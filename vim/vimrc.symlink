@@ -1,0 +1,70 @@
+set nocompatible              " be iMproved, required
+filetype off                  " required
+
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+" alternatively, pass a path where Vundle should install plugins
+"call vundle#begin('~/some/path/here')
+
+" let Vundle manage Vundle, required
+Plugin 'gmarik/Vundle.vim'
+
+Plugin 'plasticboy/vim-markdown'
+Plugin 'airblade/vim-gitgutter'
+Plugin 'Keithbsmiley/swift.vim'
+
+filetype plugin on
+filetype indent on
+syntax on
+colorscheme mustang
+set t_Co=256
+set expandtab
+set tabstop=2
+set softtabstop=2
+set autoindent
+set copyindent
+set shiftwidth=2
+set ruler
+set number
+set clipboard=unnamed
+set backupdir=/private/tmp
+set directory=/private/tmp
+
+" disable arrow keys
+map <up> <nop>
+map <down> <nop>
+map <left> <nop>
+map <right> <nop>
+imap <up> <nop>
+imap <down> <nop>
+imap <left> <nop>
+imap <right> <nop>
+inoremap jk <esc>
+inoremap kj <esc>
+
+" Ruby autocomplete
+autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1
+autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
+
+"Improve ruby autocomplete menu color
+highlight Pmenu ctermbg=238 gui=bold
+
+"ctrl+x for cut
+vmap <C-x> :!pbcopy<cr>
+"ctrl+c for copy
+vmap <C-c> :w !pbcopy<cr><cr>
+
+"clang-complete
+let g:clang_use_library = 1
+let g:clang_complete_copen = 1
+let g:clang_snippets = 1
+let g:clang_auto_select = 1
+let g:clang_complete_macros=1
+let g:clang_complete_patterns=1
+
+"vim-detailed
+"colo detailed
+
+"matchit
+runtime macros/matchit.vim
