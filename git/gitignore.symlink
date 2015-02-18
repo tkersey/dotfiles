@@ -1,0 +1,10 @@
+docs/*
+*/docs/*
+*.DS_Store
+pkg/*
+.VolumeIcon.icns
+.fseventsd
+Icon
+*.swp
+/**/*.swp
+*.netrwhist

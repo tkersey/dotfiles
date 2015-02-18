@@ -1,0 +1,32 @@
+[user]
+    name = Tim Kersey
+    email = t@k-t.im
+[color]
+    ui = 1
+[gc]
+    auto = 1      
+[core]
+excludesfile = /Users/tk/.gitignore
+    editor = vim
+	filemode = false
+[alias]
+    st = status -sb
+    ci = commit
+    cl = clone
+    br = branch
+    co = checkout
+    df = diff
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
+    pu = push
+    pl = pull
+    dmsg = commit --allow-empty -m
+    ada = add -p
+[push]
+	default = simple
+[branch]  
+    autosetuprebase = always
+[help]
+	autocorrect = 1
+[filter "media"]
+	clean = git-media-clean %f
+	smudge = git-media-smudge %f
