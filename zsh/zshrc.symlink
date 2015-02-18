@@ -1,0 +1,19 @@
+export PATH="/usr/local/bin:/usr/local/sbin:/opt/local/bin:$PATH"
+
+# shortcut to this dotfiles path is $ZSH
+export ZSH=$HOME/Dropbox/code/dot
+
+# source every .zsh file in this rep
+for config_file ($ZSH/**/*.zsh) source $config_file
+
+# setup prompt
+fpath=(~/Dropbox/code/dot/zsh $fpath)
+autoload -U promptinit && promptinit
+prompt pure
+
+# rbenv
+if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
+
+# initialize autocomplete here, otherwise functions won't be loaded
+autoload -U compinit
+compinit
