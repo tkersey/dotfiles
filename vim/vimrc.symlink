@@ -40,8 +40,6 @@ imap <up> <nop>
 imap <down> <nop>
 imap <left> <nop>
 imap <right> <nop>
-inoremap jk <esc>
-inoremap kj <esc>
 
 " Ruby autocomplete
 autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1
