@@ -1,4 +1,3 @@
-set nocompatible              " be iMproved, required
 filetype off                  " required
 
 " set the runtime path to include Vundle and initialize
@@ -10,9 +9,11 @@ call vundle#begin()
 " let Vundle manage Vundle, required
 Plugin 'gmarik/Vundle.vim'
 
+Plugin 'flazz/vim-colorschemes'
 Plugin 'plasticboy/vim-markdown'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'Keithbsmiley/swift.vim'
+call vundle#end()
 
 filetype plugin on
 filetype indent on
