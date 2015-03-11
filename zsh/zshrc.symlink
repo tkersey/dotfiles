@@ -1,13 +1,13 @@
 export PATH="/usr/local/bin:/usr/local/sbin:/opt/local/bin:$PATH"
 
 # shortcut to this dotfiles path is $ZSH
-export ZSH=$HOME/Dropbox/code/dot
+export ZSH=$HOME/Dropbox/code/dotfiles
 
 # source every .zsh file in this rep
 for config_file ($ZSH/**/*.zsh) source $config_file
 
 # setup prompt
-fpath=(~/Dropbox/code/dot/zsh $fpath)
+fpath=(~/Dropbox/code/dotfiles/zsh $fpath)
 autoload -U promptinit && promptinit
 prompt pure
 
