@@ -13,6 +13,7 @@ Plugin 'flazz/vim-colorschemes'
 Plugin 'plasticboy/vim-markdown'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'Keithbsmiley/swift.vim'
+Plugin 'jerrymarino/xcodebuild.vim'
 call vundle#end()
 
 filetype plugin on
