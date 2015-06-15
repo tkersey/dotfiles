@@ -24,6 +24,7 @@ alias git=hub
 alias cdc="cd ~/Dropbox/code"
 alias ccl="cd ~/Dropbox/clients"
 alias cdd="cd ~/downloads"
+alias cdw="cd ~/workspace"
 
 ########
 # MISC #
