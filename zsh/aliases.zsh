@@ -30,3 +30,4 @@ alias cdw="cd ~/workspace"
 # MISC #
 ########
 alias bkoff="cd ~/.bin/backup && git reset HEAD --hard && git pull && chmod 755 backup.sh && /bin/bash -l -c '~/.bin/backup/backup.sh'"
+alias xcd="/Applications/Xcode.app/Contents/MacOS/Xcode </dev/null &>/dev/null &"
