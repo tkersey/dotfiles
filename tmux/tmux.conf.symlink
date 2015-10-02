@@ -1,11 +1,6 @@
 # use VI
 set-window-option -g mode-keys vi
 
-# use ctrl-a instead of ctrl-b
-set -g prefix C-a
-unbind C-b
-bind C-a send-prefix
-
 # horizontal and vertical splits
 unbind |
 bind | split-window -h
@@ -24,6 +19,3 @@ unbind k
 bind k select-pane -U
 unbind l
 bind l select-pane -R
-
-# reattach-to-user-namespace
-set-option -g default-command "reattach-to-user-namespace -l zsh"
