@@ -34,38 +34,14 @@ set clipboard=unnamed
 set backupdir=/private/tmp
 set directory=/private/tmp
 
-" disable arrow keys
-map <up> <nop>
-map <down> <nop>
-map <left> <nop>
-map <right> <nop>
-imap <up> <nop>
-imap <down> <nop>
-imap <left> <nop>
-imap <right> <nop>
-
-" Ruby autocomplete
-autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1
-autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
-
-"Improve ruby autocomplete menu color
-highlight Pmenu ctermbg=238 gui=bold
-
-"ctrl+x for cut
+" ctrl+x for cut
 vmap <C-x> :!pbcopy<cr>
-"ctrl+c for copy
+
+" ctrl+c for copy
 vmap <C-c> :w !pbcopy<cr><cr>
 
-"clang-complete
-let g:clang_use_library = 1
-let g:clang_complete_copen = 1
-let g:clang_snippets = 1
-let g:clang_auto_select = 1
-let g:clang_complete_macros=1
-let g:clang_complete_patterns=1
-
-"vim-detailed
-"colo detailed
-
-"matchit
+" matchit
 runtime macros/matchit.vim
+
+" ctrlp
+let g:ctrlp_map = ',f'
