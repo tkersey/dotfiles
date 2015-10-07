@@ -22,3 +22,5 @@
     ada = add -p
 [help]
 	autocorrect = 1
+[push]
+	default = simple
