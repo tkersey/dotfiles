@@ -1,15 +1,8 @@
-filetype off                  " required
-
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
-" alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
-
-" let Vundle manage Vundle, required
 Plugin 'gmarik/Vundle.vim'
-
-Plugin 'mileszs/ack.vim'
+Plugin 'rking/ag.vim'
 Plugin 'kien/ctrlp.vim'
 Plugin 'flazz/vim-colorschemes'
 Plugin 'plasticboy/vim-markdown'
@@ -18,22 +11,39 @@ Plugin 'Keithbsmiley/swift.vim'
 Plugin 'jerrymarino/xcodebuild.vim'
 call vundle#end()
 
-filetype plugin on
-filetype indent on
-syntax on
-colorscheme mustang
-set t_Co=256
-set expandtab
-set tabstop=2
-set softtabstop=2
-set autoindent
-set copyindent
-set shiftwidth=2
-set ruler
-set number
-set clipboard=unnamed
-set backupdir=/private/tmp
-set directory=/private/tmp
+syntax enable                 " enable syntax processing
+
+colorscheme mustang           " color scheme
+set t_Co=256                  " enables 256 colors
+
+set expandtab                 " tabs are spaces
+set tabstop=2                 " number of visual spaces per TAB
+set softtabstop=2             " number of spaces in tab when editing
+set shiftwidth=2              " number of spaces used when indenting
+
+set number                    " show line numbers
+set autoindent                " enables auto indent
+
+filetype plugin on            " load filetype specific plugins
+filetype indent on            " load filetype specific indent files
+
+set clipboard=unnamed         " use system clipboard
+
+set backupdir=/private/tmp    " moves backups to tmp directory
+set directory=/private/tmp    " moves swaps to tmp directory
+
+set incsearch                 " search as characters are entered
+set hlsearch                  " highlight matches
+
+let mapleader=","             " leader is comma
+
+runtime macros/matchit.vim    " matchit
+
+" turn off search highlight
+nnoremap <leader><space> :nohlsearch<CR> 
+
+" open ag.vim
+nnoremap <leader>a :Ag
 
 " ctrl+x for cut
 vmap <C-x> :!pbcopy<cr>
@@ -41,9 +51,7 @@ vmap <C-x> :!pbcopy<cr>
 " ctrl+c for copy
 vmap <C-c> :w !pbcopy<cr><cr>
 
-" matchit
-runtime macros/matchit.vim
 
 " ctrlp
-let g:ctrlp_map = ',f'
+let g:ctrlp_map = '<leader>f'
 let g:ctrlp_user_command = ['.git/', 'git --git-dir=%s/.git ls-files -oc --exclude-standard']
