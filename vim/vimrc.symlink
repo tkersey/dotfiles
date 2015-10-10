@@ -1,7 +1,8 @@
+filetype off
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
-Plugin 'gmarik/Vundle.vim'
+Plugin 'VundleVim/Vundle.vim'
 Plugin 'rking/ag.vim'
 Plugin 'kien/ctrlp.vim'
 Plugin 'flazz/vim-colorschemes'
@@ -11,33 +12,33 @@ Plugin 'Keithbsmiley/swift.vim'
 Plugin 'jerrymarino/xcodebuild.vim'
 call vundle#end()
 
-syntax enable                 " enable syntax processing
+filetype plugin on         " load filetype specific plugins
+filetype indent on         " load filetype specific indent files
 
-colorscheme mustang           " color scheme
-set t_Co=256                  " enables 256 colors
+syntax enable              " enable syntax processing
 
-set expandtab                 " tabs are spaces
-set tabstop=2                 " number of visual spaces per TAB
-set softtabstop=2             " number of spaces in tab when editing
-set shiftwidth=2              " number of spaces used when indenting
+colorscheme mustang        " color scheme
+set t_Co=256               " enables 256 colors
 
-set number                    " show line numbers
-set autoindent                " enables auto indent
+set expandtab              " tabs are spaces
+set tabstop=2              " number of visual spaces per TAB
+set softtabstop=2          " number of spaces in tab when editing
+set shiftwidth=2           " number of spaces used when indenting
 
-filetype plugin on            " load filetype specific plugins
-filetype indent on            " load filetype specific indent files
+set number                 " show line numbers
+set autoindent             " enables auto indent
 
-set clipboard=unnamed         " use system clipboard
+set clipboard=unnamed      " use system clipboard
 
-set backupdir=/private/tmp    " moves backups to tmp directory
-set directory=/private/tmp    " moves swaps to tmp directory
+set backupdir=/private/tmp " moves backups to tmp directory
+set directory=/private/tmp " moves swaps to tmp directory
 
-set incsearch                 " search as characters are entered
-set hlsearch                  " highlight matches
+set incsearch              " search as characters are entered
+set hlsearch               " highlight matches
 
-let mapleader=","             " leader is comma
+let mapleader=","          " leader is comma
 
-runtime macros/matchit.vim    " matchit
+runtime macros/matchit.vim " matchit
 
 " turn off search highlight
 nnoremap <leader><space> :nohlsearch<CR> 
