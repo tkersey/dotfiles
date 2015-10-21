@@ -17,3 +17,8 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 # initialize autocomplete here, otherwise functions won't be loaded
 autoload -U compinit
 compinit
+
+# ssh
+autoload -U add-zsh-hook
+add-zsh-hook preexec check_ssh
+
