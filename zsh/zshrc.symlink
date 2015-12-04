@@ -22,3 +22,6 @@ compinit
 autoload -U add-zsh-hook
 add-zsh-hook preexec check_ssh
 
+# Swift
+export PATH=/Library/Developer/Toolchains/swift-latest.xctoolchain/usr/bin:"${PATH}"
+
