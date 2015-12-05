@@ -28,3 +28,9 @@ alias cdd="cd ~/downloads"
 # MISC #
 ########
 alias bkoff="cd ~/.bin/backup && git fetch && git reset --hard origin/master && chmod 755 backup.sh && /bin/bash -l -c '~/.bin/backup/backup.sh'"
+
+#########
+# SWIFT #
+#########
+alias xcode-swift="xcrun launch-with-toolchain /Library/Developer/Toolchains/swift-latest.xctoolchain/"
+
