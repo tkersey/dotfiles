@@ -8,7 +8,7 @@ Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'flazz/vim-colorschemes'
 Plugin 'plasticboy/vim-markdown'
 Plugin 'airblade/vim-gitgutter'
-Plugin 'Keithbsmiley/swift.vim'
+Plugin 'keith/swift.vim'
 call vundle#end()
 
 filetype plugin on         " load filetype specific plugins
