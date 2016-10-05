@@ -9,6 +9,7 @@ Plugin 'flazz/vim-colorschemes'
 Plugin 'plasticboy/vim-markdown'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'keith/swift.vim'
+Plugin 'pangloss/vim-javascript'
 call vundle#end()
 
 filetype plugin on         " load filetype specific plugins
