@@ -19,3 +19,6 @@ unbind k
 bind k select-pane -U
 unbind l
 bind l select-pane -R
+
+# macOS Sierra requires
+set-option -g default-command "reattach-to-user-namespace -l zsh"
