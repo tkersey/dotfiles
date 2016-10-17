@@ -3,7 +3,7 @@ filetype off
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
-Plugin 'rking/ag.vim'
+Plugin 'mileszs/ack.vim'
 Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'flazz/vim-colorschemes'
 Plugin 'plasticboy/vim-markdown'
@@ -44,7 +44,11 @@ runtime macros/matchit.vim " matchit
 nnoremap <leader><space> :nohlsearch<CR> 
 
 " open ag.vim
-nnoremap <leader>a :Ag
+nnoremap <leader>a :Ack
+
+if executable('ag')
+  let g:ackprg = 'ag --vimgrep'
+endif
 
 " ctrl+x for cut
 vmap <C-x> :!pbcopy<cr>
