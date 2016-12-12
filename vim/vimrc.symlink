@@ -1,16 +1,13 @@
 filetype off
-" set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'mileszs/ack.vim'
-Plugin 'ctrlpvim/ctrlp.vim'
-Plugin 'flazz/vim-colorschemes'
-Plugin 'plasticboy/vim-markdown'
-Plugin 'airblade/vim-gitgutter'
-Plugin 'pangloss/vim-javascript'
-Plugin 'apple/swift', { 'rtp': 'utils/vim' }
-call vundle#end()
+call plug#begin()
+Plug 'mileszs/ack.vim'
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'flazz/vim-colorschemes'
+Plug 'plasticboy/vim-markdown'
+Plug 'airblade/vim-gitgutter'
+Plug 'pangloss/vim-javascript'
+Plug 'apple/swift', { 'rtp': 'utils/vim' }
+call plug#end()
 
 filetype plugin on         " load filetype specific plugins
 filetype indent on         " load filetype specific indent files
