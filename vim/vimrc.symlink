@@ -8,9 +8,9 @@ endif
 call plug#begin()
 Plug 'mileszs/ack.vim'
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'plasticboy/vim-markdown'
+Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 Plug 'airblade/vim-gitgutter'
-Plug 'apple/swift', { 'rtp': 'utils/vim' }
+Plug 'apple/swift', { 'rtp': 'utils/vim', 'for': 'swift' }
 call plug#end()
 
 filetype plugin on         " load filetype specific plugins
