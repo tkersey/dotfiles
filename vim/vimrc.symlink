@@ -2,10 +2,8 @@ filetype off
 call plug#begin()
 Plug 'mileszs/ack.vim'
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'flazz/vim-colorschemes'
 Plug 'plasticboy/vim-markdown'
 Plug 'airblade/vim-gitgutter'
-Plug 'pangloss/vim-javascript'
 Plug 'apple/swift', { 'rtp': 'utils/vim' }
 call plug#end()
 
@@ -14,7 +12,6 @@ filetype indent on         " load filetype specific indent files
 
 syntax enable              " enable syntax processing
 
-colorscheme mustang        " color scheme
 set t_Co=256               " enables 256 colors
 
 set expandtab              " tabs are spaces
