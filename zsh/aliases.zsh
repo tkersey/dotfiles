@@ -21,7 +21,7 @@ alias git=hub
 ###############
 # DIRECTORIES #
 ###############
-alias cdc="cd ~/Library/Mobile\ Documents/code"
+alias cdc="cd ~/Documents/code"
 alias cdd="cd ~/Downloads"
 
 ########
