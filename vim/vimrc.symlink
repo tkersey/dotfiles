@@ -5,8 +5,8 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 
 call plug#begin()
-Plug 'mileszs/ack.vim', { 'on': 'Ack' }
-Plug 'ctrlpvim/ctrlp.vim', { 'on': 'CtrlP' }
+Plug 'mileszs/ack.vim'
+Plug 'ctrlpvim/ctrlp.vim'
 Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 Plug 'airblade/vim-gitgutter'
 Plug 'apple/swift', { 'rtp': 'utils/vim', 'for': 'swift' }
