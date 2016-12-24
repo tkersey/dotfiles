@@ -28,6 +28,7 @@ alias cdd="cd ~/Downloads"
 # MISC #
 ########
 alias bkoff="cd ~/.bin/backup && git fetch && git reset --hard origin/master && chmod 755 backup.sh && /bin/bash -l -c '~/.bin/backup/backup.sh'"
+alias sshadd="ssh-add -K ~/.ssh/id_rsa"
 
 #########
 # SWIFT #
