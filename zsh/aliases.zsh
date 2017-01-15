@@ -10,7 +10,8 @@ alias reload!='. ~/.zshrc'
 # BREW #
 ########
 alias b="brew"
-alias bupo="brew up && brew outdated"
+alias bupo="brew update && brew outdated"
+alias bupcl="brew upgrade && brew cleanup"
 
 #######
 # Git #
