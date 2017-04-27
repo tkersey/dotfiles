@@ -1,7 +1,7 @@
 [user]
   name = Tim Kersey
   email = t@k-t.im
-  signingkey = F8B5C865811D4A92
+	signingkey = 32D27670CEDBEED4
 [color]
   ui = 1
 [gc]
@@ -30,4 +30,4 @@
 [commit]
 	gpgsign = true
 [gpg]
-	program = gpg1
+	program = /usr/local/bin/gpg
