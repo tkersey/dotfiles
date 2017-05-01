@@ -12,6 +12,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'pangloss/vim-javascript'
 Plug 'mxw/vim-jsx'
 Plug 'apple/swift', { 'rtp': 'utils/vim', 'for': 'swift' }
+Plug 'idris-hackers/idris-vim'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
