@@ -23,6 +23,7 @@
   pu = push
   pl = pull
   ada = add -p
+  fetch = fetch -v
 [help]
 	autocorrect = 1
 [push]
