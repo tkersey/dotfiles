@@ -24,6 +24,9 @@
   pl = pull
   ada = add -p
   fetch = fetch -v
+  stsh = stash --keep-index
+  staash = stash --include-untracked
+  staaash = stash --all
 [help]
 	autocorrect = 1
 [push]
