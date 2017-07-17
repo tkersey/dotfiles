@@ -25,6 +25,7 @@ alias git=hub
 ###############
 alias cdc="cd ~/Documents/code"
 alias cdd="cd ~/Downloads"
+alias cdw="cd ~/workspace"
 
 ########
 # MISC #
