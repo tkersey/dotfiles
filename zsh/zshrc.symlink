@@ -15,16 +15,9 @@ prompt pure
 if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 # initialize autocomplete here, otherwise functions won't be loaded
-autoload -U compinit
-compinit
+autoload -U compinit && compinit
+zmodload -i zsh/complist
 
 # ssh
 autoload -U add-zsh-hook
 add-zsh-hook preexec check_ssh
-
-# Swift
-export PATH=/Library/Developer/Toolchains/swift-latest.xctoolchain/usr/bin:"${PATH}"
-
-
-export NVM_DIR="/Users/tk/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
