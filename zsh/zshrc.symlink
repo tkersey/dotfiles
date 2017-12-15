@@ -21,3 +21,6 @@ zmodload -i zsh/complist
 # ssh
 autoload -U add-zsh-hook
 add-zsh-hook preexec check_ssh
+
+# fastlane
+export PATH="$HOME/.fastlane/bin:$PATH"
