@@ -1,7 +1,7 @@
 export PATH="/usr/local/bin:/usr/local/sbin:/opt/local/bin:$PATH"
 
 # shortcut to this dotfiles path is $ZSH
-export ZSH=$HOME/Documents/code/dotfiles
+export ZSH=$HOME/.dotfiles
 
 # source every .zsh file in this rep
 for config_file ($ZSH/**/*.zsh) source $config_file
