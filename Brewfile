@@ -3,8 +3,8 @@ tap "caskroom/cask"
 brew "git"
 brew "hub"
 brew "reattach-to-user-namespace"
-brew "sourcery"
-brew "swiftlint"
+brew "sourcery", args: ["HEAD"]
+brew "swiftlint", args: ["HEAD"]
 brew "tmux"
 brew "vim"
 brew "zsh"
