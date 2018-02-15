@@ -8,6 +8,7 @@ brew "swiftlint", args: ["HEAD"]
 brew "tmux"
 brew "vim"
 brew "zsh"
+cask "google-chrome"
 cask "fastlane"
 cask "flycut"
 cask "gpg-suite"
