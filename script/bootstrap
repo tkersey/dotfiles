@@ -47,6 +47,23 @@ link_files () {
   success "linked $1 to $2"
 }
 
+install_homebrew() {
+	
+	# $() is for command substitution, commands don't _return_ values, they _capture_ them
+	# more here: https://stackoverflow.com/a/12137501/890814
+	# [[ ]] is the newer _test command_ for evaluations, is more literal
+	# more here: http://mywiki.wooledge.org/BashFAQ/031
+	# the double [[ ]], and $() is important
+	# `command -v brew` will output nothing if Homebrew is not installed
+	if [[ $(command -v brew) == "" ]]; then 
+		echo "Installing Homebrew.. "
+		ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+	else
+		echo "Updating Homebrew.. "
+		brew update
+	fi
+}
+
 install_dotfiles () {
   info 'installing dotfiles'
 
@@ -114,6 +131,8 @@ install_dotfiles () {
   done
 }
 
+install_homebrew
+brew bundle
 setup_gitconfig
 install_dotfiles
 
