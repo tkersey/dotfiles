@@ -1,6 +1,8 @@
 cask_args appdir: "/Applications"
 tap "caskroom/cask"
+tap "gitduet/tap"
 brew "git"
+brew "git-duet"
 brew "hub"
 brew "reattach-to-user-namespace"
 brew "sourcery", args: ["HEAD"]
