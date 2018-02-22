@@ -20,6 +20,7 @@
   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
   ada = add -p
   fetch = fetch -v
+  chp = cherry-pick
 [help]
 	autocorrect = 1
 [push]
