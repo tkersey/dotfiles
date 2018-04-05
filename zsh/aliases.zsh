@@ -28,14 +28,3 @@ alias cdc="cd ~/Documents/code"
 alias cdd="cd ~/Downloads"
 alias cdw="cd ~/workspace"
 
-########
-# MISC #
-########
-alias bkoff="cd ~/.bin/backup && git fetch && git reset --hard origin/master && chmod 755 backup.sh && /bin/bash -l -c '~/.bin/backup/backup.sh'"
-alias sshadd="ssh-add -K ~/.ssh/id_rsa"
-
-#########
-# SWIFT #
-#########
-alias xcode-swift="xcrun launch-with-toolchain /Library/Developer/Toolchains/swift-latest.xctoolchain/"
-
