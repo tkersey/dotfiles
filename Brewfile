@@ -5,7 +5,6 @@ brew "git"
 brew "git-duet"
 brew "hub"
 brew "reattach-to-user-namespace"
-brew "sourcery", args: ["HEAD"]
 brew "swiftlint", args: ["HEAD"]
 brew "tmux"
 brew "vim"
