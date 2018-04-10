@@ -1,14 +1,18 @@
-" Load vim-plug
+"Tmuxomatic Load vim-plug
 if empty(glob('~/.vim/autoload/plug.vim'))
   execute '!curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
   autocmd VimEnter * PlugInstall | source ~/.vimrc
 endif
 
 call plug#begin()
-Plug 'mileszs/ack.vim'
+Plug 'jremmen/vim-ripgrep'
 Plug 'ctrlpvim/ctrlp.vim'
+
 Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-rails'
+Plug 'tpope/vim-endwise'
+Plug 'thoughtbot/vim-rspec'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
@@ -40,19 +44,11 @@ runtime macros/matchit.vim " matchit
 " turn off search highlight
 nnoremap <leader><space> :nohlsearch<CR> 
 
-" open ag.vim
-nnoremap <leader>a :Ack
-
-if executable('ag')
-  let g:ackprg = 'ag --vimgrep'
-endif
-
 " ctrl+x for cut
 vmap <C-x> :!pbcopy<cr>
 
 " ctrl+c for copy
 vmap <C-c> :w !pbcopy<cr><cr>
-
 
 " ctrlp
 let g:ctrlp_map = '<leader>f'
