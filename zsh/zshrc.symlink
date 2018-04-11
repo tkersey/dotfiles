@@ -27,3 +27,6 @@ export PATH="$HOME/.fastlane/bin:$PATH"
 
 # Co-authored-by
 export GIT_DUET_CO_AUTHORED_BY=1
+
+# editor
+export EDITOR='vim'
