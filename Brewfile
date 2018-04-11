@@ -1,6 +1,6 @@
 cask_args appdir: "/Applications"
 tap "caskroom/cask"
-tap "tkersey/tap"
+tap "git-duet/tap"
 brew "git"
 brew "git-duet"
 brew "hub"
