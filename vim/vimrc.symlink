@@ -6,13 +6,14 @@ endif
 
 call plug#begin()
 Plug 'jremmen/vim-ripgrep'
-Plug 'ctrlpvim/ctrlp.vim'
+Plug 'ajh17/VimCompletesMe'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+Plug 'sheerun/vim-polyglot'
+Plug 'w0rp/ale'
+Plug 'airblade/vim-gitgutter'
 
 Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
-Plug 'airblade/vim-gitgutter'
-Plug 'tpope/vim-rails'
-Plug 'tpope/vim-endwise'
-Plug 'thoughtbot/vim-rspec'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
@@ -50,6 +51,6 @@ vmap <C-x> :!pbcopy<cr>
 " ctrl+c for copy
 vmap <C-c> :w !pbcopy<cr><cr>
 
-" ctrlp
-let g:ctrlp_map = '<leader>f'
-let g:ctrlp_user_command = ['.git/', 'git --git-dir=%s/.git ls-files -oc --exclude-standard']
+" persistent undo
+set undofile
+set undodir=~/.vim/undodir/
