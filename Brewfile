@@ -5,7 +5,7 @@ brew "git"
 brew "git-duet"
 brew "hub"
 brew "ripgrep"
-brew "swiftlint", args: ["HEAD"]
+brew "swiftlint"
 brew "vim"
 brew "zsh"
 cask "fastlane"
