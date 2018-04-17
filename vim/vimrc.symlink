@@ -12,9 +12,8 @@ Plug 'junegunn/fzf.vim'
 Plug 'sheerun/vim-polyglot'
 Plug 'w0rp/ale'
 Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-dispatch'
 Plug 'tpope/vim-fugitive'
-
-Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
