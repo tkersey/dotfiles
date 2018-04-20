@@ -1,3 +1,3 @@
 function gti
-  git
+  git $argv
 end
