@@ -26,22 +26,6 @@ fail () {
   exit
 }
 
-setup_gitconfig () {
-  if ! [ -f git/gitconfig.symlink ]
-  then
-    info 'setup gitconfig'
-
-    user ' - What is your github author name?'
-    read -e git_authorname
-    user ' - What is your github author email?'
-    read -e git_authoremail
-
-    sed -e "s/AUTHORNAME/$git_authorname/g" -e "s/AUTHOREMAIL/$git_authoremail/g" git/gitconfig.symlink.example > git/gitconfig.symlink
-
-    success 'gitconfig'
-  fi
-}
-
 link_files () {
   ln -s $1 $2
   success "linked $1 to $2"
@@ -73,7 +57,10 @@ install_dotfiles () {
 
   for source in `find $DOTFILES_ROOT -maxdepth 2 -name \*.symlink`
   do
-    dest="$HOME/.`basename \"${source%.*}\"`"
+    source_path=${source#"${DOTFILES_ROOT}/"}
+    echo $source_path
+    dest="$HOME/.${source_path%.*}"
+    echo $dest
 
     if [ -f $dest ] || [ -d $dest ]
     then
@@ -84,7 +71,7 @@ install_dotfiles () {
 
       if [ "$overwrite_all" == "false" ] && [ "$backup_all" == "false" ] && [ "$skip_all" == "false" ]
       then
-        user "File already exists: `basename $source`, what do you want to do? [s]kip, [S]kip all, [o]verwrite, [O]verwrite all, [b]ackup, [B]ackup all?"
+        user "File already exists: ${dest}, what do you want to do? [s]kip, [S]kip all, [o]verwrite, [O]verwrite all, [b]ackup, [B]ackup all?"
         read -n 1 action
 
         case "$action" in
@@ -121,7 +108,7 @@ install_dotfiles () {
       then
         link_files $source $dest
       else
-        success "skipped $source"
+        success "skipped $dest"
       fi
 
     else
@@ -133,7 +120,6 @@ install_dotfiles () {
 
 install_homebrew
 brew bundle
-setup_gitconfig
 install_dotfiles
 
 # If we are on a mac, lets install and setup homebrew
