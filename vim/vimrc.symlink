@@ -14,6 +14,7 @@ Plug 'w0rp/ale'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-dispatch'
 Plug 'tpope/vim-fugitive'
+Plug 'terryma/vim-multiple-cursors'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
