@@ -21,7 +21,7 @@
   ada = add -p
   fetch = fetch -v
   chp = cherry-pick
-  shf = show --pretty="" --name-only
+  ls = show --pretty="" --name-only
 [help]
 	autocorrect = 1
 [push]
