@@ -15,6 +15,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-dispatch'
 Plug 'tpope/vim-fugitive'
 Plug 'terryma/vim-multiple-cursors'
+Plug 'ap/vim-buftabline'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
@@ -71,3 +72,8 @@ command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-h
 " ALE linters
 let g:ale_linters = { 'javascript': ['eslint'], 'ruby': ['rubocop'] }
 let g:ale_fix_on_save = 1
+
+" Buftabline
+set hidden
+nnoremap <C-N> :bnext<CR>
+nnoremap <C-P> :bprev<CR>
