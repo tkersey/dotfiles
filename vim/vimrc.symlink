@@ -18,6 +18,7 @@ Plug 'terryma/vim-multiple-cursors'
 Plug 'ap/vim-buftabline'
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
+Plug 'jph00/swift-apple'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
