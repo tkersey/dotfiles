@@ -1,6 +1,5 @@
 cask_args appdir: "/Applications"
-tap "caskroom/cask"
-tap "caskroom/versions"
+tap "homebrew/cask-versions"
 tap "bow-swift/nef"
 tap "git-duet/tap"
 tap "unisonweb/unison"
