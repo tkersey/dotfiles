@@ -15,7 +15,7 @@
   cl = clone
   br = branch
   co = checkout
-  df = diff -w
+  df = diff --ignore-space-at-eol
   ds = diff --cached
   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
   ada = add -p
