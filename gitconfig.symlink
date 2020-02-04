@@ -27,7 +27,7 @@
 [push]
 	default = simple
 [gpg]
-	program = /usr/local/bin/gpg
+	program = gpg
 [filter "lfs"]
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
@@ -37,3 +37,5 @@
 	insteadOf = https://github.com/
 [fetch]
 	prune = true
+[commit]
+	gpgsign = true
