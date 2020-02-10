@@ -14,6 +14,7 @@
   ci = commit
   cl = clone
   br = branch
+  brn = branch --show-current
   co = checkout
   df = diff --ignore-space-at-eol
   ds = diff --cached
