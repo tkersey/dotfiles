@@ -19,7 +19,6 @@ Plug 'ap/vim-buftabline'
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
 Plug 'jph00/swift-apple'
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
