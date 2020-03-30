@@ -1,6 +1,7 @@
 [user]
   name = Tim Kersey
-  email = t@k-t.im
+	email = tim@carbonfive.com
+	signingkey = 56F9CDF6E5269CBF
 [color]
   ui = 1
 [gc]
@@ -35,8 +36,8 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
-[url "git@github.com:"]
-	insteadOf = https://github.com/
+#[url "git@github.com:"]
+#	insteadOf = https://github.com/
 [fetch]
 	prune = true
 [commit]
