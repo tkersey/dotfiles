@@ -16,14 +16,13 @@ Plug 'tpope/vim-dispatch'
 Plug 'tpope/vim-fugitive'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'ap/vim-buftabline'
-Plug 'prabirshrestha/async.vim'
-Plug 'prabirshrestha/vim-lsp'
-Plug 'jph00/swift-apple'
+Plug 'cocopon/iceberg.vim'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
 
 syntax enable              " enable syntax processing
+colorscheme iceberg
 
 set t_Co=256               " enables 256 colors
 
