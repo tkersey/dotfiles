@@ -17,12 +17,13 @@ Plug 'tpope/vim-fugitive'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'ap/vim-buftabline'
 Plug 'cocopon/iceberg.vim'
+Plug 'beikome/cosme.vim'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
 
 syntax enable              " enable syntax processing
-colorscheme iceberg
+colorscheme cosme
 
 set t_Co=256               " enables 256 colors
 
