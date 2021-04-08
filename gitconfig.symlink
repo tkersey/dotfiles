@@ -6,7 +6,7 @@
 [gc]
   auto = 1
 [core]
-  excludesfile = /Users/tk/.gitignore
+  excludesfile = ~/.gitignore
   editor = vim
 	filemode = false
 [alias]
