@@ -1,2 +1,3 @@
 config/fish.symlink/fishd.*
+config/fish.symlink/fish_variables
 Brewfile.lock.json
