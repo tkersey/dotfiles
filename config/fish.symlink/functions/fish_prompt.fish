@@ -1,92 +1,61 @@
-function _pwd_with_tilde
-  echo $PWD | sed 's|^'$HOME'\(.*\)$|~\1|'
-end
+function fish_prompt --description 'Write out the prompt'
+    set -l last_pipestatus $pipestatus
+    set -lx __fish_last_status $status # Export for __fish_print_pipestatus.
 
-function _in_git_directory
-  git rev-parse --git-dir > /dev/null 2>&1
-end
-
-function _git_branch_name_or_revision
-  set -l branch (git symbolic-ref HEAD ^ /dev/null | sed -e 's|^refs/heads/||')
-  set -l revision (git rev-parse HEAD ^ /dev/null | cut -b 1-7)
-
-  if test (count $branch) -gt 0
-    echo $branch
-  else
-    echo $revision
-  end
-end
-
-function _git_upstream_configured
-  git rev-parse --abbrev-ref @"{u}" > /dev/null 2>&1
-end
-
-function _git_behind_upstream
-  test (git rev-list --right-only --count HEAD...@"{u}" ^ /dev/null) -gt 0
-end
-
-function _git_ahead_of_upstream
-  test (git rev-list --left-only --count HEAD...@"{u}" ^ /dev/null) -gt 0
-end
-
-function _git_dirty
-  set -l is_git_dirty (command git status --porcelain --ignore-submodules ^/dev/null)
-  test -n "$is_git_dirty"
-end
-
-function _git_upstream_status
-  set -l arrows
-
-  if _git_upstream_configured
-    if _git_behind_upstream
-      set arrows "$arrows⇣"
+    if not set -q __fish_git_prompt_show_informative_status
+        set -g __fish_git_prompt_show_informative_status 1
+    end
+    if not set -q __fish_git_prompt_hide_untrackedfiles
+        set -g __fish_git_prompt_hide_untrackedfiles 1
+    end
+    if not set -q __fish_git_prompt_color_branch
+        set -g __fish_git_prompt_color_branch magenta --bold
+    end
+    if not set -q __fish_git_prompt_showupstream
+        set -g __fish_git_prompt_showupstream informative
+    end
+    if not set -q __fish_git_prompt_color_dirtystate
+        set -g __fish_git_prompt_color_dirtystate blue
+    end
+    if not set -q __fish_git_prompt_color_stagedstate
+        set -g __fish_git_prompt_color_stagedstate yellow
+    end
+    if not set -q __fish_git_prompt_color_invalidstate
+        set -g __fish_git_prompt_color_invalidstate red
+    end
+    if not set -q __fish_git_prompt_color_untrackedfiles
+        set -g __fish_git_prompt_color_untrackedfiles $fish_color_normal
+    end
+    if not set -q __fish_git_prompt_color_cleanstate
+        set -g __fish_git_prompt_color_cleanstate green --bold
     end
 
-    if _git_ahead_of_upstream
-      set arrows "$arrows⇡"
+    set -l color_cwd
+    set -l suffix
+    if functions -q fish_is_root_user; and fish_is_root_user
+        if set -q fish_color_cwd_root
+            set color_cwd $fish_color_cwd_root
+        else
+            set color_cwd $fish_color_cwd
+        end
+        set suffix '#'
+    else
+        set color_cwd $fish_color_cwd
+        set suffix '$'
     end
-  end
 
-  echo $arrows
-end
+    # PWD
+    set_color $color_cwd
+    echo -n (prompt_pwd)
+    set_color normal
 
-function _git_status
-  set -l asterisk
+    printf '%s ' (fish_vcs_prompt)
 
-  if _git_dirty
-    set asterisk "$asterisk*"
-  end
+    set -l status_color (set_color $fish_color_status)
+    set -l statusb_color (set_color --bold $fish_color_status)
+    set -l prompt_status (__fish_print_pipestatus "[" "]" "|" "$status_color" "$statusb_color" $last_pipestatus)
+    echo -n $prompt_status
+    set_color normal
 
-  echo $asterisk
-end
-
-function _print_in_color
-  set -l string $argv[1]
-  set -l color  $argv[2]
-
-  set_color $color
-  printf $string
-  set_color normal
-end
-
-function _prompt_color_for_status
-  if test $argv[1] -eq 0
-    echo magenta
-  else
-    echo red
-  end
-end
-
-function fish_prompt
-  set -l last_status $status
-
-  _print_in_color "\n"(_pwd_with_tilde) blue
-
-  if _in_git_directory
-    _print_in_color " "(_git_branch_name_or_revision) 242
-    _print_in_color " "(_git_status) FCBC47
-    _print_in_color " "(_git_upstream_status) cyan
-  end
-
-  _print_in_color "\n❯ " (_prompt_color_for_status $last_status)
+    echo -n "$suffix "
 end
