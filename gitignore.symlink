@@ -1,5 +1,3 @@
-docs/*
-*/docs/*
 *.DS_Store
 pkg/*
 .VolumeIcon.icns
