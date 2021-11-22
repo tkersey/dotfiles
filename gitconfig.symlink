@@ -1,7 +1,6 @@
 [user]
   name = Tim Kersey
   email = t@k-t.im
-	signingKey = /Users/tk/.ssh/id_ed25519.pub
 [color]
   ui = 1
 [gc]
@@ -48,4 +47,4 @@
 [hub]
 	protocol = ssh
 [gpg "ssh"]
-	allowedSignersFile = /Users/tk/.ssh/allowed_signers
+	defaultKeyCommand = ssh-add -L
