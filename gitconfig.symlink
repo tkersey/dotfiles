@@ -1,6 +1,7 @@
 [user]
   name = Tim Kersey
   email = t@k-t.im
+	signingKey = /Users/tk/.ssh/id_ed25519.pub
 [color]
   ui = 1
 [gc]
@@ -29,7 +30,8 @@
 [push]
 	default = simple
 [gpg]
-	program = gpg
+#	program = gpg
+  format = ssh
 [filter "lfs"]
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
@@ -45,3 +47,5 @@
 	rebase = false
 [hub]
 	protocol = ssh
+[gpg "ssh"]
+	allowedSignersFile = /Users/tk/.ssh/allowed_signers
