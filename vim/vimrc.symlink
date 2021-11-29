@@ -8,11 +8,12 @@ call plug#begin()
 Plug 'ajh17/VimCompletesMe'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-Plug 'w0rp/ale'
 Plug 'ap/vim-buftabline'
 Plug 'beikome/cosme.vim'
 Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 Plug 'mhinz/vim-signify'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'mattn/vim-lsp-settings'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
