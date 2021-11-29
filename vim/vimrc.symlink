@@ -8,15 +8,11 @@ call plug#begin()
 Plug 'ajh17/VimCompletesMe'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-Plug 'sheerun/vim-polyglot'
 Plug 'w0rp/ale'
-Plug 'airblade/vim-gitgutter'
-Plug 'tpope/vim-dispatch'
-Plug 'tpope/vim-fugitive'
 Plug 'ap/vim-buftabline'
-Plug 'cocopon/iceberg.vim'
 Plug 'beikome/cosme.vim'
-Plug 'mg979/vim-visual-multi'
+Plug 'mg979/vim-visual-multi', {'branch': 'master'}
+Plug 'mhinz/vim-signify'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
