@@ -76,3 +76,5 @@ let g:ale_fix_on_save = 1
 set hidden
 nnoremap <C-N> :bnext<CR>
 nnoremap <C-P> :bprev<CR>
+
+set backspace=indent,eol,start
