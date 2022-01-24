@@ -9,3 +9,4 @@ if not pgrep -f ssh-agent > /dev/null
 end
 
 direnv hook fish | source
+fish_add_path /usr/local/sbin
