@@ -48,3 +48,5 @@
 	protocol = ssh
 [gpg "ssh"]
 	defaultKeyCommand = ssh-add -L
+[merge]
+	conflictstyle = zdiff3
