@@ -1,11 +1,3 @@
-# Added by devenv/mac-dev-setup Sat Apr  3 18:11:18 EDT 2021
-export PATH="${PATH}:/Users/tkersey/work/devenv/bin"
-[ -f "/Users/tkersey/work/devenv/lib/eh_functions.sh" ] && . /Users/tkersey/work/devenv/lib/eh_functions.sh
-export OCI_REGISTRY=689723035205.dkr.ecr.us-east-1.amazonaws.com
-export AWS_ACCESS_KEY_ID=foo
-export AWS_SECRET_ACCESS_KEY=bar
-export AWS_DEFAULT_REGION=baz
-
 fpath+=$HOME/.zsh/pure
 
 autoload -U promptinit; promptinit
@@ -27,9 +19,12 @@ alias ....='cd ../../..' # move up 3 dirs
 alias .....='cd ../../../..' # move up 4 dirs
 alias reload!='. ~/.zshrc'
 alias gti=git
-alias git=hub
 alias cdd='cd ~/Downloads'
-alias cdw='cd ~/work'
+alias cdw='cd ~/workspace'
+alias dot='cd ~/.dotfiles'
 
+eval "$(hub alias -s)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+eval "$(direnv hook zsh)"
