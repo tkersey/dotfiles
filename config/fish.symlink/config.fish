@@ -10,3 +10,7 @@ end
 
 direnv hook fish | source
 fish_add_path /usr/local/sbin
+
+if status is-login
+  ssh-add
+end
