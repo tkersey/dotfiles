@@ -50,3 +50,5 @@
 	defaultKeyCommand = ssh-add -L
 [merge]
 	conflictstyle = zdiff3
+[init]
+	defaultBranch = main
