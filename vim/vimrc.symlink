@@ -1,4 +1,3 @@
-"Tmuxomatic Load vim-plug
 if empty(glob('~/.vim/autoload/plug.vim'))
   execute '!curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
   autocmd VimEnter * PlugInstall | source ~/.vimrc
@@ -17,6 +16,7 @@ Plug 'mattn/vim-lsp-settings'
 Plug 'pangloss/vim-javascript'
 Plug 'maxmellon/vim-jsx-pretty'
 Plug 'styled-components/vim-styled-components', { 'branch': 'main' }
+Plug 'tpope/vim-unimpaired'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
@@ -59,26 +59,8 @@ vmap <C-c> :w !pbcopy<cr><cr>
 set undofile
 set undodir=~/.vim/undodir/
 
-" --column: Show column number
-" --line-number: Show line number
-" --no-heading: Do not show file headings in results
-" --fixed-strings: Search term as a literal string
-" --ignore-case: Case insensitive search
-" --no-ignore: Do not respect .gitignore, etc...
-" --hidden: Search hidden files and folders
-" --follow: Follow symlinks
-" --glob: Additional conditions for search (in this case ignore everything in the .git/ folder)
-" --color: Search color options
-"command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
-
-" ALE linters
-let g:ale_linters = { 'javascript': ['eslint'], 'ruby': ['rubocop'] }
-let g:ale_fix_on_save = 1
-
 " Buftabline
 set hidden
-nnoremap <C-N> :bnext<CR>
-nnoremap <C-P> :bprev<CR>
 
 set backspace=indent,eol,start
 
@@ -91,6 +73,7 @@ if executable('sourcekit-lsp')
     \ })
 endif
 
+" Swift
 augroup filetype
   au! BufRead,BufNewFile *.swift set ft=swift
 augroup END
