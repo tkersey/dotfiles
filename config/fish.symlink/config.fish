@@ -8,10 +8,11 @@ source /usr/local/share/chruby/auto.fish
 #  set -Ux SSH_AUTH_SOCK $SSH_AUTH_SOCK
 #end
 
-direnv hook fish | source
 fish_add_path /usr/local/sbin
 
 #if status is-login
 #  ssh-add
 #end
 # using command ssh-agent -s instead
+
+direnv hook fish | source
