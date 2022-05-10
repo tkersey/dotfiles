@@ -12,6 +12,7 @@
 [alias]
   st = status -sb
   ci = commit
+  cie = commit --allow-empty --allow-empty-message -m ''
   cl = clone
   br = branch
   brn = branch --show-current
