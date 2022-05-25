@@ -11,12 +11,11 @@ Plug 'ap/vim-buftabline'
 Plug 'beikome/cosme.vim'
 Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 Plug 'mhinz/vim-signify'
-Plug 'prabirshrestha/vim-lsp'
-Plug 'mattn/vim-lsp-settings'
 Plug 'pangloss/vim-javascript'
 Plug 'maxmellon/vim-jsx-pretty'
 Plug 'styled-components/vim-styled-components', { 'branch': 'main' }
 Plug 'tpope/vim-unimpaired'
+Plug 'dense-analysis/ale'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
