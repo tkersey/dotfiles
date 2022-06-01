@@ -43,10 +43,11 @@ set hlsearch               " highlight matches
 
 let mapleader=","          " leader is comma
 
+
 runtime macros/matchit.vim " matchit
 
-" turn off search highlight
-nnoremap <leader><space> :nohlsearch<CR> 
+" keybindings
+nnoremap <leader><space> :Files<CR>
 
 " ctrl+x for cut
 vmap <C-x> :!pbcopy<cr>
