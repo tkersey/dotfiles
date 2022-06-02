@@ -77,3 +77,6 @@ endif
 augroup filetype
   au! BufRead,BufNewFile *.swift set ft=swift
 augroup END
+
+" ALE
+let g:ale_javascript_eslint_executable = 'eslint_d --cache'
