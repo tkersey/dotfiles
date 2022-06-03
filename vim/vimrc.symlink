@@ -81,4 +81,5 @@ augroup filetype
 augroup END
 
 " ALE
+let g:ale_linters = {'js': ['stylelint', 'eslint']}
 let g:ale_javascript_eslint_executable = 'eslint_d --cache'
