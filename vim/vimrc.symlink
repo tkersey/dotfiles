@@ -48,6 +48,8 @@ runtime macros/matchit.vim " matchit
 
 " keybindings
 nnoremap <leader><space> :Files<CR>
+nnoremap <leader>p :bprev<CR>
+nnoremap <leader>n :bnext<CR>
 
 " ctrl+x for cut
 vmap <C-x> :!pbcopy<cr>
