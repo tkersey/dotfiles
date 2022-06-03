@@ -78,8 +78,12 @@ endif
 " Swift
 augroup filetype
   au! BufRead,BufNewFile *.swift set ft=swift
+   au BufNewFile,BufRead *.jsx set filetype=javascript
 augroup END
 
 " ALE
-let g:ale_linters = {'js': ['stylelint', 'eslint']}
+let g:ale_linter_aliases = {'jsx': ['css', 'javascript']}
+let g:ale_linters = {'javascript': ['eslint'], 'jsx': ['stylelint', 'eslint']}
+let g:ale_sign_warning = '⚠️'
+let g:ale_sign_error = '❌'
 let g:ale_javascript_eslint_executable = 'eslint_d --cache'
