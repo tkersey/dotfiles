@@ -12,8 +12,6 @@ Plug 'beikome/cosme.vim'
 Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 Plug 'mhinz/vim-signify'
 Plug 'pangloss/vim-javascript'
-Plug 'maxmellon/vim-jsx-pretty'
-Plug 'styled-components/vim-styled-components', { 'branch': 'main' }
 Plug 'tpope/vim-unimpaired'
 Plug 'dense-analysis/ale'
 call plug#end()
@@ -66,24 +64,12 @@ set hidden
 
 set backspace=indent,eol,start
 
-" Swift LSP
-if executable('sourcekit-lsp')
-  au User lsp_setup call lsp#register_server({
-    \ 'name': 'sourcekit-lsp',
-    \ 'cmd': {server_info->['sourcekit-lsp']},
-    \ 'whitelist': ['swift'],
-    \ })
-endif
-
 " Swift
 augroup filetype
   au! BufRead,BufNewFile *.swift set ft=swift
-   au BufNewFile,BufRead *.jsx set filetype=javascript
 augroup END
 
 " ALE
-let g:ale_linter_aliases = {'jsx': ['css', 'javascript']}
-let g:ale_linters = {'javascript': ['eslint'], 'jsx': ['stylelint', 'eslint']}
 let g:ale_sign_warning = '⚠️'
 let g:ale_sign_error = '❌'
 let g:ale_javascript_eslint_executable = 'eslint_d --cache'
