@@ -14,6 +14,7 @@ Plug 'mhinz/vim-signify'
 Plug 'pangloss/vim-javascript'
 Plug 'tpope/vim-unimpaired'
 Plug 'dense-analysis/ale'
+Plug 'tpope/vim-eunuch'
 call plug#end()
 
 filetype indent on         " load filetype specific indent files
