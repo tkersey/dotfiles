@@ -26,19 +26,13 @@ fail () {
   exit
 }
 
-link_files () {
+setup_files () {
+  mkdir -p $(dirname $2)
   ln -s $1 $2
   success "linked $1 to $2"
 }
 
 install_homebrew() {
-	
-	# $() is for command substitution, commands don't _return_ values, they _capture_ them
-	# more here: https://stackoverflow.com/a/12137501/890814
-	# [[ ]] is the newer _test command_ for evaluations, is more literal
-	# more here: http://mywiki.wooledge.org/BashFAQ/031
-	# the double [[ ]], and $() is important
-	# `command -v brew` will output nothing if Homebrew is not installed
 	if [[ $(command -v brew) == "" ]]; then 
 		echo "Installing Homebrew.. "
 		ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -55,7 +49,7 @@ install_dotfiles () {
   backup_all=false
   skip_all=false
 
-  for source in `find $DOTFILES_ROOT -maxdepth 2 -name \*.symlink`
+  for source in `find $DOTFILES_ROOT -maxdepth 3 -name \*.symlink`
   do
     source_path=${source#"${DOTFILES_ROOT}/"}
     echo $source_path
@@ -106,13 +100,13 @@ install_dotfiles () {
 
       if [ "$skip" == "false" ] && [ "$skip_all" == "false" ]
       then
-        link_files $source $dest
+        setup_files $source $dest $source_path
       else
         success "skipped $dest"
       fi
 
     else
-      link_files $source $dest
+      setup_files $source $dest $source_path
     fi
 
   done
