@@ -16,6 +16,9 @@ set updatetime=100        " default updatetime is 4000ms and not good for async
 
 " remap
 let mapleader=","          " leader is comma
+nnoremap <leader>p :bprev<CR>
+nnoremap <leader>n :bnext<CR>
+nnoremap <leader>sv :source $MYVIMRC<CR>
 
 " Install vim-plug if not found
 if empty(glob('~/.local/share/nvim/site/autoload/plug.vim'))
@@ -29,6 +32,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzy-native.nvim'
+Plug 'nvim-telescope/telescope-file-browser.nvim'
 
 " color scheme
 Plug 'beikome/cosme.vim'
