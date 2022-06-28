@@ -10,6 +10,7 @@
   excludesfile = ~/.gitignore
   editor = vim
 	filemode = false
+#	fsmonitor = true
 [alias]
   st = status -sb
   ci = commit
