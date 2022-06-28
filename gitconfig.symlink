@@ -8,7 +8,7 @@
   auto = 1
 [core]
   excludesfile = ~/.gitignore
-  editor = vim
+  editor = nvim
 	filemode = false
 #	fsmonitor = true
 [alias]
