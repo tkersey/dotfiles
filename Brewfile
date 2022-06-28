@@ -16,6 +16,7 @@ brew "git-lfs"
 brew "hub"
 brew "idris2"
 brew "libhdhomerun"
+brew "luarocks"
 brew "luajit", args: ['HEAD']
 brew "neovim", args: ['HEAD']
 brew "ripgrep"
