@@ -43,4 +43,5 @@ cask "rectangle"
 cask "sf-symbols"
 cask "slack-beta"
 cask "tuple"
+cask "zoom"
 mas "Wipr", id: 1320666476
