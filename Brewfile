@@ -44,4 +44,6 @@ cask "sf-symbols"
 cask "slack-beta"
 cask "tuple"
 cask "zoom"
+mas "Pixelmator Pro", id: 1289583905
+mas "Sourcery Pro", id: 1561780836
 mas "Wipr", id: 1320666476
