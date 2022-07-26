@@ -22,12 +22,14 @@ brew "luarocks"
 brew "luajit", args: ['HEAD']
 brew "mas"
 brew "neovim", args: ['HEAD']
+brew "node"
 brew "ripgrep"
 brew "ruby-install"
 brew "tree-sitter", args: ['HEAD']
 brew "unison-language"
 brew "vim"
 brew "xcinfo"
+brew "yarn"
 cask "alacritty"
 cask "brave-browser"
 cask "clipy"
