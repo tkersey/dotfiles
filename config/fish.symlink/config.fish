@@ -5,6 +5,9 @@ if status is-login
   ssh-add >/dev/null 2>&1
 end
 
+# VI Prompt
+fish_vi_key_bindings
+
 # Prompt color scheme
 set -g hydro_symbol_prompt '❯'
 set -g hydro_symbol_git_dirty '*'
