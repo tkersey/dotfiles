@@ -49,6 +49,7 @@ Plug 'hrsh7th/cmp-cmdline'
 
 " statusline
 Plug 'nvim-lualine/lualine.nvim'
+Plug 'kyazdani42/nvim-web-devicons'
 
 " treesitter
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
