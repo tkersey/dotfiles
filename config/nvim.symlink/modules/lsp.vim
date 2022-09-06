@@ -47,13 +47,13 @@ lua << END
 
   vim.api.nvim_command('autocmd BufWritePre *.tsx,*.ts,*.jsx,*.js EslintFixAll')
 
-  nvim_lsp.stylelint_lsp.setup {
-    settings = {
-      stylelintplus = {
-         autoFixOnSave = true,
-         autoFixOnFormat = true
-      },
-    }
-  }
+--  nvim_lsp.stylelint_lsp.setup {
+--    settings = {
+--      stylelintplus = {
+--         autoFixOnSave = true,
+--         autoFixOnFormat = true
+--      },
+--    }
+--  }
 
 END
