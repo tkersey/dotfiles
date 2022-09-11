@@ -29,16 +29,20 @@ endif
 
 call plug#begin('~/.vim/plugged')
 " telescope
+Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzy-native.nvim'
 Plug 'nvim-telescope/telescope-file-browser.nvim'
+Plug 'jvgrootveld/telescope-zoxide'
 
 " color scheme
 Plug 'beikome/cosme.vim'
 
 " lsp
 Plug 'neovim/nvim-lspconfig'
+Plug 'alexaandru/nvim-lspupdate'
+Plug 'lukas-reineke/lsp-format.nvim'
 
 " completion
 Plug 'hrsh7th/nvim-cmp'
@@ -60,6 +64,9 @@ Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 
 " git
 Plug 'mhinz/vim-signify'
+
+" testing
+Plug 'David-Kunz/jester'
 
 call plug#end()
 

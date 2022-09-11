@@ -47,6 +47,9 @@ lua << END
 
   vim.api.nvim_command('autocmd BufWritePre *.tsx,*.ts,*.jsx,*.js EslintFixAll')
 
+  require("lsp-format").setup {}
+  nvim_lsp.gopls.setup { on_attach = require("lsp-format").on_attach }
+
 --  nvim_lsp.stylelint_lsp.setup {
 --    settings = {
 --      stylelintplus = {
