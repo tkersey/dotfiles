@@ -55,3 +55,5 @@
 	conflictstyle = zdiff3
 [init]
 	defaultBranch = main
+[rebase]
+	updateRefs = true
