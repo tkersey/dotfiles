@@ -1,7 +1,7 @@
 [user]
   name = Tim Kersey
   email = t@k-t.im
-  signingKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFBP1JdBtoBiKNDhrnxIbiZvI1+P3jNDaVoKs9kI67zo t@k-t.im"
+	signingkey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFBP1JdBtoBiKNDhrnxIbiZvI1+P3jNDaVoKs9kI67zo t@k-t.im
 [color]
   ui = 1
 [gc]
@@ -10,7 +10,7 @@
   excludesfile = ~/.gitignore
   editor = nvim
 	filemode = false
-#	fsmonitor = true
+	fsmonitor = true
 [alias]
   st = status -sb
   ci = commit
@@ -32,7 +32,6 @@
 [push]
 	default = simple
 [gpg]
-#	program = gpg
 	format = ssh
 [filter "lfs"]
 	clean = git-lfs clean -- %f
@@ -49,8 +48,6 @@
 	rebase = false
 [hub]
 	protocol = ssh
-[gpg "ssh"]
-	allowedSignersFile = /Users/tk/.ssh/allowed_signers
 [merge]
 	conflictstyle = zdiff3
 [init]
