@@ -68,3 +68,8 @@ font:
 
   # Point size of the font
   size: 11.0
+
+shell:
+  program: /usr/local/bin/fish
+  args:
+    - --login
