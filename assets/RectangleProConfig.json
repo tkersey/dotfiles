@@ -1,5 +1,5 @@
 {
-  "bundleId" : "com.knollsoft.Rectangle",
+  "bundleId" : "com.knollsoft.Hookshot",
   "defaults" : {
     "allowAnyShortcut" : {
       "bool" : false
@@ -11,25 +11,31 @@
       "float" : 0
     },
     "alternateDefaultShortcuts" : {
-      "bool" : true
+      "bool" : false
+    },
+    "alternateGestureShortcuts" : {
+      "bool" : false
     },
     "altThirdCycle" : {
       "int" : 0
     },
-    "applyGapsToMaximize" : {
+    "applyGapToEdges" : {
       "int" : 0
     },
-    "applyGapsToMaximizeHeight" : {
-      "int" : 0
+    "appSpecs" : {
+
     },
     "attemptMatchOnNextPrevDisplay" : {
       "int" : 0
     },
-    "autoMaximize" : {
+    "autoRestartOnWake" : {
+      "int" : 2
+    },
+    "cascadeHeight" : {
       "int" : 0
     },
-    "cascadeAllDeltaSize" : {
-      "float" : 30
+    "cascadeWidth" : {
+      "int" : 0
     },
     "centeredDirectionalMove" : {
       "int" : 0
@@ -37,14 +43,38 @@
     "centerHalfCycles" : {
       "int" : 0
     },
+    "checkAnimationUnsnap" : {
+      "int" : 0
+    },
+    "checkFullScreen" : {
+      "int" : 0
+    },
+    "contextMenuModifiers" : {
+      "int" : 0
+    },
+    "contextMenuShortcut" : {
+
+    },
     "cornerSnapAreaSize" : {
       "float" : 20
+    },
+    "cursorGestures" : {
+      "int" : 0
     },
     "curtainChangeSize" : {
       "int" : 0
     },
     "disabledApps" : {
 
+    },
+    "dropPaneLocation" : {
+      "int" : 0
+    },
+    "dropPaneModifier" : {
+      "int" : 0
+    },
+    "enhancedUI" : {
+      "int" : 1
     },
     "footprintAlpha" : {
       "float" : 0.30000001192092896
@@ -58,20 +88,50 @@
     "footprintFade" : {
       "int" : 0
     },
-    "fullIgnoreBundleIds" : {
-
-    },
     "gapSize" : {
       "float" : 0
+    },
+    "gestures" : {
+      "string" : "[35,{\"flags\":0,\"trail\":0}]"
+    },
+    "helperRelaunch" : {
+      "int" : 3
     },
     "hideMenubarIcon" : {
       "bool" : false
     },
+    "hideReticleRectangles" : {
+      "bool" : false
+    },
+    "hookshotStatusIcon" : {
+      "int" : 2
+    },
+    "iCloudSync" : {
+      "int" : 1
+    },
     "ignoredSnapAreas" : {
       "int" : 0
     },
+    "landscapeSnapAreas" : {
+
+    },
     "launchOnLogin" : {
       "bool" : true
+    },
+    "longReticleSpec" : {
+
+    },
+    "longshotDist" : {
+      "float" : 200
+    },
+    "mainReticleSpec" : {
+
+    },
+    "manualSpecs" : {
+
+    },
+    "maximizeAcrossDisplays" : {
+      "int" : 0
     },
     "minimumWindowHeight" : {
       "float" : 0
@@ -79,23 +139,77 @@
     "minimumWindowWidth" : {
       "float" : 0
     },
-    "moveCursor" : {
+    "missionControlDragging" : {
       "int" : 0
     },
     "moveCursorAcrossDisplays" : {
       "int" : 0
     },
-    "notifiedOfProblemApps" : {
-      "bool" : false
+    "multiWindowAllDisplays" : {
+      "int" : 0
+    },
+    "nsClickListen" : {
+      "int" : 0
+    },
+    "nsEventListen" : {
+      "int" : 0
+    },
+    "nudgeDistance" : {
+      "float" : 20
     },
     "obtainWindowOnClick" : {
       "int" : 0
     },
+    "portraitSnapAreas" : {
+
+    },
+    "quickActionMinDist" : {
+      "float" : 10
+    },
+    "quickActions" : {
+      "int" : 0
+    },
+    "quickActionTimeout" : {
+      "double" : 1
+    },
     "relaunchOpensMenu" : {
       "bool" : false
     },
+    "repeatedMaximizeRestores" : {
+      "int" : 0
+    },
     "resizeOnDirectionalMove" : {
       "bool" : false
+    },
+    "restartOnWakeDelay" : {
+      "float" : 0
+    },
+    "restToOneTouches" : {
+      "int" : 0
+    },
+    "reticle" : {
+      "int" : 2
+    },
+    "reticleColor" : {
+      "string" : "{\"red\":0.80000000000000004,\"alpha\":0.5,\"blue\":0.20000000000000001,\"green\":0.29999999999999999}"
+    },
+    "reticleDisplayMinDist" : {
+      "float" : 0
+    },
+    "reticleMouseButton" : {
+      "int" : 0
+    },
+    "reticleSize" : {
+      "int" : 12
+    },
+    "revealDesktopWidth" : {
+      "float" : 200
+    },
+    "safeAreaSize" : {
+      "int" : 35
+    },
+    "saveLayoutShortcut" : {
+
     },
     "screenEdgeGapBottom" : {
       "float" : 0
@@ -139,6 +253,9 @@
     "snapModifiers" : {
       "int" : 0
     },
+    "snapPanelActions" : {
+
+    },
     "specifiedHeight" : {
       "float" : 1050
     },
@@ -146,13 +263,58 @@
       "float" : 1680
     },
     "stageSize" : {
-      "float" : 200
+      "float" : 190
+    },
+    "stashClearedByOtherActions" : {
+      "int" : 0
+    },
+    "stashClearScreenEdge" : {
+      "int" : 0
+    },
+    "stashCursorBoxWidth" : {
+      "float" : 1
+    },
+    "stashEnabled" : {
+      "int" : 0
+    },
+    "stashHideCursorWindow" : {
+      "int" : 0
+    },
+    "stashHideTime" : {
+      "double" : 0.29999999999999999
+    },
+    "stashHideUsingMod" : {
+      "int" : 0
+    },
+    "stashInMenu" : {
+      "int" : 0
+    },
+    "stashMultipleStagger" : {
+      "int" : 0
+    },
+    "stashShowTime" : {
+      "double" : 0.29999999999999999
+    },
+    "stashShowUsingMod" : {
+      "int" : 0
+    },
+    "stashTabs" : {
+      "int" : 0
+    },
+    "stashVisibleWidth" : {
+      "float" : 1
     },
     "subsequentExecutionMode" : {
-      "int" : 1
+      "int" : 0
     },
     "SUEnableAutomaticChecks" : {
-      "bool" : false
+      "bool" : true
+    },
+    "throwFrontmost" : {
+      "int" : 0
+    },
+    "tidyGranularity" : {
+      "int" : 1
     },
     "todo" : {
       "int" : 0
@@ -163,8 +325,14 @@
     "todoMode" : {
       "bool" : false
     },
+    "todoSide" : {
+      "int" : 1
+    },
     "todoSidebarWidth" : {
       "float" : 400
+    },
+    "togggleTodoShortcut" : {
+
     },
     "traverseSingleScreen" : {
       "int" : 0
@@ -172,7 +340,19 @@
     "unsnapRestore" : {
       "int" : 0
     },
+    "unstashOnTerminate" : {
+      "int" : 0
+    },
     "windowSnapping" : {
+      "int" : 0
+    },
+    "windowStopVelocity" : {
+      "float" : 3
+    },
+    "windowToFront" : {
+      "int" : 0
+    },
+    "winModFlags" : {
       "int" : 0
     }
   },
@@ -258,5 +438,6 @@
       "modifierFlags" : 1835008
     }
   },
-  "version" : "63"
+  "timestamp" : 690845027.93196201,
+  "version" : "129"
 }
