@@ -62,6 +62,7 @@ cask "slack-beta"
 cask "tuple"
 cask "xcodes"
 cask "zoom"
+mas "Coduo", id: 6443565833
 mas "Pixelmator Pro", id: 1289583905
 mas "Sourcery Pro", id: 1561780836
 mas "Wipr", id: 1320666476
