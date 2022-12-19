@@ -1,7 +1,7 @@
 [user]
   name = Tim Kersey
   email = t@k-t.im
-	signingkey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFBP1JdBtoBiKNDhrnxIbiZvI1+P3jNDaVoKs9kI67zo t@k-t.im
+	signingkey = ~/.ssh/id_ed25519.pub
 [color]
   ui = 1
 [gc]
