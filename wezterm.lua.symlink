@@ -1,5 +1,6 @@
 local wezterm = require 'wezterm'
 return {
   color_scheme = "Catppuccin Mocha",
-  font = wezterm.font 'SF Mono'
+  font = wezterm.font 'SF Mono',
+  font_size = 11.0
 }
