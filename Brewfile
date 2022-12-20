@@ -50,21 +50,20 @@ cask "brave-browser"
 cask "clipy"
 cask "deckset"
 cask "discord-canary"
-cask "font-monoid"
-cask "font-national-park"
+# cask "font-monoid"
+# cask "font-national-park"
 cask "font-sf-mono"
 cask "hdhomerun"
-cask "hex-fiend"
-cask "jetbrains-toolbox"
+# cask "hex-fiend"
 cask "mimestream"
 cask "rectangle-pro"
-cask "sf-symbols"
+# cask "sf-symbols"
 cask "slack-beta"
 cask "tuple"
 cask "wezterm"
 cask "xcodes"
 cask "zoom"
-mas "Coduo", id: 6443565833
+# mas "Coduo", id: 6443565833
 mas "Pixelmator Pro", id: 1289583905
 mas "Sourcery Pro", id: 1561780836
 mas "Wipr", id: 1320666476
