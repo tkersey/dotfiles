@@ -24,3 +24,4 @@ set -g hydro_color_duration bryellow --bold
 # Abbreviations
 abbr --add dotdot --regex '^\.\.+$' --function multicd
 abbr -a -g bks 'cd ~/Library/Mobile\ Documents/iCloud\~com\~apple\~iBooks/Documents'
+abbr -a -g gti 'git'
