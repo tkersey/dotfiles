@@ -21,6 +21,8 @@ lua << END
           },
           ["n"] = {
             ["<C-a>"] = fb_actions.create,
+            ["<C-m>"] = fb_actions.move,
+            ["<C-d>"] = fb_actions.remove,
           },
         },
       },
