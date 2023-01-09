@@ -42,6 +42,8 @@ brew "tree-sitter", args: ['HEAD']
 brew "unison-language"
 brew "unxip"
 brew "vim"
+brew "wabt"
+brew "wasmer"
 brew "xcinfo"
 brew "yarn"
 brew "zoxide"
