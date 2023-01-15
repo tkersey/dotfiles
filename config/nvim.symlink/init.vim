@@ -44,6 +44,9 @@ Plug 'neovim/nvim-lspconfig'
 Plug 'alexaandru/nvim-lspupdate'
 Plug 'lukas-reineke/lsp-format.nvim'
 
+" language lsp
+Plug 'unisonweb/unison', { 'branch': 'trunk', 'rtp': 'editor-support/vim' }
+
 " completion
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-nvim-lsp'
