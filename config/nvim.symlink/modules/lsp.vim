@@ -28,6 +28,8 @@ lua << END
   -- Add additional capabilities supported by nvim-cmp.
   local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
+  nvim_lsp.unison.setup({})
+
   nvim_lsp.kotlin_language_server.setup{
     on_attach = on_attach,
     capabilities = capabilities
