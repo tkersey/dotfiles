@@ -13,7 +13,7 @@
 	fsmonitor = true
   pager = delta
 [interactive]
-  diffFilter = delta --color-only
+  diffFilter = delta --color-only --features=interactive
 [alias]
   st = status -sb
   ci = commit
@@ -65,3 +65,5 @@
   light = false
   side-by-side = true
   line-numbers = true
+[delta "interactive"]
+  keep-plus-minux-markers = false
