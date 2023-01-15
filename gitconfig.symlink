@@ -11,6 +11,9 @@
   editor = nvim
 	filemode = false
 	fsmonitor = true
+  pager = delta
+[interactive]
+  diffFilter = delta --color-only
 [alias]
   st = status -sb
   ci = commit
@@ -55,3 +58,10 @@
 	defaultBranch = main
 [rebase]
 	updateRefs = true
+[diff]
+  colorMoved = default
+[delta]
+  navigate = true
+  light = false
+  side-by-side = true
+  line-numbers = true
