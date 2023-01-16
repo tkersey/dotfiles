@@ -67,3 +67,6 @@
   line-numbers = true
 [delta "interactive"]
   keep-plus-minux-markers = false
+
+[includeIf "gitdir:~/workspace/hsc/"]
+  path = ~/workspace/hsc/.gitconfig-hsc
