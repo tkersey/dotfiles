@@ -53,7 +53,7 @@
       "int" : 0
     },
     "contextMenuShortcut" : {
-
+      "string" : "null"
     },
     "cornerSnapAreaSize" : {
       "float" : 20
@@ -78,6 +78,9 @@
     },
     "footprintAlpha" : {
       "float" : 0.30000001192092896
+    },
+    "footprintAnimationDurationMultiplier" : {
+      "float" : 0
     },
     "footprintBorderWidth" : {
       "float" : 2
@@ -142,10 +145,19 @@
     "missionControlDragging" : {
       "int" : 0
     },
+    "missionControlDraggingAllowedOffscreenDistance" : {
+      "float" : 25
+    },
+    "missionControlDraggingDisallowedDuration" : {
+      "int" : 250
+    },
     "moveCursorAcrossDisplays" : {
       "int" : 0
     },
     "multiWindowAllDisplays" : {
+      "int" : 0
+    },
+    "multiWindowRespectsIgnore" : {
       "int" : 0
     },
     "nsClickListen" : {
@@ -438,6 +450,6 @@
       "modifierFlags" : 1835008
     }
   },
-  "timestamp" : 690845027.93196201,
-  "version" : "129"
+  "timestamp" : 696051739.22938097,
+  "version" : "131"
 }
