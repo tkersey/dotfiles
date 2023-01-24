@@ -1,5 +1,6 @@
 fish_add_path /usr/local/sbin
 fish_add_path /opt/homebrew/bin
+fish_add_path /opt/homebrew/sbin
 direnv hook fish | source
 zoxide init fish | source
 
