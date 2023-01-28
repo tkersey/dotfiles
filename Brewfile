@@ -42,7 +42,7 @@ brew "ruby-install"
 brew "tree-sitter", args: ['HEAD']
 brew "unison-language"
 brew "unxip"
-brew "vim"
+# brew "vim"
 brew "wabt"
 brew "wasmer"
 brew "xcinfo"
