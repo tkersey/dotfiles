@@ -66,11 +66,8 @@ local plugins = {
 }
 
 local opts = {
-  install = {
-    colorscheme = {
-      "cosme",
-    },
-  }
+  checker = { enabled = true },
+  install = { colorscheme = { "cosme" } }
 }
 
 require("lazy").setup(plugins, opts)
