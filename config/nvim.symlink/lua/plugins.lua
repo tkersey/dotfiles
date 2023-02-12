@@ -59,13 +59,16 @@ local plugins = {
   "kyazdani42/nvim-web-devicons",
 
   -- Cursor
-  { "mg979/vim-visual-multi", branch = 'master' },
+  { "mg979/vim-visual-multi", branch = "master" },
 
   -- Git
   "mhinz/vim-signify",
 
   -- Mark
   "LeonHeidelbach/trailblazer.nvim",
+
+  -- Terminal
+  { "akinsho/toggleterm.nvim", version = "*" },
 }
 
 local opts = {
