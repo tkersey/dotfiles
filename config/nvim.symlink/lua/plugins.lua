@@ -63,6 +63,9 @@ local plugins = {
 
   -- Git
   "mhinz/vim-signify",
+
+  -- Mark
+  "LeonHeidelbach/trailblazer.nvim",
 }
 
 local opts = {
