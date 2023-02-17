@@ -13,10 +13,6 @@ vim.keymap.set("n", "<leader>tt", [[<Cmd>Telescope treesitter<CR>]], opts)
 vim.keymap.set("n", "<leader>fb", [[<Cmd>Telescope file_browser<CR>]], opts)
 vim.keymap.set("n", "<leader>fB", [[<Cmd>Telescope file_browser path=%:p:h<CR>]], opts)
 
-telescope.load_extension('fzy_native')
-telescope.load_extension('file_browser')
-telescope.load_extension('zoxide')
-
 telescope.setup({
   extensions = {
     file_browser = {
@@ -35,3 +31,7 @@ telescope.setup({
     },
   },
 })
+
+telescope.load_extension('fzy_native')
+telescope.load_extension('file_browser')
+telescope.load_extension('zoxide')
