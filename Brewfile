@@ -32,8 +32,6 @@ brew "libhdhomerun"
 brew "luarocks"
 brew "luajit", args: ['HEAD']
 brew "kotlin"
-brew "kotlin-debug-adapter"
-brew "kotlin-language-server"
 brew "mas"
 brew "neovim", args: ['HEAD']
 brew "node"
