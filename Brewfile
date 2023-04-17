@@ -24,6 +24,7 @@ brew "luajit", args: ['HEAD']
 brew "kotlin"
 brew "mas"
 brew "neovim", args: ['HEAD']
+brew "node"
 brew "ripgrep"
 brew "ruby-install"
 brew "tree-sitter", args: ['HEAD']
