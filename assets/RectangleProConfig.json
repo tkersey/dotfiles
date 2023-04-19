@@ -1,6 +1,12 @@
 {
   "bundleId" : "com.knollsoft.Hookshot",
   "defaults" : {
+    "adjacentResizeScreenEdge" : {
+      "int" : 0
+    },
+    "adjacentResizing" : {
+      "int" : 0
+    },
     "allowAnyShortcut" : {
       "bool" : false
     },
@@ -17,6 +23,12 @@
       "bool" : false
     },
     "altThirdCycle" : {
+      "int" : 0
+    },
+    "alwaysAccountForStage" : {
+      "int" : 0
+    },
+    "analogAdjacentResizing" : {
       "int" : 0
     },
     "applyGapToEdges" : {
@@ -67,6 +79,15 @@
     "disabledApps" : {
 
     },
+    "doubleClickTitleBar" : {
+      "int" : 0
+    },
+    "doubleClickTitleBarRestore" : {
+      "int" : 0
+    },
+    "dragFromStage" : {
+      "int" : 0
+    },
     "dropPaneLocation" : {
       "int" : 0
     },
@@ -75,6 +96,9 @@
     },
     "enhancedUI" : {
       "int" : 1
+    },
+    "fillLeftRightVersion" : {
+      "int" : 2
     },
     "footprintAlpha" : {
       "float" : 0.30000001192092896
@@ -121,6 +145,9 @@
     "launchOnLogin" : {
       "bool" : true
     },
+    "lockstepResizeOnScreenEdge" : {
+      "int" : 0
+    },
     "longReticleSpec" : {
 
     },
@@ -137,10 +164,10 @@
       "int" : 0
     },
     "minimumWindowHeight" : {
-      "float" : 0
+      "float" : 0.25
     },
     "minimumWindowWidth" : {
-      "float" : 0
+      "float" : 0.25
     },
     "missionControlDragging" : {
       "int" : 0
@@ -174,6 +201,9 @@
     },
     "portraitSnapAreas" : {
 
+    },
+    "preciseScrollTriggerIncrements" : {
+      "float" : 10
     },
     "quickActionMinDist" : {
       "float" : 10
@@ -238,6 +268,15 @@
     "screenEdgeGapTop" : {
       "float" : 0
     },
+    "scrollEdgePauseDistance" : {
+      "float" : 60
+    },
+    "scrollEdgePauseSpeed" : {
+      "float" : 20
+    },
+    "scrollTriggerIncrements" : {
+      "float" : 0.10000000149011612
+    },
     "shortEdgeSnapAreaSize" : {
       "float" : 145
     },
@@ -248,7 +287,10 @@
       "int" : 0
     },
     "sizeOffset" : {
-      "float" : 0
+      "float" : 30
+    },
+    "smallerLargerOffsetV2" : {
+      "float" : 20
     },
     "snapEdgeMarginBottom" : {
       "float" : 5
@@ -276,6 +318,9 @@
     },
     "stageSize" : {
       "float" : 190
+    },
+    "stashAnimation" : {
+      "int" : 0
     },
     "stashClearedByOtherActions" : {
       "int" : 0
@@ -325,6 +370,9 @@
     "throwFrontmost" : {
       "int" : 0
     },
+    "throwScrollResize" : {
+      "int" : 0
+    },
     "tidyGranularity" : {
       "int" : 1
     },
@@ -350,6 +398,9 @@
       "int" : 0
     },
     "unsnapRestore" : {
+      "int" : 0
+    },
+    "unstashAllToFront" : {
       "int" : 0
     },
     "unstashOnTerminate" : {
@@ -450,6 +501,6 @@
       "modifierFlags" : 1835008
     }
   },
-  "timestamp" : 696051739.22938097,
-  "version" : "131"
+  "timestamp" : 703555240.37056994,
+  "version" : "141"
 }
