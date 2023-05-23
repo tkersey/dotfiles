@@ -35,7 +35,7 @@
       "int" : 0
     },
     "appSpecs" : {
-
+      "string" : "[{\"id\":1,\"loc\":0,\"name\":\"Group 1\",\"isGroup\":true}]"
     },
     "attemptMatchOnNextPrevDisplay" : {
       "int" : 0
@@ -476,6 +476,14 @@
       "keyCode" : 126,
       "modifierFlags" : 917504
     },
+    "nudgeLeft" : {
+      "keyCode" : 123,
+      "modifierFlags" : 1966080
+    },
+    "nudgeRight" : {
+      "keyCode" : 124,
+      "modifierFlags" : 1966080
+    },
     "restore" : {
       "keyCode" : 51,
       "modifierFlags" : 786432
@@ -501,6 +509,6 @@
       "modifierFlags" : 1835008
     }
   },
-  "timestamp" : 703555240.37056994,
-  "version" : "141"
+  "timestamp" : 706478945.31167305,
+  "version" : "143"
 }
