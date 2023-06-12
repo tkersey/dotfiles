@@ -24,7 +24,7 @@
   co = checkout
   df = diff --ignore-space-at-eol
   ds = diff --cached
-  lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
+  lg = log --graph --decorate-refs-exclude=refs/tags --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
   ada = add -p
   fetch = fetch -v
   chp = cherry-pick
