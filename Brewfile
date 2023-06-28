@@ -20,7 +20,6 @@ brew "fzy"
 brew "git"
 brew "git-delta"
 brew "hub"
-brew "idris2"
 brew "libhdhomerun"
 brew "luajit", args: ['HEAD']
 brew "kotlin"
