@@ -12,8 +12,18 @@ tide_context_color_root bryellow
 tide_context_color_ssh yellow
 tide_crystal_bg_color black
 tide_crystal_color brwhite
+tide_direnv_bg_color black
+tide_direnv_bg_color_denied black
+tide_direnv_color bryellow
+tide_direnv_color_denied brred
+tide_distrobox_bg_color black
+tide_distrobox_color brmagenta
 tide_docker_bg_color black
 tide_docker_color blue
+tide_elixir_bg_color black
+tide_elixir_color magenta
+tide_gcloud_bg_color black
+tide_gcloud_color blue
 tide_git_bg_color black
 tide_git_bg_color_unstable black
 tide_git_bg_color_urgent black
@@ -45,6 +55,8 @@ tide_private_mode_bg_color black
 tide_private_mode_color brwhite
 tide_prompt_color_frame_and_connection brblack
 tide_prompt_color_separator_same_color brblack
+tide_pulumi_bg_color black
+tide_pulumi_color yellow
 tide_pwd_bg_color black
 tide_pwd_color_anchors brcyan
 tide_pwd_color_dirs cyan

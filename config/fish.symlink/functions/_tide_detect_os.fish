@@ -6,7 +6,7 @@ function _tide_detect_os
             printf %s\n  D6D6D6 333333 # from apple.com header
         case freebsd openbsd dragonfly
             printf %s\n  FFFFFF AB2B28 # https://freebsdfoundation.org/about-us/about-the-foundation/project/
-        case 'cygwin*'
+        case 'cygwin*' 'mingw*_nt*' 'msys_nt*'
             printf %s\n  FFFFFF 00CCFF # https://answers.microsoft.com/en-us/windows/forum/all/what-is-the-official-windows-8-blue-rgb-or-hex/fd57144b-f69b-42d8-8c21-6ca911646e44
         case linux
             if test (uname -o) = Android
@@ -53,11 +53,11 @@ function _tide_detect_os_linux_cases -a file key
             printf %s\n  FFFFFF 262F45 # https://wiki.mageia.org/en/Artwork_guidelines
         case manjaro
             printf %s\n  FFFFFF 35BF5C # from https://gitlab.manjaro.org/artwork/branding/logo/-/blob/master/logo.svg
-        case mint
+        case mint linuxmint
             printf %s\n  FFFFFF 69B53F # extracted from https://linuxmint.com/web/img/favicon.ico
         case nixos
             printf %s\n  FFFFFF 5277C3 # https://github.com/NixOS/nixos-artwork/tree/master/logo
-        case opensuse-leap opensuse-tumbleweed
+        case opensuse-leap opensuse-tumbleweed opensuse-microos
             printf %s\n  73BA25 173f4f # https://en.opensuse.org/openSUSE:Artwork_brand
         case raspbian
             printf %s\n  FFFFFF A22846 # https://static.raspberrypi.org/files/Raspberry_Pi_Visual_Guidelines_2020.pdf
