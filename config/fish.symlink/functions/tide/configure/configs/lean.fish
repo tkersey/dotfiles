@@ -24,10 +24,24 @@ tide_context_hostname_parts 1
 tide_crystal_bg_color normal
 tide_crystal_color FFFFFF
 tide_crystal_icon ⬢
+tide_direnv_bg_color normal
+tide_direnv_bg_color_denied normal
+tide_direnv_color $_tide_color_gold
+tide_direnv_color_denied FF0000
+tide_direnv_icon ▼
+tide_distrobox_bg_color normal
+tide_distrobox_color FF00FF
+tide_distrobox_icon ⬢
 tide_docker_bg_color normal
 tide_docker_color 2496ED
 tide_docker_default_contexts default colima
 tide_docker_icon 
+tide_elixir_bg_color normal
+tide_elixir_color 4E2A8E
+tide_elixir_icon 
+tide_gcloud_bg_color normal
+tide_gcloud_color 4285F4
+tide_gcloud_icon 
 tide_git_bg_color normal
 tide_git_bg_color_unstable normal
 tide_git_bg_color_urgent normal
@@ -41,6 +55,7 @@ tide_git_color_untracked $_tide_color_light_blue
 tide_git_color_upstream $_tide_color_green
 tide_git_icon
 tide_git_truncation_length 24
+tide_git_truncation_strategy
 tide_go_bg_color normal
 tide_go_color 00ACD7
 tide_go_icon 
@@ -80,6 +95,9 @@ tide_prompt_color_separator_same_color 949494
 tide_prompt_icon_connection ' '
 tide_prompt_min_cols 34
 tide_prompt_pad_items false
+tide_pulumi_bg_color normal
+tide_pulumi_color F7BF2A
+tide_pulumi_icon ''
 tide_pwd_bg_color normal
 tide_pwd_color_anchors $_tide_color_light_blue
 tide_pwd_color_dirs $_tide_color_dark_blue
@@ -89,7 +107,7 @@ tide_pwd_icon_home
 tide_pwd_icon_unwritable 
 tide_pwd_markers .bzr .citc .git .hg .node-version .python-version .ruby-version .shorten_folder_marker .svn .terraform Cargo.toml composer.json CVS go.mod package.json
 tide_right_prompt_frame_enabled false
-tide_right_prompt_items status cmd_duration context jobs node virtual_env rustc java php chruby go kubectl toolbox terraform aws nix_shell crystal
+tide_right_prompt_items status cmd_duration context jobs direnv node virtual_env rustc java php pulumi chruby go gcloud kubectl distrobox toolbox terraform aws nix_shell crystal elixir
 tide_right_prompt_prefix ' '
 tide_right_prompt_separator_diff_color ' '
 tide_right_prompt_separator_same_color ' '
