@@ -29,7 +29,6 @@ brew "node"
 brew "ripgrep"
 brew "ruby-install"
 brew "tree-sitter", args: ['HEAD']
-brew "unison-language"
 brew "unxip"
 brew "xcinfo"
 brew "zoxide"
