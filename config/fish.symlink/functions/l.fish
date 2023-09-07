@@ -1,3 +1,3 @@
 function l
-  exa -lah
+  eza -lah
 end
