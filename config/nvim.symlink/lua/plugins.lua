@@ -19,6 +19,7 @@ local plugins = {
 
   -- Colorscheme
   "beikome/cosme.vim",
+  "theacodes/witchhazel",
 
   -- LSP zero
   {
@@ -73,7 +74,7 @@ local plugins = {
 
 local opts = {
   checker = { enabled = true },
-  install = { colorscheme = { "cosme" } }
+  install = { colorscheme = { "witchhazel" } }
 }
 
 require("lazy").setup(plugins, opts)

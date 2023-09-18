@@ -8,7 +8,8 @@ local options = {
   clipboard = "unnamedplus",
   incsearch = true,
   hlsearch = true,
-  updatetime = 100
+  updatetime = 100,
+  termguicolors = true
 }
 
 for k, v in pairs(options) do
