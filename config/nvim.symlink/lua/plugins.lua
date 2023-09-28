@@ -40,14 +40,14 @@ local plugins = {
       {'hrsh7th/cmp-nvim-lua'},     -- Optional
 
       -- Snippets
-      {'L3MON4D3/LuaSnip', submodules = false},             -- Required
+      {'L3MON4D3/LuaSnip'},             -- Required
       {'rafamadriz/friendly-snippets'}, -- Optional
     }
   },
 
   -- Telescope
   "nvim-telescope/telescope.nvim",
-  { "nvim-telescope/telescope-fzy-native.nvim", submodules = false },
+  {"nvim-telescope/telescope-fzy-native.nvim"},
   "nvim-telescope/telescope-file-browser.nvim",
   "jvgrootveld/telescope-zoxide",
 
@@ -66,7 +66,7 @@ local plugins = {
   "mhinz/vim-signify",
 
   -- Mark
-  { "LeonHeidelbach/trailblazer.nvim", submodules = false },
+  {"LeonHeidelbach/trailblazer.nvim"},
 
   -- Terminal
   { "akinsho/toggleterm.nvim", version = "*" },
