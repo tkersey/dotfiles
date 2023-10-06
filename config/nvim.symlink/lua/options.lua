@@ -15,5 +15,3 @@ local options = {
 for k, v in pairs(options) do
   vim.opt[k] = v
 end
-
-vim.api.nvim_set_hl(0, 'Normal', { fg = "#ffffff", bg = "#333333" })
