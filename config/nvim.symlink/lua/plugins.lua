@@ -18,8 +18,15 @@ local plugins = {
 	"nvim-lua/plenary.nvim", -- Useful lua functions used ny lots of plugins
 
   -- Colorscheme
-  "beikome/cosme.vim",
-  "theacodes/witchhazel",
+  {
+    "theacodes/witchhazel",
+    lazy = false,
+    name = "witchhazel",
+    priority = 1000,
+    config = function()
+      vim.cmd([[colorscheme witchhazel]])
+    end,
+  },
 
   -- LSP zero
   {
@@ -74,7 +81,6 @@ local plugins = {
 
 local opts = {
   checker = { enabled = true },
-  install = { colorscheme = { "witchhazel" } }
 }
 
 require("lazy").setup(plugins, opts)
