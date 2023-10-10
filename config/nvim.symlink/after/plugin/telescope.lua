@@ -3,7 +3,7 @@ local actions = require("telescope.actions")
 local fb_actions = telescope.extensions.file_browser.actions
 local opts = { noremap = true, silent = true }
 
-vim.keymap.set("n", "<leader><Space>", [[<Cmd>Telescope find_files<CR>]], opts)
+vim.keymap.set("n", "<leader><Space>", "<cmd>lua require'telescope.builtin'.find_files({ find_command = {'rg', '--files', '--hidden', '-g', '!.git' }})<cr>", opts)
 vim.keymap.set("n", "<leader>/", [[<Cmd>Telescope live_grep<CR>]], opts)
 vim.keymap.set("n", "<leader>tb", [[<Cmd>Telescope buffers<CR>]], opts)
 vim.keymap.set("n", "<leader>tc", [[<Cmd>Telescope commands<CR>]], opts)
