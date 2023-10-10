@@ -76,7 +76,7 @@ local plugins = {
   {"LeonHeidelbach/trailblazer.nvim"},
 
   -- Terminal
-  { "akinsho/toggleterm.nvim", version = "*" },
+  { "akinsho/toggleterm.nvim", version = "*", config = true },
 }
 
 local opts = {
