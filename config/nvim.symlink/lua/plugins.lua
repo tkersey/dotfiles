@@ -55,7 +55,10 @@ local plugins = {
   -- Telescope
   "nvim-telescope/telescope.nvim",
   {"nvim-telescope/telescope-fzy-native.nvim"},
-  "nvim-telescope/telescope-file-browser.nvim",
+  {
+    "nvim-telescope/telescope-file-browser.nvim",
+    dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" }
+  },
   "jvgrootveld/telescope-zoxide",
 
   -- Treesitter
@@ -77,6 +80,9 @@ local plugins = {
 
   -- Terminal
   { "akinsho/toggleterm.nvim", version = "*", config = true },
+
+  -- Markdown
+  { "ellisonleao/glow.nvim", config = true, cmd = "Glow" },
 }
 
 local opts = {

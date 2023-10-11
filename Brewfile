@@ -15,6 +15,7 @@ brew "fisher"
 brew "fzy"
 brew "git"
 brew "git-delta"
+brew "glow"
 brew "hub"
 brew "libhdhomerun"
 brew "luajit", args: ['HEAD']
