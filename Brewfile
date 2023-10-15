@@ -15,8 +15,8 @@ brew "fisher"
 brew "fzy"
 brew "git"
 brew "git-delta"
-brew "glow"
 brew "hub"
+brew "lazygit"
 brew "libhdhomerun"
 brew "luajit", args: ['HEAD']
 brew "mas"
@@ -24,6 +24,7 @@ brew "neovim", args: ['HEAD']
 brew "node"
 brew "ripgrep"
 brew "ruby-install"
+brew "shellcheck"
 brew "tree-sitter", args: ['HEAD']
 brew "unxip"
 brew "zoxide"
