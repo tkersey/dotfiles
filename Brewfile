@@ -39,7 +39,7 @@ cask "hdhomerun"
 cask "mimestream"
 cask "rectangle-pro"
 cask "slack-beta"
-cask "wezterm"
+cask "wezterm-nightly"
 cask "zoom"
 mas "Pixelmator Pro", id: 1289583905
 mas "Wipr", id: 1320666476
