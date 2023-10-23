@@ -25,6 +25,7 @@ brew "node"
 brew "ripgrep"
 brew "ruby-install"
 brew "shellcheck"
+brew "swiftlint"
 brew "tree-sitter", args: ['HEAD']
 brew "unxip"
 brew "zoxide"
