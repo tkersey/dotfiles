@@ -12,6 +12,7 @@ brew "eza"
 brew "fd"
 brew "fish"
 brew "fisher"
+brew "fzf" # needed for `zi` to work
 brew "fzy"
 brew "git"
 brew "git-delta"
