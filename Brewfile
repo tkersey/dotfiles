@@ -4,6 +4,7 @@ tap "facebook/fb"
 tap "homebrew/aliases"
 tap "homebrew/cask-fonts"
 tap "homebrew/cask-versions"
+tap "pkgxdev/made"
 tap "rs/tap"
 brew "direnv"
 brew "eza"
@@ -22,6 +23,7 @@ brew "luajit", args: ['HEAD']
 brew "mas"
 brew "neovim", args: ['HEAD']
 brew "node"
+brew "pkgx"
 brew "ripgrep"
 brew "shellcheck"
 brew "tree-sitter", args: ['HEAD']
