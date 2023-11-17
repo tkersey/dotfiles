@@ -35,7 +35,7 @@
       "int" : 0
     },
     "appSpecs" : {
-      "string" : "[{\"id\":1,\"loc\":0,\"name\":\"Group 1\",\"isGroup\":true}]"
+      "string" : "[]"
     },
     "attemptMatchOnNextPrevDisplay" : {
       "int" : 0
@@ -101,7 +101,7 @@
       "int" : 2
     },
     "footprintAlpha" : {
-      "float" : 0.30000001192092896
+      "float" : 0.3
     },
     "footprintAnimationDurationMultiplier" : {
       "float" : 0
@@ -135,6 +135,9 @@
     },
     "iCloudSync" : {
       "int" : 1
+    },
+    "ignoreBehavior" : {
+      "int" : 0
     },
     "ignoredSnapAreas" : {
       "int" : 0
@@ -233,7 +236,7 @@
       "int" : 2
     },
     "reticleColor" : {
-      "string" : "{\"red\":0.80000000000000004,\"alpha\":0.5,\"blue\":0.20000000000000001,\"green\":0.29999999999999999}"
+      "string" : "{\"alpha\":0.5,\"blue\":0.2,\"red\":0.8,\"green\":0.3}"
     },
     "reticleDisplayMinDist" : {
       "float" : 0
@@ -275,7 +278,7 @@
       "float" : 20
     },
     "scrollTriggerIncrements" : {
-      "float" : 0.10000000149011612
+      "float" : 0.1
     },
     "shortEdgeSnapAreaSize" : {
       "float" : 145
@@ -338,7 +341,7 @@
       "int" : 0
     },
     "stashHideTime" : {
-      "double" : 0.29999999999999999
+      "double" : 0.3
     },
     "stashHideUsingMod" : {
       "int" : 0
@@ -350,7 +353,7 @@
       "int" : 0
     },
     "stashShowTime" : {
-      "double" : 0.29999999999999999
+      "double" : 0.3
     },
     "stashShowUsingMod" : {
       "int" : 0
@@ -366,6 +369,9 @@
     },
     "SUEnableAutomaticChecks" : {
       "bool" : true
+    },
+    "systemWideMouseDown" : {
+      "int" : 0
     },
     "throwFrontmost" : {
       "int" : 0
@@ -406,6 +412,9 @@
     "unstashOnTerminate" : {
       "int" : 0
     },
+    "winDownDefaultAction" : {
+      "int" : 0
+    },
     "windowSnapping" : {
       "int" : 0
     },
@@ -436,13 +445,13 @@
       "keyCode" : 8,
       "modifierFlags" : 786432
     },
-    "centerHalf" : {
-      "keyCode" : 8,
-      "modifierFlags" : 1835008
-    },
     "centerThird" : {
       "keyCode" : 3,
       "modifierFlags" : 786432
+    },
+    "centerTwoThirds" : {
+      "keyCode" : 8,
+      "modifierFlags" : 1835008
     },
     "firstThird" : {
       "keyCode" : 2,
@@ -509,6 +518,6 @@
       "modifierFlags" : 1835008
     }
   },
-  "timestamp" : 706478945.31167305,
-  "version" : "143"
+  "timestamp" : 721932642.748534,
+  "version" : "155"
 }
