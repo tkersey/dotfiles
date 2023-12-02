@@ -34,7 +34,7 @@ cask "bruno"
 cask "buildsettingextractor"
 cask "clipy"
 cask "copilot-for-xcode"
-cask "chromium"
+cask "chromium", args: { 'no-quarantine': true }
 cask "deckset"
 cask "font-sf-mono"
 cask "hdhomerun"
