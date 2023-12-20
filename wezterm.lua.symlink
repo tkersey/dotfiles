@@ -13,6 +13,6 @@ return {
 --  color_scheme = "TokyoNightStorm (Gogh)",
   color_scheme = "TomorrowNightEighties (Gogh)",
   font = wezterm.font 'SF Mono',
-  font_size = 13.0,
+  font_size = 14.0,
   window_close_confirmation = "NeverPrompt",
 }
