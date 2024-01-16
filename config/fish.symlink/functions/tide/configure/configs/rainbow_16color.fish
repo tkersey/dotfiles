@@ -2,8 +2,6 @@ tide_aws_bg_color yellow
 tide_aws_color brblack
 tide_character_color brgreen
 tide_character_color_failure brred
-tide_chruby_bg_color red
-tide_chruby_color black
 tide_cmd_duration_bg_color yellow
 tide_cmd_duration_color black
 tide_context_bg_color brblack
@@ -61,6 +59,10 @@ tide_pwd_bg_color blue
 tide_pwd_color_anchors brwhite
 tide_pwd_color_dirs brwhite
 tide_pwd_color_truncated_dirs white
+tide_python_bg_color brblack
+tide_python_color cyan
+tide_ruby_bg_color red
+tide_ruby_color black
 tide_rustc_bg_color red
 tide_rustc_color black
 tide_shlvl_bg_color yellow
@@ -87,5 +89,5 @@ tide_vi_mode_icon_default D
 tide_vi_mode_icon_insert I
 tide_vi_mode_icon_replace R
 tide_vi_mode_icon_visual V
-tide_virtual_env_bg_color brblack
-tide_virtual_env_color cyan
+tide_zig_bg_color yellow
+tide_zig_color black

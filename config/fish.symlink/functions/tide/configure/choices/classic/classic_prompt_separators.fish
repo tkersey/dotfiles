@@ -7,34 +7,34 @@ function classic_prompt_separators
     _tide_display_prompt
 
     _tide_option 2 Vertical
-    set -g fake_tide_left_prompt_separator_same_color '│'
-    set -g fake_tide_right_prompt_separator_same_color '│'
+    set -g fake_tide_left_prompt_separator_same_color │
+    set -g fake_tide_right_prompt_separator_same_color │
     _tide_display_prompt
 
     _tide_option 3 Slanted
-    set -g fake_tide_left_prompt_separator_same_color '╱'
-    set -g fake_tide_right_prompt_separator_same_color '╱'
+    set -g fake_tide_left_prompt_separator_same_color ╱
+    set -g fake_tide_right_prompt_separator_same_color ╱
     _tide_display_prompt
 
     _tide_option 4 Round
-    set -g fake_tide_left_prompt_separator_same_color ''
-    set -g fake_tide_right_prompt_separator_same_color ''
+    set -g fake_tide_left_prompt_separator_same_color 
+    set -g fake_tide_right_prompt_separator_same_color 
     _tide_display_prompt
 
-    _tide_menu
+    _tide_menu (status function)
     switch $_tide_selected_option
-        case 1
+        case Angled
             set -g fake_tide_left_prompt_separator_same_color 
             set -g fake_tide_right_prompt_separator_same_color 
-        case 2
-            set -g fake_tide_left_prompt_separator_same_color '│'
-            set -g fake_tide_right_prompt_separator_same_color '│'
-        case 3
-            set -g fake_tide_left_prompt_separator_same_color '╱'
-            set -g fake_tide_right_prompt_separator_same_color '╱'
-        case 4
-            set -g fake_tide_left_prompt_separator_same_color ''
-            set -g fake_tide_right_prompt_separator_same_color ''
+        case Vertical
+            set -g fake_tide_left_prompt_separator_same_color │
+            set -g fake_tide_right_prompt_separator_same_color │
+        case Slanted
+            set -g fake_tide_left_prompt_separator_same_color ╱
+            set -g fake_tide_right_prompt_separator_same_color ╱
+        case Round
+            set -g fake_tide_left_prompt_separator_same_color 
+            set -g fake_tide_right_prompt_separator_same_color 
     end
     _next_choice powerline/powerline_prompt_heads
 end
