@@ -17,15 +17,15 @@ function classic_prompt_color
     _set_all_items_bg_color 1C1C1C
     _tide_display_prompt
 
-    _tide_menu
+    _tide_menu (status function)
     switch $_tide_selected_option
-        case 1
+        case Lightest
             _set_all_items_bg_color 585858
-        case 2
+        case Light
             _set_all_items_bg_color 444444
-        case 3
+        case Dark
             _set_all_items_bg_color 303030
-        case 4
+        case Darkest
             _set_all_items_bg_color 1C1C1C
     end
     _next_choice all/show_time
