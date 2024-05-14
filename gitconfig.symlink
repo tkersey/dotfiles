@@ -71,3 +71,5 @@
 
 [includeIf "gitdir:~/workspace/hsc/"]
   path = ~/workspace/hsc/.gitconfig-hsc
+[credential]
+	helper = osxkeychain
