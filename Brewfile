@@ -42,7 +42,7 @@ cask "mimestream"
 cask "proxyman"
 cask "rectangle-pro"
 cask "slack-beta"
-cask "wezterm-nightly"
+cask "wezterm"
 cask "zoom"
 mas "Pixelmator Pro", id: 1289583905
 mas "Wipr", id: 1320666476
