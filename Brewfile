@@ -22,6 +22,8 @@ brew "neovim", args: ['HEAD']
 brew "node"
 brew "ripgrep"
 brew "shellcheck"
+brew "swiftformat"
+brew "swiftlint"
 brew "tree-sitter", args: ['HEAD']
 brew "unxip"
 brew "zoxide"
