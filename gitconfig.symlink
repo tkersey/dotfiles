@@ -72,7 +72,7 @@
 [includeIf "gitdir:~/workspace/hsc/"]
   path = ~/workspace/hsc/.gitconfig-hsc
 [credential]
-	helper = ""
+	helper = 
 	helper = /usr/local/share/gcm-core/git-credential-manager
 [credential "https://dev.azure.com"]
 	useHttpPath = true
