@@ -1,6 +1,9 @@
 return {
-  { "theacodes/witchhazel" },
-  { "LazyVim/LazyVim", opts = {
-    colorscheme = "witchhazel-hypercolor",
-  } },
+  "scottmckendry/cyberdream.nvim",
+  {
+    "LazyVim/LazyVim",
+    opts = {
+      colorscheme = "cyberdream",
+    },
+  },
 }
