@@ -46,6 +46,5 @@ cask "zoom"
 mas "Apple Configurator", id: 1037126344
 mas "Apple Developer", id: 640199958
 mas "Pixelmator Pro", id: 1289583905
-mas "RocketSim for Xcode Simulator", id: 1504940162
 mas "TestFlight", id: 899247664
 mas "Wipr", id: 1320666476
