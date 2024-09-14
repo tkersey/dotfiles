@@ -53,8 +53,8 @@
 	rebase = false
 [hub]
 	protocol = ssh
-#[merge]
-#	conflictstyle = zdiff3
+[merge]
+	conflictstyle = zdiff3
 [init]
 	defaultBranch = main
 [rebase]
