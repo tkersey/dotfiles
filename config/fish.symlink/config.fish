@@ -16,3 +16,6 @@ fish_vi_key_bindings
 abbr --add dotdot --regex '^\.\.+$' --function multicd
 abbr -a -g bks 'cd ~/Library/Mobile\ Documents/iCloud\~com\~apple\~iBooks/Documents'
 abbr -a -g gti git
+
+# Created by `pipx` on 2025-01-07 16:15:01
+set PATH $PATH /Users/tk/.local/bin
