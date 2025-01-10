@@ -22,10 +22,13 @@ brew "neovim", args: ['HEAD']
 brew "node"
 brew "ripgrep"
 brew "shellcheck"
+brew "stylua"
 brew "swiftformat"
 brew "swiftlint"
+brew "taplo"
 brew "tree-sitter", args: ['HEAD']
 brew "unxip"
+brew "uv"
 brew "zola"
 brew "zoxide"
 cask "ankerwork"
@@ -49,4 +52,4 @@ mas "Apple Configurator", id: 1037126344
 mas "Apple Developer", id: 640199958
 mas "Pixelmator Pro", id: 1289583905
 mas "TestFlight", id: 899247664
-mas "Wipr", id: 1320666476
+mas "Wipr2", id: 1662217862
