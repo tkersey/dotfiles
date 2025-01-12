@@ -4,6 +4,7 @@ fish_add_path /opt/homebrew/sbin
 direnv hook fish | source
 fzf --fish | source
 zoxide init fish | source
+pyenv init - fish | source
 
 if status is-login
     ssh-add >/dev/null 2>&1
