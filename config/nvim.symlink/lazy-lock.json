@@ -47,7 +47,7 @@
   "python-import.nvim": { "branch": "master", "commit": "4362932ebb49a5e8817b4dc2eaf9f4a1f1a47066" },
   "render-markdown.nvim": { "branch": "main", "commit": "d7b646f2e6136d963e1bd3abbb9e2ac3fa90837a" },
   "snacks.nvim": { "branch": "main", "commit": "1b7a57a0b14b37a708330a346a767865954ce448" },
-  "todo-comments.nvim": { "branch": "main", "commit": "7cc68429485029508ff0fe813587942f15043a96" },
+  "todo-comments.nvim": { "branch": "main", "commit": "304a8d204ee787d2544d8bc23cd38d2f929e7cc5" },
   "tokyonight.nvim": { "branch": "main", "commit": "775f82f08a3d1fb55a37fc6d3a4ab10cd7ed8a10" },
   "trouble.nvim": { "branch": "main", "commit": "4d36b8979287f5facc03fd6d955ace67db667e1d" },
   "ts-comments.nvim": { "branch": "main", "commit": "872dcfa0418f4a33b7437fb4d9f4e89f2f000d74" },
