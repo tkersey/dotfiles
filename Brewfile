@@ -28,6 +28,7 @@ brew "swiftlint"
 brew "taplo"
 brew "tree-sitter", args: ['HEAD']
 brew "unxip"
+brew "ux"
 brew "zola"
 brew "zoxide"
 cask "ankerwork"

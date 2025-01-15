@@ -24,6 +24,7 @@ return {
         settings = {
           python = {
             analysis = {
+              autoImportCompletions = true,
               typeCheckingMode = "recommended",
               autoSearchPaths = true,
               useLibraryCodeForTypes = true,
