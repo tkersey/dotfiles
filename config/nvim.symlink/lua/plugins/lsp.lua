@@ -31,18 +31,10 @@ return {
                 basedpyright = {
                   analysis = {
                     autoImportCompletions = true,
+                    autoSearchPaths = true,
                     diagnosticMode = "openFilesOnly",
                     useLibraryCodeForTypes = true,
                     typeCheckingMode = "basic",
-                    diagnosticSeverityOverrides = {
-                      reportMissingTypeStubs = false,
-                      reportImplicitOverride = "warning",
-                      reportUnsafeMultipleInheritance = false,
-                      reportIncompatibleMethodOverride = false,
-                      reportAny = false,
-                      reportMissingSuperCall = false,
-                      reportAttributeAccessIssue = "information",
-                    },
                   },
                 },
               },
