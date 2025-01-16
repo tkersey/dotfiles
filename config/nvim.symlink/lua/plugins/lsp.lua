@@ -1,6 +1,13 @@
 return {
+  { "neovim/nvim-lspconfig" },
   {
-    "neovim/nvim-lspconfig",
+    "williamboman/mason.nvim",
+    config = function()
+      require("mason").setup({})
+    end,
+  },
+  {
+    "williamboman/mason-lspconfig.nvim",
     config = function()
       local lspconfig = require("lspconfig")
 
@@ -13,33 +20,35 @@ return {
         },
       }
 
-      -- Sourcekit setup
-      lspconfig.sourcekit.setup({
-        capabilities = capabilities,
-      })
-
-      -- Pyright setup
-      lspconfig.pyright.setup({
-        capabilities = capabilities,
-        settings = {
-          python = {
-            analysis = {
-              autoImportCompletions = true,
-              typeCheckingMode = "recommended",
-              autoSearchPaths = true,
-              useLibraryCodeForTypes = true,
-            },
-          },
+      -- Configure Mason-LSPconfig
+      require("mason-lspconfig").setup({
+        ensure_installed = { "basedpyright" },
+        handlers = {
+          basedpyright = function()
+            lspconfig.basedpyright.setup({
+              capabilities = capabilities,
+              settings = {
+                basedpyright = {
+                  analysis = {
+                    autoImportCompletions = true,
+                    diagnosticMode = "openFilesOnly",
+                    useLibraryCodeForTypes = true,
+                    typeCheckingMode = "basic",
+                    diagnosticSeverityOverrides = {
+                      reportMissingTypeStubs = false,
+                      reportImplicitOverride = "warning",
+                      reportUnsafeMultipleInheritance = false,
+                      reportIncompatibleMethodOverride = false,
+                      reportAny = false,
+                      reportMissingSuperCall = false,
+                      reportAttributeAccessIssue = "information",
+                    },
+                  },
+                },
+              },
+            })
+          end,
         },
-      })
-
-      -- LSP keybindings
-      vim.api.nvim_create_autocmd("LspAttach", {
-        desc = "LSP Actions",
-        callback = function(args)
-          vim.keymap.set("n", "K", vim.lsp.buf.hover, { noremap = true, silent = true })
-          vim.keymap.set("n", "gd", vim.lsp.buf.definition, { noremap = true, silent = true })
-        end,
       })
     end,
   },
