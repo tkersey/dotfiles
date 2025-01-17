@@ -22,11 +22,16 @@ return {
 
       -- Configure Mason-LSPconfig
       require("mason-lspconfig").setup({
+        automatic_installation = true,
         ensure_installed = { "basedpyright" },
         handlers = {
           basedpyright = function()
             lspconfig.basedpyright.setup({
               capabilities = capabilities,
+              root_dir = function()
+                return vim.env.ROOT
+              end,
+              autostart = true,
               settings = {
                 basedpyright = {
                   analysis = {
