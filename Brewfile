@@ -30,6 +30,7 @@ brew "swiftlint"
 brew "taplo"
 brew "tree-sitter", args: ['HEAD']
 brew "unxip"
+brew "uv"
 brew "zola"
 brew "zoxide"
 cask "ankerwork"
