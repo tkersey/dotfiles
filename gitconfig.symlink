@@ -39,13 +39,6 @@
 	useForceIfIncludes = true
 [gpg]
 	format = ssh
-[filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
-#[url "git@github.com:"]
-#	insteadOf = https://github.com/
 [fetch]
 	prune = true
 [commit]
@@ -79,3 +72,8 @@
 	helper = /usr/local/share/gcm-core/git-credential-manager
 [credential "https://dev.azure.com"]
 	useHttpPath = true
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
