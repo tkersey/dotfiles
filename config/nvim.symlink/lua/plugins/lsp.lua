@@ -23,24 +23,13 @@ return {
       -- Configure Mason-LSPconfig
       require("mason-lspconfig").setup({
         automatic_installation = true,
-        ensure_installed = { "basedpyright" },
+        ensure_installed = { "pyright" },
         filetypes = { "python" },
         handlers = {
-          basedpyright = function()
-            lspconfig.basedpyright.setup({
+          pyright = function()
+            lspconfig.pyright.setup({
               capabilities = capabilities,
               autostart = true,
-              settings = {
-                basedpyright = {
-                  analysis = {
-                    autoImportCompletions = true,
-                    autoSearchPaths = true,
-                    diagnosticMode = "openFilesOnly",
-                    useLibraryCodeForTypes = true,
-                    typeCheckingMode = "basic",
-                  },
-                },
-              },
             })
           end,
         },
