@@ -16,8 +16,6 @@ brew "git"
 brew "git-delta"
 brew "hub"
 brew "lazygit"
-brew "libhdhomerun"
-brew "libyaml" # needed for `frum` to work
 brew "luajit", args: ['HEAD']
 brew "mas"
 brew "neovim", args: ['HEAD']
@@ -31,7 +29,6 @@ brew "taplo"
 brew "tree-sitter", args: ['HEAD']
 brew "unxip"
 brew "uv"
-brew "zola"
 brew "zoxide"
 cask "ankerwork"
 cask "bruno"
