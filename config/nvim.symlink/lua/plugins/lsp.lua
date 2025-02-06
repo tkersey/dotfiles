@@ -30,6 +30,11 @@ return {
             lspconfig.pyright.setup({
               capabilities = capabilities,
               autostart = true,
+              settings = {
+                python = {
+                  pythonPath = ".venv/bin/python",
+                },
+              },
             })
           end,
         },
