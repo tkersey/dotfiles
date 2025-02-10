@@ -23,11 +23,11 @@ return {
       -- Configure Mason-LSPconfig
       require("mason-lspconfig").setup({
         automatic_installation = true,
-        ensure_installed = { "pyright" },
+        ensure_installed = { "basedpyright" },
         filetypes = { "python" },
         handlers = {
-          pyright = function()
-            lspconfig.pyright.setup({
+          basedpyright = function()
+            lspconfig.basedpyright.setup({
               capabilities = capabilities,
               autostart = true,
               settings = {
