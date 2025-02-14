@@ -33,6 +33,14 @@ return {
               settings = {
                 python = {
                   pythonPath = ".venv/bin/python",
+                  analysis = {
+                    typeCheckingMode = "basic", -- or "strict" if you prefer
+                    diagnosticMode = "workspace",
+                    useLibraryCodeForTypes = true,
+                    autoImportCompletions = true,
+                    reportUnusedImport = false,
+                    reportMissingImports = false,
+                  },
                 },
               },
             })
