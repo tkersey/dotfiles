@@ -31,10 +31,10 @@ return {
               capabilities = capabilities,
               autostart = true,
               settings = {
-                python = {
+                basedpyright = {
                   pythonPath = ".venv/bin/python",
                   analysis = {
-                    typeCheckingMode = "basic", -- or "strict" if you prefer
+                    typeCheckingMode = "off", -- or "strict" if you prefer
                     diagnosticMode = "workspace",
                     useLibraryCodeForTypes = true,
                     autoImportCompletions = true,
