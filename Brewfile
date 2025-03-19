@@ -37,6 +37,7 @@ brew "zoxide"
 cask "ankerwork"
 cask "buildsettingextractor"
 cask "chatgpt"
+cask "claude"
 cask "deckset"
 cask "firefox@developer-edition"
 cask "font-sf-mono"
@@ -53,5 +54,6 @@ mas "Amphetamine", id: 937984704
 mas "Apple Configurator", id: 1037126344
 mas "Apple Developer", id: 640199958
 mas "Pixelmator Pro", id: 1289583905
+mas "Tapestry Loom", id: 6578414736
 mas "TestFlight", id: 899247664
 mas "Wipr2", id: 1662217862
