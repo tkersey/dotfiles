@@ -1,0 +1,6 @@
+#! /bin/bashbrew tap homebrew/aliases
+# alias: brew cask-upgrade
+#:  * `cask-upgrade`
+#:    `brew cask-upgrade` is an alias for `brew upgrade --cask --greedy`
+brew upgrade --cask --greedy
+
