@@ -17,6 +17,7 @@ brew "fzy"
 brew "git"
 brew "git-delta"
 brew "hub"
+brew "hurl"
 brew "lazygit"
 brew "llm"
 brew "luajit", args: ['HEAD']
