@@ -1,7 +1,6 @@
 fish_add_path /usr/local/sbin
 fish_add_path /opt/homebrew/bin
 fish_add_path /opt/homebrew/sbin
-direnv hook fish | source
 fzf --fish | source
 zoxide init fish | source
 source (goenv init - | psub)
