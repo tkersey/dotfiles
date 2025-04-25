@@ -20,32 +20,38 @@ return {
         },
       }
 
-      -- Configure Mason-LSPconfig
+      -- Configure Mason-LSPconfig for servers that can be installed via Mason
       require("mason-lspconfig").setup({
         automatic_installation = true,
         ensure_installed = { "basedpyright" },
-        filetypes = { "python" },
-        handlers = {
-          basedpyright = function()
-            lspconfig.basedpyright.setup({
-              capabilities = capabilities,
-              autostart = true,
-              settings = {
-                basedpyright = {
-                  pythonPath = ".venv/bin/python",
-                  analysis = {
-                    typeCheckingMode = "off", -- or "strict" if you prefer
-                    diagnosticMode = "workspace",
-                    useLibraryCodeForTypes = true,
-                    autoImportCompletions = true,
-                    reportUnusedImport = false,
-                    reportMissingImports = false,
-                  },
-                },
-              },
-            })
-          end,
+      })
+
+      -- Set up the servers
+      -- Python
+      lspconfig.basedpyright.setup({
+        capabilities = capabilities,
+        autostart = true,
+        settings = {
+          basedpyright = {
+            pythonPath = ".venv/bin/python",
+            analysis = {
+              typeCheckingMode = "off", -- or "strict" if you prefer
+              diagnosticMode = "workspace",
+              useLibraryCodeForTypes = true,
+              autoImportCompletions = true,
+              reportUnusedImport = false,
+              reportMissingImports = false,
+            },
+          },
         },
+      })
+
+      -- Swift
+      lspconfig.sourcekit.setup({
+        capabilities = capabilities,
+        autostart = true,
+        filetypes = { "swift" },
+        cmd = { "sourcekit-lsp" },
       })
     end,
   },
