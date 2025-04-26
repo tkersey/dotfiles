@@ -31,6 +31,7 @@ brew "swiftformat"
 brew "swiftlint"
 brew "taplo"
 brew "tree-sitter", args: ['HEAD']
+brew "unisonlang"
 brew "unxip"
 brew "uv"
 brew "zoxide"
