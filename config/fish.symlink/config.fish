@@ -17,3 +17,6 @@ abbr --add dotdot --regex '^\.\.+$' --function multicd
 abbr -a -g bks 'cd ~/Library/Mobile\ Documents/iCloud\~com\~apple\~iBooks/Documents'
 abbr -a -g gti git
 abbr -a -g claude "~/.claude/local/claude"
+
+# Variables
+set -gx EDITOR nvim
