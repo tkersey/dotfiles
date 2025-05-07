@@ -1,10 +1,8 @@
 {
   "extras": [
-    "lazyvim.plugins.extras.ai.copilot",
-    "lazyvim.plugins.extras.ai.copilot-chat",
-    "lazyvim.plugins.extras.coding.luasnip",
     "lazyvim.plugins.extras.coding.yanky",
     "lazyvim.plugins.extras.dap.core",
+    "lazyvim.plugins.extras.dap.nlua",
     "lazyvim.plugins.extras.editor.dial",
     "lazyvim.plugins.extras.editor.fzf",
     "lazyvim.plugins.extras.editor.inc-rename",
@@ -23,7 +21,8 @@
     "lazyvim.plugins.extras.lsp.neoconf",
     "lazyvim.plugins.extras.test.core",
     "lazyvim.plugins.extras.ui.dashboard-nvim",
-    "lazyvim.plugins.extras.ui.edgy"
+    "lazyvim.plugins.extras.ui.edgy",
+    "lazyvim.plugins.extras.util.mini-hipatterns"
   ],
   "install_version": 7,
   "news": {
