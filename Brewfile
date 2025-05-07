@@ -11,7 +11,7 @@ brew "fd"
 brew "fish"
 brew "fisher"
 brew "fuzzybrew"
-brew "fzf" # needed for `zi` to work
+brew "fzf"
 brew "fzy"
 brew "gh"
 brew "git"
@@ -19,7 +19,6 @@ brew "git-delta"
 brew "hub"
 brew "hurl"
 brew "lazygit"
-brew "llm"
 brew "luajit", args: ['HEAD']
 brew "mas"
 brew "neovim", args: ['HEAD']
