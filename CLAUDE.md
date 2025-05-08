@@ -26,4 +26,4 @@ There are a number of patterns that will guide your approach to writing code.
 - Follow the existing patterns in the codebase
 - Encode as many invariants as possible in the type system
 - Keep changes minimal and focused
-
+- Prefer algebra-driven design over domain-driven design
