@@ -3,6 +3,56 @@
 # bootstrap installs things.
 
 DOTFILES_ROOT="`pwd`"
+LINKS_CONF="$DOTFILES_ROOT/links.conf"
+
+# Default flags
+DO_DOTFILES=false
+DO_CUSTOM_LINKS=false
+DO_HOMEBREW=false
+DO_ALL=true
+
+# Process command line arguments
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dotfiles)
+      DO_DOTFILES=true
+      DO_ALL=false
+      ;;
+    --custom-links)
+      DO_CUSTOM_LINKS=true
+      DO_ALL=false
+      ;;
+    --homebrew)
+      DO_HOMEBREW=true
+      DO_ALL=false
+      ;;
+    --help)
+      echo "Usage: $0 [options]"
+      echo "Options:"
+      echo "  --dotfiles       Process .symlink files"
+      echo "  --custom-links   Process custom symlinks from links.conf"
+      echo "  --homebrew       Run homebrew installation/update"
+      echo "  --help           Show this help message"
+      echo ""
+      echo "If no options are specified, all tasks will be run."
+      echo "If any options are specified, only those tasks will be run."
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Use --help for usage information"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+# If no specific flags were set, do everything
+if [ "$DO_ALL" = true ]; then
+  DO_DOTFILES=true
+  DO_CUSTOM_LINKS=true
+  DO_HOMEBREW=true
+fi
 
 set -e
 
@@ -112,12 +162,103 @@ install_dotfiles () {
   done
 }
 
-install_homebrew
-brew bundle
-install_dotfiles
+install_custom_links() {
+  info 'installing custom symlinks'
+
+  if [ ! -f "$LINKS_CONF" ]; then
+    info "no custom links configuration found, skipping"
+    return
+  fi
+
+  while IFS=: read -r source_path dest_path || [ -n "$source_path" ]; do
+    # Skip comments and empty lines
+    [[ "$source_path" =~ ^#.*$ || -z "$source_path" ]] && continue
+
+    # Trim whitespace
+    source_path=$(echo "$source_path" | xargs)
+    dest_path=$(echo "$dest_path" | xargs)
+
+    # Expand environment variables in destination path
+    eval "dest_path=$dest_path"
+
+    # Get full source path
+    source="$DOTFILES_ROOT/$source_path"
+
+    # Skip if source doesn't exist
+    if [ ! -f "$source" ] && [ ! -d "$source" ]; then
+      fail "Source file not found: $source"
+      continue
+    fi
+
+    if [ -f "$dest_path" ] || [ -d "$dest_path" ]; then
+      # Handle existing files
+      overwrite=false
+      backup=false
+      skip=false
+
+      if [ "$overwrite_all" == "false" ] && [ "$backup_all" == "false" ] && [ "$skip_all" == "false" ]
+      then
+        user "File already exists: ${dest_path}, what do you want to do? [s]kip, [S]kip all, [o]verwrite, [O]verwrite all, [b]ackup, [B]ackup all?"
+        read -n 1 action
+
+        case "$action" in
+          o )
+            overwrite=true;;
+          O )
+            overwrite_all=true;;
+          b )
+            backup=true;;
+          B )
+            backup_all=true;;
+          s )
+            skip=true;;
+          S )
+            skip_all=true;;
+          * )
+            ;;
+        esac
+      fi
+
+      if [ "$overwrite" == "true" ] || [ "$overwrite_all" == "true" ]
+      then
+        rm -rf "$dest_path"
+        success "removed $dest_path"
+      fi
+
+      if [ "$backup" == "true" ] || [ "$backup_all" == "true" ]
+      then
+        mv "$dest_path" "$dest_path.backup"
+        success "moved $dest_path to $dest_path.backup"
+      fi
+
+      if [ "$skip" == "false" ] && [ "$skip_all" == "false" ]
+      then
+        setup_files "$source" "$dest_path"
+      else
+        success "skipped $dest_path"
+      fi
+    else
+      setup_files "$source" "$dest_path"
+    fi
+  done < "$LINKS_CONF"
+}
+
+# Run installations based on flags
+if [ "$DO_HOMEBREW" = true ]; then
+  install_homebrew
+  brew bundle
+fi
+
+if [ "$DO_DOTFILES" = true ]; then
+  install_dotfiles
+fi
+
+if [ "$DO_CUSTOM_LINKS" = true ]; then
+  install_custom_links
+fi
 
 # If we are on a mac, lets install and setup homebrew
-if [ "$(uname -s)" == "Darwin" ]
+if [ "$(uname -s)" == "Darwin" ] && [ "$DO_HOMEBREW" = true ]
 then
   info "installing dependencies"
   if . bin/dot > /tmp/dotfiles-dot 2>&1
