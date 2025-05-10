@@ -3,7 +3,8 @@
     "allow": [
       "Bash(gh:*)",
       "Bash(gh:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(z:*)"
     ],
     "deny": []
   }
