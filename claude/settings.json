@@ -4,7 +4,11 @@
       "Bash(gh:*)",
       "Bash(gh:*)",
       "Bash(git:*)",
-      "Bash(z:*)"
+      "Bash(z:*)",
+      "Update(*)",
+      "WebFetchTool(*)",
+      "Bash(ls:*)",
+      "Bash(printf:*)"
     ],
     "deny": []
   }
