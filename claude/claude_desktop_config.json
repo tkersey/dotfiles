@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "mcp-installer": {
+      "command": "npx",
+      "args": ["@anaisbetts/mcp-installer"]
+    },
+    "XcodeBuildMCP": {
+      "command": "mise",
+      "args": ["x", "npm:xcodebuildmcp@latest", "--", "xcodebuildmcp"]
+    }
+  }
+}
+
