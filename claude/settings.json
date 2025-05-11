@@ -8,7 +8,8 @@
       "Update(*)",
       "WebFetchTool(*)",
       "Bash(ls:*)",
-      "Bash(printf:*)"
+      "Bash(printf:*)",
+      "Bash(echo:*)"
     ],
     "deny": []
   }
