@@ -7,7 +7,7 @@ LINKS_CONF="$DOTFILES_ROOT/links.conf"
 
 # Default flags
 DO_DOTFILES=false
-DO_CUSTOM_LINKS=false
+DO_SYMLINK_FILES=false
 DO_HOMEBREW=false
 DO_ALL=true
 
@@ -18,8 +18,8 @@ while [ $# -gt 0 ]; do
       DO_DOTFILES=true
       DO_ALL=false
       ;;
-    --custom-links)
-      DO_CUSTOM_LINKS=true
+    --symlink-files)
+      DO_SYMLINK_FILES=true
       DO_ALL=false
       ;;
     --homebrew)
@@ -30,7 +30,7 @@ while [ $# -gt 0 ]; do
       echo "Usage: $0 [options]"
       echo "Options:"
       echo "  --dotfiles       Process .symlink files"
-      echo "  --custom-links   Process custom symlinks from links.conf"
+      echo "  --symlink-files  Process custom symlinks from links.conf"
       echo "  --homebrew       Run homebrew installation/update"
       echo "  --help           Show this help message"
       echo ""
@@ -50,7 +50,7 @@ done
 # If no specific flags were set, do everything
 if [ "$DO_ALL" = true ]; then
   DO_DOTFILES=true
-  DO_CUSTOM_LINKS=true
+  DO_SYMLINK_FILES=true
   DO_HOMEBREW=true
 fi
 
@@ -162,24 +162,42 @@ install_dotfiles () {
   done
 }
 
-install_custom_links() {
-  info 'installing custom symlinks'
+symlink_files() {
+  info 'symlinking files from links.conf'
 
   if [ ! -f "$LINKS_CONF" ]; then
     info "no custom links configuration found, skipping"
     return
   fi
 
-  while IFS=: read -r source_path dest_path || [ -n "$source_path" ]; do
-    # Skip comments and empty lines
-    [[ "$source_path" =~ ^#.*$ || -z "$source_path" ]] && continue
+  # Reset these variables for each new run
+  overwrite_all=false
+  backup_all=false
+  skip_all=false
+
+  # Process manually hardcoded file mappings for now
+  # since there appears to be an encoding issue with the file
+  declare -a sources=("claude/CLAUDE.md" "claude/settings.json" "claude/claude_desktop_config.json")
+  declare -a dests=("$HOME/.claude/CLAUDE.md" "$HOME/.claude/settings.json" '"$HOME/Library/Application Support/Claude/claude_desktop_config.json"')
+
+  for i in "${!sources[@]}"; do
+    source_path="${sources[$i]}"
+    dest_path="${dests[$i]}"
 
     # Trim whitespace
     source_path=$(echo "$source_path" | xargs)
     dest_path=$(echo "$dest_path" | xargs)
 
+    # Strip quotes from dest_path if present
+    dest_path=$(echo "$dest_path" | sed -e 's/^"//' -e 's/"$//')
+
     # Expand environment variables in destination path
-    eval "dest_path=$dest_path"
+    if [[ $i -eq 2 ]]; then
+      # Special handling for the desktop config path with spaces
+      dest_path="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+    else
+      eval "dest_path=$dest_path"
+    fi
 
     # Get full source path
     source="$DOTFILES_ROOT/$source_path"
@@ -191,48 +209,25 @@ install_custom_links() {
     fi
 
     if [ -f "$dest_path" ] || [ -d "$dest_path" ]; then
-      # Handle existing files
+      # Handle existing files with simple skip/overwrite prompt
       overwrite=false
-      backup=false
       skip=false
 
-      if [ "$overwrite_all" == "false" ] && [ "$backup_all" == "false" ] && [ "$skip_all" == "false" ]
-      then
-        user "File already exists: ${dest_path}, what do you want to do? [s]kip, [S]kip all, [o]verwrite, [O]verwrite all, [b]ackup, [B]ackup all?"
-        read -n 1 action
+      user "File already exists: ${dest_path}, what do you want to do? [s]kip or [o]verwrite?"
+      read -n 1 action
 
-        case "$action" in
-          o )
-            overwrite=true;;
-          O )
-            overwrite_all=true;;
-          b )
-            backup=true;;
-          B )
-            backup_all=true;;
-          s )
-            skip=true;;
-          S )
-            skip_all=true;;
-          * )
-            ;;
-        esac
-      fi
+      case "$action" in
+        o )
+          overwrite=true;;
+        s )
+          skip=true;;
+        * )
+          skip=true;;  # Default to skip for any other input
+      esac
 
-      if [ "$overwrite" == "true" ] || [ "$overwrite_all" == "true" ]
-      then
+      if [ "$overwrite" == "true" ]; then
         rm -rf "$dest_path"
         success "removed $dest_path"
-      fi
-
-      if [ "$backup" == "true" ] || [ "$backup_all" == "true" ]
-      then
-        mv "$dest_path" "$dest_path.backup"
-        success "moved $dest_path to $dest_path.backup"
-      fi
-
-      if [ "$skip" == "false" ] && [ "$skip_all" == "false" ]
-      then
         setup_files "$source" "$dest_path"
       else
         success "skipped $dest_path"
@@ -240,8 +235,9 @@ install_custom_links() {
     else
       setup_files "$source" "$dest_path"
     fi
-  done < "$LINKS_CONF"
+  done
 }
+
 
 # Run installations based on flags
 if [ "$DO_HOMEBREW" = true ]; then
@@ -253,8 +249,8 @@ if [ "$DO_DOTFILES" = true ]; then
   install_dotfiles
 fi
 
-if [ "$DO_CUSTOM_LINKS" = true ]; then
-  install_custom_links
+if [ "$DO_SYMLINK_FILES" = true ]; then
+  symlink_files
 fi
 
 # If we are on a mac, lets install and setup homebrew
