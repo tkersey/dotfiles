@@ -9,7 +9,8 @@
       "WebFetchTool(*)",
       "Bash(ls:*)",
       "Bash(printf:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(swift:*)"
     ],
     "deny": []
   }
