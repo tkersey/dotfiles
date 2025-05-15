@@ -6,3 +6,6 @@ Icon
 *.swp
 /**/*.swp
 *.netrwhist
+
+**/.claude/settings.local.json
+
