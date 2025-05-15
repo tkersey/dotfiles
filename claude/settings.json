@@ -5,13 +5,17 @@
       "Bash(gh:*)",
       "Bash(git:*)",
       "Bash(z:*)",
-      "Update(*)",
-      "WebFetchTool(*)",
       "Bash(ls:*)",
       "Bash(printf:*)",
       "Bash(echo:*)",
-      "Bash(swift:*)"
+      "Bash(swift:*)",
+      "Bash(rg:*)",
+      "Bash(find:*)",
+      "WebFetch",
+      "Write()",
+      "Edit()"
     ],
     "deny": []
   }
 }
+
