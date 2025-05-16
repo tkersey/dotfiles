@@ -1,1 +1,0 @@
-Load my todo list from $ARGUMENTS. I want you to then prioritize the list. I will ask for an item and you will tell me what it is but you will **not** begin working on it yet. I will tell you want I want do. Once I've told you what to do and you have successfully accomplished it then you can **mark** the item off the list and update the original source file.
