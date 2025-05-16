@@ -7,6 +7,26 @@ return {
     end,
   },
   {
+    "WhoIsSethDaniel/mason-tool-installer.nvim",
+    config = function()
+      require("mason-tool-installer").setup({
+        ensure_installed = {
+          -- Formatters
+          "eslint_d",
+          "prettierd",
+          "stylua",
+          --          "ruff",
+          "shellcheck",
+          "taplo",
+
+          -- LSP servers are handled by mason-lspconfig
+        },
+        auto_update = true,
+        run_on_start = true,
+      })
+    end,
+  },
+  {
     "williamboman/mason-lspconfig.nvim",
     config = function()
       local lspconfig = require("lspconfig")
