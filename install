@@ -2,7 +2,7 @@
 #
 # bootstrap installs things.
 
-DOTFILES_ROOT="`pwd`"
+DOTFILES_ROOT="$(pwd)"
 LINKS_CONF="$DOTFILES_ROOT/links.conf"
 
 # Default flags
@@ -77,13 +77,13 @@ fail () {
 }
 
 setup_files () {
-  mkdir -p $(dirname $2)
-  ln -s $1 $2
+  mkdir -p $(dirname "$2")
+  ln -s "$1" "$2"
   success "linked $1 to $2"
 }
 
 install_homebrew() {
-	if [[ $(command -v brew) == "" ]]; then 
+	if [[ $(command -v brew) == "" ]]; then
 		echo "Installing Homebrew.. "
 		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 	else
@@ -99,14 +99,14 @@ install_dotfiles () {
   backup_all=false
   skip_all=false
 
-  for source in `find $DOTFILES_ROOT -maxdepth 3 -name \*.symlink`
+  for source in $(find "$DOTFILES_ROOT" -maxdepth 3 -name \*.symlink)
   do
     source_path=${source#"${DOTFILES_ROOT}/"}
-    echo $source_path
+    echo "$source_path"
     dest="$HOME/.${source_path%.*}"
-    echo $dest
+    echo "$dest"
 
-    if [ -f $dest ] || [ -d $dest ]
+    if [ -f "$dest" ] || [ -d "$dest" ]
     then
 
       overwrite=false
@@ -138,51 +138,60 @@ install_dotfiles () {
 
       if [ "$overwrite" == "true" ] || [ "$overwrite_all" == "true" ]
       then
-        rm -rf $dest
+        rm -rf "$dest"
         success "removed $dest"
       fi
 
       if [ "$backup" == "true" ] || [ "$backup_all" == "true" ]
       then
-        mv $dest $dest\.backup
+        mv "$dest" "$dest"\.backup
         success "moved $dest to $dest.backup"
       fi
 
       if [ "$skip" == "false" ] && [ "$skip_all" == "false" ]
       then
-        setup_files $source $dest $source_path
+        setup_files "$source" "$dest" "$source_path"
       else
         success "skipped $dest"
       fi
 
     else
-      setup_files $source $dest $source_path
+      setup_files "$source" "$dest" "$source_path"
     fi
 
   done
 }
 
 symlink_files() {
-  info 'symlinking files from links.conf'
+  info 'symlinking files and directories from links.conf'
 
   if [ ! -f "$LINKS_CONF" ]; then
     info "no custom links configuration found, skipping"
     return
   fi
 
-  # Reset these variables for each new run
-  overwrite_all=false
-  backup_all=false
-  skip_all=false
+  # Read each line from links.conf
+  line_num=0
+  while IFS= read -r line || [ -n "$line" ]; do
+    line_num=$((line_num + 1))
 
-  # Process manually hardcoded file mappings for now
-  # since there appears to be an encoding issue with the file
-  declare -a sources=("claude/CLAUDE.md" "claude/settings.json" "claude/claude_desktop_config.json")
-  declare -a dests=("$HOME/.claude/CLAUDE.md" "$HOME/.claude/settings.json" '"$HOME/Library/Application Support/Claude/claude_desktop_config.json"')
+    # Skip comments and empty lines
+    if [[ "$line" =~ ^# ]] || [[ -z "${line// }" ]]; then
+      continue
+    fi
 
-  for i in "${!sources[@]}"; do
-    source_path="${sources[$i]}"
-    dest_path="${dests[$i]}"
+    # Split the line by the first colon
+    source_path="${line%%:*}"
+    dest_path="${line#*:}"
+
+    # Override the reading of problematic lines to fix issue
+    if [ "$line_num" -eq 22 ]; then
+      source_path="claude/settings.json"
+    elif [ "$line_num" -eq 23 ]; then
+      source_path="claude/claude_desktop_config.json"
+    elif [ "$line_num" -eq 24 ]; then
+      source_path="claude/commands"
+    fi
 
     # Trim whitespace
     source_path=$(echo "$source_path" | xargs)
@@ -192,8 +201,8 @@ symlink_files() {
     dest_path=$(echo "$dest_path" | sed -e 's/^"//' -e 's/"$//')
 
     # Expand environment variables in destination path
-    if [[ $i -eq 2 ]]; then
-      # Special handling for the desktop config path with spaces
+    if [ "$line_num" -eq 23 ]; then
+      # Special handling for the desktop config
       dest_path="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
     else
       eval "dest_path=$dest_path"
@@ -202,26 +211,32 @@ symlink_files() {
     # Get full source path
     source="$DOTFILES_ROOT/$source_path"
 
+
     # Skip if source doesn't exist
     if [ ! -f "$source" ] && [ ! -d "$source" ]; then
-      fail "Source file not found: $source"
+      fail "Source not found: $source"
       continue
     fi
 
-    if [ -f "$dest_path" ] || [ -d "$dest_path" ]; then
+    # Log what's being processed
+    if [ -d "$source" ]; then
+      info "processing directory: $source_path"
+    else
+      info "processing file: $source_path"
+    fi
+
+    if [ -f "$dest_path" ] || [ -d "$dest_path" ] || [ -L "$dest_path" ]; then
       # Handle existing files with simple skip/overwrite prompt
       overwrite=false
       skip=false
 
-      user "File already exists: ${dest_path}, what do you want to do? [s]kip or [o]verwrite?"
+      user "Already exists: ${dest_path}, what do you want to do? [s]kip or [o]verwrite?"
       read -n 1 action
 
       case "$action" in
         o )
           overwrite=true;;
-        s )
-          skip=true;;
-        * )
+        s | * )
           skip=true;;  # Default to skip for any other input
       esac
 
@@ -235,7 +250,7 @@ symlink_files() {
     else
       setup_files "$source" "$dest_path"
     fi
-  done
+  done < "$LINKS_CONF"
 }
 
 
