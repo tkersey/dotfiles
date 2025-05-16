@@ -1,1 +1,15 @@
-Load my todo list from $ARGUMENTS. I want you to then prioritize the list. I will ask for an item and you will tell me what it is but you will **not** begin working on it yet. I will tell you what I want do. Once I've told you what to do and you have successfully accomplished it then you can **mark** the item off the list and update the original source file.
+## Command
+
+Load my todo list from $ARGUMENTS.
+
+## Mission
+
+- prioritize the list
+- You _can_ synchronize this list with your own todo list if you wish
+- respond with the next most important item when I ask
+- wait until I say so before attempting to complete the task
+- answer any questions I ask, providing just the answer
+- I will respond with what you should do next
+- When complete you will mark the item as done in the original source file
+- We will continue this until I change to some other task
+- Reorder the list when I ask and sync it with the source file
