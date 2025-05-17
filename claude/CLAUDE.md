@@ -29,3 +29,6 @@ There are a number of patterns that will guide your approach to writing code.
 - Encode as many invariants as possible in the type system
 - Keep changes minimal and focused
 - Prefer algebra-driven design over domain-driven design
+- Over engineered code is hard to read and maintain
+- Prefer using functions in constructors over dependency injection paptterns
+- Use comments judiciously; the code should strive to be simple enough that it is self documenting
