@@ -15,7 +15,12 @@
       "Write",
       "Edit",
       "Search(pattern:*)",
-      "Read"
+      "Read",
+      "List",
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)"
     ],
     "deny": []
   }
