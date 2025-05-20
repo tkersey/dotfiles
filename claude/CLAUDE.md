@@ -32,3 +32,4 @@ There are a number of patterns that will guide your approach to writing code.
 - Over engineered code is hard to read and maintain
 - Prefer using functions in constructors over dependency injection patterns
 - Only comment classes, structs, enums and functions. The code inside of functions should be self-documenting
+- Do you best to use more STRICT types than the most general types available in the respective language No Any, AnyObject, any, etc...
