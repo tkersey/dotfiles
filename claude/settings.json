@@ -20,7 +20,8 @@
       "Bash(curl:*)",
       "Bash(find:*)",
       "Bash(npm:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Update"
     ],
     "deny": []
   }
