@@ -33,6 +33,7 @@
   brr = "!f() { git branch | rg -v -e \"${1-main}$\" -e \"master$\" -e \"develop$\" | xargs git br -D; }; f"
   au = shortlog -s -n --all --no-merges
   wk = worktree
+  bra = branch -a --sort=-committerdate
 [help]
 	autocorrect = 1
 [push]
