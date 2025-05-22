@@ -21,7 +21,8 @@
       "Bash(find:*)",
       "Bash(npm:*)",
       "Bash(npx:*)",
-      "Update"
+      "Update",
+      "Bash"
     ],
     "deny": []
   }
