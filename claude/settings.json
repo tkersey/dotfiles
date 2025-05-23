@@ -2,7 +2,6 @@
   "permissions": {
     "allow": [
       "Bash(gh:*)",
-      "Bash(gh:*)",
       "Bash(git:*)",
       "Bash(z:*)",
       "Bash(ls:*)",
@@ -13,7 +12,9 @@
       "Bash(find:*)",
       "WebFetch",
       "Write",
+      "Write()",
       "Edit",
+      "Edit()",
       "Search(pattern:*)",
       "Read",
       "List",
@@ -21,9 +22,9 @@
       "Bash(find:*)",
       "Bash(npm:*)",
       "Bash(npx:*)",
-      "Update",
-      "Bash"
+      "Update"
     ],
     "deny": []
   }
 }
+
