@@ -27,7 +27,9 @@
       "Bash(npx:*)",
       "Update",
       "Update(*)",
-      "Search(*)"
+      "Search(*)",
+      "Search(pattern:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
