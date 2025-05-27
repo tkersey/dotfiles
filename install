@@ -113,10 +113,15 @@ install_dotfiles () {
       backup=false
       skip=false
 
-      if [ "$overwrite_all" == "false" ] && [ "$backup_all" == "false" ] && [ "$skip_all" == "false" ]
+      if [ "$overwrite_all" = "false" ] && [ "$backup_all" = "false" ] && [ "$skip_all" = "false" ]
       then
         user "File already exists: ${dest}, what do you want to do? [s]kip, [S]kip all, [o]verwrite, [O]verwrite all, [b]ackup, [B]ackup all?"
-        read -n 1 action
+        if [ -t 0 ]; then
+          read -r action
+        else
+          read -r action < /dev/tty
+        fi
+        echo ''
 
         case "$action" in
           o )
@@ -136,19 +141,19 @@ install_dotfiles () {
         esac
       fi
 
-      if [ "$overwrite" == "true" ] || [ "$overwrite_all" == "true" ]
+      if [ "$overwrite" = "true" ] || [ "$overwrite_all" = "true" ]
       then
         rm -rf "$dest"
         success "removed $dest"
       fi
 
-      if [ "$backup" == "true" ] || [ "$backup_all" == "true" ]
+      if [ "$backup" = "true" ] || [ "$backup_all" = "true" ]
       then
         mv "$dest" "$dest"\.backup
         success "moved $dest to $dest.backup"
       fi
 
-      if [ "$skip" == "false" ] && [ "$skip_all" == "false" ]
+      if [ "$skip" = "false" ] && [ "$skip_all" = "false" ]
       then
         setup_files "$source" "$dest" "$source_path"
       else
@@ -171,10 +176,7 @@ symlink_files() {
   fi
 
   # Read each line from links.conf
-  line_num=0
   while IFS= read -r line || [ -n "$line" ]; do
-    line_num=$((line_num + 1))
-
     # Skip comments and empty lines
     if [[ "$line" =~ ^# ]] || [[ -z "${line// }" ]]; then
       continue
@@ -184,15 +186,6 @@ symlink_files() {
     source_path="${line%%:*}"
     dest_path="${line#*:}"
 
-    # Override the reading of problematic lines to fix issue
-    if [ "$line_num" -eq 22 ]; then
-      source_path="claude/settings.json"
-    elif [ "$line_num" -eq 23 ]; then
-      source_path="claude/claude_desktop_config.json"
-    elif [ "$line_num" -eq 24 ]; then
-      source_path="claude/commands"
-    fi
-
     # Trim whitespace
     source_path=$(echo "$source_path" | xargs)
     dest_path=$(echo "$dest_path" | xargs)
@@ -201,16 +194,10 @@ symlink_files() {
     dest_path=$(echo "$dest_path" | sed -e 's/^"//' -e 's/"$//')
 
     # Expand environment variables in destination path
-    if [ "$line_num" -eq 23 ]; then
-      # Special handling for the desktop config
-      dest_path="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
-    else
-      eval "dest_path=$dest_path"
-    fi
+    eval "dest_path=$dest_path"
 
     # Get full source path
     source="$DOTFILES_ROOT/$source_path"
-
 
     # Skip if source doesn't exist
     if [ ! -f "$source" ] && [ ! -d "$source" ]; then
@@ -218,12 +205,6 @@ symlink_files() {
       continue
     fi
 
-    # Log what's being processed
-    if [ -d "$source" ]; then
-      info "processing directory: $source_path"
-    else
-      info "processing file: $source_path"
-    fi
 
     if [ -f "$dest_path" ] || [ -d "$dest_path" ] || [ -L "$dest_path" ]; then
       # Handle existing files with simple skip/overwrite prompt
@@ -231,16 +212,21 @@ symlink_files() {
       skip=false
 
       user "Already exists: ${dest_path}, what do you want to do? [s]kip or [o]verwrite?"
-      read -n 1 action
+      if [ -t 0 ]; then
+        read -r action
+      else
+        read -r action < /dev/tty
+      fi
+      echo ''
 
       case "$action" in
-        o )
+        o|O )
           overwrite=true;;
-        s | * )
+        s|S|* )
           skip=true;;  # Default to skip for any other input
       esac
 
-      if [ "$overwrite" == "true" ]; then
+      if [ "$overwrite" = "true" ]; then
         rm -rf "$dest_path"
         success "removed $dest_path"
         setup_files "$source" "$dest_path"
