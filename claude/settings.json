@@ -11,20 +11,24 @@
       "Bash(rg:*)",
       "Bash(find:*)",
       "WebFetch",
+      "WebFetch(*)",
       "Write",
-      "Write()",
+      "Write(*)",
       "Edit",
-      "Edit()",
+      "Edit(*)",
       "Search(pattern:*)",
       "Read",
+      "Read(*)",
       "List",
+      "List(*)",
       "Bash(curl:*)",
       "Bash(find:*)",
       "Bash(npm:*)",
       "Bash(npx:*)",
-      "Update"
+      "Update",
+      "Update(*)",
+      "Search(*)"
     ],
     "deny": []
   }
 }
-
