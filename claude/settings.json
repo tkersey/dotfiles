@@ -16,7 +16,6 @@
       "Write(*)",
       "Edit",
       "Edit(*)",
-      "Search(pattern:*)",
       "Read",
       "Read(*)",
       "List",
@@ -33,4 +32,3 @@
     "deny": []
   }
 }
-
