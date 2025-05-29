@@ -27,8 +27,10 @@
       "Bash(npx:*)",
       "Update",
       "Update(*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
 }
+
