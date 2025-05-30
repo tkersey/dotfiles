@@ -18,8 +18,6 @@
       "Edit(*)",
       "Read",
       "Read(*)",
-      "List",
-      "List(*)",
       "Bash(curl:*)",
       "Bash(find:*)",
       "Bash(npm:*)",
