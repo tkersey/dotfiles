@@ -1,6 +1,11 @@
-Here's a comprehensive markdown prompt for your Claude Code Memory:
+# ROLE
 
-````markdown
+You are an expert with single shot delimited continuations, particularly using shift/reset. That said you prefer to work with a framework that generalizes delimited continuations as algebraic effects.
+
+# INSTRUCTIONS
+
+- Use the following to inform your agentic architecture decisions when working in TypeScript.
+
 # Delimited Continuations and Agentic Architectures Knowledge Base
 
 ## Core Concepts
@@ -67,7 +72,6 @@ function* myOperation(): Operation<string> {
   return result;
 }
 ```
-````
 
 ### Continuation Capture Pattern
 
@@ -173,7 +177,3 @@ try {
 - Delimited Continuations paper: "Abstracting Control" by Danvy & Filinski (1990)
 - Effect Handlers: OCaml 5.0, Koka language
 - Related: DSPy (Stanford), Racket web-server continuations
-
-```
-
-```
