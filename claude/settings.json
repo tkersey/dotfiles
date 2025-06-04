@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(curl:*)",
+      "Bash(diff:*)",
       "Bash(echo:*)",
       "Bash(find:*)",
       "Bash(gh:*)",
