@@ -1,6 +1,8 @@
 {
   "permissions": {
     "allow": [
+      "Bash(bat:*)",
+      "Bash(cat:*)",
       "Bash(curl:*)",
       "Bash(diff:*)",
       "Bash(echo:*)",
