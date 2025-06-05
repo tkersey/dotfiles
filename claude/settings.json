@@ -10,6 +10,7 @@
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(mv:*)",
+      "Bash(node:*)",
       "Bash(npm:*)",
       "Bash(npx:*)",
       "Bash(printf:*)",
@@ -39,3 +40,4 @@
     "deny": []
   }
 }
+
