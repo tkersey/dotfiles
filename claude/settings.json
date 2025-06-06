@@ -9,6 +9,9 @@
       "Bash(find:*)",
       "Bash(gh:*)",
       "Bash(git:*)",
+      "Bash(git add:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(mv:*)",
@@ -40,6 +43,6 @@
       "mcp__playwright__browser_type"
     ],
     "deny": []
-  }
+  },
+  "model": "opus"
 }
-
