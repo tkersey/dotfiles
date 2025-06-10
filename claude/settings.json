@@ -30,6 +30,13 @@
       "Bash(z:*)",
       "Edit",
       "Edit(*)",
+      "List(../../../.learnings)",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_tab_list",
+      "mcp__playwright__browser_tab_select",
+      "mcp__playwright__browser_type",
       "MultiEdit",
       "MutliEdit(*)",
       "Update",
@@ -39,13 +46,7 @@
       "WebSearch",
       "WebSearch(*)",
       "Write",
-      "Write(*)",
-      "mcp__playwright__browser_click",
-      "mcp__playwright__browser_close",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_tab_list",
-      "mcp__playwright__browser_tab_select",
-      "mcp__playwright__browser_type"
+      "Write(*)"
     ],
     "deny": []
   },
