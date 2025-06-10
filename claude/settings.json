@@ -25,6 +25,7 @@
       "Bash(npx tsc:*)",
       "Bash(printf:*)",
       "Bash(rg:*)",
+      "Bash(sed:*)",
       "Bash(swift:*)",
       "Bash(touch:*)",
       "Bash(z:*)",
@@ -52,3 +53,4 @@
   },
   "model": "opus"
 }
+
