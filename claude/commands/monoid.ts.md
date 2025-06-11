@@ -1,3 +1,5 @@
+# Learn about Monoids in TypeScript
+
 ## Task
 
 You will learn about monoids, a fundamental algebraic structure from category theory, and how to implement them correctly in TypeScript. A monoid is a set equipped with an associative binary operation and an identity element.
