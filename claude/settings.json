@@ -31,7 +31,7 @@
       "Bash(z:*)",
       "Edit",
       "Edit(*)",
-      "List(../../../.learnings)",
+      "List(~/.learnings)",
       "mcp__playwright__browser_click",
       "mcp__playwright__browser_close",
       "mcp__playwright__browser_navigate",
@@ -53,4 +53,3 @@
   },
   "model": "opus"
 }
-
