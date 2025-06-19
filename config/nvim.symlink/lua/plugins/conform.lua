@@ -21,13 +21,13 @@ return {
       --      python = { "ruff_fix", "ruff_format" },
       sh = { "shellcheck" },
       toml = { "taplo" },
-      javascript = { "prettierd", "eslint_d" },
-      typescript = { "prettierd", "eslint_d" },
-      javascriptreact = { "prettierd", "eslint_d" },
-      typescriptreact = { "prettierd", "eslint_d" },
-      json = { "prettierd" },
-      css = { "prettierd" },
-      html = { "prettierd" },
+      javascript = { { "prettierd", "prettier" }, { "eslint_d", "eslint" } },
+      typescript = { { "prettierd", "prettier" }, { "eslint_d", "eslint" } },
+      javascriptreact = { { "prettierd", "prettier" }, { "eslint_d", "eslint" } },
+      typescriptreact = { { "prettierd", "prettier" }, { "eslint_d", "eslint" } },
+      json = { { "prettierd", "prettier" } },
+      css = { { "prettierd", "prettier" } },
+      html = { { "prettierd", "prettier" } },
       ["*"] = { "trim_whitespace" },
     },
 
@@ -47,12 +47,41 @@ return {
           ".eslintrc.json",
           ".eslintrc.yml",
           ".eslintrc.yaml",
+          "eslint.config.js",
+          "eslint.config.mjs",
         }),
+        condition = function(self, ctx)
+          return vim.fs.find({
+            ".eslintrc",
+            ".eslintrc.js",
+            ".eslintrc.json",
+            ".eslintrc.yml",
+            ".eslintrc.yaml",
+            "eslint.config.js",
+            "eslint.config.mjs",
+            "package.json",
+          }, { path = ctx.filename, upward = true })[1]
+        end,
       },
       -- Use global .prettierrc file instead of trying to configure via env vars
       prettierd = {
         command = "prettierd",
         args = { "$FILENAME" },
+        condition = function(self, ctx)
+          return vim.fs.find({
+            ".prettierrc",
+            ".prettierrc.js",
+            ".prettierrc.json",
+            ".prettierrc.yml",
+            ".prettierrc.yaml",
+            "prettier.config.js",
+            "prettier.config.mjs",
+            "package.json",
+          }, { path = ctx.filename, upward = true })[1]
+        end,
+      },
+      trim_whitespace = {
+        timeout_ms = 5000, -- Increase timeout to 5 seconds
       },
     },
   },

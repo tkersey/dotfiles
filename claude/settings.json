@@ -15,7 +15,6 @@
       "Bash(git ls-tree:*)",
       "Bash(git status:*)",
       "Bash(grep:*)",
-      "Bash(ls:*)",
       "Bash(mv:*)",
       "Bash(node:*)",
       "Bash(npm:*)",
