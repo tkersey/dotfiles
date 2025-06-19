@@ -1,3 +1,4 @@
 auto-update-channel = tip
 font-size = 14
 theme = idleToes
+keybind = shift+enter=text:\n
