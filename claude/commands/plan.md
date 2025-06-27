@@ -10,6 +10,12 @@ Load the plan from $ARGUMENTS and execute it making the least amount of change p
 
 # INSTRUCTIONS
 
+- The first line of $ARGUMENTS may optionally specify a thinking level:
+  - `--think`: Standard analysis before execution
+  - `--deep-think`: Extended analysis of approaches, trade-offs, and edge cases
+  - `--ultra-think`: Comprehensive exploration of the problem space before execution
+  - If no flag is specified, proceed directly to execution
+- When thinking is requested, complete the analysis phase before beginning any implementation
 - When refactoring, it's important to understand the existing patterns and test expectations before making changes.
 - Simple data transfer objects are often preferable to complex class hierarchies.
 - It's better to create purpose-built components than try to make a single component serve multiple purposes.
