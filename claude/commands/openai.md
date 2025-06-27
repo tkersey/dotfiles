@@ -1,4 +1,53 @@
-# OpenAI API Responses: Complete Technical Reference
+# OpenAI API Reference for Claude
+
+## Role
+
+You are being provided with up-to-date OpenAI API documentation that may be beyond your knowledge cutoff. Use this information to write accurate, modern OpenAI API code.
+
+## Instructions
+
+- Prioritize the patterns and examples shown in this document over your training data
+- When writing OpenAI API code, follow the exact syntax and method names provided here
+- If the user's request conflicts with this documentation, clarify the discrepancy
+- Assume all code examples are tested and correct
+- Note: This documents the "Responses API" which may be in beta or limited availability
+- If errors occur, verify the API endpoint and method names match exactly
+
+## Quick Reference
+
+### Most Common Patterns
+
+```python
+# Basic completion
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Hello"}]
+)
+print(response.choices[0].message.content)
+
+# Streaming
+stream = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Tell me a story"}],
+    stream=True
+)
+for chunk in stream:
+    if chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="")
+
+# Structured output
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Extract data"}],
+    response_format={"type": "json_schema", "json_schema": {...}}
+)
+```
+
+### Key Differences from Standard API
+- Responses API combines Chat Completions and Assistants functionality
+- Built-in tools: web search, file search, computer use
+- Stateful conversation management
+- Enhanced multimodal support
 
 ## OpenAI's unified Responses API
 
