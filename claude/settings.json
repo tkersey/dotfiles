@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(cat:*)",
+      "Bash(export:*)",
       "Bash(find:*)",
       "Bash(gh:*)",
       "Bash(git -C:*)",
