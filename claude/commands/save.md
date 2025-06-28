@@ -20,6 +20,11 @@
   - The number should be the next sequential number in the index
   - If no specific title is found, use "Learnings" as the title
   - Tags should be formatted as backtick-wrapped hashtags (e.g., `#typescript` `#refactoring`)
+  - Analyzing the Key Topics section and updating it if the new learning introduces:
+    - A new major theme not yet represented
+    - Significant additions to an existing topic (update the session count if applicable)
+    - New frameworks, tools, or patterns that warrant inclusion
+  - Keep the Key Topics section concise but comprehensive
 - If ~/.learnings is a git repo
   - commit the latest learnings
   - push
