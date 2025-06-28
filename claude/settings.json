@@ -8,6 +8,7 @@
       "Bash(git add:*)",
       "Bash(git init:*)",
       "Bash(git push:*)",
+      "Bash(git worktree:*)",
       "Bash(grep -n:*)",
       "Bash(grep -r:*)",
       "Bash(ls -la:*)",
