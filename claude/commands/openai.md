@@ -292,11 +292,247 @@ print(response.output_text)
 4. **Use streaming for long responses** - Better UX for real-time applications
 5. **Store response IDs** - Keep track for conversation continuity
 
+## Structured Outputs
+
+Structured Outputs is a feature that ensures the model will always generate responses that adhere to your supplied JSON Schema. This eliminates the need for validation, retries, or complex prompting to achieve consistent formatting.
+
+### Benefits
+
+1. **Reliable type-safety**: No need to validate or retry incorrectly formatted responses
+2. **Explicit refusals**: Safety-based model refusals are now programmatically detectable
+3. **Simpler prompting**: No need for strongly worded prompts to achieve consistent formatting
+
+### Basic Usage with SDK
+
+#### Python (Pydantic)
+
+```python
+from openai import OpenAI
+from pydantic import BaseModel
+
+client = OpenAI()
+
+class CalendarEvent(BaseModel):
+    name: str
+    date: str
+    participants: list[str]
+
+response = client.responses.parse(
+    model="gpt-4o-2024-08-06",
+    input=[
+        {"role": "system", "content": "Extract the event information."},
+        {"role": "user", "content": "Alice and Bob are going to a science fair on Friday."},
+    ],
+    text_format=CalendarEvent,
+)
+
+event = response.output_parsed
+```
+
+#### JavaScript (Zod)
+
+```javascript
+import OpenAI from "openai";
+import { zodTextFormat } from "openai/helpers/zod";
+import { z } from "zod";
+
+const openai = new OpenAI();
+
+const CalendarEvent = z.object({
+  name: z.string(),
+  date: z.string(),
+  participants: z.array(z.string()),
+});
+
+const response = await openai.responses.parse({
+  model: "gpt-4o-2024-08-06",
+  input: [
+    { role: "system", content: "Extract the event information." },
+    { role: "user", content: "Alice and Bob are going to a science fair on Friday." },
+  ],
+  text: {
+    format: zodTextFormat(CalendarEvent, "event"),
+  },
+});
+
+const event = response.output_parsed;
+```
+
+### Direct JSON Schema Usage
+
+```python
+response = client.responses.create(
+    model="gpt-4o-2024-08-06",
+    input=[
+        {"role": "system", "content": "You are a helpful math tutor."},
+        {"role": "user", "content": "How can I solve 8x + 7 = -23"}
+    ],
+    text={
+        "format": {
+            "type": "json_schema",
+            "name": "math_response",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "explanation": {"type": "string"},
+                                "output": {"type": "string"}
+                            },
+                            "required": ["explanation", "output"],
+                            "additionalProperties": False
+                        }
+                    },
+                    "final_answer": {"type": "string"}
+                },
+                "required": ["steps", "final_answer"],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    }
+)
+```
+
+### Common Use Cases
+
+#### Chain of Thought
+
+```python
+class Step(BaseModel):
+    explanation: str
+    output: str
+
+class MathReasoning(BaseModel):
+    steps: list[Step]
+    final_answer: str
+
+response = client.responses.parse(
+    model="gpt-4o-2024-08-06",
+    input=[
+        {"role": "system", "content": "Guide the user through the solution step by step."},
+        {"role": "user", "content": "How can I solve 8x + 7 = -23"}
+    ],
+    text_format=MathReasoning,
+)
+```
+
+#### Data Extraction
+
+```python
+class ResearchPaperExtraction(BaseModel):
+    title: str
+    authors: list[str]
+    abstract: str
+    keywords: list[str]
+
+response = client.responses.parse(
+    model="gpt-4o-2024-08-06",
+    input=[
+        {"role": "system", "content": "Extract structured data from the research paper."},
+        {"role": "user", "content": "...paper content..."}
+    ],
+    text_format=ResearchPaperExtraction,
+)
+```
+
+#### UI Generation
+
+```javascript
+const UI = z.lazy(() =>
+  z.object({
+    type: z.enum(["div", "button", "header", "section", "field", "form"]),
+    label: z.string(),
+    children: z.array(UI),
+    attributes: z.array(
+      z.object({
+        name: z.string(),
+        value: z.string(),
+      })
+    ),
+  })
+);
+```
+
+### Handling Refusals
+
+```python
+response = client.responses.parse(
+    model="gpt-4o-2024-08-06",
+    input=[...],
+    text_format=YourSchema,
+)
+
+# Check for refusal
+if response.output[0].content[0].type == "refusal":
+    print(response.output[0].content[0].refusal)
+else:
+    # Process the structured output
+    result = response.output_parsed
+```
+
+### Streaming with Structured Outputs
+
+```python
+with client.responses.stream(
+    model="gpt-4o-2024-08-06",
+    input=[...],
+    text_format=YourSchema,
+) as stream:
+    for event in stream:
+        if event.type == "response.output_text.delta":
+            print(event.delta, end="")
+    
+    final_response = stream.get_final_response()
+```
+
+### Schema Requirements
+
+1. **All fields must be required** - Use unions with `null` for optional fields
+2. **Objects must have `additionalProperties: false`**
+3. **Root must be an object** (not `anyOf`)
+4. **Max 100 properties** with up to 5 levels of nesting
+5. **Max 500 enum values** across all properties
+6. **Max 15,000 characters** for all property names and values
+
+### Supported Types
+
+- String (with `pattern`, `format` constraints)
+- Number (with `minimum`, `maximum`, `multipleOf`)
+- Boolean
+- Integer
+- Object
+- Array (with `minItems`, `maxItems`)
+- Enum
+- anyOf
+- Recursive schemas (using `$ref`)
+
+### String Formats
+
+Supported string formats:
+- `date-time`, `time`, `date`, `duration`
+- `email`, `hostname`
+- `ipv4`, `ipv6`
+- `uuid`
+
+### Structured Outputs vs JSON Mode
+
+| Feature | Structured Outputs | JSON Mode |
+|---------|-------------------|-----------|
+| Valid JSON | ✓ | ✓ |
+| Schema adherence | ✓ | ✗ |
+| Models | gpt-4o-mini, gpt-4o-2024-08-06+ | All GPT models |
+| Format | `text: { format: { type: "json_schema", "strict": true, "schema": ... } }` | `text: { format: { type: "json_object" } }` |
+
 ## Important Notes
 
 - Requires latest OpenAI Python library (`pip install --upgrade openai`)
 - The Responses API is the recommended approach for new applications
 - Chat Completions API remains supported but Responses API offers more features
 - MCP integration requires MCP servers to be installed and accessible
+- Structured Outputs requires specific model versions (gpt-4o-mini, gpt-4o-2024-08-06, or later)
 
 Remember: This is OpenAI's newest and most powerful API. Always use `client.responses.create()` instead of older patterns.
