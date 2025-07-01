@@ -1,7 +1,7 @@
 fish_add_path /usr/local/sbin
 fish_add_path /opt/homebrew/bin
 fish_add_path /opt/homebrew/sbin
-fish_add_path /Users/tk/.claude/local
+fish_add_path ~/.claude/local
 fzf --fish | source
 zoxide init fish | source
 source (goenv init - | psub)
@@ -21,3 +21,4 @@ abbr -a -g nvim-plugins '~/.local/share/nvim/lazy'
 
 # Variables
 set -gx EDITOR nvim
+alias claude="~/.claude/local/claude"
