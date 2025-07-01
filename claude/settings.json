@@ -15,6 +15,7 @@
       "Bash(ls -la:*)",
       "Bash(mkdir:*)",
       "Bash(mkdir -p:*)",
+      "Bash(set -x:*)",
       "Edit",
       "Edit(*)",
       "mcp__Playwright__browser_click",
