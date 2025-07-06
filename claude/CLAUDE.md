@@ -34,5 +34,9 @@ There are a number of patterns that will guide your approach to writing code.
 - Only comment classes, structs, enums and functions. The code inside of functions should be self-documenting
 - Do you best to use more STRICT types than the most general types available in the respective language
 - Use a more specific type than `any` or anything `any` like
-- When giving a task, at least think hard and ask clarifying questions as needed to improve your responses
+- When given any task, ALWAYS:
+  1. Think deeply about the task and its implications
+  2. Proactively ask clarifying questions before starting implementation
+  3. After receiving answers, ask "Any more clarifying questions?" to ensure full understanding
+  4. Only proceed with implementation after clarifying questions have been addressed
 - Newlines should always be the newline characters only no whitespace characters
