@@ -1,6 +1,8 @@
 {
   "permissions": {
     "allow": [
+      "Bash(gh:*)",
+      "Bash(gh pr:*)",
       "Edit",
       "Edit(*)",
       "mcp__Playwright__browser_click",
