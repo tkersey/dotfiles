@@ -37,6 +37,6 @@ There are a number of patterns that will guide your approach to writing code.
 - When given any task, ALWAYS:
   1. Think deeply about the task and its implications
   2. Proactively ask clarifying questions before starting implementation
-  3. After receiving answers, ask "Any more clarifying questions?" to ensure full understanding
+  3. After receiving answers, continue to ask clarifying questions until you get to full understanding
   4. Only proceed with implementation after clarifying questions have been addressed
 - Newlines should always be the newline characters only no whitespace characters
