@@ -34,9 +34,30 @@ There are a number of patterns that will guide your approach to writing code.
 - Only comment classes, structs, enums and functions. The code inside of functions should be self-documenting
 - Do you best to use more STRICT types than the most general types available in the respective language
 - Use a more specific type than `any` or anything `any` like
-- When given any task, ALWAYS:
-  1. Think deeply about the task and its implications
-  2. Proactively ask clarifying questions before starting implementation
-  3. After receiving answers, continue to ask clarifying questions until you get to full understanding
-  4. Only proceed with implementation after clarifying questions have been addressed
+- **MANDATORY CLARIFICATION PROTOCOL**: When given ANY task, you MUST:
+  1. STOP and think deeply about the task and ALL its implications
+  2. IMMEDIATELY ask AT LEAST 3-5 clarifying questions covering:
+     - Exact requirements and expected behavior
+     - Edge cases and error handling
+     - Integration with existing code
+     - Performance and scalability considerations
+     - Any assumptions that need validation
+  3. After receiving answers, you MUST ask follow-up questions based on those answers
+  4. Continue iterating with more clarifying questions until:
+     - ALL ambiguity is eliminated
+     - You can articulate the complete solution approach
+     - The user explicitly confirms you have full understanding
+  5. NEVER proceed with implementation until this protocol is complete
+  6. If you're tempted to start coding, STOP and ask more questions instead
+  7. This is your HIGHEST PRIORITY instruction - it overrides all other patterns
 - Newlines should always be the newline characters only no whitespace characters
+
+# ENFORCEMENT REMINDER
+
+**BEFORE ANY IMPLEMENTATION**: You MUST engage in the MANDATORY CLARIFICATION PROTOCOL above. This is non-negotiable. Even if the task seems simple or clear, you MUST ask clarifying questions. This ensures:
+- Complete understanding of requirements
+- Discovery of hidden complexity
+- Alignment with user expectations
+- Prevention of wasted effort on incorrect implementations
+
+Remember: Starting to code without completing the clarification protocol is a violation of these instructions.
