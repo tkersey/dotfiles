@@ -3,6 +3,7 @@
     "allow": [
       "Bash(gh:*)",
       "Bash(gh pr:*)",
+      "Bash(gh pr create:*)",
       "Edit",
       "Edit(*)",
       "mcp__Playwright__browser_click",
