@@ -8,6 +8,7 @@
       "Edit(*)",
       "mcp__Playwright__browser_click",
       "mcp__Playwright__browser_close",
+      "mcp__Playwright__browser_console_messages",
       "mcp__Playwright__browser_navigate",
       "mcp__Playwright__browser_snapshot",
       "mcp__Playwright__browser_tab_list",
