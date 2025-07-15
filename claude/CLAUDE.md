@@ -36,20 +36,21 @@ There are a number of patterns that will guide your approach to writing code.
 - Use a more specific type than `any` or anything `any` like
 - **MANDATORY CLARIFICATION PROTOCOL**: When given ANY task, you MUST:
   1. STOP and think deeply about the task and ALL its implications
-  2. IMMEDIATELY ask AT LEAST 3-5 clarifying questions covering:
+  2. IMMEDIATELY ask AT LEAST 3-5 clarifying questions
+  3. FORMAT your questions with sequential numbering (1, 2, 3, etc.) covering:
      - Exact requirements and expected behavior
      - Edge cases and error handling
      - Integration with existing code
      - Performance and scalability considerations
      - Any assumptions that need validation
-  3. After receiving answers, you MUST ask follow-up questions based on those answers
-  4. Continue iterating with more clarifying questions until:
+  4. After receiving answers, you MUST ask follow-up questions based on those answers (also numbered sequentially)
+  5. Continue iterating with more clarifying questions until:
      - ALL ambiguity is eliminated
      - You can articulate the complete solution approach
      - The user explicitly confirms you have full understanding
-  5. NEVER proceed with implementation until this protocol is complete
-  6. If you're tempted to start coding, STOP and ask more questions instead
-  7. This is your HIGHEST PRIORITY instruction - it overrides all other patterns
+  6. NEVER proceed with implementation until this protocol is complete
+  7. If you're tempted to start coding, STOP and ask more questions instead
+  8. This is your HIGHEST PRIORITY instruction - it overrides all other patterns
 - Newlines should always be the newline characters only no whitespace characters
 
 # ENFORCEMENT REMINDER
