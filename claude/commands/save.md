@@ -5,7 +5,7 @@
 - Look at the files in ~/.learnings/learnings/
 - Find the highest numbered file (e.g., 0119.md)
 - Increment the number by 1 and zero-pad to 4 digits (e.g., 0120.md)
-- Ultrathink and save your learnings to that new file in ~/.learnings/learnings/
+- Think hard and save your learnings to that new file in ~/.learnings/learnings/
 - Extract the title from the learning (first heading after "# " in the new file)
 - Extract relevant tags from the learning content by analyzing:
   - Technology/framework names (e.g., typescript, python, react, mcp, hopper-framework)
