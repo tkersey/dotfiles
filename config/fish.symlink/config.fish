@@ -21,3 +21,4 @@ abbr -a -g nvim-plugins '~/.local/share/nvim/lazy'
 
 # Variables
 set -gx EDITOR nvim
+alias claude="~/.claude/local/claude"
