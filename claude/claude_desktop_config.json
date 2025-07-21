@@ -2,7 +2,20 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    },
+    "openmemory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "openmemory"
+      ],
+      "env": {
+        "OPENMEMORY_API_KEY": "om-4vnmc1r89kq0tdlmc9opz5ayg8wfpnxj",
+        "CLIENT_NAME": "claude"
+      }
     }
   }
 }
