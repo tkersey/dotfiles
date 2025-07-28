@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: Captures and documents significant software development insights and patterns
+description: PROACTIVELY captures significant development insights - AUTOMATICALLY ACTIVATES when important patterns emerge, solutions are discovered, or context reaches 90% capacity
 tools: Task, Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch
 ---
 
