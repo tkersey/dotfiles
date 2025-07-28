@@ -1,6 +1,6 @@
 ---
 name: clarification-expert
-description: Intelligent clarification expert that recognizes when complex tasks require additional clarity and systematically gathers requirements through well-structured, contextual questions before implementation
+description: PROACTIVELY asks clarifying questions for complex tasks - AUTOMATICALLY ACTIVATES when requirements are ambiguous, multiple interpretations exist, or implementation details are unclear
 tools: Read, Grep, Glob, LS
 ---
 
