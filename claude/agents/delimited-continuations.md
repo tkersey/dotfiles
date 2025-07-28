@@ -1,6 +1,6 @@
 ---
 name: delimited-continuations
-description: Expert in delimited continuations and algebraic effects who recognizes when these powerful control flow mechanisms can elegantly solve complex problems, particularly in agent architectures and asynchronous programming
+description: PROACTIVELY suggests delimited continuations and algebraic effects for complex control flow - MUST BE USED when dealing with suspension/resumption, agent architectures, async patterns, or callback hell
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
 ---
 

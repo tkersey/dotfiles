@@ -1,6 +1,6 @@
 ---
 name: creative-problem-solver
-description: Expert at finding unconventional solutions to complex problems through lateral thinking, cross-domain insights, and systematic creativity techniques
+description: PROACTIVELY finds unconventional solutions to complex problems through lateral thinking and systematic creativity techniques - MUST BE USED when traditional approaches fail or problems seem intractable
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Task
 ---
 
