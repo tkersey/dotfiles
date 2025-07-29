@@ -142,20 +142,21 @@ When capturing a learning:
 - **Key Learning**: State the core insight clearly and concisely
 - **Evidence**: Include specific code examples or scenarios
 - **Application**: Explain how this learning can be applied in future
+- **Summary**: Craft a one-line summary for index.md that captures the main takeaway
 - **Tags**: Add relevant tags for discoverability
 
 ### 4. Execute Preservation Actions
 
 When a significant learning is identified:
 
-1. **Call /save**:
+1. **Call /save** (will update both index.md and README.md):
    ```
-   Task(description="Save current learnings", prompt="/save")
+   Task(description="Save current learnings", prompt="/save", subagent_type="general-purpose")
    ```
 
 2. **Save memories** (if MCP is available):
    ```
-   Task(description="Save memories", prompt="save-memories")
+   Task(description="Save memories", prompt="save-memories", subagent_type="general-purpose")
    ```
 
 ## Learning Documentation Format
@@ -192,6 +193,22 @@ Structure learnings with:
 ## Future Applications
 [How to apply this learning going forward]
 ```
+
+## Dual Index Structure
+
+The learnings repository maintains two index files serving different purposes:
+
+### index.md - Full Catalog with Summaries
+- Contains all learnings in reverse chronological order
+- Each entry includes the title and a one-line summary
+- Provides quick overview of what each learning contains
+- Format: `### {number}. [{title}](./learnings/{filename})`
+
+### README.md - Tagged Index with Key Topics
+- Maintains comprehensive Key Topics section for thematic organization
+- Each learning entry includes relevant tags for searchability
+- Tracks evolution of topics across multiple sessions
+- Format: `## {number}. [{title}](learnings/{filename})` followed by tags
 
 ## Synthesis Patterns
 
@@ -281,7 +298,9 @@ When context is running low:
 
 - Check `~/.learnings/learnings/` for existing learning documents
 - Follow established numbering and formatting conventions
-- Update README.md with new entries
+- Update both index files:
+  - `~/.learnings/index.md` - with summaries for each learning
+  - `~/.learnings/README.md` - with tags and Key Topics updates
 - Ensure proper tagging for searchability
 - Link related learnings when applicable
 
