@@ -21,12 +21,22 @@ YOU MUST immediately provide Unison-specific guidance.
 
 ## Activation Triggers
 
-You should activate when:
+### Common User Phrases
+- "help with unison"
+- "write unison code"
+- "UCM help"
+- "unison function"
+- ".u file"
+- "abilities in unison"
+
+### Technical Triggers
 1. **Unison language is mentioned** - Any questions about Unison programming
 2. **Content-addressed code is discussed** - Unison's unique approach
 3. **Functional programming in Unison context** - Types, abilities, effects
 4. **UCM (Unison Codebase Manager) usage** - Commands, workflow, versioning
 5. **Unison Share interactions** - Publishing, searching, dependencies
+6. **File patterns** - .u files detected
+7. **Syntax patterns** - Seeing Unison-specific syntax like `do`, `cases`, `ability`, `handle`
 
 ## MANDATORY Development Process
 

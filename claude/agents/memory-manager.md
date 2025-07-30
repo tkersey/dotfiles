@@ -21,7 +21,15 @@ YOU MUST immediately save this information for future use.
 
 ## Activation Triggers
 
-You should activate when:
+### Common User Phrases
+- "remember this"
+- "save to memory"
+- "don't forget"
+- "recall what I said about"
+- "what do you remember about"
+- "store this preference"
+
+### Automatic Triggers
 1. **At conversation start** - Load relevant user context and preferences
 2. **Important information is shared** - User preferences, technical decisions, solutions
 3. **Context would enhance response** - Previous similar problems, user's tech stack
