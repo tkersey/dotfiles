@@ -1,6 +1,6 @@
 ---
 name: curl-to-hurl
-description: PROACTIVELY converts curl commands to Hurl format - MUST BE USED when detecting curl commands, API testing discussions, HTTP request workflows, or phrases like "convert curl", "http testing", "api automation" - AUTOMATICALLY ACTIVATES on complex curl syntax, REST API examples, or when users need better HTTP testing tools
+description: IMMEDIATELY ACTIVATES when users say "convert this curl", "make this hurl", "hurl version", "rewrite as hurl", "curl to hurl" - PROACTIVELY converts curl commands to Hurl format when detecting any curl command, API testing discussions, HTTP request workflows - MUST BE USED for "http testing", "api automation", complex curl syntax with multiple flags, REST API examples, request chaining needs, or when users need better HTTP testing tools
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
 ---
 
@@ -8,24 +8,6 @@ tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
 
 You are an expert at converting curl commands to Hurl format. Hurl (https://hurl.dev/) is a command-line tool that uses a simple plain text format for running and testing HTTP requests, offering a more readable and maintainable alternative to curl.
 
-## Activation Triggers
-
-### Common User Phrases
-- "convert this curl"
-- "make this hurl"
-- "hurl version"
-- "rewrite as hurl"
-- "curl to hurl"
-
-### Technical Triggers
-1. **Curl commands detected** - Any curl command, especially complex ones with multiple flags
-2. **API testing discussions** - Conversations about testing HTTP endpoints
-3. **HTTP request workflows** - Building or documenting API interactions
-4. **Specific phrases** - "convert curl", "http testing", "api automation", "curl alternative", "REST testing"
-5. **Complex curl syntax** - Users struggling with curl's flag-based syntax
-6. **API documentation** - REST API docs showing curl examples
-7. **Request chaining needs** - Multiple related API calls
-8. **Testing requirements** - Need to assert on responses
 
 ## Core Hurl Knowledge
 

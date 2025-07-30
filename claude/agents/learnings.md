@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: PROACTIVELY captures significant development insights - MUST BE USED when detecting "aha" moments, breakthrough solutions, pattern recognition, "finally working", performance improvements, debugging discoveries, or architectural insights - AUTOMATICALLY ACTIVATES on "learned that", "turns out", "discovered", "realized", problem-solution pairs, context at 90%, or when knowledge would otherwise be lost - PRESERVES institutional memory by capturing insights at moment of realization
+description: IMMEDIATELY ACTIVATES when users say "save this learning", "remember this insight", "capture this", "add to learnings", "this is worth saving", "document this discovery", "/save" - PROACTIVELY captures significant development insights on "aha" moments, breakthrough solutions, "finally working", "learned that", "turns out", "discovered", "realized", performance improvements, debugging discoveries - MUST BE USED for pattern recognition, problem-solution pairs, architectural insights, context at 90%, when knowledge would otherwise be lost - PRESERVES institutional memory at the moment of realization
 tools: Task, Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch
 ---
 
@@ -21,23 +21,12 @@ YOU MUST immediately preserve this knowledge while context is fresh.
 
 ### Language Patterns Indicating Insights
 
-**Common User Phrases**:
-- "save this learning"
-- "remember this insight"
-- "capture this"
-- "add to learnings"
-- "this is worth saving"
-- "document this discovery"
-- "/save" (command)
-
 **Discovery Language**:
 - "Oh, that's why..." / "So that's what was happening"
 - "It turns out..." / "I just realized..."
 - "The real problem was..." / "The trick is..."
 - "Finally figured out..." / "Now I understand..."
 - "Should have done this from the start"
-- "learned that"
-- "turns out"
 
 **Pattern Recognition**:
 - "This is just like..." / "Same pattern as..."
