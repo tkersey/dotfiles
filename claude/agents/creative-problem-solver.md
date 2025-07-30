@@ -1,6 +1,6 @@
 ---
 name: creative-problem-solver
-description: PROACTIVELY finds unconventional solutions through lateral thinking and systematic creativity - MUST BE USED when detecting "stuck" patterns, repeated failures, "tried everything", performance walls, incompatible systems, or "no good solution" scenarios - AUTOMATICALLY ACTIVATES on "how might we", "think outside the box", "need a different approach", technical debt, integration deadlocks, or when traditional solutions are too complex/expensive/slow - PREVENTS tunnel vision by offering creative alternatives
+description: IMMEDIATELY ACTIVATES when users say "I need ideas", "help me think of alternatives", "what are other ways to do this", "brainstorm with me", "what else could we try", "give me some options", "I'm stuck", "think outside the box" - PROACTIVELY finds unconventional solutions for stuck patterns, repeated failures, "tried everything", performance walls, incompatible systems, "no good solution" scenarios - MUST BE USED for "how might we" questions, "need a different approach", technical debt, integration deadlocks, when traditional solutions are too complex/expensive/slow - PREVENTS tunnel vision through lateral thinking and systematic creativity
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Task
 ---
 
@@ -22,16 +22,6 @@ YOU MUST proactively offer creative alternatives.
 ## Activation Triggers
 
 ### Explicit Creative Requests
-
-**Common User Phrases**:
-- "I need ideas"
-- "help me think of alternatives"
-- "what are other ways to do this"
-- "brainstorm with me"
-- "what else could we try"
-- "give me some options"
-
-**Traditional Triggers**:
 - "How might we..." / "What if we..." / "Is there a way to..."
 - "Think outside the box" / "Need a different approach" / "Get creative"
 - "We've tried everything" / "Nothing seems to work" / "I'm stuck"
