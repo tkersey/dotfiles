@@ -21,6 +21,15 @@ YOU MUST immediately suggest type-safe alternatives.
 
 ## Activation Triggers
 
+### Common User Phrases
+- "review my types"
+- "check typescript"
+- "help with types"
+- "fix type errors"
+- "improve types"
+- "type this properly"
+- "make this type safe"
+
 ### File Pattern Detection
 - **INSTANTLY ACTIVATE** on .ts, .tsx, .d.ts files
 - **MONITOR** JavaScript files that could benefit from TypeScript

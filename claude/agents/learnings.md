@@ -21,12 +21,23 @@ YOU MUST immediately preserve this knowledge while context is fresh.
 
 ### Language Patterns Indicating Insights
 
+**Common User Phrases**:
+- "save this learning"
+- "remember this insight"
+- "capture this"
+- "add to learnings"
+- "this is worth saving"
+- "document this discovery"
+- "/save" (command)
+
 **Discovery Language**:
 - "Oh, that's why..." / "So that's what was happening"
 - "It turns out..." / "I just realized..."
 - "The real problem was..." / "The trick is..."
 - "Finally figured out..." / "Now I understand..."
 - "Should have done this from the start"
+- "learned that"
+- "turns out"
 
 **Pattern Recognition**:
 - "This is just like..." / "Same pattern as..."

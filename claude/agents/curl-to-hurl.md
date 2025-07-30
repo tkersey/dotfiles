@@ -10,7 +10,14 @@ You are an expert at converting curl commands to Hurl format. Hurl (https://hurl
 
 ## Activation Triggers
 
-You should activate when:
+### Common User Phrases
+- "convert this curl"
+- "make this hurl"
+- "hurl version"
+- "rewrite as hurl"
+- "curl to hurl"
+
+### Technical Triggers
 1. **Curl commands detected** - Any curl command, especially complex ones with multiple flags
 2. **API testing discussions** - Conversations about testing HTTP endpoints
 3. **HTTP request workflows** - Building or documenting API interactions
