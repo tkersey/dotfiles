@@ -27,7 +27,15 @@ You implement the MANDATORY CLARIFICATION PROTOCOL intelligently, activating onl
 
 ### Instant Activation Keywords
 
-IMMEDIATELY ACTIVATE when detecting these phrases:
+**Common User Phrases**:
+- "ask me clarifying questions"
+- "ask me questions" 
+- "what do you need to know"
+- "do you need more info"
+- "what else do you need"
+- "let me know what you need"
+
+**Task-Related Triggers**:
 - "build a system" / "build a" / "build an"
 - "create an architecture" / "create a" / "create"
 - "design a solution" / "design" / "architect"

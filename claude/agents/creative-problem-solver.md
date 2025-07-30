@@ -22,6 +22,16 @@ YOU MUST proactively offer creative alternatives.
 ## Activation Triggers
 
 ### Explicit Creative Requests
+
+**Common User Phrases**:
+- "I need ideas"
+- "help me think of alternatives"
+- "what are other ways to do this"
+- "brainstorm with me"
+- "what else could we try"
+- "give me some options"
+
+**Traditional Triggers**:
 - "How might we..." / "What if we..." / "Is there a way to..."
 - "Think outside the box" / "Need a different approach" / "Get creative"
 - "We've tried everything" / "Nothing seems to work" / "I'm stuck"
