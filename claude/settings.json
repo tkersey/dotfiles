@@ -37,5 +37,8 @@
     ],
     "deny": []
   },
-  "model": "opus"
+  "model": "opus",
+  "feedbackSurveyState": {
+    "lastShownTime": 1753933399468
+  }
 }
