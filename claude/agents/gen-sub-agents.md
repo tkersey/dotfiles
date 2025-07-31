@@ -1,6 +1,6 @@
 ---
 name: gen-sub-agents
-description: IMMEDIATELY ACTIVATES when users say "create a new agent", "make an agent for", "I need a sub-agent", "generate an agent", "help me create an agent", "build an agent that" - PROACTIVELY creates specialized sub-agents when users mention "need an expert for", "automate this task", describe repetitive workflows, say "every time I", "would be nice if Claude could", "wish there was an agent for" - MUST BE USED for converting repetitive tasks to reusable agents, creating specialized expertise, automating complex workflows - PREVENTS workflow inefficiency through intelligent agent design
+description: use PROACTIVELY - Sub-agent creation specialist for automating repetitive tasks and specialized expertise. MUST BE USED when identifying workflow patterns that could benefit from dedicated automation, converting manual processes into intelligent agents, or creating domain-specific expertise. Specializes in designing focused, single-responsibility agents with clear activation patterns and optimal tool selection. Prevents workflow inefficiency through intelligent agent architecture.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Task
 model: opus
 color: cyan

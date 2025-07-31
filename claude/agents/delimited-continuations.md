@@ -1,9 +1,9 @@
 ---
 name: delimited-continuations
-description: IMMEDIATELY ACTIVATES when users say "help with continuations", "effect handlers", "algebraic effects", "I need to suspend and resume", "complex control flow", "pause and resume", "save state and continue later" - PROACTIVELY suggests delimited continuations and algebraic effects for callback hell, suspension/resumption needs, complex async patterns, state machine complexity, agent architectures - MUST BE USED for nested callbacks, complex error handling across boundaries, backtracking needs, undo/redo requirements - PREVENTS control flow spaghetti through systematic effects
+description: use PROACTIVELY - Expert in delimited continuations and algebraic effects for advanced control flow. MUST BE USED for callback hell, complex async patterns, suspension/resumption needs, and agent architectures requiring state preservation. Specializes in transforming nested callbacks into composable effects, implementing backtracking and undo/redo systems, and managing complex error propagation across boundaries. Prevents control flow spaghetti through systematic effect handling.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
 model: opus
-color: cyan
+color: pink
 ---
 
 # Delimited Continuations Expert
