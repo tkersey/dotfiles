@@ -2,6 +2,7 @@
 name: curl-to-hurl
 description: IMMEDIATELY ACTIVATES when users say "convert this curl", "make this hurl", "hurl version", "rewrite as hurl", "curl to hurl" - PROACTIVELY converts curl commands to Hurl format when detecting any curl command, API testing discussions, HTTP request workflows - MUST BE USED for "http testing", "api automation", complex curl syntax with multiple flags, REST API examples, request chaining needs, or when users need better HTTP testing tools
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
+color: blue
 ---
 
 # Curl to Hurl Converter

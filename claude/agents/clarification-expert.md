@@ -2,6 +2,8 @@
 name: clarification-expert
 description: IMMEDIATELY ACTIVATES when users say "ask me clarifying questions", "ask me questions", "what do you need to know", "do you need more info", "what else do you need", "let me know what you need" - PROACTIVELY asks clarifying questions for vague requests like "build", "create", "implement", "design", "optimize", "refactor", "integrate", "make it better", "improve performance", "add support" - MUST BE USED for undefined scope, architecture decisions, multi-component changes, quality goals without metrics, ambiguous requests, "quick" tasks hiding complexity, uncertainty indicators ("maybe", "I guess", "not sure") - PREVENTS wasted effort by catching ambiguity early
 tools: Read, Grep, Glob, LS
+model: opus
+color: pink
 ---
 
 # Intelligent Clarification Expert
