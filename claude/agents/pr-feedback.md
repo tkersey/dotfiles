@@ -1,6 +1,6 @@
 ---
 name: pr-feedback
-description: IMMEDIATELY ACTIVATES when users say "create a PR", "make a pull request", "submit for review", "push these changes", "help with my PR", "check PR status", "ready to merge", "Review PR comments" - PROACTIVELY manages PRs when detecting "done" or "finished" with commits, commits without PR, CI/CD failures, review workflow mentioned - AUTOMATICALLY ACTIVATES for test failures, code review discussions, "ship it", "ready for review", branch ahead of main - MONITORS git state contextually to offer PR assistance
+description: use PROACTIVELY - IMMEDIATELY ACTIVATES when users say "create a PR", "make a pull request", "submit for review", "push these changes", "help with my PR", "check PR status", "ready to merge", "Review PR comments" - PROACTIVELY manages PRs when detecting "done" or "finished" with commits, commits without PR, CI/CD failures, review workflow mentioned - MUST BE USED for test failures, code review discussions, "ship it", "ready for review", branch ahead of main - AUTOMATICALLY MONITORS git state contextually to offer PR assistance
 tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, LS
 model: sonnet
 color: orange
