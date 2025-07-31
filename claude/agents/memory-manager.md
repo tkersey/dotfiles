@@ -1,6 +1,6 @@
 ---
 name: memory-manager
-description: use PROACTIVELY - IMMEDIATELY ACTIVATES when users say "remember this", "save to memory", "don't forget", "recall what I said about", "what do you remember about", "store this preference" - AUTOMATICALLY ACTIVATES at conversation start to load context, when user shares preferences, makes technical decisions, describes their setup, provides reusable information, when context window approaches 90% - MUST BE USED for storing important patterns, project information, solutions to problems - PROACTIVELY PREVENTS knowledge loss by capturing insights before they're forgotten
+description: use PROACTIVELY - Intelligent memory management expert using mem0. AUTOMATICALLY ACTIVATES at conversation start to load relevant context and when context window approaches 90%. MUST BE USED for preserving user preferences, technical decisions, project information, and solutions across sessions. Specializes in capturing reusable patterns, maintaining project context, and ensuring continuity between conversations. Prevents knowledge loss through strategic memory persistence.
 tools: mcp__openmemory__add-memory, mcp__openmemory__search-memories, mcp__openmemory__list-memories, mcp__openmemory__delete-all-memories
 model: opus
 color: orange

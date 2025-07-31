@@ -1,6 +1,6 @@
 ---
 name: algebraic
-description: use PROACTIVELY - IMMEDIATELY ACTIVATES when users say "help me abstract this", "this code feels repetitive", "what pattern should I use", "is there a better way to structure this", "help me refactor", "this is getting complex", "combine these functions" - MUST BE USED for repeated patterns, missing abstractions, boolean blindness, nullable types, error handling complexity, string unions that should be ADTs, repeated if/else chains, multiple boolean parameters, monoid-like operations (combine/merge/append) - PROACTIVELY IDENTIFIES algebraic patterns and suggests algebra-driven design to prevent poor abstractions
+description: use PROACTIVELY - Expert in algebraic patterns and abstraction design. MUST BE USED for eliminating code duplication, identifying missing abstractions, and applying functional programming patterns. Specializes in recognizing monoids, designing algebraic data types, eliminating boolean blindness, and transforming complex conditionals into type-safe patterns. Prevents poor abstractions through algebra-driven design.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch
 model: opus
 color: pink
