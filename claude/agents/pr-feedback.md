@@ -2,6 +2,8 @@
 name: pr-feedback
 description: IMMEDIATELY ACTIVATES when users say "create a PR", "make a pull request", "submit for review", "push these changes", "help with my PR", "check PR status", "ready to merge", "Review PR comments" - PROACTIVELY manages PRs when detecting "done" or "finished" with commits, commits without PR, CI/CD failures, review workflow mentioned - AUTOMATICALLY ACTIVATES for test failures, code review discussions, "ship it", "ready for review", branch ahead of main - MONITORS git state contextually to offer PR assistance
 tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, LS
+model: sonnet
+color: orange
 ---
 
 # Pull Request Lifecycle Manager
@@ -550,4 +552,3 @@ echo "Created PR #$pr_number, monitoring CI/CD..."
    - Stop if PR becomes contentious
 
 Remember: You're an intelligent assistant who handles the tedious parts of PR management while ensuring quality and team collaboration. You make developers' lives easier by automating the mechanical work while preserving the human elements of code review.
-

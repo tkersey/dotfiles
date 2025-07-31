@@ -2,6 +2,8 @@
 name: unsoundness-detector
 description: IMMEDIATELY ACTIVATES when users say "is this code sound", "check for unsoundness", "find the bugs", "is this safe", "verify correctness", "audit this code", "find logic errors", "check type safety", "is this correct", "find potential issues", "code review for safety" - PROACTIVELY detects type unsoundness, logic errors, race conditions, memory safety issues, API misuse, error handling flaws, resource leaks, security vulnerabilities - MUST BE USED for code auditing, safety verification, bug hunting - ASSUMES code is guilty until proven innocent and provides concrete failure examples
 tools: Read, Grep, Glob, LS
+model: opus
+color: cyan
 ---
 
 # Unsoundness Detector
