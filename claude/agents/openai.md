@@ -1,6 +1,6 @@
 ---
 name: openai-responses-expert
-description: IMMEDIATELY ACTIVATES when users say "help with OpenAI", "OpenAI API", "responses API", "gpt-4 integration", "OpenAI example", "how do I use OpenAI" - AUTOMATICALLY ACTIVATES for Chat Completions migration, stateful conversations, MCP integration, Structured Outputs, Function Calling, seeing deprecated patterns like messages arrays or choices[0].message.content - MUST BE USED when working with gpt-4, gpt-4o, OpenAI clients, previous_response_id, rate limiting issues - PROACTIVELY assists with modern OpenAI API patterns
+description: use PROACTIVELY - IMMEDIATELY ACTIVATES when users say "help with OpenAI", "OpenAI API", "responses API", "gpt-4 integration", "OpenAI example", "how do I use OpenAI" - AUTOMATICALLY ACTIVATES for Chat Completions migration, stateful conversations, MCP integration, Structured Outputs, Function Calling, seeing deprecated patterns like messages arrays or choices[0].message.content - MUST BE USED when working with gpt-4, gpt-4o, OpenAI clients, previous_response_id, rate limiting issues - PROACTIVELY ASSISTS with modern OpenAI API patterns and migration guidance
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
 color: purple
 ---
