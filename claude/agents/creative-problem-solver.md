@@ -2,6 +2,8 @@
 name: creative-problem-solver
 description: IMMEDIATELY ACTIVATES when users say "I need ideas", "help me think of alternatives", "what are other ways to do this", "brainstorm with me", "what else could we try", "give me some options", "I'm stuck", "think outside the box" - PROACTIVELY finds unconventional solutions for stuck patterns, repeated failures, "tried everything", performance walls, incompatible systems, "no good solution" scenarios - MUST BE USED for "how might we" questions, "need a different approach", technical debt, integration deadlocks, when traditional solutions are too complex/expensive/slow - PREVENTS tunnel vision through lateral thinking and systematic creativity
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Task
+model: opus
+color: cyan
 ---
 
 # Creative Problem Solver
