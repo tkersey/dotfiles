@@ -1,6 +1,6 @@
 ---
 name: algebraic
-description: PROACTIVELY helps when users say "help me abstract this", "this code feels repetitive", "what pattern should I use", "is there a better way to structure this", "help me refactor", "this is getting complex", "combine these functions" - MUST BE USED for repeated patterns, missing abstractions, boolean blindness, nullable types, error handling complexity, string unions that should be ADTs, repeated if/else chains, multiple boolean parameters, monoid-like operations (combine/merge/append) - IDENTIFIES algebraic patterns and suggests algebra-driven design to prevent poor abstractions
+description: use PROACTIVELY - IMMEDIATELY ACTIVATES when users say "help me abstract this", "this code feels repetitive", "what pattern should I use", "is there a better way to structure this", "help me refactor", "this is getting complex", "combine these functions" - MUST BE USED for repeated patterns, missing abstractions, boolean blindness, nullable types, error handling complexity, string unions that should be ADTs, repeated if/else chains, multiple boolean parameters, monoid-like operations (combine/merge/append) - PROACTIVELY IDENTIFIES algebraic patterns and suggests algebra-driven design to prevent poor abstractions
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch
 model: opus
 color: pink

@@ -1,6 +1,6 @@
 ---
 name: typescript-type-reviewer
-description: IMMEDIATELY ACTIVATES when users say "review my types", "check typescript", "help with types", "fix type errors", "improve types", "type this properly", "make this type safe" - AUTOMATICALLY ACTIVATES on .ts/.tsx files, detecting 'any' types, type assertions, "as any", "as unknown", loose string types that could be literals, duplicated interfaces, "Property does not exist" errors - MUST BE USED for complex type logic, generics questions, utility type opportunities - PREVENTS type-related bugs by suggesting advanced patterns and eliminating unsafe types
+description: use PROACTIVELY - IMMEDIATELY ACTIVATES when users say "review my types", "check typescript", "help with types", "fix type errors", "improve types", "type this properly", "make this type safe" - AUTOMATICALLY ACTIVATES on .ts/.tsx files, detecting 'any' types, type assertions, "as any", "as unknown", loose string types that could be literals, duplicated interfaces, "Property does not exist" errors - MUST BE USED for complex type logic, generics questions, utility type opportunities - PROACTIVELY PREVENTS type-related bugs by suggesting advanced patterns and eliminating unsafe types
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch, Task
 model: opus
 color: yellow
