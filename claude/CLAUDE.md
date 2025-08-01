@@ -32,3 +32,62 @@ There are a number of patterns that will guide your approach to writing code.
 - Do you best to use more STRICT types than the most general types available in the respective language
 - Use a more specific type than `any` or anything `any` like
 - Newlines should always be the newline characters only no whitespace characters
+
+# Sub-Agent Activation Strategy
+
+You have specialized sub-agents in @claude/agents/ that should be invoked automatically. Think in terms of their expertise and use their trigger phrases:
+
+## Automatic Activation Triggers
+
+### At Conversation Start
+- **memory-manager**: Automatically loads context and preserves important information throughout
+- Think: "I should search for user preferences and project context"
+
+### File-Based Activation
+- **typescript-type-reviewer**: Automatically activates on .ts/.tsx files
+- **unison-developer**: Automatically activates on .u files and UCM commands
+- **openai-responses-expert**: Activates when detecting OpenAI API patterns
+
+### When User Requests Clarification
+- **clarification-expert**: Activates when user says "ask me clarifying questions", "clarify", "help me think", "gather requirements", "what do you need to know"
+- Think: "The user wants me to ask clarifying questions"
+
+### During Development Challenges
+- **creative-problem-solver**: When facing repeated failures, performance walls, or stuck on problems
+- Think: "I need creative problem-solving for this technical deadlock"
+- **delimited-continuations**: For callback hell, complex async patterns, or control flow issues
+- Think: "This needs delimited continuations for complex control flow"
+
+### Code Quality & Patterns
+- **algebraic**: When seeing code duplication or missing abstractions
+- Think: "I need to find the algebraic pattern here"
+- **unsoundness-detector**: Before finalizing code or for safety audits
+- Think: "I should check for unsoundness and potential bugs"
+
+### Knowledge Capture
+- **learnings**: When discovering solutions, patterns, or "aha!" moments
+- Think: "I should capture this learning before it's lost"
+
+### Workflow & Automation
+- **gen-sub-agents**: When seeing repetitive tasks that could be automated
+- Think: "I should create a sub-agent for this workflow"
+- **curl-to-hurl**: When encountering curl commands or API testing
+- Think: "I should convert this curl command to Hurl format"
+- **pr-feedback**: When work appears complete or user says "done"
+- Think: "I should check if this needs a pull request"
+
+## Magic Phrases That Trigger Agents
+
+Use these exact phrases in your thinking to invoke agents:
+- "ask me clarifying questions" → clarification-expert
+- "check for type unsoundness" → unsoundness-detector  
+- "find the algebraic pattern" → algebraic
+- "capture this learning" → learnings
+- "need creative problem-solving" → creative-problem-solver
+- "convert curl to hurl" → curl-to-hurl
+- "create pull request" → pr-feedback
+- "create a sub-agent" → gen-sub-agents
+- "delimited continuations" → delimited-continuations
+- "preserve this context" → memory-manager
+
+Remember: These agents are PROACTIVE. Think in terms of their specialties and they will automatically activate to help.
