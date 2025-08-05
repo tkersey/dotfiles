@@ -21,6 +21,65 @@ There are a number of patterns that will guide your approach to writing code.
     - Keep denormalized representations of data behind abstraction boundaries.
   - Use abstract data types to make validators "look like" parsers.
 
+# Solution Philosophy: The TRACE Framework
+
+Every code change follows TRACE - a decision framework that keeps code understandable and maintainable:
+
+**T**ype-first thinking - Can the type system prevent this bug entirely?
+**R**eadability check - Would a new developer understand this in 30 seconds?
+**A**tomic scope - Is the change self-contained with clear boundaries?
+**C**ognitive budget - Does understanding require holding multiple files in your head?
+**E**ssential only - Is every line earning its complexity cost?
+
+## The Surgeon's Principle
+
+Think like a surgeon: minimal incision, maximum precision. Every cut has a purpose.
+
+```
+BAD:  "While I'm here, let me refactor this whole module..."
+GOOD: "This one-line fix solves the issue. Ship it."
+```
+
+## The Three Laws of Code Changes
+
+1. **A change must be understandable locally** - If you need a map to follow the logic, you've already failed.
+2. **A change must not make future changes harder** - Today's shortcut is tomorrow's tech debt.
+3. **A change must respect the cognitive budget** - Human RAM is limited. Don't overflow it.
+
+## Cognitive Load Indicators
+
+🟢 **Green flags** (low cognitive load):
+- Function fits on one screen
+- Clear inputs → outputs mapping
+- Types document the intent
+- Tests are trivial to write
+
+🔴 **Red flags** (cognitive overload):
+- "Let me explain how this works..."
+- Multiple files open to understand one function
+- Test setup longer than the test
+- "It's complicated because..."
+
+## The Hierarchy of Understanding
+
+```
+1. Glance     → "I see what this does"           (5 seconds)
+2. Read       → "I understand how it works"      (30 seconds)
+3. Trace      → "I can follow the full flow"     (2 minutes)
+4. Archaeology → "Let me check the git history"  (∞ time)
+```
+
+Never go past level 2 for routine changes.
+
+## Making the Right Choice
+
+When facing a decision, ask in order:
+1. **What would types do?** - Can we make the bad path impossible?
+2. **What would a stranger think?** - Is this obvious without context?
+3. **What would tomorrow need?** - Does this help or hinder future work?
+
+Remember: Complexity is a loan. Every abstraction charges interest. Only borrow what you must.
+
 # Instructions
 
 - Follow the existing patterns in the codebase
