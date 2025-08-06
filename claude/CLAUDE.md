@@ -120,6 +120,8 @@ You have specialized sub-agents in @claude/agents/ that should be invoked automa
 ### Code Quality & Patterns
 - **algebraic**: When seeing code duplication or missing abstractions
 - Think: "I need to find the algebraic pattern here"
+- **complexity-mitigator**: When seeing over-engineered code, hard-to-change patterns, or excessive complexity
+- Think: "I need to find the right abstraction level without over-engineering"
 - **unsoundness-detector**: Before finalizing code or for safety audits
 - Think: "I should check for unsoundness and potential bugs"
 
@@ -141,6 +143,7 @@ Use these exact phrases in your thinking to invoke agents:
 - "ask me clarifying questions" → clarification-expert
 - "check for type unsoundness" → unsoundness-detector  
 - "find the algebraic pattern" → algebraic
+- "find the right abstraction level" → complexity-mitigator
 - "capture this learning" → learnings
 - "need creative problem-solving" → creative-problem-solver
 - "convert curl to hurl" → curl-to-hurl
