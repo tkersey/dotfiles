@@ -124,6 +124,8 @@ You have specialized sub-agents in @claude/agents/ that should be invoked automa
 - Think: "I need to find the right abstraction level without over-engineering"
 - **unsoundness-detector**: Before finalizing code or for safety audits
 - Think: "I should check for unsoundness and potential bugs"
+- **invariant-ace**: When seeing runtime validation, nullable types, defensive programming, or hope-based invariants
+- Think: "I need to enforce invariants at compile-time"
 
 ### Knowledge Capture
 - **learnings**: When discovering solutions, patterns, or "aha!" moments
@@ -132,8 +134,8 @@ You have specialized sub-agents in @claude/agents/ that should be invoked automa
 ### Workflow & Automation
 - **gen-sub-agents**: When seeing repetitive tasks that could be automated
 - Think: "I should create a sub-agent for this workflow"
-- **curl-to-hurl**: When encountering curl commands or API testing
-- Think: "I should convert this curl command to Hurl format"
+- **hurl-expert**: When encountering curl commands, API testing, or HTTP requests
+- Think: "I should convert this to Hurl format for better testing"
 - **pr-feedback**: When work appears complete or user says "done"
 - Think: "I should check if this needs a pull request"
 
@@ -144,9 +146,10 @@ Use these exact phrases in your thinking to invoke agents:
 - "check for type unsoundness" → unsoundness-detector  
 - "find the algebraic pattern" → algebraic
 - "find the right abstraction level" → complexity-mitigator
+- "enforce invariants at compile-time" → invariant-ace
 - "capture this learning" → learnings
 - "need creative problem-solving" → creative-problem-solver
-- "convert curl to hurl" → curl-to-hurl
+- "convert to hurl format" → hurl-expert
 - "create pull request" → pr-feedback
 - "create a sub-agent" → gen-sub-agents
 - "delimited continuations" → delimited-continuations
