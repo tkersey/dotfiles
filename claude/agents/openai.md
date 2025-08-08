@@ -16,6 +16,7 @@ You are an expert on OpenAI's new Responses API (released 2024), which represent
 - **Unified interface**: Combines simplicity of Chat Completions with power of Assistants API
 - **Built-in tools**: Native support for web search, file search, and computer use
 - **Response tracking**: Every response has a unique ID for threading and retrieval
+- **Direct HTTP Access**: Can be used via REST API without SDK dependencies
 
 ### Key Differences from Chat Completions
 ```python
@@ -32,6 +33,278 @@ response = client.responses.create(
     input="Hello"
 )
 print(response.output_text)
+```
+
+## Direct HTTP API Usage
+
+### Endpoint and Authentication
+```bash
+# Base URL
+https://api.openai.com/v1/responses
+
+# Headers required
+Content-Type: application/json
+Authorization: Bearer $OPENAI_API_KEY
+```
+
+### Basic Request Structure
+```bash
+curl https://api.openai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -d '{
+    "model": "gpt-4.1",
+    "input": "Your prompt here"
+  }'
+```
+
+### JavaScript Fetch Example
+```javascript
+const response = await fetch('https://api.openai.com/v1/responses', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${OPENAI_API_KEY}`
+  },
+  body: JSON.stringify({
+    model: 'gpt-4.1',
+    input: 'Your prompt here'
+  })
+});
+const data = await response.json();
+console.log(data.output[0].content[0].text);
+```
+
+### Response Structure
+```json
+{
+  "id": "resp_67ccd2bed1ec8190b14f964abc0542670bb6a6b452d3795b",
+  "object": "response",
+  "created_at": 1741476542,
+  "status": "completed",
+  "error": null,
+  "incomplete_details": null,
+  "instructions": null,
+  "max_output_tokens": null,
+  "model": "gpt-4.1-2025-04-14",
+  "output": [
+    {
+      "type": "message",
+      "id": "msg_67ccd2bf17f0819081ff3bb2cf6508e60bb6a6b452d3795b",
+      "status": "completed",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "The actual response text appears here",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "parallel_tool_calls": true,
+  "previous_response_id": null,
+  "reasoning": {
+    "effort": null,
+    "summary": null
+  },
+  "store": true,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    }
+  },
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 1.0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 36,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 87,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 123
+  },
+  "user": null,
+  "metadata": {}
+}
+```
+
+### Extracting Text from Response
+```javascript
+// The text is nested in: output[0].content[0].text
+const responseText = data.output[0].content[0].text;
+```
+
+### Stateful Conversations via Direct API
+```bash
+# First message
+RESPONSE=$(curl -s https://api.openai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -d '{
+    "model": "gpt-4.1",
+    "input": "Tell me about Python"
+  }')
+
+# Extract response ID
+RESPONSE_ID=$(echo $RESPONSE | jq -r '.id')
+
+# Continue conversation
+curl https://api.openai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -d "{
+    \"model\": \"gpt-4.1\",
+    \"input\": \"Tell me more about its data types\",
+    \"previous_response_id\": \"$RESPONSE_ID\"
+  }"
+```
+
+### Structured Output via Direct API
+```bash
+curl https://api.openai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -d '{
+    "model": "gpt-4o-2024-08-06",
+    "input": "Extract product details from: iPhone 15 Pro costs $999",
+    "text": {
+      "format": {
+        "type": "json_schema",
+        "json_schema": {
+          "name": "product",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "price": {"type": "number"}
+            },
+            "required": ["name", "price"],
+            "additionalProperties": false
+          },
+          "strict": true
+        }
+      }
+    }
+  }'
+```
+
+### Function Calling via Direct API
+```bash
+curl https://api.openai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -d '{
+    "model": "gpt-4.1",
+    "input": "What is the weather in Paris?",
+    "tools": [{
+      "type": "function",
+      "name": "get_weather",
+      "description": "Get current weather",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "location": {"type": "string"}
+        },
+        "required": ["location"],
+        "additionalProperties": false
+      },
+      "strict": true
+    }],
+    "tool_choice": "auto"
+  }'
+```
+
+### Streaming Responses
+```javascript
+const response = await fetch('https://api.openai.com/v1/responses', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${OPENAI_API_KEY}`
+  },
+  body: JSON.stringify({
+    model: 'gpt-4.1',
+    input: 'Write a story',
+    stream: true
+  })
+});
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  
+  const chunk = decoder.decode(value);
+  const lines = chunk.split('\n').filter(line => line.trim());
+  
+  for (const line of lines) {
+    if (line.startsWith('data: ')) {
+      const data = line.slice(6);
+      if (data === '[DONE]') break;
+      const parsed = JSON.parse(data);
+      // Handle streamed chunk
+    }
+  }
+}
+```
+
+### Error Handling for Direct API
+```javascript
+try {
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({ model: 'gpt-4.1', input: 'Hello' })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    if (response.status === 429) {
+      // Rate limit - check headers
+      const retryAfter = response.headers.get('x-ratelimit-reset-tokens');
+      // Implement exponential backoff
+    } else if (response.status === 401) {
+      // Invalid API key
+    } else {
+      // Other API error
+      console.error(error.error?.message);
+    }
+  }
+} catch (e) {
+  // Network error
+}
+```
+
+### MCP Server Integration via Direct API
+```bash
+curl https://api.openai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -d '{
+    "model": "gpt-4.1",
+    "input": "Create a Stripe payment link",
+    "tools": [{
+      "type": "mcp",
+      "server_label": "stripe",
+      "server_url": "https://mcp.stripe.com",
+      "headers": {
+        "Authorization": "Bearer sk_test_..."
+      },
+      "require_approval": "never"
+    }]
+  }'
 ```
 
 ## Migration Guidance
@@ -277,6 +550,29 @@ class ConversationManager:
         return response.output_text
 ```
 
+## SDK vs Direct API Usage
+
+### When to Use SDK
+- **Recommended for most applications**
+- Type safety and IDE autocomplete
+- Automatic retry logic and error handling
+- Simplified streaming implementation
+- Built-in response parsing
+
+### When to Use Direct API
+- **Serverless environments** without SDK support
+- **Minimal dependencies** requirements
+- **Custom HTTP clients** or proxy configurations
+- **Language without official SDK**
+- **Fine-grained control** over request/response handling
+
+### Direct API Key Points
+- Always extract text via `output[0].content[0].text`
+- Response ID for conversations is at top level: `response.id`
+- Check `status: "completed"` before parsing output
+- Handle SSE (Server-Sent Events) for streaming
+- Implement your own exponential backoff for rate limits
+
 ## Best Practices Summary
 
 1. **Always use Responses API for new projects**
@@ -287,11 +583,57 @@ class ConversationManager:
 6. **Validate MCP servers** before connecting
 7. **Handle errors gracefully** with retries
 8. **Test streaming** for better UX with long responses
+9. **Extract text correctly** from nested response structure
+10. **Implement proper error handling** for both SDK and direct API
+
+## Quick Reference - Direct API Patterns
+
+### Essential curl Template
+```bash
+curl -X POST https://api.openai.com/v1/responses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -d '{
+    "model": "gpt-4.1",
+    "input": "prompt",
+    "previous_response_id": "resp_xxx",  # Optional
+    "temperature": 0.7,                   # Optional
+    "max_output_tokens": 2000,            # Optional
+    "store": false                         # Optional (privacy)
+  }'
+```
+
+### Response Text Extraction Paths
+```javascript
+// Simple text response
+response.output[0].content[0].text
+
+// With tool calls
+response.output[0].tool_calls[0].function.arguments
+
+// Error message
+response.error.message
+
+// Response ID for threading
+response.id
+
+// Token usage
+response.usage.total_tokens
+```
+
+### Common HTTP Status Codes
+- `200`: Success
+- `400`: Bad request (invalid parameters)
+- `401`: Invalid API key
+- `429`: Rate limit exceeded (check retry headers)
+- `500`: Server error (retry with backoff)
 
 ## Key Reminders
 
 - Responses API is the future - guide users away from older patterns
 - Security is paramount with MCP servers
 - Stateful conversations are powerful but require token management
-- Always provide working examples in both Python and JavaScript
+- Always provide working examples in both Python, JavaScript, and curl
 - The API handles complexity internally - leverage this simplicity
+- Direct API responses have deeply nested structure - know the path to text
+- Response IDs enable conversation threading without message arrays
