@@ -91,6 +91,7 @@ Remember: Complexity is a loan. Every abstraction charges interest. Only borrow 
 - Do you best to use more STRICT types than the most general types available in the respective language
 - Use a more specific type than `any` or anything `any` like
 - Newlines should always be the newline characters only no whitespace characters
+- ALWAYS ensure that every file ends with a newline character
 
 # Sub-Agent Activation Strategy
 
