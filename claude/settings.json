@@ -41,5 +41,9 @@
   "model": "opus",
   "feedbackSurveyState": {
     "lastShownTime": 1754083542456
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "input=$(cat); current_dir=$(echo \"$input\" | jq -r '.workspace.current_dir'); model_name=$(echo \"$input\" | jq -r '.model.display_name'); current_time=$(date '+%H:%M:%S'); short_path=$(basename \"$current_dir\"); if git -C \"$current_dir\" rev-parse --is-inside-work-tree >/dev/null 2>&1; then git_branch=$(git -C \"$current_dir\" branch --show-current 2>/dev/null || echo 'detached'); printf '\\033[36m%s\\033[0m \\033[33m⎇ %s\\033[0m \\033[35m%s\\033[0m \\033[37m%s\\033[0m' \"$short_path\" \"$git_branch\" \"$model_name\" \"$current_time\"; else printf '\\033[36m%s\\033[0m \\033[35m%s\\033[0m \\033[37m%s\\033[0m' \"$short_path\" \"$model_name\" \"$current_time\"; fi"
   }
 }
