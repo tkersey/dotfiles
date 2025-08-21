@@ -97,7 +97,7 @@ def main():
         if is_clean:
             status.append("✓", style="green")
             if unpushed > 0:
-                status.append(f" +{unpushed}", style="green")
+                status.append(f" +{unpushed}", style="blue")
         else:
             status.append("●", style="red")
         status.append(" ")
