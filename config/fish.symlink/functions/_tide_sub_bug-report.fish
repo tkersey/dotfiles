@@ -11,14 +11,14 @@ function _tide_sub_bug-report
         set --long | string match -r "^_?tide.*" | # Get only tide variables
             string match -r --invert "^_tide_prompt_var.*" # Remove _tide_prompt_var
     else
-        set -l fish_version ($fish_path --version | string match -r "fish, version (\d\.\d\.\d)")[2]
-        _tide_check_version Fish fish-shell/fish-shell "(\d\.\d\.\d)" $fish_version || return
+        $fish_path --version | string match -qr "fish, version (?<fish_version>.*)"
+        _tide_check_version Fish fish-shell/fish-shell "(?<v>[\d.]+)" $fish_version || return
 
-        set -l tide_version (tide --version | string match -r "tide, version (\d\.\d\.\d)")[2]
-        _tide_check_version Tide IlanCosman/tide "v(\d\.\d\.\d)" $tide_version || return
+        tide --version | string match -qr "tide, version (?<tide_version>.*)"
+        _tide_check_version Tide IlanCosman/tide "v(?<v>[\d.]+)" $tide_version || return
 
         if command --query git
-            test (git --version | string match -r "git version ([\d\.]*)" | string replace --all . '')[2] -gt 2220
+            test (path sort (git --version) "git version 2.22.0")[1] = "git version 2.22.0"
             _tide_check_condition \
                 "Your git version is too old." \
                 "Tide requires at least version 2.22." \
@@ -32,11 +32,12 @@ function _tide_sub_bug-report
             "Please uninstall it before submitting a bug report." || return
 
         if not set -q _flag_check
-            set -l fish_startup_time ($fish_path -ic "time $fish_path -c exit" 2>|
-                string match -r "Executed in(.*)fish" | string trim)[2]
+            $fish_path -ic "time $fish_path -c exit" 2>|
+                string match -rg "Executed in(.*)fish" |
+                string trim | read -l fish_startup_time
 
-            read --local --prompt-str "What operating system are you using? (e.g Ubuntu 20.04): " os
-            read --local --prompt-str "What terminal emulator are you using? (e.g Kitty): " terminal_emulator
+            read -l --prompt-str "What operating system are you using? (e.g Ubuntu 20.04): " os
+            read -l --prompt-str "What terminal emulator are you using? (e.g Kitty): " terminal_emulator
 
             printf '%b\n' "\nPlease copy the following information into the issue:\n" \
                 "fish version: $fish_version" \
@@ -50,15 +51,14 @@ function _tide_sub_bug-report
     end
 end
 
-function _tide_check_version -a program_name repo_name regex_to_get_version current_version
-    curl --silent https://github.com/$repo_name/releases/latest |
-        string match -r ".*$repo_name/releases/tag/$regex_to_get_version.*" |
-        read --local --line __ latestVersion
+function _tide_check_version -a program_name repo_name regex_to_get_v installed_version
+    curl -sL https://github.com/$repo_name/releases/latest |
+        string match -qr "https://github.com/$repo_name/releases/tag/$regex_to_get_v"
 
-    string match --quiet -r "^$latestVersion" "$current_version"
+    string match -qr "^$v" "$installed_version" # Allow git versions, e.g 3.3.1-701-gceade1629
     _tide_check_condition \
         "Your $program_name version is out of date." \
-        "The latest is $latestVersion. You have $current_version." \
+        "The latest is $v. You have $installed_version." \
         "Please update before submitting a bug report."
 end
 

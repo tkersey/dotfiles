@@ -28,7 +28,7 @@ if contains newline $_tide_left_items # two line prompt initialization
     test "$tide_left_prompt_frame_enabled" = true &&
         set -l top_left_frame "$prompt_and_frame_color╭─" &&
         set -l bot_left_frame "$prompt_and_frame_color╰─" &&
-        set column_offset (math $column_offset-2)
+        set column_offset 3
     test "$tide_right_prompt_frame_enabled" = true &&
         set -l top_right_frame "$prompt_and_frame_color─╮" &&
         set -l bot_right_frame "$prompt_and_frame_color─╯" &&
@@ -145,21 +145,20 @@ end"
     end
 end
 
-eval "function _tide_on_fish_exit --on-event fish_exit
+# Inheriting instead of evaling because here load time is more important than runtime
+function _tide_on_fish_exit --on-event fish_exit --inherit-variable prompt_var
     set -e $prompt_var
-end"
+end
 
 if test "$tide_prompt_transient_enabled" = true
     function _tide_enter_transient
-        # If the commandline will be executed, or is empty
-        if commandline --is-valid || test -z "$(commandline)"
-            # Pager open usually means selecting, not running
-            # Can be untrue, but it's better than the alternative
-            if not commandline --paging-mode
-                set -g _tide_transient
-                set -g _tide_repaint
-                commandline -f repaint
-            end
+        # If the commandline will be executed or is empty, and the pager is not open
+        # Pager open usually means selecting, not running
+        # Can be untrue, but it's better than the alternative
+        if commandline --is-valid || test -z "$(commandline)" && not commandline --paging-mode
+            set -g _tide_transient
+            set -g _tide_repaint
+            commandline -f repaint
         end
         commandline -f execute
     end
