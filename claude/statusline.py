@@ -10,8 +10,8 @@ from pathlib import Path
 from rich.console import Console
 from rich.text import Text
 
-def get_git_info(directory: Path) -> tuple[bool, str, bool, int]:
-    """Returns (is_git_repo, branch_name, is_clean, unpushed_count)"""
+def get_git_info(directory: Path) -> tuple[bool, str, dict]:
+    """Returns (is_git_repo, branch_name, status_counts)"""
     try:
         # Check if it's a git repo
         result = subprocess.run(
@@ -20,7 +20,7 @@ def get_git_info(directory: Path) -> tuple[bool, str, bool, int]:
             text=True
         )
         if result.returncode != 0:
-            return False, "", False, 0
+            return False, "", {}
         
         # Get current branch
         result = subprocess.run(
@@ -30,34 +30,52 @@ def get_git_info(directory: Path) -> tuple[bool, str, bool, int]:
         )
         branch = result.stdout.strip() if result.returncode == 0 else "detached"
         
-        # Check if repo is clean
-        diff_result = subprocess.run(
-            ["git", "-C", str(directory), "diff", "--quiet"],
-            capture_output=True
+        # Get git status porcelain
+        result = subprocess.run(
+            ["git", "-C", str(directory), "--no-optional-locks", "status", "--porcelain"],
+            capture_output=True,
+            text=True
         )
-        staged_result = subprocess.run(
-            ["git", "-C", str(directory), "diff", "--cached", "--quiet"],
-            capture_output=True
+        stat_lines = result.stdout.splitlines() if result.returncode == 0 else []
+        
+        # Count different file states (similar to Tide)
+        conflicted = sum(1 for line in stat_lines if line.startswith("UU"))
+        staged = sum(1 for line in stat_lines if line[0] in "ADMR")
+        dirty = sum(1 for line in stat_lines if line[1] in "ADMR")
+        untracked = sum(1 for line in stat_lines if line.startswith("??"))
+        
+        # Get stash count
+        result = subprocess.run(
+            ["git", "-C", str(directory), "stash", "list"],
+            capture_output=True,
+            text=True
         )
-        is_clean = diff_result.returncode == 0 and staged_result.returncode == 0
+        stash = len(result.stdout.splitlines()) if result.returncode == 0 else 0
         
-        # Get unpushed commits count (only if clean)
-        unpushed_count = 0
-        if is_clean:
-            result = subprocess.run(
-                ["git", "-C", str(directory), "rev-list", "--count", "@{u}..HEAD"],
-                capture_output=True,
-                text=True
-            )
-            if result.returncode == 0:
-                try:
-                    unpushed_count = int(result.stdout.strip())
-                except ValueError:
-                    unpushed_count = 0
+        # Get ahead/behind counts
+        ahead = behind = 0
+        result = subprocess.run(
+            ["git", "-C", str(directory), "rev-list", "--count", "--left-right", "@{u}...HEAD"],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            counts = result.stdout.strip().split("\t")
+            if len(counts) == 2:
+                behind = int(counts[0]) if counts[0] else 0
+                ahead = int(counts[1]) if counts[1] else 0
         
-        return True, branch, is_clean, unpushed_count
+        return True, branch, {
+            "conflicted": conflicted,
+            "staged": staged,
+            "dirty": dirty,
+            "untracked": untracked,
+            "stash": stash,
+            "ahead": ahead,
+            "behind": behind
+        }
     except Exception:
-        return False, "", False, 0
+        return False, "", {}
 
 def format_cost(cost: float | None) -> str:
     """Format cost as $X.XX"""
@@ -79,7 +97,7 @@ def main():
     cost_display = format_cost(session_cost)
     
     # Build status line
-    console = Console(stderr=False)
+    console = Console(stderr=False, force_terminal=True, legacy_windows=False)
     status = Text()
     
     # Folder
@@ -88,18 +106,27 @@ def main():
     status.append(" ")
     
     # Git info if available
-    is_git, branch, is_clean, unpushed = get_git_info(current_dir)
+    is_git, branch, git_status = get_git_info(current_dir)
     if is_git:
         status.append("🌿 ", style="yellow")
         status.append(branch, style="yellow")
-        status.append(" ")
         
-        if is_clean:
-            status.append("✓", style="green")
-            if unpushed > 0:
-                status.append(f" +{unpushed}", style="blue")
-        else:
-            status.append("●", style="red")
+        # Show git status indicators (Tide-style)
+        if git_status.get("behind", 0) > 0:
+            status.append(f" ⇣{git_status['behind']}", style="cyan")
+        if git_status.get("ahead", 0) > 0:
+            status.append(f" ⇡{git_status['ahead']}", style="cyan")
+        if git_status.get("stash", 0) > 0:
+            status.append(f" *{git_status['stash']}", style="yellow")
+        if git_status.get("conflicted", 0) > 0:
+            status.append(f" ~{git_status['conflicted']}", style="red")
+        if git_status.get("staged", 0) > 0:
+            status.append(f" +{git_status['staged']}", style="green")
+        if git_status.get("dirty", 0) > 0:
+            status.append(f" !{git_status['dirty']}", style="red")
+        if git_status.get("untracked", 0) > 0:
+            status.append(f" ?{git_status['untracked']}", style="blue")
+        
         status.append(" ")
     
     # Model
