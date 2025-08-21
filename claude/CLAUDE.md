@@ -95,65 +95,64 @@ Remember: Complexity is a loan. Every abstraction charges interest. Only borrow 
 
 # Sub-Agent Activation Strategy
 
-You have specialized sub-agents in @claude/agents/ that should be invoked automatically. Think in terms of their expertise and use their trigger phrases:
+You have specialized sub-agents in @claude/agents/ that PROACTIVELY activate based on context. Each agent has specific triggers in its description field.
 
-## Automatic Activation Triggers
+## Critical Activation Rules
 
-### At Conversation Start
-- **memory-manager**: Automatically loads context and preserves important information throughout
-- Think: "I should search for user preferences and project context"
+1. **Descriptions are PRIMARY** - The description field determines automatic activation
+2. **Think the trigger phrases** - Your internal thoughts trigger agents
+3. **PROACTIVELY means automatic** - Don't wait to be asked
+4. **MUST BE USED is mandatory** - These are not optional
 
-### File-Based Activation
-- **typescript-type-reviewer**: Automatically activates on .ts/.tsx files
-- **unison-developer**: Automatically activates on .u files and UCM commands
-- **openai-responses-expert**: Activates when detecting OpenAI API patterns
+## Activation Triggers by Category
 
-### When User Requests Clarification
-- **clarification-expert**: Activates when user says "ask me clarifying questions", "clarify", "help me think", "gather requirements", "what do you need to know"
-- Think: "The user wants me to ask clarifying questions"
+### Conversation Lifecycle
+- **memory-manager**: AUTOMATICALLY at conversation start and 90% context capacity
+- **learnings**: AUTOMATICALLY on breakthroughs, "aha" moments, solved problems
+- **pr-feedback**: AUTOMATICALLY on "done", completed work, uncommitted changes
 
-### During Development Challenges
-- **creative-problem-solver**: When facing repeated failures, performance walls, or stuck on problems
-- Think: "I need creative problem-solving for this technical deadlock"
-- **delimited-continuations**: For callback hell, complex async patterns, or control flow issues
-- Think: "This needs delimited continuations for complex control flow"
+### File Type Detection
+- **typescript-type-reviewer**: AUTOMATICALLY on .ts/.tsx files or any types
+- **unison-developer**: AUTOMATICALLY on .u files and UCM commands
+- **openai-responses-expert**: AUTOMATICALLY on OpenAI API patterns
 
-### Code Quality & Patterns
-- **algebraic**: When seeing code duplication or missing abstractions
-- Think: "I need to find the algebraic pattern here"
-- **complexity-mitigator**: When seeing over-engineered code, hard-to-change patterns, or excessive complexity
-- Think: "I need to find the right abstraction level without over-engineering"
-- **unsoundness-detector**: Before finalizing code or for safety audits
-- Think: "I should check for unsoundness and potential bugs"
-- **invariant-ace**: When seeing runtime validation, nullable types, defensive programming, or hope-based invariants
-- Think: "I need to enforce invariants at compile-time"
+### Code Quality Patterns
+- **complexity-mitigator**: AUTOMATICALLY on nested code >3 levels, functions >50 lines
+- **algebraic**: AUTOMATICALLY on code duplication, repeated patterns
+- **unsoundness-detector**: AUTOMATICALLY before finalizing code, on "review"
+- **invariant-ace**: AUTOMATICALLY on runtime validation, nullable types
 
-### Knowledge Capture
-- **learnings**: When discovering solutions, patterns, or "aha!" moments
-- Think: "I should capture this learning before it's lost"
+### Problem Solving
+- **creative-problem-solver**: AUTOMATICALLY on "stuck", repeated failures
+- **delimited-continuations**: AUTOMATICALLY on callback hell, complex async
+- **clarification-expert**: AUTOMATICALLY on vague requirements, "clarify"
 
-### Workflow & Automation
-- **gen-sub-agents**: When seeing repetitive tasks that could be automated
-- Think: "I should create a sub-agent for this workflow"
-- **hurl-expert**: When encountering curl commands, API testing, or HTTP requests
-- Think: "I should convert this to Hurl format for better testing"
-- **pr-feedback**: When work appears complete or user says "done"
-- Think: "I should check if this needs a pull request"
+### Automation & Tools
+- **gen-sub-agents**: AUTOMATICALLY on repetitive tasks, "every time I"
+- **hurl-expert**: AUTOMATICALLY on curl commands, API testing
 
-## Magic Phrases That Trigger Agents
+## Magic Thinking Phrases
 
-Use these exact phrases in your thinking to invoke agents:
-- "ask me clarifying questions" → clarification-expert
-- "check for type unsoundness" → unsoundness-detector  
-- "find the algebraic pattern" → algebraic
-- "find the right abstraction level" → complexity-mitigator
-- "enforce invariants at compile-time" → invariant-ace
-- "capture this learning" → learnings
-- "need creative problem-solving" → creative-problem-solver
-- "convert to hurl format" → hurl-expert
-- "create pull request" → pr-feedback
-- "create a sub-agent" → gen-sub-agents
-- "delimited continuations" → delimited-continuations
-- "preserve this context" → memory-manager
+Use these EXACT phrases in your thoughts to force activation:
+- "The user wants me to ask clarifying questions" → clarification-expert
+- "I should check for type unsoundness" → unsoundness-detector  
+- "I need to find the algebraic pattern" → algebraic
+- "Find the right abstraction level" → complexity-mitigator
+- "Enforce invariants at compile-time" → invariant-ace
+- "Capture this learning" → learnings
+- "Need creative problem-solving" → creative-problem-solver
+- "Convert to Hurl format" → hurl-expert
+- "Check if this needs a pull request" → pr-feedback
+- "Create a sub-agent for this" → gen-sub-agents
+- "Use delimited continuations" → delimited-continuations
+- "Load user context" → memory-manager
 
-Remember: These agents are PROACTIVE. Think in terms of their specialties and they will automatically activate to help.
+## IMPORTANT: Proactive Activation
+
+These agents should activate WITHOUT being asked when their triggers appear. If you see:
+- Any types in TypeScript → typescript-type-reviewer activates
+- Repetitive tasks → gen-sub-agents activates
+- Vague requirements → clarification-expert activates
+- Completed work → pr-feedback activates
+
+Don't wait for permission. The PROACTIVELY keyword means automatic activation.
