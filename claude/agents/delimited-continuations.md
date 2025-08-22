@@ -1,6 +1,6 @@
 ---
 name: delimited-continuations
-description: PROACTIVELY simplifies complex control flow with delimited continuations and algebraic effects - AUTOMATICALLY ACTIVATES when seeing "callback hell", "nested promises", "await (await (await", "saveState", "resume later", "suspend execution", "complex async" - MUST BE USED when user says "callback pyramid", "control flow is complex", "pause and resume", "backtracking", "undo/redo"
+description: PROACTIVELY simplifies complex control flow with delimited continuations - AUTOMATICALLY ACTIVATES when seeing ".then(", ".catch(", "callback(", "=> {", "async function", "await await", "Promise", "setTimeout", "setInterval" - MUST BE USED when user says "callback hell", "async mess", "promise chain", "control flow", "suspend", "resume"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
 model: opus
 color: pink
