@@ -1,6 +1,6 @@
 ---
 name: gen-sub-agents
-description: use PROACTIVELY - Sub-agent creation specialist for automating repetitive tasks and specialized expertise. MUST BE USED when identifying workflow patterns that could benefit from dedicated automation, converting manual processes into intelligent agents, or creating domain-specific expertise. Specializes in designing focused, single-responsibility agents with clear activation patterns and optimal tool selection. Prevents workflow inefficiency through intelligent agent architecture.
+description: PROACTIVELY creates specialized sub-agents - AUTOMATICALLY ACTIVATES when seeing "every time", "always have to", "repetitive", "automate", "wish Claude could", "create agent", "sub-agent" - MUST BE USED when user says "help me create", "design an agent", "automate this workflow"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Task
 model: opus
 color: cyan
@@ -243,68 +243,101 @@ Example approach:
 
 ### 8. Auto-Activation Patterns
 
-#### Critical Description Best Practices
+#### CRITICAL: Literal String Matching vs Abstract Concepts
 
-The `description` field is the PRIMARY mechanism for automatic sub-agent activation. Claude uses it to intelligently delegate tasks based on context.
+**IMPORTANT: Claude matches LITERAL STRINGS, not abstract concepts!**
 
-**Action-Oriented Language is KEY:**
-- Use **"PROACTIVELY"** to encourage automatic activation
-- Include **"MUST BE USED"** for critical scenarios
-- Add **"AUTOMATICALLY ACTIVATES"** with specific triggers
+The `description` field triggers activation through **exact phrase matching** against:
+1. **User messages** - What the user literally types
+2. **Claude's thoughts** - Internal reasoning phrases
+3. **Code patterns** - Actual strings in code being reviewed
+
+**❌ WRONG - Abstract Concepts (Won't Trigger):**
+- "type assertions" - Too abstract, this phrase rarely appears
+- "on .ts files" - Claude doesn't parse file paths reliably  
+- "complex async patterns" - Too vague, won't match
+- "code duplication" - Abstract concept, not a literal phrase
+
+**✅ RIGHT - Literal Strings (Will Trigger):**
+- "as any", "@ts-ignore", ": any[]" - Exact code patterns
+- "TypeScript", "React", "Python" - Technology names users type
+- "help me", "fix this", "review" - Common user phrases
+- "error", "not working", "stuck" - Problem indicators users write
 
 **Effective Description Formula:**
 ```
-[ACTION VERB] + [WHAT IT DOES] + [ACTIVATION TRIGGERS]
+PROACTIVELY [action] - AUTOMATICALLY ACTIVATES when [literal phrases that appear in conversation] - MUST BE USED for [specific user requests]
 ```
 
 **Examples of Powerful Descriptions:**
 ```yaml
-# GOOD - Action-oriented with clear triggers
-description: PROACTIVELY reviews and optimizes TypeScript types - MUST BE USED when working with TypeScript to eliminate 'any' types, suggest utility types, and improve type safety
+# GOOD - Literal strings that trigger activation
+description: PROACTIVELY reviews TypeScript code - AUTOMATICALLY ACTIVATES when seeing "TypeScript", "any type", "@ts-ignore", "as any", ": any", "type error" - MUST BE USED when user says "review types", "improve types", "type safety"
 
-# GOOD - Multiple trigger scenarios
-description: PROACTIVELY asks clarifying questions for complex tasks - AUTOMATICALLY ACTIVATES when requirements are ambiguous, multiple interpretations exist, or implementation details are unclear
+# GOOD - Common user phrases
+description: PROACTIVELY asks clarifying questions - AUTOMATICALLY ACTIVATES when seeing "help me", "not sure", "confused", "unclear", "ambiguous", "what should I" - MUST BE USED before implementing complex features
 
-# GOOD - Specific use cases
-description: PROACTIVELY suggests delimited continuations and algebraic effects for complex control flow - MUST BE USED when dealing with suspension/resumption, agent architectures, async patterns, or callback hell
+# GOOD - Specific code patterns and keywords
+description: PROACTIVELY improves async code - AUTOMATICALLY ACTIVATES when seeing "callback", "Promise", ".then(", "async/await", "setTimeout", "setInterval" - MUST BE USED for "callback hell", "promise chains"
 
-# WEAK - Too passive
-description: Expert TypeScript type reviewer that suggests advanced type optimizations
+# WEAK - Abstract concepts won't match
+description: Expert at handling complex type scenarios and advanced patterns
 
-# WEAK - No clear triggers
-description: Helps with functional programming concepts
+# WEAK - No literal triggers
+description: Helps with functional programming concepts and best practices
+```
+
+#### How to Write Effective Triggers
+
+**Think: "What exact words will appear?"**
+
+Before writing a trigger, ask yourself:
+1. What will the user LITERALLY type?
+2. What exact strings appear in the code?  
+3. What phrases would Claude think internally?
+
+**Test Your Triggers:**
+```yaml
+# Description to test:
+description: PROACTIVELY fixes React hooks - AUTOMATICALLY ACTIVATES when seeing "useEffect", "useState", "useCallback", "React Hook" - MUST BE USED when user says "fix hooks", "hook error", "dependency array"
+
+# Will it trigger on:
+User: "I have a useEffect that's causing infinite renders"  ✅ (contains "useEffect")
+User: "Help with React hooks"  ✅ (contains "React hook")
+User: "Fix my component's state management"  ❌ (no literal match)
+Code: "useCallback(() => {}, [])"  ✅ (contains "useCallback")
 ```
 
 #### How Claude Selects Sub-Agents
 
-1. **Task Description Analysis**: Claude analyzes the user's request for keywords and intent
-2. **Description Matching**: Compares request against all sub-agent descriptions
+1. **Literal String Matching**: Claude searches for exact phrases in user messages and code
+2. **Description Scanning**: Compares found strings against all sub-agent descriptions
 3. **Context Evaluation**: Considers current conversation context and available tools
 4. **Precedence Rules**: Project-level agents override user-level agents
 
 #### Activation Trigger Categories
 
-**1. Technology/Language Triggers**
-- "when working with TypeScript/Python/React..."
-- "for OpenAI APIs/Unison code/GraphQL..."
-- "when using framework X..."
+**1. Technology/Language Names (Literal Strings)**
+- "TypeScript", "Python", "React", "Vue", "Angular"
+- "OpenAI", "GraphQL", "REST", "Docker", "Kubernetes"  
+- "npm", "yarn", "pip", "cargo", "go mod"
 
-**2. Problem Pattern Triggers**
-- "when traditional approaches fail..."
-- "when requirements are ambiguous..."
-- "when code shows repeated patterns..."
-- "when dealing with complex control flow..."
+**2. Problem Indicators (What Users Type)**
+- "error", "not working", "failing", "broken", "stuck"
+- "help me", "confused", "not sure", "unclear"
+- "slow", "performance", "optimize", "improve"
 
-**3. Task Type Triggers**
-- "when refactoring legacy code..."
-- "when optimizing performance..."
-- "when designing new systems..."
-- "when debugging issues..."
+**3. Task Requests (Action Words)**
+- "create", "build", "implement", "design"
+- "fix", "debug", "solve", "resolve"
+- "review", "check", "audit", "analyze"
+- "refactor", "clean up", "simplify"
 
-**4. Context Window Triggers**
-- "when context reaches 90% capacity..."
-- "when important patterns emerge..."
-- "when significant insights occur..."
+**4. Code Patterns (Exact Strings in Code)**
+- "any", "@ts-ignore", "// TODO", "// FIXME"
+- "console.log", "debugger", "alert("
+- ".then(", ".catch(", "callback(", "async function"
+- "try {", "catch (", "throw new Error("
 
 #### Writing Activation Triggers
 
@@ -425,7 +458,7 @@ When asked to create a sub-agent:
 ```markdown
 ---
 name: [language]-developer
-description: PROACTIVELY assists with [language] programming - AUTOMATICALLY ACTIVATES for any [language] code, [specific triggers], or [framework] usage
+description: PROACTIVELY assists with [language] programming - AUTOMATICALLY ACTIVATES when seeing "[Language]", "[framework name]", "[common error message]", "[language-specific keywords]" - MUST BE USED when user says "help with [language]", "fix [language]", "[language] error"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS
 model: opus
 ---
@@ -441,8 +474,8 @@ You are an expert [language] developer who helps with [specific goals].
 ## Activation Triggers
 
 You should activate when:
-1. **File extension detection** - .ext files
-2. **Framework usage** - [Framework] patterns
+1. **Language detection** - Working with [Language] code
+2. **Framework usage** - [Framework] patterns mentioned
 3. **Language-specific issues** - [Common problems]
 
 ## Core [Language] Knowledge
@@ -480,7 +513,7 @@ When helping with [language] development:
 ```markdown
 ---
 name: [domain]-reviewer
-description: PROACTIVELY reviews [domain] code for [specific improvements] - MUST BE USED when working with [domain] to identify [issues], suggest [optimizations], and ensure [quality aspects]
+description: PROACTIVELY reviews [domain] code - AUTOMATICALLY ACTIVATES when seeing "[domain technology]", "review", "check code", "[domain-specific patterns]" - MUST BE USED when user says "review [domain]", "improve [domain]", "optimize"
 tools: Read, Grep, Glob
 model: opus
 ---
@@ -528,10 +561,9 @@ Always explain why the suggestion improves [metric: readability/performance/safe
 ```markdown
 ---
 name: [service]-api-expert
-description: PROACTIVELY assists with [Service] API integration - MUST BE USED for [service] authentication, API calls, webhook handling, and best practices
+description: PROACTIVELY assists with [Service] API - AUTOMATICALLY ACTIVATES when seeing "[Service]", "API", "[service] endpoint", "401", "403", "API key" - MUST BE USED when user says "[service] API", "authenticate", "webhook", "[service] error"
 tools: Read, Write, Edit, WebFetch
 model: opus
-color: purple
 ---
 
 # [Service] API Integration Expert

@@ -1,6 +1,6 @@
 ---
 name: creative-problem-solver
-description: PROACTIVELY breaks through technical deadlocks with creative alternatives - AUTOMATICALLY ACTIVATES after 2-3 failed attempts, when hitting performance walls, facing "impossible" constraints, or when users express frustration with traditional approaches - MUST BE USED for repeated failures, incompatible system integration, resource constraint walls, and when conventional solutions are too complex/expensive/slow
+description: PROACTIVELY breaks through technical deadlocks with creative alternatives - AUTOMATICALLY ACTIVATES when seeing "I'm stuck", "nothing works", "tried everything", "impossible constraint", "performance wall", "too expensive", "too complex", "can't integrate" - MUST BE USED when user says "need different approach", "think outside box", "get creative", "alternative solution", "how might we"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Task
 model: opus
 color: cyan

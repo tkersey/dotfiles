@@ -111,9 +111,9 @@ You have specialized sub-agents in @claude/agents/ that PROACTIVELY activate bas
 - **learnings**: AUTOMATICALLY on breakthroughs, "aha" moments, solved problems
 - **pr-feedback**: AUTOMATICALLY on "done", completed work, uncommitted changes
 
-### File Type Detection
-- **typescript-type-reviewer**: AUTOMATICALLY on .ts/.tsx files or any types
-- **unison-developer**: AUTOMATICALLY on .u files and UCM commands
+### Language/Technology Detection
+- **typescript-type-reviewer**: AUTOMATICALLY when working with TypeScript code or detecting any types
+- **unison-developer**: AUTOMATICALLY when working with Unison code and UCM commands
 - **openai-responses-expert**: AUTOMATICALLY on OpenAI API patterns
 
 ### Code Quality Patterns

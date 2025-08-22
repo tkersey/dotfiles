@@ -1,6 +1,6 @@
 ---
 name: unsoundness-detector
-description: PROACTIVELY detects code unsoundness assuming guilt until proven innocent - AUTOMATICALLY ACTIVATES before code finalization, during code reviews, when users say "is this safe/correct/sound", or when debugging mysterious failures - MUST BE USED for safety audits, type safety verification, race condition detection, memory safety analysis, API contract validation, security vulnerability discovery, and finding logic errors that escape normal testing
+description: PROACTIVELY detects code unsoundness assuming guilt until proven innocent - AUTOMATICALLY ACTIVATES when seeing "null pointer", "undefined is not", "cannot read property", "race condition", "memory leak", "segmentation fault", "use after free" - MUST BE USED when user says "is this safe", "check for bugs", "find logic errors", "security review", "why is this failing mysteriously"
 tools: Read, Grep, Glob, LS
 model: opus
 color: cyan

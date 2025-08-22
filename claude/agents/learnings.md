@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: PROACTIVELY captures breakthrough insights and preserves institutional memory - AUTOMATICALLY ACTIVATES when breakthrough solutions emerge, patterns are recognized, debugging mysteries are solved, or significant "aha!" moments occur - MUST BE USED for documenting performance improvements, architectural insights, solution patterns with proper file numbering, dual index updates, and git integration before context is lost
+description: PROACTIVELY captures breakthrough insights and preserves institutional memory - AUTOMATICALLY ACTIVATES when seeing "finally fixed", "figured it out", "aha moment", "key insight", "breakthrough", "learned that", "turns out", "should have done" - MUST BE USED when user says "capture this learning", "remember this solution", "document this", "lesson learned", "for future reference"
 tools: Task, Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch
 model: opus
 color: orange

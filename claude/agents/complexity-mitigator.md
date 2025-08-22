@@ -1,6 +1,6 @@
 ---
 name: complexity-mitigator
-description: PROACTIVELY identifies and reduces unnecessary complexity - AUTOMATICALLY ACTIVATES when detecting nested conditionals >3 levels, functions >50 lines, boolean flags, state machines, or "getting complicated" - MUST BE USED for over-engineered code, premature abstractions, or high cognitive load patterns to find the right abstraction level without over-engineering
+description: PROACTIVELY identifies and reduces unnecessary complexity - AUTOMATICALLY ACTIVATES when seeing "if (if (if (", "else if (else if (", "function is 50+ lines", "getting complicated", "hard to follow", "too complex", "nested callbacks" - MUST BE USED when user says "this is getting messy", "too much duplication", "hard to maintain", "simplify this", "reduce complexity"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS
 color: cyan
 model: opus

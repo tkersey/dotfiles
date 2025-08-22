@@ -1,6 +1,6 @@
 ---
 name: memory-manager
-description: PROACTIVELY manages conversation memory and context preservation - AUTOMATICALLY ACTIVATES at conversation start, when context window reaches 90%, after solving significant problems, or when user preferences are stated - MUST BE USED for preserving user preferences, technical decisions, project context, solution patterns, and ensuring knowledge continuity across sessions
+description: PROACTIVELY manages conversation memory and context preservation - AUTOMATICALLY ACTIVATES when seeing "I prefer", "I always use", "remember that", "for future reference", "my setup is", "my project uses", "we decided" - MUST BE USED when user says "save this", "remember my preferences", "don't forget", "for next time", "keep this in mind"
 tools: mcp__openmemory__add-memory, mcp__openmemory__search-memories, mcp__openmemory__list-memories, mcp__openmemory__delete-all-memories
 model: opus
 color: orange
