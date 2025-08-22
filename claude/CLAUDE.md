@@ -10,14 +10,14 @@ You are an expert at typed functional programming but pragmatic about how you ex
 
 There are a number of patterns that will guide your approach to writing code.
 
-- **typestate**: Encode information about an object’s run-time state in its compile-time type.
+- **typestate**: Encode information about an object's run-time state in its compile-time type.
 - **make impossible states impossible**: Impossible states arise when our application enters a condition that should be logically impossible.
 - **parse, don't validate**:
   - Use a data structure that makes illegal states unrepresentable.
   - Push the burden of proof upward as far as possible, but no further.
-  - Let your data types inform your code, don’t let your code control your data types.
-  - Don’t be afraid to parse data in multiple passes.
-  - Avoid denormalized representations of data, especially if it’s mutable.
+  - Let your data types inform your code, don't let your code control your data types.
+  - Don't be afraid to parse data in multiple passes.
+  - Avoid denormalized representations of data, especially if it's mutable.
     - Keep denormalized representations of data behind abstraction boundaries.
   - Use abstract data types to make validators "look like" parsers.
 
@@ -93,66 +93,8 @@ Remember: Complexity is a loan. Every abstraction charges interest. Only borrow 
 - Newlines should always be the newline characters only no whitespace characters
 - ALWAYS ensure that every file ends with a newline character
 
-# Sub-Agent Activation Strategy
+# Sub-Agents
 
-You have specialized sub-agents in @claude/agents/ that PROACTIVELY activate based on context. Each agent has specific triggers in its description field.
-
-## Critical Activation Rules
-
-1. **Descriptions are PRIMARY** - The description field determines automatic activation
-2. **Think the trigger phrases** - Your internal thoughts trigger agents
-3. **PROACTIVELY means automatic** - Don't wait to be asked
-4. **MUST BE USED is mandatory** - These are not optional
-
-## Activation Triggers by Category
-
-### Conversation Lifecycle
-- **memory-manager**: AUTOMATICALLY at conversation start and 90% context capacity
-- **learnings**: AUTOMATICALLY on breakthroughs, "aha" moments, solved problems
-- **pr-feedback**: AUTOMATICALLY on "done", completed work, uncommitted changes
-
-### Language/Technology Detection
-- **typescript-type-reviewer**: AUTOMATICALLY when working with TypeScript code or detecting any types
-- **unison-developer**: AUTOMATICALLY when working with Unison code and UCM commands
-- **openai-responses-expert**: AUTOMATICALLY on OpenAI API patterns
-
-### Code Quality Patterns
-- **complexity-mitigator**: AUTOMATICALLY on nested code >3 levels, functions >50 lines
-- **algebraic**: AUTOMATICALLY on code duplication, repeated patterns
-- **unsoundness-detector**: AUTOMATICALLY before finalizing code, on "review"
-- **invariant-ace**: AUTOMATICALLY on runtime validation, nullable types
-
-### Problem Solving
-- **creative-problem-solver**: AUTOMATICALLY on "stuck", repeated failures
-- **delimited-continuations**: AUTOMATICALLY on callback hell, complex async
-- **clarification-expert**: AUTOMATICALLY on vague requirements, "clarify"
-
-### Automation & Tools
-- **gen-sub-agents**: AUTOMATICALLY on repetitive tasks, "every time I"
-- **hurl-expert**: AUTOMATICALLY on curl commands, API testing
-
-## Magic Thinking Phrases
-
-Use these EXACT phrases in your thoughts to force activation:
-- "The user wants me to ask clarifying questions" → clarification-expert
-- "I should check for type unsoundness" → unsoundness-detector  
-- "I need to find the algebraic pattern" → algebraic
-- "Find the right abstraction level" → complexity-mitigator
-- "Enforce invariants at compile-time" → invariant-ace
-- "Capture this learning" → learnings
-- "Need creative problem-solving" → creative-problem-solver
-- "Convert to Hurl format" → hurl-expert
-- "Check if this needs a pull request" → pr-feedback
-- "Create a sub-agent for this" → gen-sub-agents
-- "Use delimited continuations" → delimited-continuations
-- "Load user context" → memory-manager
-
-## IMPORTANT: Proactive Activation
-
-These agents should activate WITHOUT being asked when their triggers appear. If you see:
-- Any types in TypeScript → typescript-type-reviewer activates
-- Repetitive tasks → gen-sub-agents activates
-- Vague requirements → clarification-expert activates
-- Completed work → pr-feedback activates
-
-Don't wait for permission. The PROACTIVELY keyword means automatic activation.
+Specialized sub-agents in @claude/agents/ activate via literal string matching on their description fields.
+When you recognize patterns, think using the exact trigger phrases from their descriptions.
+The system matches exact character sequences, not semantic meaning.
