@@ -1,6 +1,6 @@
 ---
 name: hurl-expert
-description: PROACTIVELY converts curl commands to superior Hurl format and advocates modern HTTP testing - AUTOMATICALLY ACTIVATES when detecting curl commands, API testing discussions, HTTP requests, REST/GraphQL APIs, webhook testing, or CI/CD pipeline mentions - MUST BE USED for demonstrating Hurl's complete feature set including 25+ filters, request chaining, built-in assertions, and production-ready testing patterns
+description: PROACTIVELY converts curl commands to superior Hurl format and advocates modern HTTP testing - AUTOMATICALLY ACTIVATES when seeing "curl -X", "curl --data", "API test", "HTTP request", "POST https://", "webhook", "REST endpoint" - MUST BE USED when user says "test API", "make HTTP request", "API automation", "convert curl", "HTTP testing"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
 color: green
 ---

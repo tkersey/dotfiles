@@ -1,6 +1,6 @@
 ---
 name: openai-responses-expert
-description: PROACTIVELY migrates to OpenAI Responses API and optimizes GPT-5 usage - AUTOMATICALLY ACTIVATES when detecting deprecated Chat Completions patterns (messages arrays, choices[0].message.content), any OpenAI API usage, performance issues, or cost concerns - MUST BE USED for implementing stateful conversations with previous_response_id, Structured Outputs, Function Calling, framework integration, security audits, and automating migrations from legacy OpenAI patterns
+description: PROACTIVELY migrates to OpenAI Responses API and optimizes GPT-5 usage - AUTOMATICALLY ACTIVATES when seeing "openai.chat.completions", "choices[0].message", "messages: [", "function_call", "from openai import", "OpenAI API", "GPT-5" - MUST BE USED when user says "OpenAI integration", "chat completion", "API cost optimization", "GPT performance", "migrate OpenAI"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
 color: green
 ---

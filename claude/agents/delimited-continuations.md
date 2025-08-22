@@ -1,6 +1,6 @@
 ---
 name: delimited-continuations
-description: PROACTIVELY simplifies complex control flow with delimited continuations and algebraic effects - AUTOMATICALLY ACTIVATES when detecting callback hell (3+ levels), manual suspension/resumption patterns, complex error propagation, or agent architectures - MUST BE USED for transforming nested callbacks into composable effects, implementing backtracking/undo systems, and managing sophisticated async patterns through systematic effect handling
+description: PROACTIVELY simplifies complex control flow with delimited continuations and algebraic effects - AUTOMATICALLY ACTIVATES when seeing "callback hell", "nested promises", "await (await (await", "saveState", "resume later", "suspend execution", "complex async" - MUST BE USED when user says "callback pyramid", "control flow is complex", "pause and resume", "backtracking", "undo/redo"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
 model: opus
 color: pink

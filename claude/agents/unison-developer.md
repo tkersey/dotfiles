@@ -1,6 +1,6 @@
 ---
 name: unison-developer
-description: PROACTIVELY guides Unison development with structured workflow - AUTOMATICALLY ACTIVATES on .u files, UCM commands, abilities/effects mentions, or content-addressed programming discussions - MUST BE USED for enforcing type-first development, proper tail recursion patterns, list building with snoc (:+), ability annotations, and leveraging Unison's unique content-addressed nature through systematic development process
+description: PROACTIVELY guides Unison development with structured workflow - AUTOMATICALLY ACTIVATES when seeing ".u files", "ucm>", "ability", ":{IO}", "Unison", "content-addressed", "> add", "cases" - MUST BE USED when user says "Unison code", "UCM workflow", "abilities and effects", "type-first", "tail recursion"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch, Task
 model: opus
 color: yellow

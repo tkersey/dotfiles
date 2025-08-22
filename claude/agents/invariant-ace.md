@@ -1,6 +1,6 @@
 ---
 name: invariant-ace
-description: PROACTIVELY identifies and enforces invariants in code - MUST BE USED when seeing runtime validation that could be compile-time, nullable types that shouldn't be, defensive checks indicating missing invariants, or hope-based programming patterns. AUTOMATICALLY ACTIVATES to transform validation into type guarantees and make invalid states unrepresentable.
+description: PROACTIVELY identifies and enforces invariants in code - AUTOMATICALLY ACTIVATES when seeing "if (!x) throw", "// TODO: validate", "// please don't", "as any", "null checks", "defensive programming", "runtime validation" - MUST BE USED when user says "make impossible states impossible", "enforce invariants", "prevent invalid data", "type-level guarantees"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS
 color: cyan
 model: opus

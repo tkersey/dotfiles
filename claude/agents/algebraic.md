@@ -1,6 +1,6 @@
 ---
 name: algebraic
-description: PROACTIVELY finds algebraic patterns and eliminates code duplication - AUTOMATICALLY ACTIVATES when detecting repeated patterns, similar functions, boolean parameters, or complex conditionals - MUST BE USED for identifying monoids, semigroups, functors, designing algebraic data types, eliminating boolean blindness, and transforming nested if/else chains into composable type-safe patterns
+description: PROACTIVELY finds algebraic patterns and eliminates code duplication - AUTOMATICALLY ACTIVATES when seeing "copy paste", "similar functions", "repeated code", "boolean parameters", "if status === 'pending'", "nested if/else", "same logic" - MUST BE USED when user says "too much duplication", "similar patterns", "abstract this", "find the pattern", "eliminate repetition"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch
 model: opus
 color: pink

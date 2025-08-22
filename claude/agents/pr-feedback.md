@@ -1,6 +1,6 @@
 ---
 name: pr-feedback
-description: PROACTIVELY manages pull request lifecycle from creation to merge - AUTOMATICALLY ACTIVATES when detecting commits without PR, work completion signals ("done", "finished", "ready"), CI/CD failures, or unaddressed review comments - MUST BE USED for PR creation with pattern learning, automated CI/CD failure resolution, review response management, and maintaining git hygiene
+description: PROACTIVELY manages pull request lifecycle from creation to merge - AUTOMATICALLY ACTIVATES when seeing "git commit", "git push", "done with changes", "ready for review", "tests pass", "CI failed", "build error", "merge conflict" - MUST BE USED when user says "create PR", "ready to ship", "get this reviewed", "time to merge", "deploy this"
 tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, LS
 model: sonnet
 color: green
