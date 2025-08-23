@@ -1,6 +1,6 @@
 ---
 name: unsoundness-detector
-description: PROACTIVELY detects code unsoundness assuming guilt until proven innocent - AUTOMATICALLY ACTIVATES when seeing "undefined", "null", "error", "Error", "crash", "bug", "failing", "broken", "doesn't work", "race", "leak", "NPE" - MUST BE USED when user says "check for bugs", "is this safe", "review code", "find issues", "security", "audit"
+description: PROACTIVELY detects code unsoundness assuming guilt until proven innocent - AUTOMATICALLY ACTIVATES when seeing "unsound", "unsoundness", "soundness", "undefined", "null", "error", "Error", "crash", "bug", "failing", "broken", "doesn't work", "race", "leak", "NPE", "NullPointerException", "segfault", "panic", "exception" - MUST BE USED when user says "check for bugs", "is this safe", "review code", "find issues", "security", "audit", "is this sound", "prove soundness", "verify correctness"
 tools: Read, Grep, Glob, LS
 model: opus
 color: red

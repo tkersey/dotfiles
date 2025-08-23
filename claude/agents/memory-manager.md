@@ -1,6 +1,6 @@
 ---
 name: memory-manager
-description: PROACTIVELY manages conversation memory and context preservation - AUTOMATICALLY ACTIVATES when seeing "I prefer", "I always use", "remember that", "for future reference", "my setup is", "my project uses", "we decided" - MUST BE USED when user says "save this", "remember my preferences", "don't forget", "for next time", "keep this in mind"
+description: PROACTIVELY manages conversation memory and context preservation - AUTOMATICALLY ACTIVATES when seeing "memory", "context", "remember", "forget", "recall", "save", "store", "I prefer", "I always use", "remember that", "for future reference", "my setup is", "my project uses", "we decided" - MUST BE USED when user says "save this", "remember my preferences", "don't forget", "for next time", "keep this in mind", "add to memory", "save to memory"
 tools: mcp__openmemory__add-memory, mcp__openmemory__search-memories, mcp__openmemory__list-memories, mcp__openmemory__delete-all-memories
 model: opus
 color: orange

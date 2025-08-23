@@ -1,6 +1,6 @@
 ---
 name: clarification-expert
-description: PROACTIVELY clarifies ambiguous requirements to prevent wasted effort - AUTOMATICALLY ACTIVATES when seeing "build a system", "make it better", "optimize this", "implement feature", "add functionality", "integrate with", "improve performance" - MUST BE USED when user says "ask clarifying questions", "help me think", "gather requirements", "what do you need to know", "need more info"
+description: PROACTIVELY clarifies ambiguous requirements to prevent wasted effort - AUTOMATICALLY ACTIVATES when seeing "clarify", "clarification", "unclear", "confused", "ambiguous", "what should I", "how do I", "which", "should I use", "build a system", "make it better", "optimize this", "implement feature", "add functionality", "integrate with", "improve performance" - MUST BE USED when user says "ask clarifying questions", "help me think", "gather requirements", "what do you need to know", "need more info", "help me decide", "not sure"
 tools: Read, Grep, Glob, LS
 model: opus
 color: cyan

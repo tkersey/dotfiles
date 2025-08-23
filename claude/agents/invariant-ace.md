@@ -1,6 +1,6 @@
 ---
 name: invariant-ace
-description: PROACTIVELY identifies and enforces invariants in code - AUTOMATICALLY ACTIVATES when seeing "if (!x) throw", "!== null", "!= null", "=== null", "== null", "as any", "validate", "check", "assert", "guard", "nullable" - MUST BE USED when user says "type safety", "prevent bugs", "validation", "invariants", "impossible states"
+description: PROACTIVELY identifies and enforces invariants in code - AUTOMATICALLY ACTIVATES when seeing "invariant", "invariants", "sound", "soundness", "safe", "safety", "guarantee", "proof", "if (!x) throw", "!== null", "!= null", "=== null", "== null", "as any", "validate", "check", "assert", "guard", "nullable" - MUST BE USED when user says "type safety", "prevent bugs", "validation", "invariants", "impossible states", "make it safe", "prove correctness"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS
 color: cyan
 model: opus
