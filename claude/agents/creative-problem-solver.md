@@ -1,6 +1,6 @@
 ---
 name: creative-problem-solver
-description: PROACTIVELY breaks through technical deadlocks with creative alternatives - AUTOMATICALLY ACTIVATES when seeing "I'm stuck", "nothing works", "tried everything", "impossible constraint", "performance wall", "too expensive", "too complex", "can't integrate" - MUST BE USED when user says "need different approach", "think outside box", "get creative", "alternative solution", "how might we"
+description: PROACTIVELY breaks through technical deadlocks with creative alternatives - AUTOMATICALLY ACTIVATES when seeing "creative", "creativity", "brainstorm", "alternative", "out of the box", "unconventional", "innovative", "innovation", "I'm stuck", "nothing works", "tried everything", "impossible constraint", "performance wall", "too expensive", "too complex", "can't integrate" - MUST BE USED when user says "need different approach", "think outside box", "get creative", "alternative solution", "how might we", "brainstorm ideas", "what else could we try"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Task
 model: opus
 color: cyan

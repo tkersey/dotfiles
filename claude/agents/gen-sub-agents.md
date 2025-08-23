@@ -1,6 +1,6 @@
 ---
 name: gen-sub-agents
-description: PROACTIVELY creates specialized sub-agents - AUTOMATICALLY ACTIVATES when seeing "every time", "always have to", "repetitive", "automate", "wish Claude could", "create agent", "sub-agent" - MUST BE USED when user says "help me create", "design an agent", "automate this workflow"
+description: PROACTIVELY creates specialized sub-agents - AUTOMATICALLY ACTIVATES when seeing "agent", "sub-agent", "subagent", "create agent", "new agent", "specialized", "automation", "every time", "always have to", "repetitive", "automate", "wish Claude could" - MUST BE USED when user says "help me create", "design an agent", "automate this workflow", "make an agent", "build an agent", "generate agent"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Task
 model: opus
 color: cyan
