@@ -46,14 +46,25 @@ You should activate when:
 
 ### Codex Command Details
 
-The codex command runs:
+Two commands available:
+
+**Full Codex (GPT-5)**:
 ```bash
 command codex -m gpt-5 -c model_reasoning_effort="high" --yolo
 ```
-
 - Model: GPT-5 (most advanced reasoning)
 - Reasoning effort: HIGH (maximum depth)
 - Mode: YOLO (accepts prompts directly)
+- Use for: Complex proofs, deep theoretical analysis
+
+**Codex Mini (GPT-5-mini)**:
+```bash
+command codex-mini -m gpt-5-mini -c model_reasoning_effort="high" --yolo
+```
+- Model: GPT-5-mini (efficient reasoning)
+- Reasoning effort: HIGH (maximum depth)
+- Mode: YOLO (accepts prompts directly)
+- Use for: Faster responses, simpler verifications, quick checks
 
 ### Effective Prompt Engineering for Codex
 
@@ -114,9 +125,16 @@ Create a focused, well-structured prompt for codex:
 
 ### Step 3: Execute Codex
 
-Run the codex command with the prepared prompt:
+Choose appropriate model based on complexity:
+
+**For complex problems (use codex/GPT-5)**:
 ```bash
 echo "[PROMPT]" | codex
+```
+
+**For simpler verification (use codex-mini/GPT-5-mini)**:
+```bash
+echo "[PROMPT]" | codex-mini
 ```
 
 Or for multi-line prompts, use a temporary file:
@@ -124,7 +142,7 @@ Or for multi-line prompts, use a temporary file:
 cat > /tmp/codex_prompt.txt << 'EOF'
 [Multi-line prompt content]
 EOF
-codex < /tmp/codex_prompt.txt
+codex < /tmp/codex_prompt.txt  # or codex-mini for faster response
 ```
 
 ### Step 4: Process Response
@@ -338,20 +356,23 @@ When presenting results:
 
 ### Common Delegation Commands
 ```bash
-# Quick proof
+# Quick proof (use GPT-5 for complex proofs)
 echo "Prove: [statement]" | codex
 
-# Complexity analysis
-echo "Analyze complexity: [algorithm]" | codex
+# Complexity analysis (GPT-5-mini often sufficient)
+echo "Analyze complexity: [algorithm]" | codex-mini
 
-# Verification
-echo "Verify: [solution]" | codex
+# Verification (GPT-5-mini for quick checks)
+echo "Verify: [solution]" | codex-mini
 
-# Second opinion
+# Second opinion (GPT-5 for thorough review)
 echo "Review this approach: [description]" | codex
 
-# Formal specification
+# Formal specification (GPT-5 for rigorous specs)
 echo "Formalize: [informal description]" | codex
+
+# Quick sanity check (GPT-5-mini)
+echo "Check: [simple assertion]" | codex-mini
 ```
 
 ### Prompt Starters
@@ -363,15 +384,32 @@ echo "Formalize: [informal description]" | codex
 - "Derive the closed-form solution for..."
 - "Show that this algorithm is optimal..."
 
+## Model Selection Guide
+
+**Use GPT-5 (codex) for:**
+- Complex mathematical proofs
+- Deep theoretical CS problems  
+- Multi-step formal reasoning
+- Critical correctness verification
+- Novel problem solving
+
+**Use GPT-5-mini (codex-mini) for:**
+- Quick verification checks
+- Simple complexity analysis
+- Straightforward proofs
+- Sanity checks
+- Rapid iteration/exploration
+
 ## Key Reminders
 
-1. **Codex excels at formal reasoning** - Use for proofs and theoretical analysis
-2. **High reasoning effort takes time** - Set appropriate timeouts
-3. **Combine with Claude** - Best results from both perspectives
-4. **Save important results** - Archive significant proofs and analyses
-5. **Iterate on prompts** - Refine for better results
-6. **Be specific** - Vague prompts yield vague results
-7. **Include context** - Definitions and assumptions matter
-8. **Request step-by-step** - For transparency and verification
-9. **Handle errors gracefully** - Always have a fallback plan
-10. **Document insights** - Build knowledge base over time
+1. **Choose the right model** - GPT-5 for depth, GPT-5-mini for speed
+2. **Codex excels at formal reasoning** - Use for proofs and theoretical analysis
+3. **High reasoning effort takes time** - Set appropriate timeouts
+4. **Combine with Claude** - Best results from both perspectives
+5. **Save important results** - Archive significant proofs and analyses
+6. **Iterate on prompts** - Refine for better results
+7. **Be specific** - Vague prompts yield vague results
+8. **Include context** - Definitions and assumptions matter
+9. **Request step-by-step** - For transparency and verification
+10. **Handle errors gracefully** - Always have a fallback plan
+11. **Document insights** - Build knowledge base over time
