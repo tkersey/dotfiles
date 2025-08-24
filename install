@@ -6,20 +6,15 @@ DOTFILES_ROOT="$(pwd)"
 LINKS_CONF="$DOTFILES_ROOT/links.conf"
 
 # Default flags
-DO_DOTFILES=false
-DO_SYMLINK_FILES=false
+DO_SYMLINK=false
 DO_HOMEBREW=false
 DO_ALL=true
 
 # Process command line arguments
 while [ $# -gt 0 ]; do
   case "$1" in
-    --dotfiles)
-      DO_DOTFILES=true
-      DO_ALL=false
-      ;;
-    --symlink-files)
-      DO_SYMLINK_FILES=true
+    --symlink)
+      DO_SYMLINK=true
       DO_ALL=false
       ;;
     --homebrew)
@@ -29,10 +24,9 @@ while [ $# -gt 0 ]; do
     --help)
       echo "Usage: $0 [options]"
       echo "Options:"
-      echo "  --dotfiles       Process .symlink files"
-      echo "  --symlink-files  Process custom symlinks from links.conf"
-      echo "  --homebrew       Run homebrew installation/update"
-      echo "  --help           Show this help message"
+      echo "  --symlink   Create symlinks from links.conf"
+      echo "  --homebrew  Run homebrew installation/update"
+      echo "  --help      Show this help message"
       echo ""
       echo "If no options are specified, all tasks will be run."
       echo "If any options are specified, only those tasks will be run."
@@ -49,8 +43,7 @@ done
 
 # If no specific flags were set, do everything
 if [ "$DO_ALL" = true ]; then
-  DO_DOTFILES=true
-  DO_SYMLINK_FILES=true
+  DO_SYMLINK=true
   DO_HOMEBREW=true
 fi
 
@@ -59,7 +52,7 @@ set -e
 echo ''
 
 info () {
-  printf "  [ \033[00;34m..\033[0m ] $1"
+  printf "  [ \033[00;34m..\033[0m ] $1\n"
 }
 
 user () {
@@ -92,88 +85,16 @@ install_homebrew() {
 	fi
 }
 
-install_dotfiles () {
-  info 'installing dotfiles'
-
-  overwrite_all=false
-  backup_all=false
-  skip_all=false
-
-  for source in $(find "$DOTFILES_ROOT" -maxdepth 3 -name \*.symlink)
-  do
-    source_path=${source#"${DOTFILES_ROOT}/"}
-    echo "$source_path"
-    dest="$HOME/.${source_path%.*}"
-    echo "$dest"
-
-    if [ -f "$dest" ] || [ -d "$dest" ]
-    then
-
-      overwrite=false
-      backup=false
-      skip=false
-
-      if [ "$overwrite_all" = "false" ] && [ "$backup_all" = "false" ] && [ "$skip_all" = "false" ]
-      then
-        user "File already exists: ${dest}, what do you want to do? [s]kip, [S]kip all, [o]verwrite, [O]verwrite all, [b]ackup, [B]ackup all?"
-        if [ -t 0 ]; then
-          read -r action
-        else
-          read -r action < /dev/tty
-        fi
-        echo ''
-
-        case "$action" in
-          o )
-            overwrite=true;;
-          O )
-            overwrite_all=true;;
-          b )
-            backup=true;;
-          B )
-            backup_all=true;;
-          s )
-            skip=true;;
-          S )
-            skip_all=true;;
-          * )
-            ;;
-        esac
-      fi
-
-      if [ "$overwrite" = "true" ] || [ "$overwrite_all" = "true" ]
-      then
-        rm -rf "$dest"
-        success "removed $dest"
-      fi
-
-      if [ "$backup" = "true" ] || [ "$backup_all" = "true" ]
-      then
-        mv "$dest" "$dest"\.backup
-        success "moved $dest to $dest.backup"
-      fi
-
-      if [ "$skip" = "false" ] && [ "$skip_all" = "false" ]
-      then
-        setup_files "$source" "$dest" "$source_path"
-      else
-        success "skipped $dest"
-      fi
-
-    else
-      setup_files "$source" "$dest" "$source_path"
-    fi
-
-  done
-}
-
 symlink_files() {
-  info 'symlinking files and directories from links.conf'
+  info 'creating symlinks from links.conf'
 
   if [ ! -f "$LINKS_CONF" ]; then
-    info "no custom links configuration found, skipping"
+    fail "links.conf not found at $LINKS_CONF"
     return
   fi
+
+  overwrite_all=false
+  skip_all=false
 
   # Read each line from links.conf
   while IFS= read -r line || [ -n "$line" ]; do
@@ -205,33 +126,50 @@ symlink_files() {
       continue
     fi
 
-
     if [ -f "$dest_path" ] || [ -d "$dest_path" ] || [ -L "$dest_path" ]; then
-      # Handle existing files with simple skip/overwrite prompt
+      # Handle existing files
       overwrite=false
       skip=false
 
-      user "Already exists: ${dest_path}, what do you want to do? [s]kip or [o]verwrite?"
-      if [ -t 0 ]; then
-        read -r action
-      else
-        read -r action < /dev/tty
+      if [ "$overwrite_all" = "false" ] && [ "$skip_all" = "false" ]; then
+        user "Already exists: ${dest_path}, what do you want to do? [s]kip, [S]kip all, [o]verwrite, [O]verwrite all?"
+        if [ -t 0 ]; then
+          read -r action
+        else
+          read -r action < /dev/tty
+        fi
+
+        case "$action" in
+          o )
+            overwrite=true;;
+          O )
+            overwrite_all=true;;
+          s )
+            skip=true;;
+          S )
+            skip_all=true;;
+          * )
+            skip=true;;  # Default to skip
+        esac
       fi
-      echo ''
 
-      case "$action" in
-        o|O )
-          overwrite=true;;
-        s|S|* )
-          skip=true;;  # Default to skip for any other input
-      esac
-
-      if [ "$overwrite" = "true" ]; then
+      if [ "$overwrite" = "true" ] || [ "$overwrite_all" = "true" ]; then
         rm -rf "$dest_path"
         success "removed $dest_path"
+        if [ "$overwrite_all" = "false" ]; then
+          echo ''
+        fi
+        setup_files "$source" "$dest_path"
+        if [ "$overwrite_all" = "false" ]; then
+          echo ''
+        fi
+      elif [ "$skip" = "false" ] && [ "$skip_all" = "false" ]; then
         setup_files "$source" "$dest_path"
       else
         success "skipped $dest_path"
+        if [ "$skip_all" = "false" ]; then
+          echo ''
+        fi
       fi
     else
       setup_files "$source" "$dest_path"
@@ -239,22 +177,17 @@ symlink_files() {
   done < "$LINKS_CONF"
 }
 
-
 # Run installations based on flags
 if [ "$DO_HOMEBREW" = true ]; then
   install_homebrew
   brew bundle
 fi
 
-if [ "$DO_DOTFILES" = true ]; then
-  install_dotfiles
-fi
-
-if [ "$DO_SYMLINK_FILES" = true ]; then
+if [ "$DO_SYMLINK" = true ]; then
   symlink_files
 fi
 
-# If we are on a mac, lets install and setup homebrew
+# If we are on a mac, lets install and setup homebrew dependencies
 if [ "$(uname -s)" == "Darwin" ] && [ "$DO_HOMEBREW" = true ]
 then
   info "installing dependencies"
