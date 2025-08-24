@@ -44,6 +44,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "/Users/tk/.dotfiles/claude/statusline.py"
+    "command": "/Users/tk/.dotfiles/claude/statusline.py",
+    "maxLength": 160
   }
 }

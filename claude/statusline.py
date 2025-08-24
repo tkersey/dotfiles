@@ -163,7 +163,7 @@ def main():
     cost_display = format_cost(session_cost)
     
     # Build status line
-    console = Console(stderr=False, force_terminal=True, legacy_windows=False)
+    console = Console(stderr=False, force_terminal=True, legacy_windows=False, width=160)
     status = Text()
     
     # Folder
