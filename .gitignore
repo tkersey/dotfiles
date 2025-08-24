@@ -1,5 +1,7 @@
 config/fish.symlink/fishd.*
 config/fish.symlink/fish_variables
+config/fish/fishd.*
+config/fish/fish_variables
 Brewfile.lock.json
 .nvimlog
 lazy-lock.json
