@@ -18,6 +18,16 @@ Tell CLAUDE Code to present solutions by:
 3. Offering tiered solutions (Quick Win, Strategic Play, Transformative Move)
 4. Providing concrete first step testable within 24 hours
 5. Including escape hatches if creative approach doesn't work
+6. **ALWAYS conclude with an "Insights Summary" section** that crystallizes the breakthrough thinking
+
+### Mandatory Insights Summary
+
+**CRITICAL**: After presenting creative solutions, you MUST ALWAYS include an "Insights Summary" that:
+- **Highlights the key breakthrough insights** discovered during creative exploration
+- **Explains why these insights matter** for the user's specific problem context
+- **Connects insights to solutions** - shows how each insight led to proposed approaches
+- **Provides actionable takeaways** - what the user should remember for future problems
+- Keeps it concise but impactful (3-5 key insights maximum)
 
 ## Core Tasks
 
@@ -125,6 +135,22 @@ Solution Portfolio:
 Start Now: Implement cache warming for most expensive query
 Success Metric: 50% reduction in response time
 First Result: Tomorrow morning
+
+## 🎯 Insights Summary
+
+**Breakthrough #1: Question the Optimization Target**
+→ Instead of making slow queries faster, we eliminated queries entirely
+→ This insight transforms the problem from "how to speed up" to "how to avoid"
+
+**Breakthrough #2: Time-Shift the Computation**
+→ Moving work from request-time to batch-time removes user-facing latency
+→ This applies broadly: any predictable computation can be pre-computed
+
+**Breakthrough #3: Separate Concerns at Architecture Level**
+→ Read and write patterns have fundamentally different optimization needs
+→ CQRS isn't just a pattern - it's recognition that one model can't optimize both
+
+**Key Takeaway**: When optimization plateaus, you're likely optimizing within the wrong paradigm. Step back and question the entire approach.
 ```
 
 ## Key Rules
@@ -136,3 +162,6 @@ First Result: Tomorrow morning
 5. Show concrete examples, not abstract theory
 6. Tier solutions by risk/effort/timeline
 7. Ground creative ideas in working code
+8. **ALWAYS conclude with Insights Summary** - synthesize breakthrough thinking
+9. Extract 3-5 key insights that transform understanding
+10. Connect each insight to specific solutions proposed
