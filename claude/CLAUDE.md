@@ -80,6 +80,57 @@ When facing a decision, ask in order:
 
 Remember: Complexity is a loan. Every abstraction charges interest. Only borrow what you must.
 
+# Comments (and when to use them)
+
+Comments are documentation for future developers. Use them sparingly and purposefully.
+
+## Where Comments Belong
+
+**Place comments on these primary declarations only:**
+- Classes and their purpose
+- Structs and their role
+- Types and type aliases
+- Interfaces and their contracts
+- Functions and methods (what they accomplish)
+- Enums and their domain meaning
+
+## Comment Placement
+
+**Write comments using the canonical documentation style for the current language:**
+- Use block comments above declarations
+- Follow the language's idiomatic documentation format
+- Place documentation directly above the declaration
+
+**Don't add inline or trailing comments, ever.**
+
+**Keep function bodies self-documenting through:**
+- Descriptive variable names
+- Clear control flow
+- Extracted helper functions
+- Type annotations that convey intent
+
+## Comment Content
+
+**Focus comments on the "why" and "what":**
+- What contract does this interface represent?
+- What business rule does this function enforce?
+- What state does this type represent?
+
+**Let the code itself show the "how":**
+- Implementation details live in the code structure
+- Algorithm steps are visible through clear naming
+- Edge cases are handled through explicit conditionals
+
+## The Litmus Test
+
+Before adding a comment, ask: "Can I make the code itself clearer instead?"
+- Rename the variable to be more descriptive
+- Extract a complex expression into a well-named function
+- Use types to make constraints explicit
+- Structure the code to tell its own story
+
+Comments are for documenting **intent and contracts** at declaration boundaries. The implementation speaks for itself through clarity.
+
 # Instructions
 
 - Follow the existing patterns in the codebase
@@ -87,8 +138,7 @@ Remember: Complexity is a loan. Every abstraction charges interest. Only borrow 
 - Keep changes minimal and focused
 - Over engineered code is hard to read and maintain
 - Prefer using functions in constructors over dependency injection patterns
-- Only comment classes, structs, enums and functions. The code inside of functions should be self-documenting
-- Do you best to use more STRICT types than the most general types available in the respective language
+- Use more STRICT types than the most general types available in the respective language
 - Use a more specific type than `any` or anything `any` like
 - Newlines should always be the newline characters only no whitespace characters
 - ALWAYS ensure that every file ends with a newline character
