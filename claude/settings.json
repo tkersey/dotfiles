@@ -10,6 +10,9 @@
       "Bash(gh run view:*)",
       "Edit",
       "Edit(*)",
+      "Glob",
+      "Grep",
+      "LS",
       "mcp__openmemory__add-memory",
       "mcp__openmemory__list-memories",
       "mcp__openmemory__search-memories",
@@ -24,11 +27,8 @@
       "mcp__Playwright__browser_type",
       "mcp__Playwright__browser_wait_for",
       "MultiEdit",
-      "MutliEdit(*)",
       "Read",
       "Read(*)",
-      "Update",
-      "Update(*)",
       "WebFetch",
       "WebFetch(*)",
       "WebSearch",
@@ -48,3 +48,4 @@
     "maxLength": 160
   }
 }
+
