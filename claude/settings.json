@@ -8,6 +8,7 @@
       "Bash(gh pr view:*)",
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
+      "Bash(npx mocha:*)",
       "Edit",
       "Edit(*)",
       "Glob",
@@ -48,4 +49,3 @@
     "maxLength": 160
   }
 }
-
