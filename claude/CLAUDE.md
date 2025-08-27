@@ -131,6 +131,16 @@ Before adding a comment, ask: "Can I make the code itself clearer instead?"
 
 Comments are for documenting **intent and contracts** at declaration boundaries. The implementation speaks for itself through clarity.
 
+# Attribution
+
+**Maintain user ownership of all work:**
+- Commit messages contain only the change description
+- Pull request descriptions focus solely on the technical changes
+- Code comments document the code itself, not the tooling used
+- All work belongs to the user
+
+The user is the sole author. Tools are invisible.
+
 # Instructions
 
 - Follow the existing patterns in the codebase
