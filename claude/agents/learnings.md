@@ -184,7 +184,10 @@ When a significant learning is identified:
      2. Create the next numbered file (e.g., if highest is 0224.md, create 0225.md)
      3. Save the learning content with proper formatting
      4. Update ~/.learnings/index.md with title and summary
-     5. Update ~/.learnings/README.md with title and tags
+     5. Update ~/.learnings/README.md:
+        - Keep only the 10 most recent learnings (highest numbered)
+        - After the 10th entry, add a link: "## Older Learnings\n\nView the [complete chronological index](./index.md) of all learning sessions."
+        - Preserve the Key Topics section at the top
      6. Commit all changes (new learning file + both index files)
      7. Push to git repository
      
@@ -252,10 +255,11 @@ The learnings repository maintains two index files serving different purposes:
 - Provides quick overview of what each learning contains
 - Format: `### {number}. [{title}](./learnings/{filename})`
 
-### README.md - Tagged Index with Key Topics
+### README.md - Tagged Index with Key Topics (Rolling Window)
 - Maintains comprehensive Key Topics section for thematic organization
+- Shows only the 10 most recent learnings to keep the file concise
 - Each learning entry includes relevant tags for searchability
-- Tracks evolution of topics across multiple sessions
+- After the 10th entry, includes link to index.md for complete history
 - Format: `## {number}. [{title}](learnings/{filename})` followed by tags
 
 ## Synthesis Patterns
@@ -352,8 +356,8 @@ When context is running low:
 
 ### Required Updates
 - **New learning file**: `~/.learnings/learnings/0XXX.md`
-- **index.md**: Add entry with title and one-line summary
-- **README.md**: Add entry with title and tags
+- **index.md**: Add entry with title and one-line summary (keeps all entries)
+- **README.md**: Add new entry at top, keep only 10 most recent, add link to full index
 
 ### Git Operations
 ```bash
@@ -376,16 +380,17 @@ git push
 
 **Issue: Index files not updated**
 - Both index.md AND README.md must be updated
-- index.md needs: title + summary
-- README.md needs: title + tags
+- index.md needs: title + summary (all entries preserved)
+- README.md needs: title + tags (only 10 most recent + link to full index)
 
 ### Verification Checklist
 After saving, verify:
 1. ✓ New file exists with correct number
-2. ✓ index.md has new entry with summary
-3. ✓ README.md has new entry with tags
-4. ✓ All changes committed
-5. ✓ Changes pushed to remote
+2. ✓ index.md has new entry with summary (all entries preserved)
+3. ✓ README.md has new entry with tags (only 10 most recent shown)
+4. ✓ README.md has link to index.md after the 10th entry
+5. ✓ All changes committed
+6. ✓ Changes pushed to remote
 
 ## Example Learning Capture
 
