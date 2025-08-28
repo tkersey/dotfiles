@@ -130,8 +130,8 @@ echo "Is SAT NP-complete? Proof." | codex -m gpt-5 -c model_reasoning_effort="hi
 ## Error Handling
 
 ```bash
-# Timeout protection (60s default)
-timeout 60 bash -c 'echo "[PROMPT]" | codex -m gpt-5 -c model_reasoning_effort="high" exec --yolo' || echo "Timeout - fallback to gpt-5-mini"
+# Timeout protection (600s / 10 minutes default)
+timeout 600 bash -c 'echo "[PROMPT]" | codex -m gpt-5 -c model_reasoning_effort="high" exec --yolo' || echo "Timeout - fallback to gpt-5-mini"
 
 # ONLY if gpt-5 times out, try mini
 echo "[PROMPT]" | codex -m gpt-5-mini -c model_reasoning_effort="high" exec --yolo
@@ -222,7 +222,7 @@ echo "What is 2+2?" | codex -m gpt-5-mini -c model_reasoning_effort="high" exec 
 1. **IMMEDIATE EXECUTION** - Don't analyze, just execute through codex
 2. **GPT-5 IS DEFAULT** - Use gpt-5 for 95% of tasks, gpt-5-mini only for trivial math
 3. **RETURN RESULTS DIRECTLY** - Minimal wrapper, maximum value
-4. **TIMEOUT = 60s** - Use timeout protection, fallback to gpt-5-mini only if needed
+4. **TIMEOUT = 600s (10 minutes)** - Use timeout protection, fallback to gpt-5-mini only if needed
 5. **VERIFICATION IS KEY** - Use GPT-5 (not mini) to verify Claude's uncertainty
 6. **BE EXPLICIT** - Always specify model in commands, never use bare `codex`
 
