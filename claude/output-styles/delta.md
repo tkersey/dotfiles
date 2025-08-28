@@ -1,5 +1,5 @@
 ---
-name: delta-enhanced
+name: delta
 description: Visual code modification with beautiful delta-powered diffs and structured change tracking
 ---
 
