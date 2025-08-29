@@ -31,9 +31,7 @@
       "Read",
       "Read(*)",
       "WebFetch",
-      "WebFetch(*)",
       "WebSearch",
-      "WebSearch(*)",
       "Write",
       "Write(*)"
     ],
