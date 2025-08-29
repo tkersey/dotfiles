@@ -201,3 +201,107 @@ Benefits:
 5. Apply phantom types for state machines
 6. Brand primitive types with constraints
 7. Transform hope into type-level guarantees
+
+## Theoretical Foundations (Advanced)
+
+These concepts explain WHY our patterns work and how to apply them more powerfully:
+
+### Evidence-Carrying Types
+
+Instead of just asserting validity, carry proof of validation within the type itself:
+
+```typescript
+// BASIC: Simple branded type
+type Email = { readonly _tag: "Email"; value: string };
+
+// POWERFUL: Evidence-carrying type
+type Email<E extends EmailEvidence = EmailEvidence> = {
+  readonly _tag: "Email";
+  value: string;
+  evidence: E;  // Compile-time proof of validation
+};
+
+type EmailEvidence = {
+  readonly hasAtSymbol: true;
+  readonly hasDomain: true;
+  readonly validLength: true;
+};
+
+// Parser now returns evidence-carrying type
+function parseEmail<const S extends string>(
+  input: S
+): S extends `${string}@${string}.${string}` 
+  ? Email<{ hasAtSymbol: true; hasDomain: true; validLength: true }>
+  : null {
+  // Validation logic that generates evidence
+}
+```
+
+This pattern makes the validation proof visible at the type level - code can inspect what validations were performed without re-validating.
+
+### Contravariance in Validators
+
+Understanding variance explains why validators naturally work "backwards" and why parse functions are superior:
+
+```typescript
+// Validators are contravariant in their input type
+type Validator<T> = (value: unknown) => value is T;
+
+// Given: Admin extends User
+type User = { name: string };
+type Admin = User & { role: "admin" };
+
+// A validator for User can validate Admin (contravariant)
+const validateUser: Validator<User> = (x): x is User => 
+  typeof x === "object" && x !== null && "name" in x;
+
+const validateAdmin: Validator<Admin> = validateUser; // ✅ Safe!
+
+// But a validator for Admin CANNOT validate User
+const unsafeValidator: Validator<User> = validateAdmin; // ❌ Type error!
+```
+
+This contravariance is why:
+- General validators can substitute for specific ones (safe widening)
+- Specific validators cannot substitute for general ones (unsafe narrowing)
+- Parse functions that return refined types avoid this complexity entirely
+
+### Refinement Type Patterns
+
+Refinement types progressively narrow values through predicates, creating a hierarchy of increasingly strong invariants:
+
+```typescript
+// Progressive refinement hierarchy
+type Integer = number & { readonly __integer: true };
+type PositiveInteger = Integer & { readonly __positive: true };
+type PrimeNumber = PositiveInteger & { readonly __prime: true };
+
+// Each parser adds stronger invariants
+function parseInteger(n: number): Integer | null {
+  if (!Number.isInteger(n)) return null;
+  return n as Integer;
+}
+
+function parsePositive(n: Integer): PositiveInteger | null {
+  if (n <= 0) return null;
+  return n as PositiveInteger;
+}
+
+function parsePrime(n: PositiveInteger): PrimeNumber | null {
+  if (!isPrime(n)) return null;
+  return n as PrimeNumber;
+}
+
+// Chain refinements for complex invariants
+const maybePrime = parseInteger(7)
+  ?.let(parsePositive)
+  ?.let(parsePrime);
+```
+
+This creates a lattice of types where each level adds constraints:
+- **Base**: `number` (no invariants)
+- **Level 1**: `Integer` (must be whole number)
+- **Level 2**: `PositiveInteger` (must be whole AND positive)
+- **Level 3**: `PrimeNumber` (must be whole AND positive AND prime)
+
+Each refinement strengthens the invariant, and the type system tracks which validations have been applied.
