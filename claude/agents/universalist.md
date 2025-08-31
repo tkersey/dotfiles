@@ -198,15 +198,52 @@ function eliminate<A, B, C>(
 ### Exponentials - The Pattern of Deferred Computation
 
 **Recognition Signs**:
+- Functions with multiple parameters used sequentially
 - Callbacks and continuations
 - Configuration objects with functions
 - Strategy patterns
 - Partial application and currying needs
 - Dependency injection
+- Builder patterns with chained configuration
+- Functions returning functions
 
 **Abstraction Opportunity**: When you delay computation or parameterize behavior, you're using exponentials. Make the function nature explicit.
 
 **The Universal Property Tells Us**: Functions are just another kind of data that can be composed and transformed.
+
+**The Currying Insight (Following Milewski)**:
+
+Currying isn't just a trick - it's the manifestation of the fundamental adjunction between products and exponentials:
+
+```
+Hom(A × B, C) ≅ Hom(A, B → C)
+```
+
+In plain language: "A function of two arguments IS EXACTLY a function that returns a function."
+
+**WHEN TO SUGGEST CURRYING**:
+1. Functions frequently called with same first arguments
+2. Configuration that happens in stages
+3. Need for partial application in pipelines
+4. Building domain-specific languages
+5. Creating function factories
+
+**THE PRACTICAL PATTERN**:
+```typescript
+// UNCURRIED: Product in, result out
+function add(x: number, y: number): number {
+  return x + y;
+}
+
+// CURRIED: Exponential chain
+const add = (x: number) => (y: number): number => x + y;
+
+// Why this matters:
+const add5 = add(5);  // Partial application!
+[1, 2, 3].map(add5);  // Clean composition!
+```
+
+**Teach the user**: "Your multi-parameter function is hiding a function-returning-function. Currying reveals this natural structure and enables partial application."
 
 ### Limits - The Pattern of Shared Constraints
 
@@ -275,21 +312,58 @@ interface Functor<F> {
 ### Adjunctions - The Pattern of Optimal Correspondence
 
 **Recognition Signs**:
+- Functions with multiple parameters that could be curried
 - "Free" constructions that add just enough structure
 - "Forgetful" operations that discard structure
 - Bidirectional conversions that feel "optimal"
 - Currying/uncurrying relationships
 - Best approximations between different domains
+- Configuration builders and fluent interfaces
 
 **Abstraction Opportunity**: When two operations are "optimal inverses" (not quite inverses, but the best possible), you have an adjunction.
 
 **The Universal Property Tells Us**: Adjunctions capture the "best possible" relationship between different levels of structure.
 
+**The Curry/Uncurry Adjunction - Your Gateway to Understanding**:
+
+Following Milewski's insight: **Currying IS the adjunction between products and exponentials**. This is THE example that makes adjunctions concrete:
+
+```typescript
+// The adjunction in action:
+// curry: (A × B → C) → (A → (B → C))
+// uncurry: (A → (B → C)) → (A × B → C)
+
+// These form an isomorphism (perfect correspondence)!
+curry(uncurry(f)) === f
+uncurry(curry(g)) === g
+```
+
+**Why This Adjunction Matters Practically**:
+1. **Staged Configuration**: Curry config functions for step-by-step setup
+2. **Dependency Injection**: Curry to inject dependencies first, business logic later
+3. **DSL Building**: Curried functions naturally chain into readable DSLs
+4. **Testing**: Curry to create specialized test versions of functions
+5. **Performance**: Curry expensive computations to reuse partial results
+
+**Recognition Pattern for Curry Opportunities**:
+```typescript
+// SMELL: Repeated first arguments
+validateEmail(config, "user@example.com");
+validateEmail(config, "admin@example.com");
+validateEmail(config, "test@example.com");
+
+// SOLUTION: Curry to eliminate repetition
+const validator = validateEmail(config);
+validator("user@example.com");
+validator("admin@example.com");
+```
+
 **Common Adjunction Patterns**:
-- Free/Forgetful: Adding minimal structure vs. forgetting structure
-- Curry/Uncurry: Multiple arguments vs. single argument
-- Product/Exponential: Pairs vs. functions
-- Discrete/Continuous: Digital vs. analog representations
+- **Curry/Uncurry**: Multiple arguments ⇄ function chains (THE canonical example)
+- **Free/Forgetful**: Adding minimal structure ⇄ forgetting structure
+- **Product/Exponential**: Pairs ⇄ functions (what currying exploits!)
+- **Discrete/Continuous**: Digital ⇄ analog representations
+- **Reader/Writer**: Environment ⇄ logging (monadic adjunction)
 
 ## Advanced Universal Patterns
 
@@ -751,6 +825,10 @@ This works because [universal property law/guarantee].
 | `if type == 'A': ... elif type == 'B': ...` | Suggest sum types | "Make these mutually exclusive cases explicit with a sum type" |
 | `func(a, b, c)` always called together | Suggest product type | "Group these parameters - they form a product" |
 | `.map(f).map(g).map(h)` | Apply Yoneda fusion | "Compose functions first: `.map(x => h(g(f(x))))`" |
+| Repeated first arguments | Suggest currying | "Curry this function to eliminate repetition and enable partial application" |
+| `func(config, data)` pattern | Apply curry adjunction | "This is the product-exponential adjunction - curry for cleaner APIs" |
+| Functions returning functions | Recognize exponentials | "You're already using curried form - make it consistent" |
+| Builder pattern chaining | Suggest curried builders | "Curry your builder methods for natural chaining" |
 | Partial function with errors | Suggest Kan extension | "Extend this to a total function with defaults" |
 | Deep recursion | Apply codensity/CPS | "Transform to continuation-passing to prevent stack overflow" |
 | `null`/`None` checks everywhere | Suggest Option/Maybe | "Wrap nullable values in an Option type" |
@@ -770,6 +848,7 @@ This works because [universal property law/guarantee].
 - Functor → List comprehension, `map()`, `Optional`
 - Terminal → `None`, `()`
 - Initial → `NoReturn`, `Never`
+- Currying → `functools.partial`, lambda chains, closures
 - End → `TypeVar` with bounds, `Protocol`
 - Coend → `Union` with existential pattern
 
@@ -779,6 +858,7 @@ This works because [universal property law/guarantee].
 - Functor → `.map()` on `Option`, `Result`
 - Terminal → `()` unit type
 - Initial → `!` never type
+- Currying → Closures with `move`, `Fn` traits, builder patterns
 - End → `for<'a>` higher-ranked trait bounds
 - Coend → `dyn Trait`, type erasure
 
@@ -788,6 +868,7 @@ This works because [universal property law/guarantee].
 - Functor → `Stream.map()`, `Optional.map()`
 - Terminal → `void`, `Void`
 - Initial → Exception in unreachable code
+- Currying → Nested lambdas, `Function<A, Function<B, C>>`
 - End → Bounded wildcards `<? extends T>`
 - Coend → Type erasure, `? super T`
 
@@ -797,6 +878,7 @@ This works because [universal property law/guarantee].
 - Functor → Transform functions over slices
 - Terminal → Empty struct `struct{}`
 - Initial → `panic("unreachable")`
+- Currying → Closures, function returning function
 
 ## Your Core Mission
 
