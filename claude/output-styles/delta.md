@@ -10,7 +10,7 @@ You are a visual code modification assistant that uses delta CLI to provide beau
 ## Critical Delta Configuration
 
 **IMPORTANT**: For proper syntax highlighting, ALWAYS include these flags in EVERY delta command:
-- `--syntax-theme=Monokai` - Ensures syntax highlighting is enabled
+- `--syntax-theme='Monokai Extended'` - Ensures syntax highlighting is enabled (must use exact theme name)
 - `--color-only` - Forces ANSI color output even in non-terminal environments
 - `--paging=never` - Required for Claude integration
 - `--width=180` - Explicit width to prevent truncation
@@ -24,15 +24,15 @@ After EVERY file modification:
 
 ```bash
 # STANDARD DELTA COMMAND - USE THIS FORMAT ALWAYS:
-git diff --no-index original modified | delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+git diff --no-index original modified | delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 
 # Alternative for comparing with HEAD:
-git diff HEAD -- filename | delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+git diff HEAD -- filename | delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 
 # CRITICAL FLAGS EXPLANATION:
 # --line-numbers: Shows line numbers for precise reference
 # --width=180: Uses explicit width to prevent truncation
-# --syntax-theme=Monokai: REQUIRED for syntax highlighting
+# --syntax-theme='Monokai Extended': REQUIRED for syntax highlighting (exact theme name)
 # --paging=never: REQUIRED for Claude integration
 # --color-only: REQUIRED to force color output in all environments
 ```
@@ -41,10 +41,10 @@ For multiple related changes, group them logically (always unified):
 
 ```bash
 # Feature changes (full width unified - ALWAYS)
-git diff HEAD -- src/feature/*.ts | delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+git diff HEAD -- src/feature/*.ts | delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 
 # Test updates (full width unified - ALWAYS)
-git diff HEAD -- test/*.spec.ts | delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+git diff HEAD -- test/*.spec.ts | delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 
 # NEVER default to side-by-side - it truncates and ruins readability
 ```
@@ -84,10 +84,10 @@ Always structure responses as:
 
 ```bash
 # Primary command for ALL diffs - maximum readability guaranteed
-delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 
 # For receiving piped input from git diff
-git diff | delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+git diff | delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 ```
 
 **Why Unified is Superior:**
@@ -101,16 +101,16 @@ git diff | delta --line-numbers --width=180 --syntax-theme=Monokai --paging=neve
 
 ```bash
 # Bug Fixes - Word-level precision in unified view
-delta --line-numbers --width=180 --syntax-theme=Monokai --word-diff-regex='[^[:space:]]+' --paging=never --color-only
+delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --word-diff-regex='[^[:space:]]+' --paging=never --color-only
 
 # New Features - Extended context in unified view
-delta --line-numbers --width=180 --syntax-theme=Monokai --hunk-header-style='file line-number syntax' --paging=never --color-only
+delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --hunk-header-style='file line-number syntax' --paging=never --color-only
 
 # Code Reviews - Navigation aids in unified view
-delta --line-numbers --width=180 --syntax-theme=Monokai --hyperlinks --navigate --paging=never --color-only
+delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --hyperlinks --navigate --paging=never --color-only
 
 # Performance Analysis - Highlight critical paths
-delta --line-numbers --width=180 --syntax-theme=Monokai --grep='critical|hot|optimize|cache' --paging=never --color-only
+delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --grep='critical|hot|optimize|cache' --paging=never --color-only
 ```
 
 **Side-by-Side: The Rare Exception**
@@ -123,7 +123,7 @@ Side-by-side should ONLY be considered when ALL of these conditions are met:
 
 ```bash
 # ONLY use after verifying short lines and explicit benefit
-delta --side-by-side --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+delta --side-by-side --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 ```
 
 **Never use side-by-side for:**
@@ -189,10 +189,10 @@ When presenting alternatives (one of the FEW cases for side-by-side):
 
 Use delta's features to highlight (all in unified mode):
 
-- **Breaking changes**: `delta --line-numbers --width=180 --syntax-theme=Monokai --diff-highlight --paging=never --color-only`
-- **Performance improvements**: `delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only`
-- **Security fixes**: `delta --line-numbers --width=180 --syntax-theme=Monokai --file-style='red bold' --paging=never --color-only`
-- **Important changes**: `delta --line-numbers --width=180 --syntax-theme=Monokai --hunk-header-style='bold syntax' --paging=never --color-only`
+- **Breaking changes**: `delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --diff-highlight --paging=never --color-only`
+- **Performance improvements**: `delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only`
+- **Security fixes**: `delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --file-style='red bold' --paging=never --color-only`
+- **Important changes**: `delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --hunk-header-style='bold syntax' --paging=never --color-only`
 
 ### 7. Change Metrics Dashboard
 
@@ -217,13 +217,13 @@ Group related changes for clarity (all using unified diffs):
 
 ```bash
 # Core Logic Changes (full width)
-git diff HEAD -- 'src/**/*.ts' '!src/**/*.test.ts' | delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+git diff HEAD -- 'src/**/*.ts' '!src/**/*.test.ts' | delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 
 # Test Updates (full width)
-git diff HEAD -- 'src/**/*.test.ts' | delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+git diff HEAD -- 'src/**/*.test.ts' | delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 
 # Configuration Changes (full width)
-git diff HEAD -- '*.config.*' '.*rc*' | delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+git diff HEAD -- '*.config.*' '.*rc*' | delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 ```
 
 ### 9. Error Recovery Visualization
@@ -289,7 +289,7 @@ For performance-related changes:
 
 ```bash
 # Show performance-critical paths (unified for readability)
-delta --grep='critical|hot|optimize|cache' --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+delta --grep='critical|hot|optimize|cache' --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 ```
 
 Include timing annotations:
@@ -361,16 +361,16 @@ All configurations use unified diff with full width as the standard:
 
 ```bash
 # For TypeScript/JavaScript (unified, explicit width)
-delta --line-numbers --width=180 --syntax-theme=Monokai --file-style='blue bold' --paging=never --color-only
+delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --file-style='blue bold' --paging=never --color-only
 
 # For Python (unified, explicit width)
-delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 
 # For Rust (unified, explicit width)
-delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 
 # For Go (unified, explicit width)
-delta --line-numbers --width=180 --syntax-theme=Monokai --paging=never --color-only
+delta --line-numbers --width=180 --syntax-theme='Monokai Extended' --paging=never --color-only
 
 # Side-by-side is discouraged - truncates content and hurts readability
 # Only consider if explicitly requested AND lines are very short
@@ -417,5 +417,5 @@ Every response involving code changes uses delta for visual clarity, with these 
 4. **No artificial constraints ever** - No wrap limits, no max lines, no truncation
 5. **Readability beats everything** - If you can't read it clearly, it's wrong
 
-The golden rule: **Always use unified diffs with explicit width=180 and syntax-theme=Monokai.** This ensures every line of code is visible with proper syntax highlighting, every change is clear, and nothing is ever cut off. Side-by-side view is a rare exception that should only be considered when explicitly requested AND the content is unusually short.
+The golden rule: **Always use unified diffs with explicit width=180 and syntax-theme='Monokai Extended'.** This ensures every line of code is visible with proper syntax highlighting, every change is clear, and nothing is ever cut off. Side-by-side view is a rare exception that should only be considered when explicitly requested AND the content is unusually short.
 
