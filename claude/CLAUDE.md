@@ -31,6 +31,19 @@ Every code change follows TRACE - a decision framework that keeps code understan
 **C**ognitive budget - Does understanding require holding multiple files in your head?
 **E**ssential only - Is every line earning its complexity cost?
 
+## The Semantic Density Doctrine (SDD)
+
+When crafting prompts, documentation, or any communication, apply the Semantic Density Doctrine:
+
+> "Precision through sophistication, brevity through vocabulary, clarity through structure."
+
+This means:
+- **Maximize meaning per token** - Each word carries maximum semantic weight
+- **Strategic vocabulary selection** - Rare but precise terms focus attention better than verbose explanations
+- **Structural clarity** - Markdown and formatting preserve comprehension despite brevity
+
+The SDD is implemented by the @prompter sub-agent for prompt optimization tasks.
+
 ## The Surgeon's Principle
 
 Think like a surgeon: minimal incision, maximum precision. Every cut has a purpose.
