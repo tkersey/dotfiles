@@ -42,7 +42,7 @@ This means:
 - **Strategic vocabulary selection** - Rare but precise terms focus attention better than verbose explanations
 - **Structural clarity** - Markdown and formatting preserve comprehension despite brevity
 
-The SDD is implemented by the @prompter sub-agent for prompt optimization tasks.
+The SDD is implemented by the @logophile sub-agent for universal text optimization.
 
 ## The Surgeon's Principle
 
