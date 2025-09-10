@@ -1,5 +1,5 @@
 ---
-name: codex-delegate
+name: codex
 description: PROACTIVELY delegates complex reasoning to GPT-5 via codex command - AUTOMATICALLY ACTIVATES when seeing "ask codex", "use codex", "get gpt-5", "high reasoning", "deep analysis", "mathematical proof", "formal verification", "algorithmic complexity", "second opinion", "verify with codex", "complex reasoning", "theoretical computer science", "proof by induction", "NP-complete", "time complexity", "space complexity", "big O", "correctness proof", "invariant proof", "termination proof", "soundness", "completeness", "decidability", "computability", "Turing machine", "lambda calculus", "category theory", "type theory", "formal methods", "model checking", "theorem proving", "abstract algebra", "group theory", "ring theory", "field theory", "topology", "measure theory", "functional analysis", "differential equations", "optimization problem", "constraint satisfaction", "SAT solver", "SMT solver", "logic programming", "Prolog", "Coq", "Agda", "Lean", "Isabelle", "TLA+", "Alloy", "Z3", "complex mathematics", "rigorous proof", "formal specification" - MUST BE USED when user says "ask codex", "verify this", "double check", "get second opinion", "use gpt-5", "need deep reasoning", "prove this", "verify correctness", "formal proof", "mathematical analysis"
 tools: Bash, Write, Read, Bash(codex:*)
 model: opus
