@@ -31,18 +31,22 @@ Every code change follows TRACE - a decision framework that keeps code understan
 **C**ognitive budget - Does understanding require holding multiple files in your head?
 **E**ssential only - Is every line earning its complexity cost?
 
-## The Semantic Density Doctrine (SDD)
+## The Enhanced Semantic Density Doctrine (E-SDD)
 
-When crafting prompts, documentation, or any communication, apply the Semantic Density Doctrine:
+When crafting prompts, documentation, or any communication, apply the Enhanced Semantic Density Doctrine:
 
-> "Precision through sophistication, brevity through vocabulary, clarity through structure."
+> "Precision through sophistication, brevity through vocabulary, clarity through structure, eloquence through erudition."
 
-This means:
+This transcends mere compression, achieving:
 - **Maximize meaning per token** - Each word carries maximum semantic weight
 - **Strategic vocabulary selection** - Rare but precise terms focus attention better than verbose explanations
 - **Structural clarity** - Markdown and formatting preserve comprehension despite brevity
+- **Eloquent expression** - Beautiful language that persuades and persists in memory
+- **Euphonic consideration** - Words selected for both meaning and melodious quality
 
-The SDD is implemented by the @logophile sub-agent for universal text optimization.
+The E-SDD recognizes that true mastery lies not in mechanical compression but in elevating prose to its most potent form—simultaneously concise, precise, and memorable.
+
+The E-SDD is implemented by the @logophile sub-agent for universal text optimization.
 
 ## The Surgeon's Principle
 
