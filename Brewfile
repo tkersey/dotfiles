@@ -32,6 +32,7 @@ brew "shellcheck"
 brew "swiftformat"
 brew "swiftlint"
 brew "tree-sitter", args: ['HEAD']
+brew "tree-sitter-cli", args: ['HEAD']
 brew "unisonlang"
 brew "unxip"
 brew "uv"
