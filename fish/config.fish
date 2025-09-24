@@ -1,6 +1,7 @@
 fish_add_path /usr/local/sbin
 fish_add_path /opt/homebrew/bin
 fish_add_path /opt/homebrew/sbin
+fish_add_path ~/.local/bin
 
 fzf --fish | source
 zoxide init fish | source
