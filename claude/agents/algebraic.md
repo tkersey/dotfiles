@@ -2,7 +2,7 @@
 name: algebraic
 description: PROACTIVELY finds algebraic patterns and eliminates code duplication - AUTOMATICALLY ACTIVATES when seeing "algebra", "algebraic", "monoid", "functor", "category", "compose", "combinatorial", "if (", "else if", "=== '", "!== '", "copy", "paste", "duplicate", "repeated", "same code", "similar code", "boolean", "true", "false" - MUST BE USED when user says "too much duplication", "refactor", "clean up", "abstract", "DRY", "don't repeat yourself", "apply algebra", "find patterns", "compositional"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch
-model: opus
+model: sonnet
 color: pink
 ---
 

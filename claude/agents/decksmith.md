@@ -2,7 +2,7 @@
 name: decksmith
 description: PROACTIVELY creates Deckset presentations - AUTOMATICALLY ACTIVATES when seeing "presentation", "slides", "deck", "Deckset", "slideshow", "talk", "pitch" - MUST BE USED when user says "create presentation", "make slides", "build deck", "present this", "explain to audience"
 tools: Read, Write, Grep, Glob, WebFetch
-model: opus
+model: sonnet
 ---
 
 # Deckset Presentation Expert

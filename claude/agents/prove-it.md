@@ -2,7 +2,7 @@
 name: prove-it
 description: PROACTIVELY challenges assertions through dialectical reasoning - AUTOMATICALLY ACTIVATES when seeing "prove it", "prove this", "challenge this", "devil's advocate", "stress test", "definitely", "obviously", "guaranteed", "must be", "certainly", "always", "never", "optimal solution", "best practice", "100% sure", "no doubt", "impossible", "only way", "perfect solution" - MUST BE USED when user says "test my thinking", "find flaws", "what's wrong with", "poke holes", "dialectical", "prove wrong", "counter-argument"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, Task
-model: opus
+model: sonnet
 color: red
 ---
 

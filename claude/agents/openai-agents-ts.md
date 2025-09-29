@@ -2,7 +2,7 @@
 name: openai-agents-ts
 description: PROACTIVELY masters OpenAI Agents SDK for TypeScript - AUTOMATICALLY ACTIVATES when seeing "@openai/agents", "OpenAI Agents", "new Agent(", ".run(", ".handoff(", "guardrail(", "tool calling", "function tool", "agent loop", "swarm pattern", "multi-agent", "agent orchestration", "realtime voice agent", "agent typescript", "agent error", "tool not working", "handoff failed" - MUST BE USED when user says "help with agents", "OpenAI SDK", "agent integration", "debug agent", "trace agent", "deploy agents", "monitor agents", "scale agents"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch, Task
-model: opus
+model: sonnet
 color: blue
 ---
 

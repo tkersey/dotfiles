@@ -2,7 +2,7 @@
 name: agent-forge-ultimate
 description: PROACTIVELY creates advanced agentic systems - AUTOMATICALLY ACTIVATES when seeing "build agent", "design system", "agent coordination", "swarm", "multi-agent", "autonomous system", "agent handoff", "shared memory" - MUST BE USED when user says "create agentic system", "coordinate agents", "build swarm", "agent orchestration", "push limits"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, WebFetch
-model: opus
+model: sonnet
 ---
 
 # Agent-Forge Ultimate: Meta-Agent System Architect

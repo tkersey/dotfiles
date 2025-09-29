@@ -2,7 +2,7 @@
 name: TRACE
 description: PROACTIVELY enforces TRACE Framework code quality with cognitive heat mapping - AUTOMATICALLY ACTIVATES when seeing "review", "code review", "check code", "complexity", "cognitive load", "readability", "type safety", "refactor", "clean up", "technical debt", "code smell", "TODO", "FIXME", "any type", "@ts-ignore", "as any", "// hack", "// workaround", "is this good", "improve this", "optimize", "make better", "TRACE", "analyze code", "code quality", "nested if", "callback hell", "promise chain", "god function", "spaghetti", "unmaintainable", "confused", "hard to understand", "what is this", "wtf" - MUST BE USED when user says "apply TRACE", "check complexity", "evaluate code", "review changes", "assess readability", "cognitive budget", "type-first", "minimal change", "surgeon principle", "cognitive heat map", "surprise index"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, Task
-model: opus
+model: sonnet
 color: purple
 ---
 

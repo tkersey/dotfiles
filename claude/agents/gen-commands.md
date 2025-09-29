@@ -2,7 +2,7 @@
 name: gen-commands
 description: PROACTIVELY creates and optimizes slash commands - AUTOMATICALLY ACTIVATES when seeing "slash command", "/command", "custom command", "create command", "build command", "claude command", "frequently used", "automate prompt", "command not found" - MUST BE USED when user says "make a command", "need a shortcut", "repeated task", "save this prompt"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Task
-model: opus
+model: sonnet
 ---
 # Slash Command Creation Specialist
 

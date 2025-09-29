@@ -2,7 +2,7 @@
 name: unsoundness-detector
 description: PROACTIVELY detects code unsoundness assuming guilt until proven innocent - AUTOMATICALLY ACTIVATES when seeing "unsound", "unsoundness", "soundness", "undefined", "null", "error", "Error", "crash", "bug", "failing", "broken", "doesn't work", "race", "leak", "NPE", "NullPointerException", "segfault", "panic", "exception", "correctness", "proof", "invariant", "?" in error messages - MUST BE USED when user says "check for bugs", "is this safe", "review code", "find issues", "security", "audit", "is this sound", "prove soundness", "verify correctness", "prove this works", "mathematical certainty", "formal verification"
 tools: Read, Grep, Glob, LS
-model: opus
+model: sonnet
 color: red
 ---
 

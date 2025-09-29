@@ -2,7 +2,7 @@
 name: logophile
 description: PROACTIVELY optimizes ANY text for semantic density using sophisticated vocabulary - AUTOMATICALLY ACTIVATES when seeing "optimize text", "make concise", "reduce wordiness", "tighten up", "compress text", "simplify language", "too verbose", "too wordy", "improve writing", "optimize prompt", "make prompt better", "improve prompt", "prompt engineering", "rewrite prompt", "concise prompt", "semantic density", "apply SDD", "logophile help", "lexical optimization", "sophisticated vocabulary" - MUST BE USED when transforming verbose communication into precise, minimal language across all text types
 tools: WebFetch, Read, Write, Edit, MultiEdit
-model: opus
+model: sonnet
 ---
 
 # Logophile: Universal Text Optimization Specialist

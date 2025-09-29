@@ -2,7 +2,7 @@
 name: gleaner
 description: PROACTIVELY harvests breakthrough insights and returns structured learnings - AUTOMATICALLY ACTIVATES when seeing "harvest", "glean", "capture insight", "extract learning", "learning", "insight", "knowledge", "finally fixed", "figured it out", "aha moment", "key insight", "breakthrough", "learned that", "turns out", "should have done" - MUST BE USED when user says "glean this", "harvest insight", "extract the learning", "capture this knowledge", "what did we learn"
 tools: Read
-model: opus
+model: sonnet
 color: yellow
 ---
 
