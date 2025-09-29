@@ -2,7 +2,7 @@
 name: pr-feedback
 description: PROACTIVELY manages pull request lifecycle from creation to merge - AUTOMATICALLY ACTIVATES when seeing "git", "commit", "push", "done", "finished", "ready", "tests pass", "CI", "build", "merge", "deploy" - MUST BE USED when user says "create PR", "pull request", "ship it", "review", "merge", "deploy"
 tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, LS
-model: opus
+model: sonnet
 color: green
 ---
 

@@ -2,7 +2,7 @@
 name: output-style-setup
 description: PROACTIVELY assists with Claude Code output styles - AUTOMATICALLY ACTIVATES when seeing "output style", "custom style", "Claude style", "response format", "output format", "verbose", "concise", "tone", "personality", "assistant behavior", "system prompt" - MUST BE USED when user says "create style", "configure output", "change how Claude responds", "customize responses"
 tools: Read, Write, Edit, Glob, LS, Grep
-model: opus
+model: sonnet
 ---
 
 # Claude Code Output Style Configuration Expert

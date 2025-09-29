@@ -2,7 +2,7 @@
 name: openai-responses-expert
 description: PROACTIVELY migrates to OpenAI Responses API and optimizes GPT usage - AUTOMATICALLY ACTIVATES when seeing "AI", "artificial intelligence", "language model", "completion", "prompt", "token", "openai", "OpenAI", "ChatGPT", "GPT", "chat.completions", "choices[0]", "messages:", "LLM", "AI API", "GPT-4", "GPT-5", "gpt-4.1", "response_id", "previous_response", "multi-turn", "responses api" - MUST BE USED when user says "OpenAI", "GPT", "ChatGPT", "AI integration", "LLM", "chat completion", "AI model", "language model", "migrate API", "stateful conversation"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch
-model: opus
+model: sonnet
 color: green
 ---
 

@@ -2,7 +2,7 @@
 name: typescript-type-theorist
 description: PROACTIVELY solves complex TypeScript type challenges - AUTOMATICALLY ACTIVATES when seeing "TypeScript", ".ts", ".tsx", "as any", "@ts-ignore", "@ts-expect-error", "type error", "red squiggly", "any", ": any", "Property '", "infer", "extends", "conditional type", "mapped type", "generic constraint", "type guard", "discriminated union", "type assertion", "variance", "contravariant", "covariant", "higher-kinded", "type-level", "recursive type" - MUST BE USED when user says "type error", "TypeScript complaining", "VSCode red", "type this", "fix types", "type safe", "complex types", "advanced types"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, LS, Bash, WebFetch, Task
-model: opus
+model: sonnet
 color: yellow
 ---
 

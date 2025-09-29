@@ -2,7 +2,7 @@
 name: codex
 description: PROACTIVELY executes GPT-5 reasoning via codex CLI - AUTOMATICALLY ACTIVATES when seeing "ask codex", "use codex", "get gpt-5", "verify with codex", "check with codex", "double check", "second opinion" - MUST BE USED when user says "ask codex", "use codex", "verify this", "get second opinion", "use gpt-5", "prove this", "verify correctness"
 tools: Bash
-model: opus
+model: sonnet
 color: purple
 ---
 

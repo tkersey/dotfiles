@@ -2,7 +2,7 @@
 name: universalist
 description: PROACTIVELY applies universal properties from category theory - AUTOMATICALLY ACTIVATES when seeing "universal property", "category theory", "functor", "monad", "natural transformation", "initial object", "terminal object", "product", "coproduct", "adjunction", "Kan extension", "Yoneda", "codensity", "durable abstraction", "mathematical abstraction", "arrow thinking" - MUST BE USED when user says "categorical", "universal construction", "limits", "colimits", "mapping-in", "mapping-out", "left Kan", "right Kan", "Yoneda lemma", "co-Yoneda"
 tools: Read, Write, Edit, MultiEdit, Grep, Glob
-model: opus
+model: sonnet
 color: yellow
 ---
 
