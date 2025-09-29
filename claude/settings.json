@@ -13,10 +13,10 @@
       "Edit(*)",
       "Glob",
       "Grep",
-      "LS",
       "MultiEdit",
       "Read",
       "Read(*)",
+      "SlashCommand",
       "WebFetch",
       "WebSearch",
       "Write",
@@ -24,13 +24,13 @@
     ],
     "deny": []
   },
-  "model": "opus",
-  "feedbackSurveyState": {
-    "lastShownTime": 1754083542456
-  },
   "statusLine": {
     "type": "command",
-    "command": "/Users/tk/.dotfiles/claude/statusline.py",
-    "maxLength": 160
+    "command": "/Users/tk/.dotfiles/claude/statusline.py"
+  },
+  "alwaysThinkingEnabled": true,
+  "feedbackSurveyState": {
+    "lastShownTime": 1754083542456
   }
 }
+
