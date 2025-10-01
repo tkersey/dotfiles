@@ -9,28 +9,25 @@
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
       "Bash(npx mocha:*)",
+      "BashOutput",
       "Edit",
-      "Edit(*)",
       "Glob",
       "Grep",
-      "MultiEdit",
       "Read",
-      "Read(*)",
       "SlashCommand",
+      "Task",
       "WebFetch",
       "WebSearch",
-      "Write",
-      "Write(*)"
+      "Write"
     ],
     "deny": []
   },
   "statusLine": {
     "type": "command",
-    "command": "/Users/tk/.dotfiles/claude/statusline.py"
+    "command": "$HOME/.dotfiles/claude/statusline.py"
   },
   "alwaysThinkingEnabled": true,
   "feedbackSurveyState": {
     "lastShownTime": 1754083542456
   }
 }
-
