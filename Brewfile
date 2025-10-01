@@ -20,7 +20,6 @@ brew "hurl"
 brew "lazygit"
 brew "luajit", args: ['HEAD']
 brew "mas"
-brew "mise"
 brew "neovim", args: ['HEAD']
 brew "node"
 brew "prettierd"
