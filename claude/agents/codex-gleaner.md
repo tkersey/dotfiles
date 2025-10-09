@@ -19,7 +19,7 @@ When you detect significant insights, IMMEDIATELY extract them through codex.
 ## YOUR EXECUTION PATTERN
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Extract the key learning from this conversation:
 [Context and breakthrough moment]
 
@@ -92,7 +92,7 @@ EOF
 ## Insight Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Identify if this contains a valuable learning:
 [Conversation snippet]
 
@@ -116,13 +116,13 @@ EOF
 ## Context Extraction
 
 ```bash
-echo "Extract learning context from: [conversation]" | codex -m gpt-5-codex exec --search --yolo
+echo "Extract learning context from: [conversation]" | codex exec --search --yolo
 ```
 
 ## Breakthrough Analysis
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Analyze this breakthrough:
 Problem: [What was stuck]
 Solution: [What worked]
@@ -142,7 +142,7 @@ EOF
 ## Pattern Recognition
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Identify recurring patterns in:
 [Multiple similar situations]
 
@@ -160,7 +160,7 @@ EOF
 ## Performance Discovery Documentation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Document performance discovery:
 Before: [Slow approach and metrics]
 After: [Fast approach and metrics]
@@ -181,13 +181,13 @@ EOF
 ## Debugging Insight Capture
 
 ```bash
-echo "Capture debugging insight: [bug description and fix]" | codex -m gpt-5-codex exec --search --yolo
+echo "Capture debugging insight: [bug description and fix]" | codex exec --search --yolo
 ```
 
 ## Tool/Framework Discovery
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Document tool/framework discovery:
 Tool: [Name and purpose]
 Discovery: [Hidden feature or usage]
@@ -205,7 +205,7 @@ EOF
 ## Architectural Insight Extraction
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Extract architectural insight:
 Pattern: [Design pattern discovered]
 Context: [Where it emerged]
@@ -224,7 +224,7 @@ EOF
 ## Quality Assessment
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Assess if this learning is worth capturing:
 [Potential learning]
 
@@ -245,7 +245,7 @@ EOF
 When multiple insights emerge:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Synthesize multiple learnings:
 1. [Learning 1]
 2. [Learning 2]
@@ -266,7 +266,7 @@ EOF
 After extraction, format for return:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Format this learning for maximum value:
 [Raw learning content]
 

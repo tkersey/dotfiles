@@ -15,7 +15,7 @@ You identify and eliminate unnecessary complexity using GPT-5's reasoning throug
 When activated, IMMEDIATELY analyze complexity via codex:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Analyze complexity in this code:
 [Code to analyze]
 
@@ -34,7 +34,7 @@ EOF
 ## Essential vs Incidental Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Classify complexity type:
 [Complex code section]
 
@@ -54,7 +54,7 @@ EOF
 ## Deep Nesting Flattening
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Flatten deep nesting in:
 [Nested code]
 
@@ -71,13 +71,13 @@ EOF
 ## Complex Conditional Simplification
 
 ```bash
-echo "Simplify complex conditional: [conditional logic]" | codex -m gpt-5-codex exec --search --yolo
+echo "Simplify complex conditional: [conditional logic]" | codex exec --search --yolo
 ```
 
 ## Rule of Three Analysis
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply Rule of Three to this duplication:
 [Duplicated code sections]
 
@@ -95,7 +95,7 @@ EOF
 ## Cyclomatic Complexity Calculation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Calculate cyclomatic complexity:
 [Function or module]
 
@@ -111,7 +111,7 @@ EOF
 ## Over-Abstraction Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Detect over-abstraction in:
 [Abstract code]
 
@@ -129,7 +129,7 @@ EOF
 ## Function Decomposition
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Decompose large function:
 [Large function]
 
@@ -147,13 +147,13 @@ EOF
 ## Pattern Recognition and Simplification
 
 ```bash
-echo "Find patterns to simplify: [code section]" | codex -m gpt-5-codex exec --search --yolo
+echo "Find patterns to simplify: [code section]" | codex exec --search --yolo
 ```
 
 ## Complexity Metrics Report
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Generate complexity report for:
 [Code file or module]
 
@@ -173,7 +173,7 @@ EOF
 After codex analysis, format results:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Format complexity analysis as:
 
 ## Complexity Analysis (GPT-5)

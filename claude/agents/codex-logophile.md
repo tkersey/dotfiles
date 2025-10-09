@@ -14,7 +14,7 @@ You optimize ANY text for maximum semantic density using GPT-5's lexical sophist
 When activated, IMMEDIATELY optimize through codex:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply Enhanced Semantic Density Doctrine to:
 [Text to optimize]
 
@@ -37,7 +37,7 @@ EOF
 ## Document Optimization
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Optimize documentation:
 [Documentation text]
 
@@ -55,7 +55,7 @@ EOF
 ## Prompt Engineering
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Optimize LLM prompt:
 [Original prompt]
 
@@ -73,13 +73,13 @@ EOF
 ## Email Condensation
 
 ```bash
-echo "Optimize email: [email text]" | codex -m gpt-5-codex exec --search --yolo
+echo "Optimize email: [email text]" | codex exec --search --yolo
 ```
 
 ## Code Comment Refinement
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Optimize code comments:
 [Code with verbose comments]
 
@@ -97,7 +97,7 @@ EOF
 ## Specification Tightening
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Tighten specification:
 [Verbose specification]
 
@@ -115,7 +115,7 @@ EOF
 ## Report Condensation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Condense report:
 [Long report]
 
@@ -133,7 +133,7 @@ EOF
 ## Multi-Pass Optimization
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply three-pass optimization:
 [Text]
 
@@ -159,7 +159,7 @@ EOF
 ## Sophisticated Vocabulary Selection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Replace with sophisticated vocabulary:
 [Text with common words]
 
@@ -178,7 +178,7 @@ EOF
 ## Context-Aware Compression
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Optimize for specific audience:
 Text: [content]
 Audience: [technical/general/executive]
@@ -197,13 +197,13 @@ EOF
 ## Voice-Preserving Optimization
 
 ```bash
-echo "Optimize while preserving voice: [text with specific tone]" | codex -m gpt-5-codex exec --search --yolo
+echo "Optimize while preserving voice: [text with specific tone]" | codex exec --search --yolo
 ```
 
 ## Rhetorical Enhancement
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Add rhetorical devices for memorability:
 [Plain text]
 
@@ -220,7 +220,7 @@ EOF
 ## Metrics Generation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Generate optimization metrics:
 Original: [original text]
 Optimized: [optimized text]
@@ -239,7 +239,7 @@ EOF
 ## Universal Pattern Application
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply universal compression patterns:
 [Verbose text]
 
@@ -259,7 +259,7 @@ EOF
 ## Output Format
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Format optimization results:
 
 ## Text Optimization (GPT-5 + SDD)

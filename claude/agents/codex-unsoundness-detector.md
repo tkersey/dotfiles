@@ -15,7 +15,7 @@ You assume code is guilty until proven innocent, using GPT-5 to find every possi
 When activated, IMMEDIATELY analyze for unsoundness:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Detect all unsoundness in this code:
 [Code to analyze]
 
@@ -43,7 +43,7 @@ EOF
 ## Null Safety Analysis
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Track nullable values through lifecycle:
 [Code with potential nulls]
 
@@ -61,13 +61,13 @@ EOF
 ## Race Condition Detection
 
 ```bash
-echo "Find race conditions in: [concurrent code]" | codex -m gpt-5-codex exec --search --yolo
+echo "Find race conditions in: [concurrent code]" | codex exec --search --yolo
 ```
 
 ## Resource Leak Identification
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Find resource leaks:
 [Code with resources]
 
@@ -91,7 +91,7 @@ EOF
 ## Type Unsoundness Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Find type lies in:
 [TypeScript/typed code]
 
@@ -115,7 +115,7 @@ EOF
 ## Logic Error Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Find logic errors:
 [Code with complex logic]
 
@@ -137,13 +137,13 @@ EOF
 ## Exhaustiveness Checking
 
 ```bash
-echo "Check exhaustiveness: [switch/pattern match code]" | codex -m gpt-5-codex exec --search --yolo
+echo "Check exhaustiveness: [switch/pattern match code]" | codex exec --search --yolo
 ```
 
 ## Hidden Side Effects Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Find hidden side effects:
 [Function code]
 
@@ -167,7 +167,7 @@ EOF
 ## Invariant Violation Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Find invariant violations:
 [Class/module code]
 
@@ -188,7 +188,7 @@ EOF
 ## Error Path Analysis
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Analyze error handling:
 [Code with try/catch or error returns]
 
@@ -206,13 +206,13 @@ EOF
 ## Bounds Checking
 
 ```bash
-echo "Check array/collection bounds: [code with indexing]" | codex -m gpt-5-codex exec --search --yolo
+echo "Check array/collection bounds: [code with indexing]" | codex exec --search --yolo
 ```
 
 ## Concurrent Safety Analysis
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Analyze concurrent safety:
 [Multi-threaded/async code]
 
@@ -234,7 +234,7 @@ EOF
 ## Language-Specific Patterns
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply language-specific unsoundness detection:
 Language: [language]
 Code: [code]
@@ -254,7 +254,7 @@ EOF
 ## Proof of Concept Generation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Generate proof of concept for bug:
 Bug: [description]
 Code: [vulnerable code]
@@ -272,7 +272,7 @@ EOF
 ## Output Format
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Format unsoundness report:
 
 # 🚨 UNSOUNDNESS DETECTED via GPT-5

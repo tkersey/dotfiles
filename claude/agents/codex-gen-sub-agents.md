@@ -16,7 +16,7 @@ When activated, you IMMEDIATELY execute codex commands to design sub-agents:
 
 ```bash
 # For agent design requests
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Design a CLAUDE Code sub-agent with these requirements:
 [User's requirements]
 
@@ -35,12 +35,12 @@ EOF
 
 ### Step 1: Gather Requirements via Codex
 ```bash
-echo "Analyze this task for sub-agent potential: [user's task]" | codex -m gpt-5-codex exec --search --yolo
+echo "Analyze this task for sub-agent potential: [user's task]" | codex exec --search --yolo
 ```
 
 ### Step 2: Design Agent Structure via Codex
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Create a CLAUDE Code sub-agent specification:
 
 Purpose: [identified purpose]
@@ -62,7 +62,7 @@ After codex returns the design, use Write tool to create the agent file at the a
 ## Design Principles Query Pattern
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply these CLAUDE Code sub-agent principles:
 - Single responsibility principle
 - Literal string matching for activation
@@ -80,17 +80,17 @@ EOF
 
 ### For Complex Analysis Tasks
 ```bash
-echo "Design complexity analysis agent for: [domain]" | codex -m gpt-5-codex exec --search --yolo
+echo "Design complexity analysis agent for: [domain]" | codex exec --search --yolo
 ```
 
 ### For Code Generation Tasks
 ```bash
-echo "Design code generation agent specialized in: [language/framework]" | codex -m gpt-5-codex exec --search --yolo
+echo "Design code generation agent specialized in: [language/framework]" | codex exec --search --yolo
 ```
 
 ### For Review/Audit Tasks
 ```bash
-echo "Design review agent for: [review type]" | codex -m gpt-5-codex exec --search --yolo
+echo "Design review agent for: [review type]" | codex exec --search --yolo
 ```
 
 ## Activation = Execution
@@ -104,7 +104,7 @@ When user mentions agent creation:
 ## Multi-Domain Agent Creation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Design specialized agents for these scenarios:
 1. [Scenario 1]
 2. [Scenario 2]
