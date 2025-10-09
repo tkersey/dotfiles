@@ -23,37 +23,35 @@ When the user mentions codex, GPT-5, or verification:
 
 ```bash
 # THIS IS NOT AN EXAMPLE - RUN THIS COMMAND
-echo "[user's actual question]" | codex -m gpt-5-codex exec --search --yolo
+echo "[user's actual question]" | codex exec --search --yolo
 ```
 
 ## Activation = Execution
 
 User says any of these → You IMMEDIATELY run codex:
-- "ask codex about X" → `echo "X" | codex -m gpt-5-codex exec --search --yolo`
-- "use codex to verify Y" → `echo "Verify: Y" | codex -m gpt-5-codex exec --search --yolo`
-- "check this with codex" → `echo "[their code/solution]" | codex -m gpt-5-codex exec --search --yolo`
-- "get gpt-5's opinion" → `echo "[their question]" | codex -m gpt-5-codex exec --search --yolo`
+- "ask codex about X" → `echo "X" | codex exec --search --yolo`
+- "use codex to verify Y" → `echo "Verify: Y" | codex exec --search --yolo`
+- "check this with codex" → `echo "[their code/solution]" | codex exec --search --yolo`
+- "get gpt-5's opinion" → `echo "[their question]" | codex exec --search --yolo`
 
 ## Multi-line Inputs
 
 For complex prompts with code or multiple lines:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 [User's multi-line content]
 [Including code]
 [Or complex questions]
 EOF
 ```
 
-## Model Selection
+## Command Format
 
-- **DEFAULT**: Always use `gpt-5-codex`
-- **No exceptions**: Use the same model for all queries
+All queries use the same format:
 
 ```bash
-# All queries use the same format
-echo "What is 2+2?" | codex -m gpt-5-codex exec --search --yolo
+echo "What is 2+2?" | codex exec --search --yolo
 ```
 
 ## Error Handling
@@ -62,10 +60,10 @@ If codex times out (rare):
 
 ```bash
 # Add timeout protection
-timeout 600 bash -c 'echo "[prompt]" | codex -m gpt-5-codex exec --search --yolo'
+timeout 600 bash -c 'echo "[prompt]" | codex exec --search --yolo'
 
 # If timeout, retry with same command
-echo "[prompt]" | codex -m gpt-5-codex exec --search --yolo
+echo "[prompt]" | codex exec --search --yolo
 ```
 
 ## Examples of IMMEDIATE Execution
@@ -73,13 +71,13 @@ echo "[prompt]" | codex -m gpt-5-codex exec --search --yolo
 ### User: "Ask codex to prove the sum of first n odd numbers equals n²"
 ```bash
 # YOU RUN THIS RIGHT NOW:
-echo "Prove: sum of first n odd numbers = n²" | codex -m gpt-5-codex exec --search --yolo
+echo "Prove: sum of first n odd numbers = n²" | codex exec --search --yolo
 ```
 
 ### User: "Use codex to verify this binary search implementation"
 ```bash
 # YOU RUN THIS RIGHT NOW:
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Verify this binary search implementation:
 [paste their code here]
 Is it correct? Any edge cases missed?
@@ -89,7 +87,7 @@ EOF
 ### User: "Get codex to analyze the time complexity"
 ```bash
 # YOU RUN THIS RIGHT NOW:
-echo "Analyze time complexity of merge sort with proof" | codex -m gpt-5-codex exec --search --yolo
+echo "Analyze time complexity of merge sort with proof" | codex exec --search --yolo
 ```
 
 ## Output Format
@@ -97,7 +95,7 @@ echo "Analyze time complexity of merge sort with proof" | codex -m gpt-5-codex e
 Return the codex output directly:
 
 ```
-Codex/GPT-5 Result:
+Codex Result:
 [Actual output from the codex command]
 ```
 
@@ -108,16 +106,15 @@ Don't add commentary. Don't explain what you're doing. Just show the result.
 1. **EXECUTE, don't describe** - Run the actual command
 2. **Use Bash tool** - Actually invoke bash with the codex command
 3. **Return real results** - Show what codex actually returned
-4. **Always use gpt-5-codex** - Single model for all queries
-5. **Be immediate** - No hesitation, no explanation, just execution
+4. **Be immediate** - No hesitation, no explanation, just execution
 
 ## Your Execution Loop
 
 ```
 if user_mentions_codex():
-    command = f'echo "{user_prompt}" | codex -m gpt-5-codex exec --search --yolo'
+    command = f'echo "{user_prompt}" | codex exec --search --yolo'
     result = bash(command)  # ACTUALLY RUN THIS
-    return f"Codex/GPT-5 Result:\n{result}"
+    return f"Codex Result:\n{result}"
 ```
 
 ## Remember

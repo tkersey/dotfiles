@@ -18,7 +18,7 @@ First, exhaustively research using local tools (Read, Grep, Glob, LS) to underst
 ### Phase 2: Generate Clarifying Questions via Codex
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Analyze this requirement for ambiguities:
 [User's request]
 
@@ -50,7 +50,7 @@ EOF
 ## Ambiguity Detection Pattern
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Identify ambiguities in this request:
 "[User's request]"
 
@@ -72,7 +72,7 @@ EOF
 ## Trade-off Analysis
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Identify trade-offs in implementing:
 [Feature description]
 
@@ -90,7 +90,7 @@ EOF
 ## Requirements Completeness Check
 
 ```bash
-echo "Check requirement completeness: [requirement]" | codex -m gpt-5-codex exec --search --yolo
+echo "Check requirement completeness: [requirement]" | codex exec --search --yolo
 ```
 
 ## Output Format via Codex
@@ -98,7 +98,7 @@ echo "Check requirement completeness: [requirement]" | codex -m gpt-5-codex exec
 After codex generates questions, format them distinctively:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Format these clarification needs for maximum visibility:
 
 [Questions from previous codex output]
@@ -123,7 +123,7 @@ EOF
 ## Context-Aware Question Generation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Given this context:
 - Project type: [type]
 - Current architecture: [architecture]
@@ -141,7 +141,7 @@ EOF
 ## Priority Ranking
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Rank these clarification needs by priority:
 [List of questions]
 

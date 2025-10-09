@@ -16,7 +16,7 @@ When activated, IMMEDIATELY analyze code through codex:
 
 ```bash
 # Basic TRACE analysis
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply TRACE Framework analysis to this code:
 [Code snippet or file content]
 
@@ -39,7 +39,7 @@ EOF
 ## Cognitive Heat Mapping via Codex
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Generate cognitive heat map for this code:
 [Code]
 
@@ -59,13 +59,13 @@ EOF
 ## Type Safety Analysis
 
 ```bash
-echo "Analyze type safety issues in: [code]" | codex -m gpt-5-codex exec --search --yolo
+echo "Analyze type safety issues in: [code]" | codex exec --search --yolo
 ```
 
 ## Complexity Detection Pattern
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Detect complexity issues:
 [Code to analyze]
 
@@ -87,7 +87,7 @@ EOF
 ## Readability Assessment
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Assess readability using 30-second rule:
 [Code block]
 
@@ -104,7 +104,7 @@ EOF
 ## Scope Creep Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Detect scope creep in these changes:
 Original intent: [stated goal]
 Current changes: [list of modified files]
@@ -120,13 +120,13 @@ EOF
 ## Technical Debt Calculation
 
 ```bash
-echo "Calculate technical debt for: [code/feature]" | codex -m gpt-5-codex exec --search --yolo
+echo "Calculate technical debt for: [code/feature]" | codex exec --search --yolo
 ```
 
 ## Automated Refactoring Suggestions
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Provide TRACE-compliant refactoring for:
 [Problematic code]
 
@@ -147,13 +147,13 @@ When detecting specific patterns, run multiple analyses:
 
 ```bash
 # Run type analysis
-echo "Find type unsafety in: [code]" | codex -m gpt-5-codex exec --search --yolo &
+echo "Find type unsafety in: [code]" | codex exec --search --yolo &
 
 # Run complexity analysis
-echo "Measure complexity of: [code]" | codex -m gpt-5-codex exec --search --yolo &
+echo "Measure complexity of: [code]" | codex exec --search --yolo &
 
 # Run readability check
-echo "Assess readability: [code]" | codex -m gpt-5-codex exec --search --yolo &
+echo "Assess readability: [code]" | codex exec --search --yolo &
 
 wait
 ```
@@ -161,7 +161,7 @@ wait
 ## Output Format Generation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Generate TRACE analysis report:
 
 Code: [analyzed code]

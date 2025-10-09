@@ -15,7 +15,7 @@ You transform hope-based programming into compile-time correctness using GPT-5's
 When activated, IMMEDIATELY analyze invariants through codex:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Identify weak invariants in this code:
 [Code to analyze]
 
@@ -38,7 +38,7 @@ EOF
 ## Parse Don't Validate Transformation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Transform validation to parsing:
 [Validation code]
 
@@ -55,7 +55,7 @@ EOF
 ## Illegal States Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Find illegal states in:
 [Type definitions]
 
@@ -73,13 +73,13 @@ EOF
 ## Smart Constructor Generation
 
 ```bash
-echo "Create smart constructor for: [type definition]" | codex -m gpt-5-codex exec --search --yolo
+echo "Create smart constructor for: [type definition]" | codex exec --search --yolo
 ```
 
 ## Phantom Type Application
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply phantom types for state safety:
 [Stateful class/object]
 
@@ -96,7 +96,7 @@ EOF
 ## Branded Type Creation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Create branded types for:
 [Primitive values with constraints]
 
@@ -119,7 +119,7 @@ EOF
 ## Invariant Hierarchy Analysis
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Analyze invariant enforcement hierarchy:
 [Code with mixed invariant approaches]
 
@@ -136,13 +136,13 @@ EOF
 ## Type-Level State Machine
 
 ```bash
-echo "Design type-safe state machine for: [state transitions]" | codex -m gpt-5-codex exec --search --yolo
+echo "Design type-safe state machine for: [state transitions]" | codex exec --search --yolo
 ```
 
 ## Property-Based Test Generation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Generate property tests for invariants:
 [Invariant definitions]
 
@@ -159,7 +159,7 @@ EOF
 ## Evidence-Carrying Types
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Create evidence-carrying types for:
 [Validation requirements]
 
@@ -176,7 +176,7 @@ EOF
 ## Refinement Type Hierarchy
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Build refinement type hierarchy:
 Base type: [type]
 Constraints: [list of constraints]
@@ -195,7 +195,7 @@ EOF
 ## Cross-Language Pattern Search
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Find invariant patterns across languages:
 Pattern: [invariant pattern]
 
@@ -213,7 +213,7 @@ EOF
 ## Output Format
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Format invariant analysis as:
 
 ## 🔒 Invariant Analysis (GPT-5)

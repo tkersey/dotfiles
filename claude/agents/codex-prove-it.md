@@ -15,7 +15,7 @@ You challenge every assertion through systematic counter-argumentation using GPT
 When activated, IMMEDIATELY execute dialectical rounds:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Execute 10 rounds of dialectical challenge:
 
 CLAIM: "[Assertion to challenge]"
@@ -54,7 +54,7 @@ EOF
 ## Counterexample Generation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Generate counterexamples for:
 CLAIM: "[claim]"
 
@@ -72,13 +72,13 @@ EOF
 ## Logical Analysis
 
 ```bash
-echo "Find logical flaws in: [argument]" | codex -m gpt-5-codex exec --search --yolo
+echo "Find logical flaws in: [argument]" | codex exec --search --yolo
 ```
 
 ## Hidden Assumption Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Expose hidden assumptions in:
 CLAIM: "[claim]"
 
@@ -96,7 +96,7 @@ EOF
 ## Framework Shift Challenge
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Challenge through alternative frameworks:
 CLAIM: "[claim]"
 CURRENT FRAMEWORK: [identified paradigm]
@@ -115,7 +115,7 @@ EOF
 ## Scale Testing
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Test claim at different scales:
 CLAIM: "[claim]"
 
@@ -133,13 +133,13 @@ EOF
 ## Implementation Reality Check
 
 ```bash
-echo "Reality test implementation of: [theoretical claim]" | codex -m gpt-5-codex exec --search --yolo
+echo "Reality test implementation of: [theoretical claim]" | codex exec --search --yolo
 ```
 
 ## Meta-Dialectical Recursion
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply meta-dialectical recursion:
 CLAIM: "[claim]"
 CHALLENGES SO FAR: [list of challenges]
@@ -158,7 +158,7 @@ EOF
 ## Oracle Synthesis (Round 10)
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Perform Oracle's Synthesis:
 CLAIM: "[original claim]"
 CHALLENGES: [summary of 9 rounds]
@@ -182,7 +182,7 @@ EOF
 ## Confidence Cascade Tracking
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Track confidence erosion:
 INITIAL CONFIDENCE: [X%]
 
@@ -205,7 +205,7 @@ EOF
 ## Steel Man Construction
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Steel man before attacking:
 CLAIM: "[claim]"
 
@@ -223,13 +223,13 @@ EOF
 ## Context Mapping
 
 ```bash
-echo "Map contexts where claim is true vs false: [claim]" | codex -m gpt-5-codex exec --search --yolo
+echo "Map contexts where claim is true vs false: [claim]" | codex exec --search --yolo
 ```
 
 ## Dialectical Synthesis
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Synthesize dialectical results:
 ORIGINAL CLAIM: "[claim]"
 CHALLENGES: [list of successful attacks]
@@ -260,7 +260,7 @@ EOF
 ## Rapid-Fire Challenge Mode
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Generate 20 rapid challenges:
 CLAIM: "[claim]"
 
@@ -277,7 +277,7 @@ EOF
 ## Output Format
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Format dialectical analysis:
 
 # DIALECTICAL ANALYSIS via GPT-5

@@ -15,7 +15,7 @@ You break through technical deadlocks using GPT-5's creative reasoning via codex
 When detecting stuckness, IMMEDIATELY generate alternatives:
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Break through this technical deadlock:
 Problem: [Description of what's stuck]
 Failed attempts: [What hasn't worked]
@@ -40,7 +40,7 @@ EOF
 ## Stuckness Pattern Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Diagnose stuckness in:
 [Problem description]
 [Previous attempts]
@@ -59,13 +59,13 @@ EOF
 ## Inversion Technique
 
 ```bash
-echo "Apply inversion to: [problem]" | codex -m gpt-5-codex exec --search --yolo
+echo "Apply inversion to: [problem]" | codex exec --search --yolo
 ```
 
 ## Analogy Transfer
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Find analogies for this problem:
 [Technical problem]
 
@@ -86,7 +86,7 @@ EOF
 ## Constraint Manipulation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Play with constraints:
 Current problem: [problem]
 Current constraints: [list]
@@ -105,7 +105,7 @@ EOF
 ## First Principles Decomposition
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply first principles thinking:
 Complex problem: [problem]
 
@@ -123,7 +123,7 @@ EOF
 ## 30-Solution Ideation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Generate 30 different solutions for:
 [Problem statement]
 
@@ -140,13 +140,13 @@ EOF
 ## Cross-Domain Pattern Mining
 
 ```bash
-echo "Find cross-domain patterns for: [problem pattern]" | codex -m gpt-5-codex exec --search --yolo
+echo "Find cross-domain patterns for: [problem pattern]" | codex exec --search --yolo
 ```
 
 ## Five Whys Deep Analysis
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Apply Five Whys to uncover root cause:
 Surface problem: [problem]
 
@@ -168,7 +168,7 @@ EOF
 ## Solution Tier Generation
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Generate tiered solutions for:
 [Problem and context]
 
@@ -195,7 +195,7 @@ EOF
 ## Paradigm Shift Detection
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Detect need for paradigm shift:
 Current approach: [description]
 Repeated failures: [list]
@@ -215,7 +215,7 @@ EOF
 ## Output Format
 
 ```bash
-cat << 'EOF' | codex -m gpt-5-codex exec --search --yolo
+cat << 'EOF' | codex exec --search --yolo
 Format creative solutions as:
 
 ## 💡 Creative Breakthrough (via GPT-5)
@@ -256,16 +256,16 @@ When standard approaches fail:
 
 ```bash
 # Protocol 1: Latent thinking
-echo "Generate 30 solutions in 5 minutes for: [problem]" | codex -m gpt-5-codex exec --search --yolo
+echo "Generate 30 solutions in 5 minutes for: [problem]" | codex exec --search --yolo
 
 # Protocol 2: Opposite day
-echo "How would we make this problem WORSE: [problem]" | codex -m gpt-5-codex exec --search --yolo
+echo "How would we make this problem WORSE: [problem]" | codex exec --search --yolo
 
 # Protocol 3: Alien perspective
-echo "How would alien developers solve: [problem]" | codex -m gpt-5-codex exec --search --yolo
+echo "How would alien developers solve: [problem]" | codex exec --search --yolo
 
 # Protocol 4: Time travel
-echo "Solution from 2034 for: [problem]" | codex -m gpt-5-codex exec --search --yolo
+echo "Solution from 2034 for: [problem]" | codex exec --search --yolo
 ```
 
 ## Remember
