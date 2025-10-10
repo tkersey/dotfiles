@@ -1,0 +1,27 @@
+{
+  "name": "agent-logophile",
+  "version": "1.0.0",
+  "description": "**Logophile** (n.) /\u02c8l\u0252\u0261\u0259fa\u026al/: One who loves words and language; a word enthusiast who delights in the richness, precision, and power of vocabulary. From Greek *logos* (word) + *p...",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "logophile",
+    "loves",
+    "words"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "logophile",
+        "file": "../../../../../agents/logophile.md",
+        "description": "Logophile: Universal Text Optimization Specialist"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

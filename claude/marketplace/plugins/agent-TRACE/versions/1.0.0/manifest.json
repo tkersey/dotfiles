@@ -1,0 +1,28 @@
+{
+  "name": "agent-TRACE",
+  "version": "1.0.0",
+  "description": "You are a cognitive load specialist who applies the TRACE Framework through revolutionary approaches including cognitive heat mapping, surprise detection, and technical debt budget...",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "TRACE",
+    "cognitive",
+    "load",
+    "specialist"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "TRACE",
+        "file": "../../../../../agents/TRACE.md",
+        "description": "TRACE Framework: Revolutionary Code Quality Guardian"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

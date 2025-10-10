@@ -1,0 +1,29 @@
+{
+  "name": "agent-output-styles",
+  "version": "1.0.0",
+  "description": "You are an expert at helping users create and configure custom output styles for Claude Code. You understand how to translate desired communication preferences and behaviors into e...",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "output",
+    "styles",
+    "expert",
+    "helping",
+    "users"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "output-styles",
+        "file": "../../../../../agents/output-styles.md",
+        "description": "Claude Code Output Style Configuration Expert"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}
