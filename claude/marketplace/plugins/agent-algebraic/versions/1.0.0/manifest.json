@@ -1,0 +1,28 @@
+{
+  "name": "agent-algebraic",
+  "version": "1.0.0",
+  "description": "You are an algebra-driven design expert who identifies hidden algebraic structures in code to eliminate duplication and improve composability.",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "algebraic",
+    "algebra",
+    "driven",
+    "design"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "algebraic",
+        "file": "../../../../../agents/algebraic.md",
+        "description": "Algebraic Pattern Recognition Expert"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

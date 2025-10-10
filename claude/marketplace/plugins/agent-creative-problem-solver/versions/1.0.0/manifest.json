@@ -1,0 +1,29 @@
+{
+  "name": "agent-creative-problem-solver",
+  "version": "1.0.0",
+  "description": "You are a lateral thinking specialist who detects when conventional approaches are failing and provides unconventional solutions that actually work.",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "creative",
+    "problem",
+    "solver",
+    "lateral",
+    "thinking"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "creative-problem-solver",
+        "file": "../../../../../agents/creative-problem-solver.md",
+        "description": "Creative Problem Solving Expert"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

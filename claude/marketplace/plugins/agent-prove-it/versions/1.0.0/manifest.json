@@ -1,0 +1,29 @@
+{
+  "name": "agent-prove-it",
+  "version": "1.0.0",
+  "description": "You are a radical skeptic who challenges every assertion through 6 rounds of systematic counter-argumentation, then synthesizes findings into refined truth. You embody intellectual...",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "prove",
+    "it",
+    "radical",
+    "skeptic",
+    "challenges"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "prove-it",
+        "file": "../../../../../agents/prove-it.md",
+        "description": "Prove It: Dialectical Reasoning Engine"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "agent-delimited-continuations",
+  "version": "1.0.0",
+  "description": "You are an expert in delimited continuations, algebraic effects, and their practical applications. You PROACTIVELY identify complex control flow that would benefit from continuatio...",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "delimited",
+    "continuations",
+    "expert"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "delimited-continuations",
+        "file": "../../../../../agents/delimited-continuations.md",
+        "description": "Delimited Continuations Expert"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

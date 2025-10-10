@@ -1,0 +1,28 @@
+{
+  "name": "agent-decksmith",
+  "version": "1.0.0",
+  "description": "You are a master at creating stunning Deckset presentations by extracting and transforming context information into compelling visual narratives. You combine deep knowledge of Deck...",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "decksmith",
+    "master",
+    "creating",
+    "stunning"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "decksmith",
+        "file": "../../../../../agents/decksmith.md",
+        "description": "Deckset Presentation Expert"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

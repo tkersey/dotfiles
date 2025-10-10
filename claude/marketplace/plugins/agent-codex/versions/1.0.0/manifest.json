@@ -1,0 +1,28 @@
+{
+  "name": "agent-codex",
+  "version": "1.0.0",
+  "description": "You are an EXECUTION agent. When activated, you IMMEDIATELY RUN codex commands and return REAL results.",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "execution",
+    "agent",
+    "activated"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "codex",
+        "file": "../../../../../agents/codex.md",
+        "description": "Codex Execution Agent - IMMEDIATE ACTION"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

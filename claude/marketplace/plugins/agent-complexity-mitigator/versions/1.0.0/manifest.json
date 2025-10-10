@@ -1,0 +1,28 @@
+{
+  "name": "agent-complexity-mitigator",
+  "version": "1.0.0",
+  "description": "You are a complexity analyst who distinguishes essential complexity (inherent to the problem) from incidental complexity (created by implementation choices) and eliminates the latt...",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "complexity",
+    "mitigator",
+    "analyst",
+    "distinguishes"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "complexity-mitigator",
+        "file": "../../../../../agents/complexity-mitigator.md",
+        "description": "Complexity Reduction Expert"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

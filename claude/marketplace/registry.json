@@ -1,0 +1,591 @@
+{
+  "name": "tk-dotfiles-marketplace",
+  "version": "1.0.0",
+  "description": "Personal Claude Code plugin marketplace featuring curated productivity and development tools",
+  "url": "https://github.com/yourusername/dotfiles/claude/marketplace",
+  "maintainers": [
+    {
+      "name": "tk"
+    }
+  ],
+  "plugins": {
+    "agent-TRACE": {
+      "name": "agent-TRACE",
+      "description": "You are a cognitive load specialist who applies the TRACE Framework through revolutionary approaches including cognitive heat mapping, surprise detection, and technical debt budget...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "TRACE",
+        "cognitive",
+        "load",
+        "specialist"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-TRACE/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-adas-meta-search": {
+      "name": "agent-adas-meta-search",
+      "description": "Orchestrates **authentic ADAS**: meta agent iteratively *programs* novel architectures in executable Python, discovering efficacy through evolutionary search.",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "adas",
+        "meta",
+        "search",
+        "orchestrates",
+        "authentic"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-adas-meta-search/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-agent-forge-ultimate": {
+      "name": "agent-agent-forge-ultimate",
+      "description": "You are the ultimate agent creation system that designs, builds, and orchestrates complete agentic systems. You push Claude Code sub-agents to their absolute limits, creating coord...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "agent",
+        "forge",
+        "ultimate",
+        "creation"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-agent-forge-ultimate/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-algebraic": {
+      "name": "agent-algebraic",
+      "description": "You are an algebra-driven design expert who identifies hidden algebraic structures in code to eliminate duplication and improve composability.",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "algebraic",
+        "algebra",
+        "driven",
+        "design"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-algebraic/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-clarification-expert": {
+      "name": "agent-clarification-expert",
+      "description": "You are a requirements analyst who prevents wasted implementation effort by clarifying ambiguous requests BEFORE work begins.",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "clarification",
+        "expert",
+        "requirements",
+        "analyst",
+        "prevents"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-clarification-expert/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-codex": {
+      "name": "agent-codex",
+      "description": "You are an EXECUTION agent. When activated, you IMMEDIATELY RUN codex commands and return REAL results.",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "codex",
+        "execution",
+        "agent",
+        "activated"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-codex/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-complexity-mitigator": {
+      "name": "agent-complexity-mitigator",
+      "description": "You are a complexity analyst who distinguishes essential complexity (inherent to the problem) from incidental complexity (created by implementation choices) and eliminates the latt...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "complexity",
+        "mitigator",
+        "analyst",
+        "distinguishes"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-complexity-mitigator/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-creative-problem-solver": {
+      "name": "agent-creative-problem-solver",
+      "description": "You are a lateral thinking specialist who detects when conventional approaches are failing and provides unconventional solutions that actually work.",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "creative",
+        "problem",
+        "solver",
+        "lateral",
+        "thinking"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-creative-problem-solver/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-decksmith": {
+      "name": "agent-decksmith",
+      "description": "You are a master at creating stunning Deckset presentations by extracting and transforming context information into compelling visual narratives. You combine deep knowledge of Deck...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "decksmith",
+        "master",
+        "creating",
+        "stunning"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-decksmith/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-delimited-continuations": {
+      "name": "agent-delimited-continuations",
+      "description": "You are an expert in delimited continuations, algebraic effects, and their practical applications. You PROACTIVELY identify complex control flow that would benefit from continuatio...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "delimited",
+        "continuations",
+        "expert"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-delimited-continuations/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-gen-commands": {
+      "name": "agent-gen-commands",
+      "description": "You are an expert at designing and creating powerful slash commands for Claude Code. You PROACTIVELY identify opportunities to convert repetitive prompts, complex workflows, or spe...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "gen",
+        "commands",
+        "expert",
+        "designing",
+        "creating"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-gen-commands/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-gen-sub-agents": {
+      "name": "agent-gen-sub-agents",
+      "description": "When the agent should activate (PUT THIS EARLY)",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "gen",
+        "sub",
+        "agents",
+        "agent",
+        "should"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-gen-sub-agents/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-gleaner": {
+      "name": "agent-gleaner",
+      "description": "- **Date**: [ISO 8601 timestamp]",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "gleaner",
+        "date",
+        "timestamp"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-gleaner/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-hurl-expert": {
+      "name": "agent-hurl-expert",
+      "description": "You are THE authoritative expert on Hurl (https://hurl.dev/), the modern command-line tool that revolutionizes HTTP testing. You PROACTIVELY convert curl commands to Hurl without b...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "hurl",
+        "expert",
+        "authoritative"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-hurl-expert/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-invariant-ace": {
+      "name": "agent-invariant-ace",
+      "description": "You are a type-level guarantee specialist who transforms hope-based programming into compile-time correctness by making impossible states unrepresentable.",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "invariant",
+        "ace",
+        "type",
+        "level",
+        "guarantee"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-invariant-ace/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-learnings": {
+      "name": "agent-learnings",
+      "description": "ls ~/.learnings/learnings/ | grep \"\\.md$\" | sort -n | tail -1",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "learnings",
+        "grep"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-learnings/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-logophile": {
+      "name": "agent-logophile",
+      "description": "**Logophile** (n.) /\u02c8l\u0252\u0261\u0259fa\u026al/: One who loves words and language; a word enthusiast who delights in the richness, precision, and power of vocabulary. From Greek *logos* (word) + *p...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "logophile",
+        "loves",
+        "words"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-logophile/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-openai-agents-ts": {
+      "name": "agent-openai-agents-ts",
+      "description": "You are an expert in the OpenAI Agents SDK for TypeScript who PROACTIVELY provides comprehensive, production-ready solutions. You possess deep knowledge of agent orchestration, too...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "openai",
+        "agents",
+        "ts",
+        "expert"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-openai-agents-ts/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-openai": {
+      "name": "agent-openai",
+      "description": "You are a comprehensive expert on OpenAI's Responses API (released 2024) and the latest GPT models including GPT-4.1, GPT-5, and their variants. You PROACTIVELY identify opportunit...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "openai",
+        "comprehensive",
+        "expert"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-openai/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-output-styles": {
+      "name": "agent-output-styles",
+      "description": "You are an expert at helping users create and configure custom output styles for Claude Code. You understand how to translate desired communication preferences and behaviors into e...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "output",
+        "styles",
+        "expert",
+        "helping",
+        "users"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-output-styles/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-pr-feedback": {
+      "name": "agent-pr-feedback",
+      "description": "You are a PR specialist who autonomously handles the entire pull request lifecycle from creation through merge.",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "pr",
+        "feedback",
+        "specialist",
+        "autonomously",
+        "handles"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-pr-feedback/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-prove-it": {
+      "name": "agent-prove-it",
+      "description": "You are a radical skeptic who challenges every assertion through 6 rounds of systematic counter-argumentation, then synthesizes findings into refined truth. You embody intellectual...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "prove",
+        "it",
+        "radical",
+        "skeptic",
+        "challenges"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-prove-it/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-typescript": {
+      "name": "agent-typescript",
+      "description": "You are an expert in TypeScript's type system, specializing in advanced type theory applications to solve complex type challenges and enforce compile-time safety.",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "typescript",
+        "expert",
+        "type"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-typescript/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-unison-developer": {
+      "name": "agent-unison-developer",
+      "description": "You are an expert Unison developer who PROACTIVELY guides users through Unison's unique programming model. You follow the structured development process to ensure type-safe, idioma...",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "unison",
+        "developer",
+        "expert"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-unison-developer/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-universalist": {
+      "name": "agent-universalist",
+      "description": "You help developers recognize universal properties in their code and derive better abstractions from them. You teach pattern recognition, not category theory implementation.",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "universalist",
+        "help",
+        "developers",
+        "recognize"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-universalist/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    },
+    "agent-unsoundness-detector": {
+      "name": "agent-unsoundness-detector",
+      "description": "You are a paranoid code auditor who assumes code is guilty until proven innocent, finding every possible way it can fail at runtime.",
+      "latestVersion": "1.0.0",
+      "keywords": [
+        "unsoundness",
+        "detector",
+        "paranoid",
+        "code",
+        "auditor"
+      ],
+      "versions": {
+        "1.0.0": {
+          "version": "1.0.0",
+          "publishedAt": "2025-10-09T00:00:00Z",
+          "manifestUrl": "plugins/agent-unsoundness-detector/versions/1.0.0/manifest.json",
+          "deprecated": false,
+          "yanked": false
+        }
+      }
+    }
+  },
+  "categories": {
+    "productivity": {
+      "name": "Productivity",
+      "description": "Tools enhancing workflow efficiency",
+      "plugins": [
+        "agent-TRACE",
+        "agent-clarification-expert",
+        "agent-complexity-mitigator",
+        "agent-creative-problem-solver",
+        "agent-decksmith",
+        "agent-gleaner",
+        "agent-invariant-ace",
+        "agent-learnings",
+        "agent-prove-it",
+        "agent-universalist",
+        "agent-unsoundness-detector"
+      ]
+    },
+    "development": {
+      "name": "Development",
+      "description": "Software development utilities",
+      "plugins": [
+        "agent-algebraic",
+        "agent-delimited-continuations",
+        "agent-gen-commands",
+        "agent-gen-sub-agents",
+        "agent-hurl-expert",
+        "agent-unison-developer"
+      ]
+    },
+    "ai-enhancement": {
+      "name": "AI Enhancement",
+      "description": "Augmenting Claude's capabilities",
+      "plugins": [
+        "agent-adas-meta-search",
+        "agent-agent-forge-ultimate",
+        "agent-codex",
+        "agent-logophile",
+        "agent-openai-agents-ts",
+        "agent-openai",
+        "agent-output-styles",
+        "agent-typescript"
+      ]
+    },
+    "integration": {
+      "name": "Integration",
+      "description": "External service integrations",
+      "plugins": [
+        "agent-pr-feedback"
+      ]
+    }
+  },
+  "metadata": {
+    "lastUpdated": "2025-10-09T00:00:00Z",
+    "totalPlugins": 26,
+    "totalDownloads": 0
+  }
+}

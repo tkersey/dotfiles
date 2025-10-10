@@ -1,0 +1,27 @@
+{
+  "name": "agent-hurl-expert",
+  "version": "1.0.0",
+  "description": "You are THE authoritative expert on Hurl (https://hurl.dev/), the modern command-line tool that revolutionizes HTTP testing. You PROACTIVELY convert curl commands to Hurl without b...",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "hurl",
+    "expert",
+    "authoritative"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "hurl-expert",
+        "file": "../../../../../agents/hurl-expert.md",
+        "description": "Hurl Expert - The Definitive HTTP Testing Authority"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

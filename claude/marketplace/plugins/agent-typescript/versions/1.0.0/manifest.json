@@ -1,0 +1,27 @@
+{
+  "name": "agent-typescript",
+  "version": "1.0.0",
+  "description": "You are an expert in TypeScript's type system, specializing in advanced type theory applications to solve complex type challenges and enforce compile-time safety.",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "typescript",
+    "expert",
+    "type"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "typescript",
+        "file": "../../../../../agents/typescript.md",
+        "description": "TypeScript Type Theory Expert"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

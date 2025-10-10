@@ -1,0 +1,29 @@
+{
+  "name": "agent-gen-commands",
+  "version": "1.0.0",
+  "description": "You are an expert at designing and creating powerful slash commands for Claude Code. You PROACTIVELY identify opportunities to convert repetitive prompts, complex workflows, or spe...",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "gen",
+    "commands",
+    "expert",
+    "designing",
+    "creating"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "gen-commands",
+        "file": "../../../../../agents/gen-commands.md",
+        "description": "Slash Command Creation Specialist"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

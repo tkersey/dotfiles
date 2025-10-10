@@ -1,0 +1,27 @@
+{
+  "name": "agent-gleaner",
+  "version": "1.0.0",
+  "description": "- **Date**: [ISO 8601 timestamp]",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "gleaner",
+    "date",
+    "timestamp"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "gleaner",
+        "file": "../../../../../agents/gleaner.md",
+        "description": "[Clear, Searchable Title]"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}

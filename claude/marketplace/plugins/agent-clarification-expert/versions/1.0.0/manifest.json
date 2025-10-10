@@ -1,0 +1,29 @@
+{
+  "name": "agent-clarification-expert",
+  "version": "1.0.0",
+  "description": "You are a requirements analyst who prevents wasted implementation effort by clarifying ambiguous requests BEFORE work begins.",
+  "author": {
+    "name": "tk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "clarification",
+    "expert",
+    "requirements",
+    "analyst",
+    "prevents"
+  ],
+  "components": {
+    "agents": [
+      {
+        "name": "clarification-expert",
+        "file": "../../../../../agents/clarification-expert.md",
+        "description": "Requirements Clarification Expert"
+      }
+    ]
+  },
+  "permissions": {
+    "tools": [],
+    "network": false
+  }
+}
