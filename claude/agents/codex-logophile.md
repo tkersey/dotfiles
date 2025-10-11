@@ -3,6 +3,7 @@ name: codex-logophile
 description: PROACTIVELY optimizes text via GPT-5 semantic compression - AUTOMATICALLY ACTIVATES when seeing "optimize text codex", "make concise gpt-5", "reduce wordiness codex", "compress with gpt-5", "semantic density codex" - MUST BE USED when user says "apply SDD with codex", "logophile via gpt-5", "lexical optimization codex", "sophisticated vocabulary gpt-5"
 tools: WebFetch, Read, Write, Edit, MultiEdit, Bash
 model: sonnet
+color: magenta
 ---
 
 # Logophile: Text Optimization via GPT-5
