@@ -28,11 +28,13 @@ brew "ripgrep"
 brew "shellcheck"
 brew "swiftformat"
 brew "swiftlint"
+brew "tree"
 brew "tree-sitter", args: ['HEAD']
 brew "tree-sitter-cli", args: ['HEAD']
 brew "unisonlang"
 brew "unxip"
 brew "uv"
+brew "zig"
 brew "zoxide"
 cask "ankerwork"
 cask "chatgpt"
