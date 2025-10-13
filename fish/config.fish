@@ -21,3 +21,8 @@ abbr -a -g nvim-plugins '~/.local/share/nvim/lazy'
 
 # Variables
 set -gx EDITOR nvim
+
+# goenv initialization
+set -x GOENV_ROOT $HOME/.goenv
+fish_add_path $GOENV_ROOT/bin
+goenv init - | source
