@@ -38,6 +38,7 @@ When crafting prompts, documentation, or any communication, apply the Enhanced S
 > "Precision through sophistication, brevity through vocabulary, clarity through structure, eloquence through erudition."
 
 This transcends mere compression, achieving:
+
 - **Maximize meaning per token** - Each word carries maximum semantic weight
 - **Strategic vocabulary selection** - Rare but precise terms focus attention better than verbose explanations
 - **Structural clarity** - Markdown and formatting preserve comprehension despite brevity
@@ -66,12 +67,14 @@ GOOD: "This one-line fix solves the issue. Ship it."
 ## Cognitive Load Indicators
 
 🟢 **Green flags** (low cognitive load):
+
 - Function fits on one screen
 - Clear inputs → outputs mapping
 - Types document the intent
 - Tests are trivial to write
 
 🔴 **Red flags** (cognitive overload):
+
 - "Let me explain how this works..."
 - Multiple files open to understand one function
 - Test setup longer than the test
@@ -91,6 +94,7 @@ Never go past level 2 for routine changes.
 ## Making the Right Choice
 
 When facing a decision, ask in order:
+
 1. **What would types do?** - Can we make the bad path impossible?
 2. **What would a stranger think?** - Is this obvious without context?
 3. **What would tomorrow need?** - Does this help or hinder future work?
@@ -104,6 +108,7 @@ Comments are documentation for future developers. Use them sparingly and purpose
 ## Where Comments Belong
 
 **Place comments on these primary declarations only:**
+
 - Classes and their purpose
 - Structs and their role
 - Types and type aliases
@@ -114,6 +119,7 @@ Comments are documentation for future developers. Use them sparingly and purpose
 ## Comment Placement
 
 **Write comments using the canonical documentation style for the current language:**
+
 - Use block comments above declarations
 - Follow the language's idiomatic documentation format
 - Place documentation directly above the declaration
@@ -121,6 +127,7 @@ Comments are documentation for future developers. Use them sparingly and purpose
 **Don't add inline or trailing comments, ever.**
 
 **Keep function bodies self-documenting through:**
+
 - Descriptive variable names
 - Clear control flow
 - Extracted helper functions
@@ -129,11 +136,13 @@ Comments are documentation for future developers. Use them sparingly and purpose
 ## Comment Content
 
 **Focus comments on the "why" and "what":**
+
 - What contract does this interface represent?
 - What business rule does this function enforce?
 - What state does this type represent?
 
 **Let the code itself show the "how":**
+
 - Implementation details live in the code structure
 - Algorithm steps are visible through clear naming
 - Edge cases are handled through explicit conditionals
@@ -141,6 +150,7 @@ Comments are documentation for future developers. Use them sparingly and purpose
 ## The Litmus Test
 
 Before adding a comment, ask: "Can I make the code itself clearer instead?"
+
 - Rename the variable to be more descriptive
 - Extract a complex expression into a well-named function
 - Use types to make constraints explicit
@@ -151,6 +161,7 @@ Comments are for documenting **intent and contracts** at declaration boundaries.
 # Attribution
 
 **Maintain user ownership of all work:**
+
 - Commit messages contain only the change description
 - Pull request descriptions focus solely on the technical changes
 - Code comments document the code itself, not the tooling used
@@ -175,3 +186,7 @@ The user is the sole author. Tools are invisible.
 Specialized sub-agents in @claude/agents/ activate via literal string matching on their description fields.
 When you recognize patterns, think using the exact trigger phrases from their descriptions.
 The system matches exact character sequences, not semantic meaning.
+
+# Beads Issue Tracker
+
+We track work in Beads instead of Markdown. Run \`bd quickstart\` to see how.
