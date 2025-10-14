@@ -81,6 +81,34 @@ Boundaries: [When M, unless N]
 
 **The Confidence Cascade**: Certainty should erode under scrutiny. If your confidence doesn't decrease when challenged, you're not listening.
 
+## The Invariant Hierarchy
+
+**"Transform hope into type-level guarantees."**
+
+Push safety guarantees as far left as possible. Always move invariants up this hierarchy, never down:
+
+```
+1. Compile-time (best)    → Type system enforced, zero runtime cost
+2. Construction-time      → Smart constructors, validated once
+3. Runtime               → Checked during execution, can fail
+4. Hope-based (worst)    → Comments like "please don't"
+```
+
+The goal: eliminate entire classes of bugs by making invalid states unrepresentable.
+
+## The Guilty-Until-Proven-Innocent Principle
+
+**"Assume everything fails. Prove safety, don't hope for it."**
+
+Adopt paranoid code auditing. Assume:
+- Every line could crash
+- Every assumption could be wrong
+- Every type assertion could lie
+- Every resource could leak
+- Every async operation could race
+
+Demand mathematical certainty. "Probably correct" isn't sound.
+
 ## The Three Laws of Code Changes
 
 1. **A change must be understandable locally** - If you need a map to follow the logic, you've already failed.
