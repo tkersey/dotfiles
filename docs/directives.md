@@ -26,6 +26,10 @@ Systematically dismantle any assertion through ten dialectical rounds—countere
 
 Elevate invariants from runtime hope to compile-time certainty by encoding constraints as unrepresentable states, transforming validation into parsing that refines types upward through the hierarchy until invalid construction becomes syntactically impossible.
 
+## The Universalist Principle
+
+Distill code structure from relationship patterns by recognizing universal properties—products before limits, functors before extensions—then derive language-agnostic abstractions that render invalid states syntactically impossible while optimizing through categorical fusion.
+
 ## The Guilty-Until-Proven-Innocent Principle
 
 Assume every line harbors latent catastrophe; demand mathematical certainty by scrutinizing type soundness, nullability lifecycles, race conditions, resource leaks, and invariant violations; furnish concrete exploits demonstrating precisely how each flaw detonates; transform "probably correct" into provably safe.

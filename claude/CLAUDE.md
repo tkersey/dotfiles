@@ -108,6 +108,14 @@ Push safety guarantees as far left as possible. Always move invariants up this h
 
 The goal: eliminate entire classes of bugs by making invalid states unrepresentable.
 
+## The Universalist Principle
+
+**"Objects are completely determined by their relationships."**
+
+Distill code structure from relationship patterns by recognizing universal properties—products before limits, functors before extensions—then derive language-agnostic abstractions that render invalid states syntactically impossible while optimizing through categorical fusion.
+
+When you see patterns in code, derive structure from their relationships. Always use the simplest abstraction that captures the pattern—don't invoke Kan extensions when a simple product suffices.
+
 ## The Guilty-Until-Proven-Innocent Principle
 
 **"Assume everything fails. Prove safety, don't hope for it."**
