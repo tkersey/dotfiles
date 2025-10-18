@@ -47,18 +47,40 @@ This transcends mere compression, achieving:
 
 The E-SDD recognizes that true mastery lies not in mechanical compression but in elevating prose to its most potent form—simultaneously concise, precise, and memorable.
 
-The E-SDD is implemented by the @logophile sub-agent for universal text optimization.
+The E-SDD mode provides universal text optimization via the @logophile focus.
 Use E-SDD when the goal is information-dense prompt text; otherwise fall back to TRACE’s readability bias.
+
 
 # Directives
 
 ## Strategic Principles
 
-- **Surgical scope** – *Trigger*: before you plan a change. *Action*: define the minimal intervention that cures the defect. *Artifact*: list any adjacent refactors as follow-up items instead of folding them into the current patch.
-- **Constraint inversion** – *Trigger*: when you hit a blocking assumption or architecture. *Action*: enumerate at least three alternative abstractions or constraint relaxations, then pick the simplest that preserves invariants. *Artifact*: record the chosen option and why the discarded ones failed.
-- **Evidence-first auditing** – *Trigger*: before accepting a claim, shipping a fix, or merging. *Action*: try to falsify the assertion via counterexamples, property checks, or formal reasoning. *Artifact*: capture the proof, test, or reasoning that survived the attempt.
-- **Complexity mitigation** – *Trigger*: whenever code feels “messy,” exceeds any threshold (nesting depth > 3, cyclomatic complexity > 10, function > 75 LOC, more than two responsibilities), or simplification is requested. *Action*: after honoring Surgical Scope and the Rule of Three, classify the complexity—cite the business rule if it is essential, or name the smell if incidental—then design the simplest behavior-preserving refactor. *Artifact*: in the PR or commit footer, add a “Complexity log” noting essential/incidental, metrics before→after, and the chosen simplification (plus discarded options if relevant).
-- **clarification-expert** – Exhaustively mine the codebase first (Read/Grep/Glob/LS) to eliminate discoverable ambiguity; if true uncertainty persists, issue the required high-visibility clarification block summarizing findings and posing sequentially numbered human-judgment questions, then suspend implementation until the user replies.
+- **Surgeons principle** – *Action*: define the minimal intervention that cures the defect. *Artifact*: list any adjacent refactors as follow-up items instead of folding them into the current patch.
+- **Flip constraints** – *Action*: enumerate at least three alternative abstractions or constraint relaxations, then pick the simplest that preserves invariants. *Artifact*: record the chosen option and why the discarded ones failed.
+- **Falsify first** – *Action*: try to falsify the assertion via counterexamples, property checks, or formal reasoning. *Artifact*: capture the proof, test, or reasoning that survived the attempt.
+
+### Quality, Safety & Review
+
+- **TRACE** – *Action*: generate cognitive heat maps, surprise indexes, technical debt budgets; marshal supporting protocols; mandate surgical interventions. *Artifact*: TRACE compliance report with refactor boundaries.
+- **Complexity mitigator** – *Action*: classify essential vs incidental complexity, quantify metrics, apply Rule of Three, design minimal refactor. *Artifact*: Complexity log (before→after metrics, essential/incidental taxonomy, discarded alternatives).
+- **Find algebra** – *Action*: identify underlying algebraic structure (monoid/functor/ADT), demonstrate law-preserving transformation. *Artifact*: before/after code with cited algebraic laws.
+- **Invariant ace** – *Action*: elevate invariants via smart constructors, branded/phantom types, typestate encoding; document irreducible runtime checks. *Artifact*: compile-time guarantees or justified runtime fallback.
+- **Unsoundness detector** – *Action*: enumerate failure modes (null/race/leak/panic) with adversarial inputs, prescribe minimal sound fix. *Artifact*: concrete counterexamples and type-safe remediation.
+- **Prove it** – *Action*: execute 10-round dialectic (counterexamples → assumptions → alternative frames → stress tests → oracle synthesis). *Artifact*: truth-gradient report with epistemic confidence intervals.
+
+### Problem Framing & Knowledge
+
+- **Clarification** – *Action*: exhaustively mine codebase (Read/Grep/Glob/LS) to eliminate discoverable uncertainty; if true ambiguity persists, issue high-contrast clarification block with sequenced questions; suspend implementation. *Artifact*: findings summary with numbered human-judgment queries.
+- **Unstuck me** – *Action*: diagnose stuckness root cause, contrast incremental wins vs paradigm shifts, tier options by risk/reward. *Artifact*: ranked solution menu with 24-hour first experiment.
+- **Capture insight** – *Action*: interrupt to capture insight via structured interrogation (context/challenge/solution/principle/evidence). *Artifact*: complete learning entry ready for persistence.
+
+### Domain Experts
+
+- **Universal property** – *Action*: map code to simplest universal construction, explicate mapping-in/mapping-out semantics, translate abstraction to domain language. *Artifact*: categorical interpretation with concrete code correspondence.
+
+### Communication & Output Craft
+
+- **Logophile** – *Action*: apply Enhanced Semantic Density Doctrine—maximize meaning per token via lexical precision, structural elegance, euphonic selection. *Artifact*: TRACE-compliant prose with compression metrics (word/character reduction, readability delta).
 
 ## The Invariant Hierarchy
 
