@@ -5,4 +5,5 @@ Brewfile.lock.json
 lazy-lock.json
 
 **/.claude/settings.local.json
-.beads
+.beads/*
+!.beads/*.jsonl

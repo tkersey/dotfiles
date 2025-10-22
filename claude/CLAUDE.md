@@ -1,3 +1,5 @@
+**Note**: This project uses [bd (beads)](https://github.com/steveyegge/beads) for issue tracking. Use `bd` commands instead of markdown TODOs. See `codex/AGENTS.md` for workflow details.
+
 # Claude Configuration
 
 This file contains recommended configuration settings for Claude when interacting with any repository.

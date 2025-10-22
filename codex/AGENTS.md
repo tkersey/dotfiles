@@ -2,36 +2,106 @@
 
 ## beads Agent Directive
 
-**Mission**  
-Use the `bd` CLI to own the single canonical workstream. Keep every task, blocker, and follow-up inside Beads so humans never have to reconcile Markdown lists again. v0.9.x expects a single active stream—finish or close the current one before spawning a new track. Default to the `bd` binary with `--json`; only reach for the MCP server when you are certain it targets this repo.
+All task coordination flows through `bd`; consult the quick-start below before kicking off new work.
 
-### Daily Loop
-- Start: `bd list --status in_progress --json` to resume anything mid-flight. If nothing is active, run `bd ready --json` and pick the highest-priority issue.
-- Inspect context with `bd show <id> --json`. Relay the key details back to the user before acting.
-- Claim work by moving it to in-progress: `bd update <id> --status in_progress --json`. Always reflect blockers or progress changes immediately.
+## Issue Tracking with bd (beads)
 
-### Working Issues
-- While implementing, log meaningful breadcrumbs: `bd comments add <id> "what changed / what's next"` so the next session can continue smoothly.
-- If you discover a blocker, mark the current issue blocked (`bd update <id> --status blocked --json`), create the blocker issue (see below), and link them before doing anything else.
-- Wrap up with `bd close <id> --reason "Short, user-facing result" --json`. If work is incomplete, reset to open and leave a comment explaining why.
+**IMPORTANT**: This project uses **bd (beads)** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
 
-### Creating & Linking Work
-- New work you discover: `bd create "Title" -t bug|task|feature -p 0-4 --deps discovered-from:<current-id> --json`. Include enough description for an offline human review.
-- To express hard dependencies after the fact: `bd dep add <child> <parent> --type blocks`. Use `discovered-from` for lateral context and `parent-child` for epic/subtask relationships.
-- Keep priorities honest: 0 = critical, 1 = high, 2 = normal, 3 = low polish, 4 = backlog. Default to 2 if unsure.
-- Use labels sparingly but consistently: `bd label add <id> backend`, `bd label remove <id> legacy`.
+### Why bd?
 
-### Sync & Hygiene
-- Auto import/export keeps `.beads/issues.jsonl` in sync; no manual `bd export` needed unless you want an ad-hoc snapshot, and never hand-edit the JSONL or SQLite files directly.
-- If you touched the repo outside `bd` (e.g., git pull with issue changes), run `bd sync --dry-run` to preview and resolve collisions before pushing.
-- When the daemon auto-starts, let it run. Only fall back to `--no-daemon` if you see repeated connection failures.
+- Dependency-aware: Track blockers and relationships between issues
+- Git-friendly: Auto-syncs to JSONL for version control
+- Agent-optimized: JSON output, ready work detection, discovered-from links
+- Prevents duplicate tracking systems and confusion
 
-### When Unsure
-- `bd quickstart` gives the official tutorial; skim it whenever the workflow feels fuzzy.
-- `bd ready --limit 5 --json` surfaces the short list of unblocked issues; use it whenever you lose the plot.
-- Ask the user before renumbering, renaming prefixes, or running destructive imports. These commands mutate IDs and should never be surprise operations.
+### Quick Start
 
-Stay disciplined: every piece of work goes into Beads, every state change is explicit, and every session ends with no stray in-progress issues unless intentionally paused with a comment.
+**Check for ready work:**
+```bash
+bd ready --json
+```
+
+**Create new issues:**
+```bash
+bd create "Issue title" -t bug|feature|task -p 0-4 --json
+bd create "Issue title" -p 1 --deps discovered-from:bd-123 --json
+```
+
+**Claim and update:**
+```bash
+bd update bd-42 --status in_progress --json
+bd update bd-42 --priority 1 --json
+```
+
+**Complete work:**
+```bash
+bd close bd-42 --reason "Completed" --json
+```
+
+### Issue Types
+
+- `bug` - Something broken
+- `feature` - New functionality
+- `task` - Work item (tests, docs, refactoring)
+- `epic` - Large feature with subtasks
+- `chore` - Maintenance (dependencies, tooling)
+
+### Priorities
+
+- `0` - Critical (security, data loss, broken builds)
+- `1` - High (major features, important bugs)
+- `2` - Medium (default, nice-to-have)
+- `3` - Low (polish, optimization)
+- `4` - Backlog (future ideas)
+
+### Workflow for AI Agents
+
+1. **Check ready work**: `bd ready` shows unblocked issues
+2. **Claim your task**: `bd update <id> --status in_progress`
+3. **Work on it**: Implement, test, document
+4. **Discover new work?** Create linked issue:
+   - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id>`
+5. **Complete**: `bd close <id> --reason "Done"`
+
+### Auto-Sync
+
+bd automatically syncs with git:
+- Exports to `.beads/issues.jsonl` after changes (5s debounce)
+- Imports from JSONL when newer (e.g., after `git pull`)
+- No manual export/import needed!
+
+### MCP Server (Recommended)
+
+If using Claude or MCP-compatible clients, install the beads MCP server:
+
+```bash
+pip install beads-mcp
+```
+
+Add to MCP config (e.g., `~/.config/claude/config.json`):
+```json
+{
+  "beads": {
+    "command": "beads-mcp",
+    "args": []
+  }
+}
+```
+
+Then use `mcp__beads__*` functions instead of CLI commands.
+
+### Important Rules
+
+- ✅ Use bd for ALL task tracking
+- ✅ Always use `--json` flag for programmatic use
+- ✅ Link discovered work with `discovered-from` dependencies
+- ✅ Check `bd ready` before asking "what should I work on?"
+- ❌ Do NOT create markdown TODO lists
+- ❌ Do NOT use external issue trackers
+- ❌ Do NOT duplicate tracking systems
+
+For more details, see README.md and QUICKSTART.md.
 
 ## Complexity Mitigator
 
