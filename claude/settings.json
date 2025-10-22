@@ -27,6 +27,7 @@
     "command": "$HOME/.dotfiles/claude/statusline.py"
   },
   "alwaysThinkingEnabled": true,
+  "cleanupPeriodDays": 99999,
   "feedbackSurveyState": {
     "lastShownTime": 1754083542456
   }
