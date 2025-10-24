@@ -22,6 +22,7 @@ brew "hub"
 brew "hurl"
 brew "lazygit"
 brew "luajit", args: ['HEAD']
+brew "luarocks"
 brew "mas"
 brew "neovim", args: ['HEAD']
 brew "node"
