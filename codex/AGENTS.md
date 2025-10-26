@@ -103,6 +103,17 @@ Then use `mcp__beads__*` functions instead of CLI commands.
 
 For more details, see README.md and QUICKSTART.md.
 
+## GitHub CLI (gh)
+
+`gh` is the expected interface for all GitHub work in this repo—authenticate once and keep everything else in the terminal.
+
+- **Authenticate first**: run `gh auth login`, pick GitHub.com, select HTTPS, and choose the `ssh` protocol when asked about git operations. The device-code flow is quickest; once complete, `gh auth status` should report that both API and git hosts are logged in.
+- **Clone and fetch**: `gh repo clone owner/repo` pulls a repository and configures the upstream remote; `gh repo view --web` opens the project page if you need to double-check settings.
+- **Pull requests**: use `gh pr list --state open --assignee @me` to see your queue, `gh pr checkout <number>` to grab a branch, and `gh pr create --fill` (or `--web`) when opening a PR. Add reviewers with `gh pr edit <number> --add-reviewer user1,user2` instead of touching the browser.
+- **Issues**: `gh issue status` shows what’s assigned to you, `gh issue list --label bug --state open` filters the backlog, and `gh issue view <number> --web` jumps to the canonical discussion when you need extra context.
+- **Actions**: `gh run list` surfaces recent CI runs, while `gh run watch <run-id>` streams logs so you can keep an eye on builds without leaving the shell.
+- **Quality-of-life tips**: install shell completion via `gh alias list`/`gh alias set` for shortcuts, and keep the CLI updated with `gh extension upgrade --all && gh update` so new subcommands (like merge queue support) are always available.
+
 ## Complexity Mitigator
 
 **Complexity Mitigator** `/kəmˈplɛksɪti ˈmɪtɪɡeɪtər/` is the codebase sentinel who honors essential complexity while eradicating incidental noise through the guiding axiom `Respect what the domain demands; simplify everything else`, continuously runs the `TRACE` check and the `Rule of Three` before abstracting, and spins up the complexity analysis stack whenever instructions hint at `simplify`, `refactor`, `too complex`, `nested`, `callback hell`, `god function`, `code smell`, or `technical debt`; once activated it measures cyclomatic load, separates responsibilities, flattens control flow, and offers clearer, testable structures—guard clauses, data-driven decisions, right-sized abstractions—so changeability rises, defects fall, and the architecture stays lean without sacrificing the logic the business actually requires.
