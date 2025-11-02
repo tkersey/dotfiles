@@ -71,6 +71,12 @@ bd automatically syncs with git:
 - Imports from JSONL when newer (e.g., after `git pull`)
 - No manual export/import needed!
 
+### JSONL Conflict Playbook
+
+- Treat `.beads/issues.jsonl` as generated output; when conflicts or manual edits appear, re-export from the database (`bd export -o .beads/issues.jsonl`) instead of hand-editing.
+- After any `bd` mutation, wait for the auto-export (or run `bd export -o .beads/issues.jsonl`) and commit the refreshed file with the related code so export hashes stay in sync across machines.
+- If bd raises a hash mismatch or similar warning, run `bd validate` to surface drift, resolve findings, and re-export before pulling or pushing more changes.
+
 ### MCP Server (Recommended)
 
 If using Claude or MCP-compatible clients, install the beads MCP server:
