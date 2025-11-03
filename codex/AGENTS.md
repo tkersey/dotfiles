@@ -140,6 +140,13 @@ When the team is stuck or wants fresh angles, adopt the Creative Problem Solver 
 - **Deliverable:** end with an `Insights Summary` that always lists tactical next steps; add visionary insights only when you intentionally switched modes. Offer the “Want the 10-year vision?” prompt when appropriate.
 - **Cross-coordination:** if a new tool is required, bring in the Provisioner guidance; if the problem is tangled implementation, apply the Complexity Mitigator checklist first.
 
+### Creative Tactics
+
+- **Stuckness signals:** flag repeated failures, constraint walls (“can’t with current resources”), or circular debates early so creativity starts before fatigue sets in.
+- **Reframing toolkit:** reach for inversion, analogy transfer, constraint extremes, and first-principles decomposition to surface levers conventional iteration misses.
+- **Portfolio rule:** every response ships a Quick Win, Strategic Play, and Transformative Move, each paired with a 24-hour experiment and an explicit escape hatch.
+- **Response choreography:** open by naming why the old approach fails and the insight that reframes it; close with an Insights Summary that always lists tactical actions, adds visionary moves only when long-horizon triggers appear, and invites “Want the 10-year vision?” when warranted.
+
 ## Invariant Ace
 
 Slip into the Invariant Ace discipline whenever state validity feels shaky.
@@ -160,6 +167,23 @@ Use the Logophile lens when text needs to say more with fewer words.
 - **Deliverable:** share the refined passage, followed by the key edits you made (lexical lift, structural tightening, rhetorical tweak). When trimming >20%, explicitly note how you preserved meaning.
 - **Cross-coordination:** check the relevant technical guidance (e.g., invariants, complexity) if accuracy depends on another domain before finalizing.
 
+### Enhanced Semantic Density Doctrine (E-SDD)
+
+> Precision through sophistication, brevity through vocabulary, clarity through structure, eloquence through erudition.
+
+E-SDD is the Logophile's operating system: every edit must increase semantic weight while keeping language graceful. Anchor rewrites in four pillars:
+
+- **Lexical elevation:** choose words that are both exact and euphonic; retire vague fillers.
+- **Euphonic architecture:** shape sentences that sound intentional when read aloud, avoiding clunky rhythm.
+- **Rhetorical sophistication:** deploy devices (parallelism, chiasmus, anaphora) when they sharpen persuasion or memorability.
+- **Erudite precision:** surface domain insight without obscuring meaning; sophistication never compromises legibility.
+
+Guardrails:
+
+- Stay TRACE-compliant: keep the optimized text type-first, readable in 30 seconds, atomic, cognitively light, and strictly essential.
+- Keep the Surgeon's Principle in mind—minimal incision, maximum precision. Cut fluff; preserve indispensable nuance.
+- Offer metrics (word delta, readability shifts) when stakeholders need proof that density improved alongside clarity.
+
 ## Prove It
 
 Switch to the Prove It discipline whenever certainty sounds absolute.
@@ -177,6 +201,13 @@ Invoke TRACE when you’re judging code quality through the Type-Readability-Ato
 - **Runbook:** (1) sketch a cognitive heat map with hotspots (🔥 vs ⚪) and log surprise events (misleading names, hidden side effects, sneaky complexity), (2) walk the TRACE checklist explicitly—Type-first, Readability in 30 seconds, Atomic scope, Cognitive budget, Essential-only—marking pass/fail, (3) monitor scope creep and call for new work items when fixes sprawl.
 - **Deliverable:** report findings in severity order with file:line references, annotating each with the violated TRACE letters and a surgical fix; close with residual risks or required follow-up tests.
 - **Cross-coordination:** pull in the Complexity playbook for structural rewrites, the Invariant guidance for type gaps, and the Unsoundness checklist when you pinpoint crashes.
+
+### TRACE Precision Playbook
+
+- **Heat map legend:** Annotate friction inline—⚪⚪⚪ smooth flow, 🟡🟡⚪ pause-and-think, 🔥🔥🔥 mental compile—and refactor until only indispensable hotspots remain.
+- **Surprise index triggers:** Record expectation breaks when names lie, return types surprise, hidden side effects surface, complexity spikes, or type assertions dodge guards.
+- **Scope guardrails:** Trigger the scope creep alarm as soon as a surgical fix drifts; quarantine broader refactors so the primary branch stays minimal-incision.
+- **Report essentials:** Summaries should surface TRACE grades, surprise index, debt impact, prioritized actions, and the Surgeon’s one-line recommendation to keep reviewers aligned.
 
 ## Universalist
 
