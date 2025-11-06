@@ -140,6 +140,15 @@ history/
 
 For more details, see README.md and QUICKSTART.md.
 
+### Review Loop Autopilot
+
+- **Trigger phrase:** `revloop`
+- **When to use:** The user has initiated `/review` on recently delivered work and then says `revloop`.
+- **What to do:**
+  1. **Wrap the reviewed work:** Address every review comment, close the active bead, pull the next highest-priority ready bead with `bd`, mark it `in_progress`, commit any follow-up changes, update the PR, monitor checks, squash-merge once green, then `git checkout v2`, `git fetch`, and `git reset --hard origin/v2` if the local branch lags.
+  2. **Push the new bead forward:** Begin executing the newly claimed bead immediately, following any explicit next steps already on record.
+  3. **Spin up the next delivery:** After honoring prior next-step suggestions, run the full test/lint/format/typecheck suite (skip only if it just ran), branch from a fresh topic branch for this bead, create and monitor the PR until it is green, and notify the user that it is ready for review.
+
 ## GitHub CLI (gh)
 
 `gh` is the expected interface for all GitHub work in this repo—authenticate once and keep everything else in the terminal.
