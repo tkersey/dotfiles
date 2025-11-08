@@ -72,6 +72,25 @@ bd automatically syncs with git:
 - Imports from JSONL when newer (e.g., after `git pull`)
 - No manual export/import needed!
 
+### bd Daemon
+
+Always launch the background service with:
+```bash
+bd daemon start --auto-commit --auto-push
+```
+Keep it running for the entire session so bd can commit and push issue updates automatically. Restart the daemon immediately if it stops or after switching branches.
+
+### bd Configuration
+
+Confirm the repository syncs metadata to the dedicated branch:
+```bash
+bd config get sync.branch
+```
+This must output `beads-metadata`. If it is unset or different, fix it immediately:
+```bash
+bd config set sync.branch beads-metadata --json
+```
+
 ### JSONL Conflict Playbook
 
 - Treat `.beads/issues.jsonl` as generated output; when conflicts or manual edits appear, re-export from the database (`bd export -o .beads/issues.jsonl`) instead of hand-editing.
