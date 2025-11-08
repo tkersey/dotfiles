@@ -149,7 +149,9 @@ For more details, see README.md and QUICKSTART.md.
   2. **Push the new bead forward:** Begin executing the newly claimed bead immediately, following any explicit next steps already on record.
   3. **Spin up the next delivery:** After honoring prior next-step suggestions, run the full test/lint/format/typecheck suite (skip only if it just ran), branch from a fresh topic branch for this bead, create and monitor the PR until it is green, and notify the user that it is ready for review.
 
-## GitHub CLI (gh)
+## Tooling Standards
+
+### GitHub CLI (gh)
 
 `gh` is the expected interface for all GitHub work in this repo—authenticate once and keep everything else in the terminal.
 
@@ -160,7 +162,17 @@ For more details, see README.md and QUICKSTART.md.
 - **Actions**: `gh run list` surfaces recent CI runs, while `gh run watch <run-id>` streams logs so you can keep an eye on builds without leaving the shell.
 - **Quality-of-life tips**: install shell completion via `gh alias list`/`gh alias set` for shortcuts, and keep the CLI updated with `gh extension upgrade --all && gh update` so new subcommands (like merge queue support) are always available.
 
-## Complexity Mitigator
+### Python
+
+- **Use uv for everything**: favor `uv` over `python`, `pip`, or `venv` directly. `uv run …` executes scripts and tools inside the pinned Python environment, while `uv pip install` handles dependency changes and keeps lockfiles consistent.
+- **Fast setup**: `uv sync` (or `uv init` for new projects) will resolve, lock, and install dependencies in one pass using uv’s resolver and cache. Skip `pip install -r requirements.txt`.
+- **Tooling parity**: wrap test and lint invocations with `uv run`, e.g., `uv run pytest`, `uv run ruff check`, so contributors share the same interpreter and dependency graph.
+- **Shebang helper**: when creating automation, prefer `#!/usr/bin/env uv run python` to ensure scripts execute with the managed toolchain.
+- **Stay updated**: periodically run `uv self update` to pick up performance and compatibility fixes from Astral.
+
+## Disciplines
+
+### Complexity Mitigator
 
 When the work feels tangled, step into the Complexity Mitigator mindset: keep essential complexity, vaporize the incidental.
 
@@ -170,7 +182,7 @@ When the work feels tangled, step into the Complexity Mitigator mindset: keep es
 - **Deliverable:** respond with (1) essential vs incidental verdict, (2) simplification options ranked by effort vs impact, (3) a short code sketch that illustrates the better structure, and (4) which TRACE letters were satisfied or violated.
 - **Cross-coordination:** if missing invariants block simplification, tap the invariant guidance below; if confusing APIs are the root cause, incorporate the Footgun checklist before finalizing.
 
-## Creative Problem Solver
+### Creative Problem Solver
 
 When the team is stuck or wants fresh angles, adopt the Creative Problem Solver discipline.
 
@@ -180,14 +192,14 @@ When the team is stuck or wants fresh angles, adopt the Creative Problem Solver 
 - **Deliverable:** end with an `Insights Summary` that always lists tactical next steps; add visionary insights only when you intentionally switched modes. Offer the “Want the 10-year vision?” prompt when appropriate.
 - **Cross-coordination:** if a new tool is required, bring in the Provisioner guidance; if the problem is tangled implementation, apply the Complexity Mitigator checklist first.
 
-### Creative Tactics
+#### Creative Tactics
 
 - **Stuckness signals:** flag repeated failures, constraint walls (“can’t with current resources”), or circular debates early so creativity starts before fatigue sets in.
 - **Reframing toolkit:** reach for inversion, analogy transfer, constraint extremes, and first-principles decomposition to surface levers conventional iteration misses.
 - **Portfolio rule:** every response ships a Quick Win, Strategic Play, and Transformative Move, each paired with a 24-hour experiment and an explicit escape hatch.
 - **Response choreography:** open by naming why the old approach fails and the insight that reframes it; close with an Insights Summary that always lists tactical actions, adds visionary moves only when long-horizon triggers appear, and invites “Want the 10-year vision?” when warranted.
 
-## Invariant Ace
+### Invariant Ace
 
 Slip into the Invariant Ace discipline whenever state validity feels shaky.
 
@@ -197,7 +209,7 @@ Slip into the Invariant Ace discipline whenever state validity feels shaky.
 - **Deliverable:** explain (1) the risk scenario, (2) the stronger invariant and how it climbs the hierarchy, (3) a before/after code sketch highlighting the refined type, and (4) the verification you ran or recommend.
 - **Cross-coordination:** lean on the Unsoundness checklist if broader failures emerge and reference the Footgun guardrails when stronger invariants might dent ergonomics.
 
-## Logophile
+### Logophile
 
 Use the Logophile lens when text needs to say more with fewer words.
 
@@ -224,7 +236,7 @@ Guardrails:
 - Keep the Surgeon's Principle in mind—minimal incision, maximum precision. Cut fluff; preserve indispensable nuance.
 - Offer metrics (word delta, readability shifts) when stakeholders need proof that density improved alongside clarity.
 
-## TRACE
+### TRACE
 
 Invoke TRACE when you’re judging code quality through the Type-Readability-Atomic-Cognitive-Essential lens.
 
@@ -233,14 +245,14 @@ Invoke TRACE when you’re judging code quality through the Type-Readability-Ato
 - **Deliverable:** report findings in severity order with file:line references, annotating each with the violated TRACE letters and a surgical fix; close with residual risks or required follow-up tests.
 - **Cross-coordination:** pull in the Complexity playbook for structural rewrites, the Invariant guidance for type gaps, and the Unsoundness checklist when you pinpoint crashes.
 
-### TRACE Precision Playbook
+#### TRACE Precision Playbook
 
 - **Heat map legend:** Annotate friction inline—⚪⚪⚪ smooth flow, 🟡🟡⚪ pause-and-think, 🔥🔥🔥 mental compile—and refactor until only indispensable hotspots remain.
 - **Surprise index triggers:** Record expectation breaks when names lie, return types surprise, hidden side effects surface, complexity spikes, or type assertions dodge guards.
 - **Scope guardrails:** Trigger the scope creep alarm as soon as a surgical fix drifts; quarantine broader refactors so the primary branch stays minimal-incision.
 - **Report essentials:** Summaries should surface TRACE grades, surprise index, debt impact, prioritized actions, and the Surgeon’s one-line recommendation to keep reviewers aligned.
 
-## Universalist
+### Universalist
 
 Adopt the Universalist frame when design chatter veers into category theory or long-lived abstractions.
 
@@ -249,7 +261,7 @@ Adopt the Universalist frame when design chatter veers into category theory or l
 - **Deliverable:** name the pattern, show the concrete manifestation, explain the benefit (“this collapses duplicated params into a product”), and suggest a quick test or law check to keep it valid. Mention nearby patterns only if the scope is expanding.
 - **Cross-coordination:** when the abstraction risks new incidental complexity, consult the Complexity checklist; if safety is now in play, revisit the Invariant guidance.
 
-## Unsoundness Detector
+### Unsoundness Detector
 
 Put on the Unsoundness Detector hat when code might fail at runtime.
 
@@ -258,7 +270,7 @@ Put on the Unsoundness Detector hat when code might fail at runtime.
 - **Deliverable:** list findings in severity order with repro steps, explain the root cause, and recommend the smallest sound fix that removes the entire class of bug; state the invariant now guaranteed.
 - **Cross-coordination:** reference the Invariant guidance when fixes require new guarantees, consult the Footgun checklist if the API itself invites misuse, and loop in TRACE for multi-module remediation.
 
-## Footgun Detector
+### Footgun Detector
 
 Adopt the Footgun Detector checklist when an API feels dangerous to use.
 
@@ -267,7 +279,7 @@ Adopt the Footgun Detector checklist when an API feels dangerous to use.
 - **Deliverable:** share the ranked hazards, misuse examples, safer signatures, and any type-level guards, calling out ergonomics vs safety trade-offs.
 - **Cross-coordination:** if misuse causes runtime failure, use the Unsoundness checklist; if stronger types are required, align with the Invariant guidance.
 
-## Provisioner
+### Provisioner
 
 Slip into the Provisioner flow when the team needs tooling fast.
 
