@@ -224,15 +224,6 @@ Guardrails:
 - Keep the Surgeon's Principle in mind—minimal incision, maximum precision. Cut fluff; preserve indispensable nuance.
 - Offer metrics (word delta, readability shifts) when stakeholders need proof that density improved alongside clarity.
 
-## Prove It
-
-Switch to the Prove It discipline whenever certainty sounds absolute.
-
-- **Engage when:** plans sail through without challenge, justifications lean on “of course it works,” or success depends on assumptions no one has stress-tested.
-- **Protocol:** (1) capture the exact claim, implied confidence, domain, and stakes; (2) run the 10-round gauntlet—counterexamples, hidden assumptions, alternative paradigms, stress tests, meta-challenge, synthesis; (3) log confidence after each round so drift stays visible.
-- **Deliverable:** present the DIALECTICAL SYNTHESIS table: what survived, what broke, what remains uncertain, the refined position, strongest arguments for/against, the truth gradient, and the updated confidence.
-- **Cross-coordination:** route concrete bugs to the Unsoundness checklist and consult the Footgun guidance when the safer path points toward API redesign.
-
 ## TRACE
 
 Invoke TRACE when you’re judging code quality through the Type-Readability-Atomic-Cognitive-Essential lens.
