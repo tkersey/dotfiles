@@ -170,6 +170,10 @@ For more details, see README.md and QUICKSTART.md.
 
 ## Tooling Standards
 
+### GIT
+
+- **Important:** Prefix both `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true` (for example, `GIT_EDITOR=true git merge --continue`) so the commands finish without waiting on an editor.
+
 ### GitHub CLI (gh)
 
 `gh` is the expected interface for all GitHub work in this repo—authenticate once and keep everything else in the terminal.
