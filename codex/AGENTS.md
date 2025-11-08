@@ -63,7 +63,7 @@ bd close bd-42 --reason "Completed" --json
 4. **Discover new work?** Create linked issue:
    - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id>`
 5. **Complete**: `bd close <id> --reason "Done"`
-6. **Commit together**: Always commit the `.beads/issues.jsonl` file together with related code so issue state stays in sync with code state
+6. **Commit together**: Always commit the `.beads/issues.jsonl` file together with the code changes so issue state stays in sync with code state
 
 ### Auto-Sync
 
@@ -135,8 +135,8 @@ history/
 - ✅ Store AI planning docs in `history/` directory
 - ❌ Do NOT create markdown TODO lists
 - ❌ Do NOT use external issue trackers
-- ❌ Do NOT clutter repo root with planning documents
 - ❌ Do NOT duplicate tracking systems
+- ❌ Do NOT clutter repo root with planning documents
 
 For more details, see README.md and QUICKSTART.md.
 
