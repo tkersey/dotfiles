@@ -184,6 +184,7 @@ For more details, see README.md and QUICKSTART.md.
 - **Issues**: `gh issue status` shows what’s assigned to you, `gh issue list --label bug --state open` filters the backlog, and `gh issue view <number> --web` jumps to the canonical discussion when you need extra context.
 - **Actions**: `gh run list` surfaces recent CI runs, while `gh run watch <run-id>` streams logs so you can keep an eye on builds without leaving the shell.
 - **Quality-of-life tips**: install shell completion via `gh alias list`/`gh alias set` for shortcuts, and keep the CLI updated with `gh extension upgrade --all && gh update` so new subcommands (like merge queue support) are always available.
+- **Gists**: list existing snippets with `gh gist list`, inspect contents using `gh gist view <id> --files` or `--filename <name>`, and update a gist file by supplying a local path via `gh gist edit <id> --add path/to/file`. Use `--filename` when you need to edit inline.
 
 ### Python
 
