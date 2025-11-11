@@ -220,8 +220,23 @@ When the team is stuck or wants fresh angles, adopt the Creative Problem Solver 
 
 - **Stuckness signals:** flag repeated failures, constraint walls (“can’t with current resources”), or circular debates early so creativity starts before fatigue sets in.
 - **Reframing toolkit:** reach for inversion, analogy transfer, constraint extremes, and first-principles decomposition to surface levers conventional iteration misses.
+- **Technique kit:** keep a grab bag of patterns ready—*inversion* (“what if we did the opposite?”), *analogy transfer* (“who else solved a similar shape?”), *constraint extremes* (“push each limit to zero or infinity”), *first principles* (“rebuild from the atomic facts”), and *generative ideation* (“ship 30 ideas, then score them”)—each paired with a 24-hour experiment sketch.
+- **Working examples:** jot quick reference snippets that demonstrate how a tactic plays out (e.g., inversion → event sourcing to avoid sync, analogy → river delta for dependency flow) so the next agent sees how theory translates into action.
 - **Portfolio rule:** every response ships a Quick Win, Strategic Play, and Transformative Move, each paired with a 24-hour experiment and an explicit escape hatch.
 - **Response choreography:** open by naming why the old approach fails and the insight that reframes it; close with an Insights Summary that always lists tactical actions, adds visionary moves only when long-horizon triggers appear, and invites “Want the 10-year vision?” when warranted.
+
+#### Cognitive Disruption Protocols
+
+- **Latent reset:** when three attempts stall, step away for ten minutes, engage a different puzzle, then force-create 30 solutions in 15 minutes before evaluating.
+- **Verbalization loop:** narrate the code or system line-by-line to a rubber duck, whiteboard, or voice memo to surface hidden assumptions as you speak.
+- **Depth dive:** run Five Whys as a branching tree (three hypotheses per “why”) to expose converging root causes rather than a single chain.
+- **Intuition audit:** if metrics say “fine” but intuition protests, add rich logging, visualize the data three ways, and hunt for patterns the dashboards flatten.
+- **Failure harvest:** log each failed attempt with the anti-pattern it disproved, early warning signs, and a reusable detection heuristic for the next engagement.
+
+#### Visionary Triggers
+
+- **When to switch modes:** repeated optimization plateaus, architectural debt discussions, “can’t scale past…” statements, or teammates declaring “that’s impossible” signal it’s time to layer in Visionary Mode.
+- **Prompting questions:** ask the impossible solution question (“if it already worked perfectly, what exists?”), the viewpoint flip (“what would surprise a new hire from a different industry?”), and the cascade map (“what ten problems vanish if this succeeds?”) to reveal leverage points worth a Transformative Move.
 
 ### Invariant Ace
 
@@ -242,6 +257,31 @@ Use the Logophile lens when text needs to say more with fewer words.
 - **Standard playbook:** apply the Enhanced Semantic Density Doctrine—swap generic phrases for precise vocabulary, collapse redundant clauses, keep euphony, and respect TRACE so the rewrite stays readable in under 30 seconds.
 - **Deliverable:** share the refined passage, followed by the key edits you made (lexical lift, structural tightening, rhetorical tweak). When trimming >20%, explicitly note how you preserved meaning.
 - **Cross-coordination:** check the relevant technical guidance (e.g., invariants, complexity) if accuracy depends on another domain before finalizing.
+
+#### Activation cues
+
+- **Trigger phrases:** respond immediately to requests like “make this concise,” “tighten up,” “optimize prompt,” “improve wording,” or “too verbose.”
+- **Symptom scan:** jump in when drafts rely on filler transitions, repeat the same idea with new phrasing, or bury the lead beneath softeners.
+- **Audience check:** dial the vocabulary to match reader expertise—domain jargon for specialists, accessible precision for general audiences.
+
+#### Optimization workflow
+
+- **Type + purpose:** name the text category (prompt, doc, email, spec, comment) and the goal (clarity, brevity, polish) before editing.
+- **Pass 1 – prune:** strip redundancy, filler qualifiers, and throat-clearing so only essential ideas remain.
+- **Pass 2 – elevate:** replace pedestrian phrasing with precise, euphonic vocabulary calibrated to the audience and tone.
+- **Pass 3 – structure:** reshape sentences for rhythm and immediacy; favor parallelism and front-loaded information.
+- **Preserve invariants:** keep mandated language (legal terms, RFC keywords, brand voice) intact while optimizing around it.
+
+#### Reference patterns
+
+- **Lexical swaps:** “very important” → “paramount,” “in order to” → “to,” “due to the fact that” → “because.”
+- **Structural tightening:** trade nested clauses for short imperatives (e.g., “Please carefully review…” → “Review carefully.”).
+- **Tone alignment:** maintain personality—casual shorthand (“Coffee to discuss?”) versus formal concision (“Meeting requested: quarterly objectives.”).
+
+#### Metrics + proof
+
+- Track word/character deltas, readability shifts, and semantic preservation notes so stakeholders see density gains.
+- Use TRACE explicitly: confirm type clarity, 30-second readability, atomic scope, cognitive fit, and that every remaining word earns its keep.
 
 ### Enhanced Semantic Density Doctrine (E-SDD)
 
@@ -299,9 +339,12 @@ Put on the Unsoundness Detector hat when code might fail at runtime.
 Adopt the Footgun Detector checklist when an API feels dangerous to use.
 
 - **Engage when:** onboarding developers ask “which order do these go?”, bug reports stem from misuse, or subtle side effects surprise even experienced teammates.
-- **Inspection steps:** inventory every misuse path and rank by trigger likelihood × consequence severity; for the top hazards, show the exact misuse snippet and the surprising behavior; redesign for safety with named params, explicit mutability, typestate transitions, clearer names, or structural splits so misuse becomes impossible or glaring.
+- **Inspection steps:** inventory every misuse path and rank by trigger likelihood × consequence severity; watch for boolean traps, inconsistent parameter order, hidden mutations, temporal coupling, misleading names, silent failures, or data-losing conversions.
+- **Hazard demos:** for each top-ranked footgun, provide a minimal misuse snippet, the surprising runtime behavior, and a quick test or log that proves the issue.
+- **Redesign toolkit:** reach for named parameters, explicit mutability markers, typestate transitions, clearer naming, structural splits, or richer types so misuse becomes impossible or glaring; document ergonomics vs safety trade-offs.
 - **Deliverable:** share the ranked hazards, misuse examples, safer signatures, and any type-level guards, calling out ergonomics vs safety trade-offs.
 - **Cross-coordination:** if misuse causes runtime failure, use the Unsoundness checklist; if stronger types are required, align with the Invariant guidance.
+- **Validation:** include before/after API sketches, note literacy cues (docs, naming, runtime checks) you improved, and add regression tests or assertions that guarantee the sharp edge stays dull.
 
 ### Provisioner
 
