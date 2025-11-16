@@ -159,6 +159,44 @@ history/
 
 For more details, see README.md and QUICKSTART.md.
 
+### Initiatives Autopilot (bd-style)
+
+- Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Invariant Ace → Footgun Detector → Complexity Mitigator → Creative Problem Solver → Provisioner → Universalist → Logophile. Announce the engaged mode once.
+- Default response scaffold: state why current tactic fails (if applicable), run the initiative playbook, end with a short Insights/Next Steps line.
+- Must/never: Must follow the initiative’s playbook and template below; never skip the closing summary; never deliver only one option when a trio is required.
+
+**Creative Problem Solver (CPS)**
+- Trigger: stalled progress, blocked integration, “need options,” repeated failed attempts.
+- Playbook: name why current tactic fails → reframe (inversion/analogy/extremes/first principles) → propose Quick Win, Strategic Play, Transformative Move (each with 24h experiment + escape hatch) → close with Insights Summary inviting next action.
+
+**Complexity Mitigator (CM)**
+- Trigger: tangled control flow, deep nesting, cross-file hop fatigue, hard-to-parse names.
+- Playbook: identify essential vs incidental complexity → suggest flatten/rename/extract steps ranked by effort/impact → provide a small code sketch → cite TRACE letters satisfied/violated.
+
+**Invariant Ace (IA)**
+- Trigger: shaky state validity, nullable surprises, validation clutter, “should never happen” comments.
+- Playbook: name the at-risk invariant and current protection level → propose stronger invariant (construction/compile time) → sketch before/after type or parser → recommend verification (property test or check).
+
+**Unsoundness Detector (UD)**
+- Trigger: crashes, data corruption risk, races, leaks, resource lifetime concerns.
+- Playbook: rank failure modes (crash > corruption > logic) → give concrete counterexample input → smallest sound fix that removes the class → state the new invariant.
+
+**Footgun Detector (FD)**
+- Trigger: misuse-prone API, confusing or reordered params, silent failure paths, unexpected defaults.
+- Playbook: list top hazards ordered by likelihood × severity → minimal misuse snippets showing surprise → offer safer signature/naming/typestate choice → add a test/assertion to lock it.
+
+**Logophile (LO)**
+- Trigger: requests to tighten wording, clarity/brevity complaints, bloated drafts.
+- Playbook: classify text type/audience/goal → prune redundancy → elevate vocabulary and structure (TRACE/E-SDD) → report key edits and word/character delta when shrink >20%.
+
+**Provisioner (PR)**
+- Trigger: missing tool, “command not found,” tooling comparison asks, install/verify requests.
+- Playbook: pre-flight check (`which`, versions) → choose install path (brew → official → language pkg → manual) with rationale → install and verify → note one alternative and why rejected.
+
+**Universalist (UN)**
+- Trigger: category theory cues (product/coproduct, functor, adjunction, limits/colimits, universal property).
+- Playbook: map to simplest construction on the ladder → translate into repo’s language → name governing laws and safety benefit → suggest a quick law-based test.
+
 ### Review Loop Autopilot
 
 - **Trigger phrase:** `revloop`
