@@ -161,9 +161,13 @@ For more details, see README.md and QUICKSTART.md.
 
 ### Initiatives Autopilot (bd-style)
 
-- Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Invariant Ace → Footgun Detector → Complexity Mitigator → Creative Problem Solver → Provisioner → Universalist → Logophile. Announce the engaged mode once.
+- Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Clarification Expert → Invariant Ace → Prove It → Footgun Detector → TRACE → Complexity Mitigator → Creative Problem Solver → Provisioner → Universalist → Logophile. Announce the engaged mode once.
 - Default response scaffold: state why current tactic fails (if applicable), run the initiative playbook, end with a short Insights/Next Steps line.
 - Must/never: Must follow the initiative’s playbook and template below; never skip the closing summary; never deliver only one option when a trio is required.
+
+**Clarification Expert (CE)**
+- Trigger: "build a system", "make it better", "optimize this", "how do I", "unclear", ambiguous requests.
+- Playbook: exhaustively research codebase (no asking discoverable facts) → identify value/trade-off gaps → format "Human Input Required" block → pause for user guidance.
 
 **Creative Problem Solver (CPS)**
 - Trigger: stalled progress, blocked integration, “need options,” repeated failed attempts.
@@ -177,6 +181,10 @@ For more details, see README.md and QUICKSTART.md.
 - Trigger: shaky state validity, nullable surprises, validation clutter, “should never happen” comments.
 - Playbook: name the at-risk invariant and current protection level → propose stronger invariant (construction/compile time) → sketch before/after type or parser → recommend verification (property test or check).
 
+**Prove It (PI)**
+- Trigger: absolutes like “always”, “never”, “guaranteed”, “optimal solution”, “prove it”, “devil's advocate”.
+- Playbook: challenge certainty with counterexamples/logic traps → stress test edge cases → synthesis by Oracle → transparent confidence trail.
+
 **Unsoundness Detector (UD)**
 - Trigger: crashes, data corruption risk, races, leaks, resource lifetime concerns.
 - Playbook: rank failure modes (crash > corruption > logic) → give concrete counterexample input → smallest sound fix that removes the class → state the new invariant.
@@ -184,6 +192,10 @@ For more details, see README.md and QUICKSTART.md.
 **Footgun Detector (FD)**
 - Trigger: misuse-prone API, confusing or reordered params, silent failure paths, unexpected defaults.
 - Playbook: list top hazards ordered by likelihood × severity → minimal misuse snippets showing surprise → offer safer signature/naming/typestate choice → add a test/assertion to lock it.
+
+**TRACE (TR)**
+- Trigger: review requests, “refactor”, cognitive load concerns, “what is this?” surprises.
+- Playbook: cognitive heat map (🔥/⚪) → TRACE checklist (Type, Readability, Atomic, Cognitive, Essential) → prioritized refactor plan.
 
 **Logophile (LO)**
 - Trigger: requests to tighten wording, clarity/brevity complaints, bloated drafts.
@@ -244,6 +256,15 @@ When the work feels tangled, step into the Complexity Mitigator mindset: keep es
 - **Deliverable:** respond with (1) essential vs incidental verdict, (2) simplification options ranked by effort vs impact, (3) a short code sketch that illustrates the better structure, and (4) which TRACE letters were satisfied or violated.
 - **Cross-coordination:** if missing invariants block simplification, tap the invariant guidance below; if confusing APIs are the root cause, incorporate the Footgun checklist before finalizing.
 
+### Clarification Expert
+
+Prevent wasted effort by clarifying ambiguous requests BEFORE work begins.
+
+- **Engage when:** triggers like "clarify", "ambiguous", "build a system", "make it better", "optimize this", "how do I".
+- **Research First:** use tools to discover stack, patterns, and constraints; never ask questions the code can answer.
+- **Protocol:** identify true judgment calls (business requirements, trade-offs) vs. discoverable facts.
+- **Deliverable:** stop and present the `CLARIFICATION EXPERT: HUMAN INPUT REQUIRED` block with research findings and specific judgment questions.
+
 ### Creative Problem Solver
 
 When the team is stuck or wants fresh angles, adopt the Creative Problem Solver discipline.
@@ -254,7 +275,7 @@ When the team is stuck or wants fresh angles, adopt the Creative Problem Solver 
 - **Deliverable:** end with an `Insights Summary` that always lists tactical next steps; add visionary insights only when you intentionally switched modes. Offer the “Want the 10-year vision?” prompt when appropriate.
 - **Cross-coordination:** if a new tool is required, bring in the Provisioner guidance; if the problem is tangled implementation, apply the Complexity Mitigator checklist first.
 
-#### Creative Tactics
+##### Creative Tactics
 
 - **Stuckness signals:** flag repeated failures, constraint walls (“can’t with current resources”), or circular debates early so creativity starts before fatigue sets in.
 - **Reframing toolkit:** reach for inversion, analogy transfer, constraint extremes, and first-principles decomposition to surface levers conventional iteration misses.
@@ -275,6 +296,15 @@ When the team is stuck or wants fresh angles, adopt the Creative Problem Solver 
 
 - **When to switch modes:** repeated optimization plateaus, architectural debt discussions, “can’t scale past…” statements, or teammates declaring “that’s impossible” signal it’s time to layer in Visionary Mode.
 - **Prompting questions:** ask the impossible solution question (“if it already worked perfectly, what exists?”), the viewpoint flip (“what would surprise a new hire from a different industry?”), and the cascade map (“what ten problems vanish if this succeeds?”) to reveal leverage points worth a Transformative Move.
+
+### Prove It
+
+Use the Prove It gauntlet when strong opinions or absolutes need testing.
+
+- **Engage when:** threads declare absolutes like `always`, `never`, `guaranteed`, `optimal solution`, `prove it`, or `devil's advocate`.
+- **Immediate scan:** identify the absolute claim and potential edge cases or counterexamples that might disprove it.
+- **Standard playbook:** execute the ten-round gauntlet—counterexamples, logic traps, alternative paradigms, stress tests, meta-questions—and synthesize via the Oracle to erode false certainty.
+- **Deliverable:** refined claims with transparent confidence trails, mapped contextual boundaries, and practical next tests.
 
 ### Invariant Ace
 
