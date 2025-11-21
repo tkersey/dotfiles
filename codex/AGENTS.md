@@ -15,29 +15,58 @@ All task coordination flows through `bd`; consult the quick-start below before k
 - Agent-optimized: JSON output, ready work detection, discovered-from links
 - Prevents duplicate tracking systems and confusion
 
-### Quick Start
+### Quick Start (bd CLI parity)
 
-**Check for ready work:**
+**Initialize once per repo (creates `.beads/` and auto-detects prefixes):**
 ```bash
-bd ready --json
+bd init
+bd init --prefix api   # optional custom prefix, e.g., api-1
 ```
 
-**Create new issues:**
+**Create issues (always add `--json` when scripting):**
 ```bash
-bd create "Issue title" -t bug|feature|task -p 0-4 --json
+bd create "Fix login bug"
+bd create "Add auth" -p 0 -t feature
+bd create "Write tests" -d "Unit tests for auth" --assignee alice
 bd create "Issue title" -p 1 --deps discovered-from:bd-123 --json
 ```
 
-**Claim and update:**
+**List and inspect work:**
+```bash
+bd list
+bd list --status open
+bd list --priority 0
+bd show bd-1
+```
+
+**Manage dependencies explicitly:**
+```bash
+bd dep add bd-1 bd-2
+bd dep tree bd-1
+bd dep cycles
+```
+
+**Check ready work before claiming:**
+```bash
+bd ready --json
+```
+Ready = status is `open` and no blocking dependencies remain—perfect for picking your next task.
+
+**Update progress and close work:**
 ```bash
 bd update bd-42 --status in_progress --json
 bd update bd-42 --priority 1 --json
-```
-
-**Complete work:**
-```bash
 bd close bd-42 --reason "Completed" --json
+bd close bd-2 bd-3 --reason "Fixed in PR #42"
 ```
+Always commit `.beads/issues.jsonl` alongside related code so the state stays in sync.
+
+### Dependency Types
+
+- `blocks`: Task B must complete before task A can finish
+- `related`: Soft relationship that does not affect readiness
+- `parent-child`: Epic/subtask hierarchy
+- `discovered-from`: Used when new work is found while executing another bead
 
 ### Issue Types
 
@@ -71,6 +100,7 @@ bd automatically syncs with git:
 - Exports to `.beads/issues.jsonl` after changes (5s debounce)
 - Imports from JSONL when newer (e.g., after `git pull`)
 - No manual export/import needed!
+- Temporarily disable via `--no-auto-flush` or `--no-auto-import` only when you fully understand the implications.
 
 ### bd Daemon
 
@@ -90,6 +120,30 @@ This must output `beads-metadata`. If it is unset or different, fix it immediate
 ```bash
 bd config set sync.branch beads-metadata --json
 ```
+
+### Database Location
+
+`bd` discovers its SQLite database in this order:
+1. `--db /path/to/db.db` CLI flag
+2. `$BEADS_DB` environment variable
+3. `.beads/*.db` files in the current directory or ancestors
+4. `~/.beads/default.db` as the fallback
+
+Know which database you are mutating before running commands, especially if you operate in multiple repos simultaneously.
+
+### Agent Integration Notes
+
+- Always create issues for newly discovered work; avoid out-of-band trackers.
+- Prefer `--json` on any command you plan to parse or script against.
+- Use `bd ready --json` to find unblocked beads before claiming your next task.
+- Dependencies keep agents from stepping on each other’s work—maintain them diligently.
+
+### Database Extension Hooks
+
+`bd` welcomes application-specific tables inside the same SQLite file:
+- Add tables such as `myapp_executions` and join them with `issues` for richer queries.
+- See `EXTENDING.md` in the upstream beads repo for reference patterns.
+- Treat `.beads/issues.jsonl` as generated output: refresh via `bd export -o .beads/issues.jsonl` if conflicts arise.
 
 ### JSONL Conflict Playbook
 
