@@ -26,3 +26,7 @@ set -gx EDITOR nvim
 set -x GOENV_ROOT $HOME/.goenv
 fish_add_path $GOENV_ROOT/bin
 goenv init - | source
+
+# bun
+set --export BUN_INSTALL "$HOME/.bun"
+set --export PATH $BUN_INSTALL/bin $PATH
