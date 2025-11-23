@@ -1,4 +1,4 @@
-model = "gpt-5.1-codex"
+model = "gpt-5.1-codex-max"
 model_reasoning_effort = "medium"
 [projects."/Users/tk/workspace/art/openai-agents"]
 trust_level = "trusted"
@@ -21,10 +21,15 @@ trust_level = "trusted"
 [notice]
 hide_gpt5_1_migration_prompt = true
 hide_rate_limit_model_nudge = true
+"hide_gpt-5.1-codex-max_migration_prompt" = true
 
 [feature]
 web_search_request = true
 
-[profiles.yolo]
 approval_policy = "never"
 sandbox_mode    = "danger-full-access"
+
+# [mcp_servers.chrome-devtools]
+# command = "npx"
+# args = ["chrome-devtools-mcp@latest"]
+

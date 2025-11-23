@@ -2,6 +2,8 @@ fish_add_path /usr/local/sbin
 fish_add_path /opt/homebrew/bin
 fish_add_path /opt/homebrew/sbin
 fish_add_path ~/.local/bin
+# Keep zigup-managed shim ahead of Homebrew so `zigup default` can update cleanly.
+fish_add_path /opt/homebrew/opt/zigup/bin
 
 fzf --fish | source
 zoxide init fish | source
