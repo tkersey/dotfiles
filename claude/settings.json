@@ -1,5 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "cleanupPeriodDays": 99999,
   "permissions": {
     "allow": [
       "Bash(gh:*)",
@@ -27,8 +28,8 @@
     "command": "$HOME/.dotfiles/claude/statusline.py"
   },
   "alwaysThinkingEnabled": true,
-  "cleanupPeriodDays": 99999,
   "feedbackSurveyState": {
     "lastShownTime": 1754083542456
-  }
+  },
+  "model": "opus"
 }
