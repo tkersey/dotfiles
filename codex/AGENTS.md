@@ -102,6 +102,11 @@ bd automatically syncs with git:
 - No manual export/import needed!
 - Temporarily disable via `--no-auto-flush` or `--no-auto-import` only when you fully understand the implications.
 
+### GitHub Copilot Integration
+
+If using GitHub Copilot, also create `.github/copilot-instructions.md` for automatic instruction loading.
+Run `bd onboard` to get the content, or see step 2 of the onboard instructions.
+
 ### bd Daemon
 
 Always launch the background service with:
