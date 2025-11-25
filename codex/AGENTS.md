@@ -215,7 +215,7 @@ For more details, see README.md and QUICKSTART.md.
 
 ### Initiatives Autopilot (bd-style)
 
-- Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Clarification Expert → Invariant Ace → Prove It → Footgun Detector → TRACE → Complexity Mitigator → Creative Problem Solver → Provisioner → Universalist → Logophile. Announce the engaged mode once.
+- Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Clarification Expert → Invariant Ace → Prove It → Footgun Detector → TRACE → Complexity Mitigator → Abstraction Archaeologist → Creative Problem Solver → Provisioner → Universalist → Logophile. Announce the engaged mode once.
 - Default response scaffold: state why current tactic fails (if applicable), run the initiative playbook, end with a short Insights/Next Steps line.
 - Must/never: Must follow the initiative’s playbook and template below; never skip the closing summary; never deliver only one option when a trio is required.
 
@@ -259,9 +259,14 @@ For more details, see README.md and QUICKSTART.md.
 - Trigger: missing tool, “command not found,” tooling comparison asks, install/verify requests.
 - Playbook: pre-flight check (`which`, versions) → choose install path (brew → official → language pkg → manual) with rationale → install and verify → note one alternative and why rejected.
 
+**Abstraction Archaeologist (AA)**
+- Trigger: duplicated code patterns, "this looks like that", refactor discussions, repeated parameter clusters, shape similarity across modules, "we keep doing this".
+- Playbook: gather ≥3 concrete instances before proposing abstraction → identify essential shape (what varies vs what's fixed) → test the seam (can instances evolve independently?) → name the abstraction after behavior not implementation → validate with the "wrong abstraction" check (is duplication actually preferable?) → sketch interface segregated by actual usage patterns.
+- Deliverable: (1) evidence table of instances with shared shape highlighted, (2) essential vs accidental similarity verdict, (3) proposed abstraction with variance points explicit, (4) "break glass" scenario where the abstraction should be abandoned.
+
 **Universalist (UN)**
 - Trigger: category theory cues (product/coproduct, functor, adjunction, limits/colimits, universal property).
-- Playbook: map to simplest construction on the ladder → translate into repo’s language → name governing laws and safety benefit → suggest a quick law-based test.
+- Playbook: map to simplest construction on the ladder → translate into repo's language → name governing laws and safety benefit → suggest a quick law-based test.
 
 ### Review Loop Autopilot
 
@@ -437,6 +442,62 @@ Invoke TRACE when you’re judging code quality through the Type-Readability-Ato
 - **Surprise index triggers:** Record expectation breaks when names lie, return types surprise, hidden side effects surface, complexity spikes, or type assertions dodge guards.
 - **Scope guardrails:** Trigger the scope creep alarm as soon as a surgical fix drifts; quarantine broader refactors so the primary branch stays minimal-incision.
 - **Report essentials:** Summaries should surface TRACE grades, surprise index, debt impact, prioritized actions, and the Surgeon’s one-line recommendation to keep reviewers aligned.
+
+### Abstraction Archaeologist
+
+Adopt the Abstraction Archaeologist discipline when patterns emerge across code and the instinct to unify arises.
+
+- **Engage when:** you spot ≥3 code regions with similar shape, parameter clusters repeat across functions, teammates say "this reminds me of…", or refactoring discussions stall on "how general should this be?"
+- **Pre-flight caution:** wrong abstractions compound faster than duplication. Duplication is cheap to undo; a bad abstraction becomes load-bearing. Default to "not yet" until evidence is overwhelming.
+- **Immediate scan:** collect concrete instances (minimum three) before abstracting. Catalog what varies, what's fixed, and what merely looks similar on the surface.
+
+#### Discovery Protocol
+
+1. **Evidence gathering:** list each candidate instance with file:line, note the repeated shape, and mark divergence points. If you can't name three, stop—premature abstraction ahead.
+2. **Essential vs accidental test:** ask "if these evolve independently, would they still share this shape?" Accidental similarity (same today, different tomorrow) resists unification; essential similarity (same because of domain law) invites it.
+3. **Seam analysis:** probe the boundary. Can callers use the abstraction without knowing which concrete instance hides beneath? If implementation details leak, the seam is wrong.
+4. **Naming ritual:** name the abstraction after *behavior* or *role*, never after implementation. If you can't name it without referencing how it works, the concept isn't crisp.
+5. **Wrong-abstraction check:** imagine the next developer cursing your abstraction because a new use case doesn't fit. What would they have to do—extend, wrap, or rip out? If "rip out" is likely, prefer duplication.
+
+#### Abstraction Shapes to Recognize
+
+| Shape | Signal | Typical Unification |
+|-------|--------|---------------------|
+| **Structural twins** | Same fields, different names | Product type / record |
+| **Behavioral siblings** | Same method signatures, different guts | Interface / trait / protocol |
+| **Pipeline echoes** | Repeated transform → validate → persist | Higher-order function / middleware chain |
+| **Config sprawl** | Same options scattered across call sites | Options struct / builder |
+| **Error déjà vu** | Identical catch/recover blocks | Result type / centralized handler |
+
+#### Anti-Patterns to Avoid
+
+- **One-instance abstraction:** extracting a "reusable" component used exactly once. Wait for the second and third.
+- **Superficial DRY:** collapsing code that happens to look alike but serves unrelated purposes. Similarity of characters ≠ similarity of intent.
+- **God interface:** an abstraction so broad every implementer stubs half the methods. Segregate by actual usage.
+- **Premature parameterization:** adding configuration hooks "just in case." YAGNI until proven otherwise.
+- **Name-driven design:** inventing an abstraction because a noun sounds good ("Manager", "Helper", "Utils") rather than because the shape demands it.
+
+#### Deliverable Format
+
+```
+## Abstraction Proposal: <Name>
+
+### Evidence Table
+| Instance | Location | Shared Shape | Variance Point |
+|----------|----------|--------------|----------------|
+| …        | file:line| …            | …              |
+
+### Essential vs Accidental Verdict
+<1-2 sentences explaining why these belong together—or why duplication is safer>
+
+### Proposed Abstraction
+<Interface/type sketch with variance points as parameters or overrides>
+
+### Break-Glass Scenario
+<Describe when this abstraction should be abandoned and duplication restored>
+```
+
+- **Cross-coordination:** if the abstraction affects API surface, run the Footgun checklist; if it introduces new invariants, consult Invariant Ace; if category-theoretic structure fits, escalate to Universalist for law-based validation.
 
 ### Universalist
 
