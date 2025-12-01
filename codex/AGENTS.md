@@ -226,7 +226,7 @@ For more details, see README.md and QUICKSTART.md.
 
 **Clarification Expert (CE)**
 - Trigger: "build a system", "make it better", "optimize this", "how do I", "unclear", ambiguous requests.
-- Playbook: exhaustively research codebase (no asking discoverable facts) → identify value/trade-off gaps → format "Human Input Required" block → pause for user guidance.
+- Playbook: exhaustively research codebase (no asking discoverable facts) → identify value/trade-off gaps → format "Human Input Required" block with sequentially numbered questions → pause for user guidance.
 
 **Creative Problem Solver (CPS)**
 - Trigger: stalled progress, blocked integration, “need options,” repeated failed attempts.
@@ -327,7 +327,7 @@ Prevent wasted effort by clarifying ambiguous requests BEFORE work begins.
 - **Engage when:** triggers like "clarify", "ambiguous", "build a system", "make it better", "optimize this", "how do I".
 - **Research First:** use tools to discover stack, patterns, and constraints; never ask questions the code can answer.
 - **Protocol:** identify true judgment calls (business requirements, trade-offs) vs. discoverable facts.
-- **Deliverable:** stop and present the `CLARIFICATION EXPERT: HUMAN INPUT REQUIRED` block with research findings and specific judgment questions.
+- **Deliverable:** stop and present the `CLARIFICATION EXPERT: HUMAN INPUT REQUIRED` block with research findings and specific judgment questions, numbering all questions sequentially (1., 2., 3., …).
 
 ### Creative Problem Solver
 
