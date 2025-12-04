@@ -29,9 +29,6 @@ brew "node"
 brew "prettierd"
 brew "python"
 brew "ripgrep"
-brew "shellcheck"
-brew "swiftformat"
-brew "swiftlint"
 brew "tree"
 brew "tree-sitter", args: ['HEAD']
 brew "tree-sitter-cli", args: ['HEAD']
@@ -41,20 +38,15 @@ brew "uv"
 brew "zig"
 brew "zoxide"
 cask "ankerwork"
-cask "chatgpt"
-cask "claude"
 cask "deckset"
-cask "firefox@developer-edition"
 cask "font-sf-mono"
 cask "git-credential-manager"
 cask "ghostty"
+cask "helium-browser"
 cask "mimestream"
-cask "rectangle-pro"
 cask "slack@beta"
 cask "zoom"
 mas "Amphetamine", id: 937984704
-mas "Apple Configurator", id: 1037126344
-mas "Apple Developer", id: 640199958
 mas "Pixelmator Pro", id: 1289583905
 mas "Tapestry Loom", id: 6578414736
 mas "TestFlight", id: 899247664
