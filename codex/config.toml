@@ -3,32 +3,12 @@ model_reasoning_effort = "medium"
 
 [features]
 web_search_request = true
-
-[projects."/Users/tk/workspace/art/openai-agents"]
-trust_level = "trusted"
-
-[projects."/Users/tk/workspace/tk/pragma"]
-trust_level = "trusted"
-
-[projects."/Users/tk/workspace/tk/graphite"]
-trust_level = "trusted"
-
-[projects."/Users/tk/Downloads"]
-trust_level = "trusted"
-
-[projects."/Users/tk/workspace/art/hopper"]
-trust_level = "trusted"
-
-[projects."/Users/tk/workspace/art/seed"]
-trust_level = "trusted"
+rmcp_client = true
 
 [notice]
 hide_gpt5_1_migration_prompt = true
 hide_rate_limit_model_nudge = true
 "hide_gpt-5.1-codex-max_migration_prompt" = true
-
-approval_policy = "never"
-sandbox_mode    = "danger-full-access"
 
 # [mcp_servers.chrome-devtools]
 # command = "npx"
