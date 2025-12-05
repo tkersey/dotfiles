@@ -15,23 +15,32 @@ All task coordination flows through `bd`; consult the quick-start below before k
 - Agent-optimized: JSON output, ready work detection, discovered-from links
 - Prevents duplicate tracking systems and confusion
 
-### Quick Start (bd CLI parity)
+### Quick Start
 
-**Initialize once per repo (creates `.beads/` and auto-detects prefixes):**
+**Check for ready work:**
 ```bash
-bd init
-bd init --prefix api   # optional custom prefix, e.g., api-1
+bd ready --json
 ```
 
-**Create issues (always add `--json` when scripting):**
+**Create new issues:**
 ```bash
-bd create "Fix login bug"
-bd create "Add auth" -p 0 -t feature
-bd create "Write tests" -d "Unit tests for auth" --assignee alice
+bd create "Issue title" -t bug|feature|task -p 0-4 --json
 bd create "Issue title" -p 1 --deps discovered-from:bd-123 --json
+bd create "Subtask" --parent <epic-id> --json  # Hierarchical subtask (gets ID like epic-id.1)
 ```
 
-**List and inspect work:**
+**Claim and update:**
+```bash
+bd update bd-42 --status in_progress --json
+bd update bd-42 --priority 1 --json
+```
+
+**Complete work:**
+```bash
+bd close bd-42 --reason "Completed" --json
+```
+
+**List and inspect work (optional):**
 ```bash
 bd list
 bd list --status open
@@ -46,20 +55,7 @@ bd dep tree bd-1
 bd dep cycles
 ```
 
-**Check ready work before claiming:**
-```bash
-bd ready --json
-```
 Ready = status is `open` and no blocking dependencies remain—perfect for picking your next task.
-
-**Update progress and close work:**
-```bash
-bd update bd-42 --status in_progress --json
-bd update bd-42 --priority 1 --json
-bd close bd-42 --reason "Completed" --json
-bd close bd-2 bd-3 --reason "Fixed in PR #42"
-```
-Always commit `.beads/issues.jsonl` alongside related code so the state stays in sync.
 
 ### Dependency Types
 
@@ -100,7 +96,6 @@ bd automatically syncs with git:
 - Exports to `.beads/issues.jsonl` after changes (5s debounce)
 - Imports from JSONL when newer (e.g., after `git pull`)
 - No manual export/import needed!
-- Temporarily disable via `--no-auto-flush` or `--no-auto-import` only when you fully understand the implications.
 
 ### GitHub Copilot Integration
 
@@ -204,6 +199,11 @@ history/
 - ✅ Preserves planning history for archeological research
 - ✅ Reduces noise when browsing the project
 
+### CLI Help
+
+Run `bd <command> --help` to see all available flags for any command.
+For example: `bd create --help` shows `--parent`, `--deps`, `--assignee`, etc.
+
 ### Important Rules
 
 - ✅ Use bd for ALL task tracking
@@ -211,6 +211,7 @@ history/
 - ✅ Link discovered work with `discovered-from` dependencies
 - ✅ Check `bd ready` before asking "what should I work on?"
 - ✅ Store AI planning docs in `history/` directory
+- ✅ Run `bd <cmd> --help` to discover available flags
 - ❌ Do NOT create markdown TODO lists
 - ❌ Do NOT use external issue trackers
 - ❌ Do NOT duplicate tracking systems
