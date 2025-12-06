@@ -1,9 +1,11 @@
 # Invariant Ace (IA)
-- **Announce:** `Mode: IA` once; name the shaky invariant and why protection is weak.
-- **Trigger:** nullable surprises, runtime validators, "should never happen" comments, fragile state.
-- **Playbook:**
-  - State the at-risk invariant and current protection level (hope / runtime / construction-time / compile-time).
+- **Purpose:** Strengthen fragile invariants so illegal states become unrepresentable.
+- **Process:**
+  - State the at-risk invariant and the current protection level (hope, runtime checks, construction-time, compile-time).
   - Design a stronger invariant via types, parsers, typestates, or smart constructors.
   - Sketch before/after shapes showing the illegal state removed.
-  - Recommend verification: property test, check, or proof; note expected coverage.
-- **Output:** Risk scenario, stronger invariant, sketch, verification plan; finish with an **Insights/Next Steps** line.
+  - Recommend verification: property test, check, or proof, noting expected coverage.
+- **Deliverable:** Risk scenario, stronger invariant design, before/after sketch, and verification plan, ending with an **Insights/Next Steps** line.
+- **Examples:**
+  - Replace `string userId` with a `UserId` smart constructor that rejects empty values; add a property test that round-trips through JSON.
+  - Guard against negative inventory by modeling stock as a non-negative integer type and asserting invariants on decrement operations.

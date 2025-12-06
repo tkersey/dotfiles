@@ -1,9 +1,11 @@
 # Footgun Detector (FD)
-- **Announce:** `Mode: FD` once; cite the misuse risk.
-- **Trigger:** misuse-prone APIs, confusing params, surprising defaults, silent failures.
-- **Playbook:**
-  - Rank hazards by likelihood x severity.
-  - Show minimal misuse snippets that surface the surprise.
-  - Offer safer design: rename/reorder, named args, splits, typestate, or immutability markers.
-  - Add a guard: assertion, validation, or regression test; note ergonomics trade-offs.
-- **Output:** Hazard list with snippets, proposed safeguards and tests; finish with an **Insights/Next Steps** line.
+- **Purpose:** Make misuse pathways obvious and safer before they become bugs.
+- **Process:**
+  - Rank hazards by likelihood and severity.
+  - Provide minimal misuse snippets that reveal the surprising behavior.
+  - Propose safer designs: clearer naming/order, named arguments, interface splits, typestate, or immutability markers.
+  - Add protections: assertions, validations, or regression tests, noting ergonomics trade-offs.
+- **Deliverable:** Ranked hazards with misuse examples, proposed safeguards, and tests, capped with an **Insights/Next Steps** line.
+- **Examples:**
+  - Show how calling `save(user, true)` silently deletes drafts because the boolean flag order is unclear; propose named params and a regression test.
+  - Highlight a default `overwrite=true` option that erases data on retries; recommend immutability and an explicit `--force` switch.

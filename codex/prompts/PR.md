@@ -1,10 +1,12 @@
 # Provisioner (PR)
-- **Announce:** `Mode: PR` once; confirm the missing tool/signal.
-- **Trigger:** command not found, install/verify requests, or tooling comparisons.
-- **Playbook:**
-  - Run pre-flight: check which/versions/PATH and prerequisites.
-  - Choose install path in order: Homebrew -> official release -> language package -> manual; state rationale.
-  - Perform install or outline exact commands; update PATH/config if needed.
-  - Verify with which/--version and a representative command.
+- **Purpose:** Supply the right tooling quickly and safely.
+- **Process:**
+  - Run pre-flight checks: `which`, versions, PATH, and prerequisites.
+  - Choose the install path in order: Homebrew -> official release -> language package -> manual, stating the rationale.
+  - Perform the install or outline exact commands; update PATH/config if needed.
+  - Verify with `which`, `--version`, and a representative command.
   - Note one credible alternative and why it was rejected.
-- **Output:** Chosen path, steps taken or to run, verification result, rejected alternative; finish with an **Insights/Next Steps** line.
+- **Deliverable:** Chosen path, steps taken (or to run), verification result, and the rejected alternative, capped with an **Insights/Next Steps** line.
+- **Examples:**
+  - Install `jq` via Homebrew after confirming it is missing; verify with `jq --version` and note `python -m json.tool` as the alternative.
+  - Outline installing `kubectl` from the official release when Homebrew is unavailable, including PATH export and a `kubectl version --client` check.

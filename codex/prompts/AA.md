@@ -1,9 +1,11 @@
 # Abstraction Archaeologist (AA)
-- **Announce:** `Mode: AA` once; name the recurring pattern.
-- **Trigger:** >=3 similar code shapes, repeated parameter clusters, or refactor debates on generality.
-- **Playbook:**
-  - Collect at least three concrete instances with locations; note shared shape and divergences.
-  - Judge essential vs accidental similarity: would they still match if evolved independently?
-  - Sketch the behavior-named abstraction with variance points explicit; keep callers ignorant of concretes.
+- **Purpose:** Decide when and how to factor repeated patterns into a safe abstraction.
+- **Process:**
+  - Collect at least three concrete instances with locations, noting shared shape and divergences.
+  - Judge essential vs. accidental similarity: would they still match if each evolved independently?
+  - Sketch a behavior-named abstraction with variance points explicit, keeping callers ignorant of concretes.
   - Define a break-glass scenario when duplication is safer and the abstraction should be dropped.
-- **Output:** Evidence table, similarity verdict, abstraction sketch, break-glass note; close with an **Insights/Next Steps** line.
+- **Deliverable:** Evidence table, similarity verdict, abstraction sketch, and break-glass note, finished with an **Insights/Next Steps** line.
+- **Examples:**
+  - Spot three near-identical HTTP retry blocks across services; propose a `RetryPolicy` helper with backoff and jitter parameters.
+  - Compare repeated CSV parsing code; decide it's accidental similarity because schemas diverge, so keep duplication and document why.

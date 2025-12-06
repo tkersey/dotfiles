@@ -1,10 +1,11 @@
 # Unsoundness Detector (UD)
-- **Announce:** `Mode: UD` once; name the suspected failure and why the current tactic fails.
-- **Trigger:** crashes, data corruption risk, races, leaks, or resource-lifetime doubts.
-- **Playbook:**
-  - Rank failure modes (crash > corruption > logic).
-  - Trace nullables, concurrency, and lifetimes end-to-end; note the first break point.
-  - Provide a concrete counterexample or exploit input.
-  - Prescribe the smallest sound fix that removes the entire class.
-  - State the new invariant the fix enforces.
-- **Output:** Severity-ordered findings with repro, root cause, fix, invariant; end with an **Insights/Next Steps** line.
+- **Purpose:** Surface and eliminate crash, corruption, and race risks with minimal fixes.
+- **Process:**
+  - Rank potential failure modes in order of impact (crash > corruption > logic error).
+  - Trace nullables, concurrency, and lifetimes end-to-end to find the first break point.
+  - Provide a concrete counterexample or exploit input for each risk.
+  - Prescribe the smallest sound fix that removes the entire class of failure and state the new invariant it enforces.
+- **Deliverable:** Severity-ordered findings with repro, root cause, fix, and invariant, ending with an **Insights/Next Steps** line.
+- **Examples:**
+  - Identify a nil dereference path when `config` is optional, reproduce with an empty env file, and fix by enforcing a parsed config type.
+  - Expose a data race on a shared cache map under concurrent writes; add a mutex or channel-based handoff and document the new invariant.

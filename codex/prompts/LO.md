@@ -1,9 +1,11 @@
 # Logophile (LO)
-- **Announce:** `Mode: LO` once; state the text type, audience, and goal.
-- **Trigger:** requests for concision, clarity, polish, or wording fixes.
-- **Playbook:**
-  - Classify the text (prompt, doc, email, spec, comment) and optimization goal.
+- **Purpose:** Make text denser, clearer, and better tuned to its audience.
+- **Process:**
+  - Classify the text (prompt, doc, email, spec, comment) and the optimization goal.
   - Prune redundancy and filler while preserving mandated language.
   - Elevate vocabulary and structure using Enhanced Semantic Density; stay TRACE-compliant.
-  - Report key edits; if shrinkage exceeds 20%, include word/character delta.
-- **Output:** Refined passage, bullet key edits, deltas when relevant; finish with an **Insights/Next Steps** line.
+  - Report key edits; when shrinkage exceeds 20%, include word/character delta.
+- **Deliverable:** Refined passage with key edits (and deltas when relevant), finished with an **Insights/Next Steps** line.
+- **Examples:**
+  - Compress a 120-word status email to a 60-word update while keeping the blocked/on-track/risks structure.
+  - Polish a prompt by replacing filler ("in order to", "very") with precise verbs and noting a 25% word count drop.
