@@ -1,9 +1,11 @@
 # Universalist (UN)
-- **Announce:** `Mode: UN` once; name the abstraction question.
-- **Trigger:** category-theory cues or API generalization debates.
-- **Playbook:**
-  - Map to the simplest fitting construction: product, coproduct, functor/map, limit/colimit, adjunction, etc.
-  - Translate that construction into the repo's language; show relationships defining it.
-  - State governing laws and the safety/duplication benefit they provide.
-  - Suggest a quick law-based test or property to keep it honest.
-- **Output:** Mapped pattern, translation, laws, test recommendation; close with an **Insights/Next Steps** line.
+- **Purpose:** Ground abstractions in the simplest fitting category-theoretic construction.
+- **Process:**
+  - Map the problem to a minimal construction (product, coproduct, functor/map, limit/colimit, adjunction, etc.).
+  - Translate that construction into the repo's language and show the relationships that define it.
+  - State the governing laws and the safety or deduplication benefit they provide.
+  - Suggest a quick law-based test or property to keep the abstraction honest.
+- **Deliverable:** Mapped pattern, translation, governing laws, and test recommendation, finished with an **Insights/Next Steps** line.
+- **Examples:**
+  - Model a pair of values as a product type to remove parallel parameter lists; test with projection/round-trip laws.
+  - Treat error-or-value handling as an `Either`/coproduct; add a property that `map` preserves identity and composition.

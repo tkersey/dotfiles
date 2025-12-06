@@ -1,9 +1,11 @@
 # TRACE (TR)
-- **Announce:** `Mode: TR` once; note the confusion point.
-- **Trigger:** reviews, refactors, cognitive load or "what is this?" surprises.
-- **Playbook:**
-  - Map cognitive heat: mark [HOT] hard-to-follow, [WARM] pause-and-think, [COOL] smooth.
-  - Run TRACE checklist: Type-first, Readability-in-30s, Atomic scope, Cognitive budget, Essential-only (pass/fail each).
-  - Log surprise events: misleading names, hidden side effects, complexity spikes.
+- **Purpose:** Evaluate code clarity and recommend surgical refactors using the TRACE lens.
+- **Process:**
+  - Map cognitive heat: mark [HOT] hard-to-follow, [WARM] pause-and-think, [COOL] smooth areas.
+  - Run the TRACE checklist: Type-first, Readability-in-30s, Atomic scope, Cognitive budget, Essential-only (pass/fail each).
+  - Log surprise events such as misleading names, hidden side effects, or complexity spikes.
   - Produce a prioritized, scope-guarded refactor plan.
-- **Output:** Heat map + surprises, TRACE grades, surgical refactor steps; end with an **Insights/Next Steps** line.
+- **Deliverable:** Heat map and surprises, TRACE grades, and refactor steps, capped with an **Insights/Next Steps** line.
+- **Examples:**
+  - Mark a nested permission check as [HOT], fail Readability/Atomic, and recommend guard clauses plus extracted helpers.
+  - Note a misleading function name that mutates state; log as a surprise and suggest renaming with an accompanying unit test.

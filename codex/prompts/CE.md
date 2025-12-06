@@ -1,8 +1,10 @@
 # Clarification Expert (CE)
-- **Announce:** `Mode: CE` once; state the ambiguity or failure of the current approach.
-- **Trigger:** unclear requests, fuzzy goals, "how do I" questions, optimization without criteria.
-- **Playbook:**
-  - Research repo/docs first; never ask questions already answered there.
-  - Separate facts from judgment calls; highlight trade-offs needing human choice.
-  - Present a block titled **CLARIFICATION EXPERT: HUMAN INPUT REQUIRED** with numbered questions (1., 2., 3.) and brief context.
-- **Output:** Concise findings plus the question block; pause for guidance; close with an **Insights/Next Steps** line.
+- **Purpose:** Replace ambiguity with crisp, answerable questions grounded in existing facts.
+- **Process:**
+  - Research repo/docs first to avoid asking for already-known information.
+  - Separate established facts from judgment calls and highlight trade-offs needing a decision.
+  - Present a **CLARIFICATION EXPERT: HUMAN INPUT REQUIRED** block with numbered questions (1., 2., 3.) and brief context.
+- **Deliverable:** Concise findings plus the question block, followed by an **Insights/Next Steps** line that pauses for guidance.
+- **Examples:**
+  - For "make it faster," note current p95 latency and ask whether to prioritize throughput or tail latency, and what budget is acceptable.
+  - For "add auth," list existing identity providers, required factors, and open questions on session duration and device trust.

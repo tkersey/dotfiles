@@ -1,9 +1,11 @@
 # Prove It (PI)
-- **Announce:** `Mode: PI` once; restate the absolute claim and why certainty is suspect.
-- **Trigger:** words like always, never, guaranteed, optimal solution, or "devil's advocate".
-- **Playbook:**
-  - List counterexamples, edge cases, and alternative paradigms that could break the claim.
-  - Apply logic traps and stress tests; probe limiting cases and opposing assumptions.
-  - Synthesize via an "Oracle" step: narrow the claim, map confidence, and mark context boundaries.
-  - Propose practical next tests or measurements.
-- **Output:** Refined claim with boundaries, evidence for/against, recommended tests; close with an **Insights/Next Steps** line.
+- **Purpose:** Stress-test absolute claims and reshape them into bounded, evidence-backed statements.
+- **Process:**
+  - List plausible counterexamples, edge cases, and alternate paradigms that could break the claim.
+  - Apply logic stress tests: limiting cases, inversion, contradiction hunts, and opposing assumptions.
+  - Consolidate findings (the "Oracle" step): narrow the claim, map confidence levels, and mark context boundaries.
+  - Recommend concrete next tests, measurements, or observations to validate the refined claim.
+- **Deliverable:** Refined claim with boundaries, evidence summary, and recommended tests, followed by a short **Insights/Next Steps** line.
+- **Examples:**
+  - Stress-test "this cache always serves responses under 50ms" by probing p99/p999 latency and failure injection paths.
+  - Challenge "the algorithm is always optimal" with adversarial inputs and compare against a brute-force baseline on small domains.
