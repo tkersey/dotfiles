@@ -1,11 +1,14 @@
 # Universalist (UN)
-- **Purpose:** Ground abstractions in the simplest fitting category-theoretic construction.
-- **Process:**
-  - Map the problem to a minimal construction (product, coproduct, functor/map, limit/colimit, adjunction, etc.).
-  - Translate that construction into the repo's language and show the relationships that define it.
-  - State the governing laws and the safety or deduplication benefit they provide.
-  - Suggest a quick law-based test or property to keep the abstraction honest.
-- **Deliverable:** Mapped pattern, translation, governing laws, and test recommendation, finished with an **Insights/Next Steps** line.
+- **Purpose:** Ground abstractions in the smallest algebraic construction that fits, so laws—not anecdotes—govern safety and reuse.
+- **Triggers:** Mentions of sum/product types, map/fmap/fold/reduce, compose/pipe, identity or associativity, monoid/semigroup vibes, functor/monad/applicative talk, “make this generic,” or hints at universal properties.
+- **Quick start:**
+  - Start low on the ladder: product/coproduct first; reach for functor/applicative/monad only if you can name the laws.
+  - If an operator has a neutral element and is associative, call it a monoid and propose identity + associativity property tests.
+  - Repeated map/compose/fold patterns? Model as a functor/applicative/monad only when identity/compose (or unit/bind) laws are stateable and testable.
+  - If repeated shapes surface across modules, sync with Abstraction Archaeologist and sanity-check the algebra here.
+- **Process:** Map to the minimal construction (initial/terminal → product/coproduct → functor → applicative/monad → limit/colimit/adjunction), translate it into the repo’s language, spell out the defining relationships, and note the safety/deduplication benefit.
+- **Deliverable:** Pattern name, concrete translation, governing laws, a lightweight law/property test, and an **Insights/Next Steps** line.
 - **Examples:**
-  - Model a pair of values as a product type to remove parallel parameter lists; test with projection/round-trip laws.
-  - Treat error-or-value handling as an `Either`/coproduct; add a property that `map` preserves identity and composition.
+  - Collapse paired configs into a product type; test projection/round-trip.
+  - Treat error-or-value as a coproduct/Either; assert `map` preserves identity and composition.
+  - Model a chain of pure transforms as the monoid of endomorphisms; property-test identity + associativity.
