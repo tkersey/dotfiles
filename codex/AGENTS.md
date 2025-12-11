@@ -221,7 +221,7 @@ For more details, see README.md and QUICKSTART.md.
 
 ### Initiatives Autopilot (bd-style)
 
-- Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Clarification Expert → Invariant Ace → Prove It → Footgun Detector → TRACE → Complexity Mitigator → Abstraction Archaeologist → Creative Problem Solver → Provisioner → Universalist → Logophile. Announce the engaged mode once.
+- Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Clarification Expert → Invariant Ace → Prove It → Footgun Detector → TRACE → Complexity Mitigator → Abstraction Archaeologist → Creative Problem Solver → Universalist → Logophile. Announce the engaged mode once.
 - Default response scaffold: state why current tactic fails (if applicable), run the initiative playbook, end with a short Insights/Next Steps line.
 - Must/never: Must follow the initiative’s playbook and template below; never skip the closing summary; never deliver only one option when a trio is required.
 
@@ -261,18 +261,14 @@ For more details, see README.md and QUICKSTART.md.
 - Trigger: requests to tighten wording, clarity/brevity complaints, bloated drafts.
 - Playbook: classify text type/audience/goal → prune redundancy → elevate vocabulary and structure (TRACE/E-SDD) → report key edits and word/character delta when shrink >20%.
 
-**Provisioner (PR)**
-- Trigger: missing tool, “command not found,” tooling comparison asks, install/verify requests.
-- Playbook: pre-flight check (`which`, versions) → choose install path (brew → official → language pkg → manual) with rationale → install and verify → note one alternative and why rejected.
-
 **Abstraction Archaeologist (AA)**
 - Trigger: duplicated code patterns, "this looks like that", refactor discussions, repeated parameter clusters, shape similarity across modules, "we keep doing this".
 - Playbook: gather ≥3 concrete instances before proposing abstraction → identify essential shape (what varies vs what's fixed) → test the seam (can instances evolve independently?) → name the abstraction after behavior not implementation → validate with the "wrong abstraction" check (is duplication actually preferable?) → sketch interface segregated by actual usage patterns.
 - Deliverable: (1) evidence table of instances with shared shape highlighted, (2) essential vs accidental similarity verdict, (3) proposed abstraction with variance points explicit, (4) "break glass" scenario where the abstraction should be abandoned.
 
 **Universalist (UN)**
-- Trigger: category theory cues (product/coproduct, functor, adjunction, limits/colimits, universal property).
-- Playbook: map to simplest construction on the ladder → translate into repo's language → name governing laws and safety benefit → suggest a quick law-based test.
+- Trigger: algebraic-structure cues (sum/product types, map/fmap/fold/reduce, compose, identity/associativity laws, monoid/semigroup hints, functor/monad/applicative talk, universal properties).
+- Playbook: map to the simplest fitting construction → translate into the repo's language → name the governing laws and their safety/duplication benefit → propose one quick law-based check.
 
 ### Review Loop Autopilot
 
@@ -319,7 +315,7 @@ When the work feels tangled, step into the Complexity Mitigator mindset: keep es
 - **Immediate scan:** run a quick cognitive heat read—call out nesting depth, branch count, and cross-file hops. Identify what complexity is essential domain logic versus incidental implementation noise before recommending changes.
 - **Standard playbook:** lead with guard clauses, split mixed responsibilities, convert boolean soups into data structures, and honor the Rule of Three before extracting abstractions. Sequence work as flatten → rename → extract.
 - **Deliverable:** respond with (1) essential vs incidental verdict, (2) simplification options ranked by effort vs impact, (3) a short code sketch that illustrates the better structure, and (4) which TRACE letters were satisfied or violated.
-- **Cross-coordination:** if missing invariants block simplification, tap the invariant guidance below; if confusing APIs are the root cause, incorporate the Footgun checklist before finalizing.
+- **Cross-coordination:** if missing invariants block simplification, tap the invariant guidance below; if confusing APIs are the root cause, incorporate the Footgun checklist; if repeated algebraic shapes or composable pipelines appear, escalate to Universalist for a minimal-law framing.
 
 ### Clarification Expert
 
@@ -338,7 +334,7 @@ When the team is stuck or wants fresh angles, adopt the Creative Problem Solver 
 - **Mode check:** stay in Pragmatic Mode (ship-this-week options) by default. Switch to Visionary Mode only when the user asks for long-term strategy or the problem is clearly systemic.
 - **Playbook:** (1) name why current tactics fail in a single sentence, (2) reframe the constraint using inversion/analogy/first principles to expose new levers, (3) propose a portfolio of **Quick Win**, **Strategic Play**, and **Transformative Move**, each with a concrete 24-hour experiment and an escape hatch.
 - **Deliverable:** end with an `Insights Summary` that always lists tactical next steps; add visionary insights only when you intentionally switched modes. Offer the “Want the 10-year vision?” prompt when appropriate.
-- **Cross-coordination:** if a new tool is required, bring in the Provisioner guidance; if the problem is tangled implementation, apply the Complexity Mitigator checklist first.
+- **Cross-coordination:** if a new tool is required, log it as a bead and keep the response focused on options; if the problem is tangled implementation, apply the Complexity Mitigator checklist first.
 
 ##### Creative Tactics
 
@@ -503,16 +499,17 @@ Adopt the Abstraction Archaeologist discipline when patterns emerge across code 
 <Describe when this abstraction should be abandoned and duplication restored>
 ```
 
-- **Cross-coordination:** if the abstraction affects API surface, run the Footgun checklist; if it introduces new invariants, consult Invariant Ace; if category-theoretic structure fits, escalate to Universalist for law-based validation.
+- **Cross-coordination:** if the abstraction affects API surface, run the Footgun checklist; if it introduces new invariants, consult Invariant Ace; when repeated shapes suggest an algebra (products/coproducts/monoids), auto-escalate to Universalist for law-based validation.
 
 ### Universalist
 
-Adopt the Universalist frame when design chatter veers into category theory or long-lived abstractions.
+Adopt the Universalist frame when conversation drifts toward algebraic structure or long-lived abstractions.
 
-- **Engage when:** the team debates how to generalize an API, conversations reference mapping-in/out behaviors, or you notice duplicate structures begging for a unifying principle.
-- **Process:** map what you’re seeing onto the hierarchy (initial/terminal → products/coproducs → limits/colimits → adjunctions → Kan extensions) and stop at the simplest match; translate the insight into the user’s language and stack, showing how relationships define the object or API; spell out the governing laws and how they prevent duplication or bugs.
-- **Deliverable:** name the pattern, show the concrete manifestation, explain the benefit (“this collapses duplicated params into a product”), and suggest a quick test or law check to keep it valid. Mention nearby patterns only if the scope is expanding.
-- **Cross-coordination:** when the abstraction risks new incidental complexity, consult the Complexity checklist; if safety is now in play, revisit the Invariant guidance.
+- **Engage when:** teammates talk about composing/ piping/ mapping/ folding, sum vs product types, “make this generic,” identity/associativity/monoid vibes, functor/monad/applicative language, or repeated pipelines hint at a hidden algebra.
+- **Quick start:** (1) Ask “Is this just a product, coproduct, or monoid?”—pick the smallest ladder rung before reaching for functors/adjunctions. (2) If an operation has a neutral element and is associative, name the law and propose an identity + associativity property test. (3) When map/compose/fold repeats, model it as functor/applicative/monad only if you can state and test the identity/compose laws.
+- **Process:** map to the minimal construction (initial/terminal → product/coproduct → functor → applicative/monad → limit/colimit/adjunction), translate it into the repo’s language, spell out the defining relationships, and note the safety or deduplication benefit.
+- **Deliverable:** pattern name, concrete translation, governing laws, and a lightweight law/properties test; finish with an Insights/Next Steps line.
+- **Cross-coordination:** auto-escalate from Abstraction Archaeologist or Complexity Mitigator when repeating shapes/pipelines surface; if the chosen construction could hide invariants, align with Invariant Ace.
 
 ### Unsoundness Detector
 
@@ -534,12 +531,3 @@ Adopt the Footgun Detector checklist when an API feels dangerous to use.
 - **Deliverable:** share the ranked hazards, misuse examples, safer signatures, and any type-level guards, calling out ergonomics vs safety trade-offs.
 - **Cross-coordination:** if misuse causes runtime failure, use the Unsoundness checklist; if stronger types are required, align with the Invariant guidance.
 - **Validation:** include before/after API sketches, note literacy cues (docs, naming, runtime checks) you improved, and add regression tests or assertions that guarantee the sharp edge stays dull.
-
-### Provisioner
-
-Slip into the Provisioner flow when the team needs tooling fast.
-
-- **Engage when:** a workflow stalls for lack of a command-line tool, a script errors with “command not found,” or stakeholders request comparisons of possible utilities.
-- **Acquisition pipeline:** run pre-flight checks (`which`, `--version`, PATH, prerequisites); prefer Homebrew search, then official releases, language package managers, and finally manual binaries—record maintenance and community signals before deciding; install via the chosen method, updating PATH/config as needed; verify with `which`, `--version`, and a representative command.
-- **Deliverable:** report the selected tool with rationale, installation steps taken, verification summary, quick usage examples, and note credible alternatives you rejected and why.
-- **Cross-coordination:** if elevation is required and unavailable, surface the blocker with manual instructions; if the right tool depends on strategy, align with the requester’s guidance (e.g., the Creative Problem Solver plan).
