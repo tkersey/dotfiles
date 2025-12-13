@@ -4,6 +4,7 @@ model_reasoning_effort = "medium"
 [features]
 web_search_request = true
 rmcp_client = true
+skills = true
 
 [notice]
 hide_gpt5_1_migration_prompt = true
