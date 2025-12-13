@@ -24,6 +24,8 @@ bd ready --json
 
 **Create new issues:**
 ```bash
+bd create --from-template memory "Issue title" --json  # if the repo has a `memory` template
+bd create -t task -p 2 "Issue title" --description "<...>" --design "<...>" --acceptance "<...>" --json  # template-free
 bd create "Issue title" -t bug|feature|task -p 0-4 --json
 bd create "Issue title" -p 1 --deps discovered-from:bd-123 --json
 bd create "Subtask" --parent <epic-id> --json  # Hierarchical subtask (gets ID like epic-id.1)
@@ -82,6 +84,10 @@ Ready = status is `open` and no blocking dependencies remain—perfect for picki
 
 ### Workflow for AI Agents
 
+0. **Warm-start memory (new session)**: Load and read the 10 most recent closed beads before starting new work.
+   - `bd list --status closed --sort closed --reverse --limit 10 --json`
+   - For each returned `id`:
+     - `bd show <id> --json`
 1. **Check ready work**: `bd ready` shows unblocked issues
 2. **Claim your task**: `bd update <id> --status in_progress`
 3. **Work on it**: Implement, test, document
@@ -89,6 +95,50 @@ Ready = status is `open` and no blocking dependencies remain—perfect for picki
    - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id>`
 5. **Complete**: `bd close <id> --reason "Done"`
 6. **Commit together**: Always commit the `.beads/issues.jsonl` file together with the code changes so issue state stays in sync with code state
+
+### Beads as Memory (Required)
+
+Beads are the durable memory for future-you. Before closing any bead, it must be self-contained: a future reader should be able to answer “what changed, why, how do we know it works, and what did we learn?” using the bead alone.
+
+Prefer creating beads with a `memory` template **when it exists** (per-repo): `bd create --from-template memory "..." --json`.
+If no custom templates exist in the repo, create template-free and fully populate fields: `bd create -t <type> -p <priority> "..." --description "<...>" --design "<...>" --acceptance "<...>" --json`.
+
+**During work (capture as you go)**
+- Use `bd comments add <id> ...` as a scratch log while you work (comments are **not exported** to `.beads/issues.jsonl`); distill anything durable into `notes`/`description`/`design` before closing.
+
+**Closeout (mandatory before `bd close`)**
+1. **Distill the bead fields** (final state, not a draft):
+   - **`description` (Outcome + Verification + Where):** what changed, why, where it lives (files/systems), how you verified (tests/commands), and any user-visible behavior changes.
+   - **`design` (Decisions + Rationale + Constraints):** key decisions and rationale, alternatives considered (and why rejected), invariants/constraints discovered, and any footguns/gotchas to avoid next time.
+   - **`acceptance` (Definition of done):** the concrete checks a future-you can re-run (exact commands/steps).
+2. **Set `notes` to “Closure Notes”** with the template below (exported/synced; include exact commands and high-signal keywords for `bd search`).
+   - Prefer `bd edit <id>` or `bd update <id> --notes "$(cat closure-notes.txt)" --json` (avoid inline shell backticks).
+3. **Create follow-up beads** for anything non-trivial you didn’t do, and link them with `discovered-from:<this-id>` (or `blocks` if truly blocking).
+4. **Only then** close: `bd close <id> --reason "Completed" --json`
+
+**Closure Notes template (save in `notes`)**
+- Outcome:
+- Key learnings:
+- Decisions + rationale:
+- Constraints / invariants discovered:
+- Verification (exact commands + results):
+- Commands run (copy/paste safe):
+- Files / symbols touched:
+- External refs (PR/commit/issues):
+- Follow-ups created (ids + why):
+- Search keywords / phrases:
+
+**Default label taxonomy (prefer too much over too little)**
+- `memory` (durable learning worth re-reading)
+- `decision` (non-obvious choice + rationale)
+- `investigation` (debugging / root-cause / exploration)
+- `runbook` (repeatable operational steps)
+- `gotcha` (surprising pitfall / footgun)
+- `invariant` (state/typing/business-rule guarantee)
+- `security` (auth, secrets, vuln, hardening)
+- `perf` (latency, throughput, cold start, big-O)
+- `deps` (dependency / tooling / build changes)
+- `docs` (documentation / instructions changes)
 
 ### Auto-Sync
 
