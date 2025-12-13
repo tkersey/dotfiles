@@ -7,4 +7,6 @@ lazy-lock.json
 **/.claude/settings.local.json
 .beads/*
 !.beads/*.jsonl
+!.beads/templates/
+!.beads/templates/*.yaml
 .beads/beads.left.jsonl
