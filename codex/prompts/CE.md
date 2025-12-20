@@ -15,10 +15,10 @@ argument-hint: "<request...>"
   - Ask only the open questions in a **CLARIFICATION EXPERT: HUMAN INPUT REQUIRED** block with sequentially numbered questions (1., 2., 3., …).
   - After answers, update the snapshot and repeat until **Open questions** is empty (as many loops as needed).
   - If the outcome is a plan/beads: ensure open questions cover parallelization constraints and documentation expectations (without creating docs-only work items).
-  - When **Open questions** is empty: do **not** begin implementation. Instead, execute `codex/prompts/BD.md` to generate verbose beads via `bd` (tasks, subtasks, and dependencies), then hard-stop.
+  - When **Open questions** is empty: do **not** begin implementation. Instead, generate verbose beads via `bd` (tasks, subtasks, and dependencies), then hard-stop.
 - **Deliverable:**
   - If questions remain: concise findings + the question block, followed by an **Insights/Next Steps** line that pauses for guidance.
-  - If no questions remain: beads generated (via `codex/prompts/BD.md`), then stop (no implementation).
+  - If no questions remain: beads generated, then stop (no implementation).
 - **Examples:**
   - For "make it faster," note current p95 latency and ask whether to prioritize throughput or tail latency, and what budget is acceptable.
   - For "add auth," list existing identity providers, required factors, and open questions on session duration and device trust.
