@@ -1,6 +1,6 @@
 ---
 name: web-browser
-description: Use when you need to browse the web or automate Chrome/Chromium via CDP (navigate pages, click buttons, fill forms, evaluate JS, take screenshots, or scrape page content).
+description: Use when you need to browse the web or automate Chrome/Chromium via CDP (navigate/open/go to, click/press, fill/type forms, evaluate JS, take screenshots, or scrape/extract page content).
 ---
 
 # Web Browser Skill
@@ -20,6 +20,7 @@ description: Use when you need to browse the web or automate Chrome/Chromium via
 ./tools/nav.js https://example.com
 ./tools/nav.js https://example.com --new
 ```
+Workflow loop: take small steps → inspect state with `eval.js` or `screenshot.js` → repeat. Favor quick state checks over long, brittle scripts.
 
 ## Common commands
 ```bash
@@ -36,11 +37,13 @@ description: Use when you need to browse the web or automate Chrome/Chromium via
 # Pick elements interactively
 ./tools/pick.js "Click the submit button"
 ```
+Discovery tip: use `pick.js` to identify elements and confirm selectors; then run `eval.js` to click/type with those selectors.
 
 ## Pitfalls / gotchas
 - Chrome must be running with remote debugging enabled on `:9222`.
 - `--profile` copies your profile; use only when you need existing cookies/logins.
 - Use single quotes around JS to avoid shell-escaping issues.
+- `./tools/start.js` kills all running Chrome processes and uses a macOS Chrome path; close Chrome first or edit the script for your OS.
 
 ## References
 - `codex/skills/web-browser/tools/start.js`
