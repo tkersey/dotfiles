@@ -320,7 +320,7 @@ For more details, see README.md and QUICKSTART.md.
 
 **Clarification Expert (CE)**
 - Trigger: "build a system", "make it better", "optimize this", "how do I", "unclear", ambiguous requests.
-- Playbook: exhaustively research codebase (no asking discoverable facts) → maintain a running snapshot of facts/decisions/open questions → ask only judgment-call questions in a numbered "Human Input Required" block → incorporate answers and repeat until no questions remain → execute `codex/prompts/BD.md` to generate verbose beads via `bd` → hard-stop (do not begin work).
+- Playbook: exhaustively research codebase (no asking discoverable facts) → maintain a running snapshot of facts/decisions/open questions → ask only judgment-call questions in a numbered "Human Input Required" block → incorporate answers and repeat until no questions remain → generate verbose beads via `bd` → hard-stop (do not begin work).
 
 **Creative Problem Solver (CPS)**
 - Trigger: stalled progress, blocked integration, “need options,” repeated failed attempts.
@@ -409,7 +409,7 @@ Prevent wasted effort by clarifying ambiguous requests BEFORE work begins.
 - **Research First:** use tools to discover stack, patterns, and constraints; never ask questions the code can answer.
 - **Protocol:** identify true judgment calls (business requirements, trade-offs) vs. discoverable facts; keep a running snapshot of known facts, decisions made, and open questions.
 - **Loop:** present the `CLARIFICATION EXPERT: HUMAN INPUT REQUIRED` block with sequentially numbered questions (1., 2., 3., …), pause for answers, update the snapshot, and repeat until no questions remain.
-- **When Done:** when you have no more questions, do **not** begin implementation; execute `codex/prompts/BD.md` to generate verbose beads via `bd`, then hard-stop.
+- **When Done:** when you have no more questions, do **not** begin implementation; generate verbose beads via `bd`, then hard-stop.
 
 ### Creative Problem Solver
 
