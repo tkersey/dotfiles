@@ -1,27 +1,11 @@
 ---
 name: agentic-jujutsu
-version: 2.3.2
-description: Quantum-resistant, self-learning version control for AI agents with ReasoningBank intelligence and multi-agent coordination
-category: version-control
-tags: [vcs, ai-agents, quantum-security, self-learning, multi-agent, jujutsu]
-author: Agentic Flow Team
+description: Agentic Jujutsu version control layered on Git. Use when Git commits/branches/rebases are happening in repos using agentic-jujutsu (jj), or when working with JjWrapper, ReasoningBank trajectories, AgentDB logs, or quantum fingerprint/encryption.
 ---
 
 # Agentic Jujutsu - AI Agent Version Control
 
 > Quantum-ready, self-learning version control designed for multiple AI agents working simultaneously without conflicts.
-
-## When to Use This Skill
-
-Use **agentic-jujutsu** when you need:
-
-- ✅ Multiple AI agents modifying code simultaneously
-- ✅ Lock-free version control (23x faster than Git)
-- ✅ Self-learning AI that improves from experience
-- ✅ Quantum-resistant security for future-proof protection
-- ✅ Automatic conflict resolution (87% success rate)
-- ✅ Pattern recognition and intelligent suggestions
-- ✅ Multi-agent coordination without blocking
 
 ## Quick Start
 

@@ -10,3 +10,5 @@ lazy-lock.json
 !.beads/templates/
 !.beads/templates/*.yaml
 .beads/beads.left.jsonl
+
+codex/skills/.system/

@@ -1,53 +1,50 @@
 ---
 name: web-browser
-description: "Allows to interact with web pages by performing actions such as clicking buttons, filling out forms, and navigating links. It works by remote controlling Google Chrome or Chromium browsers using the Chrome DevTools Protocol (CDP). When Claude needs to browse the web, it can use this skill to do so."
-license: Stolen from Mario
+description: Use when you need to browse the web or automate Chrome/Chromium via CDP (navigate pages, click buttons, fill forms, evaluate JS, take screenshots, or scrape page content).
 ---
 
 # Web Browser Skill
 
-Minimal CDP tools for collaborative site exploration.
+## When to use
+- Navigate or interact with live websites
+- Click buttons, fill forms, or extract page content
+- Evaluate JS in a real browser context
+- Capture screenshots for review or debugging
 
-## Start Chrome
+## Quick start
+```bash
+# Start Chrome with remote debugging on :9222
+./tools/start.js
 
-\`\`\`bash
-./tools/start.js # Fresh profile
-./tools/start.js --profile # Copy your profile (cookies, logins)
-\`\`\`
-
-Start Chrome on `:9222` with remote debugging.
-
-## Navigate
-
-\`\`\`bash
+# Navigate or open a new tab
 ./tools/nav.js https://example.com
 ./tools/nav.js https://example.com --new
-\`\`\`
+```
 
-Navigate current tab or open new tab.
+## Common commands
+```bash
+# Start with your existing profile (cookies, logins)
+./tools/start.js --profile
 
-## Evaluate JavaScript
-
-\`\`\`bash
+# Evaluate JS in the active tab
 ./tools/eval.js 'document.title'
 ./tools/eval.js 'document.querySelectorAll("a").length'
-./tools/eval.js 'JSON.stringify(Array.from(document.querySelectorAll("a")).map(a => ({ text: a.textContent.trim(), href: a.href })).filter(link => !link.href.startsWith("https://")))'
-\`\`\`
 
-Execute JavaScript in active tab (async context). Be careful with string escaping, best to use single quotes.
-
-## Screenshot
-
-\`\`\`bash
+# Screenshot current viewport
 ./tools/screenshot.js
-\`\`\`
 
-Screenshot current viewport, returns temp file path
-
-## Pick Elements
-
-\`\`\`bash
+# Pick elements interactively
 ./tools/pick.js "Click the submit button"
-\`\`\`
+```
 
-Interactive element picker. Click to select, Cmd/Ctrl+Click for multi-select, Enter to finish.
+## Pitfalls / gotchas
+- Chrome must be running with remote debugging enabled on `:9222`.
+- `--profile` copies your profile; use only when you need existing cookies/logins.
+- Use single quotes around JS to avoid shell-escaping issues.
+
+## References
+- `codex/skills/web-browser/tools/start.js`
+- `codex/skills/web-browser/tools/nav.js`
+- `codex/skills/web-browser/tools/eval.js`
+- `codex/skills/web-browser/tools/screenshot.js`
+- `codex/skills/web-browser/tools/pick.js`
