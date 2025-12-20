@@ -1,6 +1,6 @@
 ---
 name: zig
-description: Zig development runbook; use when editing or modifying .zig files, build.zig, or build.zig.zon, or when working on Zig builds, packages, memory/allocators, C interop, or tests.
+description: Zig development runbook; use when editing or modifying .zig files, build.zig, or build.zig.zon, or when working on Zig builds, packages, comptime/metaprogramming, reflection/type generation, memory/allocators, C interop, or tests.
 ---
 
 # Zig
@@ -9,6 +9,7 @@ description: Zig development runbook; use when editing or modifying .zig files, 
 - Editing or reviewing `.zig` source files
 - Modifying `build.zig` or `build.zig.zon`
 - Configuring the build system, dependencies, or cross-compilation
+- Working with comptime, generics, reflection, or compile-time codegen
 - Working with allocators, memory ownership, or C interop
 - Writing or debugging Zig tests
 
@@ -39,6 +40,64 @@ zig build -Dtarget=aarch64-macos
 
 # Clean build artifacts (safe)
 rm -rf zig-out zig-cache
+```
+
+## Comptime quick start
+```zig
+const std = @import("std");
+
+fn max(comptime T: type, a: T, b: T) T {
+    return if (a > b) a else b;
+}
+
+test "comptime parameter" {
+    const x = max(u32, 3, 5);
+    try std.testing.expect(x == 5);
+}
+```
+
+## Comptime toolbox
+- `comptime` parameters drive generics and compile-time duck typing.
+- `comptime` variables guarantee loads/stores happen at compile time.
+- `comptime { ... }` blocks force evaluation and validation at compile time.
+- `inline for` / `inline while` unroll and evaluate loops at compile time.
+- `@Type` + `@typeInfo` let you build or transform types programmatically.
+- `@compileError` and `@compileLog` are for compile-time assertions/debugging.
+- `@setEvalBranchQuota` raises the compile-time loop branch limit when needed.
+
+## Comptime patterns
+```zig
+const std = @import("std");
+
+fn BiggerInt(comptime T: type) type {
+    return @Type(.{
+        .Int = .{
+            .bits = @typeInfo(T).Int.bits + 1,
+            .signedness = @typeInfo(T).Int.signedness,
+        },
+    });
+}
+
+fn requireNonZero(comptime n: usize) void {
+    if (n == 0) @compileError("n must be > 0");
+}
+
+test "comptime type + validation" {
+    requireNonZero(4);
+    try std.testing.expect(BiggerInt(u8) == u9);
+}
+```
+
+## Comptime guardrails
+- Keep compile-time loops bounded; increase the branch quota only where needed.
+- Avoid `extern` calls in comptime blocks; they cannot run at compile time.
+- Use `@compileError` to enforce invariants on comptime parameters.
+
+## Comptime diagnostics
+```zig
+test "comptime log" {
+    comptime @compileLog("compile-time value =", 42);
+}
 ```
 
 ## Build essentials (build.zig)
@@ -133,3 +192,4 @@ test "addition" {
 ## References
 - Zig standard library docs
 - Zig language reference
+- Zig Guide: comptime

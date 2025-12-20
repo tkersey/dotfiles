@@ -318,6 +318,18 @@ For more details, see README.md and QUICKSTART.md.
 - Default response scaffold: state why current tactic fails (if applicable), run the initiative playbook, end with a short Insights/Next Steps line.
 - Must/never: Must follow the initiative’s playbook and template below; never skip the closing summary; never deliver only one option when a trio is required.
 
+### Initiative Skill Router (preferred)
+
+- Use `$trace` for review/refactor/readability/cognitive-load requests.
+- Use `$trace-guard` for crash/corruption risk, invariants, footguns, or complexity tangles.
+- If both apply, prefer `$trace-guard` and include a TRACE report in the output.
+- Use `$abstraction-laws` for repeated patterns, parameter clusters, or algebraic structure cues.
+- Use `$clarification-expert` for ambiguous "build/optimize/make it better/how do I" prompts.
+- Use `$prove-it` for absolutes ("always", "never", "guaranteed", "optimal") or "devil's advocate".
+- Use `$creative-problem-solver` for stuck progress or "need options" requests.
+- Use `$logophile` for wording, clarity, brevity, or density edits.
+- Use `$zig` for .zig edits, build.zig/build.zig.zon changes, or Zig build/test tasks.
+
 **Clarification Expert (CE)**
 - Trigger: "build a system", "make it better", "optimize this", "how do I", "unclear", ambiguous requests.
 - Playbook: exhaustively research codebase (no asking discoverable facts) → maintain a running snapshot of facts/decisions/open questions → ask only judgment-call questions in a numbered "Human Input Required" block → incorporate answers and repeat until no questions remain → generate verbose beads via `bd` → hard-stop (do not begin work).
@@ -413,44 +425,11 @@ Prevent wasted effort by clarifying ambiguous requests BEFORE work begins.
 
 ### Creative Problem Solver
 
-When the team is stuck or wants fresh angles, adopt the Creative Problem Solver discipline.
-
-- **Engage when:** experiments keep failing in the same way, stakeholders ask for new ideas, or integration work blocks because every attempt replays the same constraints.
-- **Mode check:** stay in Pragmatic Mode (ship-this-week options) by default. Switch to Visionary Mode only when the user asks for long-term strategy or the problem is clearly systemic.
-- **Playbook:** (1) name why current tactics fail in a single sentence, (2) reframe the constraint using inversion/analogy/first principles to expose new levers, (3) propose a portfolio of **Quick Win**, **Strategic Play**, and **Transformative Move**, each with a concrete 24-hour experiment and an escape hatch.
-- **Deliverable:** end with an `Insights Summary` that always lists tactical next steps; add visionary insights only when you intentionally switched modes. Offer the “Want the 10-year vision?” prompt when appropriate.
-- **Cross-coordination:** if a new tool is required, log it as a bead and keep the response focused on options; if the problem is tangled implementation, apply the Complexity Mitigator checklist first.
-
-##### Creative Tactics
-
-- **Stuckness signals:** flag repeated failures, constraint walls (“can’t with current resources”), or circular debates early so creativity starts before fatigue sets in.
-- **Reframing toolkit:** reach for inversion, analogy transfer, constraint extremes, and first-principles decomposition to surface levers conventional iteration misses.
-- **Technique kit:** keep a grab bag of patterns ready—*inversion* (“what if we did the opposite?”), *analogy transfer* (“who else solved a similar shape?”), *constraint extremes* (“push each limit to zero or infinity”), *first principles* (“rebuild from the atomic facts”), and *generative ideation* (“ship 30 ideas, then score them”)—each paired with a 24-hour experiment sketch.
-- **Working examples:** jot quick reference snippets that demonstrate how a tactic plays out (e.g., inversion → event sourcing to avoid sync, analogy → river delta for dependency flow) so the next agent sees how theory translates into action.
-- **Portfolio rule:** every response ships a Quick Win, Strategic Play, and Transformative Move, each paired with a 24-hour experiment and an explicit escape hatch.
-- **Response choreography:** open by naming why the old approach fails and the insight that reframes it; close with an Insights Summary that always lists tactical actions, adds visionary moves only when long-horizon triggers appear, and invites “Want the 10-year vision?” when warranted.
-
-#### Cognitive Disruption Protocols
-
-- **Latent reset:** when three attempts stall, step away for ten minutes, engage a different puzzle, then force-create 30 solutions in 15 minutes before evaluating.
-- **Verbalization loop:** narrate the code or system line-by-line to a rubber duck, whiteboard, or voice memo to surface hidden assumptions as you speak.
-- **Depth dive:** run Five Whys as a branching tree (three hypotheses per “why”) to expose converging root causes rather than a single chain.
-- **Intuition audit:** if metrics say “fine” but intuition protests, add rich logging, visualize the data three ways, and hunt for patterns the dashboards flatten.
-- **Failure harvest:** log each failed attempt with the anti-pattern it disproved, early warning signs, and a reusable detection heuristic for the next engagement.
-
-#### Visionary Triggers
-
-- **When to switch modes:** repeated optimization plateaus, architectural debt discussions, “can’t scale past…” statements, or teammates declaring “that’s impossible” signal it’s time to layer in Visionary Mode.
-- **Prompting questions:** ask the impossible solution question (“if it already worked perfectly, what exists?”), the viewpoint flip (“what would surprise a new hire from a different industry?”), and the cascade map (“what ten problems vanish if this succeeds?”) to reveal leverage points worth a Transformative Move.
+Use `$creative-problem-solver` when the user asks for new options, fresh angles, or progress is stuck.
 
 ### Prove It
 
-Use the Prove It gauntlet when strong opinions or absolutes need testing.
-
-- **Engage when:** threads declare absolutes like `always`, `never`, `guaranteed`, `optimal solution`, `prove it`, or `devil's advocate`.
-- **Immediate scan:** identify the absolute claim and potential edge cases or counterexamples that might disprove it.
-- **Standard playbook:** execute the ten-round gauntlet—counterexamples, logic traps, alternative paradigms, stress tests, meta-questions—and synthesize via the Oracle to erode false certainty.
-- **Deliverable:** refined claims with transparent confidence trails, mapped contextual boundaries, and practical next tests.
+Use `$prove-it` when the user asserts absolutes or asks for a devil's advocate.
 
 ### Invariant Ace
 
@@ -464,55 +443,7 @@ Slip into the Invariant Ace discipline whenever state validity feels shaky.
 
 ### Logophile
 
-Use the Logophile lens when text needs to say more with fewer words.
-
-- **Engage when:** teammates struggle to parse directions, reviews note redundant phrasing, or you feel the draft drifting into filler rather than meaning.
-- **Immediate diagnosis:** classify the text type (prompt, doc, email, spec), audience, tone, and the optimization goal (clarity, brevity, eloquence) before touching the draft.
-- **Standard playbook:** apply the Enhanced Semantic Density Doctrine—swap generic phrases for precise vocabulary, collapse redundant clauses, keep euphony, and respect TRACE so the rewrite stays readable in under 30 seconds.
-- **Deliverable:** share the refined passage, followed by the key edits you made (lexical lift, structural tightening, rhetorical tweak). When trimming >20%, explicitly note how you preserved meaning.
-- **Cross-coordination:** check the relevant technical guidance (e.g., invariants, complexity) if accuracy depends on another domain before finalizing.
-
-#### Activation cues
-
-- **Trigger phrases:** respond immediately to requests like “make this concise,” “tighten up,” “optimize prompt,” “improve wording,” or “too verbose.”
-- **Symptom scan:** jump in when drafts rely on filler transitions, repeat the same idea with new phrasing, or bury the lead beneath softeners.
-- **Audience check:** dial the vocabulary to match reader expertise—domain jargon for specialists, accessible precision for general audiences.
-
-#### Optimization workflow
-
-- **Type + purpose:** name the text category (prompt, doc, email, spec, comment) and the goal (clarity, brevity, polish) before editing.
-- **Pass 1 – prune:** strip redundancy, filler qualifiers, and throat-clearing so only essential ideas remain.
-- **Pass 2 – elevate:** replace pedestrian phrasing with precise, euphonic vocabulary calibrated to the audience and tone.
-- **Pass 3 – structure:** reshape sentences for rhythm and immediacy; favor parallelism and front-loaded information.
-- **Preserve invariants:** keep mandated language (legal terms, RFC keywords, brand voice) intact while optimizing around it.
-
-#### Reference patterns
-
-- **Lexical swaps:** “very important” → “paramount,” “in order to” → “to,” “due to the fact that” → “because.”
-- **Structural tightening:** trade nested clauses for short imperatives (e.g., “Please carefully review…” → “Review carefully.”).
-- **Tone alignment:** maintain personality—casual shorthand (“Coffee to discuss?”) versus formal concision (“Meeting requested: quarterly objectives.”).
-
-#### Metrics + proof
-
-- Track word/character deltas, readability shifts, and semantic preservation notes so stakeholders see density gains.
-- Use TRACE explicitly: confirm type clarity, 30-second readability, atomic scope, cognitive fit, and that every remaining word earns its keep.
-
-### Enhanced Semantic Density Doctrine (E-SDD)
-
-> Precision through sophistication, brevity through vocabulary, clarity through structure, eloquence through erudition.
-
-E-SDD is the Logophile's operating system: every edit must increase semantic weight while keeping language graceful. Anchor rewrites in four pillars:
-
-- **Lexical elevation:** choose words that are both exact and euphonic; retire vague fillers.
-- **Euphonic architecture:** shape sentences that sound intentional when read aloud, avoiding clunky rhythm.
-- **Rhetorical sophistication:** deploy devices (parallelism, chiasmus, anaphora) when they sharpen persuasion or memorability.
-- **Erudite precision:** surface domain insight without obscuring meaning; sophistication never compromises legibility.
-
-Guardrails:
-
-- Stay TRACE-compliant: keep the optimized text type-first, readable in 30 seconds, atomic, cognitively light, and strictly essential.
-- Keep the Surgeon's Principle in mind—minimal incision, maximum precision. Cut fluff; preserve indispensable nuance.
-- Offer metrics (word delta, readability shifts) when stakeholders need proof that density improved alongside clarity.
+Use `$logophile` when the user wants tighter wording, clarity, brevity, or higher semantic density.
 
 ### TRACE
 
