@@ -1,4 +1,10 @@
+---
+description: Stress-test a claim via 10 skeptic rounds, then bound it with evidence
+argument-hint: "<claim to prove...>"
+---
+
 # Prove It (PI)
+- **Input (optional):** `$PROVING` (the claim/instruction to prove). If empty, use the surrounding conversation as context.
 - **Purpose:** Stress-test absolute claims through 10 escalating skeptic rounds, reshaping them into bounded, evidence-backed statements.
 - **Process:**
   - Run all 10 rounds in order; vary the lens each time; stop only after round 10.
