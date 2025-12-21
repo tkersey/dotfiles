@@ -12,6 +12,7 @@ description: Generate beads in bd using the repo's swarm-ready rules; explicit i
 - Atomic scope: one agent, one sitting; split if it exceeds 1 day or >3 files.
 - Embed docs in each bead; no docs-only beads.
 - Acceptance is runnable: exact commands, file paths, expected results.
+- Epic cap: 7 max; split phases if more are needed.
 
 ## Workflow
 1) Sanity check target
@@ -74,7 +75,7 @@ description: Generate beads in bd using the repo's swarm-ready rules; explicit i
    - If `.beads/templates/*.yaml` is ignored, update `.gitignore` so the template can be committed.
    - Re-run `bd template list --json` to confirm.
 3) Draft the work graph
-   - Prefer 3–7 epics for parallel workstreams.
+   - Cap epics at 7 for parallel workstreams; split phases if more are needed.
    - Define child beads that can be executed independently.
    - Mark only true prerequisites as `blocks`.
 4) Create beads

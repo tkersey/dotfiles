@@ -9,6 +9,7 @@ description: Plan and beadify work end-to-end; use for "plan this", planning/roa
 - Inline Clarification Expert -> Creative Problem Solver -> Gen-Beads.
 - Default to executing the Transformative option unless the user overrides.
 - Hard-stop after bead creation (no implementation).
+- Use strict swarm rules (split >1 day or >3 files; cap epics at 7).
 
 ## Phase 1: Clarification Expert (CE)
 1) Research first; do not ask for discoverable facts.
