@@ -1,20 +1,19 @@
 # Repository Guidelines
 
-## beads Agent Directive
+## Issue Tracking
 
-All task coordination flows through `bd`. Use `$beads` for the full workflow and repo deltas.
+This project uses **bd (beads)** for issue tracking.
+Run `bd prime` for workflow context, or install hooks (`bd hooks install`) for auto-injection.
 
-## bd Must / Never
+**Quick reference:**
+- `bd ready` - Find unblocked work
+- `bd create "Title" --type task --priority 2` - Create issue
+- `bd close <id>` - Complete work
+- `bd sync` - Sync with git (run at session end)
 
-- ✅ Use `bd` for all task tracking (no markdown TODOs or external trackers).
-- ✅ Use `--json` when you will parse or consume output.
-- ✅ Link discovered work with `discovered-from` dependencies.
-- ✅ Keep beads self-contained (description/design/acceptance + Closure Notes in `notes`).
-- ✅ No docs-only beads; embed doc updates in each bead.
-- ✅ Check `bd ready` before asking "what should I work on?"
-- ❌ Do not use external issue trackers.
+For full workflow details: `bd prime`
 
-### Managing AI-Generated Planning Documents
+## Managing AI-Generated Planning Documents
 
 AI assistants often create planning and design documents during development:
 - PLAN.md, IMPLEMENTATION.md, ARCHITECTURE.md
@@ -44,7 +43,7 @@ history/
 
 For more details, see README.md and QUICKSTART.md.
 
-### Initiatives Autopilot (bd-style)
+## Initiatives Autopilot (bd-style)
 
 - Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Clarification Expert → Invariant Ace → Prove It → Footgun Detector → TRACE → Complexity Mitigator → Abstraction Archaeologist → Creative Problem Solver → Universalist → Logophile. Announce the engaged mode once.
 - Default response scaffold: state why current tactic fails (if applicable), run the initiative playbook, end with a short Insights/Next Steps line.
