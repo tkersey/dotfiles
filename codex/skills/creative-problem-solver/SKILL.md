@@ -1,6 +1,6 @@
 ---
 name: creative-problem-solver
-description: Lateral-thinking playbook for stuck, complex, or ambiguous work; use to reframe constraints, select creative techniques, and propose a Quick Win / Strategic Play / Transformative Move with experiments, escape hatches, and a decision log for "need options" requests.
+description: Lateral-thinking playbook for complex solution design; use for architecture/migration/re-architecture, multi-system integration, high-uncertainty tradeoffs, conflict resolution, or when you need options, reframes, and a Quick Win / Strategic Play / Transformative Move.
 ---
 
 # Creative Problem Solver
@@ -218,3 +218,25 @@ Prefer: high Signal, high Reversibility, low Cost, low Time.
 - "novel" / "never done this"
 - "too many constraints"
 - "conflicting requirements"
+- "architecture" / "system design" / "re-architecture"
+- "migration" / "cutover" / "zero-downtime"
+- "multi-system integration" / "cross-service"
+- "offline sync" / "conflict resolution"
+- "event sourcing" / "CQRS"
+- "plugin system" / "sandboxing"
+- "sharding" / "rebalancing"
+- "failover" / "disaster recovery"
+- "high-availability" / "multi-region"
+- "feature flag migration" / "schema evolution"
+
+Examples:
+- "Design multi-tenant RBAC/ABAC with audit trails across services"
+- "Plan a zero-downtime monolith-to-services migration with phased cutover"
+- "Build offline-first sync with conflict resolution for web + mobile"
+- "Re-architect CI to cut time 70% across polyrepo + mixed languages"
+- "Introduce event sourcing + CQRS without breaking existing APIs"
+- "Design a plugin system with sandboxing + versioned APIs"
+- "Shard the datastore with consistent hashing and safe rebalancing"
+- "Migrate auth providers with dual-write + rollback strategy"
+- "Implement feature-flagged schema evolution at scale"
+- "Design a multi-region failover strategy with tight RTO/RPO"

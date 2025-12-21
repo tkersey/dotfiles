@@ -1,13 +1,4 @@
 # Review (REV)
-- **Purpose:** Assess changes with emphasis on unsoundness, footguns, inessential complexity, and weak or missing invariants.
-- **Process:**
-  - Scan for crash/corruption risks and other unsound behaviors.
-  - Surface misuse-prone APIs or defaults (footguns) with minimal repro snippets.
-  - Flag incidental complexity that obscures intent or maintainability.
-  - Identify missing or fragile invariants and suggest stronger guarantees.
-  - Order findings by severity and include file:line references when possible.
-- **Deliverable:** Severity-ordered findings with context and suggested fixes, followed by an **Insights/Next Steps** line.
-- **Examples:**
-  - Report a potential panic on nil pointer at `handlers/user.go:58`, suggest guarding or parsing earlier.
-  - Note a default `deleteOnFail=true` flag as a footgun, recommend flipping the default and adding a test.
-  - Highlight a 40-line nested conditional as incidental complexity and propose extracting permission checks into helpers.
+- **Purpose:** Run a deep review using `$trace-guard`.
+- **Process:** Invoke `$trace-guard` and follow its playbook (unsoundness, invariants, footguns, complexity, TRACE report).
+- **Deliverable:** Severity-ordered findings with file:line references, then an **Insights/Next Steps** line.
