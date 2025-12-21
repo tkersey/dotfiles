@@ -1,6 +1,6 @@
 ---
 name: zig
-description: Zig development runbook; use when editing or modifying .zig files, build.zig, or build.zig.zon, or when working on Zig builds, packages, comptime/metaprogramming, reflection/type generation, memory/allocators, C interop, or tests.
+description: Zig development runbook; use when working with zig/ziglang, .zig files, build.zig/build.zig.zon, zig build/zig test, comptime, allocators, @typeInfo/@compileError, or Zig builds, packages, C interop, or tests.
 ---
 
 # Zig
@@ -193,3 +193,12 @@ test "addition" {
 - Zig standard library docs
 - Zig language reference
 - Zig Guide: comptime
+
+## Activation cues
+- "zig" / "ziglang"
+- ".zig"
+- "build.zig" / "build.zig.zon"
+- "zig build" / "zig test"
+- "comptime"
+- "allocator"
+- "@typeInfo" / "@compileError"
