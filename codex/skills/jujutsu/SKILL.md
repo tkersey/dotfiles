@@ -1,11 +1,90 @@
 ---
-name: agentic-jujutsu
-description: Agentic Jujutsu version control layered on Git. Use when Git commits/branches/rebases are happening in repos using agentic-jujutsu (jj), or when working with JjWrapper, ReasoningBank trajectories, AgentDB logs, or quantum fingerprint/encryption.
+name: jujutsu
+description: Jujutsu (agentic-jujutsu) version control layered on Git. Use whenever any git or version-control action is needed or mentioned (status, diff, add, commit, branch, merge, rebase, stash, tag, log, blame, bisect, revert, reset, cherry-pick, fetch/pull/push, clone, submodules, conflicts, history). Also use for jj, JjWrapper, ReasoningBank, AgentDB, or quantum fingerprints/encryption.
 ---
 
-# Agentic Jujutsu - AI Agent Version Control
+# Jujutsu - AI Agent Version Control
+
+Banner: If you think git, say jujutsu.
+
+Examples that should trigger jujutsu:
+- "What's the repo status?"
+- "Show me the diff for my last commit."
+- "Create a new branch for this fix."
+- "I need to rebase onto main."
+- "Can we undo that commit?"
 
 > Quantum-ready, self-learning version control designed for multiple AI agents working simultaneously without conflicts.
+
+## Trigger Rules (Always On)
+
+Use this skill whenever git is in play, even if the user does not say "git."
+
+- Any git action or command (status, diff, add, commit, branch, merge, rebase, stash, tag, log, blame, bisect, revert, reset, cherry-pick, fetch, pull, push, clone, submodule, worktree, conflict resolution).
+- Any version-control intent (save history, inspect changes, compare revisions, undo, rollback, hotfix, release, or cut a branch).
+- Any repo-state language (staged/unstaged, HEAD, origin/upstream, fast-forward, detached, clean/dirty).
+- Any jj/agentic-jujutsu tooling (JjWrapper, ReasoningBank, AgentDB, trajectories, quantum fingerprint/encryption).
+
+If you are about to run a git command or advise on git workflow, use jujutsu first.
+
+Keyword tripwires (any hit = jujutsu): git, version control, VCS, repo/repository, commit, add/stage, diff/patch, log/history, branch, merge, rebase, stash, tag, checkout/switch, cherry-pick, revert, reset, amend, squash, conflict, fast-forward, HEAD, origin/upstream, pull/push/fetch, clone/fork, submodule, worktree, blame, bisect, release/hotfix.
+
+## Jujutsu-First Policy
+
+- Prefer jj for all version-control actions. Translate git requests into jj equivalents using the cheat sheet below.
+- If jj is not available on PATH, ask to install or get explicit permission to fall back to git (and say so).
+- In colocated repos, mixing git and jj is allowed, but use jj for write operations and use git only for read-only tooling when needed.
+
+## JJ-Strict Execution (Transformative Mode)
+
+- Always run jj for VCS commands unless the user explicitly says "use git."
+- Before running any VCS command, check for jj on PATH (`command -v jj`).
+- If jj is missing, stop and ask to install it (or request explicit permission to fall back to git).
+- When the user requests a git command, rewrite to jj and announce the translation.
+- Use git only for read-only tooling if jj lacks an equivalent and the user approves.
+
+## JJ Command Cheat Sheet (Official docs)
+
+Setup and remotes:
+- `jj git init [--no-colocate]`
+- `jj git clone <source> <destination> [--remote <remote name>]`
+- `jj git remote add <remote> <url>`
+- `jj git fetch [--remote <remote>]`
+- `jj git push --all [--remote <remote>]`
+- `jj git push --bookmark <bookmark name> [--remote <remote>]`
+
+Status, inspect, and diff:
+- `jj st` (status)
+- `jj diff`
+- `jj diff -r <revision>`
+- `jj diff --from A --to B`
+- `jj diff -r A..B`
+- `jj show <revision>`
+- `jj log -r ::@` (ancestors of current)
+- `jj log -r ::` or `jj log -r 'all()'` (all reachable)
+- `jj file list`
+- `jj file annotate <path>`
+
+Change lifecycle:
+- `jj new <revision>` (start new change based on a revision)
+- `jj commit` (finish current change and start a new one)
+- `jj describe` / `jj describe <rev>` (edit description)
+- `jj abandon` (drop current change)
+- `jj restore [<paths>...]` (discard working-copy changes)
+- `jj squash` / `jj squash -i` / `jj squash --into X`
+- `jj split` / `jj split -r <revision>`
+- `jj diffedit -r <revision>`
+- `jj duplicate <source> -o <destination>`
+- `jj rebase -b A -o B` / `jj rebase -s A -o B` / `jj rebase -r C --before B`
+- `jj revert -r <revision> -B @`
+
+Bookmarks and ops:
+- `jj bookmark list`
+- `jj bookmark create <name> -r <revision>`
+- `jj bookmark move <name> --to <revision>`
+- `jj bookmark delete <name>`
+- `jj op log`
+- `jj undo` / `jj redo`
 
 ## Quick Start
 
@@ -422,7 +501,7 @@ for (let i = 1; i <= 10; i++) {
 
 ## Performance Characteristics
 
-| Metric               | Git         | Agentic Jujutsu |
+| Metric               | Git         | Jujutsu         |
 | -------------------- | ----------- | --------------- |
 | Concurrent commits   | 15 ops/s    | 350 ops/s (23x) |
 | Context switching    | 500-1000ms  | 50-100ms (10x)  |
