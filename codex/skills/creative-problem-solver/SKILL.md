@@ -13,25 +13,51 @@ description: Lateral-thinking playbook for complex solution design; use for arch
 - The problem is novel, ambiguous, high-uncertainty, or cross-domain 🌪️.
 - The team is circling the same constraints without new levers 🧱.
 
-## Round contract (one turn per round)
+## Round contract (one turn)
 - Deliver options, then stop and ask for human input before executing.
 - Update the Knowledge Snapshot with new signals, constraints, and decisions.
 - Record a Decision Log entry and Assumptions/Constraints list.
 
 ## Quick start
-1. State why the current tactic fails (one sentence).
-2. Reframe the constraint (use 1 technique from the Reframing toolkit).
-3. Pick 1–3 techniques from the Library to generate options.
-4. Propose the portfolio: Quick Win ⚡, Strategic Play 🎯, Transformative Move 🚀.
-5. For each option, include: expected signal and escape hatch.
-6. Score options (1–5) for Signal, Cost, Reversibility, Time.
-7. Log decisions + assumptions/constraints.
-8. Ask the user to choose or adjust constraints.
-9. Close with an Insights Summary.
+0. Choose lane: Fast Spark or Full Session.
+1. Fast Spark only: run Oblique Draw.
+2. State why the current tactic fails (one sentence).
+3. Reframe the constraint (use 1 Reframing tool or Oblique Draw).
+4. Use 1–3 Library techniques to generate options.
+5. Propose the portfolio: Quick Win ⚡, Strategic Play 🎯, Transformative Move 🚀.
+6. For each option: expected signal + escape hatch.
+7. Score options (1–5): Signal, Ease, Reversibility, Speed.
+8. Log decisions + assumptions/constraints.
+9. Ask the user to choose or adjust constraints.
+10. Close with an Insights Summary.
 
 ## Mode check
-- Pragmatic Mode ✅ (default): ship-this-week options only.
-- Visionary Mode 🌌: only when the user asks for long-term strategy or systemic change.
+- Pragmatic ✅ (default): ship-this-week options only.
+- Visionary 🌌: only when asked for long-term strategy or systemic change.
+
+## Lane selector
+- Fast Spark: skip Ideation; generate portfolio directly (e.g., "Need 3 options in 10 minutes").
+- Full Session: run Ideation before selecting the portfolio (e.g., "We can spend a day exploring 20+ ideas").
+
+## Oblique Draw (optional fast spark)
+Use when you need a jolt or the framing is stale.
+1. Draw 4 prompts (Oblique Strategies or any deck).
+2. Pick one prompt.
+3. Apply it:
+   - Current task
+   - Session mindset
+   - Help me interpret it
+4. Translate to a concrete lever/constraint; resume at Quick start step 2.
+
+If no deck is available, use this mini-deck:
+- Do the opposite of the obvious move.
+- Remove a step.
+- Make it reversible first.
+- Smallest test that could change the plan.
+- Shift the bottleneck, not throughput.
+- Change the unit of work.
+- Swap one constraint for another.
+- Borrow a pattern from another domain.
 
 ## Reframing toolkit
 - Inversion: do the opposite of the current approach.
@@ -61,15 +87,17 @@ Transformative Move 🚀:
 ```
 
 ## Scoring rubric (simple 1–5, no weights)
-Purpose: compare options quickly, not to compute a "correct" answer.
+Purpose: fast comparison, not a "correct" answer.
 - Signal: how much new information this yields (1=low, 5=high).
-- Cost: effort/complexity to try (1=low, 5=high).
+- Ease: effort/complexity to try (1=hard, 5=easy).
 - Reversibility: ease of undoing (1=hard, 5=easy).
-- Time: elapsed time to learn (1=fast, 5=slow).
+- Speed: elapsed time to learn (1=slow, 5=fast).
 
-Prefer: high Signal, high Reversibility, low Cost, low Time.
+Prefer: high Signal, Reversibility, Ease, and Speed.
+Tie-break: require Signal ≥4 and Reversibility ≥4; then choose highest Ease + Speed.
 
 ## Ideation → prioritization workflow
+Full Session only:
 1. Diverge: generate 10–30 ideas (no judging).
 2. Cluster: group by theme or lever.
 3. Score: apply the rubric.
@@ -92,10 +120,12 @@ Prefer: high Signal, high Reversibility, low Cost, low Time.
 ## Knowledge Snapshot (update every round)
 - New facts learned:
 - New risks / constraints:
-- Signals that changed the plan:
+- Plan-changing signals:
+- Session mindset (if set):
 - Open questions:
 
 ## Technique picker (fast selection)
+- Need a fast spark → Oblique Draw (4 prompts + apply/interpret).
 - Need to mutate an existing thing → SCAMPER.
 - Need lots of ideas fast → Brainwriting 6-3-5 or Brainstorming.
 - Need structured combinations → Morphological Analysis.
@@ -106,103 +136,105 @@ Prefer: high Signal, high Reversibility, low Cost, low Time.
 
 ## Technique Library (use 1–3 per round)
 ### Creative Problem Solving (CPS) Cycle 🧭
-- Purpose: move from messy challenge to tested solution.
+- Purpose: move from mess to tested solution.
 - How: Clarify → Ideate → Develop → Implement.
-- Example: "Reduce churn" → clarify drivers, ideate 30 retention ideas, develop top 3 tests, implement one pilot.
+- Example: "Reduce churn" → clarify drivers, ideate 30 ideas, develop top 3 tests, ship one pilot.
 
 ### Brainstorming (Osborn rules) 🌊
-- Purpose: flood the space with ideas.
-- How: defer judgment, go for quantity, build on others, welcome wild ideas.
-- Example: "Cut build time" → 20 wild ideas in 10 minutes before evaluating.
+- Purpose: flood ideas.
+- How: defer judgment; go for quantity; build; welcome wild ideas.
+- Example: "Cut build time" → 20 ideas in 10 minutes, then evaluate.
 
 ### Brainwriting 6-3-5 ✍️
-- Purpose: generate lots of ideas quietly and quickly.
-- How: 6 people, 3 ideas each, 5 rounds; pass ideas along.
+- Purpose: generate many ideas quietly.
+- How: 6 people, 3 ideas each, 5 rounds; pass along.
 - Example: "Improve onboarding" → 18–30 ideas without groupthink.
 
 ### SCAMPER 🔧
-- Purpose: systematically transform an existing thing.
+- Purpose: systematically transform something existing.
 - How: Substitute, Combine, Adapt, Modify, Put to another use, Eliminate, Reverse.
-- Example: "Faster code reviews" → Eliminate long templates, Combine review+test, Reverse by batching reviews.
+- Example: "Faster reviews" → eliminate long templates; combine review+test; batch.
 
 ### Six Thinking Hats 🎩
 - Purpose: force parallel viewpoints.
-- How: cycle hats (facts, emotions, risks, benefits, creativity, process).
+- How: cycle hats: facts, emotions, risks, benefits, creativity, process.
 - Example: "Adopt new framework" → run hats to separate risks from gut feel.
 
 ### TRIZ (Contradictions + 40 Principles) 🧪
 - Purpose: resolve tradeoffs without compromise.
-- How: express contradiction, pick principles that dissolve it.
-- Example: "Increase performance without memory use" → apply "Segmentation" or "Dynamicity" to scope caches.
+- How: state contradiction; apply principles.
+- Example: "More performance, no memory" → use Segmentation/Dynamicity to scope caches.
 
 ### Morphological Analysis 🧱
 - Purpose: explore combinations across dimensions.
-- How: define key parameters, list options for each, mix-and-match.
-- Example: "New CLI" → axes: input, output, auth, mode; combine to surface novel designs.
+- How: list parameters, list options, mix-and-match.
+- Example: "New CLI" → axes: input/output/auth/mode; combine for novel designs.
 
 ### Synectics 🔗
 - Purpose: use analogies to break patterns.
-- How: direct analogy → personal analogy → symbolic analogy.
-- Example: "Queue system" → think of a grocery line, then a beehive, then "breathing" to smooth surges.
+- How: direct → personal → symbolic analogy.
+- Example: "Queue system" → grocery line → beehive → "breathing" to smooth surges.
 
 ### Lateral Thinking / Provocation (PO) ⚡
-- Purpose: break linear assumptions with provocative moves.
-- How: state a provocative idea, then extract a practical insight.
-- Example: "No login at all" → learn that first-time use should be zero-friction.
+- Purpose: break linear assumptions with provocation.
+- How: state a provocation; extract a practical insight.
+- Example: "No login" → zero-friction first use.
 
 ### Random Stimulus / Random Word 🎲
 - Purpose: force unexpected associations.
-- How: pull a random word/image, map its properties to the problem.
-- Example: Random word "bridge" → "bridge" as a guided handoff between steps.
+- How: pick a random word/image; map its properties to the problem.
+- Example: "bridge" → guided handoff between steps.
 
 ### Forced Connections 🔀
 - Purpose: connect unrelated concepts to spark ideas.
-- How: pair two random items and ask "how could these connect?"
-- Example: "Checkout flow + airport security" → pre-checklist, fast lanes, clear signage.
+- How: pair two items; ask "how do these connect?"
+- Example: "Checkout + airport security" → pre-checklist, fast lanes, clear signage.
 
 ### Reverse Brainstorming 🔄
-- Purpose: find failure modes, then invert them.
-- How: ask "How do we make this worse?" then reverse answers.
-- Example: "Make support slower" → identify delays, then remove them.
+- Purpose: find failure modes; invert them.
+- How: ask "How do we make this worse?" then invert.
+- Example: "Make support slower" → identify delays; remove them.
 
 ### Mind Mapping 🗺️
 - Purpose: expand and organize idea space.
-- How: central node → branches → sub-branches.
-- Example: "Observability revamp" → branches for logs/metrics/traces/alerts.
+- How: center → branches → sub-branches.
+- Example: "Observability" → logs/metrics/traces/alerts.
 
 ### Affinity Diagramming 🧩
-- Purpose: discover themes across many ideas.
-- How: cluster notes without labels, then name clusters.
-- Example: "User feedback" → cluster into onboarding, pricing, reliability.
+- Purpose: discover themes across ideas.
+- How: cluster notes; name clusters.
+- Example: "User feedback" → onboarding/pricing/reliability.
 
 ### How Might We (HMW) ❓
 - Purpose: reframe problems into solvable questions.
 - How: convert a complaint into an HMW question.
-- Example: "Deploys are scary" → "How might we make deploys feel reversible?"
+- Example: "Deploys are scary" → "How might we make deploys reversible?"
 
 ### Design Thinking 🧠
 - Purpose: build user-centric solutions.
 - How: Empathize → Define → Ideate → Prototype → Test.
-- Example: "New admin UI" → shadow admins, define pain, prototype, test.
+- Example: "New admin UI" → shadow admins; define pain; prototype; test.
 
 ### Crazy 8s / Speedy Eights ✏️
-- Purpose: produce rapid variations fast.
-- How: 8 sketches in 8 minutes (or 4–8 minutes for 4–8 sketches).
-- Example: "Dashboard layout" → 8 distinct layouts before discussing.
+- Purpose: rapid variations.
+- How: 8 sketches in 8 minutes (or 4–8 sketches in 4–8 minutes).
+- Example: "Dashboard layout" → 8 layouts before discussing.
 
 ### Storyboarding 🎞️
 - Purpose: visualize end-to-end flow.
-- How: sketch key frames of the user journey.
+- How: sketch key journey frames.
 - Example: "Signup → first success" in 6 frames to spot friction.
 
 ### Lotus Blossom 🌸
-- Purpose: expand ideas from a core problem outward.
-- How: center problem, fill 8 petals with ideas, then expand each petal.
-- Example: "Reduce incident MTTR" → petals for tooling, process, training, automation.
+- Purpose: expand ideas outward from a core problem.
+- How: center problem; fill 8 petals; expand each petal.
+- Example: "Reduce MTTR" → petals for tooling/process/training/automation.
 
 ## Deliverable format (response)
 - Why current tactic fails (1 sentence).
+- Lane: Fast Spark or Full Session.
 - Reframe used + new lever.
+- Oblique Draw (if used): chosen prompt + application mode.
 - Portfolio options with expected signals and escape hatches.
 - Scorecard (1–5) and quick rationale.
 - Decision Log + Assumptions/Constraints.
