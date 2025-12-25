@@ -1,6 +1,6 @@
 ---
 name: creative-problem-solver
-description: Lateral-thinking playbook for complex solution design; use for architecture/migration/re-architecture, multi-system integration, high-uncertainty tradeoffs, conflict resolution, or when you need options, reframes, and a Quick Win / Strategic Play / Transformative Move.
+description: Lateral-thinking playbook for complex solution design; use for architecture/migration/re-architecture, multi-system integration, high-uncertainty tradeoffs, conflict resolution, or when you need options, reframes, and a Quick Win / Strategic Play / Advantage Play / Transformative Move / Moonshot.
 ---
 
 # Creative Problem Solver
@@ -24,7 +24,7 @@ description: Lateral-thinking playbook for complex solution design; use for arch
 2. State why the current tactic fails (one sentence).
 3. Reframe the constraint (use 1 Reframing tool or Oblique Draw).
 4. Use 1–3 Library techniques to generate options.
-5. Propose the portfolio: Quick Win ⚡, Strategic Play 🎯, Transformative Move 🚀.
+5. Propose the portfolio: Quick Win ⚡, Strategic Play 🎯, Advantage Play 🧭, Transformative Move 🚀, Moonshot 🌙.
 6. For each option: expected signal + escape hatch.
 7. Score options (1–5): Signal, Ease, Reversibility, Speed.
 8. Log decisions + assumptions/constraints.
@@ -69,7 +69,9 @@ If no deck is available, use this mini-deck:
 Every response must include:
 - Quick Win ⚡: smallest experiment that changes the information you have.
 - Strategic Play 🎯: medium effort, leverages a structural advantage.
+- Advantage Play 🧭: higher-leverage bet that compounds beyond a single cycle.
 - Transformative Move 🚀: changes the system shape or assumptions.
+- Moonshot 🌙: radical bet aiming for an order-of-magnitude shift.
 
 ## Option template
 ```
@@ -81,7 +83,15 @@ Strategic Play 🎯:
 - Expected signal:
 - Escape hatch:
 
+Advantage Play 🧭:
+- Expected signal:
+- Escape hatch:
+
 Transformative Move 🚀:
+- Expected signal:
+- Escape hatch:
+
+Moonshot 🌙:
 - Expected signal:
 - Escape hatch:
 ```
@@ -101,7 +111,7 @@ Full Session only:
 1. Diverge: generate 10–30 ideas (no judging).
 2. Cluster: group by theme or lever.
 3. Score: apply the rubric.
-4. Pick top 3 (one per portfolio tier).
+4. Pick top 5 (one per portfolio tier).
 
 ## Decision Log (fill every round)
 - Decision:

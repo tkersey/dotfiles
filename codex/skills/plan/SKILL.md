@@ -7,7 +7,7 @@ description: Plan and beadify work end-to-end; use for "plan this", planning/roa
 
 ## Contract
 - Inline Clarification Expert -> Creative Problem Solver -> Gen-Beads.
-- Default to executing the Transformative option unless the user overrides.
+- Default to executing the Transformative option unless the user selects another tier.
 - Hard-stop after bead creation (no implementation).
 - Use strict swarm rules (split >1 day or >3 files; cap epics at 7).
 
@@ -32,10 +32,12 @@ Snapshot
 3) Generate the portfolio:
    - Quick Win
    - Strategic Play
+   - Advantage Play
    - Transformative Move
+   - Moonshot
 4) Include expected signal + escape hatch for each option.
 5) Score options (Signal, Cost, Reversibility, Time).
-6) Default to executing Transformative unless the user chooses otherwise.
+6) Default to executing Transformative unless the user chooses another tier.
 
 Decision Log:
 - Decision:
