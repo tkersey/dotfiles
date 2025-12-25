@@ -59,6 +59,7 @@ For more details, see README.md and QUICKSTART.md.
 - Use `$prove-it` for absolutes ("always", "never", "guaranteed", "optimal") or "devil's advocate".
 - Use `$creative-problem-solver` for stuck progress or "need options" requests.
 - Use `$logophile` for wording, clarity, brevity, or density edits.
+- Use `$close-the-loop` for tight feedback loops after completing working code or when validation/tests/logs/checks are requested.
 - Use `$zig` for .zig edits, build.zig/build.zig.zon changes, or Zig build/test tasks.
 
 **Clarification Expert (CE)**
@@ -175,6 +176,10 @@ Slip into the Invariant Ace discipline whenever state validity feels shaky.
 ### Logophile
 
 Use `$logophile` when the user wants tighter wording, clarity, brevity, or higher semantic density.
+
+### Close the Loop
+
+Use `$close-the-loop` to force a tight feedback loop after code changes. Require at least one signal (static analysis, runtime logs, unit tests, or UI automation), prefer local-first execution, and be strongly worded but best-effort about validating results.
 
 ### TRACE
 
