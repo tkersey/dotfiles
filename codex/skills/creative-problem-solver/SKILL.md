@@ -17,19 +17,24 @@ description: Lateral-thinking playbook for complex solution design; use for arch
 - Deliver options, then stop and ask for human input before executing.
 - Update the Knowledge Snapshot with new signals, constraints, and decisions.
 - Record a Decision Log entry and Assumptions/Constraints list.
+- Run Aha Check after Reframe (required, no scoring); optional log in Decision Log.
+- Log provenance every round (required, log-only): technique → Aha (Y/N).
+- If the same technique triggers Aha twice in a row, then switch technique next round.
 
 ## Quick start
 0. Choose lane: Fast Spark or Full Session.
 1. Fast Spark only: run Oblique Draw.
 2. State why the current tactic fails (one sentence).
 3. Reframe the constraint (use 1 Reframing tool or Oblique Draw).
-4. Use 1–3 Library techniques to generate options.
-5. Propose the portfolio: Quick Win ⚡, Strategic Play 🎯, Advantage Play 🧭, Transformative Move 🚀, Moonshot 🌙.
-6. For each option: expected signal + escape hatch.
-7. Score options (1–5): Signal, Ease, Reversibility, Speed.
-8. Log decisions + assumptions/constraints.
-9. Ask the user to choose or adjust constraints.
-10. Close with an Insights Summary.
+4. Aha Check (required): note a restructuring insight; acknowledge markers; optionally log.
+5. If no insight, then run one more Reframing tool, then continue.
+6. Use 1–3 Library techniques to generate options.
+7. Propose the portfolio: Quick Win ⚡, Strategic Play 🎯, Advantage Play 🧭, Transformative Move 🚀, Moonshot 🌙.
+8. For each option: expected signal + escape hatch.
+9. Score options (1–5): Signal, Ease, Reversibility, Speed.
+10. Log decisions + assumptions/constraints + provenance.
+11. Ask the user to choose or adjust constraints.
+12. Close with an Insights Summary.
 
 ## Mode check
 - Pragmatic ✅ (default): ship-this-week options only.
@@ -49,7 +54,7 @@ Use when you need a jolt or the framing is stale.
    - Help me interpret it
 4. Translate to a concrete lever/constraint; resume at Quick start step 2.
 
-If no deck is available, use this mini-deck:
+If no deck is available, then use this mini-deck:
 - Do the opposite of the obvious move.
 - Remove a step.
 - Make it reversible first.
@@ -64,6 +69,14 @@ If no deck is available, use this mini-deck:
 - Analogy transfer: map to a solved domain and borrow the pattern.
 - Constraint extremes: set a key variable to zero or infinity.
 - First principles: rebuild from basic facts, not inherited assumptions.
+
+## Aha Check (required)
+- Definition: restructuring-based insight (new representation/model).
+- Markers: suddenness, ease/fluency, positive affect, feeling-right/confidence.
+- Record: one-line insight only (no marker values).
+- If none, then run one more Reframing tool before options.
+- Log: optional Aha line in Decision Log.
+- Provenance (required, log-only): technique → Aha (Y/N).
 
 ## Portfolio rule
 Every response must include:
@@ -118,8 +131,14 @@ Full Session only:
 - Rationale:
 - Alternatives considered:
 - Evidence / signal:
+- Aha log (optional): one-line insight.
+- Provenance (required, log-only): technique → Aha (Y/N).
 - Reversible? (Y/N):
 - Next decision point:
+
+## Provenance Ledger (log-only, end of session)
+- Top 3 techniques that triggered insight:
+- Reuse note (1 line each):
 
 ## Assumptions & Constraints
 - Assumptions to validate:
@@ -131,10 +150,13 @@ Full Session only:
 - New facts learned:
 - New risks / constraints:
 - Plan-changing signals:
+- Aha Check (required): one-line insight.
 - Session mindset (if set):
 - Open questions:
 
 ## Technique picker (fast selection)
+- If Aha Check is none, then run one insight-biased technique (Lateral Thinking / Forced Connections / TRIZ) before options.
+- If the same technique triggers Aha twice in a row, then switch to a different technique next round.
 - Need a fast spark → Oblique Draw (4 prompts + apply/interpret).
 - Need to mutate an existing thing → SCAMPER.
 - Need lots of ideas fast → Brainwriting 6-3-5 or Brainstorming.
@@ -244,6 +266,8 @@ Full Session only:
 - Why current tactic fails (1 sentence).
 - Lane: Fast Spark or Full Session.
 - Reframe used + new lever.
+- Aha Check (required): one-line insight; markers acknowledged.
+- If no insight, then note extra reframe used.
 - Oblique Draw (if used): chosen prompt + application mode.
 - Portfolio options with expected signals and escape hatches.
 - Scorecard (1–5) and quick rationale.
