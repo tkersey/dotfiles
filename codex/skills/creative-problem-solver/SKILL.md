@@ -12,6 +12,7 @@ description: Lateral-thinking playbook for complex solution design; use for arch
 - The problem is complex, tricky, tangled, or multi-constraint 🧩.
 - The problem is novel, ambiguous, high-uncertainty, or cross-domain 🌪️.
 - The team is circling the same constraints without new levers 🧱.
+- The user explicitly wants alternatives, tradeoffs, or a strategy portfolio. 🧭
 
 ## Round contract (one turn)
 - Deliver options, then stop and ask for human input before executing.
@@ -24,17 +25,16 @@ description: Lateral-thinking playbook for complex solution design; use for arch
 ## Quick start
 0. Choose lane: Fast Spark or Full Session.
 1. Fast Spark only: run Oblique Draw.
-2. State why the current tactic fails (one sentence).
-3. Reframe the constraint (use 1 Reframing tool or Oblique Draw).
-4. Aha Check (required): note a restructuring insight; acknowledge markers; optionally log.
-5. If no insight, then run one more Reframing tool, then continue.
-6. Use 1–3 Library techniques to generate options.
-7. Propose the portfolio: Quick Win ⚡, Strategic Play 🎯, Advantage Play 🧭, Transformative Move 🚀, Moonshot 🌙.
-8. For each option: expected signal + escape hatch.
-9. Score options (1–5): Signal, Ease, Reversibility, Speed.
-10. Log decisions + assumptions/constraints + provenance.
-11. Ask the user to choose or adjust constraints.
-12. Close with an Insights Summary.
+2. Reframe the constraint (use 1 Reframing tool or Oblique Draw).
+3. Aha Check (required): note a restructuring insight; acknowledge markers; optionally log.
+4. If no insight, then run one more Reframing tool, then continue.
+5. Use 1–3 Library techniques to generate options.
+6. Propose the portfolio: Quick Win ⚡, Strategic Play 🎯, Advantage Play 🧭, Transformative Move 🚀, Moonshot 🌙.
+7. For each option: expected signal + escape hatch.
+8. Score options (1–5): Signal, Ease, Reversibility, Speed.
+9. Log decisions + assumptions/constraints + provenance.
+10. Ask the user to choose or adjust constraints.
+11. Close with an Insights Summary.
 
 ## Mode check
 - Pragmatic ✅ (default): ship-this-week options only.
@@ -263,7 +263,6 @@ Full Session only:
 - Example: "Reduce MTTR" → petals for tooling/process/training/automation.
 
 ## Deliverable format (response)
-- Why current tactic fails (1 sentence).
 - Lane: Fast Spark or Full Session.
 - Reframe used + new lever.
 - Aha Check (required): one-line insight; markers acknowledged.
@@ -277,6 +276,8 @@ Full Session only:
 
 ## Activation cues
 - "need options" / "give me options"
+- "alternatives" / "tradeoffs" / "portfolio"
+- "brainstorm" / "ideate"
 - "stuck" / "blocked" / "nothing works"
 - "outside the box" / "new ideas" / "fresh angles"
 - "complex" / "tricky" / "messy" / "tangled"

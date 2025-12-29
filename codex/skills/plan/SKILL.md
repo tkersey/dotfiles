@@ -27,17 +27,16 @@ Snapshot
 ```
 
 ## Phase 2: Creative Problem Solver (CPS)
-1) State why the current tactic fails (one sentence).
-2) Reframe the constraint (use 1 technique).
-3) Generate the portfolio:
+1) Reframe the constraint (use 1 technique).
+2) Generate the portfolio:
    - Quick Win
    - Strategic Play
    - Advantage Play
    - Transformative Move
    - Moonshot
-4) Include expected signal + escape hatch for each option.
-5) Score options (Signal, Cost, Reversibility, Time).
-6) Default to executing Transformative unless the user chooses another tier.
+3) Include expected signal + escape hatch for each option.
+4) Score options (Signal, Cost, Reversibility, Time).
+5) Default to executing Transformative unless the user chooses another tier.
 
 Decision Log:
 - Decision:
