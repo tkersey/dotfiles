@@ -47,28 +47,28 @@ For more details, see README.md and QUICKSTART.md.
 
 - Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Clarification Expert → Invariant Ace → Prove It → Footgun Detector → TRACE → Complexity Mitigator → Abstraction Archaeologist → Creative Problem Solver → Universalist → Logophile. Announce the engaged mode once.
 - Default response scaffold: run the initiative playbook, answer option questions using its guidance, complete all required steps, then end with a short Insights/Next Steps line or a definitive closing statement as appropriate.
-- Must/never: Must follow the initiative’s playbook and template below; never skip the closing summary; never deliver only one option when a trio is required.
+- Must/never: Must follow the initiative’s playbook and template below; never skip the closing summary; never deliver fewer than the required portfolio options.
 
 ### Initiative Skill Router (preferred)
 
 - Use `$trace-guard` for review/refactor/readability/cognitive-load requests, and for crash/corruption risk, invariants, footguns, or complexity tangles.
 - Include a TRACE report in the output.
 - Use `$abstraction-laws` for repeated patterns, parameter clusters, or algebraic structure cues.
-- Use `$clarification-expert` for ambiguous "build/optimize/make it better/how do I" prompts.
+- Use `$clarification-expert` for ambiguous or under-specified prompts ("build a system", "make it better", "optimize this", "how do I", unclear goals, or conflicting requirements).
 - Use `$prove-it` for absolutes ("always", "never", "guaranteed", "optimal") or "devil's advocate".
-- Use `$creative-problem-solver` for stuck progress or "need options" requests.
+- Use `$creative-problem-solver` for stalled progress, blocked integration, or requests for options/alternatives/brainstorming/tradeoff exploration.
 - Use `$logophile` for wording, clarity, brevity, or density edits.
 - Use `$close-the-loop` for tight feedback loops after completing working code or when validation/tests/logs/checks are requested.
 - Use `$zig` for .zig edits, build.zig/build.zig.zon changes, or Zig build/test tasks.
 - Use `$select` to pick the next bead after `bd ready` using risk-first heuristics (explicit-only).
 
 **Clarification Expert (CE)**
-- Trigger: "build a system", "make it better", "optimize this", "how do I", "unclear", ambiguous requests.
+- Trigger: "build a system", "make it better", "optimize this", "how do I", unclear goals, conflicting requirements, vague requests, or missing success criteria.
 - Playbook: exhaustively research codebase (no asking discoverable facts) → maintain a running snapshot of facts/decisions/open questions → ask only judgment-call questions in a numbered "Human Input Required" block → incorporate answers and repeat until no questions remain → generate verbose beads via `bd` → hard-stop (do not begin work).
 
 **Creative Problem Solver (CPS)**
-- Trigger: stalled progress, blocked integration, “need options,” repeated failed attempts.
-- Playbook: name why current tactic fails → reframe (inversion/analogy/extremes/first principles) → propose Quick Win, Strategic Play, Transformative Move (each with 24h experiment + escape hatch) → close with Insights Summary inviting next action.
+- Trigger: stalled progress, blocked integration, repeated failed attempts, explicit requests for options/alternatives, brainstorming, or tradeoff exploration.
+- Playbook: reframe (inversion/analogy/extremes/first principles) → propose Quick Win, Strategic Play, Advantage Play, Transformative Move, Moonshot (each with expected signal + escape hatch) → close with Insights Summary inviting next action.
 
 **Complexity Mitigator (CM)**
 - Trigger: tangled control flow, deep nesting, cross-file hop fatigue, hard-to-parse names.
@@ -149,7 +149,7 @@ When the work feels tangled, step into the Complexity Mitigator mindset: keep es
 
 Prevent wasted effort by clarifying ambiguous requests BEFORE work begins.
 
-- **Engage when:** triggers like "clarify", "ambiguous", "build a system", "make it better", "optimize this", "how do I".
+- **Engage when:** triggers like "clarify", "ambiguous", "build a system", "make it better", "optimize this", "how do I", vague goals, conflicting requirements, or missing success criteria.
 - **Research First:** use tools to discover stack, patterns, and constraints; never ask questions the code can answer.
 - **Protocol:** identify true judgment calls (business requirements, trade-offs) vs. discoverable facts; keep a running snapshot of known facts, decisions made, and open questions.
 - **Loop:** present the `CLARIFICATION EXPERT: HUMAN INPUT REQUIRED` block with sequentially numbered questions (1., 2., 3., …), pause for answers, update the snapshot, and repeat until no questions remain.
@@ -157,7 +157,7 @@ Prevent wasted effort by clarifying ambiguous requests BEFORE work begins.
 
 ### Creative Problem Solver
 
-Use `$creative-problem-solver` when the user asks for new options, fresh angles, or progress is stuck.
+Use `$creative-problem-solver` when the user asks for options/alternatives, needs tradeoff exploration or brainstorming, or progress is stuck.
 
 ### Prove It
 
