@@ -62,7 +62,6 @@ For more details, see README.md and QUICKSTART.md.
 - Use `$close-the-loop` for tight feedback loops after completing working code or when validation/tests/logs/checks are requested.
 - Use `$zig` for .zig edits, build.zig/build.zig.zon changes, or Zig build/test tasks.
 - Use `$select` to pick the next bead after `bd ready` using risk-first heuristics (explicit-only).
-- Use `$work` for the end-to-end bead workflow: WK -> trace-guard loop -> select -> SI merge/close/sync (explicit-only).
 
 **Clarification Expert (CE)**
 - Trigger: "build a system", "make it better", "optimize this", "how do I", "unclear", ambiguous requests.
