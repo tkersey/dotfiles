@@ -1,6 +1,6 @@
 ---
 name: trace-guard
-description: TRACE (Type-Readability-Atomic-Cognitive-Essential) code review lens plus safety guardrails (unsoundness, invariants, footguns, complexity); use for reviews, refactors, readability audits, and when code may crash, corrupt data, hide invalid states, invite misuse, or become hard to reason about.
+description: TRACE (Type-Readability-Atomic-Cognitive-Essential) review + resolve lens with safety guardrails; apply minimal fixes, validate, and ask clarifying questions when blocked.
 ---
 
 # TRACE Guard
@@ -13,6 +13,17 @@ description: TRACE (Type-Readability-Atomic-Cognitive-Essential) code review len
 - Misuse-prone APIs, confusing parameters, or silent failure paths.
 - Tangled control flow, deep nesting, or cross-file hop fatigue.
 
+## Resolution posture
+- Default mode: review **and resolve** (apply code changes) unless asked for review-only.
+- Prefer the smallest sound fix; open a follow-up bead when scope expands.
+- Ask clarifying questions before editing if requirements or constraints are unknown.
+
+## Clarify before changes
+- Expected behavior is missing, contradictory, or product-sensitive.
+- The fix needs cross-service changes, schema migrations, or API breakage decisions.
+- Repro steps or validation commands are unknown.
+- Risk tolerance (performance, compatibility, security) is undefined.
+
 ## Quick start
 1. Build a cognitive heat map (mark hotspots and surprises).
 2. Triage failure modes (crash > corruption > logic).
@@ -21,8 +32,9 @@ description: TRACE (Type-Readability-Atomic-Cognitive-Essential) code review len
 5. Defuse footguns with safer signatures and tests.
 6. Reduce incidental complexity and report via TRACE.
 7. Run the TRACE checklist (Type, Readability, Atomic, Cognitive, Essential).
-8. Prioritize the smallest fixes that improve readability and safety.
-9. Report findings ordered by severity with file:line, then close with residual risks or testing gaps.
+8. Choose the smallest fix set and apply changes.
+9. Validate with at least one signal (tests, lint, logs).
+10. Report findings + fixes ordered by severity with file:line, then close with residual risks or testing gaps.
 
 ## Heat map (quick scan)
 - Mark smooth flow as OK and hotspots as HOT.
@@ -72,22 +84,32 @@ Steps:
 - Provide a small code sketch when structural changes are needed.
 - Cite violated TRACE letters.
 
+## Resolve loop (apply changes)
+- Confirm scope, constraints, and validation command.
+- Implement the smallest sound fix; keep diffs tight and local.
+- Add or adjust tests/assertions to lock the fix.
+- Run at least one validation signal and record outcomes.
+- Summarize changes and residual risks.
+
 ## Deliverable format
 - Findings list first, ordered by severity (file:line, issue, violated TRACE letters, fix).
+- Changes applied (files touched + rationale).
+- Validation signal(s) and outcome.
 - Open questions or assumptions.
-- Brief change summary.
 - Residual risks or missing tests.
 
 ## TRACE report
 Deliverables:
 - Findings ordered by severity with file:line references.
 - Violated TRACE letters for each finding.
-- Minimal fix or mitigation and the new invariant (if any).
+- Minimal fix or mitigation applied and the new invariant (if any).
+- Validation signal(s) run.
 - Open questions and required tests.
 
 ## Pitfalls
 - Avoid vague advice; tie every critique to a concrete location.
 - Avoid broad refactors; open a follow-up bead when scope balloons.
+- Avoid leaving fixes as suggestions when resolve is requested.
 
 ## Activation cues
 - "review this code"
@@ -96,6 +118,7 @@ Deliverables:
 - "cognitive load"
 - "what is this doing"
 - "trace it"
+- "resolve this"
 - "crash"
 - "data corruption"
 - "should never happen"
