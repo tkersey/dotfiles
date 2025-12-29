@@ -46,14 +46,13 @@ For more details, see README.md and QUICKSTART.md.
 ## Initiatives Autopilot (bd-style)
 
 - Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Clarification Expert → Invariant Ace → Prove It → Footgun Detector → TRACE → Complexity Mitigator → Abstraction Archaeologist → Creative Problem Solver → Universalist → Logophile. Announce the engaged mode once.
-- Default response scaffold: state why current tactic fails (if applicable), run the initiative playbook, end with a short Insights/Next Steps line.
+- Default response scaffold: run the initiative playbook, answer option questions using its guidance, complete all required steps, then end with a short Insights/Next Steps line or a definitive closing statement as appropriate.
 - Must/never: Must follow the initiative’s playbook and template below; never skip the closing summary; never deliver only one option when a trio is required.
 
 ### Initiative Skill Router (preferred)
 
-- Use `$trace` for review/refactor/readability/cognitive-load requests.
-- Use `$trace-guard` for crash/corruption risk, invariants, footguns, or complexity tangles.
-- If both apply, prefer `$trace-guard` and include a TRACE report in the output.
+- Use `$trace-guard` for review/refactor/readability/cognitive-load requests, and for crash/corruption risk, invariants, footguns, or complexity tangles.
+- Include a TRACE report in the output.
 - Use `$abstraction-laws` for repeated patterns, parameter clusters, or algebraic structure cues.
 - Use `$clarification-expert` for ambiguous "build/optimize/make it better/how do I" prompts.
 - Use `$prove-it` for absolutes ("always", "never", "guaranteed", "optimal") or "devil's advocate".
