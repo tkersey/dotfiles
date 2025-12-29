@@ -15,11 +15,13 @@ description: TRACE (Type-Readability-Atomic-Cognitive-Essential) review + resolv
 
 ## Resolution posture
 - Default mode: review **and resolve** (apply code changes) unless asked for review-only.
-- Prefer the smallest sound fix; open a follow-up bead when scope expands.
-- Ask clarifying questions before editing if requirements or constraints are unknown.
+- Prefer the smallest sound fix, but expand scope when it meaningfully reduces future-incident risk (tests, invariants, footgun defusal, incidental-complexity reduction).
+- Do not make intentional semantic/product behavior changes without clarifying.
+- Ask clarifying questions before editing only when requirements or constraints are unknown.
 
 ## Clarify before changes
 - Expected behavior is missing, contradictory, or product-sensitive.
+- The change would intentionally alter semantic/product behavior (feature change) rather than fix a bug or tighten an invariant.
 - The fix needs cross-service changes, schema migrations, or API breakage decisions.
 - Repro steps or validation commands are unknown.
 - Risk tolerance (performance, compatibility, security) is undefined.
@@ -32,9 +34,11 @@ description: TRACE (Type-Readability-Atomic-Cognitive-Essential) review + resolv
 5. Defuse footguns with safer signatures and tests.
 6. Reduce incidental complexity and report via TRACE.
 7. Run the TRACE checklist (Type, Readability, Atomic, Cognitive, Essential).
-8. Choose the smallest fix set and apply changes.
-9. Validate with at least one signal (tests, lint, logs).
-10. Report findings + fixes ordered by severity with file:line, then close with residual risks or testing gaps.
+8. Choose the smallest sound fix.
+9. Decide risk-based scope expansion (only if it reduces future-incident risk).
+10. Apply changes (fix + scoped expansion).
+11. Validate with at least one signal (tests, lint, logs).
+12. Report findings + fixes ordered by severity with file:line, include scope expansion justification, then close with residual risks or testing gaps.
 
 ## Heat map (quick scan)
 - Mark smooth flow as OK and hotspots as HOT.
@@ -85,15 +89,17 @@ Steps:
 - Cite violated TRACE letters.
 
 ## Resolve loop (apply changes)
-- Confirm scope, constraints, and validation command.
-- Implement the smallest sound fix; keep diffs tight and local.
-- Add or adjust tests/assertions to lock the fix.
+- Confirm constraints and a validation command; proceed by default.
+- Implement the smallest sound fix.
+- If a scoped expansion reduces future-incident risk, do it in the same change (tests, assertions, footgun defusal, incidental-complexity reduction).
+- Keep intent stable: no intentional semantic/product behavior changes without clarifying.
 - Run at least one validation signal and record outcomes.
-- Summarize changes and residual risks.
+- Summarize changes, scope expansion justification, and residual risks.
 
 ## Deliverable format
 - Findings list first, ordered by severity (file:line, issue, violated TRACE letters, fix).
 - Changes applied (files touched + rationale).
+- Scope Expansion Justification (what expanded, why it reduces future-incident risk, and why it is not an intentional product behavior change).
 - Validation signal(s) and outcome.
 - Open questions or assumptions.
 - Residual risks or missing tests.
@@ -102,13 +108,15 @@ Steps:
 Deliverables:
 - Findings ordered by severity with file:line references.
 - Violated TRACE letters for each finding.
-- Minimal fix or mitigation applied and the new invariant (if any).
+- Fixes applied, including new invariants (if any).
+- Scope Expansion Justification (what expanded, why it reduces future-incident risk, and why it is not an intentional product behavior change).
 - Validation signal(s) run.
 - Open questions and required tests.
 
 ## Pitfalls
 - Avoid vague advice; tie every critique to a concrete location.
-- Avoid broad refactors; open a follow-up bead when scope balloons.
+- Avoid “nice-to-have” refactors that don’t reduce future-incident risk.
+- Avoid intentional semantic/product behavior changes (feature creep) without clarifying.
 - Avoid leaving fixes as suggestions when resolve is requested.
 
 ## Activation cues
