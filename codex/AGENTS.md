@@ -1,17 +1,19 @@
+# Mottos
+
+- Precision through sophistication, brevity through vocabulary, clarity through structure. (language doctrine)
+- Minimal incision, maximal precision. (largest impact for least cost)
+- Be like mike. (practice, composure, finish, excellence)
+
 # Repository Guidelines
 
 ## Issue Tracking
 
-This project uses **bd (beads)** for issue tracking.
-Run `bd prime` for workflow context, or install hooks (`bd hooks install`) for auto-injection.
+This project uses `bd` (beads) for issue tracking only when a `.beads` directory exists.
+Before using beads, run:
 
-**Quick reference:**
-- `bd ready` - Find unblocked work
-- `bd create "Title" --type task --priority 2` - Create issue
-- `bd close <id>` - Complete work
-- `bd sync` - Sync with git (run at session end)
+`rg --files -g '.beads/**' --hidden --no-ignore`
 
-For full workflow details: `bd prime`
+If the command returns any paths, use the `$beads` skill for all bd workflow and commands. If it returns nothing, do not use beads.
 
 ## Managing AI-Generated Planning Documents
 
