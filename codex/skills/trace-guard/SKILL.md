@@ -14,36 +14,49 @@ description: TRACE (Type-Readability-Atomic-Cognitive-Essential) review + resolv
 - Tangled control flow, deep nesting, or cross-file hop fatigue.
 
 ## Resolution posture
-- Default mode: review **and resolve** (apply code changes) unless asked for review-only.
-- Prefer the smallest sound fix, but expand scope when it meaningfully reduces future-incident risk (tests, invariants, footgun defusal, incidental-complexity reduction).
+- Default: review **and resolve** unless asked for review-only.
+- Prefer the smallest sound fix; expand scope only when it meaningfully reduces future-incident risk (tests, invariants, footgun defusal, incidental-complexity reduction).
 - Do not make intentional semantic/product behavior changes without clarifying.
-- Ask clarifying questions before editing only when requirements or constraints are unknown.
+- Ask before editing only when requirements or constraints are unknown.
 - Default to a regression/behavior test for bugfixes that change determinism, ordering, invariants, or error handling; skip only if the harness is missing, prohibitive to set up, or requires product decisions.
+
+## Autonomy principles (spirit-level)
+- Auto-advance on strong conviction: fix → validate → report; ask only if behavior changes or a guardrail trips.
+- Strong conviction requires all: local repro, explicit invariant, minimal diff, and at least one passing validation signal.
+- Scope/complexity guardrail: if either rises, invoke the Complexity Mitigator playbook and ask before crossing subsystem boundaries.
+- Explicit skills: invoke `$close-the-loop` for any code change; use `$jujutsu` for VCS actions; invoke Complexity Mitigator when the guardrail triggers.
+
+## Conviction examples (canonical)
+- Strong conviction: single-file fix, invariant stated, repro confirmed, tests pass; proceed.
+- Weak conviction: no repro, invariant unclear, or multi-subsystem change; ask.
 
 ## Clarify before changes
 - Expected behavior is missing, contradictory, or product-sensitive.
-- The change would intentionally alter semantic/product behavior (feature change) rather than fix a bug or tighten an invariant.
+- The change would alter product behavior (feature change) rather than fix a bug or tighten an invariant.
 - The fix needs cross-service changes, schema migrations, or API breakage decisions.
 - Repro steps or validation commands are unknown.
 - Risk tolerance (performance, compatibility, security) is undefined.
-- Test harness is unknown, or the only feasible test needs significant scaffolding or product decisions (otherwise add tests by default).
+- Test harness is unknown, or the only feasible test needs heavy scaffolding or product decisions (otherwise add tests by default).
+- Conviction is weak (missing repro, invariant, minimal diff, or validation signal).
+- Scope/complexity guardrail trips or a subsystem boundary would be crossed.
 
 ## Quick start
 1. Build a cognitive heat map (mark hotspots and surprises).
-2. Triage failure modes (crash > corruption > logic).
-3. Run Unsoundness scan and produce a concrete counterexample.
-4. Strengthen invariants (construction-time > runtime checks).
-5. Defuse footguns with safer signatures and tests.
-6. Reduce incidental complexity and report via TRACE.
-7. Run the TRACE checklist (Type, Readability, Atomic, Cognitive, Essential).
-8. Choose the smallest sound fix.
-9. Decide risk-based scope expansion (only if it reduces future-incident risk).
-10. Apply changes (fix + scoped expansion).
-11. Validate with at least one signal (tests, lint, logs).
-12. Report findings + fixes ordered by severity with file:line, include scope expansion justification, then close with residual risks or testing gaps.
+2. Check the conviction gate; auto-advance if strong, otherwise clarify.
+3. Triage failure modes (crash > corruption > logic).
+4. Run Unsoundness scan; produce a concrete counterexample.
+5. Strengthen invariants (construction-time > runtime checks).
+6. Defuse footguns with safer signatures and tests.
+7. Reduce incidental complexity; report via TRACE.
+8. Run the TRACE checklist (Type, Readability, Atomic, Cognitive, Essential).
+9. Choose the smallest sound fix.
+10. Decide risk-based scope expansion (only if it reduces future-incident risk).
+11. Apply changes (fix + scoped expansion).
+12. Validate with at least one signal (tests, lint, logs).
+13. Report findings + fixes (severity order, file:line), include scope expansion justification, then close with residual risks or testing gaps.
 
 ## Heat map (quick scan)
-- Mark smooth flow as OK and hotspots as HOT.
+- Mark smooth flow as OK; hotspots as HOT.
 - Record surprise events: misleading names, implicit state, sneaky side effects.
 - Note the first place a reader must simulate state across files.
 
@@ -55,7 +68,7 @@ description: TRACE (Type-Readability-Atomic-Cognitive-Essential) review + resolv
 - Essential: keep only the complexity that is required by the domain.
 
 ## Unsoundness scan
-Goal: remove crash/corruption classes, not just symptoms.
+Goal: remove crash/corruption classes, not symptoms.
 
 Steps:
 - Trace nullables, lifetimes, concurrency, and resource ownership.
@@ -86,24 +99,25 @@ Goal: keep essential complexity, remove incidental complexity.
 
 Steps:
 - Separate essential vs incidental complexity.
-- Propose flatten -> rename -> extract steps, ranked by impact/effort.
+- Propose flatten -> rename -> extract steps ranked by impact/effort.
 - Provide a small code sketch when structural changes are needed.
 - Cite violated TRACE letters.
 
 ## Resolve loop (apply changes)
 - Confirm constraints and a validation command; proceed by default.
 - Implement the smallest sound fix.
-- If a scoped expansion reduces future-incident risk, do it in the same change (tests, assertions, footgun defusal, incidental-complexity reduction).
+- If scoped expansion reduces future-incident risk, do it in the same change (tests, assertions, footgun defusal, incidental-complexity reduction).
 - Keep intent stable: no intentional semantic/product behavior changes without clarifying.
-- Run at least one validation signal and record outcomes.
+- Invoke `$close-the-loop` for any code change; run at least one validation signal and record outcomes.
 - Add a regression/behavior test by default for fixes that change determinism, ordering, invariants, or error handling; omit only with a brief Residual risks justification.
 - Summarize changes, scope expansion justification, and residual risks.
 
 ## Deliverable format
-- Findings list first, ordered by severity (file:line, issue, violated TRACE letters, fix).
-- Changes applied (files touched + rationale).
-- Scope Expansion Justification (what expanded, why it reduces future-incident risk, and why it is not an intentional product behavior change).
+- Findings first, ordered by severity (file:line, issue, violated TRACE letters, fix).
+- Changes applied (files + rationale).
+- Scope Expansion Justification (what expanded, why it reduces future-incident risk, and why it is not a product behavior change).
 - Validation signal(s) and outcome.
+- Next Steps Taken (actions executed, validations run, skills invoked).
 - Open questions or assumptions.
 - Tests added (or skipped with a reason) and residual risks.
 
@@ -114,6 +128,7 @@ Deliverables:
 - Fixes applied, including new invariants (if any).
 - Scope Expansion Justification (what expanded, why it reduces future-incident risk, and why it is not an intentional product behavior change).
 - Validation signal(s) run.
+- Next Steps Taken (actions executed, validations run, skills invoked).
 - Open questions and required tests.
 
 ## Pitfalls
