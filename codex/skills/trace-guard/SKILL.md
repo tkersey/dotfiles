@@ -18,6 +18,7 @@ description: TRACE (Type-Readability-Atomic-Cognitive-Essential) review + resolv
 - Prefer the smallest sound fix, but expand scope when it meaningfully reduces future-incident risk (tests, invariants, footgun defusal, incidental-complexity reduction).
 - Do not make intentional semantic/product behavior changes without clarifying.
 - Ask clarifying questions before editing only when requirements or constraints are unknown.
+- Default to a regression/behavior test for bugfixes that change determinism, ordering, invariants, or error handling; skip only if the harness is missing, prohibitive to set up, or requires product decisions.
 
 ## Clarify before changes
 - Expected behavior is missing, contradictory, or product-sensitive.
@@ -25,6 +26,7 @@ description: TRACE (Type-Readability-Atomic-Cognitive-Essential) review + resolv
 - The fix needs cross-service changes, schema migrations, or API breakage decisions.
 - Repro steps or validation commands are unknown.
 - Risk tolerance (performance, compatibility, security) is undefined.
+- Test harness is unknown, or the only feasible test needs significant scaffolding or product decisions (otherwise add tests by default).
 
 ## Quick start
 1. Build a cognitive heat map (mark hotspots and surprises).
@@ -94,6 +96,7 @@ Steps:
 - If a scoped expansion reduces future-incident risk, do it in the same change (tests, assertions, footgun defusal, incidental-complexity reduction).
 - Keep intent stable: no intentional semantic/product behavior changes without clarifying.
 - Run at least one validation signal and record outcomes.
+- Add a regression/behavior test by default for fixes that change determinism, ordering, invariants, or error handling; omit only with a brief Residual risks justification.
 - Summarize changes, scope expansion justification, and residual risks.
 
 ## Deliverable format
@@ -102,7 +105,7 @@ Steps:
 - Scope Expansion Justification (what expanded, why it reduces future-incident risk, and why it is not an intentional product behavior change).
 - Validation signal(s) and outcome.
 - Open questions or assumptions.
-- Residual risks or missing tests.
+- Tests added (or skipped with a reason) and residual risks.
 
 ## TRACE report
 Deliverables:
