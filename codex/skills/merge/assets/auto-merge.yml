@@ -1,0 +1,26 @@
+# Auto-merge operator defaults (optional)
+# Copy to .github/auto-merge.yml and edit as needed.
+
+labels:
+  manage: "auto:manage"
+  hold: "auto:hold"
+
+auto_pr:
+  enabled: true
+  branch_include:
+    - "*"
+  branch_exclude:
+    - "main"
+    - "master"
+  draft: false
+
+ci:
+  max_fix_attempts: 3
+  request_changes_on_exhaustion: true
+
+polling:
+  min_seconds: 30
+  max_seconds: 55
+  long_ci_threshold_minutes: 10
+  long_ci_max_seconds: 120
+  long_ci_divisor: 5
