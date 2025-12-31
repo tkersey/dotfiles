@@ -1,6 +1,6 @@
 ---
 name: bmad
-description: BMAD (Best, Most Appropriate, Design) method for technology decisions; use for stack selection, vendor comparison, TCO and lock-in analysis, architecture tradeoffs, and "best vs most appropriate" evaluations.
+description: BMAD (Best, Most Appropriate, Design) method for technology decisions and tradeoffs. Use when someone is choosing between technologies/vendors/architectures or asks "A vs B," "which should we choose," "best fit," or requests tradeoffs, TCO/lock-in/migration analysis, or mentions constraints like budget, team size, timeline, scale, compliance, or risk.
 ---
 
 # BMAD Method
@@ -316,6 +316,9 @@ Rationale: cheaper, modern DX, compliance-ready.
 - "TCO analysis"
 - "vendor lock-in"
 - "migration strategy"
+
+## Trigger regression prompts
+See references/trigger-prompts.md for a small prompt set to tune and spot-check triggering behavior.
 
 ## Resources
 - ADR templates: https://adr.github.io/
