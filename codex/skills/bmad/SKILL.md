@@ -1,327 +1,66 @@
 ---
 name: bmad
-description: BMAD (Best, Most Appropriate, Design) method for technology decisions and tradeoffs. Use when someone is choosing between technologies/vendors/architectures or asks "A vs B," "which should we choose," "best fit," or requests tradeoffs, TCO/lock-in/migration analysis, or mentions constraints like budget, team size, timeline, scale, compliance, or risk.
+description: "BMad Method (Build More, Architect Dreams) v6. Use for AI-driven agile delivery: choosing a planning track (Quick Flow vs BMad Method vs Enterprise), running workflow-based phases (analysis -> planning -> solutioning -> implementation), and producing core artifacts (PRD/tech-spec, UX design, architecture, epics/stories, sprint/story execution)."
 ---
 
-# BMAD Method
+# BMad Method (BMAD) v6
+
+This skill is based on the upstream BMAD v6 “BMad Method” project: https://github.com/bmad-code-org/BMAD-METHOD.
 
 ## When to use
-- Choose between competing technologies, vendors, or architectures.
-- Decide on stack components (database, cloud, frameworks, data tooling).
-- Produce decision records, TCO comparisons, or risk assessments.
-- Pressure-test "popular" vs "appropriate for our constraints" claims.
 
-## Core philosophy
-Technology decisions should not be made only because something is popular, novel, or familiar. BMAD forces a balance between:
-- Industry best practices.
-- Your specific context (team, budget, timeline, scale).
-- Long-term architectural alignment.
+Use BMAD when the user wants a structured, end-to-end methodology for building software with AI agents/workflows, especially when they ask for any of:
 
-## BMAD framework
+- A workflow-based process for building a project (greenfield or brownfield)
+- Choosing a planning “track” based on scope/rigor
+- Producing planning artifacts (PRD or tech spec), UX design, architecture
+- Breaking requirements into epics/stories and running a sprint/story lifecycle
+- Guidance on which agent/workflow to run next (e.g. `workflow-init`, `workflow-status`)
 
-### Best (industry gold standard)
-Question: What is considered best practice in the industry?
+## Core concepts (v6)
 
-Criteria:
-- Battle-tested at scale.
-- Widely adopted by successful teams.
-- Strong feature depth and ecosystem.
-- Clear documentation and operational guidance.
+### Workflows, not ad-hoc prompts
+BMAD v6 is organized around *workflows* run by specialized agents. A typical entry point is:
 
-Examples:
-- Database: PostgreSQL (ACID, reliability, JSON support)
-- Message queue: Apache Kafka (throughput, durability, replay)
-- Cloud: AWS (breadth of services, enterprise features)
-- Backend: Express or Fastify (maturity, ecosystem)
+- `workflow-init` to analyze the project and choose a track
+- `workflow-status` when unsure what’s next
 
-When Best matters most:
-- Enterprise or mission-critical systems.
-- Long-lived products (5+ years).
-- Large teams needing stability.
-- Regulatory or compliance-heavy contexts.
+### Three planning tracks
+Track choice is about planning needs (not just “story count”):
 
-### Most Appropriate (context fit)
-Question: What is most appropriate for your specific situation?
+- **Quick Flow**: fast path; typically tech-spec only; small changes/features
+- **BMad Method**: fuller planning; PRD + (optional UX) + architecture; products/platforms
+- **Enterprise Method**: extended planning; higher governance/compliance/testing needs
 
-Context factors:
-1) Team
-   - Size: 2-5 vs 10-50 vs 100+
-   - Expertise: what the team already knows
-   - Learning capacity and ramp time
-2) Financial
-   - Budget: free tier vs hundreds vs thousands per month
-   - Funding stage: bootstrap vs seed vs enterprise
-   - Cost predictability: fixed vs variable
-3) Timeline
-   - POC: 1-2 weeks
-   - MVP: 1-3 months
-   - Production: 6-12 months
-4) Scale
-   - Current: 100 vs 10k vs 1M users
-   - Projected: 6-12 month growth
-   - Growth rate: steady vs exponential
+### Four-phase lifecycle
+- **Phase 1: Analysis (optional)**: brainstorm, research, brief
+- **Phase 2: Planning (required)**: PRD (Method/Enterprise) or tech-spec (Quick)
+- **Phase 3: Solutioning (track-dependent)**: architecture; then create epics/stories
+- **Phase 4: Implementation (required)**: sprint planning; create story; implement; review; repeat
 
-Examples:
-- Startup (5 people, $200/mo): Firebase (fast, managed, cheap)
-- Scale-up (20 people, $5k/mo): PostgreSQL + Redis
-- Enterprise (100 people, $50k/mo): PostgreSQL (RDS) + Kafka + Redis
+### Context management rule of thumb
+BMAD v6 strongly prefers *fresh chats per workflow* to reduce context bleed/hallucinations.
 
-When Most Appropriate overrides Best:
-- Constrained budgets or short deadlines.
-- Mismatch between team skills and "best" tech.
-- Compliance requirements that narrow options.
+## Lightweight playbook (how to run BMAD “in chat”)
 
-### Design (architectural alignment)
-Question: How does this fit your system design and long-term vision?
+1. Establish context:
+   - Greenfield vs brownfield
+   - Goal/outcomes + target users
+   - Constraints: timeline, team size/skills, compliance, scale, budget
+2. Recommend a track (Quick vs Method vs Enterprise) and explain why.
+3. Outline the minimum artifact set for that track (tech-spec vs PRD/UX/architecture).
+4. Drive the next workflow step explicitly (e.g. “start with `workflow-init` / ask for `workflow-status`”).
 
-Considerations:
-1) Vendor lock-in
-   - Open source vs proprietary
-   - Standard protocols vs vendor APIs
-   - Export and migration options
-2) Ecosystem coherence
-   - Fit with existing stack and tooling
-   - Shared patterns across teams
-3) Migration path
-   - Can you switch later?
-   - Migration cost and risk
-4) Future-proofing
-   - Technology trajectory
-   - Vendor viability and community health
+## Activation keywords / trigger prompts
 
-Examples:
-- Low lock-in: PostgreSQL (standard SQL, portable)
-- Medium lock-in: MongoDB (proprietary protocol, well-supported)
-- High lock-in: DynamoDB (AWS-specific, migration cost)
+Use this skill when the user mentions or asks for:
 
-When Design is critical:
-- Long-term projects (3+ years)
-- Multi-vendor strategy
-- Data sovereignty or regulatory concerns
-- Risk-averse organizations
+- “BMAD”, “BMad Method”, “Build More, Architect Dreams”, “BMAD v6”, “BMad Core”
+- “workflow-init”, “workflow-status”, “track selection”, “Quick Flow”, “Enterprise Method”
+- “PRD”, “tech spec”, “UX design doc”, “create architecture”
+- “epics and stories”, “story lifecycle”, “sprint planning”, “dev-story”, “code-review”
+- “greenfield”, “brownfield”, “existing codebase workflow”
 
-## Decision matrix template
-```markdown
-## Technology Decision: [Category]
+## Non-goals / scope note
 
-### Context
-- Team Size: [number]
-- Budget: $[amount]/month
-- Timeline: [duration]
-- Current Scale: [users/requests]
-- Target Scale (12mo): [projected growth]
-
-### Requirements
-Must Have:
-- [ ] Requirement 1
-- [ ] Requirement 2
-
-Nice to Have:
-- [ ] Feature 1
-- [ ] Feature 2
-
-Constraints:
-- [ ] Constraint 1 (e.g., GDPR, open-source)
-
-### BMAD Analysis
-
-Best: [Technology]
-- Strengths:
-- Ecosystem:
-- Proven at:
-
-Most Appropriate: [Technology]
-- Team Fit:
-- Budget Fit:
-- Timeline Fit:
-- Scale Fit:
-
-Design: [Technology]
-- Lock-in Risk: Low | Medium | High
-- Migration Path:
-- Ecosystem Fit:
-- Future-Proofing:
-
-### Recommendation
-Choose: [Technology]
-
-Rationale:
-1. [Reason 1]
-2. [Reason 2]
-3. [Reason 3]
-
-Alternative Paths:
-- If [condition]: consider [alternative]
-- If [condition]: consider [alternative]
-
-### Implementation Plan
-- Week 1:
-- Week 2:
-- Week 3:
-```
-
-## Common decision patterns
-
-### Databases
-Best: PostgreSQL (ACID, robustness, JSON, ecosystem)
-
-Most Appropriate:
-- Startup (<$500/mo): Supabase (managed PostgreSQL)
-- Scale-up ($1k-5k/mo): AWS RDS PostgreSQL
-- Enterprise (>$10k/mo): Aurora PostgreSQL or CockroachDB
-
-Design:
-- Low lock-in: self-hosted PostgreSQL or RDS
-- High flexibility: PostgreSQL (relational + JSON)
-- NoSQL alternative: MongoDB (document model fit)
-
-### Cloud providers
-Best: AWS (most mature, broadest services)
-
-Most Appropriate:
-- Startup: Vercel/Netlify + Supabase
-- Scale-up: GCP (Kubernetes) or Hetzner (cost)
-- Enterprise: AWS or Azure (Microsoft-heavy orgs)
-
-Design:
-- Multi-cloud: Kubernetes + Terraform
-- Cost-sensitive: Hetzner or DigitalOcean
-- Vendor-neutral: avoid Lambda, use containers
-
-### Frontend frameworks
-Best: Next.js (React) or Nuxt (Vue)
-
-Most Appropriate:
-- Content-heavy: Astro
-- App-heavy: Next.js or SvelteKit
-- Rapid prototyping: Remix
-
-Design:
-- Framework-agnostic: Astro
-- React ecosystem: Next.js
-- Performance-first: SvelteKit or Qwik
-
-## Cost analysis
-
-### 3-year TCO template
-```markdown
-| Component              | Option A | Option B | Option C |
-|------------------------|----------|----------|----------|
-| Infrastructure         |          |          |          |
-| - Hosting              | $X       | $Y       | $Z       |
-| - Backup/DR            | $X       | $Y       | $Z       |
-| - Monitoring           | $X       | $Y       | $Z       |
-| Engineering            |          |          |          |
-| - Initial setup        | $X       | $Y       | $Z       |
-| - Training             | $X       | $Y       | $Z       |
-| - Ongoing maintenance  | $X       | $Y       | $Z       |
-| Risk costs             |          |          |          |
-| - Vendor lock-in       | $X       | $Y       | $Z       |
-| - Migration potential  | $X       | $Y       | $Z       |
-| Total                  | $X       | $Y       | $Z       |
-```
-
-Hidden costs to consider:
-1) Learning curve and productivity dip
-2) Maintenance burden (patching, upgrades)
-3) Vendor lock-in and migration cost
-4) Opportunity cost (time-to-market impact)
-
-## Risk assessment
-
-### Risk matrix
-```markdown
-| Risk                | Probability | Impact | Mitigation              | Decision |
-|---------------------|-------------|--------|-------------------------|----------|
-| Vendor shutdown     | 10%         | High   | Use open-source fork    | Accept   |
-| Cost explosion      | 30%         | High   | Set billing alerts      | Mitigate |
-| Performance issues  | 15%         | Medium | Load testing early      | Mitigate |
-| Team skill gap      | 40%         | Medium | Training + pairing      | Mitigate |
-| Lock-in constraints | 80%         | Low    | Abstract vendor APIs    | Accept   |
-```
-
-Mitigation strategies:
-1) Vendor lock-in
-   - Use abstraction layers.
-   - Prefer standard protocols (SQL, S3, AMQP).
-   - Test exports and backups regularly.
-2) Cost explosion
-   - Set billing alerts at 50/75/90% of budget.
-   - Plan scaling tiers (what happens at 10x users?).
-3) Knowledge gaps
-   - Pairing and internal training.
-   - Hire consultants for initial setup if needed.
-
-## Real-world examples
-
-### Example 1: Database for e-commerce startup
-Context:
-- Team: 5 engineers
-- Budget: $500/month
-- Timeline: 3 months to MVP
-- Scale: 1,000 users to 50,000 in 12 months
-
-BMAD:
-- Best: PostgreSQL
-- Most Appropriate: Supabase PostgreSQL
-- Design: low lock-in, migration to RDS later
-
-Decision: Supabase PostgreSQL
-Rationale: SQL skills, budget fit, fast setup.
-
-### Example 2: Message queue for IoT platform
-Context:
-- Team: 20 engineers
-- Budget: $5,000/month
-- Timeline: 6 months
-- Scale: 100k messages/sec, 1-year retention
-
-BMAD:
-- Best: Kafka
-- Most Appropriate: Confluent Cloud
-- Design: standard Kafka protocol, migration path
-
-Decision: Confluent Cloud
-Rationale: known tech, manageable cost, fast setup.
-
-### Example 3: Auth provider for SaaS
-Context:
-- Team: 10 engineers
-- Budget: $1,000/month
-- Requirements: SOC2, GDPR, SSO, MFA
-- Timeline: 2 months
-
-BMAD:
-- Best: Auth0
-- Most Appropriate: Clerk
-- Design: medium lock-in, standard OAuth
-
-Decision: Clerk
-Rationale: cheaper, modern DX, compliance-ready.
-
-## Best practices
-- Document decisions as ADRs.
-- Re-evaluate on a cadence (quarterly costs, annual full BMAD).
-- Build escape hatches for lock-in.
-- Start managed for speed, plan for self-hosting later.
-
-## Activation keywords
-- "best vs most appropriate"
-- "BMAD method"
-- "technology decision framework"
-- "stack selection"
-- "database choice"
-- "cloud provider comparison"
-- "architecture tradeoffs"
-- "TCO analysis"
-- "vendor lock-in"
-- "migration strategy"
-
-## Trigger regression prompts
-See references/trigger-prompts.md for a small prompt set to tune and spot-check triggering behavior.
-
-## Resources
-- ADR templates: https://adr.github.io/
-- TCO calculators: AWS, GCP, and Azure pricing calculators
-- Technology radar: https://www.thoughtworks.com/radar
-- Community: https://reddit.com/r/ExperiencedDevs
+BMAD v6 is an agile delivery *methodology*. If the user is strictly asking for a narrow “A vs B technology choice” trade study (TCO/lock-in/etc.) without wanting the broader delivery workflow, consider using a dedicated tech-decision framework instead of BMAD.

@@ -57,6 +57,7 @@ For more details, see README.md and QUICKSTART.md.
 - Include a TRACE report in the output.
 - Use `$abstraction-laws` for repeated patterns, parameter clusters, or algebraic structure cues.
 - Use `$clarification-expert` for ambiguous or under-specified prompts ("build a system", "make it better", "optimize this", "how do I", unclear goals, or conflicting requirements).
+- Use `$bmad` for BMAD v6 workflow-based agile delivery (track selection; PRD/tech-spec; UX; architecture; epics/stories; sprint/story execution).
 - Use `$prove-it` for absolutes ("always", "never", "guaranteed", "optimal") or "devil's advocate".
 - Use `$creative-problem-solver` for stalled progress, blocked integration, or requests for options/alternatives/brainstorming/tradeoff exploration.
 - Use `$logophile` for wording, clarity, brevity, or density edits.
