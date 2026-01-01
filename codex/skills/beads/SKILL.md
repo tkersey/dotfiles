@@ -1,26 +1,23 @@
 ---
 name: beads
-description: Issue tracking workflow using bd (beads). Use when a repo uses bd/beads for issue tracking (for example, when a `.beads/` directory exists) or when asked to run bd commands like `bd ready`, `bd create`, `bd close`, or `bd sync`.
+description: bd (beads) issue-tracking workflow; use when `.beads/` exists or when running `bd` commands.
 ---
 
 # Beads
 
-## Overview
+## When to use
+- The repo uses `bd` (a `.beads/` directory exists).
+- The user asks for `bd` commands (`bd ready`, `bd create`, `bd close`, `bd sync`, …).
 
-Use `bd` for issue tracking and workflow context. Run `bd prime` to learn the full process, then use the commands below for day-to-day work.
-
-## Workflow
-
+## Quick start
 1. Run `bd prime` to load workflow context.
 2. Install hooks if needed: `bd hooks install`.
 
-## Quick reference
-
-- `bd ready` - Find unblocked work
-- `bd create "Title" --type task --priority 2` - Create issue
-- `bd close <id>` - Complete work
-- `bd sync` - Sync with git (run at session end)
+## Command quick reference
+- `bd ready` — list unblocked work
+- `bd create "Title" --type task --priority 2` — create an issue
+- `bd close <id>` — close an issue
+- `bd sync` — sync with git (typically end of session)
 
 ## Notes
-
-- For full workflow details, run `bd prime`.
+- For the full workflow, run `bd prime`.
