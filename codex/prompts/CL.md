@@ -1,1 +1,1 @@
-Use $select to choose the next bead. Don't start yet.
+Update the PR, monitor it until green then squash, then cleanup local state.
