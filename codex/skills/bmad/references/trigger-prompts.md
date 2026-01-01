@@ -1,18 +1,18 @@
 # BMAD Trigger Regression Prompts
 
-Use this prompt set to sanity-check when BMAD should or should not trigger.
+Use these prompts to sanity-check when BMAD should or should not trigger.
 
 ## Should trigger BMAD
-1) "We need to pick between Postgres and DynamoDB. Which is the best fit for a 6-person team and a $1k/month budget?"
-2) "Kafka vs RabbitMQ for our event pipeline - what should we choose given 50k msg/sec?"
-3) "Is AWS or GCP more appropriate for a bootstrapped SaaS with tight runway?"
-4) "We are debating Next.js vs SvelteKit. Which is best for an app-heavy product on a 3-month timeline?"
-5) "Help us choose an auth provider with SOC2 and SSO requirements; compare Auth0, Clerk, and Okta."
-6) "We want to switch data warehouses. Snowflake vs BigQuery vs Redshift: tradeoffs and lock-in risk?"
-7) "Best database for a 2-year roadmap: managed Postgres vs self-hosted - consider migration cost."
-8) "We need a message queue. What's most appropriate given a small team and strict SLA?"
-9) "Which architecture should we choose: monolith or microservices, given our scale and staffing?"
-10) "Do a TCO comparison for hosting on Vercel vs AWS for the next 3 years."
+1) "Postgres vs DynamoDB: best fit for a 6-person team and $1k/month budget?"
+2) "Kafka vs RabbitMQ for a 50k msg/sec event pipeline - what should we choose?"
+3) "AWS or GCP for a bootstrapped SaaS with tight runway?"
+4) "Next.js vs SvelteKit for an app-heavy product on a 3-month timeline?"
+5) "Choose an auth provider with SOC2 + SSO: compare Auth0, Clerk, Okta."
+6) "Switch data warehouses: Snowflake vs BigQuery vs Redshift - tradeoffs and lock-in risk?"
+7) "Best database for a 2-year roadmap: managed vs self-hosted Postgres, consider migration cost."
+8) "Need a message queue: what's appropriate for a small team and strict SLA?"
+9) "Choose architecture: monolith vs microservices given our scale and staffing?"
+10) "Compare 3-year TCO: Vercel vs AWS hosting."
 
 ## Should NOT trigger BMAD
 1) "Explain what Kafka is and how it works."
