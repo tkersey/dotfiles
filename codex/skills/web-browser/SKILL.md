@@ -1,26 +1,27 @@
 ---
 name: web-browser
-description: Use when you need to browse the web or automate Chrome/Chromium via CDP (navigate/open/go to, click/press, fill/type forms, evaluate JS, take screenshots, or scrape/extract page content).
+description: "Automate Chrome/Chromium via CDP: navigate, click, fill forms, evaluate JS, screenshot, scrape."
 ---
 
-# Web Browser Skill
+# Web Browser
 
 ## When to use
-- Navigate or interact with live websites
-- Click buttons, fill forms, or extract page content
-- Evaluate JS in a real browser context
-- Capture screenshots for review or debugging
+- Navigate or interact with live websites.
+- Click buttons, fill forms, or extract page content.
+- Evaluate JavaScript in a real browser context.
+- Capture screenshots for debugging or review.
 
 ## Quick start
 ```bash
 # Start Chrome with remote debugging on :9222
 ./tools/start.js
 
-# Navigate or open a new tab
+# Navigate (optionally open a new tab)
 ./tools/nav.js https://example.com
 ./tools/nav.js https://example.com --new
 ```
-Workflow loop: take small steps → inspect state with `eval.js` or `screenshot.js` → repeat. Favor quick state checks over long, brittle scripts.
+
+Loop: take small steps → inspect state (`eval.js` / `screenshot.js`) → repeat.
 
 ## Common commands
 ```bash
@@ -37,13 +38,14 @@ Workflow loop: take small steps → inspect state with `eval.js` or `screenshot.
 # Pick elements interactively
 ./tools/pick.js "Click the submit button"
 ```
-Discovery tip: use `pick.js` to identify elements and confirm selectors; then run `eval.js` to click/type with those selectors.
 
-## Pitfalls / gotchas
+Tip: use `pick.js` to confirm selectors, then drive actions via `eval.js`.
+
+## Pitfalls
 - Chrome must be running with remote debugging enabled on `:9222`.
 - `--profile` copies your profile; use only when you need existing cookies/logins.
 - Use single quotes around JS to avoid shell-escaping issues.
-- `./tools/start.js` kills all running Chrome processes and uses a macOS Chrome path; close Chrome first or edit the script for your OS.
+- `./tools/start.js` kills running Chrome processes and uses a macOS Chrome path; close Chrome first or adapt for your OS.
 
 ## References
 - `codex/skills/web-browser/tools/start.js`

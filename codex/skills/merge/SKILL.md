@@ -1,97 +1,83 @@
 ---
 name: merge
-description: Automated PR creation, monitoring, CI repair, review, and squash merging for a single repo using gh with jj-first/git-fallback workflows. Use when an agent must loop over PRs, enforce CI gates, auto-create PRs from branches, apply minimal fixes, and merge quickly with a compact label contract.
+description: "PR autopilot: create/manage PRs, enforce CI gates, apply surgical fixes, and squash-merge via `gh`."
 ---
 
 # Merge
 
-## Overview
-Enable a continuous PR autopilot: create PRs for every non-default branch, enforce CI gates, apply surgical fixes to get green, auto-review, and squash-merge via gh.
+## Intent
+Run a continuous PR operator: keep PRs created, green, reviewed, and squash-merged (via `gh`) with minimal-incision fixes.
 
-## Quick Start
+## Quick start
 1. Ensure `gh auth status` succeeds.
-2. Ensure labels exist: `auto:manage`, `auto:hold` (create if missing).
-3. Optionally add `.github/auto-merge.yml` from `assets/auto-merge.yml` to make defaults explicit.
-4. Start the monitor loop (see “Monitor Loop”).
+2. Ensure labels exist: `auto:manage`, `auto:hold`.
+3. (Optional) Add `.github/auto-merge.yml` from `assets/auto-merge.yml`.
+4. Start the monitor loop.
 
-## Label Contract (Compact)
-Use labels to express intent only; derive status from CI and agent logs.
-- `auto:manage`: opt-in for full automation. Apply to all auto-created PRs.
-- `auto:hold`: pause automation; do not update, review, or merge until removed.
+## Label contract
+- `auto:manage`: opt-in to automation.
+- `auto:hold`: pause automation.
 
 Contributor guidance:
-- If you want the agent to handle your PR, add `auto:manage`.
-- If you want the agent to stop, add `auto:hold`.
-- Document this in the PR template or CONTRIBUTING.md.
+- Add `auto:manage` to opt in.
+- Add `auto:hold` to stop the operator.
 
-## PR Creation Policy (Moonshot)
+## PR creation policy
 - For every non-default branch without an open PR, create a PR.
-- Use the repo PR template if present; otherwise use `assets/pr-template.md`.
-- Set title/body from commits when possible (`gh pr create --fill`).
-- Apply `auto:manage` immediately.
-- Do not create drafts unless configured; default to ready-for-review.
+- Use the repo PR template if present; else use `assets/pr-template.md`.
+- Prefer `gh pr create --fill` and apply `auto:manage`.
+- Default to ready-for-review (no drafts unless configured).
 
-## Monitor Loop
-Repeat continuously with adaptive polling:
-1. Fetch open PRs (`gh pr list --state open --json number,title,headRefName,labels,isDraft`).
+## Monitor loop
+Repeat with adaptive polling:
+1. List open PRs: `gh pr list --state open --json number,title,headRefName,labels,isDraft`.
 2. For each PR:
-   - Skip if `auto:hold` present.
-   - If `auto:manage` absent and PR is not agent-created, skip.
-   - If draft and auto-managed, mark ready (`gh pr ready`).
-   - Ensure branch is up to date (see “Branch Update”).
-   - Evaluate CI (see “CI Gate”).
-   - Repair CI if failing (see “Surgical Fix Loop”).
+   - Skip if `auto:hold`.
+   - Skip if not `auto:manage` and not agent-created.
+   - If draft, mark ready: `gh pr ready`.
+   - Ensure branch is up to date.
+   - Enforce CI gate.
+   - If failing, run the surgical fix loop.
    - When green, auto-approve and squash-merge.
-3. Sleep for a computed interval (see “Adaptive Polling”).
 
-## CI Gate (All Checks Mandatory)
+## CI gate
 - Treat any pending or failing check as a hard block.
-- Use CI status from GitHub (`gh pr checks`, `gh run list`, `gh run watch`).
-- Do not merge until all checks are successful.
+- Use: `gh pr checks`, `gh run list`, `gh run watch`.
 
-## Surgical Fix Loop (Minimal Incision)
-Apply the surgeon’s principle: smallest change that makes CI green.
-1. Capture failure cause from check logs.
+## Surgical fix loop
+Smallest change that makes CI green:
+1. Read the failure from CI logs.
 2. Apply the minimal fix on the PR branch.
-3. Commit with a terse message (e.g., "fix(ci): <short cause>").
+3. Commit with a terse message (e.g., `fix(ci): <cause>`).
 4. Push and re-check.
-5. Limit attempts (default 3). On exhaustion or unresolved conflicts:
+5. Limit attempts (default 3). On exhaustion or hard conflicts:
    - Leave a summary comment.
-   - File “request changes” as last resort.
-   - Apply `auto:hold` to prevent churn.
+   - Request changes as last resort.
+   - Apply `auto:hold`.
 
-## Branch Update (JJ-First, Git-Fallback)
-- Prefer `jj` for all write operations; fall back to git only when needed.
-- Rebase PR branches onto the default branch, force-push if required.
-- If conflicts cannot be resolved quickly, request changes and `auto:hold`.
+## Branch updates (jj-first)
+- Prefer `jj` for writes; fall back to `git` only when needed.
+- Rebase onto the default branch; force-push only when required.
 
-## Review + Merge
-- When all checks pass and no hold:
-  - Auto-approve (`gh pr review --approve`) to satisfy any approval gates.
-  - Squash-merge (`gh pr merge --squash`).
-- Let repo settings handle branch deletion; do not force delete.
+## Merge
+- When checks are green and no hold:
+  - Approve: `gh pr review --approve`.
+  - Squash-merge: `gh pr merge --squash`.
 
-## Adaptive Polling
-Keep polling under 60s unless CI is slow.
-- Compute average CI duration from recent runs (last 5–10).
-- If avg CI ≤ 10 minutes: poll every 30–55 seconds.
-- If avg CI > 10 minutes: poll every min(120s, avg/5).
-- On API errors, back off with exponential delay.
+## Adaptive polling
+- Poll under 60s unless CI is slow.
+- Use recent CI duration to back off (cap at 120s).
+- Exponential backoff on API errors.
 
-## Status Reporting
-- Maintain a single PR comment or check-run named `AutoMerge Operator`.
-- Update with: current state, last action, next action, and last error.
-- Avoid noisy comment spam; edit in place when possible.
+## Status reporting
+- Maintain a single PR comment/check-run named `AutoMerge Operator`.
+- Update in place (avoid comment spam).
 
-## Command Recipes (gh / jj / git)
-- List PRs: `gh pr list --state open --json number,headRefName,labels,isDraft`
-- Create PR: `gh pr create --fill --head <branch> --label auto:manage`
-- Check status: `gh pr checks <num>` or `gh run list --branch <branch>`
-- Approve: `gh pr review <num> --approve`
+## Recipes
+- Create: `gh pr create --fill --head <branch> --label auto:manage`
+- Checks: `gh pr checks <num>`
 - Merge: `gh pr merge <num> --squash`
-- JJ rebase (preferred): `jj rebase -b <branch> -o <default>`
-- Git rebase (fallback): `git rebase <default>` then force-push
 
 ## Assets
-- `assets/auto-merge.yml`: optional repo config template.
-- `assets/pr-template.md`: default PR template if none exists.
+- `assets/auto-merge.yml`
+- `assets/pr-template.md`

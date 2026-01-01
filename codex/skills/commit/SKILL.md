@@ -1,62 +1,59 @@
 ---
 name: commit
-description: Create micro commits using the surgeon's principle (minimal incision, maximal precision) with git commands only. Use when Codex needs to split changes into surgical commits, stage hunks precisely, or keep commits small while ensuring at least one feedback loop passes before each commit.
+description: Create micro-commits (minimal incision) with at least one validation signal per commit.
 ---
 
 # Commit
 
-## Overview
-Create surgical, micro commits that capture one precise change and pass at least one tight feedback loop before committing.
+## Intent
+Carve changes into surgical commits: one coherent change, minimal blast radius, and at least one feedback signal before committing.
 
-## Trigger Examples
-- "Split this change into micro commits."
-- "Make a surgical commit for this fix."
-- "Stage only the minimal hunk and commit it."
-- "Keep the commit tiny, tests passing."
-- "Carve this diff into separate micro commits."
-- "I want a minimal, precise commit here."
+## When to use
+- “Split this into micro commits.”
+- “Stage only the minimal change and commit it.”
+- “Keep the commits tiny, keep checks passing.”
 
-## Workflow (Surgeon's Principle)
+## Workflow (Surgeon’s principle)
 
 ### 1) Scope the incision
-- Identify the smallest coherent change that can stand alone.
-- Isolate unrelated edits (use patch staging or stash them).
-- Avoid refactors, formatting, or drive-by edits unless they are required for correctness.
+- Identify the smallest change that can stand alone.
+- Isolate unrelated edits; avoid drive-by refactors/formatting unless required for correctness.
 
-### 2) Stage surgically (git only)
-- Inspect: `git status -sb`, `git diff`, `git diff --stat`.
-- Stage by hunk: `git add -p`.
-- Undo accidental staging: `git reset -p`.
-- Discard accidental edits: `git restore -p`.
-- Verify: `git diff --cached` is exactly the intended incision.
+### 2) Stage surgically (non-interactive-first)
+Inspect:
+- `git status -sb`
+- `git diff`
+
+Stage what you intend (prefer file-level staging in non-interactive harnesses):
+- `git add <paths...>`
+- `git restore --staged <paths...>`
+
+Verify:
+- `git diff --cached` matches the intended incision.
+
+If you truly need hunk-level staging but your environment can’t do interactive staging, ask the user to stage hunks locally or provide a patch you can apply.
 
 ### 3) Validate the micro scope
-- Optional helper: run `scripts/micro_scope.py` to summarize staged vs unstaged size.
-- If the staged diff feels multi-concern, split it before any checks.
+- Optional helper: `scripts/micro_scope.py` (staged vs unstaged size).
+- If the staged diff is multi-concern, split it before running checks.
 
 ### 4) Close the loop (required)
-- Discover the tightest available signal from the codebase.
-- Run at least one check that exercises the change.
-- If nothing is discoverable, ask the user for the preferred command.
+- Select the tightest available signal and run it.
+- If the repo’s test/check command is not discoverable, ask for the preferred command.
 - Reference: `references/loop-detection.md`.
 
-### 5) Commit (message is irrelevant)
-- Use a minimal message: `git commit -m "micro"`.
-- Only commit after the loop passes.
+### 5) Commit
+- Use a terse message; optimize for clarity, not poetry.
+- Commit only after at least one signal passes.
 
-### 6) Repeat or clean up
-- If more changes remain, repeat from step 1.
-- Keep each commit single-purpose and minimal.
-
-## JJ Compatibility (Git Mode)
-- Use plain git commands only; avoid jj commands.
-- Avoid history-rewriting commands (`git rebase`, `git reset --hard`, `git filter-branch`) unless the user explicitly asks.
+### 6) Repeat
+Repeat until the working tree is clean or the remaining changes are intentionally deferred.
 
 ## Guardrails
-- If staging cannot isolate the change cleanly, ask before widening scope.
-- Prefer small, targeted checks over full test suites when appropriate.
-- Do not claim completion without a passing signal.
+- Don’t widen scope without asking.
+- Prefer the smallest check that meaningfully exercises the change.
+- Don’t claim completion without a passing signal.
 
 ## Resources
-- `scripts/micro_scope.py` - summarize staged vs unstaged diff size and scope.
-- `references/loop-detection.md` - heuristics to select a tight feedback loop.
+- `scripts/micro_scope.py`
+- `references/loop-detection.md`

@@ -1,22 +1,21 @@
 ---
 name: clarification-expert
-description: Clarification protocol for ambiguous requests, "build/optimize/make it better" prompts, or unclear goals; use to research first, ask only judgment questions, and hard-stop before implementation.
+description: Clarify ambiguous requests by researching first, then asking only judgment calls; stop before implementation.
 ---
 
 # Clarification Expert
 
 ## When to use
-- The request is ambiguous or under-specified.
-- User says "build a system", "optimize this", "make it better", "how do I".
-- Requirements are unclear, conflicting, or success criteria are missing.
-- The goal is vague, broad, or not tied to a concrete outcome.
+- The request is ambiguous, under-specified, or missing success criteria.
+- The user asks to “build a system”, “optimize”, “make it better”, or “how do I”.
+- Requirements conflict, or trade-offs are implicit.
 
 ## Quick start
-1. Research first; do not ask for discoverable facts.
-2. Keep a running snapshot: facts, decisions, open questions.
-3. Ask only judgment-call questions in a numbered block.
-4. Incorporate answers and repeat until no questions remain.
-5. Generate verbose beads, then hard-stop (no implementation yet).
+1. Research first; don’t ask for discoverable facts.
+2. Maintain a running snapshot (facts, decisions, open questions).
+3. Ask only judgment calls, in a numbered block.
+4. Incorporate answers and repeat until no open questions remain.
+5. Generate verbose beads, then stop (no implementation).
 
 ## Snapshot template
 ```
@@ -38,12 +37,12 @@ CLARIFICATION EXPERT: HUMAN INPUT REQUIRED
 ## Guardrails
 - Never ask what the code can reveal; inspect the repo first.
 - Keep questions minimal and sequential.
-- Do not implement after questions; stop after bead creation.
+- After bead creation, hard-stop.
 
 ## Deliverable format
-- Snapshot block.
-- Human input block (numbered).
-- Short Insights/Next Steps line.
+- Snapshot.
+- Human input block.
+- One-line Insights/Next Steps.
 
 ## Activation cues
 - "clarify"
@@ -52,6 +51,5 @@ CLARIFICATION EXPERT: HUMAN INPUT REQUIRED
 - "make it better"
 - "optimize this"
 - "how do I"
-- "not sure what you want"
 - "unclear goal"
 - "conflicting requirements"
