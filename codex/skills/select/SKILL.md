@@ -32,7 +32,7 @@ Choose the next bead by risk, hardness, and blast radius; gate on codebase readi
    - Re-run `bd ready` and restart selection if you added any deps.
 5. Pick the highest-scored ready bead after the readiness gate passes.
 6. Mark it in progress: `bd update <id> --status in_progress`.
-7. Comment rationale: `bd comment <id> "Selected first: <short rationale>"`.
+7. Comment rationale: `bd comments add <id> "Selected first: <short rationale>"`.
 
 ## Output
 - Print: `Selected <id>: <rationale>`.
