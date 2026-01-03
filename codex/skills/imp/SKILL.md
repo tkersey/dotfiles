@@ -8,11 +8,13 @@ description: Unified shipping + TRACE self-review protocol (beads, proof, PR). E
 ## Intent
 Ship bead-scoped changes end-to-end with proof, then immediately self-review the resulting PR using TRACE and fix what you find.
 
-IMP is a combined *execution + review* protocol:
+IMP is a combined *execution + review + closure* protocol:
 - Write code with strong invariants and minimal incision.
 - Validate with a full check suite.
-- Open a PR (do not merge).
+- Open a PR.
 - Review that PR right away and resolve findings.
+- Select the next bead (so bead state is committed).
+- Update/monitor/merge/cleanup (CL).
 
 ## Definition of Done (IMP)
 An `imp` run is done when:
@@ -20,8 +22,12 @@ An `imp` run is done when:
 - The working tree contains only bead-aligned changes.
 - Format + lint/typecheck + build + tests have run (or are explicitly recorded as unavailable).
 - `$close-the-loop` is invoked and at least one signal is recorded.
-- A PR is opened (do not merge).
+- The worked bead is marked `done` before PR creation.
+- A PR is opened.
 - A TRACE self-review is produced (in chat) and all 🔥 + 🟡 items are resolved.
+- `$select` is run once (to pick exactly one next bead), and resulting bead state changes (e.g. `issues.jsonl`) are committed into the PR.
+- The PR is updated, monitored until green, then squash-merged.
+- Local state is cleaned up.
 - A bead comment exists with PR link + proof summary.
 
 ## Guardrails
@@ -30,7 +36,7 @@ An `imp` run is done when:
 - Surgeon’s principle: smallest correct change.
 - No intentional product/semantic changes without clarifying.
 - Don’t split into multiple PRs unless explicitly asked.
-- Don’t merge.
+- Don’t merge until the final CL step.
 
 ## Autonomy gate (conviction)
 Proceed without asking only when all are true:
@@ -147,11 +153,17 @@ If a category genuinely doesn’t exist, record it as **N/A** in proof with a 1-
 ### 8) Invoke `$close-the-loop` (required)
 `$close-the-loop` is the forcing function: record at least one signal after you’ve made the change and run validations.
 
-### 9) Open a PR (do not merge)
-- Open a single PR.
-- Do not merge.
+### 9) Close the worked bead (required)
+Before creating the PR:
+- Mark the worked bead as `done`.
 
-### 10) Immediate TRACE self-review (required, post-PR)
+Note: this typically updates bead state files (e.g. `issues.jsonl`). Those changes are part of the workflow and must be included in the PR.
+
+### 10) Open a PR (do not merge yet)
+- Open a single PR.
+- Do not merge yet.
+
+### 11) Immediate TRACE self-review (required, post-PR)
 Review the PR output immediately and resolve findings.
 
 Rules:
@@ -166,7 +178,29 @@ If fixes are required:
 - Re-invoke `$close-the-loop` (Step 8).
 - Repeat review until no 🔥 or 🟡 remain.
 
-### 11) Record proof (make results auditable)
+### 12) Select the next bead (required, post-review)
+Run the `$select` workflow once to choose exactly one next bead.
+
+Intent:
+- Pick the next `bd ready` bead via risk-first heuristics.
+- Verify dependency/readiness.
+- Add missing deps and restart selection when needed.
+- Mark the chosen bead `in_progress` and leave a short rationale comment.
+
+Critical requirement:
+- The bead state changes produced here (commonly `issues.jsonl` updates) must be committed and included in the current PR.
+
+### 13) CL: update PR → monitor green → squash → cleanup
+Follow `codex/prompts/CL.md`:
+1. Update the PR.
+2. Monitor it until green.
+3. Squash-merge.
+4. Cleanup local state.
+
+CI policy:
+- IMP must continue addressing PR issues until they are resolved (keep fixes minimal and re-run validations + `$close-the-loop` as needed).
+
+### 14) Record proof (make results auditable)
 Record proof in both places:
 - PR description: full command list + outcomes.
 - Bead comment: short proof summary + PR link.
@@ -174,7 +208,7 @@ Record proof in both places:
 Proof should include:
 - Signals: commands run and outcomes.
 - Decision: if CPS was used, record tier + rationale + escape hatch.
-- Notes: any N/A validations, known limitations, follow-ups.
+- Notes: any N/A validations, known limitations.
 
 ## Deliverable format (chat)
 
@@ -193,6 +227,7 @@ For each finding:
 - Tests: `<cmd>` → `<ok/fail>`
 - `$close-the-loop`: `<signal>`
 - PR: `<url>`
+- Merge: `<squash ok/fail>`
 - Bead comment: `<posted/blocked>`
 
 ## Failure paths
