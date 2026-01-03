@@ -27,10 +27,15 @@ Proceed without asking only when all are true:
 
 Otherwise: clarify before editing.
 
+## Autonomy defaults (to satisfy the gate)
+When the fix is localized and semantics-preserving, assume these defaults:
+- Ownership invariant: allocations created in the current scope are owned by that scope until transfer; all error paths must free them. Freeing on an arena allocator is acceptable (no-op), so adding frees is safe.
+- Validation default: if no command is provided, infer the cheapest local signal from repo conventions (no network). Prefer a documented command in README/QUICKSTART, or a local script in `scripts/` (e.g., `scripts/check`, `scripts/test`), or a repo-level task runner file (`Makefile`, `justfile`, `Taskfile.yml`). If no clear marker exists, ask before editing.
+
 ## Clarify before changes
 - Expected behavior is missing/contradictory/product-sensitive.
 - The fix crosses subsystems, needs migrations, or breaks APIs.
-- Repro/validation commands are unknown.
+- Repro/validation commands are unknown and no default can be inferred.
 - Risk tolerance is undefined (performance/compat/security).
 
 ## Workflow
