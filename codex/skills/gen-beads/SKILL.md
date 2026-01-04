@@ -1,79 +1,47 @@
 ---
 name: gen-beads
-description: Generate beads in bd using the repo's swarm-ready rules; explicit invocation only.
+description: Convert a project plan written in a Markdown file into a complete bd beads graph (tasks, subtasks, dependencies) using only bd for creation and edits, then review and optimize each bead. Use when asked to beadify a plan document (plan.md, plan-*.md, DESIGN/IMPLEMENTATION/ARCHITECTURE docs, or any planning markdown) or to generate bd tasks from a plan.
 ---
 
-# Gen-Beads
+# Gen Beads
 
-## Swarm rules (surgeon mode)
-- One bead, one deliverable, one success state.
-- Minimal incision: no refactor unless required by the outcome.
-- Parallel by default; add `blocks` only for real prerequisites.
-- Split anything that exceeds 1 day or touches >3 files.
-- No docs-only beads; embed docs in the bead.
-- Acceptance must be runnable: exact commands, paths, expected results.
-- Cap epics at 7; split phases if needed.
+## Overview
+
+Transform a markdown plan into a comprehensive bead graph with clear dependencies and rich, self-documenting comments, then review and refine every bead for optimal sequencing and user impact.
+
+## Inputs
+
+- Path to the plan markdown file
+- Any scope boundaries, sequencing constraints, or priority guidance
 
 ## Workflow
-1. Sanity-check `bd`: `bd info --json`.
-2. Ensure the `memory` template exists.
-   - `bd template list --json`
-   - If missing, create `.beads/templates/memory.yaml`:
-     ```bash
-     mkdir -p .beads/templates
-     cat > .beads/templates/memory.yaml <<'YAML'
-     name: memory
-     description: |-
-         ## Outcome (fill/update at close)
-         [What changed? What is now true?]
 
-         ## Why
-         [Motivation / constraints]
+1. Locate and read the plan file. Ask for the exact file path if multiple candidates exist.
+2. Extract major workstreams, tasks, risks, milestones, and implied dependencies.
+3. Generate beads using the "Generate Step Prompt" verbatim. Use only bd commands to create beads and add dependencies.
+4. Evaluate every bead using the "Review Prompt" verbatim, revising beads via bd only.
+5. Report what was created/updated and list any remaining ambiguities.
 
-         ## Where (paths / systems)
-         - [ ] Path(s):
-         - [ ] Component(s):
+## Generate Step Prompt (use verbatim)
 
-         ## Verification (exact commands + results)
-         - [ ] Command(s):
+```
+OK so please take ALL of that and elaborate on it more and then create a comprehensive and granular set of beads for all this with tasks, subtasks, and dependency structure overlaid, with detailed comments so that the whole thing is totally self-contained and self-documenting (including relevant background, reasoning/justification, considerations, etc.-- anything we'd want our "future self" to know about the goals and intentions and thought process and how it serves the over-arching goals of the project.)  Use only the `bd` tool to create and modify the beads and add the dependencies.
+```
 
-         ## Additional context
-         [Scratchpad while working; distill before closing.]
-     type: task
-     priority: 2
-     labels:
-       - memory
-     design: |-
-         ## Decisions + rationale
-         - [Decision]: [why]
+## Review Prompt (use verbatim)
 
-         ## Alternatives considered
-         - [Alt]: [why rejected]
+```
+Check over each bead super carefully-- are you sure it makes sense? Is it optimal? Could we change anything to make the system work better for users? If so, revise the beads. It's a lot easier and faster to operate in "plan space" before we start implementing these things!
+```
 
-         ## Constraints / invariants / gotchas
-         - [Constraint]:
+## Guardrails
 
-         ## Follow-ups
-         - [ ] Created follow-up beads (if needed) and linked via discovered-from/blocks
-     acceptance_criteria: |-
-         - [ ] Outcome implemented
-         - [ ] Verification commands recorded and pass
-         - [ ] Bead fields distilled (no placeholders)
-         - [ ] Final closure notes saved in `notes` (per `AGENTS.md` / `~/.codex/AGENTS.md`)
-     YAML
-     ```
-   - If `.beads/templates/*.yaml` is ignored, update `.gitignore` so the template can be committed.
-   - Re-run `bd template list --json` to confirm.
-3. Draft the work graph.
-   - Cap epics at 7.
-   - Define children that can execute independently.
-   - Mark only true prerequisites as `blocks`.
-4. Create beads.
-   - Prefer: `bd create --from-template memory ... --json`.
-   - Fallback:
-     - `bd create -t <type> -p <priority> "<title>" --description "…" --design "…" --acceptance "…" --json`
-   - Use `-t epic` for epics; `-t task` (or `feature`/`bug`) for children.
-   - Use `--parent <epic-id>` when coordination helps.
-5. Wire deps: `bd dep add <issue> <depends-on> -t blocks|related|parent-child|discovered-from --json`.
-6. Output a compact index: epics → children, plus which beads are ready.
-7. Hard stop (no implementation).
+- Use only bd commands to create, modify, and wire dependencies; do not hand-edit bead files.
+- Preserve plan intent. If the plan is inconsistent or missing critical details, ask targeted questions before deciding.
+- Keep bead comments self-contained: background, rationale, success criteria, and sequencing considerations.
+- Prefer small, composable beads with explicit dependencies over monolithic tasks.
+
+## Output Expectations
+
+- A coherent bead graph with tasks, subtasks, and dependencies.
+- A short summary of what was created/changed and any open questions.
