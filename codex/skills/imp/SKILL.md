@@ -26,7 +26,9 @@ An `imp` run is done when:
 - A PR is opened.
 - A TRACE self-review is produced (in chat) and all 🔥 + 🟡 items are resolved.
 - `$select` is run once (to pick exactly one next bead), and resulting bead state changes (e.g. `issues.jsonl`) are committed into the PR.
-- The PR is updated, monitored until green, then squash-merged.
+- The PR is updated and squash-merged when either:
+  - CI is green, or
+  - CI is billing-blocked (`billing` appears in CI failure text), `zig build ci` passes, and the PR is squash-mergeable.
 - Local state is cleaned up.
 - A bead comment exists with PR link + proof summary.
 
@@ -150,6 +152,12 @@ Entry points:
 
 If a category genuinely doesn’t exist, record it as **N/A** in proof with a 1-line reason and run the nearest substitute.
 
+Billing-only CI substitute (Zig):
+- Trigger: hosted CI is blocked (CI failure text contains `billing`).
+- Run `zig build ci` before opening the PR.
+- If CI is still not green at merge time, run `zig build ci` again immediately before squash-merge.
+- If `zig build ci` is unavailable, record **N/A**.
+
 ### 8) Invoke `$close-the-loop` (required)
 `$close-the-loop` is the forcing function: record at least one signal after you’ve made the change and run validations.
 
@@ -190,15 +198,21 @@ Intent:
 Critical requirement:
 - The bead state changes produced here (commonly `issues.jsonl` updates) must be committed and included in the current PR.
 
-### 13) CL: update PR → monitor green → squash → cleanup
-Follow `codex/prompts/CL.md`:
+### 13) CL: update PR → check CI + mergeability → squash → cleanup
+Follow `codex/prompts/CL.md`, with a billing-only CI bypass:
+
 1. Update the PR.
-2. Monitor it until green.
-3. Squash-merge.
-4. Cleanup local state.
+2. Confirm the PR is squash-mergeable (no merge conflict). If conflicting, merge/rebase the base branch and resolve conflicts.
+3. Check CI status (e.g., `gh pr checks`).
+4. If CI is green: squash-merge.
+5. If CI is not green:
+   - If CI failure text contains `billing`: run `zig build ci` (again, immediately before merge). If it passes and the PR is squash-mergeable, squash-merge.
+   - Otherwise: keep fixes minimal, and iterate until CI is green.
+6. Cleanup local state.
 
 CI policy:
-- IMP must continue addressing PR issues until they are resolved (keep fixes minimal and re-run validations + `$close-the-loop` as needed).
+- Default: treat non-`billing` CI failures as real (fix → re-run validations + `$close-the-loop`).
+- Bypass: only skip “wait for green” when CI failure text contains `billing`.
 
 ### 14) Record proof (make results auditable)
 Record proof in both places:
@@ -225,6 +239,7 @@ For each finding:
 - Lint/typecheck: `<cmd>` → `<ok/fail>`
 - Build: `<cmd>` → `<ok/fail>`
 - Tests: `<cmd>` → `<ok/fail>`
+- CI substitute (if `billing`): `zig build ci` (pre-PR; pre-merge if needed) → `<ok/fail>`
 - `$close-the-loop`: `<signal>`
 - PR: `<url>`
 - Merge: `<squash ok/fail>`
@@ -235,6 +250,10 @@ For each finding:
 - Unclear requirements: stop and ask; do not guess.
 - Unrelated diffs: revert/stash; do not widen scope.
 - Validation fails: fix and re-run before opening the PR.
+- CI is not green:
+  - If CI failure text contains `billing`, run `zig build ci` and treat “squash-mergeable + `zig build ci` ok” as green.
+  - Otherwise, keep fixing until CI is green.
+- PR is not squash-mergeable (merge conflict): merge/rebase the base branch, resolve conflicts, then re-run validations (Step 7) and retry merge.
 - Bug can’t be reproduced: add instrumentation or a characterization test; clearly state limits in proof.
 
 ## Activation cues
