@@ -47,7 +47,7 @@ If you find unrelated work:
 ### 4) Do the work (how the work is accomplished)
 
 #### 4.1) Mandatory TRACE mini-pass (every bead)
-Before the first code incision, do a small TRACE Guard pass:
+Before the first code incision, do a small `$resolve` pass:
 1. **Cognitive heat map**: note hotspots + surprises.
 2. **Triage failure modes**: crash > corruption > logic.
 3. **State the invariant**: what must remain true after the change?
@@ -69,7 +69,7 @@ Use a tight loop so progress stays legible and reversible:
 5. **Re-check locally**: re-run the closest fast signal (focused test, typecheck, repro script).
 6. Repeat until acceptance criteria pass.
 
-Autonomy gate (borrowed from TRACE Guard): proceed without further clarifying only when all are true:
+Autonomy gate (borrowed from `$resolve`): proceed without further clarifying only when all are true:
 - Local repro (or a tight, credible signal).
 - Invariant stated.
 - Minimal diff.
