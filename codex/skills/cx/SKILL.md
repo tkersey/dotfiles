@@ -21,5 +21,5 @@ description: Spawn Codex CLI sub-agents non-interactively with fixed model/effor
 
 ## Example
 ```bash
-scripts/cx-exec.sh "Work bead 123. Use skill trace-guard. Source the next task per that skill's workflow."
+scripts/cx-exec.sh "Work bead 123. Use skill resolve. Source the next task per that skill's workflow."
 ```
