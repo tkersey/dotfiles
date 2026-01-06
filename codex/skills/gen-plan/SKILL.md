@@ -6,6 +6,7 @@ description: Generate iterative `plan-N-E.md` / `plan-N-R.md` files in the repo 
 # Gen-Plan
 
 ## Contract
+
 - Scope: operate in the repo root; manage files named `plan-N-E.md` and `plan-N-R.md` where `N` is an integer and phase is `E` (enhance) or `R` (revise).
 - `E` and `R` files use the same template; the phase exists to support separate passes (e.g., different models).
 - Phases are case-insensitive (`-e`/`-r`), but write new files using uppercase `-E` / `-R`.
@@ -21,28 +22,23 @@ description: Generate iterative `plan-N-E.md` / `plan-N-R.md` files in the repo 
 - Ask questions only when unresolved judgment calls block the next iteration.
 
 ## Clarification flow (when needed)
+
 Follow the same clarification protocol and formatting as `codex/skills/plan/SKILL.md`:
+
 - Research first; ask only judgment-call questions.
 - Use the `CLARIFICATION EXPERT: HUMAN INPUT REQUIRED` block with numbered questions.
-- After questions are answered, write the next plan file.
+- After questions are answered, determined if another round of questions is needed; if so continue asking questions until there are no more then write the next plan file.
 
-## Plan template
-Write the plan file using this exact template:
+## Iterate on the plan
 
-````md
+Use the following to generate a plan
+
+```md
 ---
-Review the plan markdown below and propose improvements that increase clarity, feasibility, reliability, performance, and usefulness.
+Carefully review this entire plan for me and come up with your best revisions in terms of better architecture, new features, changed features, etc. to make it better, more robust/reliable, more performant, more compelling/useful, etc.
 
-Output format:
-## Changes
-- <prioritized bullets with rationale>
+For each proposed change, give me your detailed analysis and rationale/justification for why it would make the project better along with the git-diff style changes relative to the original markdown plan shown below:
 
-## Patch
-```diff
-<unified diff (git-diff style) that edits only the plan markdown below>
+<INCLUDE CONTENTS OF PLAN FILE>
+---
 ```
-
-Plan markdown (source; paste plan only, no wrapper):
-<PASTE THE CURRENT PLAN MARKDOWN HERE>
----
-````
