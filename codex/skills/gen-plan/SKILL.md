@@ -1,23 +1,19 @@
 ---
 name: gen-plan
-description: Generate iterative `plan-N-E.md` / `plan-N-R.md` files in the repo root (max N=5, E then R). Use only when asked; clarify before `plan-1-E.md`; stop at `plan-5-R.md`.
+description: Generate iterative `plan-N.md` files in the repo root (max N=5). Use only when asked; clarify before `plan-1.md`; stop at `plan-5.md`.
 ---
 
 # Gen-Plan
 
 ## Contract
 
-- Scope: operate in the repo root; manage files named `plan-N-E.md` and `plan-N-R.md` where `N` is an integer and phase is `E` (enhance) or `R` (revise).
-- `E` and `R` files use the same template; the phase exists to support separate passes (e.g., different models).
-- Phases are case-insensitive (`-e`/`-r`), but write new files using uppercase `-E` / `-R`.
-- Define `N` as the maximum numeric suffix among files matching `plan-(\d+)-[EeRr].md` (ignore non-matching filenames, including legacy `plan-N.md`).
+- Scope: operate in the repo root; manage files named `plan-N.md` where `N` is an integer.
+- Define `N` as the maximum numeric suffix among files matching `plan-(\d+).md` (ignore non-matching filenames, including legacy `plan-N-E.md` / `plan-N-R.md`).
 - If any matching file has `N > 5`: do nothing; reply exactly: "Plan is ready."
-- If `plan-5-R.md` exists (case-insensitive): do nothing; reply exactly: "Plan is ready."
-- If no matching `plan-(\d+)-[EeRr].md` exists: run the clarification flow (same question style as `codex/skills/plan/SKILL.md`), then create `plan-1-E.md`.
-- Otherwise:
-  - If `plan-N-E.md` exists and `plan-N-R.md` does not: create `plan-N-R.md`. Source plan markdown: `plan-N-E.md`.
-  - Else (if `plan-N-R.md` exists, regardless of whether `plan-N-E.md` exists): create `plan-(N+1)-E.md`. Source plan markdown: `plan-N-R.md`.
-- When loading plan markdown from a source file, extract only the plan markdown section: everything after the `Plan markdown` line and before the closing `---` delimiter.
+- If `plan-5.md` exists (case-insensitive): do nothing; reply exactly: "Plan is ready."
+- If no matching `plan-(\d+).md` exists: run the clarification flow (same question style as `codex/skills/plan/SKILL.md`), then create `plan-1.md`.
+- Otherwise: create `plan-(N+1).md`. Source plan markdown: `plan-N.md`.
+- When loading plan markdown from a source file, insert the full contents of `plan-N.md` at the `<INCLUDE CONTENTS OF PLAN FILE>` placeholder in the plan template.
 - Never overwrite an existing target file; stop and report the conflict.
 - Ask questions only when unresolved judgment calls block the next iteration.
 
