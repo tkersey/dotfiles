@@ -11,15 +11,13 @@ description: Generate iterative `plan-N.md` files in the repo root (max N=5). Us
 - Define `N` as the maximum numeric suffix among files matching `plan-(\d+).md` (ignore non-matching filenames, including legacy `plan-N-E.md` / `plan-N-R.md`).
 - If any matching file has `N > 5`: do nothing; reply exactly: "Plan is ready."
 - If `plan-5.md` exists (case-insensitive): do nothing; reply exactly: "Plan is ready."
-- If no matching `plan-(\d+).md` exists: run the clarification flow (same question style as `codex/skills/plan/SKILL.md`), then create `plan-1.md`.
+- If no matching `plan-(\d+).md` exists: run the clarification flow, then create `plan-1.md`.
 - Otherwise: create `plan-(N+1).md`. Source plan markdown: `plan-N.md`.
 - When loading plan markdown from a source file, insert the full contents of `plan-N.md` at the `<INCLUDE CONTENTS OF PLAN FILE>` placeholder in the plan template.
 - Never overwrite an existing target file; stop and report the conflict.
 - Ask questions only when unresolved judgment calls block the next iteration.
 
 ## Clarification flow (when needed)
-
-Follow the same clarification protocol and formatting as `codex/skills/plan/SKILL.md`:
 
 - Research first; ask only judgment-call questions.
 - Use the `CLARIFICATION EXPERT: HUMAN INPUT REQUIRED` block with numbered questions.
