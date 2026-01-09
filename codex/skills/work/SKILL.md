@@ -82,6 +82,13 @@ Heuristics by bead type:
 - **Feature**: implement the smallest end-to-end slice that proves the requirement (vertical slice > layered scaffolding).
 - **Refactor**: preserve behavior; add a characterization test/invariant first.
 
+Refactor hygiene (within bead scope):
+- Limit simplification to code touched by this bead unless explicitly asked.
+- Favor explicit, readable code over clever compactness.
+- Avoid nested ternaries for multi-branch logic; use if/else or switch equivalents.
+- Remove redundant comments; keep clarifying ones.
+- Keep helpful abstractions; don’t flatten at the cost of clarity.
+
 ### 5) Validation (all musts)
 Run these categories every time:
 - **Formatters** (autoformat).
