@@ -84,6 +84,7 @@ Heuristics by bead type:
 
 Refactor hygiene (within bead scope):
 - Limit simplification to code touched by this bead unless explicitly asked.
+- Any cleanup/simplification should preserve behavior beyond what the bead explicitly changes.
 - Favor explicit, readable code over clever compactness.
 - Avoid nested ternaries for multi-branch logic; use if/else or switch equivalents.
 - Remove redundant comments; keep clarifying ones.
@@ -122,6 +123,7 @@ A PR template is *not required*, but include:
 - **Signals**: command(s) you ran and the outcome.
 - **Decision**: if `$creative-problem-solver` was used, record the chosen option/tier + rationale.
 - **Notes**: any N/A validations, known limitations, or follow-ups.
+- **Simplification**: document only significant refactors (avoid rename-changelogs).
 
 Validation signal strength (prefer higher):
 1. Tests passing (best).
