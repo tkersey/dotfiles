@@ -1,0 +1,203 @@
+#!/bin/sh
+#
+# bootstrap installs things.
+
+DOTFILES_ROOT="$(pwd)"
+LINKS_CONF="$DOTFILES_ROOT/links.conf"
+
+# Default flags
+DO_SYMLINK=false
+DO_HOMEBREW=false
+DO_ALL=true
+
+# Process command line arguments
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --symlink)
+      DO_SYMLINK=true
+      DO_ALL=false
+      ;;
+    --homebrew)
+      DO_HOMEBREW=true
+      DO_ALL=false
+      ;;
+    --help)
+      echo "Usage: $0 [options]"
+      echo "Options:"
+      echo "  --symlink   Create symlinks from links.conf"
+      echo "  --homebrew  Run homebrew installation/update"
+      echo "  --help      Show this help message"
+      echo ""
+      echo "If no options are specified, all tasks will be run."
+      echo "If any options are specified, only those tasks will be run."
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Use --help for usage information"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+# If no specific flags were set, do everything
+if [ "$DO_ALL" = true ]; then
+  DO_SYMLINK=true
+  DO_HOMEBREW=true
+fi
+
+set -e
+
+echo ''
+
+info () {
+  printf "  [ \033[00;34m..\033[0m ] $1\n"
+}
+
+user () {
+  printf "\r  [ \033[0;33m?\033[0m ] $1 "
+}
+
+success () {
+  printf "\r\033[2K  [ \033[00;32mOK\033[0m ] $1\n"
+}
+
+fail () {
+  printf "\r\033[2K  [\033[0;31mFAIL\033[0m] $1\n"
+  echo ''
+  exit
+}
+
+setup_files () {
+  mkdir -p $(dirname "$2")
+  ln -s "$1" "$2"
+  success "linked $1 to $2"
+}
+
+install_homebrew() {
+	if [[ $(command -v brew) == "" ]]; then
+		echo "Installing Homebrew.. "
+		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	else
+		echo "Updating Homebrew.. "
+		brew update
+	fi
+}
+
+symlink_files() {
+  info 'creating symlinks from links.conf'
+
+  if [ ! -f "$LINKS_CONF" ]; then
+    fail "links.conf not found at $LINKS_CONF"
+    return
+  fi
+
+  overwrite_all=false
+  skip_all=false
+
+  # Read each line from links.conf
+  while IFS= read -r line || [ -n "$line" ]; do
+    # Skip comments and empty lines
+    if [[ "$line" =~ ^# ]] || [[ -z "${line// }" ]]; then
+      continue
+    fi
+
+    # Split the line by the first colon
+    source_path="${line%%:*}"
+    dest_path="${line#*:}"
+
+    # Trim whitespace
+    source_path=$(echo "$source_path" | xargs)
+    dest_path=$(echo "$dest_path" | xargs)
+
+    # Strip quotes from dest_path if present
+    dest_path=$(echo "$dest_path" | sed -e 's/^"//' -e 's/"$//')
+
+    # Expand environment variables in destination path
+    eval "dest_path=$dest_path"
+
+    # Get full source path
+    source="$DOTFILES_ROOT/$source_path"
+
+    # Skip if source doesn't exist
+    if [ ! -f "$source" ] && [ ! -d "$source" ]; then
+      fail "Source not found: $source"
+      continue
+    fi
+
+    if [ -f "$dest_path" ] || [ -d "$dest_path" ] || [ -L "$dest_path" ]; then
+      # Handle existing files
+      overwrite=false
+      skip=false
+
+      if [ "$overwrite_all" = "false" ] && [ "$skip_all" = "false" ]; then
+        user "Already exists: ${dest_path}, what do you want to do? [s]kip, [S]kip all, [o]verwrite, [O]verwrite all?"
+        if [ -t 0 ]; then
+          read -r action
+        else
+          read -r action < /dev/tty
+        fi
+
+        case "$action" in
+          o )
+            overwrite=true;;
+          O )
+            overwrite_all=true;;
+          s )
+            skip=true;;
+          S )
+            skip_all=true;;
+          * )
+            skip=true;;  # Default to skip
+        esac
+      fi
+
+      if [ "$overwrite" = "true" ] || [ "$overwrite_all" = "true" ]; then
+        rm -rf "$dest_path"
+        success "removed $dest_path"
+        if [ "$overwrite_all" = "false" ]; then
+          echo ''
+        fi
+        setup_files "$source" "$dest_path"
+        if [ "$overwrite_all" = "false" ]; then
+          echo ''
+        fi
+      elif [ "$skip" = "false" ] && [ "$skip_all" = "false" ]; then
+        setup_files "$source" "$dest_path"
+      else
+        success "skipped $dest_path"
+        if [ "$skip_all" = "false" ]; then
+          echo ''
+        fi
+      fi
+    else
+      setup_files "$source" "$dest_path"
+    fi
+  done < "$LINKS_CONF"
+}
+
+# Run installations based on flags
+if [ "$DO_HOMEBREW" = true ]; then
+  install_homebrew
+  brew bundle
+fi
+
+if [ "$DO_SYMLINK" = true ]; then
+  symlink_files
+fi
+
+# If we are on a mac, lets install and setup homebrew dependencies
+if [ "$(uname -s)" == "Darwin" ] && [ "$DO_HOMEBREW" = true ]
+then
+  info "installing dependencies"
+  if . bin/dot > /tmp/dotfiles-dot 2>&1
+  then
+    success "dependencies installed"
+  else
+    fail "error installing dependencies"
+  fi
+fi
+
+echo ''
+echo '  All installed!'

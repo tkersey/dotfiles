@@ -1,0 +1,29 @@
+customCommands:
+  - key: "Z"
+    description: "Checkout branch via fzf"
+    context: "global"
+    command: "git for-each-ref --format='%(refname:short)' refs/heads refs/remotes | sort -u | fzf | xargs git checkout"
+    output: "terminal"
+
+# Theme: Catppuccin Mocha (mauve/pink accent, pastel dark)
+gui:
+  theme:
+    activeBorderColor:
+      - "#cba6f7" # mauve
+      - bold
+    inactiveBorderColor:
+      - "#585b70"
+    optionsTextColor:
+      - "#cba6f7"
+    selectedLineBgColor:
+      - "#313244"
+    cherryPickedCommitBgColor:
+      - "#45475a"
+    cherryPickedCommitFgColor:
+      - "#cba6f7"
+    unstagedChangesColor:
+      - "#f38ba8" # pink/red blend
+    defaultFgColor:
+      - "#cdd6f4"
+    searchingActiveBorderColor:
+      - "#f2cdcd" # flamingo

@@ -1,0 +1,11 @@
+*.DS_Store
+pkg/*
+.VolumeIcon.icns
+.fseventsd
+Icon
+*.swp
+/**/*.swp
+*.netrwhist
+
+**/.claude/settings.local.json
+
