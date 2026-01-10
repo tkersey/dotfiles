@@ -17,12 +17,39 @@ description: Orchestrate multiple Codex sub-agents via cx to work beads in paral
 4. Decide concurrency and prioritization; if unspecified, ask for a cap and a
    priority rule.
 5. Compose one agent prompt per bead using the template below.
-6. Dispatch each agent with `codex/skills/cx/scripts/cx-exec.sh "..."` (or the
-   user’s chosen Opencode equivalent).
+6. Dispatch each agent from inside its per-bead workspace with
+   `codex/skills/cx/scripts/cx-exec.sh "..."` (or the user’s chosen Opencode
+   equivalent).
 7. Monitor updates and require each agent to post a bead comment with PR link +
    verification.
 8. Consolidate a single status summary: completed PRs, active blockers, and the
    next wave.
+
+## Workspace + Dispatch
+
+Mesh uses per-bead jj workspaces so agents do not collide in the same working
+copy. The default workspace path convention is:
+
+`../workspaces/<repo>/<bead-id>/`
+
+Create and enter the workspace from the repo root:
+
+```bash
+jj workspace add ../workspaces/<repo>/<bead-id>/ [-r <rev>]
+cd ../workspaces/<repo>/<bead-id>/
+```
+
+Dispatch the sub-agent from inside the workspace so edits land in the correct
+working copy:
+
+```bash
+codex/skills/cx/scripts/cx-exec.sh "..."
+```
+
+Notes:
+- Use `-r <rev>` to pin the starting revision when needed (default is current).
+- The sub-agent prompt must include bead context (copied from `bd show`) and the
+  rule: **do not run `bd`**.
 
 ## Scheduling & Wave Planning
 
@@ -104,10 +131,17 @@ auto-wrapped, but mesh never auto-beadifies.
 
 ```text
 Work bead <ID>. Use skill <work|imp|resolve> as appropriate.
-Restate done-means + acceptance criteria.
-Keep diffs bead-scoped; open a PR when done.
-Record verification and PR link in the bead comment.
+Context: <paste relevant bd show output here so the agent can work offline>.
+Do NOT run bd in this workspace; coordinator owns bead updates.
+Use the jujutsu skill for all VCS operations. Open a PR when done.
+Restate done-means + acceptance criteria. Keep diffs bead-scoped.
 If blocked, state why and what is needed.
+
+Final output block (required):
+PR: <url>
+Verify: <command>  # <pass/fail>
+Changed: <paths>
+Blockers: <none|details>
 ```
 
 ## Coordination Guardrails
