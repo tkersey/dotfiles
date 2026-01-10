@@ -6,6 +6,7 @@ web_search_request = true
 skills = true
 unified_exec = true
 shell_snapshot = true
+tui2 = true
 
 [notice]
 hide_gpt5_1_migration_prompt = true
