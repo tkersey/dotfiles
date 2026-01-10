@@ -121,7 +121,7 @@ If blocked, state why and what is needed.
 ## Agent Lifecycle (Beads-native, coordinator-only)
 
 Sub-agents do not run `bd` inside their jj workspaces. The coordinator owns all
-beads writes and liveness tracking.
+beads write operations and liveness tracking.
 
 ### Runbook
 
