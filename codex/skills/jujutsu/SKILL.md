@@ -24,6 +24,7 @@ Tripwires:
 - The working copy is a commit: `@` is the working-copy commit, `@-` its parent.
 - Bookmarks are branch-like pointers: `jj bookmark …`.
 - Workspaces are git-worktree-like: `jj workspace add …`.
+  - There is no `jj workspace use` command. To switch, `cd` into the workspace directory.
 
 ## Git interop / colocation
 - New repo backed by Git: `jj git init <name>`.
@@ -58,6 +59,33 @@ Bookmarks:
 Undo:
 - `jj undo`
 - `jj redo`
+
+## Command mapping (git -> jj)
+| Git | Jujutsu | Notes |
+| --- | --- | --- |
+| `git status` | `jj status` | |
+| `git diff` | `jj diff` | |
+| `git log` | `jj log` | |
+| `git add <path>` | `jj file track <path>` | JJ auto-tracks edits; use `track` for new paths. |
+| `git restore <path>` / `git checkout -- <path>` | `jj restore <path>` | Restores from parent into the working copy. |
+| `git commit -m "msg"` | `jj commit -m "msg"` | |
+| `git commit --amend -m "msg"` | `jj describe -m "msg"` | Edits current change description. |
+| `git branch` | `jj bookmark list` | |
+| `git branch <name>` | `jj bookmark create <name> -r @` | |
+| `git branch -d <name>` | `jj bookmark delete <name>` | |
+| `git switch <name>` / `git checkout <rev>` | `jj edit <rev>` | Moves working copy to an existing change. |
+| `git switch -c <name>` | `jj new` + `jj bookmark create <name> -r @` | Two-step in jj. |
+| `git merge <branch>` | `jj new @ <branch>` | Creates a merge commit with both parents. |
+| `git rebase <upstream>` | `jj rebase -b @ -o <upstream>` | Rebase current branch onto upstream. |
+| `git pull` | `jj git fetch` + `jj rebase -b @ -o <remote-bookmark>` | Fetch then rebase onto e.g. `origin/main`. |
+| `git fetch` | `jj git fetch` | |
+| `git push` | `jj git push` | |
+
+## Workspace switching (correct usage)
+- List workspaces: `jj workspace list`
+- Add a workspace: `jj workspace add <path> [-r <rev>]`
+- Forget a workspace: `jj workspace forget <path>`
+- Switch workspaces by changing directories: `cd <path>`
 
 ## Safety notes
 - `jj` has no “current branch”; bookmarks don’t auto-advance.
