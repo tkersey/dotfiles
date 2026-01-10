@@ -118,6 +118,59 @@ If blocked, state why and what is needed.
 - If two beads touch the same files, serialize them or explicitly define the
   lock order.
 
+## Agent Lifecycle (Beads-native, coordinator-only)
+
+Sub-agents do not run `bd` inside their jj workspaces. The coordinator owns all
+beads writes and liveness tracking.
+
+### Runbook
+
+1. Create an ephemeral agent bead per spawned sub-agent run:
+   ```bash
+   bd create --type=agent --ephemeral --role-type polecat --agent-rig <rig> \
+     --labels agent,agent:<name>,role:polecat \
+     --title "<name>"
+   ```
+2. Attach the work bead to the agent via the hook slot:
+   ```bash
+   bd slot set <agent-id> hook <bead-id>
+   ```
+3. Track liveness/state during execution:
+   ```bash
+   bd agent state <agent-id> spawning|running|working|stuck|done
+   bd agent heartbeat <agent-id>  # optional
+   ```
+4. Coordinator writes progress (sub-agents never call `bd`):
+   - Per-bead comment with PR link + verification signal.
+   - Epic-level swarm status comment aggregating PRs/blockers/next wave.
+
+### Coordinator Comment Templates
+
+Per-bead:
+```text
+Checkpoint: <short outcome>
+- PR: <link>
+- Verify: <command>  # <pass/fail>
+- Notes: <limits or follow-ups>
+```
+
+Epic-level swarm status:
+```text
+Swarm status
+- Completed: <bead -> PR>
+- Active: <bead -> agent>
+- Blocked: <bead -> reason>
+- Next wave: <bead ids>
+```
+
+### Cleanup
+
+- Clear the hook slot when the agent finishes:
+  ```bash
+  bd slot clear <agent-id> hook
+  ```
+- Optionally close or delete ephemeral agent beads after the work is merged.
+
 ## Status Summary Format
 
 ```text
