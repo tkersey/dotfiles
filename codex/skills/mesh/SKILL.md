@@ -17,8 +17,9 @@ description: Orchestrate multiple Codex sub-agents via cx to work beads in paral
 4. Decide concurrency and prioritization; if unspecified, ask for a cap and a
    priority rule.
 5. Compose one agent prompt per bead using the template below.
-6. Dispatch each agent with `codex/skills/cx/scripts/cx-exec.sh "..."` (or the
-   user’s chosen Opencode equivalent).
+6. Dispatch each agent from inside its per-bead workspace with
+   `codex/skills/cx/scripts/cx-exec.sh "..."` (or the user’s chosen Opencode
+   equivalent).
 7. Monitor updates and require each agent to post a bead comment with PR link +
    verification.
 8. Consolidate a single status summary: completed PRs, active blockers, and the
