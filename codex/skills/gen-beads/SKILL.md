@@ -21,6 +21,10 @@ Transform a markdown plan into a comprehensive bead graph with clear dependencie
 - Close a bead when its PR is opened; stacked PRs are acceptable.
 - Medium granularity: each bead should be independently PR-able.
 - Add frequent checkpoint/integration beads (planned join points).
+- Include a small metadata block in each bead comment:
+  - `Workstream: <name>`
+  - `Role: contract | implementation | integration | checkpoint`
+  - `Parallelism impact: unlocks <n> beads` (best-effort)
 - No agent routing labels; assignment stays manual.
 - Use molecules only for repeatable checklists.
 
@@ -56,6 +60,22 @@ PR + granularity assumptions:
 - Do not add agent routing labels; keep assignment manual.
 
 For every bead, include clear acceptance criteria and at least one verification signal (test/build/lint command or a precise manual check).
+Include a short metadata block in the bead comment:
+- Workstream: <name>
+- Role: contract | implementation | integration | checkpoint
+- Parallelism impact: unlocks <n> beads (best-effort)
+
+Example comment footer:
+```
+Workstream: Backend API
+Role: contract
+Parallelism impact: unlocks 3 beads
+```
+
+Example rationale line (optional, short):
+```
+Rationale: contract first to unblock 3 parallel implementations.
+```
 
 Use only the `bd` tool to create and modify the beads and add the dependencies.
 ```
@@ -70,6 +90,7 @@ Also: audit the dependency graph for parallelism.
 - Ensure `blocks` is used only for true prerequisites; downgrade soft ordering to `tracks`/`related`.
 - Ensure there are frequent checkpoint/integration join points.
 - Ensure each bead is independently PR-able with clear acceptance + verification.
+- Ensure each bead comment includes the Workstream/Role/Parallelism metadata block.
 - Run `bd ready` after you’ve created the graph. If it only surfaces one item because the graph is unnecessarily linear, revise dependencies until parallel work is available (subject to true prerequisites).
 ```
 
