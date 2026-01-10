@@ -24,6 +24,40 @@ description: Orchestrate multiple Codex sub-agents via cx to work beads in paral
 8. Consolidate a single status summary: completed PRs, active blockers, and the
    next wave.
 
+## Scheduling & Wave Planning
+
+Use this decision procedure when selecting a wave. The goal is repeatable
+ordering with a human override.
+
+1. Build the status map:
+   - `bd swarm status <epic-id>` to compute Ready/Blocked/Active/Completed.
+   - Optional: `bd swarm validate <epic-id>` to surface fronts (integration or
+     checkpoint bottlenecks).
+2. Ask the user for a concurrency cap (max agents for this wave). Mesh must not
+   assume a default.
+3. From the Ready set, rank candidates using the fixed heuristic order:
+   1) Priority first (bd priority).
+   2) Maximize unlocks: prefer high-fanout beads that unblock many dependents
+      (contract/infrastructure beads).
+   3) Prefer checkpoint/integration beads when they are Ready.
+   4) Manual pick always wins: present the recommendation, then ask the user to
+      confirm or override.
+4. Contention check: if two Ready beads touch the same files, serialize them or
+   explicitly define a lock order. Mention `bd merge-slot` as the conflict
+   primitive if the team uses it.
+5. Announce the wave + status summary using the template below.
+
+### Wave Status Summary
+
+```text
+Wave status
+- Ready: <ids>
+- Blocked: <id -> reason>
+- Active: <id -> agent>
+- Completed: <id -> PR link>
+- Recommended wave: <ids> (cap: <n>; heuristic: priority -> unlocks -> checkpoints)
+```
+
 ## Entrypoints & Scope Contract
 
 Mesh is epic-first: it swarms an epic and its child DAG. A single bead can be
