@@ -7,7 +7,7 @@ description: Spawn Codex CLI sub-agents non-interactively with fixed model/effor
 
 ## Workflow
 1. Accept a positional prompt string (required).
-2. Run `scripts/cx-exec.sh "$PROMPT"`.
+2. Run `$HOME/.codex/skills/cx/$HOME/.codex/skills/cx/scripts/cx-exec.sh "$PROMPT"`.
 3. Do not override defaults; update the script if defaults change.
 
 ## Defaults
@@ -17,9 +17,9 @@ description: Spawn Codex CLI sub-agents non-interactively with fixed model/effor
 - Mode: `codex exec` (non-interactive)
 
 ## Script
-- `scripts/cx-exec.sh`
+- `$HOME/.codex/skills/cx/$HOME/.codex/skills/cx/scripts/cx-exec.sh`
 
 ## Example
 ```bash
-scripts/cx-exec.sh "Work bead 123. Use skill resolve. Source the next task per that skill's workflow."
+$HOME/.codex/skills/cx/$HOME/.codex/skills/cx/scripts/cx-exec.sh "Work bead 123. Use skill resolve. Source the next task per that skill's workflow."
 ```
