@@ -18,6 +18,37 @@ parallel. The coordinator owns all `bd` writes; sub-agents never run `bd`.
    - The coordinator performs all bead updates, comments, and status changes.
 3. Agree on a concurrency cap (max agents per wave).
 
+## Formula contracts (mesh vNext)
+
+Mesh vNext uses two formulas under `.beads/formulas/`:
+
+- `mol-mesh-run.formula.json` (formula name: `mol-mesh-run`)
+- `mol-mesh-arm.formula.json` (formula name: `mol-mesh-arm`)
+
+`mol-mesh-run` variables:
+- `target_id`
+- `target_kind`
+- `concurrency`
+- `workspace_backend` (default: `worktree`)
+- `audit_level` (default: `full`)
+
+`mol-mesh-run` step list (order):
+- `resolve-target` (gate)
+- `validate-target` (gate)
+- `run-waves`
+- `closeout`
+
+`mol-mesh-arm` minimal structure:
+- single step: `arm`
+- intended to be bonded with `--ephemeral`
+
+Examples:
+```bash
+bd cook .beads/formulas/mol-mesh-run.formula.json
+bd mol pour mol-mesh-run --var target_id=<id> --var target_kind=epic --var concurrency=3
+bd mol bond mol-mesh-arm <mesh-run-id> --ephemeral
+```
+
 ## 1) Select the epic (scope contract)
 
 Mesh is epic-first: it swarms an epic and its child DAG. A single bead can be
