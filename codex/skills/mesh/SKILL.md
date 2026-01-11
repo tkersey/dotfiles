@@ -99,6 +99,14 @@ Use labels to mark human-reviewed or suspicious entries:
 ```bash
 bd audit label <entry-id> --label <value> --reason "<why>"
 ```
+To capture `<entry-id>`:
+```bash
+bd audit record --json ... | jq -r '.id'
+```
+Or, without assuming output format:
+```bash
+tail -n 1 .beads/interactions.jsonl | jq -r '.id'
+```
 Recommended labels:
 - `gold`: approved, reusable completion
 - `needs_review`: failed tool call or questionable output
