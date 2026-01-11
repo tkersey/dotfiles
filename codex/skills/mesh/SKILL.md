@@ -5,27 +5,88 @@ description: Orchestrate multiple Codex sub-agents via cx to work beads in paral
 
 # mesh
 
-## Workflow
+## Purpose
+Mesh orchestrates multiple Codex sub-agents to work an epic's bead DAG in
+parallel. The coordinator owns all `bd` writes; sub-agents never run `bd`.
 
-1. Confirm a beads repo by running
-   `rg --files -g '.beads/**' --hidden --no-ignore`; if no matches, stop and ask
-   for direction.
-2. Identify the target beads (explicit IDs, or `bd ready`/`bd in-progress`) and
-   confirm scope with the user.
-3. Build a dependency-aware batch plan (ready now vs blocked) and list the
-   first wave.
-4. Decide concurrency and prioritization; if unspecified, ask for a cap and a
-   priority rule.
-5. Compose one agent prompt per bead using the template below.
-6. Dispatch each agent from inside its per-bead workspace with
-   `codex/skills/cx/scripts/cx-exec.sh "..."` (or the user’s chosen Opencode
-   equivalent).
-7. Monitor updates and require each agent to post a bead comment with PR link +
-   verification.
-8. Consolidate a single status summary: completed PRs, active blockers, and the
-   next wave.
+## Preconditions (must pass)
 
-## Workspace + Dispatch
+1. Confirm a beads repo:
+   `rg --files -g '.beads/**' --hidden --no-ignore`
+2. Coordinator-only `bd`:
+   - Sub-agents run in jj workspaces and **do not** run `bd`.
+   - The coordinator performs all bead updates, comments, and status changes.
+3. Agree on a concurrency cap (max agents per wave).
+
+## 1) Select the epic (scope contract)
+
+Mesh is epic-first: it swarms an epic and its child DAG. A single bead can be
+auto-wrapped into a one-child epic, but mesh never auto-beadifies.
+
+### Supported inputs (how to resolve the target)
+
+- Explicit epic ID: use it directly.
+  - `bd swarm validate <epic-id>`
+  - `bd list --parent <epic-id> --pretty`
+- Current bead (from in-progress work):
+  - `bd list --status in_progress --pretty`
+  - If exactly one is in progress, `bd show <id>` and resolve its parent.
+  - If it has a parent epic, use the epic ID; otherwise use the bead ID.
+  - If multiple are in progress, stop and ask for the target.
+- List of bead IDs:
+  - `bd show <id>` for each to confirm a common parent epic.
+  - If no shared epic exists, stop and ask the user to create/assign one first.
+
+### Auto-wrap behavior + limitations
+
+- `bd swarm create <bead-id>` auto-wraps a non-epic bead into a 1-child epic.
+- Auto-wrap is **only** for a single bead with no epic; it does not create child
+  beads or dependencies.
+- If there is no parallelism (one child or no DAG), stop and recommend
+  `$gen-beads` before swarming.
+
+### Scope confirmation checklist (must complete before spawning)
+
+1. `bd show <epic-id>` to confirm intent.
+2. `bd list --parent <epic-id> --pretty` to enumerate children.
+3. `bd swarm validate <epic-id>` to verify DAG + parallelism.
+4. Ask the user to confirm: epic ID, child list, expected parallelism.
+5. Then run `bd swarm create <epic-id>` (or `<bead-id>` for auto-wrap).
+
+## 2) Plan waves (epic-first swarming)
+
+Use this decision procedure when selecting a wave. The goal is repeatable
+ordering with a human override.
+
+1. Build the status map:
+   - `bd swarm status <epic-id>` to compute Ready/Blocked/Active/Completed.
+   - If the DAG changed since scope confirmation, re-run
+     `bd swarm validate <epic-id>` to surface fronts (integration or checkpoint
+     bottlenecks).
+2. Ask the user for a concurrency cap (max agents for this wave). Mesh must not
+   assume a default.
+3. From the Ready set, rank candidates using the fixed heuristic order:
+   1) Priority first (bd priority).
+   2) Maximize unlocks (high-fanout beads).
+   3) Prefer checkpoint/integration beads when Ready.
+   4) Manual pick always wins (present the recommendation, then ask to confirm
+      or override).
+4. Contention check: if two Ready beads touch the same files, serialize them or
+   explicitly define a lock order. Mention `bd merge-slot` if the team uses it.
+5. Announce the wave + status summary using the template below.
+
+### Wave status summary
+
+```text
+Wave status
+- Ready: <ids>
+- Blocked: <id -> reason>
+- Active: <id -> agent>
+- Completed: <id -> PR link>
+- Recommended wave: <ids> (cap: <n>; heuristic: priority -> unlocks -> checkpoints -> manual)
+```
+
+## 3) Workspaces + dispatch (jj + cx)
 
 Mesh uses per-bead jj workspaces so agents do not collide in the same working
 copy. The default workspace path convention is:
@@ -50,114 +111,12 @@ Notes:
 - Use `-r <rev>` to pin the starting revision when needed (default is current).
 - The sub-agent prompt must include bead context (copied from `bd show`) and the
   rule: **do not run `bd`**.
+- Sub-agents must use the `jujutsu` skill for all VCS operations.
 
-## Scheduling & Wave Planning
-
-Use this decision procedure when selecting a wave. The goal is repeatable
-ordering with a human override.
-
-1. Build the status map:
-   - `bd swarm status <epic-id>` to compute Ready/Blocked/Active/Completed.
-   - Optional: `bd swarm validate <epic-id>` to surface fronts (integration or
-     checkpoint bottlenecks).
-2. Ask the user for a concurrency cap (max agents for this wave). Mesh must not
-   assume a default.
-3. From the Ready set, rank candidates using the fixed heuristic order:
-   1) Priority first (bd priority).
-   2) Maximize unlocks: prefer high-fanout beads that unblock many dependents
-      (contract/infrastructure beads).
-   3) Prefer checkpoint/integration beads when they are Ready.
-   4) Manual pick always wins: present the recommendation, then ask the user to
-      confirm or override.
-4. Contention check: if two Ready beads touch the same files, serialize them or
-   explicitly define a lock order. Mention `bd merge-slot` as the conflict
-   primitive if the team uses it.
-5. Announce the wave + status summary using the template below.
-
-### Wave Status Summary
-
-```text
-Wave status
-- Ready: <ids>
-- Blocked: <id -> reason>
-- Active: <id -> agent>
-- Completed: <id -> PR link>
-- Recommended wave: <ids> (cap: <n>; heuristic: priority -> unlocks -> checkpoints)
-```
-
-## Entrypoints & Scope Contract
-
-Mesh is epic-first: it swarms an epic and its child DAG. A single bead can be
-auto-wrapped, but mesh never auto-beadifies.
-
-### Supported inputs (how to resolve the target)
-
-- Explicit epic ID: use it directly.
-  - `bd swarm validate <epic-id>`
-  - `bd list --parent <epic-id> --pretty`
-- Current bead: resolve from in-progress work and confirm with the user.
-  - `bd list --status in_progress --pretty`
-  - If exactly one is in progress, run `bd show <id>` and resolve its parent.
-  - If it has a parent epic, use the epic ID; otherwise use the bead ID
-    (auto-wrap is only for beads without an epic).
-  - If multiple are in progress, ask for the target.
-- List of bead IDs: require a shared epic and confirm the child list.
-  - `bd show <id>` for each bead to confirm a common parent epic.
-  - If no shared epic exists, stop and ask the user to create/assign one first.
-
-### Epic-first orchestration (default)
-
-- Always create the swarm from an epic.
-  - `bd swarm create <epic-id>`
-- If given a non-epic ID, `bd swarm create <bead-id>` will auto-wrap it into a
-  1-child epic.
-
-### No auto-beadify (hard constraint)
-
-- Mesh does not split a bead into children or infer dependencies.
-- It expects a pre-built DAG (epic + child issues + deps).
-- If the epic has only one child or no parallelism, stop and recommend using
-  `$gen-beads` to create child beads + dependencies before swarming.
-
-### Scope confirmation checklist (must complete before spawning)
-
-1. `bd show <epic-id>` to confirm the epic’s intent.
-2. `bd list --parent <epic-id> --pretty` to enumerate children.
-3. `bd swarm validate <epic-id>` to verify the DAG and parallelism.
-4. Ask the user to confirm: epic ID, child list, and expected parallelism.
-5. Then run `bd swarm create <epic-id>` (or `<bead-id>` for auto-wrap).
-
-## Agent Prompt Template
-
-```text
-Work bead <ID>. Use skill <work|imp|resolve> as appropriate.
-Context: <paste relevant bd show output here so the agent can work offline>.
-Do NOT run bd in this workspace; coordinator owns bead updates.
-Use the jujutsu skill for all VCS operations. Open a PR when done.
-Restate done-means + acceptance criteria. Keep diffs bead-scoped.
-If blocked, state why and what is needed.
-
-Final output block (required):
-PR: <url>
-Verify: <command>  # <pass/fail>
-Changed: <paths>
-Blockers: <none|details>
-```
-
-## Coordination Guardrails
-
-- Prefer one bead per agent to avoid overlapping diffs.
-- Do not start blocked beads; queue them behind their prerequisites.
-- Treat bead comments as the canonical progress log.
-- If two beads touch the same files, serialize them or explicitly define the
-  lock order.
-
-## Agent Lifecycle (Beads-native, coordinator-only)
+## 4) Agent lifecycle (beads-native, coordinator-only)
 
 Sub-agents do not run `bd` inside their jj workspaces. The coordinator owns all
 beads write operations and liveness tracking.
-
-### Runbook
 
 1. Create an ephemeral agent bead per spawned sub-agent run:
    ```bash
@@ -177,8 +136,36 @@ beads write operations and liveness tracking.
 4. Coordinator writes progress (sub-agents never call `bd`):
    - Per-bead comment with PR link + verification signal.
    - Epic-level swarm status comment aggregating PRs/blockers/next wave.
+5. Cleanup:
+   ```bash
+   bd slot clear <agent-id> hook
+   ```
 
-### Coordinator Comment Templates
+## 5) Coordination guardrails
+
+- Prefer one bead per agent to avoid overlapping diffs.
+- Do not start blocked beads; queue them behind prerequisites.
+- Treat bead comments as the canonical progress log.
+- If two beads touch the same files, serialize them or define a lock order.
+
+## Agent prompt template
+
+```text
+Work bead <ID>. Use skill <work|imp|resolve> as appropriate.
+Context: <paste relevant bd show output here so the agent can work offline>.
+Do NOT run bd in this workspace; coordinator owns bead updates.
+Use the jujutsu skill for all VCS operations. Open a PR when done.
+Restate done-means + acceptance criteria. Keep diffs bead-scoped.
+If blocked, state why and what is needed.
+
+Final output block (required):
+PR: <url>
+Verify: <command>  # <pass/fail>
+Changed: <paths>
+Blockers: <none|details>
+```
+
+## Coordinator comment templates
 
 Per-bead:
 ```text
@@ -197,20 +184,99 @@ Swarm status
 - Next wave: <bead ids>
 ```
 
-### Cleanup
+## Worked example (end-to-end)
 
-- Clear the hook slot when the agent finishes:
-  ```bash
-  bd slot clear <agent-id> hook
-  ```
-- Optionally close or delete ephemeral agent beads after the work is merged.
+Scenario: swarm epic `mesh-epic` with three children `mesh-1`, `mesh-2`,
+`mesh-3`, concurrency cap = 2.
 
-## Status Summary Format
-
+1) Select the epic and validate the DAG:
+```bash
+bd show mesh-epic
+bd list --parent mesh-epic --pretty
+bd swarm validate mesh-epic
+bd swarm create mesh-epic
+```
+Example output shape:
 ```text
-Wave 1: <IDs>
-In progress: <ID -> agent>
-Blocked: <ID -> reason>
-PRs: <ID -> link>
-Next wave: <IDs>
+Children: mesh-1, mesh-2, mesh-3
+Validation: OK (parallelism detected)
+Swarm: created
+```
+
+2) Build status + pick the wave (priority -> unlocks -> checkpoints -> manual):
+```bash
+bd swarm status mesh-epic
+```
+Example output shape:
+```text
+Ready: mesh-1, mesh-2
+Blocked: mesh-3 -> mesh-2
+Active: (none)
+Completed: (none)
+```
+
+Wave status (cap: 2):
+```text
+Wave status
+- Ready: mesh-1, mesh-2
+- Blocked: mesh-3 -> mesh-2
+- Active: (none)
+- Completed: (none)
+- Recommended wave: mesh-1, mesh-2 (cap: 2; heuristic: priority -> unlocks -> checkpoints -> manual)
+```
+
+3) Create ephemeral agent beads + hook slots:
+```bash
+bd create --type=agent --ephemeral --role-type polecat --agent-rig codex \
+  --labels agent,agent:mesh-1,role:polecat \
+  --title "mesh-1"
+bd slot set <agent-id-1> hook mesh-1
+
+bd create --type=agent --ephemeral --role-type polecat --agent-rig codex \
+  --labels agent,agent:mesh-2,role:polecat \
+  --title "mesh-2"
+bd slot set <agent-id-2> hook mesh-2
+```
+Example output shape:
+```text
+Created: agent-123
+Created: agent-124
+```
+
+4) Launch sub-agents from per-bead jj workspaces:
+```bash
+jj workspace add ../workspaces/dotfiles/mesh-1/
+cd ../workspaces/dotfiles/mesh-1/
+codex/skills/cx/scripts/cx-exec.sh "Work bead mesh-1. Use skill work. Context: <bd show mesh-1> ..."
+
+jj workspace add ../workspaces/dotfiles/mesh-2/
+cd ../workspaces/dotfiles/mesh-2/
+codex/skills/cx/scripts/cx-exec.sh "Work bead mesh-2. Use skill work. Context: <bd show mesh-2> ..."
+```
+
+5) Record PR + verification signals into beads:
+```bash
+bd comments add mesh-1 "$(cat <<'EOF'
+Checkpoint: implemented mesh-1 outcome
+- PR: https://example.com/pr/101
+- Verify: rg -n \"mesh\" codex/skills/mesh/SKILL.md  # pass
+- Notes: doc-only change
+EOF
+)"
+
+bd comments add mesh-epic "$(cat <<'EOF'
+Swarm status
+- Completed: mesh-1 -> https://example.com/pr/101
+- Active: mesh-2 -> agent-124
+- Blocked: mesh-3 -> mesh-2
+- Next wave: mesh-2
+- Verify: bd swarm validate mesh-epic  # pass
+EOF
+)"
+```
+
+6) Cleanup when agents finish:
+```bash
+bd slot clear agent-123 hook
+bd slot clear agent-124 hook
 ```
