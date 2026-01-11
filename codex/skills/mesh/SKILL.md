@@ -230,7 +230,7 @@ wave if they share any lock group label.
 
 Default lock groups for this repo (initial, conservative):
 - `mesh-lock:core-config` (Brewfile, gitconfig, gitignore, brew-aliases,
-  lazygit/, links.conf, README/AGENTS)
+  lazygit/, links.conf, README.md, AGENTS.md)
 - `mesh-lock:codex` (codex/)
 - `mesh-lock:editor` (nvim/)
 - `mesh-lock:shell` (fish/)
