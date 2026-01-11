@@ -110,6 +110,17 @@ For more details, see README.md and QUICKSTART.md.
 - Trigger: algebraic-structure cues (sum/product types, map/fmap/fold/reduce, compose, identity/associativity laws, monoid/semigroup hints, functor/monad/applicative talk, universal properties).
 - Playbook: map to the simplest fitting construction → translate into the repo's language → name the governing laws and their safety/duplication benefit → propose one quick law-based check.
 
+## Response Format
+
+- Echo: immediately before any question block that appears prior to Insights/Next Steps, include `Echo:` followed by the most recent user message, max two lines (truncate with `...`).
+
+Example:
+```
+Echo: Most recent user message goes here, truncated to two lines if needed...
+CLARIFICATION EXPERT: HUMAN INPUT REQUIRED
+1. ...
+```
+
 ## Tooling Standards
 
 ### GIT
