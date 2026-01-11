@@ -7,16 +7,66 @@ description: Orchestrate multiple Codex sub-agents via cx to work beads in paral
 
 ## Purpose
 Mesh orchestrates multiple Codex sub-agents to work an epic's bead DAG in
-parallel. The coordinator owns all `bd` writes; sub-agents never run `bd`.
+parallel. The coordinator owns all `bd` writes; sub-agents never run `bd`
+directly.
 
 ## Preconditions (must pass)
 
 1. Confirm a beads repo:
    `rg --files -g '.beads/**' --hidden --no-ignore`
 2. Coordinator-only `bd`:
-   - Sub-agents run in jj workspaces and **do not** run `bd`.
+   - Sub-agents run in jj workspaces and **do not** run `bd` directly.
+     Read-only access must go through `mesh-bd-ro` (see contract below).
    - The coordinator performs all bead updates, comments, and status changes.
 3. Agree on a concurrency cap (max agents per wave).
+
+## Sub-agent bd read-only wrapper (mesh-bd-ro) — Contract
+
+Sub-agents may only read beads via the wrapper. The wrapper always executes:
+
+`bd --readonly --sandbox <command...>`
+
+Allowlisted command paths (exact):
+- `show`
+- `list`
+- `ready`
+- `blocked`
+- `search`
+- `count`
+- `status`
+- `state`
+- `dep list`
+- `dep tree`
+- `dep cycles`
+- `mol show`
+- `mol current`
+- `mol progress`
+- `swarm status`
+- `swarm validate`
+- `swarm list`
+- `epic status`
+
+Rules:
+- Reject any other top-level command, alias, or subcommand.
+- Reject bare `dep`, `mol`, `swarm`, or `epic` without an allowlisted subcommand.
+- Global flag allowlist: `-h/--help`, `--json`, `-q/--quiet`, `-v/--verbose`.
+  Disallow all other global flags (e.g., `--actor`, `--db`, `--profile`,
+  `--no-*`, `--allow-stale`, `--lock-timeout`).
+- Command-specific flags are allowed only for allowlisted commands.
+- Positional arguments are limited to those required by the allowlisted command
+  (e.g., `show <id...>`, `search <query>`).
+
+Examples (allowed):
+- `mesh-bd-ro show bd-123 --thread`
+- `mesh-bd-ro list --status in_progress --pretty`
+- `mesh-bd-ro dep tree bd-123`
+- `mesh-bd-ro mol progress bd-mol-1`
+- `mesh-bd-ro swarm status bd-epic-1`
+
+Examples (rejected):
+- `mesh-bd-ro dep bd-123 --blocks bd-456`
+- `mesh-bd-ro comments add bd-123 "nope"`
+- `mesh-bd-ro update bd-123 --status in_progress`
 
 ## Formula contracts (mesh vNext)
 
@@ -203,13 +253,13 @@ codex/skills/cx/scripts/cx-exec.sh "..."
 Notes:
 - Use `-r <rev>` to pin the starting revision when needed (default is current).
 - The sub-agent prompt must include bead context (copied from `bd show`) and the
-  rule: **do not run `bd`**.
+  rule: **do not run `bd` directly; use `mesh-bd-ro` for read-only if needed**.
 - Sub-agents must use the `jujutsu` skill for all VCS operations.
 
 ## 4) Agent lifecycle (beads-native, coordinator-only)
 
-Sub-agents do not run `bd` inside their jj workspaces. The coordinator owns all
-beads write operations and liveness tracking.
+Sub-agents do not run `bd` directly inside their jj workspaces. The coordinator
+owns all beads write operations and liveness tracking.
 
 1. Create an ephemeral agent bead per spawned sub-agent run:
    ```bash
@@ -226,7 +276,7 @@ beads write operations and liveness tracking.
    bd agent state <agent-id> spawning|running|working|stuck|done
    bd agent heartbeat <agent-id>  # optional
    ```
-4. Coordinator writes progress (sub-agents never call `bd`):
+4. Coordinator writes progress (sub-agents never call `bd` directly):
    - Per-bead comment with PR link + verification signal.
    - Epic-level swarm status comment aggregating PRs/blockers/next wave.
 5. Cleanup:
@@ -246,7 +296,7 @@ beads write operations and liveness tracking.
 ```text
 Work bead <ID>. Use skill <work|imp|resolve> as appropriate.
 Context: <paste relevant bd show output here so the agent can work offline>.
-Do NOT run bd in this workspace; coordinator owns bead updates.
+Do NOT run bd directly in this workspace; use mesh-bd-ro for read-only if needed.
 Use the jujutsu skill for all VCS operations. Open a PR when done.
 Restate done-means + acceptance criteria. Keep diffs bead-scoped.
 If blocked, state why and what is needed.
