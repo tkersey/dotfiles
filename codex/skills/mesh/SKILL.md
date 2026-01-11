@@ -214,9 +214,31 @@ ordering with a human override.
    3) Prefer checkpoint/integration beads when Ready.
    4) Manual pick always wins (present the recommendation, then ask to confirm
       or override).
-4. Contention check: if two Ready beads touch the same files, serialize them or
-   explicitly define a lock order. Mention `bd merge-slot` if the team uses it.
+4. Contention check:
+   - Lock groups are label-based: `mesh-lock:<group>`.
+   - Never schedule two Ready beads together if their lock labels overlap.
+   - If lock labels are missing but file overlap is likely, serialize them or
+     explicitly define a lock order. Mention `bd merge-slot` if the team uses it.
 5. Announce the wave + status summary using the template below.
+
+### Lock groups (mesh-lock:<group>)
+
+Lock groups prevent unsafe parallel work by declaring coarse-grained
+contention domains. A bead may carry one or more `mesh-lock:<group>` labels
+(kebab-case). Scheduling rule: **do not** place two Ready beads in the same
+wave if they share any lock group label.
+
+Default lock groups for this repo (initial, conservative):
+- `mesh-lock:core-config` (Brewfile, gitconfig, gitignore, brew-aliases,
+  lazygit/, links.conf, README/AGENTS)
+- `mesh-lock:codex` (codex/)
+- `mesh-lock:editor` (nvim/)
+- `mesh-lock:shell` (fish/)
+- `mesh-lock:terminal` (ghostty/)
+- `mesh-lock:install` (install/, assets/)
+
+If a bead spans multiple domains, add multiple lock labels. If no default fits,
+define a new lock group and keep it narrow.
 
 ### Wave status summary
 
