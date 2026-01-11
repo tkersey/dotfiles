@@ -49,6 +49,68 @@ bd mol pour mol-mesh-run --var target_id=<id> --var target_kind=epic --var concu
 bd mol bond mol-mesh-arm <mesh-run-id> --ephemeral
 ```
 
+## Audit logging contract (bd audit record)
+
+Mesh audit entries are written to `.beads/interactions.jsonl` via `bd audit record`
+using **flags-only** (no `--stdin` until the schema is pinned). This contract is
+the minimal, repeatable pattern for provenance.
+
+**Kinds in use**
+- `llm_call`: prompts + completions
+- `tool_call`: orchestration tool events
+- `label`: applied via `bd audit label`
+
+**Always include** `--issue-id <bead-id>` to associate the event with the mesh
+run/step bead that caused it.
+
+### Command templates
+
+Spawn prompt (agent prompt captured at launch):
+```bash
+bd audit record --kind llm_call --issue-id <bead-id> --model <model> \
+  --prompt "$(cat <prompt-file>)"
+```
+
+Completion response (agent final block):
+```bash
+bd audit record --kind llm_call --issue-id <bead-id> --model <model> \
+  --response "$(cat <response-file>)"
+```
+
+Orchestration tool event (input/output encoded as JSON payload):
+```bash
+bd audit record --kind tool_call --issue-id <bead-id> --tool-name <tool> \
+  --exit-code <code> --error '<json-payload>'
+```
+
+`<json-payload>` is a JSON string (stored in `--error`, the only freeform field
+available for `tool_call`):
+```json
+{"ok":true,"input":{...},"output":{...}}
+```
+On failure:
+```json
+{"ok":false,"error":"<message>","input":{...},"output":null}
+```
+
+### Labeling guidance
+
+Use labels to mark human-reviewed or suspicious entries:
+```bash
+bd audit label <entry-id> --label <value> --reason "<why>"
+```
+To capture `<entry-id>`:
+```bash
+bd audit record --json ... | jq -r '.id'
+```
+Or, without assuming output format:
+```bash
+tail -n 1 .beads/interactions.jsonl | jq -r '.id'
+```
+Recommended labels:
+- `gold`: approved, reusable completion
+- `needs_review`: failed tool call or questionable output
+
 ## 1) Select the epic (scope contract)
 
 Mesh is epic-first: it swarms an epic and its child DAG. A single bead can be
