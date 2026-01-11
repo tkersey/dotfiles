@@ -52,6 +52,7 @@ Rules:
 - Global flag allowlist: `-h/--help`, `--json`, `-q/--quiet`, `-v/--verbose`.
   Disallow all other global flags (e.g., `--actor`, `--db`, `--profile`,
   `--no-*`, `--allow-stale`, `--lock-timeout`).
+- Command-specific flags are allowed only for allowlisted commands.
 - Positional arguments are limited to those required by the allowlisted command
   (e.g., `show <id...>`, `search <query>`).
 
