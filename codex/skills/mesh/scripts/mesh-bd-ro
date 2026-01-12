@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+source "${SCRIPT_DIR}/mesh-lib.sh"
+
+usage() {
+  cat <<'USAGE'
+Usage: mesh-bd-ro <command...> [--dry-run] [--json]
+
+Read-only wrapper for bd (stub scaffold).
+
+USAGE
+  mesh_common_flags
+}
+
+mesh_parse_common_flags "$@"
+
+if [[ "${MESH_HELP}" -eq 1 ]]; then
+  usage
+  exit 0
+fi
+
+if [[ "${#MESH_ARGS[@]}" -eq 0 ]]; then
+  usage >&2
+  exit 2
+fi
+
+mesh_emit "stub: mesh-bd-ro not implemented"
+exit 2
