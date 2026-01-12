@@ -112,7 +112,7 @@ For more details, see README.md and QUICKSTART.md.
 
 ## Response Format
 
-- Echo: include `Echo:` with the most recent user message (max two lines, truncate with `...`) in every response. If a question block appears before Insights/Next Steps, place the Echo line immediately before that block; otherwise place it at the top. This requirement applies even when using skills or templates.
+- Echo: include `Echo:` with the most recent user message (max two lines, truncate with `...`) in every response. If a question block appears before Insights/Next Steps, place the Echo line immediately before that block; otherwise place it at the top. This requirement applies even when using skills or templates. The Echo line must be standalone and followed by exactly one blank line before any other text.
 
 Example:
 ```

@@ -1,0 +1,308 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=mesh-lib.sh
+source "${SCRIPT_DIR}/mesh-lib.sh"
+
+usage() {
+  cat <<'USAGE'
+Usage: mesh-agent-pool [GLOBAL_FLAGS] <command> [args...]
+
+Manage durable mesh agent beads and hook slots.
+
+Commands:
+  ensure [--count N] [--prefix NAME-] [--start N] [--rig RIG] [--role-type ROLE] <name...>
+      Ensure agent beads exist for the provided names.
+      If --count is set and no names are provided, generate names (prefix + index).
+
+  id <name>
+      Print the agent bead id for a name.
+
+  acquire [--rig RIG] [--role-type ROLE] [--force] <name> <work-bead-id>
+      Ensure agent exists, set hook slot to work bead, mark working.
+      By default, refuses to override a non-empty hook (use --force to override).
+
+  release <name>
+      Clear hook slot and mark agent idle.
+
+Global flags:
+  -h, --help     Show help and exit
+  --dry-run      Print intended actions without executing
+  --json         Emit machine-readable JSON output
+USAGE
+}
+
+mesh_require_cmd bd
+mesh_require_cmd jq
+
+DEFAULT_RIG="${MESH_AGENT_RIG:-codex}"
+DEFAULT_ROLE="${MESH_AGENT_ROLE:-polecat}"
+DEFAULT_PREFIX="${MESH_AGENT_PREFIX:-mesh-}"
+DEFAULT_START="${MESH_AGENT_START:-1}"
+
+mesh_parse_common_flags "$@"
+
+if [[ ${MESH_HELP} -eq 1 ]]; then
+  usage
+  exit 0
+fi
+
+if [[ ${#MESH_ARGS[@]} -eq 0 ]]; then
+  usage >&2
+  exit 1
+fi
+
+set -- "${MESH_ARGS[@]}"
+cmd="$1"
+shift
+
+agent_id_for_name() {
+  local name="$1"
+  local json
+  json="$(bd list --label "agent:${name}" --all --json)"
+  local count
+  count="$(jq 'length' <<<"${json}")"
+  if [[ "${count}" -eq 0 ]]; then
+    return 1
+  fi
+  if [[ "${count}" -gt 1 ]]; then
+    mesh_die "mesh-agent-pool: multiple agents found for name: ${name}"
+  fi
+  jq -r '.[0].id' <<<"${json}"
+}
+
+extract_hook_from_json() {
+  local json="$1"
+  jq -r '.. | objects | select((.name? // "") == "hook") | (.target_id? // .target? // .value? // .bead_id? // .id? // .hook? // empty)' <<<"${json}" | head -n1 || true
+}
+
+agent_hook_for_id() {
+  local id="$1"
+  local json
+  local hook=""
+
+  if json="$(bd slot show "${id}" --json 2>/dev/null)"; then
+    hook="$(extract_hook_from_json "${json}")"
+    printf '%s' "${hook}"
+    return 0
+  fi
+
+  local text
+  if text="$(bd slot show "${id}" 2>/dev/null)"; then
+    hook="$(awk -F: '/^hook[[:space:]]*:/ {print $2}' <<<"${text}" | xargs || true)"
+    printf '%s' "${hook}"
+    return 0
+  fi
+
+  return 2
+}
+
+emit_agent() {
+  local action="$1"
+  local name="$2"
+  local id="$3"
+  if [[ ${MESH_JSON} -eq 1 ]]; then
+    if [[ -n "${id}" ]]; then
+      jq -n --arg action "${action}" --arg name "${name}" --arg id "${id}" \
+        '{ok:true,action:$action,agent_name:$name,agent_id:$id}'
+    else
+      jq -n --arg action "${action}" --arg name "${name}" \
+        '{ok:true,action:$action,agent_name:$name,agent_id:null}'
+    fi
+    return 0
+  fi
+  if [[ -n "${id}" ]]; then
+    echo "${action}: ${name} -> ${id}"
+  else
+    echo "${action}: ${name}"
+  fi
+}
+
+ensure_agent() {
+  local name="$1"
+  local rig="$2"
+  local role="$3"
+  local id=""
+
+  if id="$(agent_id_for_name "${name}")"; then
+    echo "${id}"
+    return 0
+  fi
+
+  local labels="agent,agent:${name},role:${role}"
+
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    mesh_emit "dry-run: bd create --type=agent --role-type ${role} --agent-rig ${rig} --labels ${labels} --title ${name}"
+    echo ""
+    return 0
+  fi
+
+  id="$(bd create --type=agent --role-type "${role}" --agent-rig "${rig}" \
+    --labels "${labels}" --title "${name}" --silent)"
+  bd --actor "agent:${name}" agent state "${id}" idle
+  echo "${id}"
+}
+
+case "${cmd}" in
+  ensure)
+    rig="${DEFAULT_RIG}"
+    role="${DEFAULT_ROLE}"
+    prefix="${DEFAULT_PREFIX}"
+    start="${DEFAULT_START}"
+    count=""
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --rig)
+          rig="$2"
+          shift 2
+          ;;
+        --role-type)
+          role="$2"
+          shift 2
+          ;;
+        --prefix)
+          prefix="$2"
+          shift 2
+          ;;
+        --start)
+          start="$2"
+          shift 2
+          ;;
+        --count)
+          count="$2"
+          shift 2
+          ;;
+        --)
+          shift
+          break
+          ;;
+        -* )
+          mesh_die "mesh-agent-pool ensure: unknown flag: $1"
+          ;;
+        *)
+          break
+          ;;
+      esac
+    done
+
+    names=()
+    if [[ -n "${count}" ]]; then
+      if [[ $# -gt 0 ]]; then
+        mesh_die "mesh-agent-pool ensure: cannot combine --count with explicit names"
+      fi
+      if ! [[ "${count}" =~ ^[0-9]+$ ]]; then
+        mesh_die "mesh-agent-pool ensure: --count must be an integer"
+      fi
+      if ! [[ "${start}" =~ ^[0-9]+$ ]]; then
+        mesh_die "mesh-agent-pool ensure: --start must be an integer"
+      fi
+      for ((i=start; i<start+count; i++)); do
+        names+=("${prefix}${i}")
+      done
+    else
+      names=("$@")
+    fi
+
+    if [[ ${#names[@]} -eq 0 ]]; then
+      mesh_die "mesh-agent-pool ensure: no agent names provided"
+    fi
+
+    for name in "${names[@]}"; do
+      id="$(ensure_agent "${name}" "${rig}" "${role}")"
+      emit_agent "ensure" "${name}" "${id}"
+    done
+    ;;
+
+  id)
+    if [[ $# -lt 1 ]]; then
+      mesh_die "mesh-agent-pool id: requires agent name"
+    fi
+    name="$1"
+    id="$(agent_id_for_name "${name}")" || mesh_die "mesh-agent-pool id: agent not found: ${name}"
+    if [[ ${MESH_JSON} -eq 1 ]]; then
+      jq -n --arg name "${name}" --arg id "${id}" '{ok:true,agent_name:$name,agent_id:$id}'
+    else
+      echo "${id}"
+    fi
+    ;;
+
+  acquire)
+    rig="${DEFAULT_RIG}"
+    role="${DEFAULT_ROLE}"
+    force=0
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --rig)
+          rig="$2"
+          shift 2
+          ;;
+        --role-type)
+          role="$2"
+          shift 2
+          ;;
+        --force)
+          force=1
+          shift
+          ;;
+        --)
+          shift
+          break
+          ;;
+        -* )
+          mesh_die "mesh-agent-pool acquire: unknown flag: $1"
+          ;;
+        *)
+          break
+          ;;
+      esac
+    done
+
+    if [[ $# -lt 2 ]]; then
+      mesh_die "mesh-agent-pool acquire: requires <name> <work-bead-id>"
+    fi
+
+    name="$1"
+    work_id="$2"
+    id="$(ensure_agent "${name}" "${rig}" "${role}")"
+
+    if [[ -z "${id}" && ${MESH_DRY_RUN} -ne 1 ]]; then
+      mesh_die "mesh-agent-pool acquire: failed to resolve agent id for ${name}"
+    fi
+
+    if [[ ${MESH_DRY_RUN} -ne 1 && ${force} -ne 1 ]]; then
+      hook="$(agent_hook_for_id "${id}")" || mesh_die "mesh-agent-pool acquire: failed to read hook slot for ${name}"
+      if [[ -n "${hook}" && "${hook}" != "${work_id}" ]]; then
+        mesh_die "mesh-agent-pool acquire: hook already set to ${hook} (use --force to override)"
+      fi
+    fi
+
+    target_id="${id:-agent:${name}}"
+    mesh_run bd --actor "agent:${name}" slot set "${target_id}" hook "${work_id}"
+    mesh_run bd --actor "agent:${name}" agent state "${target_id}" working
+    emit_agent "acquire" "${name}" "${id}"
+    ;;
+
+  release)
+    if [[ $# -lt 1 ]]; then
+      mesh_die "mesh-agent-pool release: requires <name>"
+    fi
+    name="$1"
+    id="$(agent_id_for_name "${name}")" || true
+
+    if [[ -z "${id}" && ${MESH_DRY_RUN} -ne 1 ]]; then
+      mesh_die "mesh-agent-pool release: agent not found: ${name}"
+    fi
+
+    target_id="${id:-agent:${name}}"
+    mesh_run bd --actor "agent:${name}" slot clear "${target_id}" hook
+    mesh_run bd --actor "agent:${name}" agent state "${target_id}" idle
+    emit_agent "release" "${name}" "${id}"
+    ;;
+
+  *)
+    mesh_die "mesh-agent-pool: unknown command: ${cmd}"
+    ;;
+esac
