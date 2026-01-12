@@ -283,9 +283,21 @@ Notes:
 Sub-agents do not run `bd` directly inside their jj workspaces. The coordinator
 owns all beads write operations and liveness tracking.
 
-1. Create an ephemeral agent bead per spawned sub-agent run:
+### Durable agent pool (contract)
+
+- Names: `mesh-1`, `mesh-2`, … (stable pool identities).
+- Required labels: `agent`, `agent:<name>`, `role:polecat`.
+- Lookup: `bd list --label agent:<name> --all` before creating a new pool agent.
+- State transitions: `bd agent state <agent-id> idle|working|stuck|done`.
+- Slot semantics: `bd slot set <agent-id> hook <bead-id>` is the single source of
+  “what am I doing?”; clear the hook when work completes.
+- Actor attribution: when writing on behalf of an agent, use
+  `bd --actor agent:<name>`.
+
+1. Create the durable agent bead if it does not exist (do not use `--ephemeral`
+   for pool agents):
    ```bash
-   bd create --type=agent --ephemeral --role-type polecat --agent-rig <rig> \
+   bd create --type=agent --role-type polecat --agent-rig <rig> \
      --labels agent,agent:<name>,role:polecat \
      --title "<name>"
    ```
@@ -295,7 +307,7 @@ owns all beads write operations and liveness tracking.
    ```
 3. Track liveness/state during execution:
    ```bash
-   bd agent state <agent-id> spawning|running|working|stuck|done
+   bd agent state <agent-id> idle|working|stuck|done
    bd agent heartbeat <agent-id>  # optional
    ```
 4. Coordinator writes progress (sub-agents never call `bd` directly):
@@ -390,14 +402,14 @@ Wave status
 - Recommended wave: mesh-1, mesh-2 (cap: 2; heuristic: priority -> unlocks -> checkpoints -> manual)
 ```
 
-3) Create ephemeral agent beads + hook slots:
+3) Ensure durable agent beads exist + hook slots:
 ```bash
-bd create --type=agent --ephemeral --role-type polecat --agent-rig codex \
+bd create --type=agent --role-type polecat --agent-rig codex \
   --labels agent,agent:mesh-1,role:polecat \
   --title "mesh-1"
 bd slot set <agent-id-1> hook mesh-1
 
-bd create --type=agent --ephemeral --role-type polecat --agent-rig codex \
+bd create --type=agent --role-type polecat --agent-rig codex \
   --labels agent,agent:mesh-2,role:polecat \
   --title "mesh-2"
 bd slot set <agent-id-2> hook mesh-2
