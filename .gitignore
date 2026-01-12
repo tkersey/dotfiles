@@ -7,3 +7,5 @@ lazy-lock.json
 **/.claude/settings.local.json
 
 codex/skills/.system/
+
+**/node_modules
