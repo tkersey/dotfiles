@@ -19,8 +19,9 @@ Commands:
   id <name>
       Print the agent bead id for a name.
 
-  acquire [--rig RIG] [--role-type ROLE] <name> <work-bead-id>
+  acquire [--rig RIG] [--role-type ROLE] [--force] <name> <work-bead-id>
       Ensure agent exists, set hook slot to work bead, mark working.
+      By default, refuses to override a non-empty hook (use --force to override).
 
   release <name>
       Clear hook slot and mark agent idle.
@@ -69,6 +70,32 @@ agent_id_for_name() {
     mesh_die "mesh-agent-pool: multiple agents found for name: ${name}"
   fi
   jq -r '.[0].id' <<<"${json}"
+}
+
+extract_hook_from_json() {
+  local json="$1"
+  jq -r '.. | objects | select((.name? // "") == "hook") | (.target_id? // .target? // .value? // .bead_id? // .id? // .hook? // empty)' <<<"${json}" | head -n1 || true
+}
+
+agent_hook_for_id() {
+  local id="$1"
+  local json
+  local hook=""
+
+  if json="$(bd slot show "${id}" --json 2>/dev/null)"; then
+    hook="$(extract_hook_from_json "${json}")"
+    printf '%s' "${hook}"
+    return 0
+  fi
+
+  local text
+  if text="$(bd slot show "${id}" 2>/dev/null)"; then
+    hook="$(awk -F: '/^hook[[:space:]]*:/ {print $2}' <<<"${text}" | xargs || true)"
+    printf '%s' "${hook}"
+    return 0
+  fi
+
+  return 2
 }
 
 emit_agent() {
@@ -204,6 +231,7 @@ case "${cmd}" in
   acquire)
     rig="${DEFAULT_RIG}"
     role="${DEFAULT_ROLE}"
+    force=0
 
     while [[ $# -gt 0 ]]; do
       case "$1" in
@@ -214,6 +242,10 @@ case "${cmd}" in
         --role-type)
           role="$2"
           shift 2
+          ;;
+        --force)
+          force=1
+          shift
           ;;
         --)
           shift
@@ -238,6 +270,13 @@ case "${cmd}" in
 
     if [[ -z "${id}" && ${MESH_DRY_RUN} -ne 1 ]]; then
       mesh_die "mesh-agent-pool acquire: failed to resolve agent id for ${name}"
+    fi
+
+    if [[ ${MESH_DRY_RUN} -ne 1 && ${force} -ne 1 ]]; then
+      hook="$(agent_hook_for_id "${id}")" || mesh_die "mesh-agent-pool acquire: failed to read hook slot for ${name}"
+      if [[ -n "${hook}" && "${hook}" != "${work_id}" ]]; then
+        mesh_die "mesh-agent-pool acquire: hook already set to ${hook} (use --force to override)"
+      fi
     fi
 
     target_id="${id:-agent:${name}}"
