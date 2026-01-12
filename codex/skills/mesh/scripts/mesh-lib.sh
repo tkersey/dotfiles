@@ -6,6 +6,10 @@ mesh_die() {
   exit 2
 }
 
+mesh_require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || mesh_die "missing required command: $1"
+}
+
 mesh_common_flags() {
   cat <<'USAGE'
 Common flags:
