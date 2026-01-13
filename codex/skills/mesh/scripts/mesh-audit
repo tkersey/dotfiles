@@ -1,0 +1,465 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=mesh-lib.sh
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/mesh-lib.sh"
+
+usage() {
+  cat <<'USAGE'
+Usage: mesh-audit [GLOBAL_FLAGS] <command> [args...]
+
+Record audit entries for mesh prompts, completions, and tool calls.
+
+Commands:
+  prompt --issue-id ID --model MODEL (--prompt TEXT | --prompt-file PATH)
+      Record an agent prompt (llm_call).
+
+  response --issue-id ID --model MODEL (--response TEXT | --response-file PATH)
+      Record an agent completion (llm_call).
+
+  tool --issue-id ID --tool-name NAME --exit-code CODE \
+       [--input JSON | --input-file PATH] \
+       [--output JSON | --output-file PATH] \
+       [--error TEXT | --error-file PATH]
+      Record a tool call event (tool_call). Payload is encoded as JSON in --error.
+
+  label --entry-id ID --label VALUE --reason TEXT
+      Apply a label to an existing audit entry.
+
+Global flags:
+  -h, --help     Show help and exit
+  --dry-run      Print intended actions without executing
+  --json         Emit machine-readable JSON output
+USAGE
+}
+
+mesh_require_cmd bd
+mesh_require_cmd jq
+
+mesh_parse_common_flags "$@"
+
+if [[ ${MESH_HELP} -eq 1 ]]; then
+  usage
+  exit 0
+fi
+
+if [[ ${#MESH_ARGS[@]} -eq 0 ]]; then
+  usage >&2
+  exit 1
+fi
+
+set -- "${MESH_ARGS[@]}"
+cmd="$1"
+shift
+
+usage_error() {
+  echo "error: $*" >&2
+  usage >&2
+  exit 2
+}
+
+require_value() {
+  local name="$1"
+  local value="$2"
+  if [[ -z "${value}" ]]; then
+    usage_error "mesh-audit: missing required ${name}"
+  fi
+}
+
+read_text_value() {
+  local inline="$1"
+  local file="$2"
+
+  if [[ -n "${inline}" && -n "${file}" ]]; then
+    usage_error "mesh-audit: cannot combine inline text and file input"
+  fi
+  if [[ -n "${inline}" ]]; then
+    printf '%s' "${inline}"
+    return 0
+  fi
+  if [[ -n "${file}" ]]; then
+    if [[ "${file}" == "-" ]]; then
+      cat
+      return 0
+    fi
+    if [[ ! -f "${file}" ]]; then
+      usage_error "mesh-audit: file not found: ${file}"
+    fi
+    cat "${file}"
+    return 0
+  fi
+  usage_error "mesh-audit: expected text or file input"
+}
+
+read_json_value() {
+  local inline="$1"
+  local file="$2"
+
+  if [[ -n "${inline}" && -n "${file}" ]]; then
+    usage_error "mesh-audit: cannot combine inline JSON and file input"
+  fi
+
+  local value=""
+  if [[ -n "${inline}" ]]; then
+    value="${inline}"
+  elif [[ -n "${file}" ]]; then
+    if [[ "${file}" == "-" ]]; then
+      value="$(cat)"
+    else
+      if [[ ! -f "${file}" ]]; then
+        usage_error "mesh-audit: file not found: ${file}"
+      fi
+      value="$(cat "${file}")"
+    fi
+  else
+    printf '%s' "null"
+    return 0
+  fi
+
+  if ! jq -e . >/dev/null 2>&1 <<<"${value}"; then
+    usage_error "mesh-audit: invalid JSON payload"
+  fi
+  printf '%s' "${value}"
+}
+
+mesh_cmd_string() {
+  local out=""
+  local arg
+  for arg in "$@"; do
+    out+="${arg} "
+  done
+  printf '%s' "${out% }"
+}
+
+emit_dry_run() {
+  local action="$1"
+  shift
+  local cmd_string
+  cmd_string="$(mesh_cmd_string "$@")"
+
+  if [[ ${MESH_JSON} -eq 1 ]]; then
+    jq -n --arg action "${action}" --arg command "${cmd_string}" '{ok:true,dry_run:true,action:$action,command:$command}'
+    return 0
+  fi
+
+  mesh_emit "dry-run: ${cmd_string}"
+}
+
+emit_record_json() {
+  local action="$1"
+  local record_json="$2"
+  local entry_id
+
+  entry_id="$(jq -r '.id // .entry_id // .entry.id // .record.id // .record.entry_id // .[0].id // .[0].entry_id // empty' <<<"${record_json}")"
+  if [[ -z "${entry_id}" || "${entry_id}" == "null" ]]; then
+    mesh_die "mesh-audit: failed to read audit entry id"
+  fi
+
+  jq -n --arg action "${action}" --arg entry_id "${entry_id}" --argjson record "${record_json}" \
+    '{ok:true,action:$action,entry_id:$entry_id,record:$record}'
+}
+
+run_record() {
+  local action="$1"
+  shift
+  local cmd=(bd audit record "$@")
+  local record_json
+
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    emit_dry_run "${action}" "${cmd[@]}"
+    return 0
+  fi
+
+  if [[ ${MESH_JSON} -eq 1 ]]; then
+    record_json="$(${cmd[@]} --json)"
+    emit_record_json "${action}" "${record_json}"
+    return 0
+  fi
+
+  "${cmd[@]}"
+}
+
+run_label() {
+  local entry_id="$1"
+  local label="$2"
+  local reason="$3"
+  local cmd=(bd audit label "${entry_id}" --label "${label}" --reason "${reason}")
+  local label_json
+
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    emit_dry_run "label" "${cmd[@]}"
+    return 0
+  fi
+
+  if [[ ${MESH_JSON} -eq 1 ]]; then
+    label_json="$(${cmd[@]} --json)"
+    jq -n --arg entry_id "${entry_id}" --argjson record "${label_json}" \
+      '{ok:true,action:"label",entry_id:$entry_id,record:$record}'
+    return 0
+  fi
+
+  "${cmd[@]}"
+}
+
+case "${cmd}" in
+  prompt)
+    issue_id=""
+    model=""
+    prompt_text=""
+    prompt_file=""
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --issue-id)
+          issue_id="$2"
+          shift 2
+          ;;
+        --model)
+          model="$2"
+          shift 2
+          ;;
+        --prompt)
+          prompt_text="$2"
+          shift 2
+          ;;
+        --prompt-file)
+          prompt_file="$2"
+          shift 2
+          ;;
+        -h|--help)
+          usage
+          exit 0
+          ;;
+        --)
+          shift
+          break
+          ;;
+        -* )
+          usage_error "mesh-audit prompt: unknown flag: $1"
+          ;;
+        *)
+          usage_error "mesh-audit prompt: unexpected argument: $1"
+          ;;
+      esac
+    done
+
+    if [[ $# -gt 0 ]]; then
+      usage_error "mesh-audit prompt: unexpected arguments: $*"
+    fi
+
+    require_value "--issue-id" "${issue_id}"
+    require_value "--model" "${model}"
+
+    prompt_value="$(read_text_value "${prompt_text}" "${prompt_file}")"
+
+    run_record "prompt" --kind llm_call --issue-id "${issue_id}" --model "${model}" --prompt "${prompt_value}"
+    ;;
+
+  response|completion)
+    issue_id=""
+    model=""
+    response_text=""
+    response_file=""
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --issue-id)
+          issue_id="$2"
+          shift 2
+          ;;
+        --model)
+          model="$2"
+          shift 2
+          ;;
+        --response)
+          response_text="$2"
+          shift 2
+          ;;
+        --response-file)
+          response_file="$2"
+          shift 2
+          ;;
+        -h|--help)
+          usage
+          exit 0
+          ;;
+        --)
+          shift
+          break
+          ;;
+        -* )
+          usage_error "mesh-audit response: unknown flag: $1"
+          ;;
+        *)
+          usage_error "mesh-audit response: unexpected argument: $1"
+          ;;
+      esac
+    done
+
+    if [[ $# -gt 0 ]]; then
+      usage_error "mesh-audit response: unexpected arguments: $*"
+    fi
+
+    require_value "--issue-id" "${issue_id}"
+    require_value "--model" "${model}"
+
+    response_value="$(read_text_value "${response_text}" "${response_file}")"
+
+    run_record "response" --kind llm_call --issue-id "${issue_id}" --model "${model}" --response "${response_value}"
+    ;;
+
+  tool)
+    issue_id=""
+    tool_name=""
+    exit_code=""
+    input_json=""
+    input_file=""
+    output_json=""
+    output_file=""
+    error_text=""
+    error_file=""
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --issue-id)
+          issue_id="$2"
+          shift 2
+          ;;
+        --tool-name)
+          tool_name="$2"
+          shift 2
+          ;;
+        --exit-code)
+          exit_code="$2"
+          shift 2
+          ;;
+        --input)
+          input_json="$2"
+          shift 2
+          ;;
+        --input-file)
+          input_file="$2"
+          shift 2
+          ;;
+        --output)
+          output_json="$2"
+          shift 2
+          ;;
+        --output-file)
+          output_file="$2"
+          shift 2
+          ;;
+        --error)
+          error_text="$2"
+          shift 2
+          ;;
+        --error-file)
+          error_file="$2"
+          shift 2
+          ;;
+        -h|--help)
+          usage
+          exit 0
+          ;;
+        --)
+          shift
+          break
+          ;;
+        -* )
+          usage_error "mesh-audit tool: unknown flag: $1"
+          ;;
+        *)
+          usage_error "mesh-audit tool: unexpected argument: $1"
+          ;;
+      esac
+    done
+
+    if [[ $# -gt 0 ]]; then
+      usage_error "mesh-audit tool: unexpected arguments: $*"
+    fi
+
+    require_value "--issue-id" "${issue_id}"
+    require_value "--tool-name" "${tool_name}"
+    require_value "--exit-code" "${exit_code}"
+
+    if ! [[ "${exit_code}" =~ ^-?[0-9]+$ ]]; then
+      usage_error "mesh-audit tool: --exit-code must be an integer"
+    fi
+
+    input_value="$(read_json_value "${input_json}" "${input_file}")"
+    output_value="$(read_json_value "${output_json}" "${output_file}")"
+    error_value=""
+    if [[ -n "${error_text}" || -n "${error_file}" ]]; then
+      error_value="$(read_text_value "${error_text}" "${error_file}")"
+    fi
+
+    ok=true
+    if [[ -n "${error_value}" || "${exit_code}" -ne 0 ]]; then
+      ok=false
+    fi
+    if [[ "${ok}" == "false" && -z "${error_value}" ]]; then
+      error_value="exit code ${exit_code}"
+    fi
+
+    if [[ "${ok}" == "true" ]]; then
+      payload="$(jq -c -n --argjson input "${input_value}" --argjson output "${output_value}" '{ok:true,input:$input,output:$output}')"
+    else
+      payload="$(jq -c -n --arg error "${error_value}" --argjson input "${input_value}" '{ok:false,error:$error,input:$input,output:null}')"
+    fi
+
+    run_record "tool" --kind tool_call --issue-id "${issue_id}" --tool-name "${tool_name}" --exit-code "${exit_code}" --error "${payload}"
+    ;;
+
+  label)
+    entry_id=""
+    label=""
+    reason=""
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --entry-id)
+          entry_id="$2"
+          shift 2
+          ;;
+        --label)
+          label="$2"
+          shift 2
+          ;;
+        --reason)
+          reason="$2"
+          shift 2
+          ;;
+        -h|--help)
+          usage
+          exit 0
+          ;;
+        --)
+          shift
+          break
+          ;;
+        -* )
+          usage_error "mesh-audit label: unknown flag: $1"
+          ;;
+        *)
+          usage_error "mesh-audit label: unexpected argument: $1"
+          ;;
+      esac
+    done
+
+    if [[ $# -gt 0 ]]; then
+      usage_error "mesh-audit label: unexpected arguments: $*"
+    fi
+
+    require_value "--entry-id" "${entry_id}"
+    require_value "--label" "${label}"
+    require_value "--reason" "${reason}"
+
+    run_label "${entry_id}" "${label}" "${reason}"
+    ;;
+
+  *)
+    usage_error "mesh-audit: unknown command: ${cmd}"
+    ;;
+esac
