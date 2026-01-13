@@ -31,7 +31,6 @@ Done when:
 
 ### 3) Audit the working tree (scope containment)
 - Audit early/often; keep bead changes surgical.
-- Ignore unrelated diffs; never stage/commit them for proof/PRs.
 
 ### 4) Do the work (how the work is accomplished)
 

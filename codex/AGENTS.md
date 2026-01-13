@@ -45,6 +45,10 @@ history/
 
 For more details, see README.md and QUICKSTART.md.
 
+## Working Tree Hygiene
+
+- Ignore unrelated diffs; never stage/commit them for proof/PRs.
+
 ## Initiatives Autopilot (bd-style)
 
 - Session hook: At the start of every turn, scan for initiative triggers; if multiple match, pick the most safety-critical/high-scope mode in this order: Unsoundness Detector → Clarification Expert → Invariant Ace → Prove It → Footgun Detector → TRACE → Complexity Mitigator → Abstraction Archaeologist → Creative Problem Solver → Universalist → Logophile. Announce the engaged mode once; if no mode is engaged, do not emit a "Mode:" line.
