@@ -1,0 +1,393 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=mesh-lib.sh
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/mesh-lib.sh"
+
+usage() {
+  cat <<'USAGE'
+Usage: mesh-run [GLOBAL_FLAGS] <target> [options]
+
+Orchestrate a mesh run for an epic or an existing mol-mesh-run molecule.
+
+Target forms:
+  <epic-id>         Epic bead id (e.g. gt-epic-123)
+  <mol-id>          mol-mesh-run molecule id
+
+Options:
+  --concurrency N        Max agents per wave (required for new runs)
+  --workspace-backend X  Override workspace backend (default: worktree)
+  --audit-level X        Override audit level (default: full)
+
+Global flags:
+  -h, --help     Show help and exit
+  --dry-run      Print intended bd commands without executing writes
+  --json         Emit machine-readable JSON output
+USAGE
+}
+
+mesh_require_cmd bd
+mesh_require_cmd jq
+
+mesh_parse_common_flags "$@"
+
+if [[ ${MESH_HELP} -eq 1 ]]; then
+  usage
+  exit 0
+fi
+
+if [[ ${#MESH_ARGS[@]} -eq 0 ]]; then
+  usage >&2
+  exit 1
+fi
+
+set -- "${MESH_ARGS[@]}"
+
+concurrency="${MESH_CONCURRENCY:-}"
+workspace_backend=""
+audit_level=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --concurrency)
+      concurrency="$2"
+      shift 2
+      ;;
+    --workspace-backend)
+      workspace_backend="$2"
+      shift 2
+      ;;
+    --audit-level)
+      audit_level="$2"
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      mesh_die "mesh-run: unknown flag: $1"
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [[ $# -lt 1 ]]; then
+  usage >&2
+  exit 1
+fi
+
+target="$1"
+shift
+
+if [[ $# -gt 0 ]]; then
+  mesh_die "mesh-run: unexpected arguments: $*"
+fi
+
+if [[ -n "${concurrency}" && ! "${concurrency}" =~ ^[0-9]+$ ]]; then
+  mesh_die "mesh-run: --concurrency must be an integer"
+fi
+
+declare -a DRY_RUN_COMMANDS=()
+
+mesh_cmd_string() {
+  local out=""
+  local arg
+  for arg in "$@"; do
+    out+="${arg} "
+  done
+  printf '%s' "${out% }"
+}
+
+record_cmd() {
+  DRY_RUN_COMMANDS+=("$(mesh_cmd_string "$@")")
+}
+
+run_read() {
+  record_cmd "$@"
+  "$@"
+}
+
+run_write() {
+  record_cmd "$@"
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    return 0
+  fi
+  "$@"
+}
+
+run_read_capture() {
+  local __var="$1"
+  shift
+  record_cmd "$@"
+  local output
+  if output="$("$@")"; then
+    printf -v "${__var}" '%s' "${output}"
+    return 0
+  fi
+  return $?
+}
+
+run_write_capture() {
+  local __var="$1"
+  shift
+  record_cmd "$@"
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    printf -v "${__var}" '%s' ""
+    return 0
+  fi
+  local output
+  if output="$("$@")"; then
+    printf -v "${__var}" '%s' "${output}"
+    return 0
+  fi
+  return $?
+}
+
+require_json_field() {
+  local value="$1"
+  local name="$2"
+  if [[ -z "${value}" || "${value}" == "null" ]]; then
+    mesh_die "mesh-run: missing ${name} in mol-mesh-run variables"
+  fi
+}
+
+target_kind=""
+target_id=""
+epic_id=""
+mesh_run_id=""
+
+mol_json=""
+is_mol=0
+if run_read_capture mol_json bd mol show "${target}" --json 2>/dev/null; then
+  formula="$(jq -r '.formula? // .mol?.formula? // .proto?.formula? // empty' <<<"${mol_json}")"
+  if [[ -n "${formula}" && "${formula}" != "mol-mesh-run" ]]; then
+    mesh_die "mesh-run: mol target is not mol-mesh-run (formula: ${formula})"
+  fi
+  if [[ "${formula}" == "mol-mesh-run" ]]; then
+    is_mol=1
+  fi
+fi
+
+if [[ ${is_mol} -eq 1 ]]; then
+  mesh_run_id="${target}"
+  target_id="$(jq -r '.vars.target_id? // .variables.target_id? // empty' <<<"${mol_json}")"
+  target_kind="$(jq -r '.vars.target_kind? // .variables.target_kind? // empty' <<<"${mol_json}")"
+  if [[ -z "${concurrency}" ]]; then
+    concurrency="$(jq -r '.vars.concurrency? // .variables.concurrency? // empty' <<<"${mol_json}")"
+  fi
+  if [[ -z "${workspace_backend}" ]]; then
+    workspace_backend="$(jq -r '.vars.workspace_backend? // .variables.workspace_backend? // empty' <<<"${mol_json}")"
+  fi
+  if [[ -z "${audit_level}" ]]; then
+    audit_level="$(jq -r '.vars.audit_level? // .variables.audit_level? // empty' <<<"${mol_json}")"
+  fi
+
+  require_json_field "${target_id}" "target_id"
+  require_json_field "${target_kind}" "target_kind"
+else
+  issue_json=""
+  run_read_capture issue_json bd show "${target}" --json
+  issue_type="$(jq -r '.[0].issue_type // empty' <<<"${issue_json}")"
+  if [[ "${issue_type}" != "epic" ]]; then
+    mesh_die "mesh-run: target must be an epic id or mol-mesh-run id"
+  fi
+  target_kind="epic"
+  target_id="${target}"
+
+  if [[ -z "${concurrency}" ]]; then
+    mesh_die "mesh-run: --concurrency is required for new runs"
+  fi
+
+  if [[ -z "${workspace_backend}" ]]; then
+    workspace_backend="worktree"
+  fi
+  if [[ -z "${audit_level}" ]]; then
+    audit_level="full"
+  fi
+
+  swarm_out=""
+  run_write_capture swarm_out bd swarm create "${target_id}" --json
+  : "${swarm_out}"
+
+  mol_args=(bd mol pour mol-mesh-run
+    --var "target_id=${target_id}"
+    --var "target_kind=${target_kind}"
+    --var "concurrency=${concurrency}")
+  if [[ -n "${workspace_backend}" ]]; then
+    mol_args+=(--var "workspace_backend=${workspace_backend}")
+  fi
+  if [[ -n "${audit_level}" ]]; then
+    mol_args+=(--var "audit_level=${audit_level}")
+  fi
+
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    run_write "${mol_args[@]}"
+  else
+    run_write_capture mesh_run_id "${mol_args[@]}"
+  fi
+fi
+
+if [[ -z "${concurrency}" ]]; then
+  mesh_die "mesh-run: missing concurrency (pass --concurrency or set in mol)"
+fi
+if ! [[ "${concurrency}" =~ ^[0-9]+$ ]] || [[ "${concurrency}" -lt 1 ]]; then
+  mesh_die "mesh-run: concurrency must be a positive integer"
+fi
+
+swarm_json=""
+run_read_capture swarm_json bd swarm status "${target_id}" --json
+epic_id="$(jq -r '.epic_id // empty' <<<"${swarm_json}")"
+require_json_field "${epic_id}" "epic_id"
+
+list_json=""
+run_read_capture list_json bd list --parent "${epic_id}" --json
+
+ready_ids=()
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  ready_ids+=("${line}")
+done < <(jq -r '.ready[].id' <<<"${swarm_json}")
+
+active_ids=()
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  active_ids+=("${line}")
+done < <(jq -r '.active[].id' <<<"${swarm_json}")
+
+completed_ids=()
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  completed_ids+=("${line}")
+done < <(jq -r '.completed[].id' <<<"${swarm_json}")
+
+blocked_ids=()
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  blocked_ids+=("${line}")
+done < <(jq -r '.blocked[].id' <<<"${swarm_json}")
+
+candidate_lines=()
+for id in "${ready_ids[@]}"; do
+  item="$(jq -r --arg id "${id}" '.[] | select(.id == $id) | [(.priority // 99), (.dependent_count // 0), .title, (.labels | join(","))] | @tsv' <<<"${list_json}")"
+  priority="99"
+  dependent="0"
+  title=""
+  labels=""
+  if [[ -n "${item}" ]]; then
+    IFS=$'\t' read -r priority dependent title labels <<<"${item}"
+  fi
+  checkpoint=0
+  if [[ "${title}" =~ [Cc]heckpoint ]] || [[ "${title}" =~ [Ii]ntegration ]]; then
+    checkpoint=1
+  fi
+  candidate_lines+=("${priority}\t${dependent}\t${checkpoint}\t${id}\t${labels}")
+done
+
+sorted_candidates=()
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  sorted_candidates+=("${line}")
+done < <(printf '%b\n' "${candidate_lines[@]}" | sort -t $'\t' -k1,1n -k2,2nr -k3,3nr -k4,4)
+
+used_groups=""
+selected_ids=()
+
+extract_lock_groups() {
+  local labels="$1"
+  local groups=""
+  local -a labels_arr=()
+  IFS=',' read -r -a labels_arr <<<"${labels}"
+  for label in "${labels_arr[@]}"; do
+    if [[ "${label}" == mesh-lock:* ]]; then
+      group="${label#mesh-lock:}"
+      if [[ -z "${groups}" ]]; then
+        groups="${group}"
+      else
+        groups="${groups} ${group}"
+      fi
+    fi
+  done
+  printf '%s\n' "${groups}"
+}
+
+for line in "${sorted_candidates[@]}"; do
+  IFS=$'\t' read -r _priority _dependent _checkpoint id labels <<<"${line}"
+  groups="$(extract_lock_groups "${labels}")"
+  conflict=0
+  for group in ${groups}; do
+    if [[ " ${used_groups} " == *" ${group} "* ]]; then
+      conflict=1
+      break
+    fi
+  done
+  if [[ ${conflict} -eq 1 ]]; then
+    continue
+  fi
+  selected_ids+=("${id}")
+  for group in ${groups}; do
+    if [[ " ${used_groups} " != *" ${group} "* ]]; then
+      if [[ -z "${used_groups}" ]]; then
+        used_groups="${group}"
+      else
+        used_groups="${used_groups} ${group}"
+      fi
+    fi
+  done
+  if [[ ${#selected_ids[@]} -ge ${concurrency} ]]; then
+    break
+  fi
+done
+
+if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+  for cmd in "${DRY_RUN_COMMANDS[@]}"; do
+    mesh_emit "dry-run: ${cmd}"
+  done
+  exit 0
+fi
+
+format_list() {
+  local arr=("$@")
+  if [[ ${#arr[@]} -eq 0 ]]; then
+    echo "(none)"
+    return
+  fi
+  printf '%s' "${arr[0]}"
+  local i
+  for ((i=1; i<${#arr[@]}; i++)); do
+    printf ', %s' "${arr[i]}"
+  done
+}
+
+if [[ ${MESH_JSON} -eq 1 ]]; then
+  jq -n \
+    --arg target_id "${target_id}" \
+    --arg target_kind "${target_kind}" \
+    --arg epic_id "${epic_id}" \
+    --arg mesh_run_id "${mesh_run_id}" \
+    --argjson concurrency "${concurrency}" \
+    --argjson ready "$(printf '%s\n' "${ready_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
+    --argjson active "$(printf '%s\n' "${active_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
+    --argjson blocked "$(printf '%s\n' "${blocked_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
+    --argjson completed "$(printf '%s\n' "${completed_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
+    --argjson wave "$(printf '%s\n' "${selected_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
+    '{ok:true,target_id:$target_id,target_kind:$target_kind,epic_id:$epic_id,mesh_run_id:$mesh_run_id,concurrency:$concurrency,ready:$ready,active:$active,blocked:$blocked,completed:$completed,recommended_wave:$wave}'
+  exit 0
+fi
+
+echo "mesh-run: target=${target_id} (kind: ${target_kind})"
+echo "mesh-run: concurrency=${concurrency}"
+if [[ -n "${mesh_run_id}" ]]; then
+  echo "mesh-run: mol=${mesh_run_id}"
+fi
+echo ""
+echo "Wave status"
+echo "- Ready: $(format_list "${ready_ids[@]}")"
+echo "- Blocked: $(format_list "${blocked_ids[@]}")"
+echo "- Active: $(format_list "${active_ids[@]}")"
+echo "- Completed: $(format_list "${completed_ids[@]}")"
+echo "- Recommended wave: $(format_list "${selected_ids[@]}")"
