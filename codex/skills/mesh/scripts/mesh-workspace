@@ -76,6 +76,16 @@ normalize_root() {
   printf '%s' "${root}"
 }
 
+mesh_validate_branch() {
+  local name="$1"
+  if [[ -z "${name}" ]]; then
+    mesh_die "mesh-workspace: empty branch name"
+  fi
+  if ! git check-ref-format --branch "${name}" >/dev/null 2>&1; then
+    mesh_die "mesh-workspace: invalid branch name: ${name}"
+  fi
+}
+
 case "${cmd}" in
   create)
     backend="${DEFAULT_BACKEND}"
@@ -140,6 +150,7 @@ case "${cmd}" in
     if [[ -z "${branch}" ]]; then
       branch="${slug}"
     fi
+    mesh_validate_branch "${branch}"
 
     parent_dir="$(dirname "${path}")"
     (
