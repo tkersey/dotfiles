@@ -152,7 +152,7 @@ emit_record_json() {
   local record_json="$2"
   local entry_id
 
-  entry_id="$(jq -r '.id // .entry_id // empty' <<<"${record_json}")"
+  entry_id="$(jq -r '.id // .entry_id // .entry.id // .record.id // .record.entry_id // .[0].id // .[0].entry_id // empty' <<<"${record_json}")"
   if [[ -z "${entry_id}" || "${entry_id}" == "null" ]]; then
     mesh_die "mesh-audit: failed to read audit entry id"
   fi
