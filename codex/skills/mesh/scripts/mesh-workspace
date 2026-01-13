@@ -59,6 +59,9 @@ mesh_workspace_slug() {
   local raw="$1"
   raw="${raw##*/}"
   raw="$(printf '%s' "${raw}" | sed -E 's/^[.]+//; s/[^A-Za-z0-9._-]+/-/g; s/\.{2,}/-/g; s/[.]+$//; s/^-+//; s/-+$//')"
+  if [[ "${raw}" == *.lock ]]; then
+    raw="${raw%.lock}-lock"
+  fi
   if [[ -z "${raw}" ]]; then
     mesh_die "mesh-workspace: invalid bead id: $1"
   fi
