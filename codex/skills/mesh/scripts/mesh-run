@@ -18,13 +18,13 @@ Target forms:
 
 Options:
   --concurrency N        Max agents per wave (required for new runs)
-  --workspace-backend X  Override workspace backend (default: worktree)
-  --audit-level X        Override audit level (default: full)
+  --workspace-backend X  Override workspace backend (allowed: worktree)
+  --audit-level X        Override audit level (allowed: full|minimal|none)
 
 Global flags:
   -h, --help     Show help and exit
   --dry-run      Print intended bd commands without executing writes
-  --json         Emit machine-readable JSON output
+  --json         Emit machine-readable JSON output (single object)
 USAGE
 }
 
@@ -38,58 +38,71 @@ if [[ ${MESH_HELP} -eq 1 ]]; then
   exit 0
 fi
 
-if [[ ${#MESH_ARGS[@]} -eq 0 ]]; then
-  usage >&2
-  exit 1
-fi
-
-set -- "${MESH_ARGS[@]}"
-
 concurrency="${MESH_CONCURRENCY:-}"
 workspace_backend=""
 audit_level=""
 
-while [[ $# -gt 0 ]]; do
-  case "$1" in
+usage_error() {
+  echo "error: $*" >&2
+  usage >&2
+  exit 2
+}
+
+if [[ ${#MESH_ARGS[@]} -eq 0 ]]; then
+  usage_error "mesh-run: missing target"
+fi
+
+targets=()
+idx=0
+while [[ ${idx} -lt ${#MESH_ARGS[@]} ]]; do
+  arg="${MESH_ARGS[${idx}]}"
+  case "${arg}" in
     --concurrency)
-      concurrency="$2"
-      shift 2
+      if [[ $((idx + 1)) -ge ${#MESH_ARGS[@]} ]]; then
+        usage_error "mesh-run: --concurrency requires a value"
+      fi
+      concurrency="${MESH_ARGS[$((idx + 1))]}"
+      idx=$((idx + 2))
       ;;
     --workspace-backend)
-      workspace_backend="$2"
-      shift 2
+      if [[ $((idx + 1)) -ge ${#MESH_ARGS[@]} ]]; then
+        usage_error "mesh-run: --workspace-backend requires a value"
+      fi
+      workspace_backend="${MESH_ARGS[$((idx + 1))]}"
+      idx=$((idx + 2))
       ;;
     --audit-level)
-      audit_level="$2"
-      shift 2
+      if [[ $((idx + 1)) -ge ${#MESH_ARGS[@]} ]]; then
+        usage_error "mesh-run: --audit-level requires a value"
+      fi
+      audit_level="${MESH_ARGS[$((idx + 1))]}"
+      idx=$((idx + 2))
       ;;
     --)
-      shift
-      break
+      idx=$((idx + 1))
+      while [[ ${idx} -lt ${#MESH_ARGS[@]} ]]; do
+        targets+=("${MESH_ARGS[${idx}]}")
+        idx=$((idx + 1))
+      done
       ;;
     -*)
-      mesh_die "mesh-run: unknown flag: $1"
+      usage_error "mesh-run: unknown flag: ${arg}"
       ;;
     *)
-      break
+      targets+=("${arg}")
+      idx=$((idx + 1))
       ;;
   esac
 done
 
-if [[ $# -lt 1 ]]; then
-  usage >&2
-  exit 1
+if [[ ${#targets[@]} -ne 1 ]]; then
+  usage_error "mesh-run: expected exactly one target (got ${#targets[@]})"
 fi
 
-target="$1"
-shift
-
-if [[ $# -gt 0 ]]; then
-  mesh_die "mesh-run: unexpected arguments: $*"
-fi
+target="${targets[0]}"
 
 if [[ -n "${concurrency}" && ! "${concurrency}" =~ ^[0-9]+$ ]]; then
-  mesh_die "mesh-run: --concurrency must be an integer"
+  usage_error "mesh-run: --concurrency must be an integer"
 fi
 
 declare -a DRY_RUN_COMMANDS=()
@@ -236,7 +249,19 @@ if [[ -z "${concurrency}" ]]; then
   mesh_die "mesh-run: missing concurrency (pass --concurrency or set in mol)"
 fi
 if ! [[ "${concurrency}" =~ ^[0-9]+$ ]] || [[ "${concurrency}" -lt 1 ]]; then
-  mesh_die "mesh-run: concurrency must be a positive integer"
+  usage_error "mesh-run: concurrency must be a positive integer"
+fi
+if [[ -n "${workspace_backend}" && "${workspace_backend}" != "worktree" ]]; then
+  usage_error "mesh-run: --workspace-backend must be 'worktree'"
+fi
+if [[ -n "${audit_level}" ]]; then
+  case "${audit_level}" in
+    full|minimal|none)
+      ;;
+    *)
+      usage_error "mesh-run: --audit-level must be one of: full|minimal|none"
+      ;;
+  esac
 fi
 
 swarm_json=""
@@ -343,13 +368,6 @@ for line in "${sorted_candidates[@]}"; do
   fi
 done
 
-if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
-  for cmd in "${DRY_RUN_COMMANDS[@]}"; do
-    mesh_emit "dry-run: ${cmd}"
-  done
-  exit 0
-fi
-
 format_list() {
   local arr=("$@")
   if [[ ${#arr[@]} -eq 0 ]]; then
@@ -364,18 +382,32 @@ format_list() {
 }
 
 if [[ ${MESH_JSON} -eq 1 ]]; then
+  commands_json="$(printf '%s\n' "${DRY_RUN_COMMANDS[@]}" | jq -R -s -c 'split("\n")[:-1]')"
+  dry_run_json="false"
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    dry_run_json="true"
+  fi
   jq -n \
     --arg target_id "${target_id}" \
     --arg target_kind "${target_kind}" \
     --arg epic_id "${epic_id}" \
     --arg mesh_run_id "${mesh_run_id}" \
     --argjson concurrency "${concurrency}" \
+    --argjson dry_run "${dry_run_json}" \
+    --argjson commands "${commands_json}" \
     --argjson ready "$(printf '%s\n' "${ready_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
     --argjson active "$(printf '%s\n' "${active_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
     --argjson blocked "$(printf '%s\n' "${blocked_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
     --argjson completed "$(printf '%s\n' "${completed_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
     --argjson wave "$(printf '%s\n' "${selected_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
-    '{ok:true,target_id:$target_id,target_kind:$target_kind,epic_id:$epic_id,mesh_run_id:$mesh_run_id,concurrency:$concurrency,ready:$ready,active:$active,blocked:$blocked,completed:$completed,recommended_wave:$wave}'
+    '{ok:true,dry_run:$dry_run,commands:$commands,target_id:$target_id,target_kind:$target_kind,epic_id:$epic_id,mesh_run_id:$mesh_run_id,concurrency:$concurrency,ready:$ready,active:$active,blocked:$blocked,completed:$completed,recommended_wave:$wave}'
+  exit 0
+fi
+
+if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+  for cmd in "${DRY_RUN_COMMANDS[@]}"; do
+    mesh_emit "dry-run: ${cmd}"
+  done
   exit 0
 fi
 
