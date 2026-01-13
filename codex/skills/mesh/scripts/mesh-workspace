@@ -1,0 +1,226 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=mesh-lib.sh
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/mesh-lib.sh"
+
+usage() {
+  cat <<'USAGE'
+Usage: mesh-workspace [GLOBAL_FLAGS] <command> [args...]
+
+Create/remove mesh workspaces using bd worktree (default backend).
+
+Commands:
+  create <bead-id> [--backend worktree] [--root PATH] [--path PATH] [--branch NAME]
+  remove <bead-id> [--backend worktree] [--root PATH] [--path PATH] [--force]
+
+Defaults:
+  backend: worktree
+  root: ../workspaces/<repo> (relative to repo root)
+  path: <root>/<bead-slug>
+  branch: <bead-slug>
+
+Bead slug:
+  bead id with leading '.' stripped and unsafe chars replaced with '-'.
+USAGE
+  mesh_common_flags
+}
+
+mesh_require_cmd bd
+mesh_require_cmd git
+
+mesh_parse_common_flags "$@"
+
+if [[ ${MESH_HELP} -eq 1 ]]; then
+  usage
+  exit 0
+fi
+
+if [[ ${#MESH_ARGS[@]} -eq 0 ]]; then
+  usage >&2
+  exit 1
+fi
+
+set -- "${MESH_ARGS[@]}"
+cmd="$1"
+shift
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -z "${REPO_ROOT}" ]]; then
+  mesh_die "mesh-workspace: not inside a git repository"
+fi
+REPO_NAME="$(basename "${REPO_ROOT}")"
+DEFAULT_BACKEND="${MESH_WORKSPACE_BACKEND:-worktree}"
+DEFAULT_ROOT="${MESH_WORKSPACE_ROOT:-../workspaces/${REPO_NAME}}"
+
+mesh_workspace_slug() {
+  local raw="$1"
+  raw="${raw##*/}"
+  raw="$(printf '%s' "${raw}" | sed -E 's/^[.]+//; s/[^A-Za-z0-9._-]+/-/g; s/\.{2,}/-/g; s/[.]+$//; s/^-+//; s/-+$//')"
+  if [[ -z "${raw}" ]]; then
+    mesh_die "mesh-workspace: invalid bead id: $1"
+  fi
+  printf '%s' "${raw}"
+}
+
+normalize_root() {
+  local root="$1"
+  if [[ "${root}" != "/" ]]; then
+    root="${root%/}"
+  fi
+  printf '%s' "${root}"
+}
+
+case "${cmd}" in
+  create)
+    backend="${DEFAULT_BACKEND}"
+    root="${DEFAULT_ROOT}"
+    path=""
+    branch=""
+    bead_id=""
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --backend)
+          backend="$2"
+          shift 2
+          ;;
+        --root)
+          root="$2"
+          shift 2
+          ;;
+        --path)
+          path="$2"
+          shift 2
+          ;;
+        --branch)
+          branch="$2"
+          shift 2
+          ;;
+        -h|--help)
+          usage
+          exit 0
+          ;;
+        --)
+          shift
+          break
+          ;;
+        -* )
+          mesh_die "mesh-workspace create: unknown flag: $1"
+          ;;
+        *)
+          bead_id="$1"
+          shift
+          break
+          ;;
+      esac
+    done
+
+    if [[ -z "${bead_id}" ]]; then
+      mesh_die "mesh-workspace create: requires <bead-id>"
+    fi
+    if [[ $# -gt 0 ]]; then
+      mesh_die "mesh-workspace create: unexpected arguments: $*"
+    fi
+    if [[ "${backend}" != "worktree" ]]; then
+      mesh_die "mesh-workspace: unsupported backend: ${backend}"
+    fi
+
+    root="$(normalize_root "${root}")"
+    slug="$(mesh_workspace_slug "${bead_id}")"
+
+    if [[ -z "${path}" ]]; then
+      path="${root}/${slug}"
+    fi
+    if [[ -z "${branch}" ]]; then
+      branch="${slug}"
+    fi
+
+    parent_dir="$(dirname "${path}")"
+    (
+      cd "${REPO_ROOT}"
+      mesh_run mkdir -p "${parent_dir}"
+      mesh_run bd worktree create "${path}" --branch "${branch}"
+    )
+
+    mesh_emit "workspace created: ${path} (branch: ${branch})"
+    ;;
+  remove)
+    backend="${DEFAULT_BACKEND}"
+    root="${DEFAULT_ROOT}"
+    path=""
+    force=0
+    bead_id=""
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --backend)
+          backend="$2"
+          shift 2
+          ;;
+        --root)
+          root="$2"
+          shift 2
+          ;;
+        --path)
+          path="$2"
+          shift 2
+          ;;
+        --force)
+          force=1
+          shift
+          ;;
+        -h|--help)
+          usage
+          exit 0
+          ;;
+        --)
+          shift
+          break
+          ;;
+        -* )
+          mesh_die "mesh-workspace remove: unknown flag: $1"
+          ;;
+        *)
+          bead_id="$1"
+          shift
+          break
+          ;;
+      esac
+    done
+
+    if [[ -z "${bead_id}" ]]; then
+      mesh_die "mesh-workspace remove: requires <bead-id>"
+    fi
+    if [[ $# -gt 0 ]]; then
+      mesh_die "mesh-workspace remove: unexpected arguments: $*"
+    fi
+    if [[ "${backend}" != "worktree" ]]; then
+      mesh_die "mesh-workspace: unsupported backend: ${backend}"
+    fi
+
+    root="$(normalize_root "${root}")"
+    slug="$(mesh_workspace_slug "${bead_id}")"
+
+    if [[ -z "${path}" ]]; then
+      path="${root}/${slug}"
+    fi
+
+    remove_cmd=(bd worktree remove "${path}")
+    if [[ ${force} -eq 1 ]]; then
+      remove_cmd+=(--force)
+    fi
+
+    (
+      cd "${REPO_ROOT}"
+      mesh_run "${remove_cmd[@]}"
+    )
+
+    mesh_emit "workspace removed: ${path}"
+    ;;
+  *)
+    mesh_die "mesh-workspace: unknown command: ${cmd}"
+    ;;
+esac
