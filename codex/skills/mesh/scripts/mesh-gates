@@ -1,0 +1,171 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=mesh-lib.sh
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/mesh-lib.sh"
+
+usage() {
+  cat <<'USAGE'
+Usage: mesh-gates [GLOBAL_FLAGS] <command> [args...]
+
+Wrapper for bd gate discover/check.
+
+Commands:
+  discover [args...]        Run bd gate discover
+  check [args...]           Run bd gate check
+
+Config:
+  MESH_GATE_ESCALATE=1      Default to --escalate on check
+  MESH_GATES_ESCALATE=1     Alias for MESH_GATE_ESCALATE
+
+Notes:
+  - Use --no-escalate to disable the configured default.
+  - Global --dry-run maps to bd gate --dry-run.
+
+Global flags:
+  -h, --help     Show help and exit
+  --dry-run      Preview without applying changes
+  --json         Emit machine-readable JSON output
+USAGE
+}
+
+mesh_require_cmd bd
+
+mesh_parse_common_flags "$@"
+
+if [[ ${MESH_HELP} -eq 1 ]]; then
+  usage
+  exit 0
+fi
+
+if [[ ${#MESH_ARGS[@]} -eq 0 ]]; then
+  usage >&2
+  exit 1
+fi
+
+set -- "${MESH_ARGS[@]}"
+cmd="$1"
+shift
+
+usage_error() {
+  echo "error: $*" >&2
+  usage >&2
+  exit 2
+}
+
+mesh_bool() {
+  case "${1:-}" in
+    1|true|TRUE|yes|YES|on|ON)
+      echo 1
+      ;;
+    0|false|FALSE|no|NO|off|OFF)
+      echo 0
+      ;;
+    *)
+      echo ""
+      ;;
+  esac
+}
+
+has_dry_run_flag() {
+  local arg
+  for arg in "$@"; do
+    case "${arg}" in
+      --dry-run|-n)
+        return 0
+        ;;
+    esac
+  done
+  return 1
+}
+
+has_json_flag() {
+  local arg
+  for arg in "$@"; do
+    case "${arg}" in
+      --json)
+        return 0
+        ;;
+    esac
+  done
+  return 1
+}
+
+run_gate() {
+  local subcmd="$1"
+  shift
+  local -a args=("$@")
+
+  if [[ ${MESH_DRY_RUN} -eq 1 ]] && ! has_dry_run_flag "${args[@]}"; then
+    args+=("--dry-run")
+  fi
+
+  if [[ ${MESH_JSON} -eq 1 ]] && ! has_json_flag "${args[@]}"; then
+    args+=("--json")
+  fi
+
+  exec bd gate "${subcmd}" "${args[@]}"
+}
+
+case "${cmd}" in
+  discover)
+    if [[ $# -eq 0 ]]; then
+      run_gate discover
+    else
+      run_gate discover "$@"
+    fi
+    ;;
+  check)
+    explicit_escalate=""
+    default_escalate=""
+    raw_default="${MESH_GATE_ESCALATE:-${MESH_GATES_ESCALATE:-}}"
+    if [[ -n "${raw_default}" ]]; then
+      default_escalate="$(mesh_bool "${raw_default}")"
+      if [[ -z "${default_escalate}" ]]; then
+        usage_error "mesh-gates: invalid MESH_GATE_ESCALATE value: ${raw_default}"
+      fi
+    fi
+
+    check_args=()
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --escalate|-e)
+          if [[ "${explicit_escalate}" == "0" ]]; then
+            usage_error "mesh-gates check: --escalate conflicts with --no-escalate"
+          fi
+          explicit_escalate=1
+          shift
+          ;;
+        --no-escalate)
+          if [[ "${explicit_escalate}" == "1" ]]; then
+            usage_error "mesh-gates check: --no-escalate conflicts with --escalate"
+          fi
+          explicit_escalate=0
+          shift
+          ;;
+        --)
+          shift
+          check_args+=("$@")
+          break
+          ;;
+        *)
+          check_args+=("$1")
+          shift
+          ;;
+      esac
+    done
+
+    if [[ "${explicit_escalate}" == "1" ]]; then
+      check_args+=("--escalate")
+    elif [[ "${explicit_escalate}" == "" && "${default_escalate}" == "1" ]]; then
+      check_args+=("--escalate")
+    fi
+
+    run_gate check "${check_args[@]}"
+    ;;
+  *)
+    usage_error "mesh-gates: unknown command: ${cmd}"
+    ;;
+esac
