@@ -123,16 +123,25 @@ case "${cmd}" in
     raw_default="${MESH_GATE_ESCALATE:-${MESH_GATES_ESCALATE:-}}"
     if [[ -n "${raw_default}" ]]; then
       default_escalate="$(mesh_bool "${raw_default}")"
+      if [[ -z "${default_escalate}" ]]; then
+        usage_error "mesh-gates: invalid MESH_GATE_ESCALATE value: ${raw_default}"
+      fi
     fi
 
     check_args=()
     while [[ $# -gt 0 ]]; do
       case "$1" in
         --escalate|-e)
+          if [[ "${explicit_escalate}" == "0" ]]; then
+            usage_error "mesh-gates check: --escalate conflicts with --no-escalate"
+          fi
           explicit_escalate=1
           shift
           ;;
         --no-escalate)
+          if [[ "${explicit_escalate}" == "1" ]]; then
+            usage_error "mesh-gates check: --no-escalate conflicts with --escalate"
+          fi
           explicit_escalate=0
           shift
           ;;
