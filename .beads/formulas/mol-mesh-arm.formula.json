@@ -1,6 +1,9 @@
 {
   "formula": "mol-mesh-arm",
-  "vars": {},
+  "vars": {
+    "agent": {},
+    "bead": {}
+  },
   "steps": [
     {
       "id": "arm",

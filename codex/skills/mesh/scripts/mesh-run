@@ -219,6 +219,42 @@ mesh_repo_root() {
   printf '%s' "${root}"
 }
 
+mesh_formula_source_dir() {
+  local source_root
+  source_root="$(cd "${SCRIPT_DIR}/../../../../" && pwd)"
+  printf '%s/.beads/formulas' "${source_root}"
+}
+
+mesh_seed_formula() {
+  local repo_root="$1"
+  local source_dir="$2"
+  local name="$3"
+  local source="${source_dir}/${name}.formula.json"
+  local target_dir="${repo_root}/.beads/formulas"
+  local target="${target_dir}/${name}.formula.json"
+
+  if [[ ! -f "${source}" ]]; then
+    mesh_die "mesh-run: missing formula template: ${source}"
+  fi
+
+  if [[ -f "${target}" ]] && cmp -s "${source}" "${target}"; then
+    return 0
+  fi
+
+  run_write mkdir -p "${target_dir}"
+  run_write cp -f "${source}" "${target}"
+}
+
+mesh_seed_formulas() {
+  local repo_root
+  repo_root="$(mesh_repo_root)"
+  local source_dir
+  source_dir="$(mesh_formula_source_dir)"
+
+  mesh_seed_formula "${repo_root}" "${source_dir}" "mol-mesh-run"
+  mesh_seed_formula "${repo_root}" "${source_dir}" "mol-mesh-arm"
+}
+
 mesh_workspace_slug() {
   local raw="$1"
   raw="${raw##*/}"
@@ -289,6 +325,8 @@ mesh_audit_prompt() {
     --model "${model}" \
     --prompt "${prompt_text}"
 }
+
+mesh_seed_formulas
 
 target_kind=""
 target_id=""
