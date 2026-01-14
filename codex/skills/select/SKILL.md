@@ -1,16 +1,18 @@
 ---
 name: select
-description: "Explicit-only: pick the next `bd ready` bead via risk-first heuristics; verify dependency/readiness, add missing deps, then mark in progress and comment."
+description: "Explicit-only: pick the next `bd ready` bead via risk-first heuristics; verify dependency/readiness, add missing deps, then mark `in_progress` (work bead + epic if applicable) and comment."
 ---
 
 # Select
 
 ## Intent
 Choose the next bead by risk, hardness, and blast radius; gate on codebase readiness and dependencies before marking `in_progress`; leave a short rationale comment.
+Epics are context: only mark an `epic` `in_progress` when you also mark a concrete child bead `in_progress`.
 
 ## Selection rubric
 - Feature-first: if any ready items are `feature`, evaluate all ready features (`bd show`).
 - Type order (fallback): `task` > `bug` > `epic` > `chore`.
+- Epic rule: only mark an `epic` `in_progress` when you also mark a child bead `in_progress`.
 - Priority: P0 > P1 > P2 > P3 > P4.
 - Risk: migrations, auth/security, infra, data loss/consistency, breaking API/CLI, perf regressions, ambiguous acceptance.
 - Hardness: vague scope, multiple subsystems, unknown deps, heavy verification.
@@ -52,10 +54,14 @@ Selected first: contract bead in Backend API; unlocks 2 blocked items; lower ris
      - Link: `bd dep add <candidate-id> <dep-id> -t blocks`
    - Re-run `bd ready` and restart selection if you added any deps.
 7. Pick the highest-scored ready bead after the readiness gate passes.
-8. Mark it in progress: `bd update <id> --status in_progress`.
-9. Comment rationale: `bd comments add <id> "Selected first: <short rationale>"`.
+8. If the pick is an `epic`, resolve it to a concrete work bead:
+   - Inspect the epic (`bd show <epic-id>`) and pick a ready child `task`/`bug`/`chore` to work on.
+   - If no child bead is ready, create/unblock one and restart selection (only set the epic `in_progress` alongside a started child bead).
+9. Mark the concrete work bead `in_progress`: `bd update <work-id> --status in_progress`.
+10. If `bd show <work-id>` lists a parent epic, mark it `in_progress` too: `bd update <epic-id> --status in_progress`.
+11. Comment rationale: `bd comments add <work-id> "Selected first: <short rationale>"`.
 
 ## Output
-- Print: `Selected <id>: <rationale>`.
+- Print: `Selected <work-id>: <rationale>` (include `epic <epic-id>` if applicable; select a concrete work bead).
 - If `bd ready` is empty, report "No ready work" and stop.
 - If deps were added, print: `Blocked <id> on <dep-ids>; re-run selection`.
