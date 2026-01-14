@@ -21,6 +21,13 @@ Options:
   --workspace-backend X  Override workspace backend (allowed: worktree)
   --audit-level X        Override audit level (allowed: full|minimal|none)
 
+Config:
+  MESH_AGENT_MODEL       Audit model label for agent prompts (default: gpt-5.2-codex)
+  MESH_AGENT_PREFIX      Agent name prefix (default: mesh-)
+  MESH_AGENT_START       Agent name start index (default: 1)
+  MESH_WORKSPACE_ROOT    Workspace root (default: ../workspaces/<repo>)
+  MESH_CX_EXEC           Override cx-exec.sh path
+
 Global flags:
   -h, --help     Show help and exit
   --dry-run      Print intended bd commands without executing writes
@@ -30,6 +37,7 @@ USAGE
 
 mesh_require_cmd bd
 mesh_require_cmd jq
+mesh_require_cmd git
 
 mesh_parse_common_flags "$@"
 
@@ -41,6 +49,17 @@ fi
 concurrency="${MESH_CONCURRENCY:-}"
 workspace_backend=""
 audit_level=""
+agent_model="${MESH_AGENT_MODEL:-gpt-5.2-codex}"
+agent_prefix="${MESH_AGENT_PREFIX:-mesh-}"
+agent_start="${MESH_AGENT_START:-1}"
+
+mesh_workspace_script="${SCRIPT_DIR}/mesh-workspace"
+mesh_audit_script="${SCRIPT_DIR}/mesh-audit"
+mesh_gates_script="${SCRIPT_DIR}/mesh-gates"
+mesh_merge_slot_script="${SCRIPT_DIR}/mesh-merge-slot"
+mesh_agent_pool_script="${SCRIPT_DIR}/mesh-agent-pool"
+mesh_bd_ro_hint="codex/skills/mesh/scripts/mesh-bd-ro"
+cx_exec_script="${MESH_CX_EXEC:-${SCRIPT_DIR}/../../cx/scripts/cx-exec.sh}"
 
 usage_error() {
   echo "error: $*" >&2
@@ -133,6 +152,28 @@ run_write() {
   "$@"
 }
 
+run_write_status() {
+  record_cmd "$@"
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    return 0
+  fi
+  set +e
+  "$@"
+  local status=$?
+  set -e
+  return "${status}"
+}
+
+run_write_in_dir() {
+  local dir="$1"
+  shift
+  record_cmd bash -lc "cd \"${dir}\" && $(mesh_cmd_string "$@")"
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    return 0
+  fi
+  (cd "${dir}" && "$@")
+}
+
 run_read_capture() {
   local __var="$1"
   shift
@@ -169,10 +210,97 @@ require_json_field() {
   fi
 }
 
+mesh_repo_root() {
+  local root
+  root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -z "${root}" ]]; then
+    mesh_die "mesh-run: not inside a git repository"
+  fi
+  printf '%s' "${root}"
+}
+
+mesh_workspace_slug() {
+  local raw="$1"
+  raw="${raw##*/}"
+  raw="$(printf '%s' "${raw}" | sed -E 's/^[.]+//; s/[^A-Za-z0-9._-]+/-/g; s/\.{2,}/-/g; s/[.]+$//; s/^-+//; s/-+$//')"
+  if [[ "${raw}" == *.lock ]]; then
+    raw="${raw%.lock}-lock"
+  fi
+  if [[ -z "${raw}" ]]; then
+    mesh_die "mesh-run: invalid bead id: $1"
+  fi
+  printf '%s' "${raw}"
+}
+
+mesh_workspace_path() {
+  local bead_id="$1"
+  local root="${MESH_WORKSPACE_ROOT:-}"
+  if [[ -z "${root}" ]]; then
+    local repo_root
+    repo_root="$(mesh_repo_root)"
+    local repo_name
+    repo_name="$(basename "${repo_root}")"
+    root="${repo_root%/}/../workspaces/${repo_name}"
+  fi
+  root="${root%/}"
+  local slug
+  slug="$(mesh_workspace_slug "${bead_id}")"
+  printf '%s/%s' "${root}" "${slug}"
+}
+
+mesh_audit_tool() {
+  local tool_name="$1"
+  local input_json="$2"
+  local output_json="$3"
+  local exit_code="${4:-0}"
+
+  if [[ "${audit_level}" == "none" ]]; then
+    return 0
+  fi
+
+  local issue_id="${mesh_run_id:-${target_id}}"
+  if [[ -z "${issue_id}" ]]; then
+    return 0
+  fi
+
+  run_write "${mesh_audit_script}" tool \
+    --issue-id "${issue_id}" \
+    --tool-name "${tool_name}" \
+    --exit-code "${exit_code}" \
+    --input "${input_json}" \
+    --output "${output_json}"
+}
+
+mesh_audit_prompt() {
+  local issue_id="$1"
+  local model="$2"
+  local prompt_text="$3"
+
+  if [[ "${audit_level}" != "full" ]]; then
+    return 0
+  fi
+
+  if [[ -z "${issue_id}" ]]; then
+    return 0
+  fi
+
+  run_write "${mesh_audit_script}" prompt \
+    --issue-id "${issue_id}" \
+    --model "${model}" \
+    --prompt "${prompt_text}"
+}
+
 target_kind=""
 target_id=""
 epic_id=""
 mesh_run_id=""
+ready_ids=()
+active_ids=()
+completed_ids=()
+blocked_ids=()
+candidate_lines=()
+sorted_candidates=()
+selected_ids=()
 
 mol_json=""
 is_mol=0
@@ -264,6 +392,9 @@ if [[ -n "${audit_level}" ]]; then
   esac
 fi
 
+run_write "${mesh_gates_script}" discover
+run_write "${mesh_gates_script}" check
+
 swarm_json=""
 run_read_capture swarm_json bd swarm status "${target_id}" --json
 epic_id="$(jq -r '.epic_id // empty' <<<"${swarm_json}")"
@@ -297,7 +428,7 @@ while IFS= read -r line; do
 done < <(jq -r '.blocked[].id' <<<"${swarm_json}")
 
 candidate_lines=()
-for id in "${ready_ids[@]}"; do
+for id in "${ready_ids[@]+"${ready_ids[@]}"}"; do
   item="$(jq -r --arg id "${id}" '.[] | select(.id == $id) | [(.priority // 99), (.dependent_count // 0), .title, (.labels | join(","))] | @tsv' <<<"${list_json}")"
   priority="99"
   dependent="0"
@@ -317,17 +448,14 @@ sorted_candidates=()
 while IFS= read -r line; do
   [[ -z "${line}" ]] && continue
   sorted_candidates+=("${line}")
-done < <(printf '%b\n' "${candidate_lines[@]}" | sort -t $'\t' -k1,1n -k2,2nr -k3,3nr -k4,4)
-
-used_groups=""
-selected_ids=()
+done < <(printf '%b\n' "${candidate_lines[@]+"${candidate_lines[@]}"}" | sort -t $'\t' -k1,1n -k2,2nr -k3,3nr -k4,4)
 
 extract_lock_groups() {
   local labels="$1"
   local groups=""
   local -a labels_arr=()
   IFS=',' read -r -a labels_arr <<<"${labels}"
-  for label in "${labels_arr[@]}"; do
+  for label in "${labels_arr[@]+"${labels_arr[@]}"}"; do
     if [[ "${label}" == mesh-lock:* ]]; then
       group="${label#mesh-lock:}"
       if [[ -z "${groups}" ]]; then
@@ -340,33 +468,75 @@ extract_lock_groups() {
   printf '%s\n' "${groups}"
 }
 
-for line in "${sorted_candidates[@]}"; do
-  IFS=$'\t' read -r _priority _dependent _checkpoint id labels <<<"${line}"
-  groups="$(extract_lock_groups "${labels}")"
-  conflict=0
-  for group in ${groups}; do
-    if [[ " ${used_groups} " == *" ${group} "* ]]; then
-      conflict=1
+select_wave() {
+  local allow_checkpoints="$1"
+  local used_groups=""
+  local -a selected=()
+
+  for line in "${sorted_candidates[@]+"${sorted_candidates[@]}"}"; do
+    IFS=$'\t' read -r _priority _dependent _checkpoint id labels <<<"${line}"
+    if [[ "${allow_checkpoints}" -eq 0 && "${_checkpoint}" -eq 1 ]]; then
+      continue
+    fi
+    groups="$(extract_lock_groups "${labels}")"
+    conflict=0
+    for group in ${groups}; do
+      if [[ " ${used_groups} " == *" ${group} "* ]]; then
+        conflict=1
+        break
+      fi
+    done
+    if [[ ${conflict} -eq 1 ]]; then
+      continue
+    fi
+    selected+=("${id}")
+    for group in ${groups}; do
+      if [[ " ${used_groups} " != *" ${group} "* ]]; then
+        if [[ -z "${used_groups}" ]]; then
+          used_groups="${group}"
+        else
+          used_groups="${used_groups} ${group}"
+        fi
+      fi
+    done
+    if [[ ${#selected[@]} -ge ${concurrency} ]]; then
       break
     fi
   done
-  if [[ ${conflict} -eq 1 ]]; then
-    continue
-  fi
-  selected_ids+=("${id}")
-  for group in ${groups}; do
-    if [[ " ${used_groups} " != *" ${group} "* ]]; then
-      if [[ -z "${used_groups}" ]]; then
-        used_groups="${group}"
-      else
-        used_groups="${used_groups} ${group}"
+
+  printf '%s\n' "${selected[@]+"${selected[@]}"}"
+}
+
+is_checkpoint_id() {
+  local needle="$1"
+  local line
+  for line in "${candidate_lines[@]+"${candidate_lines[@]}"}"; do
+    IFS=$'\t' read -r _priority _dependent _checkpoint id _labels <<<"${line}"
+    if [[ "${id}" == "${needle}" ]]; then
+      if [[ "${_checkpoint}" -eq 1 ]]; then
+        return 0
       fi
+      return 1
     fi
   done
-  if [[ ${#selected_ids[@]} -ge ${concurrency} ]]; then
-    break
-  fi
-done
+  return 1
+}
+
+wave_contains_checkpoint() {
+  local id
+  for id in "$@"; do
+    if is_checkpoint_id "${id}"; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+selected_ids=()
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  selected_ids+=("${line}")
+done < <(select_wave 1)
 
 format_list() {
   local arr=("$@")
@@ -381,8 +551,103 @@ format_list() {
   done
 }
 
+json_array() {
+  if [[ $# -eq 0 ]]; then
+    printf '[]'
+    return 0
+  fi
+  printf '%s\n' "$@" | jq -R -s -c 'split("\n")[:-1]'
+}
+
+merge_slot_note=""
+merge_slot_state="not-needed"
+
+if wave_contains_checkpoint "${selected_ids[@]+"${selected_ids[@]}"}"; then
+  merge_slot_state="required"
+  if ! run_write_status "${mesh_merge_slot_script}" acquire; then
+    merge_slot_state="busy"
+    fallback_ids=()
+    while IFS= read -r line; do
+      [[ -z "${line}" ]] && continue
+      fallback_ids+=("${line}")
+    done < <(select_wave 0)
+
+    if [[ ${#fallback_ids[@]} -gt 0 ]]; then
+      selected_ids=("${fallback_ids[@]+"${fallback_ids[@]}"}")
+      merge_slot_note="merge slot busy; checkpoint wave deferred"
+    else
+      selected_ids=()
+      merge_slot_note="merge slot busy; no non-checkpoint work ready"
+    fi
+  else
+    merge_slot_state="acquired"
+    run_write "${mesh_merge_slot_script}" release
+  fi
+fi
+
+build_prompt() {
+  local bead_id="$1"
+  local bead_context="$2"
+
+  cat <<EOF
+Work bead ${bead_id}. Use skill work.
+Context:
+${bead_context}
+Do NOT run bd directly in this workspace; use ${mesh_bd_ro_hint} for read-only if needed.
+Use the jujutsu skill for all VCS operations. Open a PR when done.
+Restate done-means + acceptance criteria. Keep diffs bead-scoped.
+If blocked, state why and what is needed.
+
+Final output block (required):
+PR: <url>
+Verify: <command>  # <pass/fail>
+Changed: <paths>
+Blockers: <none|details>
+EOF
+}
+
+dispatch_wave() {
+  local -a wave_ids=("$@")
+  if [[ ${#wave_ids[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  if [[ ! -x "${cx_exec_script}" ]]; then
+    mesh_die "mesh-run: cx exec script not found: ${cx_exec_script}"
+  fi
+
+  if ! [[ "${agent_start}" =~ ^[0-9]+$ ]]; then
+    usage_error "mesh-run: MESH_AGENT_START must be an integer"
+  fi
+
+  run_write "${mesh_agent_pool_script}" ensure --count "${#wave_ids[@]}" --prefix "${agent_prefix}" --start "${agent_start}"
+
+  local idx=0
+  local id
+  for id in "${wave_ids[@]+"${wave_ids[@]}"}"; do
+    local agent_name="${agent_prefix}$((agent_start + idx))"
+    local slug
+    slug="$(mesh_workspace_slug "${id}")"
+    local workspace_path
+    workspace_path="$(mesh_workspace_path "${id}")"
+
+    run_write "${mesh_agent_pool_script}" acquire "${agent_name}" "${id}"
+    run_write "${mesh_workspace_script}" create "${id}" --backend "${workspace_backend}" --path "${workspace_path}" --branch "${slug}"
+
+    local bead_context=""
+    run_read_capture bead_context bd show "${id}"
+    local prompt
+    prompt="$(build_prompt "${id}" "${bead_context}")"
+
+    mesh_audit_prompt "${id}" "${agent_model}" "${prompt}"
+    run_write_in_dir "${workspace_path}" "${cx_exec_script}" "${prompt}"
+
+    idx=$((idx + 1))
+  done
+}
+
 if [[ ${MESH_JSON} -eq 1 ]]; then
-  commands_json="$(printf '%s\n' "${DRY_RUN_COMMANDS[@]}" | jq -R -s -c 'split("\n")[:-1]')"
+  commands_json="$(json_array "${DRY_RUN_COMMANDS[@]+"${DRY_RUN_COMMANDS[@]}"}")"
   dry_run_json="false"
   if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
     dry_run_json="true"
@@ -395,17 +660,42 @@ if [[ ${MESH_JSON} -eq 1 ]]; then
     --argjson concurrency "${concurrency}" \
     --argjson dry_run "${dry_run_json}" \
     --argjson commands "${commands_json}" \
-    --argjson ready "$(printf '%s\n' "${ready_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
-    --argjson active "$(printf '%s\n' "${active_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
-    --argjson blocked "$(printf '%s\n' "${blocked_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
-    --argjson completed "$(printf '%s\n' "${completed_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
-    --argjson wave "$(printf '%s\n' "${selected_ids[@]}" | jq -R -s -c 'split("\n")[:-1]')" \
+    --argjson ready "$(json_array "${ready_ids[@]+"${ready_ids[@]}"}")" \
+    --argjson active "$(json_array "${active_ids[@]+"${active_ids[@]}"}")" \
+    --argjson blocked "$(json_array "${blocked_ids[@]+"${blocked_ids[@]}"}")" \
+    --argjson completed "$(json_array "${completed_ids[@]+"${completed_ids[@]}"}")" \
+    --argjson wave "$(json_array "${selected_ids[@]+"${selected_ids[@]}"}")" \
     '{ok:true,dry_run:$dry_run,commands:$commands,target_id:$target_id,target_kind:$target_kind,epic_id:$epic_id,mesh_run_id:$mesh_run_id,concurrency:$concurrency,ready:$ready,active:$active,blocked:$blocked,completed:$completed,recommended_wave:$wave}'
   exit 0
 fi
 
+ready_json="$(json_array "${ready_ids[@]+"${ready_ids[@]}"}")"
+active_json="$(json_array "${active_ids[@]+"${active_ids[@]}"}")"
+blocked_json="$(json_array "${blocked_ids[@]+"${blocked_ids[@]}"}")"
+completed_json="$(json_array "${completed_ids[@]+"${completed_ids[@]}"}")"
+selected_json="$(json_array "${selected_ids[@]+"${selected_ids[@]}"}")"
+
+wave_input="$(jq -c -n \
+  --arg target_id "${target_id}" \
+  --arg epic_id "${epic_id}" \
+  --argjson concurrency "${concurrency}" \
+  --argjson ready "${ready_json}" \
+  --argjson active "${active_json}" \
+  --argjson blocked "${blocked_json}" \
+  --argjson completed "${completed_json}" \
+  '{target_id:$target_id,epic_id:$epic_id,concurrency:$concurrency,ready:$ready,active:$active,blocked:$blocked,completed:$completed}')"
+
+wave_output="$(jq -c -n \
+  --argjson wave "${selected_json}" \
+  --arg merge_slot_state "${merge_slot_state}" \
+  --arg merge_slot_note "${merge_slot_note}" \
+  '{recommended_wave:$wave,merge_slot_state:$merge_slot_state,merge_slot_note:$merge_slot_note}')"
+
+mesh_audit_tool "mesh-run.wave" "${wave_input}" "${wave_output}"
+dispatch_wave "${selected_ids[@]+"${selected_ids[@]}"}"
+
 if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
-  for cmd in "${DRY_RUN_COMMANDS[@]}"; do
+  for cmd in "${DRY_RUN_COMMANDS[@]+"${DRY_RUN_COMMANDS[@]}"}"; do
     mesh_emit "dry-run: ${cmd}"
   done
   exit 0
@@ -418,8 +708,12 @@ if [[ -n "${mesh_run_id}" ]]; then
 fi
 echo ""
 echo "Wave status"
-echo "- Ready: $(format_list "${ready_ids[@]}")"
-echo "- Blocked: $(format_list "${blocked_ids[@]}")"
-echo "- Active: $(format_list "${active_ids[@]}")"
-echo "- Completed: $(format_list "${completed_ids[@]}")"
-echo "- Recommended wave: $(format_list "${selected_ids[@]}")"
+echo "- Ready: $(format_list "${ready_ids[@]+"${ready_ids[@]}"}")"
+echo "- Blocked: $(format_list "${blocked_ids[@]+"${blocked_ids[@]}"}")"
+echo "- Active: $(format_list "${active_ids[@]+"${active_ids[@]}"}")"
+echo "- Completed: $(format_list "${completed_ids[@]+"${completed_ids[@]}"}")"
+echo "- Recommended wave: $(format_list "${selected_ids[@]+"${selected_ids[@]}"}")"
+echo "- Merge slot: ${merge_slot_state}"
+if [[ -n "${merge_slot_note}" ]]; then
+  echo "- Note: ${merge_slot_note}"
+fi
