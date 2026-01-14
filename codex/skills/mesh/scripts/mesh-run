@@ -25,6 +25,7 @@ Config:
   MESH_AGENT_MODEL       Audit model label for agent prompts (default: gpt-5.2-codex)
   MESH_AGENT_PREFIX      Agent name prefix (default: mesh-)
   MESH_AGENT_START       Agent name start index (default: 1)
+  MESH_STALE_HOOK_TTL_SECONDS  Clear agent hooks if idle beyond TTL (default: 3600)
   MESH_WORKSPACE_ROOT    Workspace root (default: ../workspaces/<repo>)
   MESH_CX_EXEC           Override cx-exec.sh path
 
@@ -52,6 +53,7 @@ audit_level=""
 agent_model="${MESH_AGENT_MODEL:-gpt-5.2-codex}"
 agent_prefix="${MESH_AGENT_PREFIX:-mesh-}"
 agent_start="${MESH_AGENT_START:-1}"
+stale_hook_ttl_seconds="${MESH_STALE_HOOK_TTL_SECONDS:-3600}"
 
 mesh_workspace_script="${SCRIPT_DIR}/mesh-workspace"
 mesh_audit_script="${SCRIPT_DIR}/mesh-audit"
@@ -172,6 +174,88 @@ run_write_in_dir() {
     return 0
   fi
   (cd "${dir}" && "$@")
+}
+
+mesh_epoch_from_iso() {
+  local ts="$1"
+  local clean
+  clean="$(printf '%s' "${ts}" | sed -E 's/\.[0-9]+//; s/([+-][0-9]{2}):([0-9]{2})/\1\2/')"
+  if date -u -j -f "%Y-%m-%dT%H:%M:%S%z" "${clean}" +%s 2>/dev/null; then
+    return 0
+  fi
+  if date -u -d "${ts}" +%s 2>/dev/null; then
+    return 0
+  fi
+  return 1
+}
+
+mesh_agent_process_running() {
+  local token="$1"
+  if command -v pgrep >/dev/null 2>&1; then
+    if pgrep -f "codex.*${token}" >/dev/null 2>&1; then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+mesh_cleanup_stale_hooks() {
+  local ttl="$1"
+  if [[ -z "${ttl}" ]]; then
+    return 0
+  fi
+  if ! [[ "${ttl}" =~ ^[0-9]+$ ]]; then
+    usage_error "mesh-run: MESH_STALE_HOOK_TTL_SECONDS must be an integer"
+  fi
+  if [[ "${ttl}" -le 0 ]]; then
+    return 0
+  fi
+
+  local now
+  now="$(date -u +%s)"
+  local idx=0
+  while [[ ${idx} -lt ${concurrency} ]]; do
+    local agent_name="${agent_prefix}$((agent_start + idx))"
+    local agent_id=""
+    if ! agent_id="$("${mesh_agent_pool_script}" id "${agent_name}" 2>/dev/null)"; then
+      idx=$((idx + 1))
+      continue
+    fi
+    local agent_json=""
+    if ! agent_json="$(bd show "${agent_id}" --json 2>/dev/null)"; then
+      idx=$((idx + 1))
+      continue
+    fi
+    local hook_bead=""
+    hook_bead="$(jq -r '.[0].hook_bead // empty' <<<"${agent_json}")"
+    if [[ -z "${hook_bead}" || "${hook_bead}" == "null" ]]; then
+      idx=$((idx + 1))
+      continue
+    fi
+    local last_activity=""
+    last_activity="$(jq -r '.[0].last_activity // empty' <<<"${agent_json}")"
+    if [[ -z "${last_activity}" || "${last_activity}" == "null" ]]; then
+      idx=$((idx + 1))
+      continue
+    fi
+    local last_epoch=""
+    if ! last_epoch="$(mesh_epoch_from_iso "${last_activity}")"; then
+      idx=$((idx + 1))
+      continue
+    fi
+    local age=$((now - last_epoch))
+    if [[ "${age}" -lt "${ttl}" ]]; then
+      idx=$((idx + 1))
+      continue
+    fi
+    if mesh_agent_process_running "${hook_bead}"; then
+      idx=$((idx + 1))
+      continue
+    fi
+
+    run_write "${mesh_agent_pool_script}" release "${agent_name}"
+    idx=$((idx + 1))
+  done
 }
 
 run_read_capture() {
@@ -327,6 +411,7 @@ mesh_audit_prompt() {
 }
 
 mesh_seed_formulas
+run_write bd sync --import-only
 
 target_kind=""
 target_id=""
@@ -416,6 +501,9 @@ if [[ -z "${concurrency}" ]]; then
 fi
 if ! [[ "${concurrency}" =~ ^[0-9]+$ ]] || [[ "${concurrency}" -lt 1 ]]; then
   usage_error "mesh-run: concurrency must be a positive integer"
+fi
+if [[ -n "${stale_hook_ttl_seconds}" && ! "${stale_hook_ttl_seconds}" =~ ^[0-9]+$ ]]; then
+  usage_error "mesh-run: MESH_STALE_HOOK_TTL_SECONDS must be an integer"
 fi
 if [[ -n "${workspace_backend}" && "${workspace_backend}" != "worktree" ]]; then
   usage_error "mesh-run: --workspace-backend must be 'worktree'"
@@ -659,6 +747,7 @@ dispatch_wave() {
   fi
 
   run_write "${mesh_agent_pool_script}" ensure --count "${#wave_ids[@]}" --prefix "${agent_prefix}" --start "${agent_start}"
+  mesh_cleanup_stale_hooks "${stale_hook_ttl_seconds}"
 
   local idx=0
   local id
