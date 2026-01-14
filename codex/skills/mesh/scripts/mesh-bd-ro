@@ -13,6 +13,7 @@ Runs: bd --readonly --sandbox <command...>
 
 Global flags (allowlisted):
   -h, --help
+  --allow-stale
   --dry-run
   --json
   -q, --quiet
@@ -56,9 +57,6 @@ deny_disallowed_globals() {
       --profile|--profile=*)
         mesh_die "mesh-bd-ro: disallowed global flag: --profile"
         ;;
-      --allow-stale|--allow-stale=*)
-        mesh_die "mesh-bd-ro: disallowed global flag: --allow-stale"
-        ;;
       --lock-timeout|--lock-timeout=*)
         mesh_die "mesh-bd-ro: disallowed global flag: --lock-timeout"
         ;;
@@ -90,6 +88,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       want_dry_run=1
+      shift
+      ;;
+    --allow-stale)
+      global_flags+=("$1")
       shift
       ;;
     --json)
