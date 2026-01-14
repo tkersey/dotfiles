@@ -74,8 +74,9 @@ agent_id_for_name() {
 
 extract_hook_from_json() {
   local json="$1"
-  jq -r '(.slots.hook? // .slots.hook // empty),
-    (.. | objects | select((.name? // "") == "hook") | (.target_id? // .target? // .value? // .bead_id? // .id? // .hook? // empty))' <<<"${json}" | head -n1 || true
+  jq -r '(.slots.hook? // empty),
+    (.. | objects | select((.name? // "") == "hook") | (.target_id? // .target? // .value? // .bead_id? // .id? // .hook? // empty))
+    | select(. != "")' <<<"${json}" | head -n1 || true
 }
 
 agent_hook_for_id() {
