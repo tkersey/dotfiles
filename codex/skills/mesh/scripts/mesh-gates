@@ -96,17 +96,28 @@ has_json_flag() {
 run_gate() {
   local subcmd="$1"
   shift
-  local -a args=("$@")
-
-  if [[ ${MESH_DRY_RUN} -eq 1 ]] && ! has_dry_run_flag "${args[@]}"; then
-    args+=("--dry-run")
+  local -a args=()
+  if [[ $# -gt 0 ]]; then
+    args=("$@")
   fi
 
-  if [[ ${MESH_JSON} -eq 1 ]] && ! has_json_flag "${args[@]}"; then
-    args+=("--json")
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    if [[ ${#args[@]} -eq 0 ]] || ! has_dry_run_flag "${args[@]}"; then
+      args+=("--dry-run")
+    fi
   fi
 
-  exec bd gate "${subcmd}" "${args[@]}"
+  if [[ ${MESH_JSON} -eq 1 ]]; then
+    if [[ ${#args[@]} -eq 0 ]] || ! has_json_flag "${args[@]}"; then
+      args+=("--json")
+    fi
+  fi
+
+  if [[ ${#args[@]} -gt 0 ]]; then
+    exec bd gate "${subcmd}" "${args[@]}"
+  else
+    exec bd gate "${subcmd}"
+  fi
 }
 
 case "${cmd}" in
@@ -163,7 +174,11 @@ case "${cmd}" in
       check_args+=("--escalate")
     fi
 
-    run_gate check "${check_args[@]}"
+    if [[ ${#check_args[@]} -gt 0 ]]; then
+      run_gate check "${check_args[@]}"
+    else
+      run_gate check
+    fi
     ;;
   *)
     usage_error "mesh-gates: unknown command: ${cmd}"

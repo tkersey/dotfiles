@@ -342,7 +342,7 @@ selected_ids=()
 
 mol_json=""
 is_mol=0
-if run_read_capture mol_json bd mol show "${target}" --json 2>/dev/null; then
+if run_read_capture mol_json bd --no-daemon mol show "${target}" --json 2>/dev/null; then
   formula="$(jq -r '.formula? // .mol?.formula? // .proto?.formula? // empty' <<<"${mol_json}")"
   if [[ -n "${formula}" && "${formula}" != "mol-mesh-run" ]]; then
     mesh_die "mesh-run: mol target is not mol-mesh-run (formula: ${formula})"
@@ -393,7 +393,7 @@ else
   run_write_capture swarm_out bd swarm create "${target_id}" --json
   : "${swarm_out}"
 
-  mol_args=(bd mol pour mol-mesh-run
+  mol_args=(bd --no-daemon mol pour mol-mesh-run
     --var "target_id=${target_id}"
     --var "target_kind=${target_kind}"
     --var "concurrency=${concurrency}")
@@ -670,7 +670,7 @@ dispatch_wave() {
     workspace_path="$(mesh_workspace_path "${id}")"
 
     run_write "${mesh_agent_pool_script}" acquire "${agent_name}" "${id}"
-    run_write "${mesh_workspace_script}" create "${id}" --backend "${workspace_backend}" --path "${workspace_path}" --branch "${slug}"
+    run_write "${mesh_workspace_script}" create --backend "${workspace_backend}" --path "${workspace_path}" --branch "${slug}" "${id}"
 
     local bead_context=""
     run_read_capture bead_context bd show "${id}"

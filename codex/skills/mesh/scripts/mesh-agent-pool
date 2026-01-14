@@ -74,7 +74,8 @@ agent_id_for_name() {
 
 extract_hook_from_json() {
   local json="$1"
-  jq -r '.. | objects | select((.name? // "") == "hook") | (.target_id? // .target? // .value? // .bead_id? // .id? // .hook? // empty)' <<<"${json}" | head -n1 || true
+  jq -r '(.slots.hook? // .slots.hook // empty),
+    (.. | objects | select((.name? // "") == "hook") | (.target_id? // .target? // .value? // .bead_id? // .id? // .hook? // empty))' <<<"${json}" | head -n1 || true
 }
 
 agent_hook_for_id() {
@@ -90,7 +91,7 @@ agent_hook_for_id() {
 
   local text
   if text="$(bd slot show "${id}" 2>/dev/null)"; then
-    hook="$(awk -F: '/^hook[[:space:]]*:/ {print $2}' <<<"${text}" | xargs || true)"
+    hook="$(awk -F: '/^[[:space:]]*hook[[:space:]]*:/ {print $2}' <<<"${text}" | xargs || true)"
     printf '%s' "${hook}"
     return 0
   fi
@@ -126,11 +127,16 @@ ensure_agent() {
   local id=""
 
   if id="$(agent_id_for_name "${name}")"; then
+    if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+      mesh_emit "dry-run: bd label add ${id} gt:agent"
+    else
+      bd label add "${id}" gt:agent >/dev/null 2>&1 || true
+    fi
     echo "${id}"
     return 0
   fi
 
-  local labels="agent,agent:${name},role:${role}"
+  local labels="gt:agent,agent,agent:${name},role:${role}"
 
   if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
     mesh_emit "dry-run: bd create --type=agent --role-type ${role} --agent-rig ${rig} --labels ${labels} --title ${name}"
@@ -272,15 +278,18 @@ case "${cmd}" in
       mesh_die "mesh-agent-pool acquire: failed to resolve agent id for ${name}"
     fi
 
-    if [[ ${MESH_DRY_RUN} -ne 1 && ${force} -ne 1 ]]; then
+    hook=""
+    if [[ ${MESH_DRY_RUN} -ne 1 ]]; then
       hook="$(agent_hook_for_id "${id}")" || mesh_die "mesh-agent-pool acquire: failed to read hook slot for ${name}"
-      if [[ -n "${hook}" && "${hook}" != "${work_id}" ]]; then
+      if [[ ${force} -ne 1 && -n "${hook}" && "${hook}" != "${work_id}" ]]; then
         mesh_die "mesh-agent-pool acquire: hook already set to ${hook} (use --force to override)"
       fi
     fi
 
     target_id="${id:-agent:${name}}"
-    mesh_run bd --actor "agent:${name}" slot set "${target_id}" hook "${work_id}"
+    if [[ ${MESH_DRY_RUN} -eq 1 || -z "${hook}" || "${hook}" != "${work_id}" ]]; then
+      mesh_run bd --actor "agent:${name}" slot set "${target_id}" hook "${work_id}"
+    fi
     mesh_run bd --actor "agent:${name}" agent state "${target_id}" working
     emit_agent "acquire" "${name}" "${id}"
     ;;
