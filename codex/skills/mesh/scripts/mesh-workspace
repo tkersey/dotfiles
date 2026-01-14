@@ -168,6 +168,16 @@ case "${cmd}" in
     fi
 
     if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+      mesh_emit "dry-run: init jj repo in ${path}"
+    else
+      if command -v jj >/dev/null 2>&1; then
+        if [[ ! -d "${path}/.jj" ]]; then
+          (cd "${path}" && jj git init --colocate >/dev/null 2>&1 || true)
+        fi
+      fi
+    fi
+
+    if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
       mesh_emit "dry-run: set beads redirect to ${REPO_ROOT}/.beads"
     else
       if [[ -d "${path}/.beads" ]]; then
