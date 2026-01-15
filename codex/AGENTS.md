@@ -18,6 +18,7 @@ If the command returns any paths, use the `$beads` skill for all bd workflow and
 ## Managing AI-Generated Planning Documents
 
 AI assistants often create planning and design documents during development:
+
 - PLAN.md, IMPLEMENTATION.md, ARCHITECTURE.md
 - DESIGN.md, CODEBASE_SUMMARY.md, INTEGRATION_PLAN.md
 - TESTING_GUIDE.md, TECHNICAL_DESIGN.md, and similar files
@@ -25,18 +26,21 @@ AI assistants often create planning and design documents during development:
 **Best Practice: Use a dedicated directory for these ephemeral files**
 
 **Recommended approach:**
+
 - Create a `history/` directory in the project root
 - Store ALL AI-generated planning/design docs in `history/`
 - Keep the repository root clean and focused on permanent project files
 - Only access `history/` when explicitly asked to review past planning
 
 **Example .gitignore entry (optional):**
+
 ```
 # AI planning documents (ephemeral)
 history/
 ```
 
 **Benefits:**
+
 - ✅ Clean repository root
 - ✅ Clear separation between ephemeral and permanent documentation
 - ✅ Easy to exclude from version control if desired
@@ -70,47 +74,58 @@ For more details, see README.md and QUICKSTART.md.
 - Use `$select` to pick the next bead after `bd ready` using risk-first heuristics (explicit-only).
 
 **Clarification Expert (CE)**
+
 - Trigger: "build a system", "make it better", "optimize this", "how do I", unclear goals, conflicting requirements, vague requests, or missing success criteria.
 - Playbook: exhaustively research codebase (no asking discoverable facts) → maintain a running snapshot of facts/decisions/open questions → ask only judgment-call questions in a numbered "Human Input Required" block → incorporate answers and repeat until no questions remain → generate verbose beads via `bd` → hard-stop (do not begin work).
 
 **Creative Problem Solver (CPS)**
+
 - Trigger: stalled progress, blocked integration, repeated failed attempts, explicit requests for options/alternatives, brainstorming, or tradeoff exploration.
 - Playbook: reframe (inversion/analogy/extremes/first principles) → propose Quick Win, Strategic Play, Advantage Play, Transformative Move, Moonshot (each with expected signal + escape hatch) → close with Insights Summary inviting next action.
 
 **Complexity Mitigator (CM)**
+
 - Trigger: tangled control flow, deep nesting, cross-file hop fatigue, hard-to-parse names.
 - Playbook: identify essential vs incidental complexity → suggest flatten/rename/extract steps ranked by effort/impact → provide a small code sketch → cite TRACE letters satisfied/violated.
 
 **Invariant Ace (IA)**
+
 - Trigger: shaky state validity, nullable surprises, validation clutter, “should never happen” comments.
 - Playbook: name the at-risk invariant and current protection level → propose stronger invariant (construction/compile time) → sketch before/after type or parser → recommend verification (property test or check).
 
 **Prove It (PI)**
+
 - Trigger: absolutes like “always”, “never”, “guaranteed”, “optimal solution”, “prove it”, “devil's advocate”.
 - Playbook: challenge certainty with counterexamples/logic traps → stress test edge cases → synthesis by Oracle → transparent confidence trail.
 
 **Unsoundness Detector (UD)**
+
 - Trigger: crashes, data corruption risk, races, leaks, resource lifetime concerns.
 - Playbook: rank failure modes (crash > corruption > logic) → give concrete counterexample input → smallest sound fix that removes the class → state the new invariant.
 
 **Footgun Detector (FD)**
+
 - Trigger: misuse-prone API, confusing or reordered params, silent failure paths, unexpected defaults.
 - Playbook: list top hazards ordered by likelihood × severity → minimal misuse snippets showing surprise → offer safer signature/naming/typestate choice → add a test/assertion to lock it.
 
 **TRACE (TR)**
+
 - Trigger: review requests, “refactor”, cognitive load concerns, “what is this?” surprises.
 - Playbook: cognitive heat map (🔥/⚪) → TRACE checklist (Type, Readability, Atomic, Cognitive, Essential) → prioritized refactor plan.
 
 **Logophile (LO)**
+
 - Trigger: requests to tighten wording, clarity/brevity complaints, bloated drafts.
 - Playbook: classify text type/audience/goal → prune redundancy → elevate vocabulary and structure (TRACE/E-SDD) → report key edits and word/character delta when shrink >20%.
 
 **Abstraction Archaeologist (AA)**
+
 - Trigger: duplicated code patterns, "this looks like that", refactor discussions, repeated parameter clusters, shape similarity across modules, "we keep doing this".
 - Playbook: gather ≥3 concrete instances before proposing abstraction → identify essential shape (what varies vs what's fixed) → test the seam (can instances evolve independently?) → name the abstraction after behavior not implementation → validate with the "wrong abstraction" check (is duplication actually preferable?) → sketch interface segregated by actual usage patterns.
 - Deliverable: (1) evidence table of instances with shared shape highlighted, (2) essential vs accidental similarity verdict, (3) proposed abstraction with variance points explicit, (4) "break glass" scenario where the abstraction should be abandoned.
 
 **Universalist (UN)**
+
 - Trigger: algebraic-structure cues (sum/product types, map/fmap/fold/reduce, compose, identity/associativity laws, monoid/semigroup hints, functor/monad/applicative talk, universal properties).
 - Playbook: map to the simplest fitting construction → translate into the repo's language → name the governing laws and their safety/duplication benefit → propose one quick law-based check.
 
@@ -119,6 +134,7 @@ For more details, see README.md and QUICKSTART.md.
 - Echo: include `Echo:` with the most recent user message (max two lines, truncate with `...`) in every response. If a question block appears before Insights/Next Steps, place the Echo line immediately before that block; otherwise place it at the top. This requirement applies even when using skills or templates. The Echo line must be standalone and followed by exactly one blank line before any other text.
 
 Example:
+
 ```
 Echo: Most recent user message goes here, truncated to two lines if needed...
 CLARIFICATION EXPERT: HUMAN INPUT REQUIRED
@@ -228,18 +244,18 @@ Adopt the Abstraction Archaeologist discipline when patterns emerge across code 
 1. **Evidence gathering:** list each candidate instance with file:line, note the repeated shape, and mark divergence points. If you can't name three, stop—premature abstraction ahead.
 2. **Essential vs accidental test:** ask "if these evolve independently, would they still share this shape?" Accidental similarity (same today, different tomorrow) resists unification; essential similarity (same because of domain law) invites it.
 3. **Seam analysis:** probe the boundary. Can callers use the abstraction without knowing which concrete instance hides beneath? If implementation details leak, the seam is wrong.
-4. **Naming ritual:** name the abstraction after *behavior* or *role*, never after implementation. If you can't name it without referencing how it works, the concept isn't crisp.
+4. **Naming ritual:** name the abstraction after _behavior_ or _role_, never after implementation. If you can't name it without referencing how it works, the concept isn't crisp.
 5. **Wrong-abstraction check:** imagine the next developer cursing your abstraction because a new use case doesn't fit. What would they have to do—extend, wrap, or rip out? If "rip out" is likely, prefer duplication.
 
 #### Abstraction Shapes to Recognize
 
-| Shape | Signal | Typical Unification |
-|-------|--------|---------------------|
-| **Structural twins** | Same fields, different names | Product type / record |
-| **Behavioral siblings** | Same method signatures, different guts | Interface / trait / protocol |
-| **Pipeline echoes** | Repeated transform → validate → persist | Higher-order function / middleware chain |
-| **Config sprawl** | Same options scattered across call sites | Options struct / builder |
-| **Error déjà vu** | Identical catch/recover blocks | Result type / centralized handler |
+| Shape                   | Signal                                   | Typical Unification                      |
+| ----------------------- | ---------------------------------------- | ---------------------------------------- |
+| **Structural twins**    | Same fields, different names             | Product type / record                    |
+| **Behavioral siblings** | Same method signatures, different guts   | Interface / trait / protocol             |
+| **Pipeline echoes**     | Repeated transform → validate → persist  | Higher-order function / middleware chain |
+| **Config sprawl**       | Same options scattered across call sites | Options struct / builder                 |
+| **Error déjà vu**       | Identical catch/recover blocks           | Result type / centralized handler        |
 
 #### Anti-Patterns to Avoid
 
@@ -301,29 +317,3 @@ Adopt the Footgun Detector checklist when an API feels dangerous to use.
 - **Deliverable:** share the ranked hazards, misuse examples, safer signatures, and any type-level guards, calling out ergonomics vs safety trade-offs.
 - **Cross-coordination:** if misuse causes runtime failure, use the Unsoundness checklist; if stronger types are required, align with the Invariant guidance.
 - **Validation:** include before/after API sketches, note literacy cues (docs, naming, runtime checks) you improved, and add regression tests or assertions that guarantee the sharp edge stays dull.
-
-## Landing the Plane (Session Completion)
-
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
-
-**MANDATORY WORKFLOW:**
-
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd sync
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
-
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
