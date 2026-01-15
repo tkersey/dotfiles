@@ -18,7 +18,7 @@ Options:
   --prefix NAME-      Agent name prefix (default: mesh-)
   --start N           Agent name start index (default: 1)
   --watch SECONDS     Poll continuously (disallowed with --json)
-  --allow-stale       Pass --allow-stale to mesh-bd-ro
+  --allow-stale       Pass --allow-stale to bd (read-only)
   --last-interaction  Show last interaction timestamp (requires rg)
 
 Diagnose options:
@@ -26,7 +26,7 @@ Diagnose options:
   --codex-log PATH    Codex log path (default: MESH_CODEX_LOG_PATH or ~/.codex/log/codex-tui.log)
   --tail N            Tail N lines of mesh-run log (default: 80)
   --wait SECONDS      Poll until status changes (prints each pass)
-  --allow-stale       Pass --allow-stale to mesh-bd-ro when resolving agent bead
+  --allow-stale       Pass --allow-stale to bd (read-only) when resolving agent bead
 
 Config:
   MESH_WORKSPACE_ROOT Workspace root (default: ../workspaces/<repo>)
@@ -52,7 +52,7 @@ Options:
   --codex-log PATH    Codex log path (default: MESH_CODEX_LOG_PATH or ~/.codex/log/codex-tui.log)
   --tail N            Tail N lines of mesh-run log (default: 80)
   --wait SECONDS      Poll until status changes (prints each pass)
-  --allow-stale       Pass --allow-stale to mesh-bd-ro when resolving agent bead
+  --allow-stale       Pass --allow-stale to bd (read-only) when resolving agent bead
 
 Global flags:
   -h, --help     Show help and exit
@@ -81,8 +81,6 @@ if [[ ${MESH_HELP} -eq 1 ]]; then
   exit 0
 fi
 
-mesh_bd_ro_script="${SCRIPT_DIR}/mesh-bd-ro"
-
 count="${MESH_CONCURRENCY:-6}"
 prefix="${MESH_AGENT_PREFIX:-mesh-}"
 start="${MESH_AGENT_START:-1}"
@@ -101,15 +99,21 @@ usage_error() {
   exit 2
 }
 
+mesh_bd_read() {
+  local allow_stale_flag="${1:-0}"
+  shift
+  local -a flags=(--readonly --sandbox)
+  if [[ "${allow_stale_flag}" -eq 1 ]]; then
+    flags+=(--allow-stale)
+  fi
+  bd "${flags[@]}" "$@"
+}
+
 mesh_agent_id_for_name() {
   local name="$1"
   local allow_stale_flag="${2:-0}"
-  local ro_flags=()
-  if [[ "${allow_stale_flag}" -eq 1 ]]; then
-    ro_flags+=(--allow-stale)
-  fi
   local json=""
-  if ! json="$("${mesh_bd_ro_script}" "${ro_flags[@]}" list --label "agent:${name}" --all --json 2>/dev/null)"; then
+  if ! json="$(mesh_bd_read "${allow_stale_flag}" list --label "agent:${name}" --all --json 2>/dev/null)"; then
     return 1
   fi
   local count
@@ -341,16 +345,12 @@ if [[ "${mode}" == "diagnose" ]]; then
     if agent_id="$(mesh_agent_id_for_name "${diag_target}" "${diag_allow_stale}" 2>/dev/null)"; then
       target_type="agent"
       agent_name="${diag_target}"
-      local_ro_flags=()
-      if [[ ${diag_allow_stale} -eq 1 ]]; then
-        local_ro_flags+=(--allow-stale)
-      fi
-      agent_json=""
-      if agent_json="$("${mesh_bd_ro_script}" "${local_ro_flags[@]}" --json show "${agent_id}" 2>/dev/null)"; then
-        hook_bead="$(jq -r '.[0].hook_bead // empty' <<<"${agent_json}")"
-        agent_state="$(jq -r '.[0].agent_state // empty' <<<"${agent_json}")"
-        last_activity="$(jq -r '.[0].last_activity // empty' <<<"${agent_json}")"
-      fi
+    agent_json=""
+    if agent_json="$(mesh_bd_read "${diag_allow_stale}" show "${agent_id}" --json 2>/dev/null)"; then
+      hook_bead="$(jq -r '.[0].hook_bead // empty' <<<"${agent_json}")"
+      agent_state="$(jq -r '.[0].agent_state // empty' <<<"${agent_json}")"
+      last_activity="$(jq -r '.[0].last_activity // empty' <<<"${agent_json}")"
+    fi
       if [[ -n "${last_activity}" ]]; then
         last_epoch=""
         if last_epoch="$(mesh_epoch_from_iso "${last_activity}")"; then
@@ -749,12 +749,8 @@ render_once() {
     local last_interaction=""
 
     if [[ -n "${agent_id}" ]]; then
-      local ro_flags=()
-      if [[ ${allow_stale} -eq 1 ]]; then
-        ro_flags+=(--allow-stale)
-      fi
       local agent_json=""
-      if agent_json="$("${mesh_bd_ro_script}" "${ro_flags[@]}" --json show "${agent_id}" 2>/dev/null)"; then
+      if agent_json="$(mesh_bd_read "${allow_stale}" show "${agent_id}" --json 2>/dev/null)"; then
         hook_bead="$(jq -r '.[0].hook_bead // empty' <<<"${agent_json}")"
         agent_state="$(jq -r '.[0].agent_state // empty' <<<"${agent_json}")"
         last_activity="$(jq -r '.[0].last_activity // empty' <<<"${agent_json}")"

@@ -66,7 +66,6 @@ mesh_audit_script="${SCRIPT_DIR}/mesh-audit"
 mesh_gates_script="${SCRIPT_DIR}/mesh-gates"
 mesh_merge_slot_script="${SCRIPT_DIR}/mesh-merge-slot"
 mesh_agent_pool_script="${SCRIPT_DIR}/mesh-agent-pool"
-mesh_bd_ro_hint="codex/skills/mesh/scripts/mesh-bd-ro"
 cx_exec_script="${MESH_CX_EXEC:-${SCRIPT_DIR}/../../cx/scripts/cx-exec.sh}"
 
 usage_error() {
@@ -737,8 +736,8 @@ build_prompt() {
 Work bead ${bead_id}. Use skill work.
 Context:
 ${bead_context}
-Do NOT run bd directly in this workspace; use ${mesh_bd_ro_hint} for read-only if needed.
-If bead reads fail due to a stale DB, retry with ${mesh_bd_ro_hint} --allow-stale, or run ${mesh_bd_ro_hint} from the repo root (DB is synced there).
+Do NOT write to beads from this workspace; for reads use: bd --readonly --sandbox.
+If bead reads fail due to a stale DB, retry with bd --readonly --sandbox --allow-stale, or run the bd command from the repo root (DB is synced there).
 Do not write/update beads from this workspace; if bead updates are required, ask via HUMAN_INPUT_REQUIRED.
 Use the jujutsu skill for all VCS operations. Open a PR when done.
 Restate done-means + acceptance criteria. Keep diffs bead-scoped.
@@ -798,10 +797,10 @@ dispatch_wave() {
           mesh_die "mesh-run: preflight sync failed for ${id}"
         fi
       fi
-      if ! run_write_in_dir "${workspace_path}" "${mesh_bd_ro_hint}" show "${id}" --json >/dev/null 2>&1; then
+      if ! run_write_in_dir "${workspace_path}" bd --readonly --sandbox show "${id}" --json >/dev/null 2>&1; then
         mesh_audit_tool "mesh-run.preflight" \
           "$(jq -c -n --arg bead "${id}" --arg workspace "${workspace_path}" '{bead:$bead,workspace:$workspace}')" \
-          '{"ok":false,"error":"mesh-bd-ro show failed (db out of sync)"}'
+          '{"ok":false,"error":"bd --readonly --sandbox show failed (db out of sync)"}'
         mesh_die "mesh-run: preflight failed for ${id}; bd DB out of sync in workspace"
       fi
     fi
@@ -815,9 +814,6 @@ dispatch_wave() {
 
     mesh_audit_prompt "${id}" "${agent_model}" "${prompt}"
     local -a cx_env=()
-    if [[ "${MESH_BD_ALLOW_STALE:-0}" == "1" ]]; then
-      cx_env=(env MESH_BD_ALLOW_STALE=1)
-    fi
 
     if [[ -n "${mesh_run_log_dir}" ]]; then
       local log_dir="${mesh_run_log_dir}/${id}"
