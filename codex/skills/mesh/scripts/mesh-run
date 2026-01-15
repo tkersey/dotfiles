@@ -741,6 +741,10 @@ Do NOT run bd directly in this workspace; use ${mesh_bd_ro_hint} for read-only i
 Use the jujutsu skill for all VCS operations. Open a PR when done.
 Restate done-means + acceptance criteria. Keep diffs bead-scoped.
 If blocked, state why and what is needed.
+If you must pause for follow-up, print a clear block:
+HUMAN_INPUT_REQUIRED:
+<question>
+END_HUMAN_INPUT_REQUIRED
 
 Final output block (required):
 PR: <url>

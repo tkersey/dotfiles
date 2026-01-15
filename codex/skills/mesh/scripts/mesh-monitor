@@ -7,7 +7,9 @@ source "${SCRIPT_DIR}/mesh-lib.sh"
 
 usage() {
   cat <<'USAGE'
-Usage: mesh-monitor [GLOBAL_FLAGS] [options] [agent-name...]
+Usage:
+  mesh-monitor [GLOBAL_FLAGS] [options] [agent-name...]
+  mesh-monitor diagnose [GLOBAL_FLAGS] [options] <agent-name|bead-id>
 
 Inspect mesh agent hooks, liveness, and workspace presence.
 
@@ -19,8 +21,38 @@ Options:
   --allow-stale       Pass --allow-stale to mesh-bd-ro
   --last-interaction  Show last interaction timestamp (requires rg)
 
+Diagnose options:
+  --log-dir PATH      Mesh run log root (default: MESH_RUN_LOG_DIR or /tmp/mesh-logs if present)
+  --codex-log PATH    Codex log path (default: MESH_CODEX_LOG_PATH or ~/.codex/log/codex-tui.log)
+  --tail N            Tail N lines of mesh-run log (default: 80)
+  --wait SECONDS      Poll until status changes (prints each pass)
+  --allow-stale       Pass --allow-stale to mesh-bd-ro when resolving agent bead
+
 Config:
   MESH_WORKSPACE_ROOT Workspace root (default: ../workspaces/<repo>)
+  MESH_RUN_LOG_DIR    Default mesh-run log root (used by diagnose)
+  MESH_CODEX_LOG_PATH Default Codex log path (used by diagnose)
+
+Global flags:
+  -h, --help     Show help and exit
+  --dry-run      Print intended actions without executing
+  --json         Emit machine-readable JSON output (single object)
+USAGE
+}
+
+usage_diagnose() {
+  cat <<'USAGE'
+Usage:
+  mesh-monitor diagnose [GLOBAL_FLAGS] [options] <agent-name|bead-id>
+
+Summarize mesh-run logs and Codex log correlations for a specific agent or bead.
+
+Options:
+  --log-dir PATH      Mesh run log root (default: MESH_RUN_LOG_DIR or /tmp/mesh-logs if present)
+  --codex-log PATH    Codex log path (default: MESH_CODEX_LOG_PATH or ~/.codex/log/codex-tui.log)
+  --tail N            Tail N lines of mesh-run log (default: 80)
+  --wait SECONDS      Poll until status changes (prints each pass)
+  --allow-stale       Pass --allow-stale to mesh-bd-ro when resolving agent bead
 
 Global flags:
   -h, --help     Show help and exit
@@ -34,10 +66,22 @@ mesh_require_cmd jq
 
 mesh_parse_common_flags "$@"
 
+mode="monitor"
+if [[ ${#MESH_ARGS[@]} -gt 0 && "${MESH_ARGS[0]}" == "diagnose" ]]; then
+  mode="diagnose"
+  MESH_ARGS=("${MESH_ARGS[@]:1}")
+fi
+
 if [[ ${MESH_HELP} -eq 1 ]]; then
-  usage
+  if [[ "${mode}" == "diagnose" ]]; then
+    usage_diagnose
+  else
+    usage
+  fi
   exit 0
 fi
+
+mesh_bd_ro_script="${SCRIPT_DIR}/mesh-bd-ro"
 
 count="${MESH_CONCURRENCY:-6}"
 prefix="${MESH_AGENT_PREFIX:-mesh-}"
@@ -49,9 +93,451 @@ names=()
 
 usage_error() {
   echo "error: $*" >&2
-  usage >&2
+  if [[ "${mode}" == "diagnose" ]]; then
+    usage_diagnose >&2
+  else
+    usage >&2
+  fi
   exit 2
 }
+
+mesh_agent_id_for_name() {
+  local name="$1"
+  local allow_stale_flag="${2:-0}"
+  local ro_flags=()
+  if [[ "${allow_stale_flag}" -eq 1 ]]; then
+    ro_flags+=(--allow-stale)
+  fi
+  local json=""
+  if ! json="$("${mesh_bd_ro_script}" "${ro_flags[@]}" list --label "agent:${name}" --all --json 2>/dev/null)"; then
+    return 1
+  fi
+  local count
+  count="$(jq 'length' <<<"${json}")"
+  if [[ "${count}" -eq 0 ]]; then
+    return 1
+  fi
+  if [[ "${count}" -gt 1 ]]; then
+    mesh_die "mesh-monitor: multiple agents found for name: ${name}"
+  fi
+  jq -r '.[0].id' <<<"${json}"
+}
+
+mesh_have_rg() {
+  command -v rg >/dev/null 2>&1
+}
+
+mesh_count_pattern() {
+  local pattern="$1"
+  local file="$2"
+  local count="0"
+  if mesh_have_rg; then
+    count="$(rg -c -e "${pattern}" "${file}" 2>/dev/null || printf '0')"
+  else
+    count="$(grep -E -c "${pattern}" "${file}" 2>/dev/null || printf '0')"
+  fi
+  printf '%s' "${count}"
+}
+
+mesh_log_last_timestamp() {
+  local file="$1"
+  local line=""
+  if mesh_have_rg; then
+    line="$(rg -n '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' "${file}" | tail -n1 || true)"
+  else
+    line="$(grep -E -n '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' "${file}" | tail -n1 || true)"
+  fi
+  if [[ -z "${line}" ]]; then
+    printf '%s' ""
+    return 0
+  fi
+  line="$(sed -E 's/^[0-9]+://' <<<"${line}")"
+  printf '%s' "${line%% *}"
+}
+
+mesh_log_session_id() {
+  local file="$1"
+  local line=""
+  if mesh_have_rg; then
+    line="$(rg -m1 -o 'session id: [^ ]+' "${file}" 2>/dev/null || true)"
+  else
+    line="$(grep -E -m1 -o 'session id: [^ ]+' "${file}" 2>/dev/null || true)"
+  fi
+  printf '%s' "${line#session id: }"
+}
+
+mesh_log_has_line() {
+  local pattern="$1"
+  local file="$2"
+  if mesh_have_rg; then
+    rg -n -m1 "${pattern}" "${file}" >/dev/null 2>&1
+  else
+    grep -E -m1 "${pattern}" "${file}" >/dev/null 2>&1
+  fi
+}
+
+mesh_repo_root() {
+  local root
+  root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -z "${root}" ]]; then
+    mesh_die "mesh-monitor: not inside a git repository"
+  fi
+  printf '%s' "${root}"
+}
+
+mesh_workspace_slug() {
+  local raw="$1"
+  raw="${raw##*/}"
+  raw="$(printf '%s' "${raw}" | sed -E 's/^[.]+//; s/[^A-Za-z0-9._-]+/-/g; s/\.{2,}/-/g; s/[.]+$//; s/^-+//; s/-+$//')"
+  if [[ "${raw}" == *.lock ]]; then
+    raw="${raw%.lock}-lock"
+  fi
+  if [[ -z "${raw}" ]]; then
+    mesh_die "mesh-monitor: invalid bead id: $1"
+  fi
+  printf '%s' "${raw}"
+}
+
+mesh_workspace_path() {
+  local bead_id="$1"
+  local root="${MESH_WORKSPACE_ROOT:-}"
+  if [[ -z "${root}" ]]; then
+    local repo_root
+    repo_root="$(mesh_repo_root)"
+    local repo_name
+    repo_name="$(basename "${repo_root}")"
+    root="${repo_root%/}/../workspaces/${repo_name}"
+  fi
+  root="${root%/}"
+  local slug
+  slug="$(mesh_workspace_slug "${bead_id}")"
+  printf '%s/%s' "${root}" "${slug}"
+}
+
+mesh_epoch_from_iso() {
+  local ts="$1"
+  local clean
+  clean="$(printf '%s' "${ts}" | sed -E 's/\\.[0-9]+//; s/([+-][0-9]{2}):([0-9]{2})/\\1\\2/')"
+  if date -u -j -f "%Y-%m-%dT%H:%M:%S%z" "${clean}" +%s 2>/dev/null; then
+    return 0
+  fi
+  if date -u -d "${ts}" +%s 2>/dev/null; then
+    return 0
+  fi
+  return 1
+}
+
+mesh_agent_process_state() {
+  local token="$1"
+  if ! command -v pgrep >/dev/null 2>&1; then
+    printf '%s' "unknown"
+    return 0
+  fi
+  if pgrep -f "codex.*${token}" >/dev/null 2>&1; then
+    printf '%s' "running"
+    return 0
+  fi
+  printf '%s' "none"
+}
+
+if [[ "${mode}" == "diagnose" ]]; then
+  diag_log_dir="${MESH_RUN_LOG_DIR:-}"
+  diag_codex_log="${MESH_CODEX_LOG_PATH:-}"
+  diag_tail="80"
+  diag_wait=""
+  diag_allow_stale=0
+  diag_target=""
+
+  idx=0
+  while [[ ${idx} -lt ${#MESH_ARGS[@]} ]]; do
+    arg="${MESH_ARGS[${idx}]}"
+    case "${arg}" in
+      -h|--help)
+        usage_diagnose
+        exit 0
+        ;;
+      --log-dir)
+        if [[ $((idx + 1)) -ge ${#MESH_ARGS[@]} ]]; then
+          usage_error "mesh-monitor diagnose: --log-dir requires a value"
+        fi
+        diag_log_dir="${MESH_ARGS[$((idx + 1))]}"
+        idx=$((idx + 2))
+        ;;
+      --codex-log)
+        if [[ $((idx + 1)) -ge ${#MESH_ARGS[@]} ]]; then
+          usage_error "mesh-monitor diagnose: --codex-log requires a value"
+        fi
+        diag_codex_log="${MESH_ARGS[$((idx + 1))]}"
+        idx=$((idx + 2))
+        ;;
+      --tail)
+        if [[ $((idx + 1)) -ge ${#MESH_ARGS[@]} ]]; then
+          usage_error "mesh-monitor diagnose: --tail requires a value"
+        fi
+        diag_tail="${MESH_ARGS[$((idx + 1))]}"
+        idx=$((idx + 2))
+        ;;
+      --wait)
+        if [[ $((idx + 1)) -ge ${#MESH_ARGS[@]} ]]; then
+          usage_error "mesh-monitor diagnose: --wait requires a value"
+        fi
+        diag_wait="${MESH_ARGS[$((idx + 1))]}"
+        idx=$((idx + 2))
+        ;;
+      --allow-stale)
+        diag_allow_stale=1
+        idx=$((idx + 1))
+        ;;
+      --)
+        idx=$((idx + 1))
+        while [[ ${idx} -lt ${#MESH_ARGS[@]} ]]; do
+          if [[ -z "${diag_target}" ]]; then
+            diag_target="${MESH_ARGS[${idx}]}"
+          else
+            usage_error "mesh-monitor diagnose: only one target is supported"
+          fi
+          idx=$((idx + 1))
+        done
+        ;;
+      -*)
+        usage_error "mesh-monitor diagnose: unknown flag: ${arg}"
+        ;;
+      *)
+        if [[ -z "${diag_target}" ]]; then
+          diag_target="${arg}"
+        else
+          usage_error "mesh-monitor diagnose: only one target is supported"
+        fi
+        idx=$((idx + 1))
+        ;;
+    esac
+  done
+
+  if [[ -z "${diag_target}" ]]; then
+    usage_error "mesh-monitor diagnose: missing target (agent name or bead id)"
+  fi
+  if ! [[ "${diag_tail}" =~ ^[0-9]+$ ]]; then
+    usage_error "mesh-monitor diagnose: --tail must be an integer"
+  fi
+  if [[ -n "${diag_wait}" && ! "${diag_wait}" =~ ^[0-9]+$ ]]; then
+    usage_error "mesh-monitor diagnose: --wait must be an integer"
+  fi
+  if [[ -z "${diag_log_dir}" && -d "/tmp/mesh-logs" ]]; then
+    diag_log_dir="/tmp/mesh-logs"
+  fi
+  if [[ -z "${diag_codex_log}" ]]; then
+    diag_codex_log="${HOME}/.codex/log/codex-tui.log"
+  fi
+
+  target_type="bead"
+  agent_name=""
+  agent_id=""
+  hook_bead="${diag_target}"
+  agent_state=""
+  last_activity=""
+  age=""
+
+  while true; do
+    if agent_id="$(mesh_agent_id_for_name "${diag_target}" "${diag_allow_stale}" 2>/dev/null)"; then
+      target_type="agent"
+      agent_name="${diag_target}"
+      local_ro_flags=()
+      if [[ ${diag_allow_stale} -eq 1 ]]; then
+        local_ro_flags+=(--allow-stale)
+      fi
+      agent_json=""
+      if agent_json="$("${mesh_bd_ro_script}" "${local_ro_flags[@]}" --json show "${agent_id}" 2>/dev/null)"; then
+        hook_bead="$(jq -r '.[0].hook_bead // empty' <<<"${agent_json}")"
+        agent_state="$(jq -r '.[0].agent_state // empty' <<<"${agent_json}")"
+        last_activity="$(jq -r '.[0].last_activity // empty' <<<"${agent_json}")"
+      fi
+      if [[ -n "${last_activity}" ]]; then
+        last_epoch=""
+        if last_epoch="$(mesh_epoch_from_iso "${last_activity}")"; then
+          now_epoch="$(date -u +%s)"
+          age="$((now_epoch - last_epoch))"
+        fi
+      fi
+    fi
+
+    if [[ -z "${hook_bead}" ]]; then
+      mesh_die "mesh-monitor diagnose: unable to resolve hook bead for ${diag_target}"
+    fi
+
+    proc_state="$(mesh_agent_process_state "${hook_bead}")"
+    ws_path="$(mesh_workspace_path "${hook_bead}")"
+    ws_state="missing"
+    if [[ -d "${ws_path}" ]]; then
+      if [[ -d "${ws_path}/.jj" ]]; then
+        ws_state="jj"
+      elif [[ -d "${ws_path}/.git" ]]; then
+        ws_state="git"
+      else
+        ws_state="dir"
+      fi
+    fi
+
+    log_file=""
+    if [[ -n "${diag_log_dir}" && -d "${diag_log_dir}/${hook_bead}" ]]; then
+      # shellcheck disable=SC2012
+      log_file="$(ls -t "${diag_log_dir}/${hook_bead}"/*.log 2>/dev/null | head -n1 || true)"
+    fi
+
+    needs_follow_up_count="0"
+    error_count="0"
+    last_ts=""
+    session_id=""
+    status="unknown"
+  human_block=""
+  if [[ -n "${log_file}" ]]; then
+    needs_follow_up_count="$(mesh_count_pattern "needs_follow_up" "${log_file}")"
+    error_count="$(mesh_count_pattern "panic|Traceback|FATAL|Exception" "${log_file}")"
+    last_ts="$(mesh_log_last_timestamp "${log_file}")"
+    session_id="$(mesh_log_session_id "${log_file}")"
+    if mesh_log_has_line "HUMAN_INPUT_REQUIRED:" "${log_file}"; then
+      human_block="$(awk '
+        /HUMAN_INPUT_REQUIRED:/ {inside=1; block=""; }
+        inside {block = block $0 ORS}
+        /END_HUMAN_INPUT_REQUIRED/ {inside=0; last=block}
+        END {if (last != "") printf "%s", last}
+      ' "${log_file}")"
+      if printf '%s' "${human_block}" | grep -q "<question>"; then
+        line_count="$(printf '%s' "${human_block}" | wc -l | awk '{print $1}')"
+        if [[ "${line_count}" -le 3 ]]; then
+          human_block=""
+        fi
+      fi
+    fi
+    if mesh_log_has_line "^PR: https?://" "${log_file}"; then
+      status="completed"
+    elif mesh_log_has_line "panic|Traceback|FATAL|Exception" "${log_file}"; then
+      status="error"
+    elif [[ "${needs_follow_up_count}" != "0" ]]; then
+        status="needs_follow_up"
+      elif [[ "${proc_state}" == "running" ]]; then
+        status="running"
+      else
+        status="stale"
+      fi
+    else
+      if [[ "${proc_state}" == "running" ]]; then
+        status="running-no-log"
+      else
+        status="missing-log"
+      fi
+    fi
+
+    codex_query=""
+    codex_matches="0"
+    if [[ -f "${diag_codex_log}" ]]; then
+      if [[ -n "${session_id}" ]]; then
+        codex_query="${session_id}"
+      elif [[ -n "${last_ts}" ]]; then
+        codex_query="$(printf '%s' "${last_ts}" | cut -c1-16)"
+      fi
+      if [[ -n "${codex_query}" ]]; then
+        codex_matches="$(mesh_count_pattern "${codex_query}" "${diag_codex_log}")"
+      fi
+    fi
+
+    if [[ ${MESH_JSON} -eq 1 ]]; then
+      jq -n \
+        --arg target "${diag_target}" \
+        --arg target_type "${target_type}" \
+        --arg agent_name "${agent_name}" \
+        --arg agent_id "${agent_id}" \
+        --arg hook_bead "${hook_bead}" \
+        --arg agent_state "${agent_state}" \
+        --arg last_activity "${last_activity}" \
+        --arg age_seconds "${age}" \
+        --arg process "${proc_state}" \
+        --arg workspace_path "${ws_path}" \
+        --arg workspace_state "${ws_state}" \
+        --arg log_file "${log_file}" \
+        --arg needs_follow_up_count "${needs_follow_up_count}" \
+        --arg error_count "${error_count}" \
+        --arg last_timestamp "${last_ts}" \
+      --arg status "${status}" \
+      --arg session_id "${session_id}" \
+      --arg human_input_required "${human_block}" \
+      --arg codex_log "${diag_codex_log}" \
+      --arg codex_query "${codex_query}" \
+      --arg codex_matches "${codex_matches}" \
+      '{ok:true,target:$target,target_type:$target_type,agent_name:$agent_name,agent_id:$agent_id,hook_bead:$hook_bead,agent_state:$agent_state,last_activity:$last_activity,age_seconds:$age_seconds,process:$process,workspace_path:$workspace_path,workspace_state:$workspace_state,log_file:$log_file,needs_follow_up_count:$needs_follow_up_count,error_count:$error_count,last_timestamp:$last_timestamp,status:$status,session_id:$session_id,human_input_required:$human_input_required,codex_log:$codex_log,codex_query:$codex_query,codex_matches:$codex_matches}'
+    else
+      echo "mesh-monitor diagnose"
+      echo "- Target: ${diag_target} (${target_type})"
+      if [[ -n "${agent_id}" ]]; then
+        echo "- Agent ID: ${agent_id}"
+      fi
+      echo "- Hook bead: ${hook_bead}"
+      if [[ -n "${agent_state}" ]]; then
+        echo "- Agent state: ${agent_state}"
+      fi
+      if [[ -n "${last_activity}" ]]; then
+        echo "- Last activity: ${last_activity} (age: ${age:-}s)"
+      fi
+      echo "- Process state: ${proc_state}"
+      echo "- Workspace: ${ws_state} (${ws_path})"
+    if [[ -n "${log_file}" ]]; then
+      echo "- Mesh-run log: ${log_file}"
+      echo "- Log status: ${status}"
+      if [[ -n "${session_id}" ]]; then
+        echo "- Session id: ${session_id}"
+      fi
+      echo "- needs_follow_up: ${needs_follow_up_count} | errors: ${error_count}"
+      if [[ -n "${last_ts}" ]]; then
+        echo "- Last timestamp: ${last_ts}"
+      fi
+      if [[ -n "${human_block}" ]]; then
+        echo ""
+        echo "${human_block}"
+      fi
+      echo ""
+      echo "Log tail (${diag_tail} lines)"
+      tail -n "${diag_tail}" "${log_file}" || true
+      else
+        echo "- Mesh-run log: missing (set MESH_RUN_LOG_DIR or --log-dir)"
+      fi
+
+      if [[ -f "${diag_codex_log}" && -n "${codex_query}" ]]; then
+        echo ""
+        echo "Codex log matches (${codex_query}): ${codex_matches}"
+        if mesh_have_rg; then
+          rg -n "${codex_query}" "${diag_codex_log}" | head -n 40 || true
+        else
+          grep -E -n "${codex_query}" "${diag_codex_log}" | head -n 40 || true
+        fi
+      elif [[ -f "${diag_codex_log}" ]]; then
+        echo ""
+        echo "Codex log present (${diag_codex_log}), but no session id or timestamp to query."
+      else
+        echo ""
+        echo "Codex log missing (${diag_codex_log})."
+      fi
+    fi
+
+    if [[ -z "${diag_wait}" ]]; then
+      break
+    fi
+    case "${status}" in
+      running|running-no-log|unknown)
+        ;;
+      *)
+        break
+        ;;
+    esac
+    if [[ ${MESH_JSON} -ne 1 ]]; then
+      echo ""
+      echo "Waiting ${diag_wait}s..."
+    fi
+    sleep "${diag_wait}"
+    if [[ ${MESH_JSON} -ne 1 ]]; then
+      echo ""
+    fi
+  done
+  exit 0
+fi
 
 idx=0
 while [[ ${idx} -lt ${#MESH_ARGS[@]} ]]; do
@@ -124,73 +610,6 @@ if ! [[ "${start}" =~ ^[0-9]+$ ]]; then
   usage_error "mesh-monitor: --start must be an integer"
 fi
 
-mesh_agent_pool_script="${SCRIPT_DIR}/mesh-agent-pool"
-mesh_bd_ro_script="${SCRIPT_DIR}/mesh-bd-ro"
-
-mesh_repo_root() {
-  local root
-  root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-  if [[ -z "${root}" ]]; then
-    mesh_die "mesh-monitor: not inside a git repository"
-  fi
-  printf '%s' "${root}"
-}
-
-mesh_workspace_slug() {
-  local raw="$1"
-  raw="${raw##*/}"
-  raw="$(printf '%s' "${raw}" | sed -E 's/^[.]+//; s/[^A-Za-z0-9._-]+/-/g; s/\.{2,}/-/g; s/[.]+$//; s/^-+//; s/-+$//')"
-  if [[ "${raw}" == *.lock ]]; then
-    raw="${raw%.lock}-lock"
-  fi
-  if [[ -z "${raw}" ]]; then
-    mesh_die "mesh-monitor: invalid bead id: $1"
-  fi
-  printf '%s' "${raw}"
-}
-
-mesh_workspace_path() {
-  local bead_id="$1"
-  local root="${MESH_WORKSPACE_ROOT:-}"
-  if [[ -z "${root}" ]]; then
-    local repo_root
-    repo_root="$(mesh_repo_root)"
-    local repo_name
-    repo_name="$(basename "${repo_root}")"
-    root="${repo_root%/}/../workspaces/${repo_name}"
-  fi
-  root="${root%/}"
-  local slug
-  slug="$(mesh_workspace_slug "${bead_id}")"
-  printf '%s/%s' "${root}" "${slug}"
-}
-
-mesh_epoch_from_iso() {
-  local ts="$1"
-  local clean
-  clean="$(printf '%s' "${ts}" | sed -E 's/\.[0-9]+//; s/([+-][0-9]{2}):([0-9]{2})/\1\2/')"
-  if date -u -j -f "%Y-%m-%dT%H:%M:%S%z" "${clean}" +%s 2>/dev/null; then
-    return 0
-  fi
-  if date -u -d "${ts}" +%s 2>/dev/null; then
-    return 0
-  fi
-  return 1
-}
-
-mesh_agent_process_state() {
-  local token="$1"
-  if ! command -v pgrep >/dev/null 2>&1; then
-    printf '%s' "unknown"
-    return 0
-  fi
-  if pgrep -f "codex.*${token}" >/dev/null 2>&1; then
-    printf '%s' "running"
-    return 0
-  fi
-  printf '%s' "none"
-}
-
 mesh_last_interaction() {
   local issue_id="$1"
   if [[ ${show_last_interaction} -ne 1 ]]; then
@@ -241,7 +660,7 @@ render_once() {
   while IFS= read -r name; do
     [[ -z "${name}" ]] && continue
     local agent_id=""
-    agent_id="$("${mesh_agent_pool_script}" id "${name}" 2>/dev/null || true)"
+    agent_id="$(mesh_agent_id_for_name "${name}" "${allow_stale}" 2>/dev/null || true)"
     local hook_bead=""
     local agent_state=""
     local last_activity=""
