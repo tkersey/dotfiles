@@ -84,20 +84,13 @@ agent_hook_for_id() {
   local json
   local hook=""
 
-  if json="$(bd slot show "${id}" --json 2>/dev/null)"; then
-    hook="$(extract_hook_from_json "${json}")"
-    printf '%s' "${hook}"
-    return 0
+  if ! json="$(bd slot show "${id}" --json 2>/dev/null)"; then
+    return 2
   fi
 
-  local text
-  if text="$(bd slot show "${id}" 2>/dev/null)"; then
-    hook="$(awk -F: '/^[[:space:]]*hook[[:space:]]*:/ {print $2}' <<<"${text}" | xargs || true)"
-    printf '%s' "${hook}"
-    return 0
-  fi
-
-  return 2
+  hook="$(extract_hook_from_json "${json}")"
+  printf '%s' "${hook}"
+  return 0
 }
 
 emit_agent() {
