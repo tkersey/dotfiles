@@ -8,18 +8,6 @@ fi
 
 PROMPT="$*"
 
-PROMPT_PREFIX=$(cat <<'EOF'
-Before any tool calls, print:
-AGENT_STATUS:
-<1-3 lines: intent + what you need next>
-END_AGENT_STATUS
-EOF
-)
-
-PROMPT="${PROMPT_PREFIX}
-
-${PROMPT}"
-
 exec codex \
   --search \
   --enable web_search_request \
