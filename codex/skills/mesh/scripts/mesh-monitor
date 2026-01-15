@@ -391,6 +391,8 @@ if [[ "${mode}" == "diagnose" ]]; then
   human_block=""
   assistant_block=""
   status_block=""
+  thinking_block=""
+  last_tool_call=""
   if [[ -n "${log_file}" ]]; then
     needs_follow_up_count="$(mesh_count_pattern "needs_follow_up" "${log_file}")"
     error_count="$(mesh_count_pattern "panic|Traceback|FATAL|Exception" "${log_file}")"
@@ -423,6 +425,29 @@ if [[ "${mode}" == "diagnose" ]]; then
           status_block=""
         fi
       fi
+    fi
+    if mesh_log_has_line "^thinking" "${log_file}"; then
+      thinking_block="$(awk '
+        /^thinking/ {inside=1; block=""; next}
+        inside {
+          if ($0 ~ /^(exec|user)$/) {inside=0; last=block; next}
+          block = block $0 ORS
+        }
+        END {if (last != "") printf "%s", last}
+      ' "${log_file}")"
+      if [[ -n "${thinking_block}" ]]; then
+        thinking_block="$(printf '%s' "${thinking_block}" | sed -E 's/^[[:space:]]+//')"
+      fi
+    fi
+    if mesh_log_has_line "^exec$" "${log_file}"; then
+      last_tool_call="$(awk '
+        /^exec$/ {inside=1; block="exec"; next}
+        inside {
+          if ($0 ~ /^(thinking|user)$/) {inside=0; last=block; next}
+          block = block ORS $0
+        }
+        END {if (last != "") printf "%s", last}
+      ' "${log_file}")"
     fi
     if mesh_log_has_line "^assistant" "${log_file}"; then
       assistant_block="$(awk '
@@ -491,11 +516,13 @@ if [[ "${mode}" == "diagnose" ]]; then
       --arg session_id "${session_id}" \
       --arg human_input_required "${human_block}" \
       --arg agent_status "${status_block}" \
+      --arg thinking "${thinking_block}" \
+      --arg last_tool_call "${last_tool_call}" \
       --arg assistant_message "${assistant_block}" \
       --arg codex_log "${diag_codex_log}" \
       --arg codex_query "${codex_query}" \
       --arg codex_matches "${codex_matches}" \
-      '{ok:true,target:$target,target_type:$target_type,agent_name:$agent_name,agent_id:$agent_id,hook_bead:$hook_bead,agent_state:$agent_state,last_activity:$last_activity,age_seconds:$age_seconds,process:$process,workspace_path:$workspace_path,workspace_state:$workspace_state,log_file:$log_file,needs_follow_up_count:$needs_follow_up_count,error_count:$error_count,last_timestamp:$last_timestamp,status:$status,session_id:$session_id,human_input_required:$human_input_required,agent_status:$agent_status,assistant_message:$assistant_message,codex_log:$codex_log,codex_query:$codex_query,codex_matches:$codex_matches}'
+      '{ok:true,target:$target,target_type:$target_type,agent_name:$agent_name,agent_id:$agent_id,hook_bead:$hook_bead,agent_state:$agent_state,last_activity:$last_activity,age_seconds:$age_seconds,process:$process,workspace_path:$workspace_path,workspace_state:$workspace_state,log_file:$log_file,needs_follow_up_count:$needs_follow_up_count,error_count:$error_count,last_timestamp:$last_timestamp,status:$status,session_id:$session_id,human_input_required:$human_input_required,agent_status:$agent_status,thinking:$thinking,last_tool_call:$last_tool_call,assistant_message:$assistant_message,codex_log:$codex_log,codex_query:$codex_query,codex_matches:$codex_matches}'
     else
       echo "mesh-monitor diagnose"
       echo "- Target: ${diag_target} (${target_type})"
@@ -528,6 +555,16 @@ if [[ "${mode}" == "diagnose" ]]; then
       if [[ -n "${status_block}" ]]; then
         echo ""
         echo "${status_block}"
+      fi
+      if [[ -n "${thinking_block}" ]]; then
+        echo ""
+        echo "Last thinking:"
+        echo "${thinking_block}"
+      fi
+      if [[ -n "${last_tool_call}" ]]; then
+        echo ""
+        echo "Last tool call:"
+        echo "${last_tool_call}"
       fi
       if [[ -n "${assistant_block}" ]]; then
         echo ""
