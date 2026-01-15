@@ -906,3 +906,11 @@ echo "- Merge slot: ${merge_slot_state}"
 if [[ -n "${merge_slot_note}" ]]; then
   echo "- Note: ${merge_slot_note}"
 fi
+echo ""
+echo "Output legend"
+echo "- Importing from JSONL...: bd refreshed local DB from JSONL (no data changes implies clean sync)"
+echo "- int-<id>: mesh audit/run identifier for this action"
+echo "- ensure: agent beads created or confirmed"
+echo "- workspace exists/created: workspace path ready for the bead"
+echo "- Set <agent>.hook: agent hooked to work bead; state=working means assigned"
+echo "- acquire: agent claimed for this run"
