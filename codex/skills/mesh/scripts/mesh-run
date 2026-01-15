@@ -191,10 +191,11 @@ mesh_epoch_from_iso() {
 
 mesh_agent_process_running() {
   local token="$1"
-  if command -v pgrep >/dev/null 2>&1; then
-    if pgrep -f "codex.*${token}" >/dev/null 2>&1; then
-      return 0
-    fi
+  if ! command -v pgrep >/dev/null 2>&1; then
+    return 0
+  fi
+  if pgrep -f "codex.*${token}" >/dev/null 2>&1; then
+    return 0
   fi
   return 1
 }
