@@ -747,6 +747,7 @@ If you must pause for follow-up, print a clear block:
 HUMAN_INPUT_REQUIRED:
 <question>
 END_HUMAN_INPUT_REQUIRED
+Print the block before any tool calls, then stop.
 
 Final output block (required):
 PR: <url>
