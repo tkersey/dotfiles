@@ -26,8 +26,11 @@ Config:
   MESH_AGENT_PREFIX      Agent name prefix (default: mesh-)
   MESH_AGENT_START       Agent name start index (default: 1)
   MESH_STALE_HOOK_TTL_SECONDS  Clear agent hooks if idle beyond TTL (default: 3600)
+  MESH_PREFLIGHT         Require workspace bd read to succeed before dispatch (default: 1)
+  MESH_PREFLIGHT_SYNC    Run bd --sandbox sync --import-only before preflight (default: 1)
   MESH_WORKSPACE_ROOT    Workspace root (default: ../workspaces/<repo>)
   MESH_CX_EXEC           Override cx-exec.sh path
+  MESH_RUN_LOG_DIR       Write agent stdout/stderr logs to this directory (per bead)
 
 Global flags:
   -h, --help     Show help and exit
@@ -54,6 +57,9 @@ agent_model="${MESH_AGENT_MODEL:-gpt-5.2-codex}"
 agent_prefix="${MESH_AGENT_PREFIX:-mesh-}"
 agent_start="${MESH_AGENT_START:-1}"
 stale_hook_ttl_seconds="${MESH_STALE_HOOK_TTL_SECONDS:-3600}"
+mesh_preflight="${MESH_PREFLIGHT:-1}"
+mesh_preflight_sync="${MESH_PREFLIGHT_SYNC:-1}"
+mesh_run_log_dir="${MESH_RUN_LOG_DIR:-}"
 
 mesh_workspace_script="${SCRIPT_DIR}/mesh-workspace"
 mesh_audit_script="${SCRIPT_DIR}/mesh-audit"
@@ -174,6 +180,17 @@ run_write_in_dir() {
     return 0
   fi
   (cd "${dir}" && "$@")
+}
+
+run_write_in_dir_logged() {
+  local dir="$1"
+  local log_file="$2"
+  shift 2
+  record_cmd bash -lc "cd \"${dir}\" && $(mesh_cmd_string "$@") > \"${log_file}\" 2>&1"
+  if [[ ${MESH_DRY_RUN} -eq 1 ]]; then
+    return 0
+  fi
+  (cd "${dir}" && "$@") > "${log_file}" 2>&1
 }
 
 mesh_epoch_from_iso() {
@@ -759,8 +776,26 @@ dispatch_wave() {
     local workspace_path
     workspace_path="$(mesh_workspace_path "${id}")"
 
-    run_write "${mesh_agent_pool_script}" acquire "${agent_name}" "${id}"
     run_write "${mesh_workspace_script}" create --backend "${workspace_backend}" --path "${workspace_path}" --branch "${slug}" "${id}"
+
+    if [[ "${mesh_preflight}" -eq 1 ]]; then
+      if [[ "${mesh_preflight_sync}" -eq 1 ]]; then
+        if ! run_write_in_dir "${workspace_path}" bd --sandbox sync --import-only >/dev/null 2>&1; then
+          mesh_audit_tool "mesh-run.preflight" \
+            "$(jq -c -n --arg bead "${id}" --arg workspace "${workspace_path}" '{bead:$bead,workspace:$workspace}')" \
+            '{"ok":false,"error":"bd sync --import-only failed"}'
+          mesh_die "mesh-run: preflight sync failed for ${id}"
+        fi
+      fi
+      if ! run_write_in_dir "${workspace_path}" "${mesh_bd_ro_hint}" show "${id}" --json >/dev/null 2>&1; then
+        mesh_audit_tool "mesh-run.preflight" \
+          "$(jq -c -n --arg bead "${id}" --arg workspace "${workspace_path}" '{bead:$bead,workspace:$workspace}')" \
+          '{"ok":false,"error":"mesh-bd-ro show failed (db out of sync)"}'
+        mesh_die "mesh-run: preflight failed for ${id}; bd DB out of sync in workspace"
+      fi
+    fi
+
+    run_write "${mesh_agent_pool_script}" acquire "${agent_name}" "${id}"
 
     local bead_context=""
     run_read_capture bead_context bd show "${id}"
@@ -768,7 +803,29 @@ dispatch_wave() {
     prompt="$(build_prompt "${id}" "${bead_context}")"
 
     mesh_audit_prompt "${id}" "${agent_model}" "${prompt}"
-    run_write_in_dir "${workspace_path}" "${cx_exec_script}" "${prompt}"
+    local -a cx_env=()
+    if [[ "${MESH_BD_ALLOW_STALE:-0}" == "1" ]]; then
+      cx_env=(env MESH_BD_ALLOW_STALE=1)
+    fi
+
+    if [[ -n "${mesh_run_log_dir}" ]]; then
+      local log_dir="${mesh_run_log_dir}/${id}"
+      local run_id
+      run_id="$(date -u +%Y%m%dT%H%M%SZ)"
+      run_write mkdir -p "${log_dir}"
+      local log_file="${log_dir}/${run_id}.log"
+      if [[ ${#cx_env[@]} -gt 0 ]]; then
+        run_write_in_dir_logged "${workspace_path}" "${log_file}" "${cx_env[@]}" "${cx_exec_script}" "${prompt}"
+      else
+        run_write_in_dir_logged "${workspace_path}" "${log_file}" "${cx_exec_script}" "${prompt}"
+      fi
+    else
+      if [[ ${#cx_env[@]} -gt 0 ]]; then
+        run_write_in_dir "${workspace_path}" "${cx_env[@]}" "${cx_exec_script}" "${prompt}"
+      else
+        run_write_in_dir "${workspace_path}" "${cx_exec_script}" "${prompt}"
+      fi
+    fi
 
     idx=$((idx + 1))
   done

@@ -26,6 +26,10 @@ Commands:
   release <name>
       Clear hook slot and mark agent idle.
 
+  doctor [--count N] [--prefix NAME-] [--start N] [--max-age SECONDS] [--release-stale] <name...>
+      Inspect agent hooks and liveness; optionally release stale hooks.
+      If --count is set and no names are provided, generate names (prefix + index).
+
 Global flags:
   -h, --help     Show help and exit
   --dry-run      Print intended actions without executing
@@ -98,6 +102,87 @@ agent_hook_for_id() {
   fi
 
   return 2
+}
+
+mesh_epoch_from_iso() {
+  local ts="$1"
+  local clean
+  clean="$(printf '%s' "${ts}" | sed -E 's/\.[0-9]+//; s/([+-][0-9]{2}):([0-9]{2})/\1\2/')"
+  if date -u -j -f "%Y-%m-%dT%H:%M:%S%z" "${clean}" +%s 2>/dev/null; then
+    return 0
+  fi
+  if date -u -d "${ts}" +%s 2>/dev/null; then
+    return 0
+  fi
+  return 1
+}
+
+process_state_for_hook() {
+  local hook="$1"
+  local name="$2"
+  if [[ -z "${hook}" || "${hook}" == "null" ]]; then
+    echo "missing"
+    return 0
+  fi
+  if ! command -v pgrep >/dev/null 2>&1; then
+    echo "unknown"
+    return 0
+  fi
+  if pgrep -f "codex.*${hook}" >/dev/null 2>&1; then
+    echo "running"
+    return 0
+  fi
+  if [[ -n "${name}" ]] && pgrep -f "codex.*${name}" >/dev/null 2>&1; then
+    echo "running"
+    return 0
+  fi
+  echo "missing"
+}
+
+emit_doctor() {
+  local name="$1"
+  local id="$2"
+  local hook="$3"
+  local state="$4"
+  local last_activity="$5"
+  local age="$6"
+  local process_state="$7"
+  local stale="$8"
+  local released="$9"
+
+  if [[ ${MESH_JSON} -eq 1 ]]; then
+    jq -n \
+      --arg name "${name}" \
+      --arg id "${id}" \
+      --arg hook "${hook}" \
+      --arg state "${state}" \
+      --arg last_activity "${last_activity}" \
+      --arg process_state "${process_state}" \
+      --argjson age "${age:-null}" \
+      --argjson stale "${stale}" \
+      --argjson released "${released}" \
+      '{ok:true,action:"doctor",agent_name:$name,agent_id:$id,hook_bead:$hook,agent_state:$state,last_activity:$last_activity,age_seconds:$age,process_state:$process_state,stale:$stale,released:$released}'
+    return 0
+  fi
+
+  local age_text="age=?"
+  if [[ -n "${age}" ]]; then
+    age_text="age=${age}s"
+  fi
+  local hook_text="hook=${hook:-none}"
+  if [[ -z "${hook}" || "${hook}" == "null" ]]; then
+    hook_text="hook=none"
+  fi
+  local state_text="state=${state:-unknown}"
+  local released_text="released=no"
+  if [[ "${released}" -eq 1 ]]; then
+    released_text="released=yes"
+  fi
+  local stale_text="stale=no"
+  if [[ "${stale}" -eq 1 ]]; then
+    stale_text="stale=yes"
+  fi
+  echo "doctor: ${name} -> ${id} ${state_text} ${hook_text} ${age_text} process=${process_state} ${stale_text} ${released_text}"
 }
 
 emit_agent() {
@@ -310,6 +395,118 @@ case "${cmd}" in
     mesh_run bd --actor "agent:${name}" slot clear "${target_id}" hook
     mesh_run bd --actor "agent:${name}" agent state "${target_id}" idle
     emit_agent "release" "${name}" "${id}"
+    ;;
+
+  doctor)
+    prefix="${DEFAULT_PREFIX}"
+    start="${DEFAULT_START}"
+    count=""
+    max_age="${MESH_STALE_HOOK_TTL_SECONDS:-3600}"
+    release_stale=0
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --prefix)
+          prefix="$2"
+          shift 2
+          ;;
+        --start)
+          start="$2"
+          shift 2
+          ;;
+        --count)
+          count="$2"
+          shift 2
+          ;;
+        --max-age)
+          max_age="$2"
+          shift 2
+          ;;
+        --release-stale)
+          release_stale=1
+          shift
+          ;;
+        --)
+          shift
+          break
+          ;;
+        -* )
+          mesh_die "mesh-agent-pool doctor: unknown flag: $1"
+          ;;
+        *)
+          break
+          ;;
+      esac
+    done
+
+    if ! [[ "${max_age}" =~ ^[0-9]+$ ]]; then
+      mesh_die "mesh-agent-pool doctor: --max-age must be an integer"
+    fi
+    if ! [[ "${start}" =~ ^[0-9]+$ ]]; then
+      mesh_die "mesh-agent-pool doctor: --start must be an integer"
+    fi
+    if [[ -n "${count}" && ! "${count}" =~ ^[0-9]+$ ]]; then
+      mesh_die "mesh-agent-pool doctor: --count must be an integer"
+    fi
+
+    names=()
+    if [[ -n "${count}" ]]; then
+      if [[ $# -gt 0 ]]; then
+        mesh_die "mesh-agent-pool doctor: cannot combine --count with explicit names"
+      fi
+      for ((i=start; i<start+count; i++)); do
+        names+=("${prefix}${i}")
+      done
+    else
+      names=("$@")
+    fi
+
+    if [[ ${#names[@]} -eq 0 ]]; then
+      mesh_die "mesh-agent-pool doctor: no agent names provided"
+    fi
+
+    now="$(date -u +%s)"
+    for name in "${names[@]}"; do
+      id=""
+      if ! id="$(agent_id_for_name "${name}")"; then
+        emit_doctor "${name}" "" "" "" "" "" "missing" 0 0
+        continue
+      fi
+
+      agent_json=""
+      if ! agent_json="$(bd show "${id}" --json 2>/dev/null)"; then
+        emit_doctor "${name}" "${id}" "" "" "" "" "missing" 0 0
+        continue
+      fi
+
+      hook="$(jq -r '.[0].hook_bead // empty' <<<"${agent_json}")"
+      state="$(jq -r '.[0].agent_state // empty' <<<"${agent_json}")"
+      last_activity="$(jq -r '.[0].last_activity // empty' <<<"${agent_json}")"
+      age=""
+      if [[ -n "${last_activity}" && "${last_activity}" != "null" ]]; then
+        if last_epoch="$(mesh_epoch_from_iso "${last_activity}")"; then
+          age=$((now - last_epoch))
+        fi
+      fi
+
+      process_state="$(process_state_for_hook "${hook}" "${name}")"
+      stale=0
+      if [[ -n "${hook}" && "${hook}" != "null" && -n "${age}" ]]; then
+        if [[ "${age}" -ge "${max_age}" && "${process_state}" == "missing" ]]; then
+          stale=1
+        fi
+      fi
+
+      released=0
+      if [[ "${release_stale}" -eq 1 && "${stale}" -eq 1 ]]; then
+        target_id="${id:-agent:${name}}"
+        mesh_run bd --actor "agent:${name}" slot clear "${target_id}" hook
+        mesh_run bd --actor "agent:${name}" agent state "${target_id}" idle
+        released=1
+      fi
+
+      emit_doctor "${name}" "${id}" "${hook}" "${state}" "${last_activity}" "${age}" "${process_state}" "${stale}" "${released}"
+    done
     ;;
 
   *)

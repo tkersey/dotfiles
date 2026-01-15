@@ -19,6 +19,9 @@ Global flags (allowlisted):
   -q, --quiet
   -v, --verbose
 
+Env:
+  MESH_BD_ALLOW_STALE=1  Append --allow-stale automatically
+
 Allowlisted commands:
   show <id...>
   list [args...]
@@ -164,6 +167,19 @@ if [[ $want_help -eq 1 ]]; then
 fi
 
 MESH_JSON=$want_json
+
+set +u
+allow_stale_present=0
+for flag in "${global_flags[@]}"; do
+  if [[ "${flag}" == "--allow-stale" ]]; then
+    allow_stale_present=1
+    break
+  fi
+done
+set -u
+if [[ "${MESH_BD_ALLOW_STALE:-0}" == "1" && ${allow_stale_present} -eq 0 ]]; then
+  global_flags+=("--allow-stale")
+fi
 
 deny_disallowed_globals "$@"
 
