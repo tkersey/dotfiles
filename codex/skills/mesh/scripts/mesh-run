@@ -748,7 +748,7 @@ HUMAN_INPUT_REQUIRED:
 <question>
 END_HUMAN_INPUT_REQUIRED
 Print the block before any tool calls, then stop.
-Before any tool calls, print:
+Before any tool calls, print Echo first, then:
 AGENT_STATUS:
 <1-3 lines: intent + what you need next>
 END_AGENT_STATUS
