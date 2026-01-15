@@ -13,6 +13,8 @@ Runs: bd --readonly --sandbox <command...>
 
 Global flags (allowlisted):
   -h, --help
+  --allow-stale
+  --dry-run
   --json
   -q, --quiet
   -v, --verbose
@@ -39,6 +41,8 @@ mesh_require_cmd bd
 
 declare -a global_flags=()
 want_help=0
+want_dry_run=0
+want_json=0
 
 deny_disallowed_globals() {
   local arg
@@ -52,9 +56,6 @@ deny_disallowed_globals() {
         ;;
       --profile|--profile=*)
         mesh_die "mesh-bd-ro: disallowed global flag: --profile"
-        ;;
-      --allow-stale|--allow-stale=*)
-        mesh_die "mesh-bd-ro: disallowed global flag: --allow-stale"
         ;;
       --lock-timeout|--lock-timeout=*)
         mesh_die "mesh-bd-ro: disallowed global flag: --lock-timeout"
@@ -85,7 +86,20 @@ while [[ $# -gt 0 ]]; do
       global_flags+=("$1")
       shift
       ;;
-    --json|-q|--quiet|-v|--verbose)
+    --dry-run)
+      want_dry_run=1
+      shift
+      ;;
+    --allow-stale)
+      global_flags+=("$1")
+      shift
+      ;;
+    --json)
+      want_json=1
+      global_flags+=("$1")
+      shift
+      ;;
+    -q|--quiet|-v|--verbose)
       global_flags+=("$1")
       shift
       ;;
@@ -149,6 +163,8 @@ if [[ $want_help -eq 1 ]]; then
   exit 0
 fi
 
+MESH_JSON=$want_json
+
 deny_disallowed_globals "$@"
 
 case "$path" in
@@ -167,8 +183,15 @@ if [[ -n "$sub" ]]; then
 fi
 cmd_args+=("$@")
 
+render_cmd=(bd --readonly --sandbox)
 if [[ ${#global_flags[@]} -gt 0 ]]; then
-  exec bd --readonly --sandbox "${global_flags[@]}" "${cmd_args[@]}"
+  render_cmd+=("${global_flags[@]}")
+fi
+render_cmd+=("${cmd_args[@]}")
+
+if [[ $want_dry_run -eq 1 ]]; then
+  mesh_emit "dry-run: ${render_cmd[*]}"
+  exit 0
 fi
 
-exec bd --readonly --sandbox "${cmd_args[@]}"
+exec "${render_cmd[@]}"
