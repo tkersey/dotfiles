@@ -1,9 +1,9 @@
 ---
-name: resolve
-description: Review+resolve protocol with safety guardrails (unsoundness, invariants, footguns, incidental complexity); requires a validation signal.
+name: fix
+description: Review+fix protocol with safety guardrails (unsoundness, invariants, footguns, incidental complexity); requires a validation signal.
 ---
 
-# Resolve
+# Fix
 
 ## Intent
 Turn unclear, risky, or failure-prone code into a small, sound, *validated* change.
@@ -16,7 +16,7 @@ Turn unclear, risky, or failure-prone code into a small, sound, *validated* chan
 - Deep nesting, branch soup, cross-file hop fatigue (when risk reduction is the goal).
 
 ## Default posture
-- Default: review and resolve (unless asked for review-only).
+- Default: review and fix (unless asked for review-only).
 - Prefer the smallest sound fix; widen scope only to reduce future-incident risk (tests, invariants, footgun defusal, incidental-complexity reduction).
 - No intentional product/semantic changes without clarifying.
 

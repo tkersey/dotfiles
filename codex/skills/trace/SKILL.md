@@ -25,13 +25,13 @@ Deliver actionable suggestions (file/line targets + minimal patch sketches) but 
    - 1–3 smallest improvements per hotspot.
    - Include file:line targets.
    - Use short pseudo-diffs or code sketches.
-6. Stop before editing; if changes are desired, escalate to `$resolve`.
+6. Stop before editing; if changes are desired, escalate to `$fix`.
 
 ## Guardrails
 - No file edits, no commits.
 - No running commands unless explicitly requested.
 - If expected behavior is unclear/product-sensitive, stop and ask.
-- If you suspect crash/corruption risk, recommend `$resolve`.
+- If you suspect crash/corruption risk, recommend `$fix`.
 
 ## TRACE checklist
 - Type: make invalid states unrepresentable; eliminate “maybe” states where possible.

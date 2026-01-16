@@ -61,7 +61,7 @@ For more details, see README.md and QUICKSTART.md.
 
 ### Initiative Skill Router (preferred)
 
-- Use `$resolve` for review/refactor/readability/cognitive-load requests, and for crash/corruption risk, invariants, footguns, or complexity tangles.
+- Use `$fix` for review/refactor/readability/cognitive-load requests, and for crash/corruption risk, invariants, footguns, or complexity tangles.
 - Use `$trace` for "trace it"/explanation requests and analysis-only improvement suggestions (no edits applied).
 - Use `$abstraction-laws` for repeated patterns, parameter clusters, or algebraic structure cues.
 - Use `$clarification-expert` for ambiguous or under-specified prompts ("build a system", "make it better", "optimize this", "how do I", unclear goals, or conflicting requirements).

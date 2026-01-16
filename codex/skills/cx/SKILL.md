@@ -22,5 +22,5 @@ description: Spawn Codex CLI sub-agents non-interactively with fixed model/effor
 
 ## Example
 ```bash
-$HOME/.codex/skills/cx/scripts/cx-exec.sh "Work bead 123. Use skill resolve. Source the next task per that skill's workflow."
+$HOME/.codex/skills/cx/scripts/cx-exec.sh "Work bead 123. Use skill fix. Source the next task per that skill's workflow."
 ```

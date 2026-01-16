@@ -66,7 +66,7 @@ Optional deepeners (ask only if still ambiguous):
 18. **Performance / latency** (if applicable): Any budgets, SLOs, or known hotspots to avoid?
 19. **Security / compliance** (if applicable): secrets/PII rules, authz expectations, audit logging, approved deps.
 20. **Tooling constraints**: must-use tools (e.g., `uv`, `jj`, `gh`), formatters/linters, CI gates, and any banned/destructive commands.
-21. **Influences**: Which existing skills should influence this method? (e.g., `$sp`, `$resolve`, `$close-the-loop`, `$commit`, `$beads`) For each: align / adapt / diverge.
+21. **Influences**: Which existing skills should influence this method? (e.g., `$sp`, `$fix`, `$close-the-loop`, `$commit`, `$beads`) For each: align / adapt / diverge.
 22. **Output format**: What should the skill output every run? (patch summary, file list, commands run, proof block, PR link, etc.)
 23. **Bead ledger** (optional; ask only if the repo uses one): If the repo uses `bd` (beads) or another work ledger, what updates are required during/after the run? (status updates, comments, close reason, linking discovered work)
 

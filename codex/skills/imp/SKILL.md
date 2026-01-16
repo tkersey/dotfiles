@@ -105,7 +105,7 @@ If you find unrelated work:
 - Revert/stash it (or split it only if explicitly asked).
 
 ### 4) Mandatory TRACE mini-pass (before first incision)
-Before changing code, do a small `$resolve` pass:
+Before changing code, do a small `$fix` pass:
 1. Cognitive heat map: note hotspots + surprises.
 2. Triage failure modes: crash > corruption > logic.
 3. State the invariant: what must remain true after the change?

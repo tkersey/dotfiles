@@ -35,7 +35,7 @@ Done when:
 ### 4) Do the work (how the work is accomplished)
 
 #### 4.1) Mandatory TRACE mini-pass
-Before first incision, run a small `$resolve` pass:
+Before first incision, run a small `$fix` pass:
 1. **Heat map**: hotspots + surprises.
 2. **Failure triage**: crash > corruption > logic.
 3. **Invariant**: what must remain true after the change?
@@ -54,7 +54,7 @@ Tight loop:
 5. **Re-check**: rerun closest fast signal.
 6. Repeat until acceptance criteria pass.
 
-Autonomy gate (borrowed from `$resolve`): proceed without further clarification only when all are true:
+Autonomy gate (borrowed from `$fix`): proceed without further clarification only when all are true:
 - Local repro (or a tight, credible signal).
 - Invariant stated.
 - Minimal diff.
