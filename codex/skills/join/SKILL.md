@@ -125,11 +125,22 @@ Smallest change that makes CI green:
   - If no local git worktree is present, stop after confirmation.
   - If a local worktree is present and clean, perform the local cleanup steps below (safe cleanup even when the PR was operated remotely).
 - Local checkout (VCS):
-  - Goal: leave the workspace on the default branch, with no PR branch checked out and no lingering local refs. Avoid destructive cleaning.
+  - Goal: leave the workspace on the default branch, synced to origin, with no PR branch checked out and no lingering local refs. Avoid destructive cleaning unless the default branch diverged; if it did, create a safety branch before resetting.
   - Example (git):
     - Ensure clean working tree: `git status --porcelain` (if dirty, stop; apply `auto:hold`).
     - Switch to default branch: `git checkout <default-branch>`
     - Fetch/prune: `git fetch --prune origin`
+    - Sync default branch to origin (prevents ahead/behind after merge):
+      - `local_default=$(git rev-parse <default-branch>)`
+      - `remote_default=$(git rev-parse origin/<default-branch>)`
+      - If equal, continue.
+      - If `git merge-base --is-ancestor "$local_default" "$remote_default"` (local behind): `git merge --ff-only origin/<default-branch>`.
+      - If `git merge-base --is-ancestor "$remote_default" "$local_default"` (local ahead): create a safety branch, then reset:
+        - `git branch "backup/<default-branch>-$(date +%Y%m%d-%H%M%S)"`
+        - `git reset --hard origin/<default-branch>`
+      - Else (diverged): create a safety branch, then reset:
+        - `git branch "backup/<default-branch>-$(date +%Y%m%d-%H%M%S)"`
+        - `git reset --hard origin/<default-branch>`
     - If the local PR branch does not exist, skip deletion.
     - Delete the local PR branch only if it matches the PR head (or remote head):
       - `pr_head=$(gh pr view <num> --json headRefOid --jq .headRefOid)`
