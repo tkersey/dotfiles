@@ -1,9 +1,9 @@
 ---
-name: merge
+name: join
 description: "PR autopilot: create/manage PRs, enforce CI gates, apply surgical fixes, and squash-merge via `gh`."
 ---
 
-# Merge
+# Join
 
 ## Intent
 Run a continuous PR operator: keep PRs created, green, reviewed, and squash-merged (via `gh`) with minimal-incision fixes.
@@ -31,14 +31,18 @@ Contributor guidance:
 ## Operating modes
 Mode is per-PR and determined by the current checkout:
 - Local checkout (VCS): the PR `headRefName` matches the currently checked-out branch/bookmark. Name match is sufficient; no upstream requirement. jj detached checkouts still count as local when they point at the PR head.
-- Remote-only (`gh` only): the current checkout does not match the PR head. Do not checkout code locally.
+- Remote-only (`gh` only): no clean local checkout/branch is available. Keep operations `gh`-only. Post-merge cleanup may still run if a local worktree is clean (see below).
 
-Local is preferred when available. If local mode is selected and the working tree is dirty, stop and apply `auto:hold` (local changes imply changes to push); do not fall back to remote-only for that PR.
+Local is preferred when available or when a local branch exists and the worktree is clean enough to switch. If local mode is selected and the PR branch is checked out, dirty changes are committed and pushed into the PR before CI. If the PR branch is not checked out and the worktree is dirty, apply `auto:hold` (cannot switch safely); do not fall back to remote-only for that PR.
 
 Mode detection (git):
 - Current checkout: `git branch --show-current` (empty means detached).
 - Dirty state: `git status --porcelain` (non-empty means dirty).
-- Local if `git branch --show-current` equals `headRefName`. If detached in git, treat as remote-only; JJ handling is delegated to the JJ skill.
+- Local branch exists: `git show-ref --verify --quiet refs/heads/<headRefName>`.
+- Local if `git branch --show-current` equals `headRefName`.
+- If not on the PR branch but a local branch exists and the worktree is clean, checkout `headRefName` and treat as local.
+- If a local branch exists but the worktree is dirty, apply `auto:hold` (cannot switch safely).
+- If detached in git, treat as remote-only for operations; still eligible for safe local cleanup when the worktree is clean. JJ handling is delegated to the JJ skill.
 
 ## Monitor loop
 Process PRs sequentially (blocking per PR on CI):
@@ -47,13 +51,29 @@ Process PRs sequentially (blocking per PR on CI):
    - Skip if `auto:hold`.
    - Skip if not `auto:manage` and not agent-created.
    - If draft, mark ready: `gh pr ready <num>`.
-   - Select mode for this PR (local if current checkout matches `headRefName`, otherwise remote-only).
-   - If local and the working tree is dirty, apply `auto:hold`, leave a comment requesting cleanup/push (template below), and skip.
+   - Select mode for this PR (local if current checkout matches `headRefName` or a clean local branch exists; otherwise remote-only).
+   - If local and not on `headRefName`, checkout the branch (requires a clean worktree). If dirty, apply `auto:hold`, leave a comment (template below), and skip.
+   - If local, run the local sync gate (below) before CI.
    - Ensure branch is up to date (jj-first if a local checkout is active).
    - Enforce CI gate (required checks only; see below).
    - If failing, run the surgical fix loop.
    - When green, auto-approve and squash-merge.
    - After a successful merge, run post-merge cleanup (mode-dependent).
+
+## Local sync gate (required before CI)
+If operating locally, ensure all local changes are in the PR:
+1. Commit and push dirty changes on the PR branch:
+   - `git add -A`
+   - `git commit -m "chore: sync local changes"`
+   - `git push`
+   - If there is nothing to commit, continue.
+2. Ensure OID parity with the PR head:
+   - `pr_head=$(gh pr view <num> --json headRefOid --jq .headRefOid)`
+   - `local_head=$(git rev-parse HEAD)`
+   - If equal, continue.
+   - If `git merge-base --is-ancestor "$local_head" "$pr_head"` (local behind): `git fetch origin` then `git rebase origin/<headRefName>`.
+   - If `git merge-base --is-ancestor "$pr_head" "$local_head"` (local ahead): `git push`.
+   - Else (diverged): apply `auto:hold` and comment (template below).
 
 ## CI gate (required checks only)
 - Gate on required checks only (`gh pr checks --required`). Optional checks do not block merges.
@@ -101,14 +121,21 @@ Smallest change that makes CI green:
 
 ## Post-merge cleanup (mode-dependent)
 - Remote-only (`gh` only):
-  - No local checkout means no local cleanup. Ensure the PR is merged via `gh pr view <num> --json state,mergedAt`.
+  - Always confirm merge: `gh pr view <num> --json state,mergedAt`.
+  - If no local git worktree is present, stop after confirmation.
+  - If a local worktree is present and clean, perform the local cleanup steps below (safe cleanup even when the PR was operated remotely).
 - Local checkout (VCS):
   - Goal: leave the workspace on the default branch, with no PR branch checked out and no lingering local refs. Avoid destructive cleaning.
   - Example (git):
     - Ensure clean working tree: `git status --porcelain` (if dirty, stop; apply `auto:hold`).
     - Switch to default branch: `git checkout <default-branch>`
-    - Delete local PR branch if present: `git branch -D <headRefName>`
-    - Prune deleted remotes: `git fetch --prune`
+    - Fetch/prune: `git fetch --prune origin`
+    - If the local PR branch does not exist, skip deletion.
+    - Delete the local PR branch only if it matches the PR head (or remote head):
+      - `pr_head=$(gh pr view <num> --json headRefOid --jq .headRefOid)`
+      - `local_head=$(git rev-parse <headRefName>)`
+      - `remote_head=$(git rev-parse origin/<headRefName> 2>/dev/null || true)`
+      - Delete only when `local_head == pr_head` or `local_head == remote_head`; otherwise apply `auto:hold` and comment (template below).
 
 ## Adaptive polling
 - Poll under 60s unless CI is slow.
@@ -121,17 +148,29 @@ Smallest change that makes CI green:
 
 ## Dirty local state comment template
 ```
-AutoMerge Operator: local changes detected
+AutoMerge Operator: local changes block checkout
 
-PR head matches current checkout; working tree is dirty.
-Commit/push or clean the workspace, then remove `auto:hold`.
+PR branch is not checked out; worktree is dirty so checkout is unsafe.
+Clean the workspace or move changes to the PR branch, then remove `auto:hold`.
 
 Signal: `git status --porcelain` is empty.
+```
+
+## Local divergence comment template
+```
+AutoMerge Operator: local branch diverged
+
+Local branch and PR head differ.
+Push local commits into the PR or reset local to the PR head, then remove `auto:hold`.
+
+Signal: `git rev-parse HEAD` equals PR `headRefOid`.
 ```
 
 ## Recipes
 - Default branch: `gh repo view --json defaultBranchRef --jq .defaultBranchRef.name`
 - Create: `gh pr create --fill --head <branch> --label auto:manage`
+- PR head OID: `gh pr view <num> --json headRefOid --jq .headRefOid`
+- Local branch exists: `git show-ref --verify --quiet refs/heads/<headRefName>`
 - Required checks (summary): `gh pr checks <num> --required`
 - Required checks (watch): `gh pr checks <num> --required --watch --fail-fast`
 - Required checks (links/JSON): `gh pr checks <num> --required --json name,bucket,link,workflow`
