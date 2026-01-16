@@ -11,6 +11,8 @@ PROMPT="$*"
 exec codex \
   --search \
   --enable web_search_request \
+  --enable skills \
+  --yolo \
   --dangerously-bypass-approvals-and-sandbox \
   exec \
   -m gpt-5.2-codex \
