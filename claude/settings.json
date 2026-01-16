@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "cleanupPeriodDays": 99999,
+  "permissions": {
+    "allow": [
+      "Bash(gh:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(npx mocha:*)",
+      "BashOutput",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "SlashCommand",
+      "Task",
+      "WebFetch",
+      "WebSearch",
+      "Write"
+    ],
+    "deny": []
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "$HOME/.dotfiles/claude/statusline.py"
+  },
+  "alwaysThinkingEnabled": true,
+  "feedbackSurveyState": {
+    "lastShownTime": 1754083542456
+  },
+  "model": "opus"
+}

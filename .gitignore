@@ -1,0 +1,14 @@
+fish/fishd.*
+fish/fish_variables
+Brewfile.lock.json
+.nvimlog
+lazy-lock.json
+
+**/.claude/settings.local.json
+.beads/*
+!.beads/*.jsonl
+!.beads/templates/
+!.beads/templates/*.yaml
+.beads/beads.left.jsonl
+
+codex/skills/.system/

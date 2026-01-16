@@ -1,0 +1,88 @@
+[user]
+  name = Tim Kersey
+  email = t@k-t.im
+	signingkey = ~/.ssh/id_ed25519.pub
+[color]
+  ui = 1
+[gc]
+  auto = 1
+[core]
+  excludesfile = ~/.gitignore
+  editor = nvim
+	filemode = false
+	fsmonitor = true
+  pager = delta
+[interactive]
+  diffFilter = delta --color-only --features=interactive
+[alias]
+  st = status -sb
+  ci = commit
+  cie = commit --allow-empty --allow-empty-message -m ''
+  cl = clone
+  br = branch
+  brn = branch --show-current
+  co = checkout
+  df = diff --ignore-space-at-eol
+  ds = diff --cached
+  lg = log --graph --decorate-refs-exclude=refs/tags --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
+  ada = add -p
+  fetch = fetch -v
+  chp = cherry-pick
+  ls = show --pretty="" --name-only
+  branches = for-each-ref --sort=-committerdate --format=\"%(color:blue)%(authordate:relative)\t%(color:red)%(authorname)\t%(color:white)%(color:bold)%(refname:short)\" refs/remotes
+  brr = "!f() { git branch | rg -v -e \"${1-main}$\" -e \"master$\" -e \"develop$\" | xargs git br -D; }; f \"$@\""
+  au = shortlog -s -n --all --no-merges
+  wk = worktree
+  bra = branch -a --sort=-committerdate
+[help]
+	autocorrect = 1
+[push]
+	default = simple
+	useForceIfIncludes = true
+[gpg]
+	format = ssh
+[fetch]
+	prune = true
+[commit]
+	gpgsign = true
+[pull]
+	rebase = false
+[hub]
+	protocol = ssh
+[merge]
+	conflictstyle = zdiff3
+[init]
+	defaultBranch = main
+[rebase]
+	updateRefs = true
+[diff]
+  colorMoved = default
+[delta]
+  navigate = true
+  light = false
+  side-by-side = true
+  line-numbers = true
+[delta "interactive"]
+  keep-plus-minux-markers = false
+
+[includeIf "gitdir:~/workspace/hsc/"]
+  path = ~/workspace/hsc/.gitconfig-hsc
+[credential "https://git-codecommit.us-east-1.amazonaws.com"]
+	provider = generic
+[credential]
+	helper =
+	helper = /usr/local/share/gcm-core/git-credential-manager
+	useHttpPath = true
+[credential "https://dev.azure.com"]
+	useHttpPath = true
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential

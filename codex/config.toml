@@ -1,0 +1,21 @@
+model = "gpt-5.2-codex"
+model_reasoning_effort = "high"
+
+[features]
+web_search_request = true
+skills = true
+unified_exec = true
+shell_snapshot = true
+tui2 = true
+
+[notice]
+hide_gpt5_1_migration_prompt = true
+hide_rate_limit_model_nudge = true
+"hide_gpt-5.1-codex-max_migration_prompt" = true
+
+[notice.model_migrations]
+"gpt-5.1-codex-max" = "gpt-5.2-codex"
+
+# [mcp_servers.chrome-devtools]
+# command = "npx"
+# args = ["chrome-devtools-mcp@latest"]
