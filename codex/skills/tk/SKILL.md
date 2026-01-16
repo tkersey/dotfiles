@@ -1,6 +1,6 @@
 ---
 name: tk
-description: "Surgeon’s Principle: invariants-first, no scope creep, evidence-before-abstraction, and Algebra-Driven Design with executable laws."
+description: "Surgeon’s Principle: invariants-first, minimal incision, no scope creep, evidence-before-abstraction, and Algebra-Driven Design with executable laws."
 ---
 
 # TK (Surgeon’s Principle)
@@ -13,7 +13,9 @@ TK is a *construction protocol*:
 - **Minimal incision**: smallest change that could be correct.
 - **No scope creep**: stay inside the user’s request.
 - **Evidence before abstraction**: earn reuse; avoid premature frameworks.
+- **Readability (TRACE)**: vaporize incidental complexity; make intent legible.
 - **Universalist when algebraic**: pick the smallest algebra; state laws; test at least one.
+- **Close the loop**: don’t claim “done” without a signal.
 
 ## Default posture
 - Explicit-only; never auto-trigger.
@@ -107,6 +109,19 @@ Do not claim success without at least one feedback signal:
 
 Local-first; CI second.
 
+### 8) Readability (TRACE)
+- Optimize for code legible in 30 seconds: names, boundaries, types.
+- Prefer guard clauses over nesting; data structures over flag branching.
+- Flatten → rename → extract; keep essential complexity, delete incidental.
+
+### 9) Footgun defusal (API design)
+- Identify the top misuse paths; redesign the interface so misuse is hard or impossible.
+- Use names, parameter order, richer types, or typestate; add a regression test or assertion.
+
+### 10) Failure modes are part of design
+- Enumerate likely failures (nullability, error paths, resource lifetimes) and make them explicit.
+- Ensure error paths preserve invariants; prove with a focused test/assertion/log.
+
 ## Autonomy gate (conviction)
 Proceed without asking only when all are true:
 - Requirements are unambiguous (or you have a local repro contract).
@@ -198,6 +213,9 @@ Heuristics:
 - Bug: reproduce if possible; otherwise characterization test/instrumentation first.
 - Feature: smallest end-to-end slice users can exercise (vertical slice > scaffolding).
 - Refactor: preserve behavior; add characterization test/invariant first.
+- Complexity: guard clauses > nesting; flatten → rename → extract.
+- API: if misuse-prone, defuse footguns (names, types, parameter order) + add a regression test.
+- Errors: make failure explicit; ensure error paths preserve invariants.
 
 ### 7) Abstraction Laws (when extracting reuse)
 Only use this section when you want to unify repeated shapes.
