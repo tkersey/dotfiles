@@ -11,41 +11,93 @@ description: "Automate Chrome/Chromium via CDP: navigate, click, fill forms, eva
 - Evaluate JavaScript in a real browser context.
 - Capture screenshots for debugging or review.
 
+## Requirements
+- Run commands from `codex/skills/web-browser/` (so `./tools/*.js` resolves).
+- Node.js (ESM + top-level `await`) and repo deps installed (notably `puppeteer-core`).
+- Chrome/Chromium installed, or set `CODEX_CHROME_PATH`.
+
 ## Quick start
 ```bash
-# Start Chrome with remote debugging on :9222
+# Start Chrome with CDP on :9222
 ./tools/start.js
 
-# Navigate (optionally open a new tab)
-./tools/nav.js https://example.com
+# Safer (recommended on your laptop): avoid killing an existing Chrome session
+./tools/start.js --no-kill
+
+# Open a deterministic tab, then operate on it
 ./tools/nav.js https://example.com --new
+./tools/eval.js 'document.title'
+./tools/screenshot.js
 ```
 
 Loop: take small steps → inspect state (`eval.js` / `screenshot.js`) → repeat.
 
+## Configuration
+- **Flags**
+  - `start.js`: `--port`, `--user-data-dir`, `--chrome-path`, `--profile`, `--no-kill`
+  - `nav.js` / `eval.js` / `screenshot.js` / `pick.js`: `--port`, `--browser-url`
+- **Environment**
+  - `CODEX_BROWSER_URL`: CDP URL (used when no CLI `--port`/`--browser-url`)
+  - `CODEX_BROWSER_PORT` (alias: `CODEX_CDP_PORT`): CDP port for localhost
+  - `CODEX_BROWSER_USER_DATA_DIR`: Chrome user data dir (used by `start.js`)
+  - `CODEX_CHROME_PATH` (aliases: `CHROME_PATH`, `PUPPETEER_EXECUTABLE_PATH`): Chrome/Chromium executable
+
+## Targeting (active tab)
+All tools operate on the “active tab”, defined as the last page returned by `puppeteer.pages()` (roughly: the most recently opened tab).
+- Prefer `./tools/nav.js <url> --new` when you want deterministic targeting.
+- If actions hit the “wrong” tab, close extra tabs or open a fresh one.
+
 ## Common commands
 ```bash
-# Start with your existing profile (cookies, logins)
-./tools/start.js --profile
+# See all options (safe; does not start/kill Chrome)
+./tools/start.js --help
 
-# Evaluate JS in the active tab
+# Use a non-default port
+./tools/start.js --port 9223 --no-kill
+./tools/nav.js --port 9223 https://example.com --new
+
+# Or configure once via env
+export CODEX_BROWSER_URL=http://localhost:9223
 ./tools/eval.js 'document.title'
-./tools/eval.js 'document.querySelectorAll("a").length'
+
+# Wait for a selector (polling with timeout; good for SPAs)
+./tools/eval.js '(async () => { for (let i = 0; i < 50; i++) { const el = document.querySelector("button[type=submit]"); if (el) return true; await new Promise(r => setTimeout(r, 100)); } return false; })()'
 
 # Screenshot current viewport
+# Prints a PNG filepath in your system temp dir
 ./tools/screenshot.js
 
 # Pick elements interactively
+# Prints tag/id/class/text/html/parents for one element (or many via Cmd/Ctrl+click)
 ./tools/pick.js "Click the submit button"
 ```
 
-Tip: use `pick.js` to confirm selectors, then drive actions via `eval.js`.
+Tip: use `pick.js` to inspect attributes/text, then craft a selector for `eval.js`.
+
+## Recipes
+```bash
+# Scrape structured data (return an array of objects for readable output)
+./tools/eval.js 'Array.from(document.querySelectorAll("a"), a => ({ href: a.href, text: a.textContent?.trim() }))'
+```
+
+- **Login flows**
+  - Dedicated automation profile: run `./tools/start.js`, log in once, then reuse the persisted profile in your user-data-dir (default: `~/.cache/scraping`).
+  - Default-profile bootstrap: run `./tools/start.js --profile` when you truly need existing cookies/logins.
+
+## Security & privacy
+- `./tools/start.js --profile` uses `rsync -a --delete` to copy your default Chrome profile into your user-data-dir (cookies/sessions/PII).
+- Treat your user-data-dir (default: `~/.cache/scraping`) as sensitive; avoid on shared machines and delete it when done if needed.
+
+## Troubleshooting
+- `✗ Failed to connect to Chrome via CDP`: run `./tools/start.js` (or set `CODEX_BROWSER_URL`/`--port` to match your Chrome).
+- `✗ No active tab found`: open a page first (e.g., `./tools/nav.js https://example.com --new`).
+- Port `9222` is busy: pick a new one (`./tools/start.js --port 9223`).
+- Selector flakiness: use the polling pattern above; SPAs often need a wait after `domcontentloaded`.
+- Chrome path not found: set `CODEX_CHROME_PATH` or pass `--chrome-path`.
 
 ## Pitfalls
-- Chrome must be running with remote debugging enabled on `:9222`.
-- `--profile` copies your profile; use only when you need existing cookies/logins.
+- `./tools/start.js` defaults to killing Chrome processes (use `--no-kill` to avoid this).
 - Use single quotes around JS to avoid shell-escaping issues.
-- `./tools/start.js` kills running Chrome processes and uses a macOS Chrome path; close Chrome first or adapt for your OS.
 
 ## References
 - `codex/skills/web-browser/tools/start.js`
