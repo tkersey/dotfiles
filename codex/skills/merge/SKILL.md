@@ -29,9 +29,16 @@ Contributor guidance:
 - Default to ready-for-review (no drafts unless configured).
 
 ## Operating modes
-Pick the least-privileged mode that can succeed:
-- Remote-only (`gh` only): create/manage PRs, monitor checks, review, merge, label, comment; do not checkout code locally.
-- Local checkout (VCS): only when a surgical fix is needed; checkout the PR branch, apply minimal changes, push, then clean up local state after merge.
+Mode is per-PR and determined by the current checkout:
+- Local checkout (VCS): the PR `headRefName` matches the currently checked-out branch/bookmark. Name match is sufficient; no upstream requirement. jj detached checkouts still count as local when they point at the PR head.
+- Remote-only (`gh` only): the current checkout does not match the PR head. Do not checkout code locally.
+
+Local is preferred when available. If local mode is selected and the working tree is dirty, stop and apply `auto:hold` (local changes imply changes to push); do not fall back to remote-only for that PR.
+
+Mode detection (git):
+- Current checkout: `git branch --show-current` (empty means detached).
+- Dirty state: `git status --porcelain` (non-empty means dirty).
+- Local if `git branch --show-current` equals `headRefName`. If detached in git, treat as remote-only; JJ handling is delegated to the JJ skill.
 
 ## Monitor loop
 Process PRs sequentially (blocking per PR on CI):
@@ -40,6 +47,8 @@ Process PRs sequentially (blocking per PR on CI):
    - Skip if `auto:hold`.
    - Skip if not `auto:manage` and not agent-created.
    - If draft, mark ready: `gh pr ready <num>`.
+   - Select mode for this PR (local if current checkout matches `headRefName`, otherwise remote-only).
+   - If local and the working tree is dirty, apply `auto:hold`, leave a comment requesting cleanup/push (template below), and skip.
    - Ensure branch is up to date (jj-first if a local checkout is active).
    - Enforce CI gate (required checks only; see below).
    - If failing, run the surgical fix loop.
@@ -109,6 +118,16 @@ Smallest change that makes CI green:
 ## Status reporting
 - Maintain a single PR comment/check-run named `AutoMerge Operator`.
 - Update in place (avoid comment spam).
+
+## Dirty local state comment template
+```
+AutoMerge Operator: local changes detected
+
+PR head matches current checkout; working tree is dirty.
+Commit/push or clean the workspace, then remove `auto:hold`.
+
+Signal: `git status --porcelain` is empty.
+```
 
 ## Recipes
 - Default branch: `gh repo view --json defaultBranchRef --jq .defaultBranchRef.name`
