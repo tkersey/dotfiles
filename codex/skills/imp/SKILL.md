@@ -248,7 +248,7 @@ For each finding:
 ## Failure paths
 - No in-progress bead: invoke `$select`, mark chosen bead in progress, then proceed.
 - Unclear requirements: stop and ask; do not guess.
-- Unrelated diffs: revert/stash; do not widen scope.
+- Unrelated diffs: ignore; don't touch or stage; continue. If the requested change would touch the same lines/hunks, stop and ask.
 - Validation fails: fix and re-run before opening the PR.
 - CI is not green:
   - If CI failure text contains `billing`, run `zig build ci` and treat “squash-mergeable + `zig build ci` ok” as green.

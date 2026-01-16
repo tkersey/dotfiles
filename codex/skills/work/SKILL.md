@@ -105,7 +105,7 @@ Signal strength (prefer higher): tests > build > lint/typecheck > formatter > ru
 ## Failure Paths
 - **No in-progress bead**: invoke `$select`, mark it in progress, proceed.
 - **Unclear requirements**: stop and ask; don't guess.
-- **Unrelated diffs**: ignore; don't touch or stage; continue.
+- **Unrelated diffs**: ignore; don't touch or stage; continue. If the task would touch the same lines/hunks, stop and ask.
 - **Validation fails**: fix and rerun before opening the PR.
 - **Bug can't be reproduced**: add instrumentation or a characterization test; state limits in proof.
 

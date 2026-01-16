@@ -285,7 +285,7 @@ If a category doesn’t exist, record **N/A** and run the closest substitute.
 ## Failure paths
 - Requirements unclear: stop and ask; don’t guess.
 - No validation command known: ask for the preferred local signal before editing.
-- Scope creep detected: revert/undo unrelated changes; suggest follow-up separately.
+- Scope creep detected: undo your out-of-scope edits; don't touch pre-existing unrelated diffs; suggest follow-up separately.
 - Abstraction urge with <3 instances: keep duplication or extract a tiny helper only.
 - Laws hard to state/test: the algebra is likely wrong—pick a smaller one or reframe.
 
