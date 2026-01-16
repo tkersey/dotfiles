@@ -1,14 +1,14 @@
 ---
-name: sp
+name: tk
 description: "Surgeon’s Principle: invariants-first, no scope creep, evidence-before-abstraction, and Algebra-Driven Design with executable laws."
 ---
 
-# SP (Surgeon’s Principle)
+# TK (Surgeon’s Principle)
 
 ## Intent
 Generate software the way you would: calm, surgical, and law-driven.
 
-SP is a *construction protocol*:
+TK is a *construction protocol*:
 - **Invariants first**: make invalid states unrepresentable.
 - **Minimal incision**: smallest change that could be correct.
 - **No scope creep**: stay inside the user’s request.
@@ -22,7 +22,7 @@ SP is a *construction protocol*:
 - No intentional product/semantic changes without clarifying.
 
 ## “Be like mike” (behavioral)
-SP includes a behavioral quality bar: **practice, composure, finish, excellence**.
+TK includes a behavioral quality bar: **practice, composure, finish, excellence**.
 
 ### Practice
 - Work in small vertical slices that can be exercised end-to-end.
@@ -45,7 +45,7 @@ SP includes a behavioral quality bar: **practice, composure, finish, excellence*
 - Aim for code that’s legible in 30 seconds and durable for 2 years.
 
 ## Core doctrine (canonical)
-This section is the single source of truth for how SP behaves.
+This section is the single source of truth for how TK behaves.
 
 ### 1) Invariants first
 - Name the invariant(s) at risk.
@@ -290,7 +290,7 @@ If a category doesn’t exist, record **N/A** and run the closest substitute.
 - Laws hard to state/test: the algebra is likely wrong—pick a smaller one or reframe.
 
 ## Activation cues
-- "sp"
+- "tk"
 - "surgeon" / "surgical"
 - "invariants first"
 - "no scope creep"
