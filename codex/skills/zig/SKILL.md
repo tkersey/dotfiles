@@ -9,6 +9,7 @@ description: "Zig runbook: performance (SIMD + threads), build/test, comptime pa
 - Editing `.zig` files.
 - Modifying `build.zig` or `build.zig.zon`.
 - Zig builds/tests, dependencies, cross-compilation.
+- Any Zig work requires fuzz testing (coverage-guided or fuzz-style).
 - Performance tuning: SIMD (`std.simd` / `@Vector`) and threading (`std.Thread.Pool`).
 - Comptime, reflection, codegen.
 - Allocators, ownership, zero-copy parsing.
@@ -30,6 +31,13 @@ zig build test
 zig test src/main.zig
 zig run src/main.zig
 ```
+
+## Fuzzing mandate (non-negotiable)
+- When this skill is active, fuzzing is required.
+- Default to Zig's built-in fuzzer (`std.testing.fuzz` + `zig build test --fuzz`).
+- Minimum bar: at least one fuzz signal per change.
+- If fuzzing cannot run, state why and record a follow-up.
+- External fuzzers are optional for older Zig or advanced workflows.
 
 ## Performance quick start (host CPU)
 ```bash
@@ -438,6 +446,86 @@ const Span = struct {
 - Allocation counting: wrap an allocator and assert zero allocations for a “zero-copy” path.
 - OOM injection: run under `std.testing.FailingAllocator`.
 - Exhaustive OOM: `std.testing.checkAllAllocationFailures`.
+
+## Fuzz testing (required)
+### Built-in fuzzer (default, Zig 0.14+)
+Use `std.testing.fuzz` in a `test` block and run the build runner with
+`zig build test --fuzz`. The build runner rebuilds tests with `-ffuzz` and
+starts the integrated fuzzer; it also serves a small web UI with live coverage.
+The fuzzer is alpha quality in Zig 0.14.0, but it is the default path.
+
+Suggested template (optional):
+```zig
+const std = @import("std");
+
+fn fuzzTarget(ctx: []const u8, input: []const u8) !void {
+    if (std.mem.eql(u8, ctx, input)) return error.Match;
+}
+
+test "fuzz target" {
+    try std.testing.fuzz(@as([]const u8, "needle"), fuzzTarget, .{});
+}
+```
+
+### Allocation-failure fuzzing (mandatory for allocators)
+`std.testing.checkAllAllocationFailures` exhaustively injects `error.OutOfMemory` across
+all allocations in a test function. The test function must take an allocator as its first
+argument, return `!void`, and reset shared state each run.
+
+```zig
+const std = @import("std");
+
+fn parseWithAlloc(alloc: std.mem.Allocator, bytes: []const u8) !void {
+    _ = alloc;
+    _ = bytes;
+}
+
+test "allocation failure fuzz" {
+    const input = "seed";
+    try std.testing.checkAllAllocationFailures(
+        std.testing.allocator,
+        parseWithAlloc,
+        .{input},
+    );
+}
+```
+
+### Allocator pressure tricks (recommended)
+- Cap per-allocation size relative to input length to surface pathological allocations.
+- Wrap with `std.testing.FailingAllocator` to validate `errdefer` and cleanup paths.
+- Use deterministic seeds and store crashing inputs under `testdata/fuzz/`.
+
+### Fast in-tree randomized fuzz (fallback when `--fuzz` is unavailable)
+Use randomized inputs inside `test` blocks for quick coverage on every change.
+
+```zig
+const std = @import("std");
+
+fn parse(bytes: []const u8) !void {
+    _ = bytes;
+}
+
+test "fuzz parse" {
+    var prng = std.rand.DefaultPrng.init(0x9e3779b97f4a7c15);
+    const rng = prng.random();
+
+    var i: usize = 0;
+    while (i < 10_000) : (i += 1) {
+        const len = rng.intRangeAtMost(usize, 0, 4096);
+        var buf = try std.testing.allocator.alloc(u8, len);
+        defer std.testing.allocator.free(buf);
+        rng.bytes(buf);
+        _ = parse(buf) catch {};
+    }
+}
+```
+
+### External harnesses (optional)
+If your Zig version lacks the built-in fuzzer or you need AFL++/libFuzzer features,
+export a C ABI entrypoint and drive it from an external fuzzer. Example outline:
+- Export a stable entrypoint: `export fn fuzz_target(ptr: [*]const u8, len: usize) void`.
+- Build a static library with `zig build-lib`.
+- Link it from an external harness (AFL++ via `cargo-afl`) and run with a seed corpus.
 
 ## C interop
 ```zig
