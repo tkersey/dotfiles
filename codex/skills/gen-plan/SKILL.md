@@ -25,14 +25,12 @@ description: Generate iterative `plan-N.md` files in the repo root (max N=5). Us
 
 ## Iterate on the plan
 
-Use the following to generate a plan
+Purpose: Use this prompt verbatim to produce `plan-(N+1).md` from `plan-N.md` by replacing the placeholder line `<INCLUDE CONTENTS OF PLAN FILE>` with the full plan content.
 
-```md
----
-Carefully review this entire plan for me and come up with your best revisions in terms of better architecture, new features, changed features, etc. to make it better, more robust/reliable, more performant, more compelling/useful, etc.
+### Prompt template (verbatim)
 
-For each proposed change, give me your detailed analysis and rationale/justification for why it would make the project better along with the git-diff style changes relative to the original markdown plan shown below:
-
-<INCLUDE CONTENTS OF PLAN FILE>
----
-```
+> Carefully review this entire plan for me and come up with your best revisions in terms of better architecture, new features, changed features, etc. to make it better, more robust/reliable, more performant, more compelling/useful, etc.
+>
+> For each proposed change, give me your detailed analysis and rationale/justification for why it would make the project better along with the git-diff style changes relative to the original markdown plan shown below:
+>
+> <INCLUDE CONTENTS OF PLAN FILE>
