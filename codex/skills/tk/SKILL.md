@@ -1,22 +1,24 @@
 ---
 name: tk
-description: "Surgeon’s Principle: task→incision protocol—contract-first, invariants-first, minimal change, no scope creep, evidence before abstraction, seams, and executable laws."
+description: "Surgeon’s Principle: math-first task→incision protocol—contracts, invariants, compositional islands, minimal change, seams, and executable laws."
 ---
 
 # TK (Surgeon’s Principle)
 
 ## Intent
-Generate software the way you would operate: calm, surgical, and evidence-led. TK is a development philosophy for turning a task into the smallest correct patch.
+Generate software the way you would operate: calm, surgical, and math-led. TK is a development philosophy for turning a task into the smallest correct patch.
 
 TK optimizes for:
 - **Correctness**: name invariants; make illegal states unrepresentable.
 - **Low-risk diffs**: minimal incision, reversible progress.
+- **Fit**: adapt to the codebase’s dialect; guide it toward better.
 - **Legibility**: vaporize incidental complexity (TRACE).
 - **Proof**: don’t claim “done” without a signal.
 
 TK is a *task-to-patch protocol*:
 - **Contract first**: state “working” in one sentence; make it executable when possible.
 - **Invariants first**: prefer parsing/refinement over scattered validation.
+- **Math-first (category lens)**: treat types as objects and functions as arrows; prefer composition; prove equivalences with small laws.
 - **Minimal incision**: the smallest change that could be correct.
 - **No scope creep (YAGNI)**: do the asked-for work; stop.
 - **Evidence before abstraction**: reuse is earned; duplication is cheaper than the wrong abstraction.
@@ -28,6 +30,7 @@ TK is a *task-to-patch protocol*:
 - Explicit-only; never auto-trigger.
 - Prefer certainty over cleverness.
 - Prefer reversible progress: changes should be easy to review and undo.
+- Prefer the repo’s dialect over ideological purity.
 - No intentional product/semantic changes without clarifying.
 
 ## Glossary (TK terms)
@@ -37,6 +40,23 @@ TK is a *task-to-patch protocol*:
 - **Incision**: the smallest code change that can satisfy the contract.
 - **Seam**: an enabling point that lets you alter behavior without editing the tangled spot (test double/probe/redirection).
 - **Proof**: the feedback signal(s) you ran (typecheck/tests/logs) and their outcomes.
+- **Dialect**: the codebase’s existing conventions (naming, error model, test style, architecture).
+- **Object**: the “thing” you’re reasoning about (type/state space/schema).
+- **Arrow**: the transformation you’re applying (function/method/workflow edge) with explicit input → output.
+- **Diagram**: two different compositions that should agree (a refactor/migration that must preserve meaning).
+- **Isomorphism**: a reversible change of representation/structure (refactor under green).
+- **Algebraic island (compositional island)**: a small local module where invariants + composition + micro-laws are enforced, integrated via adapters.
+- **Context**: an effect wrapper (errors/IO/async) that changes how arrows compose.
+- **Normal form**: a canonical representation (used for equality, caching keys, or “normalize then compare”).
+
+## Math-first lens (category theory, practical)
+Use the math, not the jargon.
+- Treat every meaningful operation as an **arrow** with a clear domain/codomain.
+- Prefer **composition** over control-flow sprawl.
+- Treat refactors as **isomorphisms**: change structure, not behavior.
+- Treat migrations as **diagrams**: old path vs new path must commute.
+- Treat effects as **contexts**: keep a small, testable core; adapt at the boundary.
+- Translate into the repo’s dialect: don’t import a new paradigm to “prove a point”.
 
 ## Operating checklist (sign-in → time-out → incision → sign-out)
 Borrow the safety structure (not the bureaucracy) from surgical checklists:
@@ -87,22 +107,59 @@ Operational defaults:
 - **No hope-based validity**: don’t rely on comments or call-site discipline.
 - **Suspicion of `()`**: validator APIs that return `()` are easy to forget; prefer “validator that returns the refined value”.
 
-### 3) Minimal incision
+### 3) Compositionality (category lens)
+TK treats code as mathematics in disguise:
+- **Objects**: the relevant sets of states/values (types, schemas, state machines).
+- **Arrows**: transformations you can compose (functions, methods, workflows).
+- **Diagrams**: equivalences you can test (“two paths, same result”).
+
+Doctrine:
+- Prefer explicit domain/codomain: write arrows as `A -> B` (or `A -> Result<B, E>`); make partiality explicit.
+- Prefer composition over branching: pipelines of small arrows beat nested control flow.
+- Push effects to the boundary: keep a small functional core and an imperative shell (ports/adapters/seams).
+- Treat refactors as isomorphisms: change structure without changing behavior; prove via tests.
+- Preserve commutation: when introducing a new path/representation, make the “old then convert” path equal the “convert then new” path.
+- Purity is local: keep the island clean; keep the integration idiomatic.
+
+#### Algebraic islands (incremental ADD without a rewrite)
+When the whole codebase can’t be algebraic, create a local island that is:
+- small (one domain concept),
+- compositional (arrows you can chain),
+- law-checked (at least one micro-law),
+- integration-friendly (adapters at the boundary).
+
+Protocol:
+0. Conform to the repo’s dialect (file layout, naming, error handling, test framework).
+1. Choose the island boundary (smallest coherent domain slice touched by the task).
+2. Define a tiny vocabulary: types for inputs/outputs/errors; smart constructors/parsers at the boundary.
+3. Implement the core as arrows that compose; keep I/O out.
+4. Wrap with adapters (parse → core → render/persist) using an existing seam/port.
+5. Add one micro-law check (round-trip, idempotence, associativity, identity, monotonicity).
+
+Micro-laws (pick one when feasible):
+- Round-trip: `decode(encode(x)) == x`
+- Idempotence: `normalize(normalize(x)) == normalize(x)`
+- Identity: `op(x, identity) == x`
+- Associativity: `op(a, op(b, c)) == op(op(a, b), c)`
+- Functor identity/composition (when mapping): `map(id) == id`, `map(f) ∘ map(g) == map(f ∘ g)`
+
+### 4) Minimal incision
 - Prefer the smallest change that could be correct.
 - Trade breadth for certainty: keep diffs scoped to the asked-for behavior.
 - When uncertain, cut *observability* first (test/log/probe), then cut behavior.
 
 Operational defaults:
 - Use Red/Green/Refactor to avoid overbuilding.
-- Don’t mix hats: make it pass, then refactor (separate behavioral vs structural change).
+- Separate behavioral change from structural change (refactor under green).
 - “Do the simplest thing that could possibly work” beats speculative elegance.
 
-### 4) No scope creep (YAGNI)
+### 5) No scope creep (YAGNI)
 - Work on the story you have, not the one you predict.
 - Pre-commit to scope: list what you will *not* change.
+- Improve locally, not globally: small tidying inside the blast radius is encouraged; roaming refactors are not.
 - Ask before widening scope (perf refactors, API redesigns, file moves).
 
-### 5) Evidence before abstraction
+### 6) Evidence before abstraction
 Domain modeling is allowed early; reusable abstractions must be earned.
 
 - **Allowed early (domain types)** when it strengthens invariants or collapses branching:
@@ -116,7 +173,7 @@ Domain modeling is allowed early; reusable abstractions must be earned.
   - Prefer duplication over the wrong abstraction; if the abstraction becomes parameter + conditional soup, inline it and start over.
   - Provide a break-glass scenario.
 
-### 6) Seams before surgery (legacy leverage)
+### 7) Seams before surgery (legacy leverage)
 A seam is a place where you can alter behavior without editing in that place.
 Use seams to:
 - break dependencies for testing (test doubles),
@@ -126,7 +183,7 @@ Use seams to:
 Bias:
 - If the “right” fix requires editing a hard-to-test tangle, first create a seam and move the work to the enabling point.
 
-### 7) Universalist (only when algebraic cues show up)
+### 8) Universalist (only when algebraic cues show up)
 Use Algebra-Driven Design (ADD) when you see:
 - `combine`/`merge` operations,
 - identity/associativity hints,
@@ -138,7 +195,7 @@ Bias:
 - Prefer the smallest algebra that fits.
 - If algebraic alignment reduces long-term branching/risk, it can justify a larger diff.
 
-### 8) Law-check when algebraic
+### 9) Law-check when algebraic
 Whenever you adopt an algebraic framing, add at least **one executable law check** when feasible.
 
 If adding a law check is not feasible, record **N/A** and compensate with:
@@ -146,7 +203,7 @@ If adding a law check is not feasible, record **N/A** and compensate with:
 - instrumentation/logs,
 - or a focused deterministic test of an edge case.
 
-### 9) Close the loop (required)
+### 10) Close the loop (required)
 Do not claim success without at least one feedback signal:
 - static analysis (lint/typecheck),
 - runtime logs/instrumentation,
@@ -155,16 +212,16 @@ Do not claim success without at least one feedback signal:
 
 Local-first; CI second.
 
-### 10) Readability (TRACE)
+### 11) Readability (TRACE)
 - Optimize for code legible in 30 seconds: names, boundaries, types.
 - Prefer guard clauses over nesting; data structures over flag branching.
 - Flatten → rename → extract; keep essential complexity, delete incidental.
 
-### 11) Footgun defusal (API design)
+### 12) Footgun defusal (API design)
 - Identify top misuse paths; redesign the interface so misuse is hard or impossible.
 - Use names, parameter order, richer types, or typestate; add a regression test/assertion.
 
-### 12) Failure modes are part of design
+### 13) Failure modes are part of design
 - Enumerate likely failures (nullability, error paths, resource lifetimes) and make them explicit.
 - Ensure error paths preserve invariants; prove with a focused test/assertion/log.
 
@@ -192,13 +249,14 @@ Otherwise: clarify before editing.
 ### Step 2: Choose the incision strategy (smallest lever)
 Prefer, in roughly this order:
 1. **Make it observable** (test / log / probe).
-2. **Refine types at boundaries** (“parse, don’t validate”).
-3. **Add a seam** (dependency injection / function parameter / module indirection).
-4. **Change behavior** (minimal patch at the leverage point).
-5. **Refactor for legibility** (guard clauses, rename, extract).
-6. **Abstract** only with evidence (Rule of Three; seam test; break-glass).
+2. **Add a seam / port** (so you can isolate, substitute, and test).
+3. **Refine types at boundaries** (“parse, don’t validate”).
+4. **Build a compositional island** (in the repo’s dialect; small core + one micro-law check).
+5. **Change behavior** (prefer inside the island; keep effects outside).
+6. **Refactor for legibility** (guard clauses, rename, extract).
+7. **Abstract** only with evidence (Rule of Three; seam test; break-glass).
 
-If you need step 6, you almost certainly need step 1.
+If you need step 7, you almost certainly need step 1.
 
 ## Worked examples (how TK chooses incisions)
 These are schematic; translate into the repo’s language and tooling.
@@ -220,6 +278,20 @@ These are schematic; translate into the repo’s language and tooling.
 - Contract: add new behavior without multiplying condition paths.
 - Incision: inline the abstraction back into callers, delete unused branches per call site, then re-extract only what remains truly shared.
 - Proof: tests prove behavior didn’t regress; the helper’s branching shrinks instead of grows.
+
+### Example 4: Error-handling pipeline (composition in a context)
+- Task: a workflow has many early returns/exceptions; adding one more case will explode branching.
+- Contract: same behavior, but failures are explicit and composable.
+- Incision: represent the workflow as arrows like `A -> Result<B, E>` (or the repo’s equivalent); compose with `bind/flatMap`/`then` (Railway Oriented Programming / Kleisli style).
+- Micro-law: test one “identity-ish” property (`Ok(x)` fed into the pipeline matches the direct call) plus one failure propagation case.
+- Proof: unit tests cover at least one happy path and one failure path; branching shrinks.
+
+### Example 5: Commutative migration (diagram check)
+- Task: replace legacy function `old` with `new` without breaking callers.
+- Contract: for all supported inputs, old and new agree (or the intentional delta is specified).
+- Incision: add adapters `toNew`/`fromNew` so one path can be written as a diagram.
+- Diagram check: add a test that `fromNew(new(toNew(x))) == old(x)` for representative inputs (or property test if available).
+- Proof: tests show equivalence before deleting `old`.
 
 ## Workflow
 
@@ -365,6 +437,7 @@ If a category doesn’t exist, record **N/A** and run the closest substitute.
 - Remove debug scaffolding.
 - Confirm the diff matches the promised scope.
 - Ensure names and boundaries are legible.
+- Make the next change cheaper (within scope): reduce incidental complexity, strengthen an invariant, or leave a seam.
 - Record proof (signals run + outcomes).
 
 ## Deliverable format (chat)
@@ -396,6 +469,7 @@ If a category doesn’t exist, record **N/A** and run the closest substitute.
 - Requirements unclear: stop and ask; don’t guess.
 - No validation command known: ask for the preferred local signal before editing.
 - Scope creep detected: undo out-of-scope edits; ignore unrelated diffs; suggest follow-up separately.
+- Purity creep detected: translate into the repo’s dialect; keep the island small; don’t impose a new framework.
 - Abstraction urge with <3 instances: keep duplication or extract a tiny helper only.
 - Abstraction becomes parameter + conditional soup: inline it; re-extract from reality.
 - Laws hard to state/test: the algebra is likely wrong—pick a smaller one or reframe.
@@ -418,6 +492,9 @@ If a category doesn’t exist, record **N/A** and run the closest substitute.
 - YAGNI (Jeffries): https://ronjeffries.com/articles/practices/pracnotneed/
 - Legacy Seams (Fowler/Feathers): https://martinfowler.com/bliki/LegacySeam.html
 - Strangler Fig Application (Fowler): https://martinfowler.com/bliki/StranglerFigApplication.html
+- Hexagonal Architecture (Cockburn): https://alistair.cockburn.us/hexagonal-architecture/
+- Railway Oriented Programming (Wlaschin): https://fsharpforfunandprofit.com/rop/
 - Test Driven Development (Fowler): https://martinfowler.com/bliki/TestDrivenDevelopment.html
 - Canon TDD (Beck): https://tidyfirst.substack.com/p/canon-tdd
 - Design by Contract: https://en.wikipedia.org/wiki/Design_by_contract
+- Category theory (background): https://en.wikipedia.org/wiki/Category_theory
