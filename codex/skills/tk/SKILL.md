@@ -1,27 +1,41 @@
 ---
 name: tk
-description: "Surgeon’s Principle: invariants-first, minimal incision, no scope creep, evidence-before-abstraction, and Algebra-Driven Design with executable laws."
+description: "Surgeon’s Principle: task→incision protocol—contract-first, invariants-first, minimal change, no scope creep, evidence before abstraction, seams, and executable laws."
 ---
 
 # TK (Surgeon’s Principle)
 
 ## Intent
-Generate software the way you would: calm, surgical, and law-driven.
+Generate software the way you would operate: calm, surgical, and evidence-led. TK is a development philosophy for turning a task into the smallest correct patch.
 
-TK is a *construction protocol*:
-- **Invariants first**: make invalid states unrepresentable.
-- **Minimal incision**: smallest change that could be correct.
-- **No scope creep**: stay inside the user’s request.
-- **Evidence before abstraction**: earn reuse; avoid premature frameworks.
-- **Readability (TRACE)**: vaporize incidental complexity; make intent legible.
+TK optimizes for:
+- **Correctness**: name invariants; make illegal states unrepresentable.
+- **Low-risk diffs**: minimal incision, reversible progress.
+- **Legibility**: vaporize incidental complexity (TRACE).
+- **Proof**: don’t claim “done” without a signal.
+
+TK is a *task-to-patch protocol*:
+- **Contract first**: state “working” in one sentence; make it executable when possible.
+- **Invariants first**: prefer parsing/refinement over scattered validation.
+- **Minimal incision**: the smallest change that could be correct.
+- **No scope creep (YAGNI)**: do the asked-for work; stop.
+- **Evidence before abstraction**: reuse is earned; duplication is cheaper than the wrong abstraction.
+- **Seams before rewrites**: create enabling points for tests, probes, and gradual replacement.
 - **Universalist when algebraic**: pick the smallest algebra; state laws; test at least one.
-- **Close the loop**: don’t claim “done” without a signal.
+- **Close the loop**: local-first feedback; CI second.
 
 ## Default posture
 - Explicit-only; never auto-trigger.
 - Prefer certainty over cleverness.
 - Prefer reversible progress: changes should be easy to review and undo.
 - No intentional product/semantic changes without clarifying.
+
+## Operating checklist (sign-in → time-out → incision → sign-out)
+Borrow the safety structure (not the bureaucracy) from surgical checklists:
+1. **Sign-in (preflight):** pick the fastest credible signal; establish baseline.
+2. **Time-out (before incision):** restate contract; name invariants; choose incision strategy.
+3. **Incision:** implement the smallest change; keep it observable.
+4. **Sign-out:** run the signal(s); clean the diff; record proof.
 
 ## “Be like mike” (behavioral)
 TK includes a behavioral quality bar: **practice, composure, finish, excellence**.
@@ -34,7 +48,7 @@ TK includes a behavioral quality bar: **practice, composure, finish, excellence*
 ### Composure
 - Say the invariant out loud before cutting.
 - If requirements are ambiguous, stop and ask—don’t guess.
-- When the system is complex, reduce uncertainty first (repro, instrumentation, characterization test).
+- When the system is complex, reduce uncertainty first (repro, instrumentation, seam, characterization test).
 
 ### Finish
 - Close the loop: don’t claim “done” without a signal.
@@ -49,50 +63,73 @@ TK includes a behavioral quality bar: **practice, composure, finish, excellence*
 ## Core doctrine (canonical)
 This section is the single source of truth for how TK behaves.
 
-### 1) Invariants first
+### 1) Contract first
+- Restate “working” for this change in one sentence.
+- Prefer an executable contract: test → assertion → diagnostic log (in that order).
+- Treat the contract as Design-by-Contract: **preconditions, postconditions, invariants**.
+
+### 2) Invariants first
 - Name the invariant(s) at risk.
 - Prefer *construction-time/compile-time* guarantees.
-- If types can’t express it, add the tightest possible **test/assertion** that locks it.
+- “Parse, don’t validate”: refine inputs once, at the boundary, then compute on refined types.
+- Make illegal states unrepresentable (tagged unions, smart constructors, parsers).
 
 Operational defaults:
-- **Type-first**: introduce a domain type, tagged union, or smart constructor before adding “if”s.
+- **Type-first**: introduce a domain type/tagged union/smart constructor before adding `if`s.
 - **No hope-based validity**: don’t rely on comments or call-site discipline.
+- **Suspicion of `()`**: validator APIs that return `()` are easy to forget; prefer “validator that returns the refined value”.
 
-### 2) Minimal incision
+### 3) Minimal incision
 - Prefer the smallest change that could be correct.
 - Trade breadth for certainty: keep diffs scoped to the asked-for behavior.
-- Keep progress legible and reversible (small commits/patches, minimal collateral churn).
+- When uncertain, cut *observability* first (test/log/probe), then cut behavior.
 
-### 3) No scope creep
-- If a fix suggests follow-on improvements, write them down and keep them out of the diff.
-- Ask before widening scope (performance refactors, API redesigns, file moves).
+Operational defaults:
+- Use Red/Green/Refactor to avoid overbuilding.
+- “Do the simplest thing that could possibly work” beats speculative elegance.
 
-### 4) Evidence before abstraction (C: compromise rule)
-**Domain modeling is allowed early; reusable abstractions must be earned.**
+### 4) No scope creep (YAGNI)
+- Work on the story you have, not the one you predict.
+- Pre-commit to scope: list what you will *not* change.
+- Ask before widening scope (perf refactors, API redesigns, file moves).
+
+### 5) Evidence before abstraction
+Domain modeling is allowed early; reusable abstractions must be earned.
 
 - **Allowed early (domain types)** when it strengthens invariants or collapses branching:
   - Introduce a product/coproduct/monoid-shaped domain type.
-  - Add a smart constructor or parser that refines types.
+  - Add a smart constructor/parser that refines types.
   - Add a minimal law/invariant check where feasible.
 
 - **Require evidence (reusable abstraction)** before extracting a general helper/framework:
-  - Collect **3+ concrete instances** (file:line) or keep duplication.
+  - Collect **3+** concrete instances (file:line) (“three strikes and you refactor”).
   - Run the **seam test**; if it fails, do not abstract.
+  - Prefer duplication over the wrong abstraction; if the abstraction becomes parameter + conditional soup, inline it and start over.
   - Provide a break-glass scenario.
 
-### 5) Universalist (only when algebraic cues show up)
+### 6) Seams before surgery (legacy leverage)
+A seam is a place where you can alter behavior without editing in that place.
+Use seams to:
+- break dependencies for testing (test doubles),
+- add probes for observability,
+- redirect flow to new modules (gradual replacement / Strangler Fig).
+
+Bias:
+- If the “right” fix requires editing a hard-to-test tangle, first create a seam and move the work to the enabling point.
+
+### 7) Universalist (only when algebraic cues show up)
 Use Algebra-Driven Design (ADD) when you see:
-- `combine`/`merge` operations
-- identity/associativity hints
-- repeated `map`/`fold`/`compose` pipelines
-- variant explosion (ad-hoc tags, boolean flag soup)
-- ordering/permissions/precedence rules
+- `combine`/`merge` operations,
+- identity/associativity hints,
+- repeated `map`/`fold`/`compose` pipelines,
+- variant explosion (ad-hoc tags, boolean flag soup),
+- ordering/permissions/precedence rules.
 
 Bias:
 - Prefer the smallest algebra that fits.
 - If algebraic alignment reduces long-term branching/risk, it can justify a larger diff.
 
-### 6) Law-check when algebraic
+### 8) Law-check when algebraic
 Whenever you adopt an algebraic framing, add at least **one executable law check** when feasible.
 
 If adding a law check is not feasible, record **N/A** and compensate with:
@@ -100,46 +137,69 @@ If adding a law check is not feasible, record **N/A** and compensate with:
 - instrumentation/logs,
 - or a focused deterministic test of an edge case.
 
-### 7) Close the loop (required)
+### 9) Close the loop (required)
 Do not claim success without at least one feedback signal:
-- static analysis (lint/typecheck)
-- runtime logs/instrumentation
-- unit/integration tests
-- UI automation
+- static analysis (lint/typecheck),
+- runtime logs/instrumentation,
+- unit/integration tests,
+- UI automation.
 
 Local-first; CI second.
 
-### 8) Readability (TRACE)
+### 10) Readability (TRACE)
 - Optimize for code legible in 30 seconds: names, boundaries, types.
 - Prefer guard clauses over nesting; data structures over flag branching.
 - Flatten → rename → extract; keep essential complexity, delete incidental.
 
-### 9) Footgun defusal (API design)
-- Identify the top misuse paths; redesign the interface so misuse is hard or impossible.
-- Use names, parameter order, richer types, or typestate; add a regression test or assertion.
+### 11) Footgun defusal (API design)
+- Identify top misuse paths; redesign the interface so misuse is hard or impossible.
+- Use names, parameter order, richer types, or typestate; add a regression test/assertion.
 
-### 10) Failure modes are part of design
+### 12) Failure modes are part of design
 - Enumerate likely failures (nullability, error paths, resource lifetimes) and make them explicit.
 - Ensure error paths preserve invariants; prove with a focused test/assertion/log.
 
-## Autonomy gate (conviction)
+## Task → incision (decision procedure)
+Given a task, pick the smallest intervention that changes the *right* thing.
+
+### Step 0: Autonomy gate (conviction)
 Proceed without asking only when all are true:
 - Requirements are unambiguous (or you have a local repro contract).
 - Invariant(s) stated.
-- Minimal diff.
-- At least one validation signal passes.
+- Scope fence stated.
+- At least one validation signal will run.
 
 Otherwise: clarify before editing.
 
+### Step 1: Classify the task (first move)
+- **Bug**: reproduce or characterize → regression test/log → fix → keep diff tiny.
+- **Feature**: write contract (acceptance/unit) → smallest vertical slice → refactor for legibility.
+- **Refactor**: add characterization test/invariant first → refactor under green.
+- **Legacy modernization**: identify/create seam → redirect small flow → Strangler Fig only if needed.
+- **Performance**: measure first → change only what the numbers implicate → re-measure.
+- **Security**: define exploit scenario → add regression check → smallest sound fix that removes the class.
+- **Docs**: edit the minimum; don’t rewrite the manual unless asked.
+
+### Step 2: Choose the incision strategy (smallest lever)
+Prefer, in roughly this order:
+1. **Make it observable** (test / log / probe).
+2. **Refine types at boundaries** (“parse, don’t validate”).
+3. **Add a seam** (dependency injection / function parameter / module indirection).
+4. **Change behavior** (minimal patch at the leverage point).
+5. **Refactor for legibility** (guard clauses, rename, extract).
+6. **Abstract** only with evidence (Rule of Three; seam test; break-glass).
+
+If you need step 6, you almost certainly need step 1.
+
 ## Workflow
 
-### 0) Preflight: establish the loop
+### 0) Sign-in: establish the loop
 - Identify the repo’s fastest credible signal (formatter, lint/typecheck, focused tests).
 - If no command is discoverable, ask for the preferred local command.
 
-### 1) Clarify the contract
-- Restate “working” for this change in one sentence.
-- Identify the user-visible behavior and the acceptance threshold.
+### 1) Time-out: clarify the contract
+- Restate “working” in one sentence.
+- Identify the user-visible behavior and acceptance threshold.
 
 Stop and ask if:
 - behavior is product-sensitive,
@@ -153,25 +213,25 @@ Answer in plain language:
 - Where is validity currently enforced (hope/runtime/construction/compile-time)?
 
 Then choose the strongest feasible protection:
-- construction-time/compile-time via types
-- otherwise tests/assertions
+- construction-time/compile-time via types,
+- otherwise tests/assertions/log probes.
 
 ### 3) Decide if a Universalist pass is warranted
 Trigger if you see algebraic cues:
-- an operation that “combines” things
-- repeated branching on variants
-- pipeline repetition that wants `map/fold`
-- ordering/precedence logic
+- an operation that “combines” things,
+- repeated branching on variants,
+- pipeline repetition that wants `map/fold`,
+- ordering/precedence logic.
 
 If triggered: do a minimal ADD pass (next section).
 
 ### 4) Universalist pass (ADD mini-protocol)
-1. **Frame the domain**: observations, invariants, operations.
-2. **Pick the minimal algebra** (avoid overfitting).
-3. **Define types**: make illegal states unrepresentable.
-4. **State laws** (pick the smallest set that constrains correctness).
-5. **Derive operations** from the algebra (reduce ad-hoc branching).
-6. **Test a law** (property/model/metamorphic/deterministic as feasible).
+1. Frame the domain: observations, invariants, operations.
+2. Pick the minimal algebra (avoid overfitting).
+3. Define types: make illegal states unrepresentable.
+4. State laws (pick the smallest set that constrains correctness).
+5. Derive operations from the algebra (reduce ad-hoc branching).
+6. Test a law (property/model/metamorphic/deterministic as feasible).
 
 #### Minimal-algebra decision guide
 - Alternatives/variants → **coproduct** (tagged union)
@@ -212,7 +272,8 @@ Repeat until done:
 Heuristics:
 - Bug: reproduce if possible; otherwise characterization test/instrumentation first.
 - Feature: smallest end-to-end slice users can exercise (vertical slice > scaffolding).
-- Refactor: preserve behavior; add characterization test/invariant first.
+- Legacy: if the fix requires editing a knot, introduce a seam and move the change to the enabling point.
+- Modernization: if replacement is needed, use a Strangler Fig approach; avoid big-bang rewrites.
 - Complexity: guard clauses > nesting; flatten → rename → extract.
 - API: if misuse-prone, defuse footguns (names, types, parameter order) + add a regression test.
 - Errors: make failure explicit; ensure error paths preserve invariants.
@@ -227,6 +288,11 @@ Only use this section when you want to unify repeated shapes.
 4. Name the abstraction by behavior.
 5. If algebraic, pick the minimal construction and add one executable law check.
 
+Essential vs accidental:
+- Essential: shared shape exists because of domain rules.
+- Accidental: shared shape exists because of today’s implementation.
+- If accidental, prefer duplication (or a smaller helper) until the domain forces convergence.
+
 #### Evidence table
 ```
 | Instance | Location | Shared Shape | Variance Point |
@@ -235,11 +301,6 @@ Only use this section when you want to unify repeated shapes.
 | B        | file:line| ...          | ...            |
 | C        | file:line| ...          | ...            |
 ```
-
-#### Essential vs accidental
-- Essential: shared shape exists because of domain rules.
-- Accidental: shared shape exists because of today’s implementation.
-- If accidental, prefer duplication (or a smaller helper) until the domain forces convergence.
 
 #### Seam test (yes/no)
 1. Can callers use the abstraction without knowing the concrete variant?
@@ -273,7 +334,7 @@ If a category doesn’t exist, record **N/A** and run the closest substitute.
 ### 9) Finish (don’t skip)
 - Remove debug scaffolding.
 - Confirm the diff matches the promised scope.
-- Make sure names and boundaries are legible.
+- Ensure names and boundaries are legible.
 - Record proof (signals run + outcomes).
 
 ## Deliverable format (chat)
@@ -281,6 +342,7 @@ If a category doesn’t exist, record **N/A** and run the closest substitute.
 ### A) Work summary
 - Contract: 1 sentence.
 - Incision: what changed and why.
+- Scope fence: what stayed out.
 
 ### B) Invariants
 - Invariant(s) stated.
@@ -297,14 +359,15 @@ If a category doesn’t exist, record **N/A** and run the closest substitute.
 - Proposed abstraction + break-glass scenario.
 
 ### E) Proof
-- `<cmd>` → `<ok/fail>` (list the signal(s) you ran)
+- `<cmd>` → `<ok/fail>` (signals run)
 - Residual risks / open questions.
 
 ## Failure paths
 - Requirements unclear: stop and ask; don’t guess.
 - No validation command known: ask for the preferred local signal before editing.
-- Scope creep detected: undo your out-of-scope edits; don't touch pre-existing unrelated diffs; suggest follow-up separately.
+- Scope creep detected: undo out-of-scope edits; ignore unrelated diffs; suggest follow-up separately.
 - Abstraction urge with <3 instances: keep duplication or extract a tiny helper only.
+- Abstraction becomes parameter + conditional soup: inline it; re-extract from reality.
 - Laws hard to state/test: the algebra is likely wrong—pick a smaller one or reframe.
 
 ## Activation cues
@@ -314,3 +377,16 @@ If a category doesn’t exist, record **N/A** and run the closest substitute.
 - "no scope creep"
 - "this looks like that" / "extract abstraction"
 - "combine/merge" / "identity" / "associativity" / "map/fold/compose"
+
+## Sources (optional reading)
+- WHO Surgical Safety Checklist: https://en.wikipedia.org/wiki/WHO_Surgical_Safety_Checklist
+- The Checklist Manifesto (Gawande): https://en.wikipedia.org/wiki/The_Checklist_Manifesto
+- “Parse, don’t validate” (Alexis King): https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/
+- “Making illegal states unrepresentable” (Wlaschin): https://fsharpforfunandprofit.com/posts/designing-with-types-making-illegal-states-unrepresentable/
+- Rule of Three: https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming)
+- “The Wrong Abstraction” (Metz): https://www.sandimetz.com/blog/2016/1/20/the-wrong-abstraction
+- YAGNI (Jeffries): https://ronjeffries.com/articles/practices/pracnotneed/
+- Legacy Seams (Fowler/Feathers): https://martinfowler.com/bliki/LegacySeam.html
+- Strangler Fig Application (Fowler): https://martinfowler.com/bliki/StranglerFigApplication.html
+- Test Driven Development (Fowler): https://martinfowler.com/bliki/TestDrivenDevelopment.html
+- Design by Contract: https://en.wikipedia.org/wiki/Design_by_contract
