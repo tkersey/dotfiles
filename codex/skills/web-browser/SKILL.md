@@ -10,6 +10,7 @@ description: "Automate Chrome/Chromium via CDP: navigate, click, fill forms, eva
 - Click buttons, fill forms, or extract page content.
 - Evaluate JavaScript in a real browser context.
 - Capture screenshots for debugging or review.
+- UI validation and smoke testing in a real browser.
 
 ## Requirements
 - Run commands from `codex/skills/web-browser/` (so `./tools/*.js` resolves).
