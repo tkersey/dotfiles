@@ -30,6 +30,14 @@ TK is a *task-to-patch protocol*:
 - Prefer reversible progress: changes should be easy to review and undo.
 - No intentional product/semantic changes without clarifying.
 
+## Glossary (TK terms)
+- **Contract**: the promised behavior (“working”), stated as a pre/postcondition; ideally executable (test/assert/log).
+- **Invariant**: what must always remain true; ideally enforced by types, otherwise by tests/assertions.
+- **Scope fence**: an explicit list of what will not change in this patch.
+- **Incision**: the smallest code change that can satisfy the contract.
+- **Seam**: an enabling point that lets you alter behavior without editing the tangled spot (test double/probe/redirection).
+- **Proof**: the feedback signal(s) you ran (typecheck/tests/logs) and their outcomes.
+
 ## Operating checklist (sign-in → time-out → incision → sign-out)
 Borrow the safety structure (not the bureaucracy) from surgical checklists:
 1. **Sign-in (preflight):** pick the fastest credible signal; establish baseline.
@@ -86,6 +94,7 @@ Operational defaults:
 
 Operational defaults:
 - Use Red/Green/Refactor to avoid overbuilding.
+- Don’t mix hats: make it pass, then refactor (separate behavioral vs structural change).
 - “Do the simplest thing that could possibly work” beats speculative elegance.
 
 ### 4) No scope creep (YAGNI)
@@ -190,6 +199,27 @@ Prefer, in roughly this order:
 6. **Abstract** only with evidence (Rule of Three; seam test; break-glass).
 
 If you need step 6, you almost certainly need step 1.
+
+## Worked examples (how TK chooses incisions)
+These are schematic; translate into the repo’s language and tooling.
+
+### Example 1: “Parse, don’t validate” bug fix
+- Task: a runtime error happens on “impossible” input (e.g., empty list, invalid ID).
+- Contract: the invalid input is rejected at the boundary; downstream code never re-checks.
+- Incision: introduce a refined type (`NonEmpty`, `UserId`, `Email`) via a parser/smart constructor; change core code to accept the refined type.
+- Proof: add a test that fails on invalid input; typecheck proves the “impossible” branch disappears.
+
+### Example 2: Legacy seam for testability (and safer change)
+- Task: a function is hard to test because it calls a slow/expensive dependency.
+- Contract: behavior stays the same, but tests can substitute a deterministic dependency.
+- Incision: add a seam (inject function/port, module indirection, service locator, etc.) at an enabling point.
+- Proof: unit test uses a stub; integration test still exercises the real dependency (if available).
+
+### Example 3: Escaping the wrong abstraction
+- Task: an extracted helper has grown flags/conditionals; new change will add another branch.
+- Contract: add new behavior without multiplying condition paths.
+- Incision: inline the abstraction back into callers, delete unused branches per call site, then re-extract only what remains truly shared.
+- Proof: tests prove behavior didn’t regress; the helper’s branching shrinks instead of grows.
 
 ## Workflow
 
@@ -389,4 +419,5 @@ If a category doesn’t exist, record **N/A** and run the closest substitute.
 - Legacy Seams (Fowler/Feathers): https://martinfowler.com/bliki/LegacySeam.html
 - Strangler Fig Application (Fowler): https://martinfowler.com/bliki/StranglerFigApplication.html
 - Test Driven Development (Fowler): https://martinfowler.com/bliki/TestDrivenDevelopment.html
+- Canon TDD (Beck): https://tidyfirst.substack.com/p/canon-tdd
 - Design by Contract: https://en.wikipedia.org/wiki/Design_by_contract
