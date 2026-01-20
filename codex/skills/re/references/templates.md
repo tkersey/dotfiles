@@ -41,6 +41,8 @@ operation_id:
 Notes:
 - Use explicit timestamps/values; avoid "now" or system state.
 - Inputs must be deterministic and YAML-serializable (scalars, sequences, maps).
+- For bytes/buffers, encode as hex or base64 string (document which in `SPEC.md`).
+- Avoid YAML-only features (anchors, tags, custom types); quote ambiguous scalars (`yes`, `no`, `on`, `off`, `null`).
 - `output` and `error` are mutually exclusive.
 - Represent errors with `error: true` only.
 
