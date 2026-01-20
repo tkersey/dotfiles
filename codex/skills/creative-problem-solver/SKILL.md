@@ -38,13 +38,13 @@ description: Lateral-thinking playbook for options and trade-offs; always delive
 
 ## Reframing toolkit
 Pick one:
-- Inversion: flip the current approach.
-- Analogy transfer: borrow a pattern from a solved domain.
-- Constraint extremes: set a key variable to zero or infinity.
-- First principles: rebuild from basic facts.
+- Inversion: flip the current approach. Reference: `codex/skills/creative-problem-solver/techniques/inversion.md`.
+- Analogy transfer: borrow a pattern from a solved domain. Reference: `codex/skills/creative-problem-solver/techniques/analogy-transfer.md`.
+- Constraint extremes: set a key variable to zero or infinity. Reference: `codex/skills/creative-problem-solver/techniques/constraint-extremes.md`.
+- First principles: rebuild from basic facts. Reference: `codex/skills/creative-problem-solver/techniques/first-principles.md`.
 
 ## Oblique draw (optional)
-Use when framing is stale.
+Use when framing is stale. Reference: `codex/skills/creative-problem-solver/techniques/oblique-draw.md`.
 1. Draw 4 prompts, pick 1, apply it.
 2. Translate it into a concrete lever/constraint.
 
@@ -96,84 +96,49 @@ Moonshot:
 
 Preference: high Signal + Reversibility, then Ease + Speed.
 
-## Technique picker
-- No Aha → run one insight-biased technique (Lateral Thinking, Forced Connections, TRIZ) before options.
-- Need a fast spark → Oblique Draw.
+## Technique rules (progressive disclosure)
+- Pick 1 technique by default (use 2–3 only if you’re still blocked).
+- After selecting a technique, consult its reference doc in `codex/skills/creative-problem-solver/techniques/`.
+- Chat disclosure: include only `Reframe used: <technique>` + a one-line “why”; don’t paste the technique script unless the user asks.
+
+## Technique picker (choose 1; rarely 2)
+- No Aha → Provocation (PO) or Forced Connections or Synectics or TRIZ.
+- Need a fast spark → Oblique Draw or Random Stimulus.
 - Need to mutate an existing thing → SCAMPER.
-- Need lots of ideas fast → Brainwriting 6-3-5.
+- Need lots of ideas fast (low debate) → Brainwriting 6-3-5.
 - Need structured combinations → Morphological Analysis.
 - Need to resolve contradictions → TRIZ.
-- Need parallel perspectives → Six Thinking Hats.
+- Need parallel perspectives / alignment → Six Thinking Hats.
+- Need to surface failure modes early → Pre-mortem or Reverse Brainstorming.
+- Need to de-risk unknowns (what to validate first) → Assumption Mapping.
+- Need momentum + traceability → CPS Cycle.
 
-## Technique library (use 1–3)
-- CPS cycle: Clarify → Ideate → Develop → Implement.
-  A simple session skeleton that prevents looping: clarify scope/constraints, diverge on options, strengthen the best candidates into experiments (signals + escape hatches), then execute the smallest step.
-  Use it when you need momentum and traceability more than novelty.
-  Example: Clarify “reduce deploy risk,” ideate rollout patterns, develop a canary experiment with a rollback trigger, then implement it for one service.
-- Brainstorming: defer judgment; go for quantity; build; welcome wild ideas.
-  Run a timed divergence phase where you only generate possibilities, then switch explicitly into critique/selection afterward.
-  The rules protect fragile ideas long enough for recombination to happen.
-  Example: In 10 minutes, list 30 ways to cut CI time; only after that, shortlist and score.
-- Brainwriting 6-3-5: quiet idea generation; reduces groupthink.
-  Each round: write 3 ideas in 5 minutes, then “pass” them for others to build on; six participants can yield up to 108 ideas in ~30 minutes.
-  Use it when discussion is dominated by loud voices, or adapt it solo by doing multiple timed rounds and iterating on your earlier list.
-  Example: Do three 5-minute rounds of “3 ideas,” then build on the prior round’s ideas (by you or others) instead of debating them.
-- SCAMPER: Substitute/Combine/Adapt/Modify/Put to use/Eliminate/Reverse.
-  Treat each verb as a prompt to mutate an existing approach (“What can we eliminate?”, “What can we reverse?”) and generate variants fast.
-  Works best once you have a baseline solution and want creative improvements without starting from zero.
-  Example: For a flaky test suite, Eliminate shared state, Combine setup steps, Modify timeouts, Reverse by testing the boundary contract instead of internals.
-- Six Thinking Hats: facts/emotions/risks/benefits/creativity/process.
-  Everyone adopts the same perspective in sequence (e.g., White facts → Red emotions → Black risks → Yellow benefits → Green ideas → Blue process) to reduce debate and surface tradeoffs cleanly.
-  Use it when alignment is hard, stakes are high, or the conversation keeps mixing analysis with advocacy.
-  Example: Evaluate “move to managed DB” by listing facts (costs), risks (lock-in), benefits (ops time), creative hybrids (split read replicas), then decide next step.
-- TRIZ: formal contradiction resolution.
-  State the contradiction (“we want X, but that worsens Y”), then look for separation principles or inventive principles that preserve both goals.
-  Use it for engineering-style tradeoffs (performance vs safety, speed vs quality) where “pick one” feels like a false dichotomy.
-  Example: Want faster responses but strict validation slows requests → separate in time by validating asynchronously and rejecting on next write.
-- Morphological analysis: explore combinations across dimensions.
-  List the key dimensions of the solution and the plausible values for each, then systematically combine them to discover non-obvious hybrids.
-  Great for architecture/design spaces where components can be mixed-and-matched (storage, interface, rollout, constraints).
-  Example: Dimensions: state store (SQL/KV), sync (push/pull), rollout (flag/canary), auth (OIDC/key) → enumerate combinations to find a viable MVP.
-- Synectics: analogy ladder (direct → personal → symbolic).
-  Force a new representation by stepping through layered analogies: “it’s like…”, “if I were it…”, “the symbol/metaphor is…”.
-  Helpful when you need a conceptual leap, not just incremental variation.
-  Example: Treat your alerting system as a “smoke detector,” then as “me being woken up,” then as “signal vs noise” to redesign thresholds and routing.
-- Lateral thinking/provocation: generate a provocation, extract a usable lever.
-  Make a deliberately “wrong” statement (often marked as PO), then ask what would make it workable and extract a principle/constraint you can apply.
-  Best when conventional reasoning keeps returning the same answers; the translation back into action is the point.
-  Example: PO “no one writes docs” → lever: auto-generate docs from code/examples and make the workflow require updating examples, not prose.
-- Random stimulus: map properties of a random word/image to the problem.
-  Pick something unrelated, list its properties, then force connections to spark new angles (stay abstract to avoid gimmicky literalism).
-  Use it as a fast spark when your framing feels stale.
-  Example: Random word “sponge” → properties: absorbs, releases slowly → idea: add a queue/buffer to absorb traffic spikes and drain steadily.
-- Reverse brainstorming: “how do we make it worse?”, then invert.
-  Generate ways to cause failure or maximize pain, then invert each into a safeguard or opportunity.
-  This surfaces hidden assumptions and risk vectors, which is useful when you’re stuck or need to harden a plan.
-  Example: “How do we guarantee bad deploys?” → skip staging, no rollback, hidden errors → invert into staging parity, rollback hooks, and visible error budgets.
-- Mind mapping: expand and organize the space.
-  Start from a central problem and radiate branches for stakeholders, causes, constraints, and solution threads, adding sub-branches as they appear.
-  Use it to externalize working memory and reveal clusters and gaps that suggest the next reframe.
-  Example: Center “slow onboarding,” branch into permissions, tooling, docs, environments, sample data; the emptiest branch often points to the next lever.
-- Affinity diagramming: cluster ideas, name themes.
-  After divergence, group raw ideas by similarity (often silently first), then label clusters with the underlying intent/theme.
-  Use it to converge from a messy list into a few directions you can score and select.
-  Example: Cluster a brainstorm into themes like “automation,” “guardrails,” “education,” then pick one representative experiment per theme.
-- How Might We: reframe complaints into solvable prompts.
-  Convert observations into open-ended, constructive questions that keep constraints visible (“How might we reduce onboarding time without sacrificing safety?”).
-  Use it early to turn problem statements into an idea-friendly search space.
-  Example: “This config is confusing” → “How might we make setup work by default, while still allowing explicit overrides for edge cases?”
-- Crazy 8s: rapid variation sketches.
-  Produce eight distinct variations in eight minutes to force range and escape your first idea.
-  Most common for UI/UX, but it also works as “8 text-only variants” for APIs, checklists, or architectures.
-  Example: Generate eight CLI designs for the same task (flags-only, interactive prompts, config-file-first, guided wizard, presets, etc.) and compare tradeoffs.
-- Storyboarding: visualize end-to-end flow.
-  Describe (or sketch) the sequence from trigger to outcome, including handoffs, decision points, and failure modes.
-  Use it to uncover missing steps and to locate where “expected signal” can be measured.
-  Example: Storyboard “incident → triage → mitigation → follow-up,” then mark the step where the best signal is “MTTR drops” and what instrumentation enables it.
-- Lotus blossom: expand outward from a core problem.
-  Surround the central problem with eight related sub-ideas, then treat each sub-idea as a new center and expand again.
-  Use it when you want structured breadth without the chaos of unbounded brainstorming.
-  Example: Core “reduce production incidents,” petals like testing/observability/rollouts/oncall; expand each petal into eight specific actions to populate the portfolio.
+## Technique library (index; use 1–3)
+- Inversion — `codex/skills/creative-problem-solver/techniques/inversion.md`
+- Analogy Transfer — `codex/skills/creative-problem-solver/techniques/analogy-transfer.md`
+- Constraint Extremes — `codex/skills/creative-problem-solver/techniques/constraint-extremes.md`
+- First Principles — `codex/skills/creative-problem-solver/techniques/first-principles.md`
+- CPS Cycle (Clarify → Ideate → Develop → Implement) — `codex/skills/creative-problem-solver/techniques/cps-cycle.md`
+- Brainstorming — `codex/skills/creative-problem-solver/techniques/brainstorming.md`
+- Brainwriting 6-3-5 — `codex/skills/creative-problem-solver/techniques/brainwriting-6-3-5.md`
+- SCAMPER — `codex/skills/creative-problem-solver/techniques/scamper.md`
+- Six Thinking Hats — `codex/skills/creative-problem-solver/techniques/six-thinking-hats.md`
+- TRIZ — `codex/skills/creative-problem-solver/techniques/triz.md`
+- Morphological Analysis — `codex/skills/creative-problem-solver/techniques/morphological-analysis.md`
+- Synectics — `codex/skills/creative-problem-solver/techniques/synectics.md`
+- Provocation (PO) — `codex/skills/creative-problem-solver/techniques/provocation-po.md`
+- Random Stimulus — `codex/skills/creative-problem-solver/techniques/random-stimulus.md`
+- Forced Connections — `codex/skills/creative-problem-solver/techniques/forced-connections.md`
+- Reverse Brainstorming — `codex/skills/creative-problem-solver/techniques/reverse-brainstorming.md`
+- Pre-mortem — `codex/skills/creative-problem-solver/techniques/pre-mortem.md`
+- Mind Mapping — `codex/skills/creative-problem-solver/techniques/mind-mapping.md`
+- Affinity Diagramming — `codex/skills/creative-problem-solver/techniques/affinity-diagramming.md`
+- How Might We — `codex/skills/creative-problem-solver/techniques/how-might-we.md`
+- Crazy 8s — `codex/skills/creative-problem-solver/techniques/crazy-8s.md`
+- Storyboarding — `codex/skills/creative-problem-solver/techniques/storyboarding.md`
+- Lotus Blossom — `codex/skills/creative-problem-solver/techniques/lotus-blossom.md`
+- Assumption Mapping — `codex/skills/creative-problem-solver/techniques/assumption-mapping.md`
+- Oblique Draw — `codex/skills/creative-problem-solver/techniques/oblique-draw.md`
 
 ## Templates
 Decision Log:
@@ -194,6 +159,7 @@ Knowledge Snapshot:
 - New facts:
 - New risks/constraints:
 - Plan-changing signals:
+- Technique provenance (technique → Aha Y/N):
 - Aha Check:
 - Open questions:
 
