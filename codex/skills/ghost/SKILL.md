@@ -1,9 +1,9 @@
 ---
-name: re
-description: Create a ghost-library repo from an existing library git repo by extracting a strict SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and preserving upstream LICENSE files. Use only when a user explicitly asks to ghostify/spec-ify a repo, extract language-agnostic specs/tests, or invokes $re / "re" / "ghost library" / "spec package" for a codebase.
+name: ghost
+description: Create a ghost-library repo from an existing library git repo by extracting a strict SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and preserving upstream LICENSE files. Use only when a user explicitly asks to ghostify/spec-ify a repo, extract language-agnostic specs/tests, or invokes $ghost / "ghost" / "ghost library" / "spec package" for a codebase.
 ---
 
-# re
+# ghost
 
 ## Overview
 Generate a ghost-library package (spec + tests + install prompt) from an existing library repo (in any source language).
