@@ -1,12 +1,12 @@
 model = "gpt-5.2-codex"
-model_reasoning_effort = "high"
+model_reasoning_effort = "xhigh"
 
 [features]
 web_search_request = true
 skills = true
 unified_exec = true
-shell_snapshot = true
-tui2 = true
+steer = true
+collab = true
 
 [notice]
 hide_gpt5_1_migration_prompt = true
