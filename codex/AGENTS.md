@@ -84,7 +84,7 @@ In this repo, that stop-and-ask behavior is explicitly disabled:
 - Use `$prove-it` for absolutes ("always", "never", "guaranteed", "optimal") or "devil's advocate".
 - Use `$creative-problem-solver` for stalled progress, blocked integration, or requests for options/alternatives/brainstorming/tradeoff exploration.
 - Use `$logophile` for wording, clarity, brevity, or density edits.
-- Use `$close-the-loop` for tight feedback loops after completing working code or when validation/tests/logs/checks are requested.
+- Use `$validate` for tight feedback loops after completing working code or when validation/tests/logs/checks are requested.
 - Use `$zig` for .zig edits, build.zig/build.zig.zon changes, or Zig build/test tasks.
 - Use `$select` to pick the next bead after `bd ready` using risk-first heuristics (explicit-only).
 
@@ -226,9 +226,9 @@ Slip into the Invariant Ace discipline whenever state validity feels shaky.
 
 Use `$logophile` when the user wants tighter wording, clarity, brevity, or higher semantic density.
 
-### Close the Loop
+### Validate
 
-Use `$close-the-loop` to force a tight feedback loop after code changes. Require at least one signal (static analysis, runtime logs, unit tests, or UI automation), prefer local-first execution, and be strongly worded but best-effort about validating results.
+Use `$validate` to force a tight feedback loop after code changes. Require at least one signal (static analysis, runtime logs, unit tests, or UI automation), prefer local-first execution, and be strongly worded but best-effort about validating results.
 
 ### TRACE
 
