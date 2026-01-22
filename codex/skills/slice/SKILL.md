@@ -1,16 +1,13 @@
 ---
 name: slice
-description: "Slice a plan into a beads-protocol-compatible DAG in SLICES.md; iteratively pick the next slice to expand using the select rubric (no bd)."
+description: "Slice a plan into a DAG in SLICES.md; iteratively pick the next slice to expand using the select rubric."
 ---
 
 # Slice
 
 ## Overview
-`slice` is a plan-space workflow that combines:
-- the decomposition + dependency-graph discipline from `gen-beads`, and
-- the selection/scoring discipline from `select`,
-
-but it does it **without** Beads (`bd`). Instead, it writes/maintains a repo-root `SLICES.md` file.
+`slice` is a plan-space workflow that combines decomposition + dependency-graph discipline with selection/scoring,
+and it writes/maintains a repo-root `SLICES.md` file.
 
 Each invocation performs **one slicing move**:
 1) select the next best slice to further decompose/refine, and
@@ -32,10 +29,10 @@ Stop condition (global): the plan is fully sliced (cannot be meaningfully decomp
 ## `SLICES.md` (repo-root workspace)
 - Path: `SLICES.md` at the repository root.
 - Canonical: `SLICES.md` is the source of truth for slicing state.
-- `slice` never runs `bd` commands and never writes to `.beads/`.
+- `slice` only reads the plan file and `SLICES.md`, and only writes to `SLICES.md`.
 
-### Slice record format (beads-protocol compatible)
-Each slice is represented as a section containing a single YAML object whose keys align with the br/beads Issue JSON shape.
+### Slice record format
+Each slice is represented as a section containing a single YAML object with a consistent issue-record schema.
 
 Conventions:
 - IDs: `sl-<short-hash>` (stable within `SLICES.md`).
