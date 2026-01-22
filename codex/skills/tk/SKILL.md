@@ -92,11 +92,12 @@ These rules keep “inevitability” from becoming scope creep.
 - **Scope fence (YAGNI)**: list explicit non-goals; avoid roaming refactors; ask before widening scope.
 - **Dialect fit**: follow the repo’s conventions for naming, errors, tests, and architecture; don’t import a framework to prove a point.
 - **Proof signal**: run at least one credible local check; don’t declare done without it.
-- **Evidence before abstraction**: no reusable abstraction without 3+ concrete instances; prefer duplication to the wrong abstraction.
+- **Evidence before abstraction**: require 3+ concrete instances; capture variance points (mini evidence table); prefer duplication to a wrong abstraction.
+- **Seam test for abstractions**: callers stay ignorant of variants; one-sentence behavioral name; new instance fits without flags—otherwise shrink it.
 - **Seams before rewrites**: if the right fix requires cutting a hard-to-test knot, add a seam and move the change to the seam.
 - **Legibility (TRACE)**: guard clauses over nesting; flatten → rename → extract; delete incidental complexity.
 - **Footgun defusal (API changes)**: identify likely misuses; make misuse hard via names/types/ordering; lock with a regression check.
-- **Wrong abstraction escape hatch**: if reuse turns into flags/conditionals, inline into callers, delete dead branches, then re-extract the shared core.
+- **Break-glass scenario (abstraction escape hatch)**: name the next likely change that would make it harmful; if it happens, inline into callers, delete dead branches, then re-extract the core.
 
 ## “Big refactor” vs “stay close” (pragmatic ambition)
 TK always wants the Transformative/Moonshot answer, but earns it.
@@ -189,7 +190,7 @@ Minimal guide (jargon allowed only when it buys precision):
 - Combine/merge with identity → a monoid (or “combine + neutral element”).
 - Canonicalization → a normal form + idempotence check.
 
-If you adopt a structure, prefer adding one executable constraint:
+If you introduce a combine/normalize/map operation, add one executable behavioral check:
 - round-trip, idempotence, identity, associativity, or a commuting diagram check.
 
 ## Canonical examples (translate into repo dialect)
