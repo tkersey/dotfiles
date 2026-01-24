@@ -13,15 +13,15 @@ description: Clarify ambiguous requests by researching first, then asking only j
 ## Quick start
 1. Research first; don’t ask for discoverable facts.
 2. Maintain a running snapshot (facts, decisions, open questions).
-3. Ask only judgment calls: prefer 1 question, never exceed 3 per batch (use `request_user_input_tool` if available; otherwise use the Human input block).
+3. Ask only judgment calls: prefer 1 question, never exceed 3 per batch (use `request_user_input` if available; otherwise note it is unavailable and use the Human input block).
 4. Incorporate answers and repeat until no open questions remain.
 5. Generate verbose beads, then stop (no implementation).
 
 ## Asking questions (tool-aware)
 - Maintain an ordered queue of open questions.
 - Ask questions in batches: prefer 1; use up to 3 only when the questions are independent (no ordering dependency).
-- If a tool named `request_user_input_tool` is available, use it (do not render the fallback Human input block).
-- Otherwise, render the fallback Human input block (below).
+- If a tool named `request_user_input` is available, use it (do not render the fallback Human input block).
+- Otherwise, add a one-line note that the tool is unavailable, then render the fallback Human input block (below).
 - After receiving answers, update the Snapshot and refresh the open-question queue:
   - remove answered questions
   - append newly discovered open questions (including follow-ups triggered by the answers)
@@ -35,12 +35,13 @@ answered_ids := set()
 while open_questions not empty:
   batch := take_next(open_questions, max=3, prefer=1)
 
-  if tool_exists("request_user_input_tool"):
+  if tool_exists("request_user_input"):
     tool_args := { questions: batch_to_tool_questions(batch) }
-    raw := call request_user_input_tool(tool_args)
+    raw := call request_user_input(tool_args)
     resp := parse_json(raw)
     answers_by_id := resp.answers
   else:
+    note "request_user_input not available; using fallback"
     render fallback numbered block for batch
     answers_by_id := extract answers from user reply
 
@@ -74,7 +75,7 @@ Follow-up hygiene:
 - Choose `header` <= 12 chars (tight noun/verb), and keep the `question` single-sentence.
 - Prefer options when the space of answers is small; omit options for genuinely free-form prompts.
 
-## `request_user_input_tool` (preferred)
+## `request_user_input` (preferred)
 When available, ask questions via a tool call with up to 3 questions.
 
 ### Call shape
@@ -135,7 +136,7 @@ Snapshot
 ```
 
 ## Human input block (fallback)
-If `request_user_input_tool` is not available, use this exact heading and numbered list:
+If `request_user_input` is not available, add a one-line note that it is unavailable, then use this exact heading and numbered list:
 ```
 CLARIFICATION EXPERT: HUMAN INPUT REQUIRED
 1. ...
@@ -150,7 +151,7 @@ CLARIFICATION EXPERT: HUMAN INPUT REQUIRED
 
 ## Deliverable format
 - Snapshot.
-- Ask for answers (use `request_user_input_tool` if available; otherwise use the Human input block).
+- Ask for answers (use `request_user_input` if available; otherwise use the Human input block).
 - One-line Insights/Next Steps.
 
 ## Activation cues
