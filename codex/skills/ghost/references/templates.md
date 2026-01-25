@@ -20,7 +20,7 @@ Ghost libraries ship specifications and tests, not implementation code.
 ## tests.yaml (format)
 
 ```yaml
-version: "X.Y.Z"
+version: "X.Y.Z"  # upstream library version or revision (opaque string)
 
 operation_id:
   - name: "human-readable case"
@@ -39,6 +39,7 @@ operation_id:
   - `Class.method` (static/class method)
 
 Notes:
+- `version` identifies the upstream library version used as evidence (SemVer/tag if available; otherwise a stable source revision like `git:<short-sha>`).
 - Use explicit timestamps/values; avoid "now" or system state.
 - Inputs must be deterministic and YAML-serializable (scalars, sequences, maps).
 - For bytes/buffers, encode as hex or base64 string (document which in `SPEC.md`).

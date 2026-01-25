@@ -22,6 +22,14 @@ This approach works best when the library’s behavior can be expressed as deter
 
 It gets harder (but is still possible) when the contract depends on time, randomness, IO, concurrency, global state, or platform details. In those cases, make assumptions explicit in `SPEC.md` + `VERIFY.md`, and normalize nondeterminism into explicit inputs/outputs.
 
+## Hard rules (MUST / MUST NOT)
+- MUST treat upstream tests as authoritative; if docs/examples disagree, prefer tests and record the discrepancy.
+- MUST normalize nondeterminism into explicit inputs/outputs (no implicit "now", random seeds, locale surprises, unordered iteration).
+- MUST keep the ghost repo language-agnostic: ship no implementation code, adapter runner, or build tooling.
+- MUST paraphrase upstream docs; do not copy text verbatim.
+- MUST preserve upstream license files verbatim as `LICENSE*`.
+- MUST produce a verification signal and document it in `VERIFY.md` (adapter runner preferred; sampling fallback allowed).
+
 ## Inputs
 - Source repo path (git working tree)
 - Output repo name/location (default: sibling directory `<repo-name>-ghost`)
@@ -39,6 +47,11 @@ It gets harder (but is still possible) when the contract depends on time, random
 - `Class.method` (static/class method)
 
 Avoid language-specific spellings in ids (e.g., avoid `snake_case` vs `camelCase` wars). Prefer the canonical name used by the source library’s docs.
+
+### `tests.yaml` version
+`tests.yaml` MUST include a top-level `version` string that identifies the upstream library version used as evidence.
+- If the upstream library has a release version (SemVer/tag), use it.
+- Otherwise, use an immutable source revision identifier (e.g., `git:<short-sha>` or `git describe`).
 
 ## Workflow (tests-first)
 
@@ -79,11 +92,13 @@ Avoid language-specific spellings in ids (e.g., avoid `snake_case` vs `camelCase
 
 ### 4) Generate `tests.yaml` (exhaustive)
 - Convert each source test into a YAML case under its operation id.
-- Schema is intentionally strict (modeled after `whenwords`):
+- Include a top-level `version` string (upstream library version or revision).
+- Schema is intentionally strict and portable:
   - each case has `name` and `input`
   - each case has exactly one of `output` or `error: true`
-  - keep to a portable YAML subset (no anchors/tags/binary), so it’s easy to parse in many languages
-- Normalize inputs to deterministic values (avoid “now”; use explicit timestamps).
+  - keep to a portable YAML subset (no anchors/tags/binary) so it is easy to parse in many languages
+  - quote ambiguous scalars (`yes`, `no`, `on`, `off`, `null`) to avoid parser disagreements
+- Normalize inputs to deterministic values (avoid "now"; use explicit timestamps).
 - Keep or improve coverage across all public operations and failure modes.
 - If the source returns floats, prefer defining stable rounding/formatting rules so `output` is exact.
 - Follow the format in `references/templates.md`.
@@ -127,8 +142,12 @@ Produce only these artifacts in the ghost repo:
 - Operation ids for methods: treat a first parameter named `self` of type `T`/`*T` as an instance method (`T#method`); otherwise use `T.method`.
 - `comptime` parameters: record allowed values in `SPEC.md`, and represent them as ordinary fields in `tests.yaml` inputs.
 - Allocators/buffers: if the API takes `std.mem.Allocator` or caller-provided buffers, specify ownership and mutation rules; assume allocations succeed unless tests cover OOM.
-- Errors: keep `tests.yaml` strict (`error: true` only); in a Zig adapter, treat “any error return” as a passing error case, and rely on `SPEC.md` to pin the exact error conditions.
+- Errors: keep `tests.yaml` strict (`error: true` only); in a Zig adapter, treat "any error return" as a passing error case, and rely on `SPEC.md` to pin the exact error conditions.
 - YAML tooling: Zig stdlib has JSON but not YAML; for adapters/implementations it’s fine to convert `tests.yaml` to JSON (or JSONL) as an intermediate and have a Zig runner parse it via `std.json`.
+
+## Activation cues
+- "ghost" / "ghost library" / "ghostify" / "spec-ify" / "spec package"
+- "extract language-agnostic spec/tests"
 
 ## Resources
 - `references/templates.md` (artifact outlines and YAML format)

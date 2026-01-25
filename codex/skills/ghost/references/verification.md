@@ -1,6 +1,6 @@
 # Verification Guidance
 
-This reference exists so the `re` skill can generate a first-class `VERIFY.md` in every ghost repo.
+This reference exists so the `ghost` skill can generate a first-class `VERIFY.md` in every ghost repo.
 
 ## Minimum checks (always)
 - `tests.yaml` parses cleanly.
@@ -42,6 +42,9 @@ If a full adapter runner is infeasible:
 
 ## Summary
 - Source verification: adapter|sampling
+- Source repo: <url/path>
+- Source revision: <tag/sha>
+- `tests.yaml` version: <string>
 - Source language/runtime: <language + versions>
 - Total cases executed: <n>/<total>
 - Result: pass|fail
