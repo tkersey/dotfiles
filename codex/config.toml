@@ -6,9 +6,10 @@ web_search_request = true
 unified_exec = true
 steer = true
 collab = true
+collaboration_modes = true
 
-[notice.model_migrations]
-"gpt-5.1-codex-max" = "gpt-5.2-codex"
+[tui]
+experimental_mode = "execute"
 
 # [mcp_servers.openaiDeveloperDocs]
 # url = "https://developers.openai.com/mcp"
