@@ -32,6 +32,9 @@ Important:
   - Not required; infer it from the invocation text + `SLICES.md` state.
   - If the human wants to force generate, they can say "generate"/"rebuild"/"regenerate".
   - If the human wants to force selection, they can say "next slice"/"what should I work on".
+- Assignee (orchestrator id):
+  - Used in Next mode to support concurrent `in_progress` slices (one per assignee).
+  - If not available from `SLICES.md` header or invocation context, ask the human once.
 - Optional: scope boundaries, sequencing constraints, priority guidance, and workflow constraints.
 
 ## Defaults (override if the user says otherwise)
@@ -52,7 +55,10 @@ Important:
 ```yaml
 plan_path: path/to/plan.md
 schema_version: 1
+default_assignee: opencode
 ```
+
+`default_assignee` is optional; if present, Next mode uses it as the orchestrator id.
 
 ### Slice record format
 Each slice is represented as a section containing a single YAML object with a consistent issue-record schema.
@@ -81,11 +87,14 @@ Recommended additions:
 - `subtasks`: ordered checklist (2-10 items) for the slice's internal steps.
 - `verification`: at least one concrete signal (command or manual check) that proves the slice is done.
 - `parent_id`: optional; if present, this slice is a child of an epic.
+- `assignee`: optional string; required when `status: in_progress`.
 
 Minimum recommended keys per slice:
 - `id`, `title`, `status`, `priority`, `issue_type`
 - `description`, `acceptance_criteria`, `notes` (can be empty strings but should converge)
 - `dependencies` (omit or empty list)
+
+If `status: in_progress`, `assignee` is required.
 
 If present, `subtasks` should be a YAML list of strings.
 
@@ -156,19 +165,20 @@ dependencies:
    - Dependency type sanity: dependency `type` is one of `blocks|tracks|related`.
    - Referentials: every `dependencies[*].depends_on_id` refers to an existing slice.
    - Epic referentials: if `parent_id` is present, it refers to an existing slice.
-   - In-progress uniqueness: at most one slice has `status: in_progress`.
+   - In-progress assignee: every `status: in_progress` slice has non-empty `assignee`.
+   - In-progress uniqueness: at most one slice has `status: in_progress` per `assignee`.
    - In-progress readiness: an `in_progress` slice has no unmet `blocks` deps.
    - Dependency sanity: `blocks` edges are acyclic (toposort/DFS; if uncertain, ask).
 
    Warning checks:
-   - `status: blocked` but no unmet `blocks` deps.
+   - `status: blocked` but no unmet `blocks` deps (auto flip to `open`).
    - `status: open` but has unmet `blocks` deps (recommend switching to `blocked`).
    - `status: closed` but has unmet `blocks` deps (probable bookkeeping bug).
    - Leaf slice missing `verification` or meaningful acceptance criteria.
 
    Ambiguity guardrails:
-   - If validation failure requires human intent (e.g., multiple `in_progress` slices), ask the human which slice
-     is the real work-in-progress before repairing.
+   - If validation failure requires human intent (e.g., missing `assignee` on an `in_progress` slice, or multiple
+     `in_progress` slices for the same `assignee`), ask the human how to resolve before repairing.
 3. If validation fails:
    - Switch to mode=`generate` (auto-repair) and (re)read the plan.
    - Stop after writing the repaired `SLICES.md`; do not select/mark any slice `in_progress`.
@@ -217,7 +227,11 @@ Dependency identification heuristics:
 If there are zero slice records:
 - Report: `No slices found; run slice in generate mode with a plan path.`
 
-If there is already a slice with `status: in_progress`:
+Determine `self_assignee` (orchestrator id):
+- Prefer `default_assignee` from the `SLICES.md` header if present.
+- Otherwise infer from invocation context; if unknown, ask the human.
+
+If there is already a slice with `status: in_progress` and `assignee: <self_assignee>`:
 - Return that slice (do not pick a new one).
 
 Otherwise, select the next slice from the Ready-to-execute set using the rubric below.
@@ -245,13 +259,18 @@ Scoring notes (lightweight):
 
 Readiness gate:
 - Never select a slice for execution if it has missing prerequisites.
-- If the prerequisite is a decision/contract, create a new contract slice and add a `blocks` edge.
-- If the dependency is uncertain and would become a `blocks` edge, ask the human before adding it.
+- Next mode is non-creative: do not add new slices or dependencies while selecting.
+- If selection surfaces a missing decision/contract or an ambiguous prerequisite, switch to Generate mode to
+  update the DAG and stop after writing `SLICES.md` (do not mark anything `in_progress`).
 
 ### 4) Update `SLICES.md`
 If mode=`next` (or auto-selected next):
 1. Mark the chosen slice `status: in_progress`.
-2. Do not rewrite unrelated slices; apply the smallest possible edit.
+2. Set `assignee: <self_assignee>` (required for `in_progress`).
+3. Do not rewrite unrelated slices; apply the smallest possible edit.
+
+If any safe normalization edits were identified during validation (e.g., auto flipping `blocked` -> `open` when
+no `blocks` deps remain), apply them with minimal diff.
 
 If mode=`generate` (or auto-selected generate):
 1. If an existing slice is too large or multi-PR, split into 2-6 child slices.
