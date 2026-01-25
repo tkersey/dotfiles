@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Zig runbook: performance (SIMD + threads), build/test, comptime patterns, allocators, build.zig/build.zig.zon, zero-copy parsing, C interop."
+description: "Zig 0.15.2 runbook: correctness-first low-level performance (fuzz + differential testing, SIMD + threads), build/test, comptime, allocators, build.zig/build.zig.zon, zero-copy parsing, C interop."
 ---
 
 # Zig
@@ -15,29 +15,54 @@ description: "Zig runbook: performance (SIMD + threads), build/test, comptime pa
 - Allocators, ownership, zero-copy parsing.
 - C interop.
 
+## Baseline (required)
+- Zig 0.15.2.
+- Integrated fuzzer is the default: `std.testing.fuzz` + `zig build test --fuzz`.
+- No compatibility work for older Zig unless explicitly requested.
+
 ## Quick start
 ```bash
+# Toolchain (required)
+zig version  # must be 0.15.2
+
 # Initialize (creates build.zig + src/main.zig)
 zig init
 # or (smaller template)
 zig init --minimal
+
+# Format
+zig fmt src/main.zig
 
 # Build/run/test (build.zig present)
 zig build
 zig build run
 zig build test
 
+# Fuzz (integrated fuzzer)
+zig build test --fuzz
+
 # Single-file test/run
 zig test src/main.zig
 zig run src/main.zig
 ```
 
-## Fuzzing mandate (non-negotiable)
-- When this skill is active, fuzzing is required.
-- Default to Zig's built-in fuzzer (`std.testing.fuzz` + `zig build test --fuzz`).
-- Minimum bar: at least one fuzz signal per change.
-- If fuzzing cannot run, state why and record a follow-up.
-- External fuzzers are optional for older Zig or advanced workflows.
+## Workflow (correctness -> speed)
+- State the contract: input domain, outputs, invariants, error model, complexity target.
+- Build a reference implementation (simple > fast) and keep it in-tree for diffing.
+- Unit tests: edge cases + regressions.
+- Differential fuzz: compare optimized vs reference in Debug/ReleaseSafe.
+- Optimize in order: algorithm -> data layout -> SIMD -> threads -> micro.
+- Re-run fuzz/tests after every optimization; benchmark separately in ReleaseFast.
+
+## Correctness mandate (non-negotiable)
+- Every Zig change earns at least one correctness signal.
+- For parsing/arith/memory/safety-sensitive code, that signal is fuzzing.
+- Prefer differential fuzzing (optimized vs reference) so behavior is proven, not inferred.
+- Default harness: `std.testing.fuzz` + `zig build test --fuzz` (Zig 0.15.2 baseline).
+- Time-agnostic: no prescribed fuzz duration; run it as long as practical and always persist findings.
+- Run fuzz in `Debug`/`ReleaseSafe` so safety checks stay on; benchmark separately in `ReleaseFast`.
+- Allocator-using code also runs `std.testing.checkAllAllocationFailures`.
+- If fuzzing cannot run locally, state why and add a follow-up (seed corpus + repro test).
 
 ## Performance quick start (host CPU)
 ```bash
@@ -210,12 +235,131 @@ pub fn runParallel(input: []const u8, allocator: std.mem.Allocator) !void {
 }
 ```
 
-## Comptime essentials
-- `comptime` parameters drive generics and specialization.
-- `comptime { ... }` forces compile-time evaluation.
-- `inline for` / `inline while` unroll at compile time.
-- `@typeInfo` enables reflection; `@compileError` enforces invariants.
-- If compile-time loops blow up, consider `@setEvalBranchQuota` (surgical use only).
+## Comptime meta-programming (Zig 0.15.2)
+Principles:
+- Use comptime for specialization and validation; measure compile time like runtime.
+- Prefer data over codegen; generate code only when it unlocks optimization.
+- Make illegal states unrepresentable with `@compileError` at the boundary.
+
+Core tools:
+- Type reflection: `@typeInfo`, `@Type`, `@TypeOf`, `@typeName`.
+- Namespaces/fields: `@hasDecl`, `@field`, `@FieldType`, `std.meta.fields`, `std.meta.declarations`.
+- Layout + ABI: `@sizeOf`, `@alignOf`, `@bitSizeOf`, `@offsetOf`, `@fieldParentPtr`.
+- Controlled unrolling: `inline for`, `inline while`, `comptime if`.
+- Diagnostics: `@compileError`, `@compileLog`.
+- Cost control: `@setEvalBranchQuota` (local, justified), `--time-report`.
+
+Common patterns:
+- Traits: assert required decls/methods at compile time.
+- Field-wise derivations: generate `eql`/`hash`/`format`/`serialize` by iterating fields.
+- Static tables: small `std.StaticStringMap.initComptime`; large enums prefer `inline for` scans (see `std.meta.stringToEnum`).
+- Kernel factories: `fn Kernel(comptime lanes: usize, comptime unroll: usize) type { ... }` + `std.simd.suggestVectorLength`.
+
+Unfair toolbox (stdlib-proven):
+- `std.meta.eql`: deep-ish equality for containers (pointers are not followed).
+- `std.meta.hasUniqueRepresentation`: gate "memcmp-style" fast paths.
+- `std.meta.FieldEnum` / `std.meta.DeclEnum`: turn fields/decls into enums for ergonomic switches.
+- `std.meta.Tag` / `std.meta.activeTag`: read tags of tagged unions.
+- `std.meta.fields` / `std.meta.declarations`: one-liners for reflection without raw `@typeInfo` plumbing.
+
+### Trait check template
+```zig
+const std = @import("std");
+
+fn assertHasRead(comptime T: type) void {
+    if (!std.meta.hasMethod(T, "read")) {
+        @compileError(@typeName(T) ++ " must implement read()");
+    }
+}
+```
+
+### Field-wise derivation template (struct)
+```zig
+const std = @import("std");
+
+fn eqlStruct(a: anytype, b: @TypeOf(a)) bool {
+    const T = @TypeOf(a);
+    if (@typeInfo(T) != .@"struct") @compileError("eqlStruct expects a struct");
+
+    inline for (std.meta.fields(T)) |f| {
+        if (!std.meta.eql(@field(a, f.name), @field(b, f.name))) return false;
+    }
+    return true;
+}
+```
+
+### Layout assertions (ABI lock)
+```zig
+comptime {
+    const Header = extern struct {
+        magic: u32,
+        version: u16,
+        flags: u16,
+        len: u32,
+        _pad: u32,
+    };
+
+    if (@sizeOf(Header) != 16) @compileError("Header ABI: size");
+    if (@alignOf(Header) != 4) @compileError("Header ABI: align");
+    if (@offsetOf(Header, "magic") != 0) @compileError("Header ABI: magic offset");
+    if (@offsetOf(Header, "len") != 8) @compileError("Header ABI: len offset");
+}
+```
+
+### Union visitor (inline switch)
+```zig
+fn visit(u: anytype) void {
+    switch (u) {
+        inline else => |payload, tag| {
+            _ = payload;
+            _ = tag; // comptime-known tag
+        },
+    }
+}
+```
+
+### Type-shape dispatcher (derive-anything)
+Use this to write one derivation pipeline that supports structs/unions/enums/pointers/arrays/etc.
+Keep the return type uniform (`R`) so call sites stay simple.
+
+Implementation + tests: `codex/skills/zig/references/type_switch.zig`.
+Validate: `zig test codex/skills/zig/references/type_switch.zig`
+
+### `@Type` builder (surgical)
+Reach for `@Type` when you truly need to manufacture a new type from an input type.
+This is sharp: prefer `std.meta.*` when it can express the same intent.
+
+Example: build a "patch" type where every runtime field is `?T` defaulting to `null`.
+
+Implementation + tests: `codex/skills/zig/references/partial_type.zig`.
+Validate: `zig test codex/skills/zig/references/partial_type.zig`
+
+### Derive pipeline (walk + policies; truly unfair)
+One traversal emits semantic events; policies decide what to do (hash, format, serialize, stats).
+Traversal owns ordering + budgets; policies own semantics.
+
+Implementation + tests: `codex/skills/zig/references/derive_walk_policy.zig`.
+Validate: `zig test codex/skills/zig/references/derive_walk_policy.zig`
+Note: formatting helpers take a writer pointer (e.g. `&w`) so state is preserved.
+
+### Fast path when representation is unique
+```zig
+const std = @import("std");
+
+fn eqlFast(a: anytype, b: @TypeOf(a)) bool {
+    const T = @TypeOf(a);
+    if (comptime std.meta.hasUniqueRepresentation(T)) {
+        return std.mem.eql(u8, std.mem.asBytes(&a), std.mem.asBytes(&b));
+    }
+    return std.meta.eql(a, b);
+}
+```
+
+### Compile-time cost guardrails
+- Avoid combinatorial specialization: keep the knob surface small and explicit.
+- Avoid huge comptime maps for large domains; prefer `inline for` scans.
+- If you must raise the branch quota, do it in the smallest loop that needs it.
+- Prefer `std.meta.*` helpers over handwritten `@typeInfo` plumbing (less code, fewer bugs).
 
 ### Comptime example
 ```zig
@@ -443,27 +587,54 @@ const Span = struct {
 ## Testing
 - Run correctness tests in Debug or ReleaseSafe; run perf checks in ReleaseFast.
 - Leak detection: use `std.testing.allocator` and `defer` frees.
-- Allocation counting: wrap an allocator and assert zero allocations for a “zero-copy” path.
+- Prefer differential tests (reference vs optimized) and metamorphic invariants (roundtrip, monotonicity).
+- Allocation counting: wrap an allocator and assert zero allocations for a "zero-copy" path.
 - OOM injection: run under `std.testing.FailingAllocator`.
 - Exhaustive OOM: `std.testing.checkAllAllocationFailures`.
 
 ## Fuzz testing (required)
-### Built-in fuzzer (default, Zig 0.14+)
-Use `std.testing.fuzz` in a `test` block and run the build runner with
-`zig build test --fuzz`. The build runner rebuilds tests with `-ffuzz` and
-starts the integrated fuzzer; it also serves a small web UI with live coverage.
-The fuzzer is alpha quality in Zig 0.14.0, but it is the default path.
+### Built-in fuzzer (default, Zig 0.15.2)
+Use `std.testing.fuzz` in a `test` block and run:
+`zig build test --fuzz` (optionally `-Doptimize=ReleaseSafe`).
 
-Suggested template (optional):
+Consult `zig build test --help` for version-specific `--fuzz` flags.
+
+### Fuzz target rules (make it fuzzer-friendly)
+- Deterministic: no timers, threads, or internal RNG (the fuzzer is the RNG).
+- Total: accept any input bytes; never read out of bounds; no UB-by-assumption.
+- Bounded: cap pathological work (length limits, recursion depth, max allocations).
+- Isolated: no global mutable state (or fully reset per call).
+- Assert properties, not vibes: reference equivalence, roundtrips, monotonicity, invariants.
+
+### Differential fuzzing (recommended)
+Make your fuzz target assert equivalence between a small reference implementation and the
+optimized kernel. This is the fastest route to algorithmic correctness.
+
+Compile-checked template: `codex/skills/zig/references/fuzz_differential.zig`.
+
+Template:
 ```zig
 const std = @import("std");
 
-fn fuzzTarget(ctx: []const u8, input: []const u8) !void {
-    if (std.mem.eql(u8, ctx, input)) return error.Match;
+fn refCountOnes(bytes: []const u8) u64 {
+    var n: u64 = 0;
+    for (bytes) |b| n += @popCount(b);
+    return n;
+}
+
+fn fastCountOnes(bytes: []const u8) u64 {
+    // Replace with the optimized version (SIMD/threads/etc).
+    return refCountOnes(bytes);
+}
+
+fn fuzzTarget(_: void, input: []const u8) !void {
+    const ref = refCountOnes(input);
+    const got = fastCountOnes(input);
+    try std.testing.expectEqual(ref, got);
 }
 
 test "fuzz target" {
-    try std.testing.fuzz(@as([]const u8, "needle"), fuzzTarget, .{});
+    try std.testing.fuzz({}, fuzzTarget, .{});
 }
 ```
 
@@ -493,10 +664,21 @@ test "allocation failure fuzz" {
 ### Allocator pressure tricks (recommended)
 - Cap per-allocation size relative to input length to surface pathological allocations.
 - Wrap with `std.testing.FailingAllocator` to validate `errdefer` and cleanup paths.
-- Use deterministic seeds and store crashing inputs under `testdata/fuzz/`.
+- Persist interesting inputs under `testdata/fuzz/` and promote crashes to regression tests.
 
-### Fast in-tree randomized fuzz (fallback when `--fuzz` is unavailable)
-Use randomized inputs inside `test` blocks for quick coverage on every change.
+### Corpus + regression workflow (required)
+- When fuzz finds a crash/mismatch, save the input under `testdata/fuzz/<target>/`.
+- Add a deterministic regression test using `@embedFile`.
+
+```zig
+test "regression: fuzz crash" {
+    const input = @embedFile("testdata/fuzz/parser/crash-<id>.bin");
+    try std.testing.expectEqual(refCountOnes(input), fastCountOnes(input));
+}
+```
+
+### Fast in-tree randomized fuzz (smoke; complements `--fuzz`)
+Use randomized inputs inside `test` blocks for cheap, always-on coverage.
 
 ```zig
 const std = @import("std");
@@ -509,20 +691,21 @@ test "fuzz parse" {
     var prng = std.rand.DefaultPrng.init(0x9e3779b97f4a7c15);
     const rng = prng.random();
 
+    var buf: [4096]u8 = undefined;
     var i: usize = 0;
     while (i < 10_000) : (i += 1) {
-        const len = rng.intRangeAtMost(usize, 0, 4096);
-        var buf = try std.testing.allocator.alloc(u8, len);
-        defer std.testing.allocator.free(buf);
-        rng.bytes(buf);
-        _ = parse(buf) catch {};
+        const len = rng.intRangeAtMost(usize, 0, buf.len);
+        const input = buf[0..len];
+        rng.bytes(input);
+        _ = parse(input) catch {};
     }
 }
 ```
 
 ### External harnesses (optional)
-If your Zig version lacks the built-in fuzzer or you need AFL++/libFuzzer features,
-export a C ABI entrypoint and drive it from an external fuzzer. Example outline:
+If you need AFL++/libFuzzer infrastructure (shared corpora, distributed fuzzing, custom
+instrumentation), export a C ABI entrypoint and drive it from an external harness.
+Example outline:
 - Export a stable entrypoint: `export fn fuzz_target(ptr: [*]const u8, len: usize) void`.
 - Build a static library with `zig build-lib`.
 - Link it from an external harness (AFL++ via `cargo-afl`) and run with a seed corpus.
