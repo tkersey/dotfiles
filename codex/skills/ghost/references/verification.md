@@ -7,6 +7,7 @@ This reference exists so the `ghost` skill can generate a first-class `VERIFY.md
 - Every public operation id has at least one test case.
 - Each operation has coverage across success and error paths (when applicable).
 - Case counts match or exceed the source test suite (when extracting from tests).
+- `VERIFY.md` includes provenance + a regeneration recipe.
 
 ## Adapter Runner (preferred)
 
@@ -21,6 +22,8 @@ Goal: prove the extracted `tests.yaml` matches the original library.
    - If the case has `error: true`, assert it errors.
    - Otherwise, assert the return value equals `output` (deep equality where applicable).
 4. Record a short summary in `VERIFY.md` (how to run it, pass/fail, skips).
+   - Include upstream repo identity + exact revision.
+   - Include the exact commands used to regenerate artifacts (or one deterministic recipe).
 5. Delete the runner after verification.
 
 Tips:
@@ -46,8 +49,24 @@ If a full adapter runner is infeasible:
 - Source revision: <tag/sha>
 - `tests.yaml` version: <string>
 - Source language/runtime: <language + versions>
-- Total cases executed: <n>/<total>
+- Total cases: <total>
+- Executed: <n>
+- Skipped: <k>
 - Result: pass|fail
+
+## Regenerate (artifact production)
+This ghost repo should be reproducible from the upstream revision.
+
+- Preconditions: <tooling needed; env normalization>
+- Upstream checkout:
+  - <exact commands to obtain upstream at the pinned revision>
+- Extract/update artifacts:
+  - `SPEC.md`: <how it was produced>
+  - `tests.yaml`: <how it was produced>
+  - `INSTALL.md` / `README.md`: <how they were produced>
+  - `LICENSE*`: <what was copied>
+- Verify:
+  - <exact commands to run verification>
 
 ## Adapter Runner (preferred)
 - How to run: <exact command>

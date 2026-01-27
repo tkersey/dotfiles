@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Create a ghost-library repo from an existing library git repo by extracting a strict SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and preserving upstream LICENSE files. Use only when a user explicitly asks to ghostify/spec-ify a repo, extract language-agnostic specs/tests, or invokes $ghost / "ghost" / "ghost library" / "spec package" for a codebase.
+description: Create a ghost-library repo from an existing library git repo by extracting a strict SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and preserving upstream LICENSE files. VERIFY.md must record provenance and a regeneration recipe. Use only when a user explicitly asks to ghostify/spec-ify a repo, extract language-agnostic specs/tests, or invokes $ghost / "ghost" / "ghost library" / "spec package" for a codebase.
 ---
 
 # ghost
@@ -29,10 +29,12 @@ It gets harder (but is still possible) when the contract depends on time, random
 - MUST paraphrase upstream docs; do not copy text verbatim.
 - MUST preserve upstream license files verbatim as `LICENSE*`.
 - MUST produce a verification signal and document it in `VERIFY.md` (adapter runner preferred; sampling fallback allowed).
+- MUST document provenance and regeneration in `VERIFY.md` (upstream repo + revision, how artifacts were produced, and how to rerun verification).
 
 ## Inputs
 - Source repo path (git working tree)
 - Output repo name/location (default: sibling directory `<repo-name>-ghost`)
+- Upstream identity + revision (remote URL if available; tag/commit SHA)
 - Public API surface if ambiguous (functions/classes/modules)
 - Source language/runtime + how to run upstream tests
 - Any required runtime assumptions (timezone, locale, units, encoding)
@@ -106,7 +108,11 @@ Avoid language-specific spellings in ids (e.g., avoid `snake_case` vs `camelCase
 ### 5) Add `INSTALL.md` + `README.md` + `VERIFY.md` + `LICENSE*`
 - `INSTALL.md`: a short prompt for implementing the library in any language, referencing `SPEC.md` and `tests.yaml`.
 - `README.md`: explain what the ghost library is, list operations, and describe the included files.
-- `VERIFY.md`: describe how the ghost artifacts were verified against the source library (adapter-first; sampling fallback).
+- `VERIFY.md`: describe provenance + how the ghost artifacts were produced and verified against the source library (adapter-first; sampling fallback).
+  - include upstream repo identity + exact revision (tag or commit)
+  - include the exact commands used to produce each artifact (or a single deterministic regeneration recipe)
+  - include the exact commands used to run verification and the resulting pass/skip counts
+  - include any environment normalization assumptions
 - `LICENSE*`: preserve the upstream repo’s license files verbatim.
   - copy common files like `LICENSE`, `LICENSE.md`, `COPYING*`
   - if no license file exists upstream, include a `LICENSE` file stating that no upstream license was found
@@ -122,6 +128,10 @@ Avoid language-specific spellings in ids (e.g., avoid `snake_case` vs `camelCase
   - run a representative sample across all operation ids (typical + boundary + error)
   - document the limitation clearly in `VERIFY.md`
 - Use `references/verification.md` for a checklist and `VERIFY.md` template.
+
+## Reproducibility and regen policy
+- The ghost repo must be reproducible: a future developer should be able to point at the upstream revision and rerun the extraction + verification.
+- Do not add regeneration scripts as tracked files unless the user explicitly asks; put the recipe in `VERIFY.md` instead.
 
 ## Output
 Produce only these artifacts in the ghost repo:
