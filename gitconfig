@@ -70,11 +70,9 @@
 [credential "https://git-codecommit.us-east-1.amazonaws.com"]
 	provider = generic
 [credential]
-	helper =
+	useHttpPath = true
+	helper = 
 	helper = /usr/local/share/gcm-core/git-credential-manager
-	useHttpPath = true
-[credential "https://dev.azure.com"]
-	useHttpPath = true
 [filter "lfs"]
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
@@ -86,3 +84,5 @@
 [credential "https://gist.github.com"]
 	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://dev.azure.com"]
+	useHttpPath = true
