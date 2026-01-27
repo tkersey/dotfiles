@@ -25,9 +25,9 @@ Important:
 - In auto mode, selecting a slice only happens when `SLICES.md` is already valid at invocation start.
 
 ## Inputs
-- Plan path:
+- Plan path (optional metadata in `SLICES.md`):
   - Provide on the first run to create/repair `SLICES.md`.
-  - Not needed on later runs if `SLICES.md` has a `plan_path` header.
+  - Not required for Next mode; `SLICES.md` is portable without it.
 - Mode:
   - Not required; infer it from the invocation text + `SLICES.md` state.
   - If the human wants to force generate, they can say "generate"/"rebuild"/"regenerate".
@@ -50,15 +50,14 @@ Important:
 - `slice` only reads the plan file and `SLICES.md`, and only writes to `SLICES.md`.
 
 ### File header
-`SLICES.md` should start with minimal metadata so Next mode can run without re-supplying the plan path:
+`SLICES.md` should start with minimal metadata so Next mode can run without any plan reference:
 
 ```yaml
-plan_path: path/to/plan.md
 schema_version: 1
 default_assignee: opencode
 ```
 
-`default_assignee` is optional; if present, Next mode uses it as the orchestrator id.
+`default_assignee` is optional; if present, Next mode uses it as the orchestrator id. `plan_path` is optional metadata only.
 
 ### Slice record format
 Each slice is represented as a section containing a single YAML object with a consistent issue-record schema.
@@ -156,7 +155,7 @@ dependencies:
    - Warning (can proceed, but print warnings).
 
    Hard invalid checks:
-   - Header: has `plan_path` (or the user provided a plan path).
+   - Header: has `schema_version`.
    - Parseability: every slice section contains exactly one valid YAML object (mapping).
    - Required keys: each slice has at least `id,title,status,priority,issue_type`.
    - Priority sanity: `priority` is an int in 0..4.
@@ -180,11 +179,11 @@ dependencies:
    - If validation failure requires human intent (e.g., missing `assignee` on an `in_progress` slice, or multiple
      `in_progress` slices for the same `assignee`), ask the human how to resolve before repairing.
 3. If validation fails:
-   - Switch to mode=`generate` (auto-repair) and (re)read the plan.
+   - Switch to mode=`generate` (auto-repair) and (re)read the plan if available.
    - Stop after writing the repaired `SLICES.md`; do not select/mark any slice `in_progress`.
 
 4. If mode=`auto` and `SLICES.md` contains zero slice records:
-   - Switch to mode=`generate` and read the plan referenced by the header.
+   - Switch to mode=`generate` and read the plan if provided.
    - Stop after writing `SLICES.md`.
 
 Derived sets (best-effort):
@@ -292,11 +291,10 @@ After any write:
 
 ## Examples
 
-Minimal `SLICES.md` skeleton:
+Minimal `SLICES.md` skeleton (portable; no plan reference required):
 
 ````md
 ---
-plan_path: PLAN.md
 schema_version: 1
 ---
 
