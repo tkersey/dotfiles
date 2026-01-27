@@ -1,5 +1,6 @@
 model = "gpt-5.2-codex"
 model_reasoning_effort = "xhigh"
+suppress_unstable_features_warning = true
 
 [features]
 web_search_request = true
@@ -10,6 +11,7 @@ collaboration_modes = true
 
 [tui]
 experimental_mode = "execute"
+
 
 # [mcp_servers.openaiDeveloperDocs]
 # url = "https://developers.openai.com/mcp"
