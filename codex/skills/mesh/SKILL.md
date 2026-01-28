@@ -32,11 +32,28 @@ To parallelize, the user must provide a clearly separable task list:
 - A numbered list or bullet list is ideal.
 - Each task should be independently executable; if not, state dependencies or required integration order.
 
-Optional (when needed): state agent type per task (default is `worker`):
-- `worker`: execute the task.
-- `orchestrator`: coordinate its own workers for that task, then report results upstream.
+Optional (recommended): state agent type per task.
+
+Agent types (Codex `spawn_agent(agent_type=...)`):
+- `worker` (default): implement/fix/run things.
+- `explorer`: fast repo research / analysis-only by default.
+- `orchestrator`: coordinate its own workers/explorers for that task, then report results upstream.
 
 If tasks are not clearly separable, ask for a numbered list (do not guess).
+
+## Prereqs (Codex CLI)
+Multi-agent orchestration requires the Collab feature flag.
+
+- Enable `collab` in `~/.codex/config.toml` (global or profile-scoped):
+  ```toml
+  [features]
+  collab = true
+  ```
+- Optional: raise concurrency via `agents.max_threads`:
+  ```toml
+  [agents]
+  max_threads = 8
+  ```
 
 ## Recommended task phrasing (for best results)
 In each task, encourage the user to include:
@@ -59,7 +76,7 @@ Recommended pattern:
 Template:
 ```text
 N. <Verb> <concrete object>.
-   - Agent: worker | orchestrator
+   - Agent: worker | explorer | orchestrator
    - Skills: <explicit list, or "none">
    - Mode: analysis-only | patch-first | direct edit ok
    - Scope: <paths/globs or "unconstrained">
@@ -110,14 +127,20 @@ Use $mesh to orchestrate orchestrators (patch-first at boundaries):
 ## Workflow (orchestrator algorithm)
 1. Extract the user-provided task list (do not invent subtasks).
 2. Decide the agent type per task:
-   - Default `worker`.
-   - Use `orchestrator` only when the user explicitly requested it (per task or globally).
+- Default `worker`.
+- Prefer `explorer` for tasks explicitly marked analysis-only.
+- Use `orchestrator` only when the user explicitly requested it (per task or globally).
 3. Run tasks in waves (max parallel, queue the rest):
-   - Spawn as many agents as allowed (optionally respect a user-provided cap).
-   - If a spawn fails due to reaching the session limit, do not thrash; `wait`, integrate, `close_agent`, then continue.
-4. `wait` for the current wave to finish; do not poll.
+   - Spawn as many agents as allowed (optionally respect a user-provided cap and/or `agents.max_threads`).
+   - Use `spawn_agent` (not a custom command).
+   - If a spawn fails (agent/thread limit, collab unavailable, or spawn-depth limit), do not thrash; `wait`, integrate, `close_agent`, then continue.
+4. Wait + integrate incrementally:
+   - `wait(ids=[...])` returns when *any* agent reaches a final status (not when all finish).
+   - Use the completed agent status' embedded final message as the worker output (patch, commands, etc.).
+   - Loop: `wait` -> integrate finished agent(s) -> `close_agent` -> repeat until the wave drains.
+   - Avoid tight polling: use the default timeout or longer timeouts (minutes). (Codex clamps `timeout_ms` to a minimum.)
 5. Validate outputs:
-   - If an agent did not follow the output contract, send a follow-up asking it to re-emit in the contract format.
+   - If an agent did not follow the output contract, use `send_input` to request a re-emit in the contract format.
 6. Integrate patch-first:
    - Apply each proposed patch sequentially in the user-provided task order.
    - If a patch no longer applies (conflict/drift), ask that same agent for a rebased patch against current HEAD.
@@ -130,8 +153,8 @@ When integrating a worker/sub-orchestrator patch:
 - Apply the unified diff as-is; avoid manual edits unless explicitly necessary.
 - If the patch applies but looks suspicious, request audit mode artifacts (prompt/output) rather than guessing intent.
 - If the patch does not apply cleanly:
-  - Ask the authoring agent for a rebased patch against current HEAD.
-  - Include the failure mode ("patch failed to apply", conflicting files) so it can rebase precisely.
+   - Ask the authoring agent for a rebased patch against current HEAD.
+   - Include the failure mode ("patch failed to apply", conflicting files) so it can rebase precisely.
 
 Rebase request template (parent -> agent):
 ```text
@@ -163,6 +186,11 @@ If you hit repeated conflicts or churn, stop and ask the user for one of:
 - Workers MUST NOT spawn sub-agents unless explicitly told.
 - Workers SHOULD avoid duplicating repo-wide research; the orchestrator should pass filepaths and constraints.
 - Workers SHOULD ask questions only when blocked; otherwise pick a reasonable default and state it.
+
+## Explorer policy (defaults)
+- Explorers are best for repo-wide search/reading and returning pointers (paths, commands, key snippets).
+- Default them to analysis-only unless the user explicitly asked for patches.
+- Explorers MUST NOT spawn sub-agents unless explicitly told.
 
 ## Sub-orchestrator policy (explicit-only)
 Sub-orchestrators are coordination-only agents. Use them only when the user asked for orchestrator-of-orchestrators.
@@ -221,6 +249,31 @@ Deliverable (required format):
 6) Questions (if blocked)
 ```
 
+## Prompt template (orchestrator -> explorer)
+Use for analysis-only / repo-understanding tasks.
+
+```text
+You are an explorer operating in a shared workspace.
+
+Default mode: ANALYSIS-ONLY.
+- Do NOT directly edit files unless explicitly instructed.
+- Do NOT spawn subagents unless explicitly instructed.
+
+Task:
+- <one sentence>
+
+Context (provided; do not re-discover unless needed):
+- Files/paths: <...>
+- Commands/entrypoints: <...>
+
+Deliverable (required format):
+1) Summary (1-3 bullets)
+2) Findings (with file paths and minimal snippets if needed)
+3) Commands run + results
+4) Risks / follow-ups
+5) Questions (if blocked)
+```
+
 ## Prompt template (orchestrator -> sub-orchestrator)
 Use this only when the user explicitly requested orchestrator-of-orchestrators.
 
@@ -272,4 +325,4 @@ If the user asks for auditability ("audit mode", "show worker prompts", "show wo
 - If output is truncated by the UI, ask the worker to write its patch/output to a file and return the path.
 
 ## Resources
-- `references/codex-multi-agent.md`: tool semantics and interrupt rules for Codex multi-agent workflows.
+- `references/codex-multi-agent.md`: tool semantics for `spawn_agent` / `send_input` / `wait` / `close_agent`.
