@@ -57,7 +57,7 @@ Multi-agent orchestration requires the Collab feature flag.
 
 ## Recommended task phrasing (for best results)
 In each task, encourage the user to include:
-- The desired skill(s) (if any), explicitly (e.g. `$trace`, `$fix`, `$validate`).
+- The desired skill(s) (if any), explicitly (e.g. `$complexity-mitigator`, `$fix`, `$validate`).
 - Whether the task is analysis-only vs a code change.
 - Any path constraints or ownership boundaries.
 - Any ordering constraints (default integration order is list order).
@@ -93,7 +93,7 @@ Parallel research (no code edits):
 
 ```text
 Use $mesh to parallelize:
-1. Use $trace to explain how config is loaded and list the entrypoints.
+1. Use $complexity-mitigator to explain how config is loaded and list the entrypoints.
 2. Search the repo for where auth tokens are parsed and summarize risks.
 3. Read CI logs for the latest failing run and summarize root cause candidates.
 ```

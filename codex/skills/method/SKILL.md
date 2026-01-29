@@ -111,7 +111,7 @@ Create resource directories only if needed.
 - Encode the method as a concrete workflow with clear guardrails.
 - Include the explicit trigger rule in frontmatter description.
 - Include the example triggers/non-triggers provided by the user.
-- If influenced by $sp or $trace, reference them by name only; do not copy their contents.
+- If influenced by existing skills, reference them by name only; do not copy their contents.
 
 Suggested structure:
 - Overview
