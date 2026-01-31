@@ -6,6 +6,8 @@ description: Lateral-thinking playbook for options and trade-offs; always delive
 # Creative Problem Solver
 
 ## Contract (one assistant turn)
+- Name the current Double Diamond stage: Discover / Define / Develop / Deliver.
+- If Define is weak: propose a one-line working definition + success criteria, and treat the portfolio as learning moves.
 - Deliver options, then stop and ask for human input before executing.
 - Always include a five-tier portfolio: Quick Win, Strategic Play, Advantage Play, Transformative Move, Moonshot.
 - For each option: expected signal + escape hatch.
@@ -20,13 +22,21 @@ description: Lateral-thinking playbook for options and trade-offs; always delive
 - The problem is multi-constraint, cross-domain, or high-uncertainty (architecture, migration, integration, conflict resolution).
 
 ## Quick start
-1. Choose lane: Fast Spark or Full Session.
-2. Reframe once (pick one tool, or run Oblique Draw).
-3. Aha Check. If none, reframe once more.
-4. Generate the five-tier portfolio.
-5. Score options (1–5): Signal, Ease, Reversibility, Speed.
-6. Ask the user to choose a tier or update constraints.
-7. Close with an Insights Summary.
+1. Choose Double Diamond stage: Discover / Define / Develop / Deliver.
+2. Choose lane: Fast Spark or Full Session.
+3. Reframe once (pick one tool, or run Oblique Draw).
+4. Aha Check. If none, reframe once more.
+5. Generate the five-tier portfolio (learning moves in Discover/Define; solution moves in Develop/Deliver).
+6. Define gate: state a one-line problem statement + success criteria (or mark unknown and ask).
+7. Score options (1–5): Signal, Ease, Reversibility, Speed.
+8. Ask the user to choose a tier or update constraints.
+9. Close with an Insights Summary.
+
+## Double Diamond alignment
+- Discover (diverge): broaden context; focus options on learning (research, instrumentation, repro, characterization).
+- Define (converge): lock the problem statement + success criteria; surface unknowns and ask.
+- Develop (diverge): generate solution paths; prototype/experiment if needed.
+- Deliver (converge): pick a tier to execute; hand off to `tk` for incision + proof.
 
 ## Mode check
 - Pragmatic (default): ship-this-week options only.
@@ -63,7 +73,9 @@ Mini-deck (if no deck is available):
 - Output: one-line insight. If none, reframe once more before generating options.
 
 ## Portfolio rule
-Every response must include all five tiers.
+- Every response must include all five tiers.
+- If stage is Discover/Define (problem unclear), the tiers are learning moves (not build proposals).
+- If stage is Develop/Deliver (problem clear), the tiers are solution moves.
 
 ## Option template
 ```
@@ -142,6 +154,7 @@ Preference: high Signal + Reversibility, then Ease + Speed.
 
 ## Templates
 Decision Log:
+- Stage:
 - Decision:
 - Rationale:
 - Alternatives considered:
@@ -150,6 +163,8 @@ Decision Log:
 - Next decision point:
 
 Assumptions & Constraints:
+- Problem statement (working definition):
+- Success criteria:
 - Assumptions to validate:
 - Known constraints (time/budget/policy/tech):
 - Unknowns to de-risk:
@@ -165,12 +180,15 @@ Knowledge Snapshot:
 
 ## Deliverable format
 - Lane (Fast Spark / Full Session).
+- Double Diamond stage (Discover / Define / Develop / Deliver).
+- Problem statement + success criteria (or marked unknown).
 - Reframe used.
 - Aha Check (one line).
 - Five-tier portfolio with signals + escape hatches.
 - Scorecard + brief rationale.
 - Decision Log + Assumptions/Constraints.
 - Human Input Required (choose tier or update constraints).
+- If execution is chosen: hand off to `tk`.
 - Insights Summary.
 
 ## Activation cues

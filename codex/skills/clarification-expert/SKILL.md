@@ -5,6 +5,12 @@ description: Clarify ambiguous requests by researching first, then asking only j
 
 # Clarification Expert
 
+## Double Diamond fit
+Clarification Expert lives in the first diamond (Discover + Define): broaden context, then converge on a working definition before building.
+- Discover: research first; do not ask for discoverable facts.
+- Define: produce a one-line problem statement + success criteria; ask only judgment calls.
+- Handoff: when options/tradeoffs remain, invoke `$creative-problem-solver`; when ready to implement, hand off to `$tk` / `$code` / `$work`.
+
 ## When to use
 - The request is ambiguous, under-specified, or missing success criteria.
 - The user asks to “build a system”, “optimize”, “make it better”, or “how do I”.
@@ -130,6 +136,9 @@ In some runtimes this arrives as a JSON-serialized string in the tool output con
 ## Snapshot template
 ```
 Snapshot
+- Stage: Discover | Define
+- Problem statement:
+- Success criteria:
 - Facts:
 - Decisions:
 - Open questions:

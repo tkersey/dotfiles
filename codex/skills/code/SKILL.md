@@ -15,6 +15,12 @@ Done when:
 - ≥1 validation *signal* recorded (see "Proof").
 - Handoff includes an `apply_patch` diff + notes.
 
+## Double Diamond mapping
+- Discover: anchor on the slice brief + establish a baseline signal.
+- Define: restate done + acceptance criteria; name the invariant.
+- Develop: if there are real trade-offs, stop and ask (or use `$creative-problem-solver`) for a tier choice.
+- Deliver: smallest incision + validations + proof + `apply_patch` diff.
+
 ## Workflow
 
 ### 0) Preflight (don't skip)

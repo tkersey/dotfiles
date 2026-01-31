@@ -21,6 +21,15 @@ TK optimizes for:
 - Reviewability: a diff you can trust without heroics.
 - Durability: the next change becomes cheaper (within the blast radius).
 
+## Double Diamond fit
+TK is the converge-heavy half of Double Diamond:
+- Discover: establish the proof signal and read for the cut.
+- Define: write Contract + Invariants (hard gate).
+- Develop: widen the cut-space via Creative Frame + (internal) tiered options.
+- Deliver: cut the incision and run Proof.
+
+If the work is still in Discover/Define uncertainty (needs options/tradeoffs, stakeholder alignment, or competing constraints), invoke `creative-problem-solver` first, then return to TK with a chosen tier and success criteria.
+
 ## What TK Outputs (and only this)
 TK has two modes.
 
@@ -36,7 +45,7 @@ Implementation mode (code change requested):
 - If blocked on requirements: output Contract, Invariants, Creative Frame, Why This Solution, Question (no Incision/Proof yet).
 
 **Contract**
-- One sentence: what “working” means.
+- One sentence: what “working” means (include success criteria / proof target when possible).
 
 **Invariants**
 - What must remain true; what becomes impossible.
@@ -93,6 +102,12 @@ TK is not a style; it’s a reduction process:
 6. **Select the most ambitious safe tier**: bias toward Transformative/Moonshot, stay pragmatic.
 7. **Cut the incision**: minimal diff at the stable boundary.
 8. **Close the loop**: run the proof signal.
+
+Double Diamond mapping:
+- Discover: 1-2
+- Define: 3-4
+- Develop: 5-6
+- Deliver: 7-8
 
 ## Doctrine (the few rules that do most of the work)
 
@@ -167,6 +182,8 @@ If moonshot is inevitable, proceed autonomously *only* via incremental cuts.
 
 ## Internal 5-tier portfolio (required, not displayed)
 Always generate these five options before choosing an incision. Keep them internal unless asked for options/tradeoffs.
+
+If entering from `creative-problem-solver`, treat its five-tier portfolio as this internal portfolio; regenerate only if new facts/constraints appear.
 
 After you’ve named the stable boundary/seams and written the contract/invariants, force a creative search across the cut-space.
 

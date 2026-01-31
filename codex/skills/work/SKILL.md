@@ -15,6 +15,12 @@ Done when:
 - ≥1 validation *signal* recorded (see "Proof").
 - PR opened (do not merge).
 
+## Double Diamond mapping
+- Discover: anchor on `bd` + find the failing signal/repro.
+- Define: restate done + acceptance criteria; name the invariant.
+- Develop: if there are real trade-offs, pause and run `$creative-problem-solver` for a tier choice.
+- Deliver: smallest incision + validations + proof + PR.
+
 ## Workflow
 
 ### 0) Preflight (don't skip)

@@ -4,6 +4,20 @@
 - Minimal incision, maximal precision. (largest impact for least cost)
 - Be like mike. (practice, composure, finish, excellence)
 
+# Problem-Solving Default: Double Diamond
+
+Use Double Diamond to avoid converging too early: separate "are we solving the right problem?" from "are we building the right thing?"
+
+- Discover (diverge): gather evidence and broaden the problem space (repo reading/search, repro, constraints).
+- Define (converge): lock a one-line problem statement + success criteria (contract/invariants/acceptance).
+- Develop (diverge): generate options/prototypes when there are real trade-offs.
+- Deliver (converge): implement, validate, and ship with a proof trail.
+
+Skill routing (default):
+- Discover/Define: `$clarification-expert`, `$prove-it`, `$complexity-mitigator`, `$invariant-ace`, `$tk` (advice mode).
+- Develop: `$creative-problem-solver` (five-tier portfolio).
+- Deliver: `$tk` (implementation mode), `$fix`, `$validate`, `$commit`, `$ship`, `$work`, `$code`, `$join`, `$fin`.
+
 # Repository Guidelines
 
 ## Issue Tracking

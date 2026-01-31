@@ -8,6 +8,15 @@ description: Review+fix protocol with safety guardrails (unsoundness, invariants
 ## Intent
 Make risky or unclear code safe with the smallest sound, validated change.
 
+## Double Diamond fit
+`fix` spans the full Double Diamond, but keeps divergence mostly internal to stay autonomous:
+- Discover: reproduce/characterize + collect counterexamples.
+- Define: state the contract and invariants (before/after).
+- Develop: (internal) consider 2-3 plausible fix strategies; pick the smallest sound one per default policy.
+- Deliver: implement + prove with a real validation signal.
+
+If a fix requires a product-sensitive choice (cannot be derived or characterized safely), stop and ask (or invoke `$creative-problem-solver` when multiple viable strategies exist).
+
 ## Inputs
 - User request text.
 - Repo state (code + tests + scripts).

@@ -5,6 +5,9 @@ description: "Run validation loops (format/lint/typecheck/build/tests) and repor
 
 # Validate
 
+## Double Diamond fit
+Validate is Deliver (converge): turn "I think it's done" into an auditable signal trail. If "working" can't be stated, step back to Discover/Define first.
+
 ## Overview
 Run the tightest available verification loop for current changes, repeat as needed, and report the signal.
 

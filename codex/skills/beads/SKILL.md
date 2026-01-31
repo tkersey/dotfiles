@@ -43,11 +43,12 @@ Recommended close reason:
    Then `bd show <id>`.
 3. Start/claim: `bd update <id> --claim` (or `bd update <id> --status in_progress`).
 4. Seed a mini-plan (rolling):
-   - `bd update <id> --notes "$(cat <<'EOF'
-## Status
-- Now: …
-- Next: …
-- Blockers: …
+    - `bd update <id> --notes "$(cat <<'EOF'
+ ## Status
+ - Stage: Discover | Define | Develop | Deliver
+ - Now: …
+ - Next: …
+ - Blockers: …
 
 ## Verification
 - [ ] <exact command>  # expected: <signal>
@@ -117,6 +118,7 @@ Template (Markdown-only, high-signal, no diffs):
 ```bash
 bd comments add <id> "$(cat <<'EOF'
 ChangeLog
+- Stage: Discover | Define | Develop | Deliver
 - Intent: <what this step was trying to accomplish>
 - Files: <paths, short list>
 - Behavior: <what is now true / user-visible change>

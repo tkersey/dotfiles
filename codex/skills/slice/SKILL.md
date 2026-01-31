@@ -109,6 +109,11 @@ Role: contract | implementation | integration | checkpoint
 Parallelism impact: unlocks <n> slices
 ```
 
+Role ↔ Double Diamond (guidance):
+- `contract`: Define
+- `implementation`: Develop / Deliver
+- `integration` / `checkpoint`: Deliver
+
 Example slice:
 ```yaml
 id: sl-1a2b3c4d

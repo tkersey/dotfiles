@@ -25,6 +25,7 @@ Transform a markdown plan into a comprehensive bead graph with clear dependencie
   - `Workstream: <name>`
   - `Role: contract | implementation | integration | checkpoint`
   - `Parallelism impact: unlocks <n> beads` (best-effort)
+  - (Optional) Double Diamond: `contract` = Define; `implementation` = Develop/Deliver; `integration|checkpoint` = Deliver.
 - No agent routing labels; assignment stays manual.
 - Use molecules only for repeatable checklists.
 
