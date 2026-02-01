@@ -1,9 +1,9 @@
 model = "gpt-5.2-codex"
 model_reasoning_effort = "xhigh"
 suppress_unstable_features_warning = true
+web_search = "live"
 
 [features]
-web_search_request = true
 unified_exec = true
 steer = true
 collab = true
