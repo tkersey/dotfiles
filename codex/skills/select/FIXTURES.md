@@ -73,3 +73,25 @@ SLICES fragment:
   status: open
 ```
 Expected: pick `sl-c` (fewest unmet blocks) as the unblocker.
+
+## F6: auto-remediate unknown dep id via alias
+Invocation list fragment:
+```text
+Use $select:
+1. First task.
+   - id: t-1
+2. Second task.
+   - id: t-2
+   - depends_on: [1]
+```
+Expected: map `depends_on: [1]` to `t-1`; no unknown-deps warning; `auto_fix` includes `dep_alias`.
+
+## F7: auto-infer scope from explicit path tokens
+Invocation list fragment:
+```text
+Use $select:
+1. Update docs.
+   - id: docs
+   - title: "Edit README.md and docs/guide.md"
+```
+Expected: infer `scope` from `README.md` and `docs/guide.md`; no missing-scope warning; `auto_fix` includes `scope_infer`.

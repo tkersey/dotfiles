@@ -43,8 +43,9 @@ Use $select to plan:
 
 ## Normalization notes
 - If `agent: orchestrator` but `subtasks` is missing/empty, downgrade to `worker` and warn.
-- Missing `scope` means the task overlaps everything and should not be parallelized; warn.
+- Missing `scope` means the task overlaps everything and should not be parallelized; warn unless auto-remediation infers scope.
+- Unknown deps are treated as unmet blocks; warn only if auto-remediation cannot resolve them.
 
 ## Schema drift detectors (warn-only; keep selecting)
 - Duplicate `id` values.
-- `depends_on` references an unknown id: treat as unmet dep for that task; warn; keep scheduling other tasks.
+- `depends_on` references an unknown id: treat as unmet dep for that task; warn only after auto-remediation; keep scheduling other tasks.

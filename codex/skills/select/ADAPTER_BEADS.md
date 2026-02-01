@@ -38,7 +38,7 @@ Respect `max_tasks`:
 - Default for `beads` is `max_tasks: 1` unless explicitly overridden.
 
 ## Schema drift detectors (warn-only; keep selecting)
-- Bead referenced by `blocks` dep is missing/unreadable: treat as unmet dep; warn.
+- Bead referenced by `blocks` dep is missing/unreadable: treat as unmet dep; warn only after auto-remediation.
 
 ## Guardrails
 - Never run mutating bd commands from `$select` (`bd update`, `bd close`, `bd dep add`, comments, etc.).

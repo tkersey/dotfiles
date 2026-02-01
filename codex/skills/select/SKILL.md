@@ -54,9 +54,27 @@ Detect sources without mutating them:
 
 Preflight (best-effort):
 - For the chosen source, collect candidate tasks + dependency edges.
-- If a dependency refers to an unknown task ID, treat the referencing task as **blocked**, emit a warning listing unknown IDs, and keep going.
+- If a dependency refers to an unknown task ID, treat the referencing task as **blocked**; warn only after auto-remediation fails.
 - If the dependency graph is cyclic/unschedulable, schedule any work outside the cycle (if possible) and emit a warning.
 - If the source is present but unparseable/empty, stop and ask before falling back.
+
+## Warning auto-remediation (read-only)
+Before emitting warnings, attempt safe, deterministic fixes that do not mutate sources.
+
+Order (stop when resolved):
+1. **ID normalization + aliasing**:
+   - Canonicalize ids/depends_on (trim, lowercase, drop leading `#`).
+   - If a `depends_on` is unknown, try to map it to a **unique** known id via a numeric suffix alias (e.g., `1` -> `t-1`, `sl-1`) or an exact canonical match.
+   - If resolved, replace the dep with the canonical id and suppress the unknown-dep warning.
+2. **Scope inference (conservative)**:
+   - If `scope` is missing, scan `id`/`title`/`subtasks` for explicit path or glob tokens (contain `/`, `**`, or a file extension).
+   - Only adopt tokens that are existing paths or obvious globs; prefer the narrowest non-overlapping set.
+   - If inferred, set `scope` and suppress the missing-scope warning.
+3. **Orchestrator downgrade**:
+   - If `agent: orchestrator` lacks `subtasks`, downgrade to `worker`.
+   - This is a semantic change; still emit a warning even after the fix.
+
+Record auto-fixes in the Decision Trace (`auto_fix`) and keep `warnings` for unresolved issues.
 
 ## Source adapters (read one; do not improvise)
 After you choose the source kind, read and apply exactly one adapter spec:
@@ -79,7 +97,7 @@ Parallelism is only scheduled when tasks provide enough metadata to make it defe
 
 ## Orchestration-of-orchestration
 Tasks may be delegated to an `agent: orchestrator` only when the user provided `subtasks`.
-If `agent: orchestrator` is set but `subtasks` is empty/missing, downgrade to `agent: worker` and warn.
+If `agent: orchestrator` is set but `subtasks` is empty/missing, downgrade to `agent: worker`, record an auto-fix, and warn.
 
 ## Output: OrchPlan v1
 Emit one YAML block with the canonical plan.
@@ -131,14 +149,16 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 - `pick`: selected task id + 3-10 word reason
 - `next2`: next two candidates (or `none`) + 3-10 word reason each
 - `warnings`: list count + top 1-3 keys (e.g. `unknown_deps`, `status_drift`, `cycle`)
+- `auto_fix`: list count + top 1-3 keys (e.g. `dep_alias`, `scope_infer`, `orchestrator_downgrade`)
 
 ## Procedure (high-level)
 1. Resolve invocation directives (mode/max_tasks/cap).
 2. Source detection (pick exactly one; do not merge sources).
 3. Read the corresponding adapter spec (above) and extract tasks.
-4. Normalize tasks: ensure `id`; apply orchestrator rule; treat unknown deps as blocked+warn.
-5. Schedule waves using `depends_on` + `scope` locks.
-6. Emit OrchPlan v1 YAML (always) + Decision Trace (required). Add pipelines only when useful.
+4. Normalize tasks: ensure `id`; apply orchestrator rule; treat unknown deps as blocked (pending auto-remediation).
+5. Run warning auto-remediation (above); finalize warnings.
+6. Schedule waves using `depends_on` + `scope` locks.
+7. Emit OrchPlan v1 YAML (always) + Decision Trace (required). Add pipelines only when useful.
 
 ## Scheduling algorithm (parallelism-first)
 Build waves using dependency readiness and `scope` locks:
@@ -159,10 +179,11 @@ When you must choose between conflicting tasks (overlapping scope or cap pressur
 5. Risk/hardness/blast (if present): prefer lower risk, smaller blast radius, and clearer scope.
 6. Stable order: preserve the source order.
 
-Always emit warnings when:
+Emit warnings when unresolved:
 - Parallelism was reduced due to missing `scope`.
 - A `depends_on` points at an unknown ID.
 - A task declared `agent=orchestrator` without `subtasks`.
+If a warning is auto-remediated, omit it from `warnings` and list it under `auto_fix` (except orchestrator downgrade, which must still warn).
 
 ## Source adapters (extraction only)
 Adapter specs live in:

@@ -35,7 +35,7 @@
 ## Dependencies + derived readiness
 - Only `dependencies[].type == blocks` gates readiness.
 - A leaf slice is **ready** iff every `blocks` dep points to a known slice with `status: closed`.
-- Unknown dep IDs: treat the slice as blocked; warn; keep selecting other work.
+- Unknown dep IDs: treat the slice as blocked; warn only after auto-remediation; keep selecting other work.
 - If `status` disagrees with derived readiness, warn and use derived readiness for selection.
 
 ## In-progress triage (must run first)
@@ -77,6 +77,7 @@ If no ready new-work candidates exist:
 
 ## Parallelism
 - SLICES tasks often lack `scope`; schedule sequentially and warn.
+- If `scope` can be inferred by auto-remediation, use it and suppress the missing-scope warning.
 - If a slice provides a `scope` list, pass it through to the OrchPlan task.
 
 ## Decision Trace notes
