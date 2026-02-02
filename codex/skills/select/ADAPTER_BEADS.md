@@ -19,6 +19,7 @@
   - `title`: bead title
   - `depends_on`: bead `blocks` dependencies
   - `scope`: usually unknown (expect sequential scheduling)
+  - `validation`: if `bd show <id>` exposes explicit verification/acceptance commands, pass them through (best-effort; does not affect scheduling)
 
 ## In-progress triage (skeptical)
 If any bead is `in_progress`:

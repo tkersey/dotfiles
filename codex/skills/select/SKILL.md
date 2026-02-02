@@ -66,11 +66,14 @@ Order (stop when resolved):
    - Canonicalize ids/depends_on (trim, lowercase, drop leading `#`).
    - If a `depends_on` is unknown, try to map it to a **unique** known id via a numeric suffix alias (e.g., `1` -> `t-1`, `sl-1`) or an exact canonical match.
    - If resolved, replace the dep with the canonical id and suppress the unknown-dep warning.
-2. **Scope inference (conservative)**:
+2. **Scope normalization (safe)**:
+   - Normalize each `scope` entry: trim whitespace; drop a leading `./` (normalize `./` to `.`); collapse repeated `/`; remove a trailing `/` (except `/`).
+   - Record as `auto_fix: scope_normalize` if any scope entry changed.
+3. **Scope inference (conservative)**:
    - If `scope` is missing, scan `id`/`title`/`subtasks` for explicit path or glob tokens (contain `/`, `**`, or a file extension).
    - Only adopt tokens that are existing paths or obvious globs; prefer the narrowest non-overlapping set.
    - If inferred, set `scope` and suppress the missing-scope warning.
-3. **Orchestrator downgrade**:
+4. **Orchestrator downgrade**:
    - If `agent: orchestrator` lacks `subtasks`, downgrade to `worker`.
    - This is a semantic change; still emit a warning even after the fix.
 
@@ -92,8 +95,25 @@ Parallelism is only scheduled when tasks provide enough metadata to make it defe
 - Two tasks may share a wave only if their `scope` sets do not overlap.
   - Treat `scope` entries as **exclusive locks**.
   - Recommended lock style: directory roots or tight file globs.
-  - Conservative overlap check: if any lock is equal OR one lock is a path-prefix of another, treat as overlap.
-- Tasks missing `scope` are treated as overlapping everything and therefore scheduled alone; include a warning explaining which metadata would unlock parallelism.
+  - Conservative overlap check: compare **lock roots**, not raw strings.
+    - For each `scope` entry: normalize it (drop leading `./`; collapse `/`), drop a trailing `/**` or `/**/*`, then take the prefix up to the first glob metachar (`*`, `?`, `[`).
+    - Treat overlap if any lock root is equal OR one lock root is a path-prefix of another.
+- Tasks missing `scope` are treated as overlapping everything and therefore scheduled alone.
+  - Warn `missing_scope` only when it affects this plan's wave packing.
+  - Hint: add a narrow `scope` list (paths/globs) to unlock parallel waves.
+- Tasks with overly-broad `scope` are treated as overlapping everything and therefore scheduled alone.
+  - Broad examples: `""`, `.`, `./`, `/`, `*`, `**`, `**/*`.
+  - Warn `broad_scope` only when it affects this plan's wave packing.
+- If tasks must be serialized due to overlapping lock roots, prefer an explicit `depends_on` edge to make the order intentional.
+  - Warn `implicit_order` only when lock roots are nested (strict prefix), the tasks are otherwise dependency-independent (no DAG path), and the order was chosen by tie-breaks/stable order.
+
+## Delegation readiness (recommended)
+Parallel waves are only useful if each task is independently executable by a worker.
+
+- Prefer tasks that include:
+  - `location`: where to work (paths/globs; navigation only; does not affect scheduling)
+  - `validation`: how to prove done (commands/checks; does not affect scheduling)
+- If emitting any wave with 2+ tasks and that wave contains at least one task with `validation`, warn `missing_validation` for tasks in that wave that lack `validation`.
 
 ## Orchestration-of-orchestration
 Tasks may be delegated to an `agent: orchestrator` only when the user provided `subtasks`.
@@ -116,11 +136,18 @@ source:
 # Optional. If omitted, treat as "auto" (unbounded by cap; waves are dependency/lock driven).
 cap: auto
 
+# Optional. Human/worker context only (does not affect scheduling).
+prereqs: []
+risks: []
+
 tasks:
   - id: t-1
     title: "..."
+    description: "..."          # optional
     agent: worker|orchestrator
     scope: ["path/**"]
+    location: ["path/file"]     # optional
+    validation: ["..."]         # optional
     depends_on: []
     subtasks: []
 
@@ -148,8 +175,9 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 - `counts`: totals for the chosen source (at minimum: leaf, ready, blocked, in_progress)
 - `pick`: selected task id + 3-10 word reason
 - `next2`: next two candidates (or `none`) + 3-10 word reason each
-- `warnings`: list count + top 1-3 keys (e.g. `unknown_deps`, `status_drift`, `cycle`)
-- `auto_fix`: list count + top 1-3 keys (e.g. `dep_alias`, `scope_infer`, `orchestrator_downgrade`)
+- `waves`: (recommended when tasks were scheduled) `N` + a compact wave listing (e.g. `w1[t-1,t-2]; w2[t-3]`)
+- `warnings`: list count + top 1-3 keys (e.g. `unknown_deps`, `status_drift`, `cycle`, `broad_scope`, `implicit_order`, `missing_validation`)
+- `auto_fix`: list count + top 1-3 keys (e.g. `dep_alias`, `scope_normalize`, `scope_infer`)
 
 ## Procedure (high-level)
 1. Resolve invocation directives (mode/max_tasks/cap).
@@ -166,24 +194,160 @@ Build waves using dependency readiness and `scope` locks:
 1. Build a DAG from `depends_on` edges.
 2. Maintain `ready` = unscheduled tasks whose deps are all scheduled.
 3. While tasks remain:
-   - Treat missing `scope` as overlapping everything (i.e. it can only be scheduled alone).
-   - Pick a maximal subset of `ready` whose `scope` locks do not overlap (greedy is fine).
-   - If `cap` is a number, limit the wave to `cap` tasks.
-   - Remove scheduled tasks from the pool; proceed to next wave.
+    - Treat missing `scope` as overlapping everything (i.e. it can only be scheduled alone).
+    - Treat overly-broad `scope` locks (`""`, `.`, `./`, `/`, `*`, `**`, `**/*`) as overlapping everything.
+    - Pick a maximal subset of `ready` whose `scope` lock roots do not overlap (greedy is fine).
+    - If `cap` is a number, limit the wave to `cap` tasks.
+    - Remove scheduled tasks from the pool; proceed to next wave.
 
 When you must choose between conflicting tasks (overlapping scope or cap pressure), use tie-breaks:
 1. Priority (if present): 0/P0 first.
 2. Kind order (if present): task > bug > feature > chore > epic > docs > question.
 3. Role (if present): contract/checkpoint > integration > implementation.
 4. Unlock count: tasks that unblock more other tasks in this plan.
-5. Risk/hardness/blast (if present): prefer lower risk, smaller blast radius, and clearer scope.
-6. Stable order: preserve the source order.
+5. Delegation readiness: prefer tighter `scope` and explicit `validation`.
+6. Risk/hardness/blast (if present): prefer lower risk, smaller blast radius, and clearer scope.
+7. Stable order: preserve the source order.
 
-Emit warnings when unresolved:
-- Parallelism was reduced due to missing `scope`.
-- A `depends_on` points at an unknown ID.
-- A task declared `agent=orchestrator` without `subtasks`.
+Emit warnings when unresolved (noise-controlled; warn only when it affects this OrchPlan):
+- `missing_scope`: a task missing `scope` prevented adding at least one other ready task to the same wave.
+- `broad_scope`: a task with overly-broad `scope` prevented adding at least one other ready task to the same wave.
+- `implicit_order`: two dependency-independent tasks had nested lock roots and were concurrently ready; order chosen by tie-breaks/stable order.
+- `missing_validation`: a parallel wave mixed tasks with and without `validation`.
+- `unknown_deps`: a `depends_on` points at an unknown ID.
+- `orchestrator_without_subtasks`: a task declared `agent=orchestrator` without `subtasks`.
 If a warning is auto-remediated, omit it from `warnings` and list it under `auto_fix` (except orchestrator downgrade, which must still warn).
+
+## Examples (synthesized)
+
+### Example A: clean parallel wave (list source)
+```yaml
+schema_version: 1
+kind: OrchPlan
+
+created_at: "2026-02-02T00:00:00Z"
+
+source:
+  kind: list
+  locator: "invocation"
+
+cap: auto
+
+tasks:
+  - id: cfg
+    title: "Add config loader"
+    agent: worker
+    scope: ["src/config/**"]
+    location: ["src/config/loader.ts", "src/config/index.ts"]
+    validation: ["npm test -w config"]
+    depends_on: []
+    subtasks: []
+  - id: ui
+    title: "Update settings UI"
+    agent: worker
+    scope: ["src/ui/**"]
+    location: ["src/ui/Settings.tsx"]
+    validation: ["npm test -w ui"]
+    depends_on: []
+    subtasks: []
+  - id: wire
+    title: "Wire config into UI"
+    agent: worker
+    scope: ["src/app/**"]
+    location: ["src/app/bootstrap.ts"]
+    validation: ["npm test"]
+    depends_on: [cfg, ui]
+    subtasks: []
+
+waves:
+  - id: w1
+    tasks: [cfg, ui]
+  - id: w2
+    tasks: [wire]
+
+integration:
+  boundary: patch-first
+  order: [cfg, ui, wire]
+  conflict_policy: rebase-author
+
+warnings: []
+```
+
+Decision Trace:
+- source: list (invocation)
+- mode: both; max_tasks=auto
+- triage: none
+- counts: leaf=3 ready=2 blocked=1 in_progress=0
+- pick: cfg; unblocks wire; parallel-safe scope
+- next2: ui; parallel-ready; disjoint scope
+- waves: 2 w1[cfg,ui]; w2[wire]
+- warnings: 0
+- auto_fix: 0
+
+### Example B: parallel wave with mixed validation + broad scope
+```yaml
+schema_version: 1
+kind: OrchPlan
+
+created_at: "2026-02-02T00:00:00Z"
+
+source:
+  kind: list
+  locator: "invocation"
+
+cap: auto
+
+tasks:
+  - id: api
+    title: "Add /health endpoint"
+    agent: worker
+    scope: ["src/api/**"]
+    location: ["src/api/health.ts", "src/api/router.ts"]
+    validation: ["npm test -w api"]
+    depends_on: []
+    subtasks: []
+  - id: docs
+    title: "Document /health endpoint"
+    agent: worker
+    scope: ["docs/**"]
+    location: ["docs/api.md"]
+    depends_on: []
+    subtasks: []
+  - id: big
+    title: "Repo-wide rename OldName -> NewName"
+    agent: worker
+    scope: ["**"]
+    location: ["."]
+    validation: ["rg -n \"OldName\" . || true"]
+    depends_on: []
+    subtasks: []
+
+waves:
+  - id: w1
+    tasks: [api, docs]
+  - id: w2
+    tasks: [big]
+
+integration:
+  boundary: patch-first
+  order: [api, docs, big]
+  conflict_policy: rebase-author
+
+warnings:
+  - "missing_validation: [docs]"
+  - "broad_scope: [big]"
+```
+
+Decision Trace:
+- source: list (invocation)
+- mode: both; max_tasks=auto
+- triage: none
+- counts: leaf=3 ready=3 blocked=0 in_progress=0
+- pick: api; explicit validation; tight scope
+- next2: docs; parallel-ready; missing validation
+- waves: 2 w1[api,docs]; w2[big]
+- warnings: 2 missing_validation,broad_scope
+- auto_fix: 0
 
 ## Source adapters (extraction only)
 Adapter specs live in:

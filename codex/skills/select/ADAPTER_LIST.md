@@ -14,8 +14,12 @@
 
 Supported metadata (all optional):
 - `id`: stable identifier (string; default `t-<n>`)
+- `title`: override default title (string)
+- `description`: additional detail for the worker (string)
 - `agent`: `worker|orchestrator` (default `worker`)
 - `scope`: list of exclusive-lock strings (paths/globs)
+- `location`: list of navigation paths/globs (does not affect scheduling)
+- `validation`: list of proof commands/checks (does not affect scheduling)
 - `depends_on`: list of task IDs
 - `subtasks`: list of tasks (only meaningful when `agent: orchestrator`)
 
@@ -45,6 +49,7 @@ Use $select to plan:
 - If `agent: orchestrator` but `subtasks` is missing/empty, downgrade to `worker` and warn.
 - Missing `scope` means the task overlaps everything and should not be parallelized; warn unless auto-remediation infers scope.
 - Unknown deps are treated as unmet blocks; warn only if auto-remediation cannot resolve them.
+- If provided, pass `title`/`description`/`location`/`validation` through to the OrchPlan task.
 
 ## Schema drift detectors (warn-only; keep selecting)
 - Duplicate `id` values.

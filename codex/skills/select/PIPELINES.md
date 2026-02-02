@@ -1,5 +1,16 @@
 # Pipelines for driving planning artifacts
 
+## ORCHPLAN execution (manual; wave-based)
+Goal: execute an OrchPlan safely with parallel workers.
+
+1. For each wave `wN` in order:
+   - Dispatch each task in `wN` to a worker.
+   - Each worker should operate within `task.scope` (exclusive lock) and use `task.location` to navigate.
+   - Each worker should return a patch-first diff plus a proof signal from `task.validation` (or explain what validation is missing).
+2. Integrate patches in `integration.order`.
+3. Resolve conflicts per `integration.conflict_policy`.
+4. Re-run relevant validations; proceed to the next wave only when green.
+
 ## PLANS pipeline (manual)
 Goal: iterate `plan-N.md` until `$gen-plan` says `Plan is ready.`
 

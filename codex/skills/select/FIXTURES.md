@@ -95,3 +95,53 @@ Use $select:
    - title: "Edit README.md and docs/guide.md"
 ```
 Expected: infer `scope` from `README.md` and `docs/guide.md`; no missing-scope warning; `auto_fix` includes `scope_infer`.
+
+## F8: overly-broad scope -> warn and serialize
+Invocation list fragment:
+```text
+Use $select:
+1. Huge refactor.
+   - id: big
+   - scope: ["**"]
+2. Small change.
+   - id: small
+   - scope: ["docs/**"]
+```
+Expected: warn `broad_scope`; treat `big` as overlapping everything (no parallel wave with `small`).
+
+## F9: overlap without depends -> warn implicit order
+Invocation list fragment:
+```text
+Use $select:
+1. Touch src.
+   - id: a
+   - scope: ["src/**"]
+2. Touch src/foo.
+   - id: b
+   - scope: ["src/foo/**"]
+```
+Expected: schedule serial due to overlap; warn `implicit_order` (ordering chosen by stable order / tie-breaks).
+
+## F10: parallel wave missing validation -> warn
+Invocation list fragment:
+```text
+Use $select:
+1. Change A.
+   - id: a
+   - scope: ["src/a/**"]
+2. Change B.
+   - id: b
+   - scope: ["src/b/**"]
+   - validation: ["npm test"]
+```
+Expected: `a` and `b` can share a wave; warn `missing_validation` for `a` (parallel work without proof signal).
+
+## F11: scope normalization -> auto_fix
+Invocation list fragment:
+```text
+Use $select:
+1. Normalize scope.
+   - id: n
+   - scope: ["./src/**"]
+```
+Expected: normalize scope entry to `src/**`; `auto_fix` includes `scope_normalize`.
