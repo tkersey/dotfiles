@@ -35,8 +35,27 @@ Accepted inputs:
 - A numbered/bulleted task list (best).
 - A single task (mesh treats it as a one-item list; hedging/restarts are still allowed).
 - Freeform text containing multiple tasks: mesh MUST extract an interpreted task list and print it in the delegation manifest before spawning.
+- User-provided workstreams: a small set of named groups with explicit subtasks.
+  - Mesh MUST NOT invent subtasks.
+  - Mesh MUST flatten to leaf subtasks for spawning, but SHOULD preserve the workstream label in the dashboard/manifest.
 
 If separability is unclear or the interpretation is ambiguous, ask for clarification by proposing the interpreted list. Avoid pedantic refusal; do not invent new tasks.
+
+## Plan-file mode (explicit-only)
+If the user provides a plan file and explicitly asks mesh to run it, mesh may parse tasks from that file.
+
+Rules:
+- Mesh MUST NOT invent tasks or dependencies; it may only extract what is present.
+- Mesh MUST print the extracted task list (and any extracted `depends_on`) in the delegation manifest before spawning.
+- If the user asks for a task subset, mesh MUST either:
+  - run only those tasks, or
+  - run those tasks plus their explicitly listed dependencies (if present in the plan).
+
+This is still "no planning": the plan file is the user's plan; mesh is only executing it.
+
+Plan file updates (optional, explicit-only):
+- If the user explicitly asks to update the plan file as work completes, the orchestrator should do it during integration (patch-first), not the workers.
+- Minimum update: mark the task complete + append a short work log (what changed, files, proof signal).
 
 Optional (recommended): state agent type per task.
 
@@ -79,6 +98,8 @@ In each task, encourage the user to include:
 - Any path constraints or ownership boundaries.
 - Any ordering constraints (default integration order is list order).
 
+If you want "two-level" orchestration (workstreams -> subtasks), do the breakdown outside mesh (e.g. using another skill or by hand), then pass mesh the explicit subtasks. Current Codex spawn depth limits prevent true nested orchestration (a sub-agent that spawns/manages its own sub-agents).
+
 This is not planning: it is just making the task boundary explicit so workers do not drift.
 
 ## Suggested task style (synthesized)
@@ -97,6 +118,9 @@ N. <Verb> <concrete object>.
    - Skills: <explicit list, or "none">
    - Mode: analysis-only | patch-first | direct edit ok
    - Scope: <paths/globs or "unconstrained">
+   - Depends on (optional): <task ids>
+   - Acceptance criteria (optional): <bullets>
+   - Validation (optional): <commands or checks>
    - Done when: <signal, file, or user-visible behavior>
 
 Tunable thresholds (optional overrides; monitoring/enforcement remain mandatory):
@@ -135,6 +159,36 @@ Use $mesh to parallelize (patch-first):
 5. Implement script: mesh-gates (gate discover/check wrappers).
 ```
 
+User-provided workstreams (single mesh run; still explicit-only):
+
+```text
+Use $mesh to parallelize (patch-first):
+
+Workstream: Formula
+1. Implement formula: mol-mesh-run.
+2. Implement formula: mol-mesh-arm.
+
+Workstream: Scripts
+3. Implement script: mesh-workspace.
+4. Implement script: mesh-merge-slot.
+5. Implement script: mesh-gates.
+```
+
+User-provided workstreams (multi mesh runs; manual two-level orchestration):
+
+```text
+Run 1:
+Use $mesh to parallelize (patch-first):
+1. Implement formula: mol-mesh-run.
+2. Implement formula: mol-mesh-arm.
+
+Run 2:
+Use $mesh to parallelize (patch-first):
+1. Implement script: mesh-workspace.
+2. Implement script: mesh-merge-slot.
+3. Implement script: mesh-gates.
+```
+
 Orchestrating orchestrators (not supported in current Codex CLI):
 
 Codex currently enforces a tight thread spawn depth limit, and child agents cannot spawn further agents. Use scoped workers instead:
@@ -163,6 +217,7 @@ Defaults (unless the user explicitly overrides):
 1. Extract tasks from the user input (do not invent subtasks):
    - If the user provided a list, use it verbatim.
    - Otherwise, extract an interpreted list (best-effort) and print it in the delegation manifest before spawning.
+   - If tasks include explicit `depends_on`, schedule work in dependency-respecting waves (unblocked tasks only). Do not invent dependencies.
 2. Decide the agent type per task:
    - Default `worker`.
    - Prefer `explorer` for tasks explicitly marked analysis-only.
@@ -173,7 +228,7 @@ Defaults (unless the user explicitly overrides):
 4. Emit a delegation manifest:
    - Print (and write to `.mesh/runs/<run_id>/manifest.md`) the task list, per-task agent type/mode/scope, caps/budgets/timeouts, and integration order (list order).
 5. Spawn tasks in waves (max parallel, queue the rest):
-   - Spawn as many agents as allowed (respect Cap if provided).
+   - Spawn as many unblocked tasks as allowed (respect Cap if provided).
    - Use `spawn_agent` (not a custom command).
    - Spawn failure handling (mandatory):
      - If `spawn_agent` fails due to no available slots, keep the task queued and retry after closing agents (do not thrash).
@@ -478,6 +533,10 @@ Default mode: PATCH-FIRST.
 - If you need to run commands, do so and report exact outputs.
 - Do NOT spawn subagents unless explicitly instructed.
 
+Plan file discipline:
+- Do NOT edit the plan file unless explicitly instructed in this task.
+- Record progress in the checkpoint + patch artifacts; the orchestrator integrates and (optionally) updates the plan file.
+
 Run context (filled by parent):
 - run_id: <run_id>
 - task_slug: <task-slug>
@@ -507,6 +566,15 @@ Durability requirements (checkpoint protocol):
 
 Task:
 - <one sentence>
+
+Dependencies (if any):
+- <explicit `depends_on` ids>
+
+Acceptance criteria (if provided):
+- <bullets>
+
+Validation (if provided):
+- <commands/checks>
 
 Context (provided; do not re-discover unless needed):
 - Files/paths: <...>
@@ -558,6 +626,15 @@ Durability requirements (checkpoint protocol):
 Task:
 - <one sentence>
 
+Dependencies (if any):
+- <explicit `depends_on` ids>
+
+Acceptance criteria (if provided):
+- <bullets>
+
+Validation (if provided):
+- <commands/checks>
+
 Context (provided; do not re-discover unless needed):
 - Files/paths: <...>
 - Commands/entrypoints: <...>
@@ -585,6 +662,27 @@ Not supported in current Codex CLI (spawn depth limits disable collab tools for 
 - Stall events: each stall must be explicitly reported with `STALL DETECTED: ...` + action taken (restart or take over).
 - Timeout escalation: if Patch draft timeout triggers, report it and the switch to direct execution (unless user opted to keep waiting).
 - Residual risks / next actions.
+
+## Execution summary template (recommended)
+```text
+Execution summary
+
+Completed
+- <task id>: <one line>
+
+Issues
+- <task id>: <issue + resolution>
+
+Blocked
+- <task id>: <blocker + next step>
+
+Files modified
+- <paths>
+
+Run artifacts
+- manifest: .mesh/runs/<run_id>/manifest.md
+- events: .mesh/runs/<run_id>/events.jsonl
+```
 
 ## Example flow: worker stall -> enforced recovery
 Illustrative output (timestamps are examples).
