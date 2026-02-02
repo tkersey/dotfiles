@@ -2,12 +2,16 @@ model = "gpt-5.2-codex"
 model_reasoning_effort = "xhigh"
 suppress_unstable_features_warning = true
 web_search = "live"
+personality = "pragmatic"
+model_personality = "pragmatic"
 
 [features]
 unified_exec = true
 steer = true
 collab = true
 collaboration_modes = true
+apps = true
+personality = true
 
 [tui]
 experimental_mode = "execute"
