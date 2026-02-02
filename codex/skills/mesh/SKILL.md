@@ -12,7 +12,7 @@ Key properties (by design):
 - Explicit-only: do not decide which other skills to invoke; do only what the user asked.
 - No planning: do not create a plan/DAG; treat the user's task list as the plan.
 - Max parallel: run as many workers as allowed; queue the rest.
-- Two topologies: orchestrate workers (default) or orchestrate sub-orchestrators (explicit).
+- Single topology (Codex-compatible): the parent orchestrates workers/explorers. Nested orchestration (sub-agents spawning their own sub-agents) is not supported under current Codex spawn depth limits.
 - Patch-first by default: workers propose diffs; the orchestrator applies sequentially. If strict escalation triggers, the orchestrator switches to direct execution to unblock.
 - Worker-first by default: the orchestrator does not start direct implementation unless an escalation gate triggers (e.g., patch draft timeout) or collab tools are unavailable.
 - Audit mode (on request): show the full worker prompts + full outputs.
@@ -43,7 +43,7 @@ Optional (recommended): state agent type per task.
 Agent types (Codex `spawn_agent(agent_type=...)`):
 - `worker` (default): implement/fix/run things.
 - `explorer`: fast repo research / analysis-only by default.
-- `orchestrator`: coordinate its own workers/explorers for that task, then report results upstream.
+- `orchestrator`: experimental in Codex; do not rely on it spawning other agents (spawn depth limits). Prefer `worker`/`explorer`.
 
 If tasks are not clearly separable, propose a best-effort interpreted list and ask the user to confirm/correct it.
 
@@ -66,6 +66,7 @@ Mesh must operate within Codex collab tool semantics (see `references/codex-mult
 
 Key constraints:
 - Multi-agent tools exist only when the under-development feature flag `[features].collab = true` is enabled; spawns can fail (cap/depth/feature off). If collab tools are unavailable, mesh MUST fall back to single-agent execution.
+- Codex enforces a thread spawn depth limit (currently `MAX_THREAD_SPAWN_DEPTH = 1` in the Codex repo); child agents should be assumed unable to spawn further agents.
 - `wait(ids, timeout_ms)` returns only when an agent reaches a final status, or when it times out; timeout is clamped by Codex to 10s-300s.
 - You cannot observe intermediate worker state while it runs.
 - `send_input` is queued and delivered only after the worker finishes unless `interrupt=true` is used. Use interrupts sparingly for SLA/stall escalation.
@@ -104,8 +105,8 @@ Tunable thresholds (optional overrides; monitoring/enforcement remain mandatory)
 - Tick interval: <e.g. 60s|off> (live monitoring cadence; `off` enables deadline-only monitoring; effective clamp 10s-300s due to Codex `wait` timeout)
 - Checkpoint interval: <e.g. 2m> (worker must emit a checkpoint at least this often)
 - Time budget (optional): <e.g. 45m> (after this, return best-effort partial results)
-- Ack SLA (optional): <e.g. 30s> (worker must ack with plan + first edit, or explain why not)
-- Patch draft timeout (optional): <e.g. 5m> (if no patch draft exists, auto-cancel and switch to direct execution unless explicitly overridden)
+- Ack SLA (optional): <e.g. 30s> (checkpoint must exist and match required format by this time)
+- Patch draft timeout (optional): <e.g. 5m> (if no meaningful patch draft (gate `D`) exists, auto-cancel and switch to direct execution unless explicitly overridden)
 - First edit target (optional): <e.g. 10m> (make at least one minimal change, even scaffolding)
 - Continue waiting (optional): <yes|no> (default no; only relevant for patch draft timeout)
 - Hedge budget (optional): <e.g. 2> (max concurrent attempts per task)
@@ -134,19 +135,18 @@ Use $mesh to parallelize (patch-first):
 5. Implement script: mesh-gates (gate discover/check wrappers).
 ```
 
-Orchestrating orchestrators (explicit):
+Orchestrating orchestrators (not supported in current Codex CLI):
+
+Codex currently enforces a tight thread spawn depth limit, and child agents cannot spawn further agents. Use scoped workers instead:
 
 ```text
-Use $mesh to orchestrate orchestrators (patch-first at boundaries):
-1. Formula workstream (Agent: orchestrator)
-   - Subtasks:
-     - Implement formula: mol-mesh-run.
-     - Implement formula: mol-mesh-arm.
-2. Scripts workstream (Agent: orchestrator)
-   - Subtasks:
-     - Implement script: mesh-workspace.
-     - Implement script: mesh-merge-slot.
-     - Implement script: mesh-gates.
+Use $mesh to parallelize (patch-first):
+1. Formula workstream.
+   - Agent: worker
+   - Scope: <formula paths>
+2. Scripts workstream.
+   - Agent: worker
+   - Scope: <script paths>
 ```
 
 ## Workflow (orchestrator algorithm)
@@ -155,7 +155,7 @@ This workflow is strict and non-optional. It exists to prevent worker stalls pai
 Defaults (unless the user explicitly overrides):
 - Tick interval: 60s (effective clamp 10s-300s due to Codex `wait` timeout). Set to `off` for deadline-only monitoring.
 - Ack SLA: 30s
-- Patch draft timeout: 5m (no patch draft -> auto-cancel + direct execution; worker-first until this triggers)
+- Patch draft timeout: 5m (no meaningful patch draft (gate `D`) -> auto-cancel + direct execution; worker-first until this triggers)
 - First edit target: 10m (at least one minimal change, even scaffolding)
 - Missing-artifact strikes: 1 (second miss triggers restart)
 - Stall detection: same status twice OR no patch progress in two consecutive ticks
@@ -167,29 +167,42 @@ Defaults (unless the user explicitly overrides):
    - Default `worker`.
    - Prefer `explorer` for tasks explicitly marked analysis-only.
    - Use `orchestrator` only when the user explicitly requested it (per task or globally).
-3. Assign a `run_id` and create `.mesh/runs/<run_id>/`.
+3. Assign a `run_id` and create `.mesh/runs/<run_id>/`:
+   - Create subdirs: `.mesh/runs/<run_id>/checkpoints/` and `.mesh/runs/<run_id>/patches/`.
+   - Initialize an append-only event log: `.mesh/runs/<run_id>/events.jsonl`.
 4. Emit a delegation manifest:
    - Print (and write to `.mesh/runs/<run_id>/manifest.md`) the task list, per-task agent type/mode/scope, caps/budgets/timeouts, and integration order (list order).
 5. Spawn tasks in waves (max parallel, queue the rest):
    - Spawn as many agents as allowed (respect Cap if provided).
    - Use `spawn_agent` (not a custom command).
+   - Spawn failure handling (mandatory):
+     - If `spawn_agent` fails due to no available slots, keep the task queued and retry after closing agents (do not thrash).
+     - If `spawn_agent` fails with a collab-unavailable or depth-limit error, record it and fall back to single-agent execution for remaining tasks.
+   - When spawning, fill the worker/explorer prompt with concrete values:
+     - `run_id`
+     - `task-slug`
+     - `attempt` (start at 1 per task; increment on restart/hedge)
+     - concrete artifact paths under `.mesh/runs/<run_id>/...`
    - Record per-attempt metadata: `spawned_at`, `last_tick_at`, `last_status`, `last_patch_stat`, `unreliable_strikes`.
    - Enforce Ack SLA: at `spawned_at + Ack SLA` (default 30s), verify the checkpoint exists on disk and matches the required checkpoint format. If missing/invalid, restart once.
+   - Avoid serial collapse: if there are free agent slots and tasks are still in-flight, use the extra slots to hedge attempts on the earliest (lowest index) not-yet-done tasks up to Hedge budget.
 6. Monitoring loop (non-optional):
    - Use `wait(..., timeout_ms=...)` as the scheduler tick; treat `wait` timeouts as ticks (not failures).
    - Tick scheduling:
      - If Tick interval is set, run a tick at that cadence.
      - If Tick interval is `off`, run ticks at enforcement deadlines (Ack SLA, Patch draft timeout, checkpoint interval) and at the Codex `wait` clamp boundary (<= 300s).
-   - On each tick, perform artifact verification + enforcement, then print:
-     - `last tick: <timestamp>`
-     - Live status dashboard
-     - Monitoring log (tick entries + verified artifact paths)
+   - On each tick, perform artifact verification + enforcement, then:
+     - append an event to `.mesh/runs/<run_id>/events.jsonl`
+     - print:
+      - `last tick: <timestamp>`
+      - Live status dashboard
+      - Monitoring log (tick entries + verified artifact paths)
    - A "monitoring" claim is only allowed if a tick was executed since the prior user-visible message.
    - Never stop ticking while any task has an active agent or any enforcement deadline is pending.
 7. Progress enforcement (non-optional):
    - Stall: same status twice OR no patch progress in two consecutive ticks -> print `STALL DETECTED` + action.
    - Checkpoint integrity: verify claimed artifacts exist before acknowledging.
-   - If patch draft still missing at Patch draft timeout -> auto-cancel + switch to direct execution unless the user opted to keep waiting.
+   - If no meaningful patch draft (gate `D`) exists at Patch draft timeout -> auto-cancel + switch to direct execution unless the user opted to keep waiting.
    - If worker misses Ack SLA -> restart. Continue restarting/hedging until Patch draft timeout; do not take over before Patch draft timeout unless collab tools are unavailable or the user explicitly requests take over.
 8. Validate outputs (strict gates):
    - If a worker output violates the contract, request a re-emit.
@@ -240,7 +253,7 @@ Gates (required set):
 - `A` (ack): initial checkpoint exists by Ack SLA and matches required checkpoint format
 - `C` (checkpoint): checkpoint continues to exist and is being updated when required
 - `O` (output): final message follows the deliverable contract sections
-- `D` (draft): patch draft exists and is a unified diff (contains at least one `diff --git` line)
+- `D` (draft): patch draft exists, is a unified diff, and contains at least one real hunk (`@@`) with at least one non-header `+`/`-` line
 - `P` (patch): unified diff applies cleanly to current workspace state
 - `S` (scope): if scope constraints were provided, touched files are within scope
 - `V` (verification): only when explicitly requested in the user task/done-when; required commands ran and results are reported
@@ -252,6 +265,9 @@ Workers/explorers MUST write checkpoints in a machine-parseable, stable format s
 
 Checkpoint path (per attempt):
 - `.mesh/runs/<run_id>/checkpoints/<task-slug>--a<attempt>.md`
+
+Checkpoint update requirements:
+- Must be updated atomically (write to a temp path, then rename to the final `.md` path) to avoid partial reads during ticks.
 
 Required fields (exact keys; ASCII-only):
 - `status_code: <one token>`
@@ -274,6 +290,8 @@ Patch draft path (patch-first):
 
 Patch draft requirements:
 - Must be a unified diff (start with `diff --git ...`).
+- Must include at least one hunk header (`@@ ... @@`) and at least one real `+`/`-` change line (excluding `+++` / `---` file headers).
+- Must be updated atomically (write to a temp path, then rename to the final `.diff` path) to avoid partial reads during ticks.
 - If you truly cannot propose a diff yet, do not create a placeholder diff. Leave the patch draft absent and explain why in the checkpoint.
 
 ## Monitoring log (mandatory)
@@ -289,12 +307,53 @@ Minimum required fields:
   - checkpoint path + verified existence
   - patch draft path + verified existence + mtime/size (for patch-first)
 
+## Run event log (mandatory)
+Mesh must leave a durable, machine-readable audit trail.
+
+- Path: `.mesh/runs/<run_id>/events.jsonl`
+- Append one JSON object per line.
+- Append on: spawn, tick, ack_fail, restart, hedge, stall_detected, patch_ready, patch_apply_ok/fail, rebase_request, close_agent, take_over, done.
+- Each `tick` event MUST include: `ts`, `event`, `tick_interval`, and per-attempt artifact stats (exists/mtime/size) + derived gates.
+- The orchestrator MUST NOT claim "monitoring" unless it appended at least one `tick` event since the previous user-visible message.
+
+## Parallelism policy (mandatory)
+Prevent serial collapse. Keep capacity working.
+
+- First fill capacity with one attempt per in-flight task.
+- If there are free slots, hedge the earliest (lowest index) not-yet-done tasks up to Hedge budget.
+- Hedge attempts MUST keep the same task and scope; they may vary only in prompt emphasis (e.g., "minimal diff first" vs "read then diff").
+- Winner-takes-integration: once a task has a passing patch, integrate that attempt and close the others.
+
+## Hedge prompt variants (recommended)
+Hedging only helps if attempts are not perfectly correlated.
+
+When spawning attempt N for the same task, vary prompt emphasis (but not scope/task):
+- Attempt 1: balanced (read enough context, then draft patch).
+- Attempt 2: diff-first (produce a minimal, real patch early; iterate).
+- Attempt 3: pattern-first (search for nearest existing pattern in-repo; adapt; then patch).
+- Attempt 4+: proof-first (find the fastest proof signal; then patch to satisfy it).
+
+All attempts still write to distinct attempt-scoped artifact paths.
+
+## Workspace hygiene (recommended)
+`.mesh/runs/<run_id>/...` is execution metadata, not product output.
+
+- Never include `.mesh/` artifacts in a product patch.
+- Never delete `.mesh/runs/<run_id>/` while the run is in progress.
+- Prefer ignoring `.mesh/` via git (repo `.gitignore` or local `.git/info/exclude`).
+
+## Artifact-first integration (mandatory for patch-first)
+For patch-first tasks, the checkpoint + patch artifacts are the primary deliverable.
+
+- Treat a patch as "ready" when the checkpoint `status_code: done` and the patch draft passes gate `D`.
+- Integrate from the patch file on disk; do not wait for the worker to restate the patch in chat.
+
 ## Strict gate mode (mandatory)
 "Strict gate" means the orchestrator does not treat a task as complete until objective criteria are met.
 
 Gate profiles:
 - Analysis-only task: require `A` + `O` (and `V` only if explicitly requested).
-- Patch-first task: require `A` + `O` + `D` + `P` (and `S` if scoped; and `V` only if explicitly requested).
+- Patch-first task: require `A` + `D` + `P` (and `S` if scoped; and `V` only if explicitly requested). `O` is best-effort only (the patch/checkpoint artifacts are the primary deliverable).
 
 If a gate fails, the orchestrator MUST take a recovery action (request re-emit, request rebase, restart, hedge, or take over) rather than silently declaring success.
 
@@ -305,16 +364,11 @@ Stall detection rules (non-optional):
 
 Stall policy (non-optional):
 - Emit `STALL DETECTED: <reason>` in the orchestrator output.
-- Take exactly one action immediately:
-  - Restart the worker, OR
-  - Switch to direct execution in the orchestrator ("take over").
-
-Default action policy (unless the user explicitly overrides):
-- On stall before Patch draft timeout: restart (and hedge if capacity allows).
-- Take over only after Patch draft timeout, unless collab tools are unavailable or the user explicitly requests take over.
+- Before Patch draft timeout: restart (and hedge if capacity allows).
+- At/after Patch draft timeout: cancel worker(s) and take over (unless user opted to keep waiting).
 
 Timeout escalation (non-optional):
-- After Patch draft timeout (default 5m) with no patch draft file, auto-cancel and switch to direct execution unless the user explicitly opted to continue waiting.
+- After Patch draft timeout (default 5m) with no meaningful patch draft (gate `D`), auto-cancel and switch to direct execution unless the user explicitly opted to continue waiting.
 
 Worker SLA (non-optional):
 - Workers must satisfy Ack SLA by writing the required checkpoint format within 30s.
@@ -354,7 +408,7 @@ Worker/explorer policy:
   3) Any blocker
 
 ## Patch application protocol (parent orchestrator)
-When integrating a worker/sub-orchestrator patch:
+When integrating a worker patch:
 - Apply the unified diff as-is; avoid manual edits unless explicitly necessary.
 - If the patch applies but looks suspicious, request audit mode artifacts (prompt/output) rather than guessing intent.
 - If the patch does not apply cleanly:
@@ -384,7 +438,7 @@ Constraints:
 If you hit repeated conflicts or churn, stop and ask the user for one of:
 - Explicit per-task scope boundaries (paths/globs) so work can be partitioned.
 - A smaller concurrency cap (run fewer agents at once).
-- Switch to orchestrator-of-orchestrators with explicit workstream scopes.
+- Run overlapping tasks sequentially (keep parallelism for disjoint scopes).
 
 ## Worker policy (defaults)
 - Workers may do anything Codex can do, but default to patch-first to avoid clobbering a shared workspace.
@@ -402,28 +456,12 @@ If you hit repeated conflicts or churn, stop and ask the user for one of:
 - Explorers MUST satisfy the SLA requirements in the prompt (checkpoint early, updated on cadence).
 - Explorers SHOULD follow the checkpoint protocol for long-running searches/reads.
 
-## Sub-orchestrator policy (explicit-only)
-Sub-orchestrators are coordination-only agents. Use them only when the user asked for orchestrator-of-orchestrators.
+## Sub-orchestrators (not supported in current Codex CLI)
+Codex child agents cannot spawn further agents under current spawn depth limits.
 
-Default constraints:
-- Patch-first at the boundary: the sub-orchestrator should not directly edit shared files.
-- It may spawn workers and collect their patches.
-
-Required handoff packet (the thing the parent integrates):
-- Workstream summary.
-- Delegation table (subtask -> worker).
-- Patch bundle (prefer a single combined patch; otherwise one patch per subtask).
-- Recommended integration order.
-- Conflicts discovered inside the workstream (if any) + how to resolve.
-- Risks / follow-ups.
-- Questions/blockers.
-
-Scope discipline (recommended):
-- Prefer giving each sub-orchestrator an explicit scope (paths/globs).
-- If two workstreams overlap heavily, expect conflict churn; ask the user to re-scope or run those tasks sequentially.
-
-Escalation path:
-- If the parent cannot apply a patch cleanly, send the failure details back to the owning sub-orchestrator and ask it to rebase/regenerate the patch bundle against current HEAD.
+Do not attempt orchestrator-of-orchestrators. If you need workstreams:
+- Express them as separate scoped worker tasks.
+- Reduce cap or run overlapping scopes sequentially.
 
 ## Direct-edit override (explicit-only)
 If the user explicitly instructs a task to do direct edits ("direct edit ok"), workers may edit files directly.
@@ -439,6 +477,12 @@ Default mode: PATCH-FIRST.
 - Do NOT directly edit files unless explicitly instructed.
 - If you need to run commands, do so and report exact outputs.
 - Do NOT spawn subagents unless explicitly instructed.
+
+Run context (filled by parent):
+- run_id: <run_id>
+- task_slug: <task-slug>
+- attempt: <attempt>
+- attempt_emphasis: <balanced|diff-first|pattern-first|proof-first>
 
 SLA requirements (non-negotiable):
 - Within 30 seconds:
@@ -490,6 +534,12 @@ Default mode: ANALYSIS-ONLY.
 - Do NOT directly edit files unless explicitly instructed.
 - Do NOT spawn subagents unless explicitly instructed.
 
+Run context (filled by parent):
+- run_id: <run_id>
+- task_slug: <task-slug>
+- attempt: <attempt>
+- attempt_emphasis: <balanced|pattern-first|proof-first>
+
 SLA requirements (non-negotiable):
 - Within 30 seconds:
   - Create/update `.mesh/runs/<run_id>/checkpoints/<task-slug>--a<attempt>.md` with the required checkpoint format:
@@ -521,40 +571,7 @@ Deliverable (required format):
 ```
 
 ## Prompt template (orchestrator -> sub-orchestrator)
-Use this only when the user explicitly requested orchestrator-of-orchestrators.
-
-```text
-You are a sub-orchestrator. You coordinate; you do not do the substantive work yourself.
-
-Default mode: PATCH-FIRST AT THE BOUNDARY.
-- Do NOT directly edit shared workspace files.
-- You MAY spawn workers.
-- You MUST NOT spawn additional sub-orchestrators unless explicitly instructed.
-
-Workstream:
-- <one sentence>
-
-Workstream scope (if provided):
-- <paths/globs or "unconstrained">
-
-User-provided subtasks (do not invent more tasks):
-<paste the subtask list verbatim>
-
-Constraints:
-- Only invoke other skills if explicitly named here: <...>
-- Audit mode: <on|off>. If on, include the full prompts you sent to workers and their full outputs.
-- Worker cap (optional): <max workers to run at once>
-- Boundary mode: patch-first at the boundary (you return patches; parent integrates).
-
-Deliverable (required format):
-1) Workstream summary (1-3 bullets)
-2) Delegation (subtask -> worker)
-3) Worker outputs (including patches)
-4) Patch bundle (prefer one combined patch when safe; otherwise one patch per subtask)
-5) Recommended integration order
-6) Risks / follow-ups
-7) Questions/blockers
-```
+Not supported in current Codex CLI (spawn depth limits disable collab tools for child agents).
 
 ## Orchestrator output contract
 - Topology: worker vs orchestrator per task.
@@ -562,6 +579,7 @@ Deliverable (required format):
 - Waves: how many waves ran + any concurrency cap used.
 - Integration: patches applied (or failed) + conflict handling/rebase roundtrips.
 - Commands/signals: what ran and what it showed (only if explicitly requested).
+- Artifacts: `run_id`, manifest path, and event log path.
 - Dashboard: enough per-task state/gate information that a reader can tell if delegation, monitoring ticks, and recovery behaved correctly.
 - Monitoring log: list of ticks (with timestamps), last known status, and last artifact paths with verified existence.
 - Stall events: each stall must be explicitly reported with `STALL DETECTED: ...` + action taken (restart or take over).
@@ -585,14 +603,14 @@ last tick: 2026-01-31T19:23:00Z (tick interval: 60s)
 Monitoring log
  - 19:23:00 ticked a1b2.. status="discovery done" checkpoint=OK patch=DNE
 
-STALL DETECTED: same status twice and no patch draft
+STALL DETECTED: same status twice and no meaningful patch draft
 Action: restart task 1 (close a1b2.., spawn attempt 2)
 
 last tick: 2026-01-31T19:27:00Z (tick interval: 60s)
 Monitoring log
  - 19:27:00 ticked c3d4.. status="working" checkpoint=OK patch=DNE
 
-TIMEOUT ESCALATION: no patch draft after 5m (default)
+TIMEOUT ESCALATION: no meaningful patch draft after 5m (default)
 Action: cancel worker and switch to direct execution in orchestrator
 ```
 
