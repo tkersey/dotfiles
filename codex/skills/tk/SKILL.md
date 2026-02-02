@@ -39,7 +39,12 @@ Advice mode (no code change requested):
 Implementation mode (code change requested):
 - Output: Contract, Invariants, Creative Frame, Why This Solution, Incision, Proof.
 - Incision is a real patch: minimal diff, concrete file paths, no churn.
-  - Prefer a fenced `diff` block (unified diff).
+  - Default to a git-based summary:
+    - `git diff --stat`
+    - `git diff --name-only`
+    - Show precise line context per file via `rg -n` or `sed -n 'start,endp'`.
+  - Only use a fenced `diff` block (unified diff) when syntax highlighting is available.
+  - Never paste raw diff output without syntax highlighting.
 - Proof includes at least one executed signal (test/typecheck/build/run).
   - If execution is impossible: give exact commands and define "pass".
 - If blocked on requirements: output Contract, Invariants, Creative Frame, Why This Solution, Question (no Incision/Proof yet).
@@ -344,7 +349,7 @@ Implementation mode (code changes): output exactly:
 - (Optional) Residual risk: <what you still don’t know>
 
 **Incision**
-- <the actual patch (minimal unified diff in a fenced `diff` block), or concrete file edits>
+- <default: git-based summary + precise line context; if syntax highlighting is available, a minimal unified diff in a fenced `diff` block is allowed>
 
 **Proof**
 - <commands run + one-line result (pass/fail + key line)>
@@ -356,6 +361,7 @@ If blocked (must ask before cutting):
 
 ## Exemplars (synthetic)
 Copy the shape, then translate into repo dialect (errors, tests, paths, and naming).
+Exemplars below show fenced diffs (assume syntax highlighting); when it isn’t available, replace with the git-based summary + line context required above.
 
 ### Exemplar 1 (Brownfield): Parse at the boundary, stop scattered validation (TypeScript)
 
