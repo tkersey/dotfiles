@@ -38,13 +38,13 @@ Advice mode (no code change requested):
 
 Implementation mode (code change requested):
 - Output: Contract, Invariants, Creative Frame, Why This Solution, Incision, Proof.
-- Incision is a real patch: minimal diff, concrete file paths, no churn.
-  - Default to a git-based summary:
-    - `git diff --stat`
-    - `git diff --name-only`
-    - Show precise line context per file via `rg -n` or `sed -n 'start,endp'`.
-  - Only use a fenced `diff` block (unified diff) when syntax highlighting is available.
-  - Never paste raw diff output without syntax highlighting.
+- Incision is the code change you made: minimal diff, meaningful changes, no churn.
+  - Report it as an excellent change summary (not a diff):
+    - Lead with the meaningful changes (behavior/invariants/API/tests), not a file inventory.
+    - Include file paths and key identifiers only as anchors when they improve reviewability.
+    - Use a file-by-file list only if the change is sprawling or the reader needs a map.
+    - Include tiny excerpts only when they clarify something non-obvious (signatures or <= ~15 lines), fenced with a language tag.
+  - You may use `git diff --stat` / `git diff --name-only` to build the summary, but do not paste diff output unless the user explicitly asks.
 - Proof includes at least one executed signal (test/typecheck/build/run).
   - If execution is impossible: give exact commands and define "pass".
 - If blocked on requirements: output Contract, Invariants, Creative Frame, Why This Solution, Question (no Incision/Proof yet).
@@ -349,7 +349,7 @@ Implementation mode (code changes): output exactly:
 - (Optional) Residual risk: <what you still don’t know>
 
 **Incision**
-- <default: git-based summary + precise line context; if syntax highlighting is available, a minimal unified diff in a fenced `diff` block is allowed>
+- <meaningful change summary (behavior/invariants/API/tests); include file/identifier anchors only when helpful; no diffs>
 
 **Proof**
 - <commands run + one-line result (pass/fail + key line)>
@@ -361,7 +361,7 @@ If blocked (must ask before cutting):
 
 ## Exemplars (synthetic)
 Copy the shape, then translate into repo dialect (errors, tests, paths, and naming).
-Exemplars below show fenced diffs (assume syntax highlighting); when it isn’t available, replace with the git-based summary + line context required above.
+Exemplars below show the expected Incision summary format (no diffs).
 
 ### Exemplar 1 (Brownfield): Parse at the boundary, stop scattered validation (TypeScript)
 
@@ -386,54 +386,9 @@ Exemplars below show fenced diffs (assume syntax highlighting); when it isn’t 
 - Proof signal: Unit tests for `parseEmail` + existing signup handler tests.
 
 **Incision**
-- Patch:
-```diff
-diff --git a/src/domain/Email.ts b/src/domain/Email.ts
-new file mode 100644
-index 0000000..1111111
---- /dev/null
-+++ b/src/domain/Email.ts
-@@
-+export type Email = string & { readonly __brand: "Email" };
-+
-+export function parseEmail(raw: string): Email | null {
-+  const s = raw.trim().toLowerCase();
-+  if (s === "") return null;
-+
-+  const at = s.indexOf("@");
-+  if (at <= 0 || at === s.length - 1) return null;
-+
-+  return s as Email;
-+}
-diff --git a/src/domain/Email.test.ts b/src/domain/Email.test.ts
-new file mode 100644
-index 0000000..2222222
---- /dev/null
-+++ b/src/domain/Email.test.ts
-@@
-+import { parseEmail } from "./Email";
-+
-+test("parseEmail trims and lowercases", () => {
-+  expect(parseEmail("  Foo@Example.com ")).toBe("foo@example.com");
-+});
-+
-+test("parseEmail rejects missing @", () => {
-+  expect(parseEmail("nope")).toBeNull();
-+});
-diff --git a/src/routes/signup.ts b/src/routes/signup.ts
-index 3333333..4444444 100644
---- a/src/routes/signup.ts
-+++ b/src/routes/signup.ts
-@@
-+import { parseEmail } from "../domain/Email";
-@@
--  const email = String(req.body.email || "");
--  if (!email.includes("@")) return res.status(400).json({ error: "invalid_email" });
-+  const email = parseEmail(String(req.body.email || ""));
-+  if (!email) return res.status(400).json({ error: "invalid_email" });
-@@
-   await userService.createUser({ email });
-```
+- Introduce a refined email boundary (`parseEmail`) that normalizes (trim/lowercase) and rejects invalid shape.
+- Move signup validation to the boundary so downstream code only sees refined/normalized emails (delete inline checks).
+- Add unit coverage for normalization + rejection.
 
 **Proof**
 - Ran: `pnpm test src/domain/Email.test.ts` -> PASS
@@ -463,78 +418,9 @@ index 3333333..4444444 100644
 - Proof signal: `go test ./...` (no sleeps).
 
 **Incision**
-- Patch:
-```diff
-diff --git a/billing/clock.go b/billing/clock.go
-new file mode 100644
-index 0000000..1111111
---- /dev/null
-+++ b/billing/clock.go
-@@
-+package billing
-+
-+import "time"
-+
-+type Clock interface {
-+  Now() time.Time
-+}
-+
-+type SystemClock struct{}
-+
-+func (SystemClock) Now() time.Time { return time.Now() }
-diff --git a/billing/service.go b/billing/service.go
-index 2222222..3333333 100644
---- a/billing/service.go
-+++ b/billing/service.go
-@@
- type Service struct {
-   repo Repo
-+  clock Clock
- }
- 
- func New(repo Repo) *Service {
--  return &Service{repo: repo}
-+  return &Service{repo: repo, clock: SystemClock{}}
- }
-+
-+func NewWithClock(repo Repo, clock Clock) *Service {
-+  return &Service{repo: repo, clock: clock}
-+}
-@@
- func (s *Service) Renew(u User) error {
--  if time.Now().After(u.ExpiresAt) {
-+  if s.clock.Now().After(u.ExpiresAt) {
-     return ErrExpired
-   }
-   // ...
- }
-diff --git a/billing/service_test.go b/billing/service_test.go
-index 4444444..5555555 100644
---- a/billing/service_test.go
-+++ b/billing/service_test.go
-@@
- package billing
- 
- import (
-   "testing"
-   "time"
- )
- 
-+type fakeClock struct{ t time.Time }
-+
-+func (f fakeClock) Now() time.Time { return f.t }
-+
- func TestRenew_Expired(t *testing.T) {
-   repo := newFakeRepo(t)
--  svc := New(repo)
-+  svc := NewWithClock(repo, fakeClock{t: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)})
- 
-   u := User{ExpiresAt: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)}
-   if err := svc.Renew(u); err != ErrExpired {
-     t.Fatalf("expected ErrExpired, got %v", err)
-   }
- }
-```
+- Add a `Clock` seam and default `SystemClock` so production behavior stays the same.
+- Inject clock into the renewal core and delete direct `time.Now()` usage to make time an explicit dependency.
+- Make tests deterministic with a `fakeClock` (no sleeps).
 
 **Proof**
 - Ran: `go test ./...` -> PASS
@@ -563,40 +449,8 @@ index 4444444..5555555 100644
 - Proof signal: Unit test for idempotence + a couple of examples.
 
 **Incision**
-- Patch:
-```diff
-diff --git a/src/domain/TagSet.ts b/src/domain/TagSet.ts
-new file mode 100644
-index 0000000..1111111
---- /dev/null
-+++ b/src/domain/TagSet.ts
-@@
-+export function normalizeTags(tags: readonly string[]): string[] {
-+  const xs = tags
-+    .map((t) => t.trim().toLowerCase())
-+    .filter((t) => t.length > 0);
-+
-+  return Array.from(new Set(xs)).sort();
-+}
-diff --git a/src/domain/TagSet.test.ts b/src/domain/TagSet.test.ts
-new file mode 100644
-index 0000000..2222222
---- /dev/null
-+++ b/src/domain/TagSet.test.ts
-@@
-+import { normalizeTags } from "./TagSet";
-+
-+test("normalizeTags canonicalizes", () => {
-+  expect(normalizeTags(["  Foo", "foo ", "Bar", ""]))
-+    .toEqual(["bar", "foo"]);
-+});
-+
-+test("normalizeTags is idempotent", () => {
-+  const x = [" Foo ", "bar", "FOO"]; 
-+  expect(normalizeTags(normalizeTags(x)))
-+    .toEqual(normalizeTags(x));
-+});
-```
+- Add `normalizeTags` as the single canonicalizer (trim/lowercase, drop empties, unique, sort).
+- Prove idempotence with a focused unit test.
 
 **Proof**
 - Ran: `pnpm test src/domain/TagSet.test.ts` -> PASS
@@ -650,68 +504,9 @@ index 0000000..2222222
 - Proof signal: A migration equivalence test + existing unit tests.
 
 **Incision**
-- Patch:
-```diff
-diff --git a/src/domain/PhoneNumber.ts b/src/domain/PhoneNumber.ts
-new file mode 100644
-index 0000000..1111111
---- /dev/null
-+++ b/src/domain/PhoneNumber.ts
-@@
-+export type PhoneNumber = string & { readonly __brand: "PhoneNumber" };
-+
-+export function parsePhoneNumber(raw: string): PhoneNumber | null {
-+  const digits = raw.replace(/\D/g, "");
-+  if (digits.length !== 10) return null;
-+  return digits as PhoneNumber;
-+}
-+
-+export function phoneNumberToString(p: PhoneNumber): string {
-+  return p;
-+}
-diff --git a/src/legacy/normalizePhone.ts b/src/legacy/normalizePhone.ts
-index 2222222..3333333 100644
---- a/src/legacy/normalizePhone.ts
-+++ b/src/legacy/normalizePhone.ts
-@@
-+import { parsePhoneNumber, phoneNumberToString } from "../domain/PhoneNumber";
-+
-+export function legacyNormalizePhone(raw: string): string {
-+  // Legacy behavior: digits-only if valid; otherwise "".
-+  const digits = raw.replace(/\D/g, "");
-+  if (digits.length !== 10) return "";
-+  return digits;
-+}
-+
- export function normalizePhone(raw: string): string {
--  const digits = raw.replace(/\D/g, "");
--  if (digits.length !== 10) return "";
--  return digits;
-+  const phone = parsePhoneNumber(raw);
-+  return phone ? phoneNumberToString(phone) : "";
- }
-diff --git a/src/legacy/normalizePhone.migration.test.ts b/src/legacy/normalizePhone.migration.test.ts
-new file mode 100644
-index 0000000..4444444
---- /dev/null
-+++ b/src/legacy/normalizePhone.migration.test.ts
-@@
-+import { legacyNormalizePhone, normalizePhone } from "./normalizePhone";
-+
-+test("normalizePhone matches legacyNormalizePhone", () => {
-+  const cases = [
-+    "(555) 123-4567",
-+    "5551234567",
-+    "555-123",
-+    "",
-+    "abc",
-+  ];
-+
-+  for (const raw of cases) {
-+    expect(normalizePhone(raw)).toBe(legacyNormalizePhone(raw));
-+  }
-+});
-```
+- Introduce a refined `PhoneNumber` core with one parser (`parsePhoneNumber`) for validity + normalization.
+- Keep the public API stable by re-implementing `normalizePhone(raw)` via the new core, while preserving the legacy behavior behind `legacyNormalizePhone`.
+- Add an equivalence test that leashes the migration (`normalizePhone(raw) === legacyNormalizePhone(raw)`).
 
 **Proof**
 - Ran: `pnpm test src/legacy/normalizePhone.migration.test.ts` -> PASS
