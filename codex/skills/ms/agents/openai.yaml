@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meta Skill"
+  short_description: "Create and update Codex skills in place"
+  default_prompt: "Use $ms to create or update a Codex skill in this repo."
