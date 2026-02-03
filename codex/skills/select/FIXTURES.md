@@ -145,3 +145,18 @@ Use $select:
    - scope: ["./src/**"]
 ```
 Expected: normalize scope entry to `src/**`; `auto_fix` includes `scope_normalize`.
+
+## F12: selecting ready work -> claim in_progress
+SLICES fragment:
+```yaml
+- id: sl-a
+  title: "A"
+  status: closed
+- id: sl-b
+  title: "B"
+  status: open
+  dependencies:
+    - type: blocks
+      depends_on_id: sl-a
+```
+Expected: select `sl-b` and include `claim: mark in_progress sl-b` in the Decision Trace.

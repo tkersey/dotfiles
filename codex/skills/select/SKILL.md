@@ -10,7 +10,7 @@ Pick a task source, refine it into dependency-aware atomic tasks, schedule paral
 
 This skill is **plan-only**:
 - It does not implement changes (no code edits; no running workers).
-- It does not mutate the task source (no `bd update`, no `SLICES.md` writes, no `plan-N.md` writes).
+- It does not mutate the task source (no `bd update`, no `SLICES.md` writes, no `plan-N.md` writes); instead it emits explicit manual writeback steps when needed (e.g., "mark <id> as in_progress").
 - It is orchestration-agnostic: the output is a neutral plan schema (not tied to a specific executor).
 
 It may also emit a small pipeline for driving planning artifacts into execution (manual steps; optionally loopable).
@@ -129,6 +129,17 @@ Parallel waves are only useful if each task is independently executable by a wor
   - `validation`: how to prove done (commands/checks; does not affect scheduling)
 - If emitting any wave with 2+ tasks and that wave contains at least one task with `validation`, warn `missing_validation` for tasks in that wave that lack `validation`.
 
+## Claiming selected work (required)
+When `$select` selects work to *start now* (i.e., the tasks in the first scheduled wave `waves[0]`), it must also emit a **claim** so other planners/executors do not pick the same work concurrently.
+
+- If the chosen source supports status, the claim is: set the selected tasks to an in-progress status using the source's spelling.
+  - Canonical token: `in_progress`
+  - Accept common variants as equivalent when reading/triaging: `in progress`, `in-progress`, `in_progress`
+  - When emitting a claim, prefer the token already used by the source; otherwise default to `in_progress`.
+- If the source is `list` or `plan`, emit `claim: none`.
+
+This is still plan-only: `$select` does not perform the writeback; it spells out what to change.
+
 ## Orchestration-of-orchestration
 Tasks may be delegated to an `agent: orchestrator` only when the user provided `subtasks`.
 If `agent: orchestrator` is set but `subtasks` is empty/missing, downgrade to `agent: worker`, record an auto-fix, and warn.
@@ -186,6 +197,7 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 - `source`: chosen source kind + locator
 - `mode`: resolved `mode` + resolved `max_tasks`
 - `triage`: if any `in_progress` was seen, state: `continue <id>` OR `recommend close <id>` OR `recommend reopen <id>` OR `none`
+- `claim`: `mark <in_progress token> <id,...>` OR `already <in_progress token> <id>` OR `none`
 - `counts`: totals for the chosen source (at minimum: leaf, ready, blocked, in_progress)
 - `pick`: selected task id + 3-10 word reason
 - `next2`: next two candidates (or `none`) + 3-10 word reason each
@@ -206,6 +218,7 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 5. Normalize tasks: ensure `id`; apply orchestrator rule; treat unknown deps as blocked (pending auto-remediation).
 6. Run warning auto-remediation (above); finalize warnings.
 7. Schedule waves using `depends_on` + `scope` locks.
+7.5. If selecting new work, compute `claim` from `waves[0]` and emit instructions to mark those tasks in-progress in the source (when the source supports status).
 8. Reviewer pass (per `review`): check deps/order/locks/validation/delegation gaps; revise as needed.
    - In reviewer mode: do not expand scope; do not redesign; only close gaps and reduce risk.
    - If `review=required`: iterate until `review: pass` OR stop+ask if blocked.
@@ -300,6 +313,7 @@ Decision Trace:
 - source: list (invocation)
 - mode: both; max_tasks=auto
 - triage: none
+- claim: none
 - counts: leaf=3 ready=2 blocked=1 in_progress=0
 - pick: cfg; unblocks wire; parallel-safe scope
 - next2: ui; parallel-ready; disjoint scope
@@ -366,6 +380,7 @@ Decision Trace:
 - source: list (invocation)
 - mode: both; max_tasks=auto
 - triage: none
+- claim: none
 - counts: leaf=3 ready=3 blocked=0 in_progress=0
 - pick: api; explicit validation; tight scope
 - next2: docs; parallel-ready; missing validation

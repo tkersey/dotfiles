@@ -14,10 +14,14 @@
 - Required: `id`, `title`.
 - Optional: `status`, `issue_type`, `priority`, `parent_id`, `dependencies`, `scope`, `verification`.
 
+Status normalization (before triage/selection):
+- Trim + lowercase.
+- Map `in progress` and `in-progress` to `in_progress`.
+
 ## Schema drift detectors (warn-only; keep selecting)
 - Duplicate `id` values.
 - Missing/empty `id` or `title`.
-- Unknown `status` values (treat as not-closed and not-in-progress).
+- Unknown `status` values after normalization (treat as not-closed and not-in-progress).
 - Unknown `issue_type` values (treat as workable unless it is exactly `epic`).
 - `parent_id` points to an unknown `id` (treat as top-level; warn).
 - `dependencies` entries missing `type` or `depends_on_id` (treat as unmet blocks; warn).
@@ -39,7 +43,7 @@
 - If `status` disagrees with derived readiness, warn and use derived readiness for selection.
 
 ## In-progress triage (must run first)
-Goal: if any **leaf** slice is `status: in_progress`, decide whether to continue it, recommend closing it, or recommend reopening it.
+Goal: if any **leaf** slice is `status: in_progress` (after normalization), decide whether to continue it, recommend closing it, or recommend reopening it.
 
 Best-effort proofs (read-only checks allowed; stable order; stop at first strong signal):
 
@@ -64,7 +68,7 @@ Staleness policy:
 ## Selecting new work
 New-work candidates:
 - Leaf + workable + derived-ready
-- Status is not `closed` and not `in_progress`
+- Status is not `closed` and not `in_progress` (after normalization)
 
 Respect `max_tasks`:
 - Default for `slices` is `max_tasks: 1` unless explicitly overridden.

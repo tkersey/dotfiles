@@ -4,9 +4,10 @@
 Goal: execute an OrchPlan safely with parallel workers.
 
 1. For each wave `wN` in order:
-   - Dispatch each task in `wN` to a worker.
-   - Each worker should operate within `task.scope` (exclusive lock) and use `task.location` to navigate.
-   - Each worker should return a patch-first diff plus a proof signal from `task.validation` (or explain what validation is missing).
+    - If the task source supports status, claim the tasks in `wN` first by marking them in-progress (use the source token; default `in_progress`).
+    - Dispatch each task in `wN` to a worker.
+    - Each worker should operate within `task.scope` (exclusive lock) and use `task.location` to navigate.
+    - Each worker should return a patch-first diff plus a proof signal from `task.validation` (or explain what validation is missing).
 2. Integrate patches in `integration.order`.
 3. Resolve conflicts per `integration.conflict_policy`.
 4. Re-run relevant validations; proceed to the next wave only when green.
@@ -23,9 +24,10 @@ Goal: keep iterating until all slices are `status: closed`.
 
 1. Create/repair `SLICES.md` by converting the current plan/tasks into slices.
 2. Repeat:
-   - Select the next ready slice (deps satisfied; not closed).
-   - Implement that slice.
-   - Update `SLICES.md`: set the slice `status: closed` and record its verification.
+    - Select the next ready slice (deps satisfied; not closed).
+    - Update `SLICES.md`: set the selected slice `status` to the in-progress token (prefer the token already used in `SLICES.md`; default `in_progress`).
+    - Implement that slice.
+    - Update `SLICES.md`: set the slice `status: closed` and record its verification.
 
 ## Optional loop form
 PLANS (loop-ready):
@@ -37,6 +39,7 @@ Stop when: The assistant replies exactly "Plan is ready."
 SLICES (loop-ready; serial execution):
 ```text
 - Select the next ready slice
+- Mark the selected slice in_progress in SLICES.md
 - Implement the selected slice; update SLICES.md to mark it closed with verification.
 Stop when: All slices in SLICES.md have status: closed.
 ```
