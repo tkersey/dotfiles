@@ -12,30 +12,31 @@ Goal: execute an OrchPlan safely with parallel workers.
 4. Re-run relevant validations; proceed to the next wave only when green.
 
 ## PLANS pipeline (manual)
-Goal: iterate `plan-N.md` until `$gen-plan` says `Plan is ready.`
+Goal: iterate `plan-N.md` until the plan is stable and implementation-ready.
 
-1. If no `plan-N.md` exists: run `$gen-plan` (it will ask clarifying questions, then create `plan-1.md`).
-2. Re-run `$gen-plan` to create `plan-(N+1).md` until it replies exactly `Plan is ready.`
+1. If no `plan-N.md` exists: create `plan-1.md` (draft).
+2. Revise by creating `plan-(N+1).md` until a review pass finds no actionable gaps.
+3. Use an explicit stop phrase (recommended): end the run by replying exactly `Plan is ready.`
 
 ## SLICES pipeline (manual)
 Goal: keep iterating until all slices are `status: closed`.
 
-1. Run `$slice` to create/repair `SLICES.md` (generate mode).
+1. Create/repair `SLICES.md` by converting the current plan/tasks into slices.
 2. Repeat:
-   - Run `$slice` (next mode) to choose the next slice.
+   - Select the next ready slice (deps satisfied; not closed).
    - Implement that slice.
    - Update `SLICES.md`: set the slice `status: closed` and record its verification.
 
-## Optional `$loop` form
+## Optional loop form
 PLANS (loop-ready):
 ```text
-- $gen-plan
+- Create the next plan revision (plan-(N+1).md)
 Stop when: The assistant replies exactly "Plan is ready."
 ```
 
 SLICES (loop-ready; serial execution):
 ```text
-- $slice (next)
+- Select the next ready slice
 - Implement the selected slice; update SLICES.md to mark it closed with verification.
 Stop when: All slices in SLICES.md have status: closed.
 ```

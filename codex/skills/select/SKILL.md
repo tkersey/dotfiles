@@ -1,19 +1,29 @@
 ---
 name: select
-description: "Source-agnostic work selector: emit an OrchPlan (waves + delegation) plus PLANS/SLICES pipelines. Plan-only; no writeback; orchestration-agnostic."
+description: "Swarm-ready work selector: pick a source, refine into atomic tasks, and emit an OrchPlan (waves + delegation) plus optional pipelines. Plan-only; no writeback; orchestration-agnostic."
 ---
 
 # Select
 
 ## Intent
-Pick a task source, schedule parallel waves when safe, and emit an **orchestration plan**.
+Pick a task source, refine it into dependency-aware atomic tasks, schedule parallel waves when safe, and emit an **orchestration plan**.
 
 This skill is **plan-only**:
-- It does not execute work (no agent spawning).
+- It does not implement changes (no code edits; no running workers).
 - It does not mutate the task source (no `bd update`, no `SLICES.md` writes, no `plan-N.md` writes).
-- It is orchestration-agnostic: the output is a neutral plan schema (not tied to `$mesh`).
+- It is orchestration-agnostic: the output is a neutral plan schema (not tied to a specific executor).
 
-It also emits a pipeline for driving **PLANS -> SLICES -> execution** (manual steps, plus an optional `$loop` form).
+It may also emit a small pipeline for driving planning artifacts into execution (manual steps; optionally loopable).
+
+## Swarm-ready planning
+`$select` is optimized for parallel multi-agent execution, so it prefers plans that are explicit, decomposed, and lock-safe.
+
+- **Explore the codebase (read-only)** when needed to ground tasks in real paths/components and to set tight `scope` locks.
+- **Ask clarifying questions** when multiple reasonable approaches exist; include a recommended default.
+- **Atomic tasks**: each task should be independently executable by a single worker.
+- **Explicit dependencies**: prefer `depends_on` edges over relying on implicit serialization via overlapping `scope`.
+- **Delegation metadata**: include `scope` (required for safe parallelism), plus `location` and `validation` whenever possible.
+- **Review before yielding**: run a separate reviewer-mode pass for missing deps/order/lock overlaps/validation gaps.
 
 ## Invocation directives (optional)
 If present, interpret these directives from the invocation text:
@@ -25,6 +35,10 @@ If present, interpret these directives from the invocation text:
 - `max_tasks`: `auto|<int>`
   - If omitted: default `1` for queue sources (`slices`, `beads`); otherwise `auto`.
   - Applies after triage decisions.
+- `review`: `required|auto|off`
+  - `required` (default): run a reviewer pass and iterate until it passes (or stop+ask if blocked).
+  - `auto`: run one reviewer pass; fix what you can; proceed with remaining warnings.
+  - `off`: skip the reviewer pass.
 
 ## Source precedence
 When multiple sources exist, pick exactly one using this precedence:
@@ -176,6 +190,7 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 - `pick`: selected task id + 3-10 word reason
 - `next2`: next two candidates (or `none`) + 3-10 word reason each
 - `waves`: (recommended when tasks were scheduled) `N` + a compact wave listing (e.g. `w1[t-1,t-2]; w2[t-3]`)
+- `review`: `pass|warn|skipped|blocked` + 0-6 word note
 - `warnings`: list count + top 1-3 keys (e.g. `unknown_deps`, `status_drift`, `cycle`, `broad_scope`, `implicit_order`, `missing_validation`)
 - `auto_fix`: list count + top 1-3 keys (e.g. `dep_alias`, `scope_normalize`, `scope_infer`)
 
@@ -183,10 +198,18 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 1. Resolve invocation directives (mode/max_tasks/cap).
 2. Source detection (pick exactly one; do not merge sources).
 3. Read the corresponding adapter spec (above) and extract tasks.
-4. Normalize tasks: ensure `id`; apply orchestrator rule; treat unknown deps as blocked (pending auto-remediation).
-5. Run warning auto-remediation (above); finalize warnings.
-6. Schedule waves using `depends_on` + `scope` locks.
-7. Emit OrchPlan v1 YAML (always) + Decision Trace (required). Add pipelines only when useful.
+4. If tasks are too coarse or missing metadata required for safe parallelism, refine them:
+   - Decompose into atomic tasks with explicit `depends_on`.
+   - Populate `scope` locks (tight paths/globs), plus `location` and `validation` where possible.
+   - Explore the repo (read-only) and consult authoritative docs when needed.
+   - Stop and ask targeted questions if blocked by ambiguity.
+5. Normalize tasks: ensure `id`; apply orchestrator rule; treat unknown deps as blocked (pending auto-remediation).
+6. Run warning auto-remediation (above); finalize warnings.
+7. Schedule waves using `depends_on` + `scope` locks.
+8. Reviewer pass (per `review`): check deps/order/locks/validation/delegation gaps; revise as needed.
+   - In reviewer mode: do not expand scope; do not redesign; only close gaps and reduce risk.
+   - If `review=required`: iterate until `review: pass` OR stop+ask if blocked.
+9. Emit OrchPlan v1 YAML (always) + Decision Trace (required). Add pipelines only when useful.
 
 ## Scheduling algorithm (parallelism-first)
 Build waves using dependency readiness and `scope` locks:
@@ -281,6 +304,7 @@ Decision Trace:
 - pick: cfg; unblocks wire; parallel-safe scope
 - next2: ui; parallel-ready; disjoint scope
 - waves: 2 w1[cfg,ui]; w2[wire]
+- review: pass
 - warnings: 0
 - auto_fix: 0
 
@@ -346,6 +370,7 @@ Decision Trace:
 - pick: api; explicit validation; tight scope
 - next2: docs; parallel-ready; missing validation
 - waves: 2 w1[api,docs]; w2[big]
+- review: warn missing_validation,broad_scope
 - warnings: 2 missing_validation,broad_scope
 - auto_fix: 0
 
