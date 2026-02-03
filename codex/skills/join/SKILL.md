@@ -30,7 +30,7 @@ Contributor guidance:
 
 ## Operating modes
 Mode is per-PR and determined by the current checkout:
-- Local checkout (VCS): the PR `headRefName` matches the currently checked-out branch/bookmark. Name match is sufficient; no upstream requirement. jj detached checkouts still count as local when they point at the PR head.
+- Local checkout (VCS): the PR `headRefName` matches the currently checked-out branch. Name match is sufficient; no upstream requirement.
 - Remote-only (`gh` only): no clean local checkout/branch is available. Keep operations `gh`-only. Post-merge cleanup may still run if a local worktree is clean (see below).
 
 Local is preferred when available or when a local branch exists and the worktree is clean enough to switch. If local mode is selected and the PR branch is checked out, dirty changes are committed and pushed into the PR before CI. If the PR branch is not checked out and the worktree is dirty, apply `auto:hold` (cannot switch safely); do not fall back to remote-only for that PR.
@@ -42,7 +42,7 @@ Mode detection (git):
 - Local if `git branch --show-current` equals `headRefName`.
 - If not on the PR branch but a local branch exists and the worktree is clean, checkout `headRefName` and treat as local.
 - If a local branch exists but the worktree is dirty, apply `auto:hold` (cannot switch safely).
-- If detached in git, treat as remote-only for operations; still eligible for safe local cleanup when the worktree is clean. JJ handling is delegated to the JJ skill.
+- If detached in git, treat as remote-only for operations; still eligible for safe local cleanup when the worktree is clean.
 
 ## Monitor loop
 Process PRs sequentially (blocking per PR on CI):
@@ -54,7 +54,7 @@ Process PRs sequentially (blocking per PR on CI):
    - Select mode for this PR (local if current checkout matches `headRefName` or a clean local branch exists; otherwise remote-only).
    - If local and not on `headRefName`, checkout the branch (requires a clean worktree). If dirty, apply `auto:hold`, leave a comment (template below), and skip.
    - If local, run the local sync gate (below) before CI.
-   - Ensure branch is up to date (jj-first if a local checkout is active).
+   - Ensure branch is up to date.
    - Enforce CI gate (required checks only; see below).
    - If failing, run the surgical fix loop.
    - When green, auto-approve and squash-merge.
