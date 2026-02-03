@@ -14,8 +14,7 @@ Finish a PR end-to-end: push updates, watch checks, squash-merge, and clean up s
 
 2) Update the PR.
    - Ensure the branch is up to date, run required checks, and push:
-     - If using jujutsu: `jj status`, fix issues, then `jj git push`.
-     - Otherwise: `git status`, fix issues, then `git push`.
+     - `git status`, fix issues, then `git push`.
 
 3) Monitor checks until green.
    - Use `gh pr checks --watch` or `gh run watch <run-id>`.
@@ -26,8 +25,7 @@ Finish a PR end-to-end: push updates, watch checks, squash-merge, and clean up s
    - If approvals are missing, request them before merging.
 
 5) Clean up local state.
-   - Fetch the updated mainline, switch to it, and delete the merged branch/bookmark.
-   - With jujutsu: `jj git fetch`, move off the merged change, then `jj bookmark delete <branch>`.
+   - Fetch the updated mainline, switch to it, and delete the merged branch.
 
 ## Guardrails
 - Do not merge if required checks or approvals are missing.
