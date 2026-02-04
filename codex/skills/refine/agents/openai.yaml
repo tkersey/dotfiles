@@ -1,0 +1,4 @@
+interface:
+  display_name: "Refine Skills"
+  short_description: "Refine other skills via focused $ms changes."
+  default_prompt: "Use $refine to improve a skill via focused $ms changes."
