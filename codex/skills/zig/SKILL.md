@@ -29,6 +29,8 @@ zig version  # must be 0.15.2
 zig init
 # or (smaller template)
 zig init --minimal
+# NOTE: --minimal does NOT add a `test` build step; `zig build test` / `--fuzz`
+# will fail unless you add a test step to build.zig.
 
 # Format
 zig fmt src/main.zig
@@ -39,6 +41,7 @@ zig build run
 zig build test
 
 # Fuzz (integrated fuzzer)
+# Requires a `test` step in build.zig (not present in --minimal template).
 zig build test --fuzz
 
 # Single-file test/run
@@ -62,7 +65,8 @@ zig run src/main.zig
 - Time-agnostic: no prescribed fuzz duration; run it as long as practical and always persist findings.
 - Run fuzz in `Debug`/`ReleaseSafe` so safety checks stay on; benchmark separately in `ReleaseFast`.
 - Allocator-using code also runs `std.testing.checkAllAllocationFailures`.
-- If fuzzing cannot run locally, state why and add a follow-up (seed corpus + repro test).
+- If fuzzing cannot run locally (e.g., macOS `InvalidElfMagic` crash), state why and add a
+  follow-up (seed corpus + repro test); run fuzz in Linux/CI or external harness.
 
 ## Performance quick start (host CPU)
 ```bash
@@ -598,6 +602,12 @@ Use `std.testing.fuzz` in a `test` block and run:
 `zig build test --fuzz` (optionally `-Doptimize=ReleaseSafe`).
 
 Consult `zig build test --help` for version-specific `--fuzz` flags.
+
+### macOS caveat (Zig 0.15.2)
+Try `zig build test --fuzz` on macOS first. If it crashes during startup
+(`InvalidElfMagic` observed), skip local fuzzing for that run, keep
+`std.testing.fuzz` tests in-tree, and run the fuzz step on Linux/CI or via an
+external harness; use `zig test` locally for smoke coverage.
 
 ### Fuzz target rules (make it fuzzer-friendly)
 - Deterministic: no timers, threads, or internal RNG (the fuzzer is the RNG).
