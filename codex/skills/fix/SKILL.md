@@ -25,9 +25,13 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 ## Outputs (chat)
 - Emit the exact sections in `Deliverable format (chat)`.
 
+### Embedded mode (when $fix is invoked inside another skill)
+- You may emit a compact **Fix Record** instead of the full deliverable.
+- Do not mention “Using $fix” without emitting either the full deliverable or a Fix Record.
+
 ## Hard rules (MUST / MUST NOT)
 - MUST default to review + implement (unless review-only is requested).
-- MUST triage and present findings in severity order: crash > corruption > logic.
+- MUST triage and present findings in severity order: security > crash > corruption > logic.
 - MUST NOT claim done without a passing validation signal.
 - MUST NOT do product/feature work.
 - MUST NOT do intentional semantic changes without clarifying, except correctness tightening.
@@ -38,6 +42,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
   - invariant_after
   - fix
   - proof
+- MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 
 ## Default policy (non-interactive)
 Use these defaults to maximize autonomy (avoid asking).
@@ -62,16 +67,17 @@ Algorithm:
    - file/wire formats (field names, JSON keys).
    - error codes/messages consumed by callers.
 2. Collect evidence in this order (stop at first match):
-   - User repro/signal references the token.
-   - Tests assert on the token/behavior.
-   - Docs/README/examples describe or demonstrate the token/behavior.
-   - Repo callsites use the token (non-test, non-doc).
+    - User repro/signal references the token.
+    - Tests assert on the token/behavior.
+    - Docs/README/examples/CHANGELOG/config examples describe or demonstrate the token/behavior.
+    - Repo callsites use the token (non-test, non-doc).
 3. IF any evidence exists, THEN mark PROVEN_USED; ELSE mark NON_PROVEN_USED.
 
 Evidence scan procedure (repo-local):
 - Tests: search `tests/`, `test/`, `__tests__/`, `spec/`, and files matching `*test*` / `*.spec.*`.
-- Docs/examples: search `README*`, `docs/`, `examples/`, and `*.md`.
+- Docs/examples: search `README*`, `docs/`, `examples/`, `CHANGELOG*`, `config.example*`, and `*.md`.
 - Callsites: search remaining source files.
+- CI/config surfaces: also scan `.github/workflows/` for env vars, flags, and script entrypoints.
 
 Tooling hint: prefer `rg -n "<token>"` with `--glob` filters.
 
@@ -150,9 +156,98 @@ Algorithm:
    - `scripts/check` / `scripts/test`
    - `Makefile` / `justfile` / `Taskfile.yml`
 3. ELSE create a proof hook in this order:
-   - focused regression/characterization test
-   - boundary assertion that fails loudly
-   - scoped + rate-limited diagnostic log tied to ONE invariant
+    - focused regression/characterization test
+    - boundary assertion that fails loudly
+    - scoped + rate-limited diagnostic log tied to ONE invariant (never log secrets/PII)
+
+### PR/diff scope guardrail (default in review mode)
+- Default slice = changed lines/paths (git diff/PR diff) + at most one boundary seam (parse/construct/API edge) required to make the fix sound.
+- Do not fix pre-existing issues outside the slice unless:
+  - severity is security/crash/corruption AND
+  - the fix is localized and provable without widening the slice.
+- Otherwise: record as `Residual risks / open questions`.
+
+### Generated / third-party code guardrail
+- If a file appears generated or is under third-party/build output, do not edit it directly.
+- Prefer to locate the source-of-truth + regeneration step; apply fixes there and regenerate as needed.
+- Common no-edit zones (examples): `dist/`, `build/`, `vendor/`, `node_modules/`.
+
+### Proof discipline for passing baselines
+When the baseline signal is ok:
+- For every acted-on finding, prefer a proof hook that fails before the fix (focused regression/characterization test).
+- If you cannot produce a failing proof hook, do not edit; attempt to create one first by:
+  - turning the counterexample into a focused regression/characterization test
+  - enforcing the invariant at a single boundary seam (parse/refine once) and testing the new error
+  - reducing effects to a pure helper and unit-testing it
+  - using an existing fuzzer/property test harness if present
+- Only if you still cannot create a proof hook without product ambiguity, record the blocker as residual risk.
+
+### Residual risks / open questions policy (last resort)
+
+Residual risks are a record of what you could not safely fix (not a to-do list).
+
+Rules:
+- Before emitting a residual item, attempt to convert it into an actionable finding:
+  - produce a concrete counterexample
+  - attach a proof hook (test/assert) that fails before the fix
+  - apply the smallest localized fix within guardrails
+  - re-run the validation signal
+- Only emit residual items that are truly blocked by one of these blockers:
+  - `product_ambiguity` (semantics cannot be derived/characterized safely)
+  - `breaking_change` (no additive path; fix would be breaking)
+  - `no_repro_or_proof` (cannot create a repro/proof hook locally)
+  - `scope_guardrail` (outside diff slice and not severe enough to widen)
+  - `generated_output` (generated/third-party output; need source-of-truth + regen)
+  - `external_dependency` (needs network/creds/services/hardware)
+  - `perf_unmeasurable` (impact plausible; no local measurement)
+- Every residual bullet MUST include: a location or token, `blocked_by=<...>`, and `next=<one action>`.
+- If there are no residual items, output `- None`.
+
+## Multi-pass loop (default)
+
+Goal: reduce missed issues in PR/diff reviews without widening scope.
+
+Run 3 core passes. Run 2 additional delta passes only if pass 3 edits code.
+
+Pass 1) Safety (highest severity)
+- Scope: diff-driven slice + required boundary seams.
+- Focus: security/crash/corruption hazards, unsafe tightening, missing error propagation.
+- Change budget: smallest sound fix only.
+
+Pass 2) Surface (compat + misuse)
+- Scope: externally-used surfaces touched by the diff (exports/CLI/config/format/docs).
+- Focus: additive compatibility, defuse top footguns, clearer errors.
+- Change budget: additive/wrapper/adapter preferred; breaking change => stop and ask.
+
+Early exit (skip pass 3):
+- If pass 2 produces zero actionable findings AND pass 2 applies no edits, then:
+  - Skip pass 3 if pass 1 also applied no edits, OR
+  - Skip pass 3 if pass 1 edits are already covered by a strong proof (targeted regression/characterization test for the diff OR full test suite).
+- Otherwise run pass 3.
+
+Pass 3) Audit (invariants + ownership + proof quality)
+- Scope: final diff slice.
+- Focus: invariants enforced at strongest cheap boundary; ownership release-on-all-paths; proof strength.
+- Change budget: no refactors unless they directly reduce risk/auditability of invariants.
+
+Early exit (stop after pass 3):
+- If pass 3 applies no edits, stop (after running/confirming the primary validation signal).
+
+Delta passes (only if pass 3 applied edits)
+
+Pass 4) Safety delta rescan
+- Scope: ONLY lines/paths changed by passes 1-3 and their immediate boundaries.
+- Focus: new security/crash/corruption hazards introduced by the fixes.
+
+Pass 5) Surface + proof delta rescan
+- Re-enumerate behavior tokens from the FINAL diff (including newly introduced errors/flags/exports/config keys).
+- Re-run PROVEN_USED/external-surface checks for newly introduced tokens.
+- Ensure proof is still strong for the final diff.
+
+Rules:
+- After any pass that edits code, run a local signal before continuing.
+- Do not edit on suspicion: every edit must have a concrete counterexample, invariant_before/after, and a proof hook.
+- Merge/de-duplicate findings across passes; final output format stays unchanged.
 
 ## Clarify before changes
 Stop and ask ONLY if any is true:
@@ -162,9 +257,14 @@ Stop and ask ONLY if any is true:
 
 ## Finding record schema (internal)
 For every issue you act on, construct this record before editing:
+- id: `F<number>`
 - location: `file:line`
-- severity: `crash|corruption|logic`
+- severity: `security|crash|corruption|logic`
 - issue: <one sentence>
+- tokens: <affected behavior tokens; empty if none>
+- proven_used: <yes/no + evidence if yes>
+- external_surface: <yes/no + why>
+- diff_touch: <yes/no>
 - counterexample: <input/timeline>
 - invariant_before: <what is allowed/assumed today>
 - invariant_after: <what becomes guaranteed/rejected>
@@ -175,27 +275,32 @@ For every issue you act on, construct this record before editing:
 
 ### 0) Preflight
 1. Determine mode: review-only vs fix.
-2. Define slice: entrypoint, inputs, outputs, state.
-3. Select validation signal (or create proof hook).
+2. Define slice:
+   - If in a git repo and there is a diff, derive slice/tokens from the diff (paths, changed symbols/strings).
+   - Otherwise: entrypoint, inputs, outputs, state.
+3. Apply `PR/diff scope guardrail` for review mode.
+4. Apply `Generated / third-party code guardrail` before editing.
+5. Select validation signal (or create proof hook).
 
 ### 1) Contract + baseline
 1. Determine PROVEN_USED behavior:
-   - Apply `PROVEN_USED evidence checklist` to the behavior tokens affected by the slice.
+    - Apply `PROVEN_USED evidence checklist` to the behavior tokens affected by the slice.
 2. Derive contract without asking (in this order):
-   - tests that exercise the slice
-   - docs/README/examples
-   - callsites in the repo
-   - if none: add a characterization test for current behavior
+    - tests that exercise the slice
+    - callsites in the repo
+    - docs/README/examples
+    - if none: add a characterization test for current behavior
 3. Write contract (1 sentence): "Working means …".
 4. Run baseline signal once; record result.
+5. If baseline signal is ok, apply `Proof discipline for passing baselines`.
 
 ### 2) Create initial findings
 1. Enumerate candidate failure modes for the slice.
-2. Rank crash > corruption > logic.
+2. Rank security > crash > corruption > logic.
 3. For each issue you will act on, create a finding record.
 
-### 3) Mandatory scans (add/upgrade findings)
-Run all scans for the touched slice.
+### 3) Mandatory scans (multi-pass)
+Run the `Multi-pass loop (default)` for the touched slice.
 
 #### 3a) Unsoundness scan
 For each hazard class that applies:
@@ -204,6 +309,7 @@ For each hazard class that applies:
 - Specify the smallest sound fix that removes the bug-class.
 
 Hazard classes:
+- Security boundaries: authz/authn, injection, path traversal, SSRF, unsafe deserialization, secrets/PII handling.
 - Nullability/uninitialized state; sentinel values.
 - Ownership/lifetime: leaks, double-free, use-after-close, lock not released.
 - Concurrency/order/time: races, lock ordering, reentrancy, timeouts/retries, TOCTOU.
@@ -268,20 +374,35 @@ For findings in severity order:
 ### 5) Close the loop (required)
 1. Run the chosen validation signal.
 2. IF it fails:
-   - update findings with the new counterexample,
-   - apply the smallest additional fix,
-   - re-run the SAME signal.
+    - update findings with the new counterexample,
+    - apply the smallest additional fix,
+    - re-run the SAME signal.
 3. Repeat until the signal passes.
+4. If you cannot make progress after 3 repair cycles, stop and ask with:
+   - the last failing output (key lines/stack),
+   - what you tried,
+   - the smallest remaining decision that blocks you.
+
+### 6) Residual risk sweep (required)
+1. Re-check `Residual risks / open questions policy`.
+2. Any item without a valid blocker becomes a finding and is fixed (with proof) or dropped.
 
 ## Deliverable format (chat)
 Output exactly these sections.
+
+If no findings:
+- **Findings (severity order)**: `None`.
+- **Changes applied**: `None`.
+- **Residual risks / open questions**: `- None`.
+- Still include **Validation** with the executed signal.
 
 **Contract**
 - <one sentence>
 
 **Findings (severity order)**
 For each finding:
-- `<file:line>` — `<crash|corruption|logic>` — <issue>
+- `F#` `<file:line>` — `<security|crash|corruption|logic>` — <issue>
+  - Surface: Tokens=<...>; PROVEN_USED=<yes/no + evidence>; External=<yes/no>; Diff_touch=<yes/no>
   - Counterexample: <input/timeline>
   - Invariant (before): <what was assumed/allowed>
   - Invariant (after): <what is now guaranteed/rejected>
@@ -295,7 +416,31 @@ For each finding:
 - <cmd> -> <ok/fail>
 
 **Residual risks / open questions**
-- <bullets>
+- If none: `- None`
+- Otherwise: `- <file:line or token> — blocked_by=<blocker> — next=<one action>`
+
+### Fix Record (embedded mode only)
+Use only when $fix is invoked inside another skill.
+
+**Findings (severity order)**
+For each finding:
+- `F#` `<file:line>` — `<security|crash|corruption|logic>` — <issue>
+  - Surface: Tokens=<...>; PROVEN_USED=<yes/no + evidence>; External=<yes/no>; Diff_touch=<yes/no>
+  - Counterexample: <input/timeline>
+  - Invariant (before): <what was assumed/allowed>
+  - Invariant (after): <what is now guaranteed/rejected>
+  - Fix: <smallest sound fix summary>
+  - Proof: <test/assert/log + validation command> -> <ok/fail>
+
+**Changes applied**
+- <file> — <rationale>
+
+**Validation**
+- <cmd> -> <ok/fail>
+
+**Residual risks / open questions**
+- If none: `- None`
+- Otherwise: `- <file:line or token> — blocked_by=<blocker> — next=<one action>`
 
 ## Pitfalls
 - Vague advice without locations.
@@ -304,6 +449,9 @@ For each finding:
 - Asking for risk tolerance instead of applying the default policy.
 - Tightening presented as optional.
 - Ownership fixes without proven allocator/owner.
+- Editing generated/third-party outputs instead of source-of-truth.
+- Code edits without a failing proof hook when baseline was ok.
+- Using `Residual risks / open questions` as a substitute for fixable findings.
 
 ## Activation cues
 - "resolve" / "fix" / "crash" / "data corruption"
