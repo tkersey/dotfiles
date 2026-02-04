@@ -33,6 +33,9 @@ If the work is still in Discover/Define uncertainty (needs options/tradeoffs, st
 ## What TK Outputs (and only this)
 TK has two modes.
 
+Output order is fixed. Do not lead with a Summary.
+If you must summarize, place it inside **Incision** as the change summary.
+
 Advice mode (no code change requested):
 - Output exactly: Contract, Invariants, Creative Frame, Why This Solution.
 
@@ -44,10 +47,14 @@ Implementation mode (code change requested):
     - Include file paths and key identifiers only as anchors when they improve reviewability.
     - Use a file-by-file list only if the change is sprawling or the reader needs a map.
     - Include tiny excerpts only when they clarify something non-obvious (signatures or <= ~15 lines), fenced with a language tag.
-  - You may use `git diff --stat` / `git diff --name-only` to build the summary, but do not paste diff output unless the user explicitly asks.
+  - You may use `git diff --stat` / `git diff --name-only` to build the summary. Do not paste diff output unless explicitly required by system/user instructions; if required, add a **Patch** section after **Proof**.
 - Proof includes at least one executed signal (test/typecheck/build/run).
   - If execution is impossible: give exact commands and define "pass".
 - If blocked on requirements: output Contract, Invariants, Creative Frame, Why This Solution, Question (no Incision/Proof yet).
+
+Template compliance (order is mandatory):
+- Contract → Invariants → Creative Frame → Why This Solution → Incision → Proof.
+- If blocked: Contract → Invariants → Creative Frame → Why This Solution → Question.
 
 **Contract**
 - One sentence: what “working” means (include success criteria / proof target when possible).
@@ -96,6 +103,7 @@ Implementation non-negotiables:
 - No pretend proofs: never claim PASS without an executed signal; if you can't run it, say so.
 - No dependency adds without an explicit ask.
 - No shotgun edits: if the diff starts spreading, cut an adapter/seam instead.
+- If a patch/diff is required by instructions, include it under **Patch** after **Proof**; never skip the TK sections.
 
 ## The TK Loop (how inevitability is produced)
 TK is not a style; it’s a reduction process:
@@ -194,57 +202,12 @@ After you’ve named the stable boundary/seams and written the contract/invarian
 
 Creative frame (required):
 - Reframe used: Inversion / Analogy transfer / Constraint extremes / First principles.
-- Technique used: pick one technique (library below) to generate non-obvious options.
+- Technique used: pick one technique (see references/creative-techniques.md) to generate non-obvious options.
 - Representation shift: one sentence describing the model/representation change (or “N/A: no shift needed”) that makes the choice feel forced.
   - If still unclear: pick a different reframe + technique, then regenerate the portfolio.
 
-Technique picker (choose one; default to Lotus blossom):
-- Need breadth across seams (subproblems → options) → Lotus blossom.
-- Need to mutate an existing approach → SCAMPER.
-- Need lots of ideas fast → Brainwriting 6-3-5 (solo ok).
-- Need structured combinations → Morphological analysis.
-- Need to resolve contradictions → TRIZ.
-- Need parallel perspectives → Six Thinking Hats.
-- Need to harden against failure → Reverse brainstorming.
-- Need a fresh spark → Random stimulus or provocation.
-
-Technique library (short):
-- Lotus blossom: expand outward from a core problem into 8 TK-native “petals”, then expand each petal to force breadth and populate the portfolio.
-- SCAMPER: Substitute/Combine/Adapt/Modify/Put to use/Eliminate/Reverse.
-- Brainwriting 6-3-5: timed rounds to generate + iterate quietly.
-- Morphological analysis: enumerate combinations across dimensions.
-- TRIZ: state the contradiction, then apply separation principles.
-- Six Thinking Hats: facts → feelings → risks → benefits → ideas → process.
-- Reverse brainstorming: “how do we make it worse?” then invert.
-- Random stimulus / provocation: force a lever from an unrelated prompt.
-
-Lotus blossom (TK use):
-- Center: stable boundary + contract (one line).
-- Petals: list 8 TK-native levers/subproblems:
-  - Stable boundary / seam (push effects + enforcement to the boundary).
-  - Invariant strengthening (types/parse/tests).
-  - Representation / normal form (collapse cases, delete branches).
-  - Proof signal (fast check: test/typecheck/log, law check, or commuting diagram).
-  - Reversibility lever (rollback, flag, adapter, fallback).
-  - Primary failure mode (crash / corruption / logic).
-  - Caller ergonomics / footguns (make misuse hard).
-  - Blast radius / integration surface (how wide the cut spreads).
-- Expansion: expand each petal into concrete candidate incisions; map candidates into the 5 tiers, then pick the highest provable tier.
-
-For each tier, attach:
-- **Expected proof signal**: what you will run/observe to learn.
-- **Escape hatch**: how you revert or narrow scope if wrong.
-
-Tiers:
-- **Quick Win**: smallest local patch; least movement.
-- **Strategic Play**: clarify a boundary; add a seam; enable tests.
-- **Advantage Play**: local type/normal-form change that reduces branching.
-- **Transformative Move**: small algebraic island; composition-first core; adapters at edges.
-- **Moonshot**: architectural boundary change, but only incremental + reversible.
-
-Selection rule:
-- Choose the highest tier that remains reviewable, incremental, and provable.
-- Preference (when in doubt): maximize **Learning value** and **Reversibility**; minimize blast radius.
+Tier details, technique picker, and Lotus blossom expansion: references/creative-techniques.md.
+Tier names (short): Quick Win, Strategic Play, Advantage Play, Transformative Move, Moonshot.
 
 ## Algebra (quietly)
 Only use algebraic framing when it reduces branching or makes proofs cheaper.
@@ -258,20 +221,8 @@ Minimal guide (jargon allowed only when it buys precision):
 If you introduce a combine/normalize/map operation, add one executable behavioral check:
 - round-trip, idempotence, identity, associativity, or a commuting diagram check.
 
-## Canonical examples (translate into repo dialect)
-
-### Example A: Parse, don’t validate
-- Contract: invalid input rejected at the boundary; core never re-checks.
-- Invariant: downstream code only receives refined values.
-- Incision: add a parser/smart constructor that returns the refined value (not `()`), and make the core accept the refined type.
-- Why inevitable: once the type can’t represent invalid states, the “impossible” paths vanish and the rule lives in one place.
-
-### Example C: Commuting migration diagram
-- Contract: old and new behavior agree on supported inputs (or the delta is explicitly defined).
-- Invariant: adapters preserve meaning.
-- Incision: introduce `toNew`/`fromNew` adapters so two paths “commute”:
-  - `old(x)` equals `fromNew(new(toNew(x)))` for representative inputs.
-- Why inevitable: you get incremental replacement with a proof signal that is local, executable, and reviewable.
+## Examples
+Canonical examples + full exemplars: references/tk-exemplars.md.
 
 ## Be like mike (behavioral bar)
 TK is calm execution under constraints.
@@ -354,163 +305,13 @@ Implementation mode (code changes): output exactly:
 **Proof**
 - <commands run + one-line result (pass/fail + key line)>
 
+**Patch** (only if required by system/user instructions)
+- <unified diff or patch>
+
 If blocked (must ask before cutting):
 
 **Question**
 - <one targeted question; include a recommended default>
-
-## Exemplars (synthetic)
-Copy the shape, then translate into repo dialect (errors, tests, paths, and naming).
-Exemplars below show the expected Incision summary format (no diffs).
-
-### Exemplar 1 (Brownfield): Parse at the boundary, stop scattered validation (TypeScript)
-
-````text
-**Contract**
-- `/signup` rejects invalid email and passes a normalized email to the service.
-
-**Invariants**
-- `parseEmail` is the only place that decides email validity for this flow.
-- Downstream code only sees trimmed, lowercased emails (no re-validation).
-- Invalid emails never reach `userService.createUser`.
-
-**Creative Frame**
-- Reframe: First principles
-- Technique: Lotus blossom
-- Representation shift: Replace `string` email with refined `Email` at the boundary.
-
-**Why This Solution**
-- Stable boundary: `src/routes/signup.ts` is where untrusted input enters.
-- Not smaller: Another inline `if (...)` check keeps validation scattered and inconsistent.
-- Not larger: Making every email in the repo a branded type is a rewrite; this keeps the cut local.
-- Proof signal: Unit tests for `parseEmail` + existing signup handler tests.
-
-**Incision**
-- Introduce a refined email boundary (`parseEmail`) that normalizes (trim/lowercase) and rejects invalid shape.
-- Move signup validation to the boundary so downstream code only sees refined/normalized emails (delete inline checks).
-- Add unit coverage for normalization + rejection.
-
-**Proof**
-- Ran: `pnpm test src/domain/Email.test.ts` -> PASS
-- Ran: `pnpm test` -> PASS
-````
-
-### Exemplar 2 (Brownfield): Add a seam (Clock), delete flaky sleeps (Go)
-
-````text
-**Contract**
-- Renewal logic uses an injected clock; production behavior is unchanged; tests are deterministic.
-
-**Invariants**
-- All time comparisons use `Clock.Now()` (no direct `time.Now()` in the core).
-- Production default is system time.
-- Tests can freeze time without sleeping.
-
-**Creative Frame**
-- Reframe: Inversion
-- Technique: SCAMPER
-- Representation shift: Replace implicit global time with an explicit dependency.
-
-**Why This Solution**
-- Stable boundary: Time is an effect; a `Clock` seam isolates it.
-- Not smaller: Adding sleeps/retries makes tests slower and still flaky.
-- Not larger: A full scheduler/state-machine refactor is unnecessary for determinism.
-- Proof signal: `go test ./...` (no sleeps).
-
-**Incision**
-- Add a `Clock` seam and default `SystemClock` so production behavior stays the same.
-- Inject clock into the renewal core and delete direct `time.Now()` usage to make time an explicit dependency.
-- Make tests deterministic with a `fakeClock` (no sleeps).
-
-**Proof**
-- Ran: `go test ./...` -> PASS
-````
-
-### Exemplar 3 (Greenfield): Pick a normal form + prove idempotence (TypeScript)
-
-````text
-**Contract**
-- `normalizeTags` returns tags in a canonical form (trimmed, lowercased, unique, sorted).
-
-**Invariants**
-- Output contains no empty strings.
-- Output is sorted, unique, lowercased.
-- Idempotence: `normalizeTags(normalizeTags(x))` equals `normalizeTags(x)`.
-
-**Creative Frame**
-- Reframe: Constraint extremes
-- Technique: Morphological analysis
-- Representation shift: Represent tags as a canonical list (normal form), not "whatever the caller sends".
-
-**Why This Solution**
-- Stable boundary: The boundary is the constructor/normalizer; everything downstream can assume the invariant.
-- Not smaller: Sprinkling `trim()/toLowerCase()` in callers guarantees drift.
-- Not larger: A dedicated class + fluent API is ceremony until there are 3+ distinct operations.
-- Proof signal: Unit test for idempotence + a couple of examples.
-
-**Incision**
-- Add `normalizeTags` as the single canonicalizer (trim/lowercase, drop empties, unique, sort).
-- Prove idempotence with a focused unit test.
-
-**Proof**
-- Ran: `pnpm test src/domain/TagSet.test.ts` -> PASS
-````
-
-### Exemplar 4 (Blocked): Ask one question, include a recommended default
-
-````text
-**Contract**
-- Invoice totals round to cents in a way that matches customer-facing expectations.
-
-**Invariants**
-- Rounding happens in one place (no per-call-site rounding).
-- Totals are deterministic across services and platforms.
-
-**Creative Frame**
-- Reframe: First principles
-- Technique: TRIZ
-- Representation shift: Treat money as integer cents end-to-end; choose rounding only at the parse/boundary.
-
-**Why This Solution**
-- Stable boundary: The money parser/constructor is where the rounding rule belongs.
-- Not smaller: Tweaking one caller fixes a symptom and keeps the bug class alive.
-- Not larger: A full money library migration is too much until we agree on semantics.
-- Proof signal: Characterization tests against a handful of real invoices (including half-cent cases).
-
-**Question**
-- For half-way values (e.g., 1.005), do we want half-up (recommended default) or half-even (banker's rounding)?
-````
-
-### Exemplar 5 (Migration): Commuting replacement behind the same API (TypeScript)
-
-````text
-**Contract**
-- `normalizePhone` preserves legacy behavior while introducing a refined `PhoneNumber` core.
-
-**Invariants**
-- Callers still call `normalizePhone(raw: string): string`.
-- New core uses one parser (`parsePhoneNumber`) for validity + normalization.
-- Migration leash: `normalizePhone(raw)` equals `legacyNormalizePhone(raw)` for representative inputs.
-
-**Creative Frame**
-- Reframe: Analogy transfer
-- Technique: TRIZ
-- Representation shift: Keep the old API stable; migrate by commuting adapters.
-
-**Why This Solution**
-- Stable boundary: `normalizePhone` is the boundary that all callers already use.
-- Not smaller: Tweaking a couple of call sites won't stop drift; the rule must live at the boundary.
-- Not larger: Changing every call site to a new type is a repo-wide rewrite.
-- Proof signal: A migration equivalence test + existing unit tests.
-
-**Incision**
-- Introduce a refined `PhoneNumber` core with one parser (`parsePhoneNumber`) for validity + normalization.
-- Keep the public API stable by re-implementing `normalizePhone(raw)` via the new core, while preserving the legacy behavior behind `legacyNormalizePhone`.
-- Add an equivalence test that leashes the migration (`normalizePhone(raw) === legacyNormalizePhone(raw)`).
-
-**Proof**
-- Ran: `pnpm test src/legacy/normalizePhone.migration.test.ts` -> PASS
-````
 
 ## Activation cues
 - "tk" / "surgeon" / "minimal incision"
