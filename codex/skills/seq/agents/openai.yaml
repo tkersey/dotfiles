@@ -1,0 +1,4 @@
+interface:
+  display_name: "Seq"
+  short_description: "Mine Codex sessions for skill and token stats"
+  default_prompt: "Use $seq to analyze sessions/ for skill usage and compliance."
