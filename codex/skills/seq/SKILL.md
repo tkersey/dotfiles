@@ -10,8 +10,93 @@ Mine `sessions/` JSONL quickly and consistently with a single script. Focus on s
 
 ## Quick Start
 ```bash
-uv run -- python3 scripts/seq.py skills-rank --root sessions
+uv run -- python3 scripts/seq.py datasets --root sessions
 ```
+
+## Query (JSON Spec)
+Run flexible mining via `query` with a small JSON spec (inline or `@spec.json`).
+
+List datasets:
+```bash
+uv run -- python3 scripts/seq.py datasets --root sessions
+```
+
+Show dataset fields/params:
+```bash
+uv run -- python3 scripts/seq.py dataset-schema --dataset token_deltas --root sessions
+```
+
+Examples:
+
+Rank skill usage:
+```bash
+uv run -- python3 scripts/seq.py query --root sessions --spec \
+  '{"dataset":"skill_mentions","group_by":["skill"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"limit":20,"format":"table"}'
+```
+
+Daily token totals (from `token_count` events):
+```bash
+uv run -- python3 scripts/seq.py query --root sessions --spec \
+  '{"dataset":"token_deltas","group_by":["day"],"metrics":[{"op":"sum","field":"delta_total_tokens","as":"tokens"}],"sort":["day"],"format":"table"}'
+```
+
+Top sessions by total tokens:
+```bash
+uv run -- python3 scripts/seq.py query --root sessions --spec \
+  '{"dataset":"token_sessions","select":["path","total_total_tokens"],"sort":["-total_total_tokens"],"limit":10,"format":"table"}'
+```
+
+Rank tool calls:
+```bash
+uv run -- python3 scripts/seq.py query --root sessions --spec \
+  '{"dataset":"tool_calls","group_by":["tool"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"limit":20,"format":"table"}'
+```
+
+### Ready-made specs
+Prebuilt specs live in `specs/`.
+
+```bash
+uv run -- python3 scripts/seq.py query --root sessions --spec @specs/skills-rank.json
+uv run -- python3 scripts/seq.py query --root sessions --spec @specs/tools-rank.json
+uv run -- python3 scripts/seq.py query --root sessions --spec @specs/tokens-top-days.json
+uv run -- python3 scripts/seq.py query --root sessions --spec @specs/tokens-top-sessions.json
+uv run -- python3 scripts/seq.py query --root sessions --spec @specs/tk-trend-week.json
+```
+
+### Spec reference
+Top-level keys:
+- `dataset` (string, required)
+- `params` (object, optional; dataset-specific)
+- `where` (list of predicates, optional)
+- `group_by` (list of field names, optional)
+- `metrics` (list of aggregations, optional; default `count` when grouping)
+- `select` (list of field names, optional; for non-grouped queries)
+- `sort` (list of field names; prefix with `-` for descending)
+- `limit` (int, optional)
+- `format` (`table` | `json` | `csv` | `jsonl`; default: `table` when grouped, else `jsonl`)
+
+Where predicate shape:
+```json
+{"field":"day","op":"eq","value":"2026-02-05"}
+```
+
+Supported `where.op`:
+- `eq`, `neq`
+- `gt`, `gte`, `lt`, `lte` (numeric-ish compare)
+- `in`, `nin` (value is a JSON list)
+- `contains` (substring)
+- `regex` (value is a regex string; optional `case_insensitive: true`)
+- `exists`, `not_exists`
+
+Metrics shape (grouped queries):
+```json
+{"op":"sum","field":"delta_total_tokens","as":"tokens"}
+```
+
+Supported `metrics.op`:
+- `count`
+- `sum`, `min`, `max`, `avg`
+- `count_distinct`
 
 ## Tasks
 

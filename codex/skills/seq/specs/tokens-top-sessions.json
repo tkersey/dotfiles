@@ -1,0 +1,12 @@
+{
+  "dataset": "token_sessions",
+  "select": [
+    "path",
+    "total_total_tokens"
+  ],
+  "sort": [
+    "-total_total_tokens"
+  ],
+  "limit": 10,
+  "format": "table"
+}

@@ -1,0 +1,18 @@
+{
+  "dataset": "token_deltas",
+  "group_by": [
+    "day"
+  ],
+  "metrics": [
+    {
+      "op": "sum",
+      "field": "delta_total_tokens",
+      "as": "tokens"
+    }
+  ],
+  "sort": [
+    "-tokens"
+  ],
+  "limit": 10,
+  "format": "table"
+}

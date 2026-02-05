@@ -1,0 +1,23 @@
+{
+  "dataset": "skill_mentions",
+  "where": [
+    {
+      "field": "skill",
+      "op": "eq",
+      "value": "tk"
+    }
+  ],
+  "group_by": [
+    "week"
+  ],
+  "metrics": [
+    {
+      "op": "count",
+      "as": "count"
+    }
+  ],
+  "sort": [
+    "week"
+  ],
+  "format": "table"
+}
