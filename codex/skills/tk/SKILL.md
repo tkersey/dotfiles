@@ -163,6 +163,11 @@ These rules keep “inevitability” from becoming scope creep.
 - **Scope fence (YAGNI)**: list explicit non-goals; avoid roaming refactors; ask before widening scope.
 - **Dialect fit**: follow the repo’s conventions for naming, errors, tests, and architecture; don’t import a framework to prove a point.
 - **Proof signal**: run at least one credible local check; don’t declare done without it.
+- **Total depravity (defensive constraints)**: assume human/agent attention fails; prefer tool-checked constraints over doc-only contracts; keep proofs with values (refined/validated types) instead of separate booleans.
+- **No in-band signaling**: avoid sentinel values (`-1`, `null`, `""`, `NaN`); return explicit option/result/enum states that force handling.
+- **Semantic tags for domains**: distinguish IDs, units, and environments with dedicated types/wrappers; never mix same-primitive values.
+- **Raw vs validated separation**: keep untrusted inputs and validated data as different types; parse/normalize at boundaries; never mix.
+- **Resource lifetime**: use scoped/RAII/with-style APIs to guarantee cleanup on all paths.
 - **Evidence before abstraction**: require 3+ concrete instances; capture variance points (mini evidence table); prefer duplication to a wrong abstraction.
 - **Seam test for abstractions**: callers stay ignorant of variants; one-sentence behavioral name; new instance fits without flags—otherwise shrink it.
 - **Seams before rewrites**: if the right fix requires cutting a hard-to-test knot, add a seam and move the change to the seam.
