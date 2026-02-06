@@ -3,14 +3,14 @@ name: seq
 description: Mine Codex sessions JSONL (sessions/) for skill usage, section compliance, and token counts. Use when analyzing session history or building reports from sessions/ logs.
 ---
 
-# Seq
+# seq
 
 ## Overview
 Mine `sessions/` JSONL quickly and consistently with a single script. Focus on skill usage, format compliance, and token counts.
 
 ## Quick Start
 ```bash
-uv run -- python3 scripts/seq.py datasets --root sessions
+uv run scripts/seq.py datasets --root sessions
 ```
 
 ## Query (JSON Spec)
@@ -18,37 +18,37 @@ Run flexible mining via `query` with a small JSON spec (inline or `@spec.json`).
 
 List datasets:
 ```bash
-uv run -- python3 scripts/seq.py datasets --root sessions
+uv run scripts/seq.py datasets --root sessions
 ```
 
 Show dataset fields/params:
 ```bash
-uv run -- python3 scripts/seq.py dataset-schema --dataset token_deltas --root sessions
+uv run scripts/seq.py dataset-schema --dataset token_deltas --root sessions
 ```
 
 Examples:
 
 Rank skill usage:
 ```bash
-uv run -- python3 scripts/seq.py query --root sessions --spec \
+uv run scripts/seq.py query --root sessions --spec \
   '{"dataset":"skill_mentions","group_by":["skill"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"limit":20,"format":"table"}'
 ```
 
 Daily token totals (from `token_count` events):
 ```bash
-uv run -- python3 scripts/seq.py query --root sessions --spec \
+uv run scripts/seq.py query --root sessions --spec \
   '{"dataset":"token_deltas","group_by":["day"],"metrics":[{"op":"sum","field":"delta_total_tokens","as":"tokens"}],"sort":["day"],"format":"table"}'
 ```
 
 Top sessions by total tokens:
 ```bash
-uv run -- python3 scripts/seq.py query --root sessions --spec \
+uv run scripts/seq.py query --root sessions --spec \
   '{"dataset":"token_sessions","select":["path","total_total_tokens"],"sort":["-total_total_tokens"],"limit":10,"format":"table"}'
 ```
 
 Rank tool calls:
 ```bash
-uv run -- python3 scripts/seq.py query --root sessions --spec \
+uv run scripts/seq.py query --root sessions --spec \
   '{"dataset":"tool_calls","group_by":["tool"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"limit":20,"format":"table"}'
 ```
 
@@ -56,11 +56,11 @@ uv run -- python3 scripts/seq.py query --root sessions --spec \
 Prebuilt specs live in `specs/`.
 
 ```bash
-uv run -- python3 scripts/seq.py query --root sessions --spec @specs/skills-rank.json
-uv run -- python3 scripts/seq.py query --root sessions --spec @specs/tools-rank.json
-uv run -- python3 scripts/seq.py query --root sessions --spec @specs/tokens-top-days.json
-uv run -- python3 scripts/seq.py query --root sessions --spec @specs/tokens-top-sessions.json
-uv run -- python3 scripts/seq.py query --root sessions --spec @specs/tk-trend-week.json
+uv run scripts/seq.py query --root sessions --spec @specs/skills-rank.json
+uv run scripts/seq.py query --root sessions --spec @specs/tools-rank.json
+uv run scripts/seq.py query --root sessions --spec @specs/tokens-top-days.json
+uv run scripts/seq.py query --root sessions --spec @specs/tokens-top-sessions.json
+uv run scripts/seq.py query --root sessions --spec @specs/tk-trend-week.json
 ```
 
 ### Spec reference
@@ -102,7 +102,7 @@ Supported `metrics.op`:
 
 ### 1) Rank skill usage
 ```bash
-uv run -- python3 scripts/seq.py skills-rank --root sessions
+uv run scripts/seq.py skills-rank --root sessions
 ```
 Common options:
 - `--format json|csv`
@@ -112,30 +112,30 @@ Common options:
 
 ### 2) Trend a skill over time
 ```bash
-uv run -- python3 scripts/seq.py skill-trend --root sessions --skill tk --bucket week
+uv run scripts/seq.py skill-trend --root sessions --skill tk --bucket week
 ```
 
 ### 3) Report on a specific skill
 ```bash
-uv run -- python3 scripts/seq.py skill-report --root sessions --skill tk \
+uv run scripts/seq.py skill-report --root sessions --skill tk \
   --sections "Contract,Invariants,Creative Frame,Why This Solution,Incision,Proof" \
   --sample-missing 3
 ```
 Another example:
 ```bash
-uv run -- python3 scripts/seq.py skill-report --root sessions --skill fix \
+uv run scripts/seq.py skill-report --root sessions --skill fix \
   --sections "Contract,Findings,Changes applied,Validation,Residual risks / open questions" \
   --sample-missing 3
 ```
 
 ### 4) Role breakdown by skill
 ```bash
-uv run -- python3 scripts/seq.py role-breakdown --root sessions --format table
+uv run scripts/seq.py role-breakdown --root sessions --format table
 ```
 
 ### 5) Audit section compliance
 ```bash
-uv run -- python3 scripts/seq.py section-audit --root sessions \
+uv run scripts/seq.py section-audit --root sessions \
   --sections "Contract,Invariants,Creative Frame" \
   --contains "Using $tk" \
   --sample-missing 5
@@ -143,19 +143,19 @@ uv run -- python3 scripts/seq.py section-audit --root sessions \
 
 ### 6) Export occurrences
 ```bash
-uv run -- python3 scripts/seq.py occurrence-export --root sessions --format jsonl --output occurrences.jsonl
+uv run scripts/seq.py occurrence-export --root sessions --format jsonl --output occurrences.jsonl
 ```
 
 ### 7) Bundle a report
 ```bash
-uv run -- python3 scripts/seq.py report-bundle --root sessions \
+uv run scripts/seq.py report-bundle --root sessions \
   --top 20 --skills tk,fix \
   --sections "Contract,Invariants,Creative Frame,Why This Solution,Incision,Proof"
 ```
 
 ### 8) Token usage summary
 ```bash
-uv run -- python3 scripts/seq.py token-usage --root sessions --top 10
+uv run scripts/seq.py token-usage --root sessions --top 10
 ```
 
 ## Notes
