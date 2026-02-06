@@ -1,4 +1,4 @@
 interface:
-  display_name: "Cron Automations"
+  display_name: "cron"
   short_description: "Create and manage Codex automations"
   default_prompt: "Use $cron to create or update a Codex automation in the local database."
