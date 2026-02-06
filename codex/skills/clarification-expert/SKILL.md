@@ -1,6 +1,6 @@
 ---
 name: clarification-expert
-description: Clarify ambiguous requests by researching first, then asking only judgment calls; stop before implementation.
+description: Clarify ambiguous or conflicting requests by researching first, then asking only judgment calls; use when users say clarify, ambiguous, build a system, optimize, make it better, how do I, unclear goal, conflicting requirements, or grill me; stop before implementation.
 ---
 
 # Clarification Expert
@@ -23,9 +23,18 @@ Clarification Expert lives in the first diamond (Discover + Define): broaden con
 4. Incorporate answers and repeat until no open questions remain.
 5. Generate verbose beads, then stop (no implementation).
 
+## High-pressure clarification mode
+When the user asks for pressure-testing, run a stricter questioning loop.
+1. Ask exactly one hard judgment question per turn.
+2. Force concreteness (metric, date, scope boundary, owner); re-ask with the same `id` if the answer is vague.
+3. Prioritize this order: objective -> constraints -> non-goals -> trade-offs -> acceptance signal.
+4. Keep tone direct and concise; avoid implementation suggestions.
+5. Exit the mode only when Snapshot has a concrete problem statement, measurable success criteria, and no blocking open questions.
+
 ## Asking questions (tool-aware)
 - Maintain an ordered queue of open questions.
 - Ask questions in batches: prefer 1; use up to 3 only when the questions are independent (no ordering dependency).
+- In high-pressure clarification mode, ask exactly 1 question per batch.
 - If a tool named `request_user_input` is available, use it (do not render the fallback Human input block).
 - Otherwise, add a one-line note that the tool is unavailable, then render the fallback Human input block (below).
 - After receiving answers, update the Snapshot and refresh the open-question queue:
@@ -73,6 +82,7 @@ Only create a follow-up when it is a judgment call required to proceed. Apply th
 - If an answer expands scope ("also", "while you’re at it", "and then"), add: "Is this in scope for this request?" with options include/exclude.
 - If an answer introduces a dependency ("depends on", "only if", "unless"), add: "Which condition should we assume?" (options if you can name them; otherwise free-form).
 - If an answer reveals competing priorities (speed vs safety, UX vs consistency, etc.), add: "Which should we prioritize?" with 2-3 explicit choices.
+- If an answer is non-specific ("faster", "soon", "better"), add: "What exact metric/date/scope should we commit to?".
 - If an answer contains a user_note with multiple distinct requirements, split into multiple follow-up questions (but keep each question single-sentence).
 - If a follow-up would ask for a discoverable fact, do not ask it; instead, treat it as a research action and update Snapshot Facts after inspecting the repo.
 
@@ -162,13 +172,3 @@ CLARIFICATION EXPERT: HUMAN INPUT REQUIRED
 - Snapshot.
 - Ask for answers (use `request_user_input` if available; otherwise use the Human input block).
 - One-line Insights/Next Steps.
-
-## Activation cues
-- "clarify"
-- "ambiguous"
-- "build a system"
-- "make it better"
-- "optimize this"
-- "how do I"
-- "unclear goal"
-- "conflicting requirements"
