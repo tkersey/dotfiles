@@ -180,6 +180,14 @@ dependencies:
    - `status: closed` but has unmet `blocks` deps (probable bookkeeping bug).
    - Leaf slice missing `verification` or meaningful acceptance criteria.
 
+   Normalization + auto-remediation (overlap with `$select`):
+   - Apply deterministic normalization before hard-failing:
+     1. ID normalization + aliasing: trim/lowercase IDs and `depends_on_id`, drop a leading `#`, and map unique numeric suffix aliases when unambiguous.
+     2. Status token normalization: treat `in progress`, `in-progress`, and `in_progress` as equivalent; write back canonical `in_progress`.
+     3. Safe status drift fix: keep auto-flip `blocked` -> `open` when no unmet `blocks` deps remain.
+   - After normalization, unresolved unknown dependency IDs remain hard invalid.
+   - Record applied fixes as `auto_fix` keys for Next-mode output.
+
    Ambiguity guardrails:
    - If validation failure requires human intent (e.g., missing `assignee` on an `in_progress` slice, or multiple
      `in_progress` slices for the same `assignee`), ask the human how to resolve before repairing.
@@ -196,6 +204,7 @@ Derived sets (best-effort):
 - Blocked-by set: any `blocks` deps to slices that are not `closed`.
 - Ready-to-work set: `status in {open}` AND no blocking deps AND not epic.
 - Ready-to-execute set: Ready-to-work AND meets the PR-able leaf criteria below.
+- Unblocker candidates: blocked leaf slices ranked by highest unlock impact within the same risk tier.
 
 Define “PR-able leaf” as:
 - small enough for a single PR,
@@ -243,9 +252,12 @@ Otherwise, select the next slice from the Ready-to-execute set using the rubric 
 If Ready-to-execute is empty but Ready-to-work is non-empty, report that slices exist but are underspecified
 (missing `verification` / acceptance) and recommend running Generate mode to enrich them.
 
+If Ready-to-execute is empty and blocked leaf slices exist, return the top unblocker recommendation (do not mark it
+`in_progress`) and identify the missing prerequisite slice(s) that must close first.
+
 Selection rubric (adapted from `select`):
 - Feature-first: if any ready slices are `issue_type=feature`, evaluate all ready features first.
-- Type order (fallback): `task` > `bug` > `epic` > `chore`.
+- Type order (fallback): `task` > `bug` > `feature` > `chore` > `epic` > `docs` > `question`.
 - Priority: 0 > 1 > 2 > 3 > 4.
 - Risk: migrations, auth/security, infra, data loss/consistency, breaking API/CLI, perf regressions, ambiguous acceptance.
 - Hardness: vague scope, multiple subsystems, unknown deps, heavy verification.
@@ -287,12 +299,15 @@ After any write:
 - Audit the local dependency subgraph for parallelism; if mostly linear, refactor toward workstreams + contracts + join points.
 - Ensure `blocks` edges are only true prerequisites.
 - Ensure each leaf slice is independently PR-able and has acceptance + verification (+ subtasks when useful).
+- Run a reviewer pass for overlap gaps from `$select`: unresolved unknown deps, cycle risk, and missing verification on likely near-term leaf work.
 
 ## Output
 - If mode=`generate`: print `Generated slices: <n>` and list new/updated slice IDs.
 - If mode=`generate` (including auto-repair): instruct the human to review `SLICES.md` and re-run `slice` later to pick work.
 - If mode=`next`: print `Next slice: <id> - <title>` and include the selected slice YAML in full.
+- If mode=`next`: include a compact `Selection Trace` with `counts`, `pick`, `next2`, `warnings`, and `auto_fix`.
 - If no ready-to-work items exist, report why (everything `closed`, or remaining items are `blocked`) and ask targeted questions if needed.
+- If no ready-to-work items exist but blocked leaf slices remain, also print `Top unblocker: <id> - <title>` with prerequisite IDs.
 
 ## Examples
 
