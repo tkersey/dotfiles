@@ -17,6 +17,7 @@ Skill routing (default):
 - Discover/Define: `$clarification-expert`, `$prove-it`, `$complexity-mitigator`, `$invariant-ace`, `$tk` (advice mode).
 - Develop: `$creative-problem-solver` (five-tier portfolio).
 - Deliver: `$tk` (implementation mode), `$fix`, `$validate`, `$commit`, `$ship`, `$work`, `$code`, `$join`, `$fin`.
+- Language routing: invoke `$zig` when the request includes Zig cues such as `.zig` paths, `build.zig`/`build.zig.zon`, `zig build|test|run|fmt|fetch`, `comptime`, `@Vector`, `std.simd`, `std.Thread`, allocator ownership, or C interop.
 
 # Repository Guidelines
 

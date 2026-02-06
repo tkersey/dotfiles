@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Zig 0.15.2 runbook: correctness-first low-level performance (fuzz + differential testing, SIMD + threads), build/test, comptime, allocators, build.zig/build.zig.zon, zero-copy parsing, C interop."
+description: "Zig 0.15.2 implementation runbook for most Zig engineering work. Use when requests touch Zig code or tooling: editing `.zig` files; changing `build.zig` or `build.zig.zon`; running or fixing `zig build`, `zig test`, `zig run`, `zig fmt`, or `zig fetch`; diagnosing compile/runtime/test failures; allocator or ownership issues; comptime/reflection/codegen (`@typeInfo`, `@compileError`); performance work with `std.simd`/`@Vector` or `std.Thread`/`Thread.Pool`; cross-compilation; zero-copy parsing; or C interop (`@cImport`). Enforce correctness-first validation with tests, differential fuzzing (`std.testing.fuzz`), and allocation-failure checks for allocator code."
 ---
 
 # Zig
@@ -47,6 +47,10 @@ zig build test --fuzz
 # Single-file test/run
 zig test src/main.zig
 zig run src/main.zig
+
+# Trigger audit (session-level proxy via seq)
+python3 codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions
+python3 codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions --since 2026-02-06T00:00:00Z
 ```
 
 ## Workflow (correctness -> speed)
