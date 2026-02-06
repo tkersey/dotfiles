@@ -1,0 +1,4 @@
+interface:
+  display_name: "casp"
+  short_description: "Proxy codex app-server for orchestration"
+  default_prompt: "Use $casp to run the Casp JSONL proxy for codex app-server."
