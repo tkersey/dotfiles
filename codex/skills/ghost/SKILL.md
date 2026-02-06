@@ -30,6 +30,9 @@ It gets harder (but is still possible) when the contract depends on time, random
 - MUST preserve upstream license files verbatim as `LICENSE*`.
 - MUST produce a verification signal and document it in `VERIFY.md` (adapter runner preferred; sampling fallback allowed).
 - MUST document provenance and regeneration in `VERIFY.md` (upstream repo + revision, how artifacts were produced, and how to rerun verification).
+- MUST choose a `tests.yaml` contract shape that matches the API style (functional vs protocol/CLI) and keep it consistent across `SPEC.md`, `INSTALL.md`, and `VERIFY.md`.
+- MUST minimize `skip` cases; only skip when deterministic setup is currently infeasible, and record why.
+- MUST assert stable machine-interface fields explicitly (required keys, lengths/counts, and state effects), not only loose partial matches.
 
 ## Inputs
 - Source repo path (git working tree)
@@ -42,7 +45,7 @@ It gets harder (but is still possible) when the contract depends on time, random
 ## Conventions
 
 ### Operation ids
-`tests.yaml` keys are **operation ids** (stable identifiers for public API entries). Use a naming scheme that survives translation across languages:
+`tests.yaml` organizes cases by **operation ids** (stable identifiers for public API entries). Use a naming scheme that survives translation across languages:
 - `foo` (top-level function)
 - `module.foo` (namespaced function)
 - `Class#method` (instance method)
@@ -50,10 +53,17 @@ It gets harder (but is still possible) when the contract depends on time, random
 
 Avoid language-specific spellings in ids (e.g., avoid `snake_case` vs `camelCase` wars). Prefer the canonical name used by the source library’s docs.
 
+### Contract shape
+Pick one schema and stay consistent:
+- **Functional API layout**: operation ids at top-level with `{name,input,output|error}` cases.
+- **Protocol/CLI layout**: top-level `meta` + `operations`, where operation ids live under `operations` and cases include command/state assertions.
+
 ### `tests.yaml` version
-`tests.yaml` MUST include a top-level `version` string that identifies the upstream library version used as evidence.
+`tests.yaml` MUST include a source version identifier that ties cases to upstream evidence.
 - If the upstream library has a release version (SemVer/tag), use it.
 - Otherwise, use an immutable source revision identifier (e.g., `git:<short-sha>` or `git describe`).
+- Functional layout: use top-level `version`.
+- Protocol/CLI layout: keep `meta.version` for test schema version and include `meta.source_version` for upstream evidence version.
 
 ## Workflow (tests-first)
 
@@ -94,14 +104,20 @@ Avoid language-specific spellings in ids (e.g., avoid `snake_case` vs `camelCase
 
 ### 4) Generate `tests.yaml` (exhaustive)
 - Convert each source test into a YAML case under its operation id.
-- Include a top-level `version` string (upstream library version or revision).
-- Schema is intentionally strict and portable:
-  - each case has `name` and `input`
-  - each case has exactly one of `output` or `error: true`
+- Include the source version identifier (`version` or `meta.source_version`).
+- Schema is intentionally strict and portable; choose the contract shape from Conventions:
+  - Functional layout:
+    - each case has `name` and `input`
+    - each case has exactly one of `output` or `error: true`
+  - Protocol/CLI layout:
+    - top-level `meta` + `operations`
+    - each case has `name`, `input`, and deterministic expected outcomes (for example `exit_code`, machine-readable stdout assertions, and state assertions)
   - keep to a portable YAML subset (no anchors/tags/binary) so it is easy to parse in many languages
   - quote ambiguous scalars (`yes`, `no`, `on`, `off`, `null`) to avoid parser disagreements
 - Normalize inputs to deterministic values (avoid "now"; use explicit timestamps).
 - Keep or improve coverage across all public operations and failure modes.
+- Prefer exact/value-complete assertions for stable output fields; use partial assertions only when fields are intentionally volatile.
+- Keep `skip` rare; every skip must include a concrete reason and be accounted for in `VERIFY.md`.
 - If the source returns floats, prefer defining stable rounding/formatting rules so `output` is exact.
 - Follow the format in `references/templates.md`.
 
@@ -119,9 +135,10 @@ Avoid language-specific spellings in ids (e.g., avoid `snake_case` vs `camelCase
 
 ### 6) Verify fidelity (must do)
 - Ensure `tests.yaml` parses and case counts match or exceed the source tests covering the public API.
+- Ensure every operation id has at least one executable (non-`skip`) case unless infeasible, and list any exceptions in `VERIFY.md`.
 - Preferred: create a temporary adapter runner in the source language to run `tests.yaml` against the existing library.
   - if the source language has weak YAML tooling, parse YAML externally and dispatch into the library via a tiny CLI/FFI shim
-  - assert outputs/errors match exactly
+  - assert expected outcomes match exactly (outputs/errors for functional layout; exit/status/payload/state assertions for protocol layout)
   - delete the adapter afterward; do not ship it in the ghost repo
   - summarize how to run it (and results) in `VERIFY.md`
 - If a full adapter is infeasible:
@@ -152,7 +169,9 @@ Produce only these artifacts in the ghost repo:
 - Operation ids for methods: treat a first parameter named `self` of type `T`/`*T` as an instance method (`T#method`); otherwise use `T.method`.
 - `comptime` parameters: record allowed values in `SPEC.md`, and represent them as ordinary fields in `tests.yaml` inputs.
 - Allocators/buffers: if the API takes `std.mem.Allocator` or caller-provided buffers, specify ownership and mutation rules; assume allocations succeed unless tests cover OOM.
-- Errors: keep `tests.yaml` strict (`error: true` only); in a Zig adapter, treat "any error return" as a passing error case, and rely on `SPEC.md` to pin the exact error conditions.
+- Errors:
+  - Functional layout: keep `tests.yaml` strict (`error: true` only); in a Zig adapter, treat "any error return" as a passing error case and rely on `SPEC.md` for exact conditions.
+  - Protocol/CLI layout: prefer explicit machine-readable error payload assertions plus exit codes.
 - YAML tooling: Zig stdlib has JSON but not YAML; for adapters/implementations it’s fine to convert `tests.yaml` to JSON (or JSONL) as an intermediate and have a Zig runner parse it via `std.json`.
 
 ## Activation cues

@@ -19,6 +19,10 @@ Ghost libraries ship specifications and tests, not implementation code.
 
 ## tests.yaml (format)
 
+Choose one layout and keep it consistent with `SPEC.md`.
+
+### A) Functional API layout
+
 ```yaml
 version: "X.Y.Z"  # upstream library version or revision (opaque string)
 
@@ -31,6 +35,42 @@ operation_id:
     error: true
 ```
 
+### B) Protocol/CLI layout
+
+```yaml
+meta:
+  protocol: "library-protocol-name"
+  version: 1               # test schema version
+  source_version: "X.Y.Z"  # upstream library version or revision
+  defaults:
+    env:
+      TZ: UTC
+      LC_ALL: C
+      LANG: C
+    args: ["--json"]
+
+operations:
+  cli.op_id:
+    - name: "happy path"
+      input:
+        setup:
+          - command: ["init"]
+            capture:
+              issue_id: "$.id"
+        command: ["show", "${issue_id}"]
+      output:
+        exit_code: 0
+        stdout_json_contains:
+          id: "${issue_id}"
+    - name: "error path"
+      input:
+        command: ["show", "missing"]
+      output:
+        exit_code: 1
+        stdout_json_contains:
+          code: "NOT_FOUND"
+```
+
 ### Operation ids
 - Use stable ids that map cleanly across languages:
   - `foo` (top-level function)
@@ -39,13 +79,15 @@ operation_id:
   - `Class.method` (static/class method)
 
 Notes:
-- `version` identifies the upstream library version used as evidence (SemVer/tag if available; otherwise a stable source revision like `git:<short-sha>`).
+- Functional layout: `version` identifies upstream evidence version (SemVer/tag if available; otherwise `git:<short-sha>`).
+- Protocol/CLI layout: keep `meta.version` for schema version and use `meta.source_version` for upstream evidence version.
 - Use explicit timestamps/values; avoid "now" or system state.
 - Inputs must be deterministic and YAML-serializable (scalars, sequences, maps).
 - For bytes/buffers, encode as hex or base64 string (document which in `SPEC.md`).
 - Avoid YAML-only features (anchors, tags, custom types); quote ambiguous scalars (`yes`, `no`, `on`, `off`, `null`).
-- `output` and `error` are mutually exclusive.
-- Represent errors with `error: true` only.
+- Functional layout: `output` and `error` are mutually exclusive; represent errors with `error: true` only.
+- Protocol/CLI layout: assert deterministic outcomes (`exit_code`, machine-readable payload checks, and optional state assertions).
+- If a case is skipped, include `skip: "<reason>"` and account for it in `VERIFY.md`.
 
 ## INSTALL.md (outline)
 - Short intro: "This is a ghost library; implement locally"

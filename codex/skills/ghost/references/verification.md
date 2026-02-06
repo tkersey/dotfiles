@@ -5,8 +5,11 @@ This reference exists so the `ghost` skill can generate a first-class `VERIFY.md
 ## Minimum checks (always)
 - `tests.yaml` parses cleanly.
 - Every public operation id has at least one test case.
+- Every public operation id has at least one executable (non-skip) case unless infeasible; document exceptions.
 - Each operation has coverage across success and error paths (when applicable).
 - Case counts match or exceed the source test suite (when extracting from tests).
+- Skip inventory is explicit (operation/case/reason), with deterministic alternatives attempted first.
+- Stable machine-interface fields are asserted (required keys, lengths/counts, and state effects where relevant).
 - `VERIFY.md` includes provenance + a regeneration recipe.
 
 ## Adapter Runner (preferred)
@@ -18,9 +21,9 @@ Goal: prove the extracted `tests.yaml` matches the original library.
    - Do not ship it in the ghost repo.
 2. Load `tests.yaml`.
 3. For each `operation_id` and case:
-   - Call the real function/method in the source library.
-   - If the case has `error: true`, assert it errors.
-   - Otherwise, assert the return value equals `output` (deep equality where applicable).
+   - Call the real surface in the source library.
+   - Functional layout: assert `error: true` vs `output` semantics.
+   - Protocol/CLI layout: assert exit/status/payload/state semantics.
 4. Record a short summary in `VERIFY.md` (how to run it, pass/fail, skips).
    - Include upstream repo identity + exact revision.
    - Include the exact commands used to regenerate artifacts (or one deterministic recipe).
@@ -45,9 +48,10 @@ If a full adapter runner is infeasible:
 
 ## Summary
 - Source verification: adapter|sampling
+- tests.yaml layout: functional|protocol
 - Source repo: <url/path>
 - Source revision: <tag/sha>
-- `tests.yaml` version: <string>
+- `tests.yaml` source version: <string>
 - Source language/runtime: <language + versions>
 - Total cases: <total>
 - Executed: <n>
@@ -80,6 +84,11 @@ This ghost repo should be reproducible from the upstream revision.
 ## Test Inventory
 | operation id | cases | error cases |
 | --- | ---: | ---: |
+| ... | ... | ... |
+
+## Skip Inventory
+| operation id | case | reason |
+| --- | --- | --- |
 | ... | ... | ... |
 
 ## Limitations
