@@ -20,6 +20,7 @@ from typing import Any, Callable, Iterable, Iterator, Optional
 SKILL_NAME_RE = re.compile(r"<name>([^<]+)</name>")
 DOLLAR_RE = re.compile(r"\$([a-z][a-z0-9-]*)")
 TOKEN_RE = re.compile(r"Original token count:\s*(\d+)")
+DEFAULT_SESSIONS_ROOT = Path.home() / ".codex" / "sessions"
 
 
 @dataclass
@@ -78,15 +79,7 @@ def is_meta_user_message(text: str) -> bool:
 def discover_sessions_root(root: Optional[str]) -> Path:
     if root:
         return Path(root).expanduser().resolve()
-    candidates = [
-        Path("./sessions"),
-        Path.home() / ".codex" / "sessions",
-        Path.home() / ".dotfiles" / "codex" / "sessions",
-    ]
-    for c in candidates:
-        if c.exists():
-            return c.resolve()
-    return candidates[0].resolve()
+    return DEFAULT_SESSIONS_ROOT.resolve()
 
 
 def iter_jsonl_paths(root: Path) -> Iterator[Path]:
@@ -1652,7 +1645,10 @@ def write_output(text: str, out_path: Optional[str]) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
-    common.add_argument("--root", help="sessions root (default: auto)")
+    common.add_argument(
+        "--root",
+        help=f"sessions root (default: {DEFAULT_SESSIONS_ROOT})",
+    )
     common.add_argument("--roles", default="user,assistant", help="roles to include")
     common.add_argument("--since", help="ISO timestamp (inclusive)")
     common.add_argument("--until", help="ISO timestamp (inclusive)")
