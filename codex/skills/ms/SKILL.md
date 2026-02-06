@@ -3,7 +3,7 @@ name: ms
 description: Create, update, or refactor Codex skills in this repo, including SKILL.md, agents/openai.yaml, and any scripts/references/assets. Use when asked to design, scaffold, edit, validate, or improve skills, or when the user mentions skill creation, updates, triggers, or metadata.
 ---
 
-# Meta Skill (ms)
+# ms
 
 ## Overview
 
