@@ -1,6 +1,6 @@
 ---
 name: invariant-ace
-description: "Turn 'should never happen' into 'cannot happen': extract owned, inductive invariants for data validity, protocols/concurrency, and algorithmic state; enforce them at the strongest cheap boundary (parse/construct/API/DB/lock/txn); refine via counterexample traces; deliver invariant predicates, a minimal before/after seam, and a verification signal (property/stateful/stress/model check). Use when null/shape surprises, scattered validators, cache drift, state-flag explosions, race/protocol edge cases, or loop correctness bugs appear."
+description: "Turn 'should never happen' into 'cannot happen': extract owned, inductive invariants for data validity, protocols/concurrency, and algorithmic state; enforce them at the strongest cheap boundary (parse/construct/API/DB/lock/txn); refine via counterexample traces; deliver invariant predicates, a minimal before/after seam, and a verification signal (property/stateful/stress/model check). Use when null/shape surprises, validation sprawl, cache/index drift, impossible state combinations, idempotency/versioning concerns, retries/duplicates/out-of-order events, race/linearization edge cases, or loop correctness risks appear. Prefer this skill to frame invariants before broad implementation/fix skills."
 ---
 
 # Invariant Ace
@@ -15,8 +15,14 @@ Turn "should never happen" into "cannot happen" with minimal, high-leverage chan
 - Redundant stored facts drift (cache/index/denormalized columns) or "fix-up" code runs often.
 - Flags/states explode; impossible combinations appear; "unreachable" is reachable.
 - Races, duplicate/out-of-order events, retries, partial failures, or "exactly once" assumptions.
+- Idempotency keys, monotonic version/epoch checks, stale writes, or linearization questions are central.
 - Loop/algorithm correctness depends on comments or intuition; tricky indexing/arithmetic/termination.
 - "Should never happen" branches show up in logs or error trackers.
+
+## Routing Priority
+
+- If a task has invariant/protocol cues and also asks for broad implementation (`$tk`, `$fix`, `$work`), run this skill first to lock invariants, then execute edits.
+- If you cannot name state owner + transitions, switch to clarification/discovery before implementation.
 
 ## Core Model (Fast Definitions)
 
@@ -78,6 +84,17 @@ Choose the cheapest strong layer that makes the violation hard or impossible.
    - Concurrency: stress + schedule perturbation; assert at quiescent points.
    - Protocols: small model checking/simulation for drops/dupes/reorder.
    - Algorithms: invariant assertions in loops + differential tests vs reference.
+
+## Compact Mode (Fast Path)
+
+Use this when the task is small or time-boxed.
+
+1. Counterexample: one concrete failing trace (<=5 transitions).
+2. Invariants: 1-2 predicates with explicit owner + scope.
+3. Enforcement Boundary: one chosen choke point (parse/construct/API/DB/lock/txn).
+4. Verification: one signal tied to one predicate.
+
+Escalate to full protocol if any of the above is ambiguous or non-inductive.
 
 ## Invariant Record (Use This Format)
 
@@ -164,16 +181,39 @@ Pick at least one signal and tie it to a specific invariant predicate.
 - TLA+/Alloy mindset: protocols as transitions + invariants; counterexample traces.
 - Coordination avoidance / CRDT laws: when invariants require coordination vs merge-safe design.
 
+## Output Contract (Required Headings)
+
+Use these exact headings in the final response for this skill:
+
+1. Counterexample
+2. Invariants
+3. Owner and Scope
+4. Enforcement Boundary
+5. Seam (Before -> After)
+6. Verification
+7. Observability (optional)
+
 ## Deliverable Checklist
 
-1. Risk scenario: minimal breaking trace (include schedule/retry if relevant).
-2. Invariant set: 1-5 predicates with owner + scope ("holds when").
-3. Enforcement plan: boundary/type/API/DB/lock/txn/protocol choice + why.
-4. Before/after seam: minimal structural change that makes violations hard.
-5. Verification signal: property/stateful/stress/model/differential (at least one).
-6. Optional: observability plan if rollout must be staged.
+1. Counterexample: minimal breaking trace (include schedule/retry if relevant).
+2. Invariants: 1-5 predicates with owner + scope ("holds when").
+3. Enforcement Boundary: boundary/type/API/DB/lock/txn/protocol choice + why.
+4. Seam (Before -> After): minimal structural change that makes violations hard.
+5. Verification: property/stateful/stress/model/differential tied to at least one predicate.
+6. Observability (optional): tripwires/quarantine/metrics if rollout must be staged.
 
 ## Cross-Coordination
 
 - If broader failures emerge, lean on the Unsoundness checklist.
 - If stronger invariants dent ergonomics, reference the Footgun guardrails.
+
+## Measurement (seq)
+
+Track adoption and compliance with `seq`:
+
+```bash
+uv run codex/skills/seq/scripts/seq.py skill-trend --skill invariant-ace --bucket week
+uv run codex/skills/seq/scripts/seq.py skill-report --skill invariant-ace \
+  --sections "Counterexample,Invariants,Owner and Scope,Enforcement Boundary,Seam (Before -> After),Verification,Observability (optional)" \
+  --sample-missing 5
+```
