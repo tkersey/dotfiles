@@ -15,7 +15,7 @@ Task implementation MUST be done by spawned subagents ("workers"). The orchestra
 
 Orchestrator-owned actions are limited to:
 - parsing/validating the inline task list
-- scheduling/wave execution
+- scheduling/frontier execution
 - monitoring + liveness handling
 - integrating worker output (apply patch / stage / commit)
 - running post-step validation commands
@@ -128,20 +128,24 @@ Extract:
    - Do NOT run tasks with `status: cancelled`.
    - Treat `status: blocked` as not runnable; report as blocked.
 
-### Step 3: Launch Subagents (Waves)
+### Step 3: Launch Subagents (Frontier-First, Max Concurrency)
 
 Define "unblocked" tasks as tasks whose `status` is runnable (`todo` or `doing`) AND whose `depends_on` tasks are all `done`.
 
-Run in waves:
-1. Identify all currently unblocked tasks.
-2. Launch a subagent for each unblocked task in parallel.
-3. Print a concise "Wave plan" line listing task ids being launched.
+Concurrency policy:
+- Do NOT impose an orchestrator-side cap on runnable tasks.
+- Launch every currently unblocked task, bounded only by runtime limits (for example thread caps such as `[agents].max_threads`) or explicit user constraints.
+- Keep slots saturated: when a task completes (or a worker is closed), immediately recompute unblocked tasks and launch newly runnable work.
+
+Run using a frontier loop:
+1. Identify all currently unblocked tasks that are not already running.
+2. Launch a subagent for each unblocked task in parallel (subject to runtime slot limits).
+3. Print a concise "Frontier plan" line listing task ids being launched.
 4. Wait for subagent results.
-   - If your runtime supports it, integrate tasks as they return (do not let one slow task block integrating others).
-   - Otherwise, wait for the wave to complete.
-5. Integrate results (Step 4).
-6. Mark tasks as `done` (in the orchestrator report) only after integration + validation succeed.
-7. Repeat until no more tasks are runnable.
+   - If your runtime supports it, integrate tasks as they return (do not let one slow task block integrating others), then immediately launch any tasks that just became unblocked.
+   - Otherwise, wait for the current batch to complete, then compute and launch the next batch.
+5. Mark tasks as `done` (in the orchestrator report) only after integration + validation succeed.
+6. Repeat until no more tasks are runnable and no workers are active.
 
 #### Codex Collab Tools (Use If Available)
 
@@ -180,6 +184,7 @@ Truthfulness rule: never invent tool usage, timestamps, statuses, or "proof". If
   - Also print a low-frequency heartbeat (at most every ~2 minutes) for still-active attempts:
     - `Task Tn attempt k: age=<dur>; last_wait=timed_out; next=wait(timeout_ms=...)`
   - Treat "completion" as soon as you have a usable patch, even if other workers are still running.
+  - After integrating a completed task, immediately recompute unblocked tasks and launch newly runnable ones before the next `wait` call (subject to runtime limits).
   - If `wait` returns a "completed" status that includes the agent's final message, treat that message as the worker deliverable and immediately extract/apply the patch from it.
   - If you are still waiting on any attempt, continue the loop (do NOT require the user to message you again to keep polling).
   - If the runtime forces you to yield (turn time limit, max tool calls, etc.), say so explicitly and stop. Tell the user the exact minimal message to resume polling (for example: `"reply: $mesh confirm"`).
@@ -202,13 +207,13 @@ Subagents can stall (queueing, pending init, tool deadlock, etc.). Handle this e
   - If the runtime exposes per-attempt status and an attempt is stuck in `pending_init` longer than `pending_init`, spawn a replacement attempt.
   - Else if there is no usable patch by `soft`:
     - Send `send_input` with `interrupt=true` to the active attempt, asking it to immediately return a checkpoint (patch if possible, otherwise a short progress report + next steps).
-    - Then spawn the single replacement attempt.
+    - Then spawn a replacement attempt.
     - Do NOT treat a single `wait` timeout as a reason to respawn; measure `soft` from `started_at`.
   - "Usable patch" means a fenced unified diff that is scoped to the task.
-- **Replacement**: spawn at most ONE replacement worker per task (attempt 2). Keep attempt 1 running (do not try to cancel unless your runtime supports it).
+- **Replacement**: no fixed attempt-number cap. Continue spawning replacement attempts (`attempt k+1`) as needed, bounded by elapsed `hard` time and available runtime slots. Keep existing attempts running (do not try to cancel unless your runtime supports it).
 - **Race**: accept the first usable patch; ignore later results and note it in the final report.
 - **Max attempts / hard stop**:
-  - If neither attempt returns a usable patch by `hard`, mark the task `blocked` with reason `no_response` and continue with other runnable tasks.
+  - If no attempt returns a usable patch by `hard`, mark the task `blocked` with reason `no_response` and continue with other runnable tasks.
 - **Observability**: when you spawn a worker, print `Task Tn attempt k spawned` (include agent/call ids if your runtime surfaces them). When using `wait`, print each `wait(...) -> ...` result (and only claim transitions if the tool actually exposes them).
 
 #### Workspace Reconciliation (Required Before Respawn / `no_response`)
@@ -231,7 +236,7 @@ Workers must not "hold" indefinitely on unanswered questions.
   - Make a reasonable default decision and proceed (document the assumption), OR
   - Stop quickly and return `HUMAN INPUT REQUIRED` in Notes (one question + recommended default + what changes based on the answer).
 - **Orchestrator rule**: if a worker returns `HUMAN INPUT REQUIRED`, ask the user that one question (include the recommended default). Do NOT spawn a replacement attempt until the user answers.
-- **If you only observe a `needs_clarification` state via `wait` but do not have the question text**, treat the attempt as stalled and spawn the single replacement attempt with an instruction to follow the Worker rule above.
+- **If you only observe a `needs_clarification` state via `wait` but do not have the question text**, treat the attempt as stalled and spawn a replacement attempt with an instruction to follow the Worker rule above.
 
 ### Step 4: Integrate & Commit (Orchestrator-Owned)
 
