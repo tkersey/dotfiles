@@ -158,6 +158,8 @@ If the runtime exposes Codex's collab tools, use them to implement workers:
 
 Cleanup rule: once you have accepted a patch from any attempt and integrated it, `close_agent` any other still-running attempts for that task.
 
+End-of-run cleanup invariant: before the final report, do a close sweep for any remaining active agents and include `open_agents=0` in Worker telemetry (or explain why it is non-zero).
+
 Note: `/ps` shows background terminals (the `exec_command` + `write_stdin` tools / `unified_exec`), not collab workers.
 
 Codex TUI evidence: each `spawn_agent`, `send_input`, and `wait` call emits collab events in the transcript (with a `call_id`). Users can verify you're actually waiting by inspecting the "Waiting for agents" / "Wait complete" entries.
@@ -177,9 +179,9 @@ Truthfulness rule: never invent tool usage, timestamps, statuses, or "proof". If
   - Call `wait` with a bounded timeout/interval (seconds to minutes; prefer longer waits to avoid busy polling; up to ~5 minutes per call when supported).
   - Prefer calling `wait` once with ALL active `agent_id`s so it returns when any attempt reaches a final status.
   - A `wait` timeout is expected and does NOT imply the worker is stuck; it only means no attempt reached a final status within the timeout.
-  - After each `wait` call, print a proof line based on the actual tool result (no invented timestamps), for example:
-    - `wait(ids=[...], timeout_ms=300000) -> timed_out=true status_keys=[]`
-    - If the runtime surfaces a tool call id, include it.
+  - After each `wait` call, print a proof line based on the actual tool result (no invented timestamps) using this canonical shape:
+    - `wait(ids=[...], timeout_ms=300000) -> timed_out=<true|false> status_keys=[...]`
+    - If the runtime surfaces a tool call id, append `call_id=<id>`.
     - If the UI does not show tool call results, include the raw `wait` JSON.
   - Also print a low-frequency heartbeat (at most every ~2 minutes) for still-active attempts:
     - `Task Tn attempt k: age=<dur>; last_wait=timed_out; next=wait(timeout_ms=...)`
@@ -210,6 +212,7 @@ Subagents can stall (queueing, pending init, tool deadlock, etc.). Handle this e
     - Then spawn a replacement attempt.
     - Do NOT treat a single `wait` timeout as a reason to respawn; measure `soft` from `started_at`.
   - "Usable patch" means a fenced unified diff that is scoped to the task.
+  - `NO_PATCH` is also a valid completion outcome when the worker demonstrates the task is already satisfied and provides a brief proof trail (for example, relevant file evidence and/or command output). The orchestrator still runs post-step validation before marking `done`.
 - **Replacement**: no fixed attempt-number cap. Continue spawning replacement attempts (`attempt k+1`) as needed, bounded by elapsed `hard` time and available runtime slots. Keep existing attempts running (do not try to cancel unless your runtime supports it).
 - **Race**: accept the first usable patch; ignore later results and note it in the final report.
 - **Max attempts / hard stop**:
@@ -245,6 +248,7 @@ Commit model: orchestrator commits per task sequentially.
 Rules:
 - Subagents MUST NOT commit or push.
 - Prefer patch-first: subagents return a unified diff; orchestrator applies it and commits.
+- If a worker returns `NO_PATCH`, do not apply a diff; run post-step validation and mark the task `done` only if acceptance is satisfied.
 - If a patch does not apply cleanly or scope is unclear, request a refreshed patch from that subagent.
 - Only stage files related to that task when committing.
 - Do NOT commit unrelated changes.
@@ -275,7 +279,7 @@ Return:
 - Execution summary (completed / issues / blocked)
 - Files modified (by task)
 - Commands run + results (validation)
-- Worker telemetry (best-effort): attempts per task, final status, and durations (from `started_at` to completion)
+- Worker telemetry (best-effort): attempts per task, final status, durations (from `started_at` to completion), and `open_agents` after the end-of-run close sweep
 - An "Updated task list" block the user can paste back into their source-of-truth, with `status` updated to `done` and brief logs.
 
 ## Subagent Prompt Template
@@ -309,7 +313,7 @@ Validation (do NOT run unless trivial; orchestrator will run post-step):
 Deliverable (required):
 1) Summary (1-3 bullets)
 2) Files touched (intended)
-3) Patch (single unified diff in a fenced block)
+3) Patch (single unified diff in a fenced block), OR `NO_PATCH` with brief proof when acceptance is already satisfied
 4) Notes / blockers
    - If blocked by a missing decision, include:
      - `HUMAN INPUT REQUIRED`
