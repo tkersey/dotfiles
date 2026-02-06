@@ -24,6 +24,8 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 
 ## Outputs (chat)
 - Emit the exact sections in `Deliverable format (chat)`.
+- During execution, emit one-line pass progress updates at pass start and pass end using:
+  `Pass <n>/<total_planned>: <name> — <start|done>; edits=<yes|no|n/a>; signal=<cmd|n/a>; result=<ok|fail|n/a>`.
 
 ### Embedded mode (when $fix is invoked inside another skill)
 - You may emit a compact **Fix Record** instead of the full deliverable.
@@ -36,6 +38,8 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST NOT do product/feature work.
 - MUST NOT do intentional semantic changes without clarifying, except correctness tightening.
 - MUST resolve trade-offs using `Default policy (non-interactive)`.
+- MUST emit pass progress updates while running the multi-pass loop.
+- MUST include a final `Pass trace` section in the deliverable/Fix Record with executed pass count and per-pass outcomes.
 - MUST produce a complete finding record for every acted-on issue:
   - counterexample
   - invariant_before
@@ -207,7 +211,7 @@ Rules:
 
 Goal: reduce missed issues in PR/diff reviews without widening scope.
 
-Run 3 core passes. Run 2 additional delta passes only if pass 3 edits code.
+Run 3 core passes (mandatory). Run 2 additional delta passes only if pass 3 edits code.
 
 Pass 1) Safety (highest severity)
 - Scope: diff-driven slice + required boundary seams.
@@ -218,12 +222,6 @@ Pass 2) Surface (compat + misuse)
 - Scope: externally-used surfaces touched by the diff (exports/CLI/config/format/docs).
 - Focus: additive compatibility, defuse top footguns, clearer errors.
 - Change budget: additive/wrapper/adapter preferred; breaking change => stop and ask.
-
-Early exit (skip pass 3):
-- If pass 2 produces zero actionable findings AND pass 2 applies no edits, then:
-  - Skip pass 3 if pass 1 also applied no edits, OR
-  - Skip pass 3 if pass 1 edits are already covered by a strong proof (targeted regression/characterization test for the diff OR full test suite).
-- Otherwise run pass 3.
 
 Pass 3) Audit (invariants + ownership + proof quality)
 - Scope: final diff slice.
@@ -248,6 +246,7 @@ Rules:
 - After any pass that edits code, run a local signal before continuing.
 - Do not edit on suspicion: every edit must have a concrete counterexample, invariant_before/after, and a proof hook.
 - Merge/de-duplicate findings across passes; final output format stays unchanged.
+- Emit pass progress updates in real time at pass start/end; these updates are required and do not replace the final `Pass trace` section.
 
 ## Clarify before changes
 Stop and ask ONLY if any is true:
@@ -394,7 +393,7 @@ If no findings:
 - **Findings (severity order)**: `None`.
 - **Changes applied**: `None`.
 - **Residual risks / open questions**: `- None`.
-- Still include **Validation** with the executed signal.
+- Still include **Pass trace** and **Validation**.
 
 **Contract**
 - <one sentence>
@@ -411,6 +410,15 @@ For each finding:
 
 **Changes applied**
 - <file> — <rationale>
+
+**Pass trace**
+- Core passes planned: `3`; core passes executed: `<3>`
+- Delta passes planned: `<0|2>`; delta passes executed: `<0|2>`
+- Total passes executed: `<3|5>`
+- `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+- `P2 Surface` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+- `P3 Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+- If delta passes executed, also include `P4` and `P5` lines in the same format.
 
 **Validation**
 - <cmd> -> <ok/fail>
@@ -434,6 +442,15 @@ For each finding:
 
 **Changes applied**
 - <file> — <rationale>
+
+**Pass trace**
+- Core passes planned: `3`; core passes executed: `<3>`
+- Delta passes planned: `<0|2>`; delta passes executed: `<0|2>`
+- Total passes executed: `<3|5>`
+- `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+- `P2 Surface` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+- `P3 Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+- If delta passes executed, also include `P4` and `P5` lines in the same format.
 
 **Validation**
 - <cmd> -> <ok/fail>
