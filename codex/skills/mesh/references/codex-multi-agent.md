@@ -22,11 +22,16 @@ Notes:
   - Args: `{ "ids": string[], "timeout_ms"?: number }`
   - Returns: `{ "status": { <thread_id>: <AgentStatus> }, "timed_out": boolean }`
   - Notes: returns when *any* id reaches a final status; completed statuses include the agent's final message payload.
+  - Notes: later `wait` calls can include statuses for ids that already completed earlier; dedupe in orchestrator logic.
   - Use longer timeouts (minutes) to avoid tight loops.
   - Timeout clamp: min 10_000ms, default 30_000ms, max 300_000ms.
 - `close_agent`: close an agent when its work is fully integrated.
   - Args: `{ "id": string }`
   - Returns: `{ "status": <AgentStatus> }`
+
+### Parallel wrapper
+- `multi_tool_use.parallel`: batch independent function calls (including collab calls) so spawns/close sweeps run concurrently.
+- Keep `wait` as one call over all active ids; avoid one `wait` call per agent.
 
 ## Execution Semantics
 - Agents share the same workspace; instruct them to avoid conflicting edits.
@@ -37,6 +42,7 @@ Notes:
 ## Limits / Feature Flags
 - Multi-agent tools are gated behind the under-development feature flag `[features].collab = true`.
 - Concurrency can be capped by config: `[agents].max_threads`.
+- `request_user_input` is unavailable in Default mode; use direct user questions unless in Plan mode.
 
 Spawn depth:
 - Codex enforces a thread spawn depth limit (currently `MAX_THREAD_SPAWN_DEPTH = 1` in the Codex repo).

@@ -1,8 +1,8 @@
 ---
 name: mesh
 description: >
-  Explicit-only parallel task executor. Runs an inline task list in dependency-respecting waves via subagents.
-  Orchestrator integrates changes and makes per-task commits; validation runs as a post-step.
+  Explicit-only parallel task executor for requests that include `$mesh` with an inline task list (or `$mesh confirm`).
+  Runs dependency-respecting waves via subagents; orchestrator integrates per-task commits and runs post-step validation.
 ---
 
 # Mesh (Inline Parallel Task Executor)
@@ -156,6 +156,14 @@ If the runtime exposes Codex's collab tools, use them to implement workers:
 - Follow-up / retry instructions: `send_input` (use `interrupt=true` only when you are deliberately abandoning an attempt).
 - Cleanup: `close_agent` when an agent is no longer needed.
 
+#### Tool Batching With `multi_tool_use.parallel` (Use If Available)
+
+If the runtime exposes `multi_tool_use.parallel`, use it for independent tool calls that can run concurrently.
+
+- Spawn frontier workers in one batched call (`functions.spawn_agent` per runnable task) instead of serial spawns.
+- Run close sweeps in one batched call (`functions.close_agent` per agent id) at task completion and end-of-run cleanup.
+- Keep `wait` as a single direct call over all active agent ids; do not wrap `wait` inside per-agent loops.
+
 Cleanup rule: once you have accepted a patch from any attempt and integrated it, `close_agent` any other still-running attempts for that task.
 
 End-of-run cleanup invariant: before the final report, do a close sweep for any remaining active agents and include `open_agents=0` in Worker telemetry (or explain why it is non-zero).
@@ -188,6 +196,7 @@ Truthfulness rule: never invent tool usage, timestamps, statuses, or "proof". If
   - Treat "completion" as soon as you have a usable patch, even if other workers are still running.
   - After integrating a completed task, immediately recompute unblocked tasks and launch newly runnable ones before the next `wait` call (subject to runtime limits).
   - If `wait` returns a "completed" status that includes the agent's final message, treat that message as the worker deliverable and immediately extract/apply the patch from it.
+  - `wait` may return statuses for multiple ids, including ids you already processed in earlier loops; keep an `integrated_attempt_ids` set and ignore duplicates.
   - If you are still waiting on any attempt, continue the loop (do NOT require the user to message you again to keep polling).
   - If the runtime forces you to yield (turn time limit, max tool calls, etc.), say so explicitly and stop. Tell the user the exact minimal message to resume polling (for example: `"reply: $mesh confirm"`).
   - Do NOT end your response with claims like "I'll keep waiting" unless you are actually continuing the loop in the same turn; otherwise say you are stopping and why.
@@ -239,6 +248,7 @@ Workers must not "hold" indefinitely on unanswered questions.
   - Make a reasonable default decision and proceed (document the assumption), OR
   - Stop quickly and return `HUMAN INPUT REQUIRED` in Notes (one question + recommended default + what changes based on the answer).
 - **Orchestrator rule**: if a worker returns `HUMAN INPUT REQUIRED`, ask the user that one question (include the recommended default). Do NOT spawn a replacement attempt until the user answers.
+- **Mode rule**: in Default mode, ask the user directly in the thread; do NOT call `request_user_input` (it is Plan-mode only).
 - **If you only observe a `needs_clarification` state via `wait` but do not have the question text**, treat the attempt as stalled and spawn a replacement attempt with an instruction to follow the Worker rule above.
 
 ### Step 4: Integrate & Commit (Orchestrator-Owned)
