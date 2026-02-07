@@ -1,0 +1,285 @@
+[
+  {
+    "id": "scenario-1",
+    "name": "Direct PR continuation",
+    "patch": {
+      "context": {
+        "pr_number": 42,
+        "branch_hint": "feature/retry-backoff",
+        "semantic_hint": "retry backoff"
+      },
+      "files": [
+        "src/retry.ts",
+        "src/http/client.ts"
+      ],
+      "symbols": [
+        "nextDelay",
+        "RetryPolicy",
+        "retry"
+      ],
+      "requires_stack": false,
+      "supersedes_prs": []
+    },
+    "open_prs": [
+      {
+        "number": 42,
+        "head_ref": "feature/retry-backoff",
+        "title": "feat: improve retry backoff",
+        "body": "adjust retry behavior in the HTTP client",
+        "files": [
+          "src/retry.ts",
+          "src/http/client.ts"
+        ],
+        "symbols": [
+          "nextDelay",
+          "retry",
+          "jitter"
+        ],
+        "recently_updated": true,
+        "conflicting_hunk_overlap": false,
+        "dependency_edge": true
+      },
+      {
+        "number": 18,
+        "head_ref": "feature/cache-warmup",
+        "title": "feat: cache warmup",
+        "body": "startup cache prefetch",
+        "files": [
+          "src/cache/warmup.ts"
+        ],
+        "symbols": [
+          "warmup"
+        ],
+        "recently_updated": true,
+        "conflicting_hunk_overlap": false,
+        "dependency_edge": false
+      }
+    ],
+    "expected": {
+      "decision": "update",
+      "target_pr": 42
+    }
+  },
+  {
+    "id": "scenario-2",
+    "name": "Independent docs follow-up",
+    "patch": {
+      "context": {
+        "semantic_hint": "docs retry behavior"
+      },
+      "files": [
+        "README.md",
+        "docs/retries.md"
+      ],
+      "symbols": [
+        "retry",
+        "backoff"
+      ],
+      "requires_stack": false,
+      "supersedes_prs": []
+    },
+    "open_prs": [
+      {
+        "number": 51,
+        "head_ref": "feature/retry-code",
+        "title": "feat: retry engine update",
+        "body": "runtime backoff behavior for API calls",
+        "files": [
+          "src/retry.ts",
+          "src/http/client.ts"
+        ],
+        "symbols": [
+          "nextDelay",
+          "requestWithRetry"
+        ],
+        "recently_updated": true,
+        "conflicting_hunk_overlap": false,
+        "dependency_edge": false
+      }
+    ],
+    "expected": {
+      "decision": "create",
+      "target_pr": null
+    }
+  },
+  {
+    "id": "scenario-3",
+    "name": "Shared file, separate hunks",
+    "patch": {
+      "context": {},
+      "files": [
+        "src/config.ts"
+      ],
+      "symbols": [
+        "retryBackoffMaxMs"
+      ],
+      "requires_stack": false,
+      "supersedes_prs": []
+    },
+    "open_prs": [
+      {
+        "number": 61,
+        "head_ref": "feature/config-cleanup",
+        "title": "refactor: config naming cleanup",
+        "body": "rename config keys",
+        "files": [
+          "src/config.ts"
+        ],
+        "symbols": [
+          "configKeyRename"
+        ],
+        "recently_updated": true,
+        "conflicting_hunk_overlap": false,
+        "dependency_edge": false
+      }
+    ],
+    "expected": {
+      "decision": "create",
+      "target_pr": null
+    }
+  },
+  {
+    "id": "scenario-4",
+    "name": "Hard dependency chain",
+    "patch": {
+      "context": {
+        "semantic_hint": "retry telemetry follow-up"
+      },
+      "files": [
+        "src/retry_metrics.ts"
+      ],
+      "symbols": [
+        "emitRetryMetrics",
+        "RetryOutcome"
+      ],
+      "requires_stack": true,
+      "supersedes_prs": []
+    },
+    "open_prs": [
+      {
+        "number": 70,
+        "head_ref": "feature/retry-core",
+        "title": "feat: retry core",
+        "body": "introduce RetryOutcome and retry core types",
+        "files": [
+          "src/retry_metrics.ts",
+          "src/retry_core.ts"
+        ],
+        "symbols": [
+          "RetryOutcome",
+          "RetryCore"
+        ],
+        "recently_updated": true,
+        "conflicting_hunk_overlap": false,
+        "dependency_edge": true
+      }
+    ],
+    "expected": {
+      "decision": "stack",
+      "target_pr": 70
+    }
+  },
+  {
+    "id": "scenario-5",
+    "name": "Multi-PR overlap",
+    "patch": {
+      "context": {
+        "branch_hint": "feature/retry-observability",
+        "semantic_hint": "retry observability"
+      },
+      "files": [
+        "src/retry_metrics.ts",
+        "src/retry.ts"
+      ],
+      "symbols": [
+        "emitRetryMetrics",
+        "nextDelay"
+      ],
+      "requires_stack": false,
+      "supersedes_prs": []
+    },
+    "open_prs": [
+      {
+        "number": 31,
+        "head_ref": "feature/retry-core",
+        "title": "feat: retry core behavior",
+        "body": "core retry loop",
+        "files": [
+          "src/retry.ts"
+        ],
+        "symbols": [
+          "nextDelay",
+          "retryLoop"
+        ],
+        "recently_updated": false,
+        "conflicting_hunk_overlap": false,
+        "dependency_edge": false
+      },
+      {
+        "number": 37,
+        "head_ref": "feature/retry-observability",
+        "title": "feat: retry observability",
+        "body": "metrics for retry loop",
+        "files": [
+          "src/retry_metrics.ts",
+          "src/retry.ts"
+        ],
+        "symbols": [
+          "emitRetryMetrics",
+          "nextDelay"
+        ],
+        "recently_updated": true,
+        "conflicting_hunk_overlap": false,
+        "dependency_edge": true
+      }
+    ],
+    "expected": {
+      "decision": "update",
+      "target_pr": 37
+    }
+  },
+  {
+    "id": "scenario-6",
+    "name": "Superseding fix",
+    "patch": {
+      "context": {
+        "semantic_hint": "replace stale ci fix"
+      },
+      "files": [
+        "src/build_fix.ts"
+      ],
+      "symbols": [
+        "fixBuildBreak"
+      ],
+      "requires_stack": false,
+      "supersedes_prs": [
+        55
+      ],
+      "prefer_replacement_branch": true
+    },
+    "open_prs": [
+      {
+        "number": 55,
+        "head_ref": "feature/old-build-fix",
+        "title": "fix: old build fix",
+        "body": "attempt to fix failing CI",
+        "files": [
+          "src/build_fix.ts"
+        ],
+        "symbols": [
+          "fixBuildBreak"
+        ],
+        "recently_updated": false,
+        "conflicting_hunk_overlap": true,
+        "dependency_edge": false
+      }
+    ],
+    "expected": {
+      "decision": "replacement_create",
+      "target_pr": null,
+      "supersedes_prs": [
+        55
+      ]
+    }
+  }
+]

@@ -1,0 +1,32 @@
+name: Join Routing Harness
+
+on:
+  pull_request:
+    paths:
+      - "codex/skills/join/SKILL.md"
+      - "codex/skills/join/scripts/**"
+      - "codex/skills/join/assets/routing-scenarios.json"
+  push:
+    branches:
+      - main
+    paths:
+      - "codex/skills/join/SKILL.md"
+      - "codex/skills/join/scripts/**"
+      - "codex/skills/join/assets/routing-scenarios.json"
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install validator dependency
+        run: python -m pip install --upgrade pyyaml
+      - name: Run routing harness
+        run: python3 codex/skills/join/scripts/routing_harness.py
+      - name: Validate skill metadata
+        run: python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/join

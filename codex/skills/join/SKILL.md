@@ -1,18 +1,27 @@
 ---
 name: join
-description: "PR autopilot: create/manage PRs, enforce CI gates, apply surgical fixes, and squash-merge via `gh`."
+description: "PR autopilot for open PRs and agent-supplied unified diff patch batches: route/split changes for parallel mergeability, enforce CI gates, apply surgical fixes, and squash-merge via `gh`."
 ---
 
 # Join
 
 ## Intent
-Run a continuous PR operator: keep PRs created, green, reviewed, and squash-merged (via `gh`) with minimal-incision fixes.
+Run a PR operator that can do both:
+- Open-PR autopilot: keep PRs created, green, reviewed, and squash-merged (via `gh`) with minimal-incision fixes.
+- Patch-batch intake: consume agent-supplied unified diffs, place them into review-friendly PRs, then merge quickly and safely.
 
 ## Quick start
 1. Ensure `gh auth status` succeeds.
 2. Ensure labels exist: `auto:manage`, `auto:hold`.
 3. (Optional) Add `.github/auto-merge.yml` from `assets/auto-merge.yml`.
-4. Start the monitor loop.
+4. (Optional) Add `.github/workflows/join-routing-harness.yml` from `assets/routing-harness.yml`.
+5. Pick a mode per invocation:
+   - Open-PR autopilot: run the monitor loop.
+   - Patch-batch intake: pass one or more fenced unified diff blocks and run the patch-batch workflow.
+
+## Scope
+- Single repository per run.
+- Patch intake is invocation-based (batch in, process, exit). External agents handle re-invocation cadence.
 
 ## Label contract
 - `auto:manage`: opt-in to automation.
@@ -22,11 +31,163 @@ Contributor guidance:
 - Add `auto:manage` to opt in.
 - Add `auto:hold` to stop the operator.
 
+## Patch intake contract (batch mode)
+- Input is provided directly to `$join` by a coding agent.
+- Each patch is a fenced unified diff block containing file headers and `@@ ... @@` hunks.
+- Support full diff semantics when present: text hunks, renames, deletions, mode changes, and binary patch payloads.
+- A batch is complete when every supplied patch has been placed into an existing or newly created PR (or explicitly held).
+
+## Batch input payload example
+Use plain text invocation content with one or more fenced `diff` blocks:
+
+````text
+Patch-Context: api retry backoff and docs sync
+Base-Hint: main
+
+```diff
+diff --git a/src/retry.ts b/src/retry.ts
+index 1111111..2222222 100644
+--- a/src/retry.ts
++++ b/src/retry.ts
+@@ -10,7 +10,12 @@ export function nextDelay(attempt: number) {
+-  return 100 * attempt;
++  const capped = Math.min(attempt, 6);
++  return 100 * (2 ** capped);
+ }
+```
+
+Patch-Context: follow-up docs for retry behavior
+
+```diff
+diff --git a/README.md b/README.md
+index aaaaaaa..bbbbbbb 100644
+--- a/README.md
++++ b/README.md
+@@ -45,6 +45,7 @@ Reliability
+ - retry behavior is linear
++ retry behavior is exponential with cap
+```
+````
+
+Rules:
+- Parse every fenced `diff` block as an independent patch candidate.
+- Treat any text outside fenced blocks as optional routing context hints.
+- Infer titles automatically from diff content; do not require explicit titles.
+
+## Canonical patch identity
+Use `Patch-Id` for idempotency and deduplication across runs:
+1. Normalize the unified diff:
+   - Strip surrounding fences/metadata outside the diff payload.
+   - Normalize line endings to `\n`.
+   - Trim trailing whitespace on diff metadata lines.
+2. Compute `sha256(normalized_diff)`; this is `Patch-Id`.
+3. Persist identity on GitHub artifacts:
+   - Commit trailer: `Patch-Id: <sha256>`
+   - PR body marker line: `Patch-Id: <sha256>` (one per included patch)
+4. Before processing, skip any patch whose `Patch-Id` already appears on an open PR head commit or PR body marker.
+
 ## PR creation policy
 - For every non-default branch without an open PR, create a PR.
 - Use the repo PR template if present; else use `assets/pr-template.md`.
 - Prefer `gh pr create --fill` and apply `auto:manage`.
 - Default to ready-for-review (no drafts unless configured).
+
+## Patch routing and PR shaping policy
+- Optimize for parallel mergeability first.
+- Prefer independent PRs over broad combined PRs when dependency edges are absent.
+- Allow stacking with no fixed depth cap when dependency edges exist.
+- Match incoming patches to existing open PRs using any available signal:
+  - Explicit branch/title/context hints from the invocation.
+  - File overlap with the PR branch diff.
+  - Semantic overlap in touched paths/symbols/messages.
+- If a patch overlaps multiple PRs, choose the best target PR and split residual independent hunks into additional PRs when feasible.
+- If a new patch supersedes existing open PRs, route to replacement PRs and close superseded PRs only after replacements are green.
+- Keep each generated/updated PR as a single commit (force-push with lease allowed when required).
+
+## Routing heuristic (tuned)
+Score each incoming patch against each open PR, then choose the highest-scoring PR when confidence is high.
+
+Scoring signals:
+- `+90` explicit PR number hint in invocation context.
+- `+40` explicit branch hint matches `headRefName`.
+- `+40` explicit title/context hint semantically matches PR title/body.
+- `+0..50` file overlap ratio with PR diff (`overlap_ratio * 50`).
+- `+0..20` symbol/token overlap in changed lines.
+- `+10` PR recently updated (last 48h).
+- `-40` conflicting hunk overlap likely requiring semantic inversion.
+
+Decision thresholds:
+- Best score `>= 70` and margin `>= 15` over second-best: update that PR.
+- Best score `40..69`: update PR only if dependency edge exists; otherwise create new PR for parallelism.
+- Best score `< 40`: create new PR from inferred base (fallback default branch).
+- Ties: prefer branch with highest file overlap, then most recent update.
+
+Splitting and stacking:
+- Split patch units when independent hunks can be merged in parallel without dependency edges.
+- Stack only where dependency edges force order.
+- Unlimited stack depth is allowed; minimize depth whenever equivalent.
+
+Supersession detection:
+- Mark PR `A` as superseded by PR `B` when `B` fully contains `A` semantic delta or resolves the same failing CI intent with strictly newer patch units.
+- Close `A` only after `B` required checks are green.
+
+## Synthetic calibration scenarios (pre-live)
+Run these scenarios against the heuristic before live operation.
+
+| Scenario | Signal profile | Expected routing |
+| --- | --- | --- |
+| 1. Direct PR continuation | Same files as open PR `#42`, strong overlap, no conflicts | Update `#42`, force-push single commit |
+| 2. Independent docs follow-up | No overlap with code PR, docs-only files | New parallel docs PR |
+| 3. Shared file, separate hunks | Same file as open PR but disjoint hunks and no dependency | Prefer separate PR for parallel mergeability |
+| 4. Hard dependency chain | Patch B requires symbols introduced by patch A | Create/keep stacked PRs A -> B |
+| 5. Multi-PR overlap | Overlaps PRs `#31` and `#37`; higher score on `#37` | Route to `#37`, split residual for new PR if independent |
+| 6. Superseding fix | New patch fully replaces stale failing PR intent | Create/update replacement PR, close stale PR only after green |
+
+## Calibration harness execution
+Use the bundled harness before enabling large-scale automation:
+- Run all scenarios: `python3 scripts/routing_harness.py`
+- Run specific scenario(s): `python3 scripts/routing_harness.py --scenario-id scenario-4`
+- Emit machine output: `python3 scripts/routing_harness.py --json`
+- Fail the run on any scenario mismatch.
+
+Use the Patch-Id helper for payload verification:
+- From batch payload file: `python3 scripts/patch_id.py --input /tmp/patch-batch.txt`
+- From stdin: `cat /tmp/patch-batch.txt | python3 scripts/patch_id.py`
+- Raw single diff mode: `python3 scripts/patch_id.py --raw-diff --input /tmp/one.diff`
+
+## Patch-batch workflow (agent-invoked)
+Process the supplied batch of patches to completion:
+1. Parse all fenced unified diff blocks from the invocation payload.
+2. Compute `Patch-Id` for each patch and drop already-processed identities found in open PR metadata.
+3. Infer base context from patch hints; fallback to repo default branch when ambiguous.
+4. Build a dependency graph for candidate patch units:
+   - Same-file/same-hunk overlaps imply an edge.
+   - Required ordering constraints imply an edge.
+   - No edge implies independent and parallelizable.
+5. Select target PR strategy per unit:
+   - Update an existing PR when it is the strongest semantic match.
+   - Create a new PR branch when independence improves merge parallelism.
+   - Create stacked PRs when dependencies block direct parallelization.
+6. Apply patch content on the chosen branch:
+   - First attempt: `git apply --index --3way --recount`.
+   - Repair attempt: rebase/refresh branch, re-attempt with adjusted context or direct file edit for minimal semantic equivalent.
+   - On unresolved apply failure: add `auto:hold`, leave diagnostics, continue with other patches.
+7. Re-shape branch history to one commit:
+   - Squash local branch to a single commit containing the complete PR delta.
+   - Include `Patch-Id: <sha256>` trailer(s) in commit message.
+   - Push with `--force-with-lease` when updating an existing PR.
+8. Create or update PR:
+   - Auto-infer title.
+   - Keep body minimal; include `Patch-Id` marker lines only.
+   - Apply `auto:manage`; preserve existing draft/ready behavior.
+9. Run CI gate on affected PRs (required checks only).
+10. For superseded PRs:
+   - Wait until the replacement PR required checks pass.
+   - Then close superseded PR(s).
+11. Run hold-recovery pass:
+   - Re-check held PRs touched this run.
+   - Remove `auto:hold` automatically when the blocking condition has cleared.
+12. Exit when all input patches are placed into PRs or explicitly held.
 
 ## Operating modes
 Mode is per-PR and determined by the current checkout:
@@ -44,7 +205,7 @@ Mode detection (git):
 - If a local branch exists but the worktree is dirty, apply `auto:hold` (cannot switch safely).
 - If detached in git, treat as remote-only for operations; still eligible for safe local cleanup when the worktree is clean.
 
-## Monitor loop
+## Monitor loop (open-PR autopilot mode)
 Process PRs sequentially (blocking per PR on CI):
 1. List open PRs: `gh pr list --state open --json number,title,headRefName,labels,isDraft`.
 2. For each PR:
@@ -77,6 +238,7 @@ If operating locally, ensure all local changes are in the PR:
 
 ## CI gate (required checks only)
 - Gate on required checks only (`gh pr checks --required`). Optional checks do not block merges.
+- Do not run local pre-checks in `$join`; local validation happens outside this skill.
 - Detect “ungated” repos/PRs (no required checks):
   - If `gh pr checks <num> --required --json name` returns an empty list, treat CI as green and proceed to merge.
 - Wait for required checks (blocking):
@@ -153,6 +315,12 @@ Smallest change that makes CI green:
 - Use recent CI duration to back off (cap at 120s).
 - Exponential backoff on API errors.
 
+## Idempotency and state
+- Use GitHub artifacts as the state store; do not require local operator state files.
+- `Patch-Id` in commit trailers and PR marker lines is the canonical dedup source.
+- On each run, re-derive routing/supersession decisions from current open PR graph plus supplied patches.
+- Idempotent requirement: re-running the same batch must not create duplicate PR deltas.
+
 ## Status reporting
 - Maintain a single PR comment/check-run named `AutoMerge Operator`.
 - Update in place (avoid comment spam).
@@ -182,6 +350,12 @@ Signal: `git rev-parse HEAD` equals PR `headRefOid`.
 - Create: `gh pr create --fill --head <branch> --label auto:manage`
 - PR head OID: `gh pr view <num> --json headRefOid --jq .headRefOid`
 - Local branch exists: `git show-ref --verify --quiet refs/heads/<headRefName>`
+- Patch-Id (sha256): `printf '%s' "$normalized_diff" | shasum -a 256 | awk '{print $1}'`
+- Patch-Id helper script: `python3 scripts/patch_id.py --input <batch.txt>`
+- Search Patch-Id on open PRs: `gh pr list --state open --json number,body --jq '.[] | select(.body|test("Patch-Id: <sha256>")) | .number'`
+- Routing harness: `python3 scripts/routing_harness.py --scenarios assets/routing-scenarios.json`
+- Apply patch (first pass): `git apply --index --3way --recount <patch.diff>`
+- Push single-commit update: `git push --force-with-lease`
 - Required checks (summary): `gh pr checks <num> --required`
 - Required checks (watch): `gh pr checks <num> --required --watch --fail-fast`
 - Required checks (links/JSON): `gh pr checks <num> --required --json name,bucket,link,workflow`
@@ -192,3 +366,5 @@ Signal: `git rev-parse HEAD` equals PR `headRefOid`.
 ## Assets
 - `assets/auto-merge.yml`
 - `assets/pr-template.md`
+- `assets/routing-scenarios.json`
+- `assets/routing-harness.yml`
