@@ -11,26 +11,29 @@ description: Gauntlet for absolute claims (always/never/guaranteed/optimal); pre
 - The claim feels too clean for the domain.
 
 ## Round cadence (mandatory)
-- Default: autoloop (no approvals). Run exactly one gauntlet round per assistant turn and continue next turn until Oracle synthesis. If confidence remains low after Oracle synthesis, continue with additional rounds (11+) and publish an updated Oracle synthesis.
-- After each round, publish:
+- Definition: one "turn" means one assistant reply.
+- Default: autoloop (no approvals). Run exactly one gauntlet round per assistant turn, publish results, then continue on the next turn until Oracle synthesis.
+- In default mode, after each round, publish:
   - Round Ledger
   - Knowledge Delta
-- Do not ask for permission to continue. Pause only when you must ask the user a question or the user says "stop".
+- If confidence remains low after Oracle synthesis, continue with additional rounds (11+) and publish an updated Oracle synthesis.
+- Do not ask for permission to continue. In default mode, do not wait for "next" between rounds. Pause only when you must ask the user a question or the user says "stop".
 - Step mode (explicit): if the user asks to "pause" / "step" / "one round at a time", run one round then wait for "next".
-- Fast mode (explicit): if the user explicitly requests "fast mode", run rounds 1-10 + Oracle synthesis in one assistant turn.
+- Full auto mode (explicit): if the user asks for "full auto" / "fast mode", run rounds 1-10 + Oracle synthesis in one assistant turn while still reporting each round in order.
 
 ## Mode invocation
 | Mode | Default? | How to invoke | Cadence |
 |------|----------|---------------|---------|
-| Autoloop | yes | (no phrase) | 1 round/turn; auto-continue |
+| Autoloop | yes | (no phrase) | 1 round/turn; auto-continue until Oracle |
 | Step mode | no | "step mode" / "pause each round" / "pause" / "step" / "one round at a time" | 1 round/turn; wait for "next" |
-| Fast mode | no | "fast mode" | rounds 1-10 + Oracle in one turn |
+| Full auto | no | "full auto" / "fast mode" | rounds 1-10 + Oracle in one turn; publish Round Ledger + Knowledge Delta after each round |
 
 ## Quick start
 1. Restate the claim and its scope.
-2. Default to autoloop. If the user explicitly requests "step mode" or "fast mode", use that instead.
+2. Default to autoloop. If the user explicitly requests "step mode" or "full auto", use that instead.
 3. Run round 1 and publish the Round Ledger + Knowledge Delta.
-4. Continue per the selected mode until Oracle synthesis. If confidence remains low, run additional rounds and publish an updated Oracle synthesis.
+4. Continue automatically with one round per turn until round 10 (Oracle synthesis).
+5. If confidence remains low, run additional rounds (11+) and publish an updated Oracle synthesis.
 
 ## Ten-round gauntlet
 1. Counterexamples: smallest concrete break.
@@ -74,7 +77,7 @@ Disproof tests:
 Refined claim:
 ```
 
-### Round Ledger (update every turn)
+### Round Ledger (update every round)
 ```
 Round: <1-10 (or 11+)>
 Focus:
@@ -85,7 +88,7 @@ Remaining gaps:
 Next round:
 ```
 
-### Knowledge Delta (publish every turn)
+### Knowledge Delta (publish every round)
 ```
 - New:
 - Updated:
@@ -139,7 +142,9 @@ Next tests:
 - Round number + focus.
 - Round Ledger + Knowledge Delta.
 - At most one question for the user (only when blocked).
-- In fast mode, run rounds 1-10 + Oracle synthesis in one turn (repeat the above per round).
+- In default autoloop, run one round in that turn and continue to the next round in the next turn.
+- In step mode, run one round and wait for "next".
+- In full auto (or "fast mode"), run rounds 1-10 + Oracle synthesis in one turn (repeat the above per round).
 
 ## Activation cues
 - "always" / "never" / "guaranteed" / "optimal" / "cannot fail" / "no downside" / "100%"
