@@ -22,6 +22,7 @@ Orchestrator-owned actions are limited to:
 - reporting + updating task statuses
 
 If you cannot spawn workers (missing tools, depth limit, runtime error), STOP and ask the user for the single decision needed to proceed. Recommended default: adjust the task list/session so workers can be spawned.
+Do NOT simulate `$mesh` by implementing tasks in the orchestrator when worker tooling is unavailable.
 
 Do NOT proactively offer to "take over" and implement tasks yourself as a convenience fallback. Only raise that option if worker delegation is impossible (e.g., collab unavailable, depth limit) or after the task has hit the hard stop.
 
@@ -147,18 +148,20 @@ Run using a frontier loop:
 5. Mark tasks as `done` (in the orchestrator report) only after integration + validation succeed.
 6. Repeat until no more tasks are runnable and no workers are active.
 
-#### Codex Collab Tools (Use If Available)
+#### Codex Collab Tools (Required When Available)
 
-If the runtime exposes Codex's collab tools, use them to implement workers:
+If the runtime exposes Codex's collab tools, you MUST use explicit lifecycle tool calls to implement workers:
 
 - Launch worker: `spawn_agent` (record returned `agent_id`).
 - Monitor worker(s): `wait` (long-polls for a final status; on timeout it returns an empty `status` map with `timed_out: true`).
 - Follow-up / retry instructions: `send_input` (use `interrupt=true` only when you are deliberately abandoning an attempt).
 - Cleanup: `close_agent` when an agent is no longer needed.
 
-#### Tool Batching With `multi_tool_use.parallel` (Use If Available)
+If these collab tools are not available, STOP and ask the user for one unblock decision. Recommended default: enable worker-capable runtime/session, then retry. Do NOT claim delegation ran when it did not.
 
-If the runtime exposes `multi_tool_use.parallel`, use it for independent tool calls that can run concurrently.
+#### Tool Batching With `multi_tool_use.parallel` (Optional Optimization)
+
+If the runtime exposes `multi_tool_use.parallel`, you MAY use it for independent tool calls that can run concurrently. It is an optimization, not a requirement.
 
 - Spawn frontier workers in one batched call (`functions.spawn_agent` per runnable task) instead of serial spawns.
 - Run close sweeps in one batched call (`functions.close_agent` per agent id) at task completion and end-of-run cleanup.
@@ -181,6 +184,7 @@ If the user asks "how are you waiting?": say you are issuing `wait` tool calls. 
 If your runtime provides a `wait` tool for spawned subagents, use it to make progress visible and to drive timeouts.
 
 Truthfulness rule: never invent tool usage, timestamps, statuses, or "proof". If you cannot observe something directly, say so.
+If no collab tool-call events exist for this run (`spawn_agent`/`wait`/`send_input`), explicitly report: `delegation_did_not_run` and why.
 
 - Record for each task attempt: `task_id`, `attempt`, `call_id` (and `agent_id` if available), and a `started_at` timestamp.
 - Run a polling loop for active attempts:
@@ -290,6 +294,7 @@ Return:
 - Files modified (by task)
 - Commands run + results (validation)
 - Worker telemetry (best-effort): attempts per task, final status, durations (from `started_at` to completion), and `open_agents` after the end-of-run close sweep
+- Delegation evidence: list observed collab call ids/events, or explicitly `delegation_did_not_run` with reason
 - An "Updated task list" block the user can paste back into their source-of-truth, with `status` updated to `done` and brief logs.
 
 ## Subagent Prompt Template
@@ -338,6 +343,7 @@ Deliverable (required):
 - `$mesh confirm` but no prior valid task list found: ask the user to paste the list.
 - `$mesh confirm` but multiple candidate task lists found: list candidates (numbered; 1 = most recent) and ask for `$mesh confirm pick=<n>` (or use `ids=` to narrow).
 - `$mesh confirm ids=...` matches 0 candidates: report that and list the available candidate task lists.
+- Collab worker tools unavailable: stop and ask for one unblock decision; do not simulate delegation.
 - Subagent no-response: apply the Liveness / Non-Response Policy; if still no result, mark `blocked` with reason `no_response`.
 - Unknown dependency id: list the unknown ids.
 - Cycle: print the cycle path (example: `T1 -> T2 -> T1`).
