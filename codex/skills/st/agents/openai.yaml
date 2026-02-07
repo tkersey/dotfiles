@@ -1,0 +1,4 @@
+interface:
+  display_name: "st"
+  short_description: "Persistent repo JSONL plan manager"
+  default_prompt: "Use $st to create or update a repo-committed JSONL plan for this task."
