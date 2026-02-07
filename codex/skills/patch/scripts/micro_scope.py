@@ -1,4 +1,4 @@
-#!/usr/bin/env uv run python
+#!/usr/bin/env -S uv run python
 """Summarize staged vs unstaged diff size for micro-patch scoping."""
 
 from __future__ import annotations
