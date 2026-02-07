@@ -14,7 +14,7 @@ Use Double Diamond to avoid converging too early: separate "are we solving the r
 - Deliver (converge): implement, validate, and ship with a proof trail.
 
 Skill routing (default):
-- Discover/Define: `$clarification-expert`, `$prove-it`, `$complexity-mitigator`, `$invariant-ace`, `$tk` (advice mode).
+- Discover/Define: `$grill-me`, `$prove-it`, `$complexity-mitigator`, `$invariant-ace`, `$tk` (advice mode).
 - Develop: `$creative-problem-solver` (five-tier portfolio).
 - Deliver: `$tk` (implementation mode), `$fix`, `$validate`, `$commit`, `$ship`, `$work`, `$code`, `$join`, `$fin`.
 - Language routing: invoke `$zig` when the request includes Zig cues such as `.zig` paths, `build.zig`/`build.zig.zon`, `zig build|test|run|fmt|fetch`, `comptime`, `@Vector`, `std.simd`, `std.Thread`, allocator ownership, or C interop.
@@ -72,7 +72,7 @@ Example:
 
 ```
 Echo: Most recent user message goes here, truncated to two lines if needed...
-CLARIFICATION EXPERT: HUMAN INPUT REQUIRED
+GRILL ME: HUMAN INPUT REQUIRED
 1. ...
 ```
 

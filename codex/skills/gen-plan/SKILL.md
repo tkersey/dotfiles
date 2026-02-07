@@ -24,7 +24,7 @@ description: Generate iterative `plan-N.md` files in the repo root (max N=5). Us
 ## Clarification flow (when needed)
 
 - Research first; ask only judgment-call questions.
-- Use the `CLARIFICATION EXPERT: HUMAN INPUT REQUIRED` block with numbered questions.
+- Use the `GRILL ME: HUMAN INPUT REQUIRED` block with numbered questions.
 - After questions are answered, determined if another round of questions is needed; if so continue asking questions until there are no more then write the next plan file.
 
 ## Iterate on the plan

@@ -1,31 +1,26 @@
 ---
-name: clarification-expert
-description: Clarify ambiguous or conflicting requests by researching first, then asking only judgment calls; use when users say clarify, ambiguous, build a system, optimize, make it better, how do I, unclear goal, conflicting requirements, or grill me; stop before implementation.
+name: grill-me
+description: Clarify ambiguous or conflicting requests by researching first, then asking only judgment calls; use when prompts are under-specified, success criteria are missing, requirements conflict, or trade-offs are implicit, and when users ask to clarify/scope/define requirements, build a system, optimize, make it better, pressure-test assumptions, ask hard questions, or grill me; stop before implementation.
 ---
 
-# Clarification Expert
+# Grill Me
 
 ## Double Diamond fit
-Clarification Expert lives in the first diamond (Discover + Define): broaden context, then converge on a working definition before building.
+Grill Me lives in the first diamond (Discover + Define): broaden context, then converge on a working definition before building.
 - Discover: research first; do not ask for discoverable facts.
 - Define: produce a one-line problem statement + success criteria; ask only judgment calls.
 - Handoff: when options/tradeoffs remain, invoke `$creative-problem-solver`; when ready to implement, hand off to `$tk` / `$code` / `$work`.
 
-## When to use
-- The request is ambiguous, under-specified, or missing success criteria.
-- The user asks to “build a system”, “optimize”, “make it better”, or “how do I”.
-- Requirements conflict, or trade-offs are implicit.
-
 ## Quick start
 1. Research first; don’t ask for discoverable facts.
 2. Maintain a running snapshot (facts, decisions, open questions).
-3. Ask only judgment calls: prefer 1 question, never exceed 3 per batch (use `request_user_input` if available; otherwise note it is unavailable and use the Human input block).
+3. Ask only judgment calls: prefer 2-3 independent questions per batch, and use 1 only when ordering dependencies force sequence (use `request_user_input` if available; otherwise note it is unavailable and use the Human input block).
 4. Incorporate answers and repeat until no open questions remain.
 5. Generate verbose beads, then stop (no implementation).
 
 ## High-pressure clarification mode
 When the user asks for pressure-testing, run a stricter questioning loop.
-1. Ask exactly one hard judgment question per turn.
+1. Ask 2 hard judgment questions per turn when independent; use 1 only when a blocking dependency forces sequence.
 2. Force concreteness (metric, date, scope boundary, owner); re-ask with the same `id` if the answer is vague.
 3. Prioritize this order: objective -> constraints -> non-goals -> trade-offs -> acceptance signal.
 4. Keep tone direct and concise; avoid implementation suggestions.
@@ -33,8 +28,8 @@ When the user asks for pressure-testing, run a stricter questioning loop.
 
 ## Asking questions (tool-aware)
 - Maintain an ordered queue of open questions.
-- Ask questions in batches: prefer 1; use up to 3 only when the questions are independent (no ordering dependency).
-- In high-pressure clarification mode, ask exactly 1 question per batch.
+- Ask questions in batches: prefer 2; use up to 3 when the questions are independent (no ordering dependency), and use 1 only when sequence is required.
+- In high-pressure clarification mode, prefer 2 hard judgment questions per batch; use 1 only when sequence is required.
 - If a tool named `request_user_input` is available, use it (do not render the fallback Human input block).
 - Otherwise, add a one-line note that the tool is unavailable, then render the fallback Human input block (below).
 - After receiving answers, update the Snapshot and refresh the open-question queue:
@@ -48,7 +43,7 @@ open_questions := initial judgment calls (ordered)
 answered_ids := set()
 
 while open_questions not empty:
-  batch := take_next(open_questions, max=3, prefer=1)
+  batch := take_next(open_questions, max=3, prefer=2)
 
   if tool_exists("request_user_input"):
     tool_args := { questions: batch_to_tool_questions(batch) }
@@ -157,7 +152,7 @@ Snapshot
 ## Human input block (fallback)
 If `request_user_input` is not available, add a one-line note that it is unavailable, then use this exact heading and numbered list:
 ```
-CLARIFICATION EXPERT: HUMAN INPUT REQUIRED
+GRILL ME: HUMAN INPUT REQUIRED
 1. ...
 2. ...
 3. ...
