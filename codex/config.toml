@@ -11,6 +11,8 @@ collab = true
 collaboration_modes = true
 apps = true
 personality = true
+memory_tool = true
+sqlite = true
 
 [tui]
 experimental_mode = "execute"
