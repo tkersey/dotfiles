@@ -6,12 +6,14 @@ import { mkdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, delimiter, join } from "node:path";
 import process from "node:process";
-import puppeteer from "puppeteer-core";
 
 const DEFAULT_PORT = 9222;
 const DEFAULT_USER_DATA_DIR = join(homedir(), ".cache", "scraping");
 const DEFAULT_MACOS_CHROME_PATH =
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const CONNECT_TIMEOUT_MS = 400;
+const CONNECT_RETRY_INTERVAL_MS = 250;
+const CONNECT_RETRY_ATTEMPTS = 60;
 
 function printHelp(exitCode = 0) {
   const chromePathEnv =
@@ -153,15 +155,20 @@ function resolveProfileSourceDir() {
 }
 
 async function canConnect(browserURL) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CONNECT_TIMEOUT_MS);
+
   try {
-    const browser = await puppeteer.connect({
-      browserURL,
-      defaultViewport: null,
+    const probeUrl = new URL("/json/version", browserURL);
+    const response = await fetch(probeUrl, {
+      signal: controller.signal,
+      cache: "no-store",
     });
-    await browser.disconnect();
-    return true;
+    return response.ok;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -323,12 +330,12 @@ try {
 }
 
 let connected = false;
-for (let i = 0; i < 30; i++) {
+for (let i = 0; i < CONNECT_RETRY_ATTEMPTS; i++) {
   if (await canConnect(browserURL)) {
     connected = true;
     break;
   }
-  await sleep(500);
+  await sleep(CONNECT_RETRY_INTERVAL_MS);
 }
 
 if (!connected) {

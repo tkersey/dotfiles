@@ -1,5 +1,9 @@
 {
   "type": "module",
+  "scripts": {
+    "bench:eval": "node ./bench-eval.js",
+    "bench:all": "node ./bench-all.js"
+  },
   "dependencies": {
     "puppeteer-core": "^24.27.0"
   }

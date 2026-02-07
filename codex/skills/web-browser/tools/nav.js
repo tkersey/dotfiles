@@ -3,6 +3,15 @@
 import puppeteer from "puppeteer-core";
 
 const DEFAULT_PORT = 9222;
+async function getActivePage(browser) {
+  const targets = browser.targets();
+  for (let i = targets.length - 1; i >= 0; i--) {
+    if (targets[i].type() !== "page") continue;
+    const page = await targets[i].page();
+    if (page) return page;
+  }
+  return null;
+}
 
 function tryParsePort(value) {
   const port = Number.parseInt(String(value), 10);
@@ -105,7 +114,7 @@ if (newTab) {
   await page.goto(url, { waitUntil: "domcontentloaded" });
   console.log("✓ Opened:", url);
 } else {
-  const page = (await browser.pages()).at(-1);
+  const page = await getActivePage(browser);
   if (!page) {
     console.error("✗ No active tab found (try --new)");
     process.exit(1);
