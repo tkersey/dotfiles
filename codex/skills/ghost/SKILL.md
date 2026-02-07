@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Create a ghost-library repo from an existing library git repo by extracting a strict SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and preserving upstream LICENSE files. VERIFY.md must record provenance and a regeneration recipe. Use only when a user explicitly asks to ghostify/spec-ify a repo, extract language-agnostic specs/tests, or invokes $ghost / "ghost" / "ghost library" / "spec package" for a codebase.
+description: Create a language-agnostic ghost-library package from an existing library repo by extracting SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and upstream LICENSE files with provenance and regeneration instructions. Use when asked to ghostify/spec-ify/spec-package a concrete codebase, extract portable spec/tests from source tests, or invoke $ghost/"ghost"/"ghost library"; do not use for implementation work or for editing skills.
 ---
 
 # ghost
@@ -66,6 +66,11 @@ Pick one schema and stay consistent:
 - Protocol/CLI layout: keep `meta.version` for test schema version and include `meta.source_version` for upstream evidence version.
 
 ## Workflow (tests-first)
+
+### 0) Define scope and contract
+- Write a one-line problem statement naming the upstream repo/revision and target ghost output path.
+- Choose one `tests.yaml` layout (functional or protocol/CLI) and keep it consistent across `SPEC.md`, `INSTALL.md`, and `VERIFY.md`.
+- Set success criteria: deterministic cases for every public operation and a recorded verification signal in `VERIFY.md`.
 
 ### 1) Scope the source
 - Locate the test suite(s), examples, and primary docs (README, API docs, docs site).
@@ -173,10 +178,6 @@ Produce only these artifacts in the ghost repo:
   - Functional layout: keep `tests.yaml` strict (`error: true` only); in a Zig adapter, treat "any error return" as a passing error case and rely on `SPEC.md` for exact conditions.
   - Protocol/CLI layout: prefer explicit machine-readable error payload assertions plus exit codes.
 - YAML tooling: Zig stdlib has JSON but not YAML; for adapters/implementations it’s fine to convert `tests.yaml` to JSON (or JSONL) as an intermediate and have a Zig runner parse it via `std.json`.
-
-## Activation cues
-- "ghost" / "ghost library" / "ghostify" / "spec-ify" / "spec package"
-- "extract language-agnostic spec/tests"
 
 ## Resources
 - `references/templates.md` (artifact outlines and YAML format)
