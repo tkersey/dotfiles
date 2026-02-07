@@ -20,6 +20,7 @@ from typing import Any, Callable, Iterable, Iterator, Optional
 SKILL_NAME_RE = re.compile(r"<name>([^<]+)</name>")
 DOLLAR_RE = re.compile(r"\$([a-z][a-z0-9-]*)")
 TOKEN_RE = re.compile(r"Original token count:\s*(\d+)")
+RESPONSE_ITEM_MESSAGE_TYPE_RE = re.compile(r'"type"\s*:\s*"message"')
 DEFAULT_SESSIONS_ROOT = Path.home() / ".codex" / "sessions"
 
 
@@ -112,15 +113,19 @@ def iter_messages_in_path(
     seen: set[bytes] = set()
     with path.open("r", encoding="utf-8") as f:
         for line in f:
+            # Fast prefilter: only parse JSON lines that can contain message payloads.
+            if "event_msg" in line:
+                if "user_message" not in line and "agent_message" not in line:
+                    continue
+            elif "response_item" in line:
+                if not RESPONSE_ITEM_MESSAGE_TYPE_RE.search(line):
+                    continue
+            else:
+                continue
+
             try:
                 obj = json.loads(line)
             except Exception:
-                continue
-
-            ts = parse_ts(obj.get("timestamp"))
-            if since and ts and ts < since:
-                continue
-            if until and ts and ts > until:
                 continue
 
             payload = obj.get("payload") or {}
@@ -151,6 +156,12 @@ def iter_messages_in_path(
 
             text = normalize_text(text)
             if not text:
+                continue
+
+            ts = parse_ts(obj.get("timestamp"))
+            if since and ts and ts < since:
+                continue
+            if until and ts and ts > until:
                 continue
 
             if dedupe:
@@ -814,6 +825,9 @@ def iter_token_count_events_in_path(
 ) -> Iterator[tuple[Optional[datetime], dict[str, Any]]]:
     with path.open("r", encoding="utf-8") as f:
         for line in f:
+            # Fast prefilter: token counts only appear on event_msg rows.
+            if "event_msg" not in line or "token_count" not in line:
+                continue
             try:
                 obj = json.loads(line)
             except Exception:
@@ -1000,20 +1014,25 @@ def dataset_tool_calls(
     for path in iter_jsonl_paths(root):
         with path.open("r", encoding="utf-8") as f:
             for line in f:
+                # Fast prefilter: tool calls are response_item rows with call types.
+                if "response_item" not in line:
+                    continue
+                if "function_call" not in line and "custom_tool_call" not in line:
+                    continue
                 try:
                     obj = json.loads(line)
                 except Exception:
                     continue
                 if obj.get("type") != "response_item":
                     continue
+                payload = obj.get("payload") or {}
+                ptype = payload.get("type")
+                if ptype not in ("function_call", "custom_tool_call"):
+                    continue
                 ts = parse_ts(obj.get("timestamp"))
                 if since and ts and ts < since:
                     continue
                 if until and ts and ts > until:
-                    continue
-                payload = obj.get("payload") or {}
-                ptype = payload.get("type")
-                if ptype not in ("function_call", "custom_tool_call"):
                     continue
 
                 tool_name = payload.get("name")
