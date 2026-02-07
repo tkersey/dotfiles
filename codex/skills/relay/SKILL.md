@@ -86,3 +86,5 @@ Backend tool names are implementation details inside `scripts/relay.py`.
 - Error playbooks and retry recipes: `references/error-playbooks.md`.
 - Prompt and workflow examples: `references/examples.md`.
 - Delegation phrasing adapters for real prompts: `references/prompt-adapters.md`.
+- Philosophy and invariants: `references/relay-philosophy.md`.
+- Gap audit and minimal-incision fix plan: `references/relay-gap-audit.md`.
