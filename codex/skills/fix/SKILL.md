@@ -17,6 +17,11 @@ Make risky or unclear code safe with the smallest sound, validated change.
 
 If a fix requires a product-sensitive choice (cannot be derived or characterized safely), stop and ask (or invoke `$creative-problem-solver` when multiple viable strategies exist).
 
+## Skill composition (required)
+- `$invariant-ace`: default invariant/protocol engine for `fix`; run it before invariant-affecting edits.
+- `$complexity-mitigator`: default complexity analysis engine; use it for risk-driven complexity judgments before reshaping code.
+- `$refine`: default path when the task is to improve `fix` itself (or other skills); apply `$refine` workflow and `quick_validate`.
+
 ## Inputs
 - User request text.
 - Repo state (code + tests + scripts).
@@ -49,6 +54,9 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
   - invariant_after
   - fix
   - proof
+- MUST route invariant/protocol reasoning through `$invariant-ace` (Compact Mode by default; full protocol when needed).
+- MUST route complexity risk analysis through `$complexity-mitigator` before non-trivial reshaping.
+- MUST route skill-self edits (for example `codex/skills/fix`) through `$refine` and run `quick_validate`.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 
 ## Default policy (non-interactive)
@@ -229,6 +237,7 @@ Pass 2) Surface (compat + misuse)
 Pass 3) Audit (invariants + ownership + proof quality)
 - Scope: final diff slice.
 - Focus: invariants enforced at strongest cheap boundary; ownership release-on-all-paths; proof strength.
+- Delegation: run `$invariant-ace` for invariant framing and `$complexity-mitigator` for complexity verdicts that affect auditability.
 - Change budget: no refactors unless they directly reduce risk/auditability of invariants.
 
 Early exit (stop after pass 3):
@@ -277,13 +286,18 @@ For every issue you act on, construct this record before editing:
 
 ### 0) Preflight
 1. Determine mode: review-only vs fix.
-2. Define slice:
+2. If the requested target is this skill (or another skill), route through `$refine`:
+   - follow `$refine` Discover -> Define -> Develop -> Deliver,
+   - apply minimal skill diffs,
+   - run `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/<skill-name>`.
+   - Return to the rest of `fix` only if the request also includes code/runtime defects.
+3. Define slice:
    - If in a git repo and there is a diff, derive slice/tokens from the diff (paths, changed symbols/strings).
    - Otherwise: entrypoint, inputs, outputs, state.
-3. If the request is PR-scoped (for example "`$fix this PR`", "`$fix current branch`", CI failure on a PR), anchor the slice to PR diff/base and keep the work PR-local unless severity widening is required.
-4. Apply `PR/diff scope guardrail` for review mode.
-5. Apply `Generated / third-party code guardrail` before editing.
-6. Select validation signal (or create proof hook).
+4. If the request is PR-scoped (for example "`$fix this PR`", "`$fix current branch`", CI failure on a PR), anchor the slice to PR diff/base and keep the work PR-local unless severity widening is required.
+5. Apply `PR/diff scope guardrail` for review mode.
+6. Apply `Generated / third-party code guardrail` before editing.
+7. Select validation signal (or create proof hook).
 
 ### 1) Contract + baseline
 1. Determine PROVEN_USED behavior:
@@ -328,21 +342,23 @@ Language cues (examples only):
 - C/C++: raw pointers, unchecked casts, manual `malloc/free`.
 
 #### 3b) Invariant strengthening scan
-For each invariant you can name:
-1. State invariant_before and invariant_after.
-2. Choose the strongest enforcement feasible:
-   - compile-time/typestate
-   - construction-time parser/smart constructor (return refined value)
-   - runtime boundary checks
-   - assertions/logs (last resort)
-3. Prefer "parse/refine once at the boundary" over scattered validation.
-4. Attach a proof hook (test/assert/log) that fails loudly on violation.
+Delegate to `$invariant-ace` and import its artifacts into `fix`.
 
-Discovery cues:
-- Same check duplicated across sites.
-- "should never happen" comments.
-- Silent defaulting/fallback.
-- Flag/boolean combos that only make sense in some states.
+Default execution:
+1. Run `$invariant-ace` Compact Mode first.
+2. Capture at minimum:
+   - `Counterexample`
+   - `Invariants`
+   - `Owner and Scope`
+   - `Enforcement Boundary`
+   - `Seam (Before -> After)`
+   - `Verification`
+3. Map these to `fix` finding fields:
+   - `invariant_before` from broken trace + prior scope,
+   - `invariant_after` from chosen predicate(s) + holds scope,
+   - `fix` from seam,
+   - `proof` from verification signal.
+4. Escalate to full `$invariant-ace` protocol if Compact Mode does not yield an inductive predicate.
 
 #### 3c) Footgun scan + defusal
 Trigger: you touched an API surface OR a caller can plausibly misuse the code.
@@ -358,14 +374,15 @@ For top-ranked misuse paths:
 3. Lock with a regression test or boundary assertion.
 
 #### 3d) Complexity scan (risk-driven)
+Delegate to `$complexity-mitigator` for analysis; implement only via `fix`.
+
 Rule: reshape only when it reduces risk and improves auditability of invariants/ownership.
 
 Algorithm:
-1. Identify hotspots: nesting, branch soup, cross-file hops, mixed responsibilities.
-2. Separate essential vs incidental.
-3. Apply in order: flatten → rename → extract → replace branches with data.
-4. If simplification requires a missing invariant, strengthen invariants first.
-5. Avoid premature abstraction; duplication is cheaper than the wrong abstraction.
+1. Run `$complexity-mitigator` on the touched slice (heat read + essential/incidental verdict + ranked options + TRACE).
+2. Select the smallest viable cut that directly supports a finding (safety/surface/invariant ownership/proof quality).
+3. If simplification depends on an unstated invariant, run/refresh `$invariant-ace` first.
+4. Keep complexity-only cleanup out of scope unless it closes a concrete risk.
 
 ### 4) Implement fixes (per finding)
 For findings in severity order:
@@ -488,3 +505,4 @@ For each finding:
 - "footgun" / "misuse" / "should never happen"
 - "invariant" / "lifetime" / "nullable surprise"
 - "too complex" / "branch soup" / "cross-file hops"
+- "refine $fix" / "improve fix skill workflow" / "update fix skill docs"
