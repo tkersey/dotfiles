@@ -1,6 +1,6 @@
 ---
 name: fix
-description: Review+fix protocol with safety guardrails (unsoundness, invariants, footguns, incidental complexity); requires a validation signal.
+description: Review+fix protocol with safety guardrails (unsoundness, invariants, footguns, incidental complexity). Use for "$fix this PR", "fix current branch", CI-red repair, crash/corruption bugs, and invariant/footgun hardening. Requires a validation signal.
 ---
 
 # Fix
@@ -24,11 +24,13 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 
 ## Outputs (chat)
 - Emit the exact sections in `Deliverable format (chat)`.
+- Use section headings verbatim (for example, `**Findings (severity order)**`, not `Findings`).
 - During execution, emit one-line pass progress updates at pass start and pass end using:
   `Pass <n>/<total_planned>: <name> — <start|done>; edits=<yes|no|n/a>; signal=<cmd|n/a>; result=<ok|fail|n/a>`.
 
 ### Embedded mode (when $fix is invoked inside another skill)
 - You may emit a compact **Fix Record** instead of the full deliverable.
+- If another skill requires a primary artifact (for example patch-only diff), append **Fix Record** immediately after that artifact in the same assistant message.
 - Do not mention “Using $fix” without emitting either the full deliverable or a Fix Record.
 
 ## Hard rules (MUST / MUST NOT)
@@ -40,6 +42,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST resolve trade-offs using `Default policy (non-interactive)`.
 - MUST emit pass progress updates while running the multi-pass loop.
 - MUST include a final `Pass trace` section in the deliverable/Fix Record with executed pass count and per-pass outcomes.
+- MUST use the exact heading names from `Deliverable format (chat)` / `Fix Record`; do not alias or shorten heading labels.
 - MUST produce a complete finding record for every acted-on issue:
   - counterexample
   - invariant_before
@@ -277,9 +280,10 @@ For every issue you act on, construct this record before editing:
 2. Define slice:
    - If in a git repo and there is a diff, derive slice/tokens from the diff (paths, changed symbols/strings).
    - Otherwise: entrypoint, inputs, outputs, state.
-3. Apply `PR/diff scope guardrail` for review mode.
-4. Apply `Generated / third-party code guardrail` before editing.
-5. Select validation signal (or create proof hook).
+3. If the request is PR-scoped (for example "`$fix this PR`", "`$fix current branch`", CI failure on a PR), anchor the slice to PR diff/base and keep the work PR-local unless severity widening is required.
+4. Apply `PR/diff scope guardrail` for review mode.
+5. Apply `Generated / third-party code guardrail` before editing.
+6. Select validation signal (or create proof hook).
 
 ### 1) Contract + baseline
 1. Determine PROVEN_USED behavior:
@@ -386,6 +390,13 @@ For findings in severity order:
 1. Re-check `Residual risks / open questions policy`.
 2. Any item without a valid blocker becomes a finding and is fixed (with proof) or dropped.
 
+### 7) Output lock (required)
+Before sending the final message, verify all are true:
+1. Heading set is exact and complete (`Contract`, `Findings (severity order)`, `Changes applied`, `Pass trace`, `Validation`, `Residual risks / open questions`).
+2. `Pass trace` includes planned/executed counts and P1/P2/P3 lines (plus P4/P5 when executed).
+3. Runtime pass updates (`Pass <n>/<total_planned>: ...`) were emitted during execution.
+4. If embedded mode was used, include **Fix Record** in the same assistant message (after any required artifact).
+
 ## Deliverable format (chat)
 Output exactly these sections.
 
@@ -472,6 +483,8 @@ For each finding:
 
 ## Activation cues
 - "resolve" / "fix" / "crash" / "data corruption"
+- "$fix this PR" / "$fix current branch" / "fix this branch"
+- "CI failed" / "fix the red checks" / "repair failing PR"
 - "footgun" / "misuse" / "should never happen"
 - "invariant" / "lifetime" / "nullable surprise"
 - "too complex" / "branch soup" / "cross-file hops"
