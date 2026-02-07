@@ -78,3 +78,13 @@ CLARIFICATION EXPERT: HUMAN INPUT REQUIRED
 - **Actions**: `gh run list` surfaces recent CI runs, while `gh run watch <run-id>` streams logs so you can keep an eye on builds without leaving the shell.
 - **Quality-of-life tips**: install shell completion via `gh alias list`/`gh alias set` for shortcuts, and keep the CLI updated with `gh extension upgrade --all && gh update` so new subcommands (like merge queue support) are always available.
 - **Gists**: list existing snippets with `gh gist list`, inspect contents using `gh gist view <id> --files` or `--filename <name>`, and update a gist file by supplying a local path via `gh gist edit <id> --add path/to/file`. Use `--filename` when you need to edit inline.
+
+### Python
+
+- **UV-only policy (hard rule)**: use `uv` for all Python work. Do not use `python`, `pip`, `pipx`, `venv`, `virtualenv`, `poetry`, or `conda` directly unless the user explicitly asks.
+- **Run everything through uv**: use `uv run ...` for scripts, tests, linters, and CLIs (for example, `uv run pytest`, `uv run ruff check`, `uv run python script.py`).
+- **Ephemeral skill dependencies**: for skill workflows, external Python dependencies must be ephemeral and non-project-scoped. Prefer `uvx <tool>` or `uv run --with <pkg> ...` so nothing is permanently installed into the repo environment.
+- **No persistent skill envs**: do not create or reuse `.venv*` for skill-only tooling, and do not `uv pip install` external packages for skills unless the user explicitly requests a persistent dependency.
+- **Project dependency sync**: when a project intentionally manages Python dependencies, use `uv sync` (or `uv lock` + `uv sync`) and keep `pyproject.toml`/`uv.lock` authoritative.
+- **Shebang helper**: for Python automation scripts, prefer `#!/usr/bin/env -S uv run python`.
+- **Maintenance**: periodically run `uv self update` to keep compatibility and performance current.
