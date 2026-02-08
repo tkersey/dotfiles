@@ -3,6 +3,8 @@
 ## Location
 - Default database: `~/.codex/sqlite/codex-dev.db`
 - Override path with `--db` in `scripts/cron.py` if needed.
+- Filesystem automation configs: `~/.codex/automations/<automation-id>/automation.toml`
+- `scripts/cron.py` keeps SQLite rows and filesystem configs in sync.
 
 ## Tables
 
@@ -18,6 +20,14 @@ Columns:
 - `rrule` TEXT (RFC5545 RRULE string; app stores with `RRULE:` prefix)
 - `created_at` INTEGER (unix milliseconds)
 - `updated_at` INTEGER (unix milliseconds)
+
+## Filesystem config
+Each automation also has a directory at:
+- `~/.codex/automations/<id>/`
+
+Files:
+- `automation.toml` (primary config rendered from the `automations` row)
+- `memory.md` (created if missing; updated by app runs)
 
 ### automation_runs
 Columns:

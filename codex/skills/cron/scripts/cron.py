@@ -3,12 +3,14 @@ import argparse
 import datetime as dt
 import json
 import os
+import shutil
 import sqlite3
 import sys
 import time
 import uuid
 
 DEFAULT_DB = os.path.expanduser("~/.codex/sqlite/codex-dev.db")
+DEFAULT_AUTOMATIONS_DIR = os.path.expanduser("~/.codex/automations")
 STATUS_ACTIVE = "ACTIVE"
 STATUS_PAUSED = "PAUSED"
 
@@ -98,6 +100,74 @@ def row_to_dict(row: sqlite3.Row) -> dict:
     return {key: row[key] for key in row.keys()}
 
 
+def validate_automation_id(automation_id: str) -> str:
+    value = automation_id.strip()
+    if not value or value in {".", ".."}:
+        fail("automation id must not be empty")
+    if os.path.sep in value or (os.path.altsep and os.path.altsep in value):
+        fail("automation id must not contain path separators")
+    return value
+
+
+def automation_dir(automation_id: str) -> str:
+    return os.path.join(DEFAULT_AUTOMATIONS_DIR, validate_automation_id(automation_id))
+
+
+def toml_quote(value: str) -> str:
+    escaped = (
+        value.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\t", "\\t")
+    )
+    return f'"{escaped}"'
+
+
+def write_automation_files(conn: sqlite3.Connection, automation_id: str) -> None:
+    row = conn.execute("select * from automations where id = ?", (automation_id,)).fetchone()
+    if not row:
+        fail(f"unable to write automation files for missing id {automation_id}")
+
+    target_dir = automation_dir(row["id"])
+    os.makedirs(target_dir, exist_ok=True)
+
+    try:
+        cwds = json.loads(row["cwds"])
+    except json.JSONDecodeError as exc:
+        fail(f"cwds for automation {row['id']} is not valid JSON: {exc}")
+    if not isinstance(cwds, list) or not all(isinstance(item, str) for item in cwds):
+        fail(f"cwds for automation {row['id']} must be a JSON array of strings")
+
+    cwds_value = "[" + ", ".join(toml_quote(item) for item in cwds) + "]"
+    lines = [
+        "version = 1",
+        f"id = {toml_quote(row['id'])}",
+        f"name = {toml_quote(row['name'])}",
+        f"prompt = {toml_quote(row['prompt'])}",
+        f"status = {toml_quote(row['status'])}",
+        f"rrule = {toml_quote(row['rrule'])}",
+        f"cwds = {cwds_value}",
+        f"created_at = {int(row['created_at'])}",
+        f"updated_at = {int(row['updated_at'])}",
+    ]
+
+    automation_toml = os.path.join(target_dir, "automation.toml")
+    with open(automation_toml, "w", encoding="utf-8") as handle:
+        handle.write("\n".join(lines) + "\n")
+
+    memory_md = os.path.join(target_dir, "memory.md")
+    if not os.path.exists(memory_md):
+        with open(memory_md, "w", encoding="utf-8"):
+            pass
+
+
+def delete_automation_files(automation_id: str) -> None:
+    target_dir = automation_dir(automation_id)
+    if os.path.isdir(target_dir):
+        shutil.rmtree(target_dir)
+
+
 def cmd_list(args: argparse.Namespace) -> None:
     conn = connect(args.db)
     query = "select * from automations"
@@ -172,6 +242,7 @@ def cmd_create(args: argparse.Namespace) -> None:
         ),
     )
     conn.commit()
+    write_automation_files(conn, automation_id)
     print(automation_id)
 
 
@@ -208,6 +279,7 @@ def cmd_update(args: argparse.Namespace) -> None:
     values.append(row["id"])
     conn.execute(f"update automations set {assignments} where id = ?", values)
     conn.commit()
+    write_automation_files(conn, row["id"])
     print(row["id"])
 
 
@@ -220,6 +292,7 @@ def cmd_enable(args: argparse.Namespace) -> None:
         (STATUS_ACTIVE, now_ms, row["id"]),
     )
     conn.commit()
+    write_automation_files(conn, row["id"])
     print(row["id"])
 
 
@@ -232,6 +305,7 @@ def cmd_disable(args: argparse.Namespace) -> None:
         (STATUS_PAUSED, now_ms, row["id"]),
     )
     conn.commit()
+    write_automation_files(conn, row["id"])
     print(row["id"])
 
 
@@ -244,6 +318,7 @@ def cmd_run_now(args: argparse.Namespace) -> None:
         (now_ms, now_ms, row["id"]),
     )
     conn.commit()
+    write_automation_files(conn, row["id"])
     print(row["id"])
 
 
@@ -252,6 +327,7 @@ def cmd_delete(args: argparse.Namespace) -> None:
     row = resolve_automation(conn, args.id, args.name)
     conn.execute("delete from automations where id = ?", (row["id"],))
     conn.commit()
+    delete_automation_files(row["id"])
     print(row["id"])
 
 

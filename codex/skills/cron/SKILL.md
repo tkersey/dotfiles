@@ -6,7 +6,7 @@ description: Create and manage Codex app automations stored in the local SQLite 
 # Cron
 
 ## Overview
-Use this skill to manage Codex automations by editing the local SQLite database. Operate through the bundled `scripts/cron.py` and keep changes minimal and explicit.
+Use this skill to manage Codex automations by editing the local SQLite database and synced filesystem automation configs. Operate through the bundled `scripts/cron.py` and keep changes minimal and explicit.
 
 ## Quick Start
 - List automations: `uv run python scripts/cron.py list`
