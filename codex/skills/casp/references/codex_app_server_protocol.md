@@ -2,6 +2,8 @@
 
 This skill does not assume access to any Codex source repo. Treat your installed `codex` binary as canonical.
 
+`casp` is v2-focused. Deprecated legacy approval requests are intentionally rejected.
+
 ## Canonical Schema Source
 
 Generate schemas that exactly match your installed version:
@@ -80,12 +82,16 @@ Tools:
 - `item/tool/call`
 - `item/tool/requestUserInput` (experimental)
 
+Auth:
+
+- `account/chatgptAuthTokens/refresh`
+
 Response payloads (see your generated schema for the exact shape):
 
 - `item/tool/call` -> `{ contentItems: [{ type: "inputText", text: "..." }], success: boolean }`
 - `item/tool/requestUserInput` -> `{ answers: { [questionId]: { answers: string[] } } }`
 
-Legacy (may appear in older flows):
+Legacy (may appear in older flows; casp rejects these in v2-only mode):
 
 - `execCommandApproval`
 - `applyPatchApproval`
@@ -122,6 +128,8 @@ Inbound messages interleave while you are waiting for any response:
 - server-initiated requests (must be answered)
 
 Use one read loop that dispatches by kind and correlates by `id`.
+
+For deterministic behavior, enforce a timeout on forwarded server requests and respond with explicit JSON-RPC errors for unimplemented methods.
 
 ## Debugging Tip
 

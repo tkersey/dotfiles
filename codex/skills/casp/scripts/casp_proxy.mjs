@@ -4,17 +4,20 @@
 // - Reads JSONL commands from stdin.
 // - Spawns `codex app-server` and performs initialize/initialized handshake.
 // - Emits JSONL events on stdout (lossless; includes raw app-server messages).
-// - Auto-accepts approvals.
-// - Forwards tool requests to the orchestrator (stdin) and blocks until a response arrives.
+// - Auto-accepts v2 approvals.
+// - Forwards server requests to the orchestrator and fails fast on timeout.
 
 import { spawn } from "node:child_process";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { createInterface } from "node:readline";
 
 const CASP_EVENT_VERSION = 1;
+const JSONRPC_INVALID_PARAMS = -32602;
+const JSONRPC_REQUEST_TIMEOUT = -32000;
 
 function nowMs() {
   return Date.now();
@@ -33,6 +36,110 @@ function safeJsonParse(line) {
       error: err instanceof Error ? err : new Error(String(err)),
     };
   }
+}
+
+function isStringArray(value) {
+  return Array.isArray(value) && value.every((v) => typeof v === "string");
+}
+
+function validateDynamicToolCallResult(result) {
+  if (!isObject(result)) {
+    return { ok: false, message: "item/tool/call result must be an object" };
+  }
+  if (!Array.isArray(result.contentItems)) {
+    return { ok: false, message: "item/tool/call result.contentItems must be an array" };
+  }
+  if (typeof result.success !== "boolean") {
+    return { ok: false, message: "item/tool/call result.success must be a boolean" };
+  }
+  for (const item of result.contentItems) {
+    if (!isObject(item) || typeof item.type !== "string") {
+      return {
+        ok: false,
+        message: "item/tool/call contentItems entries must be objects with type",
+      };
+    }
+    if (item.type === "inputText") {
+      if (typeof item.text !== "string") {
+        return {
+          ok: false,
+          message: "item/tool/call inputText entries require string text",
+        };
+      }
+      continue;
+    }
+    if (item.type === "inputImage") {
+      if (typeof item.imageUrl !== "string") {
+        return {
+          ok: false,
+          message: "item/tool/call inputImage entries require string imageUrl",
+        };
+      }
+      continue;
+    }
+    return {
+      ok: false,
+      message: `item/tool/call contentItems has unsupported type: ${item.type}`,
+    };
+  }
+  return { ok: true };
+}
+
+function validateToolRequestUserInputResult(result) {
+  if (!isObject(result)) {
+    return { ok: false, message: "item/tool/requestUserInput result must be an object" };
+  }
+  if (!isObject(result.answers)) {
+    return {
+      ok: false,
+      message: "item/tool/requestUserInput result.answers must be an object",
+    };
+  }
+  for (const [questionId, value] of Object.entries(result.answers)) {
+    if (!isObject(value) || !isStringArray(value.answers)) {
+      return {
+        ok: false,
+        message:
+          `item/tool/requestUserInput result.answers.${questionId} must be ` +
+          "{ answers: string[] }",
+      };
+    }
+  }
+  return { ok: true };
+}
+
+function validateChatgptAuthTokensRefreshResult(result) {
+  if (!isObject(result)) {
+    return {
+      ok: false,
+      message: "account/chatgptAuthTokens/refresh result must be an object",
+    };
+  }
+  if (typeof result.idToken !== "string" || typeof result.accessToken !== "string") {
+    return {
+      ok: false,
+      message:
+        "account/chatgptAuthTokens/refresh result requires string idToken and accessToken",
+    };
+  }
+  return { ok: true };
+}
+
+function validateServerRequestResult(method, result) {
+  if (method === "item/tool/call") return validateDynamicToolCallResult(result);
+  if (method === "item/tool/requestUserInput") {
+    return validateToolRequestUserInputResult(result);
+  }
+  if (method === "account/chatgptAuthTokens/refresh") {
+    return validateChatgptAuthTokensRefreshResult(result);
+  }
+  return { ok: true };
+}
+
+function defaultStateFileForCwd(cwd) {
+  const normalized = resolve(cwd);
+  const digest = createHash("sha256").update(normalized).digest("hex").slice(0, 16);
+  return resolve(homedir(), ".codex", "casp", "state", `${digest}.json`);
 }
 
 function classifyJsonRpc(msg) {
@@ -124,11 +231,11 @@ function deriveRoutingKeys(msg, requestMethodHint = null) {
 }
 
 function parseArgs(argv) {
-  /** @type {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number}} */
+  /** @type {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number}} */
   const opts = {
     codexPath: "codex",
     cwd: process.cwd(),
-    stateFile: ".casp/state.json",
+    stateFile: defaultStateFileForCwd(process.cwd()),
     clientName: "casp",
     clientTitle: "casp skill",
     clientVersion: "0.1.0",
@@ -138,7 +245,10 @@ function parseArgs(argv) {
     maxOutQueue: 20_000,
     // After casp/exit, SIGKILL app-server after N ms.
     killTimeoutMs: 2_000,
+    // Fail forwarded server requests that have no orchestrator response.
+    serverRequestTimeoutMs: 30_000,
   };
+  let explicitStateFile = false;
 
   const args = [...argv];
   while (args.length) {
@@ -161,10 +271,14 @@ function parseArgs(argv) {
     }
     if (arg === "--cwd") {
       opts.cwd = takeValue();
+      if (!explicitStateFile) {
+        opts.stateFile = defaultStateFileForCwd(opts.cwd);
+      }
       continue;
     }
     if (arg === "--state-file") {
       opts.stateFile = takeValue();
+      explicitStateFile = true;
       continue;
     }
     if (arg === "--client-name") {
@@ -191,6 +305,10 @@ function parseArgs(argv) {
       opts.killTimeoutMs = Number(takeValue());
       continue;
     }
+    if (arg === "--server-request-timeout-ms") {
+      opts.serverRequestTimeoutMs = Number(takeValue());
+      continue;
+    }
 
     throw new Error(`Unknown arg: ${arg}`);
   }
@@ -203,8 +321,10 @@ function helpText() {
     "casp_proxy.mjs - JSONL proxy for `codex app-server`",
     "",
     "Usage:",
-    "  node scripts/casp_proxy.mjs [--codex codex] [--cwd DIR] [--state-file .casp/state.json]",
+    "  node scripts/casp_proxy.mjs [--codex codex] [--cwd DIR]",
+    "                        [--state-file ~/.codex/casp/state/<workspace-hash>.json]",
     "                        [--heartbeat-ms 0] [--max-out-queue 20000] [--kill-timeout-ms 2000]",
+    "                        [--server-request-timeout-ms 30000]",
     "",
     "stdin JSONL:",
     '  { "type": "casp/request", "clientRequestId": "...", "method": "thread/start", "params": { ... } }',
@@ -246,7 +366,7 @@ async function writeStateFile(stateFile, state) {
 }
 
 class CaspProxy {
-  /** @param {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number}} opts */
+  /** @param {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number}} opts */
   constructor(opts) {
     this.opts = opts;
     this.cwd = opts.cwd;
@@ -305,7 +425,7 @@ class CaspProxy {
     /** @type {Map<string|number, { resolve: (msg: any) => void, reject: (err: Error) => void, timeout: ReturnType<typeof setTimeout> | null }>} */
     this.pendingResponseWaiters = new Map();
 
-    /** @type {Map<string|number, { method: string, params: any }>} */
+    /** @type {Map<string|number, { method: string, params: any, timeout: ReturnType<typeof setTimeout> | null, startedAtMs: number }>} */
     this.pendingServerRequests = new Map();
 
     /** @type {Array<any>} */
@@ -394,6 +514,11 @@ class CaspProxy {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = null;
     }
+
+    for (const pending of this.pendingServerRequests.values()) {
+      if (pending.timeout) clearTimeout(pending.timeout);
+    }
+    this.pendingServerRequests.clear();
 
     this.failAllResponseWaiters(new Error(`casp exiting: ${reason}`));
 
@@ -549,6 +674,26 @@ class CaspProxy {
       waiter.reject(error);
       this.pendingResponseWaiters.delete(id);
     }
+  }
+
+  clearPendingServerRequest(id) {
+    const pending = this.pendingServerRequests.get(id) ?? null;
+    if (!pending) return null;
+    if (pending.timeout) clearTimeout(pending.timeout);
+    this.pendingServerRequests.delete(id);
+    return pending;
+  }
+
+  sendServerRequestError(id, method, code, message, data, reason) {
+    const error = { code, message };
+    if (data !== undefined) error.data = data;
+    this.sendToServer(
+      { id, error },
+      {
+        reason,
+        method,
+      },
+    );
   }
 
   sendToServer(msg, meta = {}) {
@@ -870,35 +1015,47 @@ class CaspProxy {
       }
 
       const pending = this.pendingServerRequests.get(id) ?? null;
-
-      let result = msg.result;
-      if (!hasError && pending?.method === "item/tool/call" && isObject(result)) {
-        // Back-compat shim: older callers may send { output: string, success: boolean }.
-        if (
-          !Object.prototype.hasOwnProperty.call(result, "contentItems") &&
-          typeof result.output === "string"
-        ) {
-          result = {
-            contentItems: [{ type: "inputText", text: result.output }],
-            success: Boolean(result.success),
-          };
-        }
-
-        // Also accept snake_case content_items.
-        if (
-          !Object.prototype.hasOwnProperty.call(result, "contentItems") &&
-          Array.isArray(result.content_items)
-        ) {
-          result = {
-            contentItems: result.content_items,
-            success: Boolean(result.success),
-          };
-        }
+      if (!pending) {
+        this.emitError("casp/respond id does not match a pending server request", {
+          id,
+          msg,
+        });
+        return;
       }
 
-      const res = hasError ? { id, error: msg.error } : { id, result };
-      this.pendingServerRequests.delete(id);
-      this.sendToServer(res, { reason: "clientResponse" });
+      if (hasError) {
+        this.clearPendingServerRequest(id);
+        this.sendToServer(
+          { id, error: msg.error },
+          { reason: "clientResponse", method: pending.method },
+        );
+        return;
+      }
+
+      const validation = validateServerRequestResult(pending.method, msg.result);
+      if (!validation.ok) {
+        this.clearPendingServerRequest(id);
+        this.emitError("Invalid casp/respond payload for server request", {
+          id,
+          method: pending.method,
+          validationError: validation.message,
+        });
+        this.sendServerRequestError(
+          id,
+          pending.method,
+          JSONRPC_INVALID_PARAMS,
+          validation.message,
+          undefined,
+          "clientResponseValidationError",
+        );
+        return;
+      }
+
+      this.clearPendingServerRequest(id);
+      this.sendToServer(
+        { id, result: msg.result },
+        { reason: "clientResponse", method: pending.method },
+      );
       return;
     }
 
@@ -1048,20 +1205,66 @@ class CaspProxy {
     }
 
     if (method === "execCommandApproval" || method === "applyPatchApproval") {
-      this.sendToServer(
-        { id, result: { decision: "approved_for_session" } },
-        { reason: "autoApproval", method },
+      this.emitError("Deprecated server request rejected (casp is v2-only)", {
+        id,
+        method,
+      });
+      this.sendServerRequestError(
+        id,
+        method,
+        JSONRPC_INVALID_PARAMS,
+        `Unsupported deprecated server request: ${method}`,
+        {
+          supportedMode: "v2-only",
+        },
+        "legacyUnsupported",
       );
-      this.stats.autoApprovals += 1;
       return;
     }
 
-    this.pendingServerRequests.set(id, { method, params });
+    const timeout =
+      this.opts.serverRequestTimeoutMs > 0
+        ? setTimeout(() => {
+            const pending = this.clearPendingServerRequest(id);
+            if (!pending) return;
+            this.emitError("Timed out waiting for orchestrator response", {
+              id,
+              method: pending.method,
+              timeoutMs: this.opts.serverRequestTimeoutMs,
+            });
+            this.emit({
+              ...this.baseEvent("casp/serverRequestTimeout"),
+              id,
+              method: pending.method,
+              timeoutMs: this.opts.serverRequestTimeoutMs,
+              threadId: typeof pending.params.threadId === "string" ? pending.params.threadId : null,
+              turnId: typeof pending.params.turnId === "string" ? pending.params.turnId : null,
+              itemId: typeof pending.params.itemId === "string" ? pending.params.itemId : null,
+            });
+            this.sendServerRequestError(
+              id,
+              pending.method,
+              JSONRPC_REQUEST_TIMEOUT,
+              `Timed out waiting for orchestrator response to ${pending.method}`,
+              undefined,
+              "serverRequestTimeout",
+            );
+          }, this.opts.serverRequestTimeoutMs)
+        : null;
+    timeout?.unref?.();
+
+    this.pendingServerRequests.set(id, {
+      method,
+      params,
+      timeout,
+      startedAtMs: nowMs(),
+    });
     this.stats.forwardedServerRequests += 1;
     this.emit({
       ...this.baseEvent("casp/serverRequest"),
       method,
       id,
+      timeoutMs: this.opts.serverRequestTimeoutMs,
       threadId: typeof params.threadId === "string" ? params.threadId : null,
       turnId: typeof params.turnId === "string" ? params.turnId : null,
       itemId: typeof params.itemId === "string" ? params.itemId : null,

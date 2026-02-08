@@ -39,6 +39,7 @@ export class CaspClient extends EventEmitter {
    *   clientName?: string,
    *   clientTitle?: string,
    *   clientVersion?: string,
+   *   serverRequestTimeoutMs?: number,
    * }} [opts]
    */
   constructor(opts = {}) {
@@ -53,6 +54,7 @@ export class CaspClient extends EventEmitter {
       clientName: opts.clientName,
       clientTitle: opts.clientTitle,
       clientVersion: opts.clientVersion,
+      serverRequestTimeoutMs: opts.serverRequestTimeoutMs,
     };
 
     /** @type {import('node:child_process').ChildProcess | null} */
@@ -86,6 +88,9 @@ export class CaspClient extends EventEmitter {
     if (this.opts.clientName) args.push("--client-name", this.opts.clientName);
     if (this.opts.clientTitle) args.push("--client-title", this.opts.clientTitle);
     if (this.opts.clientVersion) args.push("--client-version", this.opts.clientVersion);
+    if (Number.isFinite(this.opts.serverRequestTimeoutMs)) {
+      args.push("--server-request-timeout-ms", String(this.opts.serverRequestTimeoutMs));
+    }
 
     const child = spawn(this.opts.nodePath, args, {
       stdio: ["pipe", "pipe", "pipe"],
@@ -422,12 +427,38 @@ export class CaspClient extends EventEmitter {
     if (!isObject(payload)) {
       throw new Error("respond(id, payload): payload must be an object");
     }
+    const hasResult = Object.prototype.hasOwnProperty.call(payload, "result");
+    const hasError = Object.prototype.hasOwnProperty.call(payload, "error");
+    if (hasResult === hasError) {
+      throw new Error("respond(id, payload): include exactly one of result or error");
+    }
 
     /** @type {any} */
     const msg = { type: "casp/respond", id };
-    if (Object.prototype.hasOwnProperty.call(payload, "error")) msg.error = payload.error;
+    if (hasError) msg.error = payload.error;
     else msg.result = payload.result;
     this.send(msg);
+  }
+
+  /**
+   * Send a JSON-RPC error response for a forwarded server request.
+   * @param {string|number} id
+   * @param {string} message
+   * @param {{ code?: number, data?: any }} [opts]
+   */
+  respondError(id, message, opts = {}) {
+    if (typeof message !== "string" || !message) {
+      throw new Error("respondError(id, message): message must be a non-empty string");
+    }
+    /** @type {any} */
+    const error = {
+      code: Number.isInteger(opts.code) ? opts.code : -32000,
+      message,
+    };
+    if (Object.prototype.hasOwnProperty.call(opts, "data")) {
+      error.data = opts.data;
+    }
+    this.respond(id, { error });
   }
 
   async close() {

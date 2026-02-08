@@ -16,8 +16,9 @@ function usage() {
     "  node scripts/casp_example_orchestrator.mjs --cwd DIR --prompt TEXT [--thread-id THREAD_ID]",
     "",
     "Notes:",
-    "  - --cwd controls where codex runs and where .casp/state.json lives.",
+    "  - --cwd controls where codex runs; casp state defaults to ~/.codex/casp/state/<workspace-hash>.json.",
     "  - --prompt requires a working Codex login and (usually) network access.",
+    "  - This example is v2-only and fails fast on unimplemented server requests.",
   ].join("\n");
 }
 
@@ -117,9 +118,9 @@ async function main() {
   client.on("casp/error", (ev) => logErr(`casp/error: ${ev.message}`));
   client.on("proxyStderr", (line) => logErr(`proxy stderr: ${line}`));
 
-  // Do not let server-initiated requests stall: respond with an explicit error by default.
+  // Do not let server-initiated requests stall: always respond deterministically.
   client.on("casp/serverRequest", (ev) => {
-    const method = ev.method;
+    const method = typeof ev.method === "string" ? ev.method : "<unknown>";
     if (method === "item/tool/call") {
       // Example policy: do not implement tools here; just return a clear error.
       client.respond(ev.id, {
@@ -133,10 +134,29 @@ async function main() {
       return;
     }
 
-    client.respond(ev.id, {
-      error: {
-        message: `Unhandled server request: ${method}`,
-      },
+    if (method === "item/tool/requestUserInput") {
+      client.respondError(ev.id, "requestUserInput not implemented by this example", {
+        code: -32000,
+        data: { method },
+      });
+      return;
+    }
+
+    if (method === "account/chatgptAuthTokens/refresh") {
+      client.respondError(
+        ev.id,
+        "chatgptAuthTokens refresh not implemented by this example",
+        {
+          code: -32000,
+          data: { method },
+        },
+      );
+      return;
+    }
+
+    client.respondError(ev.id, `Unhandled server request: ${method}`, {
+      code: -32601,
+      data: { method },
     });
   });
 
