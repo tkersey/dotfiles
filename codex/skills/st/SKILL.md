@@ -7,7 +7,7 @@ description: Manage persistent task plans in a repository-committed JSONL log so
 
 ## Overview
 
-Maintain a durable plan file in the repo (default: `.codex/st-plan.jsonl`) using an append-only JSONL v3 stream with dual lanes:
+Maintain a durable plan file in the repo (default: `.step/st-plan.jsonl`) using an append-only JSONL v3 stream with dual lanes:
 
 - `event` lane for mutations
 - `checkpoint` lane for periodic full-state snapshots
@@ -29,19 +29,19 @@ Plan items use typed dependency edges (`deps: [{id,type}]`) plus `notes` and `co
 Run commands from the target repository root.
 
 ```bash
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py init --file .codex/st-plan.jsonl
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py add --file .codex/st-plan.jsonl --id st-001 --step "Reproduce failing test" --deps ""
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py add --file .codex/st-plan.jsonl --id st-002 --step "Patch core logic" --deps "st-001"
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py set-status --file .codex/st-plan.jsonl --id st-001 --status in_progress
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py set-deps --file .codex/st-plan.jsonl --id st-002 --deps "st-001:blocks,st-003:blocks"
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py set-notes --file .codex/st-plan.jsonl --id st-002 --notes "Need benchmark evidence"
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py add-comment --file .codex/st-plan.jsonl --id st-002 --text "Pausing until CI clears" --author tk
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py ready --file .codex/st-plan.jsonl --format markdown
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py blocked --file .codex/st-plan.jsonl --format json
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py show --file .codex/st-plan.jsonl --format markdown
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py emit-update-plan --file .codex/st-plan.jsonl
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py export --file .codex/st-plan.jsonl --output .codex/st-plan.snapshot.json
-uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py import-plan --file .codex/st-plan.jsonl --input .codex/st-plan.snapshot.json --replace
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py init --file .step/st-plan.jsonl
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py add --file .step/st-plan.jsonl --id st-001 --step "Reproduce failing test" --deps ""
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py add --file .step/st-plan.jsonl --id st-002 --step "Patch core logic" --deps "st-001"
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py set-status --file .step/st-plan.jsonl --id st-001 --status in_progress
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py set-deps --file .step/st-plan.jsonl --id st-002 --deps "st-001:blocks,st-003:blocks"
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py set-notes --file .step/st-plan.jsonl --id st-002 --notes "Need benchmark evidence"
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py add-comment --file .step/st-plan.jsonl --id st-002 --text "Pausing until CI clears" --author tk
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py ready --file .step/st-plan.jsonl --format markdown
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py blocked --file .step/st-plan.jsonl --format json
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py show --file .step/st-plan.jsonl --format markdown
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py emit-update-plan --file .step/st-plan.jsonl
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
+uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
 ```
 
 ## Operating Rules
@@ -69,16 +69,16 @@ uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py import-plan --file .codex/
 - Use `scripts/st_query_fast.sh` for low-latency read-only queries against large logs.
 - Requires both `jq` and `rg` on `PATH`.
 - Examples:
-  - `~/.dotfiles/codex/skills/st/scripts/st_query_fast.sh --file .codex/st-plan.jsonl ready`
-  - `~/.dotfiles/codex/skills/st/scripts/st_query_fast.sh --file .codex/st-plan.jsonl blocked`
-  - `~/.dotfiles/codex/skills/st/scripts/st_query_fast.sh --file .codex/st-plan.jsonl show`
-  - `~/.dotfiles/codex/skills/st/scripts/st_query_fast.sh --file .codex/st-plan.jsonl show st-002`
+  - `~/.dotfiles/codex/skills/st/scripts/st_query_fast.sh --file .step/st-plan.jsonl ready`
+  - `~/.dotfiles/codex/skills/st/scripts/st_query_fast.sh --file .step/st-plan.jsonl blocked`
+  - `~/.dotfiles/codex/skills/st/scripts/st_query_fast.sh --file .step/st-plan.jsonl show`
+  - `~/.dotfiles/codex/skills/st/scripts/st_query_fast.sh --file .step/st-plan.jsonl show st-002`
 
 ## Sync Checklist (`$st` -> `update_plan`)
 
 - After each `$st` mutation (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`), parse the emitted `update_plan: {...}` line and publish `update_plan` in the same turn.
 - If no emitted payload is available (for example after `init` or shell piping), run:
-  - `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py emit-update-plan --file .codex/st-plan.jsonl`
+  - `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py emit-update-plan --file .step/st-plan.jsonl`
 - Preserve item ordering from `$st` in `update_plan`.
 - Map statuses:
   - `in_progress` -> `in_progress`
@@ -87,15 +87,15 @@ uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py import-plan --file .codex/
 - Keep dependency edges only in `$st` (`deps`); do not encode dependencies in `update_plan`.
 - If an item has `dep_state=waiting_on_deps`, never publish that step as `in_progress` in `update_plan`.
 - Before final response on turns that mutate `$st`, re-check no drift by comparing:
-  - `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py show --file .codex/st-plan.jsonl --format json`
+  - `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py show --file .step/st-plan.jsonl --format json`
   - the latest emitted `update_plan` payload.
 
 ## Validation
 
 - Run lightweight CLI sanity checks:
   - `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py --help`
-  - `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py emit-update-plan --file .codex/st-plan.jsonl`
-  - `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py show --file .codex/st-plan.jsonl --format json`
+  - `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py emit-update-plan --file .step/st-plan.jsonl`
+  - `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py show --file .step/st-plan.jsonl --format json`
 
 ## References
 

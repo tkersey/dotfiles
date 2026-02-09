@@ -12,7 +12,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 
-DEFAULT_FILE = Path(".codex/st-plan.jsonl")
+DEFAULT_FILE = Path(".step/st-plan.jsonl")
 DEFAULT_CHECKPOINT_INTERVAL = 50
 
 try:  # Support package and script-style imports.

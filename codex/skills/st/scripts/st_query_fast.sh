@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEFAULT_FILE=".codex/st-plan.jsonl"
+DEFAULT_FILE=".step/st-plan.jsonl"
 
 usage() {
   cat >&2 <<'EOF'
