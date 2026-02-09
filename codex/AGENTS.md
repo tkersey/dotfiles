@@ -21,15 +21,6 @@ Skill routing (default):
 
 # Repository Guidelines
 
-## Issue Tracking
-
-This project uses `bd` (beads) for issue tracking only when a `.beads` directory exists.
-Before using beads, run:
-
-`rg --files -g '.beads/**' --hidden --no-ignore`
-
-If the command returns any paths, use the `$beads` skill for all bd workflow and commands. If it returns nothing, do not use beads.
-
 ## Working Tree Hygiene
 
 - Ignore unrelated diffs; never stage/commit them for proof/PRs.
