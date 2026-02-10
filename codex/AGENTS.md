@@ -16,7 +16,7 @@ Use Double Diamond to avoid converging too early: separate "are we solving the r
 Skill routing (default):
 - Discover/Define: `$grill-me`, `$prove-it`, `$complexity-mitigator`, `$invariant-ace`, `$tk` (advice mode).
 - Develop: `$creative-problem-solver` (five-tier portfolio).
-- Deliver: `$tk` (implementation mode), `$fix`, `$validate`, `$commit`, `$ship`, `$work`, `$code`, `$join`, `$fin`.
+- Deliver: `$tk` (implementation mode), `$fix`, `$commit`, `$ship`, `$patch`, `$join`, `$fin`.
 - Language routing: invoke `$zig` when the request includes Zig cues such as `.zig` paths, `build.zig`/`build.zig.zon`, `zig build|test|run|fmt|fetch`, `comptime`, `@Vector`, `std.simd`, `std.Thread`, allocator ownership, or C interop.
 
 # Repository Guidelines
@@ -28,7 +28,7 @@ Skill routing (default):
 ## Plan Sync (`$st` <-> Codex `update_plan`)
 
 - Apply this protocol whenever both `$st` plan files and Codex `update_plan` are used in the same task.
-- Treat `.codex/st-plan.jsonl` as the source of truth for plan structure and dependencies.
+- Treat `.step/st-plan.jsonl` as the source of truth for plan structure and dependencies.
 - After any `$st` mutation (`add`, `set-status`, `set-deps`, `remove`, `import-plan --replace`), run `show --format json` and mirror the latest state into `update_plan` in the same turn.
 - Preserve item ordering from `$st` when publishing `update_plan`.
 - Map statuses as follows:
