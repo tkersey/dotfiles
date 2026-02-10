@@ -18,7 +18,11 @@
   - `id`: bead id
   - `title`: bead title
   - `depends_on`: bead `blocks` dependencies
+  - `related_to`: preserve bead soft relationships (`tracks`/`related`) when discoverable
   - `scope`: usually unknown (expect sequential scheduling)
+  - `role`: infer best-effort from explicit bead metadata/comment cues (`contract`, `implementation`, `integration`, `checkpoint`)
+  - `workstream`: pass through from explicit bead metadata/comment cues when available
+  - `parallelism_impact`: pass through from explicit bead metadata/comment cues when available
   - `validation`: if `bd show <id>` exposes explicit verification/acceptance commands, pass them through (best-effort; does not affect scheduling)
 
 ## In-progress triage (skeptical)
@@ -40,6 +44,7 @@ Respect `max_tasks`:
 
 ## Schema drift detectors (warn-only; keep selecting)
 - Bead referenced by `blocks` dep is missing/unreadable: treat as unmet dep; warn only after auto-remediation.
+- Bead soft relationship target (`tracks`/`related`) missing/unreadable: drop that `related_to` edge and warn.
 
 ## Guardrails
 - Never run mutating bd commands from `$select` (`bd update`, `bd close`, `bd dep add`, comments, etc.).

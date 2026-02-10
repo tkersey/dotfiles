@@ -160,3 +160,133 @@ SLICES fragment:
       depends_on_id: sl-a
 ```
 Expected: select `sl-b` and include `claim: mark in_progress sl-b` in the Decision Trace.
+
+## F13: soft dependency is non-gating (`related_to`)
+SLICES fragment:
+```yaml
+- id: sl-a
+  title: "Contract"
+  status: open
+- id: sl-b
+  title: "Implementation"
+  status: open
+  dependencies:
+    - type: tracks
+      depends_on_id: sl-a
+```
+Expected: `sl-b` remains selectable as ready (no hard block); keep a soft `related_to` link to `sl-a`.
+
+## F14: contract unlocks parallel implementations
+Invocation list fragment:
+```text
+Use $select:
+1. Define API contract.
+   - id: c
+   - role: contract
+   - scope: ["spec/api/**"]
+2. Build server side.
+   - id: s
+   - role: implementation
+   - depends_on: [c]
+   - scope: ["src/server/**"]
+3. Build client side.
+   - id: u
+   - role: implementation
+   - depends_on: [c]
+   - scope: ["src/ui/**"]
+```
+Expected: schedule `c` first, then parallel `s` + `u`.
+
+## F15: checkpoint join after parallel branches
+Invocation list fragment:
+```text
+Use $select:
+1. Backend implementation.
+   - id: be
+   - role: implementation
+   - scope: ["src/backend/**"]
+2. Frontend implementation.
+   - id: fe
+   - role: implementation
+   - scope: ["src/frontend/**"]
+3. Integration checkpoint.
+   - id: cp
+   - role: checkpoint
+   - depends_on: [be, fe]
+   - scope: ["tests/integration/**"]
+```
+Expected: parallel `be` + `fe`, then `cp` as explicit join.
+
+## F16: mostly linear graph warns `linear_graph`
+Invocation list fragment:
+```text
+Use $select:
+1. Task A.
+   - id: a
+   - scope: ["src/a/**"]
+2. Task B.
+   - id: b
+   - depends_on: [a]
+   - scope: ["src/b/**"]
+3. Task C.
+   - id: c
+   - depends_on: [b]
+   - scope: ["src/c/**"]
+```
+Expected: when no hard prerequisite evidence is present, reviewer emits `linear_graph` warning.
+
+## F17: multi-wave plan with missing roles warns `missing_role`
+Invocation list fragment:
+```text
+Use $select:
+1. Task A.
+   - id: a
+   - scope: ["src/a/**"]
+2. Task B.
+   - id: b
+   - depends_on: [a]
+   - scope: ["src/b/**"]
+```
+Expected: reviewer warns `missing_role` if role inference is not possible.
+
+## F18: parallel implementations without join warns `missing_checkpoint`
+Invocation list fragment:
+```text
+Use $select:
+1. Impl A.
+   - id: a
+   - role: implementation
+   - scope: ["src/a/**"]
+2. Impl B.
+   - id: b
+   - role: implementation
+   - scope: ["src/b/**"]
+```
+Expected: reviewer warns `missing_checkpoint` for missing explicit join/integration task.
+
+## F19: beads soft links are preserved as `related_to`
+Beads shape (conceptual):
+```text
+bead A: title "Contract"
+bead B: title "Implementation", tracks/related -> A, no blocks edge
+```
+Expected: `B` is not blocked by `A`; adapter preserves soft relationship as `related_to: [A]`.
+
+## F20: role tie-break prefers contract/checkpoint over implementation
+Invocation list fragment:
+```text
+Use $select:
+1. Contract decision.
+   - id: c
+   - role: contract
+   - scope: ["spec/**"]
+2. Implementation one.
+   - id: i1
+   - role: implementation
+   - scope: ["src/a/**"]
+3. Implementation two.
+   - id: i2
+   - role: implementation
+   - scope: ["src/b/**"]
+```
+Expected: if all else is equal and no deps force order, tie-break favors `c` first.

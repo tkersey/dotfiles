@@ -21,9 +21,28 @@ It may also emit a small pipeline for driving planning artifacts into execution 
 - **Explore the codebase (read-only)** when needed to ground tasks in real paths/components and to set tight `scope` locks.
 - **Ask clarifying questions** when multiple reasonable approaches exist; include a recommended default.
 - **Atomic tasks**: each task should be independently executable by a single worker.
-- **Explicit dependencies**: prefer `depends_on` edges over relying on implicit serialization via overlapping `scope`.
+- **Workstream shaping**: identify major workstreams first, then map atomic tasks into those workstreams.
+- **Role-aware shaping**: use role labels when useful (`contract`, `implementation`, `integration`, `checkpoint`) to improve sequencing and review quality.
+- **Explicit dependencies**: prefer explicit edges over relying on implicit serialization via overlapping `scope`.
 - **Delegation metadata**: include `scope` (required for safe parallelism), plus `location` and `validation` whenever possible.
 - **Review before yielding**: run a separate reviewer-mode pass for missing deps/order/lock overlaps/validation gaps.
+
+## Decomposition heuristics (parallelism quality)
+When the selected source is coarse or linear, refine task structure before scheduling waves:
+
+- Identify workstreams and keep task descriptions scoped to one workstream where possible.
+- Create explicit `contract` tasks for API/schema/interface/config decisions that unblock multiple downstream tasks.
+- Create explicit `checkpoint`/`integration` tasks as join points after parallel branches.
+- Keep medium granularity: each task should be independently PR-able.
+- Prefer explicit dependency edges to document true prerequisites and avoid accidental serialization.
+
+## Dependency semantics (hard vs soft)
+Use two dependency channels with distinct meaning:
+
+- `depends_on`: hard prerequisite; contributes to DAG readiness and wave scheduling.
+- `related_to`: soft ordering/context edge; never gates readiness or wave eligibility.
+
+If ordering is uncertain or advisory ("nice first", "reduces rework"), prefer `related_to` over `depends_on`.
 
 ## Invocation directives (optional)
 If present, interpret these directives from the invocation text:
@@ -77,7 +96,7 @@ Before emitting warnings, attempt safe, deterministic fixes that do not mutate s
 
 Order (stop when resolved):
 1. **ID normalization + aliasing**:
-   - Canonicalize ids/depends_on (trim, lowercase, drop leading `#`).
+   - Canonicalize ids/depends_on/related_to (trim, lowercase, drop leading `#`).
    - If a `depends_on` is unknown, try to map it to a **unique** known id via a numeric suffix alias (e.g., `1` -> `t-1`, `sl-1`) or an exact canonical match.
    - If resolved, replace the dep with the canonical id and suppress the unknown-dep warning.
 2. **Scope normalization (safe)**:
@@ -169,11 +188,15 @@ tasks:
   - id: t-1
     title: "..."
     description: "..."          # optional
+    workstream: "..."           # optional
+    role: contract|implementation|integration|checkpoint  # optional
+    parallelism_impact: "unlocks <n> tasks"  # optional best-effort
     agent: worker|orchestrator
     scope: ["path/**"]
     location: ["path/file"]     # optional
     validation: ["..."]         # optional
     depends_on: []
+    related_to: []              # optional non-gating links
     subtasks: []
 
 waves:
@@ -203,7 +226,7 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 - `next2`: next two candidates (or `none`) + 3-10 word reason each
 - `waves`: (recommended when tasks were scheduled) `N` + a compact wave listing (e.g. `w1[t-1,t-2]; w2[t-3]`)
 - `review`: `pass|warn|skipped|blocked` + 0-6 word note
-- `warnings`: list count + top 1-3 keys (e.g. `unknown_deps`, `status_drift`, `cycle`, `broad_scope`, `implicit_order`, `missing_validation`)
+- `warnings`: list count + top 1-3 keys (e.g. `unknown_deps`, `status_drift`, `cycle`, `broad_scope`, `implicit_order`, `missing_validation`, `linear_graph`, `missing_role`, `missing_checkpoint`)
 - `auto_fix`: list count + top 1-3 keys (e.g. `dep_alias`, `scope_normalize`, `scope_infer`)
 
 ## Procedure (high-level)
@@ -212,7 +235,12 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 3. Read the corresponding adapter spec (above) and extract tasks.
 4. If tasks are too coarse or missing metadata required for safe parallelism, refine them:
    - Decompose into atomic tasks with explicit `depends_on`.
+   - Identify workstreams and annotate `workstream` where useful.
+   - Insert `contract` tasks when they can unlock parallel implementation branches.
+   - Insert `checkpoint`/`integration` tasks as explicit join points across branches.
+   - Encode soft ordering/context in `related_to` instead of `depends_on`.
    - Populate `scope` locks (tight paths/globs), plus `location` and `validation` where possible.
+   - Keep each task independently PR-able (medium granularity).
    - Explore the repo (read-only) and consult authoritative docs when needed.
    - Stop and ask targeted questions if blocked by ambiguity.
 5. Normalize tasks: ensure `id`; apply orchestrator rule; treat unknown deps as blocked (pending auto-remediation).
@@ -220,6 +248,9 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 7. Schedule waves using `depends_on` + `scope` locks.
 7.5. If selecting new work, compute `claim` from `waves[0]` and emit instructions to mark those tasks in-progress in the source (when the source supports status).
 8. Reviewer pass (per `review`): check deps/order/locks/validation/delegation gaps; revise as needed.
+   - Detect unnecessary linear chains and downgrade advisory edges from `depends_on` to `related_to` when safe.
+   - Require explicit roles/workstreams in multi-wave plans when inference is feasible.
+   - Require checkpoint/integration joins when multiple parallel implementation branches converge.
    - In reviewer mode: do not expand scope; do not redesign; only close gaps and reduce risk.
    - If `review=required`: iterate until `review: pass` OR stop+ask if blocked.
 9. Emit OrchPlan v1 YAML (always) + Decision Trace (required). Add pipelines only when useful.
@@ -227,7 +258,7 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 ## Scheduling algorithm (parallelism-first)
 Build waves using dependency readiness and `scope` locks:
 
-1. Build a DAG from `depends_on` edges.
+1. Build a DAG from `depends_on` edges only (`related_to` is non-gating and excluded from DAG readiness).
 2. Maintain `ready` = unscheduled tasks whose deps are all scheduled.
 3. While tasks remain:
     - Treat missing `scope` as overlapping everything (i.e. it can only be scheduled alone).
@@ -252,6 +283,9 @@ Emit warnings when unresolved (noise-controlled; warn only when it affects this 
 - `missing_validation`: a parallel wave mixed tasks with and without `validation`.
 - `unknown_deps`: a `depends_on` points at an unknown ID.
 - `orchestrator_without_subtasks`: a task declared `agent=orchestrator` without `subtasks`.
+- `linear_graph`: the dependency graph is mostly chain-like and a safe split into workstreams/contracts/checkpoints appears possible.
+- `missing_role`: multi-wave plan lacks role annotations where they are needed for reasoning/review.
+- `missing_checkpoint`: multiple parallel implementation branches have no explicit integration/checkpoint join.
 If a warning is auto-remediated, omit it from `warnings` and list it under `auto_fix` (except orchestrator downgrade, which must still warn).
 
 ## Examples (synthesized)

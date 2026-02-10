@@ -38,6 +38,7 @@ Status normalization (before triage/selection):
 
 ## Dependencies + derived readiness
 - Only `dependencies[].type == blocks` gates readiness.
+- Map non-`blocks` dependency entries into task `related_to` links (soft ordering/context; non-gating).
 - A leaf slice is **ready** iff every `blocks` dep points to a known slice with `status: closed`.
 - Unknown dep IDs: treat the slice as blocked; warn only after auto-remediation; keep selecting other work.
 - If `status` disagrees with derived readiness, warn and use derived readiness for selection.
@@ -83,6 +84,7 @@ If no ready new-work candidates exist:
 - SLICES tasks often lack `scope`; schedule sequentially and warn.
 - If `scope` can be inferred by auto-remediation, use it and suppress the missing-scope warning.
 - If a slice provides a `scope` list, pass it through to the OrchPlan task.
+- Keep soft dependency intent in `related_to`; do not convert it into blocking edges.
 - If a slice provides `verification`, map it to the OrchPlan task's `validation` (best-effort):
   - If `verification` is a YAML list, use it as-is.
   - If `verification` is a string, split into non-empty lines; trim leading `-` bullet markers.

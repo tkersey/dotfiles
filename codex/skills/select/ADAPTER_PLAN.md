@@ -13,3 +13,4 @@
 Notes:
 - Set `source.kind: plan` and `source.locator` to the chosen `plan-N.md`.
 - In Decision Trace, `pick` should be `none`.
+- In pipeline guidance, recommend seeding workstreams plus `contract`/`checkpoint` tasks before execution slicing.

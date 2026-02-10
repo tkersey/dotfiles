@@ -16,11 +16,15 @@ Supported metadata (all optional):
 - `id`: stable identifier (string; default `t-<n>`)
 - `title`: override default title (string)
 - `description`: additional detail for the worker (string)
+- `workstream`: logical workstream label (string)
+- `role`: `contract|implementation|integration|checkpoint` (optional)
+- `parallelism_impact`: short best-effort unlock note (string)
 - `agent`: `worker|orchestrator` (default `worker`)
 - `scope`: list of exclusive-lock strings (paths/globs)
 - `location`: list of navigation paths/globs (does not affect scheduling)
 - `validation`: list of proof commands/checks (does not affect scheduling)
 - `depends_on`: list of task IDs
+- `related_to`: list of task IDs (soft ordering/context; non-gating)
 - `subtasks`: list of tasks (only meaningful when `agent: orchestrator`)
 
 Example:
@@ -47,9 +51,11 @@ Use $select to plan:
 
 ## Normalization notes
 - If `agent: orchestrator` but `subtasks` is missing/empty, downgrade to `worker` and warn.
+- Normalize `role` to lowercase; unknown values should warn and remain best-effort metadata.
 - Missing `scope` means the task overlaps everything and should not be parallelized; warn unless auto-remediation infers scope.
 - Unknown deps are treated as unmet blocks; warn only if auto-remediation cannot resolve them.
-- If provided, pass `title`/`description`/`location`/`validation` through to the OrchPlan task.
+- `related_to` never gates readiness; keep it as non-blocking metadata.
+- If provided, pass `title`/`description`/`workstream`/`role`/`parallelism_impact`/`location`/`validation` through to the OrchPlan task.
 
 ## Schema drift detectors (warn-only; keep selecting)
 - Duplicate `id` values.

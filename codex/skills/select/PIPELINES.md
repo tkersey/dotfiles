@@ -5,12 +5,15 @@ Goal: execute an OrchPlan safely with parallel workers.
 
 1. For each wave `wN` in order:
     - If the task source supports status, claim the tasks in `wN` first by marking them in-progress (use the source token; default `in_progress`).
+    - Treat `depends_on` as mandatory ordering and `related_to` as advisory ordering/context only.
+    - Prefer executing `role: contract` tasks early when they unlock multiple downstream tasks.
     - Dispatch each task in `wN` to a worker.
     - Each worker should operate within `task.scope` (exclusive lock) and use `task.location` to navigate.
     - Each worker should return a patch-first diff plus a proof signal from `task.validation` (or explain what validation is missing).
 2. Integrate patches in `integration.order`.
-3. Resolve conflicts per `integration.conflict_policy`.
-4. Re-run relevant validations; proceed to the next wave only when green.
+3. If the plan includes `role: checkpoint` or `role: integration` tasks, run their validations as explicit join gates before advancing.
+4. Resolve conflicts per `integration.conflict_policy`.
+5. Re-run relevant validations; proceed to the next wave only when green.
 
 ## PLANS pipeline (manual)
 Goal: iterate `plan-N.md` until the plan is stable and implementation-ready.
