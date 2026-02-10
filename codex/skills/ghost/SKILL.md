@@ -31,8 +31,13 @@ It gets harder (but is still possible) when the contract depends on time, random
 - MUST produce a verification signal and document it in `VERIFY.md` (adapter runner preferred; sampling fallback allowed).
 - MUST document provenance and regeneration in `VERIFY.md` (upstream repo + revision, how artifacts were produced, and how to rerun verification).
 - MUST choose a `tests.yaml` contract shape that matches the API style (functional vs protocol/CLI) and keep it consistent across `SPEC.md`, `INSTALL.md`, and `VERIFY.md`.
+- MUST document the `tests.yaml` harness schema when it is non-trivial (callbacks, mutation steps, warnings, multi-step protocol setup, etc.).
+  - Recommended artifact: `TESTS_SCHEMA.md`.
+  - `INSTALL.md` MUST reference it when present.
 - MUST minimize `skip` cases; only skip when deterministic setup is currently infeasible, and record why.
 - MUST assert stable machine-interface fields explicitly (required keys, lengths/counts, and state effects), not only loose partial matches.
+- MUST treat human-readable warning/error messages as unstable unless tests prove they are part of the public contract.
+  - Prefer structured fields (codes) or substring assertions for message checks.
 
 ## Inputs
 - Source repo path (git working tree)
@@ -93,6 +98,7 @@ Pick one schema and stay consistent:
 - Extract test cases and expected outputs; treat tests as authoritative.
 - When tests are silent, read code/docs to infer behavior and record the inference.
 - Note all boundary values, rounding rules, encoding rules, and error cases.
+- If the API promises "copy"/"detached" behavior, harvest mutation-isolation evidence (including nested structure mutation, not just top-level fields).
 - Normalize environment assumptions:
   - eliminate dependency on current time (use explicit timestamps)
   - force timezone/locale rules if relevant
@@ -104,6 +110,7 @@ Pick one schema and stay consistent:
 - Define normalization rules (e.g., timestamp parsing, string trimming, unicode, case folding).
 - Specify error behavior precisely (conditions), but keep the *mechanism* language-idiomatic.
 - Specify every public operation with inputs, outputs, rules, and edge cases.
+- When an operation yields both a "prepared" value and a "persisted delta" (or similar), define the delta derivation mechanically (slice/filter/identity rules) and test it.
 - Paraphrase source docs; do not copy text verbatim.
 - Use `references/templates.md` for structure.
 
@@ -122,6 +129,8 @@ Pick one schema and stay consistent:
 - Normalize inputs to deterministic values (avoid "now"; use explicit timestamps).
 - Keep or improve coverage across all public operations and failure modes.
 - Prefer exact/value-complete assertions for stable output fields; use partial assertions only when fields are intentionally volatile.
+- For warning/error message checks, prefer substring assertions unless the exact wording is itself part of the upstream contract.
+- If `tests.yaml` includes harness directives beyond basic `{name,input,output|error}` (e.g. callbacks by label, mutation steps, warning sinks, setup scripts), document them in `TESTS_SCHEMA.md`.
 - Keep `skip` rare; every skip must include a concrete reason and be accounted for in `VERIFY.md`.
 - If the source returns floats, prefer defining stable rounding/formatting rules so `output` is exact.
 - Follow the format in `references/templates.md`.
@@ -129,6 +138,7 @@ Pick one schema and stay consistent:
 ### 5) Add `INSTALL.md` + `README.md` + `VERIFY.md` + `LICENSE*`
 - `INSTALL.md`: a short prompt for implementing the library in any language, referencing `SPEC.md` and `tests.yaml`.
 - `README.md`: explain what the ghost library is, list operations, and describe the included files.
+- `TESTS_SCHEMA.md` (when needed): define the `tests.yaml` harness schema and any callback catalogs or side-effect capture requirements.
 - `VERIFY.md`: describe provenance + how the ghost artifacts were produced and verified against the source library (adapter-first; sampling fallback).
   - include upstream repo identity + exact revision (tag or commit)
   - include the exact commands used to produce each artifact (or a single deterministic regeneration recipe)
@@ -160,6 +170,7 @@ Produce only these artifacts in the ghost repo:
 - `README.md`
 - `SPEC.md`
 - `tests.yaml`
+- `TESTS_SCHEMA.md` (optional; include when tests.yaml has non-trivial harness semantics)
 - `INSTALL.md`
 - `VERIFY.md`
 - `LICENSE*` (copied from upstream)

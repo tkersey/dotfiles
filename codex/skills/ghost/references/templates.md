@@ -17,6 +17,17 @@ Ghost libraries ship specifications and tests, not implementation code.
   - Examples (short, non-exhaustive)
 - Testing section (reference tests.yaml format)
 
+## TESTS_SCHEMA.md (outline, optional)
+
+Include this file when `tests.yaml` contains harness semantics that are not obvious from `{name,input,output|error}` alone.
+
+Minimum contents:
+- Top-level `tests.yaml` layout (functional vs protocol/CLI)
+- Any custom fields used in cases (mutation directives, setup steps, capture variables)
+- Callback catalog (if callbacks are referenced by label)
+- Side-effect capture requirements (warnings/logs)
+- Output assertion semantics (deep equality vs partial/contains)
+
 ## tests.yaml (format)
 
 Choose one layout and keep it consistent with `SPEC.md`.
@@ -113,7 +124,7 @@ Notes:
 ## README.md (outline)
 - One-paragraph description of the ghost library concept
 - Operation list with one-line descriptions
-- Files included in the repo (SPEC.md, tests.yaml, INSTALL.md, VERIFY.md, LICENSE*)
+- Files included in the repo (SPEC.md, tests.yaml, TESTS_SCHEMA.md when present, INSTALL.md, VERIFY.md, LICENSE*)
 - Quick start: point to INSTALL.md
 
 ## LICENSE* (guidance)

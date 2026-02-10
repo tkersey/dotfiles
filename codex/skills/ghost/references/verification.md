@@ -33,6 +33,7 @@ Tips:
 - Treat `operation_id` as an identifier: keep an explicit dispatch/mapping table.
 - Force determinism: set timezone/locale explicitly, avoid system clock access, and document any runtime assumptions.
 - If the source language has weak YAML tooling (notably Zig), parse `tests.yaml` externally and dispatch into the library via a tiny CLI/FFI shim.
+- Re-run the adapter whenever `tests.yaml` or the harness semantics change; the verification summary must match the current test inventory.
 
 ## Sampling Fallback (if adapter infeasible)
 
