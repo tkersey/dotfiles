@@ -1,0 +1,314 @@
+#!/usr/bin/env node
+// Run many independent casp sessions in parallel and execute one request per shard.
+//
+// Purpose:
+// - Demonstrate effective concurrency beyond the per-session subagent cap.
+// - Provide a reusable shard runner for orchestrating identical requests.
+
+import { readFileSync } from "node:fs";
+import { CaspClient } from "./casp_client.mjs";
+
+function usage() {
+  return [
+    "casp_shard_runner.mjs",
+    "",
+    "Usage:",
+    "  node scripts/casp_shard_runner.mjs --cwd DIR [options]",
+    "",
+    "Required:",
+    "  --cwd DIR                        Workspace for each shard's codex app-server.",
+    "",
+    "Options:",
+    "  --shards N                       Number of parallel shards (default: 12).",
+    "  --method NAME                    App-server method (default: thread/list).",
+    "  --params-json JSON               Params as inline JSON object.",
+    "  --params-file PATH               Params from JSON file.",
+    "  --request-timeout-ms N           Timeout per request (default: 30000).",
+    "  --server-request-timeout-ms N    Forwarded server-request timeout for proxy.",
+    "  --client-prefix NAME             Prefix for shard client names (default: casp-shard).",
+    "  --sample N                       Number of sample results in output (default: 3).",
+    "  --json                           Emit JSON output (default: false).",
+    "  --verbose                        Emit per-shard start/request status to stderr.",
+    "  --help                           Show this help.",
+    "",
+    "Examples:",
+    "  node scripts/casp_shard_runner.mjs --cwd ~/.dotfiles --shards 12",
+    "  node scripts/casp_shard_runner.mjs --cwd ~/.dotfiles --method thread/list --params-json '{\"cursor\":null,\"limit\":1}' --json",
+  ].join("\n");
+}
+
+function parseArgs(argv) {
+  const opts = {
+    cwd: null,
+    shards: 12,
+    method: "thread/list",
+    paramsJson: null,
+    paramsFile: null,
+    requestTimeoutMs: 30_000,
+    serverRequestTimeoutMs: null,
+    clientPrefix: "casp-shard",
+    sample: 3,
+    json: false,
+    verbose: false,
+  };
+
+  const args = [...argv];
+  while (args.length) {
+    const a = args.shift();
+    if (!a) break;
+    if (a === "--help" || a === "-h") return { ok: false, help: true, error: null, opts: null };
+
+    const take = () => {
+      const v = args.shift();
+      if (!v) throw new Error(`Missing value for ${a}`);
+      return v;
+    };
+
+    if (a === "--cwd") {
+      opts.cwd = take();
+      continue;
+    }
+    if (a === "--shards") {
+      opts.shards = Number(take());
+      continue;
+    }
+    if (a === "--method") {
+      opts.method = take();
+      continue;
+    }
+    if (a === "--params-json") {
+      opts.paramsJson = take();
+      continue;
+    }
+    if (a === "--params-file") {
+      opts.paramsFile = take();
+      continue;
+    }
+    if (a === "--request-timeout-ms") {
+      opts.requestTimeoutMs = Number(take());
+      continue;
+    }
+    if (a === "--server-request-timeout-ms") {
+      opts.serverRequestTimeoutMs = Number(take());
+      continue;
+    }
+    if (a === "--client-prefix") {
+      opts.clientPrefix = take();
+      continue;
+    }
+    if (a === "--sample") {
+      opts.sample = Number(take());
+      continue;
+    }
+    if (a === "--json") {
+      opts.json = true;
+      continue;
+    }
+    if (a === "--verbose") {
+      opts.verbose = true;
+      continue;
+    }
+    throw new Error(`Unknown arg: ${a}`);
+  }
+
+  if (!opts.cwd) throw new Error("Missing --cwd");
+  if (!Number.isInteger(opts.shards) || opts.shards <= 0) {
+    throw new Error("--shards must be a positive integer");
+  }
+  if (!Number.isInteger(opts.requestTimeoutMs) || opts.requestTimeoutMs <= 0) {
+    throw new Error("--request-timeout-ms must be a positive integer");
+  }
+  if (opts.serverRequestTimeoutMs !== null && (!Number.isInteger(opts.serverRequestTimeoutMs) || opts.serverRequestTimeoutMs < 0)) {
+    throw new Error("--server-request-timeout-ms must be >= 0");
+  }
+  if (!Number.isInteger(opts.sample) || opts.sample < 0) {
+    throw new Error("--sample must be >= 0");
+  }
+  if (opts.paramsJson && opts.paramsFile) {
+    throw new Error("Specify only one of --params-json or --params-file");
+  }
+
+  return { ok: true, help: false, error: null, opts };
+}
+
+function parseParams(opts) {
+  if (opts.paramsJson) {
+    return JSON.parse(opts.paramsJson);
+  }
+  if (opts.paramsFile) {
+    const raw = readFileSync(opts.paramsFile, "utf-8");
+    return JSON.parse(raw);
+  }
+  if (opts.method === "thread/list") {
+    return { cursor: null, limit: 1 };
+  }
+  return {};
+}
+
+function summarizeResult(method, result) {
+  if (method === "thread/list") {
+    return {
+      firstThreadId: result?.data?.[0]?.id ?? null,
+      rows: Array.isArray(result?.data) ? result.data.length : 0,
+    };
+  }
+  if (method === "thread/read") {
+    return {
+      threadId: result?.thread?.id ?? null,
+      turns: Array.isArray(result?.turns) ? result.turns.length : null,
+    };
+  }
+  if (result && typeof result === "object") {
+    return { keys: Object.keys(result).slice(0, 8) };
+  }
+  return { value: result ?? null };
+}
+
+function writeOutput(opts, payload) {
+  if (opts.json) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+
+  const lines = [];
+  lines.push("casp_shard_runner summary");
+  lines.push(`cwd: ${payload.cwd}`);
+  lines.push(`method: ${payload.method}`);
+  lines.push(`shards requested: ${payload.shards_requested}`);
+  lines.push(`shards started:   ${payload.shards_started}`);
+  lines.push(`requests ok:      ${payload.requests_ok}`);
+  lines.push(`requests failed:  ${payload.requests_failed}`);
+  lines.push(
+    `timing ms: start=${payload.timing_ms.start_all_clients}, request=${payload.timing_ms.run_all_requests}, total=${payload.timing_ms.total}`,
+  );
+  if (payload.sample_results.length) {
+    lines.push("sample results:");
+    for (const r of payload.sample_results) {
+      lines.push(`- shard ${r.shard}: ${r.ok ? "ok" : "fail"} ${JSON.stringify(r.summary ?? r.error)}`);
+    }
+  }
+  process.stdout.write(`${lines.join("\n")}\n`);
+}
+
+async function main() {
+  let parsed;
+  try {
+    parsed = parseArgs(process.argv.slice(2));
+  } catch (err) {
+    process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n${usage()}\n`);
+    return 2;
+  }
+
+  if (!parsed.ok) {
+    if (parsed.help) {
+      process.stderr.write(`${usage()}\n`);
+      return 0;
+    }
+    process.stderr.write(`${parsed.error ?? "invalid args"}\n`);
+    return 2;
+  }
+
+  const opts = parsed.opts;
+  let params;
+  try {
+    params = parseParams(opts);
+  } catch (err) {
+    process.stderr.write(`Invalid params JSON: ${err instanceof Error ? err.message : String(err)}\n`);
+    return 2;
+  }
+
+  const clients = Array.from({ length: opts.shards }, (_, i) => {
+    const client = new CaspClient({
+      cwd: opts.cwd,
+      clientName: `${opts.clientPrefix}-${i + 1}`,
+      serverRequestTimeoutMs:
+        opts.serverRequestTimeoutMs === null ? undefined : opts.serverRequestTimeoutMs,
+    });
+    if (opts.verbose) {
+      client.on("proxyStderr", (line) =>
+        process.stderr.write(`[proxy:${i + 1}] ${line}\n`),
+      );
+      client.on("casp/error", (ev) =>
+        process.stderr.write(`[casp:${i + 1}] ${ev?.message ?? "unknown error"}\n`),
+      );
+    }
+    return client;
+  });
+
+  const startAt = Date.now();
+  const startResults = await Promise.all(
+    clients.map(async (c, idx) => {
+      try {
+        await c.start();
+        if (opts.verbose) process.stderr.write(`[start:${idx + 1}] ok\n`);
+        return { shard: idx + 1, ok: true, client: c };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (opts.verbose) process.stderr.write(`[start:${idx + 1}] fail: ${msg}\n`);
+        return { shard: idx + 1, ok: false, error: msg, client: c };
+      }
+    }),
+  );
+  const afterStart = Date.now();
+
+  const started = startResults.filter((r) => r.ok);
+  const requestResults = await Promise.all(
+    started.map(async (r) => {
+      try {
+        const result = await r.client.request(opts.method, params, {
+          timeoutMs: opts.requestTimeoutMs,
+        });
+        if (opts.verbose) process.stderr.write(`[request:${r.shard}] ok\n`);
+        return {
+          shard: r.shard,
+          ok: true,
+          summary: summarizeResult(opts.method, result),
+        };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (opts.verbose) process.stderr.write(`[request:${r.shard}] fail: ${msg}\n`);
+        return { shard: r.shard, ok: false, error: msg };
+      }
+    }),
+  );
+  const afterReq = Date.now();
+
+  await Promise.allSettled(clients.map((c) => c.close()));
+
+  const requestsOk = requestResults.filter((r) => r.ok).length;
+  const requestsFailed = requestResults.length - requestsOk;
+  const payload = {
+    demo: "casp-shard-runner",
+    cwd: opts.cwd,
+    method: opts.method,
+    params,
+    shards_requested: opts.shards,
+    shards_started: started.length,
+    start_failures: startResults.filter((r) => !r.ok).map((r) => ({
+      shard: r.shard,
+      error: r.error,
+    })),
+    requests_ok: requestsOk,
+    requests_failed: requestsFailed,
+    timing_ms: {
+      start_all_clients: afterStart - startAt,
+      run_all_requests: afterReq - afterStart,
+      total: afterReq - startAt,
+    },
+    sample_results: requestResults.slice(0, opts.sample),
+  };
+
+  writeOutput(opts, payload);
+  return requestsFailed === 0 && payload.start_failures.length === 0 ? 0 : 1;
+}
+
+main()
+  .then((code) => {
+    process.exitCode = code;
+  })
+  .catch((err) => {
+    process.stderr.write(
+      `Fatal: ${err instanceof Error ? err.stack ?? err.message : String(err)}\n`,
+    );
+    process.exitCode = 1;
+  });
