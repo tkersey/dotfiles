@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Create micro-commits (minimal incision) with at least one validation signal per commit.
+description: Create micro-commits (minimal incision) with at least one validation signal per commit. Use when requests say "split this into micro commits," "stage only the minimal change and commit," "keep commits tiny while checks pass," or when parallel workers/slices need isolated, reviewable commits.
 ---
 
 # Commit
