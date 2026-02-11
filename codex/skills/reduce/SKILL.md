@@ -1,6 +1,6 @@
 ---
 name: reduce
-description: Deconstruct high-cost abstractions that coding agents do not need; recommend lower-level primitives that reduce tools, indirection, and hidden steps. Default output is an abstraction audit + prioritized cut list + migration plan + minimal-incision patch suggestions (no implementation unless explicitly requested).
+description: Deconstruct high-cost abstractions that coding agents do not need; recommend lower-level primitives that reduce tools, indirection, and hidden steps. Use when users ask to simplify architecture, remove framework or codegen layers, cut dependency/tooling overhead, or produce an abstraction audit with a prioritized cut list and migration plan (analysis-only unless implementation is explicitly requested).
 ---
 
 # Reduce (De-abstraction for Agents)
