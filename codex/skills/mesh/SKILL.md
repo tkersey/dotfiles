@@ -1,394 +1,398 @@
 ---
 name: mesh
 description: >
-  Explicit-only parallel task executor for requests that include `$mesh` with an inline task list (or `$mesh confirm`).
-  Runs dependency-respecting waves via subagents; orchestrator integrates per-task commits and runs post-step validation.
+  Swarm coordinator for requests that explicitly invoke `$mesh`. Executes ready items from a
+  persisted `$st` plan using propose/critique/synthesize/vote, gates completion on consensus +
+  validation, and captures durable learnings via `$learnings`.
 ---
 
-# Mesh (Inline Parallel Task Executor)
+# Mesh (Swarm Coordination for $st Plans)
 
-You are an Orchestrator for subagents.
+You are an orchestrator for subagents. Optimize for solution quality through structured peer critique,
+not raw throughput.
 
 ## Delegation Policy (Required)
 
-Task implementation MUST be done by spawned subagents ("workers"). The orchestrator MUST NOT implement tasks directly (even if trivial) unless the user explicitly authorizes it.
+Task implementation MUST be done by spawned subagents ("workers"). The orchestrator MUST NOT
+implement task code directly unless the user explicitly authorizes it.
 
-Orchestrator-owned actions are limited to:
-- parsing/validating the inline task list
-- scheduling/frontier execution
-- monitoring + liveness handling
-- integrating worker output (apply patch / stage / commit)
-- running post-step validation commands
-- reporting + updating task statuses
+Orchestrator-owned actions:
+- resolve runtime + plan adapters
+- read/validate active `$st` task state
+- schedule swarm cycles for runnable tasks
+- mediate communication by passing artifacts between rounds
+- integrate accepted output (apply patch), run validation, and persist state
+- write durable learning artifacts
 
-If you cannot spawn workers (missing tools, depth limit, runtime error), STOP and ask the user for the single decision needed to proceed. Recommended default: adjust the task list/session so workers can be spawned.
-Do NOT simulate `$mesh` by implementing tasks in the orchestrator when worker tooling is unavailable.
+Hard rule for safety: workers should NOT apply patches directly. Workers produce diffs as text;
+the orchestrator applies them after consensus.
 
-Do NOT proactively offer to "take over" and implement tasks yourself as a convenience fallback. Only raise that option if worker delegation is impossible (e.g., collab unavailable, depth limit) or after the task has hit the hard stop.
+If worker tooling is unavailable, STOP and ask for one unblock decision.
+Recommended default: switch to a worker-capable runtime/session and retry.
 
 ## Branch & Merge Safety (Required)
 
-- Do NOT merge to `main`/`master` (or any protected branch) unless the user explicitly instructs you to.
-- Do NOT push to a remote unless the user explicitly instructs you to.
-- If the user asks you to "ship" or "land": open a PR (or provide steps) but do not merge it unless they explicitly say to merge.
+- Do NOT merge to `main`/`master` (or protected branches) unless explicitly instructed.
+- Do NOT push unless explicitly instructed.
+- If asked to ship/land, open a PR (or provide steps) but do not merge unless explicitly told to merge.
+
+## Operating Contract (Required)
 
 Operate ONLY when the user explicitly invokes `$mesh`.
 
-The user can provide the task list in the same message, OR they can confirm reusing a previously-posted inline task list.
-This avoids copy/paste while keeping the workflow explicit.
-
-This skill has ONE mode: inline task list execution. Do not read/require plan files.
-
-## Input Contract (Required)
+This skill has one mode: swarm execution over persisted `$st` plan state.
 
 ### Invocation (Required)
 
-The user's message MUST contain the literal token `$mesh`.
+The user message MUST contain the literal token `$mesh`.
 
-Supported invocations:
-- `$mesh` + inline task list in the same message
-- `$mesh confirm` to run a previously-posted valid inline task list already present in the conversation
+Supported forms (space-separated `key=value` args):
+- `$mesh`
+- `$mesh ids=st-003,st-007`
+- `$mesh plan_file=.step/st-plan.jsonl`
+- `$mesh max_tasks=2 parallel_tasks=1`
 
-`$mesh confirm` optional disambiguation args:
-- `pick=<n>`: choose the nth most-recent valid task list (1 = most recent)
-- `ids=<id1,id2,...>`: choose the most-recent valid task list that contains ALL listed ids
+Do NOT treat generic acknowledgements (`go`, `yep`, `ship it`) as invocation.
 
-If both are present, apply `ids=` filtering first, then apply `pick=` to the filtered list.
+## Defaults (Unless Overridden)
 
-Do NOT treat acknowledgements like "go", "the word", "yep", etc. as invocation.
+- `max_tasks`: 1 (attempt at most one task completion per run)
+- `parallel_tasks`: 1 (run only one swarm at a time)
+- `swarm_roles`: 5 (`proposer`, `critic_a`, `critic_b`, `skeptic`, `synthesizer`)
+- `fallback_swarm_roles`: 3 (`proposer`, `skeptic`, `synthesizer`) when capacity is insufficient
+- `consensus_threshold`: 4/5 agree (5-role) or 3/3 agree (fallback)
+- `consensus_retries`: 2
 
-### Task List (Required)
+Override precedence (highest to lowest):
+1) invocation args
+2) per-task `mesh` metadata block in `$st` notes
+3) defaults above
 
-The task list is a markdown list of tasks (bullets or numbered items are both fine).
+## Runtime Adapter (Required)
 
-Accepted formats:
-1) YAML-ish list-of-maps (recommended):
+`$mesh` must pick a worker transport that exists in the current runtime.
 
-```yaml
-- id: T1
-  status: todo
-  depends_on: []
-  name: Short title
-  description: What to do
-```
+Supported transports:
 
-2) One task per bullet + field sub-bullets:
+1) OpenCode Task-tool transport (preferred here)
+- Spawn workers with `functions.task`.
+- Use `multi_tool_use.parallel` to run independent role calls concurrently.
+- Communication is orchestrator-mediated: each round's prompts include prior round artifacts.
+- Liveness: a `functions.task` call is the unit of work; if output is unusable or missing, count it
+  as `no_response` and retry by spawning a replacement once.
 
-```text
-- Task title
-  - id: T1
-  - status: todo
-  - depends_on: []
-```
+Capacity rule:
+- If you cannot run a 5-role swarm for a task (thread cap, spawn failure, or resource limits),
+  fall back to the 3-role swarm (`proposer`, `skeptic`, `synthesizer`) for that task.
 
-If the user invokes `$mesh confirm`, you MUST reuse the most recent task list that satisfies the required fields.
-If there are multiple candidate lists, STOP and ask the user to disambiguate (do NOT ask them to re-paste):
-- Reply with `$mesh confirm pick=<n>`
-- Or reply with `$mesh confirm ids=<id1,id2,...>` to narrow the candidates
+2) Codex collab transport (optional, if available)
+- Use the runtime's multi-agent tools (see `references/codex-multi-agent.md`).
+- You MAY reuse live workers for the vote step via follow-up messaging if supported.
 
-Each task MUST include these fields (prerequisites):
-- `id`: unique identifier token (example: `T1`)
-- `status`: one of `todo`, `doing`, `done`, `blocked`, `cancelled`
-- `depends_on`: list of task ids (may be empty: `[]`)
+If no transport is available, STOP and ask the user to switch runtimes.
 
-Optional fields (recommended when relevant):
-- `name`: short title
-- `description`: what to do
-- `location`: file paths / globs
-- `acceptance`: bullets
-- `validation`: command(s) or checks
-- `scope`: explicit path boundary
-- `timeouts`: per-task liveness overrides (see Liveness policy)
+## Plan Source of Truth (`$st`) (Required)
 
-If any required field is missing/ambiguous, STOP and ask the user to fix the task list.
-Do NOT invent ids, dependencies, tasks, or acceptance criteria.
-
-## Process
-
-### Step 1: Parse Request
-
-Extract:
-1. Invocation: `$mesh` vs `$mesh confirm` (+ optional `pick=` / `ids=` args)
-2. Task list:
-   - If present in the message, use it.
-   - Else if `$mesh confirm`, locate candidate valid inline task lists in the conversation and select one:
-     - If there is exactly 1 candidate, use it.
-     - If `ids=` is present, filter candidates to those containing ALL ids.
-     - If `pick=` is present, pick the nth most-recent from the (filtered) candidates.
-     - If multiple candidates remain, STOP and print a numbered list of candidates and ask for `pick=`.
-   - Else STOP and ask the user to paste a task list.
-3. Optional task subset (ids to run). If provided, run only those ids AND any ids listed in their `depends_on` chains.
-
-### Step 2: Validate & Build Execution Set
-
-1. Ensure all task ids are unique.
-2. Ensure every `depends_on` id exists in the list.
-3. Detect dependency cycles; if found, report the cycle and ask the user to fix it.
-4. Compute which tasks are already complete:
-   - Treat `status: done` as completed.
-   - Do NOT run tasks with `status: cancelled`.
-   - Treat `status: blocked` as not runnable; report as blocked.
-
-### Step 3: Launch Subagents (Frontier-First, Max Concurrency)
-
-Define "unblocked" tasks as tasks whose `status` is runnable (`todo` or `doing`) AND whose `depends_on` tasks are all `done`.
-
-Concurrency policy:
-- Do NOT impose an orchestrator-side cap on runnable tasks.
-- Launch every currently unblocked task, bounded only by runtime limits (for example thread caps such as `[agents].max_threads`) or explicit user constraints.
-- Keep slots saturated: when a task completes (or a worker is closed), immediately recompute unblocked tasks and launch newly runnable work.
-
-Run using a frontier loop:
-1. Identify all currently unblocked tasks that are not already running.
-2. Launch a subagent for each unblocked task in parallel (subject to runtime slot limits).
-3. Print a concise "Frontier plan" line listing task ids being launched.
-4. Wait for subagent results.
-   - If your runtime supports it, integrate tasks as they return (do not let one slow task block integrating others), then immediately launch any tasks that just became unblocked.
-   - Otherwise, wait for the current batch to complete, then compute and launch the next batch.
-5. Mark tasks as `done` (in the orchestrator report) only after integration + validation succeed.
-6. Repeat until no more tasks are runnable and no workers are active.
-
-#### Codex Collab Tools (Required When Available)
-
-If the runtime exposes Codex's collab tools, you MUST use explicit lifecycle tool calls to implement workers:
-
-- Launch worker: `spawn_agent` (record returned `agent_id`).
-- Monitor worker(s): `wait` (long-polls for a final status; on timeout it returns an empty `status` map with `timed_out: true`).
-- Follow-up / retry instructions: `send_input` (use `interrupt=true` only when you are deliberately abandoning an attempt).
-- Cleanup: `close_agent` when an agent is no longer needed.
-
-If these collab tools are not available, STOP and ask the user for one unblock decision. Recommended default: enable worker-capable runtime/session, then retry. Do NOT claim delegation ran when it did not.
-
-#### Tool Batching With `multi_tool_use.parallel` (Optional Optimization)
-
-If the runtime exposes `multi_tool_use.parallel`, you MAY use it for independent tool calls that can run concurrently. It is an optimization, not a requirement.
-
-- Spawn frontier workers in one batched call (`functions.spawn_agent` per runnable task) instead of serial spawns.
-- Run close sweeps in one batched call (`functions.close_agent` per agent id) at task completion and end-of-run cleanup.
-- Keep `wait` as a single direct call over all active agent ids; do not wrap `wait` inside per-agent loops.
-
-Cleanup rule: once you have accepted a patch from any attempt and integrated it, `close_agent` any other still-running attempts for that task.
-
-End-of-run cleanup invariant: before the final report, do a close sweep for any remaining active agents and include `open_agents=0` in Worker telemetry (or explain why it is non-zero).
-
-Note: `/ps` shows background terminals (the `exec_command` + `write_stdin` tools / `unified_exec`), not collab workers.
-
-Codex TUI evidence: each `spawn_agent`, `send_input`, and `wait` call emits collab events in the transcript (with a `call_id`). Users can verify you're actually waiting by inspecting the "Waiting for agents" / "Wait complete" entries.
-
-Codex TUI debugging: `/agent` opens an agent picker so users can switch into a worker thread and see its last message.
-
-If the user asks "how are you waiting?": say you are issuing `wait` tool calls. Do not say "poll internally" unless you also explain that this polling only happens while you keep the current turn active.
-
-#### Monitoring With `wait` (Required If Available)
-
-If your runtime provides a `wait` tool for spawned subagents, use it to make progress visible and to drive timeouts.
-
-Truthfulness rule: never invent tool usage, timestamps, statuses, or "proof". If you cannot observe something directly, say so.
-If no collab tool-call events exist for this run (`spawn_agent`/`wait`/`send_input`), explicitly report: `delegation_did_not_run` and why.
-
-- Record for each task attempt: `task_id`, `attempt`, `call_id` (and `agent_id` if available), and a `started_at` timestamp.
-- Run a polling loop for active attempts:
-  - Call `wait` with a bounded timeout/interval (seconds to minutes; prefer longer waits to avoid busy polling; up to ~5 minutes per call when supported).
-  - Prefer calling `wait` once with ALL active `agent_id`s so it returns when any attempt reaches a final status.
-  - A `wait` timeout is expected and does NOT imply the worker is stuck; it only means no attempt reached a final status within the timeout.
-  - After each `wait` call, print a proof line based on the actual tool result (no invented timestamps) using this canonical shape:
-    - `wait(ids=[...], timeout_ms=300000) -> timed_out=<true|false> status_keys=[...]`
-    - If the runtime surfaces a tool call id, append `call_id=<id>`.
-    - If the UI does not show tool call results, include the raw `wait` JSON.
-  - Also print a low-frequency heartbeat (at most every ~2 minutes) for still-active attempts:
-    - `Task Tn attempt k: age=<dur>; last_wait=timed_out; next=wait(timeout_ms=...)`
-  - Treat "completion" as soon as you have a usable patch, even if other workers are still running.
-  - After integrating a completed task, immediately recompute unblocked tasks and launch newly runnable ones before the next `wait` call (subject to runtime limits).
-  - If `wait` returns a "completed" status that includes the agent's final message, treat that message as the worker deliverable and immediately extract/apply the patch from it.
-  - `wait` may return statuses for multiple ids, including ids you already processed in earlier loops; keep an `integrated_attempt_ids` set and ignore duplicates.
-  - If you are still waiting on any attempt, continue the loop (do NOT require the user to message you again to keep polling).
-  - If the runtime forces you to yield (turn time limit, max tool calls, etc.), say so explicitly and stop. Tell the user the exact minimal message to resume polling (for example: `"reply: $mesh confirm"`).
-  - Do NOT end your response with claims like "I'll keep waiting" unless you are actually continuing the loop in the same turn; otherwise say you are stopping and why.
-- If no `wait` tool exists, fall back to "wait for the wave to finish" behavior.
-
-If `wait` exposes a "needs input" / "awaiting user" / "paused" state, treat it as `needs_clarification` (NOT a stall) and follow the Clarification Protocol below.
-
-#### Liveness / Non-Response Policy (Required)
-
-Subagents can stall (queueing, pending init, tool deadlock, etc.). Handle this explicitly.
-
-- **Do not ask the user** whether to spawn a replacement worker; just do it and log the reason.
-- **Timeout defaults** (override per task via optional `timeouts`):
-  - `pending_init`: ~2 minutes (ONLY if the runtime exposes `pending_init`; otherwise ignore)
-  - `soft`: ~10 minutes (time since attempt spawn without a usable patch)
-  - `hard`: ~30 minutes (give up on the task after exhausting attempts)
-- **Give up / respawn rules**:
-  - Before any respawn or give-up action, run the Workspace Reconciliation step below.
-  - If the runtime exposes per-attempt status and an attempt is stuck in `pending_init` longer than `pending_init`, spawn a replacement attempt.
-  - Else if there is no usable patch by `soft`:
-    - Send `send_input` with `interrupt=true` to the active attempt, asking it to immediately return a checkpoint (patch if possible, otherwise a short progress report + next steps).
-    - Then spawn a replacement attempt.
-    - Do NOT treat a single `wait` timeout as a reason to respawn; measure `soft` from `started_at`.
-  - "Usable patch" means a fenced unified diff that is scoped to the task.
-  - `NO_PATCH` is also a valid completion outcome when the worker demonstrates the task is already satisfied and provides a brief proof trail (for example, relevant file evidence and/or command output). The orchestrator still runs post-step validation before marking `done`.
-- **Replacement**: no fixed attempt-number cap. Continue spawning replacement attempts (`attempt k+1`) as needed, bounded by elapsed `hard` time and available runtime slots. Keep existing attempts running (do not try to cancel unless your runtime supports it).
-- **Race**: accept the first usable patch; ignore later results and note it in the final report.
-- **Max attempts / hard stop**:
-  - If no attempt returns a usable patch by `hard`, mark the task `blocked` with reason `no_response` and continue with other runnable tasks.
-- **Observability**: when you spawn a worker, print `Task Tn attempt k spawned` (include agent/call ids if your runtime surfaces them). When using `wait`, print each `wait(...) -> ...` result (and only claim transitions if the tool actually exposes them).
-
-#### Workspace Reconciliation (Required Before Respawn / `no_response`)
-
-Sometimes a worker is "done" but the orchestrator misses the completion signal. Before respawning a worker or marking `no_response`, do a quick reconciliation pass:
-
-1) Re-check `wait` for just that worker (if available), in case you missed a late transition to `completed`.
-2) Check the workspace for unexpected in-scope changes (a worker may have edited files directly, or you may have integrated but not recorded it):
-   - If in a git repo: `git status --porcelain` and (optionally) `git diff --name-only` limited to the task `scope`/`location` if provided.
-   - If not in git: check for recent file modification within the task `scope`/`location`.
-   - A clean workspace does NOT prove a worker is incomplete; patch-first workers normally do not change files directly.
-3) If you find isolated, in-scope changes that plausibly correspond to exactly one task, treat those changes as the worker output and proceed with normal integration + validation for that task.
-4) If changes are mixed across tasks or out-of-scope, do NOT guess. Mark the task `blocked` with reason `ambiguous_workspace_state` and ask the user (or delegate a disentangling/fixup task to a worker).
-
-#### Clarification Protocol (Required)
-
-Workers must not "hold" indefinitely on unanswered questions.
-
-- **Worker rule**: if a task is blocked by missing information, the worker MUST NOT wait for a reply. They must either:
-  - Make a reasonable default decision and proceed (document the assumption), OR
-  - Stop quickly and return `HUMAN INPUT REQUIRED` in Notes (one question + recommended default + what changes based on the answer).
-- **Orchestrator rule**: if a worker returns `HUMAN INPUT REQUIRED`, ask the user that one question (include the recommended default). Do NOT spawn a replacement attempt until the user answers.
-- **Mode rule**: in Default mode, ask the user directly in the thread; do NOT call `request_user_input` (it is Plan-mode only).
-- **If you only observe a `needs_clarification` state via `wait` but do not have the question text**, treat the attempt as stalled and spawn a replacement attempt with an instruction to follow the Worker rule above.
-
-### Step 4: Integrate & Commit (Orchestrator-Owned)
-
-Commit model: orchestrator commits per task sequentially.
+`$st` state is authoritative for tasks and dependencies.
 
 Rules:
-- Subagents MUST NOT commit or push.
-- Prefer patch-first: subagents return a unified diff; orchestrator applies it and commits.
-- If a worker returns `NO_PATCH`, do not apply a diff; run post-step validation and mark the task `done` only if acceptance is satisfied.
-- If a patch does not apply cleanly or scope is unclear, request a refreshed patch from that subagent.
-- Only stage files related to that task when committing.
-- Do NOT commit unrelated changes.
-- Do NOT do patch surgery (reverse-apply patches, manually editing hunks, partial staging to split overlapping edits) unless the user explicitly asks for that level of history curation.
+- Never hand-edit the JSONL plan; mutate only via the `$st` script.
+- Treat any in-session plan UI (if present) as a mirror, not truth.
 
-### Step 5: Post-Step Validation (Orchestrator-Owned)
+### Plan File Resolution (Required)
 
-Validation runs after integrating a task (and before marking it `done`).
+Resolve the plan file path in this order:
 
-Defaults:
-- If a task provides `validation`, run it as the post-step for that task.
-- If no validation is provided, do not invent one.
-- If a validation fails, do not mark the task `done`; report the failure and either retry (by delegating a fix task) or ask the user.
+1) If invocation includes `plan_file=<path>`, use that exact path.
+2) Else if exactly one of these exists, use the existing file:
+   - `.codex/st-plan.jsonl`
+   - `.step/st-plan.jsonl`
+3) Else if both exist, STOP and ask the user to choose one.
+   Recommended default: pass `plan_file=.step/st-plan.jsonl` explicitly.
+4) Else (neither exists), choose `.step/st-plan.jsonl` and STOP with the exact init command:
+   `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py init --file .step/st-plan.jsonl`
 
-#### Background Terminals For Long-Running Commands (Use If Available)
+## Task Metadata Contract (Required)
 
-If the runtime supports Codex "background terminals" (the `exec_command` + `write_stdin` tool pair; a.k.a. `unified_exec`), prefer it for long-running validation commands so you can keep monitoring workers while the command runs.
+Each `$st` item must be actionable without guesswork. Store swarm-execution metadata in the item's
+`notes` field using a fenced `mesh` block.
 
-- Start the command with `exec_command` (use a finite `yield_time_ms`, e.g. 10s).
-- If the response indicates the process is still running (session id/process id), poll for output using `write_stdin`:
-  - Use `chars: ""` (empty) to poll for background output.
-  - Continue polling until an exit code is reported.
-- In Codex TUI, `/ps` lists background terminals.
+Required keys:
+- `scope`: list of file paths or globs (used for conflict avoidance)
+- `acceptance`: list of checkable acceptance bullets
+- `validation`: list of shell commands to run after integration
 
-### Step 6: Report
+Optional keys:
+- `risk`: `low|medium|high`
+- `swarm`: overrides (for example `roles`, `consensus_threshold`, `consensus_retries`)
+- `allow_no_validation`: `true|false` (default: `false`)
+
+Example `notes` content:
+
+```mesh
+scope:
+  - "src/foo.py"
+  - "tests/test_foo.py"
+acceptance:
+  - "foo() rejects invalid input"
+validation:
+  - "uv run pytest -q"
+risk: medium
+```
+
+If the `mesh` block is missing or incomplete, the first action for that task is metadata hydration:
+- proposer generates a minimal `mesh` block
+- orchestrator persists it via `$st set-notes`
+- then the swarm proceeds
+
+## Scheduling Policy (Required)
+
+Default behavior is sequential-by-default to align with `$st`'s single-`in_progress` invariant and to
+avoid workspace edit conflicts.
+
+Task selection order:
+1) If there is an `in_progress` item, run that item first.
+2) Else run the first `pending` item with `dep_state == ready`.
+3) If `ids=` is provided, restrict selection to the transitive dependency closure of those IDs, and
+   pick the first runnable item within that closure.
+
+Parallelism (`parallel_tasks > 1`) is allowed ONLY when all are true:
+- the user explicitly requests it via invocation args
+- each selected task has a disjoint `scope`
+- `$st` mutations that set multiple tasks `in_progress` use `--allow-multiple-in-progress`
+
+## Swarm Protocol (Per Task)
+
+### Roles
+
+Default 5-role set:
+- `proposer`: propose approach + assumptions + risk register
+- `critic_a`: correctness/regressions review
+- `critic_b`: coverage/ergonomics review
+- `skeptic`: adversarial edge cases + invariant stress test
+- `synthesizer`: incorporate critique into a final, minimal patch
+
+Fallback 3-role set (capacity mode):
+- `proposer`
+- `skeptic`
+- `synthesizer`
+
+Guardrail: critics and skeptic are read-only.
+
+Patch authorship rule:
+- Default: only the synthesizer outputs a patch diff.
+- The proposer may output a patch diff only when explicitly requested.
+
+### Artifacts
+
+The orchestrator must explicitly pass artifacts between rounds.
+
+- `task_meta`: parsed (or raw) `mesh` block + step text
+- `proposal`: proposer output
+- `critiques`: critic_a, critic_b, skeptic outputs
+- `synthesis`: synthesizer output (must include unified diff)
+- `votes`: one vote per role on the synthesized patch
+
+### Step 0: Hydrate Metadata (If Needed)
+
+If required task metadata is missing:
+1) Spawn proposer with `step=hydrate_meta` to generate the `mesh` block.
+2) Persist via `$st set-notes`.
+3) Reload task meta and proceed.
+
+### Round A: Proposal
+
+Spawn proposer with:
+- task id + step
+- current `mesh` meta
+- current code context (paths listed in `scope`)
+
+Proposer output must include:
+- a short plan
+- explicit assumptions
+- risk level
+
+### Round B: Critique (Parallel)
+
+Spawn critic_a, critic_b, skeptic in parallel.
+
+Each critique must:
+- cite specific risks / missing cases
+- state what change(s) would flip their vote to `agree`
+
+### Round C: Synthesis
+
+Spawn synthesizer with proposal + all critiques.
+
+Synthesizer output must include:
+- a unified diff as text (do not apply it)
+- a decision log mapping critiques to actions taken (accepted/rejected with reason)
+- the exact validation commands to run (must match task meta unless explicitly updated)
+
+### Round D: Vote
+
+After synthesis, obtain one explicit vote per role.
+
+Vote prompt input includes:
+- task meta
+- synthesized diff
+- decision log
+
+Each vote response must be:
+- `vote: agree|disagree`
+- one-line rationale
+
+Consensus logic:
+- for 5 roles: require `agree >= 4`
+- for 3 roles: require `agree == 3`
+- then proceed to integration + validation
+- else retry `critique -> synthesis -> vote` up to `consensus_retries`
+- if still below threshold, mark task `blocked` with reason `no_consensus`
+
+## Integration, Validation, and Persistence
+
+After consensus:
+
+1) Apply the synthesized patch (patch-first preferred).
+2) Run validation commands from task meta.
+   - If `validation` is missing and `allow_no_validation != true`, mark `blocked` with reason
+     `missing_validation` and ask the user for a validation signal.
+3) Persist `$st` state transitions:
+   - set `in_progress` at start (if not already)
+   - set `completed` on success
+   - set `blocked` on failure with a reason comment
+
+Persistence requirements (use `$st add-comment`):
+- Always append a `[mesh]` comment containing:
+  - outcome: `completed|blocked`
+  - block reason code when blocked: `no_consensus|no_response|missing_validation|validation_failed|ambiguous_integration`
+  - vote tally (agree/disagree counts) when applicable
+  - validation commands executed and outcomes (no fabricated logs)
+  - learning record id(s) appended (if available)
+
+## Learnings Capture (`$learnings`) (Required)
+
+Capture durable learnings automatically:
+- per-task checkpoint: immediately after each task completion or block
+- end-of-run checkpoint: one synthesized run-level learning summary
+
+Ground each learning in evidence (critiques + validation outcomes). Persist via the `$learnings`
+workflow into `.learnings.jsonl`.
+
+## Plan Mirror (Optional)
+
+If your runtime provides a plan UI tool (for example Codex `update_plan` or OpenCode `todowrite`),
+mirror `$st` state after each `$st` mutation. Treat the UI as a mirror only.
+
+## Reporting
 
 Return:
-- Execution summary (completed / issues / blocked)
-- Files modified (by task)
-- Commands run + results (validation)
-- Worker telemetry (best-effort): attempts per task, final status, durations (from `started_at` to completion), and `open_agents` after the end-of-run close sweep
-- Delegation evidence: list observed collab call ids/events, or explicitly `delegation_did_not_run` with reason
-- An "Updated task list" block the user can paste back into their source-of-truth, with `status` updated to `done` and brief logs.
+- tasks attempted and their final states (`completed`, `blocked`, `pending`)
+- consensus telemetry (attempt count, vote tallies)
+- validation commands and outcomes
+- `$st` mutations performed (ids + statuses)
+- learning capture evidence (records appended)
 
-## Subagent Prompt Template
-
-```text
-You are implementing one task from an inline task list.
-
-IMPORTANT
-- Do NOT commit or push.
-- Prefer PATCH-FIRST: produce a unified diff for only this task.
-- Patch MUST be a valid unified diff with file headers and hunk ranges (example: `@@ -12,7 +12,9 @@`). Do not omit hunk line ranges.
-- Do NOT apply changes directly; return a patch only.
-- Do NOT wait for user input. If blocked, return `HUMAN INPUT REQUIRED` in Notes.
-
-Task:
-- id: [ID]
-- name: [Name]
-- status: [Status]
-- depends_on: [Dependencies]
-- location/scope: [Paths]
-
-Description:
-[Full description]
-
-Acceptance criteria:
-[Bullets]
-
-Validation (do NOT run unless trivial; orchestrator will run post-step):
-[Commands/checks]
-
-Deliverable (required):
-1) Summary (1-3 bullets)
-2) Files touched (intended)
-3) Patch (single unified diff in a fenced block), OR `NO_PATCH` with brief proof when acceptance is already satisfied
-4) Notes / blockers
-   - If blocked by a missing decision, include:
-     - `HUMAN INPUT REQUIRED`
-     - Question (one)
-     - Recommended default
-     - What changes based on the answer
-```
+Never fabricate timestamps, tool events, or command outputs.
 
 ## Error Handling
 
-- Missing required fields (`id`, `status`, `depends_on`): ask user to fix the list.
-- `$mesh confirm` but no prior valid task list found: ask the user to paste the list.
-- `$mesh confirm` but multiple candidate task lists found: list candidates (numbered; 1 = most recent) and ask for `$mesh confirm pick=<n>` (or use `ids=` to narrow).
-- `$mesh confirm ids=...` matches 0 candidates: report that and list the available candidate task lists.
-- Collab worker tools unavailable: stop and ask for one unblock decision; do not simulate delegation.
-- Subagent no-response: apply the Liveness / Non-Response Policy; if still no result, mark `blocked` with reason `no_response`.
-- Unknown dependency id: list the unknown ids.
-- Cycle: print the cycle path (example: `T1 -> T2 -> T1`).
-- No runnable tasks: report what is blocked vs already `done` vs `cancelled`.
+- Missing `$mesh` token: do nothing under this skill.
+- Plan file missing: stop with the exact `$st init` command.
+- Both `.codex/st-plan.jsonl` and `.step/st-plan.jsonl` exist: ask user to pick `plan_file=`.
+- No runnable tasks: report ready/blocked/completed counts and exit cleanly.
+- Consensus failure after retries: set `blocked` + comment `no_consensus`.
+- Worker non-response/unusable output: retry once, then set `blocked` + comment `no_response`.
 
-## Ergonomics (Do This)
+## Worker Prompt Templates
 
-When you (the orchestrator) present a task list draft to the user, end with:
+Use role-specific prompts. Always include `task_id`, `step`, and the full current artifacts.
 
-"Reply with `$mesh confirm` to run exactly this task list (no copy/paste)."
-
-## Example Usage
+Proposal / metadata hydration:
 
 ```text
-Use $mesh to parallelize:
+You are the $mesh proposer for one task.
 
-- T1: Update config loader
-  - id: T1
-  - status: todo
-  - depends_on: []
-  - location: src/config/**
-  - description: Make config load order deterministic.
-  - acceptance:
-    - Deterministic precedence documented.
-  - validation:
-    - make test
+Hard rules
+- Do NOT commit or push.
+- Do NOT apply patches. Prefer plan + pseudocode; output a unified diff only if explicitly requested.
 
-- T2: Add regression test
-  - id: T2
-  - status: todo
-  - depends_on: [T1]
-  - location: tests/**
-  - description: Add a failing test for the old behavior.
-  - validation:
-    - make test
+Task context:
+- task_id: [ID]
+- step: [hydrate_meta|proposal]
+- st_step: [the $st step text]
+- mesh_meta: [current mesh block or MISSING]
 
-Then reply:
-
-$mesh confirm
-
-If you need to disambiguate:
-
-$mesh confirm pick=2
-
-Or narrow by ids:
-
-$mesh confirm ids=T1,T2
+Required output:
+1) Plan (1-5 bullets)
+2) Assumptions
+3) Risks (low|medium|high) + top 3 risks
+4) If step=hydrate_meta: output a complete ```mesh``` block
 ```
+
+Critique:
+
+```text
+You are one $mesh critic for one task.
+
+Hard rules
+- Do NOT commit or push.
+- Read-only: do not apply patches.
+
+Inputs:
+- task_id: [ID]
+- role: [critic_a|critic_b|skeptic]
+- proposal: [text]
+- mesh_meta: [text]
+
+Required output:
+1) Findings (max 8 bullets)
+2) Must-fix items (if any)
+3) Vote-flip conditions: what would make you vote `agree` after synthesis
+4) Risk level (low|medium|high)
+```
+
+Synthesis:
+
+```text
+You are the $mesh synthesizer for one task.
+
+Hard rules
+- Do NOT commit or push.
+- Do NOT apply patches; output unified diff text only.
+
+Inputs:
+- task_id: [ID]
+- mesh_meta: [text]
+- proposal: [text]
+- critiques: [critic_a, critic_b, skeptic]
+
+Required output:
+1) Decision log: map each critique point -> accepted/rejected + reason
+2) Patch: unified diff (text)
+3) Validation: list exact commands to run (align with mesh_meta unless you updated it explicitly)
+4) Residual risk (low|medium|high)
+```
+
+Vote:
+
+```text
+You are one $mesh voter for one task.
+
+Hard rules
+- Do NOT commit or push.
+- Do NOT propose new work; vote on what exists.
+
+Inputs:
+- task_id: [ID]
+- role: [proposer|critic_a|critic_b|skeptic|synthesizer]
+- synthesis: [diff + decision log]
+
+Required output:
+vote: agree|disagree
+reason: <one line>
+```
+
+Ergonomics: end user-facing run output with:
+
+"Reply with `$mesh` to run the next ready task from the `$st` plan."
