@@ -1,6 +1,6 @@
 ---
 name: logophile
-description: Editing mode for clarity and semantic density; use for prompts, docs, specs, emails, and naming.
+description: "Editing mode for clarity and semantic density. Trigger cues/keywords: `$logophile`, tighten wording, rewrite for brevity, sharpen prompts/docs/specs/emails, compress verbose text, improve naming/title/label options, and keep intent/tone while making copy faster to scan."
 ---
 
 # Logophile
