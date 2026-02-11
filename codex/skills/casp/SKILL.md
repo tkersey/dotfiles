@@ -86,6 +86,15 @@ The proxy itself speaks JSONL over stdio.
 }
 ```
 
+- `casp/send` forwards a raw JSON-RPC message to `codex app-server` (advanced escape hatch):
+
+```json
+{
+  "type": "casp/send",
+  "msg": { "method": "thread/list", "id": "raw-1", "params": { "cursor": null } }
+}
+```
+
 - `casp/state/get` emits the current proxy state.
 - `casp/stats/get` emits a stats snapshot (uptime, queue depth, counts).
 - `casp/exit` shuts down the proxy.
