@@ -1,6 +1,6 @@
 ---
 name: grill-me
-description: Clarify ambiguous or conflicting requests by researching first, then asking only judgment calls; use when prompts are under-specified, success criteria are missing, requirements conflict, or trade-offs are implicit, and when users ask to clarify/scope/define requirements, build a system, optimize, make it better, pressure-test assumptions, ask hard questions, or grill me; stop before implementation.
+description: Clarify ambiguous or conflicting requests by researching first, then asking only judgment calls. Use when prompts say "$grill-me"/"grill me", "ask hard questions", "pressure-test assumptions", "clarify scope/requirements", "define success criteria", or request system-design/optimization decisions before implementation; stop before implementation.
 ---
 
 # Grill Me
