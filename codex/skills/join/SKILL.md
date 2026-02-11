@@ -1,6 +1,6 @@
 ---
 name: join
-description: "PR autopilot via `gh` only: create/manage PRs, enforce required CI gates, apply surgical fixes, and publish merge-ready handoff without merging."
+description: "PR autopilot via `gh` only: create/manage PRs, keep branches current, enforce required CI gates, apply surgical code patches, and publish merge-ready handoff without merging. Use when asked to run or monitor PR automation, fix failing required checks, keep local/remote branch state clean, or prepare branch/PR cleanup for human merge."
 ---
 
 # Join
