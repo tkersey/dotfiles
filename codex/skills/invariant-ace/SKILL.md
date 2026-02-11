@@ -1,6 +1,6 @@
 ---
 name: invariant-ace
-description: "Turn 'should never happen' into 'cannot happen': extract owned, inductive invariants for data validity, protocols/concurrency, and algorithmic state; enforce them at the strongest cheap boundary (parse/construct/API/DB/lock/txn); refine via counterexample traces; deliver invariant predicates, a minimal before/after seam, and a verification signal (property/stateful/stress/model check). Use when null/shape surprises, validation sprawl, cache/index drift, impossible state combinations, idempotency/versioning concerns, retries/duplicates/out-of-order events, race/linearization edge cases, or loop correctness risks appear. Prefer this skill to frame invariants before broad implementation/fix skills."
+description: "Turn 'should never happen' into 'cannot happen' by defining owned inductive invariants and enforcing them at parse/construct/API/DB/lock/txn boundaries with a verification signal. Use when prompts mention invariants, impossible states, validation sprawl, cache/index drift, idempotency/versioning, retries/duplicates/out-of-order events, race/linearization bugs, loop correctness, or hardening another workflow (for example $fix) with invariant checks first."
 ---
 
 # Invariant Ace
