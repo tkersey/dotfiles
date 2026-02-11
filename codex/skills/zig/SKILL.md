@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Zig 0.15.2 implementation runbook for most Zig engineering work. Use when requests touch Zig code or tooling: editing `.zig` files; changing `build.zig` or `build.zig.zon`; running or fixing `zig build`, `zig test`, `zig run`, `zig fmt`, or `zig fetch`; diagnosing compile/runtime/test failures; allocator or ownership issues; comptime/reflection/codegen (`@typeInfo`, `@compileError`); performance work with `std.simd`/`@Vector` or `std.Thread`/`Thread.Pool`; cross-compilation; zero-copy parsing; or C interop (`@cImport`). Enforce correctness-first validation with tests, differential fuzzing (`std.testing.fuzz`), and allocation-failure checks for allocator code."
+description: "Use when requests involve Zig code or toolchain work: editing `.zig`, changing `build.zig`/`build.zig.zon`, running or fixing `zig build|test|run|fmt|fetch`, debugging compile/runtime/test failures, comptime/reflection/codegen, allocator ownership, SIMD (`std.simd`/`@Vector`), threads (`std.Thread`/`Thread.Pool`), cross-compilation, zero-copy parsing, or C interop (`@cImport`). Enforce correctness-first validation with tests, `std.testing.fuzz`, and allocation-failure checks."
 ---
 
 # Zig
