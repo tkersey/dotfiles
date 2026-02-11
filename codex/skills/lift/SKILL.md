@@ -1,6 +1,6 @@
 ---
 name: lift
-description: Comprehensive performance optimization for algorithmic and systems-level code, covering latency, throughput, memory/GC, and tail latency. Use when asked to speed up code, reduce latency, improve throughput, lower memory usage, diagnose bottlenecks, design benchmarks, or produce performance experiments and reports.
+description: "Comprehensive performance optimization for latency, throughput, memory/GC, and tail behavior. Trigger cues/keywords: `$lift`, optimize, speed up, reduce latency, improve p95/p99, increase throughput/QPS, lower CPU or memory, cut allocations/GC pauses, profile hot paths, benchmark regressions, and performance passes on JSONL/query-heavy code."
 ---
 
 # Lift
