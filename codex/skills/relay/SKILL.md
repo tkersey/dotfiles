@@ -1,6 +1,6 @@
 ---
 name: relay
-description: "Coordinate multiple coding subagents through a shared mail coordination service with a macro-first workflow: session bootstrap, thread preparation, contact handshakes, file reservations, inbox polling, and acknowledgements. Use when prompts ask to coordinate a swarm, manage subagent handoffs, keep agents in one thread per task, or help agents 'be excellent to each other' while avoiding duplicate edits and routing failures."
+description: "Coordinate multi-agent coding with a shared relay mail service: bootstrap sessions, keep one thread per task, reserve files, send/poll/ack messages, and handle contact handshakes. Trigger when users ask to \"mail for agents\", coordinate swarms or handoffs, inspect why relay workflows are not working, or prevent duplicate edits and routing/thread failures."
 ---
 
 # Relay
