@@ -1,6 +1,6 @@
 ---
 name: patch
-description: Create micro-patches from staged git changes (minimal incision) with at least one validation signal per patch. Use when users ask to export/share git patches instead of committing.
+description: Create micro-patches from staged git changes (minimal incision) with at least one validation signal per patch. Use when asked to split work into small .patch files, export/share diffs, or produce patches instead of commits.
 ---
 
 # Patch
