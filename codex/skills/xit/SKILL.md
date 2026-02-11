@@ -1,6 +1,6 @@
 ---
 name: xit
-description: Xit (xit) CLI for version control in repositories with a .xit directory. Prefer xit whenever `.xit/` is present; never run the TUI; translate git-like intents to xit CLI and avoid git unless explicitly requested.
+description: "Use when a repo has `.xit/` or the user asks for xit: translate git-like intents to non-interactive `xit` CLI commands (`status/diff/log --cli`, add/commit/branch/merge/cherry-pick), avoid the TUI, and do not use git unless explicitly requested."
 ---
 
 # Xit (xit)
