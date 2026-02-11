@@ -1,6 +1,6 @@
 ---
 name: fix
-description: Review+fix protocol with safety guardrails (unsoundness, invariants, footguns, incidental complexity). Use for "$fix this PR", "fix current branch", CI-red repair, crash/corruption bugs, and invariant/footgun hardening. Requires a validation signal.
+description: Review+fix protocol with safety guardrails (unsoundness, invariants, footguns, incidental complexity). Use when prompts say "$fix this PR", "fix current branch", "fix this diff", "repair CI red", or "apply a minimal patch", and when crash/corruption/invariant-break issues need correction with a validation signal.
 ---
 
 # Fix
