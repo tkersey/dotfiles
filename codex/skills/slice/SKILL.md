@@ -1,6 +1,6 @@
 ---
 name: slice
-description: "Slice a plan into a DAG in SLICES.md; validate it; pick and mark the next ready slice to execute."
+description: "Slice a plan into a DAG in SLICES.md; validate it; and pick/mark the next ready slice to execute. Use when asked to break a plan into slices, generate or repair `SLICES.md`, or choose the next ready slice to work on."
 ---
 
 # Slice
