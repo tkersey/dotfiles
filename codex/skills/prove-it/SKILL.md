@@ -1,6 +1,6 @@
 ---
 name: prove-it
-description: Gauntlet for absolute claims (always/never/guaranteed/optimal); pressure-test, then refine with explicit boundaries.
+description: Gauntlet for absolute claims (always/never/guaranteed/optimal); pressure-test, then refine with explicit boundaries. Use when users ask to prove or disprove strong certainty claims, request devil's-advocate challenge rounds, or want the $prove-it gauntlet to run in default autoloop/full-auto style.
 ---
 
 # Prove It
