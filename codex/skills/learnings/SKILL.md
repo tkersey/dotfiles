@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: Capture and persist evidence-backed execution learnings discovered during coding work. Use when a coding slice is completed or paused and there is new evidence from diffs, validations, pivots, retries, reversals, or fixes; also trigger implicitly after validation state transitions from failing to passing, repeated failure loops, strategy changes, and before commit or PR finalization. Extract actionable nuggets about fruitful paths and footguns, then append structured records to `.learnings.jsonl` at repo root.
+description: Capture and persist evidence-backed execution learnings into `.learnings.jsonl`. Use when a coding slice completes or pauses, after failing-to-passing validation transitions, repeated failure loops, pivots/retries/reversals, footgun discovery, or before commit/PR handoff. Distill actionable do-more/do-less rules with concrete evidence and application context so future turns reuse what works and avoid known traps.
 ---
 
 # Learnings
