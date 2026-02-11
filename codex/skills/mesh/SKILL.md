@@ -1,9 +1,10 @@
 ---
 name: mesh
 description: >
-  Swarm coordinator for requests that explicitly invoke `$mesh`. Executes ready items from a
-  persisted `$st` plan using propose/critique/synthesize/vote, gates completion on consensus +
-  validation, and captures durable learnings via `$learnings`.
+  Swarm coordinator activated only by explicit `$mesh` invocation. Trigger cues/keywords:
+  orchestrate subagents/workers, execute ready `$st` slices/tasks, run
+  propose/critique/synthesize/vote cycles, coordinate concurrent workers, require consensus +
+  validation before completion, and persist learnings via `$learnings`.
 ---
 
 # Mesh (Swarm Coordination for $st Plans)
