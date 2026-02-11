@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Produce essay-heavy, decision-complete plans in proposed_plan block format. Optionally export to iterative `plan-N.md` files (max N=5) when explicitly requested outside Plan Mode.
+description: Produce essay-heavy, decision-complete plans in proposed_plan block format. Use when asked to run $plan, turn a project brief into an execution-ready architecture plan, or iteratively refine strategy; optionally export to iterative `plan-N.md` files (max N=5) when explicitly requested outside Plan Mode.
 ---
 
 # Plan
