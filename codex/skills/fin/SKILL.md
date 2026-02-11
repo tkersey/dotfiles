@@ -1,6 +1,6 @@
 ---
 name: fin
-description: "Finalize GitHub PRs: update the branch/PR, monitor CI until green, squash-merge, and clean up local/remote state. Use for requests like finish/land/close a PR, monitor checks, squash and cleanup."
+description: "Finalize GitHub PRs end-to-end: update branch/PR, monitor CI until green, squash-merge, and clean up local/remote state. Use when asked to $fin or to finish/land/merge/close a PR, watch checks or runs, squash-merge, delete the branch, and sync local state."
 ---
 
 # Fin
