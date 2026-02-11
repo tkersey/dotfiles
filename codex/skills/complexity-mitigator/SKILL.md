@@ -1,6 +1,6 @@
 ---
 name: complexity-mitigator
-description: Mitigate incidental code complexity when control flow is tangled, nesting is deep, names are hard to parse, or reasoning requires cross-file hops; use during reviews or refactors to deliver essential vs incidental verdicts, ranked simplification steps, a small sketch, and TRACE letter assessment (analysis-only; no edits applied).
+description: Mitigate incidental code complexity when control flow is tangled, nesting is deep, names are hard to parse, or reasoning requires cross-file hops. Use when a review stalls on readability, you need an analysis-first refactor plan before edits, or you want essential-vs-incidental verdicts, ranked simplification steps, a small structural sketch, and a TRACE assessment (analysis-only; no edits).
 ---
 
 # Complexity Mitigator
