@@ -1,6 +1,6 @@
 ---
 name: select
-description: "Swarm-ready work selector: pick a source, refine into atomic tasks, and emit an OrchPlan (waves + delegation) plus optional pipelines. Plan-only; no writeback; orchestration-agnostic."
+description: "Swarm-ready work selector: choose one source (invocation list, `SLICES.md`, beads, or `plan-N.md`), refine it into dependency-aware atomic tasks, and emit an OrchPlan (waves + delegation) plus optional pipelines. Use for prompts like `$select`, `use $select`, `pick the next ready slice`, `find ready beads`, `orchestrate workers from SLICES`, or `what should run in parallel next`. Plan-only; no writeback; orchestration-agnostic."
 ---
 
 # Select
