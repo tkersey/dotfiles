@@ -1,6 +1,6 @@
 ---
 name: web-browser
-description: "Automate Chrome/Chromium via CDP: navigate, click, fill forms, evaluate JS, screenshot, scrape."
+description: "Use when tasks need real-browser web automation in Chrome/Chromium via CDP: open or navigate URLs, click/type/select in forms, run page JS, wait for selectors, scrape structured content, capture screenshots, or validate UI flows on live sites."
 ---
 
 # Web Browser
