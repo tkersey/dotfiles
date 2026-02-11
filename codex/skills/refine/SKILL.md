@@ -1,6 +1,6 @@
 ---
 name: refine
-description: Refine an existing Codex skill by applying $ms updates to SKILL.md, triggers, resources, and agents/openai.yaml, then validating with quick_validate. Use when asked to improve, iterate, fix, refactor, expand, or rename a skill; adjust triggers/metadata; add scripts/references/assets; regenerate UI metadata; or incorporate session-mining findings about skill quality.
+description: Refine an existing Codex skill via $ms with minimal diffs, then validate with quick_validate. Trigger when asked to improve a skill's trigger description/frontmatter, workflow text, metadata, scripts/references/assets, or agents/openai.yaml; also for requests to iterate, refactor, rename, or fix a skill using usage/session-mining evidence (for example from $seq).
 ---
 
 # Refine
