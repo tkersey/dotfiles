@@ -1,6 +1,6 @@
 ---
 name: tk
-description: "Software surgery: contract → invariants → creative search → inevitable incision; minimal diff, compositional core, proof signal."
+description: "Software surgery protocol for proof-backed, minimal-diff implementation: Contract to Invariants to Creative Frame to inevitable incision to Proof. Use when users say \"run $tk\", \"patch-first\", \"keep the diff small\", \"state contract + invariants\", \"one clear incision\", or \"fix it with a validation signal\"."
 ---
 
 # TK (Surgeon's Principle)
