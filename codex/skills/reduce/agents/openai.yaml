@@ -1,4 +1,4 @@
 interface:
-  display_name: "Reduce Abstractions"
+  display_name: "reduce"
   short_description: "Spot costly abstractions and propose lower-level primitives"
   default_prompt: "Use $reduce to review this codebase, flag high-cost abstractions, and propose lower-level replacements."
