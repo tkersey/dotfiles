@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Create a language-agnostic ghost-library package from an existing library repo by extracting SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and upstream LICENSE files with provenance and regeneration instructions. Use when asked to ghostify/spec-ify/spec-package a concrete codebase, extract portable spec/tests from source tests, or invoke $ghost/"ghost"/"ghost library"; do not use for implementation work or for editing skills.
+description: Create a language-agnostic ghost-library package from an existing library repo by extracting SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and upstream LICENSE files with provenance and regeneration instructions. Use when prompts say "$ghost", "ghostify this repo", "spec-ify/spec-package this library", "ghost library", or ask to extract portable spec/tests from source tests; do not use for implementation work or editing skills.
 ---
 
 # ghost
