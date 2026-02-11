@@ -1,6 +1,6 @@
 ---
 name: creative-problem-solver
-description: Lateral-thinking playbook for options and trade-offs; always deliver a five-tier strategy portfolio.
+description: Lateral-thinking playbook that always returns a five-tier strategy portfolio (Quick Win through Moonshot). Use when you need options, alternatives, or trade-offs; when progress is stalled or failing repeatedly; or when you ask to think creatively, reframe constraints, and choose a strategic path before execution.
 ---
 
 # Creative Problem Solver
