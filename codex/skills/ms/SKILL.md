@@ -1,6 +1,6 @@
 ---
 name: ms
-description: Create, update, or refactor Codex skills in this repo, including SKILL.md, agents/openai.yaml, and any scripts/references/assets. Use when asked to design, scaffold, edit, validate, or improve skills, or when the user mentions skill creation, updates, triggers, or metadata.
+description: Create, update, or refactor Codex skills in this repo, including SKILL.md, frontmatter trigger text, agents/openai.yaml, and scripts/references/assets. Use when asked to create or improve a skill, tighten trigger descriptions from usage evidence (for example via $seq), regenerate/verify agents/openai.yaml, or adjust skill metadata/workflows.
 ---
 
 # ms
@@ -26,6 +26,9 @@ Create and update Codex skills with minimal diffs. Work directly in the skill fo
   - Prefer generating via `generate_openai_yaml.py`.
   - `short_description` must be 25-64 chars.
   - `default_prompt` must be one short sentence and mention `$skill-name`.
+- Proof of completion (required):
+  - Record `agents/openai.yaml` disposition as one of: `regenerated`, `verified unchanged`, or `not present`.
+  - Include the exact `quick_validate.py` command used and its pass/fail result in the final summary.
 - Always run `quick_validate.py` before calling it done.
   - Recommended (no global installs):
     - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py <path/to/skill>`
@@ -36,6 +39,7 @@ Create and update Codex skills with minimal diffs. Work directly in the skill fo
 - If a matching skill already exists: run Update Workflow.
 - If no matching skill exists: run Create Workflow.
 - If the name, location, or triggers are unclear: ask 1-3 targeted questions, then proceed.
+- If refining `ms` itself: run the Seq Feedback Loop first and use that evidence to choose the smallest update set.
 
 ## Create Workflow
 
@@ -72,6 +76,21 @@ Create and update Codex skills with minimal diffs. Work directly in the skill fo
    - If missing and UI metadata is desired, create it with `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py <path/to/skill> --interface key=value`.
 5. Validate with `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py <path/to/skill>`.
 6. Summarize changes and next steps.
+   - Include `openai_yaml: regenerated|verified unchanged|not present`.
+   - Include `quick_validate: <exact command> -> <result>`.
+
+## Seq Feedback Loop (for improving `ms`)
+
+When the target skill is `ms`, mine recent sessions before editing:
+
+1. Collect assistant outputs that mention `$ms`:
+   - `uv run codex/skills/seq/scripts/seq.py query --root ~/.codex/sessions --spec '{"dataset":"messages","where":[{"field":"role","op":"eq","value":"assistant"},{"field":"text","op":"contains","value":"$ms"}],"select":["path","timestamp","text"],"sort":["timestamp"],"format":"jsonl"}'`
+2. Compute adherence rates for required proof markers:
+   - `quick_validate.py`
+   - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py`
+   - `agents/openai.yaml`
+   - `generate_openai_yaml.py`
+3. Promote repeated misses into minimal-incision SKILL.md constraints/workflow edits.
 
 ## Trigger Examples
 
