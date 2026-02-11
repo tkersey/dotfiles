@@ -1,6 +1,6 @@
 ---
 name: seq
-description: Mine Codex sessions JSONL (~/.codex/sessions/) for skill usage, section compliance, and token counts. Use when analyzing session history or building reports from global sessions logs.
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) for skill usage, section/format compliance, trigger evidence, and token metrics. Use for prompts like `$seq`, `analyze session history`, `rank skill mentions`, `audit missing sections`, `report token usage`, or `use $seq to improve skill trigger descriptions/frontmatter`."
 ---
 
 # seq
@@ -158,11 +158,30 @@ uv run scripts/seq.py report-bundle --root ~/.codex/sessions \
 uv run scripts/seq.py token-usage --root ~/.codex/sessions --top 10
 ```
 
+### 9) Reproducible perf harness
+Run stable workloads with fixed warmup/sample counts and optional baseline comparison.
+
+```bash
+uv run scripts/seq_perf_harness.py \
+  --root ~/.codex/sessions/2025 \
+  --samples 5 --warmup 1
+```
+
+A/B example:
+```bash
+uv run scripts/seq_perf_harness.py \
+  --root ~/.codex/sessions/2025 \
+  --baseline /tmp/seq-old.py \
+  --samples 5 --warmup 1 --json
+```
+
 ## Notes
 - Default root: `~/.codex/sessions`.
 - Skill names are inferred from `~/.dotfiles/codex/skills` and `~/.codex/skills` by default.
 - Add `--output <path>` to write results to a file.
+- `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 
 ## Resources
 ### scripts/
 - `scripts/seq.py`: CLI for ranking skills, auditing sections, and summarizing token counts.
+- `scripts/seq_perf_harness.py`: fixed-workload benchmark runner for reproducible seq performance comparisons.

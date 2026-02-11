@@ -20,7 +20,11 @@ from typing import Any, Callable, Iterable, Iterator, Optional
 SKILL_NAME_RE = re.compile(r"<name>([^<]+)</name>")
 DOLLAR_RE = re.compile(r"\$([a-z][a-z0-9-]*)")
 TOKEN_RE = re.compile(r"Original token count:\s*(\d+)")
-RESPONSE_ITEM_MESSAGE_TYPE_RE = re.compile(r'"type"\s*:\s*"message"')
+RESPONSE_ITEM_MESSAGE_TYPE_NEEDLES = ('"type":"message"', '"type": "message"')
+TOKEN_EVENT_TYPE_NEEDLES = (
+    '"payload":{"type":"token_count"',
+    '"payload": {"type": "token_count"',
+)
 DEFAULT_SESSIONS_ROOT = Path.home() / ".codex" / "sessions"
 
 
@@ -52,6 +56,9 @@ def message_text(payload: dict) -> str:
 
 
 def strip_echo(text: str) -> str:
+    # Fast path for the common case where no Echo preamble exists.
+    if not text.lstrip().startswith("Echo:"):
+        return text
     lines = text.splitlines()
     i = 0
     while i < len(lines) and lines[i].strip() == "":
@@ -109,7 +116,9 @@ def iter_messages_in_path(
     *,
     dedupe: bool = True,
     strip_echo_assistant: bool = True,
+    parse_timestamp: bool = True,
 ) -> Iterator[Message]:
+    need_ts = parse_timestamp or since is not None or until is not None
     seen: set[bytes] = set()
     with path.open("r", encoding="utf-8") as f:
         for line in f:
@@ -118,7 +127,10 @@ def iter_messages_in_path(
                 if "user_message" not in line and "agent_message" not in line:
                     continue
             elif "response_item" in line:
-                if not RESPONSE_ITEM_MESSAGE_TYPE_RE.search(line):
+                if (
+                    RESPONSE_ITEM_MESSAGE_TYPE_NEEDLES[0] not in line
+                    and RESPONSE_ITEM_MESSAGE_TYPE_NEEDLES[1] not in line
+                ):
                     continue
             else:
                 continue
@@ -158,7 +170,7 @@ def iter_messages_in_path(
             if not text:
                 continue
 
-            ts = parse_ts(obj.get("timestamp"))
+            ts = parse_ts(obj.get("timestamp")) if need_ts else None
             if since and ts and ts < since:
                 continue
             if until and ts and ts > until:
@@ -178,6 +190,8 @@ def iter_messages(
     roles: set[str],
     since: Optional[datetime],
     until: Optional[datetime],
+    *,
+    parse_timestamp: bool = True,
 ) -> Iterator[Message]:
     for path in iter_jsonl_paths(root):
         yield from iter_messages_in_path(
@@ -187,6 +201,7 @@ def iter_messages(
             until=until,
             dedupe=True,
             strip_echo_assistant=True,
+            parse_timestamp=parse_timestamp,
         )
 
 
@@ -213,6 +228,53 @@ def load_skill_names(skill_dirs: list[Path]) -> set[str]:
     return names
 
 
+def coerce_required_fields(params: dict[str, Any]) -> Optional[set[str]]:
+    raw = params.get("_required_fields")
+    if raw is None:
+        return None
+    if isinstance(raw, str):
+        return {raw}
+    if isinstance(raw, (list, tuple, set)):
+        out = {x for x in raw if isinstance(x, str) and x}
+        return out if out else None
+    return None
+
+
+def infer_query_required_fields(
+    where: list[dict[str, Any]],
+    group_by: list[str],
+    metrics: list[dict[str, Any]],
+    select: list[str],
+    sort: list[str],
+) -> Optional[set[str]]:
+    needed: set[str] = set()
+
+    for w in where:
+        field = w.get("field")
+        if isinstance(field, str) and field:
+            needed.add(field)
+
+    if group_by:
+        needed.update(group_by)
+        for m in metrics:
+            if not isinstance(m, dict):
+                continue
+            op = (m.get("op") or "count").lower()
+            field = m.get("field")
+            if op != "count" and isinstance(field, str) and field:
+                needed.add(field)
+    else:
+        if not select:
+            return None
+        needed.update(select)
+        for s in sort:
+            k = s[1:] if s.startswith("-") else s
+            if k:
+                needed.add(k)
+
+    return needed or None
+
+
 def collect_occurrences(
     root: Path,
     roles: set[str],
@@ -223,6 +285,7 @@ def collect_occurrences(
     dedupe_adjacent: bool,
     since: Optional[datetime],
     until: Optional[datetime],
+    required_fields: Optional[set[str]] = None,
 ) -> list[dict]:
     return list(
         iter_occurrences(
@@ -235,6 +298,7 @@ def collect_occurrences(
             dedupe_adjacent=dedupe_adjacent,
             since=since,
             until=until,
+            required_fields=required_fields,
         )
     )
 
@@ -249,8 +313,25 @@ def iter_occurrences(
     dedupe_adjacent: bool,
     since: Optional[datetime],
     until: Optional[datetime],
+    required_fields: Optional[set[str]] = None,
 ) -> Iterator[dict]:
     for path in iter_jsonl_paths(root):
+        need_types = required_fields is None or "types" in required_fields
+        need_timestamp = required_fields is None or "timestamp" in required_fields
+        need_path = required_fields is None or "path" in required_fields
+        need_snippet = required_fields is None or "snippet" in required_fields
+        need_day = required_fields is None or "day" in required_fields
+        need_week = required_fields is None or "week" in required_fields
+        need_month = required_fields is None or "month" in required_fields
+        need_ts = (
+            since is not None
+            or until is not None
+            or need_timestamp
+            or need_day
+            or need_week
+            or need_month
+        )
+        path_str = str(path) if need_path else ""
         prev_types_by_skill: dict[str, set[str]] = {}
         for msg in iter_messages_in_path(
             path,
@@ -259,6 +340,7 @@ def iter_occurrences(
             until=until,
             dedupe=True,
             strip_echo_assistant=True,
+            parse_timestamp=need_ts,
         ):
             text = msg.text
             role = msg.role
@@ -292,17 +374,25 @@ def iter_occurrences(
                         and "dollar" not in types
                     ):
                         continue
-                yield {
+                row = {
                     "skill": name,
                     "role": role,
-                    "types": "+".join(sorted(types)),
-                    "timestamp": ts.isoformat() if ts else None,
-                    "path": str(path),
-                    "snippet": text.replace("\n", " ")[:240],
-                    "day": bucket_label(ts, "day") if ts else None,
-                    "week": bucket_label(ts, "week") if ts else None,
-                    "month": bucket_label(ts, "month") if ts else None,
                 }
+                if need_types:
+                    row["types"] = "+".join(sorted(types))
+                if need_timestamp:
+                    row["timestamp"] = ts.isoformat() if ts else None
+                if need_path:
+                    row["path"] = path_str
+                if need_snippet:
+                    row["snippet"] = text.replace("\n", " ")[:240]
+                if need_day:
+                    row["day"] = bucket_label(ts, "day") if ts else None
+                if need_week:
+                    row["week"] = bucket_label(ts, "week") if ts else None
+                if need_month:
+                    row["month"] = bucket_label(ts, "month") if ts else None
+                yield row
 
             prev_types_by_skill = types_by_skill
 
@@ -382,6 +472,7 @@ def cmd_skills_rank(args: argparse.Namespace) -> str:
         dedupe_adjacent=not args.no_dedupe,
         since=since,
         until=until,
+        required_fields={"skill"},
     )
 
     counts = Counter(o["skill"] for o in occ)
@@ -419,6 +510,7 @@ def cmd_skill_trend(args: argparse.Namespace) -> str:
         dedupe_adjacent=not args.no_dedupe,
         since=since,
         until=until,
+        required_fields={"skill", "timestamp"},
     )
     occ = [o for o in occ if o["skill"] == args.skill]
 
@@ -459,6 +551,9 @@ def cmd_skill_report(args: argparse.Namespace) -> str:
 
     skill_dirs = [Path(p).expanduser() for p in args.skills_dir]
     skill_names = load_skill_names(skill_dirs)
+    needed_fields = {"skill", "role", "types"}
+    if args.snippets:
+        needed_fields.update({"timestamp", "path", "snippet"})
 
     occ = collect_occurrences(
         root=root,
@@ -470,6 +565,7 @@ def cmd_skill_report(args: argparse.Namespace) -> str:
         dedupe_adjacent=not args.no_dedupe,
         since=since,
         until=until,
+        required_fields=needed_fields,
     )
 
     occ = [o for o in occ if o["skill"] == args.skill]
@@ -535,6 +631,7 @@ def cmd_role_breakdown(args: argparse.Namespace) -> str:
         dedupe_adjacent=not args.no_dedupe,
         since=since,
         until=until,
+        required_fields={"skill", "role"},
     )
 
     counts: dict[str, dict[str, int]] = defaultdict(lambda: {"user": 0, "assistant": 0})
@@ -628,6 +725,7 @@ def cmd_report_bundle(args: argparse.Namespace) -> str:
         dedupe_adjacent=not args.no_dedupe,
         since=since,
         until=until,
+        required_fields={"skill", "role"},
     )
 
     # skills rank
@@ -754,18 +852,35 @@ def dataset_messages(
     roles = set(r.strip() for r in args.roles.split(",") if r.strip())
     since = parse_ts(args.since) if args.since else None
     until = parse_ts(args.until) if args.until else None
+    required_fields = coerce_required_fields(params)
+    need_path = required_fields is None or "path" in required_fields
+    need_timestamp = required_fields is None or "timestamp" in required_fields
+    need_day = required_fields is None or "day" in required_fields
+    need_week = required_fields is None or "week" in required_fields
+    need_month = required_fields is None or "month" in required_fields
+    need_role = required_fields is None or "role" in required_fields
+    need_text = required_fields is None or "text" in required_fields
+    need_text_len = required_fields is None or "text_len" in required_fields
     for msg in iter_messages(root, roles=roles, since=since, until=until):
         ts = msg.timestamp
-        yield {
-            "path": str(msg.path),
-            "timestamp": ts.isoformat() if ts else None,
-            "day": bucket_label(ts, "day") if ts else None,
-            "week": bucket_label(ts, "week") if ts else None,
-            "month": bucket_label(ts, "month") if ts else None,
-            "role": msg.role,
-            "text": msg.text,
-            "text_len": len(msg.text),
-        }
+        row: dict[str, Any] = {}
+        if need_path:
+            row["path"] = str(msg.path)
+        if need_timestamp:
+            row["timestamp"] = ts.isoformat() if ts else None
+        if need_day:
+            row["day"] = bucket_label(ts, "day") if ts else None
+        if need_week:
+            row["week"] = bucket_label(ts, "week") if ts else None
+        if need_month:
+            row["month"] = bucket_label(ts, "month") if ts else None
+        if need_role:
+            row["role"] = msg.role
+        if need_text:
+            row["text"] = msg.text
+        if need_text_len:
+            row["text_len"] = len(msg.text)
+        yield row
 
 
 def dataset_skill_mentions(
@@ -782,6 +897,7 @@ def dataset_skill_mentions(
     include_dollars = bool(params.get("include_dollars", True))
     skip_dollar_in_skill_block = bool(params.get("skip_dollar_in_skill_block", True))
     dedupe_adjacent = bool(params.get("dedupe_adjacent", True))
+    required_fields = coerce_required_fields(params)
 
     for o in iter_occurrences(
         root=root,
@@ -793,6 +909,7 @@ def dataset_skill_mentions(
         dedupe_adjacent=dedupe_adjacent,
         since=since,
         until=until,
+        required_fields=required_fields,
     ):
         yield o
 
@@ -804,6 +921,8 @@ TOKEN_KEYS = [
     "reasoning_output_tokens",
     "total_tokens",
 ]
+TOKEN_INDEX = {k: i for i, k in enumerate(TOKEN_KEYS)}
+TOTAL_TOKEN_INDEX = TOKEN_INDEX["total_tokens"]
 
 
 def token_usage(info: dict[str, Any], which: str) -> dict[str, int]:
@@ -818,15 +937,36 @@ def token_usage(info: dict[str, Any], which: str) -> dict[str, int]:
     return out
 
 
+def token_usage_tuple(info: dict[str, Any], which: str) -> tuple[Optional[int], ...]:
+    block = info.get(which)
+    if not isinstance(block, dict):
+        return (None,) * len(TOKEN_KEYS)
+    vals: list[Optional[int]] = [None] * len(TOKEN_KEYS)
+    for i, key in enumerate(TOKEN_KEYS):
+        v = block.get(key)
+        if isinstance(v, int):
+            vals[i] = v
+    return tuple(vals)
+
+
 def iter_token_count_events_in_path(
     path: Path,
     since: Optional[datetime],
     until: Optional[datetime],
+    *,
+    parse_timestamp: bool = True,
 ) -> Iterator[tuple[Optional[datetime], dict[str, Any]]]:
+    need_ts = parse_timestamp or since is not None or until is not None
     with path.open("r", encoding="utf-8") as f:
         for line in f:
             # Fast prefilter: token counts only appear on event_msg rows.
-            if "event_msg" not in line or "token_count" not in line:
+            if "event_msg" not in line:
+                continue
+            if (
+                TOKEN_EVENT_TYPE_NEEDLES[0] not in line
+                and TOKEN_EVENT_TYPE_NEEDLES[1] not in line
+                and "token_count" not in line
+            ):
                 continue
             try:
                 obj = json.loads(line)
@@ -840,7 +980,7 @@ def iter_token_count_events_in_path(
             info = payload.get("info")
             if not isinstance(info, dict):
                 continue
-            ts = parse_ts(obj.get("timestamp"))
+            ts = parse_ts(obj.get("timestamp")) if need_ts else None
             if since and ts and ts < since:
                 continue
             if until and ts and ts > until:
@@ -854,35 +994,64 @@ def dataset_token_events(
     since = parse_ts(args.since) if args.since else None
     until = parse_ts(args.until) if args.until else None
     dedupe = bool(params.get("dedupe", True))
+    required_fields = coerce_required_fields(params)
+    need_path = required_fields is None or "path" in required_fields
+    need_timestamp = required_fields is None or "timestamp" in required_fields
+    need_day = required_fields is None or "day" in required_fields
+    need_week = required_fields is None or "week" in required_fields
+    need_month = required_fields is None or "month" in required_fields
+    need_model_context_window = (
+        required_fields is None or "model_context_window" in required_fields
+    )
+    total_field_idx = [
+        (f"total_{k}", TOKEN_INDEX[k])
+        for k in TOKEN_KEYS
+        if required_fields is None or f"total_{k}" in required_fields
+    ]
+    last_field_idx = [
+        (f"last_{k}", TOKEN_INDEX[k])
+        for k in TOKEN_KEYS
+        if required_fields is None or f"last_{k}" in required_fields
+    ]
+    need_ts = need_timestamp or need_day or need_week or need_month
 
     for path in iter_jsonl_paths(root):
-        prev_total: Optional[int] = None
-        for ts, info in iter_token_count_events_in_path(path, since=since, until=until):
-            total = token_usage(info, "total_token_usage")
-            last = token_usage(info, "last_token_usage")
-            total_total = total.get("total_tokens")
+        path_str = str(path) if need_path else ""
+        prev_total_tokens: Optional[int] = None
+        for ts, info in iter_token_count_events_in_path(
+            path, since=since, until=until, parse_timestamp=need_ts
+        ):
+            total_vals = token_usage_tuple(info, "total_token_usage")
+            total_total = total_vals[TOTAL_TOKEN_INDEX]
             if (
                 dedupe
-                and prev_total is not None
+                and prev_total_tokens is not None
                 and total_total is not None
-                and total_total == prev_total
+                and total_total == prev_total_tokens
             ):
                 continue
             if total_total is not None:
-                prev_total = total_total
+                prev_total_tokens = total_total
+            last_vals = token_usage_tuple(info, "last_token_usage")
 
-            row: dict[str, Any] = {
-                "path": str(path),
-                "timestamp": ts.isoformat() if ts else None,
-                "day": bucket_label(ts, "day") if ts else None,
-                "week": bucket_label(ts, "week") if ts else None,
-                "month": bucket_label(ts, "month") if ts else None,
-                "model_context_window": info.get("model_context_window"),
-            }
+            row: dict[str, Any] = {}
+            if need_path:
+                row["path"] = path_str
+            if need_timestamp:
+                row["timestamp"] = ts.isoformat() if ts else None
+            if need_day:
+                row["day"] = bucket_label(ts, "day") if ts else None
+            if need_week:
+                row["week"] = bucket_label(ts, "week") if ts else None
+            if need_month:
+                row["month"] = bucket_label(ts, "month") if ts else None
+            if need_model_context_window:
+                row["model_context_window"] = info.get("model_context_window")
 
-            for k in TOKEN_KEYS:
-                row[f"total_{k}"] = total.get(k)
-                row[f"last_{k}"] = last.get(k)
+            for field_name, idx in total_field_idx:
+                row[field_name] = total_vals[idx]
+            for field_name, idx in last_field_idx:
+                row[field_name] = last_vals[idx]
 
             yield row
 
@@ -895,17 +1064,44 @@ def dataset_token_deltas(
     include_base = bool(params.get("include_base", True))
     include_zero = bool(params.get("include_zero", False))
     dedupe = bool(params.get("dedupe", True))
+    required_fields = coerce_required_fields(params)
+    need_path = required_fields is None or "path" in required_fields
+    need_timestamp = required_fields is None or "timestamp" in required_fields
+    need_day = required_fields is None or "day" in required_fields
+    need_week = required_fields is None or "week" in required_fields
+    need_month = required_fields is None or "month" in required_fields
+    need_segment = required_fields is None or "segment" in required_fields
+    need_model_context_window = (
+        required_fields is None or "model_context_window" in required_fields
+    )
+    delta_field_idx = [
+        (f"delta_{k}", TOKEN_INDEX[k])
+        for k in TOKEN_KEYS
+        if required_fields is None or f"delta_{k}" in required_fields
+    ]
+    total_field_idx = [
+        (f"total_{k}", TOKEN_INDEX[k])
+        for k in TOKEN_KEYS
+        if required_fields is None or f"total_{k}" in required_fields
+    ]
+    needed_delta_indices = {idx for _, idx in delta_field_idx}
+    if TOTAL_TOKEN_INDEX not in needed_delta_indices:
+        needed_delta_indices.add(TOTAL_TOKEN_INDEX)
+    need_ts = need_timestamp or need_day or need_week or need_month
 
     for path in iter_jsonl_paths(root):
+        path_str = str(path) if need_path else ""
         segment = 0
-        prev_total: Optional[dict[str, int]] = None
+        prev_total_vals: Optional[tuple[Optional[int], ...]] = None
         prev_total_tokens: Optional[int] = None
-        for ts, info in iter_token_count_events_in_path(path, since=since, until=until):
-            total = token_usage(info, "total_token_usage")
-            if not total or "total_tokens" not in total:
+        for ts, info in iter_token_count_events_in_path(
+            path, since=since, until=until, parse_timestamp=need_ts
+        ):
+            total_vals = token_usage_tuple(info, "total_token_usage")
+            total_tokens = total_vals[TOTAL_TOKEN_INDEX]
+            if total_tokens is None:
                 continue
 
-            total_tokens = total.get("total_tokens")
             if (
                 dedupe
                 and prev_total_tokens is not None
@@ -913,50 +1109,56 @@ def dataset_token_deltas(
             ):
                 continue
 
-            is_reset = (
-                prev_total_tokens is not None
-                and total_tokens is not None
-                and total_tokens < prev_total_tokens
-            )
+            is_reset = prev_total_tokens is not None and total_tokens < prev_total_tokens
             if is_reset:
                 segment += 1
-                prev_total = None
+                prev_total_vals = None
                 prev_total_tokens = None
 
-            deltas: dict[str, int] = {}
-            if prev_total is None:
+            deltas: dict[int, int] = {}
+            if prev_total_vals is None:
                 if include_base:
-                    for k, v in total.items():
-                        deltas[k] = v
+                    for idx in needed_delta_indices:
+                        v = total_vals[idx]
+                        if v is not None:
+                            deltas[idx] = v
             else:
-                for k, v in total.items():
-                    pv = prev_total.get(k)
-                    if pv is None:
+                for idx in needed_delta_indices:
+                    v = total_vals[idx]
+                    pv = prev_total_vals[idx]
+                    if v is None or pv is None:
                         continue
                     d = v - pv
                     if d:
-                        deltas[k] = d
+                        deltas[idx] = d
 
-            prev_total = total
+            prev_total_vals = total_vals
             prev_total_tokens = total_tokens
 
-            delta_total = deltas.get("total_tokens", 0)
+            delta_total = deltas.get(TOTAL_TOKEN_INDEX, 0)
             if not include_zero and delta_total == 0:
                 continue
 
-            row: dict[str, Any] = {
-                "path": str(path),
-                "timestamp": ts.isoformat() if ts else None,
-                "day": bucket_label(ts, "day") if ts else None,
-                "week": bucket_label(ts, "week") if ts else None,
-                "month": bucket_label(ts, "month") if ts else None,
-                "segment": segment,
-                "model_context_window": info.get("model_context_window"),
-            }
+            row: dict[str, Any] = {}
+            if need_path:
+                row["path"] = path_str
+            if need_timestamp:
+                row["timestamp"] = ts.isoformat() if ts else None
+            if need_day:
+                row["day"] = bucket_label(ts, "day") if ts else None
+            if need_week:
+                row["week"] = bucket_label(ts, "week") if ts else None
+            if need_month:
+                row["month"] = bucket_label(ts, "month") if ts else None
+            if need_segment:
+                row["segment"] = segment
+            if need_model_context_window:
+                row["model_context_window"] = info.get("model_context_window")
 
-            for k in TOKEN_KEYS:
-                row[f"delta_{k}"] = deltas.get(k)
-                row[f"total_{k}"] = total.get(k)
+            for field_name, idx in delta_field_idx:
+                row[field_name] = deltas.get(idx)
+            for field_name, idx in total_field_idx:
+                row[field_name] = total_vals[idx]
 
             yield row
 
@@ -966,17 +1168,43 @@ def dataset_token_sessions(
 ) -> Iterator[dict[str, Any]]:
     since = parse_ts(args.since) if args.since else None
     until = parse_ts(args.until) if args.until else None
+    required_fields = coerce_required_fields(params)
+    need_path = required_fields is None or "path" in required_fields
+    need_start = required_fields is None or "start" in required_fields
+    need_end = required_fields is None or "end" in required_fields
+    need_max_at = required_fields is None or "max_at" in required_fields
+    need_day = required_fields is None or "day" in required_fields
+    need_week = required_fields is None or "week" in required_fields
+    need_month = required_fields is None or "month" in required_fields
+    total_field_idx = [
+        (f"total_{k}", TOKEN_INDEX[k])
+        for k in TOKEN_KEYS
+        if required_fields is None or f"total_{k}" in required_fields
+    ]
+    need_ts = (
+        since is not None
+        or until is not None
+        or need_start
+        or need_end
+        or need_max_at
+        or need_day
+        or need_week
+        or need_month
+    )
 
     for path in iter_jsonl_paths(root):
+        path_str = str(path) if need_path else ""
         start_ts: Optional[datetime] = None
         end_ts: Optional[datetime] = None
-        max_total: Optional[dict[str, int]] = None
+        max_total_vals: Optional[tuple[Optional[int], ...]] = None
         max_total_tokens: Optional[int] = None
         max_ts: Optional[datetime] = None
 
-        for ts, info in iter_token_count_events_in_path(path, since=since, until=until):
-            total = token_usage(info, "total_token_usage")
-            tt = total.get("total_tokens")
+        for ts, info in iter_token_count_events_in_path(
+            path, since=since, until=until, parse_timestamp=need_ts
+        ):
+            total_vals = token_usage_tuple(info, "total_token_usage")
+            tt = total_vals[TOTAL_TOKEN_INDEX]
             if tt is None:
                 continue
             if ts is not None and (start_ts is None or ts < start_ts):
@@ -985,23 +1213,29 @@ def dataset_token_sessions(
                 end_ts = ts
             if max_total_tokens is None or tt > max_total_tokens:
                 max_total_tokens = tt
-                max_total = total
+                max_total_vals = total_vals
                 max_ts = ts
 
-        if max_total_tokens is None or max_total is None:
+        if max_total_tokens is None or max_total_vals is None:
             continue
 
-        row: dict[str, Any] = {
-            "path": str(path),
-            "start": start_ts.isoformat() if start_ts else None,
-            "end": end_ts.isoformat() if end_ts else None,
-            "max_at": max_ts.isoformat() if max_ts else None,
-            "day": bucket_label(start_ts, "day") if start_ts else None,
-            "week": bucket_label(start_ts, "week") if start_ts else None,
-            "month": bucket_label(start_ts, "month") if start_ts else None,
-        }
-        for k in TOKEN_KEYS:
-            row[f"total_{k}"] = max_total.get(k)
+        row: dict[str, Any] = {}
+        if need_path:
+            row["path"] = path_str
+        if need_start:
+            row["start"] = start_ts.isoformat() if start_ts else None
+        if need_end:
+            row["end"] = end_ts.isoformat() if end_ts else None
+        if need_max_at:
+            row["max_at"] = max_ts.isoformat() if max_ts else None
+        if need_day:
+            row["day"] = bucket_label(start_ts, "day") if start_ts else None
+        if need_week:
+            row["week"] = bucket_label(start_ts, "week") if start_ts else None
+        if need_month:
+            row["month"] = bucket_label(start_ts, "month") if start_ts else None
+        for field_name, idx in total_field_idx:
+            row[field_name] = max_total_vals[idx]
         yield row
 
 
@@ -1010,8 +1244,22 @@ def dataset_tool_calls(
 ) -> Iterator[dict[str, Any]]:
     since = parse_ts(args.since) if args.since else None
     until = parse_ts(args.until) if args.until else None
+    required_fields = coerce_required_fields(params)
+    need_path = required_fields is None or "path" in required_fields
+    need_timestamp = required_fields is None or "timestamp" in required_fields
+    need_day = required_fields is None or "day" in required_fields
+    need_week = required_fields is None or "week" in required_fields
+    need_month = required_fields is None or "month" in required_fields
+    need_kind = required_fields is None or "kind" in required_fields
+    need_tool = required_fields is None or "tool" in required_fields
+    need_call_id = required_fields is None or "call_id" in required_fields
+    need_arguments_len = required_fields is None or "arguments_len" in required_fields
+    need_input_len = required_fields is None or "input_len" in required_fields
+    need_status = required_fields is None or "status" in required_fields
+    need_ts = since is not None or until is not None or need_timestamp or need_day or need_week or need_month
 
     for path in iter_jsonl_paths(root):
+        path_str = str(path) if need_path else ""
         with path.open("r", encoding="utf-8") as f:
             for line in f:
                 # Fast prefilter: tool calls are response_item rows with call types.
@@ -1029,35 +1277,42 @@ def dataset_tool_calls(
                 ptype = payload.get("type")
                 if ptype not in ("function_call", "custom_tool_call"):
                     continue
-                ts = parse_ts(obj.get("timestamp"))
+                ts = parse_ts(obj.get("timestamp")) if need_ts else None
                 if since and ts and ts < since:
                     continue
                 if until and ts and ts > until:
                     continue
 
-                tool_name = payload.get("name")
-                call_id = payload.get("call_id")
-
-                row: dict[str, Any] = {
-                    "path": str(path),
-                    "timestamp": ts.isoformat() if ts else None,
-                    "day": bucket_label(ts, "day") if ts else None,
-                    "week": bucket_label(ts, "week") if ts else None,
-                    "month": bucket_label(ts, "month") if ts else None,
-                    "kind": ptype,
-                    "tool": tool_name,
-                    "call_id": call_id,
-                }
+                row: dict[str, Any] = {}
+                if need_path:
+                    row["path"] = path_str
+                if need_timestamp:
+                    row["timestamp"] = ts.isoformat() if ts else None
+                if need_day:
+                    row["day"] = bucket_label(ts, "day") if ts else None
+                if need_week:
+                    row["week"] = bucket_label(ts, "week") if ts else None
+                if need_month:
+                    row["month"] = bucket_label(ts, "month") if ts else None
+                if need_kind:
+                    row["kind"] = ptype
+                if need_tool:
+                    row["tool"] = payload.get("name")
+                if need_call_id:
+                    row["call_id"] = payload.get("call_id")
 
                 if ptype == "function_call":
-                    args_s = payload.get("arguments")
-                    row["arguments_len"] = (
-                        len(args_s) if isinstance(args_s, str) else None
-                    )
+                    if need_arguments_len:
+                        args_s = payload.get("arguments")
+                        row["arguments_len"] = (
+                            len(args_s) if isinstance(args_s, str) else None
+                        )
                 else:
-                    inp = payload.get("input")
-                    row["input_len"] = len(inp) if isinstance(inp, str) else None
-                    row["status"] = payload.get("status")
+                    if need_input_len:
+                        inp = payload.get("input")
+                        row["input_len"] = len(inp) if isinstance(inp, str) else None
+                    if need_status:
+                        row["status"] = payload.get("status")
 
                 yield row
 
@@ -1428,6 +1683,10 @@ def cmd_query(args: argparse.Namespace) -> str:
     if fmt not in ("table", "json", "csv", "jsonl"):
         return "Spec format must be one of: table, json, csv, jsonl."
 
+    required_fields = infer_query_required_fields(where, group_by, metrics, select, sort)
+    if required_fields is not None:
+        merged_params["_required_fields"] = sorted(required_fields)
+
     rows_iter = d.iter_rows(root, args, merged_params)
 
     if not group_by:
@@ -1569,7 +1828,14 @@ def cmd_token_usage(args: argparse.Namespace) -> str:
     totals_by_day: dict[str, int] = defaultdict(int)
     n_rows = 0
     for row in dataset_token_deltas(
-        root, args, {"include_base": True, "include_zero": False, "dedupe": True}
+        root,
+        args,
+        {
+            "include_base": True,
+            "include_zero": False,
+            "dedupe": True,
+            "_required_fields": ["day", "delta_total_tokens"],
+        },
     ):
         day = row.get("day")
         dt = row.get("delta_total_tokens")
