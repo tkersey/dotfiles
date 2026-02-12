@@ -1,4 +1,4 @@
 interface:
-  display_name: "Patch"
+  display_name: "patch"
   short_description: "Create micro git patches with validation"
   default_prompt: "Use $patch to stage minimal changes, run a tight check loop, and export git patches instead of committing."
