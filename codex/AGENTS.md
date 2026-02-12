@@ -19,6 +19,18 @@ Skill routing (default):
 - Deliver: `$tk` (implementation mode), `$fix`, `$commit`, `$ship`, `$patch`, `$join`, `$fin`.
 - Language routing: invoke `$zig` when the request includes Zig cues such as `.zig` paths, `build.zig`/`build.zig.zon`, `zig build|test|run|fmt|fetch`, `comptime`, `@Vector`, `std.simd`, `std.Thread`, allocator ownership, or C interop.
 
+# Automatic Orchestration Policy
+
+- Scope: default for implementation work (code/config/tests); skip for doc-only or 1-shot trivial edits unless the user asks.
+- Work unit: split work into the smallest independently verifiable increments; each unit runs `$tk` (contract/invariants/implementation) then `$fix` (safety review) before it is considered done.
+- Capacity: saturate safe parallel capacity with dynamic backpressure; when per-session worker limits are reached, scale across multiple `instance` sessions.
+- Coordination: use internal mesh-style coordination (no user invocation required) to avoid duplicate edits and keep changes coherent.
+- Questions: subagent questions enter a triage queue.
+  - Low-risk: auto-answer from repo evidence/policy and continue.
+  - Blocking/product ambiguity: do all non-blocked work first, then ask exactly one targeted question with a recommended default.
+  - Pause only the affected unit unless a shared invariant is impacted.
+- Overrides: explicit user directives can disable or constrain orchestration; when overridden, state the active override in progress updates.
+
 # Repository Guidelines
 
 ## Working Tree Hygiene
