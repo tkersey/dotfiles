@@ -16,6 +16,7 @@ sqlite = true
 
 [tui]
 experimental_mode = "execute"
+status_line = ["current-dir", "git-branch", "context-remaining"]
 
 # [mcp_servers.openaiDeveloperDocs]
 # url = "https://developers.openai.com/mcp"
