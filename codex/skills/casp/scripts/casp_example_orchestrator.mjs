@@ -11,9 +11,12 @@ function usage() {
     "",
     "Usage:",
     "  node scripts/casp_example_orchestrator.mjs --cwd DIR --list-threads [N]",
+    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --list-experimental-features [N]",
+    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --resume-thread THREAD_ID",
+    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --steer-turn THREAD_ID EXPECTED_TURN_ID TEXT",
     "  node scripts/casp_example_orchestrator.mjs --cwd DIR --read-thread THREAD_ID [--include-turns]",
     "  node scripts/casp_example_orchestrator.mjs --cwd DIR --compact-thread THREAD_ID",
-    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --prompt TEXT [--thread-id THREAD_ID]",
+    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --prompt TEXT [--thread-id THREAD_ID] [--opt-out-notification-method METHOD...]",
     "",
     "Notes:",
     "  - --cwd controls where codex runs; casp state defaults to ~/.codex/casp/state/<workspace-hash>.json.",
@@ -23,15 +26,19 @@ function usage() {
 }
 
 function parseArgs(argv) {
-  /** @type {{ cwd: string|null, listThreads: number|null, readThread: string|null, compactThread: string|null, includeTurns: boolean, prompt: string|null, threadId: string|null }} */
+  /** @type {{ cwd: string|null, listThreads: number|null, listExperimentalFeatures: number|null, resumeThread: string|null, steerTurn: { threadId: string, expectedTurnId: string, text: string } | null, readThread: string|null, compactThread: string|null, includeTurns: boolean, prompt: string|null, threadId: string|null, optOutNotificationMethods: string[] }} */
   const out = {
     cwd: null,
     listThreads: null,
+    listExperimentalFeatures: null,
+    resumeThread: null,
+    steerTurn: null,
     readThread: null,
     compactThread: null,
     includeTurns: false,
     prompt: null,
     threadId: null,
+    optOutNotificationMethods: [],
   };
 
   const args = [...argv];
@@ -59,6 +66,27 @@ function parseArgs(argv) {
       }
       continue;
     }
+    if (a === "--list-experimental-features") {
+      const maybe = args[0];
+      if (maybe && !maybe.startsWith("--")) {
+        out.listExperimentalFeatures = Number(take());
+      } else {
+        out.listExperimentalFeatures = 25;
+      }
+      continue;
+    }
+    if (a === "--resume-thread") {
+      out.resumeThread = take();
+      continue;
+    }
+    if (a === "--steer-turn") {
+      out.steerTurn = {
+        threadId: take(),
+        expectedTurnId: take(),
+        text: take(),
+      };
+      continue;
+    }
     if (a === "--read-thread") {
       out.readThread = take();
       continue;
@@ -77,6 +105,10 @@ function parseArgs(argv) {
     }
     if (a === "--thread-id") {
       out.threadId = take();
+      continue;
+    }
+    if (a === "--opt-out-notification-method") {
+      out.optOutNotificationMethods.push(take());
       continue;
     }
 
@@ -112,7 +144,10 @@ async function main() {
     return 2;
   }
 
-  const client = new CaspClient({ cwd: opts.cwd });
+  const client = new CaspClient({
+    cwd: opts.cwd,
+    optOutNotificationMethods: opts.optOutNotificationMethods,
+  });
 
   // Print all proxy events to stderr for debugging.
   client.on("casp/error", (ev) => logErr(`casp/error: ${ev.message}`));
@@ -172,6 +207,47 @@ async function main() {
     return 0;
   }
 
+  if (opts.listExperimentalFeatures !== null) {
+    const result = await client.listExperimentalFeatures({
+      cursor: null,
+      limit: opts.listExperimentalFeatures,
+    });
+    writeJson({ method: "experimentalFeature/list", result });
+    await client.close();
+    return 0;
+  }
+
+  if (opts.resumeThread) {
+    const result = await client.resumeThread({
+      threadId: opts.resumeThread,
+    });
+    writeJson({ method: "thread/resume", threadId: opts.resumeThread, result });
+    await client.close();
+    return 0;
+  }
+
+  if (opts.steerTurn) {
+    const result = await client.steerTurn({
+      threadId: opts.steerTurn.threadId,
+      expectedTurnId: opts.steerTurn.expectedTurnId,
+      input: [
+        {
+          type: "text",
+          text: opts.steerTurn.text,
+          text_elements: [],
+        },
+      ],
+    });
+    writeJson({
+      method: "turn/steer",
+      threadId: opts.steerTurn.threadId,
+      expectedTurnId: opts.steerTurn.expectedTurnId,
+      result,
+    });
+    await client.close();
+    return 0;
+  }
+
   if (opts.readThread) {
     const result = await client.request("thread/read", {
       threadId: opts.readThread,
@@ -227,7 +303,9 @@ async function main() {
     return 0;
   }
 
-  logErr("Nothing to do (specify --list-threads, --read-thread, or --prompt)");
+  logErr(
+    "Nothing to do (specify --list-threads, --list-experimental-features, --resume-thread, --steer-turn, --read-thread, or --prompt)",
+  );
   logErr(usage());
   await client.close();
   return 2;

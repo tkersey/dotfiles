@@ -1,52 +1,54 @@
 #!/usr/bin/env node
-// Run many independent casp sessions in parallel and execute one request per shard.
+// Run many independent casp sessions in parallel and execute one request per instance.
 //
 // Purpose:
 // - Demonstrate effective concurrency beyond the per-session subagent cap.
-// - Provide a reusable shard runner for orchestrating identical requests.
+// - Provide a reusable instance runner for orchestrating identical requests.
 
 import { readFileSync } from "node:fs";
 import { CaspClient } from "./casp_client.mjs";
 
 function usage() {
   return [
-    "casp_shard_runner.mjs",
+    "casp_instance_runner.mjs",
     "",
     "Usage:",
-    "  node scripts/casp_shard_runner.mjs --cwd DIR [options]",
+    "  node scripts/casp_instance_runner.mjs --cwd DIR [options]",
     "",
     "Required:",
-    "  --cwd DIR                        Workspace for each shard's codex app-server.",
+    "  --cwd DIR                        Workspace for each instance's codex app-server.",
     "",
     "Options:",
-    "  --shards N                       Number of parallel shards (default: 12).",
+    "  --instances N                       Number of parallel instances (default: 12).",
     "  --method NAME                    App-server method (default: thread/list).",
     "  --params-json JSON               Params as inline JSON object.",
     "  --params-file PATH               Params from JSON file.",
     "  --request-timeout-ms N           Timeout per request (default: 30000).",
     "  --server-request-timeout-ms N    Forwarded server-request timeout for proxy.",
-    "  --client-prefix NAME             Prefix for shard client names (default: casp-shard).",
+    "  --opt-out-notification-method M  Suppress a notification method (repeatable).",
+    "  --client-prefix NAME             Prefix for instance client names (default: casp-instance).",
     "  --sample N                       Number of sample results in output (default: 3).",
     "  --json                           Emit JSON output (default: false).",
-    "  --verbose                        Emit per-shard start/request status to stderr.",
+    "  --verbose                        Emit per-instance start/request status to stderr.",
     "  --help                           Show this help.",
     "",
     "Examples:",
-    "  node scripts/casp_shard_runner.mjs --cwd ~/.dotfiles --shards 12",
-    "  node scripts/casp_shard_runner.mjs --cwd ~/.dotfiles --method thread/list --params-json '{\"cursor\":null,\"limit\":1}' --json",
+    "  node scripts/casp_instance_runner.mjs --cwd ~/.dotfiles --instances 12",
+    "  node scripts/casp_instance_runner.mjs --cwd ~/.dotfiles --method thread/list --params-json '{\"cursor\":null,\"limit\":1}' --json",
   ].join("\n");
 }
 
 function parseArgs(argv) {
   const opts = {
     cwd: null,
-    shards: 12,
+    instances: 12,
     method: "thread/list",
     paramsJson: null,
     paramsFile: null,
     requestTimeoutMs: 30_000,
     serverRequestTimeoutMs: null,
-    clientPrefix: "casp-shard",
+    optOutNotificationMethods: [],
+    clientPrefix: "casp-instance",
     sample: 3,
     json: false,
     verbose: false,
@@ -68,8 +70,8 @@ function parseArgs(argv) {
       opts.cwd = take();
       continue;
     }
-    if (a === "--shards") {
-      opts.shards = Number(take());
+    if (a === "--instances") {
+      opts.instances = Number(take());
       continue;
     }
     if (a === "--method") {
@@ -92,6 +94,10 @@ function parseArgs(argv) {
       opts.serverRequestTimeoutMs = Number(take());
       continue;
     }
+    if (a === "--opt-out-notification-method") {
+      opts.optOutNotificationMethods.push(take());
+      continue;
+    }
     if (a === "--client-prefix") {
       opts.clientPrefix = take();
       continue;
@@ -112,8 +118,8 @@ function parseArgs(argv) {
   }
 
   if (!opts.cwd) throw new Error("Missing --cwd");
-  if (!Number.isInteger(opts.shards) || opts.shards <= 0) {
-    throw new Error("--shards must be a positive integer");
+  if (!Number.isInteger(opts.instances) || opts.instances <= 0) {
+    throw new Error("--instances must be a positive integer");
   }
   if (!Number.isInteger(opts.requestTimeoutMs) || opts.requestTimeoutMs <= 0) {
     throw new Error("--request-timeout-ms must be a positive integer");
@@ -171,11 +177,11 @@ function writeOutput(opts, payload) {
   }
 
   const lines = [];
-  lines.push("casp_shard_runner summary");
+  lines.push("casp_instance_runner summary");
   lines.push(`cwd: ${payload.cwd}`);
   lines.push(`method: ${payload.method}`);
-  lines.push(`shards requested: ${payload.shards_requested}`);
-  lines.push(`shards started:   ${payload.shards_started}`);
+  lines.push(`instances requested: ${payload.instances_requested}`);
+  lines.push(`instances started:   ${payload.instances_started}`);
   lines.push(`requests ok:      ${payload.requests_ok}`);
   lines.push(`requests failed:  ${payload.requests_failed}`);
   lines.push(
@@ -184,7 +190,7 @@ function writeOutput(opts, payload) {
   if (payload.sample_results.length) {
     lines.push("sample results:");
     for (const r of payload.sample_results) {
-      lines.push(`- shard ${r.shard}: ${r.ok ? "ok" : "fail"} ${JSON.stringify(r.summary ?? r.error)}`);
+      lines.push(`- instance ${r.instance}: ${r.ok ? "ok" : "fail"} ${JSON.stringify(r.summary ?? r.error)}`);
     }
   }
   process.stdout.write(`${lines.join("\n")}\n`);
@@ -217,12 +223,13 @@ async function main() {
     return 2;
   }
 
-  const clients = Array.from({ length: opts.shards }, (_, i) => {
+  const clients = Array.from({ length: opts.instances }, (_, i) => {
     const client = new CaspClient({
       cwd: opts.cwd,
       clientName: `${opts.clientPrefix}-${i + 1}`,
       serverRequestTimeoutMs:
         opts.serverRequestTimeoutMs === null ? undefined : opts.serverRequestTimeoutMs,
+      optOutNotificationMethods: opts.optOutNotificationMethods,
     });
     if (opts.verbose) {
       client.on("proxyStderr", (line) =>
@@ -241,11 +248,11 @@ async function main() {
       try {
         await c.start();
         if (opts.verbose) process.stderr.write(`[start:${idx + 1}] ok\n`);
-        return { shard: idx + 1, ok: true, client: c };
+        return { instance: idx + 1, ok: true, client: c };
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         if (opts.verbose) process.stderr.write(`[start:${idx + 1}] fail: ${msg}\n`);
-        return { shard: idx + 1, ok: false, error: msg, client: c };
+        return { instance: idx + 1, ok: false, error: msg, client: c };
       }
     }),
   );
@@ -258,16 +265,16 @@ async function main() {
         const result = await r.client.request(opts.method, params, {
           timeoutMs: opts.requestTimeoutMs,
         });
-        if (opts.verbose) process.stderr.write(`[request:${r.shard}] ok\n`);
+        if (opts.verbose) process.stderr.write(`[request:${r.instance}] ok\n`);
         return {
-          shard: r.shard,
+          instance: r.instance,
           ok: true,
           summary: summarizeResult(opts.method, result),
         };
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        if (opts.verbose) process.stderr.write(`[request:${r.shard}] fail: ${msg}\n`);
-        return { shard: r.shard, ok: false, error: msg };
+        if (opts.verbose) process.stderr.write(`[request:${r.instance}] fail: ${msg}\n`);
+        return { instance: r.instance, ok: false, error: msg };
       }
     }),
   );
@@ -278,14 +285,14 @@ async function main() {
   const requestsOk = requestResults.filter((r) => r.ok).length;
   const requestsFailed = requestResults.length - requestsOk;
   const payload = {
-    demo: "casp-shard-runner",
+    demo: "casp-instance-runner",
     cwd: opts.cwd,
     method: opts.method,
     params,
-    shards_requested: opts.shards,
-    shards_started: started.length,
+    instances_requested: opts.instances,
+    instances_started: started.length,
     start_failures: startResults.filter((r) => !r.ok).map((r) => ({
-      shard: r.shard,
+      instance: r.instance,
       error: r.error,
     })),
     requests_ok: requestsOk,

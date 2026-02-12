@@ -231,7 +231,7 @@ function deriveRoutingKeys(msg, requestMethodHint = null) {
 }
 
 function parseArgs(argv) {
-  /** @type {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number}} */
+  /** @type {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[]}} */
   const opts = {
     codexPath: "codex",
     cwd: process.cwd(),
@@ -247,6 +247,8 @@ function parseArgs(argv) {
     killTimeoutMs: 2_000,
     // Fail forwarded server requests that have no orchestrator response.
     serverRequestTimeoutMs: 30_000,
+    // Optional initialize capability to suppress selected notifications.
+    optOutNotificationMethods: [],
   };
   let explicitStateFile = false;
 
@@ -309,6 +311,10 @@ function parseArgs(argv) {
       opts.serverRequestTimeoutMs = Number(takeValue());
       continue;
     }
+    if (arg === "--opt-out-notification-method") {
+      opts.optOutNotificationMethods.push(takeValue());
+      continue;
+    }
 
     throw new Error(`Unknown arg: ${arg}`);
   }
@@ -324,7 +330,7 @@ function helpText() {
     "  node scripts/casp_proxy.mjs [--codex codex] [--cwd DIR]",
     "                        [--state-file ~/.codex/casp/state/<workspace-hash>.json]",
     "                        [--heartbeat-ms 0] [--max-out-queue 20000] [--kill-timeout-ms 2000]",
-    "                        [--server-request-timeout-ms 30000]",
+    "                        [--server-request-timeout-ms 30000] [--opt-out-notification-method METHOD]",
     "",
     "stdin JSONL:",
     '  { "type": "casp/request", "clientRequestId": "...", "method": "thread/start", "params": { ... } }',
@@ -366,7 +372,7 @@ async function writeStateFile(stateFile, state) {
 }
 
 class CaspProxy {
-  /** @param {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number}} opts */
+  /** @param {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[]}} opts */
   constructor(opts) {
     this.opts = opts;
     this.cwd = opts.cwd;
@@ -822,6 +828,15 @@ class CaspProxy {
   }
 
   async handshake() {
+    const capabilities = {
+      experimentalApi: true,
+    };
+    if (this.opts.optOutNotificationMethods.length > 0) {
+      capabilities.optOutNotificationMethods = [
+        ...new Set(this.opts.optOutNotificationMethods),
+      ];
+    }
+
     const id = this.allocId();
     const initialize = {
       method: "initialize",
@@ -832,9 +847,7 @@ class CaspProxy {
           title: this.opts.clientTitle,
           version: this.opts.clientVersion,
         },
-        capabilities: {
-          experimentalApi: true,
-        },
+        capabilities,
       },
     };
 
@@ -959,14 +972,18 @@ class CaspProxy {
 
       // Best-effort ergonomics.
       // - `thread/start` requires `experimentalRawEvents` on the wire.
-      // - `turn/start` text inputs should include `text_elements` (empty array if none).
+      // - `turn/start` and `turn/steer` text inputs should include `text_elements` (empty array if none).
       if (method === "thread/start") {
         if (!isObject(params)) params = {};
         if (!Object.prototype.hasOwnProperty.call(params, "experimentalRawEvents")) {
           params.experimentalRawEvents = false;
         }
       }
-      if (method === "turn/start" && isObject(params) && Array.isArray(params.input)) {
+      if (
+        (method === "turn/start" || method === "turn/steer") &&
+        isObject(params) &&
+        Array.isArray(params.input)
+      ) {
         params = {
           ...params,
           input: params.input.map((it) => {
@@ -983,6 +1000,9 @@ class CaspProxy {
       if (isObject(params)) {
         if (typeof params.threadId === "string") threadIdHint = params.threadId;
         if (typeof params.turnId === "string") turnIdHint = params.turnId;
+        if (!turnIdHint && typeof params.expectedTurnId === "string") {
+          turnIdHint = params.expectedTurnId;
+        }
         if (typeof params.itemId === "string") itemIdHint = params.itemId;
       }
 

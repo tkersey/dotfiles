@@ -34,6 +34,7 @@ Message kinds (shape-based):
 
 - `clientInfo`: `{ name, title, version }`
 - `capabilities`: `{ experimentalApi: true }` (recommended)
+- Optional: `capabilities.optOutNotificationMethods: string[]` to suppress specific notification methods for this connection.
 
 2. Send the `initialized` notification (no params) before any other request.
 
@@ -45,6 +46,8 @@ Message kinds (shape-based):
   - `thread/fork`
 - Start a turn:
   - `turn/start` with `threadId` and `input`.
+- Steer an in-flight turn:
+  - `turn/steer` with `threadId`, `expectedTurnId`, and additional `input`.
 - Stream notifications until `turn/completed`.
 - Interrupt an in-flight turn:
   - `turn/interrupt`.
@@ -102,7 +105,8 @@ Legacy (may appear in older flows; casp rejects these in v2-only mode):
 - Session mining: `thread/list`, `thread/read` (`includeTurns:true`)
 - Maintenance: `thread/archive`, `thread/unarchive`, `thread/loaded/list`
 - Manual compaction: `thread/compact/start` (progress streams as normal `turn/*` + `item/*`)
-- Turns: `turn/start`, `turn/interrupt`
+- Turns: `turn/start`, `turn/steer`, `turn/interrupt`
+- Experimental feature discovery: `experimentalFeature/list`
 - Review: `review/start`
 - One-off exec: `command/exec`
 - Skills/apps discovery: `skills/list`, `app/list`

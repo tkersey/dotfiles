@@ -40,6 +40,7 @@ export class CaspClient extends EventEmitter {
    *   clientTitle?: string,
    *   clientVersion?: string,
    *   serverRequestTimeoutMs?: number,
+   *   optOutNotificationMethods?: string[],
    * }} [opts]
    */
   constructor(opts = {}) {
@@ -55,6 +56,7 @@ export class CaspClient extends EventEmitter {
       clientTitle: opts.clientTitle,
       clientVersion: opts.clientVersion,
       serverRequestTimeoutMs: opts.serverRequestTimeoutMs,
+      optOutNotificationMethods: opts.optOutNotificationMethods,
     };
 
     /** @type {import('node:child_process').ChildProcess | null} */
@@ -90,6 +92,12 @@ export class CaspClient extends EventEmitter {
     if (this.opts.clientVersion) args.push("--client-version", this.opts.clientVersion);
     if (Number.isFinite(this.opts.serverRequestTimeoutMs)) {
       args.push("--server-request-timeout-ms", String(this.opts.serverRequestTimeoutMs));
+    }
+    if (Array.isArray(this.opts.optOutNotificationMethods)) {
+      for (const method of this.opts.optOutNotificationMethods) {
+        if (typeof method !== "string" || !method) continue;
+        args.push("--opt-out-notification-method", method);
+      }
     }
 
     const child = spawn(this.opts.nodePath, args, {
@@ -204,6 +212,65 @@ export class CaspClient extends EventEmitter {
       p.experimentalRawEvents = false;
     }
     return this.request("thread/start", p, opts);
+  }
+
+  /**
+   * Resume an existing thread.
+   *
+   * @param {any} params
+   * @param {{ id?: string|number, clientRequestId?: string, timeoutMs?: number }} [opts]
+   */
+  resumeThread(params, opts = {}) {
+    if (!isObject(params)) {
+      throw new Error("resumeThread(params): params must be an object");
+    }
+    if (typeof params.threadId !== "string" || !params.threadId) {
+      throw new Error("resumeThread(params): threadId is required");
+    }
+    return this.request("thread/resume", params, opts);
+  }
+
+  /**
+   * List experimental features (paginated).
+   *
+   * @param {any} [params]
+   * @param {{ id?: string|number, clientRequestId?: string, timeoutMs?: number }} [opts]
+   */
+  listExperimentalFeatures(params = {}, opts = {}) {
+    const p = isObject(params) ? { ...params } : {};
+    return this.request("experimentalFeature/list", p, opts);
+  }
+
+  /**
+   * Steer an active turn by appending user input mid-turn.
+   *
+   * @param {any} params
+   * @param {{ id?: string|number, clientRequestId?: string, timeoutMs?: number }} [opts]
+   */
+  steerTurn(params, opts = {}) {
+    if (!isObject(params)) {
+      throw new Error("steerTurn(params): params must be an object");
+    }
+    if (typeof params.threadId !== "string" || !params.threadId) {
+      throw new Error("steerTurn(params): threadId is required");
+    }
+    if (typeof params.expectedTurnId !== "string" || !params.expectedTurnId) {
+      throw new Error("steerTurn(params): expectedTurnId is required");
+    }
+    if (!Array.isArray(params.input)) {
+      throw new Error("steerTurn(params): input must be an array");
+    }
+
+    const p = {
+      ...params,
+      input: params.input.map((it) => {
+        if (!isObject(it) || it.type !== "text") return it;
+        if (Object.prototype.hasOwnProperty.call(it, "text_elements")) return it;
+        return { ...it, text_elements: [] };
+      }),
+    };
+
+    return this.request("turn/steer", p, opts);
   }
 
   /**
