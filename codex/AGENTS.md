@@ -14,6 +14,7 @@ Use Double Diamond to avoid converging too early: separate "are we solving the r
 - Deliver (converge): implement, validate, and ship with a proof trail.
 
 Skill routing (default):
+
 - Discover/Define: `$grill-me`, `$prove-it`, `$complexity-mitigator`, `$invariant-ace`, `$tk` (advice mode).
 - Develop: `$creative-problem-solver` (five-tier portfolio).
 - Deliver: `$tk` (implementation mode), `$fix`, `$commit`, `$ship`, `$patch`, `$join`, `$fin`.
@@ -22,9 +23,10 @@ Skill routing (default):
 # Automatic Orchestration Policy
 
 - Scope: default for implementation work (code/config/tests); skip for doc-only or 1-shot trivial edits unless the user asks.
-- Work unit: split work into the smallest independently verifiable increments; each unit runs `$tk` (contract/invariants/implementation) then `$fix` (safety review) before it is considered done.
+- Selection/slicing: use `$select` to choose ready work, decompose into atomic tasks with `scope` locks, schedule safe parallel waves, and emit claim/writeback.
+- Work unit: each atomic task runs `$tk` (contract/invariants/implementation) then `$fix` (safety review) before it is considered done.
 - Capacity: saturate safe parallel capacity with dynamic backpressure; when per-session worker limits are reached, scale across multiple `instance` sessions.
-- Coordination: use internal mesh-style coordination (no user invocation required) to avoid duplicate edits and keep changes coherent.
+- Coordination: use internal mesh-style coordination by default (no user invocation required); reserve `$mesh` for explicit user-invoked swarm coordination.
 - Questions: subagent questions enter a triage queue.
   - Low-risk: auto-answer from repo evidence/policy and continue.
   - Blocking/product ambiguity: do all non-blocked work first, then ask exactly one targeted question with a recommended default.
