@@ -1,6 +1,6 @@
 ---
 name: reduce
-description: Deconstruct high-cost abstractions that coding agents do not need; recommend lower-level primitives that reduce tools, indirection, and hidden steps. Use when users ask to simplify architecture, remove framework or codegen layers, cut dependency/tooling overhead, or produce an abstraction audit with a prioritized cut list and migration plan (analysis-only unless implementation is explicitly requested).
+description: Deconstruct high-cost abstractions and recommend lower-level primitives that reduce tooling, indirection, and hidden steps. Use when requests ask for fewer layers (for example "too many layers", "remove this framework/plugin/DI", "ditch codegen/task runners", "replace with plain scripts/config/SQL"), or ask for an abstraction audit with a prioritized cut list and phased migration with rollback (analysis-only unless implementation is explicitly requested).
 ---
 
 # Reduce (De-abstraction for Agents)
@@ -21,12 +21,16 @@ Reduce is a Discover/Define-heavy skill that produces a concrete cut list and mi
 - Develop: select the next-lower replacement rung and the smallest reversible migration.
 - Deliver: report an audit table + prioritized cut list + migration plan + minimal-incision patch suggestions.
 
-## When to use
-- Agents (or humans) struggle to find where behavior lives.
-- Builds/tests are slow or fragile due to tool orchestration.
-- Codegen/conventions create hidden steps and large diffs.
-- Frameworks/plugins/DI add indirection without proven multi-variant use.
-- You want fewer tools, fewer dependencies, and more explicit wiring.
+## Entry Criteria
+Use this skill only when at least one condition is true:
+- Change latency is dominated by abstraction/tooling hops rather than local readability.
+- Behavior is controlled by framework hooks, plugins, codegen, or configuration indirection.
+- The target outcome is to remove or downgrade layers while preserving observable behavior.
+
+## Triage Gate
+- Prefer `$reduce` for architecture/tooling de-abstraction and dependency cuts.
+- Prefer `$complexity-mitigator` for local readability or control-flow simplification inside the current stack.
+- If both apply, run `$reduce` first to delete layers, then simplify the residue.
 
 ## Core Principles
 - Minimal incision, maximal simplification: target the smallest change that deletes the most indirection.
@@ -144,6 +148,7 @@ Default output must include:
 4) Patch suggestions (minimal incisions; file/command level; no implementation).
 
 ## Output Format (default)
+Use these exact section headers in order. If evidence is missing, keep the header and write `Not enough repo evidence yet.` rather than omitting sections.
 
 **0) Scope + assumptions**
 - In-scope surfaces: ...
@@ -214,7 +219,3 @@ Good questions (examples):
 - Generic advice without locations/evidence.
 - Big-bang rewrites without seams, proof signals, and rollback levers.
 - Removing abstractions that are carrying compliance/ops obligations (without a replacement plan).
-
-## Activation cues
-- "reduce abstractions" / "too many layers" / "remove framework" / "ditch tooling"
-- "codegen is painful" / "build is slow" / "hard to change" / "agents struggle"
