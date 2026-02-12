@@ -21,6 +21,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - `$invariant-ace`: default invariant/protocol engine for `fix`; run it before invariant-affecting edits.
 - `$complexity-mitigator`: default complexity analysis engine; use it for risk-driven complexity judgments before reshaping code.
 - `$refine`: default path when the task is to improve `fix` itself (or other skills); apply `$refine` workflow and `quick_validate`.
+- Delegation order when both are needed: `$invariant-ace` first, then `$complexity-mitigator`.
 
 ## Inputs
 - User request text.
@@ -54,8 +55,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
   - invariant_after
   - fix
   - proof
-- MUST route invariant/protocol reasoning through `$invariant-ace` (Compact Mode by default; full protocol when needed).
-- MUST route complexity risk analysis through `$complexity-mitigator` before non-trivial reshaping.
+- MUST follow the delegation contract in `Skill composition (required)` (including order: `$invariant-ace` -> `$complexity-mitigator`).
 - MUST route skill-self edits (for example `codex/skills/fix`) through `$refine` and run `quick_validate`.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 
@@ -237,7 +237,7 @@ Pass 2) Surface (compat + misuse)
 Pass 3) Audit (invariants + ownership + proof quality)
 - Scope: final diff slice.
 - Focus: invariants enforced at strongest cheap boundary; ownership release-on-all-paths; proof strength.
-- Delegation: run `$invariant-ace` for invariant framing and `$complexity-mitigator` for complexity verdicts that affect auditability.
+- Delegation: run `$invariant-ace` first for invariant framing, then `$complexity-mitigator` for complexity verdicts that affect auditability.
 - Change budget: no refactors unless they directly reduce risk/auditability of invariants.
 
 Early exit (stop after pass 3):
