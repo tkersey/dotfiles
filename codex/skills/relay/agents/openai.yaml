@@ -1,4 +1,0 @@
-interface:
-  display_name: "Relay"
-  short_description: "Subagent coordination via shared mail fabric"
-  default_prompt: "Use $relay to coordinate my subagents with thread-safe handoffs, reservations, and acknowledgement loops."
