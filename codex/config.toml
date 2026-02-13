@@ -13,10 +13,11 @@ apps = true
 personality = true
 memory_tool = true
 sqlite = true
+responses_websockets_v2 = true
 
 [tui]
 experimental_mode = "execute"
-status_line = ["current-dir", "git-branch", "context-remaining"]
+status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning"]
 
 # [mcp_servers.openaiDeveloperDocs]
 # url = "https://developers.openai.com/mcp"
