@@ -55,12 +55,20 @@ Supported forms (space-separated `key=value` args):
 
 Do NOT treat generic acknowledgements (`go`, `yep`, `ship it`) as invocation.
 
+Invocation intent gate (required):
+- If the user includes `$mesh` while asking to analyze/refine this skill itself (for example "review `$mesh`",
+  "update `mesh/SKILL.md`", "use `$seq` to improve `$mesh`"), do NOT start swarm execution.
+- In that case, perform the requested analysis/edit workflow and report
+  `mesh_execution_skipped_reason=meta_request`.
+- A pasted `<skill>` block alone is not execution intent.
+
 ## Defaults (Unless Overridden)
 
 - `max_tasks`: 1 (attempt at most one task completion per run)
 - `parallel_tasks`: 1 (run only one swarm at a time)
 - `swarm_roles`: 5 (`proposer`, `critic_a`, `critic_b`, `skeptic`, `synthesizer`)
-- `fallback_swarm_roles`: 3 (`proposer`, `skeptic`, `synthesizer`) when capacity is insufficient
+- `fallback_swarm_roles`: 3 (`proposer`, `skeptic`, `synthesizer`) when capacity is insufficient or repeated
+  `no_response` occurs
 - `consensus_threshold`: 4/5 agree (5-role) or 3/3 agree (fallback)
 - `consensus_retries`: 2
 
@@ -69,28 +77,35 @@ Override precedence (highest to lowest):
 2) per-task `mesh` metadata block in `$st` notes
 3) defaults above
 
-## Runtime Adapter (Required)
+## Worker Adapter Contract (Required)
 
-`$mesh` must pick a worker transport that exists in the current runtime.
+`$mesh` must use a runtime adapter that hides backend-native tool names.
+Use stable adapter verbs as the public interface and keep raw tool calls as implementation details.
 
-Supported transports:
+Required adapter verbs:
+- `fanout`: launch one or more role workers for a round
+- `collect`: gather worker outputs (including partial completions)
+- `retry`: re-run a failed/no-response worker once
+- `follow_up`: send clarifications to a specific worker when needed
+- `close`: release worker slots/resources when lifecycle close is explicit
+- `capabilities`: expose fanout limits and lifecycle semantics
 
-1) OpenCode Task-tool transport (preferred here)
-- Spawn workers with `functions.task`.
-- Use `multi_tool_use.parallel` to run independent role calls concurrently.
-- Communication is orchestrator-mediated: each round's prompts include prior round artifacts.
-- Liveness: a `functions.task` call is the unit of work; if output is unusable or missing, count it
-  as `no_response` and retry by spawning a replacement once.
+Adapter selection order:
+1) Prefer an adapter explicitly marked `preferred` by the runtime.
+2) Else pick the first adapter that satisfies all required verbs.
+3) Else stop and ask the user to switch to a worker-capable runtime.
 
-Capacity rule:
-- If you cannot run a 5-role swarm for a task (thread cap, spawn failure, or resource limits),
-  fall back to the 3-role swarm (`proposer`, `skeptic`, `synthesizer`) for that task.
+Communication is orchestrator-mediated: each round's prompts include prior round artifacts.
 
-2) Codex collab transport (optional, if available)
-- Use the runtime's multi-agent tools (see `references/codex-multi-agent.md`).
-- You MAY reuse live workers for the vote step via follow-up messaging if supported.
+Slot hygiene (required):
+- For adapters with explicit close semantics, close every spawned worker once output is integrated or abandoned.
+- Always report `spawned` vs `closed`; if they differ, treat it as a reliability bug.
 
-If no transport is available, STOP and ask the user to switch runtimes.
+Capacity and resilience rule:
+- If you cannot run a 5-role swarm for a task (fanout cap, spawn failure, resource limits, or repeated
+  `no_response`), fall back to the 3-role swarm (`proposer`, `skeptic`, `synthesizer`) for that task.
+
+If no compatible adapter is available, STOP and ask the user to switch runtimes.
 
 ## Plan Source of Truth (`$st`) (Required)
 
@@ -112,6 +127,20 @@ Resolve the plan file path in this order:
    Recommended default: pass `plan_file=.step/st-plan.jsonl` explicitly.
 4) Else (neither exists), choose `.step/st-plan.jsonl` and STOP with the exact init command:
    `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py init --file .step/st-plan.jsonl`
+
+### Execution Preflight (Required)
+
+Before spawning workers, emit a one-line preflight with:
+- a stable run id for later `$seq` mining: `mesh_run_id=<UTC-compact>` (example: `mesh_run_id=20260213T015500Z`)
+- resolved `plan_file`
+- selected adapter id
+- selected task ids (or `none`)
+- active overrides (`max_tasks`, `parallel_tasks`, `ids`)
+
+Recommended format:
+`mesh_preflight mesh_run_id=... plan_file=... adapter=... ids=... overrides=...`
+
+If no runnable task is selected, exit via the "No runnable tasks" path.
 
 ## Task Metadata Contract (Required)
 
@@ -282,17 +311,22 @@ workflow into `.learnings.jsonl`.
 
 ## Plan Mirror (Optional)
 
-If your runtime provides a plan UI tool (for example Codex `update_plan` or OpenCode `todowrite`),
-mirror `$st` state after each `$st` mutation. Treat the UI as a mirror only.
+If your runtime provides a plan UI tool, mirror `$st` state after each `$st` mutation.
+Treat the UI as a mirror only.
 
 ## Reporting
 
 Return:
 - tasks attempted and their final states (`completed`, `blocked`, `pending`)
 - consensus telemetry (attempt count, vote tallies)
+- adapter telemetry (selected adapter, workers spawned/completed/retried/timed_out)
+- slot hygiene telemetry: workers `spawned` vs `closed` when close semantics exist; include any stragglers
 - validation commands and outcomes
 - `$st` mutations performed (ids + statuses)
 - learning capture evidence (records appended)
+
+Also include the run id in the final report so `$seq` can find it later:
+- `mesh_run_id=...`
 
 Never fabricate timestamps, tool events, or command outputs.
 
@@ -303,7 +337,13 @@ Never fabricate timestamps, tool events, or command outputs.
 - Both `.codex/st-plan.jsonl` and `.step/st-plan.jsonl` exist: ask user to pick `plan_file=`.
 - No runnable tasks: report ready/blocked/completed counts and exit cleanly.
 - Consensus failure after retries: set `blocked` + comment `no_consensus`.
-- Worker non-response/unusable output: retry once, then set `blocked` + comment `no_response`.
+- `worker_no_response` or unusable output:
+  - retry once in the current swarm size
+  - if still unusable in a 5-role swarm, retry once with fallback 3-role swarm
+  - if still unusable, set `blocked` + comment `no_response`
+- `adapter_missing_capability`: switch to another compatible adapter; if none, ask the user to switch runtime.
+- `adapter_capacity`: reduce active swarm to fallback 3-role mode and retry once.
+- `lifecycle_mismatch` (`spawned != closed`): run close sweep, report stragglers, and treat unresolved mismatch as a reliability bug.
 
 ## Worker Prompt Templates
 
