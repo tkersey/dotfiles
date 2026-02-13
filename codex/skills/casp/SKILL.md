@@ -1,9 +1,9 @@
 ---
 name: casp
-description: Run a v2-only Node JSONL proxy that spawns `codex app-server` and exposes an orchestration-friendly stream API. Use when you need to control Codex programmatically across many threads/turns, have subagents send updates or code patches into live sessions, auto-handle approvals, forward server requests with deterministic timeouts, mine sessions via `thread/*`, steer active turns (`turn/steer`), list experimental features (`experimentalFeature/list`), resume threads (`thread/resume`), or suppress specific notifications via initialize capabilities.
+description: Run a v2-only Node JSONL proxy that spawns `codex app-server` and exposes an automation-friendly stream API. Use when you need to drive the app-server programmatically (automation/orchestration/session mining), have subagents send updates or code patches into live sessions, auto-handle approvals, forward server requests with deterministic timeouts, mine sessions via `thread/*`, steer active turns (`turn/steer`), or run N parallel instances (each instance is one proxy + one app-server child).
 ---
 
-# casp (Codex App-Server Protocol)
+# casp (App-Server Protocol)
 
 ## Overview
 
@@ -16,21 +16,38 @@ Casp ships a small Node proxy (`scripts/casp_proxy.mjs`) that:
 - Forwards v2 server requests to the orchestrator.
 - Rejects deprecated legacy approval requests (`execCommandApproval`, `applyPatchApproval`).
 - Fails forwarded requests deterministically on timeout (default `30000` ms).
-- Emits a lossless, orchestration-friendly event stream (includes the raw app-server message plus derived routing keys).
+- Emits a lossless, automation-friendly event stream (includes the raw app-server message plus derived routing keys).
 
 This skill assumes `codex` is available on PATH and does not require access to any repo source tree.
+
+## Terminology (Instances)
+
+- An "instance" is one `casp_proxy` process plus its spawned app-server child process.
+- Each instance has its own JSONL stream and its own `sessionId`.
+- "N instances" means N parallel proxy+app-server pairs; it is not N threads/turns inside one instance.
+- Isolation tip: for multi-instance runs, prefer per-instance `--state-file` (or the runner's `--state-file-dir`) if you don't want instances to share state.
+
+## Trigger cues
+
+- "instances" / "multi-instance" / "parallel sessions"
+- app-server protocol control (JSONL proxy, JSON-RPC methods)
+- session mining (thread/turn inventory, export/index)
+- steering/resume (`turn/steer`, `thread/resume`)
 
 ## Workflow
 
 1. Start the proxy.
    - Run `node scripts/casp_proxy.mjs` from the casp skill directory (example: `node ~/.dotfiles/codex/skills/casp/scripts/casp_proxy.mjs`).
-   - Optional: pass `--cwd /path/to/workspace` to control where `codex app-server` runs. By default, state is written under `~/.codex/casp/state/<workspace-hash>.json`.
+   - Optional: pass `--cwd /path/to/workspace` to control where the app-server runs. By default, state is written under `~/.codex/casp/state/<workspace-hash>.json`.
    - Optional: pass `--state-file PATH` to override the default state location.
    - Optional: tune forwarded request fail-fast behavior with `--server-request-timeout-ms <N>` (0 disables timeout).
    - Optional: pass one or more `--opt-out-notification-method METHOD` flags to suppress known noisy notifications for the connection.
    - Wait for a `casp/ready` event.
 
-2. Drive Codex by sending requests to the proxy.
+   For N instances in parallel, prefer the instance runner:
+   - `node scripts/casp_instance_runner.mjs --cwd /path/to/workspace --instances N`
+
+2. Drive the app-server by sending requests to the proxy.
    - Send `casp/request` messages (method + params) to proxy stdin.
    - Proxy assigns request ids (unless you supply one), forwards to app-server, and emits `casp/fromServer` responses.
    - Optional smoke check: run `node scripts/casp_smoke_check.mjs --cwd /path/to/workspace`.

@@ -19,8 +19,8 @@ function usage() {
     "  node scripts/casp_example_orchestrator.mjs --cwd DIR --prompt TEXT [--thread-id THREAD_ID] [--opt-out-notification-method METHOD...]",
     "",
     "Notes:",
-    "  - --cwd controls where codex runs; casp state defaults to ~/.codex/casp/state/<workspace-hash>.json.",
-    "  - --prompt requires a working Codex login and (usually) network access.",
+    "  - --cwd controls where the app-server runs; casp state defaults to ~/.codex/casp/state/<workspace-hash>.json.",
+    "  - --prompt requires a working login and (usually) network access.",
     "  - This example is v2-only and fails fast on unimplemented server requests.",
   ].join("\n");
 }

@@ -17,7 +17,7 @@ function usage() {
     "  node scripts/casp_smoke_check.mjs --cwd DIR [options]",
     "",
     "Required:",
-    "  --cwd DIR                        Workspace for casp/codex app-server.",
+    "  --cwd DIR                        Workspace for casp/app-server.",
     "",
     "Options:",
     "  --thread-id THREAD_ID            Existing thread id to reuse (optional).",

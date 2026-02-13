@@ -25,7 +25,7 @@ Skill routing (default):
 - Scope: default for implementation work (code/config/tests); skip for doc-only or 1-shot trivial edits unless the user asks.
 - Selection/slicing: use `$select` to choose ready work, decompose into atomic tasks with `scope` locks, schedule safe parallel waves, and emit claim/writeback.
 - Work unit: each atomic task runs `$tk` (contract/invariants/implementation) then `$fix` (safety review) before it is considered done.
-- Capacity: saturate safe parallel capacity with dynamic backpressure; when per-session worker limits are reached, scale across multiple `instance` sessions.
+- Capacity: saturate safe parallel capacity with dynamic backpressure; when per-session worker limits are reached, scale across multiple `instance` sessions (independent app-server sessions) via `$casp`.
 - Coordination: use internal mesh-style coordination by default (no user invocation required); reserve `$mesh` for explicit user-invoked swarm coordination.
 - Questions: subagent questions enter a triage queue.
   - Low-risk: auto-answer from repo evidence/policy and continue.

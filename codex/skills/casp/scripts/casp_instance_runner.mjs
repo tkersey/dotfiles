@@ -6,6 +6,7 @@
 // - Provide a reusable instance runner for orchestrating identical requests.
 
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { CaspClient } from "./casp_client.mjs";
 
 function usage() {
@@ -16,13 +17,14 @@ function usage() {
     "  node scripts/casp_instance_runner.mjs --cwd DIR [options]",
     "",
     "Required:",
-    "  --cwd DIR                        Workspace for each instance's codex app-server.",
+    "  --cwd DIR                        Workspace for each instance's app-server.",
     "",
     "Options:",
     "  --instances N                       Number of parallel instances (default: 12).",
     "  --method NAME                    App-server method (default: thread/list).",
     "  --params-json JSON               Params as inline JSON object.",
     "  --params-file PATH               Params from JSON file.",
+    "  --state-file-dir DIR             Directory for per-instance state files (optional).",
     "  --request-timeout-ms N           Timeout per request (default: 30000).",
     "  --server-request-timeout-ms N    Forwarded server-request timeout for proxy.",
     "  --opt-out-notification-method M  Suppress a notification method (repeatable).",
@@ -45,6 +47,7 @@ function parseArgs(argv) {
     method: "thread/list",
     paramsJson: null,
     paramsFile: null,
+    stateFileDir: null,
     requestTimeoutMs: 30_000,
     serverRequestTimeoutMs: null,
     optOutNotificationMethods: [],
@@ -84,6 +87,10 @@ function parseArgs(argv) {
     }
     if (a === "--params-file") {
       opts.paramsFile = take();
+      continue;
+    }
+    if (a === "--state-file-dir") {
+      opts.stateFileDir = take();
       continue;
     }
     if (a === "--request-timeout-ms") {
@@ -132,6 +139,9 @@ function parseArgs(argv) {
   }
   if (opts.paramsJson && opts.paramsFile) {
     throw new Error("Specify only one of --params-json or --params-file");
+  }
+  if (opts.stateFileDir !== null && (typeof opts.stateFileDir !== "string" || !opts.stateFileDir)) {
+    throw new Error("--state-file-dir must be a non-empty string");
   }
 
   return { ok: true, help: false, error: null, opts };
@@ -215,6 +225,12 @@ async function main() {
   }
 
   const opts = parsed.opts;
+  if (opts.instances > 1 && !opts.stateFileDir) {
+    process.stderr.write(
+      "Note: by default, state is derived from --cwd, so parallel instances may share it. " +
+        "Use --state-file-dir for per-instance state isolation.\n",
+    );
+  }
   let params;
   try {
     params = parseParams(opts);
@@ -224,8 +240,12 @@ async function main() {
   }
 
   const clients = Array.from({ length: opts.instances }, (_, i) => {
+    const stateFile = opts.stateFileDir
+      ? resolve(opts.stateFileDir, `${opts.clientPrefix}-${i + 1}.json`)
+      : undefined;
     const client = new CaspClient({
       cwd: opts.cwd,
+      stateFile,
       clientName: `${opts.clientPrefix}-${i + 1}`,
       serverRequestTimeoutMs:
         opts.serverRequestTimeoutMs === null ? undefined : opts.serverRequestTimeoutMs,
@@ -287,6 +307,7 @@ async function main() {
   const payload = {
     demo: "casp-instance-runner",
     cwd: opts.cwd,
+    state_file_dir: opts.stateFileDir,
     method: opts.method,
     params,
     instances_requested: opts.instances,
