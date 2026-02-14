@@ -1,0 +1,15 @@
+{
+  "dataset": "learnings",
+  "select": [
+    "captured_at",
+    "status",
+    "learning_snippet",
+    "tags_text",
+    "paths_count"
+  ],
+  "sort": [
+    "-captured_at"
+  ],
+  "limit": 20,
+  "format": "table"
+}

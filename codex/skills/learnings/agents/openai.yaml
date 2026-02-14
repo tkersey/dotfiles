@@ -1,4 +1,4 @@
 interface:
   display_name: "learnings"
   short_description: "Capture and store execution learnings as JSONL"
-  default_prompt: "Use $learnings to capture high-signal lessons from this coding turn and append them to .learnings.jsonl."
+  default_prompt: "Use $learnings to capture 1-3 high-signal lessons from this coding turn and append them to .learnings.jsonl (add tags/links when helpful)."

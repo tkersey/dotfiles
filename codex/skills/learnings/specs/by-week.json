@@ -1,0 +1,16 @@
+{
+  "dataset": "learnings",
+  "group_by": [
+    "week"
+  ],
+  "metrics": [
+    {
+      "op": "count",
+      "as": "count"
+    }
+  ],
+  "sort": [
+    "week"
+  ],
+  "format": "table"
+}

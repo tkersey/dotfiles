@@ -1,0 +1,22 @@
+{
+  "dataset": "learnings",
+  "where": [
+    {
+      "field": "status",
+      "op": "eq",
+      "value": "codify_now"
+    }
+  ],
+  "select": [
+    "captured_at",
+    "learning",
+    "application",
+    "tags_text",
+    "paths_text"
+  ],
+  "sort": [
+    "-captured_at"
+  ],
+  "limit": 50,
+  "format": "table"
+}

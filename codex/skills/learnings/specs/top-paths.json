@@ -1,0 +1,17 @@
+{
+  "dataset": "learning_paths",
+  "group_by": [
+    "path"
+  ],
+  "metrics": [
+    {
+      "op": "count",
+      "as": "count"
+    }
+  ],
+  "sort": [
+    "-count"
+  ],
+  "limit": 25,
+  "format": "table"
+}

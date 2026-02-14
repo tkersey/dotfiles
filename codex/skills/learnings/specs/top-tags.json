@@ -1,0 +1,17 @@
+{
+  "dataset": "learning_tags",
+  "group_by": [
+    "tag"
+  ],
+  "metrics": [
+    {
+      "op": "count",
+      "as": "count"
+    }
+  ],
+  "sort": [
+    "-count"
+  ],
+  "limit": 25,
+  "format": "table"
+}

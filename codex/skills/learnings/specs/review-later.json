@@ -1,0 +1,21 @@
+{
+  "dataset": "learnings",
+  "where": [
+    {
+      "field": "status",
+      "op": "eq",
+      "value": "review_later"
+    }
+  ],
+  "select": [
+    "captured_at",
+    "learning_snippet",
+    "application",
+    "tags_text"
+  ],
+  "sort": [
+    "-captured_at"
+  ],
+  "limit": 50,
+  "format": "table"
+}

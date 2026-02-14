@@ -1,0 +1,16 @@
+{
+  "dataset": "learnings",
+  "group_by": [
+    "status"
+  ],
+  "metrics": [
+    {
+      "op": "count",
+      "as": "count"
+    }
+  ],
+  "sort": [
+    "-count"
+  ],
+  "format": "table"
+}
