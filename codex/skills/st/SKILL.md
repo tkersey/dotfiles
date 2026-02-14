@@ -7,7 +7,7 @@ description: Manage persistent task plans in repo-committed JSONL (`.step/st-pla
 
 ## Overview
 
-Maintain a durable plan file in the repo (default: `.step/st-plan.jsonl`) using an append-only JSONL v3 stream with dual lanes:
+Maintain a durable plan file in the repo (default: `.step/st-plan.jsonl`) using in-place JSONL v3 persistence with dual lanes:
 
 - `event` lane for mutations
 - `checkpoint` lane for periodic full-state snapshots
@@ -60,8 +60,8 @@ uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py import-plan --file .step/s
   - `done`, `closed` -> `completed`
 - Mutation commands (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`) automatically print an `update_plan:` payload line after durable write.
 - Lock sidecar policy: mutating commands require the lock file (`<plan-file>.lock`, for example `.step/st-plan.jsonl.lock`) to be gitignored when inside a git repo; add it to `.gitignore` before first mutation.
-- Checkpoint compaction cadence is controlled by `ST_CHECKPOINT_INTERVAL` (positive integer, default `50`); invalid values fail fast.
-- Preserve history by appending events/checkpoints; use `import-plan --replace` to atomically reset state while retaining an auditable log.
+- Mutations rewrite the JSONL file atomically (`temp` + `fsync` + `os.replace`) and compact to a canonical `replace` event plus checkpoint snapshot at the current seq watermark.
+- `import-plan --replace` atomically resets state in the same in-place write model.
 - Prefer concise, stable item IDs (`st-001`, `st-002`, ...).
 - Prefer `show --format markdown` for execution: it groups steps into `Ready`, `Waiting on Dependencies`, `In Progress`, and terminal/manual buckets.
 

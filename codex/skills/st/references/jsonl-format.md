@@ -2,7 +2,7 @@
 
 ## Record lanes
 
-`st` uses an append-only JSONL stream; each line is one v3 record.
+`st` uses an in-place rewritten JSONL stream; each line is one v3 record.
 
 - Shared fields: `v` (`3`), `ts` (UTC ISO-8601), `seq` (non-negative integer), `lane` (`event` or `checkpoint`)
 - `event` lane: requires `op`
@@ -10,9 +10,8 @@
 - Optional event/checkpoint metadata envelope: `mutation` (writer audit details such as policy flag/actor/session)
 
 ```json
-{"v":3,"ts":"2026-02-09T20:00:00Z","seq":41,"lane":"event","op":"set_status","id":"st-002","status":"in_progress"}
-{"v":3,"ts":"2026-02-09T20:01:00Z","seq":41,"lane":"checkpoint","items":[{"id":"st-001","step":"Reproduce issue","status":"completed","deps":[],"notes":"","comments":[]}]}
-{"v":3,"ts":"2026-02-09T20:02:00Z","seq":42,"lane":"event","op":"set_status","id":"st-003","status":"in_progress","mutation":{"allow_multiple_in_progress":false,"actor":"tk","pid":12345}}
+{"v":3,"ts":"2026-02-09T20:02:00Z","seq":42,"lane":"event","op":"replace","items":[{"id":"st-001","step":"Reproduce issue","status":"completed","deps":[],"notes":"","comments":[]}],"mutation":{"allow_multiple_in_progress":false,"actor":"tk","pid":12345}}
+{"v":3,"ts":"2026-02-09T20:02:00Z","seq":42,"lane":"checkpoint","items":[{"id":"st-001","step":"Reproduce issue","status":"completed","deps":[],"notes":"","comments":[]}],"mutation":{"allow_multiple_in_progress":false,"actor":"tk","pid":12345}}
 ```
 
 ## Event ops
@@ -52,16 +51,14 @@
 - `dep_state`: `ready`, `waiting_on_deps`, `blocked_manual`, or `n/a`
 - `waiting_on`: unresolved dependency IDs
 
-## Checkpoint cadence and seq watermark
+## In-Place Rewrite and Seq Watermark
 
 - Seq watermark is the largest `seq` present in the stream
-- New event writes use `seq = watermark + 1`
-- Checkpoints persist full `items` at the current watermark `seq`
-- Trigger checkpoint compaction when trailing events since the last checkpoint reach the configured interval (`needs_checkpoint(records, interval)`)
+- Each mutation computes `seq = watermark + 1` and rewrites the file atomically
+- Canonical rewrite shape is two records: one `event` (`op=replace`) and one `checkpoint`, both at the new watermark
 - Checkpoint seq rule: each checkpoint `seq` must equal the watermark immediately before that checkpoint record
-- Trailing seq rule: records after the latest checkpoint must be strictly increasing (`seq` monotonic + unique)
 - Replay contract: latest checkpoint + records with `seq` greater than checkpoint `seq` must equal full replay
-- Repair path: `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py doctor --file .step/st-plan.jsonl --repair-seq` appends a canonical checkpoint at the current watermark to seal historical collisions
+- Repair path: `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py doctor --file .step/st-plan.jsonl --repair-seq` rewrites a canonical replace+checkpoint stream at the current watermark
 
 ## Lock sidecar policy
 

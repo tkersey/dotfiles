@@ -1,5 +1,5 @@
 #!/usr/bin/env -S uv run python
-"""Manage a persistent repo-committed plan in append-only JSONL format."""
+"""Manage a persistent repo-committed plan in JSONL format."""
 
 from __future__ import annotations
 
@@ -15,18 +15,15 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_FILE = Path(".step/st-plan.jsonl")
-DEFAULT_CHECKPOINT_INTERVAL = 50
 
 try:  # Support package and script-style imports.
     from .st_eventlog_v3 import (
         SCHEMA_VERSION,
-        append_record,
         build_checkpoint_record,
         build_record,
         collect_seq_contract_issues,
         latest_seq,
         materialize_v3,
-        needs_checkpoint,
         next_id,
         normalize_status,
         now_utc_iso,
@@ -35,19 +32,18 @@ try:  # Support package and script-style imports.
         read_records,
         validate_seq_contract,
         validate_state,
+        write_records_atomic,
     )
     from .st_read_views import blocked_items, enrich_items, ready_items
     from .st_translate import build_update_plan_payload
 except ImportError:  # pragma: no cover
     from st_eventlog_v3 import (
         SCHEMA_VERSION,
-        append_record,
         build_checkpoint_record,
         build_record,
         collect_seq_contract_issues,
         latest_seq,
         materialize_v3,
-        needs_checkpoint,
         next_id,
         normalize_status,
         now_utc_iso,
@@ -56,6 +52,7 @@ except ImportError:  # pragma: no cover
         read_records,
         validate_seq_contract,
         validate_state,
+        write_records_atomic,
     )
     from st_read_views import blocked_items, enrich_items, ready_items
     from st_translate import build_update_plan_payload
@@ -265,20 +262,8 @@ def parse_snapshot(snapshot: Any) -> list[dict[str, Any]]:
     return list(state.values())
 
 
-def checkpoint_interval_from_env() -> int:
-    raw_interval = os.environ.get("ST_CHECKPOINT_INTERVAL", str(DEFAULT_CHECKPOINT_INTERVAL)).strip()
-    try:
-        interval = int(raw_interval)
-    except ValueError as exc:
-        raise ValueError(f"invalid ST_CHECKPOINT_INTERVAL '{raw_interval}'; expected integer > 0") from exc
-    if interval <= 0:
-        raise ValueError(f"invalid ST_CHECKPOINT_INTERVAL '{raw_interval}'; expected integer > 0")
-    return interval
-
-
-def append_mutation_records(
+def write_mutation_records(
     path: Path,
-    raw_records: list[dict[str, Any]],
     normalized_records: list[dict[str, Any]],
     event_payloads: list[dict[str, Any]],
     *,
@@ -287,21 +272,27 @@ def append_mutation_records(
     mutation_meta = build_mutation_metadata(allow_multiple_in_progress=allow_multiple_in_progress)
     working_records = list(normalized_records)
     next_seq_value = latest_seq(working_records) + 1
+    event_records: list[dict[str, Any]] = []
     for payload in event_payloads:
         payload_with_metadata = dict(payload)
         payload_with_metadata.setdefault("mutation", mutation_meta)
         event_record = build_record("event", seq=next_seq_value, **payload_with_metadata)
-        append_record(path, event_record)
-        working_records.append(event_record)
+        event_records.append(event_record)
         next_seq_value += 1
 
-    interval = checkpoint_interval_from_env()
-    if needs_checkpoint(working_records, interval):
-        state = materialize_v3(working_records)
-        validate_state(state, allow_multiple_in_progress=allow_multiple_in_progress)
-        checkpoint_record = build_checkpoint_record(state, seq=latest_seq(working_records))
-        append_record(path, checkpoint_record)
-        working_records.append(checkpoint_record)
+    working_records.extend(event_records)
+    if not working_records:
+        write_records_atomic(path, [])
+        return
+
+    state = materialize_v3(working_records)
+    validate_state(state, allow_multiple_in_progress=allow_multiple_in_progress)
+    seq_watermark = latest_seq(working_records)
+    compact_event = build_record("event", seq=seq_watermark, op="replace", items=list(state.values()))
+    compact_event["mutation"] = mutation_meta
+    compact_checkpoint = build_checkpoint_record(state, seq=seq_watermark)
+    compact_checkpoint["mutation"] = mutation_meta
+    write_records_atomic(path, [compact_event, compact_checkpoint])
 
 
 def emit_update_plan(path: Path, *, allow_multiple_in_progress: bool, prefixed: bool) -> None:
@@ -381,16 +372,15 @@ def ensure_lock_sidecar_gitignored(plan_file: Path) -> None:
 def cmd_init(args: argparse.Namespace) -> int:
     path = args.file
     if not path.exists() or path.stat().st_size == 0:
-        append_record(path, build_record("event", seq=1, op="init"))
+        write_records_atomic(path, [build_record("event", seq=1, op="init")])
         print(f"initialized {path}")
     else:
         print(f"already initialized: {path}")
 
     if args.replace:
-        raw_records, normalized_records = read_plan_records(path)
-        append_mutation_records(
+        _, normalized_records = read_plan_records(path)
+        write_mutation_records(
             path,
-            raw_records,
             normalized_records,
             [{"op": "replace", "items": []}],
             allow_multiple_in_progress=True,
@@ -400,7 +390,7 @@ def cmd_init(args: argparse.Namespace) -> int:
 
 
 def cmd_add(args: argparse.Namespace) -> int:
-    raw_records, normalized_records, state = load_validated_state(
+    _, normalized_records, state = load_validated_state(
         args.file,
         allow_multiple_in_progress=args.allow_multiple_in_progress,
     )
@@ -423,9 +413,8 @@ def cmd_add(args: argparse.Namespace) -> int:
     proposed[item_id] = item
     validate_state(proposed, allow_multiple_in_progress=args.allow_multiple_in_progress)
 
-    append_mutation_records(
+    write_mutation_records(
         args.file,
-        raw_records,
         normalized_records,
         [{"op": "upsert", "item": item}],
         allow_multiple_in_progress=args.allow_multiple_in_progress,
@@ -436,7 +425,7 @@ def cmd_add(args: argparse.Namespace) -> int:
 
 
 def cmd_set_status(args: argparse.Namespace) -> int:
-    raw_records, normalized_records, state = load_validated_state(
+    _, normalized_records, state = load_validated_state(
         args.file,
         allow_multiple_in_progress=args.allow_multiple_in_progress,
     )
@@ -449,9 +438,8 @@ def cmd_set_status(args: argparse.Namespace) -> int:
     proposed[item_id]["status"] = status
     validate_state(proposed, allow_multiple_in_progress=args.allow_multiple_in_progress)
 
-    append_mutation_records(
+    write_mutation_records(
         args.file,
-        raw_records,
         normalized_records,
         [{"op": "set_status", "id": item_id, "status": status}],
         allow_multiple_in_progress=args.allow_multiple_in_progress,
@@ -462,7 +450,7 @@ def cmd_set_status(args: argparse.Namespace) -> int:
 
 
 def cmd_set_deps(args: argparse.Namespace) -> int:
-    raw_records, normalized_records, state = load_validated_state(
+    _, normalized_records, state = load_validated_state(
         args.file,
         allow_multiple_in_progress=args.allow_multiple_in_progress,
     )
@@ -475,9 +463,8 @@ def cmd_set_deps(args: argparse.Namespace) -> int:
     proposed[item_id]["deps"] = deps
     validate_state(proposed, allow_multiple_in_progress=args.allow_multiple_in_progress)
 
-    append_mutation_records(
+    write_mutation_records(
         args.file,
-        raw_records,
         normalized_records,
         [{"op": "set_deps", "id": item_id, "deps": deps}],
         allow_multiple_in_progress=args.allow_multiple_in_progress,
@@ -491,7 +478,7 @@ def cmd_set_deps(args: argparse.Namespace) -> int:
 
 
 def cmd_set_notes(args: argparse.Namespace) -> int:
-    raw_records, normalized_records, state = load_validated_state(
+    _, normalized_records, state = load_validated_state(
         args.file,
         allow_multiple_in_progress=args.allow_multiple_in_progress,
     )
@@ -504,9 +491,8 @@ def cmd_set_notes(args: argparse.Namespace) -> int:
     proposed[item_id]["notes"] = notes
     validate_state(proposed, allow_multiple_in_progress=args.allow_multiple_in_progress)
 
-    append_mutation_records(
+    write_mutation_records(
         args.file,
-        raw_records,
         normalized_records,
         [{"op": "set_notes", "id": item_id, "notes": notes}],
         allow_multiple_in_progress=args.allow_multiple_in_progress,
@@ -517,7 +503,7 @@ def cmd_set_notes(args: argparse.Namespace) -> int:
 
 
 def cmd_add_comment(args: argparse.Namespace) -> int:
-    raw_records, normalized_records, state = load_validated_state(
+    _, normalized_records, state = load_validated_state(
         args.file,
         allow_multiple_in_progress=args.allow_multiple_in_progress,
     )
@@ -538,9 +524,8 @@ def cmd_add_comment(args: argparse.Namespace) -> int:
     proposed[item_id]["comments"].append(comment)
     validate_state(proposed, allow_multiple_in_progress=args.allow_multiple_in_progress)
 
-    append_mutation_records(
+    write_mutation_records(
         args.file,
-        raw_records,
         normalized_records,
         [{"op": "add_comment", "id": item_id, "comment": comment}],
         allow_multiple_in_progress=args.allow_multiple_in_progress,
@@ -551,7 +536,7 @@ def cmd_add_comment(args: argparse.Namespace) -> int:
 
 
 def cmd_remove(args: argparse.Namespace) -> int:
-    raw_records, normalized_records, state = load_validated_state(
+    _, normalized_records, state = load_validated_state(
         args.file,
         allow_multiple_in_progress=args.allow_multiple_in_progress,
     )
@@ -563,9 +548,8 @@ def cmd_remove(args: argparse.Namespace) -> int:
     proposed.pop(item_id)
     validate_state(proposed, allow_multiple_in_progress=args.allow_multiple_in_progress)
 
-    append_mutation_records(
+    write_mutation_records(
         args.file,
-        raw_records,
         normalized_records,
         [{"op": "remove", "id": item_id}],
         allow_multiple_in_progress=args.allow_multiple_in_progress,
@@ -640,7 +624,7 @@ def cmd_export(args: argparse.Namespace) -> int:
 def cmd_import_plan(args: argparse.Namespace) -> int:
     snapshot = json.loads(args.input.read_text(encoding="utf-8"))
     items = parse_snapshot(snapshot)
-    raw_records, normalized_records, current_state = load_validated_state(
+    _, normalized_records, current_state = load_validated_state(
         args.file,
         allow_multiple_in_progress=args.allow_multiple_in_progress,
     )
@@ -656,9 +640,8 @@ def cmd_import_plan(args: argparse.Namespace) -> int:
 
     validate_state(proposed_state, allow_multiple_in_progress=args.allow_multiple_in_progress)
 
-    append_mutation_records(
+    write_mutation_records(
         args.file,
-        raw_records,
         normalized_records,
         event_payloads,
         allow_multiple_in_progress=args.allow_multiple_in_progress,
@@ -697,12 +680,21 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         state = materialize_v3(current_records)
         validate_state(state, allow_multiple_in_progress=args.allow_multiple_in_progress)
         repaired_checkpoint_seq = latest_seq(current_records)
-        checkpoint_record = build_checkpoint_record(state, seq=repaired_checkpoint_seq)
-        checkpoint_record["repair"] = {"op": "doctor_repair_seq"}
-        checkpoint_record["mutation"] = build_mutation_metadata(
+        repair_meta = build_mutation_metadata(
             allow_multiple_in_progress=args.allow_multiple_in_progress
         )
-        append_record(args.file, checkpoint_record)
+        repair_event = build_record(
+            "event",
+            seq=repaired_checkpoint_seq,
+            op="replace",
+            items=list(state.values()),
+        )
+        repair_event["repair"] = {"op": "doctor_repair_seq"}
+        repair_event["mutation"] = repair_meta
+        checkpoint_record = build_checkpoint_record(state, seq=repaired_checkpoint_seq)
+        checkpoint_record["repair"] = {"op": "doctor_repair_seq"}
+        checkpoint_record["mutation"] = repair_meta
+        write_records_atomic(args.file, [repair_event, checkpoint_record])
 
     _, repaired_records = read_plan_records(args.file, validate_seq_on_load=False)
     validate_seq_contract(repaired_records)
@@ -732,7 +724,7 @@ def add_common_list_format_argument(parser: argparse.ArgumentParser) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Manage append-only dependency-aware JSONL v3 plan state")
+    parser = argparse.ArgumentParser(description="Manage dependency-aware JSONL v3 plan state")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     init_parser = subparsers.add_parser("init", help="Initialize plan storage")
@@ -816,7 +808,7 @@ def build_parser() -> argparse.ArgumentParser:
     doctor_parser.add_argument(
         "--repair-seq",
         action="store_true",
-        help="Append a canonical checkpoint at current seq watermark when seq contract is invalid",
+        help="Rewrite plan with canonical checkpoint at current seq watermark when seq contract is invalid",
     )
     doctor_parser.set_defaults(func=cmd_doctor)
 

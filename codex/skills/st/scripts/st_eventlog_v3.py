@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+import tempfile
 from contextlib import contextmanager
 from collections import OrderedDict
 from datetime import datetime, timezone
@@ -520,6 +522,59 @@ def plan_file_lock(path: Path) -> Iterator[None]:
 
 
 def append_record(path: Path, record: dict[str, Any]) -> None:
+    _validate_record_for_write(record)
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, separators=(",", ":")) + "\n")
+
+
+def write_records_atomic(path: Path, records: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temp_path = Path(handle.name)
+            for record in records:
+                _validate_record_for_write(record)
+                handle.write(json.dumps(record, separators=(",", ":")) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+
+        os.replace(temp_path, path)
+        _fsync_directory(path.parent)
+        temp_path = None
+    finally:
+        if temp_path is not None:
+            try:
+                temp_path.unlink()
+            except FileNotFoundError:
+                pass
+
+
+def _fsync_directory(path: Path) -> None:
+    try:
+        fd = os.open(path, os.O_RDONLY)
+    except OSError:
+        return
+
+    try:
+        os.fsync(fd)
+    except OSError:
+        pass
+    finally:
+        os.close(fd)
+
+
+def _validate_record_for_write(record: dict[str, Any]) -> None:
     if not isinstance(record, dict):
         raise ValueError("record must be an object")
     if record.get("v") != SCHEMA_VERSION:
@@ -527,10 +582,6 @@ def append_record(path: Path, record: dict[str, Any]) -> None:
     lane = str(record.get("lane", "")).strip().lower()
     if lane not in VALID_LANES:
         raise ValueError(f"record.lane must be one of: {', '.join(sorted(VALID_LANES))}")
-
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(record, separators=(",", ":")) + "\n")
 
 
 def latest_seq(records: list[dict[str, Any]]) -> int:
@@ -599,6 +650,7 @@ __all__ = [
     "parse_cli_deps",
     "plan_file_lock",
     "read_records",
+    "write_records_atomic",
     "unresolved_dependency_ids",
     "validate_seq_contract",
     "validate_state",
