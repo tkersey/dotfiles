@@ -7,6 +7,8 @@ import argparse
 import copy
 import json
 import os
+import shlex
+import subprocess
 import sys
 from collections import OrderedDict
 from pathlib import Path
@@ -21,6 +23,7 @@ try:  # Support package and script-style imports.
         append_record,
         build_checkpoint_record,
         build_record,
+        collect_seq_contract_issues,
         latest_seq,
         materialize_v3,
         needs_checkpoint,
@@ -28,7 +31,9 @@ try:  # Support package and script-style imports.
         normalize_status,
         now_utc_iso,
         parse_cli_deps,
+        plan_file_lock,
         read_records,
+        validate_seq_contract,
         validate_state,
     )
     from .st_read_views import blocked_items, enrich_items, ready_items
@@ -39,6 +44,7 @@ except ImportError:  # pragma: no cover
         append_record,
         build_checkpoint_record,
         build_record,
+        collect_seq_contract_issues,
         latest_seq,
         materialize_v3,
         needs_checkpoint,
@@ -46,7 +52,9 @@ except ImportError:  # pragma: no cover
         normalize_status,
         now_utc_iso,
         parse_cli_deps,
+        plan_file_lock,
         read_records,
+        validate_seq_contract,
         validate_state,
     )
     from st_read_views import blocked_items, enrich_items, ready_items
@@ -69,9 +77,15 @@ def normalize_record_for_read(record: dict[str, Any]) -> dict[str, Any]:
     return normalized
 
 
-def read_plan_records(path: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def read_plan_records(
+    path: Path,
+    *,
+    validate_seq_on_load: bool = True,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     raw_records = read_records(path)
     normalized_records = [normalize_record_for_read(record) for record in raw_records]
+    if validate_seq_on_load:
+        validate_seq_contract(normalized_records)
     return raw_records, normalized_records
 
 
@@ -270,10 +284,13 @@ def append_mutation_records(
     *,
     allow_multiple_in_progress: bool,
 ) -> None:
+    mutation_meta = build_mutation_metadata(allow_multiple_in_progress=allow_multiple_in_progress)
     working_records = list(normalized_records)
     next_seq_value = latest_seq(working_records) + 1
     for payload in event_payloads:
-        event_record = build_record("event", seq=next_seq_value, **payload)
+        payload_with_metadata = dict(payload)
+        payload_with_metadata.setdefault("mutation", mutation_meta)
+        event_record = build_record("event", seq=next_seq_value, **payload_with_metadata)
         append_record(path, event_record)
         working_records.append(event_record)
         next_seq_value += 1
@@ -304,6 +321,61 @@ def default_comment_author() -> str:
         if value:
             return value
     return "unknown"
+
+
+def build_mutation_metadata(*, allow_multiple_in_progress: bool) -> dict[str, Any]:
+    actor = os.environ.get("ST_ACTOR", "").strip()
+    if not actor:
+        actor = default_comment_author()
+
+    metadata: dict[str, Any] = {
+        "allow_multiple_in_progress": allow_multiple_in_progress,
+        "actor": actor,
+        "pid": os.getpid(),
+    }
+    session = os.environ.get("ST_SESSION_ID", "").strip() or os.environ.get("CODEX_THREAD_ID", "").strip()
+    if session:
+        metadata["session"] = session
+    return metadata
+
+
+def find_git_root(start: Path) -> Path | None:
+    current = start.resolve()
+    for candidate in (current, *current.parents):
+        if (candidate / ".git").exists():
+            return candidate
+    return None
+
+
+def ensure_lock_sidecar_gitignored(plan_file: Path) -> None:
+    git_root = find_git_root(plan_file.parent)
+    if git_root is None:
+        return
+
+    lock_file = (plan_file.parent / f"{plan_file.name}.lock").resolve()
+    try:
+        lock_relative = lock_file.relative_to(git_root).as_posix()
+    except ValueError:
+        lock_relative = lock_file.as_posix()
+
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(git_root), "check-ignore", "-q", "--", lock_relative],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    except OSError as exc:
+        raise ValueError("unable to run git check-ignore while enforcing lock sidecar policy") from exc
+
+    if result.returncode == 0:
+        return
+    if result.returncode == 1:
+        fix_cmd = f"cd {shlex.quote(str(git_root))} && echo {shlex.quote(lock_relative)} >> .gitignore"
+        raise ValueError(
+            f"lock sidecar '{lock_relative}' is not gitignored; run: {fix_cmd}"
+        )
+    raise ValueError(f"git check-ignore failed while validating lock sidecar '{lock_relative}'")
 
 
 def cmd_init(args: argparse.Namespace) -> int:
@@ -600,6 +672,44 @@ def cmd_import_plan(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_doctor(args: argparse.Namespace) -> int:
+    _, normalized_records = read_plan_records(args.file, validate_seq_on_load=False)
+    issues = collect_seq_contract_issues(normalized_records)
+    if not issues:
+        print(f"seq contract ok: {args.file}")
+        return 0
+
+    print(f"seq contract invalid: {args.file}")
+    for issue in issues:
+        print(f"- {issue}")
+
+    if not args.repair_seq:
+        return 2
+
+    repaired_checkpoint_seq = -1
+    with plan_file_lock(args.file):
+        _, current_records = read_plan_records(args.file, validate_seq_on_load=False)
+        current_issues = collect_seq_contract_issues(current_records)
+        if not current_issues:
+            print("repair skipped: seq contract already valid")
+            return 0
+
+        state = materialize_v3(current_records)
+        validate_state(state, allow_multiple_in_progress=args.allow_multiple_in_progress)
+        repaired_checkpoint_seq = latest_seq(current_records)
+        checkpoint_record = build_checkpoint_record(state, seq=repaired_checkpoint_seq)
+        checkpoint_record["repair"] = {"op": "doctor_repair_seq"}
+        checkpoint_record["mutation"] = build_mutation_metadata(
+            allow_multiple_in_progress=args.allow_multiple_in_progress
+        )
+        append_record(args.file, checkpoint_record)
+
+    _, repaired_records = read_plan_records(args.file, validate_seq_on_load=False)
+    validate_seq_contract(repaired_records)
+    print(f"repaired seq contract via checkpoint seq {repaired_checkpoint_seq}")
+    return 0
+
+
 def add_common_file_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--file", type=Path, default=DEFAULT_FILE, help="Path to plan JSONL file")
 
@@ -700,6 +810,16 @@ def build_parser() -> argparse.ArgumentParser:
     add_common_list_format_argument(blocked_parser)
     blocked_parser.set_defaults(func=cmd_blocked)
 
+    doctor_parser = subparsers.add_parser("doctor", help="Inspect or repair seq contract integrity")
+    add_common_file_argument(doctor_parser)
+    add_common_status_policy_argument(doctor_parser)
+    doctor_parser.add_argument(
+        "--repair-seq",
+        action="store_true",
+        help="Append a canonical checkpoint at current seq watermark when seq contract is invalid",
+    )
+    doctor_parser.set_defaults(func=cmd_doctor)
+
     emit_update_plan_parser = subparsers.add_parser(
         "emit-update-plan",
         help="Emit update_plan JSON payload derived from durable state",
@@ -731,7 +851,23 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    mutating_commands = {
+        "init",
+        "add",
+        "set-status",
+        "set-deps",
+        "set-notes",
+        "add-comment",
+        "remove",
+        "import-plan",
+    }
     try:
+        if args.command == "doctor" and getattr(args, "repair_seq", False):
+            ensure_lock_sidecar_gitignored(args.file)
+        if args.command in mutating_commands:
+            ensure_lock_sidecar_gitignored(args.file)
+            with plan_file_lock(args.file):
+                return args.func(args)
         return args.func(args)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)

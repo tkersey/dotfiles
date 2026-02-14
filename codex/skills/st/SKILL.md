@@ -59,6 +59,7 @@ uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py import-plan --file .step/s
   - `active`, `doing` -> `in_progress`
   - `done`, `closed` -> `completed`
 - Mutation commands (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`) automatically print an `update_plan:` payload line after durable write.
+- Lock sidecar policy: mutating commands require the lock file (`<plan-file>.lock`, for example `.step/st-plan.jsonl.lock`) to be gitignored when inside a git repo; add it to `.gitignore` before first mutation.
 - Checkpoint compaction cadence is controlled by `ST_CHECKPOINT_INTERVAL` (positive integer, default `50`); invalid values fail fast.
 - Preserve history by appending events/checkpoints; use `import-plan --replace` to atomically reset state while retaining an auditable log.
 - Prefer concise, stable item IDs (`st-001`, `st-002`, ...).

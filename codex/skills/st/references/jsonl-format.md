@@ -7,10 +7,12 @@
 - Shared fields: `v` (`3`), `ts` (UTC ISO-8601), `seq` (non-negative integer), `lane` (`event` or `checkpoint`)
 - `event` lane: requires `op`
 - `checkpoint` lane: requires full `items` snapshot
+- Optional event/checkpoint metadata envelope: `mutation` (writer audit details such as policy flag/actor/session)
 
 ```json
 {"v":3,"ts":"2026-02-09T20:00:00Z","seq":41,"lane":"event","op":"set_status","id":"st-002","status":"in_progress"}
 {"v":3,"ts":"2026-02-09T20:01:00Z","seq":41,"lane":"checkpoint","items":[{"id":"st-001","step":"Reproduce issue","status":"completed","deps":[],"notes":"","comments":[]}]}
+{"v":3,"ts":"2026-02-09T20:02:00Z","seq":42,"lane":"event","op":"set_status","id":"st-003","status":"in_progress","mutation":{"allow_multiple_in_progress":false,"actor":"tk","pid":12345}}
 ```
 
 ## Event ops
@@ -56,7 +58,15 @@
 - New event writes use `seq = watermark + 1`
 - Checkpoints persist full `items` at the current watermark `seq`
 - Trigger checkpoint compaction when trailing events since the last checkpoint reach the configured interval (`needs_checkpoint(records, interval)`)
+- Checkpoint seq rule: each checkpoint `seq` must equal the watermark immediately before that checkpoint record
+- Trailing seq rule: records after the latest checkpoint must be strictly increasing (`seq` monotonic + unique)
 - Replay contract: latest checkpoint + records with `seq` greater than checkpoint `seq` must equal full replay
+- Repair path: `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py doctor --file .step/st-plan.jsonl --repair-seq` appends a canonical checkpoint at the current watermark to seal historical collisions
+
+## Lock sidecar policy
+
+- Mutation paths acquire a sidecar file lock at `<plan-file>.lock` (for example `.step/st-plan.jsonl.lock`)
+- In git worktrees, mutating commands require that sidecar path to be ignored (`git check-ignore`) before writes proceed
 
 ## Translation contract to `update_plan`
 

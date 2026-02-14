@@ -5,10 +5,16 @@ from __future__ import annotations
 
 import json
 import re
+from contextlib import contextmanager
 from collections import OrderedDict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
+
+try:  # pragma: no cover - platform specific.
+    import fcntl
+except ImportError:  # pragma: no cover
+    fcntl = None
 
 SCHEMA_VERSION = 3
 VALID_LANES = {"event", "checkpoint"}
@@ -207,6 +213,69 @@ def detect_stream_version(records: list[dict[str, Any]]) -> int:
     if saw_v2_after_v3:
         raise ValueError("invalid stream: v2 record found after v3 record")
     return 3 if saw_v3 else 2
+
+
+def collect_seq_contract_issues(records: list[dict[str, Any]]) -> list[str]:
+    """Validate trailing seq integrity while allowing historical pre-checkpoint collisions."""
+
+    issues: list[str] = []
+    max_prefix_seq = 0
+    last_checkpoint_index: int | None = None
+    last_checkpoint_seq = 0
+
+    for index, record in enumerate(records, start=1):
+        version = record.get("v")
+        if version not in {2, 3}:
+            issues.append(f"record {index} has unsupported version {version!r}")
+            continue
+
+        seq = record.get("seq")
+        if not isinstance(seq, int) or seq < 0:
+            issues.append(f"record {index} has invalid seq {seq!r}; expected non-negative integer")
+            continue
+
+        if version == 3:
+            lane = str(record.get("lane", "")).strip().lower()
+            if lane not in VALID_LANES:
+                issues.append(f"record {index} has invalid lane {record.get('lane')!r}")
+                continue
+            if lane == "checkpoint":
+                if seq != max_prefix_seq:
+                    issues.append(
+                        f"record {index} checkpoint seq {seq} must match current watermark {max_prefix_seq}"
+                    )
+                last_checkpoint_index = index
+                last_checkpoint_seq = seq
+
+        if seq > max_prefix_seq:
+            max_prefix_seq = seq
+
+    trailing_start = (last_checkpoint_index + 1) if last_checkpoint_index is not None else 1
+    trailing_prev_seq: int | None = last_checkpoint_seq if last_checkpoint_index is not None else None
+
+    for index in range(trailing_start, len(records) + 1):
+        record = records[index - 1]
+        seq = record.get("seq")
+        if not isinstance(seq, int) or seq < 0:
+            continue
+        if trailing_prev_seq is not None and seq <= trailing_prev_seq:
+            issues.append(
+                f"record {index} has non-monotonic trailing seq {seq}; previous trailing seq is {trailing_prev_seq}"
+            )
+        trailing_prev_seq = seq
+
+    return issues
+
+
+def validate_seq_contract(records: list[dict[str, Any]]) -> None:
+    issues = collect_seq_contract_issues(records)
+    if not issues:
+        return
+
+    preview = "; ".join(issues[:3])
+    if len(issues) > 3:
+        preview = f"{preview}; (+{len(issues) - 3} more)"
+    raise ValueError(f"seq contract violation: {preview}")
 
 
 def _apply_event_op(
@@ -436,6 +505,20 @@ def build_record(lane: str, **payload: Any) -> dict[str, Any]:
     return record
 
 
+@contextmanager
+def plan_file_lock(path: Path) -> Iterator[None]:
+    lock_path = path.parent / f"{path.name}.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+", encoding="utf-8") as handle:
+        if fcntl is not None:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            if fcntl is not None:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
 def append_record(path: Path, record: dict[str, Any]) -> None:
     if not isinstance(record, dict):
         raise ValueError("record must be an object")
@@ -504,6 +587,7 @@ __all__ = [
     "append_record",
     "build_checkpoint_record",
     "build_record",
+    "collect_seq_contract_issues",
     "dependency_state",
     "detect_stream_version",
     "latest_seq",
@@ -513,7 +597,9 @@ __all__ = [
     "normalize_status",
     "now_utc_iso",
     "parse_cli_deps",
+    "plan_file_lock",
     "read_records",
     "unresolved_dependency_ids",
+    "validate_seq_contract",
     "validate_state",
 ]
