@@ -15,12 +15,34 @@ Use this skill to manage Codex automations by editing the local SQLite database 
 - Enable or disable: `uv run python scripts/cron.py enable --id <id>` or `uv run python scripts/cron.py disable --id <id>`
 - Run immediately: `uv run python scripts/cron.py run-now --id <id>`
 - Delete: `uv run python scripts/cron.py delete --id <id>`
+- Run due automations once (headless): `scripts/automation_runner.py --once`
+- Install and start user LaunchAgent scheduler: `scripts/install_launch_agent.sh`
+- Stop and remove scheduler: `scripts/uninstall_launch_agent.sh`
 
 ## Workflow
 1. Choose the working directories (`cwds`). Default to the current repo if not specified.
 2. Write the automation prompt. Use `--prompt-file` for multi-line prompts.
 3. Provide an RFC5545 RRULE string (see schedule guidance below).
 4. Create or update the automation with `scripts/cron.py`.
+5. If you want hands-off execution without the desktop app, install the LaunchAgent with `scripts/install_launch_agent.sh`.
+
+## Headless Runner
+- `scripts/automation_runner.py` executes due automations by calling `codex exec` and updates:
+  - `automations.last_run_at`
+  - `automations.next_run_at`
+  - `automation_runs` rows for each execution
+- The runner uses `python-dateutil` via `uv` in the shebang and does not require a persistent venv.
+- `--codex-bin` accepts either an absolute path or executable name; default resolves `$CODEX_BIN` or `codex` from `PATH`.
+- `scripts/launchd_wrapper.sh` uses `lockf` to prevent overlapping runs.
+- `scripts/install_launch_agent.sh` is idempotent and installs `~/Library/LaunchAgents/com.openai.codex.automation-runner.plist` with a 60-second interval by default.
+  - Optional overrides:
+    - `--label <reverse-dns-label>` (or env `CRON_LAUNCHD_LABEL`)
+    - `--interval-seconds <n>` (or env `CRON_LAUNCHD_INTERVAL_SECONDS`)
+    - `--path <PATH>` (or env `CRON_LAUNCHD_PATH`)
+- `scripts/uninstall_launch_agent.sh` is idempotent and accepts optional `--label`.
+- Logs: `~/Library/Logs/codex-automation-runner/out.log` and `~/Library/Logs/codex-automation-runner/err.log`.
+- Service status:
+  - `launchctl print gui/$(id -u)/com.openai.codex.automation-runner`
 
 ## Clarify When Ambiguous
 Ask questions only when the request is ambiguous or when the user explicitly asks for guidance. Do not block otherwise.
