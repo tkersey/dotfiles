@@ -1,15 +1,11 @@
 cask_args appdir: "/Applications"
-tap "bahdotsh/zp"
-tap "facebook/fb"
-tap "rs/tap"
-tap "steveyegge/beads"
 brew "bat"
-brew "bd"
 brew "codex"
 brew "curl"
 brew "eslint_d"
 brew "eza"
 brew "fd"
+brew "fnm"
 brew "fish"
 brew "fisher"
 brew "fzf"
@@ -19,10 +15,8 @@ brew "git"
 brew "git-delta"
 brew "goenv"
 brew "hub"
-brew "hurl"
-brew "jj"
+brew "jq"
 brew "lazygit"
-brew "lazyjj"
 brew "luajit", args: ['HEAD']
 brew "luarocks"
 brew "mas"
@@ -34,7 +28,6 @@ brew "ripgrep"
 brew "tree"
 brew "tree-sitter", args: ['HEAD']
 brew "tree-sitter-cli", args: ['HEAD']
-brew "unisonlang"
 brew "unxip"
 brew "uv"
 brew "zig"
@@ -49,7 +42,5 @@ cask "mimestream"
 cask "slack@beta"
 cask "zoom"
 mas "Amphetamine", id: 937984704
-mas "Pixelmator Pro", id: 1289583905
-mas "Tapestry Loom", id: 6578414736
 mas "TestFlight", id: 899247664
 mas "Wipr2", id: 1662217862
