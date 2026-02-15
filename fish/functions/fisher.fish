@@ -30,6 +30,10 @@ function fisher --argument-names cmd --description "A plugin manager for Fish"
             set --local new_plugins
 
             test -e $fish_plugins && set --local file_plugins (string match --regex -- '^[^\s]+$' <$fish_plugins | string replace -- \~ ~)
+            # Recover update behavior when universal plugin vars were lost but fish_plugins still exists.
+            if test "$cmd" = update && ! set --query old_plugins[1] && set --query file_plugins[1]
+                set old_plugins $file_plugins
+            end
 
             if ! set --query argv[2]
                 if test "$cmd" != update
