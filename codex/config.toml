@@ -4,6 +4,9 @@ suppress_unstable_features_warning = true
 web_search = "live"
 personality = "pragmatic"
 
+[agents]
+max_threads = 12
+
 [features]
 unified_exec = true
 steer = true

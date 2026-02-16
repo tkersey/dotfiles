@@ -52,6 +52,23 @@ Supported forms (space-separated `key=value` args):
 - `$mesh ids=st-003,st-007`
 - `$mesh plan_file=.step/st-plan.jsonl`
 - `$mesh max_tasks=2 parallel_tasks=1`
+- `$mesh max_tasks=4 parallel_tasks=2`
+- `$mesh max_tasks=auto parallel_tasks=auto`
+- `$mesh adapter=auto max_tasks=auto parallel_tasks=auto`
+- `$mesh adapter=auto max_tasks=auto parallel_tasks=auto headless=true`
+- `$mesh ids=st-010 integrate=false`
+
+Continual runner (turnkey):
+- Run continual draining in a terminal:
+  - `node codex/skills/mesh/scripts/mesh_casp_autopilot.mjs --cwd <repo>`
+- Run continual draining with scale-out workers (1 integrator + N workers):
+  - `node codex/skills/mesh/scripts/mesh_casp_fleet_autopilot.mjs --cwd <repo> --workers 3`
+- Run continually in the background (launchd):
+  - `codex/skills/mesh/scripts/install_mesh_casp_autopilot_launch_agent.sh --cwd <repo>`
+  - To stop: `codex/skills/mesh/scripts/uninstall_mesh_casp_autopilot_launch_agent.sh`
+- Run scale-out mode in the background (launchd):
+  - `codex/skills/mesh/scripts/install_mesh_casp_fleet_autopilot_launch_agent.sh --cwd <repo> --workers 3`
+  - To stop: `codex/skills/mesh/scripts/uninstall_mesh_casp_fleet_autopilot_launch_agent.sh`
 
 Do NOT treat generic acknowledgements (`go`, `yep`, `ship it`) as invocation.
 
@@ -66,11 +83,69 @@ Invocation intent gate (required):
 
 - `max_tasks`: 1 (attempt at most one task completion per run)
 - `parallel_tasks`: 1 (run only one swarm at a time)
+- `integrate`: true (apply patch + run validation + mutate `$st` after consensus)
 - `swarm_roles`: 5 (`proposer`, `critic_a`, `critic_b`, `skeptic`, `synthesizer`)
 - `fallback_swarm_roles`: 3 (`proposer`, `skeptic`, `synthesizer`) when capacity is insufficient or repeated
   `no_response` occurs
 - `consensus_threshold`: 4/5 agree (5-role) or 3/3 agree (fallback)
 - `consensus_retries`: 2
+
+Notes:
+- `max_tasks` is the total tasks attempted in one run; `parallel_tasks` is the max number of tasks in-flight at once.
+- `parallel_tasks` has no fixed maximum; effective concurrency is bounded by adapter capacity, disjoint `scope` locks,
+  `$st --allow-multiple-in-progress`, and the runtime thread cap (e.g. `[agents].max_threads`).
+- Rule of thumb (default 5-role swarm): budget 5 worker slots per in-flight task (vote stage), so
+  `parallel_tasks <= floor(max_threads / 5)`; leave 1-2 slots for retries/follow-ups.
+
+### Parallelism cookbook (turnkey)
+
+Definitions:
+- `roles_per_task`: 5 (default) or 3 (fallback)
+- `reserve_slots`: 2 (retries, follow-ups, close sweeps)
+
+Compute:
+- `parallel_tasks_target = floor((max_threads - reserve_slots) / roles_per_task)`
+
+Examples:
+- `max_threads=12`, 5-role => `parallel_tasks_target=floor((12-2)/5)=2`
+- `max_threads=12`, 3-role => `parallel_tasks_target=floor((12-2)/3)=3`
+
+If you use `parallel_tasks=auto`, `$mesh` should pick `parallel_tasks_target` and explain the math.
+
+If you use `max_tasks=auto`, `$mesh` should keep draining runnable tasks until no work is ready (or a fixed time budget is reached).
+
+### Headless mode (non-interactive)
+
+If `headless=true`:
+- Do not ask the user questions.
+- If prerequisites are missing (plan file, validation command, adapter capability), exit cleanly with one actionable line.
+- Prefer continuing with other runnable tasks rather than stopping the whole run.
+
+## Coordination Fabric (Optional)
+
+By default, `$mesh` is hub-and-spoke: workers only talk to the orchestrator.
+If you want agent-to-agent coordination (especially across multiple `$casp` instances), add a
+coordination substrate with:
+
+- a shared task list (recommended: `$st`)
+- a durable mailbox (threaded messages)
+- advisory file leases (scope reservations)
+
+Reference spec: `codex/skills/mesh/references/coordination-fabric.md`.
+
+Trigger (recommended): if `parallel_tasks > 1` OR you are running multi-instance work (for example via `$casp`), use mailbox+leases.
+
+Minimal fabric (tool-agnostic):
+
+- Mailbox message fields: `thread_id` (usually `task_id`), `from`, `to|broadcast`, `type`, `body`, `ts`
+- Lease fields: `owner`, `scope[]`, `mode=exclusive|shared`, `ttl_seconds`, `reason=task_id`
+
+Happy path:
+1) Post `claim` (thread=`task_id`)
+2) Acquire an exclusive lease derived from `mesh_meta.scope`
+3) Work; post `proposal/critique/question/decision`
+4) Post `proof` (exact validation cmd + pass/fail + key line)
+5) Release leases early (don't rely only on TTL)
 
 Override precedence (highest to lowest):
 1) invocation args
@@ -90,7 +165,13 @@ Required adapter verbs:
 - `close`: release worker slots/resources when lifecycle close is explicit
 - `capabilities`: expose fanout limits and lifecycle semantics
 
+Common adapter ids (convention; optional):
+- `local`: in-session workers (subagents)
+- `casp`: multi-instance workers (via `$casp`), coordinated via mailbox+leases; one integrator applies patches/validates/mutates `$st`
+- `auto`: choose `local` unless you need to exceed per-instance caps or isolate contexts; always report which adapter is selected
+
 Adapter selection order:
+0) If invocation includes `adapter=<id>` (for example `adapter=local` or `adapter=casp`), use it if available; if not available, treat as `adapter_missing_capability`.
 1) Prefer an adapter explicitly marked `preferred` by the runtime.
 2) Else pick the first adapter that satisfies all required verbs.
 3) Else stop and ask the user to switch to a worker-capable runtime.
@@ -100,6 +181,14 @@ Communication is orchestrator-mediated: each round's prompts include prior round
 Slot hygiene (required):
 - For adapters with explicit close semantics, close every spawned worker once output is integrated or abandoned.
 - Always report `spawned` vs `closed`; if they differ, treat it as a reliability bug.
+
+Parallel tool batching (required):
+- Use `multi_tool_use.parallel` for fanout and close sweeps when available (avoid sequential spawns/closes).
+- Keep each `wait` call as one call over all active ids; loop with the remaining ids if needed (avoid one-wait-per-agent loops).
+
+Saturation rule (required):
+- When `parallel_tasks > 1`, fanout should spawn the needed workers for all in-flight tasks in one batched call (or the fewest possible batches),
+  not sequential per-task loops.
 
 Capacity and resilience rule:
 - If you cannot run a 5-role swarm for a task (fanout cap, spawn failure, resource limits, or repeated
@@ -222,6 +311,11 @@ The orchestrator must explicitly pass artifacts between rounds.
 - `critiques`: critic_a, critic_b, skeptic outputs
 - `synthesis`: synthesizer output (must include unified diff)
 - `votes`: one vote per role on the synthesized patch
+- `mail`: role-to-role messages (optional; orchestrator-mediated)
+
+Orchestrator mail rule:
+- Any worker may include an `outbox` section (optional). The orchestrator must deliver those messages
+  to the addressed role(s) via `follow_up` before the next dependent round.
 
 ### Step 0: Hydrate Metadata (If Needed)
 
@@ -235,7 +329,7 @@ If required task metadata is missing:
 Spawn proposer with:
 - task id + step
 - current `mesh` meta
-- current code context (paths listed in `scope`)
+- paths listed in `scope` (workers should read their own code context; do not pre-load file contents into the prompt)
 
 Proposer output must include:
 - a short plan
@@ -263,6 +357,8 @@ Synthesizer output must include:
 
 After synthesis, obtain one explicit vote per role.
 
+Collect votes in parallel.
+
 Vote prompt input includes:
 - task meta
 - synthesized diff
@@ -282,6 +378,14 @@ Consensus logic:
 ## Integration, Validation, and Persistence
 
 After consensus:
+
+If `integrate=false`:
+- Do NOT apply the patch.
+- Do NOT run validation.
+- Do NOT mutate `$st`.
+- Return the synthesized diff + decision log + validation commands so another integrator can apply it.
+
+Otherwise (default, `integrate=true`):
 
 1) Apply the synthesized patch (patch-first preferred).
 2) Run validation commands from task meta.
@@ -318,6 +422,7 @@ Treat the UI as a mirror only.
 
 Return:
 - tasks attempted and their final states (`completed`, `blocked`, `pending`)
+- concurrency telemetry: requested vs achieved (`parallel_tasks`, roles per task); if below target, state why (scope overlap, adapter cap, spawn failures)
 - consensus telemetry (attempt count, vote tallies)
 - adapter telemetry (selected adapter, workers spawned/completed/retried/timed_out)
 - slot hygiene telemetry: workers `spawned` vs `closed` when close semantics exist; include any stragglers
@@ -369,6 +474,15 @@ Required output:
 2) Assumptions
 3) Risks (low|medium|high) + top 3 risks
 4) If step=hydrate_meta: output a complete ```mesh``` block
+5) Optional: `outbox` messages to other roles (see below)
+
+Outbox format (optional):
+```
+outbox:
+  - to: critic_a|critic_b|skeptic|synthesizer|broadcast
+    subject: "..."
+    body: "..."
+```
 ```
 
 Critique:
@@ -391,6 +505,7 @@ Required output:
 2) Must-fix items (if any)
 3) Vote-flip conditions: what would make you vote `agree` after synthesis
 4) Risk level (low|medium|high)
+5) Optional: `outbox` (e.g., ask another critic to falsify one claim)
 ```
 
 Synthesis:
@@ -413,6 +528,7 @@ Required output:
 2) Patch: unified diff (text)
 3) Validation: list exact commands to run (align with mesh_meta unless you updated it explicitly)
 4) Residual risk (low|medium|high)
+5) Optional: `outbox` (e.g., questions for voters; call out remaining uncertainty)
 ```
 
 Vote:

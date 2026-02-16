@@ -17,19 +17,37 @@ Skill routing (default):
 
 - Discover/Define: `$grill-me`, `$prove-it`, `$complexity-mitigator`, `$invariant-ace`, `$tk` (advice mode).
 - Develop: `$creative-problem-solver` (five-tier portfolio).
-- Deliver: `$tk` (implementation mode), `$fix`, `$commit`, `$ship`, `$patch`, `$join`, `$fin`.
+- Deliver: `$tk` (implementation mode), `$fix`, `$commit`, `$ship`, `$learnings`, `$patch`, `$join`, `$fin`.
 - Language routing: invoke `$zig` when the request includes Zig cues such as `.zig` paths, `build.zig`/`build.zig.zon`, `zig build|test|run|fmt|fetch`, `comptime`, `@Vector`, `std.simd`, `std.Thread`, allocator ownership, or C interop.
 
 # Automatic Orchestration Policy
 
-- Scope: default for implementation work (code/config/tests); skip for doc-only or 1-shot trivial edits unless the user asks.
-- Selection/slicing: use `$select` to choose ready work, decompose into atomic tasks with `scope` locks, schedule safe parallel waves, and emit claim/writeback.
+- Scope: default for implementation work (code/config/tests). Skip only for doc-only work or truly 1-shot edits confined to a single file/function.
+- Selection/slicing: when work is multi-step, use `$select` early to decompose into atomic tasks with `scope` locks and safe parallel waves (plan-only; do not wait on it to start fanout).
+- Fanout first (implementation tasks): before any deep repo walking or long analysis, start a read-only discovery wave as your first tool call.
+  - Default discovery roles: `explorer` (map relevant paths/entry points/prior art), `worker` (risks + validation/proof plan). Add another `explorer` when multiple independent searches are needed.
+- Start-of-turn learnings recall (required for implementation work): if `.learnings.jsonl` exists in repo root, run a fast recall and treat results as constraints/invariants (carry into worker prompts when spawning).
+  - Command: `uv run python codex/skills/learnings/scripts/learnings.py recall --query "<user request>" --limit 5 --drop-superseded`
+  - If recall returns nothing relevant, proceed normally (do not invent).
+- Parallel mechanics (required): batch independent tool calls (including `spawn_agent`/`close_agent`) with `multi_tool_use.parallel`; keep each `wait(ids=[...])` as one call over all still-running agents (loop with remaining ids if needed; avoid one-wait-per-agent loops); close agents promptly after integrating results to free slots.
 - Work unit: each atomic task runs `$tk` (contract/invariants/implementation) then `$fix` (safety review) before it is considered done.
-- Capacity: saturate safe parallel capacity with dynamic backpressure; when per-session worker limits are reached, scale across multiple `instance` sessions (independent app-server sessions) via `$casp`.
+- Capacity: saturate safe parallel capacity with dynamic backpressure; treat `[agents].max_threads` as the per-instance ceiling.
+- IMPORTANT (scale-out beyond per-instance caps): use `$casp` to run N parallel instances (each instance has its own thread pool). Keep patch application + validation + git in one integrator instance; treat other instances as read-only workers that return diffs/artifacts.
+- Coordination substrate (scale-out): when parallel work needs worker-to-worker coordination (especially across instances), add a durable mailbox + advisory file leases alongside the task list. See `codex/skills/mesh/references/coordination-fabric.md`.
+- Spawn-depth reality check: assume `spawn_agent` depth is 1; spawned agents cannot spawn further agents. The parent must spawn the whole wave.
+- Timeouts + retry ladder (model-agnostic): attempt A uses `spawn_agent` + `wait(timeout_ms=45000)`. If nothing completes, retry once (smaller prompt and/or `send_input(interrupt=true)`), then escalate to multi-`instance` `$casp`.
+- Wave scope isolation (required): before each wave, each worker must declare a write scope (file/path glob/module); overlapping write scopes are serialized and never run in the same wave.
+- Wave success/failure contract: success requires at least one completed worker result; failure is timeout/no-response/error after the retry ladder. Failed units block only themselves; continue non-dependent units.
+- Execution floor (model-agnostic): on implementation tasks, prove at least one live worker wave in-turn (`spawn_agent` + `wait` + `close_agent` for each spawned id) before turn completion.
+- End-of-turn learnings (required for implementation turns): after a proof signal and before the final response, run `$learnings` to append 0-3 high-signal records to `.learnings.jsonl` (prefer 1; skip when no capture checkpoint occurred). Mention the append result briefly.
+- Codify loop (promotion): when a learning is status `codify_now` (or repeats), promote it into durable docs (for example `codex/AGENTS.md` or a relevant skill doc), then append a follow-up learning referencing the durable anchor.
+  - Helper: `uv run python codex/skills/learnings/scripts/learnings.py codify-candidates --min-count 3 --limit 20 --drop-superseded`
 - Coordination: use internal mesh-style coordination by default (no user invocation required); reserve `$mesh` for explicit user-invoked swarm coordination.
+- Mesh concurrency knob: invoke `$mesh parallel_tasks=N max_tasks=M` to run up to N tasks concurrently when scopes are disjoint (requires `$st --allow-multiple-in-progress`). Turnkey drain: `$mesh parallel_tasks=auto max_tasks=auto` (optionally `adapter=auto`).
+- Continual runner (turnkey): run `node codex/skills/mesh/scripts/mesh_casp_autopilot.mjs --cwd <repo>`; for scale-out use `node codex/skills/mesh/scripts/mesh_casp_fleet_autopilot.mjs --cwd <repo> --workers N`. Background services: `codex/skills/mesh/scripts/install_mesh_casp_autopilot_launch_agent.sh` or `codex/skills/mesh/scripts/install_mesh_casp_fleet_autopilot_launch_agent.sh`.
 - Questions: subagent questions enter a triage queue.
   - Low-risk: auto-answer from repo evidence/policy and continue.
-  - Blocking/product ambiguity: do all non-blocked work first, then ask exactly one targeted question with a recommended default.
+  - Blocking/product ambiguity: do all non-blocked work first, then ask exactly one targeted question with a recommended default and response deadline; if unanswered by deadline, apply the default and continue unaffected units.
   - Pause only the affected unit unless a shared invariant is impacted.
 - Overrides: explicit user directives can disable or constrain orchestration; when overridden, state the active override in progress updates.
 

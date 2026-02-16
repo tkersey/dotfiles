@@ -231,7 +231,7 @@ function deriveRoutingKeys(msg, requestMethodHint = null) {
 }
 
 function parseArgs(argv) {
-  /** @type {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[]}} */
+  /** @type {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[], execApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel", fileApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel"}} */
   const opts = {
     codexPath: "codex",
     cwd: process.cwd(),
@@ -247,6 +247,11 @@ function parseArgs(argv) {
     killTimeoutMs: 2_000,
     // Fail forwarded server requests that have no orchestrator response.
     serverRequestTimeoutMs: 30_000,
+    // v2 approval auto-response policy.
+    // - exec: "auto" preserves casp's default behavior (accept execpolicy amendments when proposed).
+    // - file: "auto" is an alias for acceptForSession.
+    execApprovalDecision: "auto",
+    fileApprovalDecision: "auto",
     // Optional initialize capability to suppress selected notifications.
     optOutNotificationMethods: [],
   };
@@ -311,12 +316,38 @@ function parseArgs(argv) {
       opts.serverRequestTimeoutMs = Number(takeValue());
       continue;
     }
+    if (arg === "--exec-approval") {
+      opts.execApprovalDecision = /** @type {any} */ (takeValue());
+      continue;
+    }
+    if (arg === "--file-approval") {
+      opts.fileApprovalDecision = /** @type {any} */ (takeValue());
+      continue;
+    }
+    if (arg === "--read-only") {
+      opts.execApprovalDecision = "decline";
+      opts.fileApprovalDecision = "decline";
+      continue;
+    }
     if (arg === "--opt-out-notification-method") {
       opts.optOutNotificationMethods.push(takeValue());
       continue;
     }
 
     throw new Error(`Unknown arg: ${arg}`);
+  }
+
+  const execDecisions = new Set(["auto", "accept", "acceptForSession", "decline", "cancel"]);
+  const fileDecisions = new Set(["auto", "accept", "acceptForSession", "decline", "cancel"]);
+  if (!execDecisions.has(opts.execApprovalDecision)) {
+    throw new Error(
+      `--exec-approval must be one of: ${Array.from(execDecisions).join(", ")}`,
+    );
+  }
+  if (!fileDecisions.has(opts.fileApprovalDecision)) {
+    throw new Error(
+      `--file-approval must be one of: ${Array.from(fileDecisions).join(", ")}`,
+    );
   }
 
   return { ok: true, help: false, error: null, opts };
@@ -330,7 +361,11 @@ function helpText() {
     "  node scripts/casp_proxy.mjs [--codex codex] [--cwd DIR]",
     "                        [--state-file ~/.codex/casp/state/<workspace-hash>.json]",
     "                        [--heartbeat-ms 0] [--max-out-queue 20000] [--kill-timeout-ms 2000]",
-    "                        [--server-request-timeout-ms 30000] [--opt-out-notification-method METHOD]",
+    "                        [--server-request-timeout-ms 30000]",
+    "                        [--exec-approval auto|accept|acceptForSession|decline|cancel]",
+    "                        [--file-approval auto|accept|acceptForSession|decline|cancel]",
+    "                        [--read-only]",
+    "                        [--opt-out-notification-method METHOD]",
     "",
     "stdin JSONL:",
     '  { "type": "casp/request", "clientRequestId": "...", "method": "thread/start", "params": { ... } }',
@@ -372,7 +407,7 @@ async function writeStateFile(stateFile, state) {
 }
 
 class CaspProxy {
-  /** @param {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[]}} opts */
+  /** @param {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[], execApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel", fileApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel"}} opts */
   constructor(opts) {
     this.opts = opts;
     this.cwd = opts.cwd;
@@ -1199,14 +1234,21 @@ class CaspProxy {
     if (method === "item/commandExecution/requestApproval") {
       const proposed =
         params.proposedExecpolicyAmendment ?? params.proposed_execpolicy_amendment;
-      const decision =
-        Array.isArray(proposed) && proposed.length
-          ? {
-              acceptWithExecpolicyAmendment: {
-                execpolicy_amendment: proposed,
-              },
-            }
-          : "acceptForSession";
+
+      let decision;
+      if (this.opts.execApprovalDecision === "auto") {
+        decision =
+          Array.isArray(proposed) && proposed.length
+            ? {
+                acceptWithExecpolicyAmendment: {
+                  execpolicy_amendment: proposed,
+                },
+              }
+            : "acceptForSession";
+      } else {
+        decision = this.opts.execApprovalDecision;
+      }
+
       this.sendToServer(
         { id, result: { decision } },
         { reason: "autoApproval", method },
@@ -1216,8 +1258,12 @@ class CaspProxy {
     }
 
     if (method === "item/fileChange/requestApproval") {
+      const decision =
+        this.opts.fileApprovalDecision === "auto"
+          ? "acceptForSession"
+          : this.opts.fileApprovalDecision;
       this.sendToServer(
-        { id, result: { decision: "acceptForSession" } },
+        { id, result: { decision } },
         { reason: "autoApproval", method },
       );
       this.stats.autoApprovals += 1;

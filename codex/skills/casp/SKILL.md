@@ -41,6 +41,10 @@ This skill assumes `codex` is available on PATH and does not require access to a
    - Optional: pass `--cwd /path/to/workspace` to control where the app-server runs. By default, state is written under `~/.codex/casp/state/<workspace-hash>.json`.
    - Optional: pass `--state-file PATH` to override the default state location.
    - Optional: tune forwarded request fail-fast behavior with `--server-request-timeout-ms <N>` (0 disables timeout).
+   - Optional: control v2 approval auto-responses (useful for safe multi-instance workers):
+     - `--exec-approval auto|accept|acceptForSession|decline|cancel`
+     - `--file-approval auto|accept|acceptForSession|decline|cancel`
+     - `--read-only` (shorthand for declining both exec + file approvals)
    - Optional: pass one or more `--opt-out-notification-method METHOD` flags to suppress known noisy notifications for the connection.
    - Wait for a `casp/ready` event.
 

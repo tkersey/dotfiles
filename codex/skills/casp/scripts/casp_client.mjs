@@ -41,6 +41,9 @@ export class CaspClient extends EventEmitter {
    *   clientVersion?: string,
    *   serverRequestTimeoutMs?: number,
    *   optOutNotificationMethods?: string[],
+   *   execApprovalDecision?: string,
+   *   fileApprovalDecision?: string,
+   *   readOnly?: boolean,
    * }} [opts]
    */
   constructor(opts = {}) {
@@ -57,6 +60,9 @@ export class CaspClient extends EventEmitter {
       clientVersion: opts.clientVersion,
       serverRequestTimeoutMs: opts.serverRequestTimeoutMs,
       optOutNotificationMethods: opts.optOutNotificationMethods,
+      execApprovalDecision: opts.execApprovalDecision,
+      fileApprovalDecision: opts.fileApprovalDecision,
+      readOnly: opts.readOnly,
     };
 
     /** @type {import('node:child_process').ChildProcess | null} */
@@ -92,6 +98,15 @@ export class CaspClient extends EventEmitter {
     if (this.opts.clientVersion) args.push("--client-version", this.opts.clientVersion);
     if (Number.isFinite(this.opts.serverRequestTimeoutMs)) {
       args.push("--server-request-timeout-ms", String(this.opts.serverRequestTimeoutMs));
+    }
+    if (this.opts.readOnly) {
+      args.push("--read-only");
+    }
+    if (this.opts.execApprovalDecision) {
+      args.push("--exec-approval", String(this.opts.execApprovalDecision));
+    }
+    if (this.opts.fileApprovalDecision) {
+      args.push("--file-approval", String(this.opts.fileApprovalDecision));
     }
     if (Array.isArray(this.opts.optOutNotificationMethods)) {
       for (const method of this.opts.optOutNotificationMethods) {

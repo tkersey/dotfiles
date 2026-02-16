@@ -27,6 +27,9 @@ function usage() {
     "  --state-file-dir DIR             Directory for per-instance state files (optional).",
     "  --request-timeout-ms N           Timeout per request (default: 30000).",
     "  --server-request-timeout-ms N    Forwarded server-request timeout for proxy.",
+    "  --exec-approval VALUE            Exec approval: auto|accept|acceptForSession|decline|cancel.",
+    "  --file-approval VALUE            File approval: auto|accept|acceptForSession|decline|cancel.",
+    "  --read-only                      Decline exec + file approvals (safe for scout instances).",
     "  --opt-out-notification-method M  Suppress a notification method (repeatable).",
     "  --client-prefix NAME             Prefix for instance client names (default: casp-instance).",
     "  --sample N                       Number of sample results in output (default: 3).",
@@ -50,6 +53,9 @@ function parseArgs(argv) {
     stateFileDir: null,
     requestTimeoutMs: 30_000,
     serverRequestTimeoutMs: null,
+    execApproval: null,
+    fileApproval: null,
+    readOnly: false,
     optOutNotificationMethods: [],
     clientPrefix: "casp-instance",
     sample: 3,
@@ -101,6 +107,18 @@ function parseArgs(argv) {
       opts.serverRequestTimeoutMs = Number(take());
       continue;
     }
+    if (a === "--exec-approval") {
+      opts.execApproval = take();
+      continue;
+    }
+    if (a === "--file-approval") {
+      opts.fileApproval = take();
+      continue;
+    }
+    if (a === "--read-only") {
+      opts.readOnly = true;
+      continue;
+    }
     if (a === "--opt-out-notification-method") {
       opts.optOutNotificationMethods.push(take());
       continue;
@@ -133,6 +151,12 @@ function parseArgs(argv) {
   }
   if (opts.serverRequestTimeoutMs !== null && (!Number.isInteger(opts.serverRequestTimeoutMs) || opts.serverRequestTimeoutMs < 0)) {
     throw new Error("--server-request-timeout-ms must be >= 0");
+  }
+  if (opts.execApproval !== null && (typeof opts.execApproval !== "string" || !opts.execApproval)) {
+    throw new Error("--exec-approval must be a non-empty string");
+  }
+  if (opts.fileApproval !== null && (typeof opts.fileApproval !== "string" || !opts.fileApproval)) {
+    throw new Error("--file-approval must be a non-empty string");
   }
   if (!Number.isInteger(opts.sample) || opts.sample < 0) {
     throw new Error("--sample must be >= 0");
@@ -249,6 +273,9 @@ async function main() {
       clientName: `${opts.clientPrefix}-${i + 1}`,
       serverRequestTimeoutMs:
         opts.serverRequestTimeoutMs === null ? undefined : opts.serverRequestTimeoutMs,
+      execApprovalDecision: opts.execApproval === null ? undefined : opts.execApproval,
+      fileApprovalDecision: opts.fileApproval === null ? undefined : opts.fileApproval,
+      readOnly: opts.readOnly,
       optOutNotificationMethods: opts.optOutNotificationMethods,
     });
     if (opts.verbose) {
