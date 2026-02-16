@@ -151,6 +151,34 @@ pub fn sumF32(xs: []const f32) f32 {
 - Detect any matches: `if (@reduce(.Or, matches)) { ... }`.
 - Find the first match index: `std.simd.firstTrue(matches).?`.
 
+### SIMD delimiter bitmask pattern (CSV-class scanners)
+Use a bitmask when you need all match positions in a block (delimiter, quote, CR, LF), not just
+the first hit.
+
+```zig
+const std = @import("std");
+
+fn delimMask(block: @Vector(16, u8), delim: u8, quote: u8, cr: u8, lf: u8) u16 {
+    const matches: @Vector(16, bool) =
+        (block == @as(@Vector(16, u8), @splat(delim))) or
+        (block == @as(@Vector(16, u8), @splat(quote))) or
+        (block == @as(@Vector(16, u8), @splat(cr))) or
+        (block == @as(@Vector(16, u8), @splat(lf)));
+    return @bitCast(matches);
+}
+
+fn walkMatches(mask0: u16) void {
+    var mask = mask0;
+    while (mask != 0) {
+        const idx = @ctz(mask); // 0-based lane index
+        _ = idx;
+        mask &= mask - 1; // clear lowest set bit
+    }
+}
+```
+
+- Validate lane mapping with a unit test: after `@bitCast`, LSB corresponds to lane/index `0`.
+
 ### Loop shaping tips (stdlib-proven)
 - Unroll short inner loops with `inline for` to cut bounds checks (see `std.mem.indexOfScalarPos`).
 - Use `std.simd.suggestVectorLength(T)` to match stdlib’s preferred alignment and vector width.
@@ -513,12 +541,58 @@ pub fn buildManyThings() !void {
 - Prevent DCE in benches: `std.mem.doNotOptimizeAway(x)`
 - Time loops: `std.time.Timer`, `std.time.nanoTimestamp`
 
+### Benchmark contract for parser work
+- Benchmark only the parse/iterate loop; exclude file download/decompression and setup noise.
+- Keep buffer size fixed in reports (for example 64 KiB) so runs are comparable.
+- Report wall time and at least one hardware counter set (branch misses, cache misses) plus RSS.
+- Capture machine + OS + compiler version + dataset mix in the benchmark notes.
+
 ## Zero-copy parsing playbook
 Principles:
 - Treat input as immutable bytes; parse into views, not copies.
 - Make ownership explicit (borrowed vs owned).
 - Store spans/offsets into a stable base buffer.
 - Never return slices into temporary buffers.
+
+### Iterator lifetime + streaming buffer contract (CSV-class)
+- Prefer field iterators for hot paths (one field per `next()`), then build record views on top.
+- Document lifetime explicitly: returned field slices are valid until the next `next()` call unless
+  they reference caller-owned stable backing storage.
+- For streaming input, slide partial tokens to the front before refill (`@memmove`), then continue.
+- If a token exceeds buffer capacity, fail fast with an explicit error (`error.FieldTooLong`) instead
+  of truncating or reallocating in the hot loop.
+
+```zig
+fn refillKeepingTail(buf: []u8, head: *usize, tail: *usize, reader: anytype) !usize {
+    if (head.* > 0 and head.* < tail.*) {
+        const rem = tail.* - head.*;
+        @memmove(buf[0..rem], buf[head.*..tail.*]);
+        head.* = 0;
+        tail.* = rem;
+    } else if (head.* == tail.*) {
+        head.* = 0;
+        tail.* = 0;
+    }
+
+    if (tail.* == buf.len) return error.FieldTooLong;
+    const n = try reader.read(buf[tail.*..]);
+    tail.* += n;
+    return n;
+}
+```
+
+### Quoted-field finite-state path (robust CSV)
+- Split early into unquoted and quoted paths; keep unquoted path branch-light.
+- In quoted mode, treat `""` as escaped quote, then require delimiter/newline/end-of-input after
+  the closing quote.
+- Track `needs_unescape` during scan and only unescape when necessary.
+- Normalize CRLF with integer booleans in hot loops to avoid extra branches.
+
+```zig
+const has_lf: usize = @intFromBool(end > start and buf[end - 1] == '\n');
+const has_cr: usize = @intFromBool(end > start + has_lf and buf[end - 1 - has_lf] == '\r');
+const trimmed_end = end - has_lf - has_cr;
+```
 
 ### Borrowed/owned token (copy-on-write escape hatch)
 ```zig
@@ -738,6 +812,7 @@ pub fn main() void {
 ## Pitfalls
 - Multithreading: false sharing, oversubscription, shared allocator contention.
 - SIMD: misaligned loads on some targets, reading past the end, non-associative FP reductions.
+- SIMD bitmasks: when you `@bitCast` `@Vector(N, bool)` to an int mask, bit 0 is lane/index 0.
 - `std.heap.GeneralPurposeAllocator` is deprecated (alias of `DebugAllocator`); keep for existing code, prefer explicit allocator choices for new code.
 - Make ownership explicit; always free heap allocations.
 - Avoid returning slices backed by stack memory.
