@@ -6,11 +6,11 @@ JOBS_DIR="$PUFF_HOME/jobs"
 LOGS_DIR="$PUFF_HOME/logs"
 RESULTS_DIR="$PUFF_HOME/results"
 PROMPTS_DIR="$PUFF_HOME/prompts"
-CASP_DIR="$PUFF_HOME/casp"
-CASP_PID_FILE="$CASP_DIR/proxy.pid"
-CASP_META_FILE="$CASP_DIR/proxy.env"
+CAS_DIR="$PUFF_HOME/cas"
+CAS_PID_FILE="$CAS_DIR/proxy.pid"
+CAS_META_FILE="$CAS_DIR/proxy.env"
 
-mkdir -p "$JOBS_DIR" "$LOGS_DIR" "$RESULTS_DIR" "$PROMPTS_DIR" "$CASP_DIR"
+mkdir -p "$JOBS_DIR" "$LOGS_DIR" "$RESULTS_DIR" "$PROMPTS_DIR" "$CAS_DIR"
 
 err() {
   printf 'puff: %s\n' "$*" >&2
@@ -628,8 +628,8 @@ cmd_stop() {
   fi
 }
 
-cmd_casp_start() {
-  local proxy_script="${PUFF_CASP_PROXY_SCRIPT:-$HOME/.dotfiles/codex/skills/casp/scripts/casp_proxy.mjs}"
+cmd_cas_start() {
+  local proxy_script="${PUFF_CAS_PROXY_SCRIPT:-$HOME/.dotfiles/codex/skills/cas/scripts/cas_proxy.mjs}"
   local cwd=""
   local state_file=""
   local timeout_ms=""
@@ -669,35 +669,35 @@ cmd_casp_start() {
         shift 2
         ;;
       -h|--help)
-        usage_casp_start
+        usage_cas_start
         return 0
         ;;
       *)
-        die "unknown casp-start option: $1"
+        die "unknown cas-start option: $1"
         ;;
     esac
   done
 
   require_cmd node
-  [[ -f "$proxy_script" ]] || die "casp proxy script not found: $proxy_script"
+  [[ -f "$proxy_script" ]] || die "cas proxy script not found: $proxy_script"
   if [[ -n "$timeout_ms" ]]; then
     validate_timeout_ms "$timeout_ms"
   fi
 
   local current_pid=""
-  if [[ -f "$CASP_PID_FILE" ]]; then
-    current_pid="$(cat "$CASP_PID_FILE" 2>/dev/null || true)"
+  if [[ -f "$CAS_PID_FILE" ]]; then
+    current_pid="$(cat "$CAS_PID_FILE" 2>/dev/null || true)"
   fi
-  if [[ -z "$current_pid" && -f "$CASP_META_FILE" ]]; then
-    current_pid="$(field_from_file "$CASP_META_FILE" PID)"
+  if [[ -z "$current_pid" && -f "$CAS_META_FILE" ]]; then
+    current_pid="$(field_from_file "$CAS_META_FILE" PID)"
   fi
 
   if [[ -n "$current_pid" ]] && kill -0 "$current_pid" 2>/dev/null; then
     local existing_log=""
-    if [[ -f "$CASP_META_FILE" ]]; then
-      existing_log="$(field_from_file "$CASP_META_FILE" LOG_PATH)"
+    if [[ -f "$CAS_META_FILE" ]]; then
+      existing_log="$(field_from_file "$CAS_META_FILE" LOG_PATH)"
     fi
-    printf 'CASP_STATUS=already_running\n'
+    printf 'CAS_STATUS=already_running\n'
     printf 'PID=%s\n' "$current_pid"
     if [[ -n "$existing_log" ]]; then
       printf 'LOG_PATH=%s\n' "$existing_log"
@@ -706,7 +706,7 @@ cmd_casp_start() {
   fi
 
   if [[ -z "$log_file" ]]; then
-    log_file="$CASP_DIR/proxy-$(date -u +%Y%m%dT%H%M%SZ).log"
+    log_file="$CAS_DIR/proxy-$(date -u +%Y%m%dT%H%M%SZ).log"
   fi
 
   local cmd=(node "$proxy_script")
@@ -731,13 +731,13 @@ cmd_casp_start() {
   sleep 0.2
 
   if ! kill -0 "$pid" 2>/dev/null; then
-    printf 'CASP_STATUS=failed_to_start\n'
+    printf 'CAS_STATUS=failed_to_start\n'
     printf 'LOG_PATH=%s\n' "$log_file"
     return 1
   fi
 
-  printf '%s\n' "$pid" >"$CASP_PID_FILE"
-  cat >"$CASP_META_FILE" <<META
+  printf '%s\n' "$pid" >"$CAS_PID_FILE"
+  cat >"$CAS_META_FILE" <<META
 PID=$pid
 LOG_PATH=$log_file
 PROXY_SCRIPT=$proxy_script
@@ -747,12 +747,12 @@ SERVER_REQUEST_TIMEOUT_MS=$timeout_ms
 STARTED_AT=$(now_utc)
 META
 
-  printf 'CASP_STATUS=started\n'
+  printf 'CAS_STATUS=started\n'
   printf 'PID=%s\n' "$pid"
   printf 'LOG_PATH=%s\n' "$log_file"
 }
 
-cmd_casp_stop() {
+cmd_cas_stop() {
   local force="0"
 
   while (( $# > 0 )); do
@@ -762,25 +762,25 @@ cmd_casp_stop() {
         shift
         ;;
       -h|--help)
-        usage_casp_stop
+        usage_cas_stop
         return 0
         ;;
       *)
-        die "unknown casp-stop option: $1"
+        die "unknown cas-stop option: $1"
         ;;
     esac
   done
 
   local pid=""
-  if [[ -f "$CASP_PID_FILE" ]]; then
-    pid="$(cat "$CASP_PID_FILE" 2>/dev/null || true)"
+  if [[ -f "$CAS_PID_FILE" ]]; then
+    pid="$(cat "$CAS_PID_FILE" 2>/dev/null || true)"
   fi
-  if [[ -z "$pid" && -f "$CASP_META_FILE" ]]; then
-    pid="$(field_from_file "$CASP_META_FILE" PID)"
+  if [[ -z "$pid" && -f "$CAS_META_FILE" ]]; then
+    pid="$(field_from_file "$CAS_META_FILE" PID)"
   fi
 
   if [[ -z "$pid" ]]; then
-    printf 'CASP_STATUS=not_running\n'
+    printf 'CAS_STATUS=not_running\n'
     return 0
   fi
 
@@ -799,13 +799,13 @@ cmd_casp_stop() {
   fi
 
   if kill -0 "$pid" 2>/dev/null; then
-    printf 'CASP_STATUS=still_running\n'
+    printf 'CAS_STATUS=still_running\n'
     printf 'PID=%s\n' "$pid"
     return 1
   fi
 
-  rm -f "$CASP_PID_FILE"
-  printf 'CASP_STATUS=stopped\n'
+  rm -f "$CAS_PID_FILE"
+  printf 'CAS_STATUS=stopped\n'
   printf 'PID=%s\n' "$pid"
 }
 
@@ -863,20 +863,20 @@ Stop a detached watcher job started by launch.
 USAGE
 }
 
-usage_casp_start() {
+usage_cas_start() {
   cat <<USAGE
-Usage: puff.sh casp-start [--cwd <path>] [--state-file <path>] [--server-request-timeout-ms <ms>] [--opt-out-notification-method <method>]... [--proxy-script <path>] [--log-file <path>]
+Usage: puff.sh cas-start [--cwd <path>] [--state-file <path>] [--server-request-timeout-ms <ms>] [--opt-out-notification-method <method>]... [--proxy-script <path>] [--log-file <path>]
 
-Start the \$casp proxy as a detached background process.
-Prints CASP_STATUS, PID, and LOG_PATH.
+Start the \$cas proxy as a detached background process.
+Prints CAS_STATUS, PID, and LOG_PATH.
 USAGE
 }
 
-usage_casp_stop() {
+usage_cas_stop() {
   cat <<USAGE
-Usage: puff.sh casp-stop [--force]
+Usage: puff.sh cas-stop [--force]
 
-Stop the detached \$casp proxy process started via casp-start.
+Stop the detached \$cas proxy process started via cas-start.
 USAGE
 }
 
@@ -891,8 +891,8 @@ Commands:
   launch   Submit task + start detached watcher.
   jobs     List detached watcher jobs.
   stop     Stop a detached watcher job.
-  casp-start  Start \$casp proxy in background.
-  casp-stop   Stop background \$casp proxy.
+  cas-start  Start \$cas proxy in background.
+  cas-stop   Stop background \$cas proxy.
   help     Show this message.
 
 Run "puff.sh <command> --help" for command-specific options.
@@ -924,11 +924,11 @@ main() {
     stop)
       cmd_stop "$@"
       ;;
-    casp-start)
-      cmd_casp_start "$@"
+    cas-start)
+      cmd_cas_start "$@"
       ;;
-    casp-stop)
-      cmd_casp_stop "$@"
+    cas-stop)
+      cmd_cas_stop "$@"
       ;;
     help|-h|--help)
       usage_main

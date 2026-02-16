@@ -1,4 +1,0 @@
-interface:
-  display_name: "casp"
-  short_description: "JSONL proxy for app-server protocol"
-  default_prompt: "Use $casp to run the Casp JSONL proxy for the app-server (automation, session mining, multi-instance runs)."

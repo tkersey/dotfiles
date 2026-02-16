@@ -1,13 +1,13 @@
 ---
-name: casp
+name: cas
 description: Run a v2-only Node JSONL proxy that spawns `codex app-server` and exposes an automation-friendly stream API. Use when you need to drive the app-server programmatically (automation/orchestration/session mining), have subagents send updates or code patches into live sessions, auto-handle approvals, forward server requests with deterministic timeouts, mine sessions via `thread/*`, steer active turns (`turn/steer`), or run N parallel instances (each instance is one proxy + one app-server child).
 ---
 
-# casp (App-Server Protocol)
+# cas (App-Server Control)
 
 ## Overview
 
-Casp ships a small Node proxy (`scripts/casp_proxy.mjs`) that:
+Cas ships a small Node proxy (`scripts/cas_proxy.mjs`) that:
 
 - Spawns `codex app-server`.
 - Performs the required handshake (`initialize` -> `initialized`) with `experimentalApi: true` and optional `optOutNotificationMethods`.
@@ -22,7 +22,7 @@ This skill assumes `codex` is available on PATH and does not require access to a
 
 ## Terminology (Instances)
 
-- An "instance" is one `casp_proxy` process plus its spawned app-server child process.
+- An "instance" is one `cas_proxy` process plus its spawned app-server child process.
 - Each instance has its own JSONL stream and its own `sessionId`.
 - "N instances" means N parallel proxy+app-server pairs; it is not N threads/turns inside one instance.
 - Isolation tip: for multi-instance runs, prefer per-instance `--state-file` (or the runner's `--state-file-dir`) if you don't want instances to share state.
@@ -30,15 +30,15 @@ This skill assumes `codex` is available on PATH and does not require access to a
 ## Trigger cues
 
 - "instances" / "multi-instance" / "parallel sessions"
-- app-server protocol control (JSONL proxy, JSON-RPC methods)
+- app-server control (JSONL proxy, JSON-RPC methods)
 - session mining (thread/turn inventory, export/index)
 - steering/resume (`turn/steer`, `thread/resume`)
 
 ## Workflow
 
 1. Start the proxy.
-   - Run `node scripts/casp_proxy.mjs` from the casp skill directory (example: `node ~/.dotfiles/codex/skills/casp/scripts/casp_proxy.mjs`).
-   - Optional: pass `--cwd /path/to/workspace` to control where the app-server runs. By default, state is written under `~/.codex/casp/state/<workspace-hash>.json`.
+   - Run `node scripts/cas_proxy.mjs` from the cas skill directory (example: `node ~/.dotfiles/codex/skills/cas/scripts/cas_proxy.mjs`).
+   - Optional: pass `--cwd /path/to/workspace` to control where the app-server runs. By default, state is written under `~/.codex/cas/state/<workspace-hash>.json`.
    - Optional: pass `--state-file PATH` to override the default state location.
    - Optional: tune forwarded request fail-fast behavior with `--server-request-timeout-ms <N>` (0 disables timeout).
    - Optional: control v2 approval auto-responses (useful for safe multi-instance workers):
@@ -46,25 +46,25 @@ This skill assumes `codex` is available on PATH and does not require access to a
      - `--file-approval auto|accept|acceptForSession|decline|cancel`
      - `--read-only` (shorthand for declining both exec + file approvals)
    - Optional: pass one or more `--opt-out-notification-method METHOD` flags to suppress known noisy notifications for the connection.
-   - Wait for a `casp/ready` event.
+   - Wait for a `cas/ready` event.
 
    For N instances in parallel, prefer the instance runner:
-   - `node scripts/casp_instance_runner.mjs --cwd /path/to/workspace --instances N`
+   - `node scripts/cas_instance_runner.mjs --cwd /path/to/workspace --instances N`
 
 2. Drive the app-server by sending requests to the proxy.
-   - Send `casp/request` messages (method + params) to proxy stdin.
-   - Proxy assigns request ids (unless you supply one), forwards to app-server, and emits `casp/fromServer` responses.
-   - Optional smoke check: run `node scripts/casp_smoke_check.mjs --cwd /path/to/workspace`.
+   - Send `cas/request` messages (method + params) to proxy stdin.
+   - Proxy assigns request ids (unless you supply one), forwards to app-server, and emits `cas/fromServer` responses.
+   - Optional smoke check: run `node scripts/cas_smoke_check.mjs --cwd /path/to/workspace`.
 
 3. Stream and route notifications.
-   - Consume `casp/fromServer` events and route by `threadId` / `turnId` / `itemId`.
+   - Consume `cas/fromServer` events and route by `threadId` / `turnId` / `itemId`.
    - Treat the proxy stream as the source of truth; the raw wire message is always included under `msg`.
 
 4. Handle forwarded server requests.
-   - Only reply when casp emits `casp/serverRequest` (these are the server requests casp did not auto-handle).
-   - Respond with `casp/respond` using the same `id`.
-   - If your response is malformed for a typed v2 request, casp sends a deterministic JSON-RPC error upstream instead of hanging.
-   - If you do not reply in time, casp emits `casp/serverRequestTimeout` and fails that request upstream.
+   - Only reply when cas emits `cas/serverRequest` (these are the server requests cas did not auto-handle).
+   - Respond with `cas/respond` using the same `id`.
+   - If your response is malformed for a typed v2 request, cas sends a deterministic JSON-RPC error upstream instead of hanging.
+   - If you do not reply in time, cas emits `cas/serverRequestTimeout` and fails that request upstream.
    - Approvals are auto-accepted (including best-effort execpolicy amendments) and will not block you.
 
 5. Mine sessions (optional).
@@ -73,7 +73,7 @@ This skill assumes `codex` is available on PATH and does not require access to a
 
 ## Dedicated API Helpers
 
-Use `scripts/casp_client.mjs` convenience wrappers when you want typed intent rather than raw method strings:
+Use `scripts/cas_client.mjs` convenience wrappers when you want typed intent rather than raw method strings:
 
 - `resumeThread(params)` -> `thread/resume`
 - `steerTurn(params)` -> `turn/steer`
@@ -82,33 +82,33 @@ Use `scripts/casp_client.mjs` convenience wrappers when you want typed intent ra
 ## Dynamic Tools (Optional)
 
 If you opt into dynamic tools, register them on `thread/start` via `dynamicTools` (experimental API surface).
-When the server emits `casp/serverRequest`:
-- For `method: "item/tool/call"`, run the tool in your orchestrator and reply with `casp/respond`.
+When the server emits `cas/serverRequest`:
+- For `method: "item/tool/call"`, run the tool in your orchestrator and reply with `cas/respond`.
 - For `method: "item/tool/requestUserInput"` (experimental), collect answers and return `{ answers: ... }`.
 - For `method: "account/chatgptAuthTokens/refresh"`, return refreshed tokens or a deterministic error.
 
-## Proxy Protocol (stdin/stdout)
+## Proxy I/O Contract (stdin/stdout)
 
 The proxy itself speaks JSONL over stdio.
 
-### stdin -> casp
+### stdin -> cas
 
-- `casp/request` sends a JSON-RPC request to `codex app-server`:
+- `cas/request` sends a JSON-RPC request to `codex app-server`:
 
 ```json
 {
-  "type": "casp/request",
+  "type": "cas/request",
   "clientRequestId": "any-string",
   "method": "thread/start",
   "params": { "cwd": "/path", "experimentalRawEvents": false }
 }
 ```
 
-- `casp/respond` answers a server-initiated request forwarded by casp:
+- `cas/respond` answers a server-initiated request forwarded by cas:
 
 ```json
 {
-  "type": "casp/respond",
+  "type": "cas/respond",
   "id": 123,
   "result": {
     "contentItems": [{ "type": "inputText", "text": "..." }],
@@ -117,27 +117,27 @@ The proxy itself speaks JSONL over stdio.
 }
 ```
 
-- `casp/send` forwards a raw JSON-RPC message to `codex app-server` (advanced escape hatch):
+- `cas/send` forwards a raw JSON-RPC message to `codex app-server` (advanced escape hatch):
 
 ```json
 {
-  "type": "casp/send",
+  "type": "cas/send",
   "msg": { "method": "thread/list", "id": "raw-1", "params": { "cursor": null } }
 }
 ```
 
-- `casp/state/get` emits the current proxy state.
-- `casp/stats/get` emits a stats snapshot (uptime, queue depth, counts).
-- `casp/exit` shuts down the proxy.
+- `cas/state/get` emits the current proxy state.
+- `cas/stats/get` emits a stats snapshot (uptime, queue depth, counts).
+- `cas/exit` shuts down the proxy.
 
-### stdout <- casp
+### stdout <- cas
 
-- `casp/ready` indicates the proxy finished handshake.
-- `casp/fromServer` is emitted for every JSON message from `codex app-server`.
-- `casp/toServer` is emitted for every JSON message sent to `codex app-server` (includes auto-approvals and handshake).
-- `casp/serverRequest` is emitted for server-initiated requests that require an orchestrator response (tool calls, auth refresh, etc.).
-- `casp/serverRequestTimeout` is emitted when a forwarded server request is failed due to timeout.
-- `casp/stats` and `casp/ioPaused`/`casp/ioResumed` help you monitor backpressure.
+- `cas/ready` indicates the proxy finished handshake.
+- `cas/fromServer` is emitted for every JSON message from `codex app-server`.
+- `cas/toServer` is emitted for every JSON message sent to `codex app-server` (includes auto-approvals and handshake).
+- `cas/serverRequest` is emitted for server-initiated requests that require an orchestrator response (tool calls, auth refresh, etc.).
+- `cas/serverRequestTimeout` is emitted when a forwarded server request is failed due to timeout.
+- `cas/stats` and `cas/ioPaused`/`cas/ioResumed` help you monitor backpressure.
 
 All events include:
 
@@ -162,21 +162,21 @@ codex app-server generate-json-schema --experimental --out DIR
 
 ## Local References
 
-Read `references/codex_app_server_protocol.md` for a protocol map and the recommended routing/response strategy.
+Read `references/codex_app_server_contract.md` for a control map and the recommended routing/response strategy.
 
 ## Resources
 
 ### references/
 
-Protocol notes for fast lookup during implementation.
+Control notes for fast lookup during implementation.
 
 ### scripts/
 
 Runnable Node proxy for orchestration.
 
 Included:
-- `scripts/casp_proxy.mjs` (the proxy)
-- `scripts/casp_client.mjs` (JS wrapper: spawn proxy + request() + event stream)
-- `scripts/casp_example_orchestrator.mjs` (example orchestration script)
-- `scripts/casp_instance_runner.mjs` (run one method across many parallel casp sessions/instances)
-- `scripts/casp_smoke_check.mjs` (smoke-checks `experimentalFeature/list`, `thread/resume`, `turn/steer`)
+- `scripts/cas_proxy.mjs` (the proxy)
+- `scripts/cas_client.mjs` (JS wrapper: spawn proxy + request() + event stream)
+- `scripts/cas_example_orchestrator.mjs` (example orchestration script)
+- `scripts/cas_instance_runner.mjs` (run one method across many parallel cas sessions/instances)
+- `scripts/cas_smoke_check.mjs` (smoke-checks `experimentalFeature/list`, `thread/resume`, `turn/steer`)

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Smoke-check casp support for key app-server APIs.
+// Smoke-check cas support for key app-server APIs.
 //
 // Validates:
 // - experimentalFeature/list
@@ -7,17 +7,17 @@
 // - turn/steer method availability (accepts precondition failures)
 
 import { randomUUID } from "node:crypto";
-import { CaspClient } from "./casp_client.mjs";
+import { CasClient } from "./cas_client.mjs";
 
 function usage() {
   return [
-    "casp_smoke_check.mjs",
+    "cas_smoke_check.mjs",
     "",
     "Usage:",
-    "  node scripts/casp_smoke_check.mjs --cwd DIR [options]",
+    "  node scripts/cas_smoke_check.mjs --cwd DIR [options]",
     "",
     "Required:",
-    "  --cwd DIR                        Workspace for casp/app-server.",
+    "  --cwd DIR                        Workspace for cas/app-server.",
     "",
     "Options:",
     "  --thread-id THREAD_ID            Existing thread id to reuse (optional).",
@@ -113,7 +113,7 @@ function writeReport(opts, report) {
   }
 
   const lines = [];
-  lines.push("casp smoke-check");
+  lines.push("cas smoke-check");
   lines.push(`cwd: ${report.cwd}`);
   lines.push(`threadId: ${report.threadId ?? "n/a"}`);
   lines.push(`overall: ${report.ok ? "pass" : "fail"}`);
@@ -145,7 +145,7 @@ async function main() {
   const checks = [];
   let threadId = opts.threadId;
 
-  const client = new CaspClient({
+  const client = new CasClient({
     cwd: opts.cwd,
     optOutNotificationMethods: opts.optOutNotificationMethods,
   });
@@ -223,11 +223,11 @@ async function main() {
       await client.steerTurn(
         {
           threadId,
-          expectedTurnId: `casp-smoke-${randomUUID()}`,
+          expectedTurnId: `cas-smoke-${randomUUID()}`,
           input: [
             {
               type: "text",
-              text: "casp smoke-check turn steer",
+              text: "cas smoke-check turn steer",
             },
           ],
         },
@@ -259,7 +259,7 @@ async function main() {
 
   const ok = checks.every((c) => c.ok);
   const report = {
-    check: "casp-smoke-check",
+    check: "cas-smoke-check",
     cwd: opts.cwd,
     threadId,
     ok,

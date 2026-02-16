@@ -1,4 +1,4 @@
 interface:
   display_name: "puff"
   short_description: "Launch and monitor Codex Cloud background tasks"
-  default_prompt: "Use $puff doctor, then launch a Codex Cloud task in the background and optionally run $puff casp-start for advanced $casp orchestration."
+  default_prompt: "Use $puff doctor, then launch a Codex Cloud task in the background and optionally run $puff cas-start for advanced $cas orchestration."

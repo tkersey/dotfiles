@@ -67,14 +67,14 @@ if [ -z "$NODE_BIN" ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SCRIPT="$SCRIPT_DIR/mesh_casp_autopilot.mjs"
+SCRIPT="$SCRIPT_DIR/mesh_cas_autopilot.mjs"
 if [ ! -x "$SCRIPT" ]; then
   echo "error: autopilot script is not executable: $SCRIPT" >&2
   exit 1
 fi
 
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
-LOG_DIR="$HOME/Library/Logs/mesh-casp-autopilot"
+LOG_DIR="$HOME/Library/Logs/mesh-cas-autopilot"
 UID_VALUE="$(id -u)"
 TMP_PLIST="$(mktemp)"
 

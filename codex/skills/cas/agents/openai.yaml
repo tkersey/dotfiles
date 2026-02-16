@@ -1,0 +1,4 @@
+interface:
+  display_name: "cas"
+  short_description: "JSONL proxy for app-server orchestration"
+  default_prompt: "Use $cas to run the Cas JSONL proxy for the app-server (automation, session mining, multi-instance runs)."

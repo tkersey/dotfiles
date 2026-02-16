@@ -1,6 +1,6 @@
 ---
 name: puff
-description: Launch and manage Codex Cloud tasks from the CLI, including detached background watchers that track completion. Use when users ask to run coding work in cloud/background agents, queue multiple cloud tasks, poll task status, fetch cloud diffs, apply cloud outputs locally, or pair cloud kickoff with `$casp` orchestration.
+description: Launch and manage Codex Cloud tasks from the CLI, including detached background watchers that track completion. Use when users ask to run coding work in cloud/background agents, queue multiple cloud tasks, poll task status, fetch cloud diffs, apply cloud outputs locally, or pair cloud kickoff with `$cas` orchestration.
 ---
 
 # Puff
@@ -34,12 +34,12 @@ Use `doctor` for explicit auth/environment readiness checks.
 Use `watch` for blocking foreground polling.
 Use `jobs` and `stop` to manage detached watchers.
 
-## Interop With `$casp`
+## Interop With `$cas`
 
-Use `$casp` when orchestration requirements exceed simple cloud task lifecycle control.
+Use `$cas` when orchestration requirements exceed simple cloud task lifecycle control.
 Use `$puff` for fast cloud kickoff and lifecycle polling.
-Use `$puff` `casp-start` / `casp-stop` to manage the `$casp` proxy lifecycle from the same wrapper.
-Use `$casp` for app-server thread/turn orchestration, steering, forwarding server requests, or complex multi-thread routing.
+Use `$puff` `cas-start` / `cas-stop` to manage the `$cas` proxy lifecycle from the same wrapper.
+Use `$cas` for app-server thread/turn orchestration, steering, forwarding server requests, or complex multi-thread routing.
 
 ## Notes
 
@@ -50,4 +50,4 @@ Treat `ERROR` as terminal failure and inspect with `codex cloud status <task-id>
 ## Resources
 
 - `scripts/puff.sh`: submit/watch/launch/jobs/stop wrapper around `codex cloud`.
-- `references/commands.md`: command map including optional `$casp` pairing.
+- `references/commands.md`: command map including optional `$cas` pairing.

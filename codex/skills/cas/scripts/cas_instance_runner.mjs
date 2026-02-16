@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Run many independent casp sessions in parallel and execute one request per instance.
+// Run many independent cas sessions in parallel and execute one request per instance.
 //
 // Purpose:
 // - Demonstrate effective concurrency beyond the per-session subagent cap.
@@ -7,14 +7,14 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { CaspClient } from "./casp_client.mjs";
+import { CasClient } from "./cas_client.mjs";
 
 function usage() {
   return [
-    "casp_instance_runner.mjs",
+    "cas_instance_runner.mjs",
     "",
     "Usage:",
-    "  node scripts/casp_instance_runner.mjs --cwd DIR [options]",
+    "  node scripts/cas_instance_runner.mjs --cwd DIR [options]",
     "",
     "Required:",
     "  --cwd DIR                        Workspace for each instance's app-server.",
@@ -31,15 +31,15 @@ function usage() {
     "  --file-approval VALUE            File approval: auto|accept|acceptForSession|decline|cancel.",
     "  --read-only                      Decline exec + file approvals (safe for scout instances).",
     "  --opt-out-notification-method M  Suppress a notification method (repeatable).",
-    "  --client-prefix NAME             Prefix for instance client names (default: casp-instance).",
+    "  --client-prefix NAME             Prefix for instance client names (default: cas-instance).",
     "  --sample N                       Number of sample results in output (default: 3).",
     "  --json                           Emit JSON output (default: false).",
     "  --verbose                        Emit per-instance start/request status to stderr.",
     "  --help                           Show this help.",
     "",
     "Examples:",
-    "  node scripts/casp_instance_runner.mjs --cwd ~/.dotfiles --instances 12",
-    "  node scripts/casp_instance_runner.mjs --cwd ~/.dotfiles --method thread/list --params-json '{\"cursor\":null,\"limit\":1}' --json",
+    "  node scripts/cas_instance_runner.mjs --cwd ~/.dotfiles --instances 12",
+    "  node scripts/cas_instance_runner.mjs --cwd ~/.dotfiles --method thread/list --params-json '{\"cursor\":null,\"limit\":1}' --json",
   ].join("\n");
 }
 
@@ -57,7 +57,7 @@ function parseArgs(argv) {
     fileApproval: null,
     readOnly: false,
     optOutNotificationMethods: [],
-    clientPrefix: "casp-instance",
+    clientPrefix: "cas-instance",
     sample: 3,
     json: false,
     verbose: false,
@@ -211,7 +211,7 @@ function writeOutput(opts, payload) {
   }
 
   const lines = [];
-  lines.push("casp_instance_runner summary");
+  lines.push("cas_instance_runner summary");
   lines.push(`cwd: ${payload.cwd}`);
   lines.push(`method: ${payload.method}`);
   lines.push(`instances requested: ${payload.instances_requested}`);
@@ -267,7 +267,7 @@ async function main() {
     const stateFile = opts.stateFileDir
       ? resolve(opts.stateFileDir, `${opts.clientPrefix}-${i + 1}.json`)
       : undefined;
-    const client = new CaspClient({
+    const client = new CasClient({
       cwd: opts.cwd,
       stateFile,
       clientName: `${opts.clientPrefix}-${i + 1}`,
@@ -282,8 +282,8 @@ async function main() {
       client.on("proxyStderr", (line) =>
         process.stderr.write(`[proxy:${i + 1}] ${line}\n`),
       );
-      client.on("casp/error", (ev) =>
-        process.stderr.write(`[casp:${i + 1}] ${ev?.message ?? "unknown error"}\n`),
+      client.on("cas/error", (ev) =>
+        process.stderr.write(`[cas:${i + 1}] ${ev?.message ?? "unknown error"}\n`),
       );
     }
     return client;
@@ -332,7 +332,7 @@ async function main() {
   const requestsOk = requestResults.filter((r) => r.ok).length;
   const requestsFailed = requestResults.length - requestsOk;
   const payload = {
-    demo: "casp-instance-runner",
+    demo: "cas-instance-runner",
     cwd: opts.cwd,
     state_file_dir: opts.stateFileDir,
     method: opts.method,

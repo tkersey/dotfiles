@@ -32,10 +32,10 @@ Skill routing (default):
 - Parallel mechanics (required): batch independent tool calls (including `spawn_agent`/`close_agent`) with `multi_tool_use.parallel`; keep each `wait(ids=[...])` as one call over all still-running agents (loop with remaining ids if needed; avoid one-wait-per-agent loops); close agents promptly after integrating results to free slots.
 - Work unit: each atomic task runs `$tk` (contract/invariants/implementation) then `$fix` (safety review) before it is considered done.
 - Capacity: saturate safe parallel capacity with dynamic backpressure; treat `[agents].max_threads` as the per-instance ceiling.
-- IMPORTANT (scale-out beyond per-instance caps): use `$casp` to run N parallel instances (each instance has its own thread pool). Keep patch application + validation + git in one integrator instance; treat other instances as read-only workers that return diffs/artifacts.
+- IMPORTANT (scale-out beyond per-instance caps): use `$cas` to run N parallel instances (each instance has its own thread pool). Keep patch application + validation + git in one integrator instance; treat other instances as read-only workers that return diffs/artifacts.
 - Coordination substrate (scale-out): when parallel work needs worker-to-worker coordination (especially across instances), add a durable mailbox + advisory file leases alongside the task list. See `codex/skills/mesh/references/coordination-fabric.md`.
 - Spawn-depth reality check: assume `spawn_agent` depth is 1; spawned agents cannot spawn further agents. The parent must spawn the whole wave.
-- Timeouts + retry ladder (model-agnostic): attempt A uses `spawn_agent` + `wait(timeout_ms=45000)`. If nothing completes, retry once (smaller prompt and/or `send_input(interrupt=true)`), then escalate to multi-`instance` `$casp`.
+- Timeouts + retry ladder (model-agnostic): attempt A uses `spawn_agent` + `wait(timeout_ms=45000)`. If nothing completes, retry once (smaller prompt and/or `send_input(interrupt=true)`), then escalate to multi-`instance` `$cas`.
 - Wave scope isolation (required): before each wave, each worker must declare a write scope (file/path glob/module); overlapping write scopes are serialized and never run in the same wave.
 - Wave success/failure contract: success requires at least one completed worker result; failure is timeout/no-response/error after the retry ladder. Failed units block only themselves; continue non-dependent units.
 - Execution floor (model-agnostic): on implementation tasks, prove at least one live worker wave in-turn (`spawn_agent` + `wait` + `close_agent` for each spawned id) before turn completion.
@@ -44,7 +44,7 @@ Skill routing (default):
   - Helper: `uv run python codex/skills/learnings/scripts/learnings.py codify-candidates --min-count 3 --limit 20 --drop-superseded`
 - Coordination: use internal mesh-style coordination by default (no user invocation required); reserve `$mesh` for explicit user-invoked swarm coordination.
 - Mesh concurrency knob: invoke `$mesh parallel_tasks=N max_tasks=M` to run up to N tasks concurrently when scopes are disjoint (requires `$st --allow-multiple-in-progress`). Turnkey drain: `$mesh parallel_tasks=auto max_tasks=auto` (optionally `adapter=auto`).
-- Continual runner (turnkey): run `node codex/skills/mesh/scripts/mesh_casp_autopilot.mjs --cwd <repo>`; for scale-out use `node codex/skills/mesh/scripts/mesh_casp_fleet_autopilot.mjs --cwd <repo> --workers N`. Background services: `codex/skills/mesh/scripts/install_mesh_casp_autopilot_launch_agent.sh` or `codex/skills/mesh/scripts/install_mesh_casp_fleet_autopilot_launch_agent.sh`.
+- Continual runner (turnkey): run `node codex/skills/mesh/scripts/mesh_cas_autopilot.mjs --cwd <repo>`; for scale-out use `node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd <repo> --workers N`. Background services: `codex/skills/mesh/scripts/install_mesh_cas_autopilot_launch_agent.sh` or `codex/skills/mesh/scripts/install_mesh_cas_fleet_autopilot_launch_agent.sh`.
 - Questions: subagent questions enter a triage queue.
   - Low-risk: auto-answer from repo evidence/policy and continue.
   - Blocking/product ambiguity: do all non-blocked work first, then ask exactly one targeted question with a recommended default and response deadline; if unanswered by deadline, apply the default and continue unaffected units.

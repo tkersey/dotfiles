@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Continual $mesh runner driven via casp (codex app-server).
+// Continual $mesh runner driven via cas (codex app-server).
 //
 // This avoids `codex exec` and does not require the automation DB.
 // It runs $mesh in a persistent app-server thread on an interval.
@@ -10,16 +10,16 @@ import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { CaspClient } from "../../casp/scripts/casp_client.mjs";
+import { CasClient } from "../../cas/scripts/cas_client.mjs";
 
 function usage() {
   return [
-    "mesh_casp_autopilot.mjs",
+    "mesh_cas_autopilot.mjs",
     "",
-    "Runs $mesh continually via casp (codex app-server).",
+    "Runs $mesh continually via cas (codex app-server).",
     "",
     "Usage:",
-    "  node codex/skills/mesh/scripts/mesh_casp_autopilot.mjs --cwd DIR [options]",
+    "  node codex/skills/mesh/scripts/mesh_cas_autopilot.mjs --cwd DIR [options]",
     "",
     "Required:",
     "  --cwd DIR                Workspace to run in.",
@@ -28,13 +28,13 @@ function usage() {
     "  --plan-file PATH         Plan file path relative to --cwd (default: .step/st-plan.jsonl)",
     "  --poll-ms N              Sleep between runs (default: 60000)",
     "  --turn-timeout-ms N      Max time for one $mesh run (default: 2700000 = 45 min)",
-    "  --state-file PATH        casp state file path (default: ~/.codex/casp/state/<cwd-hash>.json)",
+    "  --state-file PATH        cas state file path (default: ~/.codex/cas/state/<cwd-hash>.json)",
     "  --once                   Run once and exit",
     "  --verbose                Emit proxy stderr lines",
     "  --help                   Show help",
     "",
     "Notes:",
-    "  - Requires `codex` on PATH (casp spawns `codex app-server`).",
+    "  - Requires `codex` on PATH (cas spawns `codex app-server`).",
     "  - Uses the local skill at codex/skills/mesh/.",
   ].join("\n");
 }
@@ -114,7 +114,7 @@ function parseArgs(argv) {
 function defaultStateFileForCwd(cwd) {
   const normalized = resolve(cwd);
   const digest = createHash("sha256").update(normalized).digest("hex").slice(0, 16);
-  return resolve(homedir(), ".codex", "casp", "state", `${digest}.json`);
+  return resolve(homedir(), ".codex", "cas", "state", `${digest}.json`);
 }
 
 function readCurrentThreadId(stateFile) {
@@ -215,16 +215,16 @@ async function main() {
   let backoffMs = 1_000;
 
   while (!stopping) {
-    const client = new CaspClient({
+    const client = new CasClient({
       cwd: opts.cwd,
       stateFile,
       clientName: "mesh-autopilot",
-      clientTitle: "mesh casp autopilot",
+      clientTitle: "mesh cas autopilot",
       clientVersion: "0.1.0",
     });
 
-    client.on("casp/error", (ev) => {
-      process.stderr.write(`[casp] error: ${ev?.message ?? "unknown"}\n`);
+    client.on("cas/error", (ev) => {
+      process.stderr.write(`[cas] error: ${ev?.message ?? "unknown"}\n`);
     });
     if (opts.verbose) {
       client.on("proxyStderr", (line) => {
@@ -233,10 +233,10 @@ async function main() {
     }
 
     // Do not allow server-initiated requests to stall forever.
-    client.on("casp/serverRequest", (ev) => {
+    client.on("cas/serverRequest", (ev) => {
       const method = typeof ev.method === "string" ? ev.method : "<unknown>";
       if (method === "item/tool/call") {
-        client.respondError(ev.id, "Dynamic tool calls not implemented by mesh_casp_autopilot", {
+        client.respondError(ev.id, "Dynamic tool calls not implemented by mesh_cas_autopilot", {
           code: -32000,
           data: { method },
         });
@@ -250,7 +250,7 @@ async function main() {
         return;
       }
       if (method === "account/chatgptAuthTokens/refresh") {
-        client.respondError(ev.id, "Auth token refresh not implemented by mesh_casp_autopilot", {
+        client.respondError(ev.id, "Auth token refresh not implemented by mesh_cas_autopilot", {
           code: -32000,
           data: { method },
         });
@@ -274,7 +274,7 @@ async function main() {
       });
 
       process.stderr.write(
-        `mesh_casp_autopilot_ready cwd=${opts.cwd} plan_file=${opts.planFile} state_file=${stateFile} thread_id=${threadId}\n`,
+        `mesh_cas_autopilot_ready cwd=${opts.cwd} plan_file=${opts.planFile} state_file=${stateFile} thread_id=${threadId}\n`,
       );
 
       while (!stopping) {
@@ -292,14 +292,14 @@ async function main() {
           const line = summarize(collected?.agentMessageText ?? "");
           const elapsedMs = Date.now() - startedAt;
           process.stderr.write(
-            `mesh_casp_autopilot_run ok status=${status ?? "null"} elapsed_ms=${elapsedMs} summary=${JSON.stringify(line)}\n`,
+            `mesh_cas_autopilot_run ok status=${status ?? "null"} elapsed_ms=${elapsedMs} summary=${JSON.stringify(line)}\n`,
           );
           ok = true;
         } catch (err) {
           const elapsedMs = Date.now() - startedAt;
           const msg = err instanceof Error ? err.message : String(err);
           process.stderr.write(
-            `mesh_casp_autopilot_run fail elapsed_ms=${elapsedMs} error=${JSON.stringify(msg)}\n`,
+            `mesh_cas_autopilot_run fail elapsed_ms=${elapsedMs} error=${JSON.stringify(msg)}\n`,
           );
         }
 
@@ -324,7 +324,7 @@ async function main() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       process.stderr.write(
-        `mesh_casp_autopilot_client fail error=${JSON.stringify(msg)} backoff_ms=${backoffMs}\n`,
+        `mesh_cas_autopilot_client fail error=${JSON.stringify(msg)} backoff_ms=${backoffMs}\n`,
       );
       try {
         await client.close();

@@ -1,8 +1,8 @@
-# Codex App-Server Protocol (CLI Notes)
+# Codex App-Server Control Contract (CLI Notes)
 
 This skill does not assume access to any Codex source repo. Treat your installed `codex` binary as canonical.
 
-`casp` is v2-focused. Deprecated legacy approval requests are intentionally rejected.
+`cas` is v2-focused. Deprecated legacy approval requests are intentionally rejected.
 
 ## Canonical Schema Source
 
@@ -94,7 +94,7 @@ Response payloads (see your generated schema for the exact shape):
 - `item/tool/call` -> `{ contentItems: [{ type: "inputText", text: "..." }], success: boolean }`
 - `item/tool/requestUserInput` -> `{ answers: { [questionId]: { answers: string[] } } }`
 
-Legacy (may appear in older flows; casp rejects these in v2-only mode):
+Legacy (may appear in older flows; cas rejects these in v2-only mode):
 
 - `execCommandApproval`
 - `applyPatchApproval`

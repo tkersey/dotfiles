@@ -1,8 +1,8 @@
-// Minimal JS client for casp_proxy.mjs.
+// Minimal JS client for cas_proxy.mjs.
 //
-// - Spawns the casp proxy as a subprocess.
+// - Spawns the cas proxy as a subprocess.
 // - Exposes request() -> Promise(result) with id correlation.
-// - Emits all casp events (lossless) for orchestration.
+// - Emits all cas events (lossless) for orchestration.
 
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -25,10 +25,10 @@ function safeJsonParse(line) {
 
 function defaultProxyScriptPath() {
   const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "casp_proxy.mjs");
+  return resolve(here, "cas_proxy.mjs");
 }
 
-export class CaspClient extends EventEmitter {
+export class CasClient extends EventEmitter {
   /**
    * @param {{
    *   nodePath?: string,
@@ -130,7 +130,7 @@ export class CaspClient extends EventEmitter {
 
     child.on("exit", (code, signal) => {
       const e = new Error(
-        `casp proxy exited (code=${code ?? "null"}, signal=${signal ?? "null"})`,
+        `cas proxy exited (code=${code ?? "null"}, signal=${signal ?? "null"})`,
       );
       this._failAllPending(e);
 
@@ -164,7 +164,7 @@ export class CaspClient extends EventEmitter {
    */
   send(msg) {
     if (!this.child || !this.child.stdin) {
-      throw new Error("casp client not started");
+      throw new Error("cas client not started");
     }
     this.child.stdin.write(`${JSON.stringify(msg)}\n`);
   }
@@ -180,13 +180,13 @@ export class CaspClient extends EventEmitter {
       throw new Error("request(method): method must be a non-empty string");
     }
 
-    const id = opts.id ?? `casp-${randomUUID()}`;
+    const id = opts.id ?? `cas-${randomUUID()}`;
     const clientRequestId = opts.clientRequestId ?? String(id);
     const timeoutMs = opts.timeoutMs ?? 60_000;
 
     /** @type {any} */
     const msg = {
-      type: "casp/request",
+      type: "cas/request",
       clientRequestId,
       id,
       method,
@@ -216,7 +216,7 @@ export class CaspClient extends EventEmitter {
    * Start a new thread with safe defaults.
    *
    * Note: `thread/start` requires `experimentalRawEvents` on the wire.
-   * casp defaults it to `false` if you omit it.
+   * cas defaults it to `false` if you omit it.
    *
    * @param {any} [params]
    * @param {{ id?: string|number, clientRequestId?: string, timeoutMs?: number }} [opts]
@@ -289,7 +289,7 @@ export class CaspClient extends EventEmitter {
   }
 
   /**
-   * Fetch a casp proxy stats snapshot.
+   * Fetch a cas proxy stats snapshot.
    * @param {{ timeoutMs?: number }} [opts]
    */
   getStats(opts = {}) {
@@ -299,28 +299,28 @@ export class CaspClient extends EventEmitter {
       let timer = null;
 
       const cleanup = () => {
-        this.off("casp/stats", onStats);
+        this.off("cas/stats", onStats);
         if (timer) clearTimeout(timer);
       };
 
       const onStats = (ev) => {
         if (!isObject(ev)) return;
-        if (ev.type !== "casp/stats") return;
+        if (ev.type !== "cas/stats") return;
         if (ev.kind !== "get") return;
         cleanup();
         resolve(ev.snapshot);
       };
 
-      this.on("casp/stats", onStats);
+      this.on("cas/stats", onStats);
 
       if (timeoutMs > 0) {
         timer = setTimeout(() => {
           cleanup();
-          reject(new Error("Timed out waiting for casp/stats"));
+          reject(new Error("Timed out waiting for cas/stats"));
         }, timeoutMs);
       }
 
-      this.send({ type: "casp/stats/get" });
+      this.send({ type: "cas/stats/get" });
     });
   }
 
@@ -374,7 +374,7 @@ export class CaspClient extends EventEmitter {
 
     const processEvent = (ev) => {
       if (!isObject(ev)) return;
-      if (ev.type !== "casp/fromServer") return;
+      if (ev.type !== "cas/fromServer") return;
       if (ev.kind !== "notification") return;
       if (ev.threadId !== threadId) return;
       if (expectedTurnId && ev.turnId && ev.turnId !== expectedTurnId) return;
@@ -420,7 +420,7 @@ export class CaspClient extends EventEmitter {
 
     const onFromServer = (ev) => {
       if (!isObject(ev)) return;
-      if (ev.type !== "casp/fromServer") return;
+      if (ev.type !== "cas/fromServer") return;
       if (ev.kind !== "notification") return;
       if (ev.threadId !== threadId) return;
 
@@ -428,10 +428,10 @@ export class CaspClient extends EventEmitter {
       if (expectedTurnId) processEvent(ev);
     };
 
-    this.on("casp/fromServer", onFromServer);
+    this.on("cas/fromServer", onFromServer);
 
     const cleanup = () => {
-      this.off("casp/fromServer", onFromServer);
+      this.off("cas/fromServer", onFromServer);
       if (timer) clearTimeout(timer);
     };
 
@@ -516,7 +516,7 @@ export class CaspClient extends EventEmitter {
     }
 
     /** @type {any} */
-    const msg = { type: "casp/respond", id };
+    const msg = { type: "cas/respond", id };
     if (hasError) msg.error = payload.error;
     else msg.result = payload.result;
     this.send(msg);
@@ -546,7 +546,7 @@ export class CaspClient extends EventEmitter {
   async close() {
     if (!this.child) return;
     try {
-      this.send({ type: "casp/exit" });
+      this.send({ type: "cas/exit" });
     } catch {
       // ignore
     }
@@ -557,7 +557,7 @@ export class CaspClient extends EventEmitter {
 
     const parsed = safeJsonParse(line);
     if (!parsed.ok) {
-      this.emit("casp/nonJson", { line, error: parsed.error.message });
+      this.emit("cas/nonJson", { line, error: parsed.error.message });
       return;
     }
 
@@ -567,7 +567,7 @@ export class CaspClient extends EventEmitter {
       this.emit(event.type, event);
     }
 
-    if (isObject(event) && event.type === "casp/ready") {
+    if (isObject(event) && event.type === "cas/ready") {
       this._readyResolve?.();
       this._readyResolve = null;
       this._readyReject = null;
@@ -576,7 +576,7 @@ export class CaspClient extends EventEmitter {
 
     if (
       isObject(event) &&
-      event.type === "casp/fromServer" &&
+      event.type === "cas/fromServer" &&
       event.kind === "response" &&
       (typeof event.id === "string" || typeof event.id === "number")
     ) {

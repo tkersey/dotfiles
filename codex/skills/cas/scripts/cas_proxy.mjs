@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Casp JSONL proxy for `codex app-server`.
+// Cas JSONL proxy for `codex app-server`.
 //
 // - Reads JSONL commands from stdin.
 // - Spawns `codex app-server` and performs initialize/initialized handshake.
@@ -15,7 +15,7 @@ import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { createInterface } from "node:readline";
 
-const CASP_EVENT_VERSION = 1;
+const CAS_EVENT_VERSION = 1;
 const JSONRPC_INVALID_PARAMS = -32602;
 const JSONRPC_REQUEST_TIMEOUT = -32000;
 
@@ -139,7 +139,7 @@ function validateServerRequestResult(method, result) {
 function defaultStateFileForCwd(cwd) {
   const normalized = resolve(cwd);
   const digest = createHash("sha256").update(normalized).digest("hex").slice(0, 16);
-  return resolve(homedir(), ".codex", "casp", "state", `${digest}.json`);
+  return resolve(homedir(), ".codex", "cas", "state", `${digest}.json`);
 }
 
 function classifyJsonRpc(msg) {
@@ -236,19 +236,19 @@ function parseArgs(argv) {
     codexPath: "codex",
     cwd: process.cwd(),
     stateFile: defaultStateFileForCwd(process.cwd()),
-    clientName: "casp",
-    clientTitle: "casp skill",
+    clientName: "cas",
+    clientTitle: "cas skill",
     clientVersion: "0.1.0",
-    // Emit casp/heartbeat every N ms (0 disables).
+    // Emit cas/heartbeat every N ms (0 disables).
     heartbeatMs: 0,
     // Max buffered stdout events before pausing inputs.
     maxOutQueue: 20_000,
-    // After casp/exit, SIGKILL app-server after N ms.
+    // After cas/exit, SIGKILL app-server after N ms.
     killTimeoutMs: 2_000,
     // Fail forwarded server requests that have no orchestrator response.
     serverRequestTimeoutMs: 30_000,
     // v2 approval auto-response policy.
-    // - exec: "auto" preserves casp's default behavior (accept execpolicy amendments when proposed).
+    // - exec: "auto" preserves cas's default behavior (accept execpolicy amendments when proposed).
     // - file: "auto" is an alias for acceptForSession.
     execApprovalDecision: "auto",
     fileApprovalDecision: "auto",
@@ -355,11 +355,11 @@ function parseArgs(argv) {
 
 function helpText() {
   return [
-    "casp_proxy.mjs - JSONL proxy for `codex app-server`",
+    "cas_proxy.mjs - JSONL proxy for `codex app-server`",
     "",
     "Usage:",
-    "  node scripts/casp_proxy.mjs [--codex codex] [--cwd DIR]",
-    "                        [--state-file ~/.codex/casp/state/<workspace-hash>.json]",
+    "  node scripts/cas_proxy.mjs [--codex codex] [--cwd DIR]",
+    "                        [--state-file ~/.codex/cas/state/<workspace-hash>.json]",
     "                        [--heartbeat-ms 0] [--max-out-queue 20000] [--kill-timeout-ms 2000]",
     "                        [--server-request-timeout-ms 30000]",
     "                        [--exec-approval auto|accept|acceptForSession|decline|cancel]",
@@ -368,15 +368,15 @@ function helpText() {
     "                        [--opt-out-notification-method METHOD]",
     "",
     "stdin JSONL:",
-    '  { "type": "casp/request", "clientRequestId": "...", "method": "thread/start", "params": { ... } }',
-    '  { "type": "casp/respond", "id": 123, "result": { ... } }',
-    '  { "type": "casp/respond", "id": 123, "error": { ... } }',
-    '  { "type": "casp/state/get" }',
-    '  { "type": "casp/stats/get" }',
-    '  { "type": "casp/exit" }',
+    '  { "type": "cas/request", "clientRequestId": "...", "method": "thread/start", "params": { ... } }',
+    '  { "type": "cas/respond", "id": 123, "result": { ... } }',
+    '  { "type": "cas/respond", "id": 123, "error": { ... } }',
+    '  { "type": "cas/state/get" }',
+    '  { "type": "cas/stats/get" }',
+    '  { "type": "cas/exit" }',
     "",
     "stdout JSONL:",
-    "  casp emits events like casp/ready, casp/fromServer, casp/toServer, casp/error.",
+    "  cas emits events like cas/ready, cas/fromServer, cas/toServer, cas/error.",
   ].join("\n");
 }
 
@@ -406,12 +406,12 @@ async function writeStateFile(stateFile, state) {
   await rename(tmp, stateFile);
 }
 
-class CaspProxy {
+class CasProxy {
   /** @param {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[], execApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel", fileApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel"}} opts */
   constructor(opts) {
     this.opts = opts;
     this.cwd = opts.cwd;
-    this.sessionId = `casp-${randomUUID()}`;
+    this.sessionId = `cas-${randomUUID()}`;
     this.seq = 0;
     this.ready = false;
     this.child = null;
@@ -480,7 +480,7 @@ class CaspProxy {
     this.seq += 1;
     return {
       type,
-      v: CASP_EVENT_VERSION,
+      v: CAS_EVENT_VERSION,
       seq: this.seq,
       ts: nowMs(),
       sessionId: this.sessionId,
@@ -521,7 +521,7 @@ class CaspProxy {
     }
 
     this.emit({
-      ...this.baseEvent("casp/ioPaused"),
+      ...this.baseEvent("cas/ioPaused"),
       reason,
     });
   }
@@ -542,7 +542,7 @@ class CaspProxy {
     }
 
     this.emit({
-      ...this.baseEvent("casp/ioResumed"),
+      ...this.baseEvent("cas/ioResumed"),
       reason,
     });
   }
@@ -561,7 +561,7 @@ class CaspProxy {
     }
     this.pendingServerRequests.clear();
 
-    this.failAllResponseWaiters(new Error(`casp exiting: ${reason}`));
+    this.failAllResponseWaiters(new Error(`cas exiting: ${reason}`));
 
     this.exitHardTimer = setTimeout(() => {
       process.exit(code);
@@ -633,7 +633,7 @@ class CaspProxy {
 
   emitStats(kind) {
     this.emit({
-      ...this.baseEvent("casp/stats"),
+      ...this.baseEvent("cas/stats"),
       kind,
       snapshot: this.statsSnapshot(),
     });
@@ -641,7 +641,7 @@ class CaspProxy {
 
   emitError(message, extra = {}) {
     this.emit({
-      ...this.baseEvent("casp/error"),
+      ...this.baseEvent("cas/error"),
       message,
       ...extra,
     });
@@ -649,7 +649,7 @@ class CaspProxy {
 
   emitState(kind) {
     this.emit({
-      ...this.baseEvent("casp/state"),
+      ...this.baseEvent("cas/state"),
       kind,
       stateFile: this.stateFileAbs,
       state: this.state,
@@ -759,7 +759,7 @@ class CaspProxy {
     const routing = deriveRoutingKeys(msg);
 
     this.emit({
-      ...this.baseEvent("casp/toServer"),
+      ...this.baseEvent("cas/toServer"),
       kind: cls.kind,
       method: cls.method,
       id: cls.id,
@@ -776,7 +776,7 @@ class CaspProxy {
     this.emitState("loaded");
 
     this.emit({
-      ...this.baseEvent("casp/starting"),
+      ...this.baseEvent("cas/starting"),
       codexPath: this.opts.codexPath,
       stateFile: this.toAbsStateFile(),
       cwd: this.cwd,
@@ -796,7 +796,7 @@ class CaspProxy {
 
     child.on("exit", (code, signal) => {
       this.emit({
-        ...this.baseEvent("casp/appServerExit"),
+        ...this.baseEvent("cas/appServerExit"),
         code,
         signal,
       });
@@ -817,7 +817,7 @@ class CaspProxy {
       this.childStderrRl = rlErr;
       rlErr.on("line", (line) => {
         this.emit({
-          ...this.baseEvent("casp/appServerStderr"),
+          ...this.baseEvent("cas/appServerStderr"),
           line,
         });
       });
@@ -841,7 +841,7 @@ class CaspProxy {
 
     this.ready = true;
     this.emit({
-      ...this.baseEvent("casp/ready"),
+      ...this.baseEvent("cas/ready"),
       codexPath: this.opts.codexPath,
       cwd: this.cwd,
       stateFile: this.toAbsStateFile(),
@@ -887,7 +887,7 @@ class CaspProxy {
     };
 
     this.pendingClientRequests.set(id, {
-      clientRequestId: "casp/initialize",
+      clientRequestId: "cas/initialize",
       method: "initialize",
       internal: true,
       threadIdHint: null,
@@ -947,15 +947,15 @@ class CaspProxy {
 
   async handleClientMessage(msg) {
     if (!isObject(msg) || typeof msg.type !== "string") {
-      this.emitError("Invalid casp command (expected object with type)", {
+      this.emitError("Invalid cas command (expected object with type)", {
         msg,
       });
       return;
     }
 
-    if (msg.type === "casp/exit") {
+    if (msg.type === "cas/exit") {
       this.emit({
-        ...this.baseEvent("casp/exiting"),
+        ...this.baseEvent("cas/exiting"),
         reason: "client",
       });
 
@@ -978,20 +978,20 @@ class CaspProxy {
       return;
     }
 
-    if (msg.type === "casp/state/get") {
+    if (msg.type === "cas/state/get") {
       this.emitState("get");
       return;
     }
 
-    if (msg.type === "casp/stats/get") {
+    if (msg.type === "cas/stats/get") {
       this.emitStats("get");
       return;
     }
 
-    if (msg.type === "casp/request") {
+    if (msg.type === "cas/request") {
       const method = msg.method;
       if (typeof method !== "string") {
-        this.emitError("casp/request missing method", { msg });
+        this.emitError("cas/request missing method", { msg });
         return;
       }
 
@@ -1055,23 +1055,23 @@ class CaspProxy {
       return;
     }
 
-    if (msg.type === "casp/respond") {
+    if (msg.type === "cas/respond") {
       const id = msg.id;
       if (!(typeof id === "string" || typeof id === "number")) {
-        this.emitError("casp/respond missing id", { msg });
+        this.emitError("cas/respond missing id", { msg });
         return;
       }
 
       const hasResult = Object.prototype.hasOwnProperty.call(msg, "result");
       const hasError = Object.prototype.hasOwnProperty.call(msg, "error");
       if (!hasResult && !hasError) {
-        this.emitError("casp/respond must include result or error", { msg });
+        this.emitError("cas/respond must include result or error", { msg });
         return;
       }
 
       const pending = this.pendingServerRequests.get(id) ?? null;
       if (!pending) {
-        this.emitError("casp/respond id does not match a pending server request", {
+        this.emitError("cas/respond id does not match a pending server request", {
           id,
           msg,
         });
@@ -1090,7 +1090,7 @@ class CaspProxy {
       const validation = validateServerRequestResult(pending.method, msg.result);
       if (!validation.ok) {
         this.clearPendingServerRequest(id);
-        this.emitError("Invalid casp/respond payload for server request", {
+        this.emitError("Invalid cas/respond payload for server request", {
           id,
           method: pending.method,
           validationError: validation.message,
@@ -1114,16 +1114,16 @@ class CaspProxy {
       return;
     }
 
-    if (msg.type === "casp/send") {
+    if (msg.type === "cas/send") {
       if (!isObject(msg.msg)) {
-        this.emitError("casp/send missing msg object", { msg });
+        this.emitError("cas/send missing msg object", { msg });
         return;
       }
       this.sendToServer(msg.msg, { reason: "clientRaw" });
       return;
     }
 
-    this.emitError(`Unknown casp command type: ${msg.type}`, { msg });
+    this.emitError(`Unknown cas command type: ${msg.type}`, { msg });
   }
 
   async onServerLine(line) {
@@ -1135,7 +1135,7 @@ class CaspProxy {
     if (!parsed.ok) {
       this.stats.serverParseErrors += 1;
       this.emit({
-        ...this.baseEvent("casp/fromServer"),
+        ...this.baseEvent("cas/fromServer"),
         kind: "nonJson",
         method: null,
         id: null,
@@ -1204,7 +1204,7 @@ class CaspProxy {
     if (!routing.itemId && requestHints.itemIdHint) routing.itemId = requestHints.itemIdHint;
 
     this.emit({
-      ...this.baseEvent("casp/fromServer"),
+      ...this.baseEvent("cas/fromServer"),
       kind: cls.kind,
       method: cls.method,
       id: cls.id,
@@ -1271,7 +1271,7 @@ class CaspProxy {
     }
 
     if (method === "execCommandApproval" || method === "applyPatchApproval") {
-      this.emitError("Deprecated server request rejected (casp is v2-only)", {
+      this.emitError("Deprecated server request rejected (cas is v2-only)", {
         id,
         method,
       });
@@ -1299,7 +1299,7 @@ class CaspProxy {
               timeoutMs: this.opts.serverRequestTimeoutMs,
             });
             this.emit({
-              ...this.baseEvent("casp/serverRequestTimeout"),
+              ...this.baseEvent("cas/serverRequestTimeout"),
               id,
               method: pending.method,
               timeoutMs: this.opts.serverRequestTimeoutMs,
@@ -1327,7 +1327,7 @@ class CaspProxy {
     });
     this.stats.forwardedServerRequests += 1;
     this.emit({
-      ...this.baseEvent("casp/serverRequest"),
+      ...this.baseEvent("cas/serverRequest"),
       method,
       id,
       timeoutMs: this.opts.serverRequestTimeoutMs,
@@ -1350,18 +1350,18 @@ async function main() {
     return 2;
   }
 
-  const proxy = new CaspProxy(parsed.opts);
+  const proxy = new CasProxy(parsed.opts);
 
   process.on("SIGINT", () => {
     proxy.emit({
-      ...proxy.baseEvent("casp/signal"),
+      ...proxy.baseEvent("cas/signal"),
       signal: "SIGINT",
     });
     proxy.child?.kill("SIGINT");
   });
   process.on("SIGTERM", () => {
     proxy.emit({
-      ...proxy.baseEvent("casp/signal"),
+      ...proxy.baseEvent("cas/signal"),
       signal: "SIGTERM",
     });
     proxy.child?.kill("SIGTERM");

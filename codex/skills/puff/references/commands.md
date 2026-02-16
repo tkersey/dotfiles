@@ -23,20 +23,20 @@ Direct Codex Cloud commands:
 - `codex cloud diff <task-id>`
 - `codex cloud apply <task-id>`
 
-## Optional Advanced Path ($casp)
+## Optional Advanced Path ($cas)
 
-Use `$casp` when you need programmatic multi-thread orchestration, turn steering, or server-request routing beyond simple cloud task polling.
+Use `$cas` when you need programmatic multi-thread orchestration, turn steering, or server-request routing beyond simple cloud task polling.
 
 Typical pairing:
 1. Use `$puff` to submit independent cloud tasks quickly.
-2. Use `$casp` to orchestrate complex app-server thread/turn flows or integrate custom automation.
+2. Use `$cas` to orchestrate complex app-server thread/turn flows or integrate custom automation.
 
 Start/stop proxy via puff:
-- `~/.dotfiles/codex/skills/puff/scripts/puff.sh casp-start --cwd <workspace>`
-- `~/.dotfiles/codex/skills/puff/scripts/puff.sh casp-stop`
+- `~/.dotfiles/codex/skills/puff/scripts/puff.sh cas-start --cwd <workspace>`
+- `~/.dotfiles/codex/skills/puff/scripts/puff.sh cas-stop`
 
 Start proxy directly (advanced):
-- `node ~/.dotfiles/codex/skills/casp/scripts/casp_proxy.mjs`
+- `node ~/.dotfiles/codex/skills/cas/scripts/cas_proxy.mjs`
 
 Then drive methods like:
 - `thread/start`

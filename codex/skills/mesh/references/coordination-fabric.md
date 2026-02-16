@@ -109,7 +109,7 @@ Implement these gates either in the fabric service or in the orchestrator.
   - only it applies patches, runs validation, and mutates `$st`.
   - worker instances/agents are read-only or diff-producing.
 
-## Multi-instance ($casp) integration
+## Multi-instance ($cas) integration
 
 To scale beyond per-instance `[agents].max_threads`:
 

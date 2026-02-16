@@ -60,15 +60,15 @@ Supported forms (space-separated `key=value` args):
 
 Continual runner (turnkey):
 - Run continual draining in a terminal:
-  - `node codex/skills/mesh/scripts/mesh_casp_autopilot.mjs --cwd <repo>`
+  - `node codex/skills/mesh/scripts/mesh_cas_autopilot.mjs --cwd <repo>`
 - Run continual draining with scale-out workers (1 integrator + N workers):
-  - `node codex/skills/mesh/scripts/mesh_casp_fleet_autopilot.mjs --cwd <repo> --workers 3`
+  - `node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd <repo> --workers 3`
 - Run continually in the background (launchd):
-  - `codex/skills/mesh/scripts/install_mesh_casp_autopilot_launch_agent.sh --cwd <repo>`
-  - To stop: `codex/skills/mesh/scripts/uninstall_mesh_casp_autopilot_launch_agent.sh`
+  - `codex/skills/mesh/scripts/install_mesh_cas_autopilot_launch_agent.sh --cwd <repo>`
+  - To stop: `codex/skills/mesh/scripts/uninstall_mesh_cas_autopilot_launch_agent.sh`
 - Run scale-out mode in the background (launchd):
-  - `codex/skills/mesh/scripts/install_mesh_casp_fleet_autopilot_launch_agent.sh --cwd <repo> --workers 3`
-  - To stop: `codex/skills/mesh/scripts/uninstall_mesh_casp_fleet_autopilot_launch_agent.sh`
+  - `codex/skills/mesh/scripts/install_mesh_cas_fleet_autopilot_launch_agent.sh --cwd <repo> --workers 3`
+  - To stop: `codex/skills/mesh/scripts/uninstall_mesh_cas_fleet_autopilot_launch_agent.sh`
 
 Do NOT treat generic acknowledgements (`go`, `yep`, `ship it`) as invocation.
 
@@ -124,7 +124,7 @@ If `headless=true`:
 ## Coordination Fabric (Optional)
 
 By default, `$mesh` is hub-and-spoke: workers only talk to the orchestrator.
-If you want agent-to-agent coordination (especially across multiple `$casp` instances), add a
+If you want agent-to-agent coordination (especially across multiple `$cas` instances), add a
 coordination substrate with:
 
 - a shared task list (recommended: `$st`)
@@ -133,7 +133,7 @@ coordination substrate with:
 
 Reference spec: `codex/skills/mesh/references/coordination-fabric.md`.
 
-Trigger (recommended): if `parallel_tasks > 1` OR you are running multi-instance work (for example via `$casp`), use mailbox+leases.
+Trigger (recommended): if `parallel_tasks > 1` OR you are running multi-instance work (for example via `$cas`), use mailbox+leases.
 
 Minimal fabric (tool-agnostic):
 
@@ -167,11 +167,11 @@ Required adapter verbs:
 
 Common adapter ids (convention; optional):
 - `local`: in-session workers (subagents)
-- `casp`: multi-instance workers (via `$casp`), coordinated via mailbox+leases; one integrator applies patches/validates/mutates `$st`
+- `cas`: multi-instance workers (via `$cas`), coordinated via mailbox+leases; one integrator applies patches/validates/mutates `$st`
 - `auto`: choose `local` unless you need to exceed per-instance caps or isolate contexts; always report which adapter is selected
 
 Adapter selection order:
-0) If invocation includes `adapter=<id>` (for example `adapter=local` or `adapter=casp`), use it if available; if not available, treat as `adapter_missing_capability`.
+0) If invocation includes `adapter=<id>` (for example `adapter=local` or `adapter=cas`), use it if available; if not available, treat as `adapter_missing_capability`.
 1) Prefer an adapter explicitly marked `preferred` by the runtime.
 2) Else pick the first adapter that satisfies all required verbs.
 3) Else stop and ask the user to switch to a worker-capable runtime.

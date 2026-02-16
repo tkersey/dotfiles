@@ -1,25 +1,25 @@
 #!/usr/bin/env node
-// Example orchestration client using CaspClient.
+// Example orchestration client using CasClient.
 //
 // This script is agent-friendly: it prints JSON to stdout and diagnostics to stderr.
 
-import { CaspClient } from "./casp_client.mjs";
+import { CasClient } from "./cas_client.mjs";
 
 function usage() {
   return [
-    "casp_example_orchestrator.mjs",
+    "cas_example_orchestrator.mjs",
     "",
     "Usage:",
-    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --list-threads [N]",
-    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --list-experimental-features [N]",
-    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --resume-thread THREAD_ID",
-    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --steer-turn THREAD_ID EXPECTED_TURN_ID TEXT",
-    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --read-thread THREAD_ID [--include-turns]",
-    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --compact-thread THREAD_ID",
-    "  node scripts/casp_example_orchestrator.mjs --cwd DIR --prompt TEXT [--thread-id THREAD_ID] [--opt-out-notification-method METHOD...]",
+    "  node scripts/cas_example_orchestrator.mjs --cwd DIR --list-threads [N]",
+    "  node scripts/cas_example_orchestrator.mjs --cwd DIR --list-experimental-features [N]",
+    "  node scripts/cas_example_orchestrator.mjs --cwd DIR --resume-thread THREAD_ID",
+    "  node scripts/cas_example_orchestrator.mjs --cwd DIR --steer-turn THREAD_ID EXPECTED_TURN_ID TEXT",
+    "  node scripts/cas_example_orchestrator.mjs --cwd DIR --read-thread THREAD_ID [--include-turns]",
+    "  node scripts/cas_example_orchestrator.mjs --cwd DIR --compact-thread THREAD_ID",
+    "  node scripts/cas_example_orchestrator.mjs --cwd DIR --prompt TEXT [--thread-id THREAD_ID] [--opt-out-notification-method METHOD...]",
     "",
     "Notes:",
-    "  - --cwd controls where the app-server runs; casp state defaults to ~/.codex/casp/state/<workspace-hash>.json.",
+    "  - --cwd controls where the app-server runs; cas state defaults to ~/.codex/cas/state/<workspace-hash>.json.",
     "  - --prompt requires a working login and (usually) network access.",
     "  - This example is v2-only and fails fast on unimplemented server requests.",
   ].join("\n");
@@ -144,17 +144,17 @@ async function main() {
     return 2;
   }
 
-  const client = new CaspClient({
+  const client = new CasClient({
     cwd: opts.cwd,
     optOutNotificationMethods: opts.optOutNotificationMethods,
   });
 
   // Print all proxy events to stderr for debugging.
-  client.on("casp/error", (ev) => logErr(`casp/error: ${ev.message}`));
+  client.on("cas/error", (ev) => logErr(`cas/error: ${ev.message}`));
   client.on("proxyStderr", (line) => logErr(`proxy stderr: ${line}`));
 
   // Do not let server-initiated requests stall: always respond deterministically.
-  client.on("casp/serverRequest", (ev) => {
+  client.on("cas/serverRequest", (ev) => {
     const method = typeof ev.method === "string" ? ev.method : "<unknown>";
     if (method === "item/tool/call") {
       // Example policy: do not implement tools here; just return a clear error.

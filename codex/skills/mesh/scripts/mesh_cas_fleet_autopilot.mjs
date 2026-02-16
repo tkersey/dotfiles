@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fleet $mesh runner driven via casp (codex app-server).
+// Fleet $mesh runner driven via cas (codex app-server).
 //
 // Design:
 // - 1 integrator instance applies patches, runs validation, and mutates $st.
@@ -13,16 +13,16 @@ import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { CaspClient } from "../../casp/scripts/casp_client.mjs";
+import { CasClient } from "../../cas/scripts/cas_client.mjs";
 
 function usage() {
   return [
-    "mesh_casp_fleet_autopilot.mjs",
+    "mesh_cas_fleet_autopilot.mjs",
     "",
-    "Runs $mesh continually using 1 integrator + N worker instances (casp).",
+    "Runs $mesh continually using 1 integrator + N worker instances (cas).",
     "",
     "Usage:",
-    "  node codex/skills/mesh/scripts/mesh_casp_fleet_autopilot.mjs --cwd DIR [options]",
+    "  node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd DIR [options]",
     "",
     "Required:",
     "  --cwd DIR                    Workspace to run in.",
@@ -33,7 +33,7 @@ function usage() {
     "  --poll-ms N                  Sleep when no work is ready (default: 60000)",
     "  --worker-turn-timeout-ms N   Max time for one worker $mesh turn (default: 1800000 = 30 min)",
     "  --integrator-turn-timeout-ms N  Max time for one integrator turn (default: 2700000 = 45 min)",
-    "  --state-dir DIR              Directory for per-instance casp state files",
+    "  --state-dir DIR              Directory for per-instance cas state files",
     "  --once                       Run one scheduling wave and exit",
     "  --verbose                    Emit proxy stderr lines",
     "  --help                       Show help",
@@ -139,7 +139,7 @@ function cwdHash(cwd) {
 
 function defaultFleetStateDir(cwd) {
   const digest = cwdHash(cwd);
-  return resolve(homedir(), ".codex", "casp", "state", "mesh-fleet", digest);
+  return resolve(homedir(), ".codex", "cas", "state", "mesh-fleet", digest);
 }
 
 function stateFileForInstance(stateDir, name) {
@@ -454,7 +454,7 @@ async function main() {
   const stateDir = resolve(opts.stateDir ?? defaultFleetStateDir(absCwd));
   mkdirSync(stateDir, { recursive: true });
 
-  // Prevent two fleet runners from sharing the same casp state files.
+  // Prevent two fleet runners from sharing the same cas state files.
   const lockPath = resolve(stateDir, "fleet.lock.json");
   if (existsSync(lockPath)) {
     try {
@@ -486,11 +486,11 @@ async function main() {
   const integrator = {
     name: "integrator",
     stateFile: integratorStateFile,
-    client: new CaspClient({
+    client: new CasClient({
       cwd: absCwd,
       stateFile: integratorStateFile,
       clientName: "mesh-fleet-integrator",
-      clientTitle: "mesh casp fleet integrator",
+      clientTitle: "mesh cas fleet integrator",
       clientVersion: "0.1.0",
     }),
     threadId: null,
@@ -501,11 +501,11 @@ async function main() {
   const workers = Array.from({ length: opts.workers }, (_, i) => {
     const name = `worker-${i + 1}`;
     const stateFile = stateFileForInstance(stateDir, name);
-    const client = new CaspClient({
+    const client = new CasClient({
       cwd: absCwd,
       stateFile,
       clientName: `mesh-fleet-${name}`,
-      clientTitle: "mesh casp fleet worker",
+      clientTitle: "mesh cas fleet worker",
       clientVersion: "0.1.0",
       // Allow commands (for reading/search), but decline file writes.
       execApprovalDecision: "acceptForSession",
@@ -523,8 +523,8 @@ async function main() {
   });
 
   function wireClientLogs(prefix, client) {
-    client.on("casp/error", (ev) => {
-      process.stderr.write(`[${prefix}] casp/error: ${ev?.message ?? "unknown"}\n`);
+    client.on("cas/error", (ev) => {
+      process.stderr.write(`[${prefix}] cas/error: ${ev?.message ?? "unknown"}\n`);
     });
     if (opts.verbose) {
       client.on("proxyStderr", (line) => {
@@ -537,9 +537,9 @@ async function main() {
   for (const w of workers) wireClientLogs(w.name, w.client);
 
   // If the server asks for dynamic tools/user input/auth refresh, fail deterministically.
-  // (We rely on casp's built-in approval auto-handling for approvals.)
+  // (We rely on cas's built-in approval auto-handling for approvals.)
   function installHeadlessServerRequestPolicy(prefix, client) {
-    client.on("casp/serverRequest", (ev) => {
+    client.on("cas/serverRequest", (ev) => {
       const method = typeof ev.method === "string" ? ev.method : "<unknown>";
       if (method === "item/tool/call") {
         client.respondError(ev.id, `${prefix}: tool calls not implemented`, {
@@ -610,7 +610,7 @@ async function main() {
   }
 
   process.stderr.write(
-    `mesh_casp_fleet_autopilot_ready cwd=${absCwd} plan_file=${opts.planFile} workers=${workers.length} state_dir=${stateDir} integrator_thread=${integrator.threadId}\n`,
+    `mesh_cas_fleet_autopilot_ready cwd=${absCwd} plan_file=${opts.planFile} workers=${workers.length} state_dir=${stateDir} integrator_thread=${integrator.threadId}\n`,
   );
 
   /** @type {Set<string>} */
@@ -624,7 +624,7 @@ async function main() {
   async function refreshQueue() {
     const snapshot = await readPlanSnapshot({ cwd: absCwd, planFileRel: opts.planFile, stScriptPath });
     if (!snapshot.ok) {
-      process.stderr.write(`mesh_casp_fleet_autopilot_no_plan plan_file=${opts.planFile} path=${snapshot.planPath}\n`);
+      process.stderr.write(`mesh_cas_fleet_autopilot_no_plan plan_file=${opts.planFile} path=${snapshot.planPath}\n`);
       return [];
     }
 
@@ -734,11 +734,11 @@ async function main() {
         await restartInstance(
           worker,
           () =>
-            new CaspClient({
+            new CasClient({
               cwd: absCwd,
               stateFile: worker.stateFile,
               clientName: `mesh-fleet-${worker.name}`,
-              clientTitle: "mesh casp fleet worker",
+              clientTitle: "mesh cas fleet worker",
               clientVersion: "0.1.0",
               execApprovalDecision: "acceptForSession",
               fileApprovalDecision: "decline",
@@ -927,7 +927,7 @@ async function main() {
 
   // Close instances.
   await Promise.allSettled([integrator.client.close(), ...workers.map((w) => w.client.close())]);
-  process.stderr.write(`mesh_casp_fleet_autopilot_exit did_any_work=${didAnyWork ? "yes" : "no"}\n`);
+  process.stderr.write(`mesh_cas_fleet_autopilot_exit did_any_work=${didAnyWork ? "yes" : "no"}\n`);
   return 0;
 }
 
