@@ -10,14 +10,16 @@ WORKERS="3"
 POLL_MS="60000"
 WORKER_TURN_TIMEOUT_MS="1800000"
 INTEGRATOR_TURN_TIMEOUT_MS="2700000"
+BUDGET_MODE="aware"
 
 usage() {
-  echo "Usage: $0 [--label <label>] [--path <path>] --cwd <dir> [--plan-file <relpath>] [--workers <n>] [--poll-ms <n>] [--worker-turn-timeout-ms <n>] [--integrator-turn-timeout-ms <n>]"
+  echo "Usage: $0 [--label <label>] [--path <path>] --cwd <dir> [--plan-file <relpath>] [--workers <n>] [--poll-ms <n>] [--worker-turn-timeout-ms <n>] [--integrator-turn-timeout-ms <n>] [--budget-mode <aware|all_out>]"
   echo "Defaults:"
   echo "  label=$LABEL"
   echo "  plan-file=$PLAN_FILE_REL"
   echo "  workers=$WORKERS"
   echo "  poll-ms=$POLL_MS"
+  echo "  budget-mode=$BUDGET_MODE"
 }
 
 while [ "$#" -gt 0 ]; do
@@ -38,6 +40,8 @@ while [ "$#" -gt 0 ]; do
       WORKER_TURN_TIMEOUT_MS="$2"; shift 2 ;;
     --integrator-turn-timeout-ms)
       INTEGRATOR_TURN_TIMEOUT_MS="$2"; shift 2 ;;
+    --budget-mode)
+      BUDGET_MODE="$2"; shift 2 ;;
     -h|--help)
       usage; exit 0 ;;
     *)
@@ -76,6 +80,15 @@ esac
 case "$INTEGRATOR_TURN_TIMEOUT_MS" in
   ''|*[!0-9]*)
     echo "error: --integrator-turn-timeout-ms must be a positive integer" >&2
+    exit 1
+    ;;
+esac
+
+case "$BUDGET_MODE" in
+  aware|all_out)
+    ;;
+  *)
+    echo "error: --budget-mode must be one of: aware, all_out" >&2
     exit 1
     ;;
 esac
@@ -123,6 +136,8 @@ cat > "$TMP_PLIST" <<EOF
     <string>$WORKER_TURN_TIMEOUT_MS</string>
     <string>--integrator-turn-timeout-ms</string>
     <string>$INTEGRATOR_TURN_TIMEOUT_MS</string>
+    <string>--budget-mode</string>
+    <string>$BUDGET_MODE</string>
   </array>
   <key>WorkingDirectory</key>
   <string>$HOME</string>

@@ -8,14 +8,16 @@ TARGET_CWD="$(pwd)"
 PLAN_FILE_REL=".step/st-plan.jsonl"
 POLL_MS="60000"
 TURN_TIMEOUT_MS="2700000"
+BUDGET_MODE="aware"
 
 usage() {
-  echo "Usage: $0 [--label <label>] [--path <path>] --cwd <dir> [--plan-file <relpath>] [--poll-ms <n>] [--turn-timeout-ms <n>]"
+  echo "Usage: $0 [--label <label>] [--path <path>] --cwd <dir> [--plan-file <relpath>] [--poll-ms <n>] [--turn-timeout-ms <n>] [--budget-mode <aware|all_out>]"
   echo "Defaults:"
   echo "  label=$LABEL"
   echo "  plan-file=$PLAN_FILE_REL"
   echo "  poll-ms=$POLL_MS"
   echo "  turn-timeout-ms=$TURN_TIMEOUT_MS"
+  echo "  budget-mode=$BUDGET_MODE"
 }
 
 while [ "$#" -gt 0 ]; do
@@ -32,6 +34,8 @@ while [ "$#" -gt 0 ]; do
       POLL_MS="$2"; shift 2 ;;
     --turn-timeout-ms)
       TURN_TIMEOUT_MS="$2"; shift 2 ;;
+    --budget-mode)
+      BUDGET_MODE="$2"; shift 2 ;;
     -h|--help)
       usage; exit 0 ;;
     *)
@@ -56,6 +60,15 @@ esac
 case "$TURN_TIMEOUT_MS" in
   ''|*[!0-9]*)
     echo "error: --turn-timeout-ms must be a positive integer" >&2
+    exit 1
+    ;;
+esac
+
+case "$BUDGET_MODE" in
+  aware|all_out)
+    ;;
+  *)
+    echo "error: --budget-mode must be one of: aware, all_out" >&2
     exit 1
     ;;
 esac
@@ -99,6 +112,8 @@ cat > "$TMP_PLIST" <<EOF
     <string>$POLL_MS</string>
     <string>--turn-timeout-ms</string>
     <string>$TURN_TIMEOUT_MS</string>
+    <string>--budget-mode</string>
+    <string>$BUDGET_MODE</string>
   </array>
   <key>WorkingDirectory</key>
   <string>$HOME</string>

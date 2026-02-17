@@ -177,6 +177,8 @@ Runnable Node proxy for orchestration.
 Included:
 - `scripts/cas_proxy.mjs` (the proxy)
 - `scripts/cas_client.mjs` (JS wrapper: spawn proxy + request() + event stream)
+- `scripts/budget_governor.mjs` (helpers: rateLimits -> weekly pacing tier)
+- `scripts/cas_rate_limits.mjs` (CLI: prints normalized `account/rateLimits/read` snapshot)
 - `scripts/cas_example_orchestrator.mjs` (example orchestration script)
 - `scripts/cas_instance_runner.mjs` (run one method across many parallel cas sessions/instances)
 - `scripts/cas_smoke_check.mjs` (smoke-checks `experimentalFeature/list`, `thread/resume`, `turn/steer`)

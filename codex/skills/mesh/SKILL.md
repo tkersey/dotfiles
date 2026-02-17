@@ -60,9 +60,9 @@ Supported forms (space-separated `key=value` args):
 
 Continual runner (turnkey):
 - Run continual draining in a terminal:
-  - `node codex/skills/mesh/scripts/mesh_cas_autopilot.mjs --cwd <repo>`
+  - `node codex/skills/mesh/scripts/mesh_cas_autopilot.mjs --cwd <repo> [--budget-mode aware|all_out]`
 - Run continual draining with scale-out workers (1 integrator + N workers):
-  - `node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd <repo> --workers 3`
+  - `node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd <repo> --workers 3 [--budget-mode aware|all_out]`
 - Run continually in the background (launchd):
   - `codex/skills/mesh/scripts/install_mesh_cas_autopilot_launch_agent.sh --cwd <repo>`
   - To stop: `codex/skills/mesh/scripts/uninstall_mesh_cas_autopilot_launch_agent.sh`
@@ -112,14 +112,26 @@ Examples:
 
 If you use `parallel_tasks=auto`, `$mesh` should pick `parallel_tasks_target` and explain the math.
 
-If you use `max_tasks=auto`, `$mesh` should keep draining runnable tasks until no work is ready (or a fixed time budget is reached).
+If you use `max_tasks=auto`, `$mesh` should keep draining runnable tasks until no work is ready (or a fixed time budget is reached; default `45m` when the runner does not provide one).
+
+`consensus_retries` semantics (required):
+- one initial `critique -> synthesis -> vote` cycle is always attempted
+- `consensus_retries` counts additional cycles after the initial one
+- default `consensus_retries=2` means at most 3 total vote cycles per task
 
 ### Headless mode (non-interactive)
 
 If `headless=true`:
 - Do not ask the user questions.
-- If prerequisites are missing (plan file, validation command, adapter capability), exit cleanly with one actionable line.
-- Prefer continuing with other runnable tasks rather than stopping the whole run.
+- Headless precedence is absolute: if any branch says "ask user", this mode overrides that branch.
+- If prerequisites are missing (plan file, validation command, adapter capability), exit cleanly with one actionable line and include `headless_stop_reason=<code>`.
+- Supported `headless_stop_reason` codes: `plan_missing|ambiguous_plan_file|adapter_missing_capability|missing_validation`.
+- Prefer continuing with other runnable tasks rather than stopping the whole run; if no runnable tasks remain, exit cleanly.
+- If worker delegation never started, report `delegation_did_not_run=true` with a one-line reason.
+
+Budget governor (runner-side):
+- `--budget-mode aware` may clamp parallelism using `account/rateLimits/read` to pace weekly allowance.
+- `--budget-mode all_out` ignores pacing and runs at full configured concurrency.
 
 ## Coordination Fabric (Optional)
 
@@ -214,6 +226,7 @@ Resolve the plan file path in this order:
    - `.step/st-plan.jsonl`
 3) Else if both exist, STOP and ask the user to choose one.
    Recommended default: pass `plan_file=.step/st-plan.jsonl` explicitly.
+   - If `headless=true`, do not ask; stop with one actionable line and `headless_stop_reason=ambiguous_plan_file`.
 4) Else (neither exists), choose `.step/st-plan.jsonl` and STOP with the exact init command:
    `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py init --file .step/st-plan.jsonl`
 
@@ -424,6 +437,7 @@ Return:
 - tasks attempted and their final states (`completed`, `blocked`, `pending`)
 - concurrency telemetry: requested vs achieved (`parallel_tasks`, roles per task); if below target, state why (scope overlap, adapter cap, spawn failures)
 - consensus telemetry (attempt count, vote tallies)
+- delegation telemetry: `delegation_did_not_run=true|false`; when true, include a reason code
 - adapter telemetry (selected adapter, workers spawned/completed/retried/timed_out)
 - slot hygiene telemetry: workers `spawned` vs `closed` when close semantics exist; include any stragglers
 - validation commands and outcomes
@@ -439,7 +453,9 @@ Never fabricate timestamps, tool events, or command outputs.
 
 - Missing `$mesh` token: do nothing under this skill.
 - Plan file missing: stop with the exact `$st init` command.
+  - If `headless=true`, do not ask; emit one actionable line and `headless_stop_reason=plan_missing`.
 - Both `.codex/st-plan.jsonl` and `.step/st-plan.jsonl` exist: ask user to pick `plan_file=`.
+  - If `headless=true`, do not ask; emit one actionable line and `headless_stop_reason=ambiguous_plan_file`.
 - No runnable tasks: report ready/blocked/completed counts and exit cleanly.
 - Consensus failure after retries: set `blocked` + comment `no_consensus`.
 - `worker_no_response` or unusable output:
@@ -447,8 +463,10 @@ Never fabricate timestamps, tool events, or command outputs.
   - if still unusable in a 5-role swarm, retry once with fallback 3-role swarm
   - if still unusable, set `blocked` + comment `no_response`
 - `adapter_missing_capability`: switch to another compatible adapter; if none, ask the user to switch runtime.
+  - If `headless=true`, do not ask; emit one actionable line with `headless_stop_reason=adapter_missing_capability` and `delegation_did_not_run=true`.
 - `adapter_capacity`: reduce active swarm to fallback 3-role mode and retry once.
 - `lifecycle_mismatch` (`spawned != closed`): run close sweep, report stragglers, and treat unresolved mismatch as a reliability bug.
+- `missing_validation` in headless mode: set `blocked`, emit one actionable line, and include `headless_stop_reason=missing_validation`.
 
 ## Worker Prompt Templates
 

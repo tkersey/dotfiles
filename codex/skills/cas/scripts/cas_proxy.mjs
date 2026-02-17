@@ -10,7 +10,7 @@
 import { spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { once } from "node:events";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { createInterface } from "node:readline";
@@ -401,9 +401,19 @@ async function readStateFile(stateFile) {
 
 async function writeStateFile(stateFile, state) {
   await mkdir(dirname(stateFile), { recursive: true });
-  const tmp = `${stateFile}.tmp`;
-  await writeFile(tmp, JSON.stringify(state), "utf8");
-  await rename(tmp, stateFile);
+  // Use a unique temp path to avoid rename races across concurrent writers.
+  const tmp = `${stateFile}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(tmp, JSON.stringify(state), "utf8");
+    await rename(tmp, stateFile);
+  } finally {
+    // Best-effort cleanup in case write/rename fails mid-flight.
+    try {
+      await rm(tmp, { force: true });
+    } catch {
+      // Ignore cleanup errors.
+    }
+  }
 }
 
 class CasProxy {

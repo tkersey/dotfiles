@@ -331,7 +331,13 @@ export class CasClient extends EventEmitter {
    * The canonical item list is the `item/*` notification stream.
    *
    * @param {any} turnStartParams
-   * @param {{ timeoutMs?: number }} [opts]
+   * @param {{
+   *   timeoutMs?: number,
+   *   onTimeoutSteerText?: string,
+   *   timeoutSteerGraceMs?: number,
+   *   timeoutSteerRequestTimeoutMs?: number,
+   *   timeoutReconcileReadTimeoutMs?: number,
+   * }} [opts]
    */
   async startTurnAndCollect(turnStartParams, opts = {}) {
     if (!isObject(turnStartParams)) {
@@ -357,8 +363,6 @@ export class CasClient extends EventEmitter {
 
     let expectedTurnId = null;
     let finalTurn = null;
-
-    let timer = null;
 
     let done = false;
     /** @type {(() => void) | null} */
@@ -432,19 +436,66 @@ export class CasClient extends EventEmitter {
 
     const cleanup = () => {
       this.off("cas/fromServer", onFromServer);
-      if (timer) clearTimeout(timer);
+    };
+
+    const waitUntilDoneOrTimeout = async (ms, timeoutMessage) => {
+      if (done) return;
+      if (!Number.isFinite(ms) || ms <= 0) {
+        await donePromise;
+        return;
+      }
+
+      await new Promise((resolve, reject) => {
+        const localTimer = setTimeout(() => {
+          reject(new Error(timeoutMessage));
+        }, ms);
+
+        donePromise.then(() => {
+          clearTimeout(localTimer);
+          resolve();
+        });
+      });
+    };
+
+    const timeoutSteerText =
+      typeof opts.onTimeoutSteerText === "string" ? opts.onTimeoutSteerText.trim() : "";
+    const timeoutSteerGraceMs =
+      Number.isFinite(opts.timeoutSteerGraceMs) && opts.timeoutSteerGraceMs > 0
+        ? Number(opts.timeoutSteerGraceMs)
+        : 0;
+    const timeoutSteerRequestTimeoutMs =
+      Number.isFinite(opts.timeoutSteerRequestTimeoutMs) && opts.timeoutSteerRequestTimeoutMs > 0
+        ? Number(opts.timeoutSteerRequestTimeoutMs)
+        : 10_000;
+    const timeoutReconcileReadTimeoutMs =
+      Number.isFinite(opts.timeoutReconcileReadTimeoutMs) && opts.timeoutReconcileReadTimeoutMs > 0
+        ? Number(opts.timeoutReconcileReadTimeoutMs)
+        : Math.max(30_000, timeoutSteerRequestTimeoutMs);
+    const tryReconcileCompletedTurn = async () => {
+      if (!expectedTurnId || done) return false;
+      const readResult = await this.request(
+        "thread/read",
+        { threadId, includeTurns: true },
+        { timeoutMs: timeoutReconcileReadTimeoutMs },
+      );
+      const turns = Array.isArray(readResult?.thread?.turns) ? readResult.thread.turns : [];
+      const matched = turns.find((turn) => isObject(turn) && turn.id === expectedTurnId);
+      if (!isObject(matched) || matched.status !== "completed") return false;
+      finalTurn = matched;
+      const turnItems = Array.isArray(matched.items) ? matched.items : [];
+      for (const item of turnItems) {
+        if (!isObject(item) || typeof item.id !== "string") continue;
+        if (!itemsById.has(item.id)) itemOrder.push(item.id);
+        itemsById.set(item.id, item);
+        if (item.type === "agentMessage" && typeof item.text === "string") {
+          agentMessageTextByItemId.set(item.id, item.text);
+        }
+      }
+      finish();
+      return true;
     };
 
     try {
-      const timeoutPromise =
-        timeoutMs > 0
-          ? new Promise((_, reject) => {
-              timer = setTimeout(() => {
-                reject(new Error("Timed out waiting for turn/completed"));
-              }, timeoutMs);
-            })
-          : null;
-
       const startResult = await this.request("turn/start", turnStartParams);
       const turnId =
         isObject(startResult) && isObject(startResult.turn) && typeof startResult.turn.id === "string"
@@ -455,8 +506,52 @@ export class CasClient extends EventEmitter {
 
       for (const ev of buffered) processEvent(ev);
 
-      if (timeoutPromise) await Promise.race([donePromise, timeoutPromise]);
-      else await donePromise;
+      let waitError = null;
+      try {
+        await waitUntilDoneOrTimeout(timeoutMs, "Timed out waiting for turn/completed");
+      } catch (err) {
+        waitError = err;
+        if (!done && expectedTurnId && timeoutSteerText && timeoutSteerGraceMs > 0) {
+          let steerIssued = false;
+          try {
+            await this.steerTurn(
+              {
+                threadId,
+                expectedTurnId,
+                input: [{ type: "text", text: timeoutSteerText, text_elements: [] }],
+              },
+              { timeoutMs: timeoutSteerRequestTimeoutMs },
+            );
+            steerIssued = true;
+          } catch {
+            steerIssued = false;
+          }
+
+          if (steerIssued) {
+            try {
+              await waitUntilDoneOrTimeout(
+                timeoutSteerGraceMs,
+                "Timed out waiting for turn/completed after timeout steer",
+              );
+              waitError = null;
+            } catch (afterSteerErr) {
+              waitError = afterSteerErr;
+            }
+          }
+        }
+      }
+
+      if (waitError && !done && expectedTurnId) {
+        try {
+          const reconciled = await tryReconcileCompletedTurn();
+          if (reconciled) {
+            waitError = null;
+          }
+        } catch {
+          // Keep original timeout error.
+        }
+      }
+      if (waitError) throw waitError;
 
       if (!finalTurn) throw new Error("turn/completed observed without final turn payload");
 

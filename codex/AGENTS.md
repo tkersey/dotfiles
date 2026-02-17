@@ -22,7 +22,22 @@ Skill routing (default):
 
 # Automatic Orchestration Policy
 
-- Scope: default for implementation work (code/config/tests). Skip only for doc-only work or truly 1-shot edits confined to a single file/function.
+- Scope gate matrix (required): classify task shape before deciding orchestration behavior.
+  - `doc-only`: orchestration is skipped.
+    - In this row: README/ADR/copy-only edits with no executable, config, or test mutation.
+    - Not in this row: docs updates that also change runnable snippets, fixtures, defaults, or behavior.
+  - `single-file/single-function 1-shot`: orchestration is optional only when all are true: one file, one function/block, no schema/migration/config/runtime invariant impact, and no cross-file validation requirement.
+    - In this row: local, behavior-preserving incision in one function.
+    - Not in this row: one-file edits that alter shared invariants, APIs, migrations, or release behavior.
+  - `test-only`: orchestration is default-on.
+    - In this row: adding/updating tests for existing behavior/regressions.
+    - Not in this row: test changes coupled with production code/config edits.
+  - `config-only`: orchestration is default-on, except harmless local metadata edits with no runtime effect.
+    - In this row: env/config/default changes with behavioral impact.
+    - Not in this row: comments/labels/display-name-only metadata edits.
+  - `multi-step code/config/tests`: orchestration is required.
+    - In this row: any task requiring more than one dependent incision.
+    - Not in this row: truly atomic one-shot work that satisfies the `single-file/single-function 1-shot` row.
 - Selection/slicing: when work is multi-step, use `$select` early to decompose into atomic tasks with `scope` locks and safe parallel waves (plan-only; do not wait on it to start fanout).
 - Fanout first (implementation tasks): before any deep repo walking or long analysis, start a read-only discovery wave as your first tool call.
   - Default discovery roles: `explorer` (map relevant paths/entry points/prior art), `worker` (risks + validation/proof plan). Add another `explorer` when multiple independent searches are needed.
@@ -31,23 +46,35 @@ Skill routing (default):
   - If recall returns nothing relevant, proceed normally (do not invent).
 - Parallel mechanics (required): batch independent tool calls (including `spawn_agent`/`close_agent`) with `multi_tool_use.parallel`; keep each `wait(ids=[...])` as one call over all still-running agents (loop with remaining ids if needed; avoid one-wait-per-agent loops); close agents promptly after integrating results to free slots.
 - Work unit: each atomic task runs `$tk` (contract/invariants/implementation) then `$fix` (safety review) before it is considered done.
-- Capacity: saturate safe parallel capacity with dynamic backpressure; treat `[agents].max_threads` as the per-instance ceiling.
+- Capacity baseline: saturate safe parallel capacity with dynamic backpressure; treat `[agents].max_threads` as the per-instance ceiling.
+- Budget governor (ChatGPT weekly allowance): default `budget=aware` (pace) unless the user explicitly sets `budget=all_out`.
+  - Mode override: if the user message includes `budget=aware` or `budget=all_out`, treat it as authoritative for that run.
+  - If you can reach the app-server (for example via `$cas`), call `account/rateLimits/read` and select the longest window (treat as weekly).
+  - Compute `elapsed%` from `resetsAt` + `windowDurationMins`, then `delta = used% - elapsed%`.
+  - Tier: `surplus<=-25`, `ahead<=-10`, `on_track<+10`, `tight<+25`, `critical>=+25` OR `used>=95`.
+  - Clamp: `surplus|ahead` full fanout ok; `on_track` cap fanout + avoid multi-instance; `tight` 1 worker + no multi-instance; `critical` serial.
+- Backpressure SLOs (required):
+  - ACK target: each worker should emit first acknowledgment within 30s.
+  - First-result target: each worker should emit a substantive result within 30s.
+  - Retry ladder: attempt A uses `spawn_agent` + `wait(timeout_ms=45000)`; if nothing completes, retry once with a smaller prompt and/or `send_input(interrupt=true)` then `wait(timeout_ms=30000)`.
+  - Scale-out trigger: escalate to multi-`instance` `$cas` when two consecutive waits yield zero completions, or when ready queue depth exceeds one full per-instance wave for two consecutive waves.
+  - Concurrency limits: keep per-instance active workers `<= [agents].max_threads`; for scale-out, cap active instances at 3 by default (global worker cap `3 * [agents].max_threads`) unless explicitly overridden.
 - IMPORTANT (scale-out beyond per-instance caps): use `$cas` to run N parallel instances (each instance has its own thread pool). Keep patch application + validation + git in one integrator instance; treat other instances as read-only workers that return diffs/artifacts.
 - Coordination substrate (scale-out): when parallel work needs worker-to-worker coordination (especially across instances), add a durable mailbox + advisory file leases alongside the task list. See `codex/skills/mesh/references/coordination-fabric.md`.
 - Spawn-depth reality check: assume `spawn_agent` depth is 1; spawned agents cannot spawn further agents. The parent must spawn the whole wave.
-- Timeouts + retry ladder (model-agnostic): attempt A uses `spawn_agent` + `wait(timeout_ms=45000)`. If nothing completes, retry once (smaller prompt and/or `send_input(interrupt=true)`), then escalate to multi-`instance` `$cas`.
 - Wave scope isolation (required): before each wave, each worker must declare a write scope (file/path glob/module); overlapping write scopes are serialized and never run in the same wave.
-- Wave success/failure contract: success requires at least one completed worker result; failure is timeout/no-response/error after the retry ladder. Failed units block only themselves; continue non-dependent units.
+- Wave success/failure contract: success requires at least one completed worker result plus at least one unit-scoped validation signal (test/check/proof output) for that unit in the same wave. Failure is timeout/no-response/error after the retry ladder. Failed units block only themselves; continue non-dependent units.
 - Execution floor (model-agnostic): on implementation tasks, prove at least one live worker wave in-turn (`spawn_agent` + `wait` + `close_agent` for each spawned id) before turn completion.
 - End-of-turn learnings (required for implementation turns): after a proof signal and before the final response, run `$learnings` to append 0-3 high-signal records to `.learnings.jsonl` (prefer 1; skip when no capture checkpoint occurred). Mention the append result briefly.
 - Codify loop (promotion): when a learning is status `codify_now` (or repeats), promote it into durable docs (for example `codex/AGENTS.md` or a relevant skill doc), then append a follow-up learning referencing the durable anchor.
   - Helper: `uv run python codex/skills/learnings/scripts/learnings.py codify-candidates --min-count 3 --limit 20 --drop-superseded`
 - Coordination: use internal mesh-style coordination by default (no user invocation required); reserve `$mesh` for explicit user-invoked swarm coordination.
 - Mesh concurrency knob: invoke `$mesh parallel_tasks=N max_tasks=M` to run up to N tasks concurrently when scopes are disjoint (requires `$st --allow-multiple-in-progress`). Turnkey drain: `$mesh parallel_tasks=auto max_tasks=auto` (optionally `adapter=auto`).
-- Continual runner (turnkey): run `node codex/skills/mesh/scripts/mesh_cas_autopilot.mjs --cwd <repo>`; for scale-out use `node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd <repo> --workers N`. Background services: `codex/skills/mesh/scripts/install_mesh_cas_autopilot_launch_agent.sh` or `codex/skills/mesh/scripts/install_mesh_cas_fleet_autopilot_launch_agent.sh`.
+- Continual runner (turnkey): run `node codex/skills/mesh/scripts/mesh_cas_autopilot.mjs --cwd <repo>`; for scale-out use `node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd <repo> --workers N` (both support `--budget-mode aware|all_out`, default `aware`). Background services: `codex/skills/mesh/scripts/install_mesh_cas_autopilot_launch_agent.sh` or `codex/skills/mesh/scripts/install_mesh_cas_fleet_autopilot_launch_agent.sh`.
 - Questions: subagent questions enter a triage queue.
+  - Task class (required before blocking/product escalation): classify each affected unit as `hotfix`, `feature`, or `refactor`.
   - Low-risk: auto-answer from repo evidence/policy and continue.
-  - Blocking/product ambiguity: do all non-blocked work first, then ask exactly one targeted question with a recommended default and response deadline; if unanswered by deadline, apply the default and continue unaffected units.
+  - Blocking/product ambiguity: do all non-blocked work first, then ask exactly one targeted question with a recommended default and response deadline by class: `hotfix=10m`, `feature=30m`, `refactor=20m`; if unanswered by deadline, apply the default and continue unaffected units.
   - Pause only the affected unit unless a shared invariant is impacted.
 - Overrides: explicit user directives can disable or constrain orchestration; when overridden, state the active override in progress updates.
 
@@ -67,6 +94,12 @@ Skill routing (default):
   - `$st` `in_progress` -> `update_plan` `in_progress`
   - `$st` `completed` -> `update_plan` `completed`
   - `$st` `pending`, `blocked`, `deferred`, `canceled` -> `update_plan` `pending`
+- Pending reason annotations (required): when mapping `$st` statuses to `update_plan` `pending`, preserve subtype visibility in step text.
+  - For `$st` `blocked`: prefix step text with `[blocked]`.
+  - For `$st` `deferred`: prefix step text with `[deferred]`.
+  - For `$st` `canceled`: prefix step text with `[canceled]`.
+  - For `$st` `pending`: no subtype prefix is required.
+  - When known, append concise reason text after the prefix (for example, `[blocked] waiting_on_deps: <task-id>`).
 - Dependency handling:
   - Dependency edges live only in `$st` (`deps`); do not invent a second dependency model in `update_plan`.
   - Never mirror an item as `in_progress` in `update_plan` when `$st` reports `dep_state=waiting_on_deps`.

@@ -8,12 +8,27 @@
 
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { CasClient } from "../../cas/scripts/cas_client.mjs";
+import { computeBudgetGovernor, effectiveWorkersForBudget } from "../../cas/scripts/budget_governor.mjs";
+
+const DEFAULT_ST_INIT_CMD = "uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py init --file .step/st-plan.jsonl";
+const LOCK_TTL_MS = 5 * 60_000;
+const WORKER_MAX_ATTEMPTS = 2;
+const BUDGET_REFRESH_MS = 60_000;
+const ONE_SHOT_MIN_TIMEOUT_MS = 300_000;
+const WORKER_ATTEMPT_WATCHDOG_GRACE_MS = 90_000;
+const WORKER_ATTEMPT_WATCHDOG_MIN_MS = 240_000;
+const TEST_WORKER_ATTEMPT_WATCHDOG_MS = (() => {
+  const raw = process.env.MESH_CAS_TEST_WORKER_WATCHDOG_MS;
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : null;
+})();
 
 function usage() {
   return [
@@ -31,9 +46,10 @@ function usage() {
     "  --plan-file PATH             Plan file path relative to --cwd (default: .step/st-plan.jsonl)",
     "  --workers N                  Worker instances (default: 3)",
     "  --poll-ms N                  Sleep when no work is ready (default: 60000)",
-    "  --worker-turn-timeout-ms N   Max time for one worker $mesh turn (default: 1800000 = 30 min)",
-    "  --integrator-turn-timeout-ms N  Max time for one integrator turn (default: 2700000 = 45 min)",
+    "  --worker-turn-timeout-ms N   Primary wait before timeout-recovery for one worker turn (default: 1800000 = 30 min)",
+    "  --integrator-turn-timeout-ms N  Primary wait before timeout-recovery for one integrator turn (default: 2700000 = 45 min)",
     "  --state-dir DIR              Directory for per-instance cas state files",
+    "  --budget-mode MODE           aware|all_out (default: aware)",
     "  --once                       Run one scheduling wave and exit",
     "  --verbose                    Emit proxy stderr lines",
     "  --help                       Show help",
@@ -41,6 +57,7 @@ function usage() {
     "Notes:",
     "  - Requires `uv` and `codex` on PATH.",
     "  - Worker instances run with sandboxPolicy=readOnly and file approvals declined.",
+    "  - With --once, effective worker/integrator timeout values are clamped to at least 300000.",
   ].join("\n");
 }
 
@@ -53,6 +70,7 @@ function parseArgs(argv) {
     workerTurnTimeoutMs: 30 * 60_000,
     integratorTurnTimeoutMs: 45 * 60_000,
     stateDir: null,
+    budgetMode: "aware",
     once: false,
     verbose: false,
   };
@@ -97,6 +115,10 @@ function parseArgs(argv) {
       opts.stateDir = take();
       continue;
     }
+    if (a === "--budget-mode") {
+      opts.budgetMode = take();
+      continue;
+    }
     if (a === "--once") {
       opts.once = true;
       continue;
@@ -127,6 +149,9 @@ function parseArgs(argv) {
   }
   if (opts.stateDir !== null && (typeof opts.stateDir !== "string" || !opts.stateDir.trim())) {
     throw new Error("--state-dir must be a non-empty string");
+  }
+  if (opts.budgetMode !== "aware" && opts.budgetMode !== "all_out") {
+    throw new Error("--budget-mode must be one of: aware, all_out");
   }
 
   return { ok: true, help: false, error: null, opts };
@@ -165,6 +190,25 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function workerAttemptWatchdogMs(turnTimeoutMs) {
+  if (TEST_WORKER_ATTEMPT_WATCHDOG_MS !== null) return TEST_WORKER_ATTEMPT_WATCHDOG_MS;
+  return Math.max(WORKER_ATTEMPT_WATCHDOG_MIN_MS, turnTimeoutMs + WORKER_ATTEMPT_WATCHDOG_GRACE_MS);
+}
+
+async function withWatchdog(promiseFactory, timeoutMs, timeoutCode) {
+  let timer = null;
+  try {
+    return await Promise.race([
+      promiseFactory(),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${timeoutCode}:${timeoutMs}`)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 function summarize(text) {
   if (typeof text !== "string") return "";
   for (const line of text.split("\n")) {
@@ -176,19 +220,45 @@ function summarize(text) {
   return "";
 }
 
-function extractDiff(text) {
-  if (typeof text !== "string" || !text) return null;
+function utcCompact(date = new Date()) {
+  const iso = date.toISOString();
+  return iso.slice(0, 19).replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+}
 
-  const fenceIdx = text.indexOf("```diff");
-  if (fenceIdx !== -1) {
-    const after = text.slice(fenceIdx + "```diff".length);
-    const end = after.indexOf("```");
-    if (end !== -1) {
-      const body = after.slice(0, end).replace(/^\n/, "");
-      const trimmed = body.trim();
-      if (trimmed) return trimmed;
-    }
-  }
+function ensureHeadlessPlanFile({ cwd, planFile }) {
+  const planPath = resolve(cwd, planFile);
+  if (existsSync(planPath)) return { ok: true, planPath };
+
+  const initCmd =
+    planFile === ".step/st-plan.jsonl"
+      ? DEFAULT_ST_INIT_CMD
+      : `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py init --file ${planFile}`;
+  process.stderr.write(
+    `mesh_headless_stop headless_stop_reason=plan_missing plan_file=${planFile} action=${JSON.stringify(initCmd)}\n`,
+  );
+  return { ok: false, planPath };
+}
+
+function extractFenceBody(text, info) {
+  if (typeof text !== "string" || !text) return null;
+  const marker = `\`\`\`${info}`;
+  const fenceIdx = text.indexOf(marker);
+  if (fenceIdx === -1) return null;
+  const after = text.slice(fenceIdx + marker.length);
+  const end = after.indexOf("```");
+  if (end === -1) return null;
+  const body = after.slice(0, end).replace(/^\n/, "").trim();
+  return body || null;
+}
+
+function extractDiff(text) {
+  if (typeof text !== "string" || !text) return { diff: null, format: "none" };
+
+  const diffFence = extractFenceBody(text, "diff");
+  if (diffFence) return { diff: diffFence, format: "diff_fence" };
+
+  const patchFence = extractFenceBody(text, "patch");
+  if (patchFence) return { diff: patchFence, format: "patch_fence" };
 
   const lines = text.split("\n");
   let start = -1;
@@ -200,10 +270,75 @@ function extractDiff(text) {
   }
   if (start !== -1) {
     const body = lines.slice(start).join("\n").trim();
-    return body || null;
+    if (body) return { diff: body, format: "git_header" };
   }
 
-  return null;
+  const unifiedStart = lines.findIndex((line) => line.startsWith("--- "));
+  if (unifiedStart !== -1) {
+    const hasPlusPlus = lines.slice(unifiedStart).some((line) => line.startsWith("+++ "));
+    const hasHunk = lines.slice(unifiedStart).some((line) => line.startsWith("@@ "));
+    if (hasPlusPlus && hasHunk) {
+      const body = lines.slice(unifiedStart).join("\n").trim();
+      if (body) return { diff: body, format: "unified_hunk" };
+    }
+  }
+
+  return { diff: null, format: "none" };
+}
+
+function extractNoDiffReason(text) {
+  if (typeof text !== "string" || !text) return null;
+  const match = text.match(/NO_DIFF\s*:\s*(.+)/i);
+  if (!match || typeof match[1] !== "string") return null;
+  const cleaned = match[1].trim();
+  return cleaned ? cleaned : null;
+}
+
+function collectPatchCandidateTexts(collected) {
+  const out = [];
+  const seen = new Set();
+  const push = (value) => {
+    if (typeof value !== "string") return;
+    const trimmed = value.trim();
+    if (!trimmed || seen.has(trimmed)) return;
+    seen.add(trimmed);
+    out.push(trimmed);
+  };
+
+  push(collected?.agentMessageText);
+  const items = Array.isArray(collected?.items) ? collected.items : [];
+  for (const item of items) {
+    push(item?.text);
+    push(item?.output);
+    push(item?.stdout);
+    push(item?.stderr);
+    push(item?.result?.output);
+    push(item?.result?.stdout);
+    push(item?.result?.stderr);
+    const content = Array.isArray(item?.content) ? item.content : [];
+    for (const part of content) {
+      push(part?.text);
+      push(part?.output);
+      push(part?.stdout);
+      push(part?.stderr);
+    }
+  }
+  return out;
+}
+
+function normalizeScopePath(rawPath) {
+  if (typeof rawPath !== "string") return "";
+  const normalized = rawPath
+    .trim()
+    .replace(/\\/g, "/")
+    .replace(/^\.\/+/, "")
+    .replace(/\/+/g, "/")
+    .replace(/\/$/, "");
+  return normalized;
+}
+
+function isGlobPattern(path) {
+  return /[*?\[]/.test(path);
 }
 
 function extractMeshScopeFromNotes(notes) {
@@ -232,18 +367,24 @@ function extractMeshScopeFromNotes(notes) {
     if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
       v = v.slice(1, -1);
     }
-    if (v) scope.push(v);
+    const normalized = normalizeScopePath(v);
+    if (normalized) scope.push(normalized);
   }
 
   if (!scope.length) return { scope: null, hasGlobs: false };
-  const hasGlobs = scope.some((p) => /[*?\[]/.test(p));
-  return { scope, hasGlobs };
+  const deduped = Array.from(new Set(scope));
+  const hasGlobs = deduped.some((p) => isGlobPattern(p));
+  return { scope: deduped, hasGlobs };
 }
 
 function scopesDisjoint(a, b) {
   if (!a || !b) return false;
-  for (const p of a) {
-    if (b.includes(p)) return false;
+  for (const left of a) {
+    for (const right of b) {
+      if (isGlobPattern(left) || isGlobPattern(right)) return false;
+      if (left === right) return false;
+      if (left.startsWith(`${right}/`) || right.startsWith(`${left}/`)) return false;
+    }
   }
   return true;
 }
@@ -329,11 +470,31 @@ async function ensureThread({ client, cwd, stateFile, startParams = {} }) {
     }
   }
 
-  const params = { ...(typeof startParams === "object" && startParams ? startParams : {}), cwd };
+  const params = {
+    ...(typeof startParams === "object" && startParams ? startParams : {}),
+    cwd,
+    experimentalRawEvents: true,
+  };
   const startRes = await client.startThread(params);
   const threadId = startRes?.thread?.id ?? null;
   if (!threadId) throw new Error("thread/start did not return thread.id");
   return threadId;
+}
+
+function meshTimeoutSteerOptions({ timeoutMs, role }) {
+  const roleLabel = typeof role === "string" && role ? role : "mesh";
+  const steerText = [
+    `Timeout budget reached for ${roleLabel}.`,
+    "Stop further exploration now and finalize this turn immediately.",
+    "Return concise task status, validation outcomes, and next pending work.",
+  ].join(" ");
+
+  return {
+    timeoutMs,
+    onTimeoutSteerText: steerText,
+    timeoutSteerGraceMs: Math.max(15_000, Math.min(60_000, Math.floor(timeoutMs * 0.25))),
+    timeoutSteerRequestTimeoutMs: 10_000,
+  };
 }
 
 async function runWorkerMesh({
@@ -344,8 +505,34 @@ async function runWorkerMesh({
   meshSkillPath,
   absCwd,
   timeoutMs,
+  attempt = 1,
 }) {
-  const prompt = `$mesh ids=${taskId} plan_file=${planFileRel} integrate=false adapter=auto parallel_tasks=1 max_tasks=1 headless=true`;
+  const budgetSec = Math.max(30, Math.floor(timeoutMs / 1000));
+  const retryStrictness =
+    attempt > 1
+      ? [
+          "",
+          "Retry mode output contract:",
+          "- Return ONLY one fenced ```diff``` patch, OR exactly one line `NO_DIFF:<reason>`.",
+          "- `<reason>` is required and must be non-empty plain text (1-220 chars).",
+          "- Do not return status headings, JSON, or extra lines.",
+          "- Never return empty output.",
+        ]
+      : [];
+  const prompt = [
+    `$mesh ids=${taskId} plan_file=${planFileRel} integrate=false adapter=auto parallel_tasks=1 max_tasks=1 headless=true`,
+    "",
+    `Runtime budget: ${budgetSec}s for this worker turn.`,
+    "Execution policy:",
+    "- Focus on this task id only and return concise diff/status quickly.",
+    "- If delegation latency is high, use fallback 3-role swarm early.",
+    "- If budget is nearly exhausted, finalize immediately with current best result.",
+    "Output contract:",
+    "- If you produce a patch candidate, emit exactly one unified diff in a fenced ```diff``` block and nothing else.",
+    "- If no safe patch can be produced, emit exactly one line in the form `NO_DIFF:<reason>`.",
+    "- `<reason>` must be a single concise clause (1-220 chars), with no surrounding quotes.",
+    ...retryStrictness,
+  ].join("\n");
   const input = [
     { type: "text", text: prompt, text_elements: [] },
     { type: "skill", name: "mesh", path: meshSkillPath },
@@ -367,7 +554,7 @@ async function runWorkerMesh({
       input,
       sandboxPolicy,
     },
-    { timeoutMs },
+    meshTimeoutSteerOptions({ timeoutMs, role: "worker mesh run" }),
   );
 }
 
@@ -379,7 +566,15 @@ async function runIntegratorMeshFull({
   meshSkillPath,
   timeoutMs,
 }) {
-  const prompt = `$mesh ids=${taskId} plan_file=${planFileRel} adapter=auto parallel_tasks=1 max_tasks=1 headless=true`;
+  const budgetSec = Math.max(30, Math.floor(timeoutMs / 1000));
+  const prompt = [
+    `$mesh ids=${taskId} plan_file=${planFileRel} adapter=auto parallel_tasks=1 max_tasks=1 headless=true`,
+    "",
+    `Runtime budget: ${budgetSec}s for this integrator turn.`,
+    "Execution policy:",
+    "- Prioritize integration and validation for this task id.",
+    "- If budget is nearly exhausted, finalize with explicit status and stop.",
+  ].join("\n");
   const input = [
     { type: "text", text: prompt, text_elements: [] },
     { type: "skill", name: "mesh", path: meshSkillPath },
@@ -390,7 +585,7 @@ async function runIntegratorMeshFull({
       threadId,
       input,
     },
-    { timeoutMs },
+    meshTimeoutSteerOptions({ timeoutMs, role: "integrator mesh run" }),
   );
 }
 
@@ -403,13 +598,16 @@ async function runIntegratorApply({
   diffText,
   timeoutMs,
 }) {
+  const budgetSec = Math.max(30, Math.floor(timeoutMs / 1000));
   const prompt = [
     `$mesh ids=${taskId} plan_file=${planFileRel} adapter=auto parallel_tasks=1 max_tasks=1 headless=true`,
     "",
+    `Runtime budget: ${budgetSec}s for this integrator turn.`,
     "Integrator override:",
     "- Skip proposal/critique/synthesis/vote.",
     "- Treat the patch below as the synthesized diff and go directly to integration + validation + persistence.",
     "- If the patch does not apply cleanly, fall back to running full $mesh for this id.",
+    "- If budget is nearly exhausted, finalize with explicit status and stop.",
     "",
     "Patch:",
     "```diff",
@@ -427,7 +625,7 @@ async function runIntegratorApply({
       threadId,
       input,
     },
-    { timeoutMs },
+    meshTimeoutSteerOptions({ timeoutMs, role: "integrator apply run" }),
   );
 }
 
@@ -450,25 +648,88 @@ async function main() {
   }
 
   const opts = parsed.opts;
+  if (opts.once && opts.workerTurnTimeoutMs < ONE_SHOT_MIN_TIMEOUT_MS) {
+    const requested = opts.workerTurnTimeoutMs;
+    opts.workerTurnTimeoutMs = ONE_SHOT_MIN_TIMEOUT_MS;
+    process.stderr.write(
+      `mesh_timeout_clamp adapter=cas_fleet mode=once field=worker_turn_timeout_ms requested_ms=${requested} applied_ms=${opts.workerTurnTimeoutMs} minimum_ms=${ONE_SHOT_MIN_TIMEOUT_MS}\n`,
+    );
+  }
+  if (opts.once && opts.integratorTurnTimeoutMs < ONE_SHOT_MIN_TIMEOUT_MS) {
+    const requested = opts.integratorTurnTimeoutMs;
+    opts.integratorTurnTimeoutMs = ONE_SHOT_MIN_TIMEOUT_MS;
+    process.stderr.write(
+      `mesh_timeout_clamp adapter=cas_fleet mode=once field=integrator_turn_timeout_ms requested_ms=${requested} applied_ms=${opts.integratorTurnTimeoutMs} minimum_ms=${ONE_SHOT_MIN_TIMEOUT_MS}\n`,
+    );
+  }
   const absCwd = resolve(opts.cwd);
+  const planCheck = ensureHeadlessPlanFile({ cwd: absCwd, planFile: opts.planFile });
+  if (!planCheck.ok) return 0;
+
   const stateDir = resolve(opts.stateDir ?? defaultFleetStateDir(absCwd));
   mkdirSync(stateDir, { recursive: true });
 
   // Prevent two fleet runners from sharing the same cas state files.
   const lockPath = resolve(stateDir, "fleet.lock.json");
+  let lockOwned = false;
+  const cleanupLock = () => {
+    if (!lockOwned) return;
+    try {
+      if (existsSync(lockPath)) unlinkSync(lockPath);
+    } catch {
+      // Best-effort cleanup.
+    }
+    lockOwned = false;
+  };
+  process.on("exit", cleanupLock);
+
   if (existsSync(lockPath)) {
+    let reaped = false;
     try {
       const prev = JSON.parse(readFileSync(lockPath, "utf-8"));
       const prevPid = Number(prev?.pid);
+      const prevStartedAt = Date.parse(prev?.startedAt ?? "");
       if (Number.isInteger(prevPid) && prevPid > 1) {
-        process.kill(prevPid, 0);
+        try {
+          process.kill(prevPid, 0);
+          process.stderr.write(
+            `mesh_fleet_lock_held state_dir=${stateDir} pid=${prevPid}\n`,
+          );
+          return 2;
+        } catch (err) {
+          if (!(err && typeof err === "object" && err.code === "ESRCH")) {
+            process.stderr.write(
+              `mesh_fleet_lock_probe_failed state_dir=${stateDir} pid=${prevPid}\n`,
+            );
+            return 2;
+          }
+          unlinkSync(lockPath);
+          reaped = true;
+          process.stderr.write(
+            `mesh_fleet_lock_reaped state_dir=${stateDir} reason=pid_not_running pid=${prevPid}\n`,
+          );
+        }
+      } else if (!Number.isFinite(prevStartedAt) || Date.now() - prevStartedAt > LOCK_TTL_MS) {
+        unlinkSync(lockPath);
+        reaped = true;
         process.stderr.write(
-          `mesh_fleet_lock_held state_dir=${stateDir} pid=${prevPid}\n`,
+          `mesh_fleet_lock_reaped state_dir=${stateDir} reason=stale_or_invalid_pid\n`,
         );
-        return 2;
       }
     } catch {
-      process.stderr.write(`mesh_fleet_lock_unreadable state_dir=${stateDir}\n`);
+      try {
+        unlinkSync(lockPath);
+        reaped = true;
+        process.stderr.write(
+          `mesh_fleet_lock_reaped state_dir=${stateDir} reason=unreadable\n`,
+        );
+      } catch {
+        process.stderr.write(`mesh_fleet_lock_unreadable state_dir=${stateDir}\n`);
+        return 2;
+      }
+    }
+    if (!reaped && existsSync(lockPath)) {
+      process.stderr.write(`mesh_fleet_lock_held state_dir=${stateDir} pid=unknown\n`);
       return 2;
     }
   }
@@ -477,10 +738,24 @@ async function main() {
     JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString() }, null, 2) + "\n",
     "utf-8",
   );
+  lockOwned = true;
 
   const here = dirname(fileURLToPath(import.meta.url));
   const meshSkillPath = resolve(here, "..");
   const stScriptPath = resolve(here, "..", "..", "st", "scripts", "st_plan.py");
+
+  function makeWorkerClient(name, stateFile) {
+    return new CasClient({
+      cwd: absCwd,
+      stateFile,
+      clientName: `mesh-fleet-${name}`,
+      clientTitle: "mesh cas fleet worker",
+      clientVersion: "0.1.0",
+      // Allow commands (for reading/search), but decline file writes.
+      execApprovalDecision: "acceptForSession",
+      fileApprovalDecision: "decline",
+    });
+  }
 
   const integratorStateFile = stateFileForInstance(stateDir, "integrator");
   const integrator = {
@@ -501,20 +776,13 @@ async function main() {
   const workers = Array.from({ length: opts.workers }, (_, i) => {
     const name = `worker-${i + 1}`;
     const stateFile = stateFileForInstance(stateDir, name);
-    const client = new CasClient({
-      cwd: absCwd,
-      stateFile,
-      clientName: `mesh-fleet-${name}`,
-      clientTitle: "mesh cas fleet worker",
-      clientVersion: "0.1.0",
-      // Allow commands (for reading/search), but decline file writes.
-      execApprovalDecision: "acceptForSession",
-      fileApprovalDecision: "decline",
-    });
+    const client = makeWorkerClient(name, stateFile);
     return { name, stateFile, client, threadId: null, busy: false };
   });
 
   let stopping = false;
+  let capabilityBlocked = false;
+  let capabilityBlockReason = null;
   process.on("SIGINT", () => {
     stopping = true;
   });
@@ -524,7 +792,8 @@ async function main() {
 
   function wireClientLogs(prefix, client) {
     client.on("cas/error", (ev) => {
-      process.stderr.write(`[${prefix}] cas/error: ${ev?.message ?? "unknown"}\n`);
+      const detail = ev?.error ? ` detail=${JSON.stringify(ev.error)}` : "";
+      process.stderr.write(`[${prefix}] cas/error: ${ev?.message ?? "unknown"}${detail}\n`);
     });
     if (opts.verbose) {
       client.on("proxyStderr", (line) => {
@@ -542,16 +811,26 @@ async function main() {
     client.on("cas/serverRequest", (ev) => {
       const method = typeof ev.method === "string" ? ev.method : "<unknown>";
       if (method === "item/tool/call") {
-        client.respondError(ev.id, `${prefix}: tool calls not implemented`, {
+        capabilityBlocked = true;
+        capabilityBlockReason = "adapter_missing_capability";
+        process.stderr.write(
+          `mesh_adapter_capability adapter=cas_fleet instance=${prefix} item_tool_call=unsupported headless=true\n`,
+        );
+        client.respondError(ev.id, `${prefix}: adapter_missing_capability (tool calls unavailable)`, {
           code: -32000,
-          data: { method },
+          data: { method, reason: "adapter_missing_capability" },
         });
         return;
       }
       if (method === "item/tool/requestUserInput") {
+        capabilityBlocked = true;
+        capabilityBlockReason = "adapter_missing_capability";
+        process.stderr.write(
+          `mesh_adapter_capability adapter=cas_fleet instance=${prefix} request_user_input=unsupported headless=true\n`,
+        );
         client.respondError(ev.id, `${prefix}: user input unavailable in fleet autopilot`, {
           code: -32000,
-          data: { method },
+          data: { method, reason: "adapter_missing_capability" },
         });
         return;
       }
@@ -610,7 +889,62 @@ async function main() {
   }
 
   process.stderr.write(
-    `mesh_cas_fleet_autopilot_ready cwd=${absCwd} plan_file=${opts.planFile} workers=${workers.length} state_dir=${stateDir} integrator_thread=${integrator.threadId}\n`,
+    `mesh_cas_fleet_autopilot_ready cwd=${absCwd} plan_file=${opts.planFile} workers=${workers.length} state_dir=${stateDir} budget_mode=${opts.budgetMode} integrator_thread=${integrator.threadId} worker_timeout_ms=${opts.workerTurnTimeoutMs} integrator_timeout_ms=${opts.integratorTurnTimeoutMs} worker_max_attempts=${WORKER_MAX_ATTEMPTS}\n`,
+  );
+
+  let budgetState = { tier: "unknown", usedPercent: null, elapsedPercent: null, deltaPercent: null, resetsAt: null };
+  let lastBudgetReadAt = 0;
+
+  async function refreshBudgetGovernor({ force = false } = {}) {
+    const now = Date.now();
+    if (!force && now - lastBudgetReadAt < BUDGET_REFRESH_MS) return budgetState;
+    lastBudgetReadAt = now;
+
+    let govErr = null;
+    if (opts.budgetMode === "aware") {
+      try {
+        const resp = await integrator.client.request("account/rateLimits/read", {}, { timeoutMs: 20_000 });
+        budgetState = computeBudgetGovernor(resp);
+      } catch (err) {
+        govErr = err instanceof Error ? err.message : String(err);
+        budgetState = {
+          tier: "unknown",
+          usedPercent: null,
+          elapsedPercent: null,
+          deltaPercent: null,
+          resetsAt: null,
+        };
+      }
+    } else {
+      budgetState = { tier: "unknown", usedPercent: null, elapsedPercent: null, deltaPercent: null, resetsAt: null };
+    }
+
+    const cap = effectiveWorkersForBudget({
+      mode: opts.budgetMode,
+      tier: budgetState?.tier,
+      maxWorkers: workers.length,
+    });
+    const elapsedPct =
+      budgetState && Number.isFinite(budgetState.elapsedPercent) ? budgetState.elapsedPercent.toFixed(1) : "null";
+    const deltaPct =
+      budgetState && Number.isFinite(budgetState.deltaPercent) ? budgetState.deltaPercent.toFixed(1) : "null";
+    const tierLabel = opts.budgetMode === "all_out" ? "all_out" : budgetState?.tier ?? "unknown";
+
+    process.stderr.write(
+      `mesh_budget budget_mode=${opts.budgetMode} tier=${tierLabel} used_percent=${budgetState?.usedPercent ?? "null"} elapsed_percent=${elapsedPct} delta_percent=${deltaPct} resets_at=${budgetState?.resetsAt ?? "null"} worker_cap=${cap}/${workers.length}${govErr ? ` rate_limits_error=${JSON.stringify(govErr)}` : ""}\n`,
+    );
+
+    return budgetState;
+  }
+
+  await refreshBudgetGovernor({ force: true });
+  const initialCap = effectiveWorkersForBudget({
+    mode: opts.budgetMode,
+    tier: budgetState?.tier,
+    maxWorkers: workers.length,
+  });
+  process.stderr.write(
+    `mesh_preflight mesh_run_id=${utcCompact()} plan_file=${opts.planFile} adapter=cas_fleet ids=auto budget_mode=${opts.budgetMode} worker_cap=${initialCap}/${workers.length} overrides=max_tasks=auto,parallel_tasks=auto\n`,
   );
 
   /** @type {Set<string>} */
@@ -693,98 +1027,129 @@ async function main() {
     worker.busy = true;
 
     try {
-      const collected = await runWorkerMesh({
-        client: worker.client,
-        threadId: worker.threadId,
-        taskId: task.id,
-        planFileRel: opts.planFile,
-        meshSkillPath,
-        absCwd,
-        timeoutMs: opts.workerTurnTimeoutMs,
-      });
+      let lastFailureCode = null;
+      let lastErrorText = null;
+      let lastRaw = "";
+      let lastParseFormat = "none";
+      let lastNoDiffReason = null;
+      const attemptWatchdogMs = workerAttemptWatchdogMs(opts.workerTurnTimeoutMs);
 
-      const elapsedMs = Date.now() - startedAt;
-      const msg = collected?.agentMessageText ?? "";
-      const diff = extractDiff(msg);
-      const summaryLine = summarize(msg);
+      for (let attempt = 1; attempt <= WORKER_MAX_ATTEMPTS; attempt += 1) {
+        try {
+          const collected = await withWatchdog(
+            () =>
+              runWorkerMesh({
+                client: worker.client,
+                threadId: worker.threadId,
+                taskId: task.id,
+                planFileRel: opts.planFile,
+                meshSkillPath,
+                absCwd,
+                timeoutMs: opts.workerTurnTimeoutMs,
+                attempt,
+              }),
+            attemptWatchdogMs,
+            "worker_attempt_watchdog_timeout",
+          );
 
+          const msg = collected?.agentMessageText ?? "";
+          const candidates = collectPatchCandidateTexts(collected);
+          let parsed = { diff: null, format: "none" };
+          for (const candidateText of candidates) {
+            parsed = extractDiff(candidateText);
+            if (parsed.diff) break;
+          }
+          const diff = parsed.diff;
+          const parseFormat = parsed.format;
+          const noDiffReason = extractNoDiffReason(msg);
+          const summaryLine = summarize(msg);
+          lastRaw = msg;
+          lastParseFormat = parseFormat;
+          lastNoDiffReason = noDiffReason;
+          const reasonSuffix = noDiffReason ? ` no_diff_reason=${JSON.stringify(noDiffReason.slice(0, 220))}` : "";
+
+          process.stderr.write(
+            `mesh_fleet_worker_attempt worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} has_diff=${diff ? "yes" : "no"} parse_format=${parseFormat}${reasonSuffix} summary=${JSON.stringify(summaryLine)}\n`,
+          );
+
+          if (diff) {
+            return {
+              ok: true,
+              taskId: task.id,
+              worker: worker.name,
+              elapsedMs: Date.now() - startedAt,
+              diff,
+              raw: msg,
+              error: null,
+              attempts: attempt,
+              failureCode: null,
+              parseFormat,
+              noDiffReason: null,
+            };
+          }
+
+          lastFailureCode = noDiffReason ? "no_patch_returned" : "no_diff_parsed";
+          lastErrorText = noDiffReason
+            ? `worker returned NO_DIFF: ${noDiffReason}`
+            : "worker produced no diff";
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          const watchdogMatch = msg.match(/^worker_attempt_watchdog_timeout:(\d+)$/);
+          if (watchdogMatch) {
+            process.stderr.write(
+              `mesh_fleet_worker_watchdog worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} failure_code=worker_turn_hang_before_output timeout_ms=${watchdogMatch[1]}\n`,
+            );
+          }
+          process.stderr.write(
+            `mesh_fleet_worker_fail worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} error=${JSON.stringify(msg)}\n`,
+          );
+          lastFailureCode = watchdogMatch ? "worker_turn_hang_before_output" : "no_response";
+          lastErrorText = msg;
+          lastParseFormat = "none";
+          lastNoDiffReason = null;
+        }
+
+        if (attempt >= WORKER_MAX_ATTEMPTS) break;
+
+        try {
+          await restartInstance(
+            worker,
+            () => makeWorkerClient(worker.name, worker.stateFile),
+            { sandbox: "read-only" },
+          );
+        } catch (restartErr) {
+          const msg = restartErr instanceof Error ? restartErr.message : String(restartErr);
+          process.stderr.write(
+            `mesh_fleet_worker_restart_fail worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} error=${JSON.stringify(msg)}\n`,
+          );
+          lastFailureCode = "no_response";
+          lastErrorText = msg;
+          lastParseFormat = "none";
+          lastNoDiffReason = null;
+          break;
+        }
+      }
+
+      const exhaustedReason = lastNoDiffReason
+        ? ` no_diff_reason=${JSON.stringify(lastNoDiffReason.slice(0, 220))}`
+        : "";
       process.stderr.write(
-        `mesh_fleet_worker_done worker=${worker.name} task=${task.id} elapsed_ms=${elapsedMs} has_diff=${diff ? "yes" : "no"} summary=${JSON.stringify(summaryLine)}\n`,
+        `mesh_fleet_worker_exhausted worker=${worker.name} task=${task.id} attempts=${WORKER_MAX_ATTEMPTS} failure_code=${lastFailureCode ?? "no_response"} parse_format=${lastParseFormat}${exhaustedReason}\n`,
       );
 
       return {
-        ok: Boolean(diff),
+        ok: false,
         taskId: task.id,
         worker: worker.name,
-        elapsedMs,
-        diff,
-        raw: msg,
-        error: null,
+        elapsedMs: Date.now() - startedAt,
+        diff: null,
+        raw: lastRaw,
+        error: lastErrorText ?? "worker attempts exhausted",
+        attempts: WORKER_MAX_ATTEMPTS,
+        failureCode: lastFailureCode ?? "no_response",
+        parseFormat: lastParseFormat,
+        noDiffReason: lastNoDiffReason,
       };
-    } catch (err) {
-      const elapsedMs = Date.now() - startedAt;
-      const msg = err instanceof Error ? err.message : String(err);
-
-      process.stderr.write(
-        `mesh_fleet_worker_fail worker=${worker.name} task=${task.id} elapsed_ms=${elapsedMs} error=${JSON.stringify(msg)}\n`,
-      );
-
-      // One restart+retry attempt.
-      try {
-        await restartInstance(
-          worker,
-          () =>
-            new CasClient({
-              cwd: absCwd,
-              stateFile: worker.stateFile,
-              clientName: `mesh-fleet-${worker.name}`,
-              clientTitle: "mesh cas fleet worker",
-              clientVersion: "0.1.0",
-              execApprovalDecision: "acceptForSession",
-              fileApprovalDecision: "decline",
-            }),
-          { sandbox: "read-only" },
-        );
-
-        const collected = await runWorkerMesh({
-          client: worker.client,
-          threadId: worker.threadId,
-          taskId: task.id,
-          planFileRel: opts.planFile,
-          meshSkillPath,
-          absCwd,
-          timeoutMs: opts.workerTurnTimeoutMs,
-        });
-
-        const retryMsg = collected?.agentMessageText ?? "";
-        const diff = extractDiff(retryMsg);
-        const summaryLine = summarize(retryMsg);
-
-        process.stderr.write(
-          `mesh_fleet_worker_retry_done worker=${worker.name} task=${task.id} has_diff=${diff ? "yes" : "no"} summary=${JSON.stringify(summaryLine)}\n`,
-        );
-
-        return {
-          ok: Boolean(diff),
-          taskId: task.id,
-          worker: worker.name,
-          elapsedMs: Date.now() - startedAt,
-          diff,
-          raw: retryMsg,
-          error: diff ? null : msg,
-        };
-      } catch (err2) {
-        const msg2 = err2 instanceof Error ? err2.message : String(err2);
-        return {
-          ok: false,
-          taskId: task.id,
-          worker: worker.name,
-          elapsedMs,
-          diff: null,
-          raw: "",
-          error: msg2,
-        };
-      }
     } finally {
       worker.busy = false;
     }
@@ -792,6 +1157,12 @@ async function main() {
 
   async function integrateOne(result) {
     if (!result.diff) {
+      const reasonSuffix = result.noDiffReason
+        ? ` no_diff_reason=${JSON.stringify(String(result.noDiffReason).slice(0, 220))}`
+        : "";
+      process.stderr.write(
+        `mesh_fleet_worker_no_diff task=${result.taskId} from=${result.worker} attempts=${result.attempts ?? 1} failure_code=${result.failureCode ?? "no_response"} parse_format=${result.parseFormat ?? "none"}${reasonSuffix}\n`,
+      );
       // Fallback: have the integrator attempt the task normally.
       if (integrator.busy) {
         while (integrator.busy && !stopping) await sleep(250);
@@ -862,6 +1233,13 @@ async function main() {
   }
 
   async function schedulingWave() {
+    await refreshBudgetGovernor();
+    const workerCap = effectiveWorkersForBudget({
+      mode: opts.budgetMode,
+      tier: budgetState?.tier,
+      maxWorkers: workers.length,
+    });
+
     // Fill the queue.
     const candidates = await refreshQueue();
     const candidateIds = new Set(candidates.map((c) => c.id));
@@ -872,8 +1250,58 @@ async function main() {
       queue.push(c);
     }
 
+    if (workerCap === 0 && inflight.size === 0) {
+      if (integrator.busy) return false;
+
+      let pickIdx = -1;
+      for (let i = 0; i < queue.length; i += 1) {
+        const t = queue[i];
+        if (!t || typeof t.id !== "string") continue;
+        if (reservedTaskIds.has(t.id)) continue;
+        pickIdx = i;
+        break;
+      }
+      if (pickIdx === -1) return false;
+
+      const task = queue.splice(pickIdx, 1)[0];
+      reservedTaskIds.add(task.id);
+      integrator.busy = true;
+      const startedAt = Date.now();
+      try {
+        process.stderr.write(
+          `mesh_fleet_integrator_solo_start task=${task.id} budget_mode=${opts.budgetMode} tier=${budgetState?.tier ?? "unknown"} worker_cap=${workerCap}/${workers.length}\n`,
+        );
+        const collected = await runIntegratorMeshFull({
+          client: integrator.client,
+          threadId: integrator.threadId,
+          taskId: task.id,
+          planFileRel: opts.planFile,
+          meshSkillPath,
+          timeoutMs: opts.integratorTurnTimeoutMs,
+        });
+        const elapsedMs = Date.now() - startedAt;
+        const status = collected?.turn?.status ?? null;
+        const summaryLine = summarize(collected?.agentMessageText ?? "");
+        process.stderr.write(
+          `mesh_fleet_integrator_solo task=${task.id} elapsed_ms=${elapsedMs} status=${status ?? "null"} summary=${JSON.stringify(summaryLine)}\n`,
+        );
+      } catch (err) {
+        const elapsedMs = Date.now() - startedAt;
+        const msg = err instanceof Error ? err.message : String(err);
+        process.stderr.write(
+          `mesh_fleet_integrator_solo_fail task=${task.id} elapsed_ms=${elapsedMs} error=${JSON.stringify(msg)}\n`,
+        );
+      } finally {
+        integrator.busy = false;
+        reservedTaskIds.delete(task.id);
+      }
+
+      return true;
+    }
+
     // Spawn worker runs.
-    const free = workers.filter((w) => !w.busy && !inflight.has(w.name));
+    const allowedWorkers = workers.slice(0, workerCap);
+    const free = allowedWorkers.filter((w) => !w.busy && !inflight.has(w.name));
     const assigned = dequeueWork(free);
     for (const { worker, task } of assigned) {
       const p = runWorkerTask(worker, task);
@@ -908,10 +1336,30 @@ async function main() {
 
   let didAnyWork = false;
   while (!stopping) {
+    if (capabilityBlocked) {
+      const reason = capabilityBlockReason ?? "adapter_missing_capability";
+      process.stderr.write(
+        `mesh_headless_stop headless_stop_reason=${reason} delegation_did_not_run=true action=\"switch to worker-capable runtime/session and retry\"\n`,
+      );
+      break;
+    }
+
     let progressed = false;
     try {
       progressed = await schedulingWave();
       if (progressed) didAnyWork = true;
+
+      // When the budget governor throttles scale-out to zero workers, avoid a tight drain loop.
+      if (progressed && opts.budgetMode === "aware") {
+        const cap = effectiveWorkersForBudget({
+          mode: opts.budgetMode,
+          tier: budgetState?.tier,
+          maxWorkers: workers.length,
+        });
+        if (cap === 0 && opts.pollMs > 0) {
+          await sleep(opts.pollMs);
+        }
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       process.stderr.write(`mesh_fleet_wave_error error=${JSON.stringify(msg)}\n`);
@@ -928,6 +1376,7 @@ async function main() {
   // Close instances.
   await Promise.allSettled([integrator.client.close(), ...workers.map((w) => w.client.close())]);
   process.stderr.write(`mesh_cas_fleet_autopilot_exit did_any_work=${didAnyWork ? "yes" : "no"}\n`);
+  cleanupLock();
   return 0;
 }
 
