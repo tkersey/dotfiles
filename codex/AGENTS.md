@@ -41,11 +41,16 @@ Skill routing (default):
 - Selection/slicing: when work is multi-step, use `$select` early to decompose into atomic tasks with `scope` locks and safe parallel waves (plan-only; do not wait on it to start fanout).
 - Fanout first (implementation tasks): before any deep repo walking or long analysis, start a read-only discovery wave as your first tool call.
   - Default discovery roles: `explorer` (map relevant paths/entry points/prior art), `worker` (risks + validation/proof plan). Add another `explorer` when multiple independent searches are needed.
+  - Fanout floor: for multi-file implementation with three or more independent analysis questions, spawn at least three discovery subagents before first edit.
 - Start-of-turn learnings recall (required for implementation work): if `.learnings.jsonl` exists in repo root, run a fast recall and treat results as constraints/invariants (carry into worker prompts when spawning).
   - Command: `CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"; CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"; LEARNINGS_SCRIPT="$CODEX_SKILLS_HOME/skills/learnings/scripts/learnings.py"; [ -f "$LEARNINGS_SCRIPT" ] || LEARNINGS_SCRIPT="$CLAUDE_SKILLS_HOME/skills/learnings/scripts/learnings.py"; uv run python "$LEARNINGS_SCRIPT" recall --query "<user request>" --limit 5 --drop-superseded`
   - If recall returns nothing relevant, proceed normally (do not invent).
 - Parallel mechanics (required): batch independent tool calls (including `spawn_agent`/`close_agent`) with `multi_tool_use.parallel`; keep each `wait(ids=[...])` as one call over all still-running agents (loop with remaining ids if needed; avoid one-wait-per-agent loops); close agents promptly after integrating results to free slots.
 - Work unit: each atomic task runs `$tk` (contract/invariants/implementation) then `$fix` (safety review) before it is considered done.
+- Code-generation skill sequence (required): for implementation units, always run `$tk` -> `$fix` first, then choose delivery mode unless the user explicitly overrides.
+  - Delivery mode default: `commit_first` (use `$commit`/`$ship`/`$join` only as requested by task context).
+  - Patch-first mode: `artifact_mode=patch_first` (or explicit `$patch`/`$join`) switches delivery to `$patch` -> `$join`.
+  - `$join` fallback in patch-first mode (no PR/`gh` context): keep validated patches unmerged/uncommitted, publish a handoff ledger, and stop (no local commit fallback by default).
 - Capacity baseline: saturate safe parallel capacity with dynamic backpressure; treat `[agents].max_threads` as the per-instance ceiling.
 - Budget governor (ChatGPT weekly allowance): default `budget=aware` (pace) unless the user explicitly sets `budget=all_out`.
   - Mode override: if the user message includes `budget=aware` or `budget=all_out`, treat it as authoritative for that run.
@@ -57,14 +62,25 @@ Skill routing (default):
   - ACK target: each worker should emit first acknowledgment within 30s.
   - First-result target: each worker should emit a substantive result within 30s.
   - Retry ladder: attempt A uses `spawn_agent` + `wait(timeout_ms=45000)`; if nothing completes, retry once with a smaller prompt and/or `send_input(interrupt=true)` then `wait(timeout_ms=30000)`.
+  - Timeout replacement: if a worker times out once, spawn one replacement worker for the same scope before integrating.
   - Scale-out trigger: escalate to multi-`instance` `$cas` when two consecutive waits yield zero completions, or when ready queue depth exceeds one full per-instance wave for two consecutive waves.
+  - Earlier scale-out trigger: escalate to 2 `$cas` instances when one wait cycle has less than 50% completions and remaining ready units contain at least two disjoint scopes.
   - Concurrency limits: keep per-instance active workers `<= [agents].max_threads`; for scale-out, cap active instances at 3 by default (global worker cap `3 * [agents].max_threads`) unless explicitly overridden.
 - IMPORTANT (scale-out beyond per-instance caps): use `$cas` to run N parallel instances (each instance has its own thread pool). Keep patch application + validation + git in one integrator instance; treat other instances as read-only workers that return diffs/artifacts.
+- CAS-use gate: use `$cas` only when app-server methods are required, cross-instance scale-out is needed, or backlog exceeds one local wave; otherwise prefer local orchestration.
 - Coordination substrate (scale-out): when parallel work needs worker-to-worker coordination (especially across instances), add a durable mailbox + advisory file leases alongside the task list. See `codex/skills/mesh/references/coordination-fabric.md`.
 - Spawn-depth reality check: assume `spawn_agent` depth is 1; spawned agents cannot spawn further agents. The parent must spawn the whole wave.
 - Wave scope isolation (required): before each wave, each worker must declare a write scope (file/path glob/module); overlapping write scopes are serialized and never run in the same wave.
 - Wave success/failure contract: success requires at least one completed worker result plus at least one unit-scoped validation signal (test/check/proof output) for that unit in the same wave. Failure is timeout/no-response/error after the retry ladder. Failed units block only themselves; continue non-dependent units.
 - Execution floor (model-agnostic): on implementation tasks, prove at least one live worker wave in-turn (`spawn_agent` + `wait` + `close_agent` for each spawned id) before turn completion.
+- Final orchestration ledger (required for implementation turns): include:
+  - `skills_used` (ordered, with per-unit pipeline state for the active delivery mode)
+  - `subagents_spawned`, `subagents_completed`, `subagents_timed_out`, `subagents_replaced`
+  - `wave_count` and per-wave write scopes
+  - `$cas_instances_used` with an explicit reason when count is 0
+  - `artifact_mode` (`commit_first` default; `patch_first` when explicitly requested)
+  - produced patch artifacts when `artifact_mode=patch_first`
+  - `join_status` (`integrated` or `fallback_unmerged`) and fallback reason when not integrated when `$join` is used
 - End-of-turn learnings (required for implementation turns): after a proof signal and before the final response, run `$learnings` to append 0-3 high-signal records to `.learnings.jsonl` (prefer 1; skip when no capture checkpoint occurred). Mention the append result briefly.
 - Codify loop (promotion): when a learning is status `codify_now` (or repeats), promote it into durable docs (for example `codex/AGENTS.md` or a relevant skill doc), then append a follow-up learning referencing the durable anchor.
   - Helper: `CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"; CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"; LEARNINGS_SCRIPT="$CODEX_SKILLS_HOME/skills/learnings/scripts/learnings.py"; [ -f "$LEARNINGS_SCRIPT" ] || LEARNINGS_SCRIPT="$CLAUDE_SKILLS_HOME/skills/learnings/scripts/learnings.py"; uv run python "$LEARNINGS_SCRIPT" codify-candidates --min-count 3 --limit 20 --drop-superseded`
