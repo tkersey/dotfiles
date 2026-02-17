@@ -1,6 +1,6 @@
 ---
 name: select
-description: "Swarm-ready work selector: choose one source (invocation list, `SLICES.md`, beads, or `plan-N.md`), refine it into dependency-aware atomic tasks, and emit an OrchPlan (waves + delegation) plus optional pipelines. Use for prompts like `$select`, `use $select`, `pick the next ready slice`, `find ready beads`, `orchestrate workers from SLICES`, or `what should run in parallel next`. Plan-only; no writeback; orchestration-agnostic."
+description: "Swarm-ready work selector: choose one source (invocation list, `SLICES.md`, or `plan-N.md`), refine it into dependency-aware atomic tasks, and emit an OrchPlan (waves + delegation) plus optional pipelines. Use for prompts like `$select`, `use $select`, `pick the next ready slice`, `orchestrate workers from SLICES`, or `what should run in parallel next`. Plan-only; no writeback; orchestration-agnostic."
 ---
 
 # Select
@@ -10,7 +10,7 @@ Pick a task source, refine it into dependency-aware atomic tasks, schedule paral
 
 This skill is **plan-only**:
 - It does not implement changes (no code edits; no running workers).
-- It does not mutate the task source (no `bd update`, no `SLICES.md` writes, no `plan-N.md` writes); instead it emits explicit manual writeback steps when needed (e.g., "mark <id> as in_progress").
+- It does not mutate the task source (no `SLICES.md` writes, no `plan-N.md` writes); instead it emits explicit manual writeback steps when needed (e.g., "mark <id> as in_progress").
 - It is orchestration-agnostic: the output is a neutral plan schema (not tied to a specific executor).
 
 It may also emit a small pipeline for driving planning artifacts into execution (manual steps; optionally loopable).
@@ -52,7 +52,7 @@ If present, interpret these directives from the invocation text:
   - `triage`: only triage `in_progress` and recommend close/reopen/continue.
   - `new`: skip triage and select new work (still warn about `in_progress`).
 - `max_tasks`: `auto|<int>`
-  - If omitted: default `1` for queue sources (`slices`, `beads`); otherwise `auto`.
+  - If omitted: default `1` for `slices`; otherwise `auto`.
   - Applies after triage decisions.
 - `review`: `required|auto|off`
   - `required` (default): run a reviewer pass and iterate until it passes (or stop+ask if blocked).
@@ -63,8 +63,7 @@ If present, interpret these directives from the invocation text:
 When multiple sources exist, pick exactly one using this precedence:
 1. Explicit user-provided task list in the invocation text.
 2. `SLICES.md` (if present and parseable).
-3. `bd` issues (if `.beads/` exists and `bd` works).
-4. `plan-N.md` (highest N, repo root).
+3. `plan-N.md` (highest N, repo root).
 
 If the highest-precedence source exists but has **no viable tasks**, do not default to an empty plan.
 - First try to select an **unblocker** (a blocked leaf task that would unlock future ready work).
@@ -79,10 +78,7 @@ Detect sources without mutating them:
 2. `SLICES.md`:
    - Exists at repo root (`SLICES.md`).
    - Parseable (each slice section contains exactly one YAML mapping).
-3. `bd`:
-   - Run `rg --files -g '.beads/**' --hidden --no-ignore`.
-   - If any paths exist, `bd` is an available source.
-4. `plan-N.md`:
+3. `plan-N.md`:
    - Find files matching `plan-(\d+).md` in the repo root and pick the highest `N`.
 
 Preflight (best-effort):
@@ -116,7 +112,6 @@ Record auto-fixes in the Decision Trace (`auto_fix`) and keep `warnings` for unr
 After you choose the source kind, read and apply exactly one adapter spec:
 - list: `codex/skills/select/ADAPTER_LIST.md`
 - slices: `codex/skills/select/ADAPTER_SLICES.md`
-- beads: `codex/skills/select/ADAPTER_BEADS.md`
 - plan: `codex/skills/select/ADAPTER_PLAN.md`
 
 Regression fixtures live in `codex/skills/select/FIXTURES.md`.
@@ -174,8 +169,8 @@ kind: OrchPlan
 created_at: "<rfc3339>"
 
 source:
-  kind: list|slices|beads|plan
-  locator: "<freeform; e.g. 'invocation', 'SLICES.md', 'bd ready', 'plan-3.md'>"
+  kind: list|slices|plan
+  locator: "<freeform; e.g. 'invocation', 'SLICES.md', 'plan-3.md'>"
 
 # Optional. If omitted, treat as "auto" (unbounded by cap; waves are dependency/lock driven).
 cap: auto
@@ -427,7 +422,6 @@ Decision Trace:
 Adapter specs live in:
 - `codex/skills/select/ADAPTER_LIST.md`
 - `codex/skills/select/ADAPTER_SLICES.md`
-- `codex/skills/select/ADAPTER_BEADS.md`
 - `codex/skills/select/ADAPTER_PLAN.md`
 
 ## Pipelines

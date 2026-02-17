@@ -264,13 +264,19 @@ Use $select:
 ```
 Expected: reviewer warns `missing_checkpoint` for missing explicit join/integration task.
 
-## F19: beads soft links are preserved as `related_to`
-Beads shape (conceptual):
+## F19: soft links are preserved as `related_to`
+Invocation list fragment:
 ```text
-bead A: title "Contract"
-bead B: title "Implementation", tracks/related -> A, no blocks edge
+Use $select:
+1. Contract.
+   - id: a
+   - scope: ["spec/**"]
+2. Implementation.
+   - id: b
+   - related_to: [a]
+   - scope: ["src/**"]
 ```
-Expected: `B` is not blocked by `A`; adapter preserves soft relationship as `related_to: [A]`.
+Expected: `b` is not blocked by `a`; parser preserves the soft relationship as `related_to: [a]`.
 
 ## F20: role tie-break prefers contract/checkpoint over implementation
 Invocation list fragment:

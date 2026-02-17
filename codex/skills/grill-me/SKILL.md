@@ -16,7 +16,7 @@ Grill Me lives in the first diamond (Discover + Define): broaden context, then c
 2. Maintain a running snapshot (facts, decisions, open questions).
 3. Ask only judgment calls: prefer 2-3 independent questions per batch, and use 1 only when ordering dependencies force sequence (use `request_user_input` if available; otherwise note it is unavailable and use the Human input block).
 4. Incorporate answers and repeat until no open questions remain.
-5. Generate verbose beads, then stop (no implementation).
+5. Generate a verbose clarification summary, then stop (no implementation).
 
 ## High-pressure clarification mode
 When the user asks for pressure-testing, run a stricter questioning loop.
@@ -161,7 +161,7 @@ GRILL ME: HUMAN INPUT REQUIRED
 ## Guardrails
 - Never ask what the code can reveal; inspect the repo first.
 - Keep questions minimal and sequential.
-- After bead creation, hard-stop.
+- After clarification output is produced, hard-stop.
 
 ## Deliverable format
 - Snapshot.

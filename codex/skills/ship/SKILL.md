@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Finalize work after validation: confirm a signal, capture proof in PR description and bead comment (if beads), and open a PR (no merge). Use when asked to run `$ship`, ship/finalize a branch, prepare or open a PR without merging, or publish validation proof before handoff."
+description: "Finalize work after validation: confirm a signal, capture proof in the PR description, and open a PR (no merge). Use when asked to run `$ship`, ship/finalize a branch, prepare or open a PR without merging, or publish validation proof before handoff."
 ---
 
 # Ship
@@ -11,7 +11,7 @@ Finalize deliverables after validation and produce a concise proof trail.
 ## Workflow
 1. Confirm a recent validation signal exists for the current change set; if not, run `validate`.
 2. Summarize proof: commands/signals and outcomes.
-3. If beads are used, comment on the active bead with the proof (only if `.beads` exists: `rg --files -g '.beads/**' --hidden --no-ignore`).
+3. Capture the proof directly in the PR description (or update the PR body if it already exists).
 4. Open a PR (do not merge), using `gh` where applicable.
 5. Report PR status and any remaining follow-ups.
 

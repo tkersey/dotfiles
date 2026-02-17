@@ -2,7 +2,7 @@
 
 ## Detection
 - Only treat an invocation task list as the source if the invocation text explicitly marks it (e.g. "Use $select" / "$select:") immediately before the list.
-- If present, it is canonical: do not look at `SLICES.md`/`bd`/`plan-N.md`.
+- If present, it is canonical: do not look at `SLICES.md`/`plan-N.md`.
 
 ## Mode handling
 - `mode` has no special meaning here; always treat list tasks as explicit work.
