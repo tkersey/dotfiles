@@ -121,18 +121,29 @@ function tierFromDelta({ usedPercent, elapsedPercent, deltaPercent }) {
   return { tier: "critical", tierReason: "delta_ge_25" };
 }
 
-export function computeBudgetGovernor(rateLimitsResponse, opts = {}) {
-  const nowSec = safeInt(opts.nowSec) ?? Math.floor(Date.now() / 1000);
-  const { bucket, bucketKey, source } = pickBucket(rateLimitsResponse);
-  const { window, kind } = pickWindow(bucket);
+const TIER_STRICTNESS = {
+  surplus: 0,
+  ahead: 1,
+  on_track: 2,
+  tight: 3,
+  critical: 4,
+};
 
-  const limitId = isObject(bucket) && typeof bucket.limitId === "string" ? bucket.limitId : null;
-  const limitName = isObject(bucket) && typeof bucket.limitName === "string" ? bucket.limitName : null;
-  const planType = isObject(bucket) && typeof bucket.planType === "string" ? bucket.planType : null;
+function toEffectiveTier(tier) {
+  return tier === "unknown" ? "on_track" : tier;
+}
 
-  const usedPercent = isObject(window) ? safeInt(window.usedPercent) : null;
-  const resetsAt = isObject(window) ? safeInt(window.resetsAt) : null;
-  const windowDurationMins = isObject(window) ? safeInt(window.windowDurationMins) : null;
+function tierStrictness(tier) {
+  const effective = toEffectiveTier(tier);
+  return Number.isInteger(TIER_STRICTNESS[effective]) ? TIER_STRICTNESS[effective] : TIER_STRICTNESS.on_track;
+}
+
+function evaluateWindow(window, kind, nowSec) {
+  if (!isObject(window)) return null;
+
+  const usedPercent = safeInt(window.usedPercent);
+  const resetsAt = safeInt(window.resetsAt);
+  const windowDurationMins = safeInt(window.windowDurationMins);
 
   const pacing = computeLinearPacing({
     usedPercent,
@@ -148,14 +159,7 @@ export function computeBudgetGovernor(rateLimitsResponse, opts = {}) {
   });
 
   return {
-    ok: Boolean(bucket && window),
-    bucketSource: source,
-    bucketKey,
-    limitId,
-    limitName,
-    planType,
-    windowKind: kind,
-    nowSec,
+    kind,
     usedPercent: pacing.usedPercent,
     resetsAt,
     windowDurationMins,
@@ -166,6 +170,89 @@ export function computeBudgetGovernor(rateLimitsResponse, opts = {}) {
     tierReason: tierInfo.tierReason,
     pacingOk: pacing.ok,
     pacingReason: pacing.reason,
+    effectiveTier: toEffectiveTier(tierInfo.tier),
+    strictness: tierStrictness(tierInfo.tier),
+  };
+}
+
+function pickStricterWindow(primaryEval, secondaryEval, preferredKind) {
+  if (!primaryEval && !secondaryEval) return null;
+  if (!primaryEval) return secondaryEval;
+  if (!secondaryEval) return primaryEval;
+
+  if (primaryEval.strictness > secondaryEval.strictness) return primaryEval;
+  if (secondaryEval.strictness > primaryEval.strictness) return secondaryEval;
+
+  if (preferredKind === "primary") return primaryEval;
+  if (preferredKind === "secondary") return secondaryEval;
+  return primaryEval;
+}
+
+export function computeBudgetGovernor(rateLimitsResponse, opts = {}) {
+  const nowSec = safeInt(opts.nowSec) ?? Math.floor(Date.now() / 1000);
+  const { bucket, bucketKey, source } = pickBucket(rateLimitsResponse);
+  const { kind } = pickWindow(bucket);
+
+  const limitId = isObject(bucket) && typeof bucket.limitId === "string" ? bucket.limitId : null;
+  const limitName = isObject(bucket) && typeof bucket.limitName === "string" ? bucket.limitName : null;
+  const planType = isObject(bucket) && typeof bucket.planType === "string" ? bucket.planType : null;
+
+  const primary = isObject(bucket) && isObject(bucket.primary) ? bucket.primary : null;
+  const secondary = isObject(bucket) && isObject(bucket.secondary) ? bucket.secondary : null;
+  const primaryEval = evaluateWindow(primary, "primary", nowSec);
+  const secondaryEval = evaluateWindow(secondary, "secondary", nowSec);
+  const selected = pickStricterWindow(primaryEval, secondaryEval, kind);
+
+  return {
+    ok: Boolean(bucket && selected),
+    bucketSource: source,
+    bucketKey,
+    limitId,
+    limitName,
+    planType,
+    windowKind: selected?.kind ?? null,
+    nowSec,
+    usedPercent: selected?.usedPercent ?? null,
+    resetsAt: selected?.resetsAt ?? null,
+    windowDurationMins: selected?.windowDurationMins ?? null,
+    remainingMins: selected?.remainingMins ?? null,
+    elapsedPercent: selected?.elapsedPercent ?? null,
+    deltaPercent: selected?.deltaPercent ?? null,
+    tier: selected?.tier ?? "unknown",
+    tierReason: selected?.tierReason ?? "window_missing",
+    pacingOk: selected?.pacingOk ?? false,
+    pacingReason: selected?.pacingReason ?? "window_missing",
+    effectiveTier: selected?.effectiveTier ?? "on_track",
+    primary: primaryEval
+      ? {
+          usedPercent: primaryEval.usedPercent,
+          resetsAt: primaryEval.resetsAt,
+          windowDurationMins: primaryEval.windowDurationMins,
+          remainingMins: primaryEval.remainingMins,
+          elapsedPercent: primaryEval.elapsedPercent,
+          deltaPercent: primaryEval.deltaPercent,
+          tier: primaryEval.tier,
+          tierReason: primaryEval.tierReason,
+          pacingOk: primaryEval.pacingOk,
+          pacingReason: primaryEval.pacingReason,
+          effectiveTier: primaryEval.effectiveTier,
+        }
+      : null,
+    secondary: secondaryEval
+      ? {
+          usedPercent: secondaryEval.usedPercent,
+          resetsAt: secondaryEval.resetsAt,
+          windowDurationMins: secondaryEval.windowDurationMins,
+          remainingMins: secondaryEval.remainingMins,
+          elapsedPercent: secondaryEval.elapsedPercent,
+          deltaPercent: secondaryEval.deltaPercent,
+          tier: secondaryEval.tier,
+          tierReason: secondaryEval.tierReason,
+          pacingOk: secondaryEval.pacingOk,
+          pacingReason: secondaryEval.pacingReason,
+          effectiveTier: secondaryEval.effectiveTier,
+        }
+      : null,
   };
 }
 

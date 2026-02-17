@@ -49,7 +49,7 @@ Skill routing (default):
 - Capacity baseline: saturate safe parallel capacity with dynamic backpressure; treat `[agents].max_threads` as the per-instance ceiling.
 - Budget governor (ChatGPT weekly allowance): default `budget=aware` (pace) unless the user explicitly sets `budget=all_out`.
   - Mode override: if the user message includes `budget=aware` or `budget=all_out`, treat it as authoritative for that run.
-  - If you can reach the app-server (for example via `$cas`), call `account/rateLimits/read` and select the longest window (treat as weekly).
+  - If you can reach the app-server (for example via `$cas`), call `account/rateLimits/read`, evaluate each available window independently, and enforce the stricter effective tier (for example weekly + 5-hour together).
   - Compute `elapsed%` from `resetsAt` + `windowDurationMins`, then `delta = used% - elapsed%`.
   - Tier: `surplus<=-25`, `ahead<=-10`, `on_track<+10`, `tight<+25`, `critical>=+25` OR `used>=95`.
   - Clamp: `surplus|ahead` full fanout ok; `on_track` cap fanout + avoid multi-instance; `tight` 1 worker + no multi-instance; `critical` serial.
