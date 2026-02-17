@@ -13,6 +13,10 @@ import { fileURLToPath } from "node:url";
 import { CasClient } from "../../cas/scripts/cas_client.mjs";
 import { computeBudgetGovernor, meshArgsForBudget } from "../../cas/scripts/budget_governor.mjs";
 
+if (!process.env.UV_CACHE_DIR) {
+  process.env.UV_CACHE_DIR = "/tmp/uv-cache";
+}
+
 function resolveStPlanScript() {
   const codexHome = process.env.CODEX_HOME ?? resolve(homedir(), ".codex");
   const claudeHome = process.env.CLAUDE_HOME ?? resolve(homedir(), ".claude");

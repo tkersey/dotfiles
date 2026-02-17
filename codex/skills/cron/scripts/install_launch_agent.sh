@@ -4,12 +4,14 @@ set -eu
 LABEL="${CRON_LAUNCHD_LABEL:-com.openai.codex.automation-runner}"
 INTERVAL_SECONDS="${CRON_LAUNCHD_INTERVAL_SECONDS:-60}"
 PATH_VALUE="${CRON_LAUNCHD_PATH:-${PATH:-/usr/bin:/bin:/usr/sbin:/sbin}}"
+UV_CACHE_DIR_VALUE="${CRON_LAUNCHD_UV_CACHE_DIR:-/tmp/uv-cache}"
 
 usage() {
-  echo "Usage: $0 [--label <label>] [--interval-seconds <n>] [--path <path>]"
+  echo "Usage: $0 [--label <label>] [--interval-seconds <n>] [--path <path>] [--uv-cache-dir <path>]"
   echo "Defaults:"
   echo "  label=$LABEL"
   echo "  interval-seconds=$INTERVAL_SECONDS"
+  echo "  uv-cache-dir=$UV_CACHE_DIR_VALUE"
 }
 
 while [ "$#" -gt 0 ]; do
@@ -36,6 +38,14 @@ while [ "$#" -gt 0 ]; do
         exit 1
       fi
       PATH_VALUE="$2"
+      shift 2
+      ;;
+    --uv-cache-dir)
+      if [ "$#" -lt 2 ]; then
+        echo "error: --uv-cache-dir requires a value" >&2
+        exit 1
+      fi
+      UV_CACHE_DIR_VALUE="$2"
       shift 2
       ;;
     -h|--help)
@@ -69,6 +79,7 @@ UID_VALUE="$(id -u)"
 TMP_PLIST="$(mktemp)"
 
 mkdir -p "$HOME/Library/LaunchAgents" "$LOG_DIR"
+mkdir -p "$UV_CACHE_DIR_VALUE"
 
 cat > "$TMP_PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -105,6 +116,8 @@ cat > "$TMP_PLIST" <<EOF
   <dict>
     <key>PATH</key>
     <string>$PATH_VALUE</string>
+    <key>UV_CACHE_DIR</key>
+    <string>$UV_CACHE_DIR_VALUE</string>
   </dict>
 </dict>
 </plist>

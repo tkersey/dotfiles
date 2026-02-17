@@ -3,6 +3,7 @@ set -eu
 
 LABEL="${MESH_FLEET_LAUNCHD_LABEL:-com.openai.codex.mesh-fleet-autopilot}"
 PATH_VALUE="${MESH_FLEET_LAUNCHD_PATH:-/opt/homebrew/bin:/usr/local/bin:${PATH:-/usr/bin:/bin:/usr/sbin:/sbin}}"
+UV_CACHE_DIR_VALUE="${MESH_FLEET_LAUNCHD_UV_CACHE_DIR:-/tmp/uv-cache}"
 
 TARGET_CWD="$(pwd)"
 PLAN_FILE_REL=".step/st-plan.jsonl"
@@ -13,13 +14,14 @@ INTEGRATOR_TURN_TIMEOUT_MS="2700000"
 BUDGET_MODE="aware"
 
 usage() {
-  echo "Usage: $0 [--label <label>] [--path <path>] --cwd <dir> [--plan-file <relpath>] [--workers <n>] [--poll-ms <n>] [--worker-turn-timeout-ms <n>] [--integrator-turn-timeout-ms <n>] [--budget-mode <aware|all_out>]"
+  echo "Usage: $0 [--label <label>] [--path <path>] [--uv-cache-dir <path>] --cwd <dir> [--plan-file <relpath>] [--workers <n>] [--poll-ms <n>] [--worker-turn-timeout-ms <n>] [--integrator-turn-timeout-ms <n>] [--budget-mode <aware|all_out>]"
   echo "Defaults:"
   echo "  label=$LABEL"
   echo "  plan-file=$PLAN_FILE_REL"
   echo "  workers=$WORKERS"
   echo "  poll-ms=$POLL_MS"
   echo "  budget-mode=$BUDGET_MODE"
+  echo "  uv-cache-dir=$UV_CACHE_DIR_VALUE"
 }
 
 while [ "$#" -gt 0 ]; do
@@ -28,6 +30,8 @@ while [ "$#" -gt 0 ]; do
       LABEL="$2"; shift 2 ;;
     --path)
       PATH_VALUE="$2"; shift 2 ;;
+    --uv-cache-dir)
+      UV_CACHE_DIR_VALUE="$2"; shift 2 ;;
     --cwd)
       TARGET_CWD="$2"; shift 2 ;;
     --plan-file)
@@ -112,6 +116,7 @@ UID_VALUE="$(id -u)"
 TMP_PLIST="$(mktemp)"
 
 mkdir -p "$HOME/Library/LaunchAgents" "$LOG_DIR"
+mkdir -p "$UV_CACHE_DIR_VALUE"
 
 cat > "$TMP_PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -160,6 +165,8 @@ cat > "$TMP_PLIST" <<EOF
   <dict>
     <key>PATH</key>
     <string>$PATH_VALUE</string>
+    <key>UV_CACHE_DIR</key>
+    <string>$UV_CACHE_DIR_VALUE</string>
   </dict>
 </dict>
 </plist>
