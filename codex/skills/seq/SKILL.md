@@ -177,7 +177,7 @@ uv run scripts/seq_perf_harness.py \
 
 ## Notes
 - Default root: `~/.codex/sessions`.
-- Skill names are inferred from `~/.dotfiles/codex/skills` and `~/.codex/skills` by default.
+- Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, with fallback to `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 

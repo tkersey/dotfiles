@@ -16,7 +16,16 @@ import { fileURLToPath } from "node:url";
 import { CasClient } from "../../cas/scripts/cas_client.mjs";
 import { computeBudgetGovernor, effectiveWorkersForBudget } from "../../cas/scripts/budget_governor.mjs";
 
-const DEFAULT_ST_INIT_CMD = "uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py init --file .step/st-plan.jsonl";
+function resolveStPlanScript() {
+  const codexHome = process.env.CODEX_HOME ?? resolve(homedir(), ".codex");
+  const claudeHome = process.env.CLAUDE_HOME ?? resolve(homedir(), ".claude");
+  const codexStPlanScript = resolve(codexHome, "skills", "st", "scripts", "st_plan.py");
+  if (existsSync(codexStPlanScript)) return codexStPlanScript;
+  return resolve(claudeHome, "skills", "st", "scripts", "st_plan.py");
+}
+
+const ST_PLAN_SCRIPT = resolveStPlanScript();
+const DEFAULT_ST_INIT_CMD = `uv run "${ST_PLAN_SCRIPT}" init --file .step/st-plan.jsonl`;
 const LOCK_TTL_MS = 5 * 60_000;
 const WORKER_MAX_ATTEMPTS = 2;
 const BUDGET_REFRESH_MS = 60_000;
@@ -232,7 +241,7 @@ function ensureHeadlessPlanFile({ cwd, planFile }) {
   const initCmd =
     planFile === ".step/st-plan.jsonl"
       ? DEFAULT_ST_INIT_CMD
-      : `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py init --file ${planFile}`;
+      : `uv run "${ST_PLAN_SCRIPT}" init --file ${planFile}`;
   process.stderr.write(
     `mesh_headless_stop headless_stop_reason=plan_missing plan_file=${planFile} action=${JSON.stringify(initCmd)}\n`,
   );

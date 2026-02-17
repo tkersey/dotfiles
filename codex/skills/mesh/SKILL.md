@@ -228,7 +228,7 @@ Resolve the plan file path in this order:
    Recommended default: pass `plan_file=.step/st-plan.jsonl` explicitly.
    - If `headless=true`, do not ask; stop with one actionable line and `headless_stop_reason=ambiguous_plan_file`.
 4) Else (neither exists), choose `.step/st-plan.jsonl` and STOP with the exact init command:
-   `uv run ~/.dotfiles/codex/skills/st/scripts/st_plan.py init --file .step/st-plan.jsonl`
+   `CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"; CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"; ST_PLAN="$CODEX_SKILLS_HOME/skills/st/scripts/st_plan.py"; [ -f "$ST_PLAN" ] || ST_PLAN="$CLAUDE_SKILLS_HOME/skills/st/scripts/st_plan.py"; uv run "$ST_PLAN" init --file .step/st-plan.jsonl`
 
 ### Execution Preflight (Required)
 

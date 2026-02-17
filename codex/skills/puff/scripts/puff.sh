@@ -629,7 +629,13 @@ cmd_stop() {
 }
 
 cmd_cas_start() {
-  local proxy_script="${PUFF_CAS_PROXY_SCRIPT:-$HOME/.dotfiles/codex/skills/cas/scripts/cas_proxy.mjs}"
+  local codex_skills_home="${CODEX_HOME:-$HOME/.codex}/skills"
+  local claude_skills_home="${CLAUDE_HOME:-$HOME/.claude}/skills"
+  local default_proxy_script="$codex_skills_home/cas/scripts/cas_proxy.mjs"
+  if [[ ! -f "$default_proxy_script" ]]; then
+    default_proxy_script="$claude_skills_home/cas/scripts/cas_proxy.mjs"
+  fi
+  local proxy_script="${PUFF_CAS_PROXY_SCRIPT:-$default_proxy_script}"
   local cwd=""
   local state_file=""
   local timeout_ms=""

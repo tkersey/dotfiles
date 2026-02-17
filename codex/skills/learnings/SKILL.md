@@ -50,7 +50,7 @@ Auto-trigger rule: if none of these checkpoints occurred and nothing decision-sh
    - Choose a more precise status when needed (for example `investigate_more`, `codify_now`, `avoid_for_now`).
 4. Persist immediately.
    - Append each accepted learning to `.learnings.jsonl` in repo root (0 records is valid when nothing qualifies).
-   - Use `codex/skills/learnings/scripts/append_learning.py` instead of hand-building JSON.
+   - Use the `append_learning.py` helper script (resolve via the canonical home paths shown below) instead of hand-building JSON.
 5. Report concise highlights in chat.
    - Summarize the 1-3 highest leverage learnings (or say none).
    - Reference the write result (`.learnings.jsonl` updated, N records appended, or duplicate-skip).
@@ -111,7 +111,14 @@ Optional keys:
 Use one append call per learning:
 
 ```bash
-uv run python codex/skills/learnings/scripts/append_learning.py \
+CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
+CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
+APPEND_LEARNING_SCRIPT="$CODEX_SKILLS_HOME/skills/learnings/scripts/append_learning.py"
+[ -f "$APPEND_LEARNING_SCRIPT" ] || APPEND_LEARNING_SCRIPT="$CLAUDE_SKILLS_HOME/skills/learnings/scripts/append_learning.py"
+```
+
+```bash
+uv run python "$APPEND_LEARNING_SCRIPT" \
   --status do_more \
   --learning "Boundary parsing eliminated downstream guard duplication." \
   --evidence "uv run pytest tests/parser_test.py::test_rejects_invalid passed after boundary parse refactor" \
@@ -136,10 +143,17 @@ Use the miner script to leverage learnings at task start and to promote repeated
 CLI:
 
 ```bash
-uv run python codex/skills/learnings/scripts/learnings.py datasets
-uv run python codex/skills/learnings/scripts/learnings.py query --spec @codex/skills/learnings/specs/status-rank.json
-uv run python codex/skills/learnings/scripts/learnings.py recall --query "fix flaky pre-commit hook" --limit 5
-uv run python codex/skills/learnings/scripts/learnings.py codify-candidates --min-count 3 --limit 20
+CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
+CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
+LEARNINGS_SCRIPT="$CODEX_SKILLS_HOME/skills/learnings/scripts/learnings.py"
+[ -f "$LEARNINGS_SCRIPT" ] || LEARNINGS_SCRIPT="$CLAUDE_SKILLS_HOME/skills/learnings/scripts/learnings.py"
+LEARNINGS_SPECS_DIR="$CODEX_SKILLS_HOME/skills/learnings/specs"
+[ -d "$LEARNINGS_SPECS_DIR" ] || LEARNINGS_SPECS_DIR="$CLAUDE_SKILLS_HOME/skills/learnings/specs"
+
+uv run python "$LEARNINGS_SCRIPT" datasets
+uv run python "$LEARNINGS_SCRIPT" query --spec "@$LEARNINGS_SPECS_DIR/status-rank.json"
+uv run python "$LEARNINGS_SCRIPT" recall --query "fix flaky pre-commit hook" --limit 5
+uv run python "$LEARNINGS_SCRIPT" codify-candidates --min-count 3 --limit 20
 ```
 
 Promotion rule of thumb:

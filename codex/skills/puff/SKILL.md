@@ -13,15 +13,22 @@ Use this skill to launch Codex Cloud tasks without blocking the local CLI sessio
 
 1. Ensure ChatGPT auth is present.
 `codex login`
-2. Run readiness checks.
-`~/.dotfiles/codex/skills/puff/scripts/puff.sh doctor --env <env-id-or-label>`
-3. Launch cloud work with a detached watcher.
-`~/.dotfiles/codex/skills/puff/scripts/puff.sh launch --env <env-id-or-label> --prompt "Implement X"`
-4. Inspect running and completed watcher jobs.
-`~/.dotfiles/codex/skills/puff/scripts/puff.sh jobs`
-5. Tail watcher logs when needed.
+2. Resolve skill paths (`.codex` primary, `.claude` fallback).
+```bash
+CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
+CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
+PUFF_SCRIPT="$CODEX_SKILLS_HOME/skills/puff/scripts/puff.sh"
+[ -f "$PUFF_SCRIPT" ] || PUFF_SCRIPT="$CLAUDE_SKILLS_HOME/skills/puff/scripts/puff.sh"
+```
+3. Run readiness checks.
+`"$PUFF_SCRIPT" doctor --env <env-id-or-label>`
+4. Launch cloud work with a detached watcher.
+`"$PUFF_SCRIPT" launch --env <env-id-or-label> --prompt "Implement X"`
+5. Inspect running and completed watcher jobs.
+`"$PUFF_SCRIPT" jobs`
+6. Tail watcher logs when needed.
 `tail -f <watch_log_path>`
-6. Inspect or apply result when ready.
+7. Inspect or apply result when ready.
 `codex cloud diff <task-id>`
 `codex cloud apply <task-id>`
 

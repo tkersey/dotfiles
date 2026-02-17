@@ -4,18 +4,27 @@
 
 Use this path for cloud background task execution from CLI.
 
+```bash
+CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
+CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
+PUFF_SCRIPT="$CODEX_SKILLS_HOME/skills/puff/scripts/puff.sh"
+[ -f "$PUFF_SCRIPT" ] || PUFF_SCRIPT="$CLAUDE_SKILLS_HOME/skills/puff/scripts/puff.sh"
+CAS_PROXY_SCRIPT="$CODEX_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"
+[ -f "$CAS_PROXY_SCRIPT" ] || CAS_PROXY_SCRIPT="$CLAUDE_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"
+```
+
 - Doctor check (auth + env resolution):
-  `~/.dotfiles/codex/skills/puff/scripts/puff.sh doctor --env <env>`
+  `"$PUFF_SCRIPT" doctor --env <env>`
 - Submit only:
-  `~/.dotfiles/codex/skills/puff/scripts/puff.sh submit --env <env> --prompt "..."`
+  `"$PUFF_SCRIPT" submit --env <env> --prompt "..."`
 - Watch in foreground:
-  `~/.dotfiles/codex/skills/puff/scripts/puff.sh watch --task <task-id-or-url>`
+  `"$PUFF_SCRIPT" watch --task <task-id-or-url>`
 - Launch detached watcher:
-  `~/.dotfiles/codex/skills/puff/scripts/puff.sh launch --env <env> --prompt "..."`
+  `"$PUFF_SCRIPT" launch --env <env> --prompt "..."`
 - List jobs:
-  `~/.dotfiles/codex/skills/puff/scripts/puff.sh jobs`
+  `"$PUFF_SCRIPT" jobs`
 - Stop job:
-  `~/.dotfiles/codex/skills/puff/scripts/puff.sh stop --job <job-id>`
+  `"$PUFF_SCRIPT" stop --job <job-id>`
 
 Direct Codex Cloud commands:
 - `codex cloud list --json`
@@ -32,11 +41,11 @@ Typical pairing:
 2. Use `$cas` to orchestrate complex app-server thread/turn flows or integrate custom automation.
 
 Start/stop proxy via puff:
-- `~/.dotfiles/codex/skills/puff/scripts/puff.sh cas-start --cwd <workspace>`
-- `~/.dotfiles/codex/skills/puff/scripts/puff.sh cas-stop`
+- `"$PUFF_SCRIPT" cas-start --cwd <workspace>`
+- `"$PUFF_SCRIPT" cas-stop`
 
 Start proxy directly (advanced):
-- `node ~/.dotfiles/codex/skills/cas/scripts/cas_proxy.mjs`
+- `node "$CAS_PROXY_SCRIPT"`
 
 Then drive methods like:
 - `thread/start`

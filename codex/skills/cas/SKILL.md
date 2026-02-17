@@ -37,7 +37,7 @@ This skill assumes `codex` is available on PATH and does not require access to a
 ## Workflow
 
 1. Start the proxy.
-   - Run `node scripts/cas_proxy.mjs` from the cas skill directory (example: `node ~/.dotfiles/codex/skills/cas/scripts/cas_proxy.mjs`).
+   - Run `node scripts/cas_proxy.mjs` from the cas skill directory (or resolve by script path: `CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"; CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"; CAS_PROXY="$CODEX_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"; [ -f "$CAS_PROXY" ] || CAS_PROXY="$CLAUDE_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"; node "$CAS_PROXY"`).
    - Optional: pass `--cwd /path/to/workspace` to control where the app-server runs. By default, state is written under `~/.codex/cas/state/<workspace-hash>.json`.
    - Optional: pass `--state-file PATH` to override the default state location.
    - Optional: tune forwarded request fail-fast behavior with `--server-request-timeout-ms <N>` (0 disables timeout).
