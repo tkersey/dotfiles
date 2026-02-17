@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Create a language-agnostic ghost-library package from an existing library repo by extracting SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and upstream LICENSE files with provenance and regeneration instructions. Use when prompts say "$ghost", "ghostify this repo", "spec-ify/spec-package this library", "ghost library", or ask to extract portable spec/tests from source tests; do not use for implementation work or editing skills.
+description: Create a language-agnostic ghost-library package from an existing library repo by extracting SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and upstream LICENSE files with provenance and regeneration instructions. Use when prompts say "$ghost", "ghostify this repo", "spec-ify/spec-package this library", "ghost library", or ask to extract portable spec/tests from source tests, including stateful/protocol workflows such as multi-step agent loops; do not use for implementation work or editing skills.
 ---
 
 # ghost
@@ -38,6 +38,11 @@ It gets harder (but is still possible) when the contract depends on time, random
 - MUST assert stable machine-interface fields explicitly (required keys, lengths/counts, and state effects), not only loose partial matches.
 - MUST treat human-readable warning/error messages as unstable unless tests prove they are part of the public contract.
   - Prefer structured fields (codes) or substring assertions for message checks.
+- MUST capture cross-operation state transitions when behavior depends on prior calls (for example session, instance, history, or tool-loop continuity).
+- MUST include executable end-to-end loop coverage for each primary stateful workflow (for example create -> act -> persist -> follow-up) with explicit pre/post state assertions.
+- MUST treat a stateful workflow as incomplete if only isolated operation cases exist; add scenario coverage in `tests.yaml` and verification proof before calling extraction done.
+- MUST produce a machine-checkable evidence bundle under `verification/evidence/` and fail extraction unless it passes `uv run python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`.
+- MUST enforce fail-closed verification thresholds: 100% mapped public operations, 100% mapped primary workflows, mutation sensitivity gate passes, and independent regeneration parity passes.
 
 ## Inputs
 - Source repo path (git working tree)
@@ -75,7 +80,7 @@ Pick one schema and stay consistent:
 ### 0) Define scope and contract
 - Write a one-line problem statement naming the upstream repo/revision and target ghost output path.
 - Choose one `tests.yaml` layout (functional or protocol/CLI) and keep it consistent across `SPEC.md`, `INSTALL.md`, and `VERIFY.md`.
-- Set success criteria: deterministic cases for every public operation and a recorded verification signal in `VERIFY.md`.
+- Set success criteria: deterministic cases for every public operation, executable loop coverage for primary stateful workflows, and a recorded verification signal in `VERIFY.md`.
 
 ### 1) Scope the source
 - Locate the test suite(s), examples, and primary docs (README, API docs, docs site).
@@ -92,6 +97,7 @@ Pick one schema and stay consistent:
 - Confirm which functions/classes are *in* scope:
   - public API + tests covering it
   - exclude internal helpers unless tests prove they are part of the contract
+- Identify primary user-facing workflows (especially stateful loops) and map each workflow to required operation sequences and state boundaries.
 - Decide the output directory as a new sibling repo unless the user overrides.
 
 ### 2) Harvest behavior evidence
@@ -99,6 +105,7 @@ Pick one schema and stay consistent:
 - When tests are silent, read code/docs to infer behavior and record the inference.
 - Note all boundary values, rounding rules, encoding rules, and error cases.
 - If the API promises "copy"/"detached" behavior, harvest mutation-isolation evidence (including nested structure mutation, not just top-level fields).
+- For stateful APIs, harvest continuity evidence across steps (persisted ids, history chains, context/tool carry-forward, and reset semantics).
 - Normalize environment assumptions:
   - eliminate dependency on current time (use explicit timestamps)
   - force timezone/locale rules if relevant
@@ -111,6 +118,7 @@ Pick one schema and stay consistent:
 - Specify error behavior precisely (conditions), but keep the *mechanism* language-idiomatic.
 - Specify every public operation with inputs, outputs, rules, and edge cases.
 - When an operation yields both a "prepared" value and a "persisted delta" (or similar), define the delta derivation mechanically (slice/filter/identity rules) and test it.
+- Specify cross-operation invariants for primary workflows (state transitions, required ordering, and continuity guarantees).
 - Paraphrase source docs; do not copy text verbatim.
 - Use `references/templates.md` for structure.
 
@@ -128,6 +136,7 @@ Pick one schema and stay consistent:
   - quote ambiguous scalars (`yes`, `no`, `on`, `off`, `null`) to avoid parser disagreements
 - Normalize inputs to deterministic values (avoid "now"; use explicit timestamps).
 - Keep or improve coverage across all public operations and failure modes.
+- Add scenario cases for primary stateful workflows so the contract proves end-to-end loop behavior, not only per-operation correctness.
 - Prefer exact/value-complete assertions for stable output fields; use partial assertions only when fields are intentionally volatile.
 - For warning/error message checks, prefer substring assertions unless the exact wording is itself part of the upstream contract.
 - If `tests.yaml` includes harness directives beyond basic `{name,input,output|error}` (e.g. callbacks by label, mutation steps, warning sinks, setup scripts), document them in `TESTS_SCHEMA.md`.
@@ -144,6 +153,7 @@ Pick one schema and stay consistent:
   - include the exact commands used to produce each artifact (or a single deterministic regeneration recipe)
   - include the exact commands used to run verification and the resulting pass/skip counts
   - include any environment normalization assumptions
+  - include a summary of `verification/evidence/` and the verifier command/result
 - `LICENSE*`: preserve the upstream repo’s license files verbatim.
   - copy common files like `LICENSE`, `LICENSE.md`, `COPYING*`
   - if no license file exists upstream, include a `LICENSE` file stating that no upstream license was found
@@ -154,8 +164,17 @@ Pick one schema and stay consistent:
 - Preferred: create a temporary adapter runner in the source language to run `tests.yaml` against the existing library.
   - if the source language has weak YAML tooling, parse YAML externally and dispatch into the library via a tiny CLI/FFI shim
   - assert expected outcomes match exactly (outputs/errors for functional layout; exit/status/payload/state assertions for protocol layout)
+  - for stateful workflows, execute end-to-end loop scenarios and assert continuity/persistence effects across steps
   - delete the adapter afterward; do not ship it in the ghost repo
   - summarize how to run it (and results) in `VERIFY.md`
+- Build a fail-closed evidence bundle in `verification/evidence/`:
+  - `inventory.json` (public operations + primary workflows, including reset requirements)
+  - `traceability.csv` (operation/workflow -> case ids -> proof artifact -> adapter run id)
+  - `workflow_loops.json` (loop cases + continuity assertions + reset assertions when required)
+  - `adapter_results.jsonl` (case-level results with `run_id`, `case_id`, `status`, and mutation marker)
+  - `mutation_check.json` (required mutation count + detected failures + pass/fail)
+  - `parity.json` (independent regeneration parity verdict + diff count)
+- Run `uv run python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`; non-zero exit means extraction is incomplete.
 - If a full adapter is infeasible:
   - run a representative sample across all operation ids (typical + boundary + error)
   - document the limitation clearly in `VERIFY.md`
@@ -173,6 +192,12 @@ Produce only these artifacts in the ghost repo:
 - `TESTS_SCHEMA.md` (optional; include when tests.yaml has non-trivial harness semantics)
 - `INSTALL.md`
 - `VERIFY.md`
+- `verification/evidence/inventory.json`
+- `verification/evidence/traceability.csv`
+- `verification/evidence/workflow_loops.json`
+- `verification/evidence/adapter_results.jsonl`
+- `verification/evidence/mutation_check.json`
+- `verification/evidence/parity.json`
 - `LICENSE*` (copied from upstream)
 - `.gitignore` (optional, minimal)
 

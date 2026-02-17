@@ -99,6 +99,8 @@ Notes:
 - Functional layout: `output` and `error` are mutually exclusive; represent errors with `error: true` only.
 - Protocol/CLI layout: assert deterministic outcomes (`exit_code`, machine-readable payload checks, and optional state assertions).
 - If a case is skipped, include `skip: "<reason>"` and account for it in `VERIFY.md`.
+- For stateful workflows, add multi-step loop scenarios (for example create -> act -> follow-up) and assert continuity fields across steps (ids, chain pointers, persisted context/history).
+- Do not rely on operation-isolated cases alone when the public behavior is workflow-driven.
 
 ## INSTALL.md (outline)
 - Short intro: "This is a ghost library; implement locally"
@@ -118,8 +120,36 @@ Notes:
 - Sampling fallback (if adapter infeasible)
   - What was sampled and why
   - Known gaps / unverified areas
+- Evidence bundle verifier (fail-closed)
+  - `verification/evidence/` is present and complete
+  - `uv run python scripts/verify_evidence.py --bundle verification/evidence` passes
+- Traceability matrix
+  - operation/workflow -> case ids -> proof artifact -> adapter run id
+- Adapter run ledger
+  - run id, mode, command, timestamp, result
+- Workflow loop inventory
+  - workflow id, cases, continuity assertions, reset assertions (when required)
+- Mutation sensitivity gate
+  - required mutations, detected failures, pass/fail
+- Independent regeneration parity
+  - two runs, normalized artifact diff count, pass/fail
 - Test inventory (optional)
   - Case counts per operation id
+
+## verification/evidence/ (required files)
+- `inventory.json`
+  - `public_operations`: list of operation ids
+  - `primary_workflows`: list of workflow objects `{id, requires_reset}`
+- `traceability.csv`
+  - columns: `target_type,target_id,case_id,proof_artifact,adapter_run_id`
+- `workflow_loops.json`
+  - `workflows`: list of `{id,cases,continuity_assertions,reset_assertions}`
+- `adapter_results.jsonl`
+  - one JSON object per case execution with `run_id`, `case_id`, `status`, optional `mutated`
+- `mutation_check.json`
+  - `{required_mutations, detected_failures, pass}`
+- `parity.json`
+  - `{pass, diff_count, run_a, run_b}`
 
 ## README.md (outline)
 - One-paragraph description of the ghost library concept
