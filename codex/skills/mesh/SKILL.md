@@ -180,13 +180,18 @@ Required adapter verbs:
 Common adapter ids (convention; optional):
 - `local`: in-session workers (subagents)
 - `cas`: multi-instance workers (via `$cas`), coordinated via mailbox+leases; one integrator applies patches/validates/mutates `$st`
-- `auto`: choose `local` unless you need to exceed per-instance caps or isolate contexts; always report which adapter is selected
+- `auto`: throughput-aware selection. Choose `local` for one-wave workloads; switch to `cas` when ready queue depth exceeds one local wave, or when high-fanout intent meets observed local cap pressure. Always report selected adapter + reason.
 
 Adapter selection order:
 0) If invocation includes `adapter=<id>` (for example `adapter=local` or `adapter=cas`), use it if available; if not available, treat as `adapter_missing_capability`.
-1) Prefer an adapter explicitly marked `preferred` by the runtime.
-2) Else pick the first adapter that satisfies all required verbs.
-3) Else stop and ask the user to switch to a worker-capable runtime.
+1) If `adapter=auto`, evaluate throughput first:
+   - estimate `local_wave_capacity = floor((max_threads - reserve_slots)/roles_per_task)`
+   - if `ready_queue_depth > local_wave_capacity`, choose `cas`
+   - if high-fanout intent ("as many subagents/shards as possible") and one local cap-pressure event is observed, choose `cas`
+   - otherwise choose `local`
+2) Else prefer an adapter explicitly marked `preferred` by the runtime.
+3) Else pick the first adapter that satisfies all required verbs.
+4) Else stop and ask the user to switch to a worker-capable runtime.
 
 Communication is orchestrator-mediated: each round's prompts include prior round artifacts.
 
@@ -235,12 +240,15 @@ Resolve the plan file path in this order:
 Before spawning workers, emit a one-line preflight with:
 - a stable run id for later `$seq` mining: `mesh_run_id=<UTC-compact>` (example: `mesh_run_id=20260213T015500Z`)
 - resolved `plan_file`
-- selected adapter id
+- selected adapter id (`selected_adapter`)
+- adapter selection reason (`selection_reason`)
+- requested worker slots for this run (`requested_workers`)
+- local per-wave capacity (`local_cap`)
 - selected task ids (or `none`)
 - active overrides (`max_tasks`, `parallel_tasks`, `ids`)
 
 Recommended format:
-`mesh_preflight mesh_run_id=... plan_file=... adapter=... ids=... overrides=...`
+`mesh_preflight mesh_run_id=... plan_file=... selected_adapter=... selection_reason=... requested_workers=... local_cap=... ids=... overrides=...`
 
 If no runnable task is selected, exit via the "No runnable tasks" path.
 
@@ -438,7 +446,7 @@ Return:
 - concurrency telemetry: requested vs achieved (`parallel_tasks`, roles per task); if below target, state why (scope overlap, adapter cap, spawn failures)
 - consensus telemetry (attempt count, vote tallies)
 - delegation telemetry: `delegation_did_not_run=true|false`; when true, include a reason code
-- adapter telemetry (selected adapter, workers spawned/completed/retried/timed_out)
+- adapter telemetry (selected adapter, selection reason, requested workers, local cap, workers spawned/completed/retried/timed_out)
 - slot hygiene telemetry: workers `spawned` vs `closed` when close semantics exist; include any stragglers
 - validation commands and outcomes
 - `$st` mutations performed (ids + statuses)
@@ -448,6 +456,19 @@ Also include the run id in the final report so `$seq` can find it later:
 - `mesh_run_id=...`
 
 Never fabricate timestamps, tool events, or command outputs.
+
+## Post-run Seq Guardrail (Required for High-Fanout Intent)
+
+When user intent is explicit high fanout ("many subagents", "many shards", "as many as possible"), run a final `$seq` check before responding. Scope counts to this mesh run (not cumulative session totals):
+- Convert `mesh_run_id=YYYYMMDDTHHMMSSZ` to `mesh_run_since=YYYY-MM-DDTHH:MM:SSZ` and pass it to `--since`.
+- Count `spawn_agent` for the current session path since `mesh_run_since`.
+- Count CAS signals for the same path since `mesh_run_since` (`$cas` mention or `adapter=cas`).
+- If run-scoped `spawn_agent >= 10` and CAS signals are `0`, include an explicit recommendation to rerun with:
+  `node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd <repo> --workers N`
+
+Reference commands:
+- `CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"; CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"; SEQ_SCRIPT="$CODEX_SKILLS_HOME/skills/seq/scripts/seq.py"; [ -f "$SEQ_SCRIPT" ] || SEQ_SCRIPT="$CLAUDE_SKILLS_HOME/skills/seq/scripts/seq.py"; uv run python "$SEQ_SCRIPT" query --root ~/.codex/sessions --since <mesh_run_since> --spec '{"dataset":"tool_calls","where":[{"field":"path","op":"eq","value":"<session_path>"},{"field":"tool","op":"eq","value":"spawn_agent"}],"group_by":["path"],"metrics":[{"op":"count","as":"spawn_calls"}],"format":"table"}'`
+- `CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"; CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"; SEQ_SCRIPT="$CODEX_SKILLS_HOME/skills/seq/scripts/seq.py"; [ -f "$SEQ_SCRIPT" ] || SEQ_SCRIPT="$CLAUDE_SKILLS_HOME/skills/seq/scripts/seq.py"; uv run python "$SEQ_SCRIPT" query --root ~/.codex/sessions --since <mesh_run_since> --spec '{"dataset":"messages","where":[{"field":"path","op":"eq","value":"<session_path>"},{"field":"text","op":"regex","value":"\\$cas\\b|adapter=cas\\b","case_insensitive":true}],"group_by":["path"],"metrics":[{"op":"count","as":"cas_signals"}],"format":"table"}'`
 
 ## Error Handling
 
