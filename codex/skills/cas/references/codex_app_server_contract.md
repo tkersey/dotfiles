@@ -58,6 +58,8 @@ Do not rely on `turn.items` being fully populated on `turn/started` / `turn/comp
 ## Notifications (Common)
 
 - `thread/started`
+- `thread/archived`
+- `thread/unarchived`
 - `turn/started`
 - `item/started`
 - `item/agentMessage/delta`
@@ -68,6 +70,8 @@ Do not rely on `turn.items` being fully populated on `turn/started` / `turn/comp
 
 Often present depending on features/config:
 
+- `model/rerouted`
+- `fuzzyFileSearch/sessionCompleted`
 - `turn/diff/updated`
 - `turn/plan/updated`
 - `item/plan/delta` (experimental)
@@ -79,6 +83,8 @@ Approvals (v2):
 
 - `item/commandExecution/requestApproval`
 - `item/fileChange/requestApproval`
+
+Note: `item/commandExecution/requestApproval` may include optional `approvalId`; preserve it in your approval routing so subcommand callbacks remain disambiguated.
 
 Tools:
 

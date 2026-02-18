@@ -68,7 +68,7 @@ This skill assumes `codex` is available on PATH and does not require access to a
    - Approvals are auto-accepted (including best-effort execpolicy amendments) and will not block you.
 
 5. Mine sessions (optional).
-   - Use `thread/list` and `thread/read` (optionally `includeTurns:true`) to build your own index.
+   - Use `thread/list` (cursor pagination + optional `modelProviders`/`sourceKinds`/`archived`/`cwd` filters) and `thread/read` (optionally `includeTurns:true`) to build your own index.
    - The server is not a search engine; extract data and index externally.
 
 ## Dedicated API Helpers
