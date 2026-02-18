@@ -20,6 +20,11 @@ from typing import Any, Callable, Iterable, Iterator, Optional
 SKILL_NAME_RE = re.compile(r"<name>([^<]+)</name>")
 DOLLAR_RE = re.compile(r"\$([a-z][a-z0-9-]*)")
 TOKEN_RE = re.compile(r"Original token count:\s*(\d+)")
+SESSION_ID_RE = re.compile(
+    r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.jsonl$",
+    re.IGNORECASE,
+)
+SKILL_BLOCK_RE = re.compile(r"<skill>[\s\S]*?</skill>", re.IGNORECASE)
 RESPONSE_ITEM_MESSAGE_TYPE_NEEDLES = ('"type":"message"', '"type": "message"')
 TOKEN_EVENT_TYPE_NEEDLES = (
     '"payload":{"type":"token_count"',
@@ -105,6 +110,58 @@ def normalize_text(text: str) -> str:
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     text = "\n".join(line.rstrip() for line in text.split("\n"))
     return text.strip()
+
+
+def session_id_from_path(path: Path) -> str:
+    m = SESSION_ID_RE.search(path.name)
+    if m:
+        return m.group(1)
+    return path.stem
+
+
+def resolve_session_path(root: Path, args: argparse.Namespace) -> tuple[Optional[Path], Optional[str]]:
+    selectors = sum(bool(x) for x in [getattr(args, "path", None), getattr(args, "session_id", None), getattr(args, "current", False)])
+    if selectors > 1:
+        return None, "Use only one of --path, --session-id, or --current."
+
+    raw_path = getattr(args, "path", None)
+    if raw_path:
+        p = Path(raw_path).expanduser().resolve()
+        if not p.exists():
+            return None, f"Session path does not exist: {p}"
+        return p, None
+
+    raw_session_id = getattr(args, "session_id", None)
+    if raw_session_id:
+        sid = raw_session_id.strip().lower()
+        matches: list[Path] = []
+        for p in iter_jsonl_paths(root):
+            pid = session_id_from_path(p).lower()
+            if pid == sid:
+                matches = [p]
+                break
+            if sid in p.name.lower():
+                matches.append(p)
+        if not matches:
+            return None, f"No session found for --session-id={raw_session_id}"
+        if len(matches) > 1:
+            preview = ", ".join(session_id_from_path(p) for p in matches[:5])
+            return None, f"Ambiguous --session-id={raw_session_id}; matches={len(matches)} ({preview})"
+        return matches[0], None
+
+    latest: Optional[Path] = None
+    latest_mtime: Optional[float] = None
+    for p in iter_jsonl_paths(root):
+        try:
+            mtime = p.stat().st_mtime
+        except OSError:
+            continue
+        if latest is None or latest_mtime is None or mtime > latest_mtime:
+            latest = p
+            latest_mtime = mtime
+    if latest is None:
+        return None, f"No session files found under {root}"
+    return latest, None
 
 
 def msg_fingerprint(role: str, text: str) -> bytes:
@@ -791,6 +848,190 @@ def cmd_report_bundle(args: argparse.Namespace) -> str:
         bundle["section_audit"] = audits
 
     return json.dumps(bundle, indent=2)
+
+
+def cmd_find_session(args: argparse.Namespace) -> str:
+    root = discover_sessions_root(args.root)
+    roles = set(r.strip() for r in args.roles.split(",") if r.strip())
+    since = parse_ts(args.since) if args.since else None
+    until = parse_ts(args.until) if args.until else None
+
+    prompt = args.prompt or ""
+    if not isinstance(prompt, str) or not prompt.strip():
+        return "--prompt must be a non-empty string."
+
+    if args.regex:
+        flags = 0 if args.case_sensitive else re.IGNORECASE
+        try:
+            rx = re.compile(prompt, flags)
+        except re.error as e:
+            return f"Invalid --prompt regex: {e}"
+
+        def is_match(text: str) -> bool:
+            return bool(rx.search(text))
+
+        match_mode = "regex"
+    else:
+        needle = normalize_text(prompt)
+        if not args.case_sensitive:
+            needle = needle.lower()
+
+        def is_match(text: str) -> bool:
+            hay = text if args.case_sensitive else text.lower()
+            return needle in hay
+
+        match_mode = "contains"
+
+    snippet_chars = args.snippet_chars if args.snippet_chars >= 0 else 0
+
+    sessions: dict[str, dict[str, Any]] = {}
+    for msg in iter_messages(root, roles=roles, since=since, until=until):
+        if not is_match(msg.text):
+            continue
+        path_str = str(msg.path)
+        ts = msg.timestamp
+        entry = sessions.get(path_str)
+        if entry is None:
+            entry = {
+                "session_id": session_id_from_path(msg.path),
+                "path": path_str,
+                "match_mode": match_mode,
+                "matches": 0,
+                "roles_set": set(),
+                "first_dt": ts,
+                "last_dt": ts,
+                "snippet": msg.text.replace("\n", " ")[:snippet_chars],
+            }
+            sessions[path_str] = entry
+        entry["matches"] += 1
+        entry["roles_set"].add(msg.role)
+        if ts is not None:
+            first_dt = entry["first_dt"]
+            if first_dt is None or ts < first_dt:
+                entry["first_dt"] = ts
+            last_dt = entry["last_dt"]
+            if last_dt is None or ts > last_dt:
+                entry["last_dt"] = ts
+
+    rows: list[dict[str, Any]] = []
+    for entry in sessions.values():
+        first_dt = entry["first_dt"]
+        last_dt = entry["last_dt"]
+        rows.append(
+            {
+                "session_id": entry["session_id"],
+                "path": entry["path"],
+                "match_mode": entry["match_mode"],
+                "matches": entry["matches"],
+                "roles": ",".join(sorted(entry["roles_set"])),
+                "first_timestamp": first_dt.isoformat() if first_dt else None,
+                "last_timestamp": last_dt.isoformat() if last_dt else None,
+                "snippet": entry["snippet"],
+            }
+        )
+
+    rows.sort(key=lambda r: (r["matches"], r["last_timestamp"] or ""), reverse=True)
+    if args.limit:
+        rows = rows[: args.limit]
+
+    cols = [
+        "session_id",
+        "matches",
+        "roles",
+        "last_timestamp",
+        "path",
+        "snippet",
+    ]
+    if args.format == "json":
+        return json.dumps(rows, indent=2, ensure_ascii=True)
+    if args.format == "jsonl":
+        return "\n".join(json.dumps(r, ensure_ascii=True) for r in rows)
+    if args.format == "csv":
+        return write_csv(rows, cols)
+    return format_table_rows(rows, cols)
+
+
+def cmd_session_prompts(args: argparse.Namespace) -> str:
+    root = discover_sessions_root(args.root)
+    roles = set(r.strip() for r in args.roles.split(",") if r.strip())
+    if not roles:
+        roles = {"user"}
+    since = parse_ts(args.since) if args.since else None
+    until = parse_ts(args.until) if args.until else None
+
+    session_path, err = resolve_session_path(root, args)
+    if err:
+        return err
+    if session_path is None:
+        return "Unable to resolve session path."
+
+    max_text = args.max_text if args.max_text >= 0 else 0
+    dedupe_exact = not args.no_dedupe_exact
+    seen_exact: set[tuple[Optional[str], str, str]] = set()
+    seen_recent: dict[tuple[str, str], datetime] = {}
+    prompts: list[dict[str, Any]] = []
+    for msg in iter_messages_in_path(
+        session_path,
+        roles=roles,
+        since=since,
+        until=until,
+        dedupe=False,
+        strip_echo_assistant=True,
+        parse_timestamp=True,
+    ):
+        text = msg.text
+        if args.strip_skill_blocks:
+            text = SKILL_BLOCK_RE.sub("", text)
+            text = normalize_text(text)
+            if not text:
+                continue
+        if max_text and len(text) > max_text:
+            text = text[: max(0, max_text - 3)] + "..."
+        ts_str = msg.timestamp.isoformat() if msg.timestamp else None
+        if dedupe_exact:
+            key = (ts_str, msg.role, text)
+            if key in seen_exact:
+                continue
+            if msg.timestamp is not None:
+                near_key = (msg.role, text)
+                prev_ts = seen_recent.get(near_key)
+                if prev_ts is not None:
+                    if abs((msg.timestamp - prev_ts).total_seconds()) <= 1.0:
+                        continue
+                seen_recent[near_key] = msg.timestamp
+            seen_exact.add(key)
+        prompts.append(
+            {
+                "session_id": session_id_from_path(session_path),
+                "path": str(session_path),
+                "timestamp": ts_str,
+                "role": msg.role,
+                "text": text,
+            }
+        )
+
+    if args.limit:
+        prompts = prompts[: args.limit]
+
+    for idx, row in enumerate(prompts, start=1):
+        row["index"] = idx
+
+    if args.format == "json":
+        return json.dumps(prompts, indent=2, ensure_ascii=True)
+    if args.format == "jsonl":
+        return "\n".join(json.dumps(r, ensure_ascii=True) for r in prompts)
+    if args.format == "csv":
+        cols = ["session_id", "path", "index", "timestamp", "role", "text"]
+        return write_csv(prompts, cols)
+
+    table = format_table_rows(prompts, ["index", "timestamp", "role", "text"])
+    return "\n".join(
+        [
+            f"session_id={session_id_from_path(session_path)}",
+            f"path={session_path}",
+            table,
+        ]
+    )
 
 
 def cmd_section_audit(args: argparse.Namespace) -> str:
@@ -2167,6 +2408,68 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-dedupe", action="store_true", help="disable adjacent block/dollar dedupe"
     )
     s_export.set_defaults(func=cmd_occurrence_export)
+
+    s_find = sub.add_parser(
+        "find-session",
+        help="search prompt text and return matching session ids",
+        parents=[common],
+    )
+    s_find.add_argument("--prompt", required=True, help="text or regex to match")
+    s_find.add_argument("--regex", action="store_true", help="treat prompt as regex")
+    s_find.add_argument(
+        "--case-sensitive",
+        action="store_true",
+        help="use case-sensitive matching",
+    )
+    s_find.add_argument("--limit", type=int, default=0, help="limit result sessions")
+    s_find.add_argument(
+        "--snippet-chars",
+        type=int,
+        default=160,
+        help="max snippet characters per session row",
+    )
+    s_find.add_argument(
+        "--format",
+        choices=["table", "json", "csv", "jsonl"],
+        default="table",
+    )
+    s_find.set_defaults(func=cmd_find_session)
+
+    s_prompts = sub.add_parser(
+        "session-prompts",
+        help="list prompts/messages from a single session",
+        parents=[common],
+    )
+    s_prompts.add_argument("--session-id", help="target session id")
+    s_prompts.add_argument("--path", help="target session jsonl path")
+    s_prompts.add_argument(
+        "--current",
+        action="store_true",
+        help="use most recent session file under --root",
+    )
+    s_prompts.add_argument(
+        "--strip-skill-blocks",
+        action="store_true",
+        help="remove pasted <skill> blocks from message text",
+    )
+    s_prompts.add_argument(
+        "--max-text",
+        type=int,
+        default=280,
+        help="max characters per prompt text row (0 disables truncation)",
+    )
+    s_prompts.add_argument(
+        "--no-dedupe-exact",
+        action="store_true",
+        help="keep duplicate rows from mirrored events",
+    )
+    s_prompts.add_argument("--limit", type=int, default=0, help="limit prompt rows")
+    s_prompts.add_argument(
+        "--format",
+        choices=["table", "json", "csv", "jsonl"],
+        default="table",
+    )
+    s_prompts.set_defaults(func=cmd_session_prompts, roles="user")
 
     s_bundle = sub.add_parser(
         "report-bundle", help="bundle common reports into JSON", parents=[common]

@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, and token metrics. Use for prompts like `$seq`, `analyze session history`, `rank skill mentions`, `audit missing sections`, `report token usage`, `mine memories`, or `use $seq to improve skill trigger descriptions/frontmatter`."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, token metrics, and prompt-to-session lookup for resume workflows. Use for prompts like `$seq`, `analyze session history`, `find sessions by prompt`, `rank skill mentions`, `audit missing sections`, `report token usage`, `mine memories`, or `use $seq to improve skill trigger descriptions/frontmatter`."
 ---
 
 # seq
@@ -181,12 +181,27 @@ uv run scripts/seq_perf_harness.py \
   --samples 5 --warmup 1 --json
 ```
 
+### 10) Find sessions by prompt text
+```bash
+uv run scripts/seq.py find-session --root ~/.codex/sessions --prompt "adapter=auto" --limit 20
+```
+
+### 11) List prompts/messages for one session
+```bash
+uv run scripts/seq.py session-prompts --root ~/.codex/sessions --session-id <session_id> \
+  --roles user,assistant --strip-skill-blocks --limit 100
+```
+
 ## Notes
 - Default root: `~/.codex/sessions`.
 - `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` to override.
 - Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, with fallback to `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
+- `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.
+- `session-prompts` defaults to `--roles user`; set `--roles user,assistant` to include both sides of a conversation.
+- `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
+- Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
 
 ## Resources
 ### scripts/
