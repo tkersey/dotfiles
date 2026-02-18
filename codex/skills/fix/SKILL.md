@@ -58,6 +58,9 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST follow the delegation contract in `Skill composition (required)` (including order: `$invariant-ace` -> `$complexity-mitigator`).
 - MUST route skill-self edits (for example `codex/skills/fix`) through `$refine` and run `quick_validate`.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
+- When paired with `$tk` in wave execution, MUST treat `$fix` as the final mutating pass before artifactization:
+  - `commit_first`: hand off immediately to `$commit` after passing validation.
+  - `patch_first`: hand off immediately to `$patch` after passing validation.
 
 ## Default policy (non-interactive)
 Use these defaults to maximize autonomy (avoid asking).

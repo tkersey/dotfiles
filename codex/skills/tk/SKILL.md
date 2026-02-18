@@ -96,6 +96,9 @@ These biases keep TK effective when you control the shape.
 - Choose the fastest credible proof signal you can actually run (existing unit test > typecheck > targeted script > integration test).
 - Cut the incision at the stable boundary; avoid scattering checks through callers.
 - Close the loop: run the proof signal; iterate until it passes; report the result.
+- In wave-oriented execution paired with `$fix`, a wave is done only after `$tk -> $fix -> validation` and immediate delivery:
+  - `commit_first`: run `$commit` for that wave.
+  - `patch_first`: run `$patch` for that wave (no in-wave commit).
 - If blocked on requirements: ask one targeted question with a recommended default; do not cut the incision yet.
 - If still blocked: reveal the 5-tier portfolio (signal + escape hatch per tier) and ask the user to pick a tier.
 
@@ -103,6 +106,7 @@ Implementation non-negotiables:
 - No pretend proofs: never claim PASS without an executed signal; if you can't run it, say so.
 - No dependency adds without an explicit ask.
 - No shotgun edits: if the diff starts spreading, cut an adapter/seam instead.
+- Do not finalize a wave artifact (`$commit`/`$patch`) before `$fix` closes the wave with a passing signal.
 - If a patch/diff is required by instructions, include it under **Patch** after **Proof**; never skip the TK sections.
 
 ## The TK Loop (how inevitability is produced)
