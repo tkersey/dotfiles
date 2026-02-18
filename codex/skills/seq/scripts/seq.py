@@ -10,7 +10,6 @@ import json
 import os
 import re
 import sys
-import hashlib
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime
@@ -164,12 +163,8 @@ def resolve_session_path(root: Path, args: argparse.Namespace) -> tuple[Optional
     return latest, None
 
 
-def msg_fingerprint(role: str, text: str) -> bytes:
-    h = hashlib.blake2b(digest_size=16)
-    h.update(role.encode("utf-8", errors="ignore"))
-    h.update(b"\0")
-    h.update(text.encode("utf-8", errors="ignore"))
-    return h.digest()
+def msg_fingerprint(role: str, text: str) -> tuple[str, str]:
+    return (role, text)
 
 
 def iter_messages_in_path(
@@ -183,7 +178,7 @@ def iter_messages_in_path(
     parse_timestamp: bool = True,
 ) -> Iterator[Message]:
     need_ts = parse_timestamp or since is not None or until is not None
-    seen: set[bytes] = set()
+    seen: set[tuple[str, str]] = set()
     with path.open("r", encoding="utf-8") as f:
         for line in f:
             # Fast prefilter: only parse JSON lines that can contain message payloads.
@@ -1332,8 +1327,13 @@ def dataset_token_deltas(
         for k in TOKEN_KEYS
         if required_fields is None or f"total_{k}" in required_fields
     ]
+    fast_total_only = (
+        not total_field_idx
+        and len(delta_field_idx) == 1
+        and delta_field_idx[0][1] == TOTAL_TOKEN_INDEX
+    )
     needed_delta_indices = {idx for _, idx in delta_field_idx}
-    if TOTAL_TOKEN_INDEX not in needed_delta_indices:
+    if not fast_total_only and TOTAL_TOKEN_INDEX not in needed_delta_indices:
         needed_delta_indices.add(TOTAL_TOKEN_INDEX)
     need_ts = need_timestamp or need_day or need_week or need_month
 
@@ -1345,10 +1345,20 @@ def dataset_token_deltas(
         for ts, info in iter_token_count_events_in_path(
             path, since=since, until=until, parse_timestamp=need_ts
         ):
-            total_vals = token_usage_tuple(info, "total_token_usage")
-            total_tokens = total_vals[TOTAL_TOKEN_INDEX]
-            if total_tokens is None:
-                continue
+            total_vals: tuple[Optional[int], ...] = ()
+            if fast_total_only:
+                total_block = info.get("total_token_usage")
+                if not isinstance(total_block, dict):
+                    continue
+                total_raw = total_block.get("total_tokens")
+                if not isinstance(total_raw, int):
+                    continue
+                total_tokens = total_raw
+            else:
+                total_vals = token_usage_tuple(info, "total_token_usage")
+                total_tokens = total_vals[TOTAL_TOKEN_INDEX]
+                if total_tokens is None:
+                    continue
 
             if (
                 dedupe
@@ -1364,26 +1374,35 @@ def dataset_token_deltas(
                 prev_total_tokens = None
 
             deltas: dict[int, int] = {}
-            if prev_total_vals is None:
-                if include_base:
+            if fast_total_only:
+                is_base = prev_total_tokens is None
+                if is_base:
+                    delta_total = total_tokens if include_base else 0
+                else:
+                    delta_total = total_tokens - prev_total_tokens
+                if delta_total or (is_base and include_base):
+                    deltas[TOTAL_TOKEN_INDEX] = delta_total
+                prev_total_tokens = total_tokens
+            else:
+                if prev_total_vals is None:
+                    if include_base:
+                        for idx in needed_delta_indices:
+                            v = total_vals[idx]
+                            if v is not None:
+                                deltas[idx] = v
+                else:
                     for idx in needed_delta_indices:
                         v = total_vals[idx]
-                        if v is not None:
-                            deltas[idx] = v
-            else:
-                for idx in needed_delta_indices:
-                    v = total_vals[idx]
-                    pv = prev_total_vals[idx]
-                    if v is None or pv is None:
-                        continue
-                    d = v - pv
-                    if d:
-                        deltas[idx] = d
+                        pv = prev_total_vals[idx]
+                        if v is None or pv is None:
+                            continue
+                        d = v - pv
+                        if d:
+                            deltas[idx] = d
+                prev_total_vals = total_vals
+                prev_total_tokens = total_tokens
+                delta_total = deltas.get(TOTAL_TOKEN_INDEX, 0)
 
-            prev_total_vals = total_vals
-            prev_total_tokens = total_tokens
-
-            delta_total = deltas.get(TOTAL_TOKEN_INDEX, 0)
             if not include_zero and delta_total == 0:
                 continue
 
