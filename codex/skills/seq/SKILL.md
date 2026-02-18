@@ -1,12 +1,12 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) for skill usage, section/format compliance, trigger evidence, and token metrics. Use for prompts like `$seq`, `analyze session history`, `rank skill mentions`, `audit missing sections`, `report token usage`, or `use $seq to improve skill trigger descriptions/frontmatter`."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, and token metrics. Use for prompts like `$seq`, `analyze session history`, `rank skill mentions`, `audit missing sections`, `report token usage`, `mine memories`, or `use $seq to improve skill trigger descriptions/frontmatter`."
 ---
 
 # seq
 
 ## Overview
-Mine `~/.codex/sessions/` JSONL quickly and consistently with a single script. Focus on skill usage, format compliance, and token counts.
+Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consistently with a single script. Focus on skill usage, format compliance, token counts, and memory-file mining.
 
 ## Quick Start
 ```bash
@@ -50,6 +50,12 @@ Rank tool calls:
 ```bash
 uv run scripts/seq.py query --root ~/.codex/sessions --spec \
   '{"dataset":"tool_calls","group_by":["tool"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"limit":20,"format":"table"}'
+```
+
+Memory files by category:
+```bash
+uv run scripts/seq.py query --spec \
+  '{"dataset":"memory_files","group_by":["category"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"format":"table"}'
 ```
 
 ### Ready-made specs
@@ -177,6 +183,7 @@ uv run scripts/seq_perf_harness.py \
 
 ## Notes
 - Default root: `~/.codex/sessions`.
+- `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` to override.
 - Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, with fallback to `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.

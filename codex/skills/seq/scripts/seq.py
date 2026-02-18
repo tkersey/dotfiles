@@ -26,6 +26,7 @@ TOKEN_EVENT_TYPE_NEEDLES = (
     '"payload": {"type": "token_count"',
 )
 DEFAULT_SESSIONS_ROOT = Path.home() / ".codex" / "sessions"
+DEFAULT_MEMORIES_ROOT = Path.home() / ".codex" / "memories"
 
 
 @dataclass
@@ -88,6 +89,12 @@ def discover_sessions_root(root: Optional[str]) -> Path:
     if root:
         return Path(root).expanduser().resolve()
     return DEFAULT_SESSIONS_ROOT.resolve()
+
+
+def discover_memories_root(root: Optional[str]) -> Path:
+    if root:
+        return Path(root).expanduser().resolve()
+    return DEFAULT_MEMORIES_ROOT.resolve()
 
 
 def iter_jsonl_paths(root: Path) -> Iterator[Path]:
@@ -1317,6 +1324,74 @@ def dataset_tool_calls(
                 yield row
 
 
+def dataset_memory_files(
+    root: Path, args: argparse.Namespace, params: dict[str, Any]
+) -> Iterator[dict[str, Any]]:
+    del root
+    del args
+    required_fields = coerce_required_fields(params)
+    memories_root_arg = params.get("memory_root")
+    memory_root = discover_memories_root(
+        memories_root_arg if isinstance(memories_root_arg, str) else None
+    )
+    if not memory_root.exists():
+        return
+
+    include_preview = bool(params.get("include_preview", False))
+    need_path = required_fields is None or "path" in required_fields
+    need_relative_path = required_fields is None or "relative_path" in required_fields
+    need_name = required_fields is None or "name" in required_fields
+    need_category = required_fields is None or "category" in required_fields
+    need_extension = required_fields is None or "extension" in required_fields
+    need_size_bytes = required_fields is None or "size_bytes" in required_fields
+    need_modified_at = required_fields is None or "modified_at" in required_fields
+    need_preview = (
+        (required_fields is not None and "preview" in required_fields)
+        or (required_fields is None and include_preview)
+    )
+
+    for path in sorted(memory_root.rglob("*")):
+        if not path.is_file():
+            continue
+
+        try:
+            stat = path.stat()
+        except OSError:
+            continue
+
+        rel = path.relative_to(memory_root)
+        category = rel.parts[0] if len(rel.parts) > 1 else "root"
+
+        row: dict[str, Any] = {}
+        if need_path:
+            row["path"] = str(path)
+        if need_relative_path:
+            row["relative_path"] = str(rel)
+        if need_name:
+            row["name"] = path.name
+        if need_category:
+            row["category"] = category
+        if need_extension:
+            row["extension"] = path.suffix
+        if need_size_bytes:
+            row["size_bytes"] = stat.st_size
+        if need_modified_at:
+            row["modified_at"] = datetime.fromtimestamp(stat.st_mtime).isoformat()
+        if need_preview:
+            preview = ""
+            try:
+                with path.open("r", encoding="utf-8", errors="replace") as f:
+                    for line in f:
+                        text = line.strip()
+                        if text:
+                            preview = text[:200]
+                            break
+            except OSError:
+                preview = ""
+            row["preview"] = preview
+        yield row
+
+
 DATASETS: dict[str, DatasetDef] = {
     "messages": DatasetDef(
         name="messages",
@@ -1334,6 +1409,26 @@ DATASETS: dict[str, DatasetDef] = {
         default_params={},
         params_help={},
         iter_rows=dataset_messages,
+    ),
+    "memory_files": DatasetDef(
+        name="memory_files",
+        description="File-based memories under ~/.codex/memories",
+        fields=[
+            "path",
+            "relative_path",
+            "name",
+            "category",
+            "extension",
+            "size_bytes",
+            "modified_at",
+            "preview",
+        ],
+        default_params={"include_preview": False, "memory_root": str(DEFAULT_MEMORIES_ROOT)},
+        params_help={
+            "include_preview": "include first non-empty line preview (default false)",
+            "memory_root": "override memories root (default ~/.codex/memories)",
+        },
+        iter_rows=dataset_memory_files,
     ),
     "skill_mentions": DatasetDef(
         name="skill_mentions",
