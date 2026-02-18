@@ -10,13 +10,14 @@ max_threads = 12
 [features]
 unified_exec = true
 steer = true
-collab = true
 collaboration_modes = true
 apps = true
 personality = true
 memory_tool = true
 sqlite = true
 responses_websockets_v2 = true
+multi_agent = true
+prevent_idle_sleep = true
 
 [tui]
 experimental_mode = "execute"
