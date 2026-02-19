@@ -6,6 +6,23 @@ personality = "pragmatic"
 
 [agents]
 max_threads = 12
+# max_depth = 2
+
+[agents.implementer]
+description = "Implement a scoped change in owned files."
+config_file = "/Users/tk/.codex/agents/implementer.toml"
+
+[agents.fixer]
+description = "Fix bugs/regressions in existing implementation with minimal diff."
+config_file = "/Users/tk/.codex/agents/fixer.toml"
+
+[agents.parallel_planner]
+description = "Split work into dependency-aware, parallel, non-overlapping slices."
+config_file = "/Users/tk/.codex/agents/parallel_planner.toml"
+
+[agents.integrator]
+description = "Merge outputs from workers into one coherent, validated result."
+config_file = "/Users/tk/.codex/agents/integrator.toml"
 
 [features]
 unified_exec = true
@@ -22,6 +39,3 @@ prevent_idle_sleep = true
 [tui]
 experimental_mode = "execute"
 status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning"]
-
-# [mcp_servers.openaiDeveloperDocs]
-# url = "https://developers.openai.com/mcp"

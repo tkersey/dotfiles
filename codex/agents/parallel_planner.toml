@@ -1,0 +1,3 @@
+model = "gpt-5.1-codex-mini"
+model_reasoning_effort = "high"
+developer_instructions = "Produce atomic tasks with write scopes, dependencies, and parallel waves; avoid implementation unless explicitly asked."

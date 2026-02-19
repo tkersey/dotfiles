@@ -1,0 +1,3 @@
+model = "gpt-5.1-codex-mini"
+model_reasoning_effort = "medium"
+developer_instructions = "Own the assigned files only; implement the requested change; report changed files and validation run."
