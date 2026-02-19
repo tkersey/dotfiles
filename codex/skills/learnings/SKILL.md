@@ -138,7 +138,7 @@ The helper script:
 
 ## Mining, Recall, and Codify Loop
 
-Use the miner script to leverage learnings at task start and to promote repeated items into durable policy.
+Use the miner script to leverage learnings at task start (once the user prompt is available) and to promote repeated items into durable policy.
 
 CLI:
 

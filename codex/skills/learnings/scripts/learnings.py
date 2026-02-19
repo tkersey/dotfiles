@@ -793,6 +793,29 @@ def tokenize(s: str) -> list[str]:
     return out
 
 
+PATHLIKE_RE = re.compile(
+    r"""
+    (?:
+        # Unix-ish absolute or explicit relative paths.
+        (?:~|\.{1,2})?/(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+
+      |
+        # Windows drive paths.
+        [A-Za-z]:[\\/](?:[A-Za-z0-9._-]+[\\/])+[A-Za-z0-9._-]+
+      |
+        # Relative file paths (requires an extension).
+        [A-Za-z0-9._-]+(?:[\\/][A-Za-z0-9._-]+)+\.[A-Za-z0-9]{1,10}
+    )
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+
+def scrub_pathlikes_for_tokenization(s: str) -> str:
+    """Remove path-like substrings to reduce incidental token matches."""
+
+    return PATHLIKE_RE.sub(" ", s or "")
+
+
 def extract_path_hints(query: str) -> list[str]:
     if not query:
         return []
@@ -839,6 +862,7 @@ def cmd_recall(args: argparse.Namespace) -> str:
 
     query = args.query or ""
     q_tokens = set(tokenize(query))
+    q_tool_tokens = q_tokens & TOOL_KEYWORDS
     if not q_tokens and not query.strip():
         return "error: --query is required"
 
@@ -865,17 +889,24 @@ def cmd_recall(args: argparse.Namespace) -> str:
         if args.drop_superseded and isinstance(rid, str) and rid in superseded:
             continue
 
-        raw_text = r.get("text")
-        text = raw_text if isinstance(raw_text, str) else ""
-        rec_tokens = set(tokenize(text))
+        learning = str(r.get("learning") or "")
+        application = str(r.get("application") or "")
+        tags_text = str(r.get("tags_text") or "")
+        evidence_text = str(r.get("evidence_text") or "")
+        if evidence_text == "none_provided":
+            evidence_match = ""
+        else:
+            evidence_match = scrub_pathlikes_for_tokenization(evidence_text)
+
+        # Match on semantic content + evidence (with paths scrubbed); do not tokenize context.paths.
+        match_text = "\n".join(
+            p for p in (learning, application, tags_text, evidence_match) if p
+        )
+        rec_tokens = set(tokenize(match_text))
         overlap = len(q_tokens & rec_tokens)
 
         # Require at least one concrete intersection signal.
-        tool_match = (
-            1.0
-            if (q_tokens & TOOL_KEYWORDS and (q_tokens & TOOL_KEYWORDS) & rec_tokens)
-            else 0.0
-        )
+        tool_match = 1.0 if (q_tool_tokens and q_tool_tokens & rec_tokens) else 0.0
         raw_paths_text = r.get("paths_text")
         paths_text = raw_paths_text if isinstance(raw_paths_text, str) else ""
         path_match = 1.0 if any(h and (h in paths_text) for h in path_hints) else 0.0
@@ -912,14 +943,14 @@ def cmd_recall(args: argparse.Namespace) -> str:
             + status_boost
         )
 
-        scored.append((score, r))
+        scored.append((score, overlap, jaccard, tool_match, path_match, r))
 
-    scored.sort(key=lambda kv: (-kv[0], str(kv[1].get("captured_at") or "")))
+    scored.sort(key=lambda kv: (-kv[0], str(kv[5].get("captured_at") or "")))
 
     # Diversity cap: avoid returning only one theme.
     kept = []
     theme_counts: dict[str, int] = {}
-    for score, r in scored:
+    for score, overlap, jaccard, tool_match, path_match, r in scored:
         raw_tags_text = r.get("tags_text")
         tags_text = raw_tags_text if isinstance(raw_tags_text, str) else ""
         raw_learning = r.get("learning")
@@ -928,28 +959,79 @@ def cmd_recall(args: argparse.Namespace) -> str:
         if theme and theme_counts.get(theme, 0) >= 2:
             continue
         theme_counts[theme] = theme_counts.get(theme, 0) + 1
-        kept.append((score, r))
+        kept.append((score, overlap, jaccard, tool_match, path_match, r))
         if args.limit and len(kept) >= args.limit:
             break
 
+    def is_good_match(overlap: int, jaccard: float, path_match: float) -> bool:
+        return (path_match >= 1.0) or (overlap >= 2) or (jaccard >= 0.06)
+
+    good = [
+        item
+        for item in kept
+        if is_good_match(int(item[1]), float(item[2]), float(item[4]))
+    ]
+    if len(good) <= 1:
+        desired = 2 if len(good) == 0 else 1
+        kept_ids: set[str] = set(
+            str(item[5].get("id"))
+            for item in kept
+            if isinstance(item[5], dict) and isinstance(item[5].get("id"), str)
+        )
+
+        candidates = []
+        for r in rows:
+            rid = r.get("id")
+            if not isinstance(rid, str) or not rid:
+                continue
+            if rid in kept_ids:
+                continue
+            if args.drop_superseded and rid in superseded:
+                continue
+
+            status = str(r.get("status") or "")
+            tags_text = str(r.get("tags_text") or "")
+            imp = impact_score(str(r.get("text") or ""), status, tags_text)
+            if imp <= 0.0:
+                continue
+
+            captured_at = r.get("captured_at")
+            ts = parse_ts(captured_at) if isinstance(captured_at, str) else None
+            ts_key = ts.timestamp() if ts else 0.0
+            candidates.append((imp, ts_key, r))
+
+        candidates.sort(key=lambda kv: (-kv[0], -kv[1]))
+        picked = [c[2] for c in candidates[:desired]]
+        if picked:
+            if args.limit and len(kept) + len(picked) > args.limit:
+                kept = kept[: max(args.limit - len(picked), 0)]
+            for r in picked:
+                kept.append((0.0, 0, 0.0, 0.0, 0.0, r))
+
     if args.format == "json":
         out = []
-        for score, r in kept:
-            row = dict(r)
+        for score, _overlap, _jaccard, _tool_match, _path_match, r in kept:
+            row = dict(r) if isinstance(r, dict) else {}
             row["score"] = round(score, 4)
             out.append(row)
         return json.dumps(out, indent=2, ensure_ascii=True)
 
     out_rows = []
-    for score, r in kept:
+    for score, _overlap, _jaccard, _tool_match, _path_match, r in kept:
         out_rows.append(
             {
                 "score": f"{score:.3f}",
-                "captured_at": r.get("captured_at"),
-                "status": r.get("status"),
-                "learning": shorten(str(r.get("learning") or ""), 120),
-                "tags": shorten(str(r.get("tags_text") or ""), 30),
-                "paths": shorten(str(r.get("paths_text") or ""), 40),
+                "captured_at": (r.get("captured_at") if isinstance(r, dict) else None),
+                "status": (r.get("status") if isinstance(r, dict) else None),
+                "learning": shorten(
+                    str((r.get("learning") if isinstance(r, dict) else "") or ""), 120
+                ),
+                "tags": shorten(
+                    str((r.get("tags_text") if isinstance(r, dict) else "") or ""), 30
+                ),
+                "paths": shorten(
+                    str((r.get("paths_text") if isinstance(r, dict) else "") or ""), 40
+                ),
             }
         )
     return format_table_rows(
