@@ -20,6 +20,64 @@ Cas ships a small Node proxy (`scripts/cas_proxy.mjs`) that:
 
 This skill assumes `codex` is available on PATH and does not require access to any repo source tree.
 
+## Quick Start
+
+```bash
+CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
+CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
+CAS_SCRIPTS_DIR="$CODEX_SKILLS_HOME/skills/cas/scripts"
+[ -d "$CAS_SCRIPTS_DIR" ] || CAS_SCRIPTS_DIR="$CLAUDE_SKILLS_HOME/skills/cas/scripts"
+
+run_cas_tool() {
+  local subcommand="${1:-}"
+  if [ -z "$subcommand" ]; then
+    echo "usage: run_cas_tool <smoke-check|instance-runner> [args...]" >&2
+    return 2
+  fi
+  shift || true
+
+  local bin=""
+  local marker=""
+  local fallback=""
+  case "$subcommand" in
+    smoke-check)
+      bin="cas_smoke_check"
+      marker="cas_smoke_check.zig"
+      fallback="$CAS_SCRIPTS_DIR/cas_smoke_check.mjs"
+      ;;
+    instance-runner)
+      bin="cas_instance_runner"
+      marker="cas_instance_runner.zig"
+      fallback="$CAS_SCRIPTS_DIR/cas_instance_runner.mjs"
+      ;;
+    *)
+      echo "unknown cas subcommand: $subcommand" >&2
+      return 2
+      ;;
+  esac
+
+  if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
+    "$bin" "$@"
+    return
+  fi
+  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+    brew install tkersey/tap/cas >/dev/null 2>&1 || true
+    if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
+      "$bin" "$@"
+      return
+    fi
+  fi
+  if [ -f "$fallback" ]; then
+    node "$fallback" "$@"
+    return
+  fi
+  echo "cas binary missing and fallback script not found: $fallback" >&2
+  return 1
+}
+
+run_cas_tool smoke-check --cwd /path/to/workspace --json
+```
+
 ## Terminology (Instances)
 
 - An "instance" is one `cas_proxy` process plus its spawned app-server child process.
@@ -49,12 +107,12 @@ This skill assumes `codex` is available on PATH and does not require access to a
    - Wait for a `cas/ready` event.
 
    For N instances in parallel, prefer the instance runner:
-   - `node scripts/cas_instance_runner.mjs --cwd /path/to/workspace --instances N`
+   - `run_cas_tool instance-runner --cwd /path/to/workspace --instances N`
 
 2. Drive the app-server by sending requests to the proxy.
    - Send `cas/request` messages (method + params) to proxy stdin.
    - Proxy assigns request ids (unless you supply one), forwards to app-server, and emits `cas/fromServer` responses.
-   - Optional smoke check: run `node scripts/cas_smoke_check.mjs --cwd /path/to/workspace`.
+   - Optional smoke check: run `run_cas_tool smoke-check --cwd /path/to/workspace`.
 
 3. Stream and route notifications.
    - Consume `cas/fromServer` events and route by `threadId` / `turnId` / `itemId`.
@@ -182,3 +240,5 @@ Included:
 - `scripts/cas_example_orchestrator.mjs` (example orchestration script)
 - `scripts/cas_instance_runner.mjs` (run one method across many parallel cas sessions/instances)
 - `scripts/cas_smoke_check.mjs` (smoke-checks `experimentalFeature/list`, `thread/resume`, `turn/steer`)
+
+Runtime bootstrap policy for Zig CLIs mirrors `seq`: prefer installed binary, attempt `brew install tkersey/tap/cas` only on macOS when `brew` exists, otherwise fallback to the local Node script.

@@ -147,8 +147,68 @@ Output exactly these sections (short, numbers-first):
 
 ## Scripts
 
-- Run `scripts/perf_report.py` to generate a performance report template.
-- Run `scripts/bench_stats.py` to summarize benchmark samples and percentiles.
+- Prefer this brew-aware launcher pattern for Lift CLIs:
+
+```bash
+CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
+CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
+LIFT_SCRIPTS_DIR="$CODEX_SKILLS_HOME/skills/lift/scripts"
+[ -d "$LIFT_SCRIPTS_DIR" ] || LIFT_SCRIPTS_DIR="$CLAUDE_SKILLS_HOME/skills/lift/scripts"
+
+run_lift_tool() {
+  local subcommand="${1:-}"
+  if [ -z "$subcommand" ]; then
+    echo "usage: run_lift_tool <bench-stats|perf-report> [args...]" >&2
+    return 2
+  fi
+  shift || true
+
+  local bin=""
+  local marker=""
+  local fallback=""
+  case "$subcommand" in
+    bench-stats)
+      bin="bench_stats"
+      marker="bench_stats.zig"
+      fallback="$LIFT_SCRIPTS_DIR/bench_stats.py"
+      ;;
+    perf-report)
+      bin="perf_report"
+      marker="perf_report.zig"
+      fallback="$LIFT_SCRIPTS_DIR/perf_report.py"
+      ;;
+    *)
+      echo "unknown lift subcommand: $subcommand" >&2
+      return 2
+      ;;
+  esac
+
+  if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
+    "$bin" "$@"
+    return
+  fi
+  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+    brew install tkersey/tap/lift >/dev/null 2>&1 || true
+    if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
+      "$bin" "$@"
+      return
+    fi
+  fi
+  if [ -f "$fallback" ]; then
+    uv run python "$fallback" "$@"
+    return
+  fi
+  echo "lift binary missing and fallback script not found: $fallback" >&2
+  return 1
+}
+
+run_lift_tool bench-stats --input samples.txt --unit ms
+run_lift_tool perf-report --title "Perf pass" --owner "team" --system "service" --output /tmp/perf-report.md
+```
+
+- Equivalent fallback-only commands remain valid:
+  - `uv run python scripts/perf_report.py --title "Perf pass" --owner "team" --system "service" --output /tmp/perf-report.md`
+  - `uv run python scripts/bench_stats.py --input samples.txt --unit ms`
 
 ## Assets
 
