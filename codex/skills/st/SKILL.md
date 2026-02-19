@@ -1,6 +1,6 @@
 ---
 name: st
-description: Manage persistent task plans in repo-committed JSONL (`.step/st-plan.jsonl`) so state survives turns/sessions and stays reviewable in git. Use when users ask to "use $st", "resume the plan", "export/import plan state", "checkpoint milestones", "track dependencies/blocked work", "show ready next tasks", "keep shared TODO status on disk", or "compare and contrast $st vs plan files".
+description: Manage persistent task plans in repo-committed JSONL (`.step/st-plan.jsonl`) so state survives turns/sessions and stays reviewable in git. Use when users ask to "use $st", "resume the plan", "export/import plan state", "checkpoint milestones", "track dependencies/blocked work", "show ready next tasks", "keep shared TODO status on disk", "compare and contrast $st vs plan files", or when work has 3+ dependent steps and transient `update_plan` is not durable enough.
 ---
 
 # st
@@ -17,12 +17,13 @@ Plan items use typed dependency edges (`deps: [{id,type}]`) plus `notes` and `co
 ## Workflow
 
 1. Resolve repository root and plan path.
-2. Initialize plan storage with `scripts/st_plan.py init` if missing.
-3. Rehydrate current state with `scripts/st_plan.py show` (or focused views via `ready` / `blocked`).
-4. Apply plan mutations through script subcommands (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`); do not hand-edit existing JSONL lines.
-5. After each mutation command, consume the emitted `update_plan: {...}` payload and publish `update_plan` in the same turn.
-6. Use `emit-update-plan` to regenerate the payload from durable state when needed.
-7. Export/import snapshots when cross-session handoff is needed.
+2. If the run has 3+ dependent steps, likely spans turns, or already uses `update_plan`, adopt `$st` as the durable source of truth before editing.
+3. Initialize plan storage with `scripts/st_plan.py init` if missing.
+4. Rehydrate current state with `scripts/st_plan.py show` (or focused views via `ready` / `blocked`).
+5. Apply plan mutations through script subcommands (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`); do not hand-edit existing JSONL lines.
+6. After each mutation command, consume the emitted `update_plan: {...}` payload and publish `update_plan` in the same turn.
+7. Use `emit-update-plan` to regenerate the payload from durable state when needed.
+8. Export/import snapshots when cross-session handoff is needed.
 
 ## Commands
 
