@@ -4,10 +4,10 @@ This reference exists so the `ghost` skill can generate a first-class `VERIFY.md
 
 ## Minimum checks (always)
 - `tests.yaml` parses cleanly.
-- Every public operation id has at least one test case.
-- Every public operation id has at least one executable (non-skip) case unless infeasible; document exceptions.
+- Every public operation id (or tool id for scenario suites) has at least one test case.
+- Every public operation id (or tool id) has at least one executable (non-skip) case unless infeasible; document exceptions.
 - Each operation has coverage across success and error paths (when applicable).
-- Each primary stateful workflow has at least one executable end-to-end loop scenario with continuity assertions.
+- Each primary stateful workflow (or scenario) has at least one executable end-to-end loop scenario with continuity assertions.
 - Verification evidence bundle exists under `verification/evidence/` with all required files.
 - 100% of public operations are mapped in traceability evidence.
 - 100% of primary workflows are mapped in traceability evidence and loop inventory evidence.
@@ -17,6 +17,10 @@ This reference exists so the `ghost` skill can generate a first-class `VERIFY.md
 - Skip inventory is explicit (operation/case/reason), with deterministic alternatives attempted first.
 - Stable machine-interface fields are asserted (required keys, lengths/counts, and state effects where relevant).
 - `VERIFY.md` includes provenance + a regeneration recipe.
+
+Scenario-suite extras (when `tests.yaml` uses scenario layout):
+- Each critical scenario has explicit **hard oracles** (final state / side effects) and **trace invariants** (forbidden tools, confirmation-before-side-effects, budget/step limits, injection resistance).
+- If the agent is stochastic in production, `VERIFY.md` records reliability runs (N trials), pass rates, and the rule that critical invariant violations are release-blocking.
 
 ## Evidence Bundle Contract (fail-closed)
 
@@ -42,6 +46,10 @@ Verifier command:
 - from the ghost skill directory: `uv run python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`
 - non-zero exit means extraction quality gate failed
 
+Notes for scenario suites:
+- Interpret `public_operations` as tool ids (what the agent can call).
+- Interpret `primary_workflows` as scenario ids (critical end-to-end loops).
+
 ## Adapter Runner (preferred)
 
 Goal: prove the extracted `tests.yaml` matches the original library.
@@ -66,6 +74,11 @@ Tips:
 - If the source language has weak YAML tooling (notably Zig), parse `tests.yaml` externally and dispatch into the library via a tiny CLI/FFI shim.
 - Re-run the adapter whenever `tests.yaml` or the harness semantics change; the verification summary must match the current test inventory.
 - Record each adapter/sample execution in `adapter_results.jsonl` and keep run ids stable enough to join with `traceability.csv`.
+
+Scenario adapter notes:
+- Treat the environment as a state machine: tool calls emit trace events; state updates; agent observes.
+- Prefer assertions over final-text matching: state assertions + trace invariants + forbidden-action checks.
+- For production-like reliability, run scenarios multiple times and record pass rates + cost/latency distributions in `VERIFY.md` and evidence artifacts.
 
 ## Sampling Fallback (if adapter infeasible)
 

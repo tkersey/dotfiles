@@ -1,36 +1,47 @@
 ---
 name: ghost
-description: Create a language-agnostic ghost-library package from an existing library repo by extracting SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and upstream LICENSE files with provenance and regeneration instructions. Use when prompts say "$ghost", "ghostify this repo", "spec-ify/spec-package this library", "ghost library", or ask to extract portable spec/tests from source tests, including stateful/protocol workflows such as multi-step agent loops; do not use for implementation work or editing skills.
+description: Create a language-agnostic ghost package (spec + portable tests) from an existing repo by extracting SPEC.md, exhaustive tests.yaml (operations and/or scenarios), INSTALL.md, README.md, VERIFY.md, and upstream LICENSE files with provenance and regeneration instructions. Use when prompts say "$ghost", "ghostify this repo", "spec-ify/spec-package this library", "ghost library", or ask to extract portable spec/tests for libraries or tool-using agent loops (scenario testing); do not use for implementation work or editing skills.
 ---
 
 # ghost
 
 ## Overview
-Generate a ghost-library package (spec + tests + install prompt) from an existing library repo (in any source language).
+Generate a ghost package (spec + tests + install prompt) from an existing repo.
 
 Preserve behavior, not prose:
-- `tests.yaml` is the behavior contract
-- source tests are the primary evidence
-- code/docs/examples only fill gaps (never contradict tests)
+- `tests.yaml` is the behavior contract (operation cases and/or scenarios)
+- source tests and/or captured traces are the primary evidence
+- code/docs/examples only fill gaps (never contradict evidence)
 
-The output is language-agnostic so the library can be implemented in any target language.
+The output is language-agnostic so it can be implemented in any target language or harness.
+
+Scenario testing frame (for agentic systems / tool loops):
+- **Given** an initial world state + tool surface + user goal
+- **When** the agent runs under realistic constraints and noise
+- **Then** it reaches an acceptable outcome without violating invariants (safety, security, cost, latency, policy)
 
 ## Fit / limitations
-This approach works best when the library’s behavior can be expressed as deterministic data:
+This approach works best when the system’s behavior can be expressed as deterministic data:
 - pure-ish operations (input -> output or error)
 - a runnable test suite covering the public API
+
+It also works for **agentic systems** when behavior can be expressed as controlled, replayable scenarios:
+- a tool sandbox (stubs/record-replay/simulator)
+- machine-checkable oracles (state assertions + trace invariants)
+- a deterministic debug mode plus a production-like reliability mode (pass rates)
 
 It gets harder (but is still possible) when the contract depends on time, randomness, IO, concurrency, global state, or platform details. In those cases, make assumptions explicit in `SPEC.md` + `VERIFY.md`, and normalize nondeterminism into explicit inputs/outputs.
 
 ## Hard rules (MUST / MUST NOT)
-- MUST treat upstream tests as authoritative; if docs/examples disagree, prefer tests and record the discrepancy.
-- MUST normalize nondeterminism into explicit inputs/outputs (no implicit "now", random seeds, locale surprises, unordered iteration).
+- MUST treat upstream tests (and for agentic systems: captured traces/eval runs) as authoritative; if docs/examples disagree, prefer evidence and record the discrepancy.
+- MUST normalize nondeterminism in the environment/tool surface into explicit inputs/outputs (no implicit "now", random seeds, locale surprises, unordered iteration).
+- MUST make model/agent stochasticity explicit and test it as **reliability**: gate on pass rates + invariant-violation-free runs (not exact-text goldens).
 - MUST keep the ghost repo language-agnostic: ship no implementation code, adapter runner, or build tooling.
 - MUST paraphrase upstream docs; do not copy text verbatim.
 - MUST preserve upstream license files verbatim as `LICENSE*`.
 - MUST produce a verification signal and document it in `VERIFY.md` (adapter runner preferred; sampling fallback allowed).
 - MUST document provenance and regeneration in `VERIFY.md` (upstream repo + revision, how artifacts were produced, and how to rerun verification).
-- MUST choose a `tests.yaml` contract shape that matches the API style (functional vs protocol/CLI) and keep it consistent across `SPEC.md`, `INSTALL.md`, and `VERIFY.md`.
+- MUST choose a `tests.yaml` contract shape that matches the system style (functional API vs protocol/CLI vs scenario) and keep it consistent across `SPEC.md`, `INSTALL.md`, and `VERIFY.md`.
 - MUST document the `tests.yaml` harness schema when it is non-trivial (callbacks, mutation steps, warnings, multi-step protocol setup, etc.).
   - Recommended artifact: `TESTS_SCHEMA.md`.
   - `INSTALL.md` MUST reference it when present.
@@ -41,6 +52,8 @@ It gets harder (but is still possible) when the contract depends on time, random
 - MUST capture cross-operation state transitions when behavior depends on prior calls (for example session, instance, history, or tool-loop continuity).
 - MUST include executable end-to-end loop coverage for each primary stateful workflow (for example create -> act -> persist -> follow-up) with explicit pre/post state assertions.
 - MUST treat a stateful workflow as incomplete if only isolated operation cases exist; add scenario coverage in `tests.yaml` and verification proof before calling extraction done.
+- MUST include trace-level invariants for agentic scenarios (for example permission boundaries, confirmation-before-side-effects, injection resistance, budget/step limits).
+- MUST prefer oracles that score behavior via state + trace (tool calls, side effects) over brittle final-text matching.
 - MUST produce a machine-checkable evidence bundle under `verification/evidence/` and fail extraction unless it passes `uv run python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`.
 - MUST enforce fail-closed verification thresholds: 100% mapped public operations, 100% mapped primary workflows, mutation sensitivity gate passes, and independent regeneration parity passes.
 
@@ -48,9 +61,16 @@ It gets harder (but is still possible) when the contract depends on time, random
 - Source repo path (git working tree)
 - Output repo name/location (default: sibling directory `<repo-name>-ghost`)
 - Upstream identity + revision (remote URL if available; tag/commit SHA)
-- Public API surface if ambiguous (functions/classes/modules)
+- Public surface if ambiguous:
+  - library: functions/classes/modules
+  - agentic system: tool names/schemas, permissions, and side-effect boundaries
 - Source language/runtime + how to run upstream tests
 - Any required runtime assumptions (timezone, locale, units, encoding)
+
+For scenario-heavy (agentic) extractions, also collect:
+- scenario catalog (top user goals + failure modes)
+- tool error/latency behaviors (timeouts, 500s, malformed payloads)
+- explicit invariants (security, safety, cost, latency, policy)
 
 ## Conventions
 
@@ -63,10 +83,19 @@ It gets harder (but is still possible) when the contract depends on time, random
 
 Avoid language-specific spellings in ids (e.g., avoid `snake_case` vs `camelCase` wars). Prefer the canonical name used by the source library’s docs.
 
+For agentic scenario suites, operation ids SHOULD match tool names as the agent sees them (e.g. `orders.lookup`, `tickets.create`).
+
+### Scenario ids
+When using scenario testing, keep **scenario ids** stable and descriptive:
+- `refund.create_ticket_with_guardrails`
+- `calendar.reschedule_with_rate_limit`
+- `security.prompt_injection_from_tool_output`
+
 ### Contract shape
 Pick one schema and stay consistent:
 - **Functional API layout**: operation ids at top-level with `{name,input,output|error}` cases.
 - **Protocol/CLI layout**: top-level `meta` + `operations`, where operation ids live under `operations` and cases include command/state assertions.
+- **Scenario layout (agentic systems)**: top-level `meta` + `scenarios`, where scenario ids live under `scenarios` and each scenario defines environment + tools + goal + oracles.
 
 ### `tests.yaml` version
 `tests.yaml` MUST include a source version identifier that ties cases to upstream evidence.
@@ -74,13 +103,19 @@ Pick one schema and stay consistent:
 - Otherwise, use an immutable source revision identifier (e.g., `git:<short-sha>` or `git describe`).
 - Functional layout: use top-level `version`.
 - Protocol/CLI layout: keep `meta.version` for test schema version and include `meta.source_version` for upstream evidence version.
+- Scenario layout: keep `meta.version` for schema version and include `meta.source_version` for upstream evidence version.
 
 ## Workflow (tests-first)
 
 ### 0) Define scope and contract
 - Write a one-line problem statement naming the upstream repo/revision and target ghost output path.
-- Choose one `tests.yaml` layout (functional or protocol/CLI) and keep it consistent across `SPEC.md`, `INSTALL.md`, and `VERIFY.md`.
+- Choose one `tests.yaml` layout (functional, protocol/CLI, or scenario) and keep it consistent across `SPEC.md`, `INSTALL.md`, and `VERIFY.md`.
 - Set success criteria: deterministic cases for every public operation, executable loop coverage for primary stateful workflows, and a recorded verification signal in `VERIFY.md`.
+
+For agentic systems, define success criteria as:
+- critical scenarios expressed in a controlled tool sandbox
+- hard oracles + trace-level invariants (no critical violations)
+- reliability gates (pass rate thresholds) for production-like runs
 
 ### 1) Scope the source
 - Locate the test suite(s), examples, and primary docs (README, API docs, docs site).
@@ -98,10 +133,16 @@ Pick one schema and stay consistent:
   - public API + tests covering it
   - exclude internal helpers unless tests prove they are part of the contract
 - Identify primary user-facing workflows (especially stateful loops) and map each workflow to required operation sequences and state boundaries.
+
+For agentic systems:
+- Identify the tool surface (names, schemas, permissions, rate limits).
+- Identify the environment/state (what changes when tools are called).
+- Identify invariants (safety/security/cost/latency/policy) that must hold across the full trace.
+- Build a coverage matrix (functional, robustness, safety/security/abuse, cost/latency).
 - Decide the output directory as a new sibling repo unless the user overrides.
 
 ### 2) Harvest behavior evidence
-- Extract test cases and expected outputs; treat tests as authoritative.
+- Extract test cases and expected outputs (or scenario traces); treat evidence as authoritative.
 - When tests are silent, read code/docs to infer behavior and record the inference.
 - Note all boundary values, rounding rules, encoding rules, and error cases.
 - If the API promises "copy"/"detached" behavior, harvest mutation-isolation evidence (including nested structure mutation, not just top-level fields).
@@ -111,6 +152,11 @@ Pick one schema and stay consistent:
   - force timezone/locale rules if relevant
   - remove nondeterminism (random seeds, unordered iteration)
 
+For scenario suites, also harvest:
+- realistic tool failures (timeouts/500s/malformed JSON/partial results) and backoff/retry behavior
+- prompt-injection-like tool outputs and required refusal/ignore behavior
+- stop conditions (max steps, budget) and graceful halts
+
 ### 3) Write `SPEC.md` (strict, language-agnostic)
 - Describe types abstractly (number/string/object/timestamp/bytes/etc.).
 - For bytes/buffers, define a canonical encoding (hex or base64) and use it consistently in `tests.yaml`.
@@ -119,6 +165,10 @@ Pick one schema and stay consistent:
 - Specify every public operation with inputs, outputs, rules, and edge cases.
 - When an operation yields both a "prepared" value and a "persisted delta" (or similar), define the delta derivation mechanically (slice/filter/identity rules) and test it.
 - Specify cross-operation invariants for primary workflows (state transitions, required ordering, and continuity guarantees).
+- For scenarios, specify:
+  - environment state model and reset semantics
+  - tool surface contracts (schemas, permissions, rate limits)
+  - invariants as explicit, testable rules (trace-level)
 - Paraphrase source docs; do not copy text verbatim.
 - Use `references/templates.md` for structure.
 
@@ -137,6 +187,12 @@ Pick one schema and stay consistent:
 - Normalize inputs to deterministic values (avoid "now"; use explicit timestamps).
 - Keep or improve coverage across all public operations and failure modes.
 - Add scenario cases for primary stateful workflows so the contract proves end-to-end loop behavior, not only per-operation correctness.
+- For agentic systems, prefer the scenario layout and define each scenario as:
+  - initial state (what the agent knows + world state)
+  - tool sandbox (stubs/record-replay/simulator) and permissions
+  - dynamics (how the world responds to tool calls, including failures/delays)
+  - success criteria (final state and/or required tool side effects)
+  - oracles (hard assertions + trace invariants; optional rubric judge)
 - Prefer exact/value-complete assertions for stable output fields; use partial assertions only when fields are intentionally volatile.
 - For warning/error message checks, prefer substring assertions unless the exact wording is itself part of the upstream contract.
 - If `tests.yaml` includes harness directives beyond basic `{name,input,output|error}` (e.g. callbacks by label, mutation steps, warning sinks, setup scripts), document them in `TESTS_SCHEMA.md`.
@@ -161,7 +217,7 @@ Pick one schema and stay consistent:
 ### 6) Verify fidelity (must do)
 - Ensure `tests.yaml` parses and case counts match or exceed the source tests covering the public API.
 - Ensure every operation id has at least one executable (non-`skip`) case unless infeasible, and list any exceptions in `VERIFY.md`.
-- Preferred: create a temporary adapter runner in the source language to run `tests.yaml` against the existing library.
+- Preferred: create a temporary adapter runner in the source language to run `tests.yaml` against the upstream system (library or agent).
   - if the source language has weak YAML tooling, parse YAML externally and dispatch into the library via a tiny CLI/FFI shim
   - assert expected outcomes match exactly (outputs/errors for functional layout; exit/status/payload/state assertions for protocol layout)
   - for stateful workflows, execute end-to-end loop scenarios and assert continuity/persistence effects across steps
@@ -175,6 +231,12 @@ Pick one schema and stay consistent:
   - `mutation_check.json` (required mutation count + detected failures + pass/fail)
   - `parity.json` (independent regeneration parity verdict + diff count)
 - Run `uv run python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`; non-zero exit means extraction is incomplete.
+- For stochastic agentic systems:
+  - run scenarios in two modes:
+    - deterministic debug mode (stable tool outputs; fixed seed when possible)
+    - production-like mode (real sampling settings)
+  - run each critical scenario N times and record pass rate + cost/latency distributions
+  - release gates: **no critical invariant violations** and pass rate meets threshold
 - If a full adapter is infeasible:
   - run a representative sample across all operation ids (typical + boundary + error)
   - document the limitation clearly in `VERIFY.md`
