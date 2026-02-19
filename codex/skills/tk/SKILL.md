@@ -1,6 +1,6 @@
 ---
 name: tk
-description: "Software surgery protocol for proof-backed, minimal-diff implementation: Contract to Invariants to Creative Frame to inevitable incision to Proof. Use when users say \"run $tk\", \"patch-first\", \"keep the diff small\", \"state contract + invariants\", \"one clear incision\", or \"fix it with a validation signal\"."
+description: "Software surgery protocol for proof-backed, minimal-diff implementation: Contract to Invariants to Creative Frame to inevitable incision to Proof. Use when users say \"run $tk\", \"patch-first\", \"keep the diff small\", \"state contract + invariants\", \"one clear incision\", \"fix it with a validation signal\", or orchestration cues like \"workers use $tk\" / \"internally use $tk\"."
 ---
 
 # TK (Surgeon's Principle)
@@ -36,6 +36,11 @@ TK has two modes.
 Output order is fixed. Do not lead with a Summary.
 If you must summarize, place it inside **Incision** as the change summary.
 
+Output-contract precedence (required):
+- If a higher-priority instruction requires strict artifact output (for example one fenced `diff` block, one `NO_DIFF:` line, or strict JSON), follow that outer contract.
+- In strict-output contexts, run TK internally (Contract, Invariants, Creative Frame, Why This Solution) and emit only the required external artifact.
+- Do not treat invocation text alone (`$tk` inside prompts/wrappers) as proof that TK output format was executed.
+
 Advice mode (no code change requested):
 - Output exactly: Contract, Invariants, Creative Frame, Why This Solution.
 
@@ -53,7 +58,8 @@ Implementation mode (code change requested):
 - If blocked on requirements: output Contract, Invariants, Creative Frame, Why This Solution, Question (no Incision/Proof yet).
 
 Template compliance (order is mandatory):
-- Contract → Invariants → Creative Frame → Why This Solution → Incision → Proof.
+- Contract → Invariants → Creative Frame → Why This Solution → Incision → Proof (default mode).
+- Strict-output override: follow the required external artifact format and keep TK sections internal.
 - If blocked: Contract → Invariants → Creative Frame → Why This Solution → Question.
 
 **Contract**
@@ -107,7 +113,8 @@ Implementation non-negotiables:
 - No dependency adds without an explicit ask.
 - No shotgun edits: if the diff starts spreading, cut an adapter/seam instead.
 - Do not finalize a wave artifact (`$commit`/`$patch`) before `$fix` closes the wave with a passing signal.
-- If a patch/diff is required by instructions, include it under **Patch** after **Proof**; never skip the TK sections.
+- If a patch/diff is required by instructions, include it under **Patch** after **Proof** in default mode.
+- In strict-output worker mode, keep TK sections internal and emit only the required external artifact contract.
 
 ## The TK Loop (how inevitability is produced)
 TK is not a style; it’s a reduction process:
@@ -317,6 +324,11 @@ Implementation mode (code changes): output exactly:
 **Patch** (only if required by system/user instructions)
 - <unified diff or patch>
 
+Strict-output mode (only when mandated by higher-priority instructions):
+- Keep TK sections internal.
+- Emit exactly the required external artifact shape (for example one fenced `diff` block, one `NO_DIFF:` line, or strict JSON).
+- If the external contract disallows prose, do not add wrapper text.
+
 If blocked (must ask before cutting):
 
 **Question**
@@ -326,3 +338,4 @@ If blocked (must ask before cutting):
 - "tk" / "surgeon" / "minimal incision"
 - "invariants" / "parse don’t validate"
 - "migration" / "equivalence" / "commute"
+- "workers use $tk" / "internally use $tk" / "PATCH-FIRST"
