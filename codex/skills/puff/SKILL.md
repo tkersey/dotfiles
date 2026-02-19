@@ -22,6 +22,8 @@ PUFF_SCRIPT="$CODEX_SKILLS_HOME/skills/puff/scripts/puff.sh"
 ```
 3. Run readiness checks.
 `"$PUFF_SCRIPT" doctor --env <env-id-or-label>`
+Optional: print manual environment-creation instructions.
+`"$PUFF_SCRIPT" create`
 4. Launch cloud work with a detached watcher.
 `"$PUFF_SCRIPT" launch --env <env-id-or-label> --prompt "Implement X"`
 5. Inspect running and completed watcher jobs.
@@ -36,7 +38,8 @@ PUFF_SCRIPT="$CODEX_SKILLS_HOME/skills/puff/scripts/puff.sh"
 
 Use `launch` for async/background execution.
 `launch` runs `doctor` by default; pass `--skip-doctor` to bypass pre-checks.
-Use `submit` when only task id/url is needed.
+Use `create` when you need formatted manual environment-creation instructions only.
+Use `submit` when only task id/url is needed (it executes a cloud task).
 Use `doctor` for explicit auth/environment readiness checks.
 Use `watch` for blocking foreground polling.
 Use `jobs` and `stop` to manage detached watchers.
@@ -56,5 +59,5 @@ Treat `ERROR` as terminal failure and inspect with `codex cloud status <task-id>
 
 ## Resources
 
-- `scripts/puff.sh`: submit/watch/launch/jobs/stop wrapper around `codex cloud`.
+- `scripts/puff.sh`: create/submit/watch/launch/jobs/stop wrapper around `codex cloud`.
 - `references/commands.md`: command map including optional `$cas` pairing.

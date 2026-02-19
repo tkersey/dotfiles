@@ -266,6 +266,39 @@ cmd_doctor() {
   run_doctor_checks "$env_id" "$quiet"
 }
 
+cmd_create() {
+  while (( $# > 0 )); do
+    case "$1" in
+      -h|--help)
+        usage_create
+        return 0
+        ;;
+      *)
+        die "unknown create option: $1"
+        ;;
+    esac
+  done
+
+  cat <<'INSTRUCTIONS'
+# Puff Cloud Environment Create Guide
+
+`puff.sh create` is instruction-only.
+It does not call any create-environment API and makes no remote changes.
+
+1. Create the environment in your Codex/ChatGPT workspace UI.
+2. Copy the environment id (or confirm a unique environment label).
+3. Verify local access:
+   - `codex login`
+   - `codex cloud list --json`
+4. Verify environment resolution:
+   - `puff.sh doctor --env <env-id-or-label>`
+5. Launch work once checks pass:
+   - `puff.sh launch --env <env-id-or-label> --prompt "Implement X"`
+
+If `doctor` fails, confirm account/workspace access or ask your workspace admin.
+INSTRUCTIONS
+}
+
 cmd_watch() {
   local task_ref=""
   local task_url=""
@@ -833,6 +866,15 @@ When --env is provided, validates that the environment selector resolves.
 USAGE
 }
 
+usage_create() {
+  cat <<USAGE
+Usage: puff.sh create
+
+Print formatted manual instructions for creating a Codex Cloud environment.
+This command is informational-only and does not create environments.
+USAGE
+}
+
 usage_watch() {
   cat <<USAGE
 Usage: puff.sh watch --task <task-id-or-url> [--interval <seconds>] [--timeout <seconds>] [--result-file <path>]
@@ -893,6 +935,7 @@ Usage: puff.sh <command> [options]
 Commands:
   submit   Submit a Codex Cloud task.
   doctor   Check codex cloud readiness (login/env resolution).
+  create   Print manual cloud-environment creation instructions.
   watch    Poll status for a task until terminal state.
   launch   Submit task + start detached watcher.
   jobs     List detached watcher jobs.
@@ -917,6 +960,9 @@ main() {
       ;;
     doctor)
       cmd_doctor "$@"
+      ;;
+    create)
+      cmd_create "$@"
       ;;
     watch)
       cmd_watch "$@"

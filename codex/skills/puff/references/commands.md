@@ -15,6 +15,8 @@ CAS_PROXY_SCRIPT="$CODEX_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"
 
 - Doctor check (auth + env resolution):
   `"$PUFF_SCRIPT" doctor --env <env>`
+- Create instructions only (manual environment creation; no API call):
+  `"$PUFF_SCRIPT" create`
 - Submit only:
   `"$PUFF_SCRIPT" submit --env <env> --prompt "..."`
 - Watch in foreground:
