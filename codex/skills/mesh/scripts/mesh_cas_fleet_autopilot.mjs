@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 
 import { CasClient } from "../../cas/scripts/cas_client.mjs";
 import { computeBudgetGovernor, effectiveWorkersForBudget } from "../../cas/scripts/budget_governor.mjs";
+import { classifyMeshOutput } from "./mesh_worker_output_parser.mjs";
 
 if (!process.env.UV_CACHE_DIR) {
   process.env.UV_CACHE_DIR = "/tmp/uv-cache";
@@ -250,93 +251,6 @@ function ensureHeadlessPlanFile({ cwd, planFile }) {
     `mesh_headless_stop headless_stop_reason=plan_missing plan_file=${planFile} action=${JSON.stringify(initCmd)}\n`,
   );
   return { ok: false, planPath };
-}
-
-function extractFenceBody(text, info) {
-  if (typeof text !== "string" || !text) return null;
-  const marker = `\`\`\`${info}`;
-  const fenceIdx = text.indexOf(marker);
-  if (fenceIdx === -1) return null;
-  const after = text.slice(fenceIdx + marker.length);
-  const end = after.indexOf("```");
-  if (end === -1) return null;
-  const body = after.slice(0, end).replace(/^\n/, "").trim();
-  return body || null;
-}
-
-function extractDiff(text) {
-  if (typeof text !== "string" || !text) return { diff: null, format: "none" };
-
-  const diffFence = extractFenceBody(text, "diff");
-  if (diffFence) return { diff: diffFence, format: "diff_fence" };
-
-  const patchFence = extractFenceBody(text, "patch");
-  if (patchFence) return { diff: patchFence, format: "patch_fence" };
-
-  const lines = text.split("\n");
-  let start = -1;
-  for (let i = 0; i < lines.length; i += 1) {
-    if (lines[i].startsWith("diff --git ")) {
-      start = i;
-      break;
-    }
-  }
-  if (start !== -1) {
-    const body = lines.slice(start).join("\n").trim();
-    if (body) return { diff: body, format: "git_header" };
-  }
-
-  const unifiedStart = lines.findIndex((line) => line.startsWith("--- "));
-  if (unifiedStart !== -1) {
-    const hasPlusPlus = lines.slice(unifiedStart).some((line) => line.startsWith("+++ "));
-    const hasHunk = lines.slice(unifiedStart).some((line) => line.startsWith("@@ "));
-    if (hasPlusPlus && hasHunk) {
-      const body = lines.slice(unifiedStart).join("\n").trim();
-      if (body) return { diff: body, format: "unified_hunk" };
-    }
-  }
-
-  return { diff: null, format: "none" };
-}
-
-function extractNoDiffReason(text) {
-  if (typeof text !== "string" || !text) return null;
-  const match = text.match(/NO_DIFF\s*:\s*(.+)/i);
-  if (!match || typeof match[1] !== "string") return null;
-  const cleaned = match[1].trim();
-  return cleaned ? cleaned : null;
-}
-
-function collectPatchCandidateTexts(collected) {
-  const out = [];
-  const seen = new Set();
-  const push = (value) => {
-    if (typeof value !== "string") return;
-    const trimmed = value.trim();
-    if (!trimmed || seen.has(trimmed)) return;
-    seen.add(trimmed);
-    out.push(trimmed);
-  };
-
-  push(collected?.agentMessageText);
-  const items = Array.isArray(collected?.items) ? collected.items : [];
-  for (const item of items) {
-    push(item?.text);
-    push(item?.output);
-    push(item?.stdout);
-    push(item?.stderr);
-    push(item?.result?.output);
-    push(item?.result?.stdout);
-    push(item?.result?.stderr);
-    const content = Array.isArray(item?.content) ? item.content : [];
-    for (const part of content) {
-      push(part?.text);
-      push(part?.output);
-      push(part?.stdout);
-      push(part?.stderr);
-    }
-  }
-  return out;
 }
 
 function normalizeScopePath(rawPath) {
@@ -1066,15 +980,13 @@ async function main() {
           );
 
           const msg = collected?.agentMessageText ?? "";
-          const candidates = collectPatchCandidateTexts(collected);
-          let parsed = { diff: null, format: "none" };
-          for (const candidateText of candidates) {
-            parsed = extractDiff(candidateText);
-            if (parsed.diff) break;
-          }
+          const statusHint =
+            typeof collected?.turn?.status === "string" ? collected.turn.status : "completed";
+          const parsed = classifyMeshOutput(collected, { strictOutput: true, statusHint });
           const diff = parsed.diff;
-          const parseFormat = parsed.format;
-          const noDiffReason = extractNoDiffReason(msg);
+          const parseFormat = parsed.parseFormat;
+          const noDiffReason = parsed.noDiffReason;
+          const parsedFailureCode = parsed.failureCode;
           const summaryLine = summarize(msg);
           lastRaw = msg;
           lastParseFormat = parseFormat;
@@ -1082,7 +994,7 @@ async function main() {
           const reasonSuffix = noDiffReason ? ` no_diff_reason=${JSON.stringify(noDiffReason.slice(0, 220))}` : "";
 
           process.stderr.write(
-            `mesh_fleet_worker_attempt worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} has_diff=${diff ? "yes" : "no"} parse_format=${parseFormat}${reasonSuffix} summary=${JSON.stringify(summaryLine)}\n`,
+            `mesh_fleet_worker_attempt worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} has_diff=${diff ? "yes" : "no"} failure_code=${parsedFailureCode ?? "none"} parse_format=${parseFormat}${reasonSuffix} summary=${JSON.stringify(summaryLine)}\n`,
           );
 
           if (diff) {
@@ -1101,22 +1013,27 @@ async function main() {
             };
           }
 
-          lastFailureCode = noDiffReason ? "no_patch_returned" : "no_diff_parsed";
-          lastErrorText = noDiffReason
-            ? `worker returned NO_DIFF: ${noDiffReason}`
-            : "worker produced no diff";
+          lastFailureCode = parsedFailureCode ?? "no_diff_parsed";
+          if (noDiffReason) {
+            lastErrorText = `worker returned NO_DIFF: ${noDiffReason}`;
+          } else if (lastFailureCode === "no_response") {
+            lastErrorText = "worker produced no response";
+          } else {
+            lastErrorText = "worker produced no diff";
+          }
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           const watchdogMatch = msg.match(/^worker_attempt_watchdog_timeout:(\d+)$/);
+          const failureCode = watchdogMatch ? "worker_turn_hang_before_output" : "no_response";
           if (watchdogMatch) {
             process.stderr.write(
               `mesh_fleet_worker_watchdog worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} failure_code=worker_turn_hang_before_output timeout_ms=${watchdogMatch[1]}\n`,
             );
           }
           process.stderr.write(
-            `mesh_fleet_worker_fail worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} error=${JSON.stringify(msg)}\n`,
+            `mesh_fleet_worker_fail worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} failure_code=${failureCode} error=${JSON.stringify(msg)}\n`,
           );
-          lastFailureCode = watchdogMatch ? "worker_turn_hang_before_output" : "no_response";
+          lastFailureCode = failureCode;
           lastErrorText = msg;
           lastParseFormat = "none";
           lastNoDiffReason = null;
@@ -1133,7 +1050,7 @@ async function main() {
         } catch (restartErr) {
           const msg = restartErr instanceof Error ? restartErr.message : String(restartErr);
           process.stderr.write(
-            `mesh_fleet_worker_restart_fail worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} error=${JSON.stringify(msg)}\n`,
+            `mesh_fleet_worker_restart_fail worker=${worker.name} task=${task.id} attempt=${attempt}/${WORKER_MAX_ATTEMPTS} failure_code=no_response error=${JSON.stringify(msg)}\n`,
           );
           lastFailureCode = "no_response";
           lastErrorText = msg;

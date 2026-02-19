@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 
 import { CasClient } from "../../cas/scripts/cas_client.mjs";
 import { computeBudgetGovernor, meshArgsForBudget } from "../../cas/scripts/budget_governor.mjs";
+import { classifyMeshOutput } from "./mesh_worker_output_parser.mjs";
 
 if (!process.env.UV_CACHE_DIR) {
   process.env.UV_CACHE_DIR = "/tmp/uv-cache";
@@ -404,17 +405,27 @@ async function main() {
             maxTasks: meshBudget.maxTasks,
           });
           const status = collected?.turn?.status ?? null;
+          const parsed = classifyMeshOutput(collected, {
+            strictOutput: false,
+            statusHint: typeof status === "string" ? status : null,
+          });
+          const reasonSuffix = parsed.noDiffReason
+            ? ` no_diff_reason=${JSON.stringify(parsed.noDiffReason.slice(0, 220))}`
+            : "";
           const line = summarize(collected?.agentMessageText ?? "");
           const elapsedMs = Date.now() - startedAt;
           process.stderr.write(
-            `mesh_cas_autopilot_run ok mesh_run_id=${meshRunId} status=${status ?? "null"} elapsed_ms=${elapsedMs} summary=${JSON.stringify(line)}\n`,
+            `mesh_cas_autopilot_run ok mesh_run_id=${meshRunId} status=${status ?? "null"} elapsed_ms=${elapsedMs} failure_code=${parsed.failureCode ?? "none"} parse_format=${parsed.parseFormat}${reasonSuffix} summary=${JSON.stringify(line)}\n`,
           );
           ok = true;
         } catch (err) {
           const elapsedMs = Date.now() - startedAt;
           const msg = err instanceof Error ? err.message : String(err);
+          const failureCode = msg.includes("worker_turn_hang_before_output")
+            ? "worker_turn_hang_before_output"
+            : "no_response";
           process.stderr.write(
-            `mesh_cas_autopilot_run fail mesh_run_id=${meshRunId} elapsed_ms=${elapsedMs} error=${JSON.stringify(msg)}\n`,
+            `mesh_cas_autopilot_run fail mesh_run_id=${meshRunId} elapsed_ms=${elapsedMs} failure_code=${failureCode} error=${JSON.stringify(msg)}\n`,
           );
         }
 

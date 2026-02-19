@@ -57,6 +57,7 @@ Supported forms (space-separated `key=value` args):
 - `$mesh adapter=auto max_tasks=auto parallel_tasks=auto`
 - `$mesh adapter=auto max_tasks=auto parallel_tasks=auto headless=true`
 - `$mesh ids=st-010 integrate=false`
+- `$mesh ids=st-010 integrate=false strict_output=true`
 
 Continual runner (turnkey):
 - Run continual draining in a terminal:
@@ -84,6 +85,7 @@ Invocation intent gate (required):
 - `max_tasks`: 1 (attempt at most one task completion per run)
 - `parallel_tasks`: 1 (run only one swarm at a time)
 - `integrate`: true (apply patch + run validation + mutate `$st` after consensus)
+- `strict_output`: false (when true, parser-facing output contract is enforced for `integrate=false`)
 - `swarm_roles`: 5 (`proposer`, `critic_a`, `critic_b`, `skeptic`, `synthesizer`)
 - `fallback_swarm_roles`: 3 (`proposer`, `skeptic`, `synthesizer`) when capacity is insufficient or repeated
   `no_response` occurs
@@ -149,8 +151,17 @@ Trigger (recommended): if `parallel_tasks > 1` OR you are running multi-instance
 
 Minimal fabric (tool-agnostic):
 
-- Mailbox message fields: `thread_id` (usually `task_id`), `from`, `to|broadcast`, `type`, `body`, `ts`
-- Lease fields: `owner`, `scope[]`, `mode=exclusive|shared`, `ttl_seconds`, `reason=task_id`
+- Mailbox message fields: `msg_id`, `thread_id` (usually `task_id`), `from`, `to|broadcast`, `type`, `body`, `ts`, `attempt`, `in_reply_to`, `dedupe_key`
+- Lease fields: `lease_id`, `owner`, `scope[]`, `mode=exclusive|shared`, `ttl_seconds`, `acquired_at`, `expires_at`, `last_heartbeat_at`, `epoch`, `reason=task_id`
+
+Mailbox idempotency rule (required):
+- Retry sends must keep `dedupe_key` stable.
+- The orchestrator must dedupe deliveries by `msg_id` (fallback `dedupe_key`) before `follow_up`.
+
+Lease lifecycle rule (required):
+- Heartbeat active leases at `ttl_seconds / 3`.
+- Re-check lease validity immediately before write/apply.
+- If lease is stale, reap it, emit `type=lease_reap`, and re-claim before continuing.
 
 Happy path:
 1) Post `claim` (thread=`task_id`)
@@ -194,6 +205,13 @@ Adapter selection order:
 4) Else stop and ask the user to switch to a worker-capable runtime.
 
 Communication is orchestrator-mediated: each round's prompts include prior round artifacts.
+
+Worker failure taxonomy (required):
+- `worker_turn_hang_before_output`: worker never returns first artifact.
+- `no_diff_parsed`: worker reply did not satisfy artifact parse contract.
+- `no_patch_returned`: worker returned explicit no-patch/no-diff outcome.
+- `no_response`: transport/lifecycle timeout with no usable worker artifact.
+- Persist exact failure codes; do not collapse them into one bucket.
 
 Slot hygiene (required):
 - For adapters with explicit close semantics, close every spawned worker once output is integrated or abandoned.
@@ -374,6 +392,11 @@ Synthesizer output must include:
 - a decision log mapping critiques to actions taken (accepted/rejected with reason)
 - the exact validation commands to run (must match task meta unless explicitly updated)
 
+Synthesis artifact contract (required):
+- Default artifact shape: exactly one fenced unified diff block.
+- If no safe patch is available, emit exactly one line `NO_DIFF:<reason>`.
+- If output is unparsable, run one strict-format `follow_up`; if still unparsable, treat as `no_diff_parsed`.
+
 ### Round D: Vote
 
 After synthesis, obtain one explicit vote per role.
@@ -405,6 +428,7 @@ If `integrate=false`:
 - Do NOT run validation.
 - Do NOT mutate `$st`.
 - Return the synthesized diff + decision log + validation commands so another integrator can apply it.
+  - If `strict_output=true`, return exactly one fenced diff block or one `NO_DIFF:<reason>` line with no wrapper prose.
 
 Otherwise (default, `integrate=true`):
 
@@ -420,7 +444,7 @@ Otherwise (default, `integrate=true`):
 Persistence requirements (use `$st add-comment`):
 - Always append a `[mesh]` comment containing:
   - outcome: `completed|blocked`
-  - block reason code when blocked: `no_consensus|no_response|missing_validation|validation_failed|ambiguous_integration`
+  - block reason code when blocked: `no_consensus|worker_turn_hang_before_output|no_diff_parsed|no_patch_returned|no_response|missing_validation|validation_failed|ambiguous_integration`
   - vote tally (agree/disagree counts) when applicable
   - validation commands executed and outcomes (no fabricated logs)
   - learning record id(s) appended (if available)
@@ -446,6 +470,7 @@ Return:
 - concurrency telemetry: requested vs achieved (`parallel_tasks`, roles per task); if below target, state why (scope overlap, adapter cap, spawn failures)
 - consensus telemetry (attempt count, vote tallies)
 - delegation telemetry: `delegation_did_not_run=true|false`; when true, include a reason code
+- failure telemetry: failure codes observed (`worker_turn_hang_before_output|no_diff_parsed|no_patch_returned|no_response`) and retry outcomes
 - adapter telemetry (selected adapter, selection reason, requested workers, local cap, workers spawned/completed/retried/timed_out)
 - slot hygiene telemetry: workers `spawned` vs `closed` when close semantics exist; include any stragglers
 - validation commands and outcomes
@@ -479,7 +504,17 @@ Reference commands:
   - If `headless=true`, do not ask; emit one actionable line and `headless_stop_reason=ambiguous_plan_file`.
 - No runnable tasks: report ready/blocked/completed counts and exit cleanly.
 - Consensus failure after retries: set `blocked` + comment `no_consensus`.
-- `worker_no_response` or unusable output:
+- `worker_turn_hang_before_output`:
+  - replace worker once and retry in the current swarm size
+  - if still failing in a 5-role swarm, retry once with fallback 3-role swarm
+  - if still failing, set `blocked` + matching failure code comment
+- `no_diff_parsed`:
+  - send one strict-output `follow_up` asking for exactly one fenced diff block or one `NO_DIFF:<reason>` line
+  - if still unparsable, set `blocked` + comment `no_diff_parsed`
+- `no_patch_returned`:
+  - if `integrate=false`, return `NO_DIFF:<reason>` and do not mutate `$st`
+  - if `integrate=true`, set `blocked` + comment `no_patch_returned`
+- `no_response` (transport/lifecycle timeout with no usable output):
   - retry once in the current swarm size
   - if still unusable in a 5-role swarm, retry once with fallback 3-role swarm
   - if still unusable, set `blocked` + comment `no_response`
