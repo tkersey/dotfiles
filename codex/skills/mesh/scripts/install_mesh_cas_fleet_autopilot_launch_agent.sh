@@ -10,11 +10,11 @@ PLAN_FILE_REL=".step/st-plan.jsonl"
 WORKERS="3"
 POLL_MS="60000"
 WORKER_TURN_TIMEOUT_MS="1800000"
-INTEGRATOR_TURN_TIMEOUT_MS="2700000"
+JOIN_TURN_TIMEOUT_MS="2700000"
 BUDGET_MODE="aware"
 
 usage() {
-  echo "Usage: $0 [--label <label>] [--path <path>] [--uv-cache-dir <path>] --cwd <dir> [--plan-file <relpath>] [--workers <n>] [--poll-ms <n>] [--worker-turn-timeout-ms <n>] [--integrator-turn-timeout-ms <n>] [--budget-mode <aware|all_out>]"
+  echo "Usage: $0 [--label <label>] [--path <path>] [--uv-cache-dir <path>] --cwd <dir> [--plan-file <relpath>] [--workers <n>] [--poll-ms <n>] [--worker-turn-timeout-ms <n>] [--join-turn-timeout-ms <n>] [--budget-mode <aware|all_out>]"
   echo "Defaults:"
   echo "  label=$LABEL"
   echo "  plan-file=$PLAN_FILE_REL"
@@ -42,8 +42,8 @@ while [ "$#" -gt 0 ]; do
       POLL_MS="$2"; shift 2 ;;
     --worker-turn-timeout-ms)
       WORKER_TURN_TIMEOUT_MS="$2"; shift 2 ;;
-    --integrator-turn-timeout-ms)
-      INTEGRATOR_TURN_TIMEOUT_MS="$2"; shift 2 ;;
+    --join-turn-timeout-ms)
+      JOIN_TURN_TIMEOUT_MS="$2"; shift 2 ;;
     --budget-mode)
       BUDGET_MODE="$2"; shift 2 ;;
     -h|--help)
@@ -81,9 +81,9 @@ case "$WORKER_TURN_TIMEOUT_MS" in
     ;;
 esac
 
-case "$INTEGRATOR_TURN_TIMEOUT_MS" in
+case "$JOIN_TURN_TIMEOUT_MS" in
   ''|*[!0-9]*)
-    echo "error: --integrator-turn-timeout-ms must be a positive integer" >&2
+    echo "error: --join-turn-timeout-ms must be a positive integer" >&2
     exit 1
     ;;
 esac
@@ -139,8 +139,8 @@ cat > "$TMP_PLIST" <<EOF
     <string>$POLL_MS</string>
     <string>--worker-turn-timeout-ms</string>
     <string>$WORKER_TURN_TIMEOUT_MS</string>
-    <string>--integrator-turn-timeout-ms</string>
-    <string>$INTEGRATOR_TURN_TIMEOUT_MS</string>
+    <string>--join-turn-timeout-ms</string>
+    <string>$JOIN_TURN_TIMEOUT_MS</string>
     <string>--budget-mode</string>
     <string>$BUDGET_MODE</string>
   </array>

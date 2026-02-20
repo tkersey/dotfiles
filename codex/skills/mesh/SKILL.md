@@ -62,7 +62,7 @@ Supported forms (space-separated `key=value` args):
 Continual runner (turnkey):
 - Run continual draining in a terminal:
   - `node codex/skills/mesh/scripts/mesh_cas_autopilot.mjs --cwd <repo> [--budget-mode aware|all_out]`
-- Run continual draining with scale-out workers (1 integrator + N workers):
+- Run continual draining with scale-out workers (1 join + N workers):
   - `node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd <repo> --workers 3 [--budget-mode aware|all_out]`
 - Run continually in the background (launchd):
   - `codex/skills/mesh/scripts/install_mesh_cas_autopilot_launch_agent.sh --cwd <repo>`
@@ -190,7 +190,7 @@ Required adapter verbs:
 
 Common adapter ids (convention; optional):
 - `local`: in-session workers (subagents)
-- `cas`: multi-instance workers (via `$cas`), coordinated via mailbox+leases; one integrator applies patches/validates/mutates `$st`
+- `cas`: multi-instance workers (via `$cas`), coordinated via mailbox+leases; one join applies patches/validates/mutates `$st`
 - `auto`: throughput-aware selection. Choose `local` for one-wave workloads; switch to `cas` when ready queue depth exceeds one local wave, or when high-fanout intent meets observed local cap pressure. Always report selected adapter + reason.
 
 Adapter selection order:
@@ -427,7 +427,7 @@ If `integrate=false`:
 - Do NOT apply the patch.
 - Do NOT run validation.
 - Do NOT mutate `$st`.
-- Return the synthesized diff + decision log + validation commands so another integrator can apply it.
+- Return the synthesized diff + decision log + validation commands so another join can apply it.
   - If `strict_output=true`, return exactly one fenced diff block or one `NO_DIFF:<reason>` line with no wrapper prose.
 
 Otherwise (default, `integrate=true`):

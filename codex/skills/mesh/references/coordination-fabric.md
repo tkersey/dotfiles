@@ -105,7 +105,7 @@ Implement these gates either in the fabric service or in the orchestrator.
 
 - Use mailbox threads as the artifact bus (instead of only in-prompt artifacts).
 - Use leases to enable safe `parallel_tasks>1` and multi-instance work.
-- Treat the orchestrator as the **integrator**:
+- Treat the orchestrator as the **join**:
   - only it applies patches, runs validation, and mutates `$st`.
   - worker instances/agents are read-only or diff-producing.
 
@@ -115,7 +115,7 @@ To scale beyond per-instance `[agents].max_threads`:
 
 - Run N instances (one per teammate).
 - All instances connect to the same fabric.
-- Exactly one instance is the integrator (patch/validation/git).
+- Exactly one instance is the join (patch/validation/git).
 - All other instances:
   - read, propose, critique, synthesize diffs
   - publish results to mailbox threads

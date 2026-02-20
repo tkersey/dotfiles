@@ -2,9 +2,9 @@
 // Fleet $mesh runner driven via cas (codex app-server).
 //
 // Design:
-// - 1 integrator instance applies patches, runs validation, and mutates $st.
+// - 1 join instance applies patches, runs validation, and mutates $st.
 // - N worker instances run $mesh with integrate=false and return candidate diffs.
-// - The fleet runner routes artifacts from workers -> integrator and drains ready work continually.
+// - The fleet runner routes artifacts from workers -> join and drains ready work continually.
 
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -48,7 +48,7 @@ function usage() {
   return [
     "mesh_cas_fleet_autopilot.mjs",
     "",
-    "Runs $mesh continually using 1 integrator + N worker instances (cas).",
+    "Runs $mesh continually using 1 join + N worker instances (cas).",
     "",
     "Usage:",
     "  node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd DIR [options]",
@@ -61,7 +61,7 @@ function usage() {
     "  --workers N                  Worker instances (default: 3)",
     "  --poll-ms N                  Sleep when no work is ready (default: 60000)",
     "  --worker-turn-timeout-ms N   Primary wait before timeout-recovery for one worker turn (default: 1800000 = 30 min)",
-    "  --integrator-turn-timeout-ms N  Primary wait before timeout-recovery for one integrator turn (default: 2700000 = 45 min)",
+    "  --join-turn-timeout-ms N  Primary wait before timeout-recovery for one join turn (default: 2700000 = 45 min)",
     "  --state-dir DIR              Directory for per-instance cas state files",
     "  --budget-mode MODE           aware|all_out (default: aware)",
     "  --once                       Run one scheduling wave and exit",
@@ -71,7 +71,7 @@ function usage() {
     "Notes:",
     "  - Requires `uv` and `codex` on PATH.",
     "  - Worker instances run with sandboxPolicy=readOnly and file approvals declined.",
-    "  - With --once, effective worker/integrator timeout values are clamped to at least 300000.",
+    "  - With --once, effective worker/join timeout values are clamped to at least 300000.",
   ].join("\n");
 }
 
@@ -82,7 +82,7 @@ function parseArgs(argv) {
     workers: 3,
     pollMs: 60_000,
     workerTurnTimeoutMs: 30 * 60_000,
-    integratorTurnTimeoutMs: 45 * 60_000,
+    joinTurnTimeoutMs: 45 * 60_000,
     stateDir: null,
     budgetMode: "aware",
     once: false,
@@ -121,8 +121,8 @@ function parseArgs(argv) {
       opts.workerTurnTimeoutMs = Number(take());
       continue;
     }
-    if (a === "--integrator-turn-timeout-ms") {
-      opts.integratorTurnTimeoutMs = Number(take());
+    if (a === "--join-turn-timeout-ms") {
+      opts.joinTurnTimeoutMs = Number(take());
       continue;
     }
     if (a === "--state-dir") {
@@ -155,8 +155,8 @@ function parseArgs(argv) {
   if (!Number.isInteger(opts.workerTurnTimeoutMs) || opts.workerTurnTimeoutMs <= 0) {
     throw new Error("--worker-turn-timeout-ms must be a positive integer");
   }
-  if (!Number.isInteger(opts.integratorTurnTimeoutMs) || opts.integratorTurnTimeoutMs <= 0) {
-    throw new Error("--integrator-turn-timeout-ms must be a positive integer");
+  if (!Number.isInteger(opts.joinTurnTimeoutMs) || opts.joinTurnTimeoutMs <= 0) {
+    throw new Error("--join-turn-timeout-ms must be a positive integer");
   }
   if (typeof opts.planFile !== "string" || !opts.planFile.trim()) {
     throw new Error("--plan-file must be a non-empty string");
@@ -485,7 +485,7 @@ async function runWorkerMesh({
   );
 }
 
-async function runIntegratorMeshFull({
+async function runJoinMeshFull({
   client,
   threadId,
   taskId,
@@ -497,7 +497,7 @@ async function runIntegratorMeshFull({
   const prompt = [
     `$mesh ids=${taskId} plan_file=${planFileRel} adapter=auto parallel_tasks=1 max_tasks=1 headless=true`,
     "",
-    `Runtime budget: ${budgetSec}s for this integrator turn.`,
+    `Runtime budget: ${budgetSec}s for this join turn.`,
     "Execution policy:",
     "- Prioritize integration and validation for this task id.",
     "- If budget is nearly exhausted, finalize with explicit status and stop.",
@@ -512,11 +512,11 @@ async function runIntegratorMeshFull({
       threadId,
       input,
     },
-    meshTimeoutSteerOptions({ timeoutMs, role: "integrator mesh run" }),
+    meshTimeoutSteerOptions({ timeoutMs, role: "join mesh run" }),
   );
 }
 
-async function runIntegratorApply({
+async function runJoinApply({
   client,
   threadId,
   taskId,
@@ -529,8 +529,8 @@ async function runIntegratorApply({
   const prompt = [
     `$mesh ids=${taskId} plan_file=${planFileRel} adapter=auto parallel_tasks=1 max_tasks=1 headless=true`,
     "",
-    `Runtime budget: ${budgetSec}s for this integrator turn.`,
-    "Integrator override:",
+    `Runtime budget: ${budgetSec}s for this join turn.`,
+    "Join override:",
     "- Skip proposal/critique/synthesis/vote.",
     "- Treat the patch below as the synthesized diff and go directly to integration + validation + persistence.",
     "- If the patch does not apply cleanly, fall back to running full $mesh for this id.",
@@ -552,7 +552,7 @@ async function runIntegratorApply({
       threadId,
       input,
     },
-    meshTimeoutSteerOptions({ timeoutMs, role: "integrator apply run" }),
+    meshTimeoutSteerOptions({ timeoutMs, role: "join apply run" }),
   );
 }
 
@@ -582,11 +582,11 @@ async function main() {
       `mesh_timeout_clamp adapter=cas_fleet mode=once field=worker_turn_timeout_ms requested_ms=${requested} applied_ms=${opts.workerTurnTimeoutMs} minimum_ms=${ONE_SHOT_MIN_TIMEOUT_MS}\n`,
     );
   }
-  if (opts.once && opts.integratorTurnTimeoutMs < ONE_SHOT_MIN_TIMEOUT_MS) {
-    const requested = opts.integratorTurnTimeoutMs;
-    opts.integratorTurnTimeoutMs = ONE_SHOT_MIN_TIMEOUT_MS;
+  if (opts.once && opts.joinTurnTimeoutMs < ONE_SHOT_MIN_TIMEOUT_MS) {
+    const requested = opts.joinTurnTimeoutMs;
+    opts.joinTurnTimeoutMs = ONE_SHOT_MIN_TIMEOUT_MS;
     process.stderr.write(
-      `mesh_timeout_clamp adapter=cas_fleet mode=once field=integrator_turn_timeout_ms requested_ms=${requested} applied_ms=${opts.integratorTurnTimeoutMs} minimum_ms=${ONE_SHOT_MIN_TIMEOUT_MS}\n`,
+      `mesh_timeout_clamp adapter=cas_fleet mode=once field=join_turn_timeout_ms requested_ms=${requested} applied_ms=${opts.joinTurnTimeoutMs} minimum_ms=${ONE_SHOT_MIN_TIMEOUT_MS}\n`,
     );
   }
   const absCwd = resolve(opts.cwd);
@@ -684,15 +684,15 @@ async function main() {
     });
   }
 
-  const integratorStateFile = stateFileForInstance(stateDir, "integrator");
-  const integrator = {
-    name: "integrator",
-    stateFile: integratorStateFile,
+  const joinStateFile = stateFileForInstance(stateDir, "join");
+  const join = {
+    name: "join",
+    stateFile: joinStateFile,
     client: new CasClient({
       cwd: absCwd,
-      stateFile: integratorStateFile,
-      clientName: "mesh-fleet-integrator",
-      clientTitle: "mesh cas fleet integrator",
+      stateFile: joinStateFile,
+      clientName: "mesh-fleet-join",
+      clientTitle: "mesh cas fleet join",
       clientVersion: "0.1.0",
     }),
     threadId: null,
@@ -729,7 +729,7 @@ async function main() {
     }
   }
 
-  wireClientLogs(integrator.name, integrator.client);
+  wireClientLogs(join.name, join.client);
   for (const w of workers) wireClientLogs(w.name, w.client);
 
   // If the server asks for dynamic tools/user input/auth refresh, fail deterministically.
@@ -775,7 +775,7 @@ async function main() {
     });
   }
 
-  installHeadlessServerRequestPolicy("integrator", integrator.client);
+  installHeadlessServerRequestPolicy("join", join.client);
   for (const w of workers) installHeadlessServerRequestPolicy(w.name, w.client);
 
   async function restartInstance(instance, makeClient, startParams) {
@@ -799,11 +799,11 @@ async function main() {
   }
 
   // Start all instances.
-  await Promise.all([integrator.client.start(), ...workers.map((w) => w.client.start())]);
-  integrator.threadId = await ensureThread({
-    client: integrator.client,
+  await Promise.all([join.client.start(), ...workers.map((w) => w.client.start())]);
+  join.threadId = await ensureThread({
+    client: join.client,
     cwd: absCwd,
-    stateFile: integrator.stateFile,
+    stateFile: join.stateFile,
     startParams: { sandbox: "workspace-write" },
   });
   for (const w of workers) {
@@ -816,7 +816,7 @@ async function main() {
   }
 
   process.stderr.write(
-    `mesh_cas_fleet_autopilot_ready cwd=${absCwd} plan_file=${opts.planFile} workers=${workers.length} state_dir=${stateDir} budget_mode=${opts.budgetMode} integrator_thread=${integrator.threadId} worker_timeout_ms=${opts.workerTurnTimeoutMs} integrator_timeout_ms=${opts.integratorTurnTimeoutMs} worker_max_attempts=${WORKER_MAX_ATTEMPTS}\n`,
+    `mesh_cas_fleet_autopilot_ready cwd=${absCwd} plan_file=${opts.planFile} workers=${workers.length} state_dir=${stateDir} budget_mode=${opts.budgetMode} join_thread=${join.threadId} worker_timeout_ms=${opts.workerTurnTimeoutMs} join_timeout_ms=${opts.joinTurnTimeoutMs} worker_max_attempts=${WORKER_MAX_ATTEMPTS}\n`,
   );
 
   let budgetState = { tier: "unknown", usedPercent: null, elapsedPercent: null, deltaPercent: null, resetsAt: null };
@@ -830,7 +830,7 @@ async function main() {
     let govErr = null;
     if (opts.budgetMode === "aware") {
       try {
-        const resp = await integrator.client.request("account/rateLimits/read", {}, { timeoutMs: 20_000 });
+        const resp = await join.client.request("account/rateLimits/read", {}, { timeoutMs: 20_000 });
         budgetState = computeBudgetGovernor(resp);
       } catch (err) {
         govErr = err instanceof Error ? err.message : String(err);
@@ -1093,57 +1093,57 @@ async function main() {
       process.stderr.write(
         `mesh_fleet_worker_no_diff task=${result.taskId} from=${result.worker} attempts=${result.attempts ?? 1} failure_code=${result.failureCode ?? "no_response"} parse_format=${result.parseFormat ?? "none"}${reasonSuffix}\n`,
       );
-      // Fallback: have the integrator attempt the task normally.
-      if (integrator.busy) {
-        while (integrator.busy && !stopping) await sleep(250);
+      // Fallback: have the join attempt the task normally.
+      if (join.busy) {
+        while (join.busy && !stopping) await sleep(250);
       }
       if (stopping) return;
 
-      integrator.busy = true;
+      join.busy = true;
       const startedAt = Date.now();
       try {
-        const collected = await runIntegratorMeshFull({
-          client: integrator.client,
-          threadId: integrator.threadId,
+        const collected = await runJoinMeshFull({
+          client: join.client,
+          threadId: join.threadId,
           taskId: result.taskId,
           planFileRel: opts.planFile,
           meshSkillPath,
-          timeoutMs: opts.integratorTurnTimeoutMs,
+          timeoutMs: opts.joinTurnTimeoutMs,
         });
         const elapsedMs = Date.now() - startedAt;
         const status = collected?.turn?.status ?? null;
         const summaryLine = summarize(collected?.agentMessageText ?? "");
         process.stderr.write(
-          `mesh_fleet_integrator_fallback task=${result.taskId} from=${result.worker} elapsed_ms=${elapsedMs} status=${status ?? "null"} summary=${JSON.stringify(summaryLine)}\n`,
+          `mesh_fleet_join_fallback task=${result.taskId} from=${result.worker} elapsed_ms=${elapsedMs} status=${status ?? "null"} summary=${JSON.stringify(summaryLine)}\n`,
         );
       } catch (err) {
         const elapsedMs = Date.now() - startedAt;
         const msg = err instanceof Error ? err.message : String(err);
         process.stderr.write(
-          `mesh_fleet_integrator_fallback_fail task=${result.taskId} from=${result.worker} elapsed_ms=${elapsedMs} error=${JSON.stringify(msg)}\n`,
+          `mesh_fleet_join_fallback_fail task=${result.taskId} from=${result.worker} elapsed_ms=${elapsedMs} error=${JSON.stringify(msg)}\n`,
         );
       } finally {
-        integrator.busy = false;
+        join.busy = false;
       }
       return;
     }
-    if (integrator.busy) {
-      // Simple backpressure: wait until integrator is free.
-      while (integrator.busy && !stopping) await sleep(250);
+    if (join.busy) {
+      // Simple backpressure: wait until join is free.
+      while (join.busy && !stopping) await sleep(250);
     }
     if (stopping) return;
 
-    integrator.busy = true;
+    join.busy = true;
     const startedAt = Date.now();
     try {
-      const collected = await runIntegratorApply({
-        client: integrator.client,
-        threadId: integrator.threadId,
+      const collected = await runJoinApply({
+        client: join.client,
+        threadId: join.threadId,
         taskId: result.taskId,
         planFileRel: opts.planFile,
         meshSkillPath,
         diffText: result.diff,
-        timeoutMs: opts.integratorTurnTimeoutMs,
+        timeoutMs: opts.joinTurnTimeoutMs,
       });
       const elapsedMs = Date.now() - startedAt;
       const status = collected?.turn?.status ?? null;
@@ -1158,7 +1158,7 @@ async function main() {
         `mesh_fleet_integrate_fail task=${result.taskId} from=${result.worker} elapsed_ms=${elapsedMs} error=${JSON.stringify(msg)}\n`,
       );
     } finally {
-      integrator.busy = false;
+      join.busy = false;
     }
   }
 
@@ -1181,7 +1181,7 @@ async function main() {
     }
 
     if (workerCap === 0 && inflight.size === 0) {
-      if (integrator.busy) return false;
+      if (join.busy) return false;
 
       let pickIdx = -1;
       for (let i = 0; i < queue.length; i += 1) {
@@ -1195,34 +1195,34 @@ async function main() {
 
       const task = queue.splice(pickIdx, 1)[0];
       reservedTaskIds.add(task.id);
-      integrator.busy = true;
+      join.busy = true;
       const startedAt = Date.now();
       try {
         process.stderr.write(
-          `mesh_fleet_integrator_solo_start task=${task.id} budget_mode=${opts.budgetMode} tier=${budgetState?.tier ?? "unknown"} worker_cap=${workerCap}/${workers.length}\n`,
+          `mesh_fleet_join_solo_start task=${task.id} budget_mode=${opts.budgetMode} tier=${budgetState?.tier ?? "unknown"} worker_cap=${workerCap}/${workers.length}\n`,
         );
-        const collected = await runIntegratorMeshFull({
-          client: integrator.client,
-          threadId: integrator.threadId,
+        const collected = await runJoinMeshFull({
+          client: join.client,
+          threadId: join.threadId,
           taskId: task.id,
           planFileRel: opts.planFile,
           meshSkillPath,
-          timeoutMs: opts.integratorTurnTimeoutMs,
+          timeoutMs: opts.joinTurnTimeoutMs,
         });
         const elapsedMs = Date.now() - startedAt;
         const status = collected?.turn?.status ?? null;
         const summaryLine = summarize(collected?.agentMessageText ?? "");
         process.stderr.write(
-          `mesh_fleet_integrator_solo task=${task.id} elapsed_ms=${elapsedMs} status=${status ?? "null"} summary=${JSON.stringify(summaryLine)}\n`,
+          `mesh_fleet_join_solo task=${task.id} elapsed_ms=${elapsedMs} status=${status ?? "null"} summary=${JSON.stringify(summaryLine)}\n`,
         );
       } catch (err) {
         const elapsedMs = Date.now() - startedAt;
         const msg = err instanceof Error ? err.message : String(err);
         process.stderr.write(
-          `mesh_fleet_integrator_solo_fail task=${task.id} elapsed_ms=${elapsedMs} error=${JSON.stringify(msg)}\n`,
+          `mesh_fleet_join_solo_fail task=${task.id} elapsed_ms=${elapsedMs} error=${JSON.stringify(msg)}\n`,
         );
       } finally {
-        integrator.busy = false;
+        join.busy = false;
         reservedTaskIds.delete(task.id);
       }
 
@@ -1304,7 +1304,7 @@ async function main() {
   }
 
   // Close instances.
-  await Promise.allSettled([integrator.client.close(), ...workers.map((w) => w.client.close())]);
+  await Promise.allSettled([join.client.close(), ...workers.map((w) => w.client.close())]);
   process.stderr.write(`mesh_cas_fleet_autopilot_exit did_any_work=${didAnyWork ? "yes" : "no"}\n`);
   cleanupLock();
   return 0;

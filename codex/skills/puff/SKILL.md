@@ -26,6 +26,10 @@ Optional: print manual environment-creation instructions.
 `"$PUFF_SCRIPT" create`
 4. Launch cloud work with a detached watcher.
 `"$PUFF_SCRIPT" launch --env <env-id-or-label> --prompt "Implement X"`
+Optional: launch the cloud Join operator prompt (`seq -> join`) for PR patch routing.
+`"$PUFF_SCRIPT" join-operator --env <env-id-or-label> --repo <owner/repo> --patch-inbox <locator>`
+Canary mode (single bounded cycle):
+`"$PUFF_SCRIPT" join-operator --env <env-id-or-label> --repo <owner/repo> --patch-inbox <locator> --canary`
 5. Inspect running and completed watcher jobs.
 `"$PUFF_SCRIPT" jobs`
 6. Tail watcher logs when needed.
@@ -43,6 +47,8 @@ Use `submit` when only task id/url is needed (it executes a cloud task).
 Use `doctor` for explicit auth/environment readiness checks.
 Use `watch` for blocking foreground polling.
 Use `jobs` and `stop` to manage detached watchers.
+Use `join-operator` to generate and launch the cloud join loop prompt that enforces manifest-first routing and `seq -> join` execution.
+Use `join-operator --max-cycles <n>` for bounded runs; `--canary` is shorthand for one cycle.
 
 ## Interop With `$cas`
 
@@ -60,4 +66,5 @@ Treat `ERROR` as terminal failure and inspect with `codex cloud status <task-id>
 ## Resources
 
 - `scripts/puff.sh`: create/submit/watch/launch/jobs/stop wrapper around `codex cloud`.
+- `scripts/puff.sh join-operator`: launch helper for cloud join operator prompts.
 - `references/commands.md`: command map including optional `$cas` pairing.

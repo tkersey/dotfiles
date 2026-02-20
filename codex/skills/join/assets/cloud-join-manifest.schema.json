@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/cloud-join-manifest.schema.json",
+  "title": "CloudJoinPatchManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "patch_id",
+    "producer",
+    "repo",
+    "base_branch",
+    "changed_paths",
+    "intent_summary"
+  ],
+  "properties": {
+    "patch_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128
+    },
+    "producer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "repo": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "base_branch": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "changed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "intent_summary": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 2000
+    },
+    "target_pr_hint": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "issue_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "uniqueItems": true
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "patch_file": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

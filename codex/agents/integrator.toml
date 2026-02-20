@@ -1,3 +1,0 @@
-model = "gpt-5.1-codex-mini"
-model_reasoning_effort = "high"
-developer_instructions = "Combine worker outputs, resolve conflicts, enforce invariants, run final validation, and summarize the final patch."

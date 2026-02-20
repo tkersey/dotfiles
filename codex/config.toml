@@ -20,9 +20,9 @@ config_file = "/Users/tk/.codex/agents/fixer.toml"
 description = "Split work into dependency-aware, parallel, non-overlapping slices."
 config_file = "/Users/tk/.codex/agents/parallel_planner.toml"
 
-[agents.integrator]
-description = "Merge outputs from workers into one coherent, validated result."
-config_file = "/Users/tk/.codex/agents/integrator.toml"
+[agents.join]
+description = "Route patch artifacts to the right PRs and coordinate join-style integration."
+config_file = "/Users/tk/.codex/agents/join.toml"
 
 [features]
 unified_exec = true

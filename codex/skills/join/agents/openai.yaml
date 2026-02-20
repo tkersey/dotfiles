@@ -1,0 +1,4 @@
+interface:
+  display_name: "join"
+  short_description: "Route cloud patch artifacts to the right PR and execute gh-only join actions"
+  default_prompt: "For each patch, run $seq for intent/conflict analysis when ambiguous, then run $join for gh-only PR operations; never merge unless explicitly asked."

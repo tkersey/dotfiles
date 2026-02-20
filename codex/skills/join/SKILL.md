@@ -18,6 +18,15 @@ Run a continuous PR operator using `gh` commands only. Keep PRs created, green, 
 2. Ensure labels exist: `auto:manage`, `auto:hold`.
 3. Start the monitor loop.
 
+## Auth preflight (required)
+- Run these checks before any PR routing or mutation:
+  - `gh auth status`
+  - `gh repo view <owner>/<repo> --json nameWithOwner --jq .nameWithOwner`
+- If either check fails:
+  - Fail fast for the current run.
+  - Apply `auto:hold` on affected PRs (or emit hold outcome in cloud loop when no PR is selected yet).
+  - Record reason as `auth_unavailable`.
+
 ## Label contract
 - `auto:manage`: opt-in to automation.
 - `auto:hold`: pause automation.
@@ -35,6 +44,39 @@ Contributor guidance:
 ## Operating mode
 Use one mode only:
 - `gh`-only remote mode: no local checkout assumptions and no local workspace mutations.
+
+## Cloud Join operator (`$puff` + `seq -> join`)
+Use this when running Join as a cloud subagent loop:
+1. Launch with `$puff` `join-operator`.
+2. For each patch artifact, route by manifest-first scoring (including PR file-path hydration via `gh pr view <num> --json files`).
+3. If mapping/conflict handling is ambiguous, run `$seq` first to recover intent/context.
+4. Then run `$join` for gh-only PR operations and CI/handoff behavior.
+
+Launch recipe:
+- `"$PUFF_SCRIPT" join-operator --env <env-id-or-label> --repo <owner/repo> --patch-inbox <locator>`
+- Canary recipe (one bounded cycle):
+  - `"$PUFF_SCRIPT" join-operator --env <env-id-or-label> --repo <owner/repo> --patch-inbox <locator> --canary`
+
+Cloud auth note:
+- In cloud environments, provide `GH_TOKEN` (or `GITHUB_TOKEN`) with repo-scoped permissions needed for join operations.
+
+## Patch manifest contract
+Patch producers should emit a manifest that validates against:
+- `assets/cloud-join-manifest.schema.json`
+
+Required fields:
+- `patch_id`
+- `producer`
+- `repo` (`owner/repo`)
+- `base_branch`
+- `changed_paths` (non-empty)
+- `intent_summary`
+
+Optional routing hints:
+- `target_pr_hint`
+- `issue_refs`
+- `confidence`
+- `patch_file`
 
 ## Monitor loop
 Process PRs sequentially (blocking per PR on CI):
@@ -131,3 +173,7 @@ Investigate the linked runs, unblock CI, then remove `auto:hold`.
 
 ## Assets
 - `assets/pr-template.md`
+- `assets/cloud-join-manifest.schema.json`
+- `assets/cloud-join-operator-prompt.md`
+- `scripts/build_cloud_join_prompt.py`
+- `scripts/manifest_router.py`

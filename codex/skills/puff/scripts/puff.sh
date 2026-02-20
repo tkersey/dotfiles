@@ -136,6 +136,17 @@ read_prompt() {
   cat
 }
 
+resolve_join_prompt_builder() {
+  local codex_skills_home="${CODEX_HOME:-$HOME/.codex}/skills"
+  local claude_skills_home="${CLAUDE_HOME:-$HOME/.claude}/skills"
+  local script="$codex_skills_home/join/scripts/build_cloud_join_prompt.py"
+  if [[ ! -f "$script" ]]; then
+    script="$claude_skills_home/join/scripts/build_cloud_join_prompt.py"
+  fi
+  [[ -f "$script" ]] || die "join prompt builder not found: $script"
+  printf '%s\n' "$script"
+}
+
 submit_task() {
   local env_id="$1"
   local prompt="$2"
@@ -553,6 +564,150 @@ JOB
   printf 'RESULT_PATH=%s\n' "$result_file"
 }
 
+cmd_join_operator() {
+  local env_id=""
+  local repo=""
+  local patch_inbox=""
+  local poll_seconds="60"
+  local confidence_threshold="0.70"
+  local max_cycles="0"
+  local attempts="1"
+  local branch=""
+  local interval="15"
+  local timeout="0"
+  local run_doctor="1"
+  local print_prompt="0"
+  local canary_mode="0"
+
+  while (( $# > 0 )); do
+    case "$1" in
+      --env)
+        [[ $# -ge 2 ]] || die "--env requires a value"
+        env_id="$2"
+        shift 2
+        ;;
+      --repo)
+        [[ $# -ge 2 ]] || die "--repo requires a value"
+        repo="$2"
+        shift 2
+        ;;
+      --patch-inbox)
+        [[ $# -ge 2 ]] || die "--patch-inbox requires a value"
+        patch_inbox="$2"
+        shift 2
+        ;;
+      --poll-seconds)
+        [[ $# -ge 2 ]] || die "--poll-seconds requires a value"
+        poll_seconds="$2"
+        shift 2
+        ;;
+      --confidence-threshold)
+        [[ $# -ge 2 ]] || die "--confidence-threshold requires a value"
+        confidence_threshold="$2"
+        shift 2
+        ;;
+      --max-cycles)
+        [[ $# -ge 2 ]] || die "--max-cycles requires a value"
+        max_cycles="$2"
+        shift 2
+        ;;
+      --canary)
+        canary_mode="1"
+        shift
+        ;;
+      --attempts)
+        [[ $# -ge 2 ]] || die "--attempts requires a value"
+        attempts="$2"
+        shift 2
+        ;;
+      --branch)
+        [[ $# -ge 2 ]] || die "--branch requires a value"
+        branch="$2"
+        shift 2
+        ;;
+      --interval)
+        [[ $# -ge 2 ]] || die "--interval requires a value"
+        interval="$2"
+        shift 2
+        ;;
+      --timeout)
+        [[ $# -ge 2 ]] || die "--timeout requires a value"
+        timeout="$2"
+        shift 2
+        ;;
+      --skip-doctor)
+        run_doctor="0"
+        shift
+        ;;
+      --print-prompt)
+        print_prompt="1"
+        shift
+        ;;
+      -h|--help)
+        usage_join_operator
+        return 0
+        ;;
+      *)
+        die "unknown join-operator option: $1"
+        ;;
+    esac
+  done
+
+  [[ -n "$env_id" ]] || die "--env is required"
+  [[ -n "$repo" ]] || die "--repo is required"
+  [[ -n "$patch_inbox" ]] || die "--patch-inbox is required"
+  validate_attempts "$attempts"
+  validate_interval "$interval"
+  validate_timeout "$timeout"
+  if ! [[ "$max_cycles" =~ ^[0-9]+$ ]]; then
+    die "--max-cycles must be a non-negative integer"
+  fi
+  if [[ "$canary_mode" == "1" ]]; then
+    max_cycles="1"
+    if [[ "$timeout" == "0" ]]; then
+      timeout="600"
+    fi
+  fi
+  if ! [[ "$poll_seconds" =~ ^[0-9]+$ ]] || (( poll_seconds <= 0 )); then
+    die "--poll-seconds must be a positive integer"
+  fi
+  if ! awk "BEGIN { exit !($confidence_threshold >= 0 && $confidence_threshold <= 1) }"; then
+    die "--confidence-threshold must be a number between 0 and 1"
+  fi
+
+  local prompt_builder=""
+  prompt_builder="$(resolve_join_prompt_builder)"
+  local prompt=""
+  prompt="$(
+    uv run python "$prompt_builder" \
+      --repo "$repo" \
+      --patch-inbox "$patch_inbox" \
+      --poll-seconds "$poll_seconds" \
+      --confidence-threshold "$confidence_threshold" \
+      --max-cycles "$max_cycles"
+  )"
+
+  if [[ "$print_prompt" == "1" ]]; then
+    printf '%s\n' "$prompt"
+    return 0
+  fi
+
+  local -a launch_args=(
+    --env "$env_id"
+    --prompt "$prompt"
+    --attempts "$attempts"
+    --interval "$interval"
+    --timeout "$timeout"
+  )
+  if [[ -n "$branch" ]]; then
+    launch_args+=(--branch "$branch")
+  fi
+  if [[ "$run_doctor" == "0" ]]; then
+    launch_args+=(--skip-doctor)
+  fi
+  cmd_launch "${launch_args[@]}"
+}
+
 cmd_jobs() {
   shopt -s nullglob
   local files=("$JOBS_DIR"/*.env)
@@ -895,6 +1050,16 @@ Prints JOB_ID, PID, TASK_ID, TASK_URL, LOG_PATH, RESULT_PATH.
 USAGE
 }
 
+usage_join_operator() {
+  cat <<USAGE
+Usage: puff.sh join-operator --env <env-id-or-label> --repo <owner/repo> --patch-inbox <locator> [--poll-seconds <n>] [--confidence-threshold <0..1>] [--max-cycles <n>] [--canary] [--attempts <1-4>] [--branch <branch>] [--interval <seconds>] [--timeout <seconds>] [--skip-doctor] [--print-prompt]
+
+Render the cloud Join-operator prompt (seq -> join flow) and launch as a detached cloud task.
+Use --max-cycles to bound execution; --canary is shorthand for --max-cycles 1.
+Use --print-prompt to inspect the generated prompt without launching.
+USAGE
+}
+
 usage_jobs() {
   cat <<USAGE
 Usage: puff.sh jobs
@@ -938,6 +1103,7 @@ Commands:
   create   Print manual cloud-environment creation instructions.
   watch    Poll status for a task until terminal state.
   launch   Submit task + start detached watcher.
+  join-operator Launch cloud Join operator using seq->join prompt flow.
   jobs     List detached watcher jobs.
   stop     Stop a detached watcher job.
   cas-start  Start \$cas proxy in background.
@@ -969,6 +1135,9 @@ main() {
       ;;
     launch)
       cmd_launch "$@"
+      ;;
+    join-operator)
+      cmd_join_operator "$@"
       ;;
     jobs)
       cmd_jobs "$@"

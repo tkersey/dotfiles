@@ -23,6 +23,10 @@ CAS_PROXY_SCRIPT="$CODEX_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"
   `"$PUFF_SCRIPT" watch --task <task-id-or-url>`
 - Launch detached watcher:
   `"$PUFF_SCRIPT" launch --env <env> --prompt "..."`
+- Launch cloud Join operator prompt (`seq -> join`):
+  `"$PUFF_SCRIPT" join-operator --env <env> --repo <owner/repo> --patch-inbox <locator>`
+- Launch single-cycle canary:
+  `"$PUFF_SCRIPT" join-operator --env <env> --repo <owner/repo> --patch-inbox <locator> --canary`
 - List jobs:
   `"$PUFF_SCRIPT" jobs`
 - Stop job:
