@@ -21,11 +21,16 @@ run_seq() {
     return
   fi
   if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
-    brew install tkersey/tap/seq >/dev/null 2>&1 || true
+    if ! brew install tkersey/tap/seq; then
+      echo "brew install tkersey/tap/seq failed; refusing silent fallback." >&2
+      return 1
+    fi
     if command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"; then
       seq "$@"
       return
     fi
+    echo "brew install tkersey/tap/seq did not produce a compatible seq binary." >&2
+    return 1
   fi
   if [ -f "$SEQ_SCRIPT" ]; then
     uv run python "$SEQ_SCRIPT" "$@"
@@ -223,7 +228,7 @@ seq session-prompts --root ~/.codex/sessions --session-id <session_id> \
 - Default root: `~/.codex/sessions`.
 - `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` to override.
 - Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, with fallback to `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
-- Runtime bootstrap policy: prefer `seq`, attempt `brew install tkersey/tap/seq` only on macOS when `brew` is already installed, otherwise fallback to `uv run python "$SEQ_SCRIPT"`.
+- Runtime bootstrap policy: prefer `seq`; on macOS with `brew`, treat `brew install tkersey/tap/seq` failure (or incompatible binary) as a hard error; otherwise fallback to `uv run python "$SEQ_SCRIPT"`.
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 - `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.

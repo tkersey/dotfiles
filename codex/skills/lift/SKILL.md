@@ -188,11 +188,16 @@ run_lift_tool() {
     return
   fi
   if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
-    brew install tkersey/tap/lift >/dev/null 2>&1 || true
+    if ! brew install tkersey/tap/lift; then
+      echo "brew install tkersey/tap/lift failed; refusing silent fallback." >&2
+      return 1
+    fi
     if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
       "$bin" "$@"
       return
     fi
+    echo "brew install tkersey/tap/lift did not produce a compatible $bin binary." >&2
+    return 1
   fi
   if [ -f "$fallback" ]; then
     uv run python "$fallback" "$@"

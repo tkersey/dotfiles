@@ -61,11 +61,16 @@ run_cas_tool() {
     return
   fi
   if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
-    brew install tkersey/tap/cas >/dev/null 2>&1 || true
+    if ! brew install tkersey/tap/cas; then
+      echo "brew install tkersey/tap/cas failed; refusing silent fallback." >&2
+      return 1
+    fi
     if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
       "$bin" "$@"
       return
     fi
+    echo "brew install tkersey/tap/cas did not produce a compatible $bin binary." >&2
+    return 1
   fi
   if [ -f "$fallback" ]; then
     node "$fallback" "$@"
@@ -241,4 +246,4 @@ Included:
 - `scripts/cas_instance_runner.mjs` (run one method across many parallel cas sessions/instances)
 - `scripts/cas_smoke_check.mjs` (smoke-checks `experimentalFeature/list`, `thread/resume`, `turn/steer`)
 
-Runtime bootstrap policy for Zig CLIs mirrors `seq`: prefer installed binary, attempt `brew install tkersey/tap/cas` only on macOS when `brew` exists, otherwise fallback to the local Node script.
+Runtime bootstrap policy for Zig CLIs mirrors `seq`: prefer installed binary; on macOS with `brew`, treat `brew install tkersey/tap/cas` failure (or incompatible binary) as a hard error; otherwise fallback to the local Node script.
