@@ -43,7 +43,7 @@ run_seq() {
 run_seq datasets --root ~/.codex/sessions
 ```
 
-Commands below use `seq` directly for brevity. Use `run_seq` in places where brew-aware bootstrap and Python fallback behavior are required.
+Commands below use `seq` directly for brevity. This is the preferred Zig execution path. Use `run_seq` in places where brew-aware bootstrap and Python fallback behavior are required.
 
 ## Query (JSON Spec)
 Run flexible mining via `query` with a small JSON spec (inline or `@spec.json`).
@@ -228,7 +228,7 @@ seq session-prompts --root ~/.codex/sessions --session-id <session_id> \
 - Default root: `~/.codex/sessions`.
 - `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` to override.
 - Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, with fallback to `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
-- Runtime bootstrap policy: prefer `seq`; on macOS with `brew`, treat `brew install tkersey/tap/seq` failure (or incompatible binary) as a hard error; otherwise fallback to `uv run python "$SEQ_SCRIPT"`.
+- Runtime bootstrap policy: prefer the Zig `seq` binary; on macOS with `brew`, treat `brew install tkersey/tap/seq` failure (or incompatible binary) as a hard error; use `uv run python "$SEQ_SCRIPT"` only when no compatible `seq` binary is available.
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 - `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.
