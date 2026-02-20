@@ -32,13 +32,21 @@ function parseFloatArg(value, name, fallback) {
   return n;
 }
 
-function runCommand(cmd, args) {
+function runCommand(cmd, args, { allowFailure = false } = {}) {
   const result = spawnSync(cmd, args, { encoding: "utf8" });
   if (result.status !== 0) {
+    if (allowFailure) return result;
     process.stderr.write(result.stderr ?? "");
     process.stdout.write(result.stdout ?? "");
     process.exit(result.status ?? 1);
   }
+  return result;
+}
+
+function ensureActiveTab() {
+  const probe = runCommand("./eval.js", ["1+1"], { allowFailure: true });
+  if (probe.status === 0) return;
+  runCommand("./nav.js", ["about:blank", "--new"]);
 }
 
 function benchmarkOne({ label, cmd, args, warmup, samples, budgetP95Ms }) {
@@ -162,8 +170,10 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
-// Ensure deterministic active-tab behavior for nav/eval/screenshot loops.
-runCommand("./nav.js", ["about:blank", "--new"]);
+// Keep repeated benchmark runs comparable: reuse an existing active tab when
+// possible, and only create one if none exists.
+ensureActiveTab();
+runCommand("./nav.js", ["about:blank"]);
 
 console.log(
   `samples: nav/eval/start=${samples}, screenshot=${screenshotSamples} (warmup ${warmup})`,

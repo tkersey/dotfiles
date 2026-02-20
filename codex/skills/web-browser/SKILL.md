@@ -1,6 +1,6 @@
 ---
 name: web-browser
-description: "Use when tasks need real-browser web automation in Chrome/Chromium via CDP: open or navigate URLs, click/type/select in forms, run page JS, wait for selectors, scrape structured content, capture screenshots, or validate UI flows on live sites."
+description: "Use when tasks need real-browser web automation in Chrome/Chromium via CDP: open or navigate URLs, click/type/select in forms, run page JS, wait for selectors, scrape structured content, capture screenshots, validate UI flows, or run measured web-browser latency checks (`bench:eval`, `bench:all`) for perf regressions."
 ---
 
 # Web Browser
@@ -11,6 +11,7 @@ description: "Use when tasks need real-browser web automation in Chrome/Chromium
 - Evaluate JavaScript in a real browser context.
 - Capture screenshots for debugging or review.
 - UI validation and smoke testing in a real browser.
+- Measure and gate latency regressions in web-browser tools with the local benchmark scripts.
 
 ## Requirements
 - Run commands from `codex/skills/web-browser/` (so `./tools/*.js` resolves).
@@ -32,6 +33,31 @@ description: "Use when tasks need real-browser web automation in Chrome/Chromium
 ```
 
 Loop: take small steps → inspect state (`eval.js` / `screenshot.js`) → repeat.
+
+## Performance pass ($lift)
+Use this when optimizing or validating web-browser tool latency.
+
+```bash
+./tools/start.js --no-kill
+./tools/nav.js https://example.com --new
+
+cd tools
+npm run -s bench:all -- --warmup 5 --samples 30 --screenshot-samples 20
+```
+
+For stricter CI-style gating, add p95 budgets:
+
+```bash
+cd tools
+npm run -s bench:all -- \
+  --warmup 5 \
+  --samples 30 \
+  --screenshot-samples 20 \
+  --budget-nav-p95-ms 310 \
+  --budget-eval-p95-ms 220 \
+  --budget-screenshot-p95-ms 320 \
+  --budget-start-p95-ms 140
+```
 
 ## Configuration
 - **Flags**
@@ -100,9 +126,20 @@ Tip: use `pick.js` to inspect attributes/text, then craft a selector for `eval.j
 - `./tools/start.js` defaults to killing Chrome processes (use `--no-kill` to avoid this).
 - Use single quotes around JS to avoid shell-escaping issues.
 
+## Prove $lift uses Zig
+When you need objective proof that the local `$lift` tooling is Zig-based:
+
+```bash
+bench_stats --help 2>&1 | sed -n '1,6p'
+perf_report --help 2>&1 | sed -n '1,6p'
+brew cat tkersey/tap/lift | rg -n 'depends_on \"zig\" => :build|build-exe|bench_stats.zig|perf_report.zig'
+```
+
 ## References
 - `codex/skills/web-browser/tools/start.js`
 - `codex/skills/web-browser/tools/nav.js`
 - `codex/skills/web-browser/tools/eval.js`
 - `codex/skills/web-browser/tools/screenshot.js`
 - `codex/skills/web-browser/tools/pick.js`
+- `codex/skills/web-browser/tools/bench-eval.js`
+- `codex/skills/web-browser/tools/bench-all.js`

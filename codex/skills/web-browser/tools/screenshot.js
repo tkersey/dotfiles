@@ -87,6 +87,10 @@ try {
   browser = await puppeteer.connect({
     browserURL,
     defaultViewport: null,
+    targetFilter: (target) => {
+      const type = target.type();
+      return type === "browser" || type === "tab" || type === "page";
+    },
   });
 } catch (e) {
   console.error("✗ Failed to connect to Chrome via CDP");
