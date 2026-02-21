@@ -11,26 +11,51 @@ PUFF_SCRIPT="$CODEX_SKILLS_HOME/skills/puff/scripts/puff.sh"
 [ -f "$PUFF_SCRIPT" ] || PUFF_SCRIPT="$CLAUDE_SKILLS_HOME/skills/puff/scripts/puff.sh"
 CAS_PROXY_SCRIPT="$CODEX_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"
 [ -f "$CAS_PROXY_SCRIPT" ] || CAS_PROXY_SCRIPT="$CLAUDE_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"
+
+run_puff_tool() {
+  if command -v puff >/dev/null 2>&1 && puff --help 2>&1 | grep -q "puff.zig"; then
+    puff "$@"
+    return
+  fi
+  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+    if ! brew install tkersey/tap/puff; then
+      echo "brew install tkersey/tap/puff failed; refusing silent fallback." >&2
+      return 1
+    fi
+    if command -v puff >/dev/null 2>&1 && puff --help 2>&1 | grep -q "puff.zig"; then
+      puff "$@"
+      return
+    fi
+    echo "brew install tkersey/tap/puff did not produce a compatible puff binary." >&2
+    return 1
+  fi
+  if [ -f "$PUFF_SCRIPT" ]; then
+    "$PUFF_SCRIPT" "$@"
+    return
+  fi
+  echo "puff binary missing and fallback script not found: $PUFF_SCRIPT" >&2
+  return 1
+}
 ```
 
 - Doctor check (auth + env resolution):
-  `"$PUFF_SCRIPT" doctor --env <env>`
+  `run_puff_tool doctor --env <env>`
 - Create instructions only (manual environment creation; no API call):
-  `"$PUFF_SCRIPT" create`
+  `run_puff_tool create`
 - Submit only:
-  `"$PUFF_SCRIPT" submit --env <env> --prompt "..."`
+  `run_puff_tool submit --env <env> --prompt "..."`
 - Watch in foreground:
-  `"$PUFF_SCRIPT" watch --task <task-id-or-url>`
+  `run_puff_tool watch --task <task-id-or-url>`
 - Launch detached watcher:
-  `"$PUFF_SCRIPT" launch --env <env> --prompt "..."`
+  `run_puff_tool launch --env <env> --prompt "..."`
 - Launch cloud Join operator prompt (`seq -> join`):
-  `"$PUFF_SCRIPT" join-operator --env <env> --repo <owner/repo> --patch-inbox <locator>`
+  `run_puff_tool join-operator --env <env> --repo <owner/repo> --patch-inbox <locator>`
 - Launch single-cycle canary:
-  `"$PUFF_SCRIPT" join-operator --env <env> --repo <owner/repo> --patch-inbox <locator> --canary`
+  `run_puff_tool join-operator --env <env> --repo <owner/repo> --patch-inbox <locator> --canary`
 - List jobs:
-  `"$PUFF_SCRIPT" jobs`
+  `run_puff_tool jobs`
 - Stop job:
-  `"$PUFF_SCRIPT" stop --job <job-id>`
+  `run_puff_tool stop --job <job-id>`
 
 Direct Codex Cloud commands:
 - `codex cloud list --json`
@@ -47,8 +72,8 @@ Typical pairing:
 2. Use `$cas` to orchestrate complex app-server thread/turn flows or integrate custom automation.
 
 Start/stop proxy via puff:
-- `"$PUFF_SCRIPT" cas-start --cwd <workspace>`
-- `"$PUFF_SCRIPT" cas-stop`
+- `run_puff_tool cas-start --cwd <workspace>`
+- `run_puff_tool cas-stop`
 
 Start proxy directly (advanced):
 - `node "$CAS_PROXY_SCRIPT"`
