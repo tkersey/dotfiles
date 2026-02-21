@@ -146,6 +146,12 @@ coordination substrate with:
 - advisory file leases (scope reservations)
 
 Reference spec: `codex/skills/mesh/references/coordination-fabric.md`.
+Reliability references:
+- `codex/skills/mesh/references/failure-taxonomy.md`
+- `codex/skills/mesh/references/completion-gates.md`
+- `codex/skills/mesh/references/team-protocol.md`
+- `codex/skills/mesh/references/adjudication-fallback.md`
+- `codex/skills/mesh/references/coder-rubric.md`
 
 Trigger (recommended): if `parallel_tasks > 1` OR you are running multi-instance work (for example via `$cas`), use mailbox+leases.
 
@@ -212,6 +218,7 @@ Worker failure taxonomy (required):
 - `no_patch_returned`: worker returned explicit no-patch/no-diff outcome.
 - `no_response`: transport/lifecycle timeout with no usable worker artifact.
 - Persist exact failure codes; do not collapse them into one bucket.
+- Extended team-level failure classes and handling are defined in `references/failure-taxonomy.md`.
 
 Slot hygiene (required):
 - For adapters with explicit close semantics, close every spawned worker once output is integrated or abandoned.
@@ -448,6 +455,7 @@ Persistence requirements (use `$st add-comment`):
   - vote tally (agree/disagree counts) when applicable
   - validation commands executed and outcomes (no fabricated logs)
   - learning record id(s) appended (if available)
+- GateResult pass criteria and evidence requirements are defined in `references/completion-gates.md`.
 
 ## Learnings Capture (`$learnings`) (Required)
 
