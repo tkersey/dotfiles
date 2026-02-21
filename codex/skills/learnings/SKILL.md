@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: "Capture and persist evidence-backed execution learnings into `.learnings.jsonl`. Trigger cues/keywords: `$learnings`, lessons learned, takeaways, wrap up, handoff, before commit/PR, after tests pass, fail->pass, strategy pivot, footgun, retry loop."
+description: "Capture and persist evidence-backed execution learnings into `.learnings.jsonl`. Trigger cues/keywords: `$learnings`, lessons learned, takeaways, wrap up, handoff, before commit/PR, after tests pass, fail-to-pass, strategy pivot, footgun, retry loop."
 ---
 
 # Learnings
@@ -22,6 +22,84 @@ Write each validated learning as JSONL so future agents can reuse successful pat
 - Allowed to run automatically at the end of an implementation turn (success or paused) and at delivery boundaries (commit/PR/handoff).
 - Best-effort and non-blocking: never require extra context; if evidence is thin, either write nothing or persist `review_later` with placeholders.
 - Noise control: if no Capture Checkpoint occurred or nothing decision-shaping emerged, append 0 records; otherwise prefer 1 record (max 3).
+
+## Quick Start
+
+```bash
+CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
+CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
+LEARNINGS_SCRIPTS_DIR="$CODEX_SKILLS_HOME/skills/learnings/scripts"
+[ -d "$LEARNINGS_SCRIPTS_DIR" ] || LEARNINGS_SCRIPTS_DIR="$CLAUDE_SKILLS_HOME/skills/learnings/scripts"
+LEARNINGS_SPECS_DIR="$CODEX_SKILLS_HOME/skills/learnings/specs"
+[ -d "$LEARNINGS_SPECS_DIR" ] || LEARNINGS_SPECS_DIR="$CLAUDE_SKILLS_HOME/skills/learnings/specs"
+
+run_learnings_tool() {
+  local subcommand="${1:-}"
+  if [ -z "$subcommand" ]; then
+    echo "usage: run_learnings_tool <datasets|query|recall|codify-candidates|append> [args...]" >&2
+    return 2
+  fi
+  shift || true
+
+  local mode=""
+  local bin=""
+  local marker=""
+  local fallback=""
+  case "$subcommand" in
+    append|append-learning|append_learning)
+      mode="append"
+      bin="append_learning"
+      marker="append_learning.zig"
+      fallback="$LEARNINGS_SCRIPTS_DIR/append_learning.py"
+      ;;
+    datasets|query|recall|codify-candidates)
+      mode="learnings"
+      bin="learnings"
+      marker="learnings.zig"
+      fallback="$LEARNINGS_SCRIPTS_DIR/learnings.py"
+      ;;
+    *)
+      echo "unknown learnings subcommand: $subcommand" >&2
+      return 2
+      ;;
+  esac
+
+  if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
+    if [ "$mode" = "append" ]; then
+      "$bin" "$@"
+    else
+      "$bin" "$subcommand" "$@"
+    fi
+    return
+  fi
+  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+    if ! brew install tkersey/tap/learnings; then
+      echo "brew install tkersey/tap/learnings failed; refusing silent fallback." >&2
+      return 1
+    fi
+    if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
+      if [ "$mode" = "append" ]; then
+        "$bin" "$@"
+      else
+        "$bin" "$subcommand" "$@"
+      fi
+      return
+    fi
+    echo "brew install tkersey/tap/learnings did not produce a compatible $bin binary." >&2
+    return 1
+  fi
+  if [ -f "$fallback" ]; then
+    if [ "$mode" = "append" ]; then
+      uv run python "$fallback" "$@"
+    else
+      uv run python "$fallback" "$subcommand" "$@"
+    fi
+    return
+  fi
+  echo "learnings binary missing and fallback script not found: $fallback" >&2
+  return 1
+}
+```
 
 ## Capture Checkpoints
 
@@ -111,14 +189,7 @@ Optional keys:
 Use one append call per learning:
 
 ```bash
-CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
-CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
-APPEND_LEARNING_SCRIPT="$CODEX_SKILLS_HOME/skills/learnings/scripts/append_learning.py"
-[ -f "$APPEND_LEARNING_SCRIPT" ] || APPEND_LEARNING_SCRIPT="$CLAUDE_SKILLS_HOME/skills/learnings/scripts/append_learning.py"
-```
-
-```bash
-uv run python "$APPEND_LEARNING_SCRIPT" \
+run_learnings_tool append \
   --status do_more \
   --learning "Boundary parsing eliminated downstream guard duplication." \
   --evidence "uv run pytest tests/parser_test.py::test_rejects_invalid passed after boundary parse refactor" \
@@ -143,22 +214,17 @@ Use the miner script to leverage learnings at task start (once the user prompt i
 CLI:
 
 ```bash
-CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
-CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
-LEARNINGS_SCRIPT="$CODEX_SKILLS_HOME/skills/learnings/scripts/learnings.py"
-[ -f "$LEARNINGS_SCRIPT" ] || LEARNINGS_SCRIPT="$CLAUDE_SKILLS_HOME/skills/learnings/scripts/learnings.py"
-LEARNINGS_SPECS_DIR="$CODEX_SKILLS_HOME/skills/learnings/specs"
-[ -d "$LEARNINGS_SPECS_DIR" ] || LEARNINGS_SPECS_DIR="$CLAUDE_SKILLS_HOME/skills/learnings/specs"
-
-uv run python "$LEARNINGS_SCRIPT" datasets
-uv run python "$LEARNINGS_SCRIPT" query --spec "@$LEARNINGS_SPECS_DIR/status-rank.json"
-uv run python "$LEARNINGS_SCRIPT" recall --query "fix flaky pre-commit hook" --limit 5
-uv run python "$LEARNINGS_SCRIPT" codify-candidates --min-count 3 --limit 20
+run_learnings_tool datasets
+run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/status-rank.json"
+run_learnings_tool recall --query "fix flaky pre-commit hook" --limit 5
+run_learnings_tool codify-candidates --min-count 3 --limit 20
 ```
 
 Promotion rule of thumb:
 - If a learning is repeated (theme appears >= 3 times) or status is `codify_now`, promote it into durable docs (for example `codex/AGENTS.md` or a relevant skill doc).
 - After codifying, append a follow-up learning referencing the durable anchor (use `--related-id`/`--supersedes-id` and a `codified` tag).
+
+Runtime bootstrap policy for `learnings` mirrors `seq`/`cas`/`lift`: prefer Zig binaries (`learnings`, `append_learning`); on macOS with `brew`, treat `brew install tkersey/tap/learnings` failure (or incompatible binaries) as a hard error; otherwise fallback to the local Python scripts.
 
 ## Guardrails
 
