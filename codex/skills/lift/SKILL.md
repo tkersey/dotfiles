@@ -1,6 +1,6 @@
 ---
 name: lift
-description: "Comprehensive performance optimization for latency, throughput, memory/GC, and tail behavior. Trigger cues/keywords: `$lift`, optimize, speed up, reduce latency, improve p95/p99, increase throughput/QPS, lower CPU or memory, cut allocations/GC pauses, profile hot paths, benchmark regressions, and performance passes on JSONL/query-heavy code."
+description: "Comprehensive performance optimization for latency, throughput, memory/GC, and tail behavior. Trigger cues/keywords: `$lift`, optimize, speed up, reduce latency, improve p95/p99, increase throughput/QPS, lower CPU or memory, cut allocations/GC pauses, profile hot paths, benchmark regressions, performance passes on JSONL/query-heavy code, and Zig-first CLI perf iterations where `bench_stats`/`perf_report` are proven first and Python/Node wrappers are kept in parity."
 ---
 
 # Lift
@@ -33,6 +33,8 @@ Lift lives in Define -> Deliver:
 - Do not change semantics without explicit user approval.
 - Stop and ask before raising resource/cost ceilings (CPU cores, memory footprint, I/O bytes, external calls), unless explicitly requested.
 - Stop when ROI is negative or risk exceeds benefit.
+- For Lift-owned CLIs, iterate on Zig binaries first (`bench_stats`, `perf_report`) and prove that execution path before touching wrappers.
+- After any Zig CLI contract change, bring Python/Node wrappers along in the same pass by matching flags, outputs, and error behavior.
 
 ## Default policy (non-interactive)
 
@@ -83,6 +85,10 @@ Stop and ask only if you cannot find or create any runnable proof workload witho
    - Add/extend a benchmark, budget, or alert; document trade-offs.
 7. Report
    - Present baseline vs variant and the evidence trail.
+8. Wrapper convergence (Zig first)
+   - Lock Zig behavior first and capture proof (`<tool> --help` marker check plus one sample run).
+   - Update each wrapper that exists (Python today, Node when present) to keep CLI/output parity.
+   - Validate parity on the same sample input before shipping.
 
 ## Decision Gates
 
@@ -165,17 +171,20 @@ run_lift_tool() {
 
   local bin=""
   local marker=""
-  local fallback=""
+  local fallback_py=""
+  local fallback_node=""
   case "$subcommand" in
     bench-stats)
       bin="bench_stats"
       marker="bench_stats.zig"
-      fallback="$LIFT_SCRIPTS_DIR/bench_stats.py"
+      fallback_py="$LIFT_SCRIPTS_DIR/bench_stats.py"
+      fallback_node="$LIFT_SCRIPTS_DIR/bench_stats.mjs"
       ;;
     perf-report)
       bin="perf_report"
       marker="perf_report.zig"
-      fallback="$LIFT_SCRIPTS_DIR/perf_report.py"
+      fallback_py="$LIFT_SCRIPTS_DIR/perf_report.py"
+      fallback_node="$LIFT_SCRIPTS_DIR/perf_report.mjs"
       ;;
     *)
       echo "unknown lift subcommand: $subcommand" >&2
@@ -199,11 +208,15 @@ run_lift_tool() {
     echo "brew install tkersey/tap/lift did not produce a compatible $bin binary." >&2
     return 1
   fi
-  if [ -f "$fallback" ]; then
-    uv run python "$fallback" "$@"
+  if [ -f "$fallback_node" ] && command -v node >/dev/null 2>&1; then
+    node "$fallback_node" "$@"
     return
   fi
-  echo "lift binary missing and fallback script not found: $fallback" >&2
+  if [ -f "$fallback_py" ]; then
+    uv run python "$fallback_py" "$@"
+    return
+  fi
+  echo "lift binary missing and wrapper fallback not found (node: $fallback_node, python: $fallback_py)" >&2
   return 1
 }
 
@@ -211,9 +224,13 @@ run_lift_tool bench-stats --input samples.txt --unit ms
 run_lift_tool perf-report --title "Perf pass" --owner "team" --system "service" --output /tmp/perf-report.md
 ```
 
-- Equivalent fallback-only commands remain valid:
-  - `uv run python scripts/perf_report.py --title "Perf pass" --owner "team" --system "service" --output /tmp/perf-report.md`
-  - `uv run python scripts/bench_stats.py --input samples.txt --unit ms`
+- Equivalent wrapper fallback commands remain valid:
+  - Node (when `scripts/*.mjs` wrappers exist):
+    - `node scripts/perf_report.mjs --title "Perf pass" --owner "team" --system "service" --output /tmp/perf-report.md`
+    - `node scripts/bench_stats.mjs --input samples.txt --unit ms`
+  - Python:
+    - `uv run python scripts/perf_report.py --title "Perf pass" --owner "team" --system "service" --output /tmp/perf-report.md`
+    - `uv run python scripts/bench_stats.py --input samples.txt --unit ms`
 
 ## Assets
 
