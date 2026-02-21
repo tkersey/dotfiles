@@ -6,24 +6,58 @@ description: Create and manage Codex app automations stored in the local SQLite 
 # Cron
 
 ## Overview
-Use this skill to manage Codex automations by editing the local SQLite database and synced filesystem automation configs. Operate through the bundled `scripts/cron.py` and keep changes minimal and explicit.
+Use this skill to manage Codex automations by editing the local SQLite database and synced filesystem automation configs. Use `run_cron_tool` to prefer the Zig CLI with script fallback and keep changes minimal and explicit.
 
 ## Quick Start
-- List automations: `uv run python scripts/cron.py list`
-- Create an automation: `uv run python scripts/cron.py create --name "Weekly release notes" --prompt-file /path/to/prompt.md --rrule "RRULE:FREQ=WEEKLY;BYDAY=FR;BYHOUR=9;BYMINUTE=0"`
-- Update an automation: `uv run python scripts/cron.py update --id <id> --rrule "RRULE:FREQ=DAILY;BYHOUR=9;BYMINUTE=0"`
-- Enable or disable: `uv run python scripts/cron.py enable --id <id>` or `uv run python scripts/cron.py disable --id <id>`
-- Run immediately: `uv run python scripts/cron.py run-now --id <id>`
-- Delete: `uv run python scripts/cron.py delete --id <id>`
+```bash
+CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
+CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
+CRON_SCRIPT="$CODEX_SKILLS_HOME/skills/cron/scripts/cron.py"
+[ -f "$CRON_SCRIPT" ] || CRON_SCRIPT="$CLAUDE_SKILLS_HOME/skills/cron/scripts/cron.py"
+
+run_cron_tool() {
+  if command -v cron >/dev/null 2>&1 && cron --help 2>&1 | grep -q "cron.zig"; then
+    cron "$@"
+    return
+  fi
+  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+    if ! brew install tkersey/tap/cron; then
+      echo "brew install tkersey/tap/cron failed; refusing silent fallback." >&2
+      return 1
+    fi
+    if command -v cron >/dev/null 2>&1 && cron --help 2>&1 | grep -q "cron.zig"; then
+      cron "$@"
+      return
+    fi
+    echo "brew install tkersey/tap/cron did not produce a compatible cron binary." >&2
+    return 1
+  fi
+  if [ -f "$CRON_SCRIPT" ]; then
+    uv run python "$CRON_SCRIPT" "$@"
+    return
+  fi
+  echo "cron binary missing and fallback script not found: $CRON_SCRIPT" >&2
+  return 1
+}
+```
+
+- List automations: `run_cron_tool list`
+- Create an automation: `run_cron_tool create --name "Weekly release notes" --prompt-file /path/to/prompt.md --rrule "RRULE:FREQ=WEEKLY;BYDAY=FR;BYHOUR=9;BYMINUTE=0"`
+- Update an automation: `run_cron_tool update --id <id> --rrule "RRULE:FREQ=DAILY;BYHOUR=9;BYMINUTE=0"`
+- Enable or disable: `run_cron_tool enable --id <id>` or `run_cron_tool disable --id <id>`
+- Run immediately: `run_cron_tool run-now --id <id>`
+- Delete: `run_cron_tool delete --id <id>`
 - Run due automations once (headless): `scripts/automation_runner.py --once`
 - Install and start user LaunchAgent scheduler: `scripts/install_launch_agent.sh`
 - Stop and remove scheduler: `scripts/uninstall_launch_agent.sh`
+
+Runtime bootstrap policy for `cron` mirrors `seq`/`cas`/`lift`: prefer the Zig `cron` binary; on macOS with `brew`, treat `brew install tkersey/tap/cron` failure (or incompatible binary) as a hard error; otherwise fallback to `uv run python "$CRON_SCRIPT"`.
 
 ## Workflow
 1. Choose the working directories (`cwds`). Default to the current repo if not specified.
 2. Write the automation prompt. Use `--prompt-file` for multi-line prompts.
 3. Provide an RFC5545 RRULE string (see schedule guidance below).
-4. Create or update the automation with `scripts/cron.py`.
+4. Create or update the automation with `run_cron_tool`.
 5. If you want hands-off execution without the desktop app, install the LaunchAgent with `scripts/install_launch_agent.sh`.
 
 ## Headless Runner
