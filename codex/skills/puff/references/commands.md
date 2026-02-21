@@ -71,11 +71,7 @@ Typical pairing:
 1. Use `$puff` to submit independent cloud tasks quickly.
 2. Use `$cas` to orchestrate complex app-server thread/turn flows or integrate custom automation.
 
-Start/stop proxy via puff:
-- `run_puff_tool cas-start --cwd <workspace>`
-- `run_puff_tool cas-stop`
-
-Start proxy directly (advanced):
+Proxy lifecycle is managed by `$cas` (not `$puff`):
 - `node "$CAS_PROXY_SCRIPT"`
 
 Then drive methods like:

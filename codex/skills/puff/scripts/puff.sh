@@ -6,11 +6,8 @@ JOBS_DIR="$PUFF_HOME/jobs"
 LOGS_DIR="$PUFF_HOME/logs"
 RESULTS_DIR="$PUFF_HOME/results"
 PROMPTS_DIR="$PUFF_HOME/prompts"
-CAS_DIR="$PUFF_HOME/cas"
-CAS_PID_FILE="$CAS_DIR/proxy.pid"
-CAS_META_FILE="$CAS_DIR/proxy.env"
 
-mkdir -p "$JOBS_DIR" "$LOGS_DIR" "$RESULTS_DIR" "$PROMPTS_DIR" "$CAS_DIR"
+mkdir -p "$JOBS_DIR" "$LOGS_DIR" "$RESULTS_DIR" "$PROMPTS_DIR"
 
 err() {
   printf 'puff: %s\n' "$*" >&2
@@ -81,13 +78,6 @@ validate_timeout() {
   local timeout="$1"
   if ! [[ "$timeout" =~ ^[0-9]+$ ]]; then
     die "timeout must be an integer in seconds"
-  fi
-}
-
-validate_timeout_ms() {
-  local timeout_ms="$1"
-  if ! [[ "$timeout_ms" =~ ^[0-9]+$ ]]; then
-    die "server-request timeout must be an integer in milliseconds"
   fi
 }
 
@@ -816,193 +806,6 @@ cmd_stop() {
   fi
 }
 
-cmd_cas_start() {
-  local codex_skills_home="${CODEX_HOME:-$HOME/.codex}/skills"
-  local claude_skills_home="${CLAUDE_HOME:-$HOME/.claude}/skills"
-  local default_proxy_script="$codex_skills_home/cas/scripts/cas_proxy.mjs"
-  if [[ ! -f "$default_proxy_script" ]]; then
-    default_proxy_script="$claude_skills_home/cas/scripts/cas_proxy.mjs"
-  fi
-  local proxy_script="${PUFF_CAS_PROXY_SCRIPT:-$default_proxy_script}"
-  local cwd=""
-  local state_file=""
-  local timeout_ms=""
-  local log_file=""
-  local -a opt_out_methods=()
-
-  while (( $# > 0 )); do
-    case "$1" in
-      --proxy-script)
-        [[ $# -ge 2 ]] || die "--proxy-script requires a value"
-        proxy_script="$2"
-        shift 2
-        ;;
-      --cwd)
-        [[ $# -ge 2 ]] || die "--cwd requires a value"
-        cwd="$2"
-        shift 2
-        ;;
-      --state-file)
-        [[ $# -ge 2 ]] || die "--state-file requires a value"
-        state_file="$2"
-        shift 2
-        ;;
-      --server-request-timeout-ms)
-        [[ $# -ge 2 ]] || die "--server-request-timeout-ms requires a value"
-        timeout_ms="$2"
-        shift 2
-        ;;
-      --opt-out-notification-method)
-        [[ $# -ge 2 ]] || die "--opt-out-notification-method requires a value"
-        opt_out_methods+=("$2")
-        shift 2
-        ;;
-      --log-file)
-        [[ $# -ge 2 ]] || die "--log-file requires a value"
-        log_file="$2"
-        shift 2
-        ;;
-      -h|--help)
-        usage_cas_start
-        return 0
-        ;;
-      *)
-        die "unknown cas-start option: $1"
-        ;;
-    esac
-  done
-
-  require_cmd node
-  [[ -f "$proxy_script" ]] || die "cas proxy script not found: $proxy_script"
-  if [[ -n "$timeout_ms" ]]; then
-    validate_timeout_ms "$timeout_ms"
-  fi
-
-  local current_pid=""
-  if [[ -f "$CAS_PID_FILE" ]]; then
-    current_pid="$(cat "$CAS_PID_FILE" 2>/dev/null || true)"
-  fi
-  if [[ -z "$current_pid" && -f "$CAS_META_FILE" ]]; then
-    current_pid="$(field_from_file "$CAS_META_FILE" PID)"
-  fi
-
-  if [[ -n "$current_pid" ]] && kill -0 "$current_pid" 2>/dev/null; then
-    local existing_log=""
-    if [[ -f "$CAS_META_FILE" ]]; then
-      existing_log="$(field_from_file "$CAS_META_FILE" LOG_PATH)"
-    fi
-    printf 'CAS_STATUS=already_running\n'
-    printf 'PID=%s\n' "$current_pid"
-    if [[ -n "$existing_log" ]]; then
-      printf 'LOG_PATH=%s\n' "$existing_log"
-    fi
-    return 0
-  fi
-
-  if [[ -z "$log_file" ]]; then
-    log_file="$CAS_DIR/proxy-$(date -u +%Y%m%dT%H%M%SZ).log"
-  fi
-
-  local cmd=(node "$proxy_script")
-  if [[ -n "$cwd" ]]; then
-    cmd+=(--cwd "$cwd")
-  fi
-  if [[ -n "$state_file" ]]; then
-    cmd+=(--state-file "$state_file")
-  fi
-  if [[ -n "$timeout_ms" ]]; then
-    cmd+=(--server-request-timeout-ms "$timeout_ms")
-  fi
-  if (( ${#opt_out_methods[@]} > 0 )); then
-    local method
-    for method in "${opt_out_methods[@]}"; do
-      cmd+=(--opt-out-notification-method "$method")
-    done
-  fi
-
-  nohup "${cmd[@]}" >"$log_file" 2>&1 < /dev/null &
-  local pid="$!"
-  sleep 0.2
-
-  if ! kill -0 "$pid" 2>/dev/null; then
-    printf 'CAS_STATUS=failed_to_start\n'
-    printf 'LOG_PATH=%s\n' "$log_file"
-    return 1
-  fi
-
-  printf '%s\n' "$pid" >"$CAS_PID_FILE"
-  cat >"$CAS_META_FILE" <<META
-PID=$pid
-LOG_PATH=$log_file
-PROXY_SCRIPT=$proxy_script
-CWD=$cwd
-STATE_FILE=$state_file
-SERVER_REQUEST_TIMEOUT_MS=$timeout_ms
-STARTED_AT=$(now_utc)
-META
-
-  printf 'CAS_STATUS=started\n'
-  printf 'PID=%s\n' "$pid"
-  printf 'LOG_PATH=%s\n' "$log_file"
-}
-
-cmd_cas_stop() {
-  local force="0"
-
-  while (( $# > 0 )); do
-    case "$1" in
-      --force)
-        force="1"
-        shift
-        ;;
-      -h|--help)
-        usage_cas_stop
-        return 0
-        ;;
-      *)
-        die "unknown cas-stop option: $1"
-        ;;
-    esac
-  done
-
-  local pid=""
-  if [[ -f "$CAS_PID_FILE" ]]; then
-    pid="$(cat "$CAS_PID_FILE" 2>/dev/null || true)"
-  fi
-  if [[ -z "$pid" && -f "$CAS_META_FILE" ]]; then
-    pid="$(field_from_file "$CAS_META_FILE" PID)"
-  fi
-
-  if [[ -z "$pid" ]]; then
-    printf 'CAS_STATUS=not_running\n'
-    return 0
-  fi
-
-  if kill -0 "$pid" 2>/dev/null; then
-    kill "$pid" >/dev/null 2>&1 || true
-    local i
-    for i in {1..25}; do
-      if ! kill -0 "$pid" 2>/dev/null; then
-        break
-      fi
-      sleep 0.2
-    done
-    if [[ "$force" == "1" ]] && kill -0 "$pid" 2>/dev/null; then
-      kill -9 "$pid" >/dev/null 2>&1 || true
-    fi
-  fi
-
-  if kill -0 "$pid" 2>/dev/null; then
-    printf 'CAS_STATUS=still_running\n'
-    printf 'PID=%s\n' "$pid"
-    return 1
-  fi
-
-  rm -f "$CAS_PID_FILE"
-  printf 'CAS_STATUS=stopped\n'
-  printf 'PID=%s\n' "$pid"
-}
-
 usage_submit() {
   cat <<USAGE
 Usage: puff.sh submit --env <env-id-or-label> [--prompt <text>] [--attempts <1-4>] [--branch <branch>]
@@ -1076,23 +879,6 @@ Stop a detached watcher job started by launch.
 USAGE
 }
 
-usage_cas_start() {
-  cat <<USAGE
-Usage: puff.sh cas-start [--cwd <path>] [--state-file <path>] [--server-request-timeout-ms <ms>] [--opt-out-notification-method <method>]... [--proxy-script <path>] [--log-file <path>]
-
-Start the \$cas proxy as a detached background process.
-Prints CAS_STATUS, PID, and LOG_PATH.
-USAGE
-}
-
-usage_cas_stop() {
-  cat <<USAGE
-Usage: puff.sh cas-stop [--force]
-
-Stop the detached \$cas proxy process started via cas-start.
-USAGE
-}
-
 usage_main() {
   cat <<USAGE
 Usage: puff.sh <command> [options]
@@ -1106,8 +892,6 @@ Commands:
   join-operator Launch cloud Join operator using seq->join prompt flow.
   jobs     List detached watcher jobs.
   stop     Stop a detached watcher job.
-  cas-start  Start \$cas proxy in background.
-  cas-stop   Stop background \$cas proxy.
   help     Show this message.
 
 Run "puff.sh <command> --help" for command-specific options.
@@ -1144,12 +928,6 @@ main() {
       ;;
     stop)
       cmd_stop "$@"
-      ;;
-    cas-start)
-      cmd_cas_start "$@"
-      ;;
-    cas-stop)
-      cmd_cas_stop "$@"
       ;;
     help|-h|--help)
       usage_main

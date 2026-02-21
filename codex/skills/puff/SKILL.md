@@ -81,8 +81,7 @@ Use `join-operator --max-cycles <n>` for bounded runs; `--canary` is shorthand f
 
 Use `$cas` when orchestration requirements exceed simple cloud task lifecycle control.
 Use `$puff` for fast cloud kickoff and lifecycle polling.
-Use `$puff` `cas-start` / `cas-stop` to manage the `$cas` proxy lifecycle from the same wrapper.
-Use `$cas` for app-server thread/turn orchestration, steering, forwarding server requests, or complex multi-thread routing.
+Use `$cas` directly for proxy lifecycle management (`start`/`stop`) and app-server thread/turn orchestration, steering, forwarding server requests, or complex multi-thread routing.
 
 ## Notes
 

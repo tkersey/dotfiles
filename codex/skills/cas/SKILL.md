@@ -31,22 +31,22 @@ CAS_SCRIPTS_DIR="$CODEX_SKILLS_HOME/skills/cas/scripts"
 run_cas_tool() {
   local subcommand="${1:-}"
   if [ -z "$subcommand" ]; then
-    echo "usage: run_cas_tool <smoke-check|instance-runner> [args...]" >&2
+    echo "usage: run_cas_tool <smoke-check|smoke_check|instance-runner|instance_runner> [args...]" >&2
     return 2
   fi
   shift || true
 
-  local bin=""
+  local cas_subcommand=""
   local marker=""
   local fallback=""
   case "$subcommand" in
-    smoke-check)
-      bin="cas_smoke_check"
+    smoke-check|smoke_check)
+      cas_subcommand="smoke_check"
       marker="cas_smoke_check.zig"
       fallback="$CAS_SCRIPTS_DIR/cas_smoke_check.mjs"
       ;;
-    instance-runner)
-      bin="cas_instance_runner"
+    instance-runner|instance_runner)
+      cas_subcommand="instance_runner"
       marker="cas_instance_runner.zig"
       fallback="$CAS_SCRIPTS_DIR/cas_instance_runner.mjs"
       ;;
@@ -56,20 +56,28 @@ run_cas_tool() {
       ;;
   esac
 
-  if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
-    "$bin" "$@"
-    return
+  if command -v cas >/dev/null 2>&1 && cas --help 2>&1 | grep -q "cas.zig"; then
+    if cas "$cas_subcommand" --help 2>&1 | grep -q "$marker"; then
+      cas "$cas_subcommand" "$@"
+      return
+    fi
+    echo "cas binary found, but marker check failed for subcommand: $cas_subcommand" >&2
+    return 1
   fi
   if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
     if ! brew install tkersey/tap/cas; then
       echo "brew install tkersey/tap/cas failed; refusing silent fallback." >&2
       return 1
     fi
-    if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
-      "$bin" "$@"
-      return
+    if command -v cas >/dev/null 2>&1 && cas --help 2>&1 | grep -q "cas.zig"; then
+      if cas "$cas_subcommand" --help 2>&1 | grep -q "$marker"; then
+        cas "$cas_subcommand" "$@"
+        return
+      fi
+      echo "brew install tkersey/tap/cas did not produce a compatible cas $cas_subcommand subcommand." >&2
+      return 1
     fi
-    echo "brew install tkersey/tap/cas did not produce a compatible $bin binary." >&2
+    echo "brew install tkersey/tap/cas did not produce a compatible cas binary." >&2
     return 1
   fi
   if [ -f "$fallback" ]; then
@@ -246,4 +254,4 @@ Included:
 - `scripts/cas_instance_runner.mjs` (run one method across many parallel cas sessions/instances)
 - `scripts/cas_smoke_check.mjs` (smoke-checks `experimentalFeature/list`, `thread/resume`, `turn/steer`)
 
-Runtime bootstrap policy for Zig CLIs mirrors `seq`: prefer installed binary; on macOS with `brew`, treat `brew install tkersey/tap/cas` failure (or incompatible binary) as a hard error; otherwise fallback to the local Node script.
+Runtime bootstrap policy for Zig CLIs mirrors `seq`: prefer installed `cas` dispatcher binary (`cas smoke_check` / `cas instance_runner`); on macOS with `brew`, treat `brew install tkersey/tap/cas` failure (or incompatible binary/subcommand marker) as a hard error; otherwise fallback to the local Node script.
