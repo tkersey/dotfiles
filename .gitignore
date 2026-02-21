@@ -10,3 +10,5 @@ lazy-lock.json
 codex/skills/.system/
 
 **/node_modules
+
+.step/st-plan.jsonl.lock
