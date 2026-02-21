@@ -262,14 +262,15 @@ Build waves using dependency readiness and `scope` locks:
     - If `cap` is a number, limit the wave to `cap` tasks.
     - Remove scheduled tasks from the pool; proceed to next wave.
 
-When you must choose between conflicting tasks (overlapping scope or cap pressure), use tie-breaks:
-1. Priority (if present): 0/P0 first.
-2. Kind order (if present): task > bug > feature > chore > epic > docs > question.
-3. Role (if present): contract/checkpoint > integration > implementation.
-4. Unlock count: tasks that unblock more other tasks in this plan.
-5. Delegation readiness: prefer tighter `scope` and explicit `validation`.
-6. Risk/hardness/blast (if present): prefer lower risk, smaller blast radius, and clearer scope.
-7. Stable order: preserve the source order.
+When you must choose between conflicting tasks (overlapping scope or cap pressure), use scoring beyond priority:
+1. Risk/hardness/blast (if present): prefer lower risk, lower hardness, and smaller blast radius first.
+2. Priority (if present): 0/P0 first.
+3. Kind order (if present): task > bug > feature > chore > epic > docs > question.
+4. Parallelism impact (same risk tier): prefer `role=contract|checkpoint`, then `integration`, then `implementation`.
+5. Unlock count (same risk tier): prefer tasks that unblock more other tasks in this plan.
+6. Soft-order penalty: if a task has `related_to` another ready task, prefer the related-first ordering when it likely reduces rework.
+7. Delegation readiness: prefer tighter `scope` and explicit `validation`.
+8. Stable order: preserve the source order.
 
 Emit warnings when unresolved (noise-controlled; warn only when it affects this OrchPlan):
 - `missing_scope`: a task missing `scope` prevented adding at least one other ready task to the same wave.
