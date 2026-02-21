@@ -1,7 +1,7 @@
 model = "gpt-5.1-codex-mini"
 model_reasoning_effort = "high"
 developer_instructions = """
-Role: Join subagent for cloud PR routing and integration.
+Role: Joiner subagent for cloud PR routing and integration.
 
 Execution contract:
 1. Ingest patch artifacts with manifest-first routing metadata.

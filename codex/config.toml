@@ -8,9 +8,9 @@ personality = "pragmatic"
 max_threads = 12
 # max_depth = 2
 
-[agents.implementer]
+[agents.coder]
 description = "Implement a scoped change in owned files."
-config_file = "/Users/tk/.codex/agents/implementer.toml"
+config_file = "/Users/tk/.codex/agents/coder.toml"
 
 [agents.fixer]
 description = "Fix bugs/regressions in existing implementation with minimal diff."
@@ -20,9 +20,9 @@ config_file = "/Users/tk/.codex/agents/fixer.toml"
 description = "Split work into dependency-aware, parallel, non-overlapping slices."
 config_file = "/Users/tk/.codex/agents/parallel_planner.toml"
 
-[agents.join]
+[agents.joiner]
 description = "Route patch artifacts to the right PRs and coordinate join-style integration."
-config_file = "/Users/tk/.codex/agents/join.toml"
+config_file = "/Users/tk/.codex/agents/joiner.toml"
 
 [features]
 unified_exec = true
