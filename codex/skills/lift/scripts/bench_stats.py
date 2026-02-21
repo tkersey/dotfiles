@@ -7,11 +7,13 @@ Usage examples:
   bench_stats.py --input samples.txt --unit ms
   bench_stats.py --input samples.txt --scale 1000 --unit us
   bench_stats.py --input samples.txt --all
+  bench_stats.py --input samples.txt --json
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import re
 import statistics
@@ -62,6 +64,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Parse all numbers in each line instead of only the first",
     )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit JSON (numbers stay unformatted)",
+    )
     return parser
 
 
@@ -90,17 +97,35 @@ def main() -> int:
     median = statistics.median(values)
     stdev = statistics.pstdev(values) if count > 1 else 0.0
 
+    report_numeric = {
+        "count": count,
+        "min": values[0],
+        "p50": percentile(values, 50),
+        "p90": percentile(values, 90),
+        "p95": percentile(values, 95),
+        "p99": percentile(values, 99),
+        "max": values[-1],
+        "mean": mean,
+        "median": median,
+        "stdev": stdev,
+        "unit": args.unit,
+    }
+
+    if args.json:
+        print(json.dumps(report_numeric, separators=(",", ":")))
+        return 0
+
     report = {
-        "count": str(count),
-        "min": format_value(values[0], args.unit),
-        "p50": format_value(percentile(values, 50), args.unit),
-        "p90": format_value(percentile(values, 90), args.unit),
-        "p95": format_value(percentile(values, 95), args.unit),
-        "p99": format_value(percentile(values, 99), args.unit),
-        "max": format_value(values[-1], args.unit),
-        "mean": format_value(mean, args.unit),
-        "median": format_value(median, args.unit),
-        "stdev": format_value(stdev, args.unit),
+        "count": str(report_numeric["count"]),
+        "min": format_value(report_numeric["min"], args.unit),
+        "p50": format_value(report_numeric["p50"], args.unit),
+        "p90": format_value(report_numeric["p90"], args.unit),
+        "p95": format_value(report_numeric["p95"], args.unit),
+        "p99": format_value(report_numeric["p99"], args.unit),
+        "max": format_value(report_numeric["max"], args.unit),
+        "mean": format_value(report_numeric["mean"], args.unit),
+        "median": format_value(report_numeric["median"], args.unit),
+        "stdev": format_value(report_numeric["stdev"], args.unit),
     }
 
     print("count  :", report["count"])
