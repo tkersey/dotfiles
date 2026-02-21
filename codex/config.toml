@@ -9,12 +9,20 @@ max_threads = 12
 # max_depth = 2
 
 [agents.coder]
-description = "Implement a scoped change in owned files."
+description = "Author code changes with TK doctrine and explicit proof signals."
 config_file = "/Users/tk/.codex/agents/coder.toml"
 
+[agents.reducer]
+description = "Reduce incidental complexity while preserving coder contract and invariants."
+config_file = "/Users/tk/.codex/agents/reducer.toml"
+
 [agents.fixer]
-description = "Fix bugs/regressions in existing implementation with minimal diff."
+description = "Own safety/regression review and final authority for safety conflicts."
 config_file = "/Users/tk/.codex/agents/fixer.toml"
+
+[agents.feedback]
+description = "Score doctrine-fit and provide actionable improvement guidance."
+config_file = "/Users/tk/.codex/agents/feedback.toml"
 
 [agents.parallel_planner]
 description = "Split work into dependency-aware, parallel, non-overlapping slices."
