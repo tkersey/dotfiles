@@ -23,6 +23,12 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - `$refine`: default path when the task is to improve `fix` itself (or other skills); apply `$refine` workflow and `quick_validate`.
 - Delegation order when both are needed: `$invariant-ace` first, then `$complexity-mitigator`.
 
+Delegation triggers (deterministic):
+- Run `$invariant-ace` when the slice touches stateful boundaries (parse/construct/API/DB/lock/txn/retry ordering), ownership/lifetime, or any "should never happen" claim.
+- Run `$complexity-mitigator` when auditability is at risk (for example: branch soup, deep nesting, cross-file reasoning, or unclear ownership/control flow).
+- Run `$refine` when the requested target is a skill artifact (for example `SKILL.md`, `agents/openai.yaml`, skill scripts/references/assets).
+- If both invariant and complexity triggers fire, run `$invariant-ace` first, then `$complexity-mitigator`.
+
 ## Inputs
 - User request text.
 - Repo state (code + tests + scripts).
@@ -33,6 +39,8 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - Use section headings verbatim (for example, `**Findings (severity order)**`, not `Findings`).
 - During execution, emit one-line pass progress updates at pass start and pass end using:
   `Pass <n>/<total_planned>: <name> — <start|done>; edits=<yes|no|n/a>; signal=<cmd|n/a>; result=<ok|fail|n/a>`.
+- In `Validation`, include a machine-checkable JSON object with keys:
+  `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
 
 ### Embedded mode (when $fix is invoked inside another skill)
 - You may emit a compact **Fix Record** instead of the full deliverable.
@@ -43,11 +51,13 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST default to review + implement (unless review-only is requested).
 - MUST triage and present findings in severity order: security > crash > corruption > logic.
 - MUST NOT claim done without a passing validation signal.
+- MUST NOT edit when no local signal/proof hook can be found or created under `Validation signal selection`; fail fast and report blocker.
 - MUST NOT do product/feature work.
 - MUST NOT do intentional semantic changes without clarifying, except correctness tightening.
 - MUST resolve trade-offs using `Default policy (non-interactive)`.
 - MUST emit pass progress updates while running the multi-pass loop.
 - MUST include a final `Pass trace` section in the deliverable/Fix Record with executed pass count and per-pass outcomes.
+- MUST include machine-checkable validation evidence keys in `Validation`: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
 - MUST use the exact heading names from `Deliverable format (chat)` / `Fix Record`; do not alias or shorten heading labels.
 - MUST produce a complete finding record for every acted-on issue:
   - counterexample
@@ -55,6 +65,8 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
   - invariant_after
   - fix
   - proof
+  - proof_strength
+  - compatibility_impact
 - MUST follow the delegation contract in `Skill composition (required)` (including order: `$invariant-ace` -> `$complexity-mitigator`).
 - MUST route skill-self edits (for example `codex/skills/fix`) through `$refine` and run `quick_validate`.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
@@ -98,6 +110,11 @@ Evidence scan procedure (repo-local):
 - CI/config surfaces: also scan `.github/workflows/` for env vars, flags, and script entrypoints.
 
 Tooling hint: prefer `rg -n "<token>"` with `--glob` filters.
+Deterministic scan command template (run in this order):
+- `rg -n "<token>" tests test __tests__ spec --glob '*test*' --glob '*.spec.*'`
+- `rg -n "<token>" README* docs examples CHANGELOG* config.example* --glob '*.md'`
+- `rg -n "<token>" .github/workflows`
+- `rg -n "<token>" .`
 
 ### Externally-used surface checklist (deterministic)
 Treat a surface as external if ANY is true:
@@ -178,12 +195,24 @@ Algorithm:
     - boundary assertion that fails loudly
     - scoped + rate-limited diagnostic log tied to ONE invariant (never log secrets/PII)
 
+No-signal fail-fast (deterministic):
+- If no signal/proof hook is available after executing the selection algorithm once, stop before editing.
+- Return one blocker with `blocked_by=no_repro_or_proof` and include the exact commands you attempted.
+
 ### PR/diff scope guardrail (default in review mode)
 - Default slice = changed lines/paths (git diff/PR diff) + at most one boundary seam (parse/construct/API edge) required to make the fix sound.
 - Do not fix pre-existing issues outside the slice unless:
   - severity is security/crash/corruption AND
   - the fix is localized and provable without widening the slice.
 - Otherwise: record as `Residual risks / open questions`.
+
+Scope widening trigger (deterministic):
+- Widen beyond the diff only when ALL are true:
+  - severity is `security`, `crash`, or `corruption`
+  - you can show a concrete causal chain from a diff token to the out-of-slice location
+  - the widening is limited to one adjacent seam (at most one additional file/module boundary)
+  - one local validation signal can prove the widened fix
+- If any check fails, keep scope fixed and record `blocked_by=scope_guardrail`.
 
 ### Generated / third-party code guardrail
 - If a file appears generated or is under third-party/build output, do not edit it directly.
@@ -218,7 +247,7 @@ Rules:
   - `generated_output` (generated/third-party output; need source-of-truth + regen)
   - `external_dependency` (needs network/creds/services/hardware)
   - `perf_unmeasurable` (impact plausible; no local measurement)
-- Every residual bullet MUST include: a location or token, `blocked_by=<...>`, and `next=<one action>`.
+- Every residual bullet MUST include: a location or token, `blocked_by=<product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable>`, and `next=<one action>`.
 - If there are no residual items, output `- None`.
 
 ## Multi-pass loop (default)
@@ -284,6 +313,26 @@ For every issue you act on, construct this record before editing:
 - invariant_after: <what becomes guaranteed/rejected>
 - fix: <smallest sound fix that removes the bug-class>
 - proof: <test/assert/log + validation command + result>
+- proof_strength: `characterization|targeted_regression|property_or_fuzz`
+- compatibility_impact: `none|tightening|additive|breaking`
+
+### Canonical finding example (fully-filled)
+Use this as the reference shape when writing findings.
+
+```md
+F1 `src/config_loader.py:88` — crash — untrusted config type causes uncaught attribute access
+  - Surface: Tokens=config.path; PROVEN_USED=yes (tests/config/test_loader.py::test_reads_path); External=yes; Diff_touch=yes
+  - Counterexample: `{"path":null}` reaches `cfg.path.strip()` and raises `AttributeError`
+  - Invariant (before): loader assumes `path` is a non-empty string
+  - Invariant (after): loader accepts only non-empty string `path`; invalid type returns explicit error
+  - Fix: add boundary validation in `parse_config()` and reject invalid `path` before use
+  - Proof: `uv run pytest tests/config/test_loader.py::test_rejects_null_path` -> ok
+  - Proof strength: `targeted_regression`
+  - Compatibility impact: `tightening`
+
+Residual risks / open questions
+- `vendor/generated/config_schema.py` — blocked_by=generated_output — next=edit source schema and regenerate artifact
+```
 
 ## Workflow (algorithm)
 
@@ -293,6 +342,7 @@ For every issue you act on, construct this record before editing:
    - follow `$refine` Discover -> Define -> Develop -> Deliver,
    - apply minimal skill diffs,
    - run `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/<skill-name>`.
+   - if `codex/skills/fix/SKILL.md` was touched, also run `uv run python codex/skills/fix/scripts/lint_fix_skill_contract.py codex/skills/fix/SKILL.md`.
    - Return to the rest of `fix` only if the request also includes code/runtime defects.
 3. Define slice:
    - If in a git repo and there is a diff, derive slice/tokens from the diff (paths, changed symbols/strings).
@@ -301,6 +351,7 @@ For every issue you act on, construct this record before editing:
 5. Apply `PR/diff scope guardrail` for review mode.
 6. Apply `Generated / third-party code guardrail` before editing.
 7. Select validation signal (or create proof hook).
+8. If signal/proof creation fails, stop before editing and return `blocked_by=no_repro_or_proof` with attempted commands.
 
 ### 1) Contract + baseline
 1. Determine PROVEN_USED behavior:
@@ -416,6 +467,9 @@ Before sending the final message, verify all are true:
 2. `Pass trace` includes planned/executed counts and P1/P2/P3 lines (plus P4/P5 when executed).
 3. Runtime pass updates (`Pass <n>/<total_planned>: ...`) were emitted during execution.
 4. If embedded mode was used, include **Fix Record** in the same assistant message (after any required artifact).
+5. `Validation` includes machine-checkable keys: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
+6. Every acted-on finding includes `Proof strength` and `Compatibility impact` using the allowed enums.
+7. Every residual `blocked_by` uses only: `product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable`.
 
 ## Deliverable format (chat)
 Output exactly these sections.
@@ -438,6 +492,8 @@ For each finding:
   - Invariant (after): <what is now guaranteed/rejected>
   - Fix: <smallest sound fix summary>
   - Proof: <test/assert/log + validation command> -> <ok/fail>
+  - Proof strength: `<characterization|targeted_regression|property_or_fuzz>`
+  - Compatibility impact: `<none|tightening|additive|breaking>`
 
 **Changes applied**
 - <file> — <rationale>
@@ -453,10 +509,11 @@ For each finding:
 
 **Validation**
 - <cmd> -> <ok/fail>
+- `{"baseline_cmd":"<cmd|n/a>","baseline_result":"<ok|fail|n/a>","proof_hook":"<test/assert/log|n/a>","final_cmd":"<cmd>","final_result":"<ok|fail>"}` (single-line JSON)
 
 **Residual risks / open questions**
 - If none: `- None`
-- Otherwise: `- <file:line or token> — blocked_by=<blocker> — next=<one action>`
+- Otherwise: `- <file:line or token> — blocked_by=<product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable> — next=<one action>`
 
 ### Fix Record (embedded mode only)
 Use only when $fix is invoked inside another skill.
@@ -470,6 +527,8 @@ For each finding:
   - Invariant (after): <what is now guaranteed/rejected>
   - Fix: <smallest sound fix summary>
   - Proof: <test/assert/log + validation command> -> <ok/fail>
+  - Proof strength: `<characterization|targeted_regression|property_or_fuzz>`
+  - Compatibility impact: `<none|tightening|additive|breaking>`
 
 **Changes applied**
 - <file> — <rationale>
@@ -485,10 +544,11 @@ For each finding:
 
 **Validation**
 - <cmd> -> <ok/fail>
+- `{"baseline_cmd":"<cmd|n/a>","baseline_result":"<ok|fail|n/a>","proof_hook":"<test/assert/log|n/a>","final_cmd":"<cmd>","final_result":"<ok|fail>"}` (single-line JSON)
 
 **Residual risks / open questions**
 - If none: `- None`
-- Otherwise: `- <file:line or token> — blocked_by=<blocker> — next=<one action>`
+- Otherwise: `- <file:line or token> — blocked_by=<product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable> — next=<one action>`
 
 ## Pitfalls
 - Vague advice without locations.
