@@ -54,8 +54,11 @@ It gets harder (but is still possible) when the contract depends on time, random
 - MUST treat a stateful workflow as incomplete if only isolated operation cases exist; add scenario coverage in `tests.yaml` and verification proof before calling extraction done.
 - MUST include trace-level invariants for agentic scenarios (for example permission boundaries, confirmation-before-side-effects, injection resistance, budget/step limits).
 - MUST prefer oracles that score behavior via state + trace (tool calls, side effects) over brittle final-text matching.
-- MUST produce a machine-checkable evidence bundle under `verification/evidence/` and fail extraction unless it passes `uv run python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`.
-- MUST enforce fail-closed verification thresholds: 100% mapped public operations, 100% mapped primary workflows, mutation sensitivity gate passes, and independent regeneration parity passes.
+- MUST produce a machine-checkable evidence bundle under `verification/evidence/` and fail extraction unless it passes `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`.
+- MUST keep `verification/evidence/inventory.json` synchronized with `tests.yaml`: `public_operations` must match non-workflow operation ids and `primary_workflows` must match workflow/scenario ids (`coverage_mode` defaults to `exhaustive`; when `sampled`, include `sampled_case_ids`).
+- MUST ensure every required case id appears in `traceability.csv` and has at least one baseline (`mutated=false`) `pass` row in `adapter_results.jsonl` (all `tests.yaml` cases for `exhaustive`; `inventory.json.sampled_case_ids` for `sampled`).
+- MUST enforce fail-closed verification thresholds: 100% mapped public operations, 100% mapped primary workflows, and 100% mapped required case ids (all tests for `exhaustive`; sampled ids for `sampled`), plus mutation sensitivity and independent regeneration parity passes.
+- MUST declare verification coverage mode in `VERIFY.md`: default `exhaustive`; `sampled` is allowed only when full adapter execution is infeasible and must list sampled case ids plus rationale (including `inventory.json.sampled_case_ids`).
 
 ## Inputs
 - Source repo path (git working tree)
@@ -90,6 +93,12 @@ When using scenario testing, keep **scenario ids** stable and descriptive:
 - `refund.create_ticket_with_guardrails`
 - `calendar.reschedule_with_rate_limit`
 - `security.prompt_injection_from_tool_output`
+
+### Case ids
+Every executable case SHOULD carry a stable `case_id` and use it as the primary key across evidence artifacts.
+- Prefer `<operation-id>.<behavior>` for operation cases.
+- For single-case workflow/scenario targets, reusing the workflow/scenario id as `case_id` is acceptable.
+- `traceability.csv` and `adapter_results.jsonl` MUST use the same `case_id` tokens.
 
 ### Contract shape
 Pick one schema and stay consistent:
@@ -177,11 +186,11 @@ For scenario suites, also harvest:
 - Include the source version identifier (`version` or `meta.source_version`).
 - Schema is intentionally strict and portable; choose the contract shape from Conventions:
   - Functional layout:
-    - each case has `name` and `input`
+    - each case has `name`, `input`, and a stable `case_id` (recommended)
     - each case has exactly one of `output` or `error: true`
   - Protocol/CLI layout:
     - top-level `meta` + `operations`
-    - each case has `name`, `input`, and deterministic expected outcomes (for example `exit_code`, machine-readable stdout assertions, and state assertions)
+    - each case has `case_id`, `name`, `input`, and deterministic expected outcomes (for example `exit_code`, machine-readable stdout assertions, and state assertions)
   - keep to a portable YAML subset (no anchors/tags/binary) so it is easy to parse in many languages
   - quote ambiguous scalars (`yes`, `no`, `on`, `off`, `null`) to avoid parser disagreements
 - Normalize inputs to deterministic values (avoid "now"; use explicit timestamps).
@@ -194,6 +203,7 @@ For scenario suites, also harvest:
   - success criteria (final state and/or required tool side effects)
   - oracles (hard assertions + trace invariants; optional rubric judge)
 - Prefer exact/value-complete assertions for stable output fields; use partial assertions only when fields are intentionally volatile.
+- If assertions use path lookups, define path resolver semantics in `TESTS_SCHEMA.md` (root object, dot segments, `[index]` arrays, and "missing path fails assertion").
 - For warning/error message checks, prefer substring assertions unless the exact wording is itself part of the upstream contract.
 - If `tests.yaml` includes harness directives beyond basic `{name,input,output|error}` (e.g. callbacks by label, mutation steps, warning sinks, setup scripts), document them in `TESTS_SCHEMA.md`.
 - Keep `skip` rare; every skip must include a concrete reason and be accounted for in `VERIFY.md`.
@@ -224,13 +234,13 @@ For scenario suites, also harvest:
   - delete the adapter afterward; do not ship it in the ghost repo
   - summarize how to run it (and results) in `VERIFY.md`
 - Build a fail-closed evidence bundle in `verification/evidence/`:
-  - `inventory.json` (public operations + primary workflows, including reset requirements)
+  - `inventory.json` (public operations + primary workflows, including reset requirements; optional `coverage_mode`, and `sampled_case_ids` when `coverage_mode=sampled`)
   - `traceability.csv` (operation/workflow -> case ids -> proof artifact -> adapter run id)
   - `workflow_loops.json` (loop cases + continuity assertions + reset assertions when required)
   - `adapter_results.jsonl` (case-level results with `run_id`, `case_id`, `status`, and mutation marker)
   - `mutation_check.json` (required mutation count + detected failures + pass/fail)
   - `parity.json` (independent regeneration parity verdict + diff count)
-- Run `uv run python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`; non-zero exit means extraction is incomplete.
+- Run `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`; non-zero exit means extraction is incomplete.
 - For stochastic agentic systems:
   - run scenarios in two modes:
     - deterministic debug mode (stable tool outputs; fixed seed when possible)

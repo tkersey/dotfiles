@@ -9,8 +9,14 @@ This reference exists so the `ghost` skill can generate a first-class `VERIFY.md
 - Each operation has coverage across success and error paths (when applicable).
 - Each primary stateful workflow (or scenario) has at least one executable end-to-end loop scenario with continuity assertions.
 - Verification evidence bundle exists under `verification/evidence/` with all required files.
+- `inventory.json.public_operations` exactly matches non-workflow operation ids in `tests.yaml`.
+- `inventory.json.primary_workflows` exactly matches workflow/scenario ids in `tests.yaml`.
+- Coverage mode is explicit (`exhaustive` default; `sampled` requires non-empty `sampled_case_ids`).
 - 100% of public operations are mapped in traceability evidence.
 - 100% of primary workflows are mapped in traceability evidence and loop inventory evidence.
+- If coverage mode is `exhaustive`: 100% of `tests.yaml` case ids are mapped in `traceability.csv`.
+- If coverage mode is `sampled`: 100% of `inventory.json.sampled_case_ids` are mapped in `traceability.csv`.
+- Every required case id (all tests for exhaustive; sampled ids for sampled mode) has at least one baseline (`mutated=false`) `pass` row in `adapter_results.jsonl`.
 - Mutation sensitivity gate passes (required mutations detected as failures).
 - Independent regeneration parity passes with zero normalized artifact diffs.
 - Case counts match or exceed the source test suite (when extracting from tests).
@@ -30,20 +36,25 @@ Required files:
 - `inventory.json`
   - `public_operations`: list of operation ids
   - `primary_workflows`: list of `{id, requires_reset}`
+  - optional `coverage_mode`: `exhaustive` (default) or `sampled`
+  - required `sampled_case_ids` when `coverage_mode=sampled`
+  - must be set-equal to operation/workflow ids defined in `tests.yaml`
 - `traceability.csv`
   - columns: `target_type,target_id,case_id,proof_artifact,adapter_run_id`
   - `target_type` must be `operation` or `workflow`
+  - must include every required case id (all tests for exhaustive; sampled ids for sampled mode)
 - `workflow_loops.json`
   - `workflows`: list of `{id,cases,continuity_assertions,reset_assertions}`
 - `adapter_results.jsonl`
   - one JSON object per executed case: `run_id`, `case_id`, `status`, optional `mutated`
+  - every required case id must appear with baseline `status=pass` at least once
 - `mutation_check.json`
   - `{required_mutations, detected_failures, pass}`
 - `parity.json`
   - `{pass, diff_count, run_a, run_b}`
 
 Verifier command:
-- from the ghost skill directory: `uv run python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`
+- from the ghost skill directory: `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`
 - non-zero exit means extraction quality gate failed
 
 Notes for scenario suites:
@@ -99,11 +110,12 @@ If a full adapter runner is infeasible:
 - Source revision: <tag/sha>
 - `tests.yaml` source version: <string>
 - Source language/runtime: <language + versions>
+- Coverage mode: exhaustive|sampled (default exhaustive)
 - Total cases: <total>
 - Executed: <n>
 - Skipped: <k>
 - Loop scenarios executed: <count>
-- Verifier command: `uv run python scripts/verify_evidence.py --bundle verification/evidence`
+- Verifier command: `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle verification/evidence`
 - Verifier result: pass|fail
 - Result: pass|fail
 
@@ -128,6 +140,7 @@ This ghost repo should be reproducible from the upstream revision.
 
 ## Sampling (fallback)
 - Sampled cases: <what, how many, why these>
+- Sampled case ids: <explicit list>
 - Not verified: <what remains, why>
 
 ## Test Inventory

@@ -27,6 +27,7 @@ Minimum contents:
 - Callback catalog (if callbacks are referenced by label)
 - Side-effect capture requirements (warnings/logs)
 - Output assertion semantics (deep equality vs partial/contains)
+- Assertion path semantics (root, dot segments, `[index]`, and missing-path behavior)
 
 ## tests.yaml (format)
 
@@ -62,7 +63,8 @@ meta:
 
 operations:
   cli.op_id:
-    - name: "happy path"
+    - case_id: cli.op_id.happy_path
+      name: "happy path"
       input:
         setup:
           - command: ["init"]
@@ -73,7 +75,8 @@ operations:
         exit_code: 0
         stdout_json_contains:
           id: "${issue_id}"
-    - name: "error path"
+    - case_id: cli.op_id.error_path
+      name: "error path"
       input:
         command: ["show", "missing"]
       output:
@@ -176,12 +179,14 @@ Notes:
 - Functional layout: `version` identifies upstream evidence version (SemVer/tag if available; otherwise `git:<short-sha>`).
 - Protocol/CLI layout: keep `meta.version` for schema version and use `meta.source_version` for upstream evidence version.
 - Scenario layout: keep `meta.version` for schema version and use `meta.source_version` for upstream evidence version.
+- Prefer explicit `case_id` for every executable case and reuse the same ids in `traceability.csv` and `adapter_results.jsonl`.
 - Use explicit timestamps/values; avoid "now" or system state.
 - Inputs must be deterministic and YAML-serializable (scalars, sequences, maps).
 - For bytes/buffers, encode as hex or base64 string (document which in `SPEC.md`).
 - Avoid YAML-only features (anchors, tags, custom types); quote ambiguous scalars (`yes`, `no`, `on`, `off`, `null`).
 - Functional layout: `output` and `error` are mutually exclusive; represent errors with `error: true` only.
 - Protocol/CLI layout: assert deterministic outcomes (`exit_code`, machine-readable payload checks, and optional state assertions).
+- If path-based assertions are used, document path semantics in `TESTS_SCHEMA.md` and fail assertions when a referenced path is missing.
 - Scenario layout: prefer oracles over text goldens (state assertions + trace invariants); keep runner-only knobs out of the contract unless documented in `TESTS_SCHEMA.md`.
 - If a case is skipped, include `skip: "<reason>"` and account for it in `VERIFY.md`.
 - For stateful workflows, add multi-step loop scenarios (for example create -> act -> follow-up) and assert continuity fields across steps (ids, chain pointers, persisted context/history).
@@ -199,6 +204,7 @@ Notes:
 
 ## VERIFY.md (outline)
 - Verification policy: adapter-first, sampling fallback
+- Coverage mode declaration: `exhaustive` (default) or `sampled` with explicit sampled case ids
 - Source-language adapter runner (preferred)
   - How to run it locally
   - What it asserts (outputs/errors match tests.yaml)
@@ -207,7 +213,7 @@ Notes:
   - Known gaps / unverified areas
 - Evidence bundle verifier (fail-closed)
   - `verification/evidence/` is present and complete
-  - `uv run python scripts/verify_evidence.py --bundle verification/evidence` passes
+  - `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle verification/evidence` passes
 - Traceability matrix
   - operation/workflow -> case ids -> proof artifact -> adapter run id
 - Adapter run ledger
@@ -225,12 +231,17 @@ Notes:
 - `inventory.json`
   - `public_operations`: list of operation ids
   - `primary_workflows`: list of workflow objects `{id, requires_reset}`
+  - optional `coverage_mode`: `exhaustive` (default) or `sampled`
+  - required `sampled_case_ids` when `coverage_mode=sampled`
+  - must match operation/workflow ids in `tests.yaml`
 - `traceability.csv`
   - columns: `target_type,target_id,case_id,proof_artifact,adapter_run_id`
+  - must include every required case id (all tests for exhaustive; sampled ids for sampled mode)
 - `workflow_loops.json`
   - `workflows`: list of `{id,cases,continuity_assertions,reset_assertions}`
 - `adapter_results.jsonl`
   - one JSON object per case execution with `run_id`, `case_id`, `status`, optional `mutated`
+  - every required case id must have a baseline (`mutated=false`) `pass` row
 - `mutation_check.json`
   - `{required_mutations, detected_failures, pass}`
 - `parity.json`
