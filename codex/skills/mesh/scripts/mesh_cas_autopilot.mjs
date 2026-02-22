@@ -175,6 +175,23 @@ function summarize(text) {
   return "";
 }
 
+function orchestrationEvidenceFlags(text) {
+  const source = typeof text === "string" ? text : "";
+  const lifecycle =
+    /\bspawn(?:_agent)?\b/i.test(source) && /\bwait\b/i.test(source) && /\bclose(?:_agent)?\b/i.test(source);
+  const waitAllIds =
+    /\bwait\s*\(\s*ids\s*=\s*\[[^\]]+\]/i.test(source) ||
+    /\bone wait call\b[\s\S]{0,80}\ball (?:active|running) ids\b/i.test(source) ||
+    /\bsingle wait\b[\s\S]{0,80}\ball (?:active|running) ids\b/i.test(source);
+  const retryLadder =
+    /\bretry\b[\s\S]{0,160}\bspawn\b[\s\S]{0,120}\bwait\b[\s\S]{0,120}\bclose\b/i.test(source) ||
+    /\bspawn\b[\s\S]{0,120}\bwait\b[\s\S]{0,120}\bclose\b[\s\S]{0,160}\bretry\b/i.test(source);
+  const highFanoutCas =
+    /\b(high[- ]fanout|as many subagents|as many shards|local cap pressure|cap pressure)\b/i.test(source) &&
+    /\b(\$cas|adapter=cas|mesh_cas_fleet_autopilot|cas fleet)\b/i.test(source);
+  return { lifecycle, waitAllIds, retryLadder, highFanoutCas };
+}
+
 function utcCompact(date = new Date()) {
   const iso = date.toISOString();
   return iso.slice(0, 19).replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
@@ -223,6 +240,11 @@ async function runMeshOnce({ client, threadId, planFile, meshSkillPath, timeoutM
     "- Prioritize completing at least one ready task.",
     "- If delegation latency is high, use the fallback 3-role swarm early.",
     "- If budget is nearly exhausted, emit current status and finish the turn.",
+    "Orchestration evidence (required):",
+    "- Report spawn/wait/close lifecycle evidence for this turn.",
+    "- Use one wait call over all active ids before proceeding.",
+    "- If retries occur, report the retry ladder as spawn -> wait -> close.",
+    "- If high-fanout intent plus local cap pressure occurs, state whether you escalated to $cas and why.",
   ].join("\n");
   const timeoutSteerText = [
     "Timeout budget reached.",
@@ -394,6 +416,8 @@ async function main() {
         );
         const startedAt = Date.now();
         let ok = false;
+        /** @type {{ lifecycle: boolean, waitAllIds: boolean, retryLadder: boolean, highFanoutCas: boolean } | null} */
+        let compliance = null;
         try {
           const collected = await runMeshOnce({
             client,
@@ -413,6 +437,7 @@ async function main() {
             ? ` no_diff_reason=${JSON.stringify(parsed.noDiffReason.slice(0, 220))}`
             : "";
           const line = summarize(collected?.agentMessageText ?? "");
+          compliance = orchestrationEvidenceFlags(collected?.agentMessageText ?? "");
           const elapsedMs = Date.now() - startedAt;
           process.stderr.write(
             `mesh_cas_autopilot_run ok mesh_run_id=${meshRunId} status=${status ?? "null"} elapsed_ms=${elapsedMs} failure_code=${parsed.failureCode ?? "none"} parse_format=${parsed.parseFormat}${reasonSuffix} summary=${JSON.stringify(line)}\n`,
@@ -428,6 +453,9 @@ async function main() {
             `mesh_cas_autopilot_run fail mesh_run_id=${meshRunId} elapsed_ms=${elapsedMs} failure_code=${failureCode} error=${JSON.stringify(msg)}\n`,
           );
         }
+        process.stderr.write(
+          `mesh_orchestration_compliance adapter=cas_autopilot mesh_run_id=${meshRunId} lifecycle_evidence=${compliance?.lifecycle ? "yes" : "no"} wait_all_ids_evidence=${compliance?.waitAllIds ? "yes" : "no"} retry_ladder_evidence=${compliance?.retryLadder ? "yes" : "no"} high_fanout_cas_evidence=${compliance?.highFanoutCas ? "yes" : "no"}\n`,
+        );
 
         if (capabilityBlocked) {
           const reason = capabilityReason ?? "adapter_missing_capability";

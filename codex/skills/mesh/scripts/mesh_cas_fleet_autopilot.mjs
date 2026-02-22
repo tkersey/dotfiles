@@ -234,6 +234,23 @@ function summarize(text) {
   return "";
 }
 
+function orchestrationEvidenceFlags(text) {
+  const source = typeof text === "string" ? text : "";
+  const lifecycle =
+    /\bspawn(?:_agent)?\b/i.test(source) && /\bwait\b/i.test(source) && /\bclose(?:_agent)?\b/i.test(source);
+  const waitAllIds =
+    /\bwait\s*\(\s*ids\s*=\s*\[[^\]]+\]/i.test(source) ||
+    /\bone wait call\b[\s\S]{0,80}\ball (?:active|running) ids\b/i.test(source) ||
+    /\bsingle wait\b[\s\S]{0,80}\ball (?:active|running) ids\b/i.test(source);
+  const retryLadder =
+    /\bretry\b[\s\S]{0,160}\bspawn\b[\s\S]{0,120}\bwait\b[\s\S]{0,120}\bclose\b/i.test(source) ||
+    /\bspawn\b[\s\S]{0,120}\bwait\b[\s\S]{0,120}\bclose\b[\s\S]{0,160}\bretry\b/i.test(source);
+  const highFanoutCas =
+    /\b(high[- ]fanout|as many subagents|as many shards|local cap pressure|cap pressure)\b/i.test(source) &&
+    /\b(\$cas|adapter=cas|mesh_cas_fleet_autopilot|cas fleet)\b/i.test(source);
+  return { lifecycle, waitAllIds, retryLadder, highFanoutCas };
+}
+
 function utcCompact(date = new Date()) {
   const iso = date.toISOString();
   return iso.slice(0, 19).replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
@@ -454,6 +471,11 @@ async function runWorkerMesh({
     "- Focus on this task id only and return concise diff/status quickly.",
     "- If delegation latency is high, use fallback 3-role swarm early.",
     "- If budget is nearly exhausted, finalize immediately with current best result.",
+    "Orchestration evidence (required):",
+    "- Report spawn/wait/close lifecycle evidence for this task.",
+    "- Use one wait call over all active ids before proceeding.",
+    "- If retries occur, report the retry ladder as spawn -> wait -> close.",
+    "- If high-fanout intent plus local cap pressure occurs, state whether you escalated to $cas and why.",
     "Output contract:",
     "- If you produce a patch candidate, emit exactly one unified diff in a fenced ```diff``` block and nothing else.",
     "- If no safe patch can be produced, emit exactly one line in the form `NO_DIFF:<reason>`.",
@@ -501,6 +523,11 @@ async function runJoinMeshFull({
     "Execution policy:",
     "- Prioritize integration and validation for this task id.",
     "- If budget is nearly exhausted, finalize with explicit status and stop.",
+    "Orchestration evidence (required):",
+    "- Report spawn/wait/close lifecycle evidence for this task.",
+    "- Use one wait call over all active ids before proceeding.",
+    "- If retries occur, report the retry ladder as spawn -> wait -> close.",
+    "- If high-fanout intent plus local cap pressure occurs, state whether you escalated to $cas and why.",
   ].join("\n");
   const input = [
     { type: "text", text: prompt, text_elements: [] },
@@ -535,6 +562,11 @@ async function runJoinApply({
     "- Treat the patch below as the synthesized diff and go directly to integration + validation + persistence.",
     "- If the patch does not apply cleanly, fall back to running full $mesh for this id.",
     "- If budget is nearly exhausted, finalize with explicit status and stop.",
+    "Orchestration evidence (required):",
+    "- Report spawn/wait/close lifecycle evidence for this task.",
+    "- Use one wait call over all active ids before proceeding.",
+    "- If retries occur, report the retry ladder as spawn -> wait -> close.",
+    "- If high-fanout intent plus local cap pressure occurs, state whether you escalated to $cas and why.",
     "",
     "Patch:",
     "```diff",
@@ -865,14 +897,30 @@ async function main() {
   }
 
   await refreshBudgetGovernor({ force: true });
+  const meshRunId = utcCompact();
   const initialCap = effectiveWorkersForBudget({
     mode: opts.budgetMode,
     tier: budgetState?.tier,
     maxWorkers: workers.length,
   });
   process.stderr.write(
-    `mesh_preflight mesh_run_id=${utcCompact()} plan_file=${opts.planFile} adapter=cas_fleet ids=auto budget_mode=${opts.budgetMode} worker_cap=${initialCap}/${workers.length} overrides=max_tasks=auto,parallel_tasks=auto\n`,
+    `mesh_preflight mesh_run_id=${meshRunId} plan_file=${opts.planFile} adapter=cas_fleet ids=auto budget_mode=${opts.budgetMode} worker_cap=${initialCap}/${workers.length} overrides=max_tasks=auto,parallel_tasks=auto\n`,
   );
+  const orchestrationCompliance = {
+    lifecycle: false,
+    waitAllIds: false,
+    retryLadder: false,
+    highFanoutCas: false,
+    capPressureObserved: false,
+    retriesObserved: 0,
+  };
+  function mergeOrchestrationEvidence(text) {
+    const flags = orchestrationEvidenceFlags(text);
+    orchestrationCompliance.lifecycle = orchestrationCompliance.lifecycle || flags.lifecycle;
+    orchestrationCompliance.waitAllIds = orchestrationCompliance.waitAllIds || flags.waitAllIds;
+    orchestrationCompliance.retryLadder = orchestrationCompliance.retryLadder || flags.retryLadder;
+    orchestrationCompliance.highFanoutCas = orchestrationCompliance.highFanoutCas || flags.highFanoutCas;
+  }
 
   /** @type {Set<string>} */
   const reservedTaskIds = new Set();
@@ -962,6 +1010,10 @@ async function main() {
       const attemptWatchdogMs = workerAttemptWatchdogMs(opts.workerTurnTimeoutMs);
 
       for (let attempt = 1; attempt <= WORKER_MAX_ATTEMPTS; attempt += 1) {
+        if (attempt > 1) {
+          orchestrationCompliance.retryLadder = true;
+          orchestrationCompliance.retriesObserved += 1;
+        }
         try {
           const collected = await withWatchdog(
             () =>
@@ -991,6 +1043,7 @@ async function main() {
           lastRaw = msg;
           lastParseFormat = parseFormat;
           lastNoDiffReason = noDiffReason;
+          mergeOrchestrationEvidence(msg);
           const reasonSuffix = noDiffReason ? ` no_diff_reason=${JSON.stringify(noDiffReason.slice(0, 220))}` : "";
 
           process.stderr.write(
@@ -1112,7 +1165,9 @@ async function main() {
         });
         const elapsedMs = Date.now() - startedAt;
         const status = collected?.turn?.status ?? null;
-        const summaryLine = summarize(collected?.agentMessageText ?? "");
+        const message = collected?.agentMessageText ?? "";
+        const summaryLine = summarize(message);
+        mergeOrchestrationEvidence(message);
         process.stderr.write(
           `mesh_fleet_join_fallback task=${result.taskId} from=${result.worker} elapsed_ms=${elapsedMs} status=${status ?? "null"} summary=${JSON.stringify(summaryLine)}\n`,
         );
@@ -1147,7 +1202,9 @@ async function main() {
       });
       const elapsedMs = Date.now() - startedAt;
       const status = collected?.turn?.status ?? null;
-      const summaryLine = summarize(collected?.agentMessageText ?? "");
+      const message = collected?.agentMessageText ?? "";
+      const summaryLine = summarize(message);
+      mergeOrchestrationEvidence(message);
       process.stderr.write(
         `mesh_fleet_integrated task=${result.taskId} from=${result.worker} elapsed_ms=${elapsedMs} status=${status ?? "null"} summary=${JSON.stringify(summaryLine)}\n`,
       );
@@ -1178,6 +1235,9 @@ async function main() {
       if (reservedTaskIds.has(c.id)) continue;
       if (queue.find((q) => q.id === c.id)) continue;
       queue.push(c);
+    }
+    if (workerCap < workers.length && queue.length > workerCap) {
+      orchestrationCompliance.capPressureObserved = true;
     }
 
     if (workerCap === 0 && inflight.size === 0) {
@@ -1211,7 +1271,9 @@ async function main() {
         });
         const elapsedMs = Date.now() - startedAt;
         const status = collected?.turn?.status ?? null;
-        const summaryLine = summarize(collected?.agentMessageText ?? "");
+        const message = collected?.agentMessageText ?? "";
+        const summaryLine = summarize(message);
+        mergeOrchestrationEvidence(message);
         process.stderr.write(
           `mesh_fleet_join_solo task=${task.id} elapsed_ms=${elapsedMs} status=${status ?? "null"} summary=${JSON.stringify(summaryLine)}\n`,
         );
@@ -1305,6 +1367,9 @@ async function main() {
 
   // Close instances.
   await Promise.allSettled([join.client.close(), ...workers.map((w) => w.client.close())]);
+  process.stderr.write(
+    `mesh_orchestration_compliance adapter=cas_fleet mesh_run_id=${meshRunId} lifecycle_evidence=${orchestrationCompliance.lifecycle ? "yes" : "no"} wait_all_ids_evidence=${orchestrationCompliance.waitAllIds ? "yes" : "no"} retry_ladder_evidence=${orchestrationCompliance.retryLadder ? "yes" : "no"} high_fanout_cas_evidence=${orchestrationCompliance.highFanoutCas || orchestrationCompliance.capPressureObserved ? "yes" : "no"} cap_pressure_observed=${orchestrationCompliance.capPressureObserved ? "yes" : "no"} retries_observed=${orchestrationCompliance.retriesObserved}\n`,
+  );
   process.stderr.write(`mesh_cas_fleet_autopilot_exit did_any_work=${didAnyWork ? "yes" : "no"}\n`);
   cleanupLock();
   return 0;

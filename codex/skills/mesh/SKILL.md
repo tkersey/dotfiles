@@ -210,6 +210,11 @@ Adapter selection order:
 3) Else pick the first adapter that satisfies all required verbs.
 4) Else stop and ask the user to switch to a worker-capable runtime.
 
+High-fanout and cap-pressure source of truth (required):
+- Treat high-fanout intent as explicit only when the current user turn asks for many workers/subagents/shards (for example "as many as possible").
+- Treat local cap pressure as observed only when runtime evidence is present in this run (for example `worker_cap < configured_workers`, ready queue depth exceeds one local wave, spawn failures, or `adapter_capacity`).
+- If both are true in the same run, escalate to `cas` on the next wave and report the exact trigger evidence in telemetry.
+
 Communication is orchestrator-mediated: each round's prompts include prior round artifacts.
 
 Worker failure taxonomy (required):
@@ -451,7 +456,7 @@ Otherwise (default, `integrate=true`):
 Persistence requirements (use `$st add-comment`):
 - Always append a `[mesh]` comment containing:
   - outcome: `completed|blocked`
-  - block reason code when blocked: `no_consensus|worker_turn_hang_before_output|no_diff_parsed|no_patch_returned|no_response|missing_validation|validation_failed|ambiguous_integration`
+  - block reason code when blocked: `no_consensus|worker_turn_hang_before_output|no_diff_parsed|no_patch_returned|no_response|wait_timeout_without_close|lifecycle_signal_mismatch|missing_validation|validation_failed|ambiguous_integration`
   - vote tally (agree/disagree counts) when applicable
   - validation commands executed and outcomes (no fabricated logs)
   - learning record id(s) appended (if available)
@@ -478,9 +483,10 @@ Return:
 - concurrency telemetry: requested vs achieved (`parallel_tasks`, roles per task); if below target, state why (scope overlap, adapter cap, spawn failures)
 - consensus telemetry (attempt count, vote tallies)
 - delegation telemetry: `delegation_did_not_run=true|false`; when true, include a reason code
-- failure telemetry: failure codes observed (`worker_turn_hang_before_output|no_diff_parsed|no_patch_returned|no_response`) and retry outcomes
+- failure telemetry: failure codes observed (`worker_turn_hang_before_output|no_diff_parsed|no_patch_returned|no_response|wait_timeout_without_close|lifecycle_signal_mismatch`) and retry outcomes
 - adapter telemetry (selected adapter, selection reason, requested workers, local cap, workers spawned/completed/retried/timed_out)
 - slot hygiene telemetry: workers `spawned` vs `closed` when close semantics exist; include any stragglers
+- orchestration evidence telemetry: `lifecycle_evidence`, `wait_all_ids_evidence`, `retry_ladder_evidence`, `high_fanout_cas_evidence`
 - validation commands and outcomes
 - `$st` mutations performed (ids + statuses)
 - learning capture evidence (records appended)
@@ -529,7 +535,8 @@ Reference commands:
 - `adapter_missing_capability`: switch to another compatible adapter; if none, ask the user to switch runtime.
   - If `headless=true`, do not ask; emit one actionable line with `headless_stop_reason=adapter_missing_capability` and `delegation_did_not_run=true`.
 - `adapter_capacity`: reduce active swarm to fallback 3-role mode and retry once.
-- `lifecycle_mismatch` (`spawned != closed`): run close sweep, report stragglers, and treat unresolved mismatch as a reliability bug.
+- `wait_timeout_without_close`: run one retry-ladder attempt with a smaller prompt, then close sweep; if unresolved, set `blocked` + comment `wait_timeout_without_close`.
+- `lifecycle_signal_mismatch` (`spawned != closed`): run close sweep, report stragglers, and treat unresolved mismatch as a reliability bug.
 - `missing_validation` in headless mode: set `blocked`, emit one actionable line, and include `headless_stop_reason=missing_validation`.
 
 ## Worker Prompt Templates

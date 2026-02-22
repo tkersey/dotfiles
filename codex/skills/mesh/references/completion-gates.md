@@ -13,6 +13,7 @@ Use this shape for each task before status moves to `completed`:
   "rubric_pass": true,
   "adjudication_resolved": true,
   "scope_lock_clean": true,
+  "lifecycle_consistency": true,
   "decision": "promote"
 }
 ```
@@ -29,10 +30,13 @@ Use this shape for each task before status moves to `completed`:
    - Any disagreement has a recorded final authority decision.
 4. `scope_lock_clean`
    - No overlapping exclusive scopes remained unresolved at integration time.
+5. `lifecycle_consistency`
+   - Delegation lifecycle is reconciled (`spawned`/`fanout` vs `wait` vs `closed`).
+   - No dangling worker slots or unresolved wait timeouts remain.
 
 ## Decision rule
 
-- Promote only when all four checks are `true`.
+- Promote only when all five checks are `true`.
 - Otherwise set `decision` to `rework` or `block`, attach failure code from `failure-taxonomy.md`, and persist evidence.
 
 ## Evidence contract
@@ -44,3 +48,4 @@ Record these fields in task comments:
 3. rubric score breakdown
 4. adjudication record ID (if applicable)
 5. selected failure code (or `none`)
+6. lifecycle evidence (`spawned`, `waited`, `closed`, plus mismatched ids/timeouts when present)

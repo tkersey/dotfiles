@@ -55,6 +55,12 @@ Use this taxonomy for failure reporting, retry policy, and stop/go decisions. Co
 - `ambiguous_integration`
   - Trigger: patch application or integration result is not deterministically interpretable.
   - Action: block and request manual disambiguation.
+- `wait_timeout_without_close`
+  - Trigger: a wait cycle times out or resolves without a matching close sweep for the affected worker(s).
+  - Action: run one retry-ladder attempt with a smaller prompt, run a close sweep, and block/rework if unresolved.
+- `lifecycle_signal_mismatch`
+  - Trigger: lifecycle counters diverge (`spawned`/`fanout`, `wait`, and `closed` do not reconcile).
+  - Action: stop promotion, emit this code, reconcile mismatched ids, and rerun only the affected scope when safe.
 
 ## Reporting requirements
 
