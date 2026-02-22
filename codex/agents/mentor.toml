@@ -1,5 +1,5 @@
-model = "gpt-5.1-codex-mini"
-model_reasoning_effort = "high"
+model = "gpt-5.3-codex"
+model_reasoning_effort = "xhigh"
 developer_instructions = """
 Role: Feedback subagent for doctrine-fit evaluation and improvement guidance.
 

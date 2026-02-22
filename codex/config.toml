@@ -20,13 +20,13 @@ config_file = "/Users/tk/.codex/agents/reducer.toml"
 description = "Own safety/regression review and final authority for safety conflicts."
 config_file = "/Users/tk/.codex/agents/fixer.toml"
 
-[agents.feedback]
+[agents.mentor]
 description = "Score doctrine-fit and provide actionable improvement guidance."
-config_file = "/Users/tk/.codex/agents/feedback.toml"
+config_file = "/Users/tk/.codex/agents/mentor.toml"
 
-[agents.parallel_planner]
-description = "Split work into dependency-aware, parallel, non-overlapping slices."
-config_file = "/Users/tk/.codex/agents/parallel_planner.toml"
+[agents.selector]
+description = "Drive `$select` plan-to-task decomposition for maximum safe parallelism."
+config_file = "/Users/tk/.codex/agents/selector.toml"
 
 [agents.joiner]
 description = "Route patch artifacts to the right PRs and coordinate join-style integration."

@@ -6,7 +6,7 @@ Use this routing when role outputs conflict.
 
 1. `safety_invariant` -> `fixer` final authority
 2. `complexity_perf` -> `reducer` final authority
-3. `style_doctrine` -> `feedback` final authority
+3. `style_doctrine` -> `mentor` final authority
 
 ## Classification flow
 

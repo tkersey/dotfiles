@@ -1,4 +1,4 @@
-# Team Protocol (Coder / Reducer / Fixer / Feedback)
+# Team Protocol (Coder / Reducer / Fixer / Mentor)
 
 This protocol defines role boundaries and handoff envelopes for the four-agent coding team.
 
@@ -7,7 +7,7 @@ This protocol defines role boundaries and handoff envelopes for the four-agent c
 - `coder`: authoring-only; produces candidate changes and proof signals.
 - `reducer`: simplifies incidental complexity while preserving invariants.
 - `fixer`: safety authority for invariant/regression concerns.
-- `feedback`: doctrine-fit scoring and actionable improvement guidance.
+- `mentor`: doctrine-fit scoring and actionable improvement guidance.
 
 No role should assume another role's final authority domain.
 
@@ -55,7 +55,7 @@ Coder handoff must include:
 3. known risk notes
 4. scope boundaries touched
 
-Reducer/fixer/feedback responses must include:
+Reducer/fixer/mentor responses must include:
 
 1. decision (`accept`, `rework_required`, or `blocked` semantics)
 2. concrete action items
