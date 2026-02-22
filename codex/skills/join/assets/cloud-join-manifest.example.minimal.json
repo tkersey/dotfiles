@@ -1,0 +1,18 @@
+{
+  "patch_id": "cj-example-minimal-001",
+  "producer": "join-operator",
+  "repo": "owner/repo",
+  "base_branch": "main",
+  "changed_paths": [
+    "src/service.py"
+  ],
+  "intent_summary": "Patch updates service routing behavior.",
+  "touched_entities": [
+    {
+      "entity": "process_order",
+      "file": "src/service.py",
+      "kind": "function"
+    }
+  ],
+  "risk_level": "low"
+}

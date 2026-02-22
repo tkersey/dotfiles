@@ -48,8 +48,8 @@ Use one mode only:
 ## Cloud Join operator (`$puff` + `seq -> join`)
 Use this when running Join as a cloud subagent loop:
 1. Launch with `$puff` `join-operator`.
-2. For each patch artifact, route by manifest-first scoring (including PR file-path hydration via `gh pr view <num> --json files`).
-3. If mapping/conflict handling is ambiguous, run `$seq` first to recover intent/context.
+2. For each patch artifact, route by weighted manifest-first scoring (include PR file-path hydration via `gh pr view <num> --json files`): `target_pr_hint` (+5.0), `touched_entities` overlap (+0..4.5), `changed_paths` overlap (+0..3.0), base-branch match (+1.5), and `issue_refs` (+0.5 each, max +1.0). Compute confidence as `min(0.99, (raw_score / 12.0) * risk_multiplier)` where `risk_multiplier={low:1.00, medium:0.95, high:0.80, critical:0.65}`.
+3. If routing gates fail, run `$seq` first to recover intent/context. Routing gates are: confidence below effective threshold (`threshold * risk_threshold_multiplier` where `risk_threshold_multiplier={low:0.95, medium:1.00, high:1.15, critical:1.25}`), top-two score margin `< 0.75`, no entity/path/hint signal, manifest entities exist but no entity match, or `risk_level` is `high|critical`.
 4. Then run `$join` for gh-only PR operations and CI/handoff behavior.
 
 Launch recipe:
@@ -63,6 +63,8 @@ Cloud auth note:
 ## Patch manifest contract
 Patch producers should emit a manifest that validates against:
 - `assets/cloud-join-manifest.schema.json`
+- `assets/cloud-join-manifest.example.minimal.json` (copy-ready minimal example)
+- `assets/cloud-join-manifest.example.full.json` (copy-ready full example)
 
 Required fields:
 - `patch_id`
@@ -75,6 +77,8 @@ Required fields:
 Optional routing hints:
 - `target_pr_hint`
 - `issue_refs`
+- `touched_entities` (array of objects with `entity`; optional `file` and `kind`)
+- `risk_level` (`low|medium|high|critical`)
 - `confidence`
 - `patch_file`
 
@@ -114,7 +118,11 @@ Smallest change that makes CI green using `gh` only:
 1. Read the failure from CI logs.
 2. Apply the minimal fix through GitHub APIs via `gh api` on the PR head branch.
 3. Re-run checks and re-evaluate.
-4. Limit attempts (default 3). On exhaustion, permission issues, or hard conflicts:
+4. Apply a hard regression floor before each new attempt:
+   - Snapshot required checks before and after each attempt (`gh pr checks <num> --required --json name,bucket`).
+   - If required checks get worse (for example: more failing checks, fewer passing checks, or a new blocked required check), stop immediately, apply `auto:hold`, and publish `hold_reason=regression_floor_worsened`.
+   - If two consecutive attempts show no reduction in failing required checks, stop, apply `auto:hold`, and publish `hold_reason=regression_floor_no_improvement`.
+5. Limit attempts (default 3). On exhaustion, permission issues, or hard conflicts:
    - Leave a summary comment.
    - Request changes as last resort.
    - Apply `auto:hold`.
@@ -137,6 +145,17 @@ Smallest change that makes CI green using `gh` only:
 ## Status reporting
 - Maintain a single PR comment/check-run named `Join Operator`.
 - Update in place (avoid comment spam).
+- Include machine-checkable fields in each status update:
+  - `raw_score`
+  - `score_breakdown` (`target_pr_hint`, `entity_overlap`, `entity_hits`, `path_overlap`, `base_branch_match`, `issue_refs`, `risk_multiplier`)
+  - `threshold_decision` (`confidence_threshold`, `effective_confidence_threshold`, `risk_threshold_multiplier`, `score_margin`, `needs_seq_reasons`)
+  - `conflict_kind` (`none|routing|merge|policy|permission|ci`)
+  - `complexity` (`low|medium|high`)
+  - `confidence` (`0.00-1.00`)
+  - `resolution_hint` (actionable next step; `none` only when resolved)
+  - `action_taken`
+  - `status` (`applied|hold|failed|no_match`)
+  - `hold_reason`
 
 ## Gh-only block comment template
 ```
@@ -174,6 +193,8 @@ Investigate the linked runs, unblock CI, then remove `auto:hold`.
 ## Assets
 - `assets/pr-template.md`
 - `assets/cloud-join-manifest.schema.json`
+- `assets/cloud-join-manifest.example.minimal.json`
+- `assets/cloud-join-manifest.example.full.json`
 - `assets/cloud-join-operator-prompt.md`
 - `scripts/build_cloud_join_prompt.py`
 - `scripts/manifest_router.py`

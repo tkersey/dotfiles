@@ -1,0 +1,32 @@
+{
+  "patch_id": "cj-example-full-001",
+  "producer": "join-operator",
+  "repo": "owner/repo",
+  "base_branch": "main",
+  "changed_paths": [
+    "src/service.py",
+    "src/router.py"
+  ],
+  "intent_summary": "Route entity-level patch to the most relevant PR with risk-aware confidence checks.",
+  "target_pr_hint": 42,
+  "issue_refs": [
+    "ABC-123",
+    "ABC-456"
+  ],
+  "touched_entities": [
+    {
+      "entity": "process_order",
+      "file": "src/service.py",
+      "kind": "function"
+    },
+    {
+      "entity": "JoinRouter",
+      "file": "src/router.py",
+      "kind": "class"
+    }
+  ],
+  "risk_level": "medium",
+  "confidence": 0.82,
+  "patch_file": "artifacts/join-routing.patch",
+  "created_at": "2026-02-22T00:00:00Z"
+}
