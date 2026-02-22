@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Use when requests involve Zig code or toolchain work: editing `.zig`, changing `build.zig`/`build.zig.zon`, running or fixing `zig build|test|run|fmt|fetch`, debugging compile/runtime/test failures, comptime/reflection/codegen, allocator ownership, SIMD (`std.simd`/`@Vector`), threads (`std.Thread`/`Thread.Pool`), cross-compilation, zero-copy parsing, or C interop (`@cImport`). Enforce correctness-first validation with tests, `std.testing.fuzz`, and allocation-failure checks."
+description: "Use when requests involve Zig code or toolchain work: editing `.zig`, changing `build.zig`/`build.zig.zon`, defining or fixing `zig build` steps (for example `zig build ci`), handling `.zig-cache`/CI wiring, running or fixing `zig build|test|run|fmt|fetch`, debugging compile/runtime/test failures, comptime/reflection/codegen, allocator ownership, SIMD (`std.simd`/`@Vector`), threads (`std.Thread`/`Thread.Pool`), cross-compilation, zero-copy parsing, C interop (`@cImport`), or Zig 0.15.2 pin/migration issues. Enforce correctness-first validation with tests, `std.testing.fuzz`, and allocation-failure checks."
 ---
 
 # Zig
@@ -8,6 +8,7 @@ description: "Use when requests involve Zig code or toolchain work: editing `.zi
 ## When to use
 - Editing `.zig` files.
 - Modifying `build.zig` or `build.zig.zon`.
+- Defining custom `zig build` steps (for example `zig build ci`) and CI/build-cache wiring.
 - Zig builds/tests, dependencies, cross-compilation.
 - Any Zig work requires fuzz testing (coverage-guided or fuzz-style).
 - Performance tuning: SIMD (`std.simd` / `@Vector`) and threading (`std.Thread.Pool`).
@@ -49,8 +50,11 @@ zig test src/main.zig
 zig run src/main.zig
 
 # Trigger audit (session-level proxy via seq)
-python3 codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions
-python3 codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions --since 2026-02-06T00:00:00Z
+uv run python codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions
+uv run python codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions --since 2026-02-06T00:00:00Z
+uv run python codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions --since 2026-02-06T00:00:00Z --strict-implicit --format json --output /tmp/zig-audit.json
+# Output includes split explicit-vs-implicit recall/precision plus filtered implicit-denominator counts.
+uv run python codex/skills/zig/scripts/test_zig_trigger_audit.py
 ```
 
 ## Workflow (correctness -> speed)
