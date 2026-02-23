@@ -1,6 +1,6 @@
 ---
 name: logophile
-description: "Editing mode for clarity and semantic density. Trigger cues/keywords: `$logophile`, tighten wording, rewrite for brevity, sharpen prompts/docs/specs/emails, compress verbose text, improve naming/title/label options, and keep intent/tone while making copy faster to scan."
+description: "Editing mode for precision copy edits and naming refinement. Trigger cues/keywords: `$logophile`; rewrite/reword/rephrase for brevity; rename or improve names/titles/labels/headings; clarify wording/language/text without changing meaning; shorten/compress verbose prompts/docs/specs/emails; keep intent/tone while reducing tokens. Avoid routing for operational asks like tighten scope/minimal diff, validation checklists, or read-only reviews unless wording edits are explicit."
 ---
 
 # Logophile
@@ -9,9 +9,12 @@ description: "Editing mode for clarity and semantic density. Trigger cues/keywor
 Maximize semantic density: fewer tokens, same meaning.
 
 ## Use when
-- User asks to tighten/clarify/compress.
-- Text is verbose/repetitive or slow to scan (<30s).
-- Names/titles/labels/headings feel weak.
+- User asks to rewrite/reword/rephrase, tighten wording/language, or compress for brevity.
+- Text is verbose/repetitive or slow to scan (<30s), and meaning must stay intact.
+- Names/titles/labels/headings need stronger wording or renaming.
+
+## Not for
+- Operational requests like tighten scope/minimal diff, concise findings-only responses, or validation-checklist workflows unless a wording/naming rewrite is explicitly requested.
 
 ## Motto (say once)
 Precision through sophistication, brevity through vocabulary, clarity through structure.
