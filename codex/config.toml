@@ -10,27 +10,27 @@ max_threads = 12
 
 [agents.coder]
 description = "Author code changes with TK doctrine and explicit proof signals."
-config_file = "/Users/tk/.codex/agents/coder.toml"
+config_file = "~/.codex/agents/coder.toml"
 
 [agents.reducer]
 description = "Reduce incidental complexity while preserving coder contract and invariants."
-config_file = "/Users/tk/.codex/agents/reducer.toml"
+config_file = "~/.codex/agents/reducer.toml"
 
 [agents.fixer]
 description = "Own safety/regression review and final authority for safety conflicts."
-config_file = "/Users/tk/.codex/agents/fixer.toml"
+config_file = "~/.codex/agents/fixer.toml"
 
 [agents.mentor]
 description = "Score doctrine-fit and provide actionable improvement guidance."
-config_file = "/Users/tk/.codex/agents/mentor.toml"
+config_file = "~/.codex/agents/mentor.toml"
 
 [agents.selector]
 description = "Drive `$select` plan-to-task decomposition for maximum safe parallelism."
-config_file = "/Users/tk/.codex/agents/selector.toml"
+config_file = "~/.codex/agents/selector.toml"
 
 [agents.joiner]
 description = "Route patch artifacts to the right PRs and coordinate join-style integration."
-config_file = "/Users/tk/.codex/agents/joiner.toml"
+config_file = "~/.codex/agents/joiner.toml"
 
 [features]
 unified_exec = true
