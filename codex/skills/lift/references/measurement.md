@@ -14,6 +14,7 @@
 
 - Track latency distributions, not just averages.
 - Report p50, p90, p95, p99, and max for latency.
+- Tail percentiles need enough samples: treat p99 from small-N runs as unstable; increase N or label as inconclusive.
 - Track throughput, CPU, memory, and GC pause time in parallel.
 - Measure steady state and cold start separately.
 
@@ -40,7 +41,8 @@
 
 - Run enough samples to separate signal from noise.
 - Prefer medians and percentiles over means for skewed distributions.
-- Report variance or confidence interval when variance is high.
+- Report variance or a confidence interval when variance is high.
+- Prefer confidence intervals (bootstrap if needed) for medians/percentiles; treat overlapping CIs as no proven change.
 - Reject wins smaller than the noise floor.
 
 ## 6. Microbenchmark pitfalls

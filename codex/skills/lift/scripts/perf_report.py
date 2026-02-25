@@ -20,6 +20,7 @@ System: {system}
 - Metric:
 - Target:
 - Percentile:
+- Workload command:
 - Dataset:
 - Environment:
 - Constraints:
@@ -66,7 +67,17 @@ System: {system}
 - Benchmark or budget:
 - Alert or threshold:
 
-## 9. Next Steps
+## 9. Validation
+
+- Correctness command(s) -> pass/fail:
+- Performance command(s) -> numbers:
+
+## 10. Lift Compliance
+
+- mode (measured|unmeasured):
+- proof artifacts (bench + profile paths):
+
+## 11. Next Steps
 
 - Follow-up experiments:
 - Rollout plan:
@@ -74,7 +85,9 @@ System: {system}
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Generate a performance report template.")
+    parser = argparse.ArgumentParser(
+        description="Generate a performance report template."
+    )
     parser.add_argument("--title", default="Untitled", help="Report title")
     parser.add_argument("--owner", default="", help="Owner or team")
     parser.add_argument("--system", default="", help="System or component")

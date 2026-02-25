@@ -16,6 +16,7 @@
 - Define the target metric and percentile.
 - Define the dataset and load shape.
 - Define the environment and runtime flags.
+- Decide mode: measured (numbers) vs unmeasured (plan); if unmeasured, write exact commands and label the report `UNMEASURED`.
 - Confirm correctness tests are passing.
 
 ## 2. Baseline checklist
@@ -23,6 +24,7 @@
 - Warm up to steady state.
 - Collect enough samples.
 - Report p50, p95, p99, and max.
+- Estimate the noise floor; reject changes smaller than noise or report as inconclusive.
 - Record environment and dataset.
 
 ## 3. CPU-bound checklist
@@ -65,3 +67,4 @@
 - Add a regression guard or budget.
 - Record before and after metrics.
 - Document trade-offs and risks.
+- Record `lift_compliance` (mode, workload, baseline/after, correctness, bottleneck evidence).

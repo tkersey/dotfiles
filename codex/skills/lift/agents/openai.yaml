@@ -1,0 +1,4 @@
+interface:
+  display_name: "lift"
+  short_description: "Measured perf optimization with proof"
+  default_prompt: "Use $lift to run a measured performance pass with a contract, baseline, profiling evidence, minimal patch, and before/after proof."

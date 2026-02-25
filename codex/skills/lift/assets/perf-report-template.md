@@ -9,6 +9,7 @@ System: <component>
 - Metric:
 - Target:
 - Percentile:
+- Workload command:
 - Dataset:
 - Environment:
 - Constraints:
@@ -54,6 +55,16 @@ System: <component>
 
 - Benchmark or budget:
 - Alert or threshold:
+
+## Validation
+
+- Correctness command(s) -> pass/fail:
+- Performance command(s) -> numbers:
+
+## Lift Compliance
+
+- mode (measured|unmeasured):
+- proof artifacts (bench + profile paths):
 
 ## Next Steps
 

@@ -1,6 +1,6 @@
 ---
 name: lift
-description: "Comprehensive performance optimization for latency, throughput, memory/GC, and tail behavior. Trigger cues/keywords: `$lift`, optimize, speed up, reduce latency, improve p95/p99, increase throughput/QPS, lower CPU or memory, cut allocations/GC pauses, profile hot paths, benchmark regressions, performance passes on JSONL/query-heavy code, and Zig-first CLI perf iterations where `bench_stats`/`perf_report` are proven first and Python/Node wrappers are kept in parity."
+description: "Comprehensive, measurement-driven performance optimization for latency, throughput, memory/GC, and tail behavior. Use when the user asks to optimize/speed up, reduce latency (p95/p99), increase throughput/QPS, lower CPU/memory/allocations/GC pauses, profile hot paths, or run a benchmarked perf pass (including JSONL/query-heavy code). Requires before/after measurement on a runnable workload (or an explicit `UNMEASURED` plan) plus a correctness gate. Zig-first CLI iteration where `bench_stats`/`perf_report` are proven first and wrappers are kept in parity."
 ---
 
 # Lift
@@ -15,14 +15,6 @@ Lift lives in Define -> Deliver:
 - Define: write a performance contract and pick a proof workload.
 - Deliver: measure baseline, profile, run tight experiments, then ship with a guard.
 
-## When to use
-
-- "optimize" / "speed up" / "slow"
-- "reduce latency" / "p95/p99" / "tail latency"
-- "increase throughput" / "QPS"
-- "high CPU" / "GC" / "allocations" / "memory blowups"
-- "contention" / "locks" / "hot path"
-
 ## Hard Rules
 
 - Measure before and after every optimization (numbers + environment + command).
@@ -31,14 +23,22 @@ Lift lives in Define -> Deliver:
 - Keep correctness and safety invariants intact.
 - Require a correctness signal before and after; never accept a perf win with failing correctness.
 - Do not change semantics without explicit user approval.
+- If you cannot run a proof workload, label the output `UNMEASURED` and provide exact benchmark/profiling commands; treat all optimization ideas as hypotheses.
 - Stop and ask before raising resource/cost ceilings (CPU cores, memory footprint, I/O bytes, external calls), unless explicitly requested.
 - Stop when ROI is negative or risk exceeds benefit.
 - For Lift-owned CLIs, iterate on Zig binaries first (`bench_stats`, `perf_report`) and prove that execution path before touching wrappers.
-- After any Zig CLI contract change, bring Python/Node wrappers along in the same pass by matching flags, outputs, and error behavior.
+- After any Zig CLI contract change, bring Python and any existing Node wrappers along in the same pass by matching flags, outputs, and error behavior.
 
 ## Default policy (non-interactive)
 
 Goal: stay autonomous without inventing SLOs.
+
+### Mode selection (measured vs unmeasured)
+
+If you can run a proof workload, operate in measured mode. Otherwise operate in unmeasured mode.
+
+- Measured: run baseline + variant on the same workload; include numbers, bottleneck evidence, and a correctness signal.
+- Unmeasured: start with `UNMEASURED: <why>`; do not claim wins; provide the exact commands you would run to produce baseline/after + profiling evidence.
 
 ### Contract derivation
 
@@ -101,6 +101,8 @@ Stop and ask only if you cannot find or create any runnable proof workload witho
 
 ## Deliverable format (chat)
 
+If unmeasured, prefix the response with `UNMEASURED: <reason>` and fill sections with a concrete measurement plan (no claimed deltas).
+
 Output exactly these sections (short, numbers-first):
 
 **Performance contract**
@@ -140,10 +142,13 @@ Output exactly these sections (short, numbers-first):
 **Residual risks / next steps**
 - <bullets>
 
+`lift_compliance: mode=<measured|unmeasured>; workload=<yes|no>; baseline=<yes|no>; after=<yes|no>; correctness=<yes|no>; bottleneck_evidence=<yes|no>`
+
 ## Core References (Load on Demand)
 
 - Read `references/playbook.md` for the master flow and optimization ladder.
 - Read `references/measurement.md` for benchmarking and statistical rigor.
+- Read `references/profiling-tools.md` for a profiler/tool matrix and evidence artifacts.
 - Read `references/algorithms-and-data-structures.md` for algorithmic levers.
 - Read `references/systems-and-architecture.md` for CPU, memory, and OS tactics.
 - Read `references/latency-throughput-tail.md` for queueing and tail behavior.
@@ -225,12 +230,16 @@ run_lift_tool perf-report --title "Perf pass" --owner "team" --system "service" 
 ```
 
 - Equivalent wrapper fallback commands remain valid:
-  - Node (when `scripts/*.mjs` wrappers exist):
-    - `node scripts/perf_report.mjs --title "Perf pass" --owner "team" --system "service" --output /tmp/perf-report.md`
-    - `node scripts/bench_stats.mjs --input samples.txt --unit ms`
-  - Python:
+  - Python (always present in this skill folder):
     - `uv run python scripts/perf_report.py --title "Perf pass" --owner "team" --system "service" --output /tmp/perf-report.md`
     - `uv run python scripts/bench_stats.py --input samples.txt --unit ms`
+  - Node (optional; only if you add `scripts/*.mjs` wrappers):
+    - `node scripts/perf_report.mjs --title "Perf pass" --owner "team" --system "service" --output /tmp/perf-report.md`
+    - `node scripts/bench_stats.mjs --input samples.txt --unit ms`
+
+- Zig proof snippet:
+  - `command -v bench_stats && bench_stats --help 2>&1 | grep -q bench_stats.zig`
+  - `command -v perf_report && perf_report --help 2>&1 | grep -q perf_report.zig`
 
 ## Assets
 
