@@ -1,9 +1,17 @@
 {
-  "refreshed_at": "2026-02-25T16:33:58+00:00",
+  "refreshed_at": "2026-02-25T20:15:20+00:00",
   "docs_url": "https://docs.deckset.com/markdownDocumentation.html",
   "gist_id": "69c36bcf40e23f7ef5c82a9c63983a13",
-  "docs_source": "network",
-  "gist_source": "network",
+  "docs_source": "cache_not_modified",
+  "gist_source": "cache_not_modified",
+  "cheatsheet_source": "generated",
   "used_cache_fallback": false,
+  "max_age_sec": 0,
+  "docs_http_status": 304,
+  "gist_http_status": 304,
+  "docs_etag": "\"7e67c0bc4d3d6fe92ba49484fa2c9225\"",
+  "docs_last_modified": "Tue, 17 Feb 2026 20:12:42 GMT",
+  "gist_etag": "W/\"5c1120614df37bdfe83961f57c933520e7196158e92f8904a30acaf0cfae26fa\"",
+  "gist_last_modified": "Wed, 18 Feb 2026 12:20:00 GMT",
   "errors": []
 }
