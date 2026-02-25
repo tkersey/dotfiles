@@ -125,10 +125,29 @@ function validateChatgptAuthTokensRefreshResult(result) {
   return { ok: true };
 }
 
+function validateSkillRequestApprovalResult(result) {
+  if (!isObject(result)) {
+    return {
+      ok: false,
+      message: "skill/requestApproval result must be an object",
+    };
+  }
+  if (result.decision !== "approve" && result.decision !== "decline") {
+    return {
+      ok: false,
+      message: "skill/requestApproval result.decision must be 'approve' or 'decline'",
+    };
+  }
+  return { ok: true };
+}
+
 function validateServerRequestResult(method, result) {
   if (method === "item/tool/call") return validateDynamicToolCallResult(result);
   if (method === "item/tool/requestUserInput") {
     return validateToolRequestUserInputResult(result);
+  }
+  if (method === "skill/requestApproval") {
+    return validateSkillRequestApprovalResult(result);
   }
   if (method === "account/chatgptAuthTokens/refresh") {
     return validateChatgptAuthTokensRefreshResult(result);
@@ -231,7 +250,7 @@ function deriveRoutingKeys(msg, requestMethodHint = null) {
 }
 
 function parseArgs(argv) {
-  /** @type {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[], execApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel", fileApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel"}} */
+  /** @type {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[], execApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel", fileApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel", skillApprovalDecision: "auto"|"approve"|"decline"}} */
   const opts = {
     codexPath: "codex",
     cwd: process.cwd(),
@@ -250,8 +269,10 @@ function parseArgs(argv) {
     // v2 approval auto-response policy.
     // - exec: "auto" preserves cas's default behavior (accept execpolicy amendments when proposed).
     // - file: "auto" is an alias for acceptForSession.
+    // - skill: "auto" is an alias for approve.
     execApprovalDecision: "auto",
     fileApprovalDecision: "auto",
+    skillApprovalDecision: "auto",
     // Optional initialize capability to suppress selected notifications.
     optOutNotificationMethods: [],
   };
@@ -324,9 +345,14 @@ function parseArgs(argv) {
       opts.fileApprovalDecision = /** @type {any} */ (takeValue());
       continue;
     }
+    if (arg === "--skill-approval") {
+      opts.skillApprovalDecision = /** @type {any} */ (takeValue());
+      continue;
+    }
     if (arg === "--read-only") {
       opts.execApprovalDecision = "decline";
       opts.fileApprovalDecision = "decline";
+      opts.skillApprovalDecision = "decline";
       continue;
     }
     if (arg === "--opt-out-notification-method") {
@@ -339,6 +365,7 @@ function parseArgs(argv) {
 
   const execDecisions = new Set(["auto", "accept", "acceptForSession", "decline", "cancel"]);
   const fileDecisions = new Set(["auto", "accept", "acceptForSession", "decline", "cancel"]);
+  const skillDecisions = new Set(["auto", "approve", "decline"]);
   if (!execDecisions.has(opts.execApprovalDecision)) {
     throw new Error(
       `--exec-approval must be one of: ${Array.from(execDecisions).join(", ")}`,
@@ -347,6 +374,11 @@ function parseArgs(argv) {
   if (!fileDecisions.has(opts.fileApprovalDecision)) {
     throw new Error(
       `--file-approval must be one of: ${Array.from(fileDecisions).join(", ")}`,
+    );
+  }
+  if (!skillDecisions.has(opts.skillApprovalDecision)) {
+    throw new Error(
+      `--skill-approval must be one of: ${Array.from(skillDecisions).join(", ")}`,
     );
   }
 
@@ -364,6 +396,7 @@ function helpText() {
     "                        [--server-request-timeout-ms 30000]",
     "                        [--exec-approval auto|accept|acceptForSession|decline|cancel]",
     "                        [--file-approval auto|accept|acceptForSession|decline|cancel]",
+    "                        [--skill-approval auto|approve|decline]",
     "                        [--read-only]",
     "                        [--opt-out-notification-method METHOD]",
     "",
@@ -417,7 +450,7 @@ async function writeStateFile(stateFile, state) {
 }
 
 class CasProxy {
-  /** @param {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[], execApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel", fileApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel"}} opts */
+  /** @param {{codexPath: string, cwd: string, stateFile: string, clientName: string, clientTitle: string, clientVersion: string, heartbeatMs: number, maxOutQueue: number, killTimeoutMs: number, serverRequestTimeoutMs: number, optOutNotificationMethods: string[], execApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel", fileApprovalDecision: "auto"|"accept"|"acceptForSession"|"decline"|"cancel", skillApprovalDecision: "auto"|"approve"|"decline"}} opts */
   constructor(opts) {
     this.opts = opts;
     this.cwd = opts.cwd;
@@ -1272,6 +1305,19 @@ class CasProxy {
         this.opts.fileApprovalDecision === "auto"
           ? "acceptForSession"
           : this.opts.fileApprovalDecision;
+      this.sendToServer(
+        { id, result: { decision } },
+        { reason: "autoApproval", method },
+      );
+      this.stats.autoApprovals += 1;
+      return;
+    }
+
+    if (method === "skill/requestApproval") {
+      const decision =
+        this.opts.skillApprovalDecision === "auto"
+          ? "approve"
+          : this.opts.skillApprovalDecision;
       this.sendToServer(
         { id, result: { decision } },
         { reason: "autoApproval", method },

@@ -189,6 +189,12 @@ async function main() {
       return;
     }
 
+    if (method === "skill/requestApproval") {
+      // Example policy: approve skill invocations.
+      client.respond(ev.id, { result: { decision: "approve" } });
+      return;
+    }
+
     client.respondError(ev.id, `Unhandled server request: ${method}`, {
       code: -32601,
       data: { method },

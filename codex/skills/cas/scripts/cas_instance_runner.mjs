@@ -29,7 +29,8 @@ function usage() {
     "  --server-request-timeout-ms N    Forwarded server-request timeout for proxy.",
     "  --exec-approval VALUE            Exec approval: auto|accept|acceptForSession|decline|cancel.",
     "  --file-approval VALUE            File approval: auto|accept|acceptForSession|decline|cancel.",
-    "  --read-only                      Decline exec + file approvals (safe for scout instances).",
+    "  --skill-approval VALUE           Skill approval: auto|approve|decline.",
+    "  --read-only                      Decline exec + file + skill approvals (safe for scout instances).",
     "  --opt-out-notification-method M  Suppress a notification method (repeatable).",
     "  --client-prefix NAME             Prefix for instance client names (default: cas-instance).",
     "  --sample N                       Number of sample results in output (default: 3).",
@@ -55,6 +56,7 @@ function parseArgs(argv) {
     serverRequestTimeoutMs: null,
     execApproval: null,
     fileApproval: null,
+    skillApproval: null,
     readOnly: false,
     optOutNotificationMethods: [],
     clientPrefix: "cas-instance",
@@ -115,6 +117,10 @@ function parseArgs(argv) {
       opts.fileApproval = take();
       continue;
     }
+    if (a === "--skill-approval") {
+      opts.skillApproval = take();
+      continue;
+    }
     if (a === "--read-only") {
       opts.readOnly = true;
       continue;
@@ -157,6 +163,12 @@ function parseArgs(argv) {
   }
   if (opts.fileApproval !== null && (typeof opts.fileApproval !== "string" || !opts.fileApproval)) {
     throw new Error("--file-approval must be a non-empty string");
+  }
+  if (
+    opts.skillApproval !== null &&
+    (typeof opts.skillApproval !== "string" || !opts.skillApproval)
+  ) {
+    throw new Error("--skill-approval must be a non-empty string");
   }
   if (!Number.isInteger(opts.sample) || opts.sample < 0) {
     throw new Error("--sample must be >= 0");
@@ -275,6 +287,7 @@ async function main() {
         opts.serverRequestTimeoutMs === null ? undefined : opts.serverRequestTimeoutMs,
       execApprovalDecision: opts.execApproval === null ? undefined : opts.execApproval,
       fileApprovalDecision: opts.fileApproval === null ? undefined : opts.fileApproval,
+      skillApprovalDecision: opts.skillApproval === null ? undefined : opts.skillApproval,
       readOnly: opts.readOnly,
       optOutNotificationMethods: opts.optOutNotificationMethods,
     });

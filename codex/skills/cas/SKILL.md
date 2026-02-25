@@ -115,7 +115,8 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
    - Optional: control v2 approval auto-responses (useful for safe multi-instance workers):
      - `--exec-approval auto|accept|acceptForSession|decline|cancel`
      - `--file-approval auto|accept|acceptForSession|decline|cancel`
-     - `--read-only` (shorthand for declining both exec + file approvals)
+     - `--skill-approval auto|approve|decline`
+     - `--read-only` (shorthand for declining exec + file + skill approvals)
    - Optional: pass one or more `--opt-out-notification-method METHOD` flags to suppress known noisy notifications for the connection.
    - Wait for a `cas/ready` event.
 
@@ -136,7 +137,7 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
    - Respond with `cas/respond` using the same `id`.
    - If your response is malformed for a typed v2 request, cas sends a deterministic JSON-RPC error upstream instead of hanging.
    - If you do not reply in time, cas emits `cas/serverRequestTimeout` and fails that request upstream.
-   - Approvals are auto-accepted (including best-effort execpolicy amendments) and will not block you.
+   - Approvals are auto-accepted by default (including best-effort execpolicy amendments and skill approvals) and will not block you unless you override approval policy flags.
 
 5. Mine sessions (optional).
    - Use `thread/list` (cursor pagination + optional `modelProviders`/`sourceKinds`/`archived`/`cwd` filters) and `thread/read` (optionally `includeTurns:true`) to build your own index.
@@ -156,6 +157,7 @@ If you opt into dynamic tools, register them on `thread/start` via `dynamicTools
 When the server emits `cas/serverRequest`:
 - For `method: "item/tool/call"`, run the tool in your orchestrator and reply with `cas/respond`.
 - For `method: "item/tool/requestUserInput"` (experimental), collect answers and return `{ answers: ... }`.
+- For `method: "skill/requestApproval"` (experimental), return `{ decision: "approve" }` or `{ decision: "decline" }`.
 - For `method: "account/chatgptAuthTokens/refresh"`, return refreshed tokens or a deterministic error.
 
 ## Proxy I/O Contract (stdin/stdout)

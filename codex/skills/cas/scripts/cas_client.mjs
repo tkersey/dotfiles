@@ -43,6 +43,7 @@ export class CasClient extends EventEmitter {
    *   optOutNotificationMethods?: string[],
    *   execApprovalDecision?: string,
    *   fileApprovalDecision?: string,
+   *   skillApprovalDecision?: string,
    *   readOnly?: boolean,
    * }} [opts]
    */
@@ -62,6 +63,7 @@ export class CasClient extends EventEmitter {
       optOutNotificationMethods: opts.optOutNotificationMethods,
       execApprovalDecision: opts.execApprovalDecision,
       fileApprovalDecision: opts.fileApprovalDecision,
+      skillApprovalDecision: opts.skillApprovalDecision,
       readOnly: opts.readOnly,
     };
 
@@ -107,6 +109,9 @@ export class CasClient extends EventEmitter {
     }
     if (this.opts.fileApprovalDecision) {
       args.push("--file-approval", String(this.opts.fileApprovalDecision));
+    }
+    if (this.opts.skillApprovalDecision) {
+      args.push("--skill-approval", String(this.opts.skillApprovalDecision));
     }
     if (Array.isArray(this.opts.optOutNotificationMethods)) {
       for (const method of this.opts.optOutNotificationMethods) {
