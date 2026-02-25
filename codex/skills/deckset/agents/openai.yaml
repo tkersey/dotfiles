@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deckset"
+  short_description: "Convert conversations into Deckset markdown decks."
+  default_prompt: "Use $deckset to turn this conversation into a Deckset markdown presentation with presenter notes."
