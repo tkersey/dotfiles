@@ -1,6 +1,6 @@
 ---
 name: st
-description: Manage persistent task plans in repo-committed JSONL (`.step/st-plan.jsonl`) so state survives turns/sessions and stays reviewable in git. Use when users ask to "use $st", "resume the plan", "export/import plan state", "checkpoint milestones", "track dependencies/blocked work", "show ready next tasks", "keep shared TODO status on disk", "compare and contrast $st vs plan files", or when work has 3+ dependent steps and transient `update_plan` is not durable enough.
+description: Manage persistent task plans in repo-committed JSONL (`.step/st-plan.jsonl`) so state survives turns/sessions and stays reviewable in git. Use when users ask to "use $st", "resume the plan", "export/import plan state", "checkpoint milestones", "track dependencies/blocked work", "show ready next tasks", "keep shared TODO status on disk", "map a `$select` plan into durable execution state", "prove `$st` works for implementation tracking", or diagnose/repair `st-plan.jsonl` concerns (for example append-only vs mutable semantics, lock-file gitignore policy, or seq/checkpoint integrity).
 ---
 
 # st
@@ -18,12 +18,14 @@ Plan items use typed dependency edges (`deps: [{id,type}]`) plus `notes` and `co
 
 1. Resolve repository root and plan path.
 2. If the run has 3+ dependent steps, likely spans turns, or already uses `update_plan`, adopt `$st` as the durable source of truth before editing.
-3. Initialize plan storage with `scripts/st_plan.py init` if missing.
-4. Rehydrate current state with `scripts/st_plan.py show` (or focused views via `ready` / `blocked`).
-5. Apply plan mutations through script subcommands (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`); do not hand-edit existing JSONL lines.
-6. After each mutation command, consume the emitted `update_plan: {...}` payload and publish `update_plan` in the same turn.
-7. Use `emit-update-plan` to regenerate the payload from durable state when needed.
-8. Export/import snapshots when cross-session handoff is needed.
+3. If the plan came from `$select`, map selected units into stable `$st` IDs and dependency edges before execution starts.
+4. Initialize plan storage with `scripts/st_plan.py init` if missing.
+5. Rehydrate current state with `scripts/st_plan.py show` (or focused views via `ready` / `blocked`).
+6. Run `doctor` when ingesting an existing plan file or when integrity is in doubt.
+7. Apply plan mutations through script subcommands (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`); do not hand-edit existing JSONL lines.
+8. After each mutation command, consume the emitted `update_plan: {...}` payload and publish `update_plan` in the same turn.
+9. Use `emit-update-plan` to regenerate the payload from durable state when needed.
+10. Export/import snapshots when cross-session handoff is needed.
 
 ## Commands
 
@@ -47,6 +49,8 @@ uv run "$ST_PLAN" add-comment --file .step/st-plan.jsonl --id st-002 --text "Pau
 uv run "$ST_PLAN" ready --file .step/st-plan.jsonl --format markdown
 uv run "$ST_PLAN" blocked --file .step/st-plan.jsonl --format json
 uv run "$ST_PLAN" show --file .step/st-plan.jsonl --format markdown
+uv run "$ST_PLAN" doctor --file .step/st-plan.jsonl
+uv run "$ST_PLAN" doctor --file .step/st-plan.jsonl --repair-seq
 uv run "$ST_PLAN" emit-update-plan --file .step/st-plan.jsonl
 uv run "$ST_PLAN" export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
 uv run "$ST_PLAN" import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
@@ -68,7 +72,8 @@ uv run "$ST_PLAN" import-plan --file .step/st-plan.jsonl --input .step/st-plan.s
   - `done`, `closed` -> `completed`
 - Mutation commands (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`) automatically print an `update_plan:` payload line after durable write.
 - Lock sidecar policy: mutating commands require the lock file (`<plan-file>.lock`, for example `.step/st-plan.jsonl.lock`) to be gitignored when inside a git repo; add it to `.gitignore` before first mutation.
-- Mutations rewrite the JSONL file atomically (`temp` + `fsync` + `os.replace`) and compact to a canonical `replace` event plus checkpoint snapshot at the current seq watermark.
+- Storage model: not append-only growth. Mutations rewrite the JSONL file atomically (`temp` + `fsync` + `os.replace`) and compact to a canonical `replace` event plus checkpoint snapshot at the current seq watermark.
+- `doctor` is the first-line integrity check for seq/checkpoint contract issues; use `doctor --repair-seq` only when repair is explicitly needed.
 - `import-plan --replace` atomically resets state in the same in-place write model.
 - Prefer concise, stable item IDs (`st-001`, `st-002`, ...).
 - Prefer `show --format markdown` for execution: it groups steps into `Ready`, `Waiting on Dependencies`, `In Progress`, and terminal/manual buckets.
@@ -103,6 +108,7 @@ uv run "$ST_PLAN" import-plan --file .step/st-plan.jsonl --input .step/st-plan.s
 
 - Run lightweight CLI sanity checks:
   - `uv run "$ST_PLAN" --help`
+  - `uv run "$ST_PLAN" doctor --file .step/st-plan.jsonl`
   - `uv run "$ST_PLAN" emit-update-plan --file .step/st-plan.jsonl`
   - `uv run "$ST_PLAN" show --file .step/st-plan.jsonl --format json`
 
