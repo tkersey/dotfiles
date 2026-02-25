@@ -70,7 +70,7 @@ Template compliance (order is mandatory):
 
 **Creative Frame**
 - Reframe: <Inversion / Analogy transfer / Constraint extremes / First principles>
-- Technique: <one named technique (e.g., Lotus blossom / SCAMPER / TRIZ)>
+- Technique: <one named technique (selected via creative-problem-solver picker; include one-line why)>
 - Representation shift: <one sentence (or “N/A: no shift needed”)>
 
 **Why This Solution**
@@ -122,7 +122,7 @@ TK is not a style; it’s a reduction process:
 2. **Read for the cut**: locate where the meaning lives; name the seams.
 3. **State the contract**: make “working” testable in principle.
 4. **Name invariants**: tighten validity until the code has fewer degrees of freedom.
-5. **Reframe + run a technique (Lotus blossom default, internal)**: generate a 5-tier portfolio (proof signals + escape hatches).
+5. **Reframe + run a technique (selected via creative-problem-solver, internal)**: generate a 5-tier portfolio (proof signals + escape hatches).
 6. **Select the most ambitious safe tier**: bias toward Transformative/Moonshot, stay pragmatic.
 7. **Cut the incision**: minimal diff at the stable boundary.
 8. **Close the loop**: run the proof signal.
@@ -218,11 +218,13 @@ After you’ve named the stable boundary/seams and written the contract/invarian
 
 Creative frame (required):
 - Reframe used: Inversion / Analogy transfer / Constraint extremes / First principles.
-- Technique used: pick one technique (see references/creative-techniques.md) to generate non-obvious options.
+- Technique used: pick 1 technique using the `$creative-problem-solver` skill’s **Technique selection** section; consult the matching technique reference in that skill.
+  - If the technique is Lotus Blossom, apply the TK-specific petals from this skill’s **Creative Techniques** reference.
 - Representation shift: one sentence describing the model/representation change (or “N/A: no shift needed”) that makes the choice feel forced.
-  - If still unclear: pick a different reframe + technique, then regenerate the portfolio.
+  - If no Aha (no meaningful representation shift), pick 1 different technique from a different picker row (max 2) and regenerate.
 
-Tier details, technique picker, and Lotus blossom expansion: references/creative-techniques.md.
+Technique picker + index: use the `$creative-problem-solver` skill’s **Technique selection** and **Full technique index (grouped)** sections.
+Lotus Blossom (TK adaptation) + tier mapping: this skill’s **Creative Techniques** reference.
 Tier names (short): Quick Win, Strategic Play, Advantage Play, Transformative Move, Moonshot.
 
 ## Algebra (quietly)
@@ -283,7 +285,7 @@ Advice mode (no code changes): output exactly:
 
 **Creative Frame**
 - Reframe: <Inversion / Analogy transfer / Constraint extremes / First principles>
-- Technique: <one named technique (e.g., Lotus blossom / SCAMPER / TRIZ)>
+- Technique: <one named technique (selected via creative-problem-solver picker; include one-line why)>
 - Representation shift: <one sentence (or “N/A: no shift needed”)>
 
 **Why This Solution**
@@ -304,7 +306,7 @@ Implementation mode (code changes): output exactly:
 
 **Creative Frame**
 - Reframe: <Inversion / Analogy transfer / Constraint extremes / First principles>
-- Technique: <one named technique (e.g., Lotus blossom / SCAMPER / TRIZ)>
+- Technique: <one named technique (selected via creative-problem-solver picker; include one-line why)>
 - Representation shift: <one sentence (or “N/A: no shift needed”)>
 
 **Why This Solution**

@@ -32,7 +32,7 @@ Exemplars below show the expected Incision summary format (no diffs).
 
 **Creative Frame**
 - Reframe: First principles
-- Technique: Lotus blossom
+- Technique: Lotus Blossom (why: structured combinations across seams)
 - Representation shift: Replace `string` email with refined `Email` at the boundary.
 
 **Why This Solution**
@@ -64,7 +64,7 @@ Exemplars below show the expected Incision summary format (no diffs).
 
 **Creative Frame**
 - Reframe: Inversion
-- Technique: SCAMPER
+- Technique: SCAMPER (why: mutate the current approach without redesigning)
 - Representation shift: Replace implicit global time with an explicit dependency.
 
 **Why This Solution**
@@ -95,7 +95,7 @@ Exemplars below show the expected Incision summary format (no diffs).
 
 **Creative Frame**
 - Reframe: Constraint extremes
-- Technique: Morphological analysis
+- Technique: Morphological Analysis (why: explore combinations across canonicalization dimensions)
 - Representation shift: Represent tags as a canonical list (normal form), not "whatever the caller sends".
 
 **Why This Solution**
@@ -124,7 +124,7 @@ Exemplars below show the expected Incision summary format (no diffs).
 
 **Creative Frame**
 - Reframe: First principles
-- Technique: TRIZ
+- Technique: TRIZ (why: resolve a contradiction cleanly)
 - Representation shift: Treat money as integer cents end-to-end; choose rounding only at the parse/boundary.
 
 **Why This Solution**
@@ -150,7 +150,7 @@ Exemplars below show the expected Incision summary format (no diffs).
 
 **Creative Frame**
 - Reframe: Analogy transfer
-- Technique: TRIZ
+- Technique: TRIZ (why: keep legacy API stable while strengthening invariants)
 - Representation shift: Keep the old API stable; migrate by commuting adapters.
 
 **Why This Solution**

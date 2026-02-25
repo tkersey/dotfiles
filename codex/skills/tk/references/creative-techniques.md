@@ -1,26 +1,12 @@
 # Creative Techniques (TK)
 
-## Technique picker (default: Lotus blossom)
-- Need breadth across seams (subproblems → options): Lotus blossom.
-- Need to mutate an existing approach: SCAMPER.
-- Need lots of ideas fast: Brainwriting 6-3-5 (solo ok).
-- Need structured combinations: Morphological analysis.
-- Need to resolve contradictions: TRIZ.
-- Need parallel perspectives: Six Thinking Hats.
-- Need to harden against failure: Reverse brainstorming.
-- Need a fresh spark: Random stimulus or provocation.
+## Technique selection (canonical: creative-problem-solver)
+- Pick 1 technique using the `$creative-problem-solver` skill’s **Technique selection** section.
+- Then consult the matching technique reference in that skill.
+- If no Aha (no meaningful representation shift), pick 1 more technique from a different picker row (max 2).
+- This file exists for TK-specific Lotus Blossom petals + tier mapping.
 
-## Technique library (short)
-- Lotus blossom: expand outward from a core problem into 8 TK-native “petals,” then expand each petal to force breadth and populate the portfolio.
-- SCAMPER: Substitute/Combine/Adapt/Modify/Put to use/Eliminate/Reverse.
-- Brainwriting 6-3-5: timed rounds to generate + iterate quietly.
-- Morphological analysis: enumerate combinations across dimensions.
-- TRIZ: state the contradiction, then apply separation principles.
-- Six Thinking Hats: facts → feelings → risks → benefits → ideas → process.
-- Reverse brainstorming: “how do we make it worse?” then invert.
-- Random stimulus / provocation: force a lever from an unrelated prompt.
-
-## Lotus blossom (TK use)
+## Lotus Blossom (TK adaptation)
 - Center: stable boundary + contract (one line).
 - Petals: list 8 TK-native levers/subproblems:
   - Stable boundary / seam (push effects + enforcement to the boundary).
