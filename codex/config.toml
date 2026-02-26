@@ -6,7 +6,7 @@ personality = "pragmatic"
 
 [agents]
 max_threads = 12
-# max_depth = 2
+max_depth = 3
 
 [agents.coder]
 description = "Author code changes with TK doctrine and explicit proof signals."
@@ -38,12 +38,14 @@ steer = true
 collaboration_modes = true
 apps = true
 personality = true
-memory_tool = true
+memories = true
 sqlite = true
 responses_websockets_v2 = true
 multi_agent = true
 prevent_idle_sleep = true
+voice_transcription = true
 
 [tui]
 experimental_mode = "execute"
 status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning"]
+theme = "coldark-dark"
