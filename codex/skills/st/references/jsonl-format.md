@@ -58,7 +58,7 @@
 - Canonical rewrite shape is two records: one `event` (`op=replace`) and one `checkpoint`, both at the new watermark
 - Checkpoint seq rule: each checkpoint `seq` must equal the watermark immediately before that checkpoint record
 - Replay contract: latest checkpoint + records with `seq` greater than checkpoint `seq` must equal full replay
-- Repair path: `CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"; CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"; ST_PLAN="$CODEX_SKILLS_HOME/skills/st/scripts/st_plan.py"; [ -f "$ST_PLAN" ] || ST_PLAN="$CLAUDE_SKILLS_HOME/skills/st/scripts/st_plan.py"; uv run "$ST_PLAN" doctor --file .step/st-plan.jsonl --repair-seq` rewrites a canonical replace+checkpoint stream at the current watermark
+- Repair path: `st doctor --file .step/st-plan.jsonl --repair-seq` rewrites a canonical replace+checkpoint stream at the current watermark
 
 ## Lock sidecar policy
 
