@@ -1,648 +1,133 @@
 ---
 name: mesh
-description: >
-  Swarm coordinator activated only by explicit `$mesh` invocation. Trigger cues/keywords:
-  orchestrate subagents/workers, execute ready `$st` slices/tasks, run
-  propose/critique/synthesize/vote cycles, coordinate concurrent workers, require consensus +
-  validation before completion, and persist learnings via `$learnings`.
+description: Execute plan-driven orchestration with CSV waves, strict coder->fixer->integrator unit gates, and budget-aware parallelism. Use for `$mesh`, parallel step execution from `update_plan`, `spawn_agents_on_csv` wave runs, CAS budget clamping, and event-only orchestration ledgers.
 ---
 
-# Mesh (Swarm Coordination for $st Plans)
-
-You are an orchestrator for subagents. Optimize for solution quality through structured peer critique,
-not raw throughput.
-
-## Delegation Policy (Required)
-
-Task implementation MUST be done by spawned subagents ("workers"). The orchestrator MUST NOT
-implement task code directly unless the user explicitly authorizes it.
-
-Orchestrator-owned actions:
-- resolve runtime + plan adapters
-- read/validate active `$st` task state
-- schedule swarm cycles for runnable tasks
-- mediate communication by passing artifacts between rounds
-- integrate accepted output (apply patch), run validation, and persist state
-- write durable learning artifacts
-
-Hard rule for safety: workers should NOT apply patches directly. Workers produce diffs as text;
-the orchestrator applies them after consensus.
-
-If worker tooling is unavailable, STOP and ask for one unblock decision.
-Recommended default: switch to a worker-capable runtime/session and retry.
-
-## Branch & Merge Safety (Required)
-
-- Do NOT merge to `main`/`master` (or protected branches) unless explicitly instructed.
-- Do NOT push unless explicitly instructed.
-- If asked to ship/land, open a PR (or provide steps) but do not merge unless explicitly told to merge.
-
-## Operating Contract (Required)
-
-Operate ONLY when the user explicitly invokes `$mesh`.
-
-This skill has one mode: swarm execution over persisted `$st` plan state.
-
-### Invocation (Required)
-
-The user message MUST contain the literal token `$mesh`.
-
-Supported forms (space-separated `key=value` args):
-- `$mesh`
-- `$mesh ids=st-003,st-007`
-- `$mesh plan_file=.step/st-plan.jsonl`
-- `$mesh max_tasks=2 parallel_tasks=1`
-- `$mesh max_tasks=4 parallel_tasks=2`
-- `$mesh max_tasks=auto parallel_tasks=auto`
-- `$mesh adapter=auto max_tasks=auto parallel_tasks=auto`
-- `$mesh adapter=auto max_tasks=auto parallel_tasks=auto headless=true`
-- `$mesh ids=st-010 integrate=false`
-- `$mesh ids=st-010 integrate=false strict_output=true`
-
-Continual runner (turnkey):
-- Run continual draining in a terminal:
-  - `node codex/skills/mesh/scripts/mesh_cas_autopilot.mjs --cwd <repo> [--budget-mode aware|all_out]`
-- Run continual draining with scale-out workers (1 join + N workers):
-  - `node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd <repo> --workers 3 [--budget-mode aware|all_out]`
-- Run continually in the background (launchd):
-  - `codex/skills/mesh/scripts/install_mesh_cas_autopilot_launch_agent.sh --cwd <repo>`
-  - To stop: `codex/skills/mesh/scripts/uninstall_mesh_cas_autopilot_launch_agent.sh`
-- Run scale-out mode in the background (launchd):
-  - `codex/skills/mesh/scripts/install_mesh_cas_fleet_autopilot_launch_agent.sh --cwd <repo> --workers 3`
-  - To stop: `codex/skills/mesh/scripts/uninstall_mesh_cas_fleet_autopilot_launch_agent.sh`
-
-Do NOT treat generic acknowledgements (`go`, `yep`, `ship it`) as invocation.
-
-Invocation intent gate (required):
-- If the user includes `$mesh` while asking to analyze/refine this skill itself (for example "review `$mesh`",
-  "update `mesh/SKILL.md`", "use `$seq` to improve `$mesh`"), do NOT start swarm execution.
-- In that case, perform the requested analysis/edit workflow and report
-  `mesh_execution_skipped_reason=meta_request`.
-- A pasted `<skill>` block alone is not execution intent.
-
-## Defaults (Unless Overridden)
-
-- `max_tasks`: 1 (attempt at most one task completion per run)
-- `parallel_tasks`: 1 (run only one swarm at a time)
-- `integrate`: true (apply patch + run validation + mutate `$st` after consensus)
-- `strict_output`: false (when true, parser-facing output contract is enforced for `integrate=false`)
-- `swarm_roles`: 5 (`proposer`, `critic_a`, `critic_b`, `skeptic`, `synthesizer`)
-- `fallback_swarm_roles`: 3 (`proposer`, `skeptic`, `synthesizer`) when capacity is insufficient or repeated
-  `no_response` occurs
-- `consensus_threshold`: 4/5 agree (5-role) or 3/3 agree (fallback)
-- `consensus_retries`: 2
-
-Notes:
-- `max_tasks` is the total tasks attempted in one run; `parallel_tasks` is the max number of tasks in-flight at once.
-- `parallel_tasks` has no fixed maximum; effective concurrency is bounded by adapter capacity, disjoint `scope` locks,
-  `$st --allow-multiple-in-progress`, and the runtime thread cap (e.g. `[agents].max_threads`).
-- Rule of thumb (default 5-role swarm): budget 5 worker slots per in-flight task (vote stage), so
-  `parallel_tasks <= floor(max_threads / 5)`; leave 1-2 slots for retries/follow-ups.
-
-### Parallelism cookbook (turnkey)
-
-Definitions:
-- `roles_per_task`: 5 (default) or 3 (fallback)
-- `reserve_slots`: 2 (retries, follow-ups, close sweeps)
-
-Compute:
-- `raw_parallel_tasks_target = floor((max_threads - reserve_slots) / roles_per_task)`
-- `parallel_tasks_target = max(1, raw_parallel_tasks_target)`
-
-Examples:
-- `max_threads=12`, 5-role => `parallel_tasks_target=floor((12-2)/5)=2`
-- `max_threads=12`, 3-role => `parallel_tasks_target=floor((12-2)/3)=3`
-
-If you use `parallel_tasks=auto`, `$mesh` should pick `parallel_tasks_target` and explain the math.
-If clamping was required (`raw_parallel_tasks_target < 1`), report the clamp and run fallback 3-role swarms.
-
-If you use `max_tasks=auto`, `$mesh` should keep draining runnable tasks until no work is ready (or a fixed time budget is reached; default `45m` when the runner does not provide one).
-
-`consensus_retries` semantics (required):
-- one initial `critique -> synthesis -> vote` cycle is always attempted
-- `consensus_retries` counts additional cycles after the initial one
-- default `consensus_retries=2` means at most 3 total vote cycles per task
-
-### Headless mode (non-interactive)
-
-If `headless=true`:
-- Do not ask the user questions.
-- Headless precedence is absolute: if any branch says "ask user", this mode overrides that branch.
-- If global prerequisites are missing (plan file, adapter capability), exit cleanly with one actionable line and include `headless_stop_reason=<code>`.
-- Supported `headless_stop_reason` codes: `plan_missing|ambiguous_plan_file|adapter_missing_capability|missing_validation`.
-- If a task-local prerequisite is missing (for example `missing_validation`), block that task and continue other runnable tasks; if none remain, exit cleanly.
-- If worker delegation never started, report `delegation_did_not_run=true` with a one-line reason.
-
-Budget governor (runner-side):
-- `--budget-mode aware` may clamp parallelism using `account/rateLimits/read` to pace weekly allowance.
-- `--budget-mode all_out` ignores pacing and runs at full configured concurrency.
-
-## Coordination Fabric (Optional)
-
-By default, `$mesh` is hub-and-spoke: workers only talk to the orchestrator.
-If you want agent-to-agent coordination (especially across multiple `$cas` instances), add a
-coordination substrate with:
-
-- a shared task list (recommended: `$st`)
-- a durable mailbox (threaded messages)
-- advisory file leases (scope reservations)
-
-Reference spec: `codex/skills/mesh/references/coordination-fabric.md`.
-Reliability references:
-- `codex/skills/mesh/references/failure-taxonomy.md`
-- `codex/skills/mesh/references/completion-gates.md`
-- `codex/skills/mesh/references/team-protocol.md`
-- `codex/skills/mesh/references/adjudication-fallback.md`
-- `codex/skills/mesh/references/coder-rubric.md`
-
-Trigger (recommended): if `parallel_tasks > 1` OR you are running multi-instance work (for example via `$cas`), use mailbox+leases.
-
-Minimal fabric (tool-agnostic):
-
-- Mailbox message fields: `msg_id`, `thread_id` (usually `task_id`), `from`, `to|broadcast`, `type`, `body`, `ts`, `attempt`, `in_reply_to`, `dedupe_key`
-- Lease fields: `lease_id`, `owner`, `scope[]`, `mode=exclusive|shared`, `ttl_seconds`, `acquired_at`, `expires_at`, `last_heartbeat_at`, `epoch`, `reason=task_id`
-
-Mailbox idempotency rule (required):
-- Retry sends must keep `dedupe_key` stable.
-- The orchestrator must dedupe deliveries by `msg_id` (fallback `dedupe_key`) before `follow_up`.
-
-Lease lifecycle rule (required):
-- Heartbeat active leases at `ttl_seconds / 3`.
-- Re-check lease validity immediately before write/apply.
-- If lease is stale, reap it, emit `type=lease_reap`, and re-claim before continuing.
-
-Happy path:
-1) Post `claim` (thread=`task_id`)
-2) Acquire an exclusive lease derived from `mesh_meta.scope`
-3) Work; post `proposal/critique/question/decision`
-4) Post `proof` (exact validation cmd + pass/fail + key line)
-5) Release leases early (don't rely only on TTL)
-
-Override precedence (highest to lowest):
-1) invocation args
-2) per-task `mesh` metadata block in `$st` notes
-3) defaults above
-
-## Worker Adapter Contract (Required)
-
-`$mesh` must use a runtime adapter that hides backend-native tool names.
-Use stable adapter verbs as the public interface and keep raw tool calls as implementation details.
-
-Required adapter verbs:
-- `fanout`: launch one or more role workers for a round
-- `collect`: gather worker outputs (including partial completions)
-- `retry`: re-run a failed/no-response worker once
-- `follow_up`: send clarifications to a specific worker when needed
-- `close`: release worker slots/resources when lifecycle close is explicit
-- `capabilities`: expose fanout limits and lifecycle semantics
-
-Common adapter ids (convention; optional):
-- `local`: in-session workers (subagents)
-- `cas`: multi-instance workers (via `$cas`), coordinated via mailbox+leases; one join applies patches/validates/mutates `$st`
-- `auto`: throughput-aware selection. Choose `local` for one-wave workloads; switch to `cas` when ready queue depth exceeds one local wave, or when high-fanout intent meets observed local cap pressure. Always report selected adapter + reason.
-
-Adapter selection order:
-0) If invocation includes `adapter=<id>` (for example `adapter=local` or `adapter=cas`), use it if available; if not available, treat as `adapter_missing_capability`.
-1) If `adapter=auto`, evaluate throughput first:
-   - estimate `local_wave_capacity = floor((max_threads - reserve_slots)/roles_per_task)`
-   - if `ready_queue_depth > local_wave_capacity`, choose `cas`
-   - if high-fanout intent ("as many subagents/shards as possible") and one local cap-pressure event is observed, choose `cas`
-   - otherwise choose `local`
-2) Else prefer an adapter explicitly marked `preferred` by the runtime.
-3) Else pick the first adapter that satisfies all required verbs.
-4) Else stop and ask the user to switch to a worker-capable runtime.
-
-High-fanout and cap-pressure source of truth (required):
-- Treat high-fanout intent as explicit only when the current user turn asks for many workers/subagents/shards (for example "as many as possible").
-- Treat local cap pressure as observed only when runtime evidence is present in this run (for example `worker_cap < configured_workers`, ready queue depth exceeds one local wave, spawn failures, or `adapter_capacity`).
-- If both are true in the same run, escalate to `cas` on the next wave and report the exact trigger evidence in telemetry.
-
-Communication is orchestrator-mediated: each round's prompts include prior round artifacts.
-
-Worker failure taxonomy (required):
-- `worker_turn_hang_before_output`: worker never returns first artifact.
-- `no_diff_parsed`: worker reply did not satisfy artifact parse contract.
-- `no_patch_returned`: worker returned explicit no-patch/no-diff outcome.
-- `no_response`: transport/lifecycle timeout with no usable worker artifact.
-- Persist exact failure codes; do not collapse them into one bucket.
-- Extended team-level failure classes and handling are defined in `references/failure-taxonomy.md`.
-
-Slot hygiene (required):
-- For adapters with explicit close semantics, close every spawned worker once output is integrated or abandoned.
-- Always report `spawned` vs `closed`; if they differ, treat it as a reliability bug.
-
-Parallel tool batching (required):
-- Use `multi_tool_use.parallel` for fanout and close sweeps when available (avoid sequential spawns/closes).
-- Keep each `wait` call as one call over all active ids; loop with the remaining ids if needed (avoid one-wait-per-agent loops).
-
-Saturation rule (required):
-- When `parallel_tasks > 1`, fanout should spawn the needed workers for all in-flight tasks in one batched call (or the fewest possible batches),
-  not sequential per-task loops.
-
-Capacity and resilience rule:
-- If you cannot run a 5-role swarm for a task (fanout cap, spawn failure, resource limits, or repeated
-  `no_response`), fall back to the 3-role swarm (`proposer`, `skeptic`, `synthesizer`) for that task.
-
-If no compatible adapter is available, STOP and ask the user to switch runtimes.
-
-## Plan Source of Truth (`$st`) (Required)
-
-`$st` state is authoritative for tasks and dependencies.
-
-Rules:
-- Never hand-edit the JSONL plan; mutate only via the `$st` CLI.
-- Treat any in-session plan UI (if present) as a mirror, not truth.
-
-### Plan File Resolution (Required)
-
-Resolve the plan file path in this order:
-
-1) If invocation includes `plan_file=<path>`, use that exact path.
-2) Else if exactly one of these exists, use the existing file:
-   - `.codex/st-plan.jsonl`
-   - `.step/st-plan.jsonl`
-3) Else if both exist, STOP and ask the user to choose one.
-   Recommended default: pass `plan_file=.step/st-plan.jsonl` explicitly.
-   - If `headless=true`, do not ask; stop with one actionable line and `headless_stop_reason=ambiguous_plan_file`.
-4) Else (neither exists), choose `.step/st-plan.jsonl` and STOP with the exact init command:
-   `st init --file .step/st-plan.jsonl`
-
-### Execution Preflight (Required)
-
-Before spawning workers, emit a one-line preflight with:
-- a stable run id for later `$seq` mining: `mesh_run_id=<UTC-compact>` (example: `mesh_run_id=20260213T015500Z`)
-- resolved `plan_file`
-- selected adapter id (`selected_adapter`)
-- adapter selection reason (`selection_reason`)
-- requested worker slots for this run (`requested_workers`)
-- local per-wave capacity (`local_cap`)
-- selected task ids (or `none`)
-- active overrides (`max_tasks`, `parallel_tasks`, `ids`)
-
-Recommended format:
-`mesh_preflight mesh_run_id=... plan_file=... selected_adapter=... selection_reason=... requested_workers=... local_cap=... ids=... overrides=...`
-
-If no runnable task is selected, exit via the "No runnable tasks" path.
-
-## Task Metadata Contract (Required)
-
-Each `$st` item must be actionable without guesswork. Store swarm-execution metadata in the item's
-`notes` field using a fenced `mesh` block.
-
-Required keys:
-- `scope`: list of file paths or globs (used for conflict avoidance)
-- `acceptance`: list of checkable acceptance bullets
-- `validation`: list of shell commands to run after integration
-
-Optional keys:
-- `risk`: `low|medium|high`
-- `swarm`: overrides (for example `roles`, `consensus_threshold`, `consensus_retries`)
-- `allow_no_validation`: `true|false` (default: `false`)
-
-Example `notes` content:
-
-```mesh
-scope:
-  - "src/foo.py"
-  - "tests/test_foo.py"
-acceptance:
-  - "foo() rejects invalid input"
-validation:
-  - "uv run pytest -q"
-risk: medium
+# mesh
+
+## Overview
+
+`$mesh` is the execution engine for implementation orchestration:
+
+- Uses `update_plan` as the canonical ready queue.
+- Slices coarse steps into atomic units.
+- Builds disjoint-scope CSV waves.
+- Executes waves with `spawn_agents_on_csv`.
+- Enforces `coder -> fixer -> integrator` on each unit.
+- Emits an event-only orchestration ledger.
+
+## Quick Start (Zig Binary + Brew Bootstrap)
+
+```bash
+run_mesh() {
+  if command -v mesh >/dev/null 2>&1 && mesh --help 2>&1 | grep -q "mesh.zig"; then
+    mesh "$@"
+    return
+  fi
+  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+    if ! brew install tkersey/tap/mesh; then
+      echo "brew install tkersey/tap/mesh failed; refusing fallback." >&2
+      return 1
+    fi
+    if command -v mesh >/dev/null 2>&1 && mesh --help 2>&1 | grep -q "mesh.zig"; then
+      mesh "$@"
+      return
+    fi
+    echo "brew install tkersey/tap/mesh did not produce a compatible mesh binary." >&2
+    return 1
+  fi
+  echo "mesh binary missing or incompatible (marker mesh.zig not found)." >&2
+  return 1
+}
+
+run_mesh --help
 ```
 
-If the `mesh` block is missing or incomplete, the first action for that task is metadata hydration:
-- proposer generates a minimal `mesh` block
-- orchestrator merges it into notes via `$st set-notes`, preserving any non-`mesh` note content
-- then the swarm proceeds
+## Commands
 
-## Scheduling Policy (Required)
+- `mesh budget`: compute active-unit clamp from 5-hour + weekly remaining budget.
+- `mesh plan_sync`: summarize and normalize plan JSON payloads.
+- `mesh slice`: produce atomic units from plan steps.
+- `mesh wave`: emit a wave-template CSV from sliced units.
+- `mesh run_csv`: validate input CSV, enforce template/output path separation, and prepare output CSV.
+- `mesh ledger`: filter ledger payloads to occurred events only.
+- `mesh replay`: preflight simulation of budget/wave behavior without execution.
 
-Default behavior is sequential-by-default to align with `$st`'s single-`in_progress` invariant and to
-avoid workspace edit conflicts.
+## Orchestration Policy
 
-Task selection order:
-1) If there is an `in_progress` item, run that item first.
-2) Else run the first `pending` item with `dep_state == ready`.
-3) If `ids=` is provided, restrict selection to the transitive dependency closure of those IDs, and
-   pick the first runnable item within that closure.
+- Source of truth: `update_plan` queue.
+- `$st` sync: when `.step/st-plan.jsonl` is active, keep `$st` and `update_plan` aligned in the same turn.
+- Unit pipeline (hard gate): `coder -> fixer -> integrator`.
+- Delivery default: `commit_first`; use `patch_first` only when explicitly requested.
+- Budget clamp uses strictest remaining window (`min(remaining_5h, remaining_weekly)`):
+  - `> 33%`: no budget-based clamp.
+  - `10%..33%`: linear clamp.
+  - `<= 10%`: single active unit, sequential single-agent execution.
+- Scale-out gate: only allow CAS multi-instance fanout when backlog/saturation warrants it and strict remaining budget is `> 25%`.
 
-Parallelism (`parallel_tasks > 1`) is allowed ONLY when all are true:
-- the user explicitly requests it via invocation args
-- each selected task has a disjoint `scope`
-- `$st` mutations that set multiple tasks `in_progress` use `--allow-multiple-in-progress`
+## CSV-Wave Contract (`spawn_agents_on_csv`)
 
-## Swarm Protocol (Per Task)
+Required input headers:
 
-### Roles
+- `id`
+- `objective`
+- `unit_scope`
+- `constraints`
+- `invariants`
+- `proof_command`
+- `delivery_mode`
+- `attempt`
+- `variant`
+- `budget_tier`
 
-Default 5-role set:
-- `proposer`: propose approach + assumptions + risk register
-- `critic_a`: correctness/regressions review
-- `critic_b`: coverage/ergonomics review
-- `skeptic`: adversarial edge cases + invariant stress test
-- `synthesizer`: incorporate critique into a final, minimal patch
+Required worker output fields:
 
-Fallback 3-role set (capacity mode):
-- `proposer`
-- `skeptic`
-- `synthesizer`
+- `id`
+- `decision`
+- `proof_status`
 
-Guardrail: critics and skeptic are read-only.
+Optional output fields:
 
-Patch authorship rule:
-- Default: only the synthesizer outputs a patch diff.
-- The proposer may output a patch diff only when explicitly requested.
+- `failure_code`
+- `patch_ref`
+- `commit_ref`
+- `notes`
 
-### Artifacts
+Important:
 
-The orchestrator must explicitly pass artifacts between rounds.
+- Keep `csv_path` and `output_csv_path` distinct per run.
+- `output_schema` metadata is not runtime-enforced by `spawn_agents_on_csv`; mesh must enforce strict output parsing before integration.
 
-- `task_meta`: parsed (or raw) `mesh` block + step text
-- `proposal`: proposer output
-- `critiques`: active critique outputs (5-role: critic_a, critic_b, skeptic; 3-role fallback: skeptic)
-- `synthesis`: synthesizer output (must include unified diff)
-- `votes`: one vote per active role on the synthesized patch
-- `mail`: role-to-role messages (optional; orchestrator-mediated)
+## Recommended Flow
 
-Orchestrator mail rule:
-- Any worker may include an `outbox` section (optional). The orchestrator must deliver those messages
-  to the addressed role(s) via `follow_up` before the next dependent round.
+1. `mesh budget --remaining-five-hour <pct> --remaining-weekly <pct> --max-threads 12`
+2. `mesh plan_sync --input-json <plan.json>`
+3. `mesh slice --input-json <plan.json> --output-json <units.json>`
+4. `mesh wave --units-json <units.json> --csv-path <run-wave.csv> --max-active <n>`
+5. Run `spawn_agents_on_csv` against `<run-wave.csv>` with a distinct output CSV path.
+6. `mesh run_csv --csv-path <run-wave.csv> --output-csv-path <run-output.csv>` for preflight/contract checks.
+7. `mesh ledger --input-json <ledger.json>` to emit event-only final ledger payload.
 
-### Step 0: Hydrate Metadata (If Needed)
+## Replay Mode
 
-If required task metadata is missing:
-1) Spawn proposer with `step=hydrate_meta` to generate the `mesh` block.
-2) Persist with non-destructive notes merge (replace/add the fenced `mesh` block, preserve other note text).
-3) Reload task meta and proceed.
+Use `mesh replay` to simulate orchestration before spending budget:
 
-### Round A: Proposal
-
-Spawn proposer with:
-- task id + step
-- current `mesh` meta
-- paths listed in `scope` (workers should read their own code context; do not pre-load file contents into the prompt)
-
-Proposer output must include:
-- a short plan
-- explicit assumptions
-- risk level
-
-### Round B: Critique (Parallel)
-
-Spawn active critique roles in parallel:
-- 5-role swarm: `critic_a`, `critic_b`, `skeptic`
-- 3-role fallback: `skeptic` only
-
-Each critique must:
-- cite specific risks / missing cases
-- state what change(s) would flip their vote to `agree`
-
-### Round C: Synthesis
-
-Spawn synthesizer with proposal + all critiques.
-
-Synthesizer output must include:
-- a unified diff as text (do not apply it)
-- a decision log mapping critiques to actions taken (accepted/rejected with reason)
-- the exact validation commands to run (must match task meta unless explicitly updated)
-
-Synthesis artifact contract (required):
-- Default artifact shape (`strict_output=false`): decision log + validation list + exactly one fenced unified diff block.
-- Strict artifact shape (`integrate=false strict_output=true`): exactly one fenced unified diff block, or exactly one line `NO_DIFF:<reason>`.
-- If no safe patch is available, emit exactly one line `NO_DIFF:<reason>`.
-- If output is unparsable, run one strict-format `follow_up`; if still unparsable, treat as `no_diff_parsed`.
-
-### Round D: Vote
-
-After synthesis, obtain one explicit vote per active role.
-
-Collect votes in parallel.
-
-Vote prompt input includes:
-- task meta
-- synthesized diff
-- decision log
-
-Each vote response must be:
-- `vote: agree|disagree`
-- one-line rationale
-
-Consensus logic:
-- for 5 roles: require `agree >= 4`
-- for 3 roles: require `agree == 3`
-- then proceed to integration + validation
-- else retry `critique -> synthesis -> vote` up to `consensus_retries`
-- if still below threshold, mark task `blocked` with reason `no_consensus`
-
-## Integration, Validation, and Persistence
-
-After consensus:
-
-If `integrate=false`:
-- Do NOT apply the patch.
-- Do NOT run validation.
-- Do NOT mutate `$st`.
-- Return the synthesis artifact so another join can apply it.
-  - If `strict_output=false`, return synthesized diff + decision log + validation commands.
-  - If `strict_output=true`, return exactly one fenced diff block or one `NO_DIFF:<reason>` line with no wrapper prose.
-
-Otherwise (default, `integrate=true`):
-
-1) Apply the synthesized patch (patch-first preferred).
-2) Run validation commands from task meta.
-   - If `validation` is missing and `allow_no_validation != true`, mark `blocked` with reason
-     `missing_validation` and ask the user for a validation signal.
-3) Persist `$st` state transitions:
-   - set `in_progress` at start (if not already)
-   - set `completed` on success
-   - set `blocked` on failure with a reason comment
-
-Persistence requirements (use `$st add-comment`):
-- Always append a `[mesh]` comment containing:
-  - outcome: `completed|blocked`
-  - block reason code when blocked: `no_consensus|worker_turn_hang_before_output|no_diff_parsed|no_patch_returned|no_response|wait_timeout_without_close|lifecycle_signal_mismatch|missing_validation|validation_failed|ambiguous_integration`
-  - vote tally (agree/disagree counts) when applicable
-  - validation commands executed and outcomes (no fabricated logs)
-  - learning record id(s) appended (if available)
-- GateResult pass criteria and evidence requirements are defined in `references/completion-gates.md`.
-
-## Learnings Capture (`$learnings`) (Required)
-
-Capture durable learnings automatically:
-- per-task checkpoint: immediately after each task completion or block
-- end-of-run checkpoint: one synthesized run-level learning summary
-
-Ground each learning in evidence (critiques + validation outcomes). Persist via the `$learnings`
-workflow into `.learnings.jsonl`.
-
-## Plan Mirror (Optional)
-
-If your runtime provides a plan UI tool, mirror `$st` state after each `$st` mutation.
-Treat the UI as a mirror only.
-
-## Reporting
-
-Return:
-- tasks attempted and their final states (`completed`, `blocked`, `pending`)
-- concurrency telemetry: requested vs achieved (`parallel_tasks`, roles per task); if below target, state why (scope overlap, adapter cap, spawn failures)
-- consensus telemetry (attempt count, vote tallies)
-- delegation telemetry: `delegation_did_not_run=true|false`; when true, include a reason code
-- failure telemetry: failure codes observed (`worker_turn_hang_before_output|no_diff_parsed|no_patch_returned|no_response|wait_timeout_without_close|lifecycle_signal_mismatch`) and retry outcomes
-- adapter telemetry (selected adapter, selection reason, requested workers, local cap, workers spawned/completed/retried/timed_out)
-- slot hygiene telemetry: workers `spawned` vs `closed` when close semantics exist; include any stragglers
-- orchestration evidence telemetry: `lifecycle_evidence`, `wait_all_ids_evidence`, `retry_ladder_evidence`, `high_fanout_cas_evidence`
-- validation commands and outcomes
-- `$st` mutations performed (ids + statuses)
-- learning capture evidence (records appended)
-
-Also include the run id in the final report so `$seq` can find it later:
-- `mesh_run_id=...`
-
-Never fabricate timestamps, tool events, or command outputs.
-
-## Post-run Seq Guardrail (Required for High-Fanout Intent)
-
-When user intent is explicit high fanout ("many subagents", "many shards", "as many as possible"), run a final `$seq` check before responding. Scope counts to this mesh run (not cumulative session totals):
-- Convert `mesh_run_id=YYYYMMDDTHHMMSSZ` to `mesh_run_since=YYYY-MM-DDTHH:MM:SSZ` and pass it to `--since`.
-- Count `spawn_agent` for the current session path since `mesh_run_since`.
-- Count CAS signals for the same path since `mesh_run_since` (`$cas` mention or `adapter=cas`).
-- If run-scoped `spawn_agent >= 10` and CAS signals are `0`, include an explicit recommendation to rerun with:
-  `node codex/skills/mesh/scripts/mesh_cas_fleet_autopilot.mjs --cwd <repo> --workers N`
-
-Reference commands:
-- `CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"; CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"; SEQ_SCRIPT="$CODEX_SKILLS_HOME/skills/seq/scripts/seq.py"; [ -f "$SEQ_SCRIPT" ] || SEQ_SCRIPT="$CLAUDE_SKILLS_HOME/skills/seq/scripts/seq.py"; uv run python "$SEQ_SCRIPT" query --root ~/.codex/sessions --since <mesh_run_since> --spec '{"dataset":"tool_calls","where":[{"field":"path","op":"eq","value":"<session_path>"},{"field":"tool","op":"eq","value":"spawn_agent"}],"group_by":["path"],"metrics":[{"op":"count","as":"spawn_calls"}],"format":"table"}'`
-- `CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"; CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"; SEQ_SCRIPT="$CODEX_SKILLS_HOME/skills/seq/scripts/seq.py"; [ -f "$SEQ_SCRIPT" ] || SEQ_SCRIPT="$CLAUDE_SKILLS_HOME/skills/seq/scripts/seq.py"; uv run python "$SEQ_SCRIPT" query --root ~/.codex/sessions --since <mesh_run_since> --spec '{"dataset":"messages","where":[{"field":"path","op":"eq","value":"<session_path>"},{"field":"text","op":"regex","value":"\\$cas\\b|adapter=cas\\b","case_insensitive":true}],"group_by":["path"],"metrics":[{"op":"count","as":"cas_signals"}],"format":"table"}'`
-
-## Error Handling
-
-- Missing `$mesh` token: do nothing under this skill.
-- Plan file missing: stop with the exact `$st init` command.
-  - If `headless=true`, do not ask; emit one actionable line and `headless_stop_reason=plan_missing`.
-- Both `.codex/st-plan.jsonl` and `.step/st-plan.jsonl` exist: ask user to pick `plan_file=`.
-  - If `headless=true`, do not ask; emit one actionable line and `headless_stop_reason=ambiguous_plan_file`.
-- No runnable tasks: report ready/blocked/completed counts and exit cleanly.
-- Consensus failure after retries: set `blocked` + comment `no_consensus`.
-- `worker_turn_hang_before_output`:
-  - replace worker once and retry in the current swarm size
-  - if still failing in a 5-role swarm, retry once with fallback 3-role swarm
-  - if still failing, set `blocked` + matching failure code comment
-- `no_diff_parsed`:
-  - send one strict-output `follow_up` asking for exactly one fenced diff block or one `NO_DIFF:<reason>` line
-  - if still unparsable, set `blocked` + comment `no_diff_parsed`
-- `no_patch_returned`:
-  - if `integrate=false`, return `NO_DIFF:<reason>` and do not mutate `$st`
-  - if `integrate=true`, set `blocked` + comment `no_patch_returned`
-- `no_response` (transport/lifecycle timeout with no usable output):
-  - retry once in the current swarm size
-  - if still unusable in a 5-role swarm, retry once with fallback 3-role swarm
-  - if still unusable, set `blocked` + comment `no_response`
-- `adapter_missing_capability`: switch to another compatible adapter; if none, ask the user to switch runtime.
-  - If `headless=true`, do not ask; emit one actionable line with `headless_stop_reason=adapter_missing_capability` and `delegation_did_not_run=true`.
-- `adapter_capacity`: reduce active swarm to fallback 3-role mode and retry once.
-- `wait_timeout_without_close`: run one retry-ladder attempt with a smaller prompt, then close sweep; if unresolved, set `blocked` + comment `wait_timeout_without_close`.
-- `lifecycle_signal_mismatch` (`spawned != closed`): run close sweep, report stragglers, and treat unresolved mismatch as a reliability bug.
-- `missing_validation` in headless mode: set that task `blocked`; continue other runnable tasks; if none remain, emit one actionable line and include `headless_stop_reason=missing_validation`.
-
-## Worker Prompt Templates
-
-Use role-specific prompts. Always include `task_id`, `step`, and the full current artifacts.
-
-Proposal / metadata hydration:
-
-```text
-You are the $mesh proposer for one task.
-
-Hard rules
-- Do NOT commit or push.
-- Do NOT apply patches. Prefer plan + pseudocode; output a unified diff only if explicitly requested.
-
-Task context:
-- task_id: [ID]
-- step: [hydrate_meta|proposal]
-- st_step: [the $st step text]
-- mesh_meta: [current mesh block or MISSING]
-
-Required output:
-1) Plan (1-5 bullets)
-2) Assumptions
-3) Risks (low|medium|high) + top 3 risks
-4) If step=hydrate_meta: output a complete ```mesh``` block
-5) Optional: `outbox` messages to other roles (see below)
-
-Outbox format (optional):
-outbox:
-  - to: critic_a|critic_b|skeptic|synthesizer|broadcast
-    subject: "..."
-    body: "..."
+```bash
+mesh replay --remaining-five-hour 62 --remaining-weekly 41 --max-threads 12 --ready-units 19
 ```
 
-Critique:
+Replay returns predicted active-unit clamp, wave count, and per-wave unit counts.
 
-```text
-You are one $mesh critic for one task.
+## Validation
 
-Hard rules
-- Do NOT commit or push.
-- Read-only: do not apply patches.
-
-Inputs:
-- task_id: [ID]
-- role: [critic_a|critic_b|skeptic]
-- proposal: [text]
-- mesh_meta: [text]
-
-Required output:
-1) Findings (max 8 bullets)
-2) Must-fix items (if any)
-3) Vote-flip conditions: what would make you vote `agree` after synthesis
-4) Risk level (low|medium|high)
-5) Optional: `outbox` (e.g., ask another critic to falsify one claim)
+```bash
+mesh --help
+mesh budget --remaining-five-hour 40 --remaining-weekly 28 --max-threads 12
+mesh replay --remaining-five-hour 72 --remaining-weekly 55 --max-threads 12 --ready-units 24
+mesh run_csv --csv-path /tmp/mesh_wave.csv --output-csv-path /tmp/mesh_wave.out.csv
 ```
 
-Synthesis:
+## References
 
-```text
-You are the $mesh synthesizer for one task.
-
-Hard rules
-- Do NOT commit or push.
-- Do NOT apply patches; output unified diff text only.
-
-Inputs:
-- task_id: [ID]
-- mesh_meta: [text]
-- proposal: [text]
-- critiques: [critic_a, critic_b, skeptic]
-
-Required output:
-1) Decision log: map each critique point -> accepted/rejected + reason
-2) Patch: unified diff (text)
-3) Validation: list exact commands to run (align with mesh_meta unless you updated it explicitly)
-4) Residual risk (low|medium|high)
-5) Optional: `outbox` (e.g., questions for voters; call out remaining uncertainty)
-```
-
-Vote:
-
-```text
-You are one $mesh voter for one task.
-
-Hard rules
-- Do NOT commit or push.
-- Do NOT propose new work; vote on what exists.
-
-Inputs:
-- task_id: [ID]
-- role: [proposer|critic_a|critic_b|skeptic|synthesizer]
-- synthesis: [diff + decision log]
-
-Required output:
-vote: agree|disagree
-reason: <one line>
-```
-
-Ergonomics: end user-facing run output with:
-
-"Reply with `$mesh` to run the next ready task from the `$st` plan."
+- `references/failure-taxonomy.md`
+- `references/coder-rubric.md`
