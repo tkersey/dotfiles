@@ -32,6 +32,10 @@ config_file = "~/.codex/agents/selector.toml"
 description = "Route patch artifacts to the right PRs and coordinate join-style integration."
 config_file = "~/.codex/agents/joiner.toml"
 
+[agents.integrator]
+description = "Own delivery packaging after fixer acceptance (`$commit`/`$patch`) with artifact hygiene."
+config_file = "~/.codex/agents/integrator.toml"
+
 [features]
 unified_exec = true
 steer = true
