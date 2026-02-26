@@ -106,13 +106,15 @@ Definitions:
 - `reserve_slots`: 2 (retries, follow-ups, close sweeps)
 
 Compute:
-- `parallel_tasks_target = floor((max_threads - reserve_slots) / roles_per_task)`
+- `raw_parallel_tasks_target = floor((max_threads - reserve_slots) / roles_per_task)`
+- `parallel_tasks_target = max(1, raw_parallel_tasks_target)`
 
 Examples:
 - `max_threads=12`, 5-role => `parallel_tasks_target=floor((12-2)/5)=2`
 - `max_threads=12`, 3-role => `parallel_tasks_target=floor((12-2)/3)=3`
 
 If you use `parallel_tasks=auto`, `$mesh` should pick `parallel_tasks_target` and explain the math.
+If clamping was required (`raw_parallel_tasks_target < 1`), report the clamp and run fallback 3-role swarms.
 
 If you use `max_tasks=auto`, `$mesh` should keep draining runnable tasks until no work is ready (or a fixed time budget is reached; default `45m` when the runner does not provide one).
 
@@ -126,9 +128,9 @@ If you use `max_tasks=auto`, `$mesh` should keep draining runnable tasks until n
 If `headless=true`:
 - Do not ask the user questions.
 - Headless precedence is absolute: if any branch says "ask user", this mode overrides that branch.
-- If prerequisites are missing (plan file, validation command, adapter capability), exit cleanly with one actionable line and include `headless_stop_reason=<code>`.
+- If global prerequisites are missing (plan file, adapter capability), exit cleanly with one actionable line and include `headless_stop_reason=<code>`.
 - Supported `headless_stop_reason` codes: `plan_missing|ambiguous_plan_file|adapter_missing_capability|missing_validation`.
-- Prefer continuing with other runnable tasks rather than stopping the whole run; if no runnable tasks remain, exit cleanly.
+- If a task-local prerequisite is missing (for example `missing_validation`), block that task and continue other runnable tasks; if none remain, exit cleanly.
 - If worker delegation never started, report `delegation_did_not_run=true` with a one-line reason.
 
 Budget governor (runner-side):
@@ -248,7 +250,7 @@ If no compatible adapter is available, STOP and ask the user to switch runtimes.
 `$st` state is authoritative for tasks and dependencies.
 
 Rules:
-- Never hand-edit the JSONL plan; mutate only via the `$st` script.
+- Never hand-edit the JSONL plan; mutate only via the `$st` CLI.
 - Treat any in-session plan UI (if present) as a mirror, not truth.
 
 ### Plan File Resolution (Required)
@@ -263,7 +265,7 @@ Resolve the plan file path in this order:
    Recommended default: pass `plan_file=.step/st-plan.jsonl` explicitly.
    - If `headless=true`, do not ask; stop with one actionable line and `headless_stop_reason=ambiguous_plan_file`.
 4) Else (neither exists), choose `.step/st-plan.jsonl` and STOP with the exact init command:
-   `CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"; CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"; ST_PLAN="$CODEX_SKILLS_HOME/skills/st/scripts/st_plan.py"; [ -f "$ST_PLAN" ] || ST_PLAN="$CLAUDE_SKILLS_HOME/skills/st/scripts/st_plan.py"; uv run "$ST_PLAN" init --file .step/st-plan.jsonl`
+   `st init --file .step/st-plan.jsonl`
 
 ### Execution Preflight (Required)
 
@@ -312,7 +314,7 @@ risk: medium
 
 If the `mesh` block is missing or incomplete, the first action for that task is metadata hydration:
 - proposer generates a minimal `mesh` block
-- orchestrator persists it via `$st set-notes`
+- orchestrator merges it into notes via `$st set-notes`, preserving any non-`mesh` note content
 - then the swarm proceeds
 
 ## Scheduling Policy (Required)
@@ -359,9 +361,9 @@ The orchestrator must explicitly pass artifacts between rounds.
 
 - `task_meta`: parsed (or raw) `mesh` block + step text
 - `proposal`: proposer output
-- `critiques`: critic_a, critic_b, skeptic outputs
+- `critiques`: active critique outputs (5-role: critic_a, critic_b, skeptic; 3-role fallback: skeptic)
 - `synthesis`: synthesizer output (must include unified diff)
-- `votes`: one vote per role on the synthesized patch
+- `votes`: one vote per active role on the synthesized patch
 - `mail`: role-to-role messages (optional; orchestrator-mediated)
 
 Orchestrator mail rule:
@@ -372,7 +374,7 @@ Orchestrator mail rule:
 
 If required task metadata is missing:
 1) Spawn proposer with `step=hydrate_meta` to generate the `mesh` block.
-2) Persist via `$st set-notes`.
+2) Persist with non-destructive notes merge (replace/add the fenced `mesh` block, preserve other note text).
 3) Reload task meta and proceed.
 
 ### Round A: Proposal
@@ -389,7 +391,9 @@ Proposer output must include:
 
 ### Round B: Critique (Parallel)
 
-Spawn critic_a, critic_b, skeptic in parallel.
+Spawn active critique roles in parallel:
+- 5-role swarm: `critic_a`, `critic_b`, `skeptic`
+- 3-role fallback: `skeptic` only
 
 Each critique must:
 - cite specific risks / missing cases
@@ -405,13 +409,14 @@ Synthesizer output must include:
 - the exact validation commands to run (must match task meta unless explicitly updated)
 
 Synthesis artifact contract (required):
-- Default artifact shape: exactly one fenced unified diff block.
+- Default artifact shape (`strict_output=false`): decision log + validation list + exactly one fenced unified diff block.
+- Strict artifact shape (`integrate=false strict_output=true`): exactly one fenced unified diff block, or exactly one line `NO_DIFF:<reason>`.
 - If no safe patch is available, emit exactly one line `NO_DIFF:<reason>`.
 - If output is unparsable, run one strict-format `follow_up`; if still unparsable, treat as `no_diff_parsed`.
 
 ### Round D: Vote
 
-After synthesis, obtain one explicit vote per role.
+After synthesis, obtain one explicit vote per active role.
 
 Collect votes in parallel.
 
@@ -439,7 +444,8 @@ If `integrate=false`:
 - Do NOT apply the patch.
 - Do NOT run validation.
 - Do NOT mutate `$st`.
-- Return the synthesized diff + decision log + validation commands so another join can apply it.
+- Return the synthesis artifact so another join can apply it.
+  - If `strict_output=false`, return synthesized diff + decision log + validation commands.
   - If `strict_output=true`, return exactly one fenced diff block or one `NO_DIFF:<reason>` line with no wrapper prose.
 
 Otherwise (default, `integrate=true`):
@@ -537,7 +543,7 @@ Reference commands:
 - `adapter_capacity`: reduce active swarm to fallback 3-role mode and retry once.
 - `wait_timeout_without_close`: run one retry-ladder attempt with a smaller prompt, then close sweep; if unresolved, set `blocked` + comment `wait_timeout_without_close`.
 - `lifecycle_signal_mismatch` (`spawned != closed`): run close sweep, report stragglers, and treat unresolved mismatch as a reliability bug.
-- `missing_validation` in headless mode: set `blocked`, emit one actionable line, and include `headless_stop_reason=missing_validation`.
+- `missing_validation` in headless mode: set that task `blocked`; continue other runnable tasks; if none remain, emit one actionable line and include `headless_stop_reason=missing_validation`.
 
 ## Worker Prompt Templates
 
@@ -566,12 +572,10 @@ Required output:
 5) Optional: `outbox` messages to other roles (see below)
 
 Outbox format (optional):
-```
 outbox:
   - to: critic_a|critic_b|skeptic|synthesizer|broadcast
     subject: "..."
     body: "..."
-```
 ```
 
 Critique:
