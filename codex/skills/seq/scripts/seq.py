@@ -1871,6 +1871,16 @@ def compile_where(where: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 flags |= re.IGNORECASE
             rx = re.compile(value, flags)
             compiled.append({"field": field, "op": op, "rx": rx})
+        elif op == "regex_any":
+            if not isinstance(value, list) or not all(
+                isinstance(item, str) for item in value
+            ):
+                raise ValueError("regex_any value must be a list of strings")
+            flags = 0
+            if w.get("case_insensitive"):
+                flags |= re.IGNORECASE
+            rxs = [re.compile(item, flags) for item in value]
+            compiled.append({"field": field, "op": op, "rxs": rxs})
         else:
             compiled.append({"field": field, "op": op, "value": value})
     return compiled
@@ -1901,6 +1911,11 @@ def record_matches(rec: dict[str, Any], where: list[dict[str, Any]]) -> bool:
         if op == "regex":
             rx = w["rx"]
             if not rx.search("" if v is None else str(v)):
+                return False
+            continue
+        if op == "regex_any":
+            rxs = w["rxs"]
+            if not any(rx.search("" if v is None else str(v)) for rx in rxs):
                 return False
             continue
 
@@ -1937,6 +1952,16 @@ def record_matches(rec: dict[str, Any], where: list[dict[str, Any]]) -> bool:
             if op == "in" and not inside:
                 return False
             if op == "nin" and inside:
+                return False
+            continue
+        if op == "contains_any":
+            rhs = w.get("value")
+            if not isinstance(rhs, list) or not all(
+                isinstance(item, str) for item in rhs
+            ):
+                return False
+            haystack = "" if v is None else str(v)
+            if not any(needle in haystack for needle in rhs):
                 return False
             continue
 

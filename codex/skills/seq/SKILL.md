@@ -123,7 +123,9 @@ Supported `where.op`:
 - `gt`, `gte`, `lt`, `lte` (numeric-ish compare)
 - `in`, `nin` (value is a JSON list)
 - `contains` (substring)
-- `regex` (value is a regex string; optional `case_insensitive: true`)
+- `contains_any` (value is a JSON list of substrings; optional `case_insensitive: true`)
+- `regex` (regex-like matching with `^`, `$`, and alternation `|`; optional `case_insensitive: true`)
+- `regex_any` (value is a JSON list of regex-like strings; OR semantics)
 - `exists`, `not_exists`
 
 Metrics shape (grouped queries):
@@ -222,6 +224,14 @@ seq find-session --root ~/.codex/sessions --prompt "adapter=auto" --limit 20
 ```bash
 seq session-prompts --root ~/.codex/sessions --session-id <session_id> \
   --roles user,assistant --strip-skill-blocks --limit 100
+```
+
+### 12) Cue vs invoked discovery-skill rate
+```bash
+seq routing-gap --root ~/.codex/sessions \
+  --cue-spec @cue-spec.json \
+  --discovery-skills grill-me,prove-it,complexity-mitigator,invariant-ace,tk \
+  --format table
 ```
 
 ## Notes
