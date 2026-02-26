@@ -23,11 +23,6 @@ This skill assumes `codex` is available on PATH and does not require access to a
 ## Quick Start
 
 ```bash
-CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
-CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
-CAS_SCRIPTS_DIR="$CODEX_SKILLS_HOME/skills/cas/scripts"
-[ -d "$CAS_SCRIPTS_DIR" ] || CAS_SCRIPTS_DIR="$CLAUDE_SKILLS_HOME/skills/cas/scripts"
-
 run_cas_tool() {
   local subcommand="${1:-}"
   if [ -z "$subcommand" ]; then
@@ -38,17 +33,14 @@ run_cas_tool() {
 
   local cas_subcommand=""
   local marker=""
-  local fallback=""
   case "$subcommand" in
     smoke-check|smoke_check)
       cas_subcommand="smoke_check"
       marker="cas_smoke_check.zig"
-      fallback="$CAS_SCRIPTS_DIR/cas_smoke_check.mjs"
       ;;
     instance-runner|instance_runner)
       cas_subcommand="instance_runner"
       marker="cas_instance_runner.zig"
-      fallback="$CAS_SCRIPTS_DIR/cas_instance_runner.mjs"
       ;;
     *)
       echo "unknown cas subcommand: $subcommand" >&2
@@ -80,11 +72,7 @@ run_cas_tool() {
     echo "brew install tkersey/tap/cas did not produce a compatible cas binary." >&2
     return 1
   fi
-  if [ -f "$fallback" ]; then
-    node "$fallback" "$@"
-    return
-  fi
-  echo "cas binary missing and fallback script not found: $fallback" >&2
+  echo "cas binary missing or incompatible; install tkersey/tap/cas." >&2
   return 1
 }
 
@@ -115,8 +103,7 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
    - Optional: control v2 approval auto-responses (useful for safe multi-instance workers):
      - `--exec-approval auto|accept|acceptForSession|decline|cancel`
      - `--file-approval auto|accept|acceptForSession|decline|cancel`
-     - `--skill-approval auto|approve|decline`
-     - `--read-only` (shorthand for declining exec + file + skill approvals)
+     - `--read-only` (shorthand for declining exec + file approvals)
    - Optional: pass one or more `--opt-out-notification-method METHOD` flags to suppress known noisy notifications for the connection.
    - Wait for a `cas/ready` event.
 
@@ -137,10 +124,10 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
    - Respond with `cas/respond` using the same `id`.
    - If your response is malformed for a typed v2 request, cas sends a deterministic JSON-RPC error upstream instead of hanging.
    - If you do not reply in time, cas emits `cas/serverRequestTimeout` and fails that request upstream.
-   - Approvals are auto-accepted by default (including best-effort execpolicy amendments and skill approvals) and will not block you unless you override approval policy flags.
+   - Approvals are auto-accepted by default (including best-effort execpolicy amendments) and will not block you unless you override approval policy flags.
 
 5. Mine sessions (optional).
-   - Use `thread/list` (cursor pagination + optional `modelProviders`/`sourceKinds`/`archived`/`cwd` filters) and `thread/read` (optionally `includeTurns:true`) to build your own index.
+   - Use `thread/list` (cursor pagination + optional `modelProviders`/`sourceKinds`/`archived`/`cwd`/`searchTerm` filters), `thread/read` (optionally `includeTurns:true`), and `thread/unsubscribe` to build/maintain your own index and loaded-thread lifecycle.
    - The server is not a search engine; extract data and index externally.
 
 ## Dedicated API Helpers
@@ -157,7 +144,6 @@ If you opt into dynamic tools, register them on `thread/start` via `dynamicTools
 When the server emits `cas/serverRequest`:
 - For `method: "item/tool/call"`, run the tool in your orchestrator and reply with `cas/respond`.
 - For `method: "item/tool/requestUserInput"` (experimental), collect answers and return `{ answers: ... }`.
-- For `method: "skill/requestApproval"` (experimental), return `{ decision: "approve" }` or `{ decision: "decline" }`.
 - For `method: "account/chatgptAuthTokens/refresh"`, return refreshed tokens or a deterministic error.
 
 ## Proxy I/O Contract (stdin/stdout)
@@ -253,7 +239,5 @@ Included:
 - `scripts/budget_governor.mjs` (helpers: rateLimits -> per-window pacing + stricter-tier clamp)
 - `scripts/cas_rate_limits.mjs` (CLI: prints normalized `account/rateLimits/read` snapshot)
 - `scripts/cas_example_orchestrator.mjs` (example orchestration script)
-- `scripts/cas_instance_runner.mjs` (run one method across many parallel cas sessions/instances)
-- `scripts/cas_smoke_check.mjs` (smoke-checks `experimentalFeature/list`, `thread/resume`, `turn/steer`)
 
-Runtime bootstrap policy for Zig CLIs mirrors `seq`: prefer installed `cas` dispatcher binary (`cas smoke_check` / `cas instance_runner`); on macOS with `brew`, treat `brew install tkersey/tap/cas` failure (or incompatible binary/subcommand marker) as a hard error; otherwise fallback to the local Node script.
+Runtime bootstrap policy for Zig CLIs mirrors `seq`: require the installed `cas` dispatcher binary (`cas smoke_check` / `cas instance_runner`). On macOS with `brew`, treat `brew install tkersey/tap/cas` failure (or incompatible binary/subcommand marker) as a hard error.
