@@ -16,6 +16,13 @@ description: Execute plan-driven orchestration with CSV waves, strict coder-to-f
 - Enforces `coder -> fixer -> integrator` on each unit.
 - Emits an event-only orchestration ledger.
 
+## Zig CLI Iteration Repos
+
+When iterating on the Zig-backed `mesh` helper CLI path, use these two repos:
+
+- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `mesh` Zig binary, build/test wiring, and release tags.
+- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `mesh` binaries.
+
 ## Quick Start (Zig Binary + Brew Bootstrap)
 
 ```bash

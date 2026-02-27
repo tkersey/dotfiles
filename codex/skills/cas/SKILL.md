@@ -20,6 +20,13 @@ Cas ships a small Node proxy (`scripts/cas_proxy.mjs`) that:
 
 This skill assumes `codex` is available on PATH and does not require access to any repo source tree.
 
+## Zig CLI Iteration Repos
+
+When iterating on the Zig-backed `cas` helper CLI path, use these two repos:
+
+- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `cas` Zig binaries, build/test wiring, and release tags.
+- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `cas` binaries.
+
 ## Quick Start
 
 ```bash

@@ -8,6 +8,13 @@ description: Create and manage Codex app automations stored in the local SQLite 
 ## Overview
 Use this skill to manage Codex automations by editing the local SQLite database and synced filesystem automation configs. Use `run_cron_tool` to prefer the Zig CLI with script fallback and keep changes minimal and explicit.
 
+## Zig CLI Iteration Repos
+
+When iterating on the Zig-backed `cron` helper CLI path, use these two repos:
+
+- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `cron` Zig binary, build/test wiring, and release tags.
+- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `cron` binaries.
+
 ## Quick Start
 ```bash
 CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"

@@ -9,6 +9,13 @@ description: "Comprehensive, measurement-driven performance optimization for lat
 
 Deliver aggressive, measurement-driven performance improvements (latency/throughput/memory/GC/tail) with correctness preserved and regressions guarded.
 
+## Zig CLI Iteration Repos
+
+When iterating on the Zig-backed `bench_stats`/`perf_report` helper CLI path, use these two repos:
+
+- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for `bench_stats` and `perf_report`, build/test wiring, and release tags.
+- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `lift` binaries.
+
 ## Double Diamond fit
 
 Lift lives in Define -> Deliver:

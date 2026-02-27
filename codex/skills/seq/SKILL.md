@@ -8,6 +8,13 @@ description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based mem
 ## Overview
 Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consistently with a single script. Focus on skill usage, format compliance, token counts, and memory-file mining.
 
+## Zig CLI Iteration Repos
+
+When iterating on the Zig-backed `seq` helper CLI path, use these two repos:
+
+- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `seq` Zig binary, build/test wiring, and release tags.
+- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `seq` binaries.
+
 ## Quick Start
 ```bash
 CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"

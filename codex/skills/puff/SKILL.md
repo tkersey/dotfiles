@@ -9,6 +9,13 @@ description: Launch and manage Codex Cloud tasks from the CLI, including detache
 
 Use this skill to launch Codex Cloud tasks without blocking the local CLI session. Use `run_puff_tool` to prefer the Zig CLI with script fallback, submit work, detach status watchers, and retain logs/results for later diff/apply actions.
 
+## Zig CLI Iteration Repos
+
+When iterating on the Zig-backed `puff` helper CLI path, use these two repos:
+
+- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `puff` Zig binary, build/test wiring, and release tags.
+- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `puff` binaries.
+
 ## Quick Start
 
 ```bash

@@ -14,6 +14,13 @@ Maintain a durable plan file in the repo (default: `.step/st-plan.jsonl`) using 
 
 Plan items use typed dependency edges (`deps: [{id,type}]`) plus `notes` and `comments`, and render deterministically through `show`/read views.
 
+## Zig CLI Iteration Repos
+
+When iterating on the Zig-backed `st` helper CLI path, use these two repos:
+
+- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `st` Zig binary, build/test wiring, and release tags.
+- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `st` binaries.
+
 ## Quick Start (Automatic Zig Binary + Brew Bootstrap)
 
 ```bash
