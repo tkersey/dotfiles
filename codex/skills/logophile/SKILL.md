@@ -1,6 +1,6 @@
 ---
 name: logophile
-description: "Precision copy edits + naming: compress and clarify without changing meaning. Triggers: `$logophile`, rewrite/reword/rephrase, shorten, rename titles/labels/headings. Avoid operational scope/validation tasks unless rewriting is explicit."
+description: "Precision copy edits + naming: compress and clarify without changing meaning. Triggers: `$logophile`, rewrite/reword/rephrase, shorten/tighten/make concise, choose final wording/phrasing, rename titles/labels/headings/skill names. In operational turns, use only when wording or naming output is explicitly requested."
 ---
 
 # Logophile
@@ -18,12 +18,12 @@ Maximize semantic density without semantic drift.
 - Prefer consistency over variety: reuse the same term for the same concept.
 
 ## Use when
-- The user asks to rewrite/reword/rephrase, tighten language, or shorten text.
+- The user asks to rewrite/reword/rephrase, tighten language, shorten text, or choose final wording/phrasing.
 - Text is verbose/repetitive or slow to scan (<30s) and meaning must stay intact.
-- Names/titles/labels/headings need refinement or renaming.
+- Names/titles/labels/headings need refinement or renaming, including skill/feature names.
 
 ## Not for
-- Operational workflows (scope minimization, validation checklists, incident analysis, code review) unless the user explicitly requests a wording/naming rewrite.
+- Operational workflows (scope minimization, validation checklists, incident analysis, code review) unless the user explicitly requests a wording/naming rewrite. If implementation is also requested, pair with the implementation skill and keep logophile scoped to text/names only.
 
 ## Motto
 Precision through sophistication, brevity through vocabulary, clarity through structure.
