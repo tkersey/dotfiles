@@ -48,7 +48,7 @@ GRILL ME: HUMAN INPUT REQUIRED
 
 ## Orchestration Contract
 
-- Detailed execution runbook: see `codex/ORCHESTRATION.md` (keep this file thin).
+- Detailed execution runbook: see `codex/skills/mesh/SKILL.md`.
 
 - Source of truth: use `update_plan` as the canonical ready queue for implementation orchestration. When `$st` is in play, keep `.step/st-plan.jsonl` and `update_plan` in sync in the same turn.
 - Execution substrate: use `$mesh` and execute ready waves via `spawn_agents_on_csv` by default.

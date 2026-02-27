@@ -72,7 +72,42 @@ run_mesh --help
   - `<= 10%`: single active unit, sequential single-agent execution.
 - Scale-out gate: only allow CAS multi-instance fanout when backlog/saturation warrants it and strict remaining budget is `> 25%`.
 
-For orchestration integration patterns (fleet/worktree/test-first), see `codex/ORCHESTRATION.md`.
+## Core Invariants
+
+- Single-writer: only the integrator applies patches/creates commits; parallel workers are read-only.
+- Durable DAG: dependency edges live in `.step/st-plan.jsonl` (`$st`). `update_plan` is a derived ready queue.
+- Strict outputs: when machine output is required, machine blocks win over narrative text.
+
+## Pipeline Roles (`coder -> fixer -> integrator`)
+
+- `coder`: produce the smallest patch that satisfies acceptance criteria; report `decision` + `proof_status` (plus optional `patch`).
+- `fixer`: adversarial review for safety/regression/invariant breaks; flip `decision` to `reject` with concrete `failure_code` when needed.
+- `integrator`: apply accepted patches, run `proof_command`, package delivery (`commit_first` or `patch_first`), and update plan/ledger/learnings.
+
+## Integration Modes
+
+### Fleet Mode (Super Swarm, Safe)
+
+Goal: high parallelism without write collisions.
+
+- Use `$cas` to run N worker instances.
+- Workers run read-only and only propose diffs/patches plus structured result blocks.
+- Integrator applies patches sequentially, runs `proof_command`, and produces the delivery artifact.
+
+### Worktree Mode (Isolation First)
+
+Goal: remove filesystem overlap at the cost of setup overhead.
+
+- Create one git worktree per unit.
+- Run `coder -> fixer` in each worktree.
+- Integrator merges/applies into the main worktree, then runs proof and delivers.
+
+### Test-First Lane
+
+Goal: make correctness cheap by pinning proof signals early.
+
+- Add an initial wave of test-only units that create failing tests and define `proof_command`.
+- Implementation units follow and must make those proofs pass.
 
 ## CSV-Wave Contract (`spawn_agents_on_csv`)
 
@@ -106,6 +141,17 @@ Notes:
 - `max_workers` (optional): alias for `max_concurrency`
 - `max_runtime_seconds` (optional): per-worker runtime timeout (default 1800)
 - `output_schema` (optional): JSON shown to workers as the expected schema (not runtime-validated)
+
+Agent-job mechanics:
+
+- Collaboration tools + sqlite must be enabled for agent jobs.
+- Job spawning is subject to `agent_max_depth`; deep fanout may be blocked.
+- Workers must call `report_agent_job_result` exactly once; missing reports are failures.
+- Workers may cancel remaining pending items by setting `stop: true` in `report_agent_job_result`.
+
+Role note:
+
+- `spawn_agents_on_csv` spawns generic agent-job workers (no configured `agent_role`). If lane semantics are needed, encode lane (for example `coder|fixer`) in CSV/instruction, or run separate lane jobs.
 
 Placeholder escaping:
 
@@ -199,3 +245,9 @@ mesh run_csv --csv-path /tmp/mesh_wave.csv --output-csv-path /tmp/mesh_wave.out.
 - `references/failure-taxonomy.md`
 - `references/coder-rubric.md`
 - `references/output-contract.md`
+
+## Handoff Checklist
+
+- Capture the proof command and outcome in the orchestration ledger.
+- Persist reusable orchestration footguns/rules in `.learnings.jsonl` (prefer one record).
+- For cross-agent handoffs, dual-write key outcomes to both memory and `.learnings.jsonl`.
