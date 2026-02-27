@@ -64,18 +64,23 @@ run_mesh --help
 
 - Source of truth: `update_plan` queue.
 - `$st` sync: when `.step/st-plan.jsonl` is active, keep `$st` and `update_plan` aligned in the same turn.
+- Dependency discipline: run only units whose `$st deps` are satisfied. Treat dependency metadata as advisory only when explicitly requested by the user and all participating `unit_scope` sets are disjoint.
 - Unit pipeline (hard gate): `coder -> fixer -> integrator`.
 - Delivery default: `commit_first`; use `patch_first` only when explicitly requested.
+- Plan-write rule: workers return structured results only; they do not edit plan docs, `.step/st-plan.jsonl`, or ledger artifacts directly.
 - Budget clamp uses strictest remaining window (`min(remaining_5h, remaining_weekly)`):
   - `> 33%`: no budget-based clamp.
   - `10%..33%`: linear clamp.
   - `<= 10%`: single active unit, sequential single-agent execution.
+- Concurrency authority: derive one active-unit target during preflight and keep it aligned across `mesh wave --max-active`, `spawn_agents_on_csv.max_concurrency`, and orchestration ledger counts.
 - Scale-out gate: only allow CAS multi-instance fanout when backlog/saturation warrants it and strict remaining budget is `> 25%`.
+- Failure backpressure: if a wave reports `reject`, timeout, `invalid_output_schema`, or lifecycle mismatch, reduce next-wave concurrency (minimum 1) and serialize overlapping scopes until a clean wave passes.
 - Dirty working tree is not a reason to disable orchestration by itself; continue with disjoint `unit_scope`, read-only workers, and integrator-only writes.
 
 ## Core Invariants
 
 - Single-writer: only the integrator applies patches/creates commits; parallel workers are read-only.
+- State-writer ownership: only the integrator mutates plan state (`.step/st-plan.jsonl`), task status logs, and orchestration ledger fields.
 - Durable DAG: dependency edges live in `.step/st-plan.jsonl` (`$st`). `update_plan` is a derived ready queue.
 - Strict outputs: when machine output is required, machine blocks win over narrative text.
 
@@ -129,6 +134,8 @@ Notes:
 
 - Additional columns are allowed and can be referenced as `{column_name}` placeholders in the
   `instruction` template. A common extension is `lane` (example: `coder|fixer`).
+- Optional dependency columns: `depends_on` and `dep_policy` (`strict` default, `advisory` only by explicit user request).
+- Optional state column: `plan_write` (`integrator_only` recommended default).
 
 ### `spawn_agents_on_csv` Tool Arguments (Upstream Codex)
 
@@ -217,10 +224,73 @@ Important:
 2. `mesh plan_sync --input-json <plan.json>`
 3. `mesh slice --input-json <plan.json> --output-json <units.json>`
 4. `mesh wave --units-json <units.json> --csv-path <run-wave.csv> --max-active <n>`
-5. Run `spawn_agents_on_csv` against `<run-wave.csv>` with a distinct output CSV path.
+5. `mesh run_csv --csv-path <run-wave.csv> --output-csv-path <run-output.csv>` for preflight/contract checks.
+6. Run `spawn_agents_on_csv` against `<run-wave.csv>` with a distinct output CSV path.
    - Recommended: set `id_column: "id"`, pass an `output_schema` matching `references/output-contract.md`, and clamp `max_concurrency` to your current safe parallelism.
-6. `mesh run_csv --csv-path <run-wave.csv> --output-csv-path <run-output.csv>` for preflight/contract checks.
 7. `mesh ledger --input-json <ledger.json>` to emit event-only final ledger payload.
+
+## Preflight Checklist (Required Before Wave Spawn)
+
+Treat this as a hard gate. If any check fails, do not spawn workers for that wave.
+
+1. Runnable-unit gate (`$st deps` satisfied).
+   - Exclude units with unresolved dependencies from the candidate wave.
+   - If zero runnable units remain, emit no-runnable preflight and stop.
+2. Scope isolation gate (`unit_scope` disjointness).
+   - Keep overlapping write scopes out of the same wave.
+   - If overlap cannot be separated safely, serialize that scope (`max_active=1` for that lane).
+3. Concurrency authority gate (single active-unit target).
+   - Compute one active-unit target from budget preflight.
+   - Use the same number in `mesh wave --max-active`, `spawn_agents_on_csv.max_concurrency`, and ledger reporting.
+4. CSV hygiene gate.
+   - Require distinct `csv_path` and `output_csv_path`.
+   - Run `mesh run_csv` before spawn to validate headers/shape and output path separation.
+5. Strict output gate.
+   - Require worker `result_json` fields `id`, `decision`, `proof_status`.
+   - If strict parsing fails, classify as `invalid_output_schema` and block integration for that unit.
+6. State-writer ownership gate.
+   - Workers must return structured results only.
+   - Integrator alone mutates `.step/st-plan.jsonl`, plan/task status logs, and ledger fields.
+7. Launch gate.
+   - Spawn only after all gates pass for the wave.
+   - Keep `id_column: "id"` and use the preflight concurrency authority value.
+8. Backpressure gate for next wave.
+   - On `reject`, timeout, lifecycle mismatch, or `invalid_output_schema`, reduce next-wave concurrency (minimum 1).
+   - Serialize overlapping scopes until a clean wave passes.
+
+### Preflight Command Skeleton (Copy/Paste)
+
+```bash
+# Inputs (set these per run)
+PLAN_JSON=/tmp/plan.json
+UNITS_JSON=/tmp/units.json
+WAVE_CSV=/tmp/mesh_wave.csv
+WAVE_OUT_CSV=/tmp/mesh_wave.out.csv
+REMAINING_5H=40
+REMAINING_WEEKLY=28
+MAX_THREADS=12
+
+# 1) Budget -> choose one active-unit target (ACTIVE_UNITS) and reuse it everywhere.
+mesh budget --remaining-five-hour "$REMAINING_5H" --remaining-weekly "$REMAINING_WEEKLY" --max-threads "$MAX_THREADS"
+
+# 2) Normalize plan and slice runnable units.
+mesh plan_sync --input-json "$PLAN_JSON"
+mesh slice --input-json "$PLAN_JSON" --output-json "$UNITS_JSON"
+
+# 3) Build wave with the single concurrency authority value.
+mesh wave --units-json "$UNITS_JSON" --csv-path "$WAVE_CSV" --max-active <ACTIVE_UNITS>
+
+# 4) Preflight CSV contract and path separation before spawning workers.
+mesh run_csv --csv-path "$WAVE_CSV" --output-csv-path "$WAVE_OUT_CSV"
+```
+
+Then run `spawn_agents_on_csv` with:
+
+- `csv_path: <WAVE_CSV>`
+- `output_csv_path: <WAVE_OUT_CSV>` (must be different from input)
+- `id_column: "id"`
+- `max_concurrency: <ACTIVE_UNITS>` (same value used in `mesh wave --max-active`)
+- `output_schema` aligned to `references/output-contract.md`
 
 ## Replay Mode
 
@@ -246,6 +316,7 @@ mesh run_csv --csv-path /tmp/mesh_wave.csv --output-csv-path /tmp/mesh_wave.out.
 - `references/failure-taxonomy.md`
 - `references/coder-rubric.md`
 - `references/output-contract.md`
+- `references/orchestration-anti-patterns.md`
 
 ## Handoff Checklist
 

@@ -52,15 +52,19 @@ GRILL ME: HUMAN INPUT REQUIRED
 
 - Source of truth: use `update_plan` as the canonical ready queue for implementation orchestration. When `$st` is in play, keep `.step/st-plan.jsonl` and `update_plan` in sync in the same turn.
 - Execution substrate: use `$mesh` and execute ready waves via `spawn_agents_on_csv` by default.
+- Dependency discipline: schedule only units with satisfied `$st` deps. Treat dependency metadata as advisory only when the user explicitly opts in and `unit_scope` is disjoint.
 - Unit pipeline (hard gate): each implementation unit runs `coder -> fixer -> integrator`.
 - Delivery defaults: `integrator` uses `commit_first` unless the task/user explicitly requests `patch_first`.
 - Single-writer rule: only `integrator` applies patches/creates commits; parallel workers should be read-only.
+- Plan-write rule: workers must not mutate plan/state artifacts (`.step/st-plan.jsonl`, plan docs, orchestration ledger). Workers return structured results; integrator performs state writes.
 - Budget clamp (strictest of 5-hour and weekly remaining from CAS):
   - `remaining > 33%`: no budget-based clamp (still bounded by configured capacity).
   - `10% < remaining <= 33%`: linear clamp from full capacity to one active unit.
   - `remaining <= 10%`: single active unit, single-agent sequential execution.
+- Concurrency authority: compute one active-unit target at preflight and keep it consistent across `mesh wave --max-active`, `spawn_agents_on_csv.max_concurrency`, and ledger reporting.
 - Scale-out rules: allow multi-instance CAS only when backlog/saturation conditions justify it and `remaining > 25%`; disallow scale-out at `<= 25%`.
 - Wave isolation: overlapping write scopes are serialized; non-overlapping scopes can run in parallel.
+- Failure backpressure: on `reject`, timeout, lifecycle mismatch, or `invalid_output_schema`, reduce next-wave concurrency and serialize overlapping scopes until a clean wave passes.
 - Dirty working tree is not a skip gate for multi-agent orchestration; ignore unrelated diffs and preserve safety with disjoint scopes plus integrator-only writes.
 - CSV hygiene: keep `csv_path` and `output_csv_path` distinct per run to avoid template clobbering.
 - Output contract caveat: `spawn_agents_on_csv` output schema metadata is advisory; mesh must enforce strict output parsing before integration.
