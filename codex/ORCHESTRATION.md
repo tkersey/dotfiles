@@ -77,6 +77,12 @@ Key mechanics (from `openai/codex`):
 - Workers MUST call `report_agent_job_result` exactly once; missing reports are failures.
 - Workers may cancel remaining pending items by passing `stop: true` to `report_agent_job_result`.
 
+Role note:
+
+- `spawn_agents_on_csv` spawns generic agent-job workers (no configured `agent_role`). If you want
+  coder/fixer semantics, encode the lane in the CSV (example: `lane=coder|fixer`) and include it
+  in the instruction template, or run separate jobs per lane.
+
 Export behavior:
 
 - Output CSV includes the original input columns plus job metadata columns including `job_id`,
@@ -87,7 +93,7 @@ Example tool call (shape only):
 ```json
 {
   "csv_path": "/abs/path/to/wave.csv",
-  "instruction": "Implement unit {id}\nObjective: {objective}\nScope: {unit_scope}\nProof: {proof_command}",
+  "instruction": "Lane: {lane}\nImplement unit {id}\nObjective: {objective}\nScope: {unit_scope}\nProof: {proof_command}\n\nIf lane=coder: propose a patch and set proof_status=skipped.\nIf lane=fixer: review proposed patch and set decision=accept|reject.",
   "id_column": "id",
   "output_csv_path": "/abs/path/to/wave.out.csv",
   "max_concurrency": 8,

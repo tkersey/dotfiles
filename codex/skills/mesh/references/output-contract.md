@@ -16,6 +16,12 @@ Every worker MUST call `report_agent_job_result` exactly once with:
 If a worker finishes without calling `report_agent_job_result`, the item is marked failed with
 `last_error` like `worker finished without calling report_agent_job_result`.
 
+Important:
+
+- `report_agent_job_result` is a worker-only tool. Non-agent-job threads typically do not have it.
+- Even if the tool exists, results are only accepted when reported from the worker thread that
+  owns that job item; wrong-thread calls return `accepted: false` and the item will still fail.
+
 ## Required `result` Keys
 
 Mesh expects these fields inside the `result` JSON object (they will be exported under the
@@ -31,6 +37,31 @@ Recommended optional keys:
 - `patch`: an `apply_patch`-format patch string (when proposing changes)
 - `notes`: short explanation; for no-change use `NO_DIFF:<reason>`
 
+Examples:
+
+Coder lane (propose patch, no proof):
+
+```json
+{
+  "id": "u-001",
+  "decision": "accept",
+  "proof_status": "skipped",
+  "patch": "*** Begin Patch\n*** Update File: src/foo.txt\n@@\n-Old\n+New\n*** End Patch\n",
+  "notes": "Proposed minimal patch; proof deferred to integrator."
+}
+```
+
+No-diff lane:
+
+```json
+{
+  "id": "u-002",
+  "decision": "no_diff",
+  "proof_status": "skipped",
+  "notes": "NO_DIFF: already satisfies acceptance criteria"
+}
+```
+
 If `result_json` is missing, not a JSON object, or cannot be parsed, classify as
 `invalid_output_schema`.
 
@@ -43,6 +74,9 @@ Effect:
 
 - The job is marked `Cancelled`.
 - Remaining items stay `pending` (no worker runs) and their `result_json` stays empty.
+
+Use `stop: true` only for global blockers (missing dependency, invalid spec, dangerous invariant
+break) where completing remaining items would be wasted work.
 
 ## Recommended `output_schema`
 

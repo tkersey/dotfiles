@@ -89,6 +89,11 @@ Required input headers:
 - `variant`
 - `budget_tier`
 
+Notes:
+
+- Additional columns are allowed and can be referenced as `{column_name}` placeholders in the
+  `instruction` template. A common extension is `lane` (example: `coder|fixer`).
+
 ### `spawn_agents_on_csv` Tool Arguments (Upstream Codex)
 
 `spawn_agents_on_csv` takes:
@@ -166,6 +171,7 @@ Important:
 3. `mesh slice --input-json <plan.json> --output-json <units.json>`
 4. `mesh wave --units-json <units.json> --csv-path <run-wave.csv> --max-active <n>`
 5. Run `spawn_agents_on_csv` against `<run-wave.csv>` with a distinct output CSV path.
+   - Recommended: set `id_column: "id"`, pass an `output_schema` matching `references/output-contract.md`, and clamp `max_concurrency` to your current safe parallelism.
 6. `mesh run_csv --csv-path <run-wave.csv> --output-csv-path <run-output.csv>` for preflight/contract checks.
 7. `mesh ledger --input-json <ledger.json>` to emit event-only final ledger payload.
 
