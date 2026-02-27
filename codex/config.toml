@@ -49,6 +49,7 @@ responses_websockets_v2 = true
 multi_agent = true
 prevent_idle_sleep = true
 voice_transcription = true
+js_repl = true
 
 [tui]
 experimental_mode = "execute"
