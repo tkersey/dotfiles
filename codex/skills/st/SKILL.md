@@ -14,36 +14,23 @@ Maintain a durable plan file in the repo (default: `.step/st-plan.jsonl`) using 
 
 Plan items use typed dependency edges (`deps: [{id,type}]`) plus `notes` and `comments`, and render deterministically through `show`/read views.
 
-## Quick Start (Zig Binary + Brew Bootstrap)
+## Quick Start (Automatic Zig Binary + Brew Bootstrap)
 
 ```bash
-run_st() {
-  if command -v st >/dev/null 2>&1 && st --help 2>&1 | grep -q "st.zig"; then
-    st "$@"
-    return
-  fi
-  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
-    if ! brew install tkersey/tap/st; then
-      echo "brew install tkersey/tap/st failed; refusing fallback." >&2
-      return 1
-    fi
-    if command -v st >/dev/null 2>&1 && st --help 2>&1 | grep -q "st.zig"; then
-      st "$@"
-      return
-    fi
-    echo "brew install tkersey/tap/st did not produce a compatible st binary." >&2
-    return 1
-  fi
-  echo "st binary missing or incompatible (marker st.zig not found)." >&2
-  return 1
-}
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+RUN_ST_SCRIPT="$REPO_ROOT/codex/skills/st/scripts/run_st.sh"
+if [ ! -x "$RUN_ST_SCRIPT" ]; then
+  echo "run_st bootstrap script missing or not executable: $RUN_ST_SCRIPT" >&2
+  exit 1
+fi
 
-run_st --help
+# Always invoke st through RUN_ST_SCRIPT; it auto-installs tkersey/tap/st on macOS when needed.
+"$RUN_ST_SCRIPT" --help
 ```
 
 ## Workflow
 
-1. Resolve repository root and plan path.
+1. Resolve repository root and set `RUN_ST_SCRIPT` to `codex/skills/st/scripts/run_st.sh`; use `"$RUN_ST_SCRIPT"` for all commands (do not call `st` directly).
 2. If the run has 3+ dependent steps, likely spans turns, or already uses `update_plan`, adopt `$st` as the durable source of truth before editing.
 3. If the plan came from `$select`, map selected units into stable `$st` IDs and dependency edges before execution starts.
 4. Initialize plan storage with `st init` if missing.
@@ -59,21 +46,21 @@ run_st --help
 Run commands from the target repository root.
 
 ```bash
-run_st init --file .step/st-plan.jsonl
-run_st add --file .step/st-plan.jsonl --id st-001 --step "Reproduce failing test" --deps ""
-run_st add --file .step/st-plan.jsonl --id st-002 --step "Patch core logic" --deps "st-001"
-run_st set-status --file .step/st-plan.jsonl --id st-001 --status in_progress
-run_st set-deps --file .step/st-plan.jsonl --id st-002 --deps "st-001:blocks,st-003:blocks"
-run_st set-notes --file .step/st-plan.jsonl --id st-002 --notes "Need benchmark evidence"
-run_st add-comment --file .step/st-plan.jsonl --id st-002 --text "Pausing until CI clears" --author tk
-run_st ready --file .step/st-plan.jsonl --format markdown
-run_st blocked --file .step/st-plan.jsonl --format json
-run_st show --file .step/st-plan.jsonl --format markdown
-run_st doctor --file .step/st-plan.jsonl
-run_st doctor --file .step/st-plan.jsonl --repair-seq
-run_st emit-update-plan --file .step/st-plan.jsonl
-run_st export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
-run_st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
+"$RUN_ST_SCRIPT" init --file .step/st-plan.jsonl
+"$RUN_ST_SCRIPT" add --file .step/st-plan.jsonl --id st-001 --step "Reproduce failing test" --deps ""
+"$RUN_ST_SCRIPT" add --file .step/st-plan.jsonl --id st-002 --step "Patch core logic" --deps "st-001"
+"$RUN_ST_SCRIPT" set-status --file .step/st-plan.jsonl --id st-001 --status in_progress
+"$RUN_ST_SCRIPT" set-deps --file .step/st-plan.jsonl --id st-002 --deps "st-001:blocks,st-003:blocks"
+"$RUN_ST_SCRIPT" set-notes --file .step/st-plan.jsonl --id st-002 --notes "Need benchmark evidence"
+"$RUN_ST_SCRIPT" add-comment --file .step/st-plan.jsonl --id st-002 --text "Pausing until CI clears" --author tk
+"$RUN_ST_SCRIPT" ready --file .step/st-plan.jsonl --format markdown
+"$RUN_ST_SCRIPT" blocked --file .step/st-plan.jsonl --format json
+"$RUN_ST_SCRIPT" show --file .step/st-plan.jsonl --format markdown
+"$RUN_ST_SCRIPT" doctor --file .step/st-plan.jsonl
+"$RUN_ST_SCRIPT" doctor --file .step/st-plan.jsonl --repair-seq
+"$RUN_ST_SCRIPT" emit-update-plan --file .step/st-plan.jsonl
+"$RUN_ST_SCRIPT" export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
+"$RUN_ST_SCRIPT" import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
 ```
 
 ## Operating Rules
@@ -102,7 +89,7 @@ run_st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.jso
 
 - After each `$st` mutation (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`), parse the emitted `update_plan: {...}` line and publish `update_plan` in the same turn.
 - If no emitted payload is available (for example after `init` or shell piping), run:
-  - `run_st emit-update-plan --file .step/st-plan.jsonl`
+  - `"$RUN_ST_SCRIPT" emit-update-plan --file .step/st-plan.jsonl`
 - Preserve item ordering from `$st` in `update_plan`.
 - Map statuses:
   - `in_progress` -> `in_progress`
@@ -111,16 +98,16 @@ run_st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.jso
 - Keep dependency edges only in `$st` (`deps`); do not encode dependencies in `update_plan`.
 - If an item has `dep_state=waiting_on_deps`, never publish that step as `in_progress` in `update_plan`.
 - Before final response on turns that mutate `$st`, re-check no drift by comparing:
-  - `run_st show --file .step/st-plan.jsonl --format json`
+  - `"$RUN_ST_SCRIPT" show --file .step/st-plan.jsonl --format json`
   - the latest emitted `update_plan` payload.
 
 ## Validation
 
 - Run lightweight CLI sanity checks:
-  - `run_st --help`
-  - `run_st doctor --file .step/st-plan.jsonl`
-  - `run_st emit-update-plan --file .step/st-plan.jsonl`
-  - `run_st show --file .step/st-plan.jsonl --format json`
+  - `"$RUN_ST_SCRIPT" --help`
+  - `"$RUN_ST_SCRIPT" doctor --file .step/st-plan.jsonl`
+  - `"$RUN_ST_SCRIPT" emit-update-plan --file .step/st-plan.jsonl`
+  - `"$RUN_ST_SCRIPT" show --file .step/st-plan.jsonl --format json`
 
 ## References
 
