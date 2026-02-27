@@ -71,6 +71,7 @@ run_mesh --help
   - `10%..33%`: linear clamp.
   - `<= 10%`: single active unit, sequential single-agent execution.
 - Scale-out gate: only allow CAS multi-instance fanout when backlog/saturation warrants it and strict remaining budget is `> 25%`.
+- Dirty working tree is not a reason to disable orchestration by itself; continue with disjoint `unit_scope`, read-only workers, and integrator-only writes.
 
 ## Core Invariants
 

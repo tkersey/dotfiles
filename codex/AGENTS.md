@@ -61,6 +61,7 @@ GRILL ME: HUMAN INPUT REQUIRED
   - `remaining <= 10%`: single active unit, single-agent sequential execution.
 - Scale-out rules: allow multi-instance CAS only when backlog/saturation conditions justify it and `remaining > 25%`; disallow scale-out at `<= 25%`.
 - Wave isolation: overlapping write scopes are serialized; non-overlapping scopes can run in parallel.
+- Dirty working tree is not a skip gate for multi-agent orchestration; ignore unrelated diffs and preserve safety with disjoint scopes plus integrator-only writes.
 - CSV hygiene: keep `csv_path` and `output_csv_path` distinct per run to avoid template clobbering.
 - Output contract caveat: `spawn_agents_on_csv` output schema metadata is advisory; mesh must enforce strict output parsing before integration.
 - Orchestration Ledger (implementation turns): include only events that occurred:
