@@ -50,6 +50,7 @@ multi_agent = true
 prevent_idle_sleep = true
 voice_transcription = true
 js_repl = true
+default_mode_request_user_input = true
 
 [tui]
 experimental_mode = "execute"
