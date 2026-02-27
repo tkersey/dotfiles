@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Upcoming Features"
+  short_description: "Summarize unreleased Codex features from GitHub"
+  default_prompt: "Use $codex-upcoming-features to fetch openai/codex and summarize unreleased features since the latest stable tag."
