@@ -1,4 +1,4 @@
 interface:
   display_name: "mesh"
   short_description: "Plan-driven CSV-wave orchestration with coder/fixer/integrator gates"
-  default_prompt: "Use $mesh to execute update_plan work in parallel CSV waves with strict coder->fixer->integrator gates."
+  default_prompt: "Use $mesh to execute update_plan work in parallel CSV waves with strict coder->fixer->integrator gates, integrator-only delivery, and strict worker output parsing."

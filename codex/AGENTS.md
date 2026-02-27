@@ -48,10 +48,13 @@ GRILL ME: HUMAN INPUT REQUIRED
 
 ## Orchestration Contract
 
+- Detailed execution runbook: see `codex/ORCHESTRATION.md` (keep this file thin).
+
 - Source of truth: use `update_plan` as the canonical ready queue for implementation orchestration. When `$st` is in play, keep `.step/st-plan.jsonl` and `update_plan` in sync in the same turn.
 - Execution substrate: use `$mesh` and execute ready waves via `spawn_agents_on_csv` by default.
 - Unit pipeline (hard gate): each implementation unit runs `coder -> fixer -> integrator`.
 - Delivery defaults: `integrator` uses `commit_first` unless the task/user explicitly requests `patch_first`.
+- Single-writer rule: only `integrator` applies patches/creates commits; parallel workers should be read-only.
 - Budget clamp (strictest of 5-hour and weekly remaining from CAS):
   - `remaining > 33%`: no budget-based clamp (still bounded by configured capacity).
   - `10% < remaining <= 33%`: linear clamp from full capacity to one active unit.

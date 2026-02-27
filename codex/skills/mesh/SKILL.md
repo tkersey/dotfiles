@@ -1,6 +1,6 @@
 ---
 name: mesh
-description: Execute plan-driven orchestration with CSV waves, strict coder->fixer->integrator unit gates, and budget-aware parallelism. Use for `$mesh`, parallel step execution from `update_plan`, `spawn_agents_on_csv` wave runs, CAS budget clamping, and event-only orchestration ledgers.
+description: Execute plan-driven orchestration with CSV waves, strict coder-to-fixer-to-integrator unit gates, and budget-aware parallelism. Use for `$mesh`, parallel step execution from `update_plan`, `spawn_agents_on_csv` wave runs, CAS budget clamping, and event-only orchestration ledgers.
 ---
 
 # mesh
@@ -65,6 +65,8 @@ run_mesh --help
   - `<= 10%`: single active unit, sequential single-agent execution.
 - Scale-out gate: only allow CAS multi-instance fanout when backlog/saturation warrants it and strict remaining budget is `> 25%`.
 
+For orchestration integration patterns (fleet/worktree/test-first), see `codex/ORCHESTRATION.md`.
+
 ## CSV-Wave Contract (`spawn_agents_on_csv`)
 
 Required input headers:
@@ -80,18 +82,70 @@ Required input headers:
 - `variant`
 - `budget_tier`
 
+### `spawn_agents_on_csv` Tool Arguments (Upstream Codex)
+
+`spawn_agents_on_csv` takes:
+
+- `csv_path` (required): path to the input CSV
+- `instruction` (required): template string; `{column_name}` placeholders expand per row
+- `id_column` (optional): which column to use as stable `item_id` (duplicates are suffixed)
+- `output_csv_path` (optional): exported CSV path (default is derived from input filename)
+- `max_concurrency` (optional): max parallel workers (default 16; capped by config; max 64)
+- `max_workers` (optional): alias for `max_concurrency`
+- `max_runtime_seconds` (optional): per-worker runtime timeout (default 1800)
+- `output_schema` (optional): JSON shown to workers as the expected schema (not runtime-validated)
+
+Placeholder escaping:
+
+- Use `{{` and `}}` to emit literal braces in the rendered instruction.
+- To show a placeholder literally (without expansion), write `{{column_name}}`.
+
+### Canonical CSV Example (Fully Filled)
+
+This is a minimal, parseable example row that maps a plan task into one atomic unit.
+
+```csv
+id,objective,unit_scope,constraints,invariants,proof_command,delivery_mode,attempt,variant,budget_tier
+u-001,"Fix flaky parser: treat trailing commas as invalid","src/parser.py; tests/test_parser.py","Do not change public API; keep diff minimal; no git push","No new allocations in hot path; reject invalid input at boundary","uv run pytest tests/test_parser.py::test_reject_trailing_comma","commit_first",1,"wave","aware"
+```
+
+Field mapping from a typical subagent task template:
+
+- Plan/Goals/Task/Acceptance -> `objective`
+- Location/File paths -> `unit_scope`
+- Constraints/Risks/"do not touch" -> `constraints`
+- Invariants/"must never" rules -> `invariants`
+- Validation command -> `proof_command`
+- Commit vs patch delivery choice -> `delivery_mode`
+
 Required worker output fields:
 
 - `id`
 - `decision`
 - `proof_status`
 
+These fields are expected inside the worker's `report_agent_job_result.result` object (exported in
+the `result_json` column). See `references/output-contract.md`.
+
+### Machine Output Precedence (Strict Mode)
+
+When using Codex agent jobs, the machine output is the `report_agent_job_result` tool call.
+Prefer the recorded `result_json` over any narrative text.
+If `result_json` is missing or cannot be parsed, classify the unit as `invalid_output_schema`.
+
+Recommended strict-mode contract: `references/output-contract.md`.
+
 Optional output fields:
 
 - `failure_code`
-- `patch_ref`
-- `commit_ref`
+- `patch`
 - `notes`
+
+Export note:
+
+- `spawn_agents_on_csv` exports an output CSV that includes the original input columns plus job
+  metadata columns like `job_id`, `item_id`, `status`, `attempt_count`, `last_error`, and
+  `result_json`.
 
 Important:
 
@@ -131,3 +185,4 @@ mesh run_csv --csv-path /tmp/mesh_wave.csv --output-csv-path /tmp/mesh_wave.out.
 
 - `references/failure-taxonomy.md`
 - `references/coder-rubric.md`
+- `references/output-contract.md`
