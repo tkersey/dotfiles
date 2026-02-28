@@ -86,7 +86,7 @@ GRILL ME: HUMAN INPUT REQUIRED
   - Include an `Orchestration Ledger` section in the final response.
   - Render the event-only ledger payload in a fenced `json` code block (pretty-printed, multi-line).
   - Do not inline minified JSON in narrative text.
-  - If orchestration did not run, omit the JSON block and state `Orchestration Ledger: not invoked`.
+  - If orchestration did not run, omit the `Orchestration Ledger` section entirely.
   - Completion gate: missing required ledger is an invalid completion; generate and include it before sending the final response.
 
 ## Working Tree Hygiene

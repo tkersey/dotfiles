@@ -74,7 +74,7 @@ Rendering rules:
 - Heading: `Orchestration Ledger`
 - Body: one fenced `json` code block, pretty-printed (multi-line), containing only occurred events.
 - Never inline minified JSON in prose.
-- If orchestration did not run, skip the JSON block and emit: `Orchestration Ledger: not invoked`.
+- If orchestration did not run, omit the `Orchestration Ledger` section entirely.
 
 Template:
 
