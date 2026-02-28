@@ -56,8 +56,9 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Claim gate: when `$select` emits a first-wave claim, apply those `in_progress` claims in `$st` before spawning workers.
 - Dependency discipline: schedule only units with satisfied `$st` deps. Treat dependency metadata as advisory only when the user explicitly opts in and `unit_scope` is disjoint.
 - Unit pipeline (hard gate): each implementation unit runs `coder -> fixer -> integrator` as explicit lanes/jobs unless the user requests a collapsed path.
-- Delivery defaults: `integrator` uses `commit_first` unless the task/user explicitly requests `patch_first`.
+- Delivery defaults: `integrator` uses `patch_first` unless the task/user explicitly requests `commit_first`.
 - Single-writer rule: only `integrator` applies patches/creates commits; parallel workers should be read-only.
+- Integrator commit materialization: when converting accepted patches into commits, use `git am` only (no `git apply`-then-commit path).
 - Scope quality gate: units with missing/unknown/overly broad `unit_scope` are not eligible for parallel waves; block or serialize until scope is tightened.
 - Plan-write rule: workers must not mutate plan/state artifacts (`.step/st-plan.jsonl`, plan docs, orchestration ledger). Workers return structured results; integrator performs state writes.
 - Budget clamp (strictest of 5-hour and weekly remaining from CAS):

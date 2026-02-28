@@ -96,7 +96,8 @@ Orchestration Ledger
 - Claim gate: apply first-wave `$select` `in_progress` claims in `$st` before spawning workers.
 - Dependency discipline: run only units whose `$st deps` are satisfied. Treat dependency metadata as advisory only when explicitly requested by the user and all participating `unit_scope` sets are disjoint.
 - Unit pipeline (hard gate): `coder -> fixer -> integrator` as explicit lanes/jobs unless user intent requires a collapsed path.
-- Delivery default: `commit_first`; use `patch_first` only when explicitly requested.
+- Delivery default: `patch_first`; use `commit_first` only when explicitly requested.
+- Commit materialization gate: if accepted patches are converted to commits, integrator must use `git am` only (no `git apply`-then-commit path).
 - Plan-write rule: workers return structured results only; they do not edit plan docs, `.step/st-plan.jsonl`, or ledger artifacts directly.
 - Scope quality gate: missing/unknown/overly broad scopes are not parallel-safe; block or serialize those units until scope is narrowed.
 - Budget clamp uses strictest remaining window (`min(remaining_5h, remaining_weekly)`):
@@ -121,7 +122,7 @@ Orchestration Ledger
 
 - `coder`: produce the smallest patch that satisfies acceptance criteria; report `decision` + `proof_status` (plus optional `patch`).
 - `fixer`: adversarial review for safety/regression/invariant breaks; flip `decision` to `reject` with concrete `failure_code` when needed.
-- `integrator`: apply accepted patches, run `proof_command`, package delivery (`commit_first` or `patch_first`), and update plan/ledger/learnings.
+- `integrator`: apply accepted patches, run `proof_command`, package delivery (`patch_first` or `commit_first`), and update plan/ledger/learnings. For commit materialization from patches, use `git am` only.
 
 ## Lane Expansion (Safe Fanout)
 
@@ -215,7 +216,7 @@ This is a minimal, parseable example row that maps a plan task into one atomic u
 
 ```csv
 id,objective,unit_scope,constraints,invariants,proof_command,delivery_mode,attempt,variant,budget_tier
-u-001,"Fix flaky parser: treat trailing commas as invalid","src/parser.py; tests/test_parser.py","Do not change public API; keep diff minimal; no git push","No new allocations in hot path; reject invalid input at boundary","uv run pytest tests/test_parser.py::test_reject_trailing_comma","commit_first",1,"wave","aware"
+u-001,"Fix flaky parser: treat trailing commas as invalid","src/parser.py; tests/test_parser.py","Do not change public API; keep diff minimal; no git push","No new allocations in hot path; reject invalid input at boundary","uv run pytest tests/test_parser.py::test_reject_trailing_comma","patch_first",1,"wave","aware"
 ```
 
 Field mapping from a typical subagent task template:
@@ -225,7 +226,7 @@ Field mapping from a typical subagent task template:
 - Constraints/Risks/"do not touch" -> `constraints`
 - Invariants/"must never" rules -> `invariants`
 - Validation command -> `proof_command`
-- Commit vs patch delivery choice -> `delivery_mode`
+- Commit vs patch delivery choice -> `delivery_mode` (if materializing commit(s) from patches, use `git am` only)
 
 Required worker output fields:
 
