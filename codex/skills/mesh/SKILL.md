@@ -1,6 +1,6 @@
 ---
 name: mesh
-description: Execute plan-driven orchestration with CSV waves, strict coder-to-fixer-to-integrator unit gates, and budget-aware parallelism. Use for `$mesh`, parallel step execution from `update_plan`, `spawn_agents_on_csv` wave runs, CAS budget clamping, and event-only orchestration ledgers.
+description: Execute plan-driven orchestration with CSV waves, strict coder+reducer-to-fixer-to-integrator unit gates, and budget-aware parallelism. Use for `$mesh`, parallel step execution from `update_plan`, `spawn_agents_on_csv` wave runs, CAS budget clamping, and event-only orchestration ledgers.
 ---
 
 # mesh
@@ -13,8 +13,8 @@ description: Execute plan-driven orchestration with CSV waves, strict coder-to-f
 - Slices coarse steps into atomic units.
 - Builds disjoint-scope CSV waves.
 - Executes waves with `spawn_agents_on_csv`.
-- Enforces `coder -> fixer -> integrator` on each unit.
-- Defaults coding phases to triplet cohorts (`coder x3`, `fixer x3`, `integrator x3`) with safe degrade/restore.
+- Enforces `coder + reducer -> fixer -> integrator` on each unit.
+- Defaults coding phases to dual-author cohorts (`coder x2`, `reducer x1`) and safety cohorts (`fixer x3`, `integrator x3`) with safe degrade/restore.
 - Emits an event-only orchestration ledger.
 
 ## Zig CLI Iteration Repos
@@ -112,7 +112,7 @@ Rendering rules:
 - Heading: `Orchestration Ledger`
 - Body: formatted prose only (no fenced JSON block and no inline JSON).
 - Use deterministic line order and omit lines for non-events: `Skills used`, `Wave summary`, `Subagents`, `Budget and scaling`, `CAS instances`, `Retry/replacement events`, `Delivery/join status`.
-- Include triplet fanout target/effective and degrade/restore events in `Wave summary` whenever triplet lanes were active.
+- Include lane fanout target/effective and degrade/restore events in `Wave summary` whenever dual-author lanes were active.
 - If orchestration did not run, omit the `Orchestration Ledger` section entirely.
 
 Template:
@@ -120,7 +120,7 @@ Template:
 ````markdown
 Orchestration Ledger
 - Skills used: st, mesh, spawn_agents_on_csv
-- Wave summary: 2 waves (wave1: U00,U10; wave2: U01); triplet fanout target 3/3/3, effective 3/3/2, degraded once (budget_low)
+- Wave summary: 2 waves (wave1: U00,U10; wave2: U01); fanout target coder/reducer/fixer/integrator=2/1/3/3, effective=2/1/3/2, degraded once (budget_low)
 - Subagents: spawned 12, completed 12, timed out 0, replaced 1
 - Budget and scaling: tier aware, single-instance clamp at max-active 3
 - CAS instances: used false, count 0
@@ -134,9 +134,9 @@ Orchestration Ledger
 - Decomposition gate: before spawning non-trivial waves, run `$select` (or equivalent decomposition) so units are atomic and carry explicit scope + proof metadata.
 - Claim gate: apply first-wave `$select` `in_progress` claims in `$st` before spawning workers.
 - Dependency discipline: run only units whose `$st deps` are satisfied. Treat dependency metadata as advisory only when explicitly requested by the user and all participating `unit_scope` sets are disjoint.
-- Unit pipeline (hard gate): `coder -> fixer -> integrator` as explicit lanes/jobs unless user intent requires a collapsed path.
-- Triplet default (coding phase): run lane cohorts as `coder x3`, `fixer x3`, and `integrator x3` per active unit.
-- Coder adversarial gate: require peer challenge findings before fixer intake.
+- Unit pipeline (hard gate): `coder + reducer -> fixer -> integrator` as explicit lanes/jobs unless user intent requires a collapsed path.
+- Dual-author default (coding phase): run lane cohorts as `coder x2`, `reducer x1`, `fixer x3`, and `integrator x3` per active unit.
+- Author adversarial gate: require coder/reducer peer challenge findings before fixer intake.
 - Fixer quorum gate: require at least 2 accepts and no blocker reject to promote.
 - Integrator trio gate: run one writer and two shadows; close only when writer passes and both shadows accept.
 - Delivery default: `patch_first`; use `commit_first` only when explicitly requested.
@@ -150,7 +150,7 @@ Orchestration Ledger
 - Concurrency authority: derive one active-unit target during preflight and keep it aligned across `mesh wave --max-active`, `spawn_agents_on_csv.max_concurrency`, and orchestration ledger counts.
 - Scale-out gate: only allow CAS multi-instance fanout when backlog/saturation warrants it and strict remaining budget is `> 25%`.
 - Lane fanout (safe degrade):
-  - `remaining > 15%` and no instability: keep triplet width `3`.
+  - `remaining > 15%` and no instability: keep dual-author fanout at `coder x2 + reducer x1` and safety lanes at width `3`.
   - `10% < remaining <= 15%` or prior-wave instability: degrade to width `2`.
   - `remaining <= 10%` or two consecutive unstable waves: degrade to width `1`.
   - Restore by one level after two consecutive clean waves and `remaining > 20%`.
@@ -166,19 +166,20 @@ Orchestration Ledger
 - Durable DAG: dependency edges live in `.step/st-plan.jsonl` (`$st`). `update_plan` is a derived ready queue.
 - Strict outputs: when machine output is required, machine blocks win over narrative text.
 
-## Pipeline Roles (`coder -> fixer -> integrator`, Triplet-First)
+## Pipeline Roles (`coder + reducer -> fixer -> integrator`, Dual-Author First)
 
-- `coder`: three candidates per unit; each reports `decision` + `proof_status` + peer `challenge_findings`.
+- `coder`: two candidates per unit; each reports `decision` + `proof_status` + peer `challenge_findings`.
+- `reducer`: one candidate per unit; invokes `$reduce`, emits a `Reduce Record`, and may propose a lower-indirection patch.
 - `fixer`: three adversarial reviews per promoted candidate; quorum is `>=2 accepts` with no blocker reject.
 - `integrator`: one writer plus two shadows; writer applies accepted patch and runs proof, shadows validate scope/proof, and closure requires writer pass + both shadow accepts. Commit materialization from patches uses `git am` only.
 
 ## Lane Expansion (Safe Fanout)
 
-For parallel waves, prefer explicit per-unit triplet lanes to maximize safe subagent usage:
+For parallel waves, prefer explicit per-unit dual-author plus safety lanes to maximize safe subagent usage:
 
-- Emit `u-<id>-coder-{1..3}`, `u-<id>-fixer-{1..3}`, and `u-<id>-integrator-{1..3}` rows/jobs per unit.
-- Keep lane dependency order strict (`coder -> fixer -> integrator`) per unit id.
-- Because `spawn_agents_on_csv` does not enforce dependencies, run lanes as separate waves/spawns (coder first, then fixer, then integrator).
+- Emit `u-<id>-coder-{1..2}`, `u-<id>-reducer-1`, `u-<id>-fixer-{1..3}`, and `u-<id>-integrator-{1..3}` rows/jobs per unit.
+- Keep lane dependency order strict (`coder + reducer -> fixer -> integrator`) per unit id.
+- Because `spawn_agents_on_csv` does not enforce dependencies, run lanes as separate waves/spawns (coder/reducer first, then fixer, then integrator).
 - Integrator index `1` is writer; integrator indexes `2` and `3` are shadow reviewers.
 - If you intentionally collapse lanes (for trivial or serialized units), record the reason in notes/ledger.
 
@@ -222,7 +223,7 @@ Required input headers:
 - `variant`
 - `budget_tier`
 - `cohort_id`
-- `triplet_index`
+- `triplet_index` (legacy key name; use as lane index: coder `1..2`, reducer `1`, fixer/integrator `1..3`)
 - `candidate_id`
 - `role_in_lane`
 - `challenge_targets`
@@ -231,7 +232,7 @@ Required input headers:
 Notes:
 
 - Additional columns are allowed and can be referenced as `{column_name}` placeholders in the
-  `instruction` template. A common extension is `lane` (example: `coder|fixer`).
+  `instruction` template. A common extension is `lane` (example: `coder|reducer|fixer`).
 - Optional dependency columns: `depends_on` and `dep_policy` (`strict` default, `advisory` only by explicit user request).
 - Optional state column: `plan_write` (`integrator_only` recommended default).
 
@@ -257,7 +258,7 @@ Agent-job mechanics:
 
 Role note:
 
-- `spawn_agents_on_csv` spawns generic agent-job workers (no configured `agent_role`). If lane semantics are needed, encode lane (for example `coder|fixer`) in CSV/instruction, or run separate lane jobs.
+- `spawn_agents_on_csv` spawns generic agent-job workers (no configured `agent_role`). If lane semantics are needed, encode lane (for example `coder|reducer|fixer`) in CSV/instruction, or run separate lane jobs.
 
 Placeholder escaping:
 
@@ -286,7 +287,7 @@ Required worker output fields:
 
 - `id`
 - `candidate_id`
-- `triplet_index`
+- `triplet_index` (legacy key name; lane index semantics)
 - `decision`
 - `proof_status`
 

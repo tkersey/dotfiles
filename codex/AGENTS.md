@@ -55,9 +55,9 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Decomposition gate: before spawning non-trivial waves, run `$select` (or an equivalent explicit decomposition step) so units are atomic, dependency-aware, and carry concrete `unit_scope` + validation/proof signals.
 - Claim gate: when `$select` emits a first-wave claim, apply those `in_progress` claims in `$st` before spawning workers.
 - Dependency discipline: schedule only units with satisfied `$st` deps. Treat dependency metadata as advisory only when the user explicitly opts in and `unit_scope` is disjoint.
-- Unit pipeline (hard gate): each implementation unit runs `coder -> fixer -> integrator` as explicit lanes/jobs unless the user requests a collapsed path.
-- Triplet default (coding phase): run lane cohorts as `coder x3`, `fixer x3`, `integrator x3` per active unit unless the user explicitly requests a narrower path.
-- Coder adversarial gate: coder cohort members must challenge peer outputs before fixer intake.
+- Unit pipeline (hard gate): each implementation unit runs `coder + reducer -> fixer -> integrator` as explicit lanes/jobs unless the user requests a collapsed path.
+- Dual-author default (coding phase): run lane cohorts as `coder x2`, `reducer x1`, `fixer x3`, `integrator x3` per active unit unless the user explicitly requests a narrower path.
+- Author adversarial gate: coder/reducer cohort members must challenge peer outputs before fixer intake.
 - Fixer quorum gate: require at least 2 accepts and no blocker reject to promote a unit to integrator.
 - Integrator trio gate: use `writer + 2 shadow integrators`; close only when writer passes and both shadows accept.
 - Delivery defaults: `integrator` uses `patch_first` unless the task/user explicitly requests `commit_first`.
@@ -72,7 +72,7 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Concurrency authority: compute one active-unit target at preflight and keep it consistent across `mesh wave --max-active`, `spawn_agents_on_csv.max_concurrency`, and ledger reporting.
 - Scale-out rules: allow multi-instance CAS only when backlog/saturation conditions justify it and `remaining > 25%`; disallow scale-out at `<= 25%`.
 - Lane fanout (safe degrade):
-  - `remaining > 15%` and no instability: keep triplet width `3`.
+  - `remaining > 15%` and no instability: keep dual-author fanout at `coder x2 + reducer x1` and safety lanes at width `3`.
   - `10% < remaining <= 15%` or prior-wave instability: degrade to width `2`.
   - `remaining <= 10%` or two consecutive unstable waves: degrade to width `1`.
   - Restore by one level after two consecutive clean waves and `remaining > 20%`.
@@ -81,12 +81,12 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Dirty working tree is not a skip gate for multi-agent orchestration; ignore unrelated diffs and preserve safety with disjoint scopes plus integrator-only writes.
 - CSV hygiene: keep `csv_path` and `output_csv_path` distinct per run to avoid template clobbering.
 - Output contract caveat: `spawn_agents_on_csv` output schema metadata is advisory; mesh must enforce strict output parsing before integration.
-- Triplet output gate: require `candidate_id` and `triplet_index` in strict worker results before quorum evaluation.
+- Candidate output gate: require `candidate_id` and `triplet_index` in strict worker results before quorum evaluation (legacy key name retained).
 - Reject-closure gate: never close a unit when worker output contains `decision=reject` or `proof_status=fail`; require explicit replacement/re-run evidence first.
 - Orchestration Ledger (implementation turns): include only events that occurred:
   - `skills_used`
   - `wave_count` and wave scopes
-  - triplet fanout target/effective and any degrade/restore events
+  - lane fanout target/effective and any degrade/restore events
   - subagent counts (`spawned`, `completed`, `timed_out`, `replaced`)
   - budget snapshot and scaling decision
   - CAS instance usage

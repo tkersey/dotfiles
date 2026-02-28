@@ -14,7 +14,7 @@ description = "Author code changes with TK doctrine and explicit proof signals."
 config_file = "~/.codex/agents/coder.toml"
 
 [agents.reducer]
-description = "Reduce incidental complexity while preserving coder contract and invariants."
+description = "Run `$reduce` to cut high-cost abstractions while preserving contract/invariants with minimal reversible diffs."
 config_file = "~/.codex/agents/reducer.toml"
 
 [agents.fixer]

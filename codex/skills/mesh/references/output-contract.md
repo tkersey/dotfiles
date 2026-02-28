@@ -29,7 +29,7 @@ Mesh expects these fields inside the `result` JSON object (they will be exported
 
 - `id`: unit id (string; should match the CSV row id)
 - `candidate_id`: unique candidate id for the lane row (string)
-- `triplet_index`: candidate index within the lane cohort (`1..3`)
+- `triplet_index`: lane index (legacy key name retained; coder `1..2`, reducer `1`, fixer/integrator `1..3`)
 - `decision`: `accept` | `reject` | `no_diff`
 - `proof_status`: `pass` | `fail` | `skipped`
 
@@ -39,7 +39,8 @@ Recommended optional keys:
 
 - `failure_code`: one of the Mesh failure taxonomy codes (only when `decision != accept`)
 - `blockers`: array of blocker labels that force reject semantics
-- `challenge_findings`: peer-review findings (required for coder triplet lanes)
+- `challenge_findings`: peer-review findings (required for coder/reducer author lanes)
+- `reduce_record`: reducer-specific abstraction cut summary (`target_abstraction`, `replacement_primitive`, `complexity_delta`, `invariants_preserved`, `rollback_plan`)
 - `patch`: an `apply_patch`-format patch string (when proposing changes)
 - `notes`: short explanation; for no-change use `NO_DIFF:<reason>`
 
@@ -60,6 +61,31 @@ Coder lane (propose patch, no proof):
   ],
   "patch": "*** Begin Patch\n*** Update File: src/foo.txt\n@@\n-Old\n+New\n*** End Patch\n",
   "notes": "Proposed minimal patch; proof deferred to integrator."
+}
+```
+
+Reducer lane (propose abstraction cut, no proof):
+
+```json
+{
+  "id": "u-001",
+  "candidate_id": "u-001-reducer-1",
+  "triplet_index": 1,
+  "decision": "accept",
+  "proof_status": "skipped",
+  "challenge_findings": [
+    "Coder candidate 1 keeps DI wrapper with no measurable benefit",
+    "Coder candidate 2 introduces helper indirection without reducing call depth"
+  ],
+  "reduce_record": {
+    "target_abstraction": "Service adapter wrapper used only once",
+    "replacement_primitive": "Direct function call with explicit args",
+    "complexity_delta": "Remove one layer and one indirection helper",
+    "invariants_preserved": "Request validation and timeout behavior unchanged",
+    "rollback_plan": "Revert reducer patch commit/patch artifact"
+  },
+  "patch": "*** Begin Patch\n*** Update File: src/foo.txt\n@@\n-Old\n+New\n*** End Patch\n",
+  "notes": "Reduced hidden control flow; proof deferred to integrator."
 }
 ```
 
@@ -110,6 +136,7 @@ workers as guidance. For mesh, prefer a JSON Schema object like:
     "failure_code": {"type": "string"},
     "blockers": {"type": "array", "items": {"type": "string"}},
     "challenge_findings": {"type": "array", "items": {"type": "string"}},
+    "reduce_record": {"type": "object"},
     "patch": {"type": "string"},
     "notes": {"type": "string"}
   }

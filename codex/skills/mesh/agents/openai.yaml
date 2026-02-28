@@ -1,4 +1,4 @@
 interface:
   display_name: "mesh"
-  short_description: "Plan-driven CSV-wave orchestration with coder/fixer/integrator gates"
-  default_prompt: "Use $mesh to execute update_plan work in parallel CSV waves with triplet-first coder/fixer/integrator cohorts, safe degrade/restore fanout, integrator-only delivery, and strict worker output parsing."
+  short_description: "Plan-driven CSV-wave orchestration with coder+reducer/fixer/integrator gates"
+  default_prompt: "Use $mesh to execute update_plan work in parallel CSV waves with dual-author cohorts (coder x2 + reducer x1), safety cohorts (fixer/integrator x3), safe degrade/restore fanout, integrator-only delivery, and strict worker output parsing."
