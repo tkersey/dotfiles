@@ -1,308 +1,126 @@
 ---
 name: zig
-description: "Use when requests involve Zig code or toolchain work: editing `.zig`, changing `build.zig`/`build.zig.zon`, defining or fixing `zig build` steps (for example `zig build ci`), handling `.zig-cache`/CI wiring, running or fixing `zig build|test|run|fmt|fetch`, debugging compile/runtime/test failures, comptime/reflection/codegen, allocator ownership, SIMD (`std.simd`/`@Vector`), threads (`std.Thread`/`Thread.Pool`), cross-compilation, zero-copy parsing, C interop (`@cImport`), or Zig 0.15.2 pin/migration issues. Enforce correctness-first validation with tests, `std.testing.fuzz`, and allocation-failure checks."
+description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon changes, zig build/test/run/fmt/fetch commands, comptime/reflection/codegen, allocator ownership and zero-copy parsing, C interop, and performance work (latency, throughput, profiling, SIMD, threading) that must preserve correctness with fuzz and allocation-failure checks."
 ---
 
 # Zig
 
-## When to use
-- Editing `.zig` files.
-- Modifying `build.zig` or `build.zig.zon`.
-- Defining custom `zig build` steps (for example `zig build ci`) and CI/build-cache wiring.
-- Zig builds/tests, dependencies, cross-compilation.
-- Any Zig work requires fuzz testing (coverage-guided or fuzz-style).
-- Performance tuning: SIMD (`std.simd` / `@Vector`) and threading (`std.Thread.Pool`).
-- Comptime, reflection, codegen.
-- Allocators, ownership, zero-copy parsing.
-- C interop.
+## Operating contract
+- Assume Zig 0.15.2 unless the user explicitly requests another version.
+- Treat correctness as a hard gate before optimization and release work.
+- Prefer minimal incisions with explicit proof signals.
+- Keep fast paths benchmarked, but keep safety checks on during correctness validation.
 
-## Baseline (required)
-- Zig 0.15.2.
-- Integrated fuzzer is the default: `std.testing.fuzz` + `zig build test --fuzz`.
-- No compatibility work for older Zig unless explicitly requested.
+## Baseline requirements
+- Confirm toolchain version first:
 
-## Quick start
 ```bash
-# Toolchain (required)
-zig version  # must be 0.15.2
+zig version
+```
 
-# Initialize (creates build.zig + src/main.zig)
+- If the version is not `0.15.2`, stop and state the mismatch.
+- If the request is performance-focused, run in two lanes:
+  - Correctness lane (`Debug` or `ReleaseSafe`).
+  - Performance lane (`ReleaseFast`) only after correctness passes.
+
+## Core workflow
+1. State the contract: domain, invariants, error model, and complexity target.
+2. Build or identify a reference path before touching optimized code.
+3. Add or extend unit tests around edge cases and regressions.
+4. Run fuzz and allocation-failure checks for safety-sensitive paths.
+5. Optimize in order: algorithm -> data layout -> vectorization -> threading -> micro-tuning.
+6. Re-run correctness gates after each optimization step.
+7. Report proof with exact commands and outcomes.
+
+## Correctness gate (required)
+- Every Zig change needs at least one correctness signal.
+- For parsing, allocation, arithmetic, or safety-sensitive code:
+  - `std.testing.fuzz` is required.
+  - `std.testing.checkAllAllocationFailures` is required for allocator-using functions.
+- Prefer differential fuzzing (optimized path vs reference path).
+
+### Standard correctness commands
+```bash
+# Project build/test
+zig build
+zig build test
+
+# Single-file test
+zig test src/main.zig
+
+# Integrated fuzz path (requires a test step in build.zig)
+zig build test --fuzz
+```
+
+### Allocation-failure pattern
+```zig
+const std = @import("std");
+
+fn parseWithAlloc(alloc: std.mem.Allocator, input: []const u8) !void {
+    _ = alloc;
+    _ = input;
+}
+
+test "allocation failure coverage" {
+    try std.testing.checkAllAllocationFailures(
+        std.testing.allocator,
+        parseWithAlloc,
+        .{"seed"},
+    );
+}
+```
+
+## Performance lane and `$lift` handoff
+Use this lane when the request is about speed, latency, throughput, memory, or profiling.
+
+- If you can run a workload: produce baseline + after numbers and bottleneck evidence.
+- If you cannot run a workload: mark output `UNMEASURED` and provide exact commands.
+- Keep correctness gates before and after each performance change.
+
+### Minimal measured loop
+```bash
+# 1) correctness first
+zig build test
+
+# 2) baseline perf sample
+zig build -Doptimize=ReleaseFast -Dtarget=native -Dcpu=native
+
+# 3) variant perf sample (after one change)
+zig build -Doptimize=ReleaseFast -Dtarget=native -Dcpu=native
+```
+
+When the request is a broader perf pass with explicit reporting format, apply `$lift` conventions (contract -> baseline -> bottleneck -> experiments -> result -> regression guard).
+
+## Build and project commands
+```bash
+# Initialize project
 zig init
-# or (smaller template)
 zig init --minimal
-# NOTE: --minimal does NOT add a `test` build step; `zig build test` / `--fuzz`
-# will fail unless you add a test step to build.zig.
 
 # Format
 zig fmt src/main.zig
 
-# Build/run/test (build.zig present)
+# Build and run
 zig build
 zig build run
-zig build test
 
-# Fuzz (integrated fuzzer)
-# Requires a `test` step in build.zig (not present in --minimal template).
-zig build test --fuzz
-
-# Single-file test/run
-zig test src/main.zig
-zig run src/main.zig
-
-# Trigger audit (session-level proxy via seq)
-uv run python codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions
-uv run python codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions --since 2026-02-06T00:00:00Z
-uv run python codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions --since 2026-02-06T00:00:00Z --strict-implicit --format json --output /tmp/zig-audit.json
-# Output includes split explicit-vs-implicit recall/precision plus filtered implicit-denominator counts.
-uv run python codex/skills/zig/scripts/test_zig_trigger_audit.py
-```
-
-## Workflow (correctness -> speed)
-- State the contract: input domain, outputs, invariants, error model, complexity target.
-- Build a reference implementation (simple > fast) and keep it in-tree for diffing.
-- Unit tests: edge cases + regressions.
-- Differential fuzz: compare optimized vs reference in Debug/ReleaseSafe.
-- Optimize in order: algorithm -> data layout -> SIMD -> threads -> micro.
-- Re-run fuzz/tests after every optimization; benchmark separately in ReleaseFast.
-
-## Correctness mandate (non-negotiable)
-- Every Zig change earns at least one correctness signal.
-- For parsing/arith/memory/safety-sensitive code, that signal is fuzzing.
-- Prefer differential fuzzing (optimized vs reference) so behavior is proven, not inferred.
-- Default harness: `std.testing.fuzz` + `zig build test --fuzz` (Zig 0.15.2 baseline).
-- Time-agnostic: no prescribed fuzz duration; run it as long as practical and always persist findings.
-- Run fuzz in `Debug`/`ReleaseSafe` so safety checks stay on; benchmark separately in `ReleaseFast`.
-- Allocator-using code also runs `std.testing.checkAllAllocationFailures`.
-- If fuzzing cannot run locally (e.g., macOS `InvalidElfMagic` crash), state why and add a
-  follow-up (seed corpus + repro test); run fuzz in Linux/CI or external harness.
-
-## Performance quick start (host CPU)
-```bash
-# High-performance build for local benchmarking
-zig build-exe -O ReleaseFast -mcpu=native -fstrip src/main.zig
-
-# Emit assembly / optimized IR for inspection
-zig build-exe -O ReleaseFast -mcpu=native -femit-asm src/main.zig
-zig build-exe -O ReleaseFast -mcpu=native -femit-llvm-ir src/main.zig  # requires LLVM extensions
-
-# Build.zig projects (when using b.standardTargetOptions / standardOptimizeOption)
-zig build -Doptimize=ReleaseFast -Dtarget=native -Dcpu=native
-```
-
-## Common commands
-```bash
-# Release
+# Release-oriented build
 zig build -Doptimize=ReleaseFast
 
-# Release + LTO (requires LLVM extensions)
-zig build-exe -O ReleaseFast -mcpu=native -flto -fstrip src/main.zig
-
-# Cross-compile
+# Cross-compile examples
 zig build -Dtarget=x86_64-linux
 zig build -Dtarget=aarch64-macos
 
-# Clean artifacts
+# Cleanup
 rm -rf zig-out zig-cache
 ```
 
-## Optimization stance (for generated code)
-- Prefer algorithmic wins first; then data layout; then SIMD; then threads; then micro-tuning.
-- Keep hot loops allocation-free; treat allocations as a correctness smell in kernels.
-- Prefer contiguous slices and SoA layouts; avoid pointer chasing in the hot path.
-- Avoid false sharing: make per-thread outputs cache-line separated (e.g. `align(std.atomic.cache_line)`).
-- Help the optimizer: branchless vector loops, `@branchHint(.likely/.unlikely)`, and simple control flow.
-- Keep fast paths portable: `std.simd.suggestVectorLength(T)` + scalar fallback; thread-pool usage already degrades on `builtin.single_threaded`.
+## Comptime and invariants
+- Prefer compile-time invariant checks for shape, ABI, and required methods.
+- Use `@compileError` to make illegal states unrepresentable at build time.
+- Keep generated specialization knobs small and measurable.
 
-## SIMD / vectorization playbook
-Principles:
-- Use explicit vectors when you need guaranteed SIMD (`@Vector`); rely on auto-vectorization only as a bonus.
-- Derive lane count from `std.simd.suggestVectorLength(T)` so the same code scales across targets.
-- Keep vector loops straight-line: no function pointers, no complex branching, no hidden allocations.
-- Handle tails (remainder elements) with a scalar loop.
-- Alignment matters on some targets (notably ARM); when tuning, consider a scalar prologue until aligned to the block size.
-
-### SIMD template: reduce a slice
-```zig
-const std = @import("std");
-
-pub fn sumF32(xs: []const f32) f32 {
-    if (xs.len == 0) return 0;
-
-    if (!@inComptime()) if (std.simd.suggestVectorLength(f32)) |lanes| {
-        const V = @Vector(lanes, f32);
-
-        var i: usize = 0;
-        var acc: V = @splat(0);
-
-        while (i + lanes <= xs.len) : (i += lanes) {
-            const v: V = xs[i..][0..lanes].*;
-            acc += v;
-        }
-
-        var total: f32 = @reduce(.Add, acc);
-        while (i < xs.len) : (i += 1) total += xs[i];
-        return total;
-    }
-
-    var total: f32 = 0;
-    for (xs) |x| total += x;
-    return total;
-}
-```
-
-### SIMD scanning pattern (mask + reduce)
-- Compare a vector against a scalar mask: `matches = block == @as(Block, @splat(value))`.
-- Detect any matches: `if (@reduce(.Or, matches)) { ... }`.
-- Find the first match index: `std.simd.firstTrue(matches).?`.
-
-### SIMD delimiter bitmask pattern (CSV-class scanners)
-Use a bitmask when you need all match positions in a block (delimiter, quote, CR, LF), not just
-the first hit.
-
-```zig
-const std = @import("std");
-
-fn delimMask(block: @Vector(16, u8), delim: u8, quote: u8, cr: u8, lf: u8) u16 {
-    const matches: @Vector(16, bool) =
-        (block == @as(@Vector(16, u8), @splat(delim))) or
-        (block == @as(@Vector(16, u8), @splat(quote))) or
-        (block == @as(@Vector(16, u8), @splat(cr))) or
-        (block == @as(@Vector(16, u8), @splat(lf)));
-    return @bitCast(matches);
-}
-
-fn walkMatches(mask0: u16) void {
-    var mask = mask0;
-    while (mask != 0) {
-        const idx = @ctz(mask); // 0-based lane index
-        _ = idx;
-        mask &= mask - 1; // clear lowest set bit
-    }
-}
-```
-
-- Validate lane mapping with a unit test: after `@bitCast`, LSB corresponds to lane/index `0`.
-
-### Loop shaping tips (stdlib-proven)
-- Unroll short inner loops with `inline for` to cut bounds checks (see `std.mem.indexOfScalarPos`).
-- Use `std.simd.suggestVectorLength(T)` to match stdlib’s preferred alignment and vector width.
-- Guard vector paths with `!@inComptime()` and `!std.debug.inValgrind()` when doing anything tricky.
-
-## Threads / parallelism playbook
-Principles:
-- Only thread if you can amortize scheduling + cache effects (tiny slices usually lose).
-- Partition work by contiguous ranges; avoid shared writes and shared locks in the hot path.
-- Use a thread pool (`std.Thread.Pool`) + wait group (`std.Thread.WaitGroup`), not "spawn a thread per task".
-- Make tasks coarse: ~`cpu_count` to ~`8*cpu_count` tasks, each doing a SIMD inner loop.
-- Reduce results at the end; avoid atomics unless you truly need streaming aggregation.
-
-### Thread pool template (data-parallel)
-```zig
-const std = @import("std");
-const builtin = @import("builtin");
-
-fn sumChunk(xs: []const f32, out: *f32) void {
-    // Each task uses the SIMD kernel.
-    out.* = sumF32(xs);
-}
-
-pub fn sumParallel(xs: []const f32) !f32 {
-    if (xs.len == 0) return 0;
-
-    // For throughput-oriented programs, prefer std.heap.smp_allocator in ReleaseFast.
-    // smp_allocator is unavailable when compiled with -fsingle-threaded.
-    const alloc = if (builtin.single_threaded) std.heap.page_allocator else std.heap.smp_allocator;
-
-    var pool: std.Thread.Pool = undefined;
-    try pool.init(.{ .allocator = alloc });
-    defer pool.deinit();
-
-    const cpu_count = @max(1, std.Thread.getCpuCount() catch 1);
-    const task_count = @min(cpu_count * 4, xs.len);
-    const chunk_len = (xs.len + task_count - 1) / task_count;
-
-    var partials = try alloc.alloc(f32, task_count);
-    defer alloc.free(partials);
-
-    var wg: std.Thread.WaitGroup = .{};
-
-    for (0..task_count) |t| {
-        const start = t * chunk_len;
-        const end = @min(xs.len, start + chunk_len);
-        pool.spawnWg(&wg, sumChunk, .{ xs[start..end], &partials[t] });
-    }
-
-    // Let the calling thread help execute queued work.
-    pool.waitAndWork(&wg);
-
-    var total: f32 = 0;
-    for (partials) |p| total += p;
-    return total;
-}
-```
-
-### Per-thread scratch (no allocator contention)
-- Initialize the pool with `.track_ids = true`.
-- Use `pool.spawnWgId(&wg, func, args)`; `func` receives `id: usize` first.
-- Keep `scratch[id]` aligned to `std.atomic.cache_line` to prevent false sharing.
-
-```zig
-const std = @import("std");
-
-const Scratch = struct {
-    _: void align(std.atomic.cache_line) = {},
-    tmp: [4096]u8 = undefined,
-};
-
-fn work(id: usize, input: []const u8, scratch: []Scratch) void {
-    // Stable per-thread slot; no locks, no false sharing.
-    const buf = scratch[id].tmp[0..];
-    _ = buf;
-    _ = input;
-}
-
-pub fn runParallel(input: []const u8, allocator: std.mem.Allocator) !void {
-    var pool: std.Thread.Pool = undefined;
-    try pool.init(.{ .allocator = allocator, .track_ids = true });
-    defer pool.deinit();
-
-    const scratch = try allocator.alloc(Scratch, pool.getIdCount());
-    defer allocator.free(scratch);
-
-    var wg: std.Thread.WaitGroup = .{};
-    pool.spawnWgId(&wg, work, .{ input, scratch });
-    pool.waitAndWork(&wg);
-}
-```
-
-## Comptime meta-programming (Zig 0.15.2)
-Principles:
-- Use comptime for specialization and validation; measure compile time like runtime.
-- Prefer data over codegen; generate code only when it unlocks optimization.
-- Make illegal states unrepresentable with `@compileError` at the boundary.
-
-Core tools:
-- Type reflection: `@typeInfo`, `@Type`, `@TypeOf`, `@typeName`.
-- Namespaces/fields: `@hasDecl`, `@field`, `@FieldType`, `std.meta.fields`, `std.meta.declarations`.
-- Layout + ABI: `@sizeOf`, `@alignOf`, `@bitSizeOf`, `@offsetOf`, `@fieldParentPtr`.
-- Controlled unrolling: `inline for`, `inline while`, `comptime if`.
-- Diagnostics: `@compileError`, `@compileLog`.
-- Cost control: `@setEvalBranchQuota` (local, justified), `--time-report`.
-
-Common patterns:
-- Traits: assert required decls/methods at compile time.
-- Field-wise derivations: generate `eql`/`hash`/`format`/`serialize` by iterating fields.
-- Static tables: small `std.StaticStringMap.initComptime`; large enums prefer `inline for` scans (see `std.meta.stringToEnum`).
-- Kernel factories: `fn Kernel(comptime lanes: usize, comptime unroll: usize) type { ... }` + `std.simd.suggestVectorLength`.
-
-Unfair toolbox (stdlib-proven):
-- `std.meta.eql`: deep-ish equality for containers (pointers are not followed).
-- `std.meta.hasUniqueRepresentation`: gate "memcmp-style" fast paths.
-- `std.meta.FieldEnum` / `std.meta.DeclEnum`: turn fields/decls into enums for ergonomic switches.
-- `std.meta.Tag` / `std.meta.activeTag`: read tags of tagged unions.
-- `std.meta.fields` / `std.meta.declarations`: one-liners for reflection without raw `@typeInfo` plumbing.
-
-### Trait check template
+### Template
 ```zig
 const std = @import("std");
 
@@ -313,520 +131,88 @@ fn assertHasRead(comptime T: type) void {
 }
 ```
 
-### Field-wise derivation template (struct)
-```zig
-const std = @import("std");
+## Zero-copy and ownership checklist
+- Parse into spans/slices that point to stable backing storage.
+- Do not return slices backed by temporary buffers.
+- Make borrowed vs owned states explicit in API types.
+- Fail fast on over-capacity streaming tokens instead of truncating.
 
-fn eqlStruct(a: anytype, b: @TypeOf(a)) bool {
-    const T = @TypeOf(a);
-    if (@typeInfo(T) != .@"struct") @compileError("eqlStruct expects a struct");
+## SIMD and threading policy
+- Use SIMD/threading only when profiling shows CPU-bound hot paths.
+- Keep scalar fallback paths and deterministic behavior.
+- Avoid hidden allocations inside hot loops.
+- Re-run fuzz/tests after vectorization or parallelization changes.
 
-    inline for (std.meta.fields(T)) |f| {
-        if (!std.meta.eql(@field(a, f.name), @field(b, f.name))) return false;
-    }
-    return true;
-}
+## macOS fuzz caveat
+`zig build test --fuzz` may fail on macOS (`InvalidElfMagic`) in Zig 0.15.2.
+
+If this occurs:
+- State the local limitation explicitly.
+- Keep `std.testing.fuzz` targets in-tree.
+- Run fuzz on Linux/CI or an external harness.
+- Add deterministic regression seeds under `testdata/fuzz/`.
+
+## Trigger-audit workflow (`$seq` backed)
+Use this to measure whether Zig intent is being routed to `$zig`.
+
+```bash
+# Run audit on full history
+uv run python codex/skills/zig/scripts/zig_trigger_audit.py --root ~/.codex/sessions
+
+# Time-windowed audit
+uv run python codex/skills/zig/scripts/zig_trigger_audit.py \
+  --root ~/.codex/sessions \
+  --since 2026-02-01T00:00:00Z \
+  --strict-implicit \
+  --format json \
+  --output /tmp/zig-audit.json
+
+# Regression tests for the audit script
+uv run python codex/skills/zig/scripts/test_zig_trigger_audit.py
 ```
 
-### Layout assertions (ABI lock)
-```zig
-comptime {
-    const Header = extern struct {
-        magic: u32,
-        version: u16,
-        flags: u16,
-        len: u32,
-        _pad: u32,
-    };
+Notes:
+- The audit uses literal `contains` matching to avoid regex parser limitations in `seq` for dotted literals (for example `.zig`, `build.zig`, `std.simd`).
+- Keep strict-implicit mode enabled when evaluating precision-sensitive routing changes.
 
-    if (@sizeOf(Header) != 16) @compileError("Header ABI: size");
-    if (@alignOf(Header) != 4) @compileError("Header ABI: align");
-    if (@offsetOf(Header, "magic") != 0) @compileError("Header ABI: magic offset");
-    if (@offsetOf(Header, "len") != 8) @compileError("Header ABI: len offset");
-}
+## Monthly drift scorecard
+Generate a compact scorecard that combines:
+- `$zig` SKILL size.
+- Trigger-audit counts/rates.
+- Routing-gap invoked-rate metrics for safe Zig cues.
+- Recommendation hints when drift is detected.
+
+```bash
+uv run python codex/skills/zig/scripts/zig_ops_scorecard.py \
+  --root ~/.codex/sessions \
+  --since 2026-02-01T00:00:00Z \
+  --format text
 ```
 
-### Union visitor (inline switch)
-```zig
-fn visit(u: anytype) void {
-    switch (u) {
-        inline else => |payload, tag| {
-            _ = payload;
-            _ = tag; // comptime-known tag
-        },
-    }
-}
+## `skills-zig` evidence lane
+When validating guidance against current Zig production patterns, inspect:
+- Source/build/release repo: `/Users/tk/workspace/tk/skills-zig`
+- Formula propagation repo: `/Users/tk/workspace/tk/homebrew-tap`
+
+Recommended checks:
+```bash
+git -C /Users/tk/workspace/tk/skills-zig log --oneline --max-count=30
+rg -n "std.testing.fuzz|checkAllAllocationFailures|FailingAllocator" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
+rg -n "std.simd|@Vector|std.Thread.Pool" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
 ```
 
-### Type-shape dispatcher (derive-anything)
-Use this to write one derivation pipeline that supports structs/unions/enums/pointers/arrays/etc.
-Keep the return type uniform (`R`) so call sites stay simple.
-
-Implementation + tests: `codex/skills/zig/references/type_switch.zig`.
-Validate: `zig test codex/skills/zig/references/type_switch.zig`
-
-### `@Type` builder (surgical)
-Reach for `@Type` when you truly need to manufacture a new type from an input type.
-This is sharp: prefer `std.meta.*` when it can express the same intent.
-
-Example: build a "patch" type where every runtime field is `?T` defaulting to `null`.
-
-Implementation + tests: `codex/skills/zig/references/partial_type.zig`.
-Validate: `zig test codex/skills/zig/references/partial_type.zig`
-
-### Derive pipeline (walk + policies; truly unfair)
-One traversal emits semantic events; policies decide what to do (hash, format, serialize, stats).
-Traversal owns ordering + budgets; policies own semantics.
-
-Implementation + tests: `codex/skills/zig/references/derive_walk_policy.zig`.
-Validate: `zig test codex/skills/zig/references/derive_walk_policy.zig`
-Note: formatting helpers take a writer pointer (e.g. `&w`) so state is preserved.
-
-### Fast path when representation is unique
-```zig
-const std = @import("std");
-
-fn eqlFast(a: anytype, b: @TypeOf(a)) bool {
-    const T = @TypeOf(a);
-    if (comptime std.meta.hasUniqueRepresentation(T)) {
-        return std.mem.eql(u8, std.mem.asBytes(&a), std.mem.asBytes(&b));
-    }
-    return std.meta.eql(a, b);
-}
-```
-
-### Compile-time cost guardrails
-- Avoid combinatorial specialization: keep the knob surface small and explicit.
-- Avoid huge comptime maps for large domains; prefer `inline for` scans.
-- If you must raise the branch quota, do it in the smallest loop that needs it.
-- Prefer `std.meta.*` helpers over handwritten `@typeInfo` plumbing (less code, fewer bugs).
-
-### Comptime example
-```zig
-const std = @import("std");
-
-fn max(comptime T: type, a: T, b: T) T {
-    return if (a > b) a else b;
-}
-
-test "comptime parameter" {
-    const x = max(u32, 3, 5);
-    try std.testing.expect(x == 5);
-}
-```
-
-## Comptime for performance
-Patterns:
-- Specialize on lane count and unroll factors (`comptime lanes`, `comptime unroll`).
-- Generate lookup tables at comptime (e.g., classification maps, shuffle indices).
-- Prefer `comptime if` for CPU/arch dispatch (`builtin.cpu.arch`) when you need different kernels.
-
-### Comptime specialization example (SIMD dot product)
-```zig
-const std = @import("std");
-
-fn Dot(comptime lanes: usize) type {
-    return struct {
-        pub fn dot(a: []const f32, b: []const f32) f32 {
-            const V = @Vector(lanes, f32);
-
-            var i: usize = 0;
-            var acc: V = @splat(0);
-
-            while (i + lanes <= a.len) : (i += lanes) {
-                const av: V = a[i..][0..lanes].*;
-                const bv: V = b[i..][0..lanes].*;
-                acc += av * bv;
-            }
-
-            var total: f32 = @reduce(.Add, acc);
-            while (i < a.len) : (i += 1) total += a[i] * b[i];
-            return total;
-        }
-    };
-}
-
-pub fn dotAuto(a: []const f32, b: []const f32) f32 {
-    const lanes = std.simd.suggestVectorLength(f32) orelse 1;
-    return Dot(lanes).dot(a, b);
-}
-```
-
-## Build essentials (`build.zig`)
-```zig
-const std = @import("std");
-
-pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{});
-    const optimize = b.standardOptimizeOption(.{});
-
-    const exe = b.addExecutable(.{
-        .name = "my-app",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/main.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-
-    b.installArtifact(exe);
-
-    const run_cmd = b.addRunArtifact(exe);
-    run_cmd.step.dependOn(b.getInstallStep());
-
-    const run_step = b.step("run", "Run the app");
-    run_step.dependOn(&run_cmd.step);
-
-    if (b.args) |args| run_cmd.addArgs(args);
-}
-```
-
-## Package management (`build.zig.zon`)
-```zig
-.{
-    .name = "my-project",
-    .version = "0.1.0",
-    .dependencies = .{
-        .@"some-package" = .{
-            .url = "https://github.com/user/package/archive/main.tar.gz",
-            .hash = "1220abcdef...",
-        },
-    },
-    .paths = .{ "build.zig", "build.zig.zon", "src" },
-}
-```
-
-## Memory / allocators (performance-first)
-Rules of thumb:
-- Debugging correctness/leaks: `std.testing.allocator` in tests, or `std.heap.DebugAllocator` in apps.
-- Throughput + multithreading (ReleaseFast): `std.heap.smp_allocator` (singleton, designed for MT + ReleaseFast).
-- Short-lived "build a result then throw away": `std.heap.ArenaAllocator` on top of a fast backing allocator.
-- Scratch buffers: `std.heap.FixedBufferAllocator` or `std.heap.stackFallback(N, fallback)`.
-- Fixed-size objects: `std.heap.MemoryPool` / `std.heap.MemoryPoolAligned`.
-
-### Debug allocator (leak checking)
-```zig
-const std = @import("std");
-
-pub fn main() !void {
-    var dbg = std.heap.DebugAllocator(.{}){};
-    defer _ = dbg.deinit();
-    const allocator = dbg.allocator();
-
-    const bytes = try allocator.alloc(u8, 100);
-    defer allocator.free(bytes);
-}
-```
-
-### Smp allocator + arena reset (hot loop friendly)
-```zig
-const std = @import("std");
-const builtin = @import("builtin");
-
-pub fn buildManyThings() !void {
-    const backing = if (builtin.single_threaded) std.heap.page_allocator else std.heap.smp_allocator;
-
-    var arena = std.heap.ArenaAllocator.init(backing);
-    defer arena.deinit();
-    const a = arena.allocator();
-
-    var i: usize = 0;
-    while (i < 1000) : (i += 1) {
-        _ = arena.reset(.retain_capacity);
-        _ = try a.alloc(u8, 4096);
-    }
-}
-```
-
-## Inspecting codegen / benchmarking
-- Emit assembly: `zig build-exe -O ReleaseFast -mcpu=native -femit-asm src/main.zig`
-- Emit optimized LLVM IR: `zig build-exe -O ReleaseFast -mcpu=native -femit-llvm-ir src/main.zig` (LLVM extensions)
-- Track compile time: `--time-report`
-- Prevent DCE in benches: `std.mem.doNotOptimizeAway(x)`
-- Time loops: `std.time.Timer`, `std.time.nanoTimestamp`
-
-### Benchmark contract for parser work
-- Benchmark only the parse/iterate loop; exclude file download/decompression and setup noise.
-- Keep buffer size fixed in reports (for example 64 KiB) so runs are comparable.
-- Report wall time and at least one hardware counter set (branch misses, cache misses) plus RSS.
-- Capture machine + OS + compiler version + dataset mix in the benchmark notes.
-
-## Zero-copy parsing playbook
-Principles:
-- Treat input as immutable bytes; parse into views, not copies.
-- Make ownership explicit (borrowed vs owned).
-- Store spans/offsets into a stable base buffer.
-- Never return slices into temporary buffers.
-
-### Iterator lifetime + streaming buffer contract (CSV-class)
-- Prefer field iterators for hot paths (one field per `next()`), then build record views on top.
-- Document lifetime explicitly: returned field slices are valid until the next `next()` call unless
-  they reference caller-owned stable backing storage.
-- For streaming input, slide partial tokens to the front before refill (`@memmove`), then continue.
-- If a token exceeds buffer capacity, fail fast with an explicit error (`error.FieldTooLong`) instead
-  of truncating or reallocating in the hot loop.
-
-```zig
-fn refillKeepingTail(buf: []u8, head: *usize, tail: *usize, reader: anytype) !usize {
-    if (head.* > 0 and head.* < tail.*) {
-        const rem = tail.* - head.*;
-        @memmove(buf[0..rem], buf[head.*..tail.*]);
-        head.* = 0;
-        tail.* = rem;
-    } else if (head.* == tail.*) {
-        head.* = 0;
-        tail.* = 0;
-    }
-
-    if (tail.* == buf.len) return error.FieldTooLong;
-    const n = try reader.read(buf[tail.*..]);
-    tail.* += n;
-    return n;
-}
-```
-
-### Quoted-field finite-state path (robust CSV)
-- Split early into unquoted and quoted paths; keep unquoted path branch-light.
-- In quoted mode, treat `""` as escaped quote, then require delimiter/newline/end-of-input after
-  the closing quote.
-- Track `needs_unescape` during scan and only unescape when necessary.
-- Normalize CRLF with integer booleans in hot loops to avoid extra branches.
-
-```zig
-const has_lf: usize = @intFromBool(end > start and buf[end - 1] == '\n');
-const has_cr: usize = @intFromBool(end > start + has_lf and buf[end - 1 - has_lf] == '\r');
-const trimmed_end = end - has_lf - has_cr;
-```
-
-### Borrowed/owned token (copy-on-write escape hatch)
-```zig
-const std = @import("std");
-
-pub const ByteView = union(enum) {
-    borrowed: []const u8,
-    owned: []u8,
-
-    pub fn slice(self: ByteView) []const u8 {
-        return switch (self) {
-            .borrowed => |s| s,
-            .owned => |s| s,
-        };
-    }
-
-    pub fn toOwned(self: ByteView, allocator: std.mem.Allocator) ![]u8 {
-        return switch (self) {
-            .owned => |s| s,
-            .borrowed => |s| try allocator.dupe(u8, s),
-        };
-    }
-
-    pub fn deinit(self: *ByteView, allocator: std.mem.Allocator) void {
-        if (self.* == .owned) allocator.free(self.owned);
-        self.* = .{ .borrowed = &.{} };
-    }
-};
-```
-
-### POSIX mmap (stable base buffer)
-```zig
-const std = @import("std");
-
-pub const MappedFile = struct {
-    data: []const u8,
-    owns: bool,
-
-    pub fn open(path: []const u8) !MappedFile {
-        const file = try std.fs.cwd().openFile(path, .{});
-        defer file.close();
-        const size = (try file.stat()).size;
-        const map = try std.posix.mmap(
-            null,
-            size,
-            std.posix.PROT.READ,
-            .{ .TYPE = .PRIVATE },
-            file.handle,
-            0,
-        );
-        return .{ .data = map, .owns = true };
-    }
-
-    pub fn close(self: *MappedFile) void {
-        if (self.owns) std.posix.munmap(self.data);
-        self.* = .{ .data = &.{}, .owns = false };
-    }
-};
-```
-
-### Span-based parsing (offsets, not copies)
-```zig
-const Span = struct {
-    base: []const u8,
-    start: usize,
-    len: usize,
-
-    pub fn slice(self: Span) []const u8 {
-        return self.base[self.start..][0..self.len];
-    }
-};
-```
-
-## Testing
-- Run correctness tests in Debug or ReleaseSafe; run perf checks in ReleaseFast.
-- Leak detection: use `std.testing.allocator` and `defer` frees.
-- Prefer differential tests (reference vs optimized) and metamorphic invariants (roundtrip, monotonicity).
-- Allocation counting: wrap an allocator and assert zero allocations for a "zero-copy" path.
-- OOM injection: run under `std.testing.FailingAllocator`.
-- Exhaustive OOM: `std.testing.checkAllAllocationFailures`.
-
-## Fuzz testing (required)
-### Built-in fuzzer (default, Zig 0.15.2)
-Use `std.testing.fuzz` in a `test` block and run:
-`zig build test --fuzz` (optionally `-Doptimize=ReleaseSafe`).
-
-Consult `zig build test --help` for version-specific `--fuzz` flags.
-
-### macOS caveat (Zig 0.15.2)
-Try `zig build test --fuzz` on macOS first. If it crashes during startup
-(`InvalidElfMagic` observed), skip local fuzzing for that run, keep
-`std.testing.fuzz` tests in-tree, and run the fuzz step on Linux/CI or via an
-external harness; use `zig test` locally for smoke coverage.
-
-### Fuzz target rules (make it fuzzer-friendly)
-- Deterministic: no timers, threads, or internal RNG (the fuzzer is the RNG).
-- Total: accept any input bytes; never read out of bounds; no UB-by-assumption.
-- Bounded: cap pathological work (length limits, recursion depth, max allocations).
-- Isolated: no global mutable state (or fully reset per call).
-- Assert properties, not vibes: reference equivalence, roundtrips, monotonicity, invariants.
-
-### Differential fuzzing (recommended)
-Make your fuzz target assert equivalence between a small reference implementation and the
-optimized kernel. This is the fastest route to algorithmic correctness.
-
-Compile-checked template: `codex/skills/zig/references/fuzz_differential.zig`.
-
-Template:
-```zig
-const std = @import("std");
-
-fn refCountOnes(bytes: []const u8) u64 {
-    var n: u64 = 0;
-    for (bytes) |b| n += @popCount(b);
-    return n;
-}
-
-fn fastCountOnes(bytes: []const u8) u64 {
-    // Replace with the optimized version (SIMD/threads/etc).
-    return refCountOnes(bytes);
-}
-
-fn fuzzTarget(_: void, input: []const u8) !void {
-    const ref = refCountOnes(input);
-    const got = fastCountOnes(input);
-    try std.testing.expectEqual(ref, got);
-}
-
-test "fuzz target" {
-    try std.testing.fuzz({}, fuzzTarget, .{});
-}
-```
-
-### Allocation-failure fuzzing (mandatory for allocators)
-`std.testing.checkAllAllocationFailures` exhaustively injects `error.OutOfMemory` across
-all allocations in a test function. The test function must take an allocator as its first
-argument, return `!void`, and reset shared state each run.
-
-```zig
-const std = @import("std");
-
-fn parseWithAlloc(alloc: std.mem.Allocator, bytes: []const u8) !void {
-    _ = alloc;
-    _ = bytes;
-}
-
-test "allocation failure fuzz" {
-    const input = "seed";
-    try std.testing.checkAllAllocationFailures(
-        std.testing.allocator,
-        parseWithAlloc,
-        .{input},
-    );
-}
-```
-
-### Allocator pressure tricks (recommended)
-- Cap per-allocation size relative to input length to surface pathological allocations.
-- Wrap with `std.testing.FailingAllocator` to validate `errdefer` and cleanup paths.
-- Persist interesting inputs under `testdata/fuzz/` and promote crashes to regression tests.
-
-### Corpus + regression workflow (required)
-- When fuzz finds a crash/mismatch, save the input under `testdata/fuzz/<target>/`.
-- Add a deterministic regression test using `@embedFile`.
-
-```zig
-test "regression: fuzz crash" {
-    const input = @embedFile("testdata/fuzz/parser/crash-<id>.bin");
-    try std.testing.expectEqual(refCountOnes(input), fastCountOnes(input));
-}
-```
-
-### Fast in-tree randomized fuzz (smoke; complements `--fuzz`)
-Use randomized inputs inside `test` blocks for cheap, always-on coverage.
-
-```zig
-const std = @import("std");
-
-fn parse(bytes: []const u8) !void {
-    _ = bytes;
-}
-
-test "fuzz parse" {
-    var prng = std.rand.DefaultPrng.init(0x9e3779b97f4a7c15);
-    const rng = prng.random();
-
-    var buf: [4096]u8 = undefined;
-    var i: usize = 0;
-    while (i < 10_000) : (i += 1) {
-        const len = rng.intRangeAtMost(usize, 0, buf.len);
-        const input = buf[0..len];
-        rng.bytes(input);
-        _ = parse(input) catch {};
-    }
-}
-```
-
-### External harnesses (optional)
-If you need AFL++/libFuzzer infrastructure (shared corpora, distributed fuzzing, custom
-instrumentation), export a C ABI entrypoint and drive it from an external harness.
-Example outline:
-- Export a stable entrypoint: `export fn fuzz_target(ptr: [*]const u8, len: usize) void`.
-- Build a static library with `zig build-lib`.
-- Link it from an external harness (AFL++ via `cargo-afl`) and run with a seed corpus.
-
-## C interop
-```zig
-const c = @cImport({
-    @cInclude("stdio.h");
-});
-
-pub fn main() void {
-    _ = c.printf("Hello from C!\n");
-}
-```
+Use these results to keep `$zig` guidance aligned with what is true in active Zig repos.
 
 ## Pitfalls
-- Multithreading: false sharing, oversubscription, shared allocator contention.
-- SIMD: misaligned loads on some targets, reading past the end, non-associative FP reductions.
-- SIMD bitmasks: when you `@bitCast` `@Vector(N, bool)` to an int mask, bit 0 is lane/index 0.
-- `std.heap.GeneralPurposeAllocator` is deprecated (alias of `DebugAllocator`); keep for existing code, prefer explicit allocator choices for new code.
-- Make ownership explicit; always free heap allocations.
-- Avoid returning slices backed by stack memory.
-- `[*c]T` is nullable; `[*]T` is non-null.
-- Use `zig fetch --save` to populate `build.zig.zon` hashes.
+- Claiming performance wins without measured baseline/after evidence.
+- Running micro-optimizations before removing algorithmic waste.
+- Skipping allocation-failure coverage in allocator-heavy code.
+- Treating borrowed memory as owned (or vice versa).
+- Returning stack-backed slices.
+- Assuming regex-like query patterns are portable across all tooling without validation.
 
-## Activation cues
-- "zig" / "ziglang" / ".zig"
-- "build.zig" / "build.zig.zon"
-- "zig build" / "zig test"
-- "comptime" / "allocator" / "@typeInfo" / "@compileError"
-- "SIMD" / "@Vector" / "std.simd"
-- "thread" / "std.Thread" / "Thread.Pool" / "WaitGroup"
+## References
+- Differential fuzz template: `codex/skills/zig/references/fuzz_differential.zig`
+- Type-shape dispatcher example: `codex/skills/zig/references/type_switch.zig`
+- `@Type` partial-builder example: `codex/skills/zig/references/partial_type.zig`
+- Derive-walk policy pipeline: `codex/skills/zig/references/derive_walk_policy.zig`

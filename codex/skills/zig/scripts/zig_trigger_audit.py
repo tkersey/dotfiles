@@ -468,6 +468,9 @@ def main() -> int:
     seq_script = resolve_seq_script()
     seq_runner = resolve_seq_runner(seq_script)
 
+    # Use literal contains matching instead of regex. The seq regex engine is a
+    # restricted subset that rejects punctuation-heavy literals (for example
+    # ".zig" / "build.zig"), which breaks this audit path.
     intent_specs = [
         {
             "dataset": "messages",
@@ -475,7 +478,7 @@ def main() -> int:
                 {"field": "role", "op": "eq", "value": "user"},
                 {
                     "field": "text",
-                    "op": "regex",
+                    "op": "contains",
                     "value": term,
                     "case_insensitive": True,
                 },

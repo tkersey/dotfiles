@@ -32,6 +32,13 @@ def fake_run_seq_query(seq_runner, root, spec, since, until):
             {"path": "s-clean-1", "timestamp": "2026-02-20T10:00:00Z"},
         ]
 
+    where = spec.get("where", [{}, {}])
+    if len(where) > 1:
+        # Regression guard: dotted Zig cues must use literal contains matching,
+        # not regex, so seq does not fail with UnsupportedRegexConstruct.
+        if where[1].get("op") != "contains":
+            raise AssertionError(f"unexpected where.op: {where[1].get('op')}")
+
     term = spec.get("where", [{}, {}])[1].get("value")
     if term == "zig":
         return [
