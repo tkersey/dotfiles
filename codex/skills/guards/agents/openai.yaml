@@ -1,0 +1,4 @@
+interface:
+  display_name: "guards"
+  short_description: "generate provider-agnostic guardrail blueprints"
+  default_prompt: "use $guards to produce a provider-agnostic guardrail blueprint and control matrix for an ai agent use case."
