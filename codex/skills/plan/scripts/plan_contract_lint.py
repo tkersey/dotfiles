@@ -54,6 +54,7 @@ CONTRACT_SIGNAL_FIELDS = [
     "new_errors",
     "rewrite_ratio",
     "external_inputs_trusted",
+    "improvement_exhausted",
 ]
 
 MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
@@ -105,12 +106,37 @@ def parse_rewrite_ratio(markdown: str) -> float | None:
 
 
 def extract_bullet_entries(section_text: str) -> list[str]:
-    """Extract top-level bullet lines from a section."""
+    """Extract top-level bullet entry blocks from a section.
+
+    Each entry is the bullet line plus any following indented lines until the next
+    top-level bullet.
+    """
+    lines = section_text.splitlines()
+    bullet_indents: list[int] = []
+    for line in lines:
+        match = re.match(r"^(\s*)- ", line)
+        if match:
+            bullet_indents.append(len(match.group(1)))
+    if not bullet_indents:
+        return []
+
+    top_indent = min(bullet_indents)
     entries: list[str] = []
-    for line in section_text.splitlines():
-        stripped = line.strip()
-        if stripped.startswith("- "):
-            entries.append(stripped)
+    i = 0
+    while i < len(lines):
+        match = re.match(r"^(\s*)- ", lines[i])
+        if match and len(match.group(1)) == top_indent:
+            start = i
+            i += 1
+            while i < len(lines):
+                match = re.match(r"^(\s*)- ", lines[i])
+                if match and len(match.group(1)) == top_indent:
+                    break
+                i += 1
+            entries.append("\n".join(lines[start:i]).strip())
+            continue
+        i += 1
+
     return entries
 
 
@@ -145,7 +171,7 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
     round_delta = extract_heading_section(body, "Round Delta")
     if round_delta and len(round_delta.strip()) < 10:
         errors.append(
-            "`Round Delta` must describe concrete changes from the prior round."
+            "`Round Delta` must describe concrete changes from the input plan."
         )
 
     iteration_action_log = extract_heading_section(body, "Iteration Action Log")
