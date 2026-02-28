@@ -23,23 +23,60 @@ When iterating on the Zig-backed `seq` helper CLI path, use these two repos:
 ## Quick Start
 ```bash
 run_seq() {
+  install_seq_direct() {
+    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
+    if ! command -v zig >/dev/null 2>&1; then
+      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
+      return 1
+    fi
+    if [ ! -d "$repo" ]; then
+      echo "skills-zig repo not found at $repo." >&2
+      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
+      return 1
+    fi
+    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
+      echo "direct Zig build failed in $repo." >&2
+      return 1
+    fi
+    if [ ! -x "$repo/zig-out/bin/seq" ]; then
+      echo "direct Zig build did not produce $repo/zig-out/bin/seq." >&2
+      return 1
+    fi
+    mkdir -p "$HOME/.local/bin"
+    install -m 0755 "$repo/zig-out/bin/seq" "$HOME/.local/bin/seq"
+  }
+
+  local os="$(uname -s)"
   if command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"; then
     seq "$@"
     return
   fi
-  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
-    if ! brew install tkersey/tap/seq; then
-      echo "brew install tkersey/tap/seq failed; hard-failing." >&2
+
+  if [ "$os" = "Darwin" ]; then
+    if ! command -v brew >/dev/null 2>&1; then
+      echo "homebrew is required on macOS: https://brew.sh/" >&2
       return 1
     fi
-    if command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"; then
-      seq "$@"
-      return
+    if ! brew install tkersey/tap/seq; then
+      echo "brew install tkersey/tap/seq failed." >&2
+      return 1
     fi
-    echo "brew install tkersey/tap/seq did not produce a compatible seq binary." >&2
-    return 1
+  elif ! (command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"); then
+    if ! install_seq_direct; then
+      return 1
+    fi
   fi
-  echo "no compatible seq binary found; install with brew install tkersey/tap/seq" >&2
+
+  if command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"; then
+    seq "$@"
+    return
+  fi
+  echo "no compatible seq binary found after install attempt." >&2
+  if [ "$os" = "Darwin" ]; then
+    echo "expected install path: brew install tkersey/tap/seq" >&2
+  else
+    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
+  fi
   return 1
 }
 
@@ -250,7 +287,7 @@ seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl --format js
 - Default root: `~/.codex/sessions`.
 - `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` to override.
 - Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, and from `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
-- Runtime bootstrap policy: require the Zig `seq` binary. On macOS with `brew`, treat `brew install tkersey/tap/seq` failure (or incompatible binary) as a hard error.
+- Runtime bootstrap policy: require the Zig `seq` binary, default to Homebrew install on macOS, and fallback to direct Zig install from `skills-zig` on non-macOS.
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 - `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.

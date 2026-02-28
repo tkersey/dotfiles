@@ -68,6 +68,32 @@ run_learnings_tool() {
       ;;
   esac
 
+  install_learnings_direct() {
+    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
+    if ! command -v zig >/dev/null 2>&1; then
+      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
+      return 1
+    fi
+    if [ ! -d "$repo" ]; then
+      echo "skills-zig repo not found at $repo." >&2
+      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
+      return 1
+    fi
+    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
+      echo "direct Zig build failed in $repo." >&2
+      return 1
+    fi
+    mkdir -p "$HOME/.local/bin"
+    for direct_bin in learnings append_learning; do
+      if [ ! -x "$repo/zig-out/bin/$direct_bin" ]; then
+        echo "direct Zig build did not produce $repo/zig-out/bin/$direct_bin." >&2
+        return 1
+      fi
+      install -m 0755 "$repo/zig-out/bin/$direct_bin" "$HOME/.local/bin/$direct_bin"
+    done
+  }
+
+  local os="$(uname -s)"
   if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
     if [ "$mode" = "append" ]; then
       "$bin" "$@"
@@ -76,23 +102,36 @@ run_learnings_tool() {
     fi
     return
   fi
-  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+
+  if [ "$os" = "Darwin" ]; then
+    if ! command -v brew >/dev/null 2>&1; then
+      echo "homebrew is required on macOS: https://brew.sh/" >&2
+      return 1
+    fi
     if ! brew install tkersey/tap/learnings; then
       echo "brew install tkersey/tap/learnings failed." >&2
       return 1
     fi
-    if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
-      if [ "$mode" = "append" ]; then
-        "$bin" "$@"
-      else
-        "$bin" "$subcommand" "$@"
-      fi
-      return
+  elif ! (command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"); then
+    if ! install_learnings_direct; then
+      return 1
     fi
-    echo "brew install tkersey/tap/learnings did not produce a compatible $bin binary." >&2
-    return 1
   fi
-  echo "learnings binary missing or incompatible: $bin" >&2
+
+  if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
+    if [ "$mode" = "append" ]; then
+      "$bin" "$@"
+    else
+      "$bin" "$subcommand" "$@"
+    fi
+    return
+  fi
+  echo "learnings binary missing or incompatible after install attempt: $bin" >&2
+  if [ "$os" = "Darwin" ]; then
+    echo "expected install path: brew install tkersey/tap/learnings" >&2
+  else
+    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
+  fi
   return 1
 }
 ```
@@ -244,7 +283,7 @@ Promotion rule of thumb:
 - If a learning is repeated (theme appears >= 3 times) or status is `codify_now`, promote it into durable docs (for example `codex/AGENTS.md` or a relevant skill doc).
 - After codifying, append a follow-up learning referencing the durable anchor (use `--related-id`/`--supersedes-id` and a `codified` tag).
 
-Runtime bootstrap policy for `learnings` mirrors `cas`: use Zig binaries only (`learnings`, `append_learning`); on macOS with `brew`, treat `brew install tkersey/tap/learnings` failure (or incompatible binaries) as a hard error.
+Runtime bootstrap policy for `learnings` mirrors `cas`: use Zig binaries only (`learnings`, `append_learning`), default to Homebrew install on macOS, and fallback to direct Zig install from `skills-zig` on non-macOS.
 
 ## Guardrails
 

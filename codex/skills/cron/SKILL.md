@@ -18,23 +18,60 @@ When iterating on `cron`, use these two repos:
 ## Quick Start
 ```bash
 run_cron_tool() {
+  install_cron_direct() {
+    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
+    if ! command -v zig >/dev/null 2>&1; then
+      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
+      return 1
+    fi
+    if [ ! -d "$repo" ]; then
+      echo "skills-zig repo not found at $repo." >&2
+      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
+      return 1
+    fi
+    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
+      echo "direct Zig build failed in $repo." >&2
+      return 1
+    fi
+    if [ ! -x "$repo/zig-out/bin/cron" ]; then
+      echo "direct Zig build did not produce $repo/zig-out/bin/cron." >&2
+      return 1
+    fi
+    mkdir -p "$HOME/.local/bin"
+    install -m 0755 "$repo/zig-out/bin/cron" "$HOME/.local/bin/cron"
+  }
+
+  local os="$(uname -s)"
   if command -v cron >/dev/null 2>&1 && cron --help 2>&1 | grep -q "cron.zig"; then
     cron "$@"
     return
   fi
-  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+
+  if [ "$os" = "Darwin" ]; then
+    if ! command -v brew >/dev/null 2>&1; then
+      echo "homebrew is required on macOS: https://brew.sh/" >&2
+      return 1
+    fi
     if ! brew install tkersey/tap/cron; then
       echo "brew install tkersey/tap/cron failed." >&2
       return 1
     fi
-    if command -v cron >/dev/null 2>&1 && cron --help 2>&1 | grep -q "cron.zig"; then
-      cron "$@"
-      return
+  elif ! (command -v cron >/dev/null 2>&1 && cron --help 2>&1 | grep -q "cron.zig"); then
+    if ! install_cron_direct; then
+      return 1
     fi
-    echo "brew install tkersey/tap/cron did not produce a compatible cron binary." >&2
-    return 1
   fi
-  echo "cron binary missing; install tkersey/tap/cron." >&2
+
+  if command -v cron >/dev/null 2>&1 && cron --help 2>&1 | grep -q "cron.zig"; then
+    cron "$@"
+    return
+  fi
+  echo "cron binary missing or incompatible after install attempt." >&2
+  if [ "$os" = "Darwin" ]; then
+    echo "expected install path: brew install tkersey/tap/cron" >&2
+  else
+    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
+  fi
   return 1
 }
 ```
@@ -51,7 +88,7 @@ run_cron_tool() {
 - Stop/remove launchd scheduler (macOS): `run_cron_tool scheduler uninstall`
 - Show scheduler status (macOS): `run_cron_tool scheduler status`
 
-Runtime bootstrap policy mirrors `seq`/`cas`/`lift`: prefer the Zig binary and fail closed when missing/incompatible.
+Runtime bootstrap policy mirrors `seq`/`cas`/`lift`: require the Zig binary, default to Homebrew install on macOS, and fallback to direct Zig install from `skills-zig` on non-macOS.
 
 ## Workflow
 1. Choose working directories (`cwds`). Default is current repo if omitted on `create`.

@@ -193,23 +193,60 @@ run_lift_tool() {
       ;;
   esac
 
+  install_lift_direct() {
+    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
+    if ! command -v zig >/dev/null 2>&1; then
+      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
+      return 1
+    fi
+    if [ ! -d "$repo" ]; then
+      echo "skills-zig repo not found at $repo." >&2
+      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
+      return 1
+    fi
+    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
+      echo "direct Zig build failed in $repo." >&2
+      return 1
+    fi
+    if [ ! -x "$repo/zig-out/bin/$bin" ]; then
+      echo "direct Zig build did not produce $repo/zig-out/bin/$bin." >&2
+      return 1
+    fi
+    mkdir -p "$HOME/.local/bin"
+    install -m 0755 "$repo/zig-out/bin/$bin" "$HOME/.local/bin/$bin"
+  }
+
+  local os="$(uname -s)"
   if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
     "$bin" "$@"
     return
   fi
-  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
-    if ! brew install tkersey/tap/lift; then
-      echo "brew install tkersey/tap/lift failed; refusing silent fallback." >&2
+
+  if [ "$os" = "Darwin" ]; then
+    if ! command -v brew >/dev/null 2>&1; then
+      echo "homebrew is required on macOS: https://brew.sh/" >&2
       return 1
     fi
-    if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
-      "$bin" "$@"
-      return
+    if ! brew install tkersey/tap/lift; then
+      echo "brew install tkersey/tap/lift failed." >&2
+      return 1
     fi
-    echo "brew install tkersey/tap/lift did not produce a compatible $bin binary." >&2
-    return 1
+  elif ! (command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"); then
+    if ! install_lift_direct; then
+      return 1
+    fi
   fi
-  echo "missing compatible $bin binary; install tkersey/tap/lift (or provide a compatible $bin on PATH)." >&2
+
+  if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
+    "$bin" "$@"
+    return
+  fi
+  echo "missing compatible $bin binary after install attempt." >&2
+  if [ "$os" = "Darwin" ]; then
+    echo "expected install path: brew install tkersey/tap/lift" >&2
+  else
+    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
+  fi
   return 1
 }
 

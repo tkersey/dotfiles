@@ -7,33 +7,64 @@ Use this path for cloud background task execution from CLI.
 ```bash
 CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
 CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
-PUFF_SCRIPT="$CODEX_SKILLS_HOME/skills/puff/scripts/puff.sh"
-[ -f "$PUFF_SCRIPT" ] || PUFF_SCRIPT="$CLAUDE_SKILLS_HOME/skills/puff/scripts/puff.sh"
 CAS_PROXY_SCRIPT="$CODEX_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"
 [ -f "$CAS_PROXY_SCRIPT" ] || CAS_PROXY_SCRIPT="$CLAUDE_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"
 
 run_puff_tool() {
+  install_puff_direct() {
+    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
+    if ! command -v zig >/dev/null 2>&1; then
+      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
+      return 1
+    fi
+    if [ ! -d "$repo" ]; then
+      echo "skills-zig repo not found at $repo." >&2
+      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
+      return 1
+    fi
+    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
+      echo "direct Zig build failed in $repo." >&2
+      return 1
+    fi
+    if [ ! -x "$repo/zig-out/bin/puff" ]; then
+      echo "direct Zig build did not produce $repo/zig-out/bin/puff." >&2
+      return 1
+    fi
+    mkdir -p "$HOME/.local/bin"
+    install -m 0755 "$repo/zig-out/bin/puff" "$HOME/.local/bin/puff"
+  }
+
+  local os="$(uname -s)"
   if command -v puff >/dev/null 2>&1 && puff --help 2>&1 | grep -q "puff.zig"; then
     puff "$@"
     return
   fi
-  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
-    if ! brew install tkersey/tap/puff; then
-      echo "brew install tkersey/tap/puff failed; refusing silent fallback." >&2
+
+  if [ "$os" = "Darwin" ]; then
+    if ! command -v brew >/dev/null 2>&1; then
+      echo "homebrew is required on macOS: https://brew.sh/" >&2
       return 1
     fi
-    if command -v puff >/dev/null 2>&1 && puff --help 2>&1 | grep -q "puff.zig"; then
-      puff "$@"
-      return
+    if ! brew install tkersey/tap/puff; then
+      echo "brew install tkersey/tap/puff failed." >&2
+      return 1
     fi
-    echo "brew install tkersey/tap/puff did not produce a compatible puff binary." >&2
-    return 1
+  elif ! (command -v puff >/dev/null 2>&1 && puff --help 2>&1 | grep -q "puff.zig"); then
+    if ! install_puff_direct; then
+      return 1
+    fi
   fi
-  if [ -f "$PUFF_SCRIPT" ]; then
-    "$PUFF_SCRIPT" "$@"
+
+  if command -v puff >/dev/null 2>&1 && puff --help 2>&1 | grep -q "puff.zig"; then
+    puff "$@"
     return
   fi
-  echo "puff binary missing and fallback script not found: $PUFF_SCRIPT" >&2
+  echo "puff binary missing or incompatible after install attempt." >&2
+  if [ "$os" = "Darwin" ]; then
+    echo "expected install path: brew install tkersey/tap/puff" >&2
+  else
+    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
+  fi
   return 1
 }
 ```

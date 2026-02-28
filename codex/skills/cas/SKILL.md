@@ -55,6 +55,30 @@ run_cas_tool() {
       ;;
   esac
 
+  install_cas_direct() {
+    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
+    if ! command -v zig >/dev/null 2>&1; then
+      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
+      return 1
+    fi
+    if [ ! -d "$repo" ]; then
+      echo "skills-zig repo not found at $repo." >&2
+      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
+      return 1
+    fi
+    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
+      echo "direct Zig build failed in $repo." >&2
+      return 1
+    fi
+    if [ ! -x "$repo/zig-out/bin/cas" ]; then
+      echo "direct Zig build did not produce $repo/zig-out/bin/cas." >&2
+      return 1
+    fi
+    mkdir -p "$HOME/.local/bin"
+    install -m 0755 "$repo/zig-out/bin/cas" "$HOME/.local/bin/cas"
+  }
+
+  local os="$(uname -s)"
   if command -v cas >/dev/null 2>&1 && cas --help 2>&1 | grep -q "cas.zig"; then
     if cas "$cas_subcommand" --help 2>&1 | grep -q "$marker"; then
       cas "$cas_subcommand" "$@"
@@ -63,23 +87,36 @@ run_cas_tool() {
     echo "cas binary found, but marker check failed for subcommand: $cas_subcommand" >&2
     return 1
   fi
-  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+
+  if [ "$os" = "Darwin" ]; then
+    if ! command -v brew >/dev/null 2>&1; then
+      echo "homebrew is required on macOS: https://brew.sh/" >&2
+      return 1
+    fi
     if ! brew install tkersey/tap/cas; then
-      echo "brew install tkersey/tap/cas failed; refusing silent fallback." >&2
+      echo "brew install tkersey/tap/cas failed." >&2
       return 1
     fi
-    if command -v cas >/dev/null 2>&1 && cas --help 2>&1 | grep -q "cas.zig"; then
-      if cas "$cas_subcommand" --help 2>&1 | grep -q "$marker"; then
-        cas "$cas_subcommand" "$@"
-        return
-      fi
-      echo "brew install tkersey/tap/cas did not produce a compatible cas $cas_subcommand subcommand." >&2
+  elif ! (command -v cas >/dev/null 2>&1 && cas --help 2>&1 | grep -q "cas.zig"); then
+    if ! install_cas_direct; then
       return 1
     fi
-    echo "brew install tkersey/tap/cas did not produce a compatible cas binary." >&2
+  fi
+
+  if command -v cas >/dev/null 2>&1 && cas --help 2>&1 | grep -q "cas.zig"; then
+    if cas "$cas_subcommand" --help 2>&1 | grep -q "$marker"; then
+      cas "$cas_subcommand" "$@"
+      return
+    fi
+    echo "cas binary found, but marker check failed for subcommand: $cas_subcommand" >&2
     return 1
   fi
-  echo "cas binary missing or incompatible; install tkersey/tap/cas." >&2
+  echo "cas binary missing or incompatible after install attempt." >&2
+  if [ "$os" = "Darwin" ]; then
+    echo "expected install path: brew install tkersey/tap/cas" >&2
+  else
+    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
+  fi
   return 1
 }
 
@@ -247,4 +284,4 @@ Included:
 - `scripts/cas_rate_limits.mjs` (CLI: prints normalized `account/rateLimits/read` snapshot)
 - `scripts/cas_example_orchestrator.mjs` (example orchestration script)
 
-Runtime bootstrap policy for Zig CLIs mirrors `seq`: require the installed `cas` dispatcher binary (`cas smoke_check` / `cas instance_runner`). On macOS with `brew`, treat `brew install tkersey/tap/cas` failure (or incompatible binary/subcommand marker) as a hard error.
+Runtime bootstrap policy for Zig CLIs mirrors `seq`: require the installed `cas` dispatcher binary (`cas smoke_check` / `cas instance_runner`). On macOS, default to `brew install tkersey/tap/cas`; on other OSes, fallback to direct Zig install from `skills-zig`.

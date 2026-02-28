@@ -28,23 +28,60 @@ When iterating on the Zig-backed `mesh` helper CLI path, use these two repos:
 
 ```bash
 run_mesh() {
+  install_mesh_direct() {
+    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
+    if ! command -v zig >/dev/null 2>&1; then
+      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
+      return 1
+    fi
+    if [ ! -d "$repo" ]; then
+      echo "skills-zig repo not found at $repo." >&2
+      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
+      return 1
+    fi
+    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
+      echo "direct Zig build failed in $repo." >&2
+      return 1
+    fi
+    if [ ! -x "$repo/zig-out/bin/mesh" ]; then
+      echo "direct Zig build did not produce $repo/zig-out/bin/mesh." >&2
+      return 1
+    fi
+    mkdir -p "$HOME/.local/bin"
+    install -m 0755 "$repo/zig-out/bin/mesh" "$HOME/.local/bin/mesh"
+  }
+
+  local os="$(uname -s)"
   if command -v mesh >/dev/null 2>&1 && mesh --help 2>&1 | grep -q "mesh.zig"; then
     mesh "$@"
     return
   fi
-  if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
-    if ! brew install tkersey/tap/mesh; then
-      echo "brew install tkersey/tap/mesh failed; refusing fallback." >&2
+
+  if [ "$os" = "Darwin" ]; then
+    if ! command -v brew >/dev/null 2>&1; then
+      echo "homebrew is required on macOS: https://brew.sh/" >&2
       return 1
     fi
-    if command -v mesh >/dev/null 2>&1 && mesh --help 2>&1 | grep -q "mesh.zig"; then
-      mesh "$@"
-      return
+    if ! brew install tkersey/tap/mesh; then
+      echo "brew install tkersey/tap/mesh failed." >&2
+      return 1
     fi
-    echo "brew install tkersey/tap/mesh did not produce a compatible mesh binary." >&2
-    return 1
+  elif ! (command -v mesh >/dev/null 2>&1 && mesh --help 2>&1 | grep -q "mesh.zig"); then
+    if ! install_mesh_direct; then
+      return 1
+    fi
   fi
-  echo "mesh binary missing or incompatible (marker mesh.zig not found)." >&2
+
+  if command -v mesh >/dev/null 2>&1 && mesh --help 2>&1 | grep -q "mesh.zig"; then
+    mesh "$@"
+    return
+  fi
+  echo "mesh binary missing or incompatible after install attempt (marker mesh.zig not found)." >&2
+  if [ "$os" = "Darwin" ]; then
+    echo "expected install path: brew install tkersey/tap/mesh" >&2
+  else
+    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
+  fi
   return 1
 }
 

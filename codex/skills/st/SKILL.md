@@ -21,23 +21,74 @@ When iterating on the Zig-backed `st` helper CLI path, use these two repos:
 - `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `st` Zig binary, build/test wiring, and release tags.
 - `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `st` binaries.
 
-## Quick Start (Automatic Zig Binary + Brew Bootstrap)
+## Quick Start (Zig CLI Bootstrap)
 
 ```bash
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-RUN_ST_SCRIPT="$REPO_ROOT/codex/skills/st/scripts/run_st.sh"
-if [ ! -x "$RUN_ST_SCRIPT" ]; then
-  echo "run_st bootstrap script missing or not executable: $RUN_ST_SCRIPT" >&2
-  exit 1
-fi
+run_st_tool() {
+  install_st_direct() {
+    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
+    if ! command -v zig >/dev/null 2>&1; then
+      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
+      return 1
+    fi
+    if [ ! -d "$repo" ]; then
+      echo "skills-zig repo not found at $repo." >&2
+      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
+      return 1
+    fi
+    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
+      echo "direct Zig build failed in $repo." >&2
+      return 1
+    fi
+    if [ ! -x "$repo/zig-out/bin/st" ]; then
+      echo "direct Zig build did not produce $repo/zig-out/bin/st." >&2
+      return 1
+    fi
+    mkdir -p "$HOME/.local/bin"
+    install -m 0755 "$repo/zig-out/bin/st" "$HOME/.local/bin/st"
+  }
 
-# Always invoke st through RUN_ST_SCRIPT; it auto-installs tkersey/tap/st on macOS when needed.
-"$RUN_ST_SCRIPT" --help
+  local os="$(uname -s)"
+  if command -v st >/dev/null 2>&1 && st --help 2>&1 | grep -q "st.zig"; then
+    st "$@"
+    return
+  fi
+
+  if [ "$os" = "Darwin" ]; then
+    if ! command -v brew >/dev/null 2>&1; then
+      echo "homebrew is required on macOS: https://brew.sh/" >&2
+      return 1
+    fi
+    if ! brew install tkersey/tap/st; then
+      echo "brew install tkersey/tap/st failed." >&2
+      return 1
+    fi
+  elif ! (command -v st >/dev/null 2>&1 && st --help 2>&1 | grep -q "st.zig"); then
+    if ! install_st_direct; then
+      return 1
+    fi
+  fi
+
+  if command -v st >/dev/null 2>&1 && st --help 2>&1 | grep -q "st.zig"; then
+    st "$@"
+    return
+  fi
+
+  echo "st binary missing or incompatible after install attempt." >&2
+  if [ "$os" = "Darwin" ]; then
+    echo "expected install path: brew install tkersey/tap/st" >&2
+  else
+    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
+  fi
+  return 1
+}
+
+run_st_tool --help
 ```
 
 ## Workflow
 
-1. Resolve repository root and set `RUN_ST_SCRIPT` to `codex/skills/st/scripts/run_st.sh`; use `"$RUN_ST_SCRIPT"` for all commands (do not call `st` directly).
+1. Define `run_st_tool` once per shell session to bootstrap/install `st`.
 2. If the run has 3+ dependent steps, likely spans turns, or already uses `update_plan`, adopt `$st` as the durable source of truth before editing.
 3. If the plan came from `$select`, map selected units into stable `$st` IDs and dependency edges before execution starts.
 4. Initialize plan storage with `st init` if missing.
@@ -50,24 +101,24 @@ fi
 
 ## Commands
 
-Run commands from the target repository root.
+Run commands from the target repository root. Commands below use `st` directly; use `run_st_tool` first when bootstrapping.
 
 ```bash
-"$RUN_ST_SCRIPT" init --file .step/st-plan.jsonl
-"$RUN_ST_SCRIPT" add --file .step/st-plan.jsonl --id st-001 --step "Reproduce failing test" --deps ""
-"$RUN_ST_SCRIPT" add --file .step/st-plan.jsonl --id st-002 --step "Patch core logic" --deps "st-001"
-"$RUN_ST_SCRIPT" set-status --file .step/st-plan.jsonl --id st-001 --status in_progress
-"$RUN_ST_SCRIPT" set-deps --file .step/st-plan.jsonl --id st-002 --deps "st-001:blocks,st-003:blocks"
-"$RUN_ST_SCRIPT" set-notes --file .step/st-plan.jsonl --id st-002 --notes "Need benchmark evidence"
-"$RUN_ST_SCRIPT" add-comment --file .step/st-plan.jsonl --id st-002 --text "Pausing until CI clears" --author tk
-"$RUN_ST_SCRIPT" ready --file .step/st-plan.jsonl --format markdown
-"$RUN_ST_SCRIPT" blocked --file .step/st-plan.jsonl --format json
-"$RUN_ST_SCRIPT" show --file .step/st-plan.jsonl --format markdown
-"$RUN_ST_SCRIPT" doctor --file .step/st-plan.jsonl
-"$RUN_ST_SCRIPT" doctor --file .step/st-plan.jsonl --repair-seq
-"$RUN_ST_SCRIPT" emit-update-plan --file .step/st-plan.jsonl
-"$RUN_ST_SCRIPT" export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
-"$RUN_ST_SCRIPT" import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
+st init --file .step/st-plan.jsonl
+st add --file .step/st-plan.jsonl --id st-001 --step "Reproduce failing test" --deps ""
+st add --file .step/st-plan.jsonl --id st-002 --step "Patch core logic" --deps "st-001"
+st set-status --file .step/st-plan.jsonl --id st-001 --status in_progress
+st set-deps --file .step/st-plan.jsonl --id st-002 --deps "st-001:blocks,st-003:blocks"
+st set-notes --file .step/st-plan.jsonl --id st-002 --notes "Need benchmark evidence"
+st add-comment --file .step/st-plan.jsonl --id st-002 --text "Pausing until CI clears" --author tk
+st ready --file .step/st-plan.jsonl --format markdown
+st blocked --file .step/st-plan.jsonl --format json
+st show --file .step/st-plan.jsonl --format markdown
+st doctor --file .step/st-plan.jsonl
+st doctor --file .step/st-plan.jsonl --repair-seq
+st emit-update-plan --file .step/st-plan.jsonl
+st export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
+st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
 ```
 
 ## Operating Rules
@@ -96,7 +147,7 @@ Run commands from the target repository root.
 
 - After each `$st` mutation (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`), parse the emitted `update_plan: {...}` line and publish `update_plan` in the same turn.
 - If no emitted payload is available (for example after `init` or shell piping), run:
-  - `"$RUN_ST_SCRIPT" emit-update-plan --file .step/st-plan.jsonl`
+  - `st emit-update-plan --file .step/st-plan.jsonl`
 - Preserve item ordering from `$st` in `update_plan`.
 - Map statuses:
   - `in_progress` -> `in_progress`
@@ -105,16 +156,16 @@ Run commands from the target repository root.
 - Keep dependency edges only in `$st` (`deps`); do not encode dependencies in `update_plan`.
 - If an item has `dep_state=waiting_on_deps`, never publish that step as `in_progress` in `update_plan`.
 - Before final response on turns that mutate `$st`, re-check no drift by comparing:
-  - `"$RUN_ST_SCRIPT" show --file .step/st-plan.jsonl --format json`
+  - `st show --file .step/st-plan.jsonl --format json`
   - the latest emitted `update_plan` payload.
 
 ## Validation
 
 - Run lightweight CLI sanity checks:
-  - `"$RUN_ST_SCRIPT" --help`
-  - `"$RUN_ST_SCRIPT" doctor --file .step/st-plan.jsonl`
-  - `"$RUN_ST_SCRIPT" emit-update-plan --file .step/st-plan.jsonl`
-  - `"$RUN_ST_SCRIPT" show --file .step/st-plan.jsonl --format json`
+  - `run_st_tool --help`
+  - `st doctor --file .step/st-plan.jsonl`
+  - `st emit-update-plan --file .step/st-plan.jsonl`
+  - `st show --file .step/st-plan.jsonl --format json`
 
 ## References
 
