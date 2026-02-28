@@ -2,9 +2,9 @@
 
 ## Location
 - Default database: `~/.codex/sqlite/codex-dev.db`
-- Override path with `--db` in `scripts/cron.py` if needed.
+- Override path with `cron --db <path> ...` when needed.
 - Filesystem automation configs: `~/.codex/automations/<automation-id>/automation.toml`
-- `scripts/cron.py` keeps SQLite rows and filesystem configs in sync.
+- Native Zig `cron` keeps SQLite rows and filesystem configs in sync.
 
 ## Tables
 
@@ -13,27 +13,27 @@ Columns:
 - `id` TEXT primary key
 - `name` TEXT
 - `prompt` TEXT
-- `status` TEXT (defaults to `ACTIVE`)
+- `status` TEXT (runtime-valid values: `ACTIVE`, `PAUSED`)
 - `next_run_at` INTEGER (unix milliseconds, nullable)
 - `last_run_at` INTEGER (unix milliseconds, nullable)
 - `cwds` TEXT (JSON array of strings)
-- `rrule` TEXT (RFC5545 RRULE string; app stores with `RRULE:` prefix)
+- `rrule` TEXT (RFC5545 RRULE string, canonicalized to `RRULE:` prefix)
 - `created_at` INTEGER (unix milliseconds)
 - `updated_at` INTEGER (unix milliseconds)
 
 ## Filesystem config
-Each automation also has a directory at:
+Each automation has a directory at:
 - `~/.codex/automations/<id>/`
 
 Files:
-- `automation.toml` (primary config rendered from the `automations` row)
-- `memory.md` (created if missing; updated by app runs)
+- `automation.toml` (rendered from `automations` row)
+- `memory.md` (created if missing; appended with run summaries)
 
 ### automation_runs
 Columns:
 - `thread_id` TEXT primary key
 - `automation_id` TEXT
-- `status` TEXT
+- `status` TEXT (`RUNNING`, `PENDING_REVIEW`, `FAILED`)
 - `read_at` INTEGER
 - `thread_title` TEXT
 - `source_cwd` TEXT
