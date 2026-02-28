@@ -52,10 +52,13 @@ GRILL ME: HUMAN INPUT REQUIRED
 
 - Source of truth: use `update_plan` as the canonical ready queue for implementation orchestration. When `$st` is in play, keep `.step/st-plan.jsonl` and `update_plan` in sync in the same turn.
 - Execution substrate: use `$mesh` and execute ready waves via `spawn_agents_on_csv` by default.
+- Decomposition gate: before spawning non-trivial waves, run `$select` (or an equivalent explicit decomposition step) so units are atomic, dependency-aware, and carry concrete `unit_scope` + validation/proof signals.
+- Claim gate: when `$select` emits a first-wave claim, apply those `in_progress` claims in `$st` before spawning workers.
 - Dependency discipline: schedule only units with satisfied `$st` deps. Treat dependency metadata as advisory only when the user explicitly opts in and `unit_scope` is disjoint.
-- Unit pipeline (hard gate): each implementation unit runs `coder -> fixer -> integrator`.
+- Unit pipeline (hard gate): each implementation unit runs `coder -> fixer -> integrator` as explicit lanes/jobs unless the user requests a collapsed path.
 - Delivery defaults: `integrator` uses `commit_first` unless the task/user explicitly requests `patch_first`.
 - Single-writer rule: only `integrator` applies patches/creates commits; parallel workers should be read-only.
+- Scope quality gate: units with missing/unknown/overly broad `unit_scope` are not eligible for parallel waves; block or serialize until scope is tightened.
 - Plan-write rule: workers must not mutate plan/state artifacts (`.step/st-plan.jsonl`, plan docs, orchestration ledger). Workers return structured results; integrator performs state writes.
 - Budget clamp (strictest of 5-hour and weekly remaining from CAS):
   - `remaining > 33%`: no budget-based clamp (still bounded by configured capacity).
@@ -64,10 +67,11 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Concurrency authority: compute one active-unit target at preflight and keep it consistent across `mesh wave --max-active`, `spawn_agents_on_csv.max_concurrency`, and ledger reporting.
 - Scale-out rules: allow multi-instance CAS only when backlog/saturation conditions justify it and `remaining > 25%`; disallow scale-out at `<= 25%`.
 - Wave isolation: overlapping write scopes are serialized; non-overlapping scopes can run in parallel.
-- Failure backpressure: on `reject`, timeout, lifecycle mismatch, or `invalid_output_schema`, reduce next-wave concurrency and serialize overlapping scopes until a clean wave passes.
+- Failure backpressure: on `reject`, timeout, lifecycle mismatch, `invalid_output_schema`, or user `turn_aborted`, reduce next-wave concurrency to `max(1, floor(previous/2))` and serialize overlapping scopes until a clean wave passes.
 - Dirty working tree is not a skip gate for multi-agent orchestration; ignore unrelated diffs and preserve safety with disjoint scopes plus integrator-only writes.
 - CSV hygiene: keep `csv_path` and `output_csv_path` distinct per run to avoid template clobbering.
 - Output contract caveat: `spawn_agents_on_csv` output schema metadata is advisory; mesh must enforce strict output parsing before integration.
+- Reject-closure gate: never close a unit when worker output contains `decision=reject` or `proof_status=fail`; require explicit replacement/re-run evidence first.
 - Orchestration Ledger (implementation turns): include only events that occurred:
   - `skills_used`
   - `wave_count` and wave scopes
@@ -76,6 +80,14 @@ GRILL ME: HUMAN INPUT REQUIRED
   - CAS instance usage
   - retry/replacement events
   - delivery artifact/join status when delivery actions occurred
+- Wave closeout ledger gate: emit/refresh an event-only ledger after each completed wave, not only at final handoff.
+- Orchestration Ledger response rendering (required when orchestration ran):
+  - Trigger: required whenever the turn uses agent orchestration (`spawn_agents_on_csv`, `spawn_agent` + `wait`/`close_agent`, or mesh wave execution) and any orchestration event occurred.
+  - Include an `Orchestration Ledger` section in the final response.
+  - Render the event-only ledger payload in a fenced `json` code block (pretty-printed, multi-line).
+  - Do not inline minified JSON in narrative text.
+  - If orchestration did not run, omit the JSON block and state `Orchestration Ledger: not invoked`.
+  - Completion gate: missing required ledger is an invalid completion; generate and include it before sending the final response.
 
 ## Working Tree Hygiene
 

@@ -60,21 +60,54 @@ run_mesh --help
 - `mesh ledger`: filter ledger payloads to occurred events only.
 - `mesh replay`: preflight simulation of budget/wave behavior without execution.
 
+## Final Response Ledger Rendering (Required)
+
+When orchestration actually ran (wave spawn, retries/replacements, delivery, or budget/scaling events), include the event-only ledger in the final assistant response.
+
+Hard gate:
+
+- If orchestration events occurred, a missing ledger block is an invalid completion; do not finalize until the ledger is present.
+- Treat any `spawn_agents_on_csv` run with started/completed/timed_out/replaced items as orchestration activity requiring the ledger block.
+
+Rendering rules:
+
+- Heading: `Orchestration Ledger`
+- Body: one fenced `json` code block, pretty-printed (multi-line), containing only occurred events.
+- Never inline minified JSON in prose.
+- If orchestration did not run, skip the JSON block and emit: `Orchestration Ledger: not invoked`.
+
+Template:
+
+````markdown
+Orchestration Ledger
+```json
+{
+  "skills_used": ["st", "mesh", "spawn_agents_on_csv"],
+  "wave_count": 2
+}
+```
+````
+
 ## Orchestration Policy
 
 - Source of truth: `update_plan` queue.
 - `$st` sync: when `.step/st-plan.jsonl` is active, keep `$st` and `update_plan` aligned in the same turn.
+- Decomposition gate: before spawning non-trivial waves, run `$select` (or equivalent decomposition) so units are atomic and carry explicit scope + proof metadata.
+- Claim gate: apply first-wave `$select` `in_progress` claims in `$st` before spawning workers.
 - Dependency discipline: run only units whose `$st deps` are satisfied. Treat dependency metadata as advisory only when explicitly requested by the user and all participating `unit_scope` sets are disjoint.
-- Unit pipeline (hard gate): `coder -> fixer -> integrator`.
+- Unit pipeline (hard gate): `coder -> fixer -> integrator` as explicit lanes/jobs unless user intent requires a collapsed path.
 - Delivery default: `commit_first`; use `patch_first` only when explicitly requested.
 - Plan-write rule: workers return structured results only; they do not edit plan docs, `.step/st-plan.jsonl`, or ledger artifacts directly.
+- Scope quality gate: missing/unknown/overly broad scopes are not parallel-safe; block or serialize those units until scope is narrowed.
 - Budget clamp uses strictest remaining window (`min(remaining_5h, remaining_weekly)`):
   - `> 33%`: no budget-based clamp.
   - `10%..33%`: linear clamp.
   - `<= 10%`: single active unit, sequential single-agent execution.
 - Concurrency authority: derive one active-unit target during preflight and keep it aligned across `mesh wave --max-active`, `spawn_agents_on_csv.max_concurrency`, and orchestration ledger counts.
 - Scale-out gate: only allow CAS multi-instance fanout when backlog/saturation warrants it and strict remaining budget is `> 25%`.
-- Failure backpressure: if a wave reports `reject`, timeout, `invalid_output_schema`, or lifecycle mismatch, reduce next-wave concurrency (minimum 1) and serialize overlapping scopes until a clean wave passes.
+- Failure backpressure: if a wave reports `reject`, timeout, `invalid_output_schema`, lifecycle mismatch, or user `turn_aborted`, set next-wave concurrency to `max(1, floor(previous/2))` and serialize overlapping scopes until a clean wave passes.
+- Reject/proof closure gate: never close units with `decision=reject` or `proof_status=fail`; require explicit replacement/re-run evidence first.
+- Wave closeout ledger gate: emit/refresh an event-only ledger after each completed wave, not only at final handoff.
 - Dirty working tree is not a reason to disable orchestration by itself; continue with disjoint `unit_scope`, read-only workers, and integrator-only writes.
 
 ## Core Invariants
@@ -89,6 +122,16 @@ run_mesh --help
 - `coder`: produce the smallest patch that satisfies acceptance criteria; report `decision` + `proof_status` (plus optional `patch`).
 - `fixer`: adversarial review for safety/regression/invariant breaks; flip `decision` to `reject` with concrete `failure_code` when needed.
 - `integrator`: apply accepted patches, run `proof_command`, package delivery (`commit_first` or `patch_first`), and update plan/ledger/learnings.
+
+## Lane Expansion (Safe Fanout)
+
+For parallel waves, prefer explicit per-unit lanes to maximize safe subagent usage:
+
+- Emit `u-<id>-coder`, `u-<id>-fixer`, and `u-<id>-integrator` rows/jobs per unit.
+- Keep lane dependency order strict (`coder -> fixer -> integrator`) per unit id.
+- Because `spawn_agents_on_csv` does not enforce dependencies, run lanes as separate waves/spawns (coder first, then fixer, then integrator).
+- Integrator is the only write-enabled lane.
+- If you intentionally collapse lanes (for trivial or serialized units), record the reason in notes/ledger.
 
 ## Integration Modes
 
@@ -233,29 +276,40 @@ Important:
 
 Treat this as a hard gate. If any check fails, do not spawn workers for that wave.
 
-1. Runnable-unit gate (`$st deps` satisfied).
+1. Decomposition gate (`$select`/equivalent completed).
+   - Ensure candidate units are atomic and include explicit `unit_scope`, constraints/invariants, and proof commands.
+   - Avoid manual wave CSV authoring from coarse tasks unless the user explicitly requests it.
+2. Claim gate.
+   - If `$select` emitted first-wave claims, apply those `in_progress` updates in `$st` before spawn.
+3. Runnable-unit gate (`$st deps` satisfied).
    - Exclude units with unresolved dependencies from the candidate wave.
    - If zero runnable units remain, emit no-runnable preflight and stop.
-2. Scope isolation gate (`unit_scope` disjointness).
+4. Scope quality gate.
+   - Treat missing/unknown/overly broad scopes as unsafe for parallelism.
+   - Block the wave or serialize those units until scope is narrowed.
+5. Scope isolation gate (`unit_scope` disjointness).
    - Keep overlapping write scopes out of the same wave.
    - If overlap cannot be separated safely, serialize that scope (`max_active=1` for that lane).
-3. Concurrency authority gate (single active-unit target).
+6. Concurrency authority gate (single active-unit target).
    - Compute one active-unit target from budget preflight.
    - Use the same number in `mesh wave --max-active`, `spawn_agents_on_csv.max_concurrency`, and ledger reporting.
-4. CSV hygiene gate.
+7. CSV hygiene gate.
    - Require distinct `csv_path` and `output_csv_path`.
    - Run `mesh run_csv` before spawn to validate headers/shape and output path separation.
-5. Strict output gate.
+8. Strict output gate.
    - Require worker `result_json` fields `id`, `decision`, `proof_status`.
    - If strict parsing fails, classify as `invalid_output_schema` and block integration for that unit.
-6. State-writer ownership gate.
+9. Reject/proof closure gate.
+   - Do not close units with `decision=reject` or `proof_status=fail`.
+   - Require explicit replacement/re-run evidence before closure.
+10. State-writer ownership gate.
    - Workers must return structured results only.
    - Integrator alone mutates `.step/st-plan.jsonl`, plan/task status logs, and ledger fields.
-7. Launch gate.
+11. Launch gate.
    - Spawn only after all gates pass for the wave.
    - Keep `id_column: "id"` and use the preflight concurrency authority value.
-8. Backpressure gate for next wave.
-   - On `reject`, timeout, lifecycle mismatch, or `invalid_output_schema`, reduce next-wave concurrency (minimum 1).
+12. Backpressure gate for next wave.
+   - On `reject`, timeout, lifecycle mismatch, `invalid_output_schema`, or `turn_aborted`, reduce next-wave concurrency to `max(1, floor(previous/2))`.
    - Serialize overlapping scopes until a clean wave passes.
 
 ### Preflight Command Skeleton (Copy/Paste)
@@ -321,5 +375,6 @@ mesh run_csv --csv-path /tmp/mesh_wave.csv --output-csv-path /tmp/mesh_wave.out.
 ## Handoff Checklist
 
 - Capture the proof command and outcome in the orchestration ledger.
+- Final-response gate: if orchestration activity occurred, include the `Orchestration Ledger` JSON block in the final response before handoff.
 - Persist reusable orchestration footguns/rules in `.learnings.jsonl` (prefer one record).
 - For cross-agent handoffs, dual-write key outcomes to both memory and `.learnings.jsonl`.
