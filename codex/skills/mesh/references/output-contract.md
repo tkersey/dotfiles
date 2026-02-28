@@ -28,12 +28,18 @@ Mesh expects these fields inside the `result` JSON object (they will be exported
 `result_json` column in the output CSV):
 
 - `id`: unit id (string; should match the CSV row id)
+- `candidate_id`: unique candidate id for the lane row (string)
+- `triplet_index`: candidate index within the lane cohort (`1..3`)
 - `decision`: `accept` | `reject` | `no_diff`
 - `proof_status`: `pass` | `fail` | `skipped`
+
+If a lane is intentionally collapsed, still report `candidate_id` and set `triplet_index` to `1`.
 
 Recommended optional keys:
 
 - `failure_code`: one of the Mesh failure taxonomy codes (only when `decision != accept`)
+- `blockers`: array of blocker labels that force reject semantics
+- `challenge_findings`: peer-review findings (required for coder triplet lanes)
 - `patch`: an `apply_patch`-format patch string (when proposing changes)
 - `notes`: short explanation; for no-change use `NO_DIFF:<reason>`
 
@@ -44,8 +50,14 @@ Coder lane (propose patch, no proof):
 ```json
 {
   "id": "u-001",
+  "candidate_id": "u-001-coder-1",
+  "triplet_index": 1,
   "decision": "accept",
   "proof_status": "skipped",
+  "challenge_findings": [
+    "Peer candidate 2 omits CSRF coverage on mutating route",
+    "Peer candidate 3 broadens scope beyond unit boundary"
+  ],
   "patch": "*** Begin Patch\n*** Update File: src/foo.txt\n@@\n-Old\n+New\n*** End Patch\n",
   "notes": "Proposed minimal patch; proof deferred to integrator."
 }
@@ -56,6 +68,8 @@ No-diff lane:
 ```json
 {
   "id": "u-002",
+  "candidate_id": "u-002-fixer-2",
+  "triplet_index": 2,
   "decision": "no_diff",
   "proof_status": "skipped",
   "notes": "NO_DIFF: already satisfies acceptance criteria"
@@ -86,12 +100,16 @@ workers as guidance. For mesh, prefer a JSON Schema object like:
 ```json
 {
   "type": "object",
-  "required": ["id", "decision", "proof_status"],
+  "required": ["id", "candidate_id", "triplet_index", "decision", "proof_status"],
   "properties": {
     "id": {"type": "string"},
+    "candidate_id": {"type": "string"},
+    "triplet_index": {"type": "integer", "minimum": 1, "maximum": 3},
     "decision": {"type": "string", "enum": ["accept", "reject", "no_diff"]},
     "proof_status": {"type": "string", "enum": ["pass", "fail", "skipped"]},
     "failure_code": {"type": "string"},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "challenge_findings": {"type": "array", "items": {"type": "string"}},
     "patch": {"type": "string"},
     "notes": {"type": "string"}
   }
