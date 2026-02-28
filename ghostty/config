@@ -6,7 +6,7 @@ font-size = 14
 window-padding-x = 6
 window-padding-y = 6
 window-padding-balance = true
-unfocused-split-opacity = 0.8
+unfocused-split-opacity = 0.55
 keybind = shift+enter=text:\n
 keybind = cmd+shift+h=new_split:right
 keybind = cmd+shift+v=new_split:down
