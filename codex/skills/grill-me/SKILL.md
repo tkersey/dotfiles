@@ -1,6 +1,6 @@
 ---
 name: grill-me
-description: Clarify ambiguous or conflicting requests by researching first, then asking only judgment calls. Use when prompts say "$grill-me"/"grill me", "ask hard questions", "pressure-test assumptions", "clarify scope/requirements", "define success criteria", or request system-design/optimization decisions before implementation; stop before implementation.
+description: Clarify ambiguous or conflicting requests by researching first, then asking only judgment calls. Use when prompts say "$grill-me"/"grill me", ask hard questions, request relentless interrogation, pressure-test assumptions, clarify scope/requirements, define success criteria, or request system-design/optimization decisions before implementation; stop before implementation.
 ---
 
 # Grill Me
@@ -26,10 +26,21 @@ When the user asks for pressure-testing, run a stricter questioning loop.
 4. Keep tone direct and concise; avoid implementation suggestions.
 5. Exit the mode only when Snapshot has a concrete problem statement, measurable success criteria, and no blocking open questions.
 
+## Relentless architecture interrogation mode
+When the user explicitly asks for relentless interrogation or says to ask question after question, run this stricter override.
+1. Start with exactly one question: "What do you want to build?" asked via `request_user_input`.
+2. Use `request_user_input` for every questioning turn when available; do not emit prose question lists in normal assistant output.
+3. Ask one question at a time by default; ask 2-3 only when all questions are independent and non-blocking.
+4. Do not summarize, propose implementation, or start planning while any required unknown remains.
+5. Probe unstated constraints explicitly: timeline, budget, team size/ownership, technical limits, non-goals, and failure tolerance.
+6. Challenge problem framing directly when needed: ask whether the stated problem is the root problem worth solving.
+7. Pull every thread from each answer until follow-ups are exhausted; only then output a structured plan.
+
 ## Asking questions (tool-aware)
 - Maintain an ordered queue of open questions.
 - Ask questions in batches: prefer 2; use up to 3 when the questions are independent (no ordering dependency), and use 1 only when sequence is required.
 - In high-pressure clarification mode, prefer 2 hard judgment questions per batch; use 1 only when sequence is required.
+- In relentless architecture interrogation mode, prefer 1 question per batch unless multiple independent questions can be answered without sequencing.
 - If a tool named `request_user_input` is available, use it (do not render the fallback Human input block).
 - Otherwise, add a one-line note that the tool is unavailable, then render the fallback Human input block (below).
 - After receiving answers, update the Snapshot and refresh the open-question queue:
@@ -78,6 +89,8 @@ Only create a follow-up when it is a judgment call required to proceed. Apply th
 - If an answer introduces a dependency ("depends on", "only if", "unless"), add: "Which condition should we assume?" (options if you can name them; otherwise free-form).
 - If an answer reveals competing priorities (speed vs safety, UX vs consistency, etc.), add: "Which should we prioritize?" with 2-3 explicit choices.
 - If an answer is non-specific ("faster", "soon", "better"), add: "What exact metric/date/scope should we commit to?".
+- If constraints are still unstated, add follow-ups that force concrete timeline, budget, team ownership, and technical-limit assumptions.
+- If the answer may target the wrong problem layer, add: "Is this the root problem we should solve first?" with options yes/no/reframe.
 - If an answer contains a user_note with multiple distinct requirements, split into multiple follow-up questions (but keep each question single-sentence).
 - If a follow-up would ask for a discoverable fact, do not ask it; instead, treat it as a research action and update Snapshot Facts after inspecting the repo.
 
@@ -164,6 +177,5 @@ GRILL ME: HUMAN INPUT REQUIRED
 - After clarification output is produced, hard-stop.
 
 ## Deliverable format
-- Snapshot.
-- Ask for answers (use `request_user_input` if available; otherwise use the Human input block).
-- One-line Insights/Next Steps.
+- While open questions remain: ask for answers (use `request_user_input` if available; otherwise use the Human input block) and do not summarize or plan.
+- When open questions are exhausted: output Snapshot, then a structured clarification plan (no implementation).

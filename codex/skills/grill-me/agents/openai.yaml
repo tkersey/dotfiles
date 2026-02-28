@@ -1,0 +1,4 @@
+interface:
+  display_name: "grill-me"
+  short_description: "Relentless clarification via judgment-call interrogation"
+  default_prompt: "Use $grill-me to research first, interrogate assumptions with request_user_input, and stop at clarification."
