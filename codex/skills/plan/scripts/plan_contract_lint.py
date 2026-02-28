@@ -10,6 +10,8 @@ from pathlib import Path
 
 REQUIRED_HEADINGS = [
     "Round Delta",
+    "Iteration Action Log",
+    "Iteration Change Log",
     "Summary",
     "Non-Goals/Out of Scope",
     "Scope Change Log",
@@ -35,6 +37,8 @@ FINDINGS_SCHEMA_FIELDS = ["lens", "type", "severity", "section", "decision", "st
 FINDINGS_TAXONOMY = ["errors", "risks", "preferences"]
 RISK_DETAIL_FIELDS = ["probability", "impact", "trigger"]
 TRACEABILITY_FIELDS = ["requirement", "acceptance"]
+ITERATION_ACTION_FIELDS = ["iteration", "what_we_did", "target_outcome"]
+ITERATION_CHANGE_FIELDS = ["iteration", "what_we_did", "change", "sections_touched"]
 OPEN_QUESTION_FIELDS = ["owner", "due_date", "default_action"]
 ROLLBACK_FIELDS = ["abort_trigger", "rollback_action"]
 DECISION_IMPACT_FIELDS = ["decision_id", "impacted_sections", "follow_up_action"]
@@ -52,9 +56,7 @@ CONTRACT_SIGNAL_FIELDS = [
     "external_inputs_trusted",
 ]
 
-MONTHS = (
-    "January|February|March|April|May|June|July|August|September|October|November|December"
-)
+MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
 ABSOLUTE_DATE_PATTERN = re.compile(
     rf"\b\d{{4}}-\d{{2}}-\d{{2}}\b|\b(?:{MONTHS})\s+\d{{1,2}},\s+\d{{4}}\b",
     re.IGNORECASE,
@@ -76,7 +78,9 @@ def extract_heading_section(markdown: str, heading: str) -> str:
     section_start = match.end()
     remainder = markdown[section_start:]
     next_heading = re.search(r"(?im)^#{1,6}\s+\S", remainder)
-    section_end = section_start + next_heading.start() if next_heading else len(markdown)
+    section_end = (
+        section_start + next_heading.start() if next_heading else len(markdown)
+    )
     return markdown[section_start:section_end].strip()
 
 
@@ -100,6 +104,16 @@ def parse_rewrite_ratio(markdown: str) -> float | None:
         return None
 
 
+def extract_bullet_entries(section_text: str) -> list[str]:
+    """Extract top-level bullet lines from a section."""
+    entries: list[str] = []
+    for line in section_text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("- "):
+            entries.append(stripped)
+    return entries
+
+
 def lint_plan(text: str) -> tuple[list[str], list[str]]:
     """Return (errors, warnings) from contract checks."""
     errors: list[str] = []
@@ -116,8 +130,10 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
 
     body = text.split("<proposed_plan>", 1)[1].split("</proposed_plan>", 1)[0].strip()
     first_line = first_non_empty_line(body)
-    if not re.match(r"^Iteration:\s*\d+/5$", first_line):
-        errors.append("First non-empty line inside <proposed_plan> must be `Iteration: N/5`.")
+    if not re.match(r"^Iteration:\s*\d+$", first_line):
+        errors.append(
+            "First non-empty line inside <proposed_plan> must be `Iteration: N`."
+        )
 
     if not re.search(r"(?im)^#\s+\S", body):
         errors.append("Plan body must include a title heading (for example `# Title`).")
@@ -128,7 +144,37 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
 
     round_delta = extract_heading_section(body, "Round Delta")
     if round_delta and len(round_delta.strip()) < 10:
-        errors.append("`Round Delta` must describe concrete changes from the prior round.")
+        errors.append(
+            "`Round Delta` must describe concrete changes from the prior round."
+        )
+
+    iteration_action_log = extract_heading_section(body, "Iteration Action Log")
+    if iteration_action_log:
+        action_entries = extract_bullet_entries(iteration_action_log)
+        if not action_entries:
+            errors.append(
+                "`Iteration Action Log` must contain at least one bullet entry."
+            )
+        for idx, entry in enumerate(action_entries, start=1):
+            for field in ITERATION_ACTION_FIELDS:
+                if not re.search(rf"(?i)\b{field}\b", entry):
+                    errors.append(
+                        f"`Iteration Action Log` entry {idx} must include `{field}`."
+                    )
+
+    iteration_change_log = extract_heading_section(body, "Iteration Change Log")
+    if iteration_change_log:
+        change_entries = extract_bullet_entries(iteration_change_log)
+        if not change_entries:
+            errors.append(
+                "`Iteration Change Log` must contain at least one bullet entry."
+            )
+        for idx, entry in enumerate(change_entries, start=1):
+            for field in ITERATION_CHANGE_FIELDS:
+                if not re.search(rf"(?i)\b{field}\b", entry):
+                    errors.append(
+                        f"`Iteration Change Log` entry {idx} must include `{field}`."
+                    )
 
     traceability = extract_heading_section(body, "Requirement-to-Test Traceability")
     if traceability:
@@ -163,9 +209,7 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
     if decision_impact_map:
         for field in DECISION_IMPACT_FIELDS:
             if not re.search(rf"(?i)\b{field}\b", decision_impact_map):
-                errors.append(
-                    f"`Decision Impact Map` must include `{field}` markers."
-                )
+                errors.append(f"`Decision Impact Map` must include `{field}` markers.")
 
     open_questions = extract_heading_section(body, "Open Questions")
     if open_questions and not re.search(r"(?i)\bnone\b|\bn\/a\b", open_questions):
@@ -227,9 +271,7 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
         press_pass_clean = bool(
             re.search(r"(?i)\bpress_pass_clean\b\s*[:=]\s*(true|yes|1)\b", convergence)
         )
-        no_new_errors = bool(
-            re.search(r"(?i)\bnew_errors\b\s*[:=]\s*0\b", convergence)
-        )
+        no_new_errors = bool(re.search(r"(?i)\bnew_errors\b\s*[:=]\s*0\b", convergence))
         press_pass_ok = press_pass_clean and no_new_errors
         if not (clean_rounds_ok or press_pass_ok):
             errors.append(
@@ -247,9 +289,7 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
     if implementation_brief:
         for field in IMPLEMENTATION_BRIEF_FIELDS:
             if not re.search(rf"(?i)\b{field}\b", implementation_brief):
-                errors.append(
-                    f"`Implementation Brief` must include `{field}` markers."
-                )
+                errors.append(f"`Implementation Brief` must include `{field}` markers.")
 
     rewrite_ratio = parse_rewrite_ratio(body)
     if rewrite_ratio is None:
