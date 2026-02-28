@@ -84,8 +84,9 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Orchestration Ledger response rendering (required when orchestration ran):
   - Trigger: required whenever the turn uses agent orchestration (`spawn_agents_on_csv`, `spawn_agent` + `wait`/`close_agent`, or mesh wave execution) and any orchestration event occurred.
   - Include an `Orchestration Ledger` section in the final response.
-  - Render the event-only ledger payload in a fenced `json` code block (pretty-printed, multi-line).
-  - Do not inline minified JSON in narrative text.
+  - Render the event-only ledger as formatted prose only.
+  - Do not render ledger JSON (no fenced code block and no inline JSON).
+  - Use this deterministic line order, omitting lines with no occurred event: `Skills used`, `Wave summary`, `Subagents`, `Budget and scaling`, `CAS instances`, `Retry/replacement events`, `Delivery/join status`.
   - If orchestration did not run, omit the `Orchestration Ledger` section entirely.
   - Completion gate: missing required ledger is an invalid completion; generate and include it before sending the final response.
 
@@ -129,7 +130,7 @@ GRILL ME: HUMAN INPUT REQUIRED
 
 ## Learnings Lifecycle
 
-- Tool policy: use native `learnings` CLI. If missing, install with `brew install tkersey/tap/learnings`; fail closed if unavailable or incompatible (no Python fallback).
+- Tool policy: use native `learnings` CLI. If missing, install with `brew install tkersey/tap/learnings`; fail closed if unavailable or incompatible.
 - Task-start learnings recall (required for implementation work): once the first user prompt/request text is available (do not run at empty session start), if `.learnings.jsonl` exists in repo root, run a fast recall and treat results as constraints/invariants (carry into worker prompts when spawning).
   - Command: `learnings recall --query "<user request>" --limit 5 --drop-superseded`
   - If recall returns nothing relevant, proceed normally (do not invent).

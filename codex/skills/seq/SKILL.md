@@ -1,12 +1,17 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, token metrics, and prompt-to-session lookup for resume workflows. Use for prompts like `$seq`, `analyze session history`, `find sessions by prompt`, `rank skill mentions`, `audit missing sections`, `report token usage`, `mine memories`, or `use $seq to improve skill trigger descriptions/frontmatter`."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, token metrics, prompt-to-session lookup, and orchestration-concurrency analysis from `spawn_agents_on_csv` calls. Use for prompts like `$seq`, `analyze session history`, `find sessions by prompt`, `rank skill mentions`, `audit missing sections`, `report token usage`, `mine memories`, `orchestration ledger/concurrency from session artifacts`, or `use $seq to improve skill trigger descriptions/frontmatter`."
 ---
 
 # seq
 
 ## Overview
 Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consistently with a single script. Focus on skill usage, format compliance, token counts, and memory-file mining.
+
+## Trigger Cues
+- Questions that ask to verify prior session output using artifacts (`"use $seq to find it"` / `"what did that session actually say"`).
+- Orchestration ledger forensics from session traces (`Orchestration Ledger`, `spawn_agents_on_csv`, wave CSVs, concurrency counts).
+- Concurrency math validation (`max_concurrency`, effective fanout, occurrences of peak parallelism, planned rows vs actual parallelism).
 
 ## Zig CLI Iteration Repos
 
@@ -17,11 +22,6 @@ When iterating on the Zig-backed `seq` helper CLI path, use these two repos:
 
 ## Quick Start
 ```bash
-CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
-CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
-SEQ_SCRIPT="$CODEX_SKILLS_HOME/skills/seq/scripts/seq.py"
-[ -f "$SEQ_SCRIPT" ] || SEQ_SCRIPT="$CLAUDE_SKILLS_HOME/skills/seq/scripts/seq.py"
-
 run_seq() {
   if command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"; then
     seq "$@"
@@ -29,7 +29,7 @@ run_seq() {
   fi
   if [ "$(uname -s)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
     if ! brew install tkersey/tap/seq; then
-      echo "brew install tkersey/tap/seq failed; refusing silent fallback." >&2
+      echo "brew install tkersey/tap/seq failed; hard-failing." >&2
       return 1
     fi
     if command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"; then
@@ -39,18 +39,14 @@ run_seq() {
     echo "brew install tkersey/tap/seq did not produce a compatible seq binary." >&2
     return 1
   fi
-  if [ -f "$SEQ_SCRIPT" ]; then
-    uv run python "$SEQ_SCRIPT" "$@"
-    return
-  fi
-  echo "seq binary missing and fallback script not found: $SEQ_SCRIPT" >&2
+  echo "no compatible seq binary found; install with brew install tkersey/tap/seq" >&2
   return 1
 }
 
 run_seq datasets --root ~/.codex/sessions
 ```
 
-Commands below use `seq` directly for brevity. This is the preferred Zig execution path. Use `run_seq` in places where brew-aware bootstrap and Python fallback behavior are required.
+Commands below use `seq` directly for brevity. Use `run_seq` when you want brew-aware bootstrap with binary-only execution.
 
 ## Query (JSON Spec)
 Run flexible mining via `query` with a small JSON spec (inline or `@spec.json`).
@@ -241,17 +237,27 @@ seq routing-gap --root ~/.codex/sessions \
   --format table
 ```
 
+### 13) Orchestration concurrency summary
+```bash
+seq orchestration-concurrency --root ~/.codex/sessions --session-id <session_id> --format table
+```
+Or target one JSONL directly:
+```bash
+seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl --format json
+```
+
 ## Notes
 - Default root: `~/.codex/sessions`.
 - `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` to override.
-- Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, with fallback to `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
-- Runtime bootstrap policy: prefer the Zig `seq` binary; on macOS with `brew`, treat `brew install tkersey/tap/seq` failure (or incompatible binary) as a hard error; use `uv run python "$SEQ_SCRIPT"` only when no compatible `seq` binary is available.
+- Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, and from `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
+- Runtime bootstrap policy: require the Zig `seq` binary. On macOS with `brew`, treat `brew install tkersey/tap/seq` failure (or incompatible binary) as a hard error.
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 - `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.
 - `session-prompts` defaults to `--roles user`; set `--roles user,assistant` to include both sides of a conversation.
 - `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
+- `orchestration-concurrency` reports both configured (`max_concurrency`) and effective fanout (`min(max_concurrency, csv_rows)`), plus how many times each maximum occurred.
 
 ## Resources
 - `seq` binary: CLI for ranking skills, auditing sections, querying datasets, and summarizing token usage.

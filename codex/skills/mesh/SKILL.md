@@ -72,20 +72,20 @@ Hard gate:
 Rendering rules:
 
 - Heading: `Orchestration Ledger`
-- Body: one fenced `json` code block, pretty-printed (multi-line), containing only occurred events.
-- Never inline minified JSON in prose.
+- Body: formatted prose only (no fenced JSON block and no inline JSON).
+- Use deterministic line order and omit lines for non-events: `Skills used`, `Wave summary`, `Subagents`, `Budget and scaling`, `CAS instances`, `Retry/replacement events`, `Delivery/join status`.
 - If orchestration did not run, omit the `Orchestration Ledger` section entirely.
 
 Template:
 
 ````markdown
 Orchestration Ledger
-```json
-{
-  "skills_used": ["st", "mesh", "spawn_agents_on_csv"],
-  "wave_count": 2
-}
-```
+- Skills used: st, mesh, spawn_agents_on_csv
+- Wave summary: 2 waves (wave1: U00,U10; wave2: U01)
+- Subagents: spawned 12, completed 12, timed out 0, replaced 1
+- Budget and scaling: tier aware, single-instance clamp at max-active 3
+- CAS instances: used false, count 0
+- Retry/replacement events: U10 fixer rejected once; replacement succeeded on attempt 2
 ````
 
 ## Orchestration Policy
@@ -375,6 +375,6 @@ mesh run_csv --csv-path /tmp/mesh_wave.csv --output-csv-path /tmp/mesh_wave.out.
 ## Handoff Checklist
 
 - Capture the proof command and outcome in the orchestration ledger.
-- Final-response gate: if orchestration activity occurred, include the `Orchestration Ledger` JSON block in the final response before handoff.
+- Final-response gate: if orchestration activity occurred, include the `Orchestration Ledger` formatted prose block in the final response before handoff.
 - Persist reusable orchestration footguns/rules in `.learnings.jsonl` (prefer one record).
 - For cross-agent handoffs, dual-write key outcomes to both memory and `.learnings.jsonl`.
