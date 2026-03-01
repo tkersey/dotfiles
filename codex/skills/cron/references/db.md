@@ -17,7 +17,7 @@ Columns:
 - `next_run_at` INTEGER (unix milliseconds, nullable)
 - `last_run_at` INTEGER (unix milliseconds, nullable)
 - `cwds` TEXT (JSON array of strings)
-- `rrule` TEXT (RFC5545 RRULE string, canonicalized to `RRULE:` prefix)
+- `rrule` TEXT (RFC5545 RRULE string; canonical writes use `RRULE:` prefix, legacy non-prefixed rows may exist)
 - `created_at` INTEGER (unix milliseconds)
 - `updated_at` INTEGER (unix milliseconds)
 
@@ -33,7 +33,7 @@ Files:
 Columns:
 - `thread_id` TEXT primary key
 - `automation_id` TEXT
-- `status` TEXT (`RUNNING`, `PENDING_REVIEW`, `FAILED`)
+- `status` TEXT (`RUNNING`, `PENDING_REVIEW`, `FAILED`, `ARCHIVED` may appear when app-side archival runs)
 - `read_at` INTEGER
 - `thread_title` TEXT
 - `source_cwd` TEXT

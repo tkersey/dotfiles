@@ -29,7 +29,7 @@ run_cron_tool() {
       echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
       return 1
     fi
-    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
+    if ! (cd "$repo" && zig build build-cron -Doptimize=ReleaseFast); then
       echo "direct Zig build failed in $repo." >&2
       return 1
     fi
@@ -70,13 +70,14 @@ run_cron_tool() {
   if [ "$os" = "Darwin" ]; then
     echo "expected install path: brew install tkersey/tap/cron" >&2
   else
-    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
+    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build build-cron -Doptimize=ReleaseFast" >&2
   fi
   return 1
 }
 ```
 
 - List automations: `run_cron_tool list`
+- Show one automation: `run_cron_tool show --id <id>`
 - Create an automation: `run_cron_tool create --name "Weekly release notes" --prompt-file /path/to/prompt.md --rrule "RRULE:FREQ=WEEKLY;BYDAY=FR;BYHOUR=9;BYMINUTE=0"`
 - Update an automation: `run_cron_tool update --id <id> --rrule "RRULE:FREQ=DAILY;BYHOUR=9;BYMINUTE=0"`
 - Enable or disable: `run_cron_tool enable --id <id>` or `run_cron_tool disable --id <id>`
@@ -90,6 +91,8 @@ run_cron_tool() {
 
 Runtime bootstrap policy mirrors `seq`/`cas`/`lift`: require the Zig binary, default to Homebrew install on macOS, and fallback to direct Zig install from `skills-zig` on non-macOS.
 
+Subcommand `--help` prints top-level usage. For detailed options, use the matrix below.
+
 ## Workflow
 1. Choose working directories (`cwds`). Default is current repo if omitted on `create`.
 2. Write the automation prompt (use `--prompt-file` for multi-line prompts).
@@ -102,10 +105,28 @@ Runtime bootstrap policy mirrors `seq`/`cas`/`lift`: require the Zig binary, def
   - `automations.last_run_at`
   - `automations.next_run_at`
   - `automation_runs` rows
+- `cron run-due --dry-run` is read-only:
+  - no `automation_runs` rows are inserted/updated
+  - no `automations.last_run_at`/`next_run_at` updates
+  - no automation files or `memory.md` writes
 - `--codex-bin` accepts executable name or absolute path (default resolves `$CODEX_BIN` or `codex` in `PATH`).
 - Locking is label-scoped and fail-closed (`--lock-label`, or env `CRON_LAUNCHD_LABEL`).
+- `--lock-label` uses strict label validation: only `[A-Za-z0-9._-]` (no slashes/spaces).
+- `run-due` default batch limit is `10` automations per invocation (`--limit` overrides).
 - Scheduler commands are macOS-only and manage `~/Library/LaunchAgents/<label>.plist` directly from Zig.
+- Launchd scheduler runs `run-due` with default DB path and default limit unless you invoke `cron` manually with overrides.
 - Logs: `~/Library/Logs/codex-automation-runner/out.log` and `~/Library/Logs/codex-automation-runner/err.log`.
+
+## Command Options (High Signal)
+- `list`: `--status <ACTIVE|PAUSED>`, `--json`
+- `show`: `--id <id>` or `--name <name>`, optional `--json`
+- `create`: `--name`, `--prompt|--prompt-file`, `--rrule`, optional `--status`, `--cwd` (repeatable), `--cwds-json`, `--clear-cwds`, `--next-run-at`
+- `update`: `--id|--name`, optional `--new-name`, `--prompt|--prompt-file`, `--rrule`, `--status`, `--cwd` (repeatable), `--cwds-json`, `--clear-cwds`, `--next-run-at`, `--clear-next-run-at`
+- `enable|disable|run-now|delete`: `--id` or `--name`
+- `run-due`: optional `--id`, `--limit`, `--dry-run`, `--codex-bin`, `--lock-label` (`[A-Za-z0-9._-]` only)
+- `scheduler install`: optional `--label`, `--interval-seconds`, `--path`, `--codex-bin`
+- `scheduler uninstall|status`: optional `--label`
+- Scheduler `--label` is strict: only `[A-Za-z0-9._-]` (no slashes/spaces).
 
 ## Clarify When Ambiguous
 Ask questions only when the request is ambiguous or when the user explicitly asks for guidance. Do not block otherwise.
@@ -124,7 +145,9 @@ When ambiguous, ask for missing details. Examples:
 ## Schedule (RRULE)
 - Accept only RFC5545 RRULE strings. Cron expressions are unsupported.
 - Rules are canonicalized to `RRULE:`-prefixed form.
+- Legacy non-prefixed stored values (`FREQ=...`) are still accepted at run time for compatibility.
 - Validation is fail-closed.
+- `BYHOUR`/`BYMINUTE` are interpreted in UTC.
 - Supported frequencies:
   - `HOURLY` requires `BYMINUTE`
   - `DAILY` requires `BYHOUR` and `BYMINUTE`
