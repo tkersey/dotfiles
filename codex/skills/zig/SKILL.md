@@ -1,12 +1,13 @@
 ---
 name: zig
-description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon changes, zig build/test/run/fmt/fetch commands, comptime/reflection/codegen, allocator ownership and zero-copy parsing, C interop, and performance work (latency, throughput, profiling, SIMD, threading) that must preserve correctness with fuzz and allocation-failure checks."
+description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon changes, zig build/test/run/fmt/fetch/lint commands, zlinter integration, comptime/reflection/codegen, allocator ownership and zero-copy parsing, C interop, and performance work (latency, throughput, profiling, SIMD, threading) that must preserve correctness with lint, fuzz, and allocation-failure checks."
 ---
 
 # Zig
 
 ## Operating contract
 - Assume Zig 0.15.2 unless the user explicitly requests another version.
+- Treat `zlinter` (`zig build lint`) as a required gate for Zig codebases.
 - Treat correctness as a hard gate before optimization and release work.
 - Prefer minimal incisions with explicit proof signals.
 - Keep fast paths benchmarked, but keep safety checks on during correctness validation.
@@ -19,18 +20,52 @@ zig version
 ```
 
 - If the version is not `0.15.2`, stop and state the mismatch.
+- If `zig build lint` is missing in the target repo, stop implementation and bootstrap lint first.
 - If the request is performance-focused, run in two lanes:
   - Correctness lane (`Debug` or `ReleaseSafe`).
   - Performance lane (`ReleaseFast`) only after correctness passes.
 
+### Lint bootstrap (required when missing)
+1. Add `zlinter` for Zig 0.15.x:
+
+```bash
+zig fetch --save git+https://github.com/kurtwagner/zlinter#0.15.x
+```
+
+2. Add a `lint` step in `build.zig` (all built-in rules baseline):
+
+```zig
+const zlinter = @import("zlinter");
+// ...
+const lint_cmd = b.step("lint", "Lint source code.");
+lint_cmd.dependOn(step: {
+    var builder = zlinter.builder(b, .{});
+    inline for (@typeInfo(zlinter.BuiltinLintRule).@"enum".fields) |f| {
+        builder.addRule(.{ .builtin = @enumFromInt(f.value) }, .{});
+    }
+    break :step builder.build();
+});
+```
+
 ## Core workflow
 1. State the contract: domain, invariants, error model, and complexity target.
-2. Build or identify a reference path before touching optimized code.
-3. Add or extend unit tests around edge cases and regressions.
-4. Run fuzz and allocation-failure checks for safety-sensitive paths.
-5. Optimize in order: algorithm -> data layout -> vectorization -> threading -> micro-tuning.
-6. Re-run correctness gates after each optimization step.
-7. Report proof with exact commands and outcomes.
+2. Confirm Zig version and required lint wiring (`zig build lint`).
+3. Run lint autofix pass (`zig build lint -- --fix`).
+4. Re-run strict lint gate with zero warnings (`zig build lint -- --max-warnings 0`).
+5. Build or identify a reference path before touching optimized code.
+6. Add or extend unit tests around edge cases and regressions.
+7. Run fuzz and allocation-failure checks for safety-sensitive paths.
+8. Optimize in order: algorithm -> data layout -> vectorization -> threading -> micro-tuning.
+9. Re-run lint and correctness gates after each optimization step.
+10. Report proof with exact commands and outcomes.
+
+## Lint gate (required)
+- Every Zig implementation turn must include lint evidence.
+- Default lint flow:
+  - `zig build lint -- --fix`
+  - `zig build lint -- --max-warnings 0`
+- If `--fix` changes code, review the diff before continuing.
+- Do not mark work complete if lint step is missing or failing.
 
 ## Correctness gate (required)
 - Every Zig change needs at least one correctness signal.
@@ -103,6 +138,8 @@ zig fmt src/main.zig
 # Build and run
 zig build
 zig build run
+zig build lint -- --fix
+zig build lint -- --max-warnings 0
 
 # Release-oriented build
 zig build -Doptimize=ReleaseFast
@@ -174,6 +211,7 @@ uv run python codex/skills/zig/scripts/test_zig_trigger_audit.py
 Notes:
 - The audit uses literal `contains` matching to avoid regex parser limitations in `seq` for dotted literals (for example `.zig`, `build.zig`, `std.simd`).
 - Keep strict-implicit mode enabled when evaluating precision-sensitive routing changes.
+- Lint cues (`zig build lint`, `zlinter`) are tracked as Zig intent.
 
 ## Monthly drift scorecard
 Generate a compact scorecard that combines:
@@ -207,6 +245,8 @@ Use these results to keep `$zig` guidance aligned with what is true in active Zi
 - Claiming performance wins without measured baseline/after evidence.
 - Running micro-optimizations before removing algorithmic waste.
 - Skipping allocation-failure coverage in allocator-heavy code.
+- Skipping `zig build lint` or allowing warnings to pass.
+- Running `zig build lint -- --fix` on a dirty tree without reviewing the resulting diff.
 - Treating borrowed memory as owned (or vice versa).
 - Returning stack-backed slices.
 - Assuming regex-like query patterns are portable across all tooling without validation.

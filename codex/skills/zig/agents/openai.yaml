@@ -1,4 +1,4 @@
 interface:
   display_name: "Zig"
-  short_description: "Build, test, fuzz, and optimize Zig 0.15.2 code"
-  default_prompt: "Use $zig to implement and validate Zig 0.15.2 changes with correctness-first testing."
+  short_description: "Build, lint, test, fuzz, and optimize Zig 0.15.2 code"
+  default_prompt: "Use $zig to integrate zlinter lint gates and validate Zig 0.15.2 changes with correctness-first testing."

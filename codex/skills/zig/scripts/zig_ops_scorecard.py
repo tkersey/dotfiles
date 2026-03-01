@@ -17,6 +17,8 @@ from typing import Any
 SAFE_CUES = {
     "cues": [
         {"name": "zig_build", "pattern": "zig build", "case_insensitive": True},
+        {"name": "zig_lint", "pattern": "zig build lint", "case_insensitive": True},
+        {"name": "zlinter", "pattern": "zlinter", "case_insensitive": True},
         {"name": "zig_test", "pattern": "zig test", "case_insensitive": True},
         {"name": "zig_run", "pattern": "zig run", "case_insensitive": True},
         {"name": "zig_fmt", "pattern": "zig fmt", "case_insensitive": True},
@@ -103,13 +105,21 @@ def recommendations(skill_lines: int, audit: dict[str, Any], routing: list[dict[
     by_cue = {str(row.get("cue", "")): row for row in routing}
     zig_build = by_cue.get("zig_build")
     if zig_build:
-        rate = float(zig_build.get("invoked_rate_pct", 0.0))
+        value = zig_build.get("invoked_rate_pct")
+        rate = float(value) if value is not None else 0.0
         if rate < 50.0:
             recs.append("Strengthen frontmatter cues for zig build workflows; current zig_build invoked rate is below 50%.")
+    zig_lint = by_cue.get("zig_lint")
+    if zig_lint:
+        value = zig_lint.get("invoked_rate_pct")
+        rate = float(value) if value is not None else 0.0
+        if rate < 50.0:
+            recs.append("Strengthen lint trigger cues; current zig_lint invoked rate is below 50%.")
 
     overall = by_cue.get("__all__")
     if overall:
-        rate = float(overall.get("invoked_rate_pct", 0.0))
+        value = overall.get("invoked_rate_pct")
+        rate = float(value) if value is not None else 0.0
         if rate < 30.0:
             recs.append("Review trigger surface with seq routing-gap; overall invoked rate is below 30%.")
 

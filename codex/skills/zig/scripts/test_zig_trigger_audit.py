@@ -30,6 +30,7 @@ def fake_run_seq_query(seq_runner, root, spec, since, until):
         return [
             {"path": "s-explicit", "timestamp": "2026-02-20T10:00:00Z"},
             {"path": "s-clean-1", "timestamp": "2026-02-20T10:00:00Z"},
+            {"path": "s-lint-clean", "timestamp": "2026-02-20T10:00:00Z"},
         ]
 
     where = spec.get("where", [{}, {}])
@@ -71,6 +72,22 @@ def fake_run_seq_query(seq_runner, root, spec, since, until):
             {
                 "path": "s-clean-2",
                 "text": "add comptime assertion",
+                "timestamp": "2026-02-20T10:00:00Z",
+            }
+        ]
+    if term == "zig build lint":
+        return [
+            {
+                "path": "s-lint-clean",
+                "text": "run zig build lint before tests",
+                "timestamp": "2026-02-20T10:00:00Z",
+            }
+        ]
+    if term == "zlinter":
+        return [
+            {
+                "path": "s-lint-clean",
+                "text": "wire zlinter into build.zig",
                 "timestamp": "2026-02-20T10:00:00Z",
             }
         ]
@@ -129,24 +146,24 @@ class ZigTriggerAuditTests(unittest.TestCase):
 
             self.assertTrue(report["flags"]["strict_implicit"])
             counts = report["counts"]
-            self.assertEqual(counts["zig_intent_sessions_total"], 3)
+            self.assertEqual(counts["zig_intent_sessions_total"], 4)
             self.assertEqual(counts["explicit_zig_intent_sessions"], 1)
-            self.assertEqual(counts["implicit_zig_intent_sessions_raw"], 4)
+            self.assertEqual(counts["implicit_zig_intent_sessions_raw"], 5)
             self.assertEqual(counts["implicit_noise_filtered_sessions"], 1)
             self.assertEqual(counts["implicit_low_signal_total_sessions"], 1)
             self.assertEqual(counts["implicit_low_signal_filtered_sessions"], 1)
             self.assertEqual(counts["implicit_low_signal_included_sessions"], 0)
-            self.assertEqual(counts["implicit_zig_intent_sessions"], 2)
-            self.assertEqual(counts["assistant_mentioned_$zig_sessions"], 2)
-            self.assertEqual(counts["matched_sessions"], 2)
+            self.assertEqual(counts["implicit_zig_intent_sessions"], 3)
+            self.assertEqual(counts["assistant_mentioned_$zig_sessions"], 3)
+            self.assertEqual(counts["matched_sessions"], 3)
             self.assertEqual(counts["matched_explicit_sessions"], 1)
-            self.assertEqual(counts["matched_implicit_sessions"], 1)
+            self.assertEqual(counts["matched_implicit_sessions"], 2)
 
             rates = report["rates"]
-            self.assertAlmostEqual(rates["session_recall_proxy_pct"], 66.6666666, places=3)
+            self.assertAlmostEqual(rates["session_recall_proxy_pct"], 75.0, places=3)
             self.assertAlmostEqual(rates["session_precision_proxy_pct"], 100.0, places=3)
             self.assertAlmostEqual(rates["explicit_session_recall_proxy_pct"], 100.0, places=3)
-            self.assertAlmostEqual(rates["implicit_session_recall_proxy_pct"], 50.0, places=3)
+            self.assertAlmostEqual(rates["implicit_session_recall_proxy_pct"], 66.6666666, places=3)
 
             samples = report["samples"]
             self.assertEqual(len(samples["explicit_miss_sample"]), 0)
