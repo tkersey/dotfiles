@@ -30,7 +30,7 @@ GRILL ME: HUMAN INPUT REQUIRED
 ## Skill Routing
 
 - Default: if the user is asking for a change to code/config/tests, start with `$tk` (implementation mode) and keep the incision minimal with a proof signal.
-- `$mesh`: Trigger for plan-driven orchestration (`update_plan` queue, parallel waves, subagent execution). Default to CSV-wave execution via `spawn_agents_on_csv`.
+- `$mesh`: Trigger for plan-driven streaming orchestration (`update_plan` queue, rolling CSV batches, subagent execution). Default to `spawn_agents_on_csv` with no global wave barrier.
 - `$grill-me`: Trigger when requirements are ambiguous/conflicting, or the user asks to "grill me"/pressure-test/clarify scope; research first, then ask only judgment calls; stop before implementation.
 - `$prove-it`: Trigger on absolute claims (always/never/guaranteed/optimal) or requests for certainty; pressure-test, then restate with explicit boundaries.
 - `$complexity-mitigator`: Trigger when reasoning is hard (deep nesting, unclear naming, cross-file hops); produce an analysis-first simplification plan (no edits).
@@ -51,50 +51,50 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Detailed execution runbook: see `codex/skills/mesh/SKILL.md`.
 
 - Source of truth: use `update_plan` as the canonical ready queue for implementation orchestration. When `$st` is in play, keep `.step/st-plan.jsonl` and `update_plan` in sync in the same turn.
-- Execution substrate: use `$mesh` and execute ready waves via `spawn_agents_on_csv` by default.
-- Decomposition gate: before spawning non-trivial waves, run `$select` (or an equivalent explicit decomposition step) so units are atomic, dependency-aware, and carry concrete `unit_scope` + validation/proof signals.
-- Claim gate: when `$select` emits a first-wave claim, apply those `in_progress` claims in `$st` before spawning workers.
+- Execution substrate: use `$mesh` and execute a streaming per-unit state machine via `spawn_agents_on_csv` rolling batches by default.
+- Decomposition gate: before spawning non-trivial batches, run `$select` (or an equivalent explicit decomposition step) so units are atomic, dependency-aware, and carry concrete `unit_scope` + validation/proof signals.
+- Claim gate: when `$select` emits first-ready claims, apply those `in_progress` claims in `$st` before spawning workers.
 - Dependency discipline: schedule only units with satisfied `$st` deps. Treat dependency metadata as advisory only when the user explicitly opts in and `unit_scope` is disjoint.
-- Unit pipeline (hard gate): each implementation unit runs `coder + reducer -> fixer -> integrator` as explicit lanes/jobs unless the user requests a collapsed path.
-- Dual-author default (coding phase): run lane cohorts as `coder x2`, `reducer x1`, `fixer x3`, `integrator x3` per active unit unless the user explicitly requests a narrower path.
+- Unit pipeline (hard gate): each implementation unit runs candidate lanes (`coder x2`, `reducer x1`) then `locksmith -> applier -> prover`, then fixer quorum, then integrator packaging unless the user requests a collapsed path.
 - Author adversarial gate: coder/reducer cohort members must challenge peer outputs before fixer intake.
-- Fixer quorum gate: require at least 2 accepts and no blocker reject to promote a unit to integrator.
-- Integrator trio gate: use `writer + 2 shadow integrators`; close only when writer passes and both shadows accept.
+- Fixer quorum gate: use risk-adaptive quorum targets (`low=1`, `med=2`, `high=3`) and require no blocker reject to promote.
+- Integrator trio gate: optional for high-risk units; integrator writer is sufficient for low-risk patch packaging when quorum already passed.
 - Delivery defaults: `integrator` uses `patch_first` unless the task/user explicitly requests `commit_first`.
-- Single-writer rule: only `integrator` applies patches/creates commits; parallel workers should be read-only.
+- Single-writer rule for durable state: only `integrator` mutates plan/ledger state; `applier` may mutate isolated worktrees only after lease grant.
 - Integrator commit materialization: when converting accepted patches into commits, use `git am` only (no `git apply`-then-commit path).
-- Scope quality gate: units with missing/unknown/overly broad `unit_scope` are not eligible for parallel waves; block or serialize until scope is tightened.
+- Scope quality gate: units with missing/unknown/overly broad `unit_scope` are not eligible for parallel batches; block or serialize until scope is tightened.
+- write_scope reservations: mutating phases must acquire a lease before apply/proof; overlapping reservations serialize automatically.
 - Plan-write rule: workers must not mutate plan/state artifacts (`.step/st-plan.jsonl`, plan docs, orchestration ledger). Workers return structured results; integrator performs state writes.
 - Budget clamp (strictest of 5-hour and weekly remaining from CAS):
   - `remaining > 33%`: no budget-based clamp (still bounded by configured capacity).
   - `10% < remaining <= 33%`: linear clamp from full capacity to one active unit.
   - `remaining <= 10%`: single active unit, single-agent sequential execution.
-- Concurrency authority: compute one active-unit target at preflight and keep it consistent across `mesh wave --max-active`, `spawn_agents_on_csv.max_concurrency`, and ledger reporting.
+- Concurrency authority: compute one active-unit target at preflight and keep it consistent across batch generation, `spawn_agents_on_csv.max_concurrency`, and ledger reporting.
 - Scale-out rules: allow multi-instance CAS only when backlog/saturation conditions justify it and `remaining > 25%`; disallow scale-out at `<= 25%`.
 - Lane fanout (safe degrade):
   - `remaining > 15%` and no instability: keep dual-author fanout at `coder x2 + reducer x1` and safety lanes at width `3`.
   - `10% < remaining <= 15%` or prior-wave instability: degrade to width `2`.
   - `remaining <= 10%` or two consecutive unstable waves: degrade to width `1`.
   - Restore by one level after two consecutive clean waves and `remaining > 20%`.
-- Wave isolation: overlapping write scopes are serialized; non-overlapping scopes can run in parallel.
-- Failure backpressure: on `reject`, timeout, lifecycle mismatch, `invalid_output_schema`, or user `turn_aborted`, reduce next-wave concurrency to `max(1, floor(previous/2))` and serialize overlapping scopes until a clean wave passes.
+- Batch isolation: overlapping write scopes are serialized for mutating lanes; non-overlapping scopes can run in parallel.
+- Failure backpressure: on `reject`, timeout, lifecycle mismatch, `invalid_output_schema`, or user `turn_aborted`, reduce next-batch concurrency to `max(1, floor(previous/2))` and serialize overlapping scopes until a clean batch passes.
 - Dirty working tree is not a skip gate for multi-agent orchestration; ignore unrelated diffs and preserve safety with disjoint scopes plus integrator-only writes.
 - CSV hygiene: keep `csv_path` and `output_csv_path` distinct per run to avoid template clobbering.
 - Output contract caveat: `spawn_agents_on_csv` output schema metadata is advisory; mesh must enforce strict output parsing before integration.
-- Candidate output gate: require `candidate_id` and `triplet_index` in strict worker results before quorum evaluation (legacy key name retained).
+- Candidate output gate: require strict v2 worker keys (`candidate_id`, `triplet_index`, `lane`, `write_scope`, `risk_tier`, `proof_evidence`) before quorum evaluation.
 - Reject-closure gate: never close a unit when worker output contains `decision=reject` or `proof_status=fail`; require explicit replacement/re-run evidence first.
 - Orchestration Ledger (implementation turns): include only events that occurred:
   - `skills_used`
-  - `wave_count` and wave scopes
+  - batch count and batch scopes
   - lane fanout target/effective and any degrade/restore events
   - subagent counts (`spawned`, `completed`, `timed_out`, `replaced`)
   - budget snapshot and scaling decision
   - CAS instance usage
   - retry/replacement events
   - delivery artifact/join status when delivery actions occurred
-- Wave closeout ledger gate: emit/refresh an event-only ledger after each completed wave, not only at final handoff.
+- Batch closeout ledger gate: emit/refresh an event-only ledger after each completed batch, not only at final handoff.
 - Orchestration Ledger response rendering (required when orchestration ran):
-  - Trigger: required whenever the turn uses agent orchestration (`spawn_agents_on_csv`, `spawn_agent` + `wait`/`close_agent`, or mesh wave execution) and any orchestration event occurred.
+  - Trigger: required whenever the turn uses agent orchestration (`spawn_agents_on_csv`, `spawn_agent` + `wait`/`close_agent`, or mesh batch execution) and any orchestration event occurred.
   - Include an `Orchestration Ledger` section in the final response.
   - Render the event-only ledger as formatted prose only.
   - Do not render ledger JSON (no fenced code block and no inline JSON).

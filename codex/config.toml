@@ -10,15 +10,15 @@ max_threads = 12
 max_depth = 3
 
 [agents.coder]
-description = "Author code changes with TK doctrine and explicit proof signals."
+description = "Author patch candidates with explicit scope/risk metadata for streaming orchestration."
 config_file = "~/.codex/agents/coder.toml"
 
 [agents.reducer]
-description = "Run `$reduce` to cut high-cost abstractions while preserving contract/invariants with minimal reversible diffs."
+description = "Run `$reduce` to produce low-indirection patch candidates with explicit reduce records."
 config_file = "~/.codex/agents/reducer.toml"
 
 [agents.fixer]
-description = "Own safety/regression review and final authority for safety conflicts."
+description = "Own quorum-based safety adjudication across proven candidates."
 config_file = "~/.codex/agents/fixer.toml"
 
 [agents.mentor]
@@ -34,8 +34,20 @@ description = "Route patch artifacts to the right PRs and coordinate join-style 
 config_file = "~/.codex/agents/joiner.toml"
 
 [agents.integrator]
-description = "Own delivery packaging after fixer acceptance (`$commit`/`$patch`) with artifact hygiene."
+description = "Package accepted artifacts, keep plan state consistent, and materialize commits via git am when requested."
 config_file = "~/.codex/agents/integrator.toml"
+
+[agents.locksmith]
+description = "Grant/deny write_scope leases for mutating phases and reclaim expired reservations."
+config_file = "~/.codex/agents/locksmith.toml"
+
+[agents.applier]
+description = "Apply patch artifacts in isolated worktrees and emit deterministic apply evidence."
+config_file = "~/.codex/agents/applier.toml"
+
+[agents.prover]
+description = "Run proof commands in isolated worktrees with bounded retries and structured evidence."
+config_file = "~/.codex/agents/prover.toml"
 
 [features]
 unified_exec = true

@@ -1,4 +1,4 @@
 interface:
   display_name: "mesh"
-  short_description: "Plan-driven CSV-wave orchestration with coder+reducer/fixer/integrator gates"
-  default_prompt: "Use $mesh to execute update_plan work in parallel CSV waves with dual-author cohorts (coder x2 + reducer x1), safety cohorts (fixer/integrator x3), safe degrade/restore fanout, integrator-only delivery, and strict worker output parsing."
+  short_description: "Streaming orchestration with reservation-gated mutating lanes"
+  default_prompt: "Use $mesh to execute update_plan work as a streaming per-unit state machine: coder x2 + reducer x1 candidate generation, reservation-gated applier/prover lanes for all candidates, risk-adaptive fixer quorum, patch-first integration, strict output parsing, and CAS budget-aware scaling without global wave barriers."

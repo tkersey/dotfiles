@@ -1,5 +1,5 @@
 #!/usr/bin/env -S uv run python
-"""Dual-author contract drift lint for mesh/reducer docs and prompts."""
+"""Streaming mesh contract drift lint."""
 
 from __future__ import annotations
 
@@ -8,30 +8,36 @@ from pathlib import Path
 
 REQUIRED_SNIPPETS: dict[str, list[str]] = {
     "codex/AGENTS.md": [
-        "`coder + reducer -> fixer -> integrator`",
-        "`coder x2`, `reducer x1`, `fixer x3`, `integrator x3`",
+        "streaming per-unit state machine",
+        "write_scope reservations",
+        "locksmith -> applier -> prover",
     ],
     "codex/skills/mesh/SKILL.md": [
-        "`coder + reducer -> fixer -> integrator`",
-        "`coder x2`, `reducer x1`, `fixer x3`, and `integrator x3`",
+        "streaming per-unit state machine",
+        "no global wave barrier",
+        "locksmith -> applier -> prover",
     ],
     "codex/skills/mesh/agents/openai.yaml": [
+        "Streaming orchestration",
         "coder x2 + reducer x1",
     ],
     "codex/skills/mesh/references/output-contract.md": [
-        "Reducer lane (propose abstraction cut, no proof):",
-        "`reduce_record`",
+        "Mesh Output Contract v2 (Streaming)",
+        "write_scope",
+        "proof_evidence",
     ],
-    "codex/agents/reducer.toml": [
-        "Invoke `$reduce` first",
-        "`target_abstraction`",
+    "codex/agents/coder.toml": [
+        "Do not run proof in the coder lane",
+        "write_scope",
     ],
-    "codex/agents/fixer.toml": [
-        "Deterministically adjudicate coder/reducer candidates",
-        "Selected candidate:",
+    "codex/agents/integrator.toml": [
+        "Default mode is `patch_first`",
+        "git am",
     ],
     "codex/config.toml": [
-        "Run `$reduce` to cut high-cost abstractions",
+        "[agents.locksmith]",
+        "[agents.applier]",
+        "[agents.prover]",
     ],
 }
 
