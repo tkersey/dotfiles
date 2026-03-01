@@ -21,6 +21,17 @@ Core execution model:
 - `planned -> candidates_ready -> proofs_ready -> fixer_accept -> completed`
 - no global wave barrier; units progress independently once dependencies are satisfied.
 
+## Compliance Guardrails (Fail-Closed)
+
+- Do not claim `$mesh` orchestration if execution only used direct `spawn_agent` workers or a single-lane `coder` run without downstream lanes.
+- Default lane matrix per unit is mandatory unless explicitly overridden by the user:
+  - candidate cohort: `coder` + `coder` + `reducer` (distinct `candidate_id`/`triplet_index`)
+  - mutating/proof chain for each candidate: `locksmith -> applier -> prover`
+  - adjudication: `fixer` quorum by `risk_tier`
+  - delivery/state write: `integrator`
+- Collapsed path is allowed only on explicit user request; record the override in ledger output and keep unit closure criteria explicit.
+- Never close a unit in `$st` without fixer accept + integrator completion evidence (or explicit collapsed-path override).
+
 ## Zig CLI Iteration Repos
 
 When iterating on the Zig-backed `mesh` helper CLI path, use these repos:
@@ -122,6 +133,7 @@ Risk-adaptive fixer quorum:
 - Reservation gate: mutating phases require write_scope lease grants.
 - Plan-write rule: workers return structured results only; only integrator writes plan state.
 - Completion gate: close a unit only when fixer accepted and proof status is pass.
+- Anti-pattern gate: a coder-only wave is not a valid completion path unless a collapsed-path override is explicitly requested.
 - Concurrency authority: compute one active-unit target and reuse it across mesh/batch/ledger reporting.
 - Scale-out gate: enable CAS multi-instance only when saturation justifies it and remaining budget is above clamp thresholds.
 - Backpressure gate: on reject/timeout/schema failures/turn abort, reduce next-batch concurrency and serialize overlapping scopes.
@@ -167,6 +179,7 @@ Required input headers:
 - `candidate_id`
 - `triplet_index`
 - `lane`
+- `base_sha`
 - `delivery_mode`
 - `attempt`
 - `variant`
@@ -183,10 +196,10 @@ Required worker output fields are defined in:
 3. `mesh slice --input-json <plan.json> --output-json <units.json>`
 4. Build a ready batch CSV (`mesh wave ...`) for currently unblocked units.
 5. `mesh run_csv --csv-path <batch.csv> --output-csv-path <batch.out.csv>`
-6. Spawn candidate lanes (`coder/reducer`) via `spawn_agents_on_csv`.
-7. Spawn reservation/proof lanes (`locksmith -> applier -> prover`) for all candidate rows.
-8. Spawn fixer lanes; enforce risk-tier quorum.
-9. Spawn integrator lane for accepted candidates; write plan state and artifact output.
+6. Spawn candidate cohort rows per unit (`coder x2 + reducer x1`) via `spawn_agents_on_csv`.
+7. Spawn reservation/proof lanes (`locksmith -> applier -> prover`) for every candidate row.
+8. Spawn fixer lanes and enforce risk-tier quorum (`low=1`, `med=2`, `high=3`).
+9. Spawn integrator lane for accepted candidates, then write plan state and artifact output.
 10. Repeat on next ready units immediately (streaming), rather than waiting for a global barrier.
 
 ## Preflight Checklist (Required)
@@ -202,6 +215,8 @@ Treat this as a hard gate before each batch spawn.
 7. Worker output parser is configured for contract v2.
 8. Retry/backpressure settings are set for this batch.
 9. Ledger event sink is enabled for occurred-event reporting.
+10. Batch CSV header set includes `base_sha` (required by current `mesh run_csv` preflight).
+11. Candidate cohort wave has `coder x2 + reducer x1` rows per unit (or an explicit collapsed-path override is recorded).
 
 ## Validation
 
@@ -211,6 +226,7 @@ mesh budget --remaining-five-hour 40 --remaining-weekly 28 --max-threads 12
 mesh replay --remaining-five-hour 72 --remaining-weekly 55 --max-threads 12 --ready-units 24
 mesh run_csv --csv-path /tmp/mesh_batch.csv --output-csv-path /tmp/mesh_batch.out.csv
 uv run codex/skills/mesh/references/contract_drift_lint.py
+uv run codex/skills/mesh/references/lane_completeness_lint.py --check candidate /tmp/mesh_batch.csv
 ```
 
 ## References
@@ -224,5 +240,6 @@ uv run codex/skills/mesh/references/contract_drift_lint.py
 
 - Capture proof evidence for accepted candidates.
 - Capture lease and retry events when they occur.
+- Before claiming `$mesh`, run lane completeness lint on outputs: `uv run codex/skills/mesh/references/lane_completeness_lint.py --check full .mesh/*.exec.out.csv`.
 - Include `Orchestration Ledger` in final response only when orchestration actually ran.
 - Append one reusable learning to `.learnings.jsonl` when appropriate.

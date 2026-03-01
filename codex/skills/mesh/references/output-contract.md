@@ -34,6 +34,18 @@ Required keys for strict parsing:
 Mesh classifies rows as `invalid_output_schema` when any required key is missing,
 wrongly typed, or semantically invalid.
 
+## Run-Level Invariants (Fail-Closed)
+
+Mesh orchestration is a lane-complete pipeline, not just concurrent work.
+
+- Do not claim `$mesh` orchestration if execution only ran `lane=coder` (or used ad-hoc `spawn_agent` concurrency) without downstream lanes.
+- Default lane matrix per unit is mandatory unless the user explicitly requests a collapsed path:
+  - candidate cohort: `coder` + `coder` + `reducer`
+  - proof chain: `locksmith -> applier -> prover` (coder/reducer do not run proof)
+  - adjudication: `fixer` quorum by `risk_tier`
+  - delivery: `integrator`
+- Close gate: do not mark a unit complete without fixer acceptance + integrator completion evidence (unless an explicit collapsed-path override is recorded).
+
 ## Lane-Specific Expectations
 
 - `coder` and `reducer`:

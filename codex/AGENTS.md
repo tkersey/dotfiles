@@ -55,6 +55,10 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Decomposition gate: before spawning non-trivial batches, run `$select` (or an equivalent explicit decomposition step) so units are atomic, dependency-aware, and carry concrete `unit_scope` + validation/proof signals.
 - Claim gate: when `$select` emits first-ready claims, apply those `in_progress` claims in `$st` before spawning workers.
 - Dependency discipline: schedule only units with satisfied `$st` deps. Treat dependency metadata as advisory only when the user explicitly opts in and `unit_scope` is disjoint.
+- Mesh truth gate (fail-closed): do not claim `$mesh` orchestration if execution used only direct `spawn_agent` workers or a single `coder` lane without downstream lanes.
+- Lane completeness gate (default): unless the user explicitly requests a collapsed path, each unit must execute full lanes in order: candidate cohort (`coder x2 + reducer x1`) -> `locksmith -> applier -> prover` -> fixer quorum -> integrator.
+- Collapse override gate: collapsed-path execution is allowed only on explicit user request; record the override in ledger output and keep completion criteria explicit.
+- Lane completeness lint (recommended): before claiming `$mesh`, verify lane completeness from `.mesh/*.exec.out.csv` (e.g. `uv run codex/skills/mesh/references/lane_completeness_lint.py --check full .mesh/*.exec.out.csv`) or record an explicit collapsed-path override.
 - Unit pipeline (hard gate): each implementation unit runs candidate lanes (`coder x2`, `reducer x1`) then `locksmith -> applier -> prover`, then fixer quorum, then integrator packaging unless the user requests a collapsed path.
 - Author adversarial gate: coder/reducer cohort members must challenge peer outputs before fixer intake.
 - Fixer quorum gate: use risk-adaptive quorum targets (`low=1`, `med=2`, `high=3`) and require no blocker reject to promote.
@@ -80,9 +84,11 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Failure backpressure: on `reject`, timeout, lifecycle mismatch, `invalid_output_schema`, or user `turn_aborted`, reduce next-batch concurrency to `max(1, floor(previous/2))` and serialize overlapping scopes until a clean batch passes.
 - Dirty working tree is not a skip gate for multi-agent orchestration; ignore unrelated diffs and preserve safety with disjoint scopes plus integrator-only writes.
 - CSV hygiene: keep `csv_path` and `output_csv_path` distinct per run to avoid template clobbering.
+- CSV header gate: `mesh run_csv` currently requires `base_sha`; include it in every batch CSV template or fail preflight.
 - Output contract caveat: `spawn_agents_on_csv` output schema metadata is advisory; mesh must enforce strict output parsing before integration.
 - Candidate output gate: require strict v2 worker keys (`candidate_id`, `triplet_index`, `lane`, `write_scope`, `risk_tier`, `proof_evidence`) before quorum evaluation.
 - Reject-closure gate: never close a unit when worker output contains `decision=reject` or `proof_status=fail`; require explicit replacement/re-run evidence first.
+- Close gate: never mark a unit `completed` in `$st` unless fixer acceptance and integrator completion evidence are both present for that unit (or an explicit collapsed-path override exists).
 - Orchestration Ledger (implementation turns): include only events that occurred:
   - `skills_used`
   - batch count and batch scopes

@@ -1,4 +1,11 @@
 interface:
   display_name: "mesh"
   short_description: "Streaming orchestration with reservation-gated mutating lanes"
-  default_prompt: "Use $mesh to execute update_plan work as a streaming per-unit state machine: coder x2 + reducer x1 candidate generation, reservation-gated applier/prover lanes for all candidates, risk-adaptive fixer quorum, patch-first integration, strict output parsing, and CAS budget-aware scaling without global wave barriers."
+  default_prompt: >
+    Use $mesh to execute update_plan work as a streaming per-unit state machine.
+    Default lane matrix is mandatory unless the user explicitly requests a collapsed path:
+    coder x2 + reducer x1 (candidate generation only; no proof) -> locksmith -> applier -> prover
+    (proof runs here, bounded retries) -> fixer quorum -> integrator (patch_first by default).
+    Fail closed: do not claim $mesh if execution only used direct spawn_agent workers or coder-only waves.
+    Enforce Mesh Output Contract v2 via report_agent_job_result + strict parsing.
+    Before final response, verify lane completeness (e.g. uv run codex/skills/mesh/references/lane_completeness_lint.py --check full .mesh/*.exec.out.csv).

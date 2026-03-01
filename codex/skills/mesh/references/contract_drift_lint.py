@@ -11,20 +11,32 @@ REQUIRED_SNIPPETS: dict[str, list[str]] = {
         "streaming per-unit state machine",
         "write_scope reservations",
         "locksmith -> applier -> prover",
+        "Lane completeness gate (default)",
+        "Collapse override gate",
     ],
     "codex/skills/mesh/SKILL.md": [
         "streaming per-unit state machine",
         "no global wave barrier",
         "locksmith -> applier -> prover",
+        "Compliance Guardrails (Fail-Closed)",
+        "Anti-pattern gate: a coder-only wave",
+        "lane_completeness_lint.py",
     ],
     "codex/skills/mesh/agents/openai.yaml": [
         "Streaming orchestration",
         "coder x2 + reducer x1",
+        "Fail closed",
     ],
     "codex/skills/mesh/references/output-contract.md": [
         "Mesh Output Contract v2 (Streaming)",
         "write_scope",
         "proof_evidence",
+        "Run-Level Invariants (Fail-Closed)",
+        "Do not claim `$mesh` orchestration",
+    ],
+    "codex/skills/mesh/references/lane_completeness_lint.py": [
+        "lane_completeness_lint:",
+        "coder-only",
     ],
     "codex/agents/coder.toml": [
         "Do not run proof in the coder lane",
