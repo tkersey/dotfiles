@@ -117,8 +117,14 @@ symlink_files() {
     # Expand environment variables in destination path
     eval "dest_path=$dest_path"
 
-    # Get full source path
-    source="$DOTFILES_ROOT/$source_path"
+    # Resolve source path:
+    # - Entries starting with $HOME should stay home-anchored.
+    # - Everything else is resolved relative to the dotfiles root.
+    if [ "${source_path#\$HOME}" != "$source_path" ]; then
+      source="$HOME${source_path#\$HOME}"
+    else
+      source="$DOTFILES_ROOT/$source_path"
+    fi
 
     # Skip if source doesn't exist
     if [ ! -f "$source" ] && [ ! -d "$source" ]; then
