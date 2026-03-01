@@ -6,6 +6,10 @@ fish_add_path ~/.cargo/bin
 # Keep zigup-managed shim ahead of Homebrew so `zigup default` can update cleanly.
 fish_add_path /opt/homebrew/opt/zigup/bin
 
+if status is-interactive
+    ulimit -n 4096 >/dev/null 2>&1
+end
+
 fzf --fish | source
 zoxide init fish | source
 
