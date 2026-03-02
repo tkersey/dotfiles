@@ -70,6 +70,7 @@ Delegation triggers (deterministic):
 - MUST follow the delegation contract in `Skill composition (required)` (including order: `$invariant-ace` -> `$complexity-mitigator`).
 - MUST route skill-self edits (for example `codex/skills/fix`) through `$refine` and run `quick_validate`.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
+- MUST run a final user-directed changeset loop: ask `If you could change one thing about this changeset what would you change?`, apply exactly one requested change at a time, re-run validation, and repeat until the user has no more requested changes.
 - When paired with `$tk` in wave execution, MUST treat `$fix` as the final mutating pass before artifactization:
   - `commit_first`: hand off immediately to `$commit` after passing validation.
   - `patch_first`: hand off immediately to `$patch` after passing validation.
@@ -461,7 +462,16 @@ For findings in severity order:
 1. Re-check `Residual risks / open questions policy`.
 2. Any item without a valid blocker becomes a finding and is fixed (with proof) or dropped.
 
-### 7) Output lock (required)
+### 7) User-directed changeset loop (required final step)
+1. Ask exactly: `If you could change one thing about this changeset what would you change?`
+2. If the user requests a change:
+   - convert the request into one concrete finding,
+   - apply the smallest sound change,
+   - re-run the chosen validation signal and update findings/proof.
+3. Repeat step 1 after each applied change.
+4. Exit the loop only when the user explicitly indicates there are no more requested changes.
+
+### 8) Output lock (required)
 Before sending the final message, verify all are true:
 1. Heading set is exact and complete (`Contract`, `Findings (severity order)`, `Changes applied`, `Pass trace`, `Validation`, `Residual risks / open questions`).
 2. `Pass trace` includes planned/executed counts and P1/P2/P3 lines (plus P4/P5 when executed).
