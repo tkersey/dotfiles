@@ -212,8 +212,8 @@ Use these exact headings in the final response for this skill:
 Track adoption and compliance with `seq`:
 
 ```bash
-uv run codex/skills/seq/scripts/seq.py skill-trend --skill invariant-ace --bucket week
-uv run codex/skills/seq/scripts/seq.py skill-report --skill invariant-ace \
+seq skill-trend --root ~/.codex/sessions --skill invariant-ace --bucket week
+seq skill-report --root ~/.codex/sessions --skill invariant-ace \
   --sections "Counterexample,Invariants,Owner and Scope,Enforcement Boundary,Seam (Before -> After),Verification,Observability (optional)" \
   --sample-missing 5
 ```

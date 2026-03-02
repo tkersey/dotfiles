@@ -153,28 +153,25 @@ def parse_ts(value: str | None) -> datetime | None:
         return None
 
 
-def resolve_seq_script() -> Path:
-    # codex/skills/zig/scripts/zig_trigger_audit.py -> codex/skills/seq/scripts/seq.py
-    here = Path(__file__).resolve()
-    seq_script = here.parents[2] / "seq" / "scripts" / "seq.py"
-    if not seq_script.exists():
-        raise FileNotFoundError(f"seq script not found at: {seq_script}")
-    return seq_script
-
-
-def resolve_seq_runner(seq_script: Path) -> list[str]:
+def resolve_seq_runner() -> list[str]:
     seq_bin = shutil.which("seq")
-    if seq_bin:
-        probe = subprocess.run(
-            [seq_bin, "--help"],
-            capture_output=True,
-            text=True,
-            check=False,
+    if not seq_bin:
+        raise FileNotFoundError(
+            "seq binary not found in PATH. Install with: brew install tkersey/tap/seq"
         )
-        marker_text = f"{probe.stdout}\n{probe.stderr}"
-        if probe.returncode == 0 and "skills-rank" in marker_text:
-            return [seq_bin]
-    return [sys.executable, str(seq_script)]
+
+    probe = subprocess.run(
+        [seq_bin, "--help"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    marker_text = f"{probe.stdout}\n{probe.stderr}"
+    if probe.returncode == 0 and "skills-rank" in marker_text:
+        return [seq_bin]
+    raise RuntimeError(
+        "incompatible seq binary in PATH (missing skills-rank support); update seq first"
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -469,8 +466,7 @@ def emit_report(report: dict, fmt: str, output: str | None) -> None:
 
 def main() -> int:
     args = build_parser().parse_args()
-    seq_script = resolve_seq_script()
-    seq_runner = resolve_seq_runner(seq_script)
+    seq_runner = resolve_seq_runner()
 
     # Use literal contains matching instead of regex. The seq regex engine is a
     # restricted subset that rejects punctuation-heavy literals (for example

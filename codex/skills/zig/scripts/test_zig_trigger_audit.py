@@ -105,11 +105,6 @@ class ZigTriggerAuditTests(unittest.TestCase):
             patch.object(self.mod, "run_seq_query", side_effect=fake_run_seq_query),
             patch.object(
                 self.mod,
-                "resolve_seq_script",
-                return_value=Path("/tmp/seq.py"),
-            ),
-            patch.object(
-                self.mod,
                 "resolve_seq_runner",
                 return_value=["seq"],
             ),

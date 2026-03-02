@@ -6,7 +6,7 @@ description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based mem
 # seq
 
 ## Overview
-Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consistently with a single script. Focus on skill usage, format compliance, token counts, and memory-file mining.
+Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consistently with the Zig `seq` CLI. Focus on skill usage, format compliance, token counts, and memory-file mining.
 
 ## Trigger Cues
 - Questions that ask to verify prior session output using artifacts (`"use $seq to find it"` / `"what did that session actually say"`).
@@ -245,16 +245,6 @@ Run stable workloads with fixed warmup/sample counts and optional baseline compa
 zig build bench -Doptimize=ReleaseFast -- --config perf/frozen/workload_config.json
 ```
 
-Head-to-head Zig vs Python gate (runs parity first):
-```bash
-scripts/perf/head_to_head.sh --root testdata/golden/sessions --gate 20 --samples 9 --warmup 1
-```
-
-Differential parity against the Python oracle:
-```bash
-scripts/parity/run_diff.sh --root ~/.codex/sessions/2026/02/19
-```
-
 ### 10) Find sessions by prompt text
 ```bash
 seq find-session --root ~/.codex/sessions --prompt "adapter=auto" --limit 20
@@ -312,5 +302,3 @@ seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl \
 ## Resources
 - `seq` binary: CLI for ranking skills, auditing sections, querying datasets, and summarizing token usage.
 - `zig build bench -Doptimize=ReleaseFast -- --config perf/frozen/workload_config.json`: frozen-workload performance runner.
-- `scripts/parity/run_diff.sh`: Zig/Python differential parity harness.
-- `scripts/perf/head_to_head.sh`: parity-gated head-to-head p50 speed benchmark.

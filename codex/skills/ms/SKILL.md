@@ -84,7 +84,7 @@ Create and update Codex skills with minimal diffs. Work directly in the skill fo
 When the target skill is `ms`, mine recent sessions before editing:
 
 1. Collect assistant outputs that mention `$ms`:
-   - `uv run codex/skills/seq/scripts/seq.py query --root ~/.codex/sessions --spec '{"dataset":"messages","where":[{"field":"role","op":"eq","value":"assistant"},{"field":"text","op":"contains","value":"$ms"}],"select":["path","timestamp","text"],"sort":["timestamp"],"format":"jsonl"}'`
+   - `seq query --root ~/.codex/sessions --spec '{"dataset":"messages","where":[{"field":"role","op":"eq","value":"assistant"},{"field":"text","op":"contains","value":"$ms"}],"select":["path","timestamp","text"],"sort":["timestamp"],"format":"jsonl"}'`
 2. Compute adherence rates for required proof markers:
    - `quick_validate.py`
    - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py`
