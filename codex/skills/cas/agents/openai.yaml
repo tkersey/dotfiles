@@ -1,4 +1,4 @@
 interface:
   display_name: "cas"
-  short_description: "JSONL proxy for app-server orchestration"
-  default_prompt: "Use $cas to run the Cas JSONL proxy for the app-server (automation, session mining, multi-instance runs)."
+  short_description: "Zig CAS CLI for app-server checks and request fanout"
+  default_prompt: "Use $cas with Zig-only CAS commands (`smoke_check`, `instance_runner`, or request mode via `instance_runner --instances 1`) for app-server validation and orchestration requests."

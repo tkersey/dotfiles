@@ -5,11 +5,6 @@
 Use this path for cloud background task execution from CLI.
 
 ```bash
-CODEX_SKILLS_HOME="${CODEX_HOME:-$HOME/.codex}"
-CLAUDE_SKILLS_HOME="${CLAUDE_HOME:-$HOME/.claude}"
-CAS_PROXY_SCRIPT="$CODEX_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"
-[ -f "$CAS_PROXY_SCRIPT" ] || CAS_PROXY_SCRIPT="$CLAUDE_SKILLS_HOME/skills/cas/scripts/cas_proxy.mjs"
-
 run_puff_tool() {
   install_puff_direct() {
     local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
@@ -103,7 +98,8 @@ Typical pairing:
 2. Use `$cas` to orchestrate complex app-server thread/turn flows or integrate custom automation.
 
 Proxy lifecycle is managed by `$cas` (not `$puff`):
-- `node "$CAS_PROXY_SCRIPT"`
+- `cas smoke_check --cwd <workspace> --json`
+- `cas instance_runner --cwd <workspace> --instances 1 --method thread/list --params-json '{"cursor":null,"limit":1}' --json`
 
 Then drive methods like:
 - `thread/start`
