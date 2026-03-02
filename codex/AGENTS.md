@@ -30,7 +30,8 @@ GRILL ME: HUMAN INPUT REQUIRED
 ## Skill Routing
 
 - Default: if the user is asking for a change to code/config/tests, start with `$tk` (implementation mode) and keep the incision minimal with a proof signal.
-- `$mesh`: Trigger for plan-driven streaming orchestration (`update_plan` queue, rolling CSV batches, subagent execution). Default to `spawn_agents_on_csv` with no global wave barrier.
+- `$mesh`: Trigger for plan-driven streaming orchestration (`update_plan` queue, rolling CSV batches, subagent execution). Default to `spawn_agents_on_csv` with no global wave barrier. Hard auto-route: when the user request includes orchestration/concurrency cues (`max concurrent`, `parallel subagents`, `orchestration`, `wave`, `batch`, `fanout`, `spawn_agents_on_csv`, `concurrent`), set `mesh_expected=true` and use `$mesh`.
+- Tiny-scope bypass: allow non-`$mesh` execution only when no orchestration/concurrency cue is present and work is single-goal, low-incision (`tiny_scope_bypass=true`).
 - `$grill-me`: Trigger when requirements are ambiguous/conflicting, or the user asks to "grill me"/pressure-test/clarify scope; research first, then ask only judgment calls; stop before implementation.
 - `$prove-it`: Trigger on absolute claims (always/never/guaranteed/optimal) or requests for certainty; pressure-test, then restate with explicit boundaries.
 - `$complexity-mitigator`: Trigger when reasoning is hard (deep nesting, unclear naming, cross-file hops); produce an analysis-first simplification plan (no edits).
@@ -50,15 +51,18 @@ GRILL ME: HUMAN INPUT REQUIRED
 
 - Detailed execution runbook: see `codex/skills/mesh/SKILL.md`.
 
+- Routing state gate (hard): compute and honor `mesh_expected`, `tiny_scope_bypass`, and `collapsed_path_override` at preflight for implementation turns.
 - Source of truth: use `update_plan` as the canonical ready queue for implementation orchestration. When `$st` is in play, keep `.step/st-plan.jsonl` and `update_plan` in sync in the same turn.
 - Execution substrate: use `$mesh` and execute a streaming per-unit state machine via `spawn_agents_on_csv` rolling batches by default.
+- Mesh invocation gate (fail-closed): when `mesh_expected=true` and no explicit `collapsed_path_override` exists, start orchestration with `spawn_agents_on_csv`; do not use direct `spawn_agent` workers as the primary substrate.
+- Tiny-scope bypass gate: non-`$mesh` execution is allowed only when `mesh_expected=false` and `tiny_scope_bypass=true`.
 - Decomposition gate: before spawning non-trivial batches, run `$select` (or an equivalent explicit decomposition step) so units are atomic, dependency-aware, and carry concrete `unit_scope` + validation/proof signals.
 - Claim gate: when `$select` emits first-ready claims, apply those `in_progress` claims in `$st` before spawning workers.
 - Dependency discipline: schedule only units with satisfied `$st` deps. Treat dependency metadata as advisory only when the user explicitly opts in and `unit_scope` is disjoint.
 - Mesh truth gate (fail-closed): do not claim `$mesh` orchestration if execution used only direct `spawn_agent` workers or a single `coder` lane without downstream lanes.
 - Lane completeness gate (default): unless the user explicitly requests a collapsed path, each unit must execute full lanes in order: candidate cohort (`coder x2 + reducer x1`) -> `locksmith -> applier -> prover` -> fixer quorum -> integrator.
-- Collapse override gate: collapsed-path execution is allowed only on explicit user request; record the override in ledger output and keep completion criteria explicit.
-- Lane completeness lint (recommended): before claiming `$mesh`, verify lane completeness from `.mesh/*.exec.out.csv` (e.g. `uv run codex/skills/mesh/references/lane_completeness_lint.py --check full .mesh/*.exec.out.csv`) or record an explicit collapsed-path override.
+- Collapse override gate: collapsed-path execution is allowed only on explicit user request; record the override in ledger output with the user instruction and reduced lane path, and keep completion criteria explicit.
+- Lane completeness lint (required): before claiming `$mesh`, verify lane completeness from `.mesh/*.exec.out.csv` (e.g. `uv run codex/skills/mesh/references/lane_completeness_lint.py --check full --require-spawn-substrate .mesh/*.exec.out.csv`); if this fails and no explicit collapsed-path override exists, fail completion.
 - Unit pipeline (hard gate): each implementation unit runs candidate lanes (`coder x2`, `reducer x1`) then `locksmith -> applier -> prover`, then fixer quorum, then integrator packaging unless the user requests a collapsed path.
 - Author adversarial gate: coder/reducer cohort members must challenge peer outputs before fixer intake.
 - Fixer quorum gate: use risk-adaptive quorum targets (`low=1`, `med=2`, `high=3`) and require no blocker reject to promote.
@@ -89,6 +93,8 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Candidate output gate: require strict v2 worker keys (`candidate_id`, `triplet_index`, `lane`, `write_scope`, `risk_tier`, `proof_evidence`) before quorum evaluation.
 - Reject-closure gate: never close a unit when worker output contains `decision=reject` or `proof_status=fail`; require explicit replacement/re-run evidence first.
 - Close gate: never mark a unit `completed` in `$st` unless fixer acceptance and integrator completion evidence are both present for that unit (or an explicit collapsed-path override exists).
+- Completion claim gate (hard): before claiming successful `$mesh`, require both checks: `seq orchestration-concurrency --path <session_jsonl> --fail-on-mesh-truth --format table` and `uv run codex/skills/mesh/references/lane_completeness_lint.py --check full --require-spawn-substrate .mesh/*.exec.out.csv`. If either fails, `$mesh` completion claim is invalid.
+- Mesh violation response gate (fail-closed): if `mesh_expected=true` and any invocation/proof/claim gate fails, final response must declare contract violation and must not claim successful `$mesh` completion.
 - Orchestration Ledger (implementation turns): include only events that occurred:
   - `skills_used`
   - batch count and batch scopes
