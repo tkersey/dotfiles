@@ -17,7 +17,7 @@ description: Produce essay-heavy, decision-complete plans in proposed_plan block
 - No fixed iteration cap: never stop because you hit a round number (5, 10, etc.). If you must stop due to external limits, set `improvement_exhausted=false` and include the stop reason.
 - Plan-ready fast-path (hardened): only when the input plan indicates `improvement_exhausted=true` and `contract_version=2` in `Contract Signals`, it includes v2 closure proof (typed `Contract Signals`, hysteresis proof in `Convergence Evidence`, and last-two no-delta proof in `Iteration Change Log`), and the user is not asking for further improvements. Only then reply exactly: "Plan is ready." Otherwise treat the flag as untrusted and run at least one refinement pass.
 - Plan style: essay-heavy and decision-complete, with concrete choices and rationale.
-- Required content in the final plan: title, round delta, iteration action log, iteration change log, summary, non-goals/out of scope, scope change log, interfaces/types/APIs impacted, data flow, edge cases/failure modes, tests/acceptance, requirement-to-test traceability, rollout/monitoring, rollback/abort criteria, assumptions/defaults with provenance (confidence + verification plan, and explicit date when time-sensitive), decision log, decision impact map, open questions, stakeholder signoff matrix, adversarial findings, convergence evidence, contract signals, and implementation brief.
+- Required content in the final plan: title, round delta, iteration action log, iteration change log, iteration reports, summary, non-goals/out of scope, scope change log, interfaces/types/APIs impacted, data flow, edge cases/failure modes, tests/acceptance, requirement-to-test traceability, rollout/monitoring, rollback/abort criteria, assumptions/defaults with provenance (confidence + verification plan, and explicit date when time-sensitive), decision log, decision impact map, open questions, stakeholder signoff matrix, adversarial findings, convergence evidence, contract signals, and implementation brief.
 - In Plan Mode: do not mutate repo-tracked files.
 - Research first; ask questions only for unresolved judgment calls that materially affect the plan.
 - Prefer `request_user_input` for decision questions with meaningful multiple-choice options.
@@ -37,6 +37,9 @@ description: Produce essay-heavy, decision-complete plans in proposed_plan block
 - Round-delta gate: each round must include an explicit `Round Delta` section.
 - Iteration-action gate: `Iteration Action Log` entries include `iteration`, `focus`, `round_decision`, `what_we_did`, and `target_outcome`.
 - Iteration-change gate: `Iteration Change Log` entries include `iteration`, `delta_kind`, `evidence`, `what_we_did`, `change`, and `sections_touched`.
+- Iteration-reports gate: include `Iteration Reports` with one delta-only entry per executed round; entries include `iteration`, `focus`, `round_decision`, `delta_kind`, `delta_summary`, `risk_delta`, `sections_touched`, `iteration_health_score`, and `evidence`.
+- Iteration-report alignment gate: `Iteration Reports`, `Iteration Action Log`, and `Iteration Change Log` must cover the same contiguous iteration range, and shared fields (`focus`, `round_decision`, `delta_kind`) must not conflict.
+- Iteration-reports soft-enforcement gate: treat `Iteration Reports` as a required contract section, but lint as advisory in this rollout; missing or malformed entries should warn, not fail-close.
 - Contract-signals gate (v2): `Contract Signals` must be machine-parseable `key=value` lines (typed) and include `contract_version=2` and `stop_reason=...`.
 - Close-decision gate: each iteration must set `round_decision=continue|close`; only allow `round_decision=close` when `focus=5` and closure gates are satisfied.
 - Anti-churn closure gate: only allow `improvement_exhausted=true` after two consecutive iterations with `delta_kind=none` (each with non-empty `evidence`).
@@ -86,6 +89,7 @@ Output rules:
 - Include a `Round Delta` section describing what changed from the input plan.
 - Include an `Iteration Action Log` section with one entry per executed round; each entry must include `iteration`, `focus`, `round_decision`, `what_we_did`, and `target_outcome`.
 - Include an `Iteration Change Log` section with one entry per executed round; each entry must include `iteration`, `delta_kind`, `evidence`, `what_we_did`, `change`, and `sections_touched`.
+- Include an `Iteration Reports` section with one entry per executed round; each entry must include `iteration`, `focus`, `round_decision`, `delta_kind`, `delta_summary`, `risk_delta` (`up|down|flat`), `sections_touched`, `iteration_health_score` (`0..3`), and `evidence`.
 - Include a `Non-Goals/Out of Scope` section to make deliberate exclusions explicit.
 - Include a `Scope Change Log` section for scope expansion/reduction records.
 - Include an `Adversarial Findings` section in the plan body that summarizes lens results (`errors`, `risks`, `preferences`) and current resolution status.
@@ -109,6 +113,7 @@ Run an adversarial pass before finalizing the revision: use feasibility, operabi
 
 Run the continuous refinement loop until exhausted and emit only the final plan.
 Fail-closed pre-emit check: if `Iteration Action Log` or `Iteration Change Log` is missing or incomplete, regenerate until both are present and complete.
+Advisory pre-emit check: if `Iteration Reports` is missing or incomplete, regenerate when feasible; if not feasible due to external limits, continue and keep `Iteration Reports` gap explicit in `Round Delta`.
 If a round makes no material change, write `no material delta` in the iteration logs (do not invent churn).
 
 <INCLUDE CONTENTS OF PLAN FILE>
@@ -119,10 +124,12 @@ If a round makes no material change, write `no material delta` in the iteration 
 - Default auto-run: run the continuous refinement loop until exhausted and include `improvement_exhausted=true` in `Contract Signals`.
 - No iteration cap: do not stop due to reaching any fixed iteration count; stop only when convergence and exhaustion gates are met (or fail closed with `improvement_exhausted=false` plus a stop reason).
 - Plan-ready fast-path: only if the input plan indicates `improvement_exhausted=true` and `contract_version=2`, it includes v2 closure proof, and the user did not request further improvements; then output exactly `Plan is ready.` and nothing else.
-- Required plan sections are present: title, `Round Delta`, `Iteration Action Log`, `Iteration Change Log`, summary, `Non-Goals/Out of Scope`, `Scope Change Log`, interfaces/types/APIs impacted, data flow, edge cases/failure modes, tests/acceptance, `Requirement-to-Test Traceability`, rollout/monitoring, `Rollback/Abort Criteria`, assumptions/defaults, `Decision Log`, `Decision Impact Map`, `Open Questions`, `Stakeholder Signoff Matrix`, `Adversarial Findings`, `Convergence Evidence`, `Contract Signals`, and `Implementation Brief`.
+- Required plan sections are present: title, `Round Delta`, `Iteration Action Log`, `Iteration Change Log`, `Iteration Reports`, summary, `Non-Goals/Out of Scope`, `Scope Change Log`, interfaces/types/APIs impacted, data flow, edge cases/failure modes, tests/acceptance, `Requirement-to-Test Traceability`, rollout/monitoring, `Rollback/Abort Criteria`, assumptions/defaults, `Decision Log`, `Decision Impact Map`, `Open Questions`, `Stakeholder Signoff Matrix`, `Adversarial Findings`, `Convergence Evidence`, `Contract Signals`, and `Implementation Brief`.
 - Iteration action proof is explicit: `Iteration Action Log` contains one entry per executed round, and each entry includes non-empty `what_we_did` and `target_outcome`, plus `focus` and `round_decision`.
 - Iteration change proof is explicit: `Iteration Change Log` contains one entry per executed round, and each entry includes `delta_kind` and non-empty `evidence`, plus non-empty `what_we_did`, non-empty `change`, and at least one `sections_touched` item.
+- Iteration reports proof is explicit: `Iteration Reports` contains one entry per executed round, and each entry includes non-empty `delta_summary`, `risk_delta`, `iteration_health_score`, and `evidence`, plus non-empty `sections_touched`.
 - Iteration log alignment proof is explicit: action+change logs cover the same contiguous iteration range and the maximum `iteration` equals the plan header `Iteration: N`.
+- Iteration report alignment proof is explicit: report+action+change logs cover the same contiguous iteration range and shared fields (`focus`, `round_decision`, `delta_kind`) are consistent.
 - Convergence proof is explicit: blocking `errors` resolved; material `risks` mitigated or accepted with rationale.
 - Adversarial findings include schema fields for each entry: `lens`, `type`, `severity`, `section`, `decision`, `status`.
 - Material risk entries include `probability`, `impact`, and `trigger`.
@@ -146,12 +153,12 @@ If a round makes no material change, write `no material delta` in the iteration 
 ## Contract lint helper (optional but recommended)
 
 - Run `uv run python codex/skills/plan/scripts/plan_contract_lint.py --file <plan-output.md>` to check output shape and required contract markers.
-- The lint helper checks: single `<proposed_plan>` block, iteration marker, required section headings, adversarial findings schema markers, convergence evidence markers, requirement traceability markers, decision-impact markers, scope-change markers, signoff-matrix markers, implementation-brief markers, open-question accountability markers, contract signals markers, and rewrite-justification guardrail.
+- The lint helper checks: single `<proposed_plan>` block, iteration marker, required section headings, adversarial findings schema markers, convergence evidence markers, requirement traceability markers, decision-impact markers, scope-change markers, signoff-matrix markers, implementation-brief markers, open-question accountability markers, contract signals markers, rewrite-justification guardrail, and advisory checks for `Iteration Reports`.
 
 ## Continuous improvement loop (default)
 
 - Run repeated refinement passes.
-- Each pass must do: identify next high-impact deltas, implement minimal edits, run validation signals, then reassess for remaining high-impact gaps.
+- Each pass must do: identify next high-impact deltas, implement minimal edits, update `Iteration Action Log`/`Iteration Change Log`/`Iteration Reports`, run validation signals, then reassess for remaining high-impact gaps.
 - Stop when two consecutive reassessment passes find no material improvements (only `preferences` remain).
 - At stop, report closure explicitly with `improvement_exhausted=true` in `Contract Signals`.
 - Never stop due to a fixed iteration count; if you cannot continue, leave `improvement_exhausted=false` and state why.

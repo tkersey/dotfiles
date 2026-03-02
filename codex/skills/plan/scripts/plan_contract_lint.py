@@ -52,6 +52,17 @@ ITERATION_CHANGE_FIELDS = [
     "change",
     "sections_touched",
 ]
+ITERATION_REPORT_FIELDS = [
+    "iteration",
+    "focus",
+    "round_decision",
+    "delta_kind",
+    "delta_summary",
+    "risk_delta",
+    "sections_touched",
+    "iteration_health_score",
+    "evidence",
+]
 OPEN_QUESTION_FIELDS = ["owner", "due_date", "default_action"]
 ROLLBACK_FIELDS = ["abort_trigger", "rollback_action"]
 DECISION_IMPACT_FIELDS = ["decision_id", "impacted_sections", "follow_up_action"]
@@ -75,6 +86,7 @@ CONTRACT_SIGNAL_FIELDS = [
 STRICTNESS_PROFILES = {"fast", "balanced", "strict"}
 ROUND_DECISIONS = {"continue", "close"}
 DELTA_KINDS = {"material", "preference", "none"}
+RISK_DELTAS = {"up", "down", "flat"}
 STOP_REASONS = {
     "none",
     "token_limit",
@@ -279,6 +291,7 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
 
     action_by_iter: dict[int, dict[str, object]] = {}
     change_by_iter: dict[int, dict[str, object]] = {}
+    report_by_iter: dict[int, dict[str, object]] = {}
 
     open_count = text.count("<proposed_plan>")
     close_count = text.count("</proposed_plan>")
@@ -443,6 +456,163 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
                 errors.append(
                     f"Iteration logs max iteration={max_iter} must equal plan header `Iteration: {iteration_header}`."
                 )
+
+    iteration_reports = extract_heading_section(body, "Iteration Reports")
+    if not iteration_reports:
+        warnings.append(
+            "`Iteration Reports` is missing (advisory in current rollout; not fail-closed)."
+        )
+    else:
+        report_entries = extract_bullet_entries(iteration_reports)
+        if not report_entries:
+            warnings.append(
+                "`Iteration Reports` should contain at least one bullet entry."
+            )
+        for idx, entry in enumerate(report_entries, start=1):
+            iteration = parse_int_field(entry, "iteration")
+            if iteration is None:
+                warnings.append(
+                    f"`Iteration Reports` entry {idx} should include `iteration: <int>` (or `iteration=<int>`)."
+                )
+                continue
+            if iteration in report_by_iter:
+                warnings.append(
+                    f"`Iteration Reports` contains duplicate iteration={iteration}."
+                )
+                continue
+
+            focus = parse_int_field(entry, "focus")
+            if focus is None or not (1 <= focus <= 5):
+                warnings.append(
+                    f"`Iteration Reports` entry {idx} should include `focus: 1..5` (or `focus=...`)."
+                )
+
+            round_decision = parse_enum_field(entry, "round_decision", ROUND_DECISIONS)
+            if round_decision is None:
+                warnings.append(
+                    f"`Iteration Reports` entry {idx} should include `round_decision: continue|close` (or `round_decision=...`)."
+                )
+
+            delta_kind = parse_enum_field(entry, "delta_kind", DELTA_KINDS)
+            if delta_kind is None:
+                warnings.append(
+                    f"`Iteration Reports` entry {idx} should include `delta_kind: material|preference|none` (or `delta_kind=...`)."
+                )
+
+            if not field_has_value_or_list(entry, "delta_summary"):
+                warnings.append(
+                    f"`Iteration Reports` entry {idx} should include non-empty `delta_summary` (value or list)."
+                )
+
+            risk_delta = parse_enum_field(entry, "risk_delta", RISK_DELTAS)
+            if risk_delta is None:
+                warnings.append(
+                    f"`Iteration Reports` entry {idx} should include `risk_delta: up|down|flat` (or `risk_delta=...`)."
+                )
+
+            if not field_has_value_or_list(entry, "sections_touched"):
+                warnings.append(
+                    f"`Iteration Reports` entry {idx} should include non-empty `sections_touched` (value or list)."
+                )
+
+            iteration_health_score = parse_int_field(entry, "iteration_health_score")
+            if iteration_health_score is None or not (0 <= iteration_health_score <= 3):
+                warnings.append(
+                    f"`Iteration Reports` entry {idx} should include `iteration_health_score: 0..3` (or `iteration_health_score=...`)."
+                )
+
+            evidence_ok = field_has_value_or_list(entry, "evidence")
+            if not evidence_ok:
+                warnings.append(
+                    f"`Iteration Reports` entry {idx} should include non-empty `evidence` (value or list)."
+                )
+
+            report_by_iter[iteration] = {
+                "focus": focus,
+                "round_decision": round_decision,
+                "delta_kind": delta_kind,
+            }
+
+    if report_by_iter:
+        report_iters = sorted(report_by_iter.keys())
+        min_iter = min(report_iters)
+        max_iter = max(report_iters)
+        expected = list(range(min_iter, max_iter + 1))
+        if report_iters != expected:
+            warnings.append(
+                "`Iteration Reports` should cover a contiguous iteration range with no gaps."
+            )
+        if iteration_header is not None and max_iter != iteration_header:
+            warnings.append(
+                f"`Iteration Reports` max iteration={max_iter} should match plan header `Iteration: {iteration_header}`."
+            )
+
+        if action_by_iter:
+            action_iters = sorted(action_by_iter.keys())
+            if set(report_iters) != set(action_iters):
+                missing_in_reports = sorted(set(action_iters) - set(report_iters))
+                missing_in_actions = sorted(set(report_iters) - set(action_iters))
+                if missing_in_reports:
+                    warnings.append(
+                        "Iteration report alignment mismatch: reports missing iterations "
+                        + ", ".join(map(str, missing_in_reports))
+                        + "."
+                    )
+                if missing_in_actions:
+                    warnings.append(
+                        "Iteration report alignment mismatch: action log missing iterations "
+                        + ", ".join(map(str, missing_in_actions))
+                        + "."
+                    )
+            for iter_value in sorted(set(report_iters) & set(action_iters)):
+                report_entry = report_by_iter.get(iter_value, {})
+                action_entry = action_by_iter.get(iter_value, {})
+                if (
+                    report_entry.get("focus") is not None
+                    and action_entry.get("focus") is not None
+                    and report_entry.get("focus") != action_entry.get("focus")
+                ):
+                    warnings.append(
+                        f"Iteration report alignment mismatch at iteration={iter_value}: `focus` conflicts with `Iteration Action Log`."
+                    )
+                if (
+                    report_entry.get("round_decision") is not None
+                    and action_entry.get("round_decision") is not None
+                    and report_entry.get("round_decision")
+                    != action_entry.get("round_decision")
+                ):
+                    warnings.append(
+                        f"Iteration report alignment mismatch at iteration={iter_value}: `round_decision` conflicts with `Iteration Action Log`."
+                    )
+
+        if change_by_iter:
+            change_iters = sorted(change_by_iter.keys())
+            if set(report_iters) != set(change_iters):
+                missing_in_reports = sorted(set(change_iters) - set(report_iters))
+                missing_in_changes = sorted(set(report_iters) - set(change_iters))
+                if missing_in_reports:
+                    warnings.append(
+                        "Iteration report alignment mismatch: reports missing iterations "
+                        + ", ".join(map(str, missing_in_reports))
+                        + "."
+                    )
+                if missing_in_changes:
+                    warnings.append(
+                        "Iteration report alignment mismatch: change log missing iterations "
+                        + ", ".join(map(str, missing_in_changes))
+                        + "."
+                    )
+            for iter_value in sorted(set(report_iters) & set(change_iters)):
+                report_entry = report_by_iter.get(iter_value, {})
+                change_entry = change_by_iter.get(iter_value, {})
+                if (
+                    report_entry.get("delta_kind") is not None
+                    and change_entry.get("delta_kind") is not None
+                    and report_entry.get("delta_kind") != change_entry.get("delta_kind")
+                ):
+                    warnings.append(
+                        f"Iteration report alignment mismatch at iteration={iter_value}: `delta_kind` conflicts with `Iteration Change Log`."
+                    )
 
     traceability = extract_heading_section(body, "Requirement-to-Test Traceability")
     if traceability:
