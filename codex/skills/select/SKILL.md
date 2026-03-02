@@ -25,6 +25,8 @@ It may also emit a small pipeline for driving planning artifacts into execution 
 - **Role-aware shaping**: use role labels when useful (`contract`, `implementation`, `integration`, `checkpoint`) to improve sequencing and review quality.
 - **Explicit dependencies**: prefer explicit edges over relying on implicit serialization via overlapping `scope`.
 - **Delegation metadata**: include `scope` (required for safe parallelism), plus `location` and `validation` whenever possible.
+- **Unit scope quality**: mark scope as invalid when missing/unknown/overly broad; invalid scope units are not parallel-eligible.
+- **First-ready claim quality**: when emitting `waves[0]`, include claim-ready ids only after dependency and scope checks pass.
 - **Review before yielding**: run a separate reviewer-mode pass for missing deps/order/lock overlaps/validation gaps.
 
 ## Decomposition heuristics (parallelism quality)

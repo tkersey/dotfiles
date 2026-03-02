@@ -282,6 +282,16 @@ Or target one JSONL directly:
 ```bash
 seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl --format json
 ```
+Assert the floor gate for non-trivial runs:
+```bash
+seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl \
+  --floor-threshold 3 --fail-on-floor --format table
+```
+Assert mesh-truth for claim eligibility:
+```bash
+seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl \
+  --fail-on-mesh-truth --format table
+```
 
 ## Notes
 - Default root: `~/.codex/sessions`.
@@ -295,6 +305,9 @@ seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl --format js
 - `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
 - `orchestration-concurrency` reports both configured (`max_concurrency`) and effective fanout (`min(max_concurrency, csv_rows)`), plus how many times each maximum occurred.
+- It also emits `effective_peak`, `spawn_substrate`, `mesh_truth_verdict`, direct-lane counters (`spawn_agent_calls`, `wait_calls`, `close_agent_calls`), `serialized_wait_ratio`, and floor-gate fields (`floor_threshold`, `floor_applicable`, `floor_result`).
+- For sessions without `spawn_agents_on_csv`, it returns a structured row with `mesh_truth_verdict=false` and `spawn_substrate=spawn_agent|none` rather than failing.
+- Use `--fail-on-mesh-truth` to enforce fail-closed preflight for `$mesh` claims.
 
 ## Resources
 - `seq` binary: CLI for ranking skills, auditing sections, querying datasets, and summarizing token usage.

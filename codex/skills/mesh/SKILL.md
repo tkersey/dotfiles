@@ -130,6 +130,7 @@ Risk-adaptive fixer quorum:
 - Dependency gate: schedule only units with satisfied `$st` deps.
 - Candidate gate: require 2-3 candidates per unit unless explicitly overridden.
 - Proof gate: prove all candidates in isolated worktrees with max one retry.
+- Floor gate (strict): when runnable units are `>= 3`, fail preflight unless the planned path can achieve effective peak `>= 3` on `spawn_agents_on_csv`.
 - Reservation gate: mutating phases require write_scope lease grants.
 - Plan-write rule: workers return structured results only; only integrator writes plan state.
 - Completion gate: close a unit only when fixer accepted and proof status is pass.
@@ -217,6 +218,8 @@ Treat this as a hard gate before each batch spawn.
 9. Ledger event sink is enabled for occurred-event reporting.
 10. Batch CSV header set includes `base_sha` (required by current `mesh run_csv` preflight).
 11. Candidate cohort wave has `coder x2 + reducer x1` rows per unit (or an explicit collapsed-path override is recorded).
+12. Mesh-truth precheck passes for full-lane claims by running: `seq orchestration-concurrency --path <session_jsonl> --fail-on-mesh-truth --format table`.
+13. Deadlock lint passes for dependency CSV (`id,depends_on,interactive_lead`) before batch spawn when interactive lead tasks are present.
 
 ## Validation
 
@@ -225,8 +228,12 @@ mesh --help
 mesh budget --remaining-five-hour 40 --remaining-weekly 28 --max-threads 12
 mesh replay --remaining-five-hour 72 --remaining-weekly 55 --max-threads 12 --ready-units 24
 mesh run_csv --csv-path /tmp/mesh_batch.csv --output-csv-path /tmp/mesh_batch.out.csv
+mesh run_csv --csv-path /tmp/mesh_batch.csv --output-csv-path /tmp/mesh_batch.out.csv --max-concurrency 6 --runnable-units 6 --floor-threshold 3 --fail-on-floor
 uv run codex/skills/mesh/references/contract_drift_lint.py
+seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl --fail-on-mesh-truth --format table
 uv run codex/skills/mesh/references/lane_completeness_lint.py --check candidate /tmp/mesh_batch.csv
+uv run codex/skills/mesh/references/lane_completeness_lint.py --check full --require-spawn-substrate .mesh/*.exec.out.csv
+uv run codex/skills/mesh/references/lane_completeness_lint.py --check full --deps-csv /tmp/mesh_deps.csv .mesh/*.exec.out.csv
 ```
 
 ## References
@@ -240,6 +247,8 @@ uv run codex/skills/mesh/references/lane_completeness_lint.py --check candidate 
 
 - Capture proof evidence for accepted candidates.
 - Capture lease and retry events when they occur.
-- Before claiming `$mesh`, run lane completeness lint on outputs: `uv run codex/skills/mesh/references/lane_completeness_lint.py --check full .mesh/*.exec.out.csv`.
+- Before claiming `$mesh`, run mesh-truth preflight and fail closed on mismatch: `seq orchestration-concurrency --path <session_jsonl> --fail-on-mesh-truth --format table`.
+- Before claiming `$mesh`, run lane completeness lint on outputs: `uv run codex/skills/mesh/references/lane_completeness_lint.py --check full --require-spawn-substrate .mesh/*.exec.out.csv`.
+- When dependency metadata is available, run deadlock hooks in the same gate: `uv run codex/skills/mesh/references/lane_completeness_lint.py --check full --deps-csv /tmp/mesh_deps.csv .mesh/*.exec.out.csv`.
 - Include `Orchestration Ledger` in final response only when orchestration actually ran.
 - Append one reusable learning to `.learnings.jsonl` when appropriate.

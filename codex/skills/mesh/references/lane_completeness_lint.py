@@ -13,6 +13,13 @@ Usage:
   # A full mesh run must have downstream lanes too
   uv run codex/skills/mesh/references/lane_completeness_lint.py \
     --check full .mesh/*.exec.out.csv
+
+  # Optional mesh-truth and deadlock hooks
+  uv run codex/skills/mesh/references/lane_completeness_lint.py \
+    --check full \
+    --require-spawn-substrate \
+    --deps-csv .mesh/wave-deps.csv \
+    .mesh/*.exec.out.csv
 """
 
 from __future__ import annotations
@@ -21,6 +28,7 @@ import argparse
 import csv
 from collections import Counter, defaultdict
 from pathlib import Path
+from typing import Iterable
 
 
 LANES = {
@@ -156,6 +164,68 @@ def lint_full(paths: list[Path]) -> tuple[bool, list[str]]:
     return (len(errors) == 0), errors
 
 
+def _parse_dep_cells(raw: str) -> list[str]:
+    parts = [p.strip() for p in raw.replace(";", ",").split(",")]
+    return [p for p in parts if p]
+
+
+def _parse_truthy(raw: str) -> bool:
+    text = raw.strip().lower()
+    return text in {"1", "true", "yes", "y", "on"}
+
+
+def lint_deadlock_csvs(paths: Iterable[Path]) -> tuple[bool, list[str]]:
+    errors: list[str] = []
+    for path in paths:
+        rows = _read_csv_rows(path)
+        header_errs = _require_headers(path, rows, {"id"})
+        if header_errs:
+            errors.extend(header_errs)
+            continue
+
+        ids = {row.get("id", "").strip() for row in rows if row.get("id", "").strip()}
+        deps_by_id: dict[str, list[str]] = {}
+
+        for row in rows:
+            unit_id = row.get("id", "").strip()
+            if not unit_id:
+                continue
+            deps = _parse_dep_cells(row.get("depends_on", ""))
+            deps_by_id[unit_id] = deps
+
+            unknown = sorted([dep for dep in deps if dep not in ids])
+            if unknown:
+                errors.append(
+                    f"{path}:{unit_id}: unknown deps: {', '.join(unknown)}"
+                )
+
+            if _parse_truthy(row.get("interactive_lead", "")) and deps:
+                errors.append(
+                    f"{path}:{unit_id}: interactive_lead waits on deps ({', '.join(deps)})"
+                )
+
+        visiting: set[str] = set()
+        visited: set[str] = set()
+
+        def visit(node: str, stack: list[str]) -> None:
+            if node in visited or node not in deps_by_id:
+                return
+            if node in visiting:
+                loop = " -> ".join(stack + [node])
+                errors.append(f"{path}: cycle detected: {loop}")
+                return
+            visiting.add(node)
+            for dep in deps_by_id.get(node, []):
+                visit(dep, stack + [node])
+            visiting.remove(node)
+            visited.add(node)
+
+        for node in sorted(deps_by_id.keys()):
+            visit(node, [])
+
+    return (len(errors) == 0), errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Mesh lane completeness lint (fail-closed)"
@@ -171,6 +241,22 @@ def main() -> int:
         action="store_true",
         help="Waive lane completeness failures (explicit collapsed-path override).",
     )
+    parser.add_argument(
+        "--require-spawn-substrate",
+        action="store_true",
+        help="Fail if full-check rows do not include spawn_substrate=spawn_agents_on_csv.",
+    )
+    parser.add_argument(
+        "--expected-spawn-substrate",
+        default="spawn_agents_on_csv",
+        help="Expected spawn substrate value when --require-spawn-substrate is enabled.",
+    )
+    parser.add_argument(
+        "--deps-csv",
+        action="append",
+        default=[],
+        help="Optional dependency CSV for deadlock checks (headers: id,depends_on,interactive_lead). Repeatable.",
+    )
     parser.add_argument("csv_paths", nargs="+", help="One or more CSV paths")
     args = parser.parse_args()
 
@@ -178,6 +264,36 @@ def main() -> int:
 
     ok, errs = lint_candidate(paths) if args.check == "candidate" else lint_full(paths)
 
+    if args.check == "full" and args.require_spawn_substrate:
+        for path in paths:
+            rows = _read_csv_rows(path)
+            if not rows:
+                continue
+            if "spawn_substrate" not in rows[0]:
+                errs.append(
+                    f"{path}: missing headers: spawn_substrate (required by --require-spawn-substrate)"
+                )
+                continue
+            bad = sorted(
+                {
+                    row.get("id", "").strip() or "<unknown>"
+                    for row in rows
+                    if row.get("spawn_substrate", "").strip()
+                    != args.expected_spawn_substrate
+                }
+            )
+            if bad:
+                errs.append(
+                    f"{path}: spawn_substrate mismatch for ids: {', '.join(bad)}"
+                )
+
+    deps_paths = [Path(p).expanduser() for p in args.deps_csv]
+    if deps_paths:
+        dep_ok, dep_errs = lint_deadlock_csvs(deps_paths)
+        if not dep_ok:
+            errs.extend(dep_errs)
+
+    ok = len(errs) == 0
     if ok:
         print("lane_completeness_lint: PASS")
         return 0
