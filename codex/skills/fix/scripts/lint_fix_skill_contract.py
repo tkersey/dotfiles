@@ -55,6 +55,13 @@ EXPECTED_RESIDUAL_LINE = (
     + "> — next=<one action>`"
 )
 
+REQUIRED_USER_LOOP_GUARDRAILS = [
+    "MUST ask the final user-directed changeset question only after at least one change is applied and validation is passing.",
+    "MUST NOT emit `If you could change one thing about this changeset what would you change?` as a standalone first/only response.",
+    "Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.",
+    "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, do not ask the question; proceed to output.",
+]
+
 SECTION_PATTERN = re.compile(r"^\*\*(.+?)\*\*$", re.MULTILINE)
 JSON_LINE_PATTERN = re.compile(r"^\s*-\s*`(\{.*\})`\s*\(single-line JSON\)\s*$", re.MULTILINE)
 
@@ -218,6 +225,13 @@ def run(path: Path) -> int:
                 "Residual risks / open questions",
                 residual_line,
                 errors,
+            )
+
+    for phrase in REQUIRED_USER_LOOP_GUARDRAILS:
+        if phrase not in text:
+            errors.append(
+                "user_loop_guardrail missing required phrase: "
+                f"{phrase}"
             )
 
     if errors:

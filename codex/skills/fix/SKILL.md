@@ -70,6 +70,8 @@ Delegation triggers (deterministic):
 - MUST follow the delegation contract in `Skill composition (required)` (including order: `$invariant-ace` -> `$complexity-mitigator`).
 - MUST route skill-self edits (for example `codex/skills/fix`) through `$refine` and run `quick_validate`.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
+- MUST ask the final user-directed changeset question only after at least one change is applied and validation is passing.
+- MUST NOT emit `If you could change one thing about this changeset what would you change?` as a standalone first/only response.
 - MUST run a final user-directed changeset loop: ask `If you could change one thing about this changeset what would you change?`, apply exactly one requested change at a time, re-run validation, and repeat until the user has no more requested changes.
 - When paired with `$tk` in wave execution, MUST treat `$fix` as the final mutating pass before artifactization:
   - `commit_first`: hand off immediately to `$commit` after passing validation.
@@ -462,14 +464,16 @@ For findings in severity order:
 1. Re-check `Residual risks / open questions policy`.
 2. Any item without a valid blocker becomes a finding and is fixed (with proof) or dropped.
 
-### 7) User-directed changeset loop (required final step)
-1. Ask exactly: `If you could change one thing about this changeset what would you change?`
-2. If the user requests a change:
+### 7) User-directed changeset loop (required final step when a changeset exists)
+1. Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.
+2. Ask exactly: `If you could change one thing about this changeset what would you change?`
+3. If the user requests a change:
    - convert the request into one concrete finding,
    - apply the smallest sound change,
    - re-run the chosen validation signal and update findings/proof.
-3. Repeat step 1 after each applied change.
-4. Exit the loop only when the user explicitly indicates there are no more requested changes.
+4. Repeat step 2 after each applied change.
+5. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, do not ask the question; proceed to output.
+6. Exit the loop only when the user explicitly indicates there are no more requested changes.
 
 ### 8) Output lock (required)
 Before sending the final message, verify all are true:
