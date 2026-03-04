@@ -25,51 +25,6 @@ Only after we have both reached clarity, when you've run out of unknowns to surf
 
 Start by asking me what I want to build.
 
-## Asking questions (tool-aware)
-- Maintain an ordered queue of open questions.
-- Ask one question at a time by default; ask 2-3 only when all questions are independent and non-blocking.
-- If a tool named `request_user_input` is available, use it for every questioning turn (do not render prose question lists and do not render the fallback Human input block).
-- Otherwise, add a one-line note that the tool is unavailable, then render the fallback Human input block (below).
-- Do not summarize, propose implementation, or start planning while any required unknown remains.
-- After receiving answers, update the Snapshot and refresh the open-question queue:
-  - remove answered questions
-  - append newly discovered open questions (including follow-ups triggered by the answers)
-  - continue looping until the queue is empty
-
-### Loop pseudocode
-```text
-open_questions := initial judgment calls (ordered)
-answered_ids := set()
-
-while open_questions not empty:
-  batch := take_next(open_questions, max=3, prefer=1)
-
-  if tool_exists("request_user_input"):
-    tool_args := { questions: batch_to_tool_questions(batch) }
-    raw := call request_user_input(tool_args)
-    resp := parse_json(raw)
-    answers_by_id := resp.answers
-  else:
-    note "request_user_input not available; using fallback"
-    render fallback numbered block for batch
-    answers_by_id := extract answers from user reply
-
-  for q in batch:
-    a := answers_by_id[q.id].answers (may be missing/empty)
-    if a missing/empty and q still required:
-      keep q in open_questions (re-ask; rephrase; same id)
-    else:
-      remove q from open_questions
-      answered_ids.add(q.id)
-      update Snapshot with facts/decisions from a
-
-  followups := derive_followups(answers_by_id, Snapshot) using rules below
-  enqueue followups:
-    - if a follow-up blocks other questions, prepend it
-    - otherwise append it
-    - dedupe by id against open_questions and answered_ids
-```
-
 ### Follow-up derivation rules
 Only create a follow-up when it is a judgment call required to proceed. Apply these rules in order:
 
