@@ -72,6 +72,7 @@ Delegation triggers (deterministic):
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 - MUST ask the final user-directed changeset question only after at least one change is applied and validation is passing.
 - MUST NOT emit `If you could change one thing about this changeset what would you change?` as a standalone first/only response.
+- MUST, when the user-directed changeset loop precondition gate passes, append the exact question as the final line of the assistant message (after the required sections) and then stop.
 - MUST run a final user-directed changeset loop: ask `If you could change one thing about this changeset what would you change?`, apply exactly one requested change at a time, re-run validation, and repeat until the user has no more requested changes.
 - When paired with `$tk` in wave execution, MUST treat `$fix` as the final mutating pass before artifactization:
   - `commit_first`: hand off immediately to `$commit` after passing validation.
@@ -467,10 +468,11 @@ For findings in severity order:
 ### 7) User-directed changeset loop (required final step when a changeset exists)
 1. Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.
 2. Ask exactly: `If you could change one thing about this changeset what would you change?`
+   - Output rule: when you ask this, it MUST be the final line of the message (no trailing text) so the user can reply.
 3. If the user requests a change:
-   - convert the request into one concrete finding,
-   - apply the smallest sound change,
-   - re-run the chosen validation signal and update findings/proof.
+    - convert the request into one concrete finding,
+    - apply the smallest sound change,
+    - re-run the chosen validation signal and update findings/proof.
 4. Repeat step 2 after each applied change.
 5. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, do not ask the question; proceed to output.
 6. Exit the loop only when the user explicitly indicates there are no more requested changes.
@@ -484,9 +486,14 @@ Before sending the final message, verify all are true:
 5. `Validation` includes machine-checkable keys: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
 6. Every acted-on finding includes `Proof strength` and `Compatibility impact` using the allowed enums.
 7. Every residual `blocked_by` uses only: `product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable`.
+8. If `Changes applied` is not `None` AND the latest validation result is `ok`, the final line of the message is exactly: `If you could change one thing about this changeset what would you change?`
 
 ## Deliverable format (chat)
-Output exactly these sections.
+Output exactly these sections in this order.
+
+If the user-directed changeset loop precondition gate passes (`Changes applied` is not `None` AND the latest validation result is `ok`), append the exact question as the final line after the last section, then stop:
+
+If you could change one thing about this changeset what would you change?
 
 If no findings:
 - **Findings (severity order)**: `None`.
@@ -563,6 +570,10 @@ For each finding:
 **Residual risks / open questions**
 - If none: `- None`
 - Otherwise: `- <file:line or token> — blocked_by=<product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable> — next=<one action>`
+
+If the user-directed changeset loop precondition gate passes (`Changes applied` is not `None` AND the latest validation result is `ok`), append the exact question as the final line after the last section, then stop:
+
+If you could change one thing about this changeset what would you change?
 
 ## Pitfalls
 - Vague advice without locations.
