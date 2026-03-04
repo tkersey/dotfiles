@@ -130,6 +130,12 @@ seq query --spec \
   '{"dataset":"memory_files","group_by":["category"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"format":"table"}'
 ```
 
+Opencode prompts with source override:
+```bash
+seq query --spec \
+  '{"dataset":"opencode_prompts","params":{"source":"db","opencode_db_path":"~/.local/share/opencode/opencode.db"},"where":[{"field":"part_types","op":"contains","value":"file"}],"select":["session_slug","prompt_text","part_types"],"sort":["-time_created_epoch_ms"],"format":"jsonl"}'
+```
+
 ### Ready-made specs
 Prebuilt specs live in `specs/`.
 
@@ -283,13 +289,52 @@ seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl \
   --fail-on-mesh-truth --format table
 ```
 
+### 14) Query Opencode prompt history
+```bash
+seq opencode-prompts --limit 20 --format jsonl
+```
+Filter and project:
+```bash
+seq opencode-prompts \
+  --source db \
+  --contains "grill me" \
+  --mode normal \
+  --part-type file \
+  --select session_slug,message_id,prompt_text,part_types \
+  --sort -time_created_epoch_ms \
+  --format table
+```
+Hybrid with `--spec` (CLI convenience flags override conflicting spec values):
+```bash
+seq opencode-prompts --spec @opencode-spec.json --contains "$plan" --limit 10
+```
+
+### 15) Query Opencode message/part events
+```bash
+seq opencode-events --limit 50 --format jsonl
+```
+Filter event rows:
+```bash
+seq opencode-events \
+  --source db \
+  --role assistant \
+  --tool shell \
+  --status completed \
+  --select session_slug,message_id,event_index,part_type,tool_name,tool_status,text \
+  --sort -time_created_epoch_ms \
+  --format table
+```
+
 ## Notes
 - Default root: `~/.codex/sessions`.
-- `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` to override.
+- `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` and `params.include_preview`.
+- Opencode datasets (`opencode_prompts`, `opencode_events`) default to `source=auto`, which resolves DB-first (`$HOME/.local/share/opencode/opencode.db`) with JSONL fallback (`$HOME/.local/state/opencode/prompt-history.jsonl`).
+- Opencode params: `params.source`, `params.opencode_db_path`, `params.opencode_path`, `params.include_raw`; `opencode_prompts` also supports `params.include_summary_fallback`.
 - Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, and from `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
 - Runtime bootstrap policy: require the Zig `seq` binary, default to Homebrew install on macOS, and fallback to direct Zig install from `skills-zig` on non-macOS.
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
+- `query.params` is now parsed and routed into dataset collectors for dataset-specific source overrides.
 - `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.
 - `session-prompts` defaults to `--roles user`; set `--roles user,assistant` to include both sides of a conversation.
 - `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.

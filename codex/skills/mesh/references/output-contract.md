@@ -40,11 +40,12 @@ Mesh orchestration is a lane-complete pipeline, not just concurrent work.
 
 - Do not claim `$mesh` orchestration if execution only ran `lane=coder` (or used ad-hoc `spawn_agent` concurrency) without downstream lanes.
 - Default lane matrix per unit is mandatory unless the user explicitly requests a collapsed path:
-  - candidate cohort: `coder` + `coder` + `reducer`
-  - proof chain: `locksmith -> applier -> prover` (coder/reducer do not run proof)
-  - adjudication: `fixer` quorum by `risk_tier`
+  - candidate cohort: `coder` + `reducer` (add a second `coder` only for high-risk/ambiguous units)
+  - adjudication: `fixer` quorum by `risk_tier` selects one candidate (or no-op)
+  - proof: `prover` runs proof for the selected candidate (bounded retries)
   - delivery: `integrator`
-- Close gate: do not mark a unit complete without fixer acceptance + integrator completion evidence (unless an explicit collapsed-path override is recorded).
+  - optional full-mesh apply: `locksmith -> applier` before `prover` when reservation-gated apply is required
+- Close gate: do not mark a unit complete without fixer acceptance; for selected-candidate units also require prover `proof_status=pass` and integrator completion evidence (unless an explicit collapsed-path override is recorded).
 
 ## Lane-Specific Expectations
 
@@ -64,9 +65,10 @@ Mesh orchestration is a lane-complete pipeline, not just concurrent work.
   - `decision=proof_complete|proof_failed`
   - `proof_status=pass|fail`
   - `proof_attempts` must be `1` or `2`
+  - include `apply_evidence` when the patch is applied in the prover lane
 - `fixer`:
   - `decision=accepted|rework_required|blocked_safety`
-  - include `selected_candidate`, `quorum_target`, `quorum_observed`
+  - include `selected_candidate` (required; use `none` for explicit no-op acceptance), `quorum_target`, `quorum_observed`
 - `integrator`:
   - `decision=integrated_patch|integrated_commit|blocked_delivery`
   - include `artifact_ref` and `scope_assertion`

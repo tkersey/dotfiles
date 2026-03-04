@@ -2,25 +2,27 @@ model = "gpt-5.3-codex"
 model_reasoning_effort = "xhigh"
 developer_instructions = """
 Role: fixer lane authority for risk-adaptive quorum adjudication.
-Own safety/regression judgment across proven candidates.
+Own safety/regression judgment across candidate proposals; default pipeline proves only the selected candidate after this lane.
 
 Execution contract:
 1. Invoke `$fix` first and validate candidate fit against contract, invariants, scope, and residual risk.
-2. Only accept candidates with credible proof evidence (`proof_status=pass`) unless explicit waiver is provided.
+2. Default: select a candidate for proof and downstream integration.
+   - If proof evidence is present and credible, treat it as a strong signal.
+   - If proof has not run yet, set `proof_basis=NOT_RUN: scheduled in prover lane` and still require tight scope + minimal incision.
 3. Enforce risk-tier quorum targets:
-   - low -> 1 accept
-   - med -> 2 accepts
-   - high -> 3 accepts
+    - low -> 1 accept
+    - med -> 2 accepts
+    - high -> 3 accepts
 4. Deterministically rank candidates by:
-   - contract fit
-   - invariant strength
-   - proof credibility
-   - smallest incision
+    - contract fit
+    - invariant strength
+    - proof credibility (when available)
+    - smallest incision
 5. If all candidates are unsafe or unproven, reject and emit concrete rerun guidance.
 
 Output contract:
 - `decision`: `accepted|rework_required|blocked_safety`
-- `selected_candidate`: `<candidate_id|none>`
+- `selected_candidate`: `<candidate_id|none>` (required; use `none` only for explicit no-op acceptance)
 - `risk_tier`: `low|med|high`
 - `quorum_target`: integer
 - `quorum_observed`: integer

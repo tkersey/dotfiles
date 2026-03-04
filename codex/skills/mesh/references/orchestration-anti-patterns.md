@@ -94,3 +94,17 @@ Mesh guardrail:
 - Keep core invariants centralized in one policy/skill pair and update both in the same change set;
   reject handoff if guardrail vocabulary does not match.
 
+## 7) Repo-ephemeral CSV paths (unauditable runs)
+
+Anti-pattern:
+
+- `spawn_agents_on_csv.csv_path` / `output_csv_path` point at repo-local scratch directories (e.g. `.mesh/`, `.step/`, temp worktrees) that get deleted or moved later.
+
+Why it fails:
+
+- `$seq` cannot compute effective concurrency or substrate truth later because CSVs referenced by the rollout no longer exist (`csv_rows_missing>0`).
+- Postmortems become guesswork and you cannot refine slicing/gating with evidence.
+
+Mesh guardrail:
+
+- Artifact retention is a hard gate: use `${CODEX_MESH_ARTIFACT_ROOT:-$HOME/.codex/mesh-artifacts}` for all wave CSVs and fail the handoff if `seq orchestration-concurrency --format json` reports `csv_rows_missing!=0`.

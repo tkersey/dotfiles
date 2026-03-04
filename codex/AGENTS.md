@@ -60,18 +60,19 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Claim gate: when `$select` emits first-ready claims, apply those `in_progress` claims in `$st` before spawning workers.
 - Dependency discipline: schedule only units with satisfied `$st` deps. Treat dependency metadata as advisory only when the user explicitly opts in and `unit_scope` is disjoint.
 - Mesh truth gate (fail-closed): do not claim `$mesh` orchestration if execution used only direct `spawn_agent` workers or a single `coder` lane without downstream lanes.
-- Lane completeness gate (default): unless the user explicitly requests a collapsed path, each unit must execute full lanes in order: candidate cohort (`coder x2 + reducer x1`) -> `locksmith -> applier -> prover` -> fixer quorum -> integrator.
+- Lane completeness gate (default): unless the user explicitly requests a collapsed path, each unit must execute CRFIP lanes in order: candidate cohort (`coder x1 + reducer x1`) -> fixer -> prover -> integrator.
+- Proof shaping gate: prove only the fixer-selected candidate; fixer may accept `selected_candidate=none` (no-op) to close without prover/integrator.
 - Collapse override gate: collapsed-path execution is allowed only on explicit user request; record the override in ledger output with the user instruction and reduced lane path, and keep completion criteria explicit.
-- Lane completeness lint (required): before claiming `$mesh`, verify lane completeness from `.mesh/*.exec.out.csv` (e.g. `uv run codex/skills/mesh/references/lane_completeness_lint.py --check full --require-spawn-substrate .mesh/*.exec.out.csv`); if this fails and no explicit collapsed-path override exists, fail completion.
-- Unit pipeline (hard gate): each implementation unit runs candidate lanes (`coder x2`, `reducer x1`) then `locksmith -> applier -> prover`, then fixer quorum, then integrator packaging unless the user requests a collapsed path.
+- Lane completeness lint (required): before claiming `$mesh`, verify lane completeness from `.mesh/*.exec.out.csv` (e.g. `mesh lane_completeness_lint --check crfip --require-spawn-substrate .mesh/*.exec.out.csv`); if this fails and no explicit collapsed-path override exists, fail completion.
+- Unit pipeline (hard gate): each implementation unit runs candidate lanes (`coder x1`, `reducer x1`) then fixer, then prover, then integrator packaging unless the user requests a collapsed path.
 - Author adversarial gate: coder/reducer cohort members must challenge peer outputs before fixer intake.
 - Fixer quorum gate: use risk-adaptive quorum targets (`low=1`, `med=2`, `high=3`) and require no blocker reject to promote.
 - Integrator trio gate: optional for high-risk units; integrator writer is sufficient for low-risk patch packaging when quorum already passed.
 - Delivery defaults: `integrator` uses `patch_first` unless the task/user explicitly requests `commit_first`.
-- Single-writer rule for durable state: only `integrator` mutates plan/ledger state; `applier` may mutate isolated worktrees only after lease grant.
+- Single-writer rule for durable state: only `integrator` mutates plan/ledger state and the shared repo; `prover` may mutate isolated worktrees only.
 - Integrator commit materialization: when converting accepted patches into commits, use `git am` only (no `git apply`-then-commit path).
 - Scope quality gate: units with missing/unknown/overly broad `unit_scope` are not eligible for parallel batches; block or serialize until scope is tightened.
-- write_scope reservations: mutating phases must acquire a lease before apply/proof; overlapping reservations serialize automatically.
+- write_scope reservations: treat unit `write_scope` as exclusive locks for mutating work; serialize overlapping scopes.
 - Plan-write rule: workers must not mutate plan/state artifacts (`.step/st-plan.jsonl`, plan docs, orchestration ledger). Workers return structured results; integrator performs state writes.
 - Budget clamp (strictest of 5-hour and weekly remaining from CAS):
   - `remaining > 33%`: no budget-based clamp (still bounded by configured capacity).
@@ -80,20 +81,22 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Concurrency authority: compute one active-unit target at preflight and keep it consistent across batch generation, `spawn_agents_on_csv.max_concurrency`, and ledger reporting.
 - Scale-out rules: allow multi-instance CAS only when backlog/saturation conditions justify it and `remaining > 25%`; disallow scale-out at `<= 25%`.
 - Lane fanout (safe degrade):
-  - `remaining > 15%` and no instability: keep dual-author fanout at `coder x2 + reducer x1` and safety lanes at width `3`.
-  - `10% < remaining <= 15%` or prior-wave instability: degrade to width `2`.
+  - `remaining > 15%` and no instability: keep dual-author fanout at `coder x1 + reducer x1` and safety lanes at width `2`.
+  - `10% < remaining <= 15%` or prior-wave instability: degrade to width `1`.
   - `remaining <= 10%` or two consecutive unstable waves: degrade to width `1`.
   - Restore by one level after two consecutive clean waves and `remaining > 20%`.
 - Batch isolation: overlapping write scopes are serialized for mutating lanes; non-overlapping scopes can run in parallel.
 - Failure backpressure: on `reject`, timeout, lifecycle mismatch, `invalid_output_schema`, or user `turn_aborted`, reduce next-batch concurrency to `max(1, floor(previous/2))` and serialize overlapping scopes until a clean batch passes.
 - Dirty working tree is not a skip gate for multi-agent orchestration; ignore unrelated diffs and preserve safety with disjoint scopes plus integrator-only writes.
 - CSV hygiene: keep `csv_path` and `output_csv_path` distinct per run to avoid template clobbering.
+- Artifact retention gate (hard): `csv_path` and `output_csv_path` must be durable (not repo-ephemeral). Default root is `${CODEX_MESH_ARTIFACT_ROOT:-$HOME/.codex/mesh-artifacts}`; prefer preparing batches via `mesh prepare_crfip_batch`. Before handoff, require `seq orchestration-concurrency --path <session_jsonl> --format json` to report `csv_rows_missing==0`.
 - CSV header gate: `mesh run_csv` currently requires `base_sha`; include it in every batch CSV template or fail preflight.
 - Output contract caveat: `spawn_agents_on_csv` output schema metadata is advisory; mesh must enforce strict output parsing before integration.
 - Candidate output gate: require strict v2 worker keys (`candidate_id`, `triplet_index`, `lane`, `write_scope`, `risk_tier`, `proof_evidence`) before quorum evaluation.
 - Reject-closure gate: never close a unit when worker output contains `decision=reject` or `proof_status=fail`; require explicit replacement/re-run evidence first.
 - Close gate: never mark a unit `completed` in `$st` unless fixer acceptance and integrator completion evidence are both present for that unit (or an explicit collapsed-path override exists).
-- Completion claim gate (hard): before claiming successful `$mesh`, require both checks: `seq orchestration-concurrency --path <session_jsonl> --fail-on-mesh-truth --format table` and `uv run codex/skills/mesh/references/lane_completeness_lint.py --check full --require-spawn-substrate .mesh/*.exec.out.csv`. If either fails, `$mesh` completion claim is invalid.
+- Completion claim gate (hard): before claiming successful `$mesh`, require both checks: `seq orchestration-concurrency --path <session_jsonl> --fail-on-mesh-truth --format table` and `mesh lane_completeness_lint --check crfip --require-spawn-substrate .mesh/*.exec.out.csv`. If either fails, `$mesh` completion claim is invalid.
+- Postmortem doctor (recommended): `mesh doctor --rollout-jsonl <session_jsonl> --expect-mesh-truth --require-artifacts --require-archived-paths --lane-check crfip --require-spawn-substrate`.
 - Mesh violation response gate (fail-closed): if `mesh_expected=true` and any invocation/proof/claim gate fails, final response must declare contract violation and must not claim successful `$mesh` completion.
 - Orchestration Ledger (implementation turns): include only events that occurred:
   - `skills_used`

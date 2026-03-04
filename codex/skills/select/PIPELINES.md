@@ -15,6 +15,20 @@ Goal: execute an OrchPlan safely with parallel workers.
 4. Resolve conflicts per `integration.conflict_policy`.
 5. Re-run relevant validations; proceed to the next wave only when green.
 
+## ORCHPLAN -> $mesh (streaming; CRFIP)
+Goal: execute an OrchPlan as a streaming run with maximum safe parallelism.
+
+1. Ensure each selected task has a tight `scope` list (exclusive lock roots) and at least one `validation` command.
+2. Map each task into a mesh unit envelope:
+   - `id`: task id
+   - `objective`: task title
+   - `write_scope`: task `scope`
+   - `proof_command`: first `validation` command
+   - `risk_tier`: default `med` unless the task is clearly `low|high`
+3. Run `$mesh` with the default lane matrix: `coder x1 + reducer x1 -> fixer -> prover -> integrator`.
+4. Gate for throughput: run prover+integrator only for units where fixer selects a non-`none` candidate.
+5. Artifact retention gate (required): store wave CSVs under `${CODEX_MESH_ARTIFACT_ROOT:-$HOME/.codex/mesh-artifacts}` and fail the handoff if `$seq` reports `csv_rows_missing>0`.
+
 ## PLANS pipeline (manual)
 Goal: iterate `plan-N.md` until the plan is stable and implementation-ready.
 

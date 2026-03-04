@@ -7,9 +7,11 @@ Purpose:
 
 Coverage anchors:
 
-- `codex/AGENTS.md`: pipeline + default fanout must state `coder + reducer -> fixer -> integrator`.
+- `codex/AGENTS.md`: pipeline + default fanout must state `coder x1 + reducer x1 -> fixer -> prover -> integrator` and include the `csv_rows_missing==0` artifact retention gate.
 - `codex/skills/mesh/SKILL.md`: same pipeline/fanout language and legacy `triplet_index` compatibility note.
-- `codex/skills/mesh/agents/openai.yaml`: dual-author default prompt mentions `coder x2 + reducer x1`.
+- `codex/skills/mesh/agents/openai.yaml`: default prompt mentions `coder x1 + reducer x1`.
+- `mesh prepare_crfip_batch`: durable wave CSV preparation under the artifact root.
+- `mesh doctor`: postmortem gate that checks mesh-truth + artifacts + lane completeness.
 - `codex/agents/reducer.toml`: explicit `$reduce` invocation and `Reduce Record` keys.
 - `codex/agents/fixer.toml`: deterministic coder/reducer candidate adjudication.
 - `codex/config.toml`: reducer description explicitly references `$reduce`.
@@ -18,7 +20,7 @@ Coverage anchors:
 Run:
 
 ```bash
-uv run /Users/tk/.dotfiles/codex/skills/mesh/references/contract_drift_lint.py
+mesh contract_drift_lint --repo-root /Users/tk/.dotfiles
 ```
 
 Expected outcome:
