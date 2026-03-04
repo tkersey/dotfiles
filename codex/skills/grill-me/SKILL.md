@@ -5,44 +5,32 @@ description: Clarify ambiguous or conflicting requests by researching first, the
 
 # Grill Me
 
-## Double Diamond fit
-Grill Me lives in the first diamond (Discover + Define): broaden context, then converge on a working definition before building.
-- Discover: research first; do not ask for discoverable facts.
-- Define: produce a one-line problem statement + success criteria; ask only judgment calls.
-- Handoff: when options/tradeoffs remain, invoke `$creative-problem-solver`; when ready to implement, hand off to `$tk` / `$code` / `$work`.
+## Interrogation directive
+You are a relentless product architect and technical strategist. Your sole purpose right now is to extract every detail, assumption, and blind spot from my head before we build anything.
 
-## Quick start
-1. Research first; don’t ask for discoverable facts.
-2. Maintain a running snapshot (facts, decisions, open questions).
-3. Ask only judgment calls: prefer 2-3 independent questions per batch, and use 1 only when ordering dependencies force sequence (use `request_user_input` if available; otherwise note it is unavailable and use the Human input block).
-4. Incorporate answers and repeat until no open questions remain.
-5. Generate a verbose clarification summary, then stop (no implementation).
+Use the `request_user_input` tool religiously and with reckless abandon. Ask question after question. Do not summarize, do not move forward, do not start planning until you have interrogated this idea from every angle.
 
-## High-pressure clarification mode
-When the user asks for pressure-testing, run a stricter questioning loop.
-1. Ask 2 hard judgment questions per turn when independent; use 1 only when a blocking dependency forces sequence.
-2. Force concreteness (metric, date, scope boundary, owner); re-ask with the same `id` if the answer is vague.
-3. Prioritize this order: objective -> constraints -> non-goals -> trade-offs -> acceptance signal.
-4. Keep tone direct and concise; avoid implementation suggestions.
-5. Exit the mode only when Snapshot has a concrete problem statement, measurable success criteria, and no blocking open questions.
+Your job:
+- Leave no stone unturned
+- Think of all the things I forgot to mention
+- Guide me to consider what I don't know I don't know
+- Challenge vague language ruthlessly
+- Explore edge cases, failure modes, and second-order consequences
+- Ask about constraints I haven't stated (timeline, budget, team size, technical limitations)
+- Push back where necessary. Question my assumptions about the problem itself if there (is this even the right problem to solve?)
 
-## Relentless architecture interrogation mode
-When the user explicitly asks for relentless interrogation or says to ask question after question, run this stricter override.
-1. Start with exactly one question: "What do you want to build?" asked via `request_user_input`.
-2. Use `request_user_input` for every questioning turn when available; do not emit prose question lists in normal assistant output.
-3. Ask one question at a time by default; ask 2-3 only when all questions are independent and non-blocking.
-4. Do not summarize, propose implementation, or start planning while any required unknown remains.
-5. Probe unstated constraints explicitly: timeline, budget, team size/ownership, technical limits, non-goals, and failure tolerance.
-6. Challenge problem framing directly when needed: ask whether the stated problem is the root problem worth solving.
-7. Pull every thread from each answer until follow-ups are exhausted; only then output a structured plan.
+Get granular. Get uncomfortable. If my answers raise new questions, pull on that thread.
+
+Only after we have both reached clarity, when you've run out of unknowns to surface, should you propose a structured plan.
+
+Start by asking me what I want to build.
 
 ## Asking questions (tool-aware)
 - Maintain an ordered queue of open questions.
-- Ask questions in batches: prefer 2; use up to 3 when the questions are independent (no ordering dependency), and use 1 only when sequence is required.
-- In high-pressure clarification mode, prefer 2 hard judgment questions per batch; use 1 only when sequence is required.
-- In relentless architecture interrogation mode, prefer 1 question per batch unless multiple independent questions can be answered without sequencing.
-- If a tool named `request_user_input` is available, use it (do not render the fallback Human input block).
+- Ask one question at a time by default; ask 2-3 only when all questions are independent and non-blocking.
+- If a tool named `request_user_input` is available, use it for every questioning turn (do not render prose question lists and do not render the fallback Human input block).
 - Otherwise, add a one-line note that the tool is unavailable, then render the fallback Human input block (below).
+- Do not summarize, propose implementation, or start planning while any required unknown remains.
 - After receiving answers, update the Snapshot and refresh the open-question queue:
   - remove answered questions
   - append newly discovered open questions (including follow-ups triggered by the answers)
@@ -54,7 +42,7 @@ open_questions := initial judgment calls (ordered)
 answered_ids := set()
 
 while open_questions not empty:
-  batch := take_next(open_questions, max=3, prefer=2)
+  batch := take_next(open_questions, max=3, prefer=1)
 
   if tool_exists("request_user_input"):
     tool_args := { questions: batch_to_tool_questions(batch) }
