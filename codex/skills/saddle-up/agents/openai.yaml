@@ -1,0 +1,4 @@
+interface:
+  display_name: "Saddle Up"
+  short_description: "Continuously improve AGENTS harness with eval loops."
+  default_prompt: "Run saddle-up for this repo with explicit model and harness path, then report pass rate, streak, PR link, and blockers."
