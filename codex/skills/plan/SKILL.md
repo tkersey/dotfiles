@@ -41,7 +41,7 @@ description: Produce essay-heavy, decision-complete plans in proposed_plan block
 - Iteration-report alignment gate: `Iteration Reports`, `Iteration Action Log`, and `Iteration Change Log` must cover the same contiguous iteration range, and shared fields (`focus`, `round_decision`, `delta_kind`) must not conflict.
 - Iteration-reports soft-enforcement gate: treat `Iteration Reports` as a required contract section, but lint as advisory in this rollout; missing or malformed entries should warn, not fail-close.
 - Contract-signals gate (v2): `Contract Signals` must be machine-parseable `key=value` lines (typed) and include `contract_version=2` and `stop_reason=...`.
-- Close-decision gate: each iteration must set `round_decision=continue|close`; only allow `round_decision=close` when `focus=5` and closure gates are satisfied.
+- Close-decision gate: each iteration must set `round_decision=continue|close`; only allow `round_decision=close` when closure gates are satisfied.
 - Anti-churn closure gate: only allow `improvement_exhausted=true` after two consecutive iterations with `delta_kind=none` (each with non-empty `evidence`).
 - Stop-reason gate: if you stop early for any reason, set `improvement_exhausted=false`, set `stop_reason` to a non-`none` value, and state the reason.
 - Scope-lock gate: include explicit `Non-Goals/Out of Scope` and do not broaden scope without rationale.

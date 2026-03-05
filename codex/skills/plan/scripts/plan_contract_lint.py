@@ -827,10 +827,6 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
         else:
             last_iter = iters[-1]
             last_action = action_by_iter.get(last_iter, {})
-            if last_action.get("focus") != 5:
-                errors.append(
-                    "Close-decision gate: final iteration must have `focus=5` when `improvement_exhausted=true`."
-                )
             if last_action.get("round_decision") != "close":
                 errors.append(
                     "Close-decision gate: final iteration must have `round_decision=close` when `improvement_exhausted=true`."
