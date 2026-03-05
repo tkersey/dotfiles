@@ -59,6 +59,28 @@ It gets harder (but is still possible) when the contract depends on time, random
 - MUST ensure every required case id appears in `traceability.csv` and has at least one baseline (`mutated=false`) `pass` row in `adapter_results.jsonl` (all `tests.yaml` cases for `exhaustive`; `inventory.json.sampled_case_ids` for `sampled`).
 - MUST enforce fail-closed verification thresholds: 100% mapped public operations, 100% mapped primary workflows, and 100% mapped required case ids (all tests for `exhaustive`; sampled ids for `sampled`), plus mutation sensitivity and independent regeneration parity passes.
 - MUST declare verification coverage mode in `VERIFY.md`: default `exhaustive`; `sampled` is allowed only when full adapter execution is infeasible and must list sampled case ids plus rationale (including `inventory.json.sampled_case_ids`).
+- MUST define and enforce conformance profiles in generated artifacts: `Core Conformance`, `Extension Conformance`, and `Real Integration Profile`.
+- MUST include `Conformance Profile`, `Validation Matrix`, and `Definition of Done` sections in `SPEC.md`.
+- MUST include `Summary`, `Regenerate`, `Validation Matrix`, `Traceability Matrix`, `Mutation Sensitivity`, `Regeneration Parity`, and `Limitations` sections in `VERIFY.md`.
+- MUST include typed failure classes for extraction/verification failures (for example missing artifacts, parse failures, and contract mismatches).
+- MUST require stateful/scenario ghost specs to include lifecycle structure sections in `SPEC.md`: `State Model`, `Transition Triggers`, `Recovery/Idempotency`, and `Reference Algorithm`.
+- MUST run the evidence verifier in strict mode by default; legacy bypass is break-glass only (`--legacy-allow --legacy-reason "<rationale>"`) and never default.
+
+## Conformance profiles (required)
+- `Core Conformance`:
+  - deterministic contract extraction requirements that every ghost package must satisfy
+  - strict evidence gates and fail-closed verification
+- `Extension Conformance`:
+  - optional behaviors implemented by an extraction for stronger fidelity or ergonomics
+  - must be explicitly labeled as optional and tested if claimed
+- `Real Integration Profile`:
+  - environment-dependent checks that validate production-like behavior
+  - may be skipped only with explicit rationale in `VERIFY.md`
+
+Profile usage rules:
+- `SPEC.md` and `VERIFY.md` must state which profile each validation requirement belongs to.
+- `Validation Matrix` and `Definition of Done` must align with the selected profile labels.
+- Stateful/scenario workflows must include lifecycle sections regardless of profile.
 
 ## Inputs
 - Source repo path (git working tree)
@@ -167,14 +189,19 @@ For scenario suites, also harvest:
 - stop conditions (max steps, budget) and graceful halts
 
 ### 3) Write `SPEC.md` (strict, language-agnostic)
+- Include `Conformance Profile`, `Validation Matrix`, and `Definition of Done` sections.
 - Describe types abstractly (number/string/object/timestamp/bytes/etc.).
 - For bytes/buffers, define a canonical encoding (hex or base64) and use it consistently in `tests.yaml`.
 - Define normalization rules (e.g., timestamp parsing, string trimming, unicode, case folding).
 - Specify error behavior precisely (conditions), but keep the *mechanism* language-idiomatic.
+- Include typed failure classes in the spec surface (machine-checkable failure names/codes where possible).
 - Specify every public operation with inputs, outputs, rules, and edge cases.
 - When an operation yields both a "prepared" value and a "persisted delta" (or similar), define the delta derivation mechanically (slice/filter/identity rules) and test it.
 - Specify cross-operation invariants for primary workflows (state transitions, required ordering, and continuity guarantees).
 - For scenarios, specify:
+  - state model and transition triggers
+  - recovery/idempotency behavior
+  - reference algorithm overview (language-agnostic)
   - environment state model and reset semantics
   - tool surface contracts (schemas, permissions, rate limits)
   - invariants as explicit, testable rules (trace-level)
@@ -215,11 +242,13 @@ For scenario suites, also harvest:
 - `README.md`: explain what the ghost library is, list operations, and describe the included files.
 - `TESTS_SCHEMA.md` (when needed): define the `tests.yaml` harness schema and any callback catalogs or side-effect capture requirements.
 - `VERIFY.md`: describe provenance + how the ghost artifacts were produced and verified against the source library (adapter-first; sampling fallback).
+  - include `Summary`, `Regenerate`, `Validation Matrix`, `Traceability Matrix`, `Mutation Sensitivity`, `Regeneration Parity`, and `Limitations` sections
   - include upstream repo identity + exact revision (tag or commit)
   - include the exact commands used to produce each artifact (or a single deterministic regeneration recipe)
   - include the exact commands used to run verification and the resulting pass/skip counts
   - include any environment normalization assumptions
   - include a summary of `verification/evidence/` and the verifier command/result
+  - if legacy verifier bypass is used, include explicit break-glass rationale and follow-up remediation plan
 - `LICENSE*`: preserve the upstream repo’s license files verbatim.
   - copy common files like `LICENSE`, `LICENSE.md`, `COPYING*`
   - if no license file exists upstream, include a `LICENSE` file stating that no upstream license was found
@@ -241,6 +270,7 @@ For scenario suites, also harvest:
   - `mutation_check.json` (required mutation count + detected failures + pass/fail)
   - `parity.json` (independent regeneration parity verdict + diff count)
 - Run `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`; non-zero exit means extraction is incomplete.
+- Strict mode is default and fail-closed. Use `--legacy-allow --legacy-reason "<rationale>"` only for explicit manual break-glass migrations.
 - For stochastic agentic systems:
   - run scenarios in two modes:
     - deterministic debug mode (stable tool outputs; fixed seed when possible)
@@ -270,6 +300,7 @@ Produce only these artifacts in the ghost repo:
 - `verification/evidence/adapter_results.jsonl`
 - `verification/evidence/mutation_check.json`
 - `verification/evidence/parity.json`
+- `verification/evidence/structure_contract.json` (optional, recommended for explicit structure policy)
 - `LICENSE*` (copied from upstream)
 - `.gitignore` (optional, minimal)
 

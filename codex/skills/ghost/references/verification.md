@@ -2,6 +2,19 @@
 
 This reference exists so the `ghost` skill can generate a first-class `VERIFY.md` in every ghost repo.
 
+## Conformance profiles
+- `Core Conformance`:
+  - required for every ghost extraction
+  - deterministic evidence mapping, strict verifier pass, and required heading contracts
+- `Extension Conformance`:
+  - optional enhancements declared by the extraction
+  - include explicit acceptance checks for each claimed extension
+- `Real Integration Profile`:
+  - environment-dependent validation (for example live endpoints or non-local tool surfaces)
+  - may be skipped only with explicit rationale
+
+`VERIFY.md` should label major checks with one of these profile tags.
+
 ## Minimum checks (always)
 - `tests.yaml` parses cleanly.
 - Every public operation id (or tool id for scenario suites) has at least one test case.
@@ -23,6 +36,9 @@ This reference exists so the `ghost` skill can generate a first-class `VERIFY.md
 - Skip inventory is explicit (operation/case/reason), with deterministic alternatives attempted first.
 - Stable machine-interface fields are asserted (required keys, lengths/counts, and state effects where relevant).
 - `VERIFY.md` includes provenance + a regeneration recipe.
+- `SPEC.md` includes required headings: `Conformance Profile`, `Validation Matrix`, `Definition of Done`.
+- `VERIFY.md` includes required headings: `Summary`, `Regenerate`, `Validation Matrix`, `Traceability Matrix`, `Mutation Sensitivity`, `Regeneration Parity`, `Limitations`.
+- For stateful/scenario ghost specs, `SPEC.md` includes: `State Model`, `Transition Triggers`, `Recovery/Idempotency`, `Reference Algorithm`.
 
 Scenario-suite extras (when `tests.yaml` uses scenario layout):
 - Each critical scenario has explicit **hard oracles** (final state / side effects) and **trace invariants** (forbidden tools, confirmation-before-side-effects, budget/step limits, injection resistance).
@@ -56,6 +72,14 @@ Required files:
 Verifier command:
 - from the ghost skill directory: `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`
 - non-zero exit means extraction quality gate failed
+- strict mode is default; legacy bypass is manual break-glass only:
+  - `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence --legacy-allow --legacy-reason "<rationale>"`
+  - bypass downgrades structure-contract errors only; evidence contract failures remain fail-closed
+
+Break-glass policy:
+- Use only for explicit migration windows.
+- Always record rationale and remediation date in `VERIFY.md`.
+- Do not treat bypass runs as final completion proof.
 
 Notes for scenario suites:
 - Interpret `public_operations` as tool ids (what the agent can call).
@@ -105,6 +129,7 @@ If a full adapter runner is infeasible:
 
 ## Summary
 - Source verification: adapter|sampling
+- Profile labels used: Core Conformance|Extension Conformance|Real Integration Profile
 - tests.yaml layout: functional|protocol
 - Source repo: <url/path>
 - Source revision: <tag/sha>
@@ -142,6 +167,11 @@ This ghost repo should be reproducible from the upstream revision.
 - Sampled cases: <what, how many, why these>
 - Sampled case ids: <explicit list>
 - Not verified: <what remains, why>
+
+## Validation Matrix
+| requirement id | profile | acceptance check |
+| --- | --- | --- |
+| ... | Core Conformance | ... |
 
 ## Test Inventory
 | operation id | cases | error cases |
@@ -181,4 +211,5 @@ This ghost repo should be reproducible from the upstream revision.
 ## Limitations
 - <timezone/locale assumptions>
 - <known gaps>
+- <if break-glass used: rationale + remediation date>
 ```

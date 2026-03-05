@@ -61,6 +61,39 @@ class TestsContract:
     workflow_case_count: int
 
 
+@dataclass(frozen=True)
+class StructureContract:
+    spec_required_headings: tuple[str, ...]
+    spec_stateful_required_headings: tuple[str, ...]
+    verify_required_headings: tuple[str, ...]
+    source: str
+
+
+DEFAULT_STRUCTURE_CONTRACT = StructureContract(
+    spec_required_headings=(
+        "Conformance Profile",
+        "Validation Matrix",
+        "Definition of Done",
+    ),
+    spec_stateful_required_headings=(
+        "State Model",
+        "Transition Triggers",
+        "Recovery/Idempotency",
+        "Reference Algorithm",
+    ),
+    verify_required_headings=(
+        "Summary",
+        "Regenerate",
+        "Validation Matrix",
+        "Traceability Matrix",
+        "Mutation Sensitivity",
+        "Regeneration Parity",
+        "Limitations",
+    ),
+    source="default",
+)
+
+
 def _load_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -401,6 +434,155 @@ def _resolve_tests_yaml(bundle_dir: Path) -> Path:
     )
 
 
+def _normalize_heading_list(
+    value: Any,
+    *,
+    field_name: str,
+    allow_empty: bool = False,
+) -> tuple[str, ...]:
+    if not isinstance(value, list):
+        raise EvidenceError(f"invalid_structure_contract: {field_name} must be a list")
+
+    headings: list[str] = []
+    seen: set[str] = set()
+    for idx, raw in enumerate(value, start=1):
+        if not isinstance(raw, str) or not raw.strip():
+            raise EvidenceError(
+                f"invalid_structure_contract: {field_name}[{idx}] must be a non-empty string"
+            )
+        heading = raw.strip()
+        if heading in seen:
+            raise EvidenceError(
+                f"invalid_structure_contract: duplicate heading in {field_name}: {heading}"
+            )
+        seen.add(heading)
+        headings.append(heading)
+
+    if not headings and not allow_empty:
+        raise EvidenceError(f"invalid_structure_contract: {field_name} must be non-empty")
+
+    return tuple(headings)
+
+
+def _load_structure_contract(bundle_dir: Path) -> StructureContract:
+    path = bundle_dir / "structure_contract.json"
+    if not path.is_file():
+        return DEFAULT_STRUCTURE_CONTRACT
+
+    data = _load_json(path)
+    if not isinstance(data, dict):
+        raise EvidenceError("invalid_structure_contract: structure_contract.json must be an object")
+
+    raw_spec = data.get("spec", {})
+    raw_verify = data.get("verify", {})
+
+    if not isinstance(raw_spec, dict):
+        raise EvidenceError("invalid_structure_contract: spec must be an object")
+    if not isinstance(raw_verify, dict):
+        raise EvidenceError("invalid_structure_contract: verify must be an object")
+
+    spec_required = _normalize_heading_list(
+        raw_spec.get("required_headings"),
+        field_name="spec.required_headings",
+    )
+    spec_stateful_required = _normalize_heading_list(
+        raw_spec.get("stateful_required_headings", []),
+        field_name="spec.stateful_required_headings",
+        allow_empty=True,
+    )
+    verify_required = _normalize_heading_list(
+        raw_verify.get("required_headings"),
+        field_name="verify.required_headings",
+    )
+
+    return StructureContract(
+        spec_required_headings=spec_required,
+        spec_stateful_required_headings=spec_stateful_required,
+        verify_required_headings=verify_required,
+        source="bundle",
+    )
+
+
+def _collect_h2_headings(path: Path) -> set[str]:
+    try:
+        content = path.read_text(encoding="utf-8")
+    except FileNotFoundError as exc:
+        raise EvidenceError(f"missing_doc_file: {path}") from exc
+
+    headings: set[str] = set()
+    for line in content.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("## "):
+            continue
+        heading = stripped[3:].strip()
+        if heading:
+            headings.add(heading)
+    return headings
+
+
+def _check_required_headings(
+    *,
+    doc_label: str,
+    doc_headings: set[str],
+    required_headings: tuple[str, ...],
+) -> list[str]:
+    missing = sorted(heading for heading in required_headings if heading not in doc_headings)
+    return [
+        f"structure_contract_mismatch: {doc_label} missing required section: {heading}"
+        for heading in missing
+    ]
+
+
+def _validate_structure_contract(
+    *,
+    bundle_dir: Path,
+    tests_contract: TestsContract,
+) -> tuple[dict[str, Any], list[str]]:
+    summary: dict[str, Any] = {}
+    errors: list[str] = []
+
+    contract = _load_structure_contract(bundle_dir)
+    repo_root = bundle_dir.parent.parent
+
+    spec_path = repo_root / "SPEC.md"
+    verify_path = repo_root / "VERIFY.md"
+    stateful_mode = bool(tests_contract.workflow_ids or tests_contract.workflow_case_count > 0)
+
+    spec_headings = _collect_h2_headings(spec_path)
+    verify_headings = _collect_h2_headings(verify_path)
+
+    spec_required = list(contract.spec_required_headings)
+    if stateful_mode:
+        spec_required.extend(contract.spec_stateful_required_headings)
+
+    errors.extend(
+        _check_required_headings(
+            doc_label="SPEC.md",
+            doc_headings=spec_headings,
+            required_headings=tuple(spec_required),
+        )
+    )
+    errors.extend(
+        _check_required_headings(
+            doc_label="VERIFY.md",
+            doc_headings=verify_headings,
+            required_headings=contract.verify_required_headings,
+        )
+    )
+
+    summary.update(
+        {
+            "structure_contract_source": contract.source,
+            "structure_stateful_mode": stateful_mode,
+            "structure_spec_required_sections": len(spec_required),
+            "structure_verify_required_sections": len(contract.verify_required_headings),
+            "structure_errors_count": len(errors),
+        }
+    )
+
+    return summary, errors
+
+
 def _resolve_case_id(target_id: str, case: dict[str, Any], case_index: int) -> str:
     case_id = case.get("case_id")
     if isinstance(case_id, str) and case_id.strip():
@@ -564,14 +746,28 @@ def _load_tests_contract(bundle_dir: Path) -> tuple[TestsContract, list[str]]:
     )
 
 
-def verify_bundle(bundle_dir: Path) -> tuple[dict[str, Any], list[str]]:
-    errors: list[str] = []
+def verify_bundle(
+    bundle_dir: Path,
+    *,
+    legacy_allow: bool = False,
+    legacy_reason: str | None = None,
+) -> tuple[dict[str, Any], list[str], list[str]]:
+    data_errors: list[str] = []
+    structure_errors: list[str] = []
     summary: dict[str, Any] = {}
 
     missing_files = [name for name in REQUIRED_FILES if not (bundle_dir / name).is_file()]
     if missing_files:
-        errors.extend(f"missing required file: {bundle_dir / name}" for name in missing_files)
-        return summary, errors
+        data_errors.extend(f"missing required file: {bundle_dir / name}" for name in missing_files)
+        summary.update(
+            {
+                "legacy_bypass_used": legacy_allow,
+                "legacy_reason": legacy_reason or "",
+                "downgraded_structure_errors_count": 0,
+                "data_errors_count": len(data_errors),
+            }
+        )
+        return summary, data_errors, []
 
     try:
         inventory = _load_inventory(bundle_dir / "inventory.json")
@@ -592,70 +788,80 @@ def verify_bundle(bundle_dir: Path) -> tuple[dict[str, Any], list[str]]:
         )
         parity_pass, parity_diff_count = _load_parity(bundle_dir / "parity.json")
     except EvidenceError as exc:
-        errors.append(str(exc))
-        return summary, errors
+        data_errors.append(str(exc))
+        summary.update(
+            {
+                "legacy_bypass_used": legacy_allow,
+                "legacy_reason": legacy_reason or "",
+                "downgraded_structure_errors_count": 0,
+                "data_errors_count": len(data_errors),
+            }
+        )
+        return summary, data_errors, []
 
-    errors.extend(mode_errors)
+    data_errors.extend(mode_errors)
 
     inventory_ops = set(operations)
     inventory_workflows = {workflow.workflow_id for workflow in workflows}
 
     for operation_id in sorted(tests_contract.operation_ids - inventory_ops):
-        errors.append(f"inventory missing public operation from tests.yaml: {operation_id}")
+        data_errors.append(f"inventory missing public operation from tests.yaml: {operation_id}")
     for operation_id in sorted(inventory_ops - tests_contract.operation_ids):
-        errors.append(f"inventory public operation not found in tests.yaml: {operation_id}")
+        data_errors.append(f"inventory public operation not found in tests.yaml: {operation_id}")
 
     for workflow_id in sorted(tests_contract.workflow_ids - inventory_workflows):
-        errors.append(f"inventory missing primary workflow from tests.yaml: {workflow_id}")
+        data_errors.append(f"inventory missing primary workflow from tests.yaml: {workflow_id}")
     for workflow_id in sorted(inventory_workflows - tests_contract.workflow_ids):
-        errors.append(f"inventory primary workflow not found in tests.yaml: {workflow_id}")
+        data_errors.append(f"inventory primary workflow not found in tests.yaml: {workflow_id}")
 
     if coverage_mode == "sampled":
         for case_id in sorted(sampled_case_ids - tests_contract.case_ids):
-            errors.append(f"inventory.sampled_case_ids references unknown tests.yaml case_id: {case_id}")
+            data_errors.append(
+                f"inventory.sampled_case_ids references unknown tests.yaml case_id: {case_id}"
+            )
 
     for operation_id in operations:
         if operation_id not in op_to_cases:
-            errors.append(f"unmapped public operation in traceability.csv: {operation_id}")
+            data_errors.append(f"unmapped public operation in traceability.csv: {operation_id}")
 
     for workflow in workflows:
         if workflow.workflow_id not in workflow_to_cases:
-            errors.append(f"unmapped primary workflow in traceability.csv: {workflow.workflow_id}")
+            data_errors.append(f"unmapped primary workflow in traceability.csv: {workflow.workflow_id}")
         loop = loops_by_id.get(workflow.workflow_id)
         if loop is None:
-            errors.append(f"primary workflow missing in workflow_loops.json: {workflow.workflow_id}")
+            data_errors.append(f"primary workflow missing in workflow_loops.json: {workflow.workflow_id}")
             continue
         if not loop["continuity_assertions"]:
-            errors.append(
+            data_errors.append(
                 f"workflow has no continuity_assertions: {workflow.workflow_id}"
             )
         if workflow.requires_reset and not loop["reset_assertions"]:
-            errors.append(
+            data_errors.append(
                 f"workflow requires reset_assertions but none were provided: {workflow.workflow_id}"
             )
 
     for run_id in run_to_cases:
         if run_id not in known_run_ids:
-            errors.append(f"traceability references unknown adapter_run_id: {run_id}")
+            data_errors.append(f"traceability references unknown adapter_run_id: {run_id}")
 
     for run_id, case_ids in run_to_cases.items():
         for case_id in case_ids:
             pair = (run_id, case_id)
             if case_id not in all_result_cases:
-                errors.append(f"traceability case not present in adapter_results.jsonl: {case_id}")
+                data_errors.append(f"traceability case not present in adapter_results.jsonl: {case_id}")
             if pair not in baseline_pass_pairs:
-                errors.append(
+                data_errors.append(
                     "traceability pair has no baseline pass result: "
                     f"run_id={run_id} case_id={case_id}"
                 )
             if pair in baseline_nonpass_pairs:
-                errors.append(
+                data_errors.append(
                     "traceability pair has non-pass baseline result: "
                     f"run_id={run_id} case_id={case_id}"
                 )
 
     for case_id in sorted(traceability_cases - tests_contract.case_ids):
-        errors.append(f"traceability.csv references unknown tests.yaml case_id: {case_id}")
+        data_errors.append(f"traceability.csv references unknown tests.yaml case_id: {case_id}")
 
     required_case_ids = (
         tests_contract.case_ids if coverage_mode == "exhaustive" else sampled_case_ids
@@ -665,29 +871,54 @@ def verify_bundle(bundle_dir: Path) -> tuple[dict[str, Any], list[str]]:
     )
 
     for case_id in sorted(required_case_ids - traceability_cases):
-        errors.append(f"{required_case_label} case missing from traceability.csv: {case_id}")
+        data_errors.append(f"{required_case_label} case missing from traceability.csv: {case_id}")
 
     for case_id in sorted(required_case_ids - all_result_cases):
-        errors.append(f"{required_case_label} case missing from adapter_results.jsonl: {case_id}")
+        data_errors.append(f"{required_case_label} case missing from adapter_results.jsonl: {case_id}")
 
     baseline_case_ids = {case_id for _, case_id in baseline_pass_pairs}
     for case_id in sorted(required_case_ids - baseline_case_ids):
-        errors.append(
+        data_errors.append(
             f"{required_case_label} case has no baseline pass in adapter_results.jsonl: {case_id}"
         )
 
     if not mutation_pass:
-        errors.append("mutation_check.json.pass must be true")
+        data_errors.append("mutation_check.json.pass must be true")
     if detected_failures < required_mutations:
-        errors.append(
+        data_errors.append(
             "mutation sensitivity gate failed: detected_failures < required_mutations "
             f"({detected_failures} < {required_mutations})"
         )
 
     if not parity_pass:
-        errors.append("parity.json.pass must be true")
+        data_errors.append("parity.json.pass must be true")
     if parity_diff_count != 0:
-        errors.append(f"parity.json.diff_count must be 0 (found {parity_diff_count})")
+        data_errors.append(f"parity.json.diff_count must be 0 (found {parity_diff_count})")
+
+    structure_summary: dict[str, Any] = {}
+    try:
+        structure_summary, structure_errors = _validate_structure_contract(
+            bundle_dir=bundle_dir,
+            tests_contract=tests_contract,
+        )
+    except EvidenceError as exc:
+        structure_errors.append(str(exc))
+        structure_summary = {
+            "structure_contract_source": "unknown",
+            "structure_stateful_mode": bool(
+                tests_contract.workflow_ids or tests_contract.workflow_case_count > 0
+            ),
+            "structure_spec_required_sections": 0,
+            "structure_verify_required_sections": 0,
+            "structure_errors_count": len(structure_errors),
+        }
+
+    downgraded_structure_errors: list[str] = []
+    if legacy_allow:
+        downgraded_structure_errors = sorted(structure_errors)
+        final_errors = data_errors
+    else:
+        final_errors = data_errors + structure_errors
 
     summary.update(
         {
@@ -708,18 +939,33 @@ def verify_bundle(bundle_dir: Path) -> tuple[dict[str, Any], list[str]]:
             "required_mutations": required_mutations,
             "detected_failures": detected_failures,
             "parity_diff_count": parity_diff_count,
+            "legacy_bypass_used": legacy_allow,
+            "legacy_reason": legacy_reason or "",
+            "downgraded_structure_errors_count": len(downgraded_structure_errors),
+            "data_errors_count": len(data_errors),
+            "structure_errors_count": len(structure_errors),
         }
     )
+    summary.update(structure_summary)
 
-    return summary, errors
+    return summary, final_errors, downgraded_structure_errors
 
 
-def _format_text(result: str, summary: dict[str, Any], errors: list[str]) -> str:
+def _format_text(
+    result: str,
+    summary: dict[str, Any],
+    errors: list[str],
+    downgraded_structure_errors: list[str],
+) -> str:
     lines = [f"Evidence bundle verification: {result}"]
     if summary:
         lines.append("Summary:")
         for key in sorted(summary):
             lines.append(f"- {key}: {summary[key]}")
+    if downgraded_structure_errors:
+        lines.append("Downgraded structure errors (legacy bypass):")
+        for err in downgraded_structure_errors:
+            lines.append(f"- {err}")
     if errors:
         lines.append("Errors:")
         for err in errors:
@@ -742,17 +988,52 @@ def main(argv: list[str] | None = None) -> int:
         default="text",
         help="Output format.",
     )
+    parser.add_argument(
+        "--legacy-allow",
+        action="store_true",
+        help="Break-glass mode: downgrade structure-contract errors only.",
+    )
+    parser.add_argument(
+        "--legacy-reason",
+        default="",
+        help="Required rationale when --legacy-allow is set.",
+    )
     args = parser.parse_args(argv)
 
+    legacy_reason = args.legacy_reason.strip()
+    if args.legacy_allow and not legacy_reason:
+        print("legacy_reason_required: --legacy-reason must be provided when --legacy-allow is set")
+        return 1
+    if (not args.legacy_allow) and legacy_reason:
+        print("legacy_reason_without_legacy_allow: pass --legacy-allow when using --legacy-reason")
+        return 1
+
     bundle_dir = Path(args.bundle).expanduser().resolve()
-    summary, errors = verify_bundle(bundle_dir)
+    summary, errors, downgraded_structure_errors = verify_bundle(
+        bundle_dir,
+        legacy_allow=args.legacy_allow,
+        legacy_reason=legacy_reason if args.legacy_allow else None,
+    )
     result = "pass" if not errors else "fail"
 
     if args.format == "json":
-        payload = {"result": result, "bundle": str(bundle_dir), "summary": summary, "errors": errors}
+        payload = {
+            "result": result,
+            "bundle": str(bundle_dir),
+            "summary": summary,
+            "errors": errors,
+            "downgraded_structure_errors": downgraded_structure_errors,
+        }
         print(json.dumps(payload, ensure_ascii=True, indent=2))
     else:
-        print(_format_text(result=result, summary=summary, errors=errors))
+        print(
+            _format_text(
+                result=result,
+                summary=summary,
+                errors=errors,
+                downgraded_structure_errors=downgraded_structure_errors,
+            )
+        )
 
     return 0 if not errors else 1
 

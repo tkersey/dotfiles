@@ -2,9 +2,36 @@
 
 Ghost libraries ship specifications and tests, not implementation code.
 
+## Required heading contracts
+
+Enforce these headings exactly (case-sensitive) so structure checks stay deterministic.
+
+### SPEC.md required headings (all ghost extractions)
+- `## Conformance Profile`
+- `## Validation Matrix`
+- `## Definition of Done`
+
+### SPEC.md additional required headings (stateful/scenario ghost extractions)
+- `## State Model`
+- `## Transition Triggers`
+- `## Recovery/Idempotency`
+- `## Reference Algorithm`
+
+### VERIFY.md required headings (all ghost extractions)
+- `## Summary`
+- `## Regenerate`
+- `## Validation Matrix`
+- `## Traceability Matrix`
+- `## Mutation Sensitivity`
+- `## Regeneration Parity`
+- `## Limitations`
+
 ## SPEC.md (outline)
 - Title + version
 - Overview (what the library does)
+- Conformance Profile (declare `Core Conformance`, `Extension Conformance`, `Real Integration Profile`)
+- Validation Matrix (map requirements to acceptance checks)
+- Definition of Done (required completion criteria by profile)
 - Design principles (deterministic, pure, etc.)
 - Type conventions (abstract types and normalization rules)
 - Error handling (language-idiomatic, exact error conditions)
@@ -16,6 +43,11 @@ Ghost libraries ship specifications and tests, not implementation code.
   - Edge cases
   - Examples (short, non-exhaustive)
 - Testing section (reference tests.yaml format)
+- Stateful/scenario additions (required when workflow/scenario behavior exists):
+  - State Model
+  - Transition Triggers
+  - Recovery/Idempotency
+  - Reference Algorithm
 
 ## TESTS_SCHEMA.md (outline, optional)
 
@@ -204,6 +236,9 @@ Notes:
 
 ## VERIFY.md (outline)
 - Verification policy: adapter-first, sampling fallback
+- Summary (required heading)
+- Regenerate (required heading)
+- Validation Matrix (required heading; include profile labels)
 - Coverage mode declaration: `exhaustive` (default) or `sampled` with explicit sampled case ids
 - Source-language adapter runner (preferred)
   - How to run it locally
@@ -214,18 +249,20 @@ Notes:
 - Evidence bundle verifier (fail-closed)
   - `verification/evidence/` is present and complete
   - `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle verification/evidence` passes
-- Traceability matrix
+- Traceability Matrix (required heading)
   - operation/workflow -> case ids -> proof artifact -> adapter run id
 - Adapter run ledger
   - run id, mode, command, timestamp, result
 - Workflow loop inventory
   - workflow id, cases, continuity assertions, reset assertions (when required)
-- Mutation sensitivity gate
+- Mutation Sensitivity (required heading)
   - required mutations, detected failures, pass/fail
-- Independent regeneration parity
+- Regeneration Parity (required heading)
   - two runs, normalized artifact diff count, pass/fail
 - Test inventory (optional)
   - Case counts per operation id
+- Limitations (required heading)
+- Break-glass note (when used): record `--legacy-allow --legacy-reason "<rationale>"` and remediation date.
 
 ## verification/evidence/ (required files)
 - `inventory.json`
@@ -246,6 +283,8 @@ Notes:
   - `{required_mutations, detected_failures, pass}`
 - `parity.json`
   - `{pass, diff_count, run_a, run_b}`
+- `structure_contract.json` (optional, recommended)
+  - required headings and profile constraints used by strict verifier checks
 
 ## README.md (outline)
 - One-paragraph description of the ghost library concept
