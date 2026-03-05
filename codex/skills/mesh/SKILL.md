@@ -32,6 +32,14 @@ Core execution model:
 - Collapsed path is allowed only on explicit user request; record the override in ledger output and keep unit closure criteria explicit.
 - Never close a unit in `$st` without fixer accept + integrator completion evidence (or explicit collapsed-path override).
 
+## Mesh vs Agent Teams
+
+- Use `$mesh` when the goal is a proven patch with durable artifacts + fail-closed gates (this skill).
+- Use agent teams when the goal is exploration/review/competing hypotheses that benefits from peer-to-peer debate; expect a plan/RFC, not patch artifacts.
+- Hybrid (recommended): teams converge on `unit_scope`/`write_scope`/`proof_command`, then `$mesh` runs CRFIP for execution/proof/delivery.
+- Guardrail: if teams are the execution substrate, do not claim `$mesh` completion; keep the reporting/proof path explicit for the teams run.
+- If the user asked for teams explicitly, prefer `$teams` for the teams leg; this skill stays focused on the execution/proof leg.
+
 ## Zig CLI Iteration Repos
 
 When iterating on the Zig-backed `mesh` helper CLI path, use these repos:

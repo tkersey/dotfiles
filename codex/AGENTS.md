@@ -30,7 +30,8 @@ GRILL ME: HUMAN INPUT REQUIRED
 ## Skill Routing
 
 - Default: if the user is asking for a change to code/config/tests, start with `$tk` (implementation mode) and keep the incision minimal with a proof signal.
-- `$mesh`: Trigger for plan-driven streaming orchestration (`update_plan` queue, rolling CSV batches, subagent execution). Default to `spawn_agents_on_csv` with no global wave barrier. Hard auto-route: when the user request includes orchestration/concurrency cues (`max concurrent`, `parallel subagents`, `orchestration`, `wave`, `batch`, `fanout`, `spawn_agents_on_csv`, `concurrent`), set `mesh_expected=true` and use `$mesh`.
+- `$teams`: Trigger when the user explicitly requests an agent team/teammates, or when the primary deliverable is a decision/report (research/review/competing hypotheses/cross-layer design). Prefer producing a handoff artifact (`unit_scope`, `write_scope`, `proof_command`) for `$mesh` when implementation is needed.
+- `$mesh`: Trigger for plan-driven streaming orchestration (`update_plan` queue, rolling CSV batches, subagent execution). Default to `spawn_agents_on_csv` with no global wave barrier. Hard auto-route: when the user request includes orchestration/concurrency cues (`max concurrent`, `parallel subagents`, `orchestration`, `wave`, `batch`, `fanout`, `spawn_agents_on_csv`, `concurrent`) and is not an explicit agent-teams request, set `mesh_expected=true` and use `$mesh`.
 - Tiny-scope bypass: allow non-`$mesh` execution only when no orchestration/concurrency cue is present and work is single-goal, low-incision (`tiny_scope_bypass=true`).
 - `$grill-me`: Trigger when requirements are ambiguous/conflicting, or the user asks to "grill me"/pressure-test/clarify scope; research first, then ask only judgment calls; stop before implementation.
 - `$prove-it`: Trigger on absolute claims (always/never/guaranteed/optimal) or requests for certainty; pressure-test, then restate with explicit boundaries.
@@ -46,6 +47,42 @@ GRILL ME: HUMAN INPUT REQUIRED
 - `$fin`: Trigger when asked to land/merge/finish a PR; squash-merge and clean up local/remote state.
 - `$learnings`: Trigger at the end of implementation turns (after proof) when something is reusable; append 0-3 records to `.learnings.jsonl`.
 - `$zig`: Auto-route when you see Zig cues: `.zig`, `build.zig`/`build.zig.zon`, `zig build|test|run|fmt|fetch`, `comptime`, `@Vector`, `std.simd`, `std.Thread`, allocator ownership, C interop.
+
+## Mesh vs Teams Routing
+
+Goal: pick one substrate per turn (`$mesh` or teams) unless you explicitly choose the hybrid.
+
+Routing (apply in order):
+
+1. Explicit teams request -> teams
+2. Explicit `$mesh` request / mesh primitives mentioned -> `$mesh`
+3. Deliverable is a decision/report (review/research/competing hypotheses) -> teams
+4. Otherwise -> `$mesh` for execution (patches + proof + durable artifacts)
+
+Recognizers (string match is fine):
+
+- Explicit teams request: `agent team`, `teammates`, `create a team`, `spawn teammates`, `teams approach`
+- Mesh primitives: `$mesh`, `spawn_agents_on_csv`, `mesh prepare_crfip_batch`, `wave`, `batch`, `fanout`, `max concurrency`
+- Decision/report deliverable: `compare`, `consider`, `which is better`, `review`, `investigate`, `hypothesis`, `design`
+- Execution deliverable: `implement`, `fix`, `refactor`, `add tests`, `run tests`, `ship`, `PR`
+
+Hybrid (teams -> `$mesh`):
+
+- Use when you need debate/review to converge on unit boundaries (`unit_scope`, `write_scope`, `proof_command`) before execution.
+- Teams phase produces units + proof commands; `$mesh` phase executes CRFIP and writes state.
+- Guardrail: if teams are the execution substrate, do not claim `$mesh` truth/completion.
+
+Action:
+
+- teams: run `$teams`
+- `$mesh`: run `$mesh`
+- hybrid: run `$teams` then `$mesh`
+
+Examples:
+
+- "Review PR for security/perf/tests" -> teams
+- "Implement/fix/refactor + add tests + provide proof" -> `$mesh`
+- "Investigate competing hypotheses, then implement the fix" -> hybrid
 
 ## Orchestration Contract
 
