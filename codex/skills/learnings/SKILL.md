@@ -43,7 +43,7 @@ LEARNINGS_SPECS_DIR="$CODEX_SKILLS_HOME/skills/learnings/specs"
 run_learnings_tool() {
   local subcommand="${1:-}"
   if [ -z "$subcommand" ]; then
-    echo "usage: run_learnings_tool <datasets|query|recall|codify-candidates|append> [args...]" >&2
+    echo "usage: run_learnings_tool <datasets|query|recent|recall|codify-candidates|quality-audit|value-report|append> [args...]" >&2
     return 2
   fi
   shift || true
@@ -57,7 +57,7 @@ run_learnings_tool() {
       bin="append_learning"
       marker="append_learning.zig"
       ;;
-    datasets|query|recall|codify-candidates)
+    datasets|query|recent|recall|codify-candidates|quality-audit|value-report)
       mode="learnings"
       bin="learnings"
       marker="learnings.zig"
@@ -275,8 +275,11 @@ CLI:
 ```bash
 run_learnings_tool datasets
 run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/status-rank.json"
+run_learnings_tool recent --limit 15
 run_learnings_tool recall --query "fix flaky pre-commit hook" --limit 5
 run_learnings_tool codify-candidates --min-count 3 --limit 20
+run_learnings_tool quality-audit --since 2026-02-01 --until 2026-03-05 --format json
+run_learnings_tool value-report --sessions-root "$HOME/.codex/sessions" --since 2026-03-01 --comparator impl_nonrecall --format json
 ```
 
 Promotion rule of thumb:
