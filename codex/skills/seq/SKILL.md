@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, token metrics, prompt-to-session lookup, and orchestration-concurrency analysis from `spawn_agents_on_csv` calls. Use for prompts like `$seq`, `analyze session history`, `find sessions by prompt`, `rank skill mentions`, `audit missing sections`, `report token usage`, `mine memories`, `orchestration ledger/concurrency from session artifacts`, or `use $seq to improve skill trigger descriptions/frontmatter`."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, token metrics, prompt-to-session lookup, and orchestration-concurrency analysis from `spawn_agents_on_csv` calls. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
 ---
 
 # seq
@@ -12,6 +12,14 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 - Questions that ask to verify prior session output using artifacts (`"use $seq to find it"` / `"what did that session actually say"`).
 - Orchestration ledger forensics from session traces (`Orchestration Ledger`, `spawn_agents_on_csv`, wave CSVs, concurrency counts).
 - Concurrency math validation (`max_concurrency`, effective fanout, occurrences of peak parallelism, planned rows vs actual parallelism).
+
+## Opencode Explicitness Gate (Hard)
+- Only run opencode research when the request text includes the literal word `opencode`.
+- Treat these as opencode research and block them without the literal cue:
+  - `seq opencode-prompts`
+  - `seq opencode-events`
+  - `seq query` specs targeting dataset `opencode_prompts` or `opencode_events`
+- For mixed searches without a literal `opencode` cue, hard-skip the opencode branch and continue with non-opencode `seq` datasets only.
 
 ## Zig CLI Iteration Repos
 
@@ -290,6 +298,7 @@ seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl \
 ```
 
 ### 14) Query Opencode prompt history
+Only run this section when the user request explicitly includes `opencode`.
 ```bash
 seq opencode-prompts --limit 20 --format jsonl
 ```
@@ -310,6 +319,7 @@ seq opencode-prompts --spec @opencode-spec.json --contains "$plan" --limit 10
 ```
 
 ### 15) Query Opencode message/part events
+Only run this section when the user request explicitly includes `opencode`.
 ```bash
 seq opencode-events --limit 50 --format jsonl
 ```
