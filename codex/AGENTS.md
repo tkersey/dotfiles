@@ -84,6 +84,19 @@ Examples:
 - "Implement/fix/refactor + add tests + provide proof" -> `$mesh`
 - "Investigate competing hypotheses, then implement the fix" -> hybrid
 
+## Sub-agent Forking (`spawn_agent.fork_context`)
+
+- Use `fork_context: true` only when the child must share exact parent context (constraints, plan, diff, repo state). Otherwise default to `false` for "fresh eyes" review and lower token cost.
+- Before forking, consider compacting the parent thread (`/compact`) so the forked history is short, current, and not polluted.
+- Forked sub-agents inherit runtime settings (cwd, sandbox, approval policy, model/provider); do not treat them as clean-room.
+- `/fork` (and app-server `thread/fork`) forks a thread, not a worker sub-agent. Use it for interactive "branch the conversation", not for execution parallelism.
+- Limits still apply: forked sub-agents are still gated by `agents.max_threads` and depth (`agent_max_depth`).
+
+## Collab Wait Semantics (`wait`)
+
+- `wait` clamps very short timeouts (minimum is 10s); avoid tight polling loops.
+- `wait` is not a join: it returns when any agent reaches a final status. If you need all results, loop `wait` on the remaining ids until all are final.
+
 ## Orchestration Contract
 
 - Detailed execution runbook: see `codex/skills/mesh/SKILL.md`.

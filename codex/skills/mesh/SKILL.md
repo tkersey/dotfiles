@@ -40,6 +40,13 @@ Core execution model:
 - Guardrail: if teams are the execution substrate, do not claim `$mesh` completion; keep the reporting/proof path explicit for the teams run.
 - If the user asked for teams explicitly, prefer `$teams` for the teams leg; this skill stays focused on the execution/proof leg.
 
+## Codex Sub-agents (If Falling Back To `spawn_agent`)
+
+- `spawn_agent` supports `fork_context: true` (fork parent history). Use it only when a worker must share exact parent context; prefer `fork_context: false` for adversarial lanes.
+- Forking copies history: compact the parent thread first (`/compact`) so the forked history is short and current.
+- `wait` is not a join (and clamps very short timeouts to >= 10s): if you need all worker results, loop `wait` until all ids are final.
+- `/fork` (thread fork) is for branching the conversation, not for worker orchestration.
+
 ## Zig CLI Iteration Repos
 
 When iterating on the Zig-backed `mesh` helper CLI path, use these repos:

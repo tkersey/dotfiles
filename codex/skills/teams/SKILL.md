@@ -28,6 +28,15 @@ Prefer `$mesh` when:
 - Pick a single writer for repo state (one agent owns edits/merges); keep teammate tasks file-disjoint.
 - For risky tasks: require plan approval before any code edits.
 
+## Codex Sub-agents (If Using `spawn_agent`)
+
+- Decide `fork_context` per teammate:
+  - Prefer `fork_context: false` for skeptic/reviewer roles to reduce anchoring.
+  - Use `fork_context: true` only when the teammate must share exact parent context (constraints, plan, diff).
+- Forking copies history: compact the parent thread first (`/compact`) so the forked history is short and current.
+- Forked sub-agents inherit runtime settings (cwd, sandbox, approval policy, model/provider); do not assume clean-room isolation.
+- `wait` is not a join (and clamps very short timeouts to >= 10s): if you need all teammate results, loop `wait` until all ids are final.
+
 ## Default Team Shape
 
 - 3 teammates (recommended start):
