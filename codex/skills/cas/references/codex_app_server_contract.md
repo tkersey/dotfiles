@@ -12,15 +12,35 @@ Generate schemas that exactly match your installed version:
 codex app-server generate-ts --out DIR
 codex app-server generate-json-schema --out DIR
 
-# Include experimental methods/fields (e.g. dynamic tools):
+# Include experimental methods/fields:
 codex app-server generate-ts --experimental --out DIR
 codex app-server generate-json-schema --experimental --out DIR
 ```
 
+## Connection Lifecycle (Required)
+
+Every connection must complete this sequence exactly once:
+
+1. Send `initialize` with `clientInfo` and optional capabilities.
+2. Send the `initialized` notification.
+3. Only then issue method requests.
+
+If this contract is violated, expect lifecycle errors:
+
+- `"Not initialized"`: request sent before handshake finished.
+- `"Already initialized"`: repeated initialize on same connection.
+
+Recommended initialize payload baseline:
+
+- `clientInfo: { name, title, version }`
+- `capabilities: { experimentalApi: true }` when you need experimental methods/fields.
+- Optional: `capabilities.optOutNotificationMethods` for per-connection suppression.
+
 ## Transport and Envelope
 
-- JSONL over stdio: one JSON object per line in both directions.
-- JSON-RPC-like envelopes, but omit `"jsonrpc":"2.0"`.
+- Default transport: stdio JSONL (`--listen stdio://`), one JSON object per line.
+- WebSocket transport exists but is experimental/unsupported for production.
+- JSON-RPC-like envelopes omit `"jsonrpc":"2.0"`.
 
 Message kinds (shape-based):
 
@@ -28,65 +48,58 @@ Message kinds (shape-based):
 - Response: `{ "id": string|number, "result": any }` or `{ "id": string|number, "error": any }`
 - Notification: `{ "method": string, "params"?: any }`
 
-## Required Handshake
+## Backpressure and Retry Policy
 
-1. Send `initialize` with:
+When ingress is saturated, app-server may reject requests with:
 
-- `clientInfo`: `{ name, title, version }`
-- `capabilities`: `{ experimentalApi: true }` (recommended)
-- Optional: `capabilities.optOutNotificationMethods: string[]` to suppress specific notification methods for this connection.
+- JSON-RPC error code `-32001`
+- Message: `"Server overloaded; retry later."`
 
-2. Send the `initialized` notification (no params) before any other request.
+Treat this as retryable, not fatal. Use exponential backoff with jitter. Do not classify `-32001` as protocol drift.
 
-## Core v2 Flow (Thread/Turn)
+## Experimental API Capability Gate
 
-- Start or resume a thread:
-  - `thread/start`
-  - `thread/resume`
-  - `thread/fork`
-- Start a turn:
-  - `turn/start` with `threadId` and `input`.
-- Steer an in-flight turn:
-  - `turn/steer` with `threadId`, `expectedTurnId`, and additional `input`.
-- Stream notifications until `turn/completed`.
-- Interrupt an in-flight turn:
-  - `turn/interrupt`.
+`capabilities.experimentalApi = true` on `initialize` is required to use experimental methods and fields.
 
-Important: the authoritative streaming payload is the notification stream.
-Do not rely on `turn.items` being fully populated on `turn/started` / `turn/completed`.
+Examples that require opt-in:
 
-## Notifications (Common)
+- `tool/requestUserInput`
+- `thread/backgroundTerminals/clean`
+- `thread/realtime/*`
+- `item/tool/call` dynamic tool flow
 
-- `thread/started`
-- `thread/archived`
-- `thread/unarchived`
-- `turn/started`
-- `item/started`
-- `item/agentMessage/delta`
-- `item/commandExecution/outputDelta`
-- `item/fileChange/outputDelta`
-- `item/completed`
-- `turn/completed`
+If opt-in is missing, treat failures as capability negotiation errors before debugging payload shapes.
 
-Often present depending on features/config:
+## Core v2 Thread/Turn Flow
 
-- `model/rerouted`
-- `fuzzyFileSearch/sessionCompleted`
-- `turn/diff/updated`
-- `turn/plan/updated`
-- `item/plan/delta` (experimental)
-- `item/reasoning/*` (experimental)
+1. Open conversation context:
+
+- `thread/start` or `thread/resume` or `thread/fork`
+
+2. Start turn:
+
+- `turn/start` with `threadId` and `input`
+
+3. Optional steer:
+
+- `turn/steer` with `threadId`, required `expectedTurnId`, and additional `input`
+
+4. Stream notifications until `turn/completed`.
+
+5. Optional interruption:
+
+- `turn/interrupt`
+
+The notification stream is authoritative for item lifecycle and tool events.
 
 ## Server-Initiated Requests (Must Reply)
 
-Approvals (v2):
+Approvals:
 
 - `item/commandExecution/requestApproval`
 - `item/fileChange/requestApproval`
 
-Note: `item/commandExecution/requestApproval` may include optional `approvalId`; preserve it in your approval routing so subcommand callbacks remain disambiguated.
-
-Tools:
+Tool requests:
 
 - `item/tool/call`
 - `item/tool/requestUserInput` (experimental)
@@ -95,56 +108,71 @@ Auth:
 
 - `account/chatgptAuthTokens/refresh`
 
-Response payloads (see your generated schema for the exact shape):
+For command approvals, preserve optional `approvalId` in routing to avoid callback ambiguity.
 
-- `item/tool/call` -> `{ contentItems: [{ type: "inputText", text: "..." }], success: boolean }`
-- `item/tool/requestUserInput` -> `{ answers: { [questionId]: { answers: string[] } } }`
+## requestUserInput Semantics
 
-Legacy (may appear in older flows; cas rejects these in v2-only mode):
+`item/tool/requestUserInput` responses must use answer-map structure:
 
-- `execCommandApproval`
-- `applyPatchApproval`
+- `{ answers: { [questionId]: { answers: string[] } } }`
+
+After responding (or when pending request is cleared by turn lifecycle), server emits:
+
+- `serverRequest/resolved` with `{ threadId, requestId }`
+
+Plan for cleanup-resolution events on turn start/complete/interrupt.
+
+## Notifications (Common)
+
+Frequently observed:
+
+- `thread/started`
+- `turn/started`
+- `item/started`
+- `item/agentMessage/delta`
+- `item/completed`
+- `turn/completed`
+
+Common depending on features/config:
+
+- `model/rerouted`
+- `turn/diff/updated`
+- `turn/plan/updated`
+- `skills/changed`
+- `thread/status/changed`
 
 ## Useful Methods (Non-Exhaustive)
 
-- Thread lifecycle: `thread/start`, `thread/resume`, `thread/fork`
-- Session mining: `thread/list`, `thread/read` (`includeTurns:true`)
-- Maintenance: `thread/archive`, `thread/unarchive`, `thread/loaded/list`
-- Manual compaction: `thread/compact/start` (progress streams as normal `turn/*` + `item/*`)
-- Turns: `turn/start`, `turn/steer`, `turn/interrupt`
-- Experimental feature discovery: `experimentalFeature/list`
+- Thread/session: `thread/list`, `thread/read`, `thread/archive`, `thread/unarchive`, `thread/loaded/list`, `thread/rollback`
+- Turn control: `turn/start`, `turn/steer`, `turn/interrupt`
 - Review: `review/start`
-- One-off exec: `command/exec`
-- Skills/apps discovery: `skills/list`, `app/list`
-- Auth/account: `account/*`, `mcpServer/oauth/*` (see schema)
-
-Skill/app invocation pattern (v2 input items):
-
-- Include `$skill-name` in a `text` input and add a `skill` input item with `{ name, path }`.
-- Include `$app-slug` in a `text` input and add a `mention` input item with `{ name, path: "app://<connector-id>" }`.
-
-## Mining Sessions (Threads)
-
-- Use `thread/list` (cursor pagination) to enumerate stored sessions.
-- Use `thread/read` to fetch a thread; pass `includeTurns:true` when you want rollout history.
-- Build your own index/search store; the app-server is not a query engine.
+- Utility: `command/exec`
+- Discovery: `skills/list`, `app/list`, `model/list`, `collaborationMode/list`
+- Experimental: `experimentalFeature/list`, `thread/backgroundTerminals/clean`, `tool/requestUserInput`
 
 ## Routing Rule (Avoid Deadlocks)
 
-Inbound messages interleave while you are waiting for any response:
+Inbound messages can interleave while waiting for responses:
 
-- responses (to your requests)
+- responses (your request IDs)
 - notifications
-- server-initiated requests (must be answered)
+- server-initiated requests requiring replies
 
-Use one read loop that dispatches by kind and correlates by `id`.
+Use one read loop that dispatches by envelope kind and correlates by `id`. Add explicit timeouts for forwarded server requests and return structured errors for unsupported methods.
 
-For deterministic behavior, enforce a timeout on forwarded server requests and respond with explicit JSON-RPC errors for unimplemented methods.
+## Debugging Commands
 
-## Debugging Tip
-
-To see a full, real JSONL turn stream (without writing a client), use the built-in debug helper:
+Smoke and stream visibility:
 
 ```sh
+run_cas_tool smoke-check --cwd /path --json
+run_cas_tool request --cwd /path --method thread/list --params-json '{"cursor":null,"limit":5}' --json
 codex debug app-server send-message-v2 "run tests and summarize failures"
 ```
+
+When diagnosing failures, check in order:
+
+1. handshake completed (`initialize` then `initialized`)
+2. capability gate for experimental surfaces
+3. overload behavior (`-32001`) and retry strategy
+4. request/response correlation and timeout handling

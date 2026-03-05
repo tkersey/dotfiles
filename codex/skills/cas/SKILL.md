@@ -144,31 +144,46 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
 
 ## Workflow
 
-1. Validate basic app-server wiring.
+1. Validate basic app-server wiring first.
    - `run_cas_tool smoke-check --cwd /path/to/workspace --json`
+   - Treat this as a protocol preflight before any fanout run.
 
-2. Run one direct method request (single-request lane).
+2. Enforce handshake assumptions when diagnosing failures.
+   - Confirm the session completed `initialize` then `initialized` before method calls.
+   - If you see `"Not initialized"` or `"Already initialized"`, treat it as connection-lifecycle error, not a method payload error.
+
+3. Run one direct method request (single-request lane).
    - `run_cas_tool request --cwd /path/to/workspace --method thread/list --params-json '{"cursor":null,"limit":10}' --json`
 
-3. Run fanout/multi-instance requests.
+4. Run fanout/multi-instance requests.
    - `run_cas_tool instance-runner --cwd /path/to/workspace --instances 12 --method thread/list --params-json '{"cursor":null,"limit":1}' --json`
 
-4. Drive specific thread/turn methods as needed.
+5. Apply overload handling on request saturation.
+   - If app-server returns JSON-RPC error code `-32001` (`"Server overloaded; retry later."`), retry with exponential backoff and jitter.
+   - Do not treat `-32001` as a permanent protocol mismatch.
+
+6. Drive specific thread/turn methods as needed.
    - Thread read:
      - `run_cas_tool request --cwd /path/to/workspace --method thread/read --params-json '{"threadId":"thr_123","includeTurns":true}' --json`
    - Resume thread:
      - `run_cas_tool request --cwd /path/to/workspace --method thread/resume --params-json '{"threadId":"thr_123"}' --json`
    - Steer turn:
-     - `run_cas_tool request --cwd /path/to/workspace --method turn/steer --params-json '{"threadId":"thr_123","expectedTurnId":"turn_abc","input":[{"type":"text","text":"continue","text_elements":[]}]}' --json`
+     - `run_cas_tool request --cwd /path/to/workspace --method turn/steer --params-json '{"threadId":"thr_123","expectedTurnId":"turn_abc","input":[{"type":"text","text":"continue"}]}' --json`
 
-5. Use method-specific params for list/mine flows.
+7. Use method-specific params for list/mine flows.
    - `thread/list` supports filter params (`cursor`, `limit`, `searchTerm`, `cwd`, etc.) as provided by your app-server version.
+   - `turn/steer` requires `expectedTurnId`.
+
+8. Gate experimental methods and payload fields explicitly.
+   - Methods such as `tool/requestUserInput` and `thread/backgroundTerminals/clean` require `initialize.params.capabilities.experimentalApi = true`.
+   - If omitted, treat failures as capability negotiation errors.
 
 ## Approval and Request Semantics
 
 - Exec/file approval decisions are handled by the Zig client (`--exec-approval`, `--file-approval`, `--read-only`).
 - For command approvals, CAS resolves decisions against server-provided `availableDecisions` when present.
 - Unknown server-request methods are rejected fail-closed in native mode to prevent deadlocks.
+- For overload responses (`-32001`), CAS callers should retry with exponential backoff and jitter.
 
 ## Scope Boundaries (Zig-Only Cutover)
 
