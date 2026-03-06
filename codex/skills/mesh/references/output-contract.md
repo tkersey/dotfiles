@@ -1,165 +1,66 @@
-# Mesh Output Contract v2 (Streaming)
+# Mesh Batch Result Contract
 
-Mesh streaming runs fail closed when worker results are ambiguous.
+`$mesh` uses `spawn_agents_on_csv` as a batch runner. The authoritative worker output is the
+worker-only `report_agent_job_result` call.
 
-For `spawn_agents_on_csv`, the canonical output channel is the worker-only
-`report_agent_job_result` call. Narrative text is non-authoritative.
+## Core Rule
 
-## Required Reporting Mechanism
+Each worker must call `report_agent_job_result` exactly once with:
 
-Every worker MUST call `report_agent_job_result` exactly once with:
+- `job_id`
+- `item_id`
+- `result`: a JSON object
 
-- `job_id`: worker job id
-- `item_id`: worker item id
-- `result`: JSON object following this contract
+Missing reports are failures.
 
-Missing report calls are hard failures.
+## Result Shape
 
-## Required `result` Keys
+Keep `result` small, stable, and useful downstream.
 
-Required keys for strict parsing:
+Recommended fields:
 
-- `id`: unit id
-- `candidate_id`: candidate id unique within unit
-- `triplet_index`: lane index (legacy key retained)
-- `lane`: `coder|reducer|locksmith|applier|prover|fixer|integrator`
-- `decision`: lane outcome token
-- `proof_status`: `pass|fail|skipped|not_applicable`
-- `write_scope`: list of lock roots or file globs
-- `risk_tier`: `low|med|high`
-- `base_sha`: commit used for apply/proof context
-- `proof_attempts`: integer (`0` for non-proof lanes)
-- `proof_evidence`: object with `command`, `key_line`, `exit_code`
+- `id`: stable row identifier when useful
+- `status`: short machine-friendly outcome such as `ok`, `skip`, or `error`
+- row-specific fields you actually need later
+- `summary`: optional short human-readable summary
+- `error`: optional concise failure detail
 
-Mesh classifies rows as `invalid_output_schema` when any required key is missing,
-wrongly typed, or semantically invalid.
+Avoid giant blobs, raw transcripts, or patch payloads unless the batch genuinely needs them.
 
-## Run-Level Invariants (Fail-Closed)
+## `output_schema`
 
-Mesh orchestration is a lane-complete pipeline, not just concurrent work.
+If you pass `output_schema` to `spawn_agents_on_csv`, make it describe only the fields you plan to
+consume later. Keep it minimal and aligned with the actual result keys.
 
-- Do not claim `$mesh` orchestration if execution only ran `lane=coder` (or used ad-hoc `spawn_agent` concurrency) without downstream lanes.
-- Default lane matrix per unit is mandatory unless the user explicitly requests a collapsed path:
-  - candidate cohort: `coder` + `reducer` (add a second `coder` only for high-risk/ambiguous units)
-  - adjudication: `fixer` quorum by `risk_tier` selects one candidate (or no-op)
-  - proof: `prover` runs proof for the selected candidate (bounded retries)
-  - delivery: `integrator`
-  - optional full-mesh apply: `locksmith -> applier` before `prover` when reservation-gated apply is required
-- Close gate: do not mark a unit complete without fixer acceptance; for selected-candidate units also require prover `proof_status=pass` and integrator completion evidence (unless an explicit collapsed-path override is recorded).
-
-## Lane-Specific Expectations
-
-- `coder` and `reducer`:
-  - usually `decision=accept`
-  - `proof_status=skipped`
-  - include `patch` when proposing changes
-  - include `challenge_findings`
-- `locksmith`:
-  - `decision=lease_granted|lease_denied|lease_reclaimed`
-  - include `lease_id` and `ttl_ms`
-- `applier`:
-  - `decision=applied|apply_failed`
-  - `proof_status=not_applicable`
-  - include `apply_evidence`
-- `prover`:
-  - `decision=proof_complete|proof_failed`
-  - `proof_status=pass|fail`
-  - `proof_attempts` must be `1` or `2`
-  - include `apply_evidence` when the patch is applied in the prover lane
-- `fixer`:
-  - `decision=accepted|rework_required|blocked_safety`
-  - include `selected_candidate` (required; use `none` for explicit no-op acceptance), `quorum_target`, `quorum_observed`
-- `integrator`:
-  - `decision=integrated_patch|integrated_commit|blocked_delivery`
-  - include `artifact_ref` and `scope_assertion`
-
-## Recommended Optional Keys
-
-- `failure_code`
-- `notes`
-- `patch` (apply_patch-format patch text)
-- `patch_sha256`
-- `challenge_findings`
-- `reduce_record`
-- `lease_id`, `ttl_ms`
-- `worktree_path`
-- `apply_evidence`
-- `selected_candidate`, `quorum_target`, `quorum_observed`
-- `artifact_ref`, `scope_assertion`
-
-## Example Result (Prover)
-
-```json
-{
-  "id": "u-104",
-  "candidate_id": "u-104-coder-1",
-  "triplet_index": 1,
-  "lane": "prover",
-  "decision": "proof_complete",
-  "proof_status": "pass",
-  "write_scope": ["codex/skills/mesh", "codex/agents"],
-  "risk_tier": "med",
-  "base_sha": "9c6458d",
-  "proof_attempts": 1,
-  "proof_evidence": {
-    "command": "uv run pytest tests/test_streaming.py",
-    "key_line": "1 passed",
-    "exit_code": 0
-  },
-  "worktree_path": "/tmp/mesh-u-104"
-}
-```
-
-## Recommended `output_schema`
-
-`spawn_agents_on_csv` does not enforce schema at runtime, so mesh must enforce this schema during parse:
+Example schema:
 
 ```json
 {
   "type": "object",
-  "required": [
-    "id",
-    "candidate_id",
-    "triplet_index",
-    "lane",
-    "decision",
-    "proof_status",
-    "write_scope",
-    "risk_tier",
-    "base_sha",
-    "proof_attempts",
-    "proof_evidence"
-  ],
+  "required": ["id", "status", "summary"],
   "properties": {
-    "id": {"type": "string"},
-    "candidate_id": {"type": "string"},
-    "triplet_index": {"type": "integer", "minimum": 1},
-    "lane": {
-      "type": "string",
-      "enum": ["coder", "reducer", "locksmith", "applier", "prover", "fixer", "integrator"]
-    },
-    "decision": {"type": "string"},
-    "proof_status": {
-      "type": "string",
-      "enum": ["pass", "fail", "skipped", "not_applicable"]
-    },
-    "write_scope": {
-      "type": "array",
-      "items": {"type": "string"},
-      "minItems": 1
-    },
-    "risk_tier": {"type": "string", "enum": ["low", "med", "high"]},
-    "base_sha": {"type": "string"},
-    "proof_attempts": {"type": "integer", "minimum": 0, "maximum": 2},
-    "proof_evidence": {
-      "type": "object",
-      "required": ["command", "key_line", "exit_code"],
-      "properties": {
-        "command": {"type": "string"},
-        "key_line": {"type": "string"},
-        "exit_code": {"type": "integer"}
-      }
-    }
-  }
+    "id": { "type": "string" },
+    "status": { "type": "string" },
+    "summary": { "type": "string" },
+    "path": { "type": "string" }
+  },
+  "additionalProperties": false
 }
 ```
+
+Example result:
+
+```json
+{
+  "id": "file-17",
+  "status": "ok",
+  "summary": "Uses deprecated API in one helper",
+  "path": "src/helpers/api.ts"
+}
+```
+
+## Notes
+
+- Narrative assistant text is non-authoritative compared with the structured result.
+- Use `stop: true` only when one worker has discovered a job-wide reason to stop future items.
+- If you need multi-step coordination between rows, the task is probably not a good fit for `$mesh`.

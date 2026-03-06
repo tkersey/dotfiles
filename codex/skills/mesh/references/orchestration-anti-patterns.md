@@ -1,110 +1,87 @@
-# Mesh Orchestration Anti-Patterns
+# Mesh Batch Anti-Patterns
 
-This note captures orchestration failure modes observed in external swarm-style skills and the
-guardrails mesh uses to avoid them.
+Use `$mesh` for uniform batch jobs, not as a general-purpose orchestration layer.
 
-## 1) Dependency-agnostic scheduling on a dependency-aware plan
-
-Anti-pattern:
-
-- Planning requires explicit task dependencies, but execution later ignores dependency maps.
-
-Why it fails:
-
-- Runs units out of order, increases retries, and shifts correctness burden to late integration.
-
-Mesh guardrail:
-
-- Default to strict dependency gating from `$st deps`; allow advisory dependency handling only with
-  explicit user opt-in and disjoint `unit_scope`.
-
-## 2) Multi-writer plan state in parallel waves
+## 1) Heterogeneous work in a row runner
 
 Anti-pattern:
 
-- Every worker edits shared plan/state artifacts while other workers are running.
+- using `$mesh` for research, review, design, or mixed implementation tasks
 
 Why it fails:
 
-- Produces merge conflicts and stale status races, then hides true execution state.
+- rows stop being interchangeable and the instruction template becomes vague
 
-Mesh guardrail:
+Better path:
 
-- Single-writer state ownership: workers return structured outputs only; integrator alone mutates
-  `.step/st-plan.jsonl`, task logs, and orchestration ledger fields.
+- use `$teams` or direct `spawn_agent` delegation for heterogeneous work
 
-## 3) Conflicting concurrency numbers across the same workflow
+## 2) Dependent rows
 
 Anti-pattern:
 
-- One document advertises one pool size while other sections use different limits.
+- one row needs another row's output before it can proceed
 
 Why it fails:
 
-- Operators cannot predict scheduler behavior; telemetry and reality diverge.
+- `spawn_agents_on_csv` is built for independent items, not dependency-aware scheduling
 
-Mesh guardrail:
+Better path:
 
-- One preflight-derived active-unit target is the concurrency authority and must match wave
-  generation, `spawn_agents_on_csv.max_concurrency`, and ledger reporting.
+- do the dependency shaping locally or with `$teams`, then run only the independent batch portion in `$mesh`
 
-## 4) No failure backpressure after bad waves
+## 3) Overlapping write scopes
 
 Anti-pattern:
 
-- Scheduler keeps full parallelism despite rejects, timeouts, or invalid worker outputs.
+- multiple rows mutate the same files or the same shared state
 
 Why it fails:
 
-- Repeats the same bad conditions and amplifies integration debt.
+- workers race, clobber results, or produce hard-to-integrate outputs
 
-Mesh guardrail:
+Better path:
 
-- Apply backpressure on failure classes (`reject`, timeout, lifecycle mismatch,
-  `invalid_output_schema`): reduce next-wave concurrency (min 1) and serialize overlapping scopes
-  until a clean wave passes.
+- keep mesh rows read-only or give each row a disjoint output scope
 
-## 5) Executor/runtime coupling disguised as generic orchestration
+## 4) Ambiguous result payloads
 
 Anti-pattern:
 
-- Skill contracts rely on runtime-specific executors/roles while presented as portable defaults.
+- workers return long narratives instead of stable structured fields
 
 Why it fails:
 
-- Portability breaks between agent runtimes and hidden assumptions leak into core flow.
+- exported CSV output becomes hard to compare, filter, or consume later
 
-Mesh guardrail:
+Better path:
 
-- Keep orchestration substrate generic (`spawn_agents_on_csv` + structured output contract), and
-  treat role/lane semantics as explicit CSV/instruction data instead of implicit runtime bindings.
+- keep `report_agent_job_result.result` small, structured, and schema-aligned
 
-## 6) Copy-paste variant drift
+## 5) Reusing the same input and output path
 
 Anti-pattern:
 
-- Near-identical skill variants diverge through small edits and contradictory details.
+- setting `csv_path` and `output_csv_path` to the same location
 
 Why it fails:
 
-- Maintenance cost rises and correctness rules become inconsistent between “equivalent” modes.
+- exported results can overwrite or confuse the input source of truth
 
-Mesh guardrail:
+Better path:
 
-- Keep core invariants centralized in one policy/skill pair and update both in the same change set;
-  reject handoff if guardrail vocabulary does not match.
+- keep input and output CSV paths distinct
 
-## 7) Repo-ephemeral CSV paths (unauditable runs)
+## 6) Treating `$mesh` as the default
 
 Anti-pattern:
 
-- `spawn_agents_on_csv.csv_path` / `output_csv_path` point at repo-local scratch directories (e.g. `.mesh/`, `.step/`, temp worktrees) that get deleted or moved later.
+- routing ordinary implementation work to `$mesh` just because multiple agents exist
 
 Why it fails:
 
-- `$seq` cannot compute effective concurrency or substrate truth later because CSVs referenced by the rollout no longer exist (`csv_rows_missing>0`).
-- Postmortems become guesswork and you cannot refine slicing/gating with evidence.
+- you lose the advantages of native collab tools, reusable agent context, and flexible delegation
 
-Mesh guardrail:
+Better path:
 
-- Artifact retention is a hard gate: use `${CODEX_MESH_ARTIFACT_ROOT:-$HOME/.codex/mesh-artifacts}` for all wave CSVs and fail the handoff if `seq orchestration-concurrency --format json` reports `csv_rows_missing!=0`.
+- stay local by default; use `$teams` for heterogeneous delegation and `$mesh` only for true batch fanout

@@ -1,162 +1,185 @@
 ---
 name: teams
-description: Coordinate agent teams (multi-session) for parallel research/review/design or competing hypotheses, then synthesize a decision/report or produce a mesh-ready execution handoff (OrchPlan/units).
+description: "Coordinate agent teams (multi-session) as the native Codex delegation workflow for composite work: decompose, challenge, and parallelize with `update_plan`, `spawn_agent`, and built-in `explorer`/`worker` roles. Hand only homogeneous leaf batches to `$mesh`."
 ---
 
 # teams
 
 ## Intent
-Use agent teams (independent sessions with a shared task list + peer messaging) when parallel exploration and debate is the work.
 
-Deliverables:
-- Decision/report: recommendations + tradeoffs + risks.
-- Execution handoff (for `$mesh`): a set of atomic units with `unit_scope`, `write_scope`, and `proof_command`.
+Use `$teams` when a task is still composite and parallelism helps, but keep the workflow aligned with how Codex actually works:
 
-## When To Use Teams
+- `update_plan` tracks the shared checklist.
+- `spawn_agent` handles heterogeneous delegation.
+- `send_input`, `resume_agent`, `wait`, and `close_agent` manage running agents.
+- `explorer` answers specific codebase questions.
+- `worker` owns bounded execution with explicit ownership.
 
-Use teams when:
-- The user explicitly asks for an agent team / teammates.
-- The primary deliverable is a decision/report (research, review, compare approaches, competing hypotheses).
-- The work benefits from peer-to-peer challenge (avoid anchoring on the first plausible theory).
+Canonical name: use `$teams` in policy text and examples; treat `$team` as a user alias.
 
-Prefer `$mesh` when:
-- The primary deliverable is a proven patch set with durable artifacts and fail-closed gates.
+Plan first, execute second: use `$teams` to shape or challenge the work, then delegate bounded leaf tasks.
 
-## Preflight (Do First)
+## Composite vs Leaf Fit
 
-- Ensure agent teams are enabled in the runtime (Claude Code: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`). If teams are unavailable, fall back to non-team parallelism or a single-session plan.
-- Pick a single writer for repo state (one agent owns edits/merges); keep teammate tasks file-disjoint.
-- For risky tasks: require plan approval before any code edits.
+Use `$teams` for composite work:
 
-## Codex Sub-agents (If Using `spawn_agent`)
+- the task still needs decomposition, comparison, sequencing, or shared judgment
+- you want parallel research, review, challenge, or design before choosing a path
+- you have several bounded sidecar tasks that are not one repeated row template
 
-- Decide `fork_context` per teammate:
-  - Prefer `fork_context: false` for skeptic/reviewer roles to reduce anchoring.
-  - Use `fork_context: true` only when the teammate must share exact parent context (constraints, plan, diff).
-- Forking copies history: compact the parent thread first (`/compact`) so the forked history is short and current.
-- Forked sub-agents inherit runtime settings (cwd, sandbox, approval policy, model/provider); do not assume clean-room isolation.
-- `wait` is not a join (and clamps very short timeouts to >= 10s): if you need all teammate results, loop `wait` until all ids are final.
+Do not reach for `$teams` just because multiple tools exist. If the work is already one repeated row template, use `$mesh` instead.
 
-## Default Team Shape
+## When To Use `$teams`
 
-- 3 teammates (recommended start):
-  - Researcher: gathers evidence, finds codepaths, summarizes facts.
-  - Architect: proposes options, boundaries, and the recommended approach.
-  - Skeptic: attacks assumptions, finds failure modes, challenges the plan.
+Use `$teams` when:
 
-Scale to 4-5 only when tasks are truly independent.
+- The user explicitly asks for teammates, an agent team, or a parallel approach.
+- You have multiple independent questions that explorers can answer in parallel.
+- You have bounded, file-disjoint implementation slices that workers can own.
+- You want parallel review, comparison, or challenge before choosing a direction.
+- You need help turning a composite task into a set of leaf tasks.
 
-## Task Shaping Rules
+Stay local instead when:
 
-- Size tasks so each produces a concrete artifact (a doc section, a hypothesis test result, a draft plan).
-- Keep tasks file-disjoint; do not assign two teammates to edit the same file.
-- Aim for ~5 tasks per teammate (too few = idle; too many = thrash).
+- The next critical-path step is urgent and blocked on one task you can do directly.
+- The work is tiny, tightly coupled, or not decomposed yet.
+- Multiple agents would need to mutate the same files.
 
-## Quality Gates (Recommended)
+Use `$mesh` instead when:
 
-- Use hooks to enforce rigor:
-  - `TeammateIdle`: block idling if the teammate has not produced its promised artifact.
-  - `TaskCompleted`: block completion if acceptance criteria are missing.
+- The user explicitly asks for `$mesh`.
+- The workload is homogeneous and row-shaped: one file, row, or item per worker.
+- `spawn_agents_on_csv` is a better fit than long-lived teammates.
 
-## Completion Criteria (Required)
+## Native Architecture Fit
 
-Close a teams run only when:
-- Every claimed task has an explicit deliverable and that deliverable exists (text summary, doc update, file path, or a tested patch if you allowed edits).
-- The lead has synthesized the team output into either:
-  - a decision/report, or
-  - a `$mesh`-ready execution handoff.
-- Teammates are shut down (or explicitly kept running by user request) and the team resources are cleaned up.
+- Codex is thread-centric: public integrations use `thread/start`, `thread/resume`, `thread/fork`, and `turn/start`.
+- Collaboration activity appears as `collabToolCall` items, not as a separate public teams protocol.
+- `$teams` should therefore stay close to the native collab tools and roles instead of inventing a second orchestration stack.
 
-If you cannot meet a criterion, stop and report what is missing.
+## Recommended Workflow
 
-## Final Response: Teams Ledger (Required When Teams Ran)
+1. Make a short local plan with `update_plan` and decide the immediate critical-path step.
+2. Identify the composite parts and reshape them into bounded leaf tasks.
+3. Keep the blocking next step local; delegate only sidecar work that can run in parallel.
+4. Pick the right role:
+   - `explorer` for specific repository questions
+   - `worker` for bounded edits or verification with explicit ownership
+5. Give every teammate a concrete deliverable and, for code changes, a disjoint write scope.
+6. While teammates run, continue non-overlapping local work.
+7. Use `wait` only when you are actually blocked, and prefer longer waits over polling.
+8. Reuse context with `send_input` or `resume_agent` when follow-up belongs with the same teammate.
+9. Review, integrate, and close agents when they are no longer needed.
 
-When teams actually ran, include a `Teams Ledger` section in the final response.
+## Concrete Examples
 
-Rules:
-- Prose only (no JSON block).
-- Omit lines for non-events.
-- Deterministic line order:
-  - `Skills used`
-  - `Team summary`
-  - `Task summary`
-  - `Artifacts produced`
-  - `Handoff status`
-  - `Cleanup status`
+### Example 1: Parallel repo research
 
-## Hybrid Handoff Schema (Required For Hybrid)
+Request:
 
-If the outcome is "hybrid" (teams -> `$mesh`), output exactly one of the following blocks (choose one), so `$mesh` can run without reinterpretation.
+> Compare the thread API with the collab tool surface. Have one teammate inspect docs and another inspect runtime code, then recommend the native path.
 
-Option A: OrchPlan v1 (YAML)
+Good `$teams` execution:
 
-```yaml
-schema_version: 1
-kind: OrchPlan
+- keep the recommendation and final synthesis local
+- spawn one `explorer` to inspect API docs and examples
+- spawn one `explorer` to inspect runtime handlers and tool specs
+- wait only when blocked, then combine both findings into one recommendation
 
-created_at: "<rfc3339>"
+Why `$teams`:
 
-source:
-  kind: list
-  locator: "teams-handoff"
+- the work is parallel and heterogeneous
+- the answer still needs shared judgment before execution
 
-cap: auto
+### Example 2: Scoped implementation with disjoint ownership
 
-prereqs: []
-risks: []
+Request:
 
-tasks:
-  - id: t-1
-    title: "<one line>"
-    description: "<optional>"
-    agent: worker
-    scope: ["<write_scope lock; paths/globs>"]
-    location: ["<paths to inspect>"]
-    validation: ["<proof_command>"]
-    depends_on: []
+> Add a new CLI flag, update the docs, and add focused validation. Use teammates where helpful.
 
-waves:
-  - id: w1
-    tasks: ["t-1"]
-```
+Good `$teams` execution:
 
-Option B: MeshUnits v1 (JSON)
+- keep the parser or core behavior change local because it is on the critical path
+- spawn one `worker` to update the docs in a disjoint file
+- spawn one `worker` to add or adjust a focused test in a disjoint test file
+- integrate both results locally and close the agents
 
-```json
-{
-  "schema_version": 1,
-  "kind": "MeshUnits",
-  "units": [
-    {
-      "id": "u-1",
-      "objective": "<one line>",
-      "unit_scope": "<what changes>",
-      "write_scope": ["<exclusive locks; paths/globs>"],
-      "constraints": ["<must/never>"],
-      "invariants": ["<must remain true>"],
-      "proof_command": "<command to prove>",
-      "risk_tier": "low"
-    }
-  ]
-}
-```
+Why `$teams`:
 
-## Hybrid Handoff To `$mesh` (Common)
+- the sidecar tasks are bounded and file-disjoint
+- the work is not one repeated row template, so `$mesh` would be the wrong tool
 
-When teams produce an execution handoff, output one of:
+### Example 3: Handoff from `$teams` to `$mesh`
 
-1. OrchPlan (preferred): run `$select` to emit an OrchPlan with explicit `scope` locks and `validation` commands.
-2. Units list (direct): for each unit, provide:
-   - `objective`
-   - `unit_scope` (what changes)
-   - `write_scope` (exclusive locks; paths/globs)
-   - `proof_command` (how to prove)
-   - `risk_tier` (low|med|high)
-   - `constraints` and `invariants`
+Request:
 
-Then hand off to `$mesh` to execute CRFIP (candidate -> fixer -> prover -> integrator) and write durable artifacts.
+> Audit 300 markdown files for missing frontmatter and export one result row per file.
+
+Good split:
+
+- use `$teams` or local work first to decide the audit rule, CSV columns, and output fields
+- once planning is complete, hand the file list to `$mesh`
+- let `$mesh` run one audit per row and review the output CSV locally
+
+Why the handoff:
+
+- the shaping work is composite
+- the remaining execution is a homogeneous leaf batch
+
+## Decomposition Rules
+
+- Separate planning from execution: do the shaping work before you fan out.
+- Prefer leaf tasks with a single artifact, answer, or bounded edit scope.
+- If a child task would need to negotiate scope with another child, it is not a leaf yet.
+- If the remaining leaf tasks become a uniform row batch, hand that subset to `$mesh`.
+
+## Forking And Ownership
+
+- Default `fork_context: false` for fresh-eyes research or review.
+- Use `fork_context: true` only when the child truly needs the same history, constraints, or diff.
+- Tell `worker` agents they are not alone in the repo and must not revert other edits.
+- Keep write scopes disjoint; one worker should own each mutating scope.
+- Remember that `thread/fork` branches a conversation; it is not a substitute for worker delegation.
 
 ## Guardrails
 
-- If teams are the execution substrate, do not claim `$mesh` truth/completion.
-- Clean up teammates when done; lingering teammates burn tokens and create coordination noise.
+- Do not delegate the immediate next blocking step if you can do it locally.
+- Do not spawn agents for vague goals; narrow each ask to the artifact or answer you need next.
+- Do not duplicate work between the lead and teammates.
+- Do not treat `$teams` as a hidden batch engine; once the work is a uniform row job, hand it to `$mesh`.
+- Do not leave agents running after their contribution has been integrated unless the user explicitly wants them kept alive.
+
+## Completion Criteria
+
+Close a `$teams` run only when:
+
+- each spawned agent produced the requested artifact or answer
+- the lead synthesized the results into one decision, patch, or recommendation
+- unneeded agents were closed
+
+If you cannot meet one of these, report what is missing.
+
+## Final Response
+
+When teams actually ran, include a short `Orchestration Ledger` section in prose.
+
+Use concise event-only lines such as:
+
+- `Skills used`
+- `Subagents`
+- `Artifacts produced`
+- `Cleanup status`
+
+Omit the section entirely when no team orchestration ran.
+
+## Handoff To `$mesh`
+
+If teams discovers that the remaining work is a uniform batch job, hand off narrowly:
+
+- state that planning is complete and the remaining work is leaf execution
+- state why the work is row-shaped and independent
+- provide the row schema or CSV columns
+- provide the instruction template
+- specify the expected output fields
+
+Do not invent extra lane, quorum, or state-machine protocols unless the runtime actually provides them.

@@ -1,13 +1,10 @@
 interface:
   display_name: "mesh"
-  short_description: "Streaming orchestration with CRFIP lanes and durable artifacts"
+  short_description: "Batch fanout over spawn_agents_on_csv"
   default_prompt: >
-    Use $mesh to execute update_plan work as a streaming per-unit state machine.
-    Default lane matrix (CRFIP) unless the user explicitly requests full-mesh:
-    coder x1 + reducer x1 (candidate generation only; no proof) -> fixer -> prover -> integrator (patch_first by default).
-    Gate: prove only the fixer-selected candidate; skip prover/integrator when fixer selects no-op.
-    If using $select, convert OrchPlan -> units.json via mesh orchplan_to_units.
-    Artifact retention: prepare batches with mesh prepare_crfip_batch so csv_path/output_csv_path live under ${CODEX_MESH_ARTIFACT_ROOT:-$HOME/.codex/mesh-artifacts}; fail handoff if seq reports csv_rows_missing>0.
-    Fail closed: do not claim $mesh if execution only used direct spawn_agent workers or coder-only waves.
-    Enforce Mesh Output Contract v2 via report_agent_job_result + strict parsing.
-    Before final response, verify mesh-truth (seq orchestration-concurrency), lane completeness (mesh lane_completeness_lint --check crfip --require-spawn-substrate .mesh/*.exec.out.csv), and optionally run the one-shot doctor (mesh doctor --expect-mesh-truth --require-artifacts --require-archived-paths ...).
+    Use $mesh only for already-shaped homogeneous leaf batches over spawn_agents_on_csv.
+    Finish planning before the batch starts, make each row independent, provide a clear CSV schema
+    plus one instruction template, and require exactly one report_agent_job_result call per worker.
+    Keep outputs small and structured, optionally shape them with output_schema, and review the
+    exported CSV when the batch completes. If the work is heterogeneous, coupled, or still needs
+    debate, design, or decomposition, use $teams or local execution instead.
