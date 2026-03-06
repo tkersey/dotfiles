@@ -6,6 +6,7 @@ plan_mode_reasoning_effort = "xhigh"
 suppress_unstable_features_warning = true
 web_search = "live"
 personality = "pragmatic"
+service_tier = "fast"
 
 [agents]
 max_threads = 12
@@ -65,6 +66,7 @@ prevent_idle_sleep = true
 voice_transcription = true
 js_repl = true
 default_mode_request_user_input = true
+fast_mode = true
 
 [tui]
 experimental_mode = "execute"
