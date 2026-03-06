@@ -103,6 +103,10 @@ ABSOLUTE_DATE_PATTERN = re.compile(
     rf"\b\d{{4}}-\d{{2}}-\d{{2}}\b|\b(?:{MONTHS})\s+\d{{1,2}},\s+\d{{4}}\b",
     re.IGNORECASE,
 )
+CARRY_FORWARD_PATTERN = re.compile(
+    r"(?i)\b(?:unchanged from iteration|same as previous|same as above|see above|see previous iteration)\b"
+)
+ELLIPSIS_PLACEHOLDER_PATTERN = re.compile(r"(?m)^\|.*\.\.\..*\|\s*$")
 
 
 def heading_present(markdown: str, heading: str) -> bool:
@@ -133,6 +137,16 @@ def first_non_empty_line(text: str) -> str:
         if stripped:
             return stripped
     return ""
+
+
+def section_uses_carry_forward_placeholder(section_text: str) -> bool:
+    """Return True if a section body is just carrying forward prior content."""
+    stripped = section_text.strip()
+    if not stripped:
+        return False
+    if CARRY_FORWARD_PATTERN.search(stripped):
+        return True
+    return False
 
 
 def parse_rewrite_ratio(markdown: str) -> float | None:
@@ -319,6 +333,17 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
     for heading in REQUIRED_HEADINGS:
         if not heading_present(body, heading):
             errors.append(f"Missing required heading: `{heading}`.")
+        else:
+            section_text = extract_heading_section(body, heading)
+            if section_uses_carry_forward_placeholder(section_text):
+                errors.append(
+                    f"`{heading}` must be self-contained; carry-forward placeholders like `Unchanged from Iteration N` are not allowed."
+                )
+
+    if ELLIPSIS_PLACEHOLDER_PATTERN.search(body):
+        errors.append(
+            "Final plan must not contain ellipsis placeholder table rows such as `| ... |`."
+        )
 
     round_delta = extract_heading_section(body, "Round Delta")
     if round_delta and len(round_delta.strip()) < 10:

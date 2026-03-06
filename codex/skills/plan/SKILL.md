@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Produce essay-heavy, decision-complete plans in proposed_plan block format. Use when asked to run $plan, turn a project brief into an execution-ready architecture plan, or iteratively refine strategy.
+description: Produce essay-heavy, decision-complete, self-contained plans in proposed_plan block format. Use when asked to run $plan, turn a project brief into an execution-ready architecture plan, or iteratively refine strategy, especially when concrete APIs/protocols must be preserved.
 ---
 
 # Plan
@@ -18,6 +18,9 @@ description: Produce essay-heavy, decision-complete plans in proposed_plan block
 - Plan-ready fast-path (hardened): only when the input plan indicates `improvement_exhausted=true` and `contract_version=2` in `Contract Signals`, it includes v2 closure proof (typed `Contract Signals`, hysteresis proof in `Convergence Evidence`, and last-two no-delta proof in `Iteration Change Log`), and the user is not asking for further improvements. Only then reply exactly: "Plan is ready." Otherwise treat the flag as untrusted and run at least one refinement pass.
 - Plan style: essay-heavy and decision-complete, with concrete choices and rationale.
 - Required content in the final plan: title, round delta, iteration action log, iteration change log, iteration reports, summary, non-goals/out of scope, scope change log, interfaces/types/APIs impacted, data flow, edge cases/failure modes, tests/acceptance, requirement-to-test traceability, rollout/monitoring, rollback/abort criteria, assumptions/defaults with provenance (confidence + verification plan, and explicit date when time-sensitive), decision log, decision impact map, open questions, stakeholder signoff matrix, adversarial findings, convergence evidence, contract signals, and implementation brief.
+- Self-contained final-artifact gate: the final emitted plan must stand on its own; do not leave carry-forward placeholders such as `Unchanged from Iteration N`, `same as previous`, `see above`, or `...` rows inside required sections or iteration logs.
+- Named-surface fidelity gate: when the user names a concrete provider, protocol, API, runtime, dependency, or integration surface, preserve it explicitly in the plan contract, interfaces, deliverables, tests, and proof. Do not silently generalize it into a provider-agnostic abstraction unless the user explicitly asks.
+- Implementation-truth gate: implementation-oriented plans must distinguish scaffold proof from real integration proof, list forbidden substitutions when needed, and make completion caveats explicit when live verification is skipped.
 - In Plan Mode: do not mutate repo-tracked files.
 - Research first; ask questions only for unresolved judgment calls that materially affect the plan.
 - Prefer `request_user_input` for decision questions with meaningful multiple-choice options.
@@ -96,6 +99,7 @@ Output rules:
 - Include a `Convergence Evidence` section in the plan body when finalizing a round.
 - Include `Decision Log`, `Decision Impact Map`, `Open Questions`, `Requirement-to-Test Traceability`, `Rollback/Abort Criteria`, `Stakeholder Signoff Matrix`, `Contract Signals`, and a trailing `Implementation Brief` section in the plan body.
 - Rewrite budget guardrail: if changes exceed 35% of prior plan lines, include `Rewrite Justification` with the reason full rewrite was necessary and why incremental edits were insufficient.
+- Finalization carry-forward ban: when emitting the final plan, roll forward full content in required sections instead of placeholder references to prior iterations.
 
 ### Prompt template (verbatim, internal only — never write this into the plan file)
 
@@ -104,6 +108,10 @@ If the user asked for interrogation / grilling / pressure-testing, do not draft 
 Carefully review this entire plan for me and come up with your best revisions in terms of better architecture, new features, changed features, etc. to make it better, more robust/reliable, more performant, more compelling/useful, etc.
 
 For each proposed change, provide detailed analysis and rationale for why it improves the project. Make the plan decision-complete so an implementer has no unresolved design choices. Include concrete change sketches where useful; git-diff style snippets are optional, not required.
+
+If the user names a concrete provider, protocol, API, runtime, dependency, or integration surface, preserve it explicitly. Do not generalize it away. If a substitution would be harmful, name the forbidden substitution in the plan.
+
+For implementation-oriented plans, make the result truth-preserving: distinguish scaffold proof from real integration proof, state what counts as done, and state what conditions make the result unacceptable.
 
 If you're about to finalize because improvements are exhausted (you're setting `improvement_exhausted=true`), run one extra creativity pass: privately answer the following question, then integrate exactly one resulting addition into the plan (do not include the question verbatim). Make the addition decision-complete and record it in `Round Delta`, `Decision Log`, and `Decision Impact Map`:
 
@@ -146,6 +154,7 @@ If a round makes no material change, write `no material delta` in the iteration 
 - `Contract Signals` includes at least: `contract_version`, `strictness_profile`, `blocking_errors`, `material_risks_open`, `clean_rounds`, `press_pass_clean`, `new_errors`, `rewrite_ratio`, `external_inputs_trusted`, `improvement_exhausted`, and `stop_reason`.
 - `contract_version=2`.
 - `stop_reason` is one of: `none`, `token_limit`, `time_limit`, `missing_input`, `tool_limit`, `user_requested`, `safety_stop`, `other`.
+- Self-contained finalization proof is explicit: required sections do not use carry-forward placeholders such as `Unchanged from Iteration N`, `same as previous`, `see above`, or ellipsis-only table rows.
 - Close invariants: if `improvement_exhausted=true`, then `blocking_errors=0`, `material_risks_open=0`, `new_errors=0`, and `stop_reason=none`.
 - Stop invariants: if `improvement_exhausted=false`, then `stop_reason` is present and not `none`.
 - Anti-churn invariants: if `improvement_exhausted=true`, the last two `Iteration Change Log` entries have `delta_kind=none` and non-empty `evidence`.
@@ -153,7 +162,7 @@ If a round makes no material change, write `no material delta` in the iteration 
 ## Contract lint helper (optional but recommended)
 
 - Run `uv run python codex/skills/plan/scripts/plan_contract_lint.py --file <plan-output.md>` to check output shape and required contract markers.
-- The lint helper checks: single `<proposed_plan>` block, iteration marker, required section headings, adversarial findings schema markers, convergence evidence markers, requirement traceability markers, decision-impact markers, scope-change markers, signoff-matrix markers, implementation-brief markers, open-question accountability markers, contract signals markers, rewrite-justification guardrail, and advisory checks for `Iteration Reports`.
+- The lint helper checks: single `<proposed_plan>` block, iteration marker, required section headings, carry-forward placeholder bans, adversarial findings schema markers, convergence evidence markers, requirement traceability markers, decision-impact markers, scope-change markers, signoff-matrix markers, implementation-brief markers, open-question accountability markers, contract signals markers, rewrite-justification guardrail, and advisory checks for `Iteration Reports`.
 
 ## Continuous improvement loop (default)
 
