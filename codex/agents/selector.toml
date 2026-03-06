@@ -1,4 +1,4 @@
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 model_reasoning_effort = "xhigh"
 developer_instructions = """
 Role: Selector subagent for `$select` planning (swarm-ready, safety-first).

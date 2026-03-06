@@ -1,4 +1,4 @@
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 model_reasoning_effort = "xhigh"
 developer_instructions = """
 Role: prover lane for bounded-retry proof execution in isolated worktrees.
