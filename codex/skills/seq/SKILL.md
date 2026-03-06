@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, token metrics, prompt-to-session lookup, and orchestration-concurrency analysis from `spawn_agents_on_csv` calls. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, token metrics, prompt-to-session lookup, memory artifact inventory/routing (`memory_summary.md`, `MEMORY.md`, `rollout_summaries/`, `raw_memories.md`), and orchestration-concurrency analysis from `spawn_agents_on_csv` calls. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
 ---
 
 # seq
@@ -10,8 +10,30 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 
 ## Trigger Cues
 - Questions that ask to verify prior session output using artifacts (`"use $seq to find it"` / `"what did that session actually say"`).
+- Questions about Codex memory artifacts or provenance (`"what's in MEMORY.md"`, `"which rollout produced this memory"`, `"is this memory stale"`, `"how do memory_summary.md and rollout_summaries relate"`).
 - Orchestration ledger forensics from session traces (`Orchestration Ledger`, `spawn_agents_on_csv`, wave CSVs, concurrency counts).
 - Concurrency math validation (`max_concurrency`, effective fanout, occurrences of peak parallelism, planned rows vs actual parallelism).
+
+## Memory Artifact Model
+- Treat `~/.codex/memories` as a file-backed memory workspace, not an opaque store.
+- Use root artifacts deliberately:
+  - `memory_summary.md`: compact routing/index layer. Use it first when the question is broad or you need to decide where to dig.
+  - `MEMORY.md`: durable handbook/registry. Use it first when the question is about reusable guidance, prior decisions, or task-family history.
+  - `raw_memories.md`: merged stage-1 raw memories. Use it for recency and inventory, especially when tracing newly added or removed memory inputs.
+- Treat `rollout_summaries/*.md` as per-rollout markdown summaries, not JSONL logs.
+  - Expect fields like `thread_id`, `updated_at`, `cwd`, `rollout_path`, and sometimes `git_branch`.
+  - Use `rollout_path` to jump to the original session JSONL under `~/.codex/sessions` when you need raw evidence.
+- Treat `skills/` under the memory root as optional memory-derived helper assets.
+
+## Memory Mining Workflow
+- Use `seq` first for inventory, routing, and timestamp/category analysis; do not pretend it replaces reading the target markdown files.
+- Start broad, then go deeper:
+  1. Inventory `memory_files` to see what categories and files exist.
+  2. If the question is navigational or "what do we know?", route through `memory_summary.md`.
+  3. If the question is durable/procedural, route through `MEMORY.md`.
+  4. If you need provenance for one memory block, inspect the relevant `rollout_summaries/*.md` file.
+  5. If you need raw session evidence, follow `rollout_path` into `~/.codex/sessions/...jsonl`; use `seq` session/orchestration commands only when they accept the handle you actually have, otherwise inspect the file directly.
+- Prefer `MEMORY.md` / `memory_summary.md` over `raw_memories.md` when both cover the topic; `raw_memories.md` is a lower-level consolidation input, not the highest-level answer.
 
 ## Opencode Explicitness Gate (Hard)
 - Only run opencode research when the request text includes the literal word `opencode`.
@@ -335,9 +357,31 @@ seq opencode-events \
   --format table
 ```
 
+### 16) Inventory Codex memory artifacts
+```bash
+seq query --spec \
+  '{"dataset":"memory_files","group_by":["category"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"format":"table"}'
+```
+List root artifacts explicitly:
+```bash
+seq query --spec \
+  '{"dataset":"memory_files","where":[{"field":"category","op":"eq","value":"root"}],"select":["relative_path","size_bytes","modified_at"],"sort":["relative_path"],"format":"table"}'
+```
+
+### 17) Find recent rollout summaries behind memory updates
+```bash
+seq query --spec \
+  '{"dataset":"memory_files","where":[{"field":"category","op":"eq","value":"rollout_summaries"}],"select":["relative_path","modified_at","size_bytes"],"sort":["-modified_at"],"limit":20,"format":"table"}'
+```
+Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` to jump into the original session JSONL when deeper proof is required.
+
 ## Notes
 - Default root: `~/.codex/sessions`.
 - `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` and `params.include_preview`.
+- `memory_files` exposes `path`, `relative_path`, `name`, `category`, `extension`, `size_bytes`, `modified_at`, and `preview`.
+- Current memory-file categories are `root`, `rollout_summaries`, and `skills`; `root` may also include non-canonical files, so do not assume every root file is part of the memory contract.
+- `rollout_summaries/*.md` are markdown summaries; the original JSONL evidence lives at the `rollout_path` referenced inside those files.
+- `memory_files` is best for inventory and routing; when the answer depends on markdown body content, use `seq` to find the file and then read that specific file directly.
 - Opencode datasets (`opencode_prompts`, `opencode_events`) default to `source=auto`, which resolves DB-first (`$HOME/.local/share/opencode/opencode.db`) with JSONL fallback (`$HOME/.local/state/opencode/prompt-history.jsonl`).
 - Opencode params: `params.source`, `params.opencode_db_path`, `params.opencode_path`, `params.include_raw`; `opencode_prompts` also supports `params.include_summary_fallback`.
 - Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, and from `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
