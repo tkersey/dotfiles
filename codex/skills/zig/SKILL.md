@@ -168,6 +168,33 @@ fn assertHasRead(comptime T: type) void {
 }
 ```
 
+## Serde-style derive patterns
+- Centralize reflection in one classifier/helper layer instead of scattering raw `@typeInfo` switches across serializers, deserializers, and adapters.
+- Guard `@hasDecl` and `@hasField` behind type-shape checks before duck-typing or custom-hook detection; `@hasDecl` is not valid on every Zig type.
+- Let explicit custom hooks opt out of auto-derivation first, then fall back to a small `Kind` or policy dispatcher.
+- Put rename, flatten, skip, tag, default, and `with` policies in a per-type `pub const` options surface and query it at comptime; keep runtime loops limited to I/O and data movement.
+- Precompute wire names and naming-convention transforms at comptime so field matching and emission do not redo string work per value.
+- Initialize flattened or defaulted sub-objects in dedicated helpers before parsing so the runtime path only fills observed fields and validates missing ones.
+
+### Safe decl template
+```zig
+const std = @import("std");
+
+fn hasDeclSafe(comptime T: type, comptime name: []const u8) bool {
+    return switch (@typeInfo(T)) {
+        .@"struct", .@"union", .@"enum", .@"opaque" => @hasDecl(T, name),
+        else => false,
+    };
+}
+
+fn classify(comptime T: type) enum { auto, custom } {
+    if (hasDeclSafe(T, "serialize") or hasDeclSafe(T, "deserialize")) {
+        return .custom;
+    }
+    return .auto;
+}
+```
+
 ## Zero-copy and ownership checklist
 - Parse into spans/slices that point to stable backing storage.
 - Do not return slices backed by temporary buffers.
@@ -237,6 +264,7 @@ Recommended checks:
 git -C /Users/tk/workspace/tk/skills-zig log --oneline --max-count=30
 rg -n "std.testing.fuzz|checkAllAllocationFailures|FailingAllocator" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
 rg -n "std.simd|@Vector|std.Thread.Pool" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
+rg -n "@typeInfo|@hasDecl|@hasField|@Type|comptime" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
 ```
 
 Use these results to keep `$zig` guidance aligned with what is true in active Zig repos.
@@ -247,6 +275,7 @@ Use these results to keep `$zig` guidance aligned with what is true in active Zi
 - Skipping allocation-failure coverage in allocator-heavy code.
 - Skipping `zig build lint` or allowing warnings to pass.
 - Running `zig build lint -- --fix` on a dirty tree without reviewing the resulting diff.
+- Scattering `@typeInfo` and trait-probe logic across format-specific code instead of centralizing the classifier and policy layer first.
 - Treating borrowed memory as owned (or vice versa).
 - Returning stack-backed slices.
 - Assuming regex-like query patterns are portable across all tooling without validation.
