@@ -18,6 +18,7 @@
 ## Exemplars (synthetic)
 Copy the shape, then translate into repo dialect (errors, tests, paths, and naming).
 Exemplars below show the expected Incision summary format (no diffs).
+Keep these synthetic; real session transcripts belong in `references/eval/`, not here.
 
 ### Exemplar 1 (Brownfield): Parse at the boundary, stop scattered validation (TypeScript)
 
@@ -167,3 +168,27 @@ Exemplars below show the expected Incision summary format (no diffs).
 **Proof**
 - Ran: `pnpm test src/legacy/normalizePhone.migration.test.ts` -> PASS
 ````
+
+### Exemplar 6 (Strict-output worker mode): patch-only external contract (Python)
+
+````text
+```diff
+diff --git a/src/slug.py b/src/slug.py
+--- a/src/slug.py
++++ b/src/slug.py
+@@
+-def slugify(value: str) -> str:
+-    return value.strip().lower().replace(" ", "-")
++def normalize_slug(raw: str) -> str:
++    value = raw.strip().lower()
++    return "-".join(part for part in value.split() if part)
++
++
++def slugify(value: str) -> str:
++    return normalize_slug(value)
+```
+````
+
+Notes:
+- TK still runs internally here (Contract -> Invariants -> Creative Frame -> Why This Solution).
+- The external contract wins, so only the patch artifact is emitted.

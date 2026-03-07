@@ -11,6 +11,7 @@ Software surgery as inevitability: find the stable boundary, refine to valid sta
 ## Intent
 TK is a task-to-incision protocol for writing the *fundamental expression* of a change:
 - The contract and invariants determine the code.
+- The chosen seam/boundary determines the shape of the code (more than the prose does).
 - The patch is as small as correctness allows, and obviously correct.
 - Cleverness is allowed only when it reduces risk and branching.
 - Creativity is deliberate: once seams are named, use reframing + techniques to explore cuts before choosing the incision.
@@ -40,6 +41,8 @@ Output-contract precedence (required):
 - If a higher-priority instruction requires strict artifact output (for example one fenced `diff` block, one `NO_DIFF:` line, or strict JSON), follow that outer contract.
 - In strict-output contexts, run TK internally (Contract, Invariants, Creative Frame, Why This Solution) and emit only the required external artifact.
 - Do not treat invocation text alone (`$tk` inside prompts/wrappers) as proof that TK output format was executed.
+- When output-shape and code-shape preferences conflict, preserve the outer artifact contract and keep TK's seam/shape discipline internal.
+- Decision order for conflicts: outer artifact contract -> explicit task envelope/write scope -> stable boundary/invariants -> repo dialect. See `references/style-precedence-matrix.md`.
 
 Advice mode (no code change requested):
 - Output exactly: Contract, Invariants, Creative Frame, Why This Solution.
@@ -70,7 +73,7 @@ Template compliance (order is mandatory):
 
 **Creative Frame**
 - Reframe: <Inversion / Analogy transfer / Constraint extremes / First principles>
-- Technique: <one named technique (selected via creative-problem-solver picker; include one-line why)>
+- Technique: <one named technique from the creative-problem-solver picker; use the picker name verbatim and include one-line why>
 - Representation shift: <one sentence (or “N/A: no shift needed”)>
 
 **Why This Solution**
@@ -85,6 +88,7 @@ These biases keep TK effective in brownfield codebases.
 - Seams before surgery: if the knot is hard to test, cut a seam (adapter/extract function/interface) and move the change there.
 - Characterization over speculation: if behavior is unclear, add a characterization test/script; let it leash the change.
 - Prefer adapters: refine at the boundary (parse/normalize); keep the core small and boring.
+- Cross-module is allowed when the stable boundary genuinely lives there and the cut remains reviewable.
 - Complexity first aid: flatten -> rename -> extract (then change behavior).
 - Observability when uncertain: add the smallest temporary signal (assert/log); delete once proof exists.
 
@@ -107,6 +111,7 @@ These biases keep TK effective when you control the shape.
   - `patch_first`: run `$patch` for that wave (no in-wave commit).
 - If blocked on requirements: ask one targeted question with a recommended default; do not cut the incision yet.
 - If still blocked: reveal the 5-tier portfolio (signal + escape hatch per tier) and ask the user to pick a tier.
+- Prefer the highest provable tier, not merely the smallest safe tier.
 
 Implementation non-negotiables:
 - No pretend proofs: never claim PASS without an executed signal; if you can't run it, say so.
@@ -185,6 +190,7 @@ These rules keep “inevitability” from becoming scope creep.
 - **Legibility (TRACE)**: guard clauses over nesting; flatten → rename → extract; delete incidental complexity.
 - **Footgun defusal (API changes)**: identify likely misuses; make misuse hard via names/types/ordering; lock with a regression check.
 - **Break-glass scenario (abstraction escape hatch)**: name the next likely change that would make it harmful; if it happens, inline into callers, delete dead branches, then re-extract the core.
+- **Seam over slogan**: if a polished explanation points one way but the stable boundary points another, follow the boundary and let the prose explain it afterward.
 
 ## “Big refactor” vs “stay close” (pragmatic ambition)
 TK always wants the Transformative/Moonshot answer, but earns it.
@@ -216,9 +222,14 @@ If entering from `creative-problem-solver`, treat its five-tier portfolio as thi
 
 After you’ve named the stable boundary/seams and written the contract/invariants, force a creative search across the cut-space.
 
+Selection bias:
+- Compare candidates primarily on seam choice, abstraction level, blast radius, and proof posture.
+- Prefer the candidate that deletes future branches/checks, even if it crosses one more module today.
+
 Creative frame (required):
 - Reframe used: Inversion / Analogy transfer / Constraint extremes / First principles.
 - Technique used: pick 1 technique using the `$creative-problem-solver` skill’s **Technique selection** section; consult the matching technique reference in that skill.
+  - Use the picker name verbatim in TK output; do not invent or rename technique labels.
   - If the technique is Lotus Blossom, apply the TK-specific petals from this skill’s **Creative Techniques** reference.
 - Representation shift: one sentence describing the model/representation change (or “N/A: no shift needed”) that makes the choice feel forced.
   - If no Aha (no meaningful representation shift), pick 1 different technique from a different picker row (max 2) and regenerate.
@@ -241,6 +252,14 @@ If you introduce a combine/normalize/map operation, add one executable behaviora
 
 ## Examples
 Canonical examples + full exemplars: references/tk-exemplars.md.
+
+## Validation
+For this skill itself, keep doctrine + parity locked with:
+- `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/tk`
+- `uv run python codex/skills/tk/scripts/lint_tk_skill_contract.py`
+- `uv run --with pyyaml python codex/skills/tk/scripts/tk_replay_benchmark.py --suite codex/skills/tk/references/eval/replay-suite.yaml --dry-run`
+
+Replay suite + shadow-mode notes live under `references/eval/`.
 
 ## Be like mike (behavioral bar)
 TK is calm execution under constraints.
@@ -285,7 +304,7 @@ Advice mode (no code changes): output exactly:
 
 **Creative Frame**
 - Reframe: <Inversion / Analogy transfer / Constraint extremes / First principles>
-- Technique: <one named technique (selected via creative-problem-solver picker; include one-line why)>
+- Technique: <one named technique from the creative-problem-solver picker; use the picker name verbatim and include one-line why>
 - Representation shift: <one sentence (or “N/A: no shift needed”)>
 
 **Why This Solution**
@@ -306,7 +325,7 @@ Implementation mode (code changes): output exactly:
 
 **Creative Frame**
 - Reframe: <Inversion / Analogy transfer / Constraint extremes / First principles>
-- Technique: <one named technique (selected via creative-problem-solver picker; include one-line why)>
+- Technique: <one named technique from the creative-problem-solver picker; use the picker name verbatim and include one-line why>
 - Representation shift: <one sentence (or “N/A: no shift needed”)>
 
 **Why This Solution**

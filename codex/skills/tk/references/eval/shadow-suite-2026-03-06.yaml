@@ -1,0 +1,121 @@
+version: 1
+defaults:
+  repo: codex
+  sandbox: read-only
+  case_timeout_seconds: 240
+cases:
+  - id: shadow-advice-shared-parser
+    source: shadow
+    mode: advice
+    prompt: |
+      Run `$tk` in advice mode only.
+
+      A CSV import tool has `parseRegion(raw)` duplicated in `api/import.py`, `jobs/retry_import.py`, and `cli/import_once.py`. Each caller trims whitespace, lowercases region names differently, and treats empty strings as `global` in a slightly different way.
+
+      Recommend the incision shape, not a rewrite. The important judgment is whether the rule belongs in a shared boundary parser even if that crosses one module.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Why This Solution**"
+      - type: technique_from_picker
+      - type: regex
+        value: stable boundary|boundary parser|shared parser|ingress
+      - type: regex
+        value: cross-module|shared module|adapter|parser
+  - id: shadow-advice-domain-hardening
+    source: shadow
+    mode: advice
+    prompt: |
+      Run `$tk` in advice mode.
+
+      An order dispatcher uses `phase: string`, uses `0` to mean "not retriable", mixes raw broker messages with validated orders in the same list, and threads `is_primary_dc: bool` across four helpers.
+
+      Recommend the code-shape change that best prevents this bug class.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Why This Solution**"
+      - type: technique_from_picker
+      - type: regex
+        value: enum|tag|variant
+      - type: regex
+        value: raw|validated|parse|ingress
+      - type: regex
+        value: sentinel|in-band|explicit
+  - id: shadow-implementation-summary
+    source: shadow
+    mode: implementation
+    prompt: |
+      Run `$tk` in implementation mode, but treat this as reporting-only: assume the change is already made and you cannot paste raw diffs.
+
+      Scenario: you moved tenant header normalization into `parseTenantHeader(raw)` and updated two HTTP handlers plus one job entrypoint to consume the refined value.
+
+      You cannot run commands right now, so `Proof` must give exact commands and define pass.
+
+      Return the normal TK chat format with a high-signal `Incision` summary, not a file inventory.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Why This Solution**"
+          - "**Incision**"
+          - "**Proof**"
+      - type: technique_from_picker
+      - type: regex
+        value: parseTenantHeader|refined|normalized
+      - type: not_contains
+        value: "diff --git"
+      - type: not_contains
+        value: "@@"
+  - id: shadow-strict-diff
+    source: shadow
+    mode: strict_output
+    prompt: |
+      Follow the outer contract exactly.
+
+      Output one fenced `diff` block and nothing else.
+      Internally use `$tk` implementation mode.
+
+      File: `src/locale.js`
+
+      ```js
+      export function normalizeLocale(value) {
+        return value.trim().toLowerCase().replace("_", "-")
+      }
+      ```
+
+      Need: collapse repeated separators so `EN__US` becomes `en-us` without adding caller-side checks.
+    checks:
+      - type: diff_block_count
+        value: 1
+      - type: not_contains
+        value: "**Contract**"
+      - type: regex
+        value: normalizeLocale|normalize_locale|normalizeLocale\(
+      - type: regex
+        value: split|join|replace
+  - id: shadow-strict-no-diff
+    source: shadow
+    mode: strict_output
+    prompt: |
+      Follow the outer contract exactly.
+
+      Output exactly one line starting with `NO_DIFF:` and nothing else.
+      Internally use `$tk` and refuse unsafe movement.
+
+      Task: rename all production tenant IDs across the repository, but you are only allowed to edit `docs/examples/tenant_ids.md`.
+    checks:
+      - type: starts_with
+        value: "NO_DIFF:"
+      - type: max_nonempty_lines
+        value: 1
+      - type: not_contains
+        value: "```"

@@ -16,6 +16,8 @@ Execution contract:
 4. Produce one apply_patch-format candidate artifact or `NO_DIFF:<reason>`.
 5. Include brief adversarial challenge findings against at least one alternative candidate seam.
 6. Default `decision=accept` when a patch is produced and `proof_status=skipped`.
+7. When artifact-shape and code-shape preferences conflict, honor the outer artifact contract and keep TK seam/shape reasoning internal.
+8. Prefer the highest provable seam within scope; widen across modules only when the stable boundary clearly lives there.
 
 Output contract:
 - Candidate Record (single block):

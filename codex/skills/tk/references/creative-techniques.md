@@ -3,6 +3,7 @@
 ## Technique selection (canonical: creative-problem-solver)
 - Pick 1 technique using the `$creative-problem-solver` skill’s **Technique selection** section.
 - Then consult the matching technique reference in that skill.
+- Use the picker name verbatim in TK output so evals can detect off-picker drift.
 - If no Aha (no meaningful representation shift), pick 1 more technique from a different picker row (max 2).
 - This file exists for TK-specific Lotus Blossom petals + tier mapping.
 
@@ -10,14 +11,20 @@
 - Center: stable boundary + contract (one line).
 - Petals: list 8 TK-native levers/subproblems:
   - Stable boundary / seam (push effects + enforcement to the boundary).
+  - Seam comparison (compare candidate cuts by where the rule truly lives).
   - Invariant strengthening (types/parse/tests).
   - Representation / normal form (collapse cases, delete branches).
+  - Abstraction level (inline fix vs helper vs algebraic island vs adapter).
   - Proof signal (fast check: test/typecheck/log, law check, or commuting diagram).
   - Reversibility lever (rollback, flag, adapter, fallback).
   - Primary failure mode (crash / corruption / logic).
   - Caller ergonomics / footguns (make misuse hard).
   - Blast radius / integration surface (how wide the cut spreads).
 - Expansion: expand each petal into concrete candidate incisions; map candidates into the 5 tiers, then pick the highest provable tier.
+
+Scoring reminder:
+- Compare candidates first on seam choice, abstraction level, blast radius, and proof posture.
+- Only use wording/readability as a tie-breaker after the code-shape decision is settled.
 
 ## Tiers + selection
 For each tier, attach:
