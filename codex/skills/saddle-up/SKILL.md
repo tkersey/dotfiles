@@ -15,7 +15,19 @@ Use an explicit model on every run.
 uv run --with pyyaml codex/skills/saddle-up/scripts/saddle_up.py run \
   --repo /path/to/target-repo \
   --harness-path AGENTS.md \
-  --model openrouter/google/gemini-2.5-pro
+  --model google/gemini-2.5-pro
+```
+
+For a bounded debugging pass that cannot hang forever:
+
+```bash
+uv run --with pyyaml codex/skills/saddle-up/scripts/saddle_up.py run \
+  --repo /path/to/target-repo \
+  --harness-path AGENTS.md \
+  --model google/gemini-2.5-pro \
+  --no-commit \
+  --max-cycles 1 \
+  --opencode-timeout-seconds 180
 ```
 
 Stop gracefully from another shell:
@@ -46,13 +58,15 @@ uv run --with pyyaml codex/skills/saddle-up/scripts/saddle_up.py replay-refresh 
 5. Auto-commit passing changes to `saddle-up/eval` and open/update PR.
 6. Auto-revert harness on regression below gate using the last passing commit.
 7. Stop automatically when reliability reaches 3 consecutive passing cycles.
-8. Stop gracefully on manual interrupt or when stop file exists (`.saddle-up/STOP` by default).
+8. Stop gracefully on manual interrupt, stop file, or an optional cycle cap (`--max-cycles`).
 
 ## Defaults and Gates
 - `threshold`: `0.80`
 - `stability_window`: `3` consecutive passes
+- `opencode_timeout_seconds`: `180`
 - suite mix target: `60% curated / 40% replay`
 - stop file: `.saddle-up/STOP` (override with `--stop-file`)
+- `max_cycles`: unbounded unless set
 - branch: `saddle-up/eval`
 
 ## Repo Contract
@@ -75,5 +89,7 @@ Schema details:
 
 ## Troubleshooting
 - If `yaml` import fails, run with `uv run --with pyyaml ...`.
+- If a run appears stuck inside `opencode run`, lower or set `--opencode-timeout-seconds` and retry.
+- For one-cycle diagnosis without commits or PR side effects, use `--no-commit --max-cycles 1`.
 - If you need to stop a running loop gracefully, create the stop file path (default `.saddle-up/STOP`) or interrupt with `Ctrl+C`.
 - If `gh` auth fails, run `gh auth login` before enabling PR automation.

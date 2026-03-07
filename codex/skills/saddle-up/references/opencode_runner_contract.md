@@ -7,11 +7,14 @@ Saddle-up uses OpenCode CLI in headless mode:
 opencode run --model <provider/model> --dir <repo> --format json "<message>"
 ```
 
+Individual calls may be capped by the runner's `--opencode-timeout-seconds` option.
+
 ## Expectations
 - `--model` is mandatory.
 - `--format json` output is parsed line-by-line as JSON events.
 - Non-JSON lines are tolerated and ignored.
 - Return code `0` is required for a case to pass.
+- Timed-out OpenCode calls return a non-zero status and count as failures.
 - The loop is explicit-trigger continuous (`run` command); no scheduler/cron path.
 
 ## Text Extraction
@@ -32,6 +35,7 @@ Before eval in each cycle, the runner sends an improvement prompt requesting har
 ## Failure Signals
 The runner marks run failure on:
 - OpenCode invocation errors
+- timed-out OpenCode improve/eval calls
 - pass rate below threshold
 - non-doc file mutations in git status
 - policy/critical error matches
@@ -40,6 +44,7 @@ The runner marks run failure on:
 The runner exits when one of these occurs:
 - reliability gate reached (`pass_rate >= threshold` and required consecutive pass streak met)
 - stop file detected (default `.saddle-up/STOP`, configurable via `--stop-file`)
+- optional cycle cap reached (`--max-cycles`)
 - operator interruption (`Ctrl+C`)
 - fatal command error
 

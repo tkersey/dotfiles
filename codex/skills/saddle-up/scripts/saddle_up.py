@@ -27,6 +27,7 @@ DEFAULT_THRESHOLD = 0.80
 DEFAULT_STABILITY_WINDOW = 3
 DEFAULT_STOP_FILE = ".saddle-up/STOP"
 DEFAULT_SUITE_SIZE = 10
+DEFAULT_OPENCODE_TIMEOUT_SECONDS = 180
 
 
 class CommandError(RuntimeError):
@@ -274,7 +275,21 @@ def extract_text_from_events(events: list[dict[str, Any]]) -> str:
     return "\n".join(chunks)
 
 
-def run_opencode(repo: Path, model: str, message: str) -> dict[str, Any]:
+def coerce_subprocess_text(value: str | bytes | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value
+
+
+def run_opencode(
+    repo: Path,
+    model: str,
+    message: str,
+    *,
+    timeout_seconds: int | None = None,
+) -> dict[str, Any]:
     cmd = [
         "opencode",
         "run",
@@ -286,7 +301,32 @@ def run_opencode(repo: Path, model: str, message: str) -> dict[str, Any]:
         "json",
         message,
     ]
-    proc = run_cmd(cmd, check=False)
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=str(repo),
+            text=True,
+            capture_output=True,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = coerce_subprocess_text(exc.stdout)
+        stderr = coerce_subprocess_text(exc.stderr)
+        timeout_note = f"opencode timed out after {timeout_seconds}s"
+        output_text = timeout_note
+        combined = "\n".join(part for part in [stdout.strip(), stderr.strip()] if part).strip()
+        if combined:
+            output_text = f"{timeout_note}\n{combined}"
+        return {
+            "cmd": cmd,
+            "returncode": 124,
+            "events": parse_json_lines(stdout),
+            "output_text": output_text,
+            "stdout": stdout,
+            "stderr": timeout_note if not stderr else f"{timeout_note}\n{stderr}",
+            "timed_out": True,
+        }
+
     events = parse_json_lines(proc.stdout)
     output_text = extract_text_from_events(events)
     if not output_text:
@@ -298,6 +338,7 @@ def run_opencode(repo: Path, model: str, message: str) -> dict[str, Any]:
         "output_text": output_text,
         "stdout": proc.stdout,
         "stderr": proc.stderr,
+        "timed_out": False,
     }
 
 
@@ -631,6 +672,8 @@ def evaluate_iteration(
     model: str,
     selected_cases: list[dict[str, Any]],
     scoring: dict[str, Any],
+    *,
+    timeout_seconds: int | None = None,
 ) -> tuple[list[dict[str, Any]], float]:
     case_results: list[dict[str, Any]] = []
     for case in selected_cases:
@@ -648,7 +691,7 @@ def evaluate_iteration(
                 }
             )
             continue
-        result = run_opencode(repo, model, prompt)
+        result = run_opencode(repo, model, prompt, timeout_seconds=timeout_seconds)
         case_results.append(evaluate_case(case, result, scoring))
 
     passed = sum(1 for result in case_results if result.get("passed"))
@@ -661,6 +704,12 @@ def run_loop(args: argparse.Namespace) -> int:
     repo = normalize_repo(args.repo)
     _, harness_rel = normalize_harness(repo, args.harness_path)
     stop_path = resolve_stop_file(repo, args.stop_file)
+    timeout_seconds = int(args.opencode_timeout_seconds) if args.opencode_timeout_seconds else None
+    if timeout_seconds is not None and timeout_seconds <= 0:
+        raise SystemExit("--opencode-timeout-seconds must be > 0")
+    max_cycles = int(args.max_cycles) if args.max_cycles else None
+    if max_cycles is not None and max_cycles <= 0:
+        raise SystemExit("--max-cycles must be > 0")
 
     require_command("git")
     require_command("opencode")
@@ -699,10 +748,17 @@ def run_loop(args: argparse.Namespace) -> int:
             selected_cases = pick_suite_cases(suite, scoring)
 
             improve_prompt = build_improvement_prompt(harness_rel, failed_case_ids)
-            improve_result = run_opencode(repo, args.model, improve_prompt)
+            improve_result = run_opencode(repo, args.model, improve_prompt, timeout_seconds=timeout_seconds)
 
-            case_results, pass_rate = evaluate_iteration(repo, args.model, selected_cases, scoring)
-            gate_passed = pass_rate >= threshold
+            case_results, pass_rate = evaluate_iteration(
+                repo,
+                args.model,
+                selected_cases,
+                scoring,
+                timeout_seconds=timeout_seconds,
+            )
+            improve_failed = improve_result["returncode"] != 0
+            gate_passed = pass_rate >= threshold and not improve_failed
 
             blocked_paths = docs_scope_violations(repo, harness_rel)
             if blocked_paths:
@@ -740,6 +796,8 @@ def run_loop(args: argparse.Namespace) -> int:
 
             reliable = consecutive >= int(args.stability_window)
             failed_case_ids = [str(item.get("id")) for item in case_results if not item.get("passed")]
+            if improve_failed:
+                failed_case_ids = ["improve-step", *failed_case_ids]
             previous_gate = gate_passed
 
             cycle_stop_reason = "reliable_reached" if reliable else "none"
@@ -759,6 +817,7 @@ def run_loop(args: argparse.Namespace) -> int:
                 "failed_case_ids": failed_case_ids,
                 "blocked_paths": blocked_paths,
                 "improve_returncode": improve_result["returncode"],
+                "improve_timed_out": bool(improve_result.get("timed_out")),
                 "eval_total": len(case_results),
                 "eval_passed": sum(1 for item in case_results if item.get("passed")),
                 "commit_sha": commit_sha,
@@ -782,6 +841,8 @@ def run_loop(args: argparse.Namespace) -> int:
                 "regression_reverted": regression_reverted,
                 "failed_case_ids": failed_case_ids,
                 "blocked_paths": blocked_paths,
+                "improve_returncode": improve_result["returncode"],
+                "improve_timed_out": bool(improve_result.get("timed_out")),
                 "run_id": run_id,
                 "pr_url": pr_url,
                 "stop_reason": cycle_stop_reason,
@@ -790,11 +851,16 @@ def run_loop(args: argparse.Namespace) -> int:
 
             print(
                 f"cycle={cycle_count} pass_rate={pass_rate:.3f} gate_passed={str(gate_passed).lower()} "
-                f"consecutive={consecutive} reliable={str(reliable).lower()}"
+                f"consecutive={consecutive} reliable={str(reliable).lower()} "
+                f"improve_returncode={improve_result['returncode']}"
             )
 
             if reliable:
                 stop_reason = "reliable_reached"
+                break
+            if max_cycles is not None and cycle_count >= max_cycles:
+                stop_reason = "max_cycles_reached"
+                print(f"stop_reason={stop_reason} max_cycles={max_cycles}")
                 break
     except KeyboardInterrupt:
         stop_reason = "interrupt"
@@ -814,7 +880,7 @@ def run_loop(args: argparse.Namespace) -> int:
     if pending_error:
         raise pending_error
 
-    if stop_reason != "reliable_reached":
+    if stop_reason not in {"reliable_reached", "stop_file", "max_cycles_reached"}:
         summary = textwrap.dedent(
             f"""
             saddle-up diagnostics
@@ -824,6 +890,8 @@ def run_loop(args: argparse.Namespace) -> int:
             - model: `{args.model}`
             - threshold: `{threshold:.2f}`
             - stability_window: `{args.stability_window}`
+            - opencode_timeout_seconds: `{timeout_seconds if timeout_seconds is not None else 'none'}`
+            - max_cycles: `{max_cycles if max_cycles is not None else 'unbounded'}`
             - stop_reason: `{stop_reason}`
             - cycles: `{cycle_count}`
             - latest_pass_rate: `{float(state.get('last_pass_rate', 0.0)):.3f}`
@@ -835,7 +903,7 @@ def run_loop(args: argparse.Namespace) -> int:
         if diag_ref:
             print(f"diagnostics_ref={diag_ref}")
 
-    if stop_reason in {"reliable_reached", "stop_file"}:
+    if stop_reason in {"reliable_reached", "stop_file", "max_cycles_reached"}:
         return 0
     if stop_reason == "interrupt":
         return 130
@@ -965,6 +1033,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Consecutive pass requirement",
     )
     run_parser.add_argument("--stop-file", default=DEFAULT_STOP_FILE, help="Stop-file path for graceful exit")
+    run_parser.add_argument(
+        "--opencode-timeout-seconds",
+        type=int,
+        default=DEFAULT_OPENCODE_TIMEOUT_SECONDS,
+        help="Per-opencode-call timeout in seconds",
+    )
+    run_parser.add_argument("--max-cycles", type=int, help="Optional cap on completed cycles")
     run_parser.add_argument("--no-commit", action="store_true", help="Disable commit/PR/revert actions")
     run_parser.set_defaults(func=run_loop)
 
