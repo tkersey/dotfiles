@@ -1,5 +1,0 @@
-services:
-  auth:
-    build: ./services/auth
-  billing:
-    build: ./services/billing

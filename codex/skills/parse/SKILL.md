@@ -11,6 +11,76 @@ Identify the architecture a repository is using right now from code-first eviden
 
 Keep the advice narrow. Describe how to work within the current repo's seams, ownership boundaries, and dialect; do not prescribe target architectures, migrations, or adjacent-skill routing.
 
+## Zig CLI Iteration Repos
+
+When iterating on the Zig-backed `parse-arch` helper CLI, use these two repos:
+
+- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `parse-arch` binary, build/test wiring, release tags, and eval fixtures.
+- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates and checksum bumps for released `parse-arch` binaries.
+
+## Quick Start
+
+```bash
+run_parse_arch_tool() {
+  install_parse_arch_direct() {
+    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
+    if ! command -v zig >/dev/null 2>&1; then
+      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
+      return 1
+    fi
+    if [ ! -d "$repo" ]; then
+      echo "skills-zig repo not found at $repo." >&2
+      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
+      return 1
+    fi
+    if ! (cd "$repo" && zig build build-parse-arch -Doptimize=ReleaseFast); then
+      echo "direct Zig build failed in $repo." >&2
+      return 1
+    fi
+    if [ ! -x "$repo/zig-out/bin/parse-arch" ]; then
+      echo "direct Zig build did not produce $repo/zig-out/bin/parse-arch." >&2
+      return 1
+    fi
+    mkdir -p "$HOME/.local/bin"
+    install -m 0755 "$repo/zig-out/bin/parse-arch" "$HOME/.local/bin/parse-arch"
+  }
+
+  local os="$(uname -s)"
+  if command -v parse-arch >/dev/null 2>&1 && parse-arch --help 2>&1 | grep -q "parse_arch.zig"; then
+    parse-arch "$@"
+    return
+  fi
+
+  if [ "$os" = "Darwin" ]; then
+    if ! command -v brew >/dev/null 2>&1; then
+      echo "homebrew is required on macOS: https://brew.sh/" >&2
+      return 1
+    fi
+    if ! brew install tkersey/tap/parse-arch; then
+      echo "brew install tkersey/tap/parse-arch failed." >&2
+      return 1
+    fi
+  elif ! (command -v parse-arch >/dev/null 2>&1 && parse-arch --help 2>&1 | grep -q "parse_arch.zig"); then
+    if ! install_parse_arch_direct; then
+      return 1
+    fi
+  fi
+
+  if command -v parse-arch >/dev/null 2>&1 && parse-arch --help 2>&1 | grep -q "parse_arch.zig"; then
+    parse-arch "$@"
+    return
+  fi
+
+  echo "parse-arch binary missing or incompatible after install attempt." >&2
+  if [ "$os" = "Darwin" ]; then
+    echo "expected install path: brew install tkersey/tap/parse-arch" >&2
+  else
+    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build build-parse-arch -Doptimize=ReleaseFast" >&2
+  fi
+  return 1
+}
+```
+
 ## Inputs
 
 - `repo_path`: required root path for the repository under inspection.
@@ -23,7 +93,7 @@ Keep the advice narrow. Describe how to work within the current repo's seams, ow
    - Use repo kind to avoid forcing app-centric labels onto thin libraries or infrastructure repos.
 
 2. Collect static signals first.
-   - Run this skill's collector script at `scripts/collect_architecture_signals.py`.
+   - Run the Zig collector via `parse-arch collect`.
    - Pass `--focus-path` for each target slice when `focus_paths` are available.
    - Use the JSON output to inspect manifests, entrypoints, dependency-direction hints, runtime-boundary hints, architecture-doc claims, scan coverage, subsystem candidates, and focus-path observations.
    - Treat the script as evidence collection only. Do not let it choose the final architecture label for you.
@@ -112,11 +182,12 @@ For each section:
 ## Validation
 
 - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/parse`
-- `uv run --with pyyaml python codex/skills/parse/scripts/eval_parse_collector.py --suite codex/skills/parse/references/eval/suite.yaml`
+- `run_parse_arch_tool eval --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml"`
+- `run_parse_arch_tool doctor --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml" --repo-path "$PWD"`
 
 ## Resources
 
 - Taxonomy rules: [references/taxonomy.md](references/taxonomy.md)
 - Evidence escalation and memo guidance: [references/evidence-playbook.md](references/evidence-playbook.md)
-- Eval suite: [references/eval/README.md](references/eval/README.md)
-- Static signal collection: `scripts/collect_architecture_signals.py`
+- Eval suite: `"$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/README.md"`
+- Static signal collection: `parse-arch collect`
