@@ -1,4 +1,5 @@
 cask_args appdir: "/Applications"
+tap "li-kai/treetok"
 brew "bat"
 brew "codex"
 brew "curl"
@@ -28,6 +29,7 @@ brew "ripgrep"
 brew "tree"
 brew "tree-sitter", args: ['HEAD']
 brew "tree-sitter-cli", args: ['HEAD']
+brew "treetok"
 brew "unxip"
 brew "uv"
 brew "zig"
