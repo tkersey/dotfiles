@@ -6,9 +6,9 @@ interface:
     row per substantive unit with a unique scope and acceptance target. Finish planning before the
     batch starts, make each row independent, provide a clear CSV schema plus one instruction
     template, and require exactly one report_agent_job_result call per worker. Set max_concurrency
-    to the safe row count when appropriate. Only add secondary review, reduction, fixer, prover,
-    or integration rows when a primary row reports a concrete blocker, a failed proof, or a
-    non-trivial diff that needs another pass. Keep outputs small and structured, optionally shape
-    them with output_schema, and review the exported CSV when the batch completes. If the work is
-    heterogeneous, coupled, or still needs debate, design, or decomposition, use $teams or local
-    execution instead.
+    to the safe row count when appropriate. Only add secondary coder, fixer, prover, or
+    integration rows when a primary row reports a concrete blocker, a failed proof, or a
+    non-trivial diff that needs another pass. Keep deprecated shims out of fresh mesh rows, keep
+    outputs small and structured, optionally shape them with output_schema, and review the
+    exported CSV when the batch completes. If the work is heterogeneous, coupled, or still needs
+    debate, design, or decomposition, use $teams or local execution instead.

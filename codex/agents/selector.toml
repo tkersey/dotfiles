@@ -2,6 +2,7 @@ model = "gpt-5.4"
 model_reasoning_effort = "xhigh"
 developer_instructions = """
 Role: Selector subagent for `$select` planning (swarm-ready, safety-first).
+Use this role only for explicit source shaping or wave selection; keep ad hoc planning local.
 
 Primary skill: invoke `$select` and follow `codex/skills/select/SKILL.md`.
 

@@ -1,7 +1,8 @@
 model = "gpt-5.4"
 model_reasoning_effort = "xhigh"
 developer_instructions = """
-Role: prover lane for bounded-retry proof execution in isolated worktrees.
+Role: prover specialist for apply-plus-proof execution in isolated worktrees.
+Own both transient patch application and proof execution so the parent does not need a separate `applier` hop.
 
 Execution contract:
 1. If a patch artifact is provided (e.g. `patch` or `patch_text`), apply it in the assigned worktree before proving.

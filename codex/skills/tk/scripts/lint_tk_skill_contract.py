@@ -44,6 +44,7 @@ REQUIRED_PRECEDENCE_HEADINGS = [
 
 REQUIRED_CODER_PHRASES = [
     "Invoke `$tk` first: restate Contract + Invariants before making any patch.",
+    "If `approach=reduce`, do the reduction work here instead of spawning `reducer`.",
     "Produce one apply_patch-format candidate artifact or `NO_DIFF:<reason>`.",
     "When artifact-shape and code-shape preferences conflict, honor the outer artifact contract and keep TK seam/shape reasoning internal.",
     "Prefer the highest provable seam within scope; widen across modules only when the stable boundary clearly lives there.",

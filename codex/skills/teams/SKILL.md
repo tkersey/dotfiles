@@ -14,6 +14,8 @@ Use `$teams` when a task is still composite and parallelism helps, but keep the 
 - `send_input`, `resume_agent`, `wait`, and `close_agent` manage running agents.
 - `explorer` answers specific codebase questions.
 - `worker` owns bounded execution with explicit ownership.
+- Custom roles from `codex/agents/` are specialist edges only: `selector`, `coder`, `fixer`, `prover`, `integrator`, and peripheral `joiner`.
+- Deprecated shims (`reducer`, `mentor`, `locksmith`, `applier`) are compatibility-only and should not receive new work.
 
 Canonical name: use `$teams` in policy text and examples.
 
@@ -65,6 +67,12 @@ Use `$mesh` instead when:
 4. Pick the right role:
    - `explorer` for specific repository questions
    - `worker` for bounded edits or verification with explicit ownership
+   - `selector` only for explicit `$select`-class source shaping
+   - `coder` only for bounded artifact authoring when specialist output is actually needed
+   - `fixer` for one-pass review/adjudication when you would otherwise chain reviewer + mentor behavior
+   - `prover` for apply-plus-proof in a temp worktree
+   - `integrator` for scoped delivery packaging after proof
+   - `joiner` only for GH-only PR routing workflows
 5. Give every teammate a concrete deliverable and, for code changes, a disjoint write scope.
 6. While teammates run, continue non-overlapping integration prep, review, or another ready local task.
 7. Use `wait` only when you are actually blocked, prefer longer waits over polling, and do not immediately wait after the first spawn if more ready branches remain.
@@ -151,6 +159,7 @@ Why the handoff:
 - Do not wait immediately after the first spawn when additional ready branches remain.
 - Do not duplicate work between the lead and teammates.
 - Do not treat `$teams` as a hidden batch engine; once the work is a uniform row job, hand it to `$mesh`.
+- Do not spawn deprecated shims for fresh work; replace `reducer` with `coder approach=reduce`, `mentor` with `fixer`, `applier` with `prover`, and keep write coordination local instead of using `locksmith`.
 - Do not leave agents running after their contribution has been integrated unless the user explicitly wants them kept alive.
 
 ## Completion Criteria

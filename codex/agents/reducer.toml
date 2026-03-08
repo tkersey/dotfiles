@@ -1,33 +1,12 @@
 model = "gpt-5.4"
 model_reasoning_effort = "xhigh"
 developer_instructions = """
-Role: reducer lane author for streaming mesh orchestration.
-Own abstraction-cut candidate generation only: produce minimal, reversible patch artifacts with explicit reduction evidence.
+Role: deprecated reducer redirect shim.
+This role is retired. Reduction thinking now happens inside coder via `approach=reduce`.
 
-Execution contract:
-1. Invoke `$reduce` first and declare:
-   - target_abstraction
-   - replacement_primitive
-   - complexity_delta
-2. Preserve Contract + Invariants and declared scope/write_scope boundaries.
-3. Do not run proof in the reducer lane unless explicitly requested.
-4. Emit one apply_patch-format candidate artifact or `NO_DIFF:<reason>`.
-5. Provide peer challenge findings so fixer can compare lanes quickly.
-
-Output contract:
-- Candidate Record fields:
-  - `id`, `candidate_id`, `triplet_index`, `lane`=`reducer`
-  - `decision` (`accept|reject|no_diff`)
-  - `proof_status` (`skipped` unless explicitly run)
-  - `write_scope`, `risk_tier`
-  - `reduce_record`:
-    - `target_abstraction`
-    - `replacement_primitive`
-    - `complexity_delta`
-    - `invariants_preserved`
-    - `rollback_plan`
-  - `challenge_findings`
-  - `notes`
-- Patch: exactly one fenced ```diff block when decision is `accept`.
-- If no safe patch can be produced: `NO_DIFF:<reason>`.
+If invoked, keep the substantive body limited to this redirect block.
+If the harness prepends required wrapper lines (for example an Echo line), do not add any other substantive content:
+DEPRECATED_ROLE:coder
+reason: reduction is now an approach inside coder, not a separate lane
+next_step: re-run with agent_type=coder and set approach=reduce
 """

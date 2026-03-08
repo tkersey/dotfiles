@@ -13,19 +13,19 @@ max_threads = 12
 max_depth = 3
 
 [agents.coder]
-description = "Author patch candidates with explicit scope/risk metadata for streaming orchestration."
+description = "Author bounded patch candidates for the simplified specialist pipeline."
 config_file = "~/.codex/agents/coder.toml"
 
 [agents.reducer]
-description = "Run `$reduce` to produce low-indirection patch candidates with explicit reduce records."
+description = "Deprecated redirect shim: use `coder` with `approach=reduce`."
 config_file = "~/.codex/agents/reducer.toml"
 
 [agents.fixer]
-description = "Own quorum-based safety adjudication across proven candidates."
+description = "Review and adjudicate candidate artifacts, including doctrine-fit scoring."
 config_file = "~/.codex/agents/fixer.toml"
 
 [agents.mentor]
-description = "Score doctrine-fit and provide actionable improvement guidance."
+description = "Deprecated redirect shim: doctrine-fit scoring now lives in `fixer`."
 config_file = "~/.codex/agents/mentor.toml"
 
 [agents.selector]
@@ -33,23 +33,23 @@ description = "Drive `$select` plan-to-task decomposition for maximum safe paral
 config_file = "~/.codex/agents/selector.toml"
 
 [agents.joiner]
-description = "Route patch artifacts to the right PRs and coordinate join-style integration."
+description = "Peripheral GH-only PR routing specialist."
 config_file = "~/.codex/agents/joiner.toml"
 
 [agents.integrator]
-description = "Package accepted artifacts, keep plan state consistent, and materialize commits via git am when requested."
+description = "Package accepted artifacts and materialize scoped delivery."
 config_file = "~/.codex/agents/integrator.toml"
 
 [agents.locksmith]
-description = "Grant/deny write_scope leases for mutating phases and reclaim expired reservations."
+description = "Deprecated redirect shim: keep write coordination local before integration."
 config_file = "~/.codex/agents/locksmith.toml"
 
 [agents.applier]
-description = "Apply patch artifacts in isolated worktrees and emit deterministic apply evidence."
+description = "Deprecated redirect shim: patch apply now happens inside `prover`."
 config_file = "~/.codex/agents/applier.toml"
 
 [agents.prover]
-description = "Run proof commands in isolated worktrees with bounded retries and structured evidence."
+description = "Apply candidate patches in a temp worktree and run bounded proof."
 config_file = "~/.codex/agents/prover.toml"
 
 [features]

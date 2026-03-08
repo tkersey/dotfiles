@@ -63,7 +63,8 @@ If you still need to decide the row schema, challenge the approach, or compare s
 - One row should represent one unique work unit with one unique write or read scope and one acceptance target.
 - Do not multiply rows over the same scope merely to create more lanes, more evidence, or a higher concurrency number.
 - Treat a clean primary row as sufficient evidence for that unit.
-- Only add secondary review, reduction, fixer, prover, or integration rows when a prior row reports a concrete blocker, a failed proof, or a non-trivial diff that needs another pass.
+- Only add secondary review, coder, fixer, prover, or integration rows when a prior row reports a concrete blocker, a failed proof, or a non-trivial diff that needs another pass.
+- Deprecated shims (`reducer`, `mentor`, `locksmith`, `applier`) are never valid fresh rows.
 
 ## Recommended Flow
 
@@ -192,6 +193,7 @@ Why not:
 - Keep result objects structured and comparable across rows.
 - Use stable row ids when you will reconcile outputs later.
 - Do not multiply rows by role or lane on the same scope unless a blocker or failed proof justifies the follow-up.
+- If you need reduction thinking, keep it inside `coder` by setting `approach=reduce`; do not resurrect `reducer` as a new row type.
 - If rows need shared mutable state, stop and switch away from `$mesh`.
 - If a row still needs planning, stop and finish decomposition before running the batch.
 
@@ -211,7 +213,8 @@ See `references/output-contract.md`.
 - splitting one tightly coupled implementation across dependent rows
 - overlapping write scopes across rows
 - launching a synthetic evidence wave after the substantive work is already done
-- multiplying coder/reducer/fixer/prover/integrator rows over the same scope without a blocker-triggered reason
+- multiplying coder/fixer/prover/integrator rows over the same scope without a blocker-triggered reason
+- routing fresh work through deprecated shims instead of the live core roles
 - relying on free-form text instead of structured result fields
 - reusing the same path for `csv_path` and `output_csv_path`
 

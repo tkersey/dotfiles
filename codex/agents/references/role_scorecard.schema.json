@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "suite_id",
+    "baseline_label",
+    "candidate_label",
+    "cases"
+  ],
+  "properties": {
+    "suite_id": { "type": "string" },
+    "baseline_label": { "type": "string" },
+    "candidate_label": { "type": "string" },
+    "generated_at": { "type": "string" },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "wins": { "type": "integer" },
+        "ties": { "type": "integer" },
+        "losses": { "type": "integer" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "winner",
+          "overhead_delta",
+          "leverage_delta",
+          "throughput_delta",
+          "notes"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "role": { "type": "string" },
+          "winner": {
+            "type": "string",
+            "enum": ["baseline", "candidate", "tie", "pending"]
+          },
+          "overhead_delta": { "type": "string" },
+          "leverage_delta": { "type": "string" },
+          "throughput_delta": { "type": "string" },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

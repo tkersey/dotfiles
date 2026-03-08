@@ -78,6 +78,14 @@ Apply these in order:
 - `$teams` is the native heterogeneous orchestration path.
 - Use `update_plan`, `spawn_agent`, `send_input`, `resume_agent`, `wait`, and `close_agent`.
 - Use built-in roles intentionally: `explorer` for focused questions, `worker` for bounded execution.
+- Treat custom roles in `codex/agents/` as specialist edges, not the default path:
+  - `selector` for explicit `$select`-class wave shaping
+  - `coder` for bounded artifact authoring, including reduction-style seams via `approach=reduce`
+  - `fixer` for review plus doctrine-fit scoring in one pass
+  - `prover` for apply-plus-proof in an isolated worktree
+  - `integrator` for patch-first or commit-first delivery packaging
+  - `joiner` for GH-only PR routing, not for ordinary local tasks
+  - `reducer`, `mentor`, `locksmith`, and `applier` are compatibility shims only; do not route new work to them
 - Keep synthesis, integration, and overlapping-write work local.
 - Dispatch the full dependency-independent ready set before the first blocking `wait`.
 - Delegate concrete work with explicit deliverables and disjoint write scopes; do not reserve core ready branches for the lead just because they feel central.
@@ -94,6 +102,7 @@ Apply these in order:
 - Planning and decomposition do not happen inside `$mesh`; they happen before the batch starts.
 - Prefer structured outputs, optionally constrained with `output_schema`, then review the exported CSV locally or with `$teams`.
 - Do not create synthetic evidence waves or multiply lanes on the same scope unless a concrete blocker or failed proof justifies the follow-up row.
+- If a secondary specialist row is justified, use live roles only (`coder`, `fixer`, `prover`, `integrator`); do not route new work through deprecated shims.
 - If rows share mutable state, depend on each other, or need debate or design, stop and use `$teams` or local execution instead.
 
 ## Wait semantics
