@@ -1,4 +1,4 @@
 interface:
   display_name: "Parse Architecture"
-  short_description: "Infer repo architecture from evidence"
-  default_prompt: "Use $parse to identify this repo's dominant architecture, subsystem variants, confidence, and architecture drift."
+  short_description: "Infer repo architecture and fit hints"
+  default_prompt: "Use $parse to identify this repo's architecture, drift, and repo-fit hints."

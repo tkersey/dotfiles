@@ -1,15 +1,20 @@
 ---
 name: parse
-description: Analyze a local codebase and infer the architecture it is actually using, including dominant style, major subsystem variants, confidence, and declared-vs-implemented drift. Use when prompts ask what architecture a repo uses, whether it is layered, MVC, MVVM, clean, hexagonal, onion, modular monolith, microservice, event-driven, pipeline-oriented, or plugin-based, how major subsystems differ, or whether the documented architecture matches the implementation.
+description: Analyze a local codebase and infer the architecture it is actually using, including repo kind, dominant style, major subsystem variants, confidence, declared-vs-implemented drift, and repo-fit hints for downstream agents. Use when prompts ask what architecture a repo uses, whether docs match code, how a target slice fits a hybrid monorepo, or when `$tk` needs a repo-dialect preflight before making a minimal change.
 ---
 
 # Parse
 
 ## Overview
 
-Identify the architecture a repository is using right now from code-first evidence. Produce one best-fit dominant architecture label, note meaningful subsystem variants, and call out architecture drift when docs and implementation disagree.
+Identify the architecture a repository is using right now from code-first evidence. Produce one best-fit dominant architecture label, note meaningful subsystem variants, call out architecture drift when docs and implementation disagree, and give narrow repo-fit hints that help downstream agents fit a change to the repo that already exists.
 
-Keep the skill focused on identification. Do not turn the result into redesign advice, refactoring steps, or adjacent-skill routing.
+Keep the advice narrow. Describe how to work within the current repo's seams, ownership boundaries, and dialect; do not prescribe target architectures, migrations, or adjacent-skill routing.
+
+## Inputs
+
+- `repo_path`: required root path for the repository under inspection.
+- `focus_paths`: optional repo-relative files or directories for the slice the caller cares about. Use these when a downstream agent already knows the target files or subsystem.
 
 ## Workflow
 
@@ -18,8 +23,9 @@ Keep the skill focused on identification. Do not turn the result into redesign a
    - Use repo kind to avoid forcing app-centric labels onto thin libraries or infrastructure repos.
 
 2. Collect static signals first.
-   - Run `python3 codex/skills/parse/scripts/collect_architecture_signals.py <repo-path>`.
-   - Use the JSON output to inspect manifests, entrypoints, framework hints, dependency-direction hints, service boundaries, architecture-doc claims, and subsystem candidates.
+   - Run this skill's collector script at `scripts/collect_architecture_signals.py`.
+   - Pass `--focus-path` for each target slice when `focus_paths` are available.
+   - Use the JSON output to inspect manifests, entrypoints, dependency-direction hints, runtime-boundary hints, architecture-doc claims, scan coverage, subsystem candidates, and focus-path observations.
    - Treat the script as evidence collection only. Do not let it choose the final architecture label for you.
 
 3. Map the evidence to the curated taxonomy.
@@ -28,16 +34,22 @@ Keep the skill focused on identification. Do not turn the result into redesign a
    - If major slices differ materially, keep the dominant label and add subsystem variants instead of flattening the whole repo into one story.
    - Prefer common labels plus explicit hybrid wording over inventing niche names.
 
-4. Escalate only when static evidence is weak or contradictory.
+4. Derive repo-fit advice.
+   - Translate the dominant architecture, major subsystems, and any `focus_paths` into narrow advice about seams, ownership, and where a change probably belongs.
+   - Keep the advice implementation-fitting: tell downstream agents what to align with, what boundaries to respect, and what not to assume.
+   - If confidence is `low`, downshift from positive directives to conservative `do_not_assume` warnings.
+
+5. Escalate only when static evidence is weak or contradictory.
    - Read [references/evidence-playbook.md](references/evidence-playbook.md) before running investigative commands.
    - Use safe, non-mutating probes only when they add meaningful evidence: builds, tests, dependency inspection, or local command help.
    - Stop if the only available probe mutates tracked files, requires secrets, or depends on network-only truth.
 
-5. Produce the memo.
+6. Produce the memo.
    - Choose one best-fit dominant architecture label even when confidence is low.
    - State confidence and what evidence is missing.
    - Include architecture drift when documentation and implementation diverge.
    - Keep critique lightweight: mention mismatches or ambiguity, but do not prescribe a new target architecture.
+   - When `focus_paths` materially differ from the repo-wide story, say so explicitly and carry that distinction into the advice.
 
 ## Output Contract
 
@@ -48,9 +60,11 @@ Return these sections in order:
 3. `Confidence`
 4. `Why This Best Fits`
 5. `Major Subsystems`
-6. `Evidence`
-7. `Architecture Drift`
-8. `Caveats`
+6. `Repo-Fit Advice`
+7. `Agent Handoff`
+8. `Evidence`
+9. `Architecture Drift`
+10. `Caveats`
 
 For each section:
 - `Repo Kind`: Name the repo shape and why it matters for interpretation.
@@ -58,6 +72,8 @@ For each section:
 - `Confidence`: Use `high`, `medium`, or `low` and explain what would change the score.
 - `Why This Best Fits`: Cite the strongest evidence paths, framework clues, or runtime topology clues.
 - `Major Subsystems`: List major slices only when they materially differ from the dominant architecture.
+- `Repo-Fit Advice`: Give 3-5 bullets that help a downstream agent fit work to the repo as it exists now. Include likely seams, ownership boundaries, and `do_not_assume` warnings when confidence is weak.
+- `Agent Handoff`: Emit one fenced `yaml` block with stable keys: `repo_kind`, `dominant_architecture`, `confidence`, `focus_scope`, `major_subsystems`, `architecture_drift`, `repo_fit_hints`, `do_not_assume`, and `evidence_paths`.
 - `Evidence`: Prefer concrete paths, module names, entrypoints, and signal summaries over general impressions.
 - `Architecture Drift`: Compare docs and implementation when both exist; write `none observed` when there is no meaningful drift.
 - `Caveats`: State uncertainty, missing evidence, or overclaim boundaries.
@@ -65,9 +81,12 @@ For each section:
 ## Guardrails
 
 - Keep code and runtime evidence above docs when they conflict.
+- Keep repo-fit advice descriptive and current-state-only; do not turn it into redesign advice.
+- If confidence is `low`, keep the advice advisory and make the uncertainty explicit.
 - Do not claim specialized patterns such as CQRS, event sourcing, or DDD without direct repo evidence.
 - Do not confuse framework choice with architecture by default; explain whether the framework is shaping or merely hosting the design.
-- Do not collapse a mixed monorepo into one label without naming important exceptions.
+- Do not collapse a mixed monorepo into one label without naming important exceptions or `focus_paths` caveats.
+- Do not let a repo-wide label override a slice-local signal when `focus_paths` clearly point at a materially different subsystem.
 - Do not suggest migrations, modernizations, or follow-up skills unless the user explicitly asks for that next step.
 
 ## Quick Heuristics
@@ -87,9 +106,17 @@ For each section:
 - "Figure out whether this codebase is actually hexagonal or just layered."
 - "Analyze this monorepo and tell me the dominant architecture plus subsystem exceptions."
 - "Does the documented clean architecture match what the code implements?"
+- "Use `$parse` before `$tk` so the patch fits this repo's architecture."
+- "Tell me how this target slice fits the repo without recommending a redesign."
+
+## Validation
+
+- `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/parse`
+- `uv run --with pyyaml python codex/skills/parse/scripts/eval_parse_collector.py --suite codex/skills/parse/references/eval/suite.yaml`
 
 ## Resources
 
 - Taxonomy rules: [references/taxonomy.md](references/taxonomy.md)
 - Evidence escalation and memo guidance: [references/evidence-playbook.md](references/evidence-playbook.md)
-- Static signal collection: `python3 codex/skills/parse/scripts/collect_architecture_signals.py <repo-path>`
+- Eval suite: [references/eval/README.md](references/eval/README.md)
+- Static signal collection: `scripts/collect_architecture_signals.py`

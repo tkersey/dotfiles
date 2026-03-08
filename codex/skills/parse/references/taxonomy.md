@@ -67,6 +67,15 @@ Repo kind is a context layer, not the final architecture label.
 5. Prefer `layered` over `clean`/`hexagonal` when the repo names inner layers but dependency direction is unclear.
 6. Prefer `component-driven UI` or `mvc`/`mvvm` only when presentation boundaries are a major organizing force.
 
+## Near-Miss Rules
+
+- A `services/` folder alone does not make the repo `microservice`; require multiple runtime or deployment boundaries.
+- An `adapters/` or `ports/` folder alone does not make the repo `clean` or `hexagonal`; require believable dependency direction or adapter boundaries.
+- A workspace with `apps/` and `packages/` is often a `monorepo-platform` or `modular monolith`, not automatically `microservice`.
+- A few queues, jobs, or event handlers inside one service do not make the repo `event-driven` or `pipeline` dominant.
+- A small `plugins/` or `integrations/` folder does not make the repo `plugin`-based unless the host/plugin contract is first-class.
+- If the repo kind is `library-sdk` or `cli-tooling`, be extra careful not to over-apply app-centric labels from folder aesthetics alone.
+
 ## Hybrid Rules
 
 Use hybrid wording only when there is real mixed evidence, for example:
@@ -81,6 +90,21 @@ Do not invent new top-level labels when dominant-plus-variants is enough.
 - Treat architecture docs, READMEs, and ADRs as hypotheses.
 - If code or runtime topology contradicts the docs, keep the implemented architecture as the dominant label.
 - Record the difference in `Architecture Drift`.
+
+## Repo-Fit Hints By Dominant Architecture
+
+Use these to help downstream agents fit work to the repo as it exists now:
+
+- `layered`: prefer delivery -> service -> persistence seams; keep controllers and handlers thin; avoid pushing business rules into entrypoints.
+- `component-driven UI` / `mvc` / `mvvm`: respect presentation boundaries; keep view state and domain state separated; prefer feature-local components before shared abstractions.
+- `clean` / `hexagonal` / `onion`: keep framework and IO details outside the core; prefer ports/adapters seams; treat dependency direction as part of the architecture, not just the folder layout.
+- `modular monolith`: favor module-owned changes over repo-wide helpers; cross module boundaries only when the stable seam is genuinely shared.
+- `microservice`: favor one service boundary at a time; do not invent cross-service helpers to patch a local issue.
+- `event-driven`: inspect publishers, consumers, retry boundaries, and event schemas before assuming a request/response seam.
+- `pipeline`: look for stage ownership, job boundaries, and handoff formats before modifying orchestration or shared utilities.
+- `plugin`: preserve host/plugin contracts and hook registration surfaces; avoid baking plugin-specific assumptions into the host core.
+
+If confidence is low, turn these into conservative `do_not_assume` warnings instead of assertive change guidance.
 
 ## Overclaim Boundary
 
