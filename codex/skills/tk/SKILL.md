@@ -31,6 +31,8 @@ TK is the converge-heavy half of Double Diamond:
 
 If the work is still in Discover/Define uncertainty (needs options/tradeoffs, stakeholder alignment, or competing constraints), invoke `creative-problem-solver` first, then return to TK with a chosen tier and success criteria.
 
+After Contract + Invariants, if the issue is structurally shaped (exclusive variants, repeated validation, shared-key agreement, behavior encoded as branching, syntax/execution entanglement, or lawful combine/identity rules), consult `$universalist` internally, then return to TK to choose the incision. If no such signal is present, stay on the normal TK path.
+
 ## What TK Outputs (and only this)
 TK has two modes.
 
@@ -58,6 +60,7 @@ Implementation mode (code change requested):
   - You may use `git diff --stat` / `git diff --name-only` to build the summary. Do not paste diff output unless explicitly required by system/user instructions; if required, add a **Patch** section after **Proof**.
 - Proof includes at least one executed signal (test/typecheck/build/run).
   - If execution is impossible: give exact commands and define "pass".
+  - If the chosen incision changes representation or introduces constructors/eliminators, normalization, or combine operations, add the lightest fitting structural check (for example exhaustive handling, round-trip/idempotence, identity/associativity, or constructor/eliminator sanity).
 - If blocked on requirements: output Contract, Invariants, Creative Frame, Why This Solution, Question (no Incision/Proof yet).
 
 Template compliance (order is mandatory):
@@ -107,6 +110,7 @@ These biases keep TK effective when you control the shape.
 
 ## Execution (required in Implementation mode)
 - Gate: no code until Contract + Invariants are written.
+- After Contract + Invariants, run a quick signal check: if the problem is really about variants, repeated validation, shared-key agreement, behavior-as-branching, syntax/execution separation, or lawful combine/identity, consult `$universalist` internally before choosing the cut.
 - Choose the fastest credible proof signal you can actually run (existing unit test > typecheck > targeted script > integration test).
 - Cut the incision at the stable boundary; avoid scattering checks through callers.
 - Close the loop: run the proof signal; iterate until it passes; report the result.
@@ -131,11 +135,12 @@ TK is not a style; it’s a reduction process:
 2. **Read for the cut**: locate where the meaning lives; name the seams.
 3. **State the contract**: make “working” testable in principle.
 4. **Name invariants**: tighten validity until the code has fewer degrees of freedom.
-5. **Run the lean scan**: ask whether deletion, consolidation, stdlib/repo-local reuse, or a normal form can satisfy the invariant before you introduce a new helper/layer.
-6. **Reframe + run a technique (selected via creative-problem-solver, internal)**: generate a 5-tier portfolio (proof signals + escape hatches).
-7. **Select the most ambitious safe tier**: bias toward Transformative/Moonshot, stay pragmatic.
-8. **Cut the incision**: minimal diff at the stable boundary.
-9. **Close the loop**: run the proof signal.
+5. **Run the universalist signal check**: if the problem is structurally shaped (variants, repeated validation, shared-key agreement, behavior-as-branching, syntax/execution split, or lawful combine), consult `$universalist` internally and pick the smallest fitting construction; otherwise stay on the ordinary TK path.
+6. **Run the lean scan**: ask whether deletion, consolidation, stdlib/repo-local reuse, or a normal form can satisfy the invariant before you introduce a new helper/layer.
+7. **Reframe + run a technique (selected via creative-problem-solver, internal)**: generate a 5-tier portfolio (proof signals + escape hatches).
+8. **Select the most ambitious safe tier**: bias toward Transformative/Moonshot, stay pragmatic.
+9. **Cut the incision**: minimal diff at the stable boundary.
+10. **Close the loop**: run the proof signal.
 
 Double Diamond mapping:
 - Discover: 1-2
@@ -164,6 +169,7 @@ Double Diamond mapping:
 - Don’t scatter validation when one boundary parse can refine the value.
 - Don’t add flags/conditionals when a normal form collapses cases.
 - Prefer one canonical path for each rule; if two helpers differ only by trim/lowercase/default handling, collapse them into the boundary-owned version.
+- After Contract + Invariants, if the structure is the bug class, consult `$universalist` internally and choose the smallest fitting construction; if the structure is not the bug class, do not widen scope just to make the code look more algebraic.
 
 A good sign you’re near the inevitable solution:
 - the “impossible” branches disappear,
@@ -259,6 +265,7 @@ Minimal guide (jargon allowed only when it buys precision):
 
 If you introduce a combine/normalize/map operation, add one executable behavioral check:
 - round-trip, idempotence, identity, associativity, or a commuting diagram check.
+- If you introduce a refined constructor/eliminator boundary, add the lightest sanity check that proves raw-vs-validated separation still holds.
 
 ## Examples
 Canonical examples + full exemplars: references/tk-exemplars.md.
@@ -324,6 +331,7 @@ Advice mode (no code changes): output exactly:
 - Proof signal: <what test/typecheck/log/law/diagram check makes this trustworthy>
 - (Optional) Reversibility: <escape hatch / rollback lever>
 - (Optional) Residual risk: <what you still don’t know>
+- If `$universalist` was consulted, name the smallest fitting construction inside these existing bullets; do not add a new section.
 
 Implementation mode (code changes): output exactly:
 
@@ -345,6 +353,7 @@ Implementation mode (code changes): output exactly:
 - Proof signal: <what test/typecheck/build/run/law check makes this trustworthy>
 - (Optional) Reversibility: <escape hatch / rollback lever>
 - (Optional) Residual risk: <what you still don’t know>
+- If `$universalist` was consulted, name the smallest fitting construction inside these existing bullets; do not add a new section.
 
 **Incision**
 - <meaningful change summary (behavior/invariants/API/tests); include file/identifier anchors only when helpful; no diffs>
