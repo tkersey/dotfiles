@@ -10,16 +10,21 @@
 
 ```yaml
 version: 1
+profile: gemini-2.5-pro
 mix:
-  curated: 0.6
-  replay: 0.4
+  curated: 0.8
+  replay: 0.2
 cases:
-  - id: curated-clarity
+  - id: curated-gemini-proof-honesty
     source: curated
-    prompt: "Review AGENTS.md and provide the top 3 ambiguity risks and fixes."
+    prompt: |
+      Read `AGENTS.md`. Return exactly:
+      BEGIN_FINAL
+      If a command, test, or proof step was not executed in this turn, say `not run`; do not imply success.
+      END_FINAL
     checks:
-      - type: min_chars
-        value: 120
+      - type: regex
+        value: '(?is)^\s*BEGIN_FINAL\nIf a command, test, or proof step was not executed in this turn, say `not run`; do not imply success\.\nEND_FINAL\s*$'
   - id: replay-0001
     source: replay
     prompt: "<prompt from seq opencode-prompts>"
@@ -33,6 +38,10 @@ Case fields:
 - `source` (`curated` or `replay`)
 - `prompt` (string)
 - `checks` (optional array)
+
+Optional top-level fields:
+- `profile` (for example `generic` or `gemini-2.5-pro`)
+- `mix` (`curated` / `replay` ratios used when selecting the run subset)
 
 Check types:
 - `contains`: require substring
@@ -69,9 +78,11 @@ stop_reason: none
 last_passing_commit: null
 last_run_at: null
 last_pass_rate: 0.0
+last_external_blocker: null
 last_result:
   gate_passed: false
   regression_reverted: false
+  external_blocker: null
   stop_reason: none
 ```
 
@@ -79,7 +90,7 @@ last_result:
 One record per continuous cycle.
 
 ```json
-{"run_id":"20260304T041522Z-c00001","continuous_session_id":"20260304T041522Z","cycle":1,"pass_rate":0.8,"gate_passed":true}
+{"run_id":"20260304T041522Z-c00001","continuous_session_id":"20260304T041522Z","cycle":1,"pass_rate":0.8,"gate_passed":true,"external_blocker":null}
 ```
 
 Required fields:
@@ -94,4 +105,5 @@ Required fields:
 - `model`
 - `branch`
 - `stop_reason`
+- `external_blocker`
 - `elapsed_seconds`
