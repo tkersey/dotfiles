@@ -52,6 +52,78 @@ cases:
         value: raw vs validated|validated|parse
       - type: regex
         value: sentinel|in-band
+  - id: replay-delete-before-add
+    source: replay
+    source_session: ~/.codex/sessions/2026/03/08/rollout-synthetic-delete-before-add.jsonl
+    mode: advice
+    prompt: |
+      Run `$tk` in advice mode.
+
+      A Django app has `clean_slug`, `normalize_slug`, and `canonical_slug` wrappers spread across three modules. Each one trims, lowercases, and collapses spaces a little differently before callers pass the result into the same `slugify(raw)` boundary function.
+
+      Recommend the incision shape that removes drift with the smallest correct cut.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Why This Solution**"
+      - type: technique_from_picker
+      - type: regex
+        value: delete|remove|collapse|consolidate
+      - type: regex
+        value: slugify|boundary|canonical
+      - type: regex
+        value: wrapper|helper|drift
+  - id: replay-primitive-before-helper
+    source: replay
+    source_session: ~/.codex/sessions/2026/03/08/rollout-synthetic-primitive-before-helper.jsonl
+    mode: advice
+    prompt: |
+      Run `$tk` in advice mode.
+
+      A Python service has one `normalize_tags(raw)` function at the boundary. A proposed patch adds a `TagSanitizer` helper module plus a `collapse_whitespace()` utility, but the actual rule is just trim, lowercase, drop empties, dedupe, and sort.
+
+      Recommend the incision shape that keeps the rule local and obvious.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Why This Solution**"
+      - type: technique_from_picker
+      - type: regex
+        value: normalize_tags|normal form|canonical
+      - type: regex
+        value: built-in|stdlib|sort|dedupe|unique
+      - type: regex
+        value: helper|module|utility
+  - id: replay-canonical-seam-over-raw-primitive
+    source: replay
+    source_session: ~/.codex/sessions/2026/03/08/rollout-synthetic-canonical-seam.jsonl
+    mode: advice
+    prompt: |
+      Run `$tk` in advice mode.
+
+      A Go repo already uses `accountid.Parse(raw)` in twelve callers. One handler currently inlines `strings.TrimSpace`, `strings.ToUpper`, and a regex because an engineer wants the "leanest" code to live next to the endpoint.
+
+      Recommend the incision shape, making clear whether raw stdlib cleanup is actually the lean choice here.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Why This Solution**"
+      - type: technique_from_picker
+      - type: regex
+        value: accountid.Parse|stable boundary|canonical
+      - type: regex
+        value: repo|shared|helper|dialect
+      - type: regex
+        value: raw stdlib|inline|second policy path|second rule owner
   - id: replay-worker-patch-first
     source: replay
     source_session: ~/.codex/sessions/2026/02/03/rollout-2026-02-03T07-37-59-019c2427-44c9-7cf3-83ec-dd869e570461.jsonl

@@ -85,9 +85,11 @@ Everything else (full portfolio, scorecards, scope fence, refactors) happens int
 These biases keep TK effective in brownfield codebases.
 
 - Minimize surface area: no formatting churn; no renames unless required; touch the fewest files that can enforce the invariant.
+- Delete before adding: first look for a cut that removes duplicated guards/helpers/comments or collapses parallel paths before introducing a new abstraction.
 - Seams before surgery: if the knot is hard to test, cut a seam (adapter/extract function/interface) and move the change there.
 - Characterization over speculation: if behavior is unclear, add a characterization test/script; let it leash the change.
 - Prefer adapters: refine at the boundary (parse/normalize); keep the core small and boring.
+- Prefer the existing primitive: reuse stdlib and canonical repo helpers before inventing bespoke utilities; if the repo already has one stable seam, lean means using it.
 - Cross-module is allowed when the stable boundary genuinely lives there and the cut remains reviewable.
 - Complexity first aid: flatten -> rename -> extract (then change behavior).
 - Observability when uncertain: add the smallest temporary signal (assert/log); delete once proof exists.
@@ -98,7 +100,9 @@ These biases keep TK effective when you control the shape.
 - Start with the boundary: define inputs/outputs; enforce invariants at construction (types/smart constructors) or parse/normalize at the edge.
 - Compose a small core: keep effects at the boundary; keep the core pure/total when reasonable.
 - Prefer a normal form: pick one canonical representation early; collapse cases to delete branching.
+- Prefer one obvious path: if a rule can live in one boundary-owned function/type, do not ship a second helper stack that expresses the same policy differently.
 - Defer abstraction until it earns itself: prefer small duplication over a wrong framework.
+- Reach for built-ins first: prefer stdlib/core primitives and repo-local seams before bespoke helpers or dependencies.
 - Bake in a proof signal: add the smallest fast test/check that makes the contract executable.
 
 ## Execution (required in Implementation mode)
@@ -127,16 +131,17 @@ TK is not a style; it’s a reduction process:
 2. **Read for the cut**: locate where the meaning lives; name the seams.
 3. **State the contract**: make “working” testable in principle.
 4. **Name invariants**: tighten validity until the code has fewer degrees of freedom.
-5. **Reframe + run a technique (selected via creative-problem-solver, internal)**: generate a 5-tier portfolio (proof signals + escape hatches).
-6. **Select the most ambitious safe tier**: bias toward Transformative/Moonshot, stay pragmatic.
-7. **Cut the incision**: minimal diff at the stable boundary.
-8. **Close the loop**: run the proof signal.
+5. **Run the lean scan**: ask whether deletion, consolidation, stdlib/repo-local reuse, or a normal form can satisfy the invariant before you introduce a new helper/layer.
+6. **Reframe + run a technique (selected via creative-problem-solver, internal)**: generate a 5-tier portfolio (proof signals + escape hatches).
+7. **Select the most ambitious safe tier**: bias toward Transformative/Moonshot, stay pragmatic.
+8. **Cut the incision**: minimal diff at the stable boundary.
+9. **Close the loop**: run the proof signal.
 
 Double Diamond mapping:
 - Discover: 1-2
 - Define: 3-4
-- Develop: 5-6
-- Deliver: 7-8
+- Develop: 5-7
+- Deliver: 8-9
 
 ## Doctrine (the few rules that do most of the work)
 
@@ -158,6 +163,7 @@ Double Diamond mapping:
 - Don’t add a branch when a type can encode the distinction.
 - Don’t scatter validation when one boundary parse can refine the value.
 - Don’t add flags/conditionals when a normal form collapses cases.
+- Prefer one canonical path for each rule; if two helpers differ only by trim/lowercase/default handling, collapse them into the boundary-owned version.
 
 A good sign you’re near the inevitable solution:
 - the “impossible” branches disappear,
@@ -171,14 +177,17 @@ Use the math, not the sermon:
 
 ### 5) Minimal incision
 - Prefer the smallest change that could be correct.
+- Delete before you add: first try removing duplicated guards, wrappers, or comments that exist only to explain incidental complexity.
+- Prefer the existing primitive: built-ins and canonical repo helpers beat bespoke wrappers until the invariant proves otherwise.
 - If uncertainty is high, cut **observability** first (a tight repro/test/log), then behavior.
 
 ## Guardrails (internal, required)
 These rules keep “inevitability” from becoming scope creep.
 
 - **Scope fence (YAGNI)**: list explicit non-goals; avoid roaming refactors; ask before widening scope.
-- **Dialect fit**: follow the repo’s conventions for naming, errors, tests, and architecture; don’t import a framework to prove a point.
+- **Dialect fit**: follow the repo’s conventions for naming, errors, tests, and architecture; if the repo already has a canonical helper/boundary, reuse it before bypassing it with raw primitives.
 - **Proof signal**: run at least one credible local check; don’t declare done without it.
+- **Code over commentary**: prefer renaming, extraction, canonicalization, or deletion to explain the rule; keep comments for non-local invariants, operator context, or migration notes the code cannot carry.
 - **Total depravity (defensive constraints)**: assume human/agent attention fails; prefer tool-checked constraints over doc-only contracts; keep proofs with values (refined/validated types) instead of separate booleans.
 - **No in-band signaling**: avoid sentinel values (`-1`, `null`, `""`, `NaN`); return explicit option/result/enum states that force handling.
 - **Semantic tags for domains**: distinguish IDs, units, and environments with dedicated types/wrappers; never mix same-primitive values.
@@ -188,6 +197,7 @@ These rules keep “inevitability” from becoming scope creep.
 - **Seam test for abstractions**: callers stay ignorant of variants; one-sentence behavioral name; new instance fits without flags—otherwise shrink it.
 - **Seams before rewrites**: if the right fix requires cutting a hard-to-test knot, add a seam and move the change to the seam.
 - **Legibility (TRACE)**: guard clauses over nesting; flatten → rename → extract; delete incidental complexity.
+- **One path per rule**: prefer one boundary-owned normal form over parallel helpers that differ only in local cleanup steps.
 - **Footgun defusal (API changes)**: identify likely misuses; make misuse hard via names/types/ordering; lock with a regression check.
 - **Break-glass scenario (abstraction escape hatch)**: name the next likely change that would make it harmful; if it happens, inline into callers, delete dead branches, then re-extract the core.
 - **Seam over slogan**: if a polished explanation points one way but the stable boundary points another, follow the boundary and let the prose explain it afterward.

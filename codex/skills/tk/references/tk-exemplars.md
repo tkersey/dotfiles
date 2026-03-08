@@ -52,6 +52,72 @@ Keep these synthetic; real session transcripts belong in `references/eval/`, not
 - Ran: `pnpm test` -> PASS
 ````
 
+### Exemplar 1A (Brownfield): Delete wrapper ladders, keep one normalizer (Python)
+
+````text
+**Contract**
+- Request header normalization happens once in `normalize_header`; callers stop layering cleanup wrappers.
+
+**Invariants**
+- `normalize_header` is the only place that trims, lowercases, and collapses internal whitespace for this flow.
+- Callers receive one canonical representation.
+- Comments do not restate cleanup rules that the code can encode directly.
+
+**Creative Frame**
+- Reframe: First principles
+- Technique: SCAMPER (why: simplify by removing helper layers before adding new ones)
+- Representation shift: Replace three cleanup helpers with one boundary-owned normal form.
+
+**Why This Solution**
+- Stable boundary: `normalize_header(raw)` already sits at ingress for the request path.
+- Not smaller: Adding a fourth alias helper preserves the same drift under a new name.
+- Not larger: A `HeaderNormalizer` class is ceremony when the rule is one pure transform.
+- Proof signal: Unit tests for header normalization + existing request handler tests.
+
+**Incision**
+- Collapse `clean_header`, `safe_header`, and `canonical_header` into the existing `normalize_header`.
+- Reuse built-in string operations (`strip`, `lower`, `split`, `join`) at the boundary instead of adding a new wrapper.
+- Delete caller-side comments that only describe the whitespace cleanup the code now performs directly.
+
+**Proof**
+- Ran: `pytest tests/test_headers.py -q` -> PASS
+- Ran: `pytest tests/test_requests.py -q` -> PASS
+````
+
+### Exemplar 1B (Brownfield): Keep the canonical repo seam, do not bypass it (Go)
+
+````text
+**Contract**
+- Account IDs are parsed through `accountid.Parse`; the endpoint stops re-implementing cleanup inline.
+
+**Invariants**
+- `accountid.Parse` remains the sole owner of trimming, case normalization, and validity for account IDs.
+- Handlers never pass raw account ID strings deeper into the core.
+- Lean code does not mean bypassing the repo's canonical boundary.
+
+**Creative Frame**
+- Reframe: Inversion
+- Technique: TRIZ (why: remove the contradiction between "fewer lines here" and "one rule owner overall")
+- Representation shift: Treat the existing parser package as the lean path because it already owns the invariant.
+
+**Why This Solution**
+- Stable boundary: `accountid.Parse` is the repo's shared ingress for account ID validity.
+- Not smaller: Inline `strings.TrimSpace` plus a regex is a second policy path, not a simplification.
+- Not larger: Rebuilding the parser package or changing every caller is unnecessary.
+- Proof signal: Focused parser tests + the handler test that exercises the endpoint path.
+
+**Incision**
+- Route the endpoint through `accountid.Parse` and delete the local trim/regex cleanup.
+- Keep the repo's existing refined `AccountID` type as the thing the core receives.
+- Leave any migration note only if it captures cross-service rollout context that the code cannot encode.
+
+**Proof**
+- Ran: `go test ./internal/accountid ./internal/http/...` -> PASS
+````
+
+Lean note:
+- If the repo already has one canonical boundary, lean means using it; raw stdlib is only "leaner" when it does not create a second rule owner.
+
 ### Exemplar 2 (Brownfield): Add a seam (Clock), delete flaky sleeps (Go)
 
 ````text
