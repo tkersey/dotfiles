@@ -6,6 +6,7 @@ This directory holds the leakage-audited replay benchmark for `$tk`.
 - Distill real session patterns into replayable, synthetic prompts.
 - Judge seam choice and code shape before prose polish.
 - Catch regressions in strict-output worker mode, advice mode, and non-diff implementation reporting.
+- Exercise internal `$parse` preflight cases without allowing output-contract leakage.
 
 ## Files
 - `replay-suite.yaml`: replay-distilled cases and machine checks.

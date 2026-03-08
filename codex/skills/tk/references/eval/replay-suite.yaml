@@ -52,6 +52,31 @@ cases:
         value: raw vs validated|validated|parse
       - type: regex
         value: sentinel|in-band
+  - id: replay-parse-preflight-hybrid-repo
+    source: replay
+    mode: advice
+    prompt: |
+      Run `$tk` in advice mode only.
+
+      Internally use `$parse` as a preflight.
+
+      Repo sketch: `apps/web/` is component-driven UI, `services/api/` is a single backend service with `controllers/`, `services/`, and `repositories/`, and `jobs/sync/` is a small pipeline slice.
+
+      Need: tenant normalization is duplicated in `services/api/controllers/tenant.py` and `services/api/jobs/retry_tenant.py`. Recommend the incision shape, not a rewrite. The key judgment is that the fix should fit the API slice, not the whole monorepo.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Why This Solution**"
+      - type: technique_from_picker
+      - type: regex
+        value: services/api|API slice|backend slice
+      - type: regex
+        value: shared parser|boundary parser|ingress|normalize
+      - type: regex
+        value: not the whole monorepo|slice|local exception|repo dialect
   - id: replay-worker-patch-first
     source: replay
     source_session: ~/.codex/sessions/2026/02/03/rollout-2026-02-03T07-37-59-019c2427-44c9-7cf3-83ec-dd869e570461.jsonl
@@ -79,6 +104,37 @@ cases:
         value: normalize|slugify
       - type: regex
         value: split|join
+  - id: replay-worker-parse-preflight-no-leak
+    source: replay
+    mode: strict_output
+    prompt: |
+      Follow the outer contract exactly.
+
+      Output one fenced `diff` block and nothing else.
+      Internally use `$parse` as repo-dialect preflight before `$tk`.
+
+      Repo sketch: a hybrid monorepo has `apps/web` for UI and `services/api` for backend work. You are editing only `services/api/src/tenant.js`.
+
+      File: `services/api/src/tenant.js`
+
+      ```js
+      export function normalizeTenant(value) {
+        return value.trim().toLowerCase()
+      }
+      ```
+
+      Need: collapse repeated internal spaces so `"North   Star"` becomes `"north star"` without adding caller-side checks.
+    checks:
+      - type: diff_block_count
+        value: 1
+      - type: not_contains
+        value: "**Contract**"
+      - type: not_contains
+        value: "Repo Kind"
+      - type: regex
+        value: normalizeTenant|tenant
+      - type: regex
+        value: split|join|replace
   - id: replay-worker-no-diff
     source: replay
     source_session: ~/.codex/sessions/2026/02/05/rollout-2026-02-05T17-58-35-019c30ac-2c8e-7ac1-9a9c-9ef9c28c01f1.jsonl

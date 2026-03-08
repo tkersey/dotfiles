@@ -31,6 +31,8 @@ TK is the converge-heavy half of Double Diamond:
 
 If the work is still in Discover/Define uncertainty (needs options/tradeoffs, stakeholder alignment, or competing constraints), invoke `creative-problem-solver` first, then return to TK with a chosen tier and success criteria.
 
+Default internal preflight: run `$parse` first when available to learn repo kind, dominant architecture, subsystem exceptions, drift, and repo-fit hints. Pass target files as `focus_paths` when you know the slice. If `$parse` returns low confidence or mixed evidence, treat it as advisory context only and keep seam ownership with TK.
+
 ## What TK Outputs (and only this)
 TK has two modes.
 
@@ -40,6 +42,7 @@ If you must summarize, place it inside **Incision** as the change summary.
 Output-contract precedence (required):
 - If a higher-priority instruction requires strict artifact output (for example one fenced `diff` block, one `NO_DIFF:` line, or strict JSON), follow that outer contract.
 - In strict-output contexts, run TK internally (Contract, Invariants, Creative Frame, Why This Solution) and emit only the required external artifact.
+- Keep `$parse` internal too when strict-output mode is active; never leak parse prose into the outward artifact.
 - Do not treat invocation text alone (`$tk` inside prompts/wrappers) as proof that TK output format was executed.
 - When output-shape and code-shape preferences conflict, preserve the outer artifact contract and keep TK's seam/shape discipline internal.
 - Decision order for conflicts: outer artifact contract -> explicit task envelope/write scope -> stable boundary/invariants -> repo dialect. See `references/style-precedence-matrix.md`.
@@ -104,6 +107,7 @@ These biases keep TK effective when you control the shape.
 ## Execution (required in Implementation mode)
 - Gate: no code until Contract + Invariants are written.
 - Choose the fastest credible proof signal you can actually run (existing unit test > typecheck > targeted script > integration test).
+- Preflight repo dialect with `$parse` when available; pass target files as `focus_paths` when known and keep low-confidence parse results advisory-only.
 - Cut the incision at the stable boundary; avoid scattering checks through callers.
 - Close the loop: run the proof signal; iterate until it passes; report the result.
 - In wave-oriented execution paired with `$fix`, a wave is done only after `$tk -> $fix -> validation` and immediate delivery:

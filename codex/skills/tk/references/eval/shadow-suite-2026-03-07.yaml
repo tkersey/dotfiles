@@ -1,0 +1,61 @@
+version: 1
+defaults:
+  repo: codex
+  sandbox: read-only
+  case_timeout_seconds: 240
+cases:
+  - id: shadow-advice-parse-preflight
+    source: shadow
+    mode: advice
+    prompt: |
+      Run `$tk` in advice mode only.
+
+      Internally use `$parse` as a preflight.
+
+      Repo sketch: `apps/web` is a component UI, `services/api` is a layered backend, and `jobs/sync` is a pipeline slice.
+
+      Need: region normalization is duplicated in `services/api/controllers/region.py` and `services/api/jobs/retry_region.py`. Recommend the incision shape that best fits the API slice.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Why This Solution**"
+      - type: technique_from_picker
+      - type: regex
+        value: services/api|API slice|backend slice
+      - type: regex
+        value: parser|boundary|normalize|ingress
+
+  - id: shadow-strict-parse-preflight
+    source: shadow
+    mode: strict_output
+    prompt: |
+      Follow the outer contract exactly.
+
+      Output one fenced `diff` block and nothing else.
+      Internally use `$parse` as repo-dialect preflight before `$tk`.
+
+      Repo sketch: a hybrid monorepo has `apps/web` for UI and `services/api` for backend work. You are editing only `services/api/src/slug.js`.
+
+      File: `services/api/src/slug.js`
+
+      ```js
+      export function slugifyRegion(value) {
+        return value.trim().toLowerCase().replace(" ", "-")
+      }
+      ```
+
+      Need: collapse repeated spaces so `"North   Star"` becomes `"north-star"` without pushing checks into callers.
+    checks:
+      - type: diff_block_count
+        value: 1
+      - type: not_contains
+        value: "**Contract**"
+      - type: not_contains
+        value: "Repo Kind"
+      - type: regex
+        value: slugifyRegion|region
+      - type: regex
+        value: split|join|replace
