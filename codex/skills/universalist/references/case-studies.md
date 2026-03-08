@@ -1,95 +1,107 @@
-# ADD Case Studies
+# Universalist Case Studies
 
 ## Table of contents
-- Case 1: Pricing and promotions (Haskell)
-- Case 2: Access control policies (Go)
-- Case 3: Workflow state machine (TypeScript)
+- Case 1: Workflow flags to coproduct (TypeScript)
+- Case 2: Shared-id join to pullback witness (Go)
+- Case 3: Repeated validation to refined type (Java or Python)
+- Case 4: Branchy policy logic to exponential (Java or C#)
+- Case 5: Rule engine to free construction (TypeScript or Python)
 
-## Case 1: Pricing and promotions (Haskell)
-**Domain**: A checkout pipeline with discounts, taxes, and fees.
+## Case 1: Workflow flags to coproduct (TypeScript)
+**Domain**: A document lifecycle uses `status`, `approved`, `publishedAt`, and `archivedReason` fields that drift out of sync.
 
-**Algebra**: Monoid (composition of adjustments), Semiring (add/multiply for totals).
-
-**Types**
-```haskell
-newtype Amount = Amount Int
-newtype Adjust = Adjust { runAdjust :: Amount -> Amount }
-
-instance Semigroup Adjust where
-  Adjust f <> Adjust g = Adjust (g . f)
-
-instance Monoid Adjust where
-  mempty = Adjust id
-```
-
-**Laws**
-- Identity: mempty <> a == a
-- Associativity: a <> (b <> c) == (a <> b) <> c
+**Construction**: Coproduct for the lifecycle plus a product for shared metadata.
 
 **Architecture change**
-- Replace a chain of conditionals with a list of Adjust.
-- Fold adjustments into a single function via mconcat.
-- Delete bespoke ordering code by using associativity law.
+- Replace string flags and booleans with a tagged union.
+- Keep stable fields such as title and body in a product type.
+- Add a boundary decoder so API or DB rows can stay in the legacy shape during a small refactor.
+- Centralize transitions in one pure function.
+
+**Why this fits**
+- Each document is in exactly one state.
+- Eliminating impossible combinations is the main win, not algebraic combination.
 
 **Testing**
-- Property test: applying mconcat of adjusts equals folding them sequentially.
-- Round-trip: normalize promotions (sorted by priority) and prove idempotence.
+- Exhaustive handling for every state.
+- Migration test from the legacy row shape to exactly one variant.
+- Deterministic fixtures for invalid legacy field combinations.
+- Differential check that legal transitions still behave the same.
 
-## Case 2: Access control policies (Go)
-**Domain**: Permissions from multiple sources (roles, feature flags, overrides).
+## Case 2: Shared-id join to pullback witness (Go)
+**Domain**: An API handler pairs a `Customer` record and a `Subscription` record but must reject mismatched `AccountID` values.
 
-**Algebra**: Join/meet semilattice on sets.
-
-**Types**
-```go
-type PermSet map[string]struct{}
-
-type Policy struct { Allow PermSet }
-
-func Join(a, b Policy) Policy { /* union */ }
-func Meet(a, b Policy) Policy { /* intersection */ }
-```
-
-**Laws**
-- Commutative: Join(a,b) == Join(b,a)
-- Idempotent: Join(a,a) == a
-- Associative: Join(a, Join(b,c)) == Join(Join(a,b), c)
+**Construction**: Pullback-shaped join over `AccountID`.
 
 **Architecture change**
-- Replace precedence rules with algebraic joins.
-- Eliminate "override" flags; encode them as elements in the lattice.
-- Co-locate policy merge logic in a single module with laws + tests.
+- Introduce a checked constructor such as `NewCustomerSubscription`.
+- Preserve both projections so callers can still access each original view.
+- Delete scattered `if customer.AccountID != subscription.AccountID` checks from business code.
+
+**Why this fits**
+- The real invariant is agreement over a shared projection.
+- A plain pair plus repeated assertions leaks the proof obligation everywhere.
 
 **Testing**
-- Property tests for commutative/idempotent/associative.
-- Model-based test: compare policy evaluation to a simple reference interpreter.
+- Constructor accepts matching pairs.
+- Constructor rejects mismatches.
+- Follow-up operations preserve the witness or require reconstruction.
 
-## Case 3: Workflow state machine (TypeScript)
-**Domain**: Document lifecycle with review, approval, publish, archive.
+## Case 3: Repeated validation to refined type (Java or Python)
+**Domain**: Email addresses or non-empty identifiers are revalidated in controllers, services, and serializers.
 
-**Algebra**: Sum type for state, product for metadata, monoid for audit log.
-
-**Types**
-```ts
-type State =
-  | { tag: "Draft" }
-  | { tag: "InReview"; reviewers: string[] }
-  | { tag: "Approved"; approver: string }
-  | { tag: "Published"; url: string }
-  | { tag: "Archived"; reason: string };
-
-type Doc = { state: State; title: string; body: string };
-```
-
-**Laws**
-- Transition totality: every State must be handled.
-- No illegal states: cannot be both Approved and Archived.
+**Construction**: Equalizer or refined type at the boundary.
 
 **Architecture change**
-- Remove "status" string flags and boolean fields.
-- Centralize transitions in a single pure function.
-- Use exhaustive pattern matching to prevent illegal transitions.
+- Replace raw strings with a value object or wrapper built through one checked constructor.
+- Normalize once, for example lowercase and trim, if the domain allows it.
+- Parse once in controllers and serializers, keep services and repositories on the refined type, and unwrap only at explicit I/O boundaries.
+
+**Why this fits**
+- The main property is membership in a stable legal subset.
+- A single constructor is simpler than re-running the same predicate everywhere.
 
 **Testing**
-- Property test: transitions preserve invariants (e.g., Published has url).
-- Model-based test: state transition graph vs reference table.
+- Accept valid inputs.
+- Reject invalid inputs.
+- Prove normalization is idempotent if normalization exists.
+- Add boundary tests showing the raw string becomes the refined value exactly once.
+
+## Case 4: Branchy policy logic to exponential (Java or C#)
+**Domain**: Pricing or policy code switches on flags to decide which calculation to run.
+
+**Construction**: Exponential encoded as a strategy, closure, or function object.
+
+**Architecture change**
+- Replace a large branch with a supplied function or strategy interface.
+- Compose reusable behaviors instead of appending more conditionals.
+- If combination laws matter, apply ADD inside the strategy outputs, for example a monoid for audit logs.
+
+**Why this fits**
+- The real variation is behavior from input to output.
+- The code wants parameterized computation, not a larger state machine.
+
+**Testing**
+- Fixture-based behavior tests for each supplied strategy.
+- Composition-order tests when strategies chain.
+- Differential check against the old branchy implementation during migration.
+
+## Case 5: Rule engine to free construction (TypeScript or Python)
+**Domain**: A workflow or rule engine mixes business syntax, evaluation, and logging inside one class hierarchy.
+
+**Construction**: Free construction or initial algebra via an AST plus interpreters.
+
+**Architecture change**
+- Model the rules as syntax nodes.
+- Add one interpreter for execution and one for explanation or logging.
+- Keep constructors dumb and interpreters explicit, then add adapters from the legacy class tree into the shared rule AST.
+
+**Why this fits**
+- Multiple interpretations are valuable.
+- Separating syntax from execution makes testing and migration easier.
+
+**Testing**
+- Interpreter consistency on a shared corpus of rules.
+- Explanation output should line up with the same branch decisions used by evaluation.
+- Fold or evaluation tests for representative trees.
+- Differential tests against the legacy evaluator until migration is complete.

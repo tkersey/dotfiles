@@ -1,56 +1,120 @@
-# Go Examples (ADD)
+# Go Examples
 
 ## Table of contents
-- Sum types via interfaces
-- Product types
-- Smart constructors
-- Monoid-like combine
-- Validation with error accumulation
-- Lattice for permissions
-- Semiring-like scores
-- State machine transitions
-- Fold with monoid
-- Normalization
-- Homomorphism
+- Product and terminal object
+- Coproduct and initial object
+- Refined type
+- Pullback witness
+- Exponential
+- Free construction
+- ADD sub-lens
 
-## Sum types via interfaces
-```go
-// Coproduct: one of several variants
-package domain
-
-type PaymentStatus interface{ isPaymentStatus() }
-
-type Pending struct{}
-func (Pending) isPaymentStatus() {}
-
-type Settled struct{ Ref string }
-func (Settled) isPaymentStatus() {}
-
-type Failed struct{ Reason string }
-func (Failed) isPaymentStatus() {}
-```
-
-## Product types
+## Product and terminal object
 ```go
 type Money struct {
   Amount   int
   Currency string
 }
+
+type NoPayload struct{}
 ```
 
-## Smart constructors
+## Coproduct and initial object
 ```go
-func NewNonEmpty(s string) (string, error) {
+type DocState interface{ isDocState() }
+
+type Draft struct{}
+func (Draft) isDocState() {}
+
+type InReview struct{ Reviewers []string }
+func (InReview) isDocState() {}
+
+type Published struct{ URL string }
+func (Published) isDocState() {}
+```
+
+## Refined type
+```go
+type Email string
+
+func NewEmail(s string) (Email, error) {
   if s == "" {
-    return "", fmt.Errorf("empty string")
+    return "", fmt.Errorf("empty email")
   }
-  return s, nil
+  return Email(strings.ToLower(strings.TrimSpace(s))), nil
 }
 ```
 
-## Monoid-like combine
+## Pullback witness
 ```go
-type Log struct { Lines []string }
+type AccountID string
+
+type Customer struct {
+  AccountID AccountID
+  Name      string
+}
+
+type Subscription struct {
+  AccountID AccountID
+  Plan      string
+}
+
+type CustomerSubscription struct {
+  customer     Customer
+  subscription Subscription
+}
+
+func NewCustomerSubscription(customer Customer, subscription Subscription) (CustomerSubscription, error) {
+  if customer.AccountID != subscription.AccountID {
+    return CustomerSubscription{}, fmt.Errorf("account mismatch")
+  }
+  return CustomerSubscription{customer: customer, subscription: subscription}, nil
+}
+
+func (cs CustomerSubscription) Customer() Customer { return cs.customer }
+func (cs CustomerSubscription) Subscription() Subscription { return cs.subscription }
+func (cs CustomerSubscription) AccountID() AccountID { return cs.customer.AccountID }
+```
+
+## Exponential
+```go
+type Formatter func(string) string
+
+func WithPrefix(prefix string) Formatter {
+  return func(body string) string {
+    return prefix + body
+  }
+}
+```
+
+## Free construction
+```go
+type Expr interface{ isExpr() }
+
+type Lit struct{ N int }
+func (Lit) isExpr() {}
+
+type Add struct {
+  A Expr
+  B Expr
+}
+func (Add) isExpr() {}
+
+func Eval(e Expr) int {
+  switch v := e.(type) {
+  case Lit:
+    return v.N
+  case Add:
+    return Eval(v.A) + Eval(v.B)
+  default:
+    return 0
+  }
+}
+```
+
+## ADD sub-lens
+```go
+type Log struct{ Lines []string }
 
 func EmptyLog() Log { return Log{Lines: []string{}} }
 
@@ -60,111 +124,4 @@ func CombineLog(a, b Log) Log {
   out = append(out, b.Lines...)
   return Log{Lines: out}
 }
-```
-
-## Validation with error accumulation
-```go
-type Validation[T any] struct {
-  Value T
-  Errs  []error
-}
-
-func (v Validation[T]) Combine(w Validation[T]) Validation[T] {
-  if len(v.Errs) > 0 {
-    return Validation[T]{Errs: append(v.Errs, w.Errs...)}
-  }
-  if len(w.Errs) > 0 {
-    return Validation[T]{Errs: append(v.Errs, w.Errs...)}
-  }
-  return v
-}
-```
-
-## Lattice for permissions
-```go
-type PermSet map[string]struct{}
-
-type Perm struct { Set PermSet }
-
-func Join(a, b Perm) Perm { // union
-  out := Perm{Set: map[string]struct{}{}}
-  for k := range a.Set { out.Set[k] = struct{}{} }
-  for k := range b.Set { out.Set[k] = struct{}{} }
-  return out
-}
-
-func Meet(a, b Perm) Perm { // intersection
-  out := Perm{Set: map[string]struct{}{}}
-  for k := range a.Set {
-    if _, ok := b.Set[k]; ok { out.Set[k] = struct{}{} }
-  }
-  return out
-}
-```
-
-## Semiring-like scores
-```go
-type Score int
-
-func Add(a, b Score) Score { return a + b }
-func Mul(a, b Score) Score { return a * b }
-```
-
-## State machine transitions
-```go
-type State int
-
-const (
-  Draft State = iota
-  Review
-  Approved
-  Published
-)
-
-func Step(s State) State {
-  switch s {
-  case Draft:
-    return Review
-  case Review:
-    return Approved
-  case Approved:
-    return Published
-  default:
-    return Published
-  }
-}
-```
-
-## Fold with monoid
-```go
-func FoldLog(logs []Log) Log {
-  acc := EmptyLog()
-  for _, l := range logs {
-    acc = CombineLog(acc, l)
-  }
-  return acc
-}
-```
-
-## Normalization
-```go
-type Expr struct {
-  Op   string
-  A, B *Expr
-  Lit  *int
-}
-
-func Normalize(e *Expr) *Expr {
-  if e == nil { return nil }
-  if e.Op == "add" && e.A != nil && e.A.Lit != nil && *e.A.Lit == 0 {
-    return Normalize(e.B)
-  }
-  return &Expr{Op: e.Op, A: Normalize(e.A), B: Normalize(e.B), Lit: e.Lit}
-}
-```
-
-## Homomorphism
-```go
-// len is a homomorphism from concatenation to addition:
-// len(a + b) == len(a) + len(b)
 ```

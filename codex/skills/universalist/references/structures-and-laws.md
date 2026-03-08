@@ -1,84 +1,167 @@
-# Structures and Laws Catalog
+# Structures and Universal-Property Catalog
 
 ## Table of contents
-- Products and coproducts
-- Semigroup and monoid
-- Groups
-- Lattices and posets
-- Semirings
-- Functor / Applicative / Monad
-- Homomorphisms
-- Normal forms
+- Products and terminal objects
+- Coproducts and initial objects
+- Equalizers and refined types
+- Pullbacks
+- Exponentials
+- Free constructions and initial algebras
+- ADD sub-lens
+- Advanced reference tier
 
-## Products and coproducts
-**Product (record/struct)**
-- Shape: A x B
-- Laws: projection consistency (fst (a,b) = a, snd (a,b) = b)
-- Use: independent fields, cross-product of constraints
+## Products and terminal objects
+**Property**
+- A product `A x B` is the best way to hold `A` and `B` together.
+- To give `X -> A x B` is equivalent to giving both `X -> A` and `X -> B`.
+- A terminal object is the unique no-information payload.
 
-**Coproduct (sum/tagged union)**
-- Shape: A + B
-- Laws: exhaustiveness and disjointness (each value is exactly one variant)
-- Use: alternatives, state machines, error typing
+**Use**
+- Independent fields, grouped parameters, return bundles, shared context, `unit` or `struct{}` payloads.
 
-## Semigroup and monoid
+**Code shape**
+- Record, struct, tuple, or object with projections.
+
+**Validation**
+- Constructor and projection consistency.
+- If fields are meant to be independent, avoid hidden conditional coupling between them.
+
+**Avoid when**
+- The fields are really alternatives or some combinations are illegal without extra checks.
+
+## Coproducts and initial objects
+**Property**
+- A coproduct `A + B` is the best way to say a value is either `A` or `B`.
+- To give `A + B -> X` is equivalent to giving one handler for `A` and one for `B`.
+- An initial object is the impossible case with no inhabitants.
+
+**Use**
+- Workflows, typed errors, event variants, state machines, partial parsing results.
+
+**Code shape**
+- Tagged union, enum with payload, sealed interface, interface plus discriminant, or visitor.
+
+**Validation**
+- Exhaustive handling.
+- Disjointness: every value is exactly one variant.
+
+**Avoid when**
+- The cases are actually a record with optional independent fields.
+
+## Equalizers and refined types
+**Property**
+- An equalizer is the best subset where two observations agree.
+- In code, this usually appears as a refined type or checked constructor for values satisfying one stable predicate.
+
+**Use**
+- Email addresses, non-empty strings, normalized identifiers, versioned payloads, validated ranges.
+
+**Code shape**
+- Smart constructor, parser, value object, normalized wrapper, constructor plus error.
+
+**Validation**
+- Accept valid inputs.
+- Reject invalid inputs.
+- If normalization exists, prove idempotence.
+
+**Avoid when**
+- The predicate depends on mutable external context or is too unstable to capture once.
+
+## Pullbacks
+**Property**
+- A pullback is the best way to hold `X` and `Y` together while forcing their projections into `Z` to agree.
+- In code, this is a checked witness that two views belong to the same account, tenant, locale, schema version, or other shared key.
+
+**Use**
+- Joining two records over a shared identifier, reconciling cache and DB views, pairing request and permission context.
+
+**Code shape**
+- Checked composite struct, witness object, validated pair with preserved projections.
+
+**Validation**
+- Preserve both projections.
+- Reject mismatches.
+- Keep the agreement proof in one constructor.
+
+**Avoid when**
+- A plain pair plus occasional assertions is enough and there is no stable shared projection worth encoding.
+
+## Exponentials
+**Property**
+- An exponential `B^A` internalizes functions from `A` to `B`.
+- To give `X -> B^A` corresponds to giving `X x A -> B`.
+
+**Use**
+- Closures, strategy objects, dependency injection, render functions, policy callbacks, composable handlers.
+
+**Code shape**
+- Function, closure, callable object, strategy interface, or configuration plus callable.
+
+**Validation**
+- Exercise application behavior with representative fixtures.
+- Check composition or adapter rules when the repo already composes these functions.
+
+**Avoid when**
+- The problem is really data modeling or state classification rather than behavior parameterization.
+
+## Free constructions and initial algebras
+**Property**
+- A free construction gives syntax with no extra equations beyond the chosen operations.
+- An initial algebra gives the canonical fold out of that syntax into any interpreter.
+
+**Use**
+- Query builders, command ASTs, rule engines, workflows, compiler IR, serialization formats with multiple interpreters.
+
+**Code shape**
+- AST or IR nodes plus explicit interpreters, folds, or evaluators.
+
+**Validation**
+- Interpreter consistency.
+- Fold or evaluation laws.
+- Round-trip or differential tests against legacy behavior.
+
+**Avoid when**
+- There is only one hard-coded execution path and the syntax tree adds no separation benefit.
+
+## ADD sub-lens
+Use Algebra-Driven Design after choosing the outer construction.
+
 **Semigroup**
-- op(a,b) associative: op(a, op(b,c)) == op(op(a,b), c)
-- Use: combine logs, configs, validations
+- `op(a, op(b, c)) == op(op(a, b), c)`
+- Use for logs, config merges, validation accumulation.
 
 **Monoid**
-- Semigroup + identity element `empty`
+- Semigroup plus identity `empty`
 - Laws:
-  - assoc: a <> (b <> c) == (a <> b) <> c
-  - identity: empty <> a == a; a <> empty == a
-- Use: aggregation, folding, accumulation
+  - `a <> (b <> c) == (a <> b) <> c`
+  - `empty <> a == a`
+  - `a <> empty == a`
+- Use for aggregation, folds, accumulation.
 
-## Groups
-**Group**
-- Monoid + inverse
-- Laws: a <> inv(a) == empty
-- Use: undo/redo, reversible ops
+**Join or meet semilattice**
+- associative, commutative, idempotent
+- Use for permissions, conflict resolution, feature flags.
 
-## Lattices and posets
-**Join-semilattice**
-- op is associative, commutative, idempotent
-- Laws:
-  - assoc: a v (b v c) == (a v b) v c
-  - comm: a v b == b v a
-  - idem: a v a == a
-- Use: permissions, feature flags, conflict resolution
+**Semiring**
+- additive and multiplicative structure with distributivity and zero annihilation
+- Use for costs, scoring, path weights, policy composition.
 
-**Meet-semilattice**
-- Dual of join with ^
-- Same laws as above
+**Functor, Applicative, Monad**
+- Use when the repo already works with mapped, lifted, or sequenced computations.
+- Keep the language and ecosystem idiomatic; do not force these names into codebases that do not use them.
 
-## Semirings
-Two operations: add and multiply
-- Add: associative, commutative, identity (zero)
-- Multiply: associative, identity (one)
-- Distributivity: a*(b+c) == a*b + a*c
-- Zero annihilates: a*0 == 0 == 0*a
-- Use: costs, path weights, policy composition
+**Homomorphisms and normal forms**
+- `h(op(a, b)) == op'(h(a), h(b))`
+- `normalize(normalize(x)) == normalize(x)`
+- Use these as refactor criteria and regression checks.
 
-## Functor / Applicative / Monad
-**Functor**
-- map id == id
-- map (f . g) == map f . map g
+## Advanced reference tier
+- **Pushouts, coequalizers, and quotients**: good for merge and identification problems, especially schema or API gluing.
+- **Adjunctions**: useful to explain free versus forgetful relationships and best approximations.
+- **Representables and Yoneda**: useful for generic-element reasoning and some polymorphic representation theorems.
+- **Kan extensions**: useful for schema migration, data transport, and shape-changing semantics.
+- **Monads and comonads as categorical abstractions**: useful when effects or contexts are already first-class in the repo.
+- **Ends, coends, and optics**: useful when the codebase already uses profunctors, lenses, prisms, or advanced encodings.
+- **Higher-categorical coherence**: keep in reserve for explicit homotopy or dependent-type semantics prompts.
 
-**Applicative**
-- identity, homomorphism, interchange, composition (see law list per library)
-
-**Monad**
-- left identity: return a >>= f == f a
-- right identity: m >>= return == m
-- associativity: (m >>= f) >>= g == m >>= (\x -> f x >>= g)
-
-## Homomorphisms
-A function `h` between algebras that preserves operations:
-- h(op(a,b)) == op'(h(a), h(b))
-Use as a refactor criterion and test property.
-
-## Normal forms
-Define a canonical representation and a `normalize` function.
-- Law: normalize(normalize(x)) == normalize(x)
-- Law: normalize(x) == x for already-canonical inputs
+Do not lead with the advanced tier unless the prompt or codebase already operates there.

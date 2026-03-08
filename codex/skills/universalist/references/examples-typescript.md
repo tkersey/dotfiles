@@ -1,41 +1,145 @@
-# TypeScript Examples (ADD)
+# TypeScript Examples
 
 ## Table of contents
-- Tagged unions
-- Product types
-- Smart constructors
-- Monoid combine
-- Validation
-- Lattice for permissions
-- Semiring-like scoring
-- State machine transitions
-- Fold with monoid
-- Normalization
-- Homomorphism
+- Product and terminal object
+- Coproduct and initial object
+- Refined type
+- Pullback witness
+- Exponential
+- Free construction
+- ADD sub-lens
 
-## Tagged unions
-```ts
-type PaymentStatus =
-  | { tag: "Pending" }
-  | { tag: "Settled"; ref: string }
-  | { tag: "Failed"; reason: string };
-```
-
-## Product types
+## Product and terminal object
 ```ts
 type Money = { amount: number; currency: string };
+type NoPayload = Record<never, never>;
 ```
 
-## Smart constructors
+## Coproduct and initial object
 ```ts
-type NonEmpty = { tag: "NonEmpty"; value: string };
+type LegacyDocument = {
+  status: string;
+  approvedBy?: string;
+  publishedAt?: string;
+  archivedReason?: string;
+};
 
-function mkNonEmpty(s: string): NonEmpty | null {
-  return s.length === 0 ? null : { tag: "NonEmpty", value: s };
+type DocState =
+  | { tag: "Draft" }
+  | { tag: "Approved"; approvedBy: string }
+  | { tag: "Published"; approvedBy: string; publishedAt: string }
+  | { tag: "Archived"; archivedReason: string };
+
+function toState(doc: LegacyDocument): DocState | null {
+  switch (doc.status) {
+    case "draft":
+      return doc.approvedBy == null && doc.publishedAt == null && doc.archivedReason == null
+        ? { tag: "Draft" }
+        : null;
+    case "approved":
+      return doc.approvedBy != null && doc.publishedAt == null && doc.archivedReason == null
+        ? { tag: "Approved", approvedBy: doc.approvedBy }
+        : null;
+    case "published":
+      return doc.approvedBy != null && doc.publishedAt != null && doc.archivedReason == null
+        ? { tag: "Published", approvedBy: doc.approvedBy, publishedAt: doc.publishedAt }
+        : null;
+    case "archived":
+      return doc.archivedReason != null && doc.approvedBy == null && doc.publishedAt == null
+        ? { tag: "Archived", archivedReason: doc.archivedReason }
+        : null;
+    default:
+      return null;
+  }
+}
+
+function renderState(state: DocState): string {
+  switch (state.tag) {
+    case "Draft":
+      return "draft";
+    case "Approved":
+      return state.approvedBy;
+    case "Published":
+      return state.publishedAt;
+    case "Archived":
+      return state.archivedReason;
+  }
 }
 ```
 
-## Monoid combine
+## Refined type
+```ts
+type Email = { tag: "Email"; value: string };
+
+function mkEmail(raw: string): Email | null {
+  const value = raw.trim().toLowerCase();
+  return value.length === 0 ? null : { tag: "Email", value };
+}
+```
+
+## Pullback witness
+```ts
+type Customer = { accountId: string; name: string };
+type Subscription = { accountId: string; plan: string };
+type CustomerSubscription = { customer: Customer; subscription: Subscription };
+
+function mkCustomerSubscription(
+  customer: Customer,
+  subscription: Subscription
+): CustomerSubscription | null {
+  return customer.accountId === subscription.accountId
+    ? { customer, subscription }
+    : null;
+}
+```
+
+## Exponential
+```ts
+type Formatter = (body: string) => string;
+
+function withPrefix(prefix: string): Formatter {
+  return body => `${prefix}${body}`;
+}
+```
+
+## Free construction
+```ts
+type Rule =
+  | { tag: "All"; rules: Rule[] }
+  | { tag: "Any"; rules: Rule[] }
+  | { tag: "Not"; rule: Rule }
+  | { tag: "FieldEq"; field: string; value: string };
+
+type Facts = Record<string, string>;
+
+function evaluateRule(rule: Rule, facts: Facts): boolean {
+  switch (rule.tag) {
+    case "All":
+      return rule.rules.every(child => evaluateRule(child, facts));
+    case "Any":
+      return rule.rules.some(child => evaluateRule(child, facts));
+    case "Not":
+      return !evaluateRule(rule.rule, facts);
+    case "FieldEq":
+      return facts[rule.field] === rule.value;
+  }
+}
+
+function explainRule(rule: Rule): string {
+  switch (rule.tag) {
+    case "All":
+      return `all(${rule.rules.map(explainRule).join(", ")})`;
+    case "Any":
+      return `any(${rule.rules.map(explainRule).join(", ")})`;
+    case "Not":
+      return `not(${explainRule(rule.rule)})`;
+    case "FieldEq":
+      return `${rule.field} == ${rule.value}`;
+  }
+}
+```
+
+## ADD sub-lens
 ```ts
 type Log = { lines: string[] };
 const emptyLog: Log = { lines: [] };
@@ -43,78 +147,4 @@ const emptyLog: Log = { lines: [] };
 function combineLog(a: Log, b: Log): Log {
   return { lines: [...a.lines, ...b.lines] };
 }
-```
-
-## Validation
-```ts
-type Validation<E, A> =
-  | { tag: "Failure"; errors: E[] }
-  | { tag: "Success"; value: A };
-
-function combineValidation<E, A>(a: Validation<E, A>, b: Validation<E, A>): Validation<E, A> {
-  if (a.tag === "Failure" && b.tag === "Failure") {
-    return { tag: "Failure", errors: [...a.errors, ...b.errors] };
-  }
-  if (a.tag === "Failure") return a;
-  if (b.tag === "Failure") return b;
-  return a;
-}
-```
-
-## Lattice for permissions
-```ts
-type Perm = Set<string>;
-
-function join(a: Perm, b: Perm): Perm {
-  return new Set([...a, ...b]);
-}
-
-function meet(a: Perm, b: Perm): Perm {
-  return new Set([...a].filter(x => b.has(x)));
-}
-```
-
-## Semiring-like scoring
-```ts
-type Score = number;
-const add = (a: Score, b: Score) => a + b;
-const mul = (a: Score, b: Score) => a * b;
-```
-
-## State machine transitions
-```ts
-type State = "Draft" | "Review" | "Approved" | "Published";
-
-function step(s: State): State {
-  switch (s) {
-    case "Draft": return "Review";
-    case "Review": return "Approved";
-    case "Approved": return "Published";
-    default: return "Published";
-  }
-}
-```
-
-## Fold with monoid
-```ts
-function foldLog(logs: Log[]): Log {
-  return logs.reduce((acc, l) => combineLog(acc, l), emptyLog);
-}
-```
-
-## Normalization
-```ts
-type Expr = { tag: "Lit"; n: number } | { tag: "Add"; a: Expr; b: Expr };
-
-function normalize(e: Expr): Expr {
-  if (e.tag === "Add" && e.a.tag === "Lit" && e.a.n === 0) return normalize(e.b);
-  if (e.tag === "Add") return { tag: "Add", a: normalize(e.a), b: normalize(e.b) };
-  return e;
-}
-```
-
-## Homomorphism
-```ts
-// length is a homomorphism from concatenation to addition:
-// length(a + b) === length(a) + length(b)
 ```
