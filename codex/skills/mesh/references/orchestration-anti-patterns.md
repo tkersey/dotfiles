@@ -1,6 +1,6 @@
 # Mesh Batch Anti-Patterns
 
-Use `$mesh` for uniform batch jobs, not as a general-purpose orchestration layer.
+Use `$mesh` for uniform batch jobs and repeated leaf execution, not as a general-purpose orchestration layer.
 
 ## 1) Heterogeneous work in a row runner
 
@@ -76,7 +76,7 @@ Better path:
 
 Anti-pattern:
 
-- routing ordinary implementation work to `$mesh` just because multiple agents exist
+- routing unshaped implementation work to `$mesh` just because multiple agents exist
 
 Why it fails:
 
@@ -84,4 +84,34 @@ Why it fails:
 
 Better path:
 
-- stay local by default; use `$teams` for heterogeneous delegation and `$mesh` only for true batch fanout
+- shape the work with `$teams` or locally, then prefer `$mesh` once the remaining units are repeated leaf work
+
+## 7) Synthetic evidence waves
+
+Anti-pattern:
+
+- launching a late batch of near-no-op rows just to prove mesh usage or lane completeness
+
+Why it fails:
+
+- concurrency numbers go up while unique work stays flat
+- tokens and review time are spent on evidence theater instead of useful execution
+
+Better path:
+
+- treat primary substantive rows as sufficient evidence and only add follow-up rows for blocker or proof-failure cases
+
+## 8) Cartesian lane multiplication on the same scope
+
+Anti-pattern:
+
+- expanding one unit into coder, reducer, fixer, prover, and integrator rows on the same scope before any blocker exists
+
+Why it fails:
+
+- workers duplicate effort, inflate fanout metrics, and create misleading signs of progress
+- integration cost rises without adding new substantive coverage
+
+Better path:
+
+- start with one primary row per substantive unit and add secondary rows only after a concrete blocker, failed proof, or non-trivial diff justifies them

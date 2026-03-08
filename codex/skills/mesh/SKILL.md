@@ -1,21 +1,22 @@
 ---
 name: mesh
-description: "Use `$mesh` for homogeneous leaf-batch execution over `spawn_agents_on_csv`: CSV or file-list fanout, repeated audits, structured extraction, or other one-row-per-worker jobs after planning is done. This is a narrow batch adapter, not the default orchestration workflow."
+description: "Use `$mesh` for homogeneous leaf-batch execution over `spawn_agents_on_csv`: once planning has shaped repeated independent units, prefer one substantive row per unit with structured results and explicit concurrency."
 ---
 
 # mesh
 
 ## Intent
 
-`$mesh` is the narrow batch-execution path for Codex.
+`$mesh` is the high-fanout batch-execution path for Codex once repeated leaf work has been shaped.
 
 It is for already-shaped leaf work, not for planning or decomposition.
 
 Use it when:
 
-- the user explicitly asks for `$mesh`
+- the user explicitly asks for `$mesh`, or repeated leaf work is already clearly row-shaped
 - the workload is row-shaped and homogeneous
 - each row can be processed independently
+- each row represents one substantive unit with a unique scope and acceptance target
 - you want structured per-row results exported to CSV
 - planning is complete and the remaining work is leaf execution
 
@@ -42,6 +43,7 @@ Do not use it when:
 - classify one ticket, log chunk, or document per row
 - extract structured fields from many inputs
 - run the same bounded transformation over a file list with disjoint outputs
+- execute one disjoint implementation unit per row after `$select` or `$teams` has already shaped the wave
 
 If the work is heterogeneous, use `$teams` or direct `spawn_agent` instead.
 
@@ -56,14 +58,22 @@ Use `$mesh` only when every row is already a leaf task:
 
 If you still need to decide the row schema, challenge the approach, or compare strategies, do that work before `$mesh`, usually with `$teams` or locally.
 
+## Substantive-unit rule
+
+- One row should represent one unique work unit with one unique write or read scope and one acceptance target.
+- Do not multiply rows over the same scope merely to create more lanes, more evidence, or a higher concurrency number.
+- Treat a clean primary row as sufficient evidence for that unit.
+- Only add secondary review, reduction, fixer, prover, or integration rows when a prior row reports a concrete blocker, a failed proof, or a non-trivial diff that needs another pass.
+
 ## Recommended Flow
 
 1. Confirm planning is complete and the rows are truly homogeneous and independent.
-2. Build a CSV with stable headers and, when useful, a stable `id_column`.
-3. Write one instruction template using `{column}` placeholders.
-4. Choose only the controls you need: `output_schema`, `output_csv_path`, `max_concurrency`, `max_runtime_seconds`.
+2. Build a CSV with stable headers and, when useful, a stable `id_column`; keep one row per substantive unit.
+3. Write one instruction template using `{column}` placeholders and one primary deliverable per row.
+4. Choose only the controls you need: `output_schema`, `output_csv_path`, `max_concurrency`, `max_runtime_seconds`; set `max_concurrency` to the safe row count unless a lower cap is required.
 5. Run `spawn_agents_on_csv`.
-6. Review the exported CSV and do any integration or follow-up work locally or with `$teams`.
+6. Only queue secondary rows for units that reported a concrete blocker, a failed proof, or a non-trivial diff needing another pass.
+7. Review the exported CSV and do any integration or follow-up work locally or with `$teams`.
 
 ## Concrete Examples
 
@@ -143,6 +153,25 @@ Why `$mesh`:
 - the write scopes are disjoint
 - the same bounded transformation repeats for every row
 
+### Example 4: Disjoint implementation units
+
+Goal:
+
+> Execute the first safe implementation wave from an OrchPlan where each task already owns a disjoint scope.
+
+Good `$mesh` setup:
+
+- CSV columns such as `id,objective,write_scope,proof_command`
+- one primary row per implementation unit, not one row per reviewer lane
+- `max_concurrency` set to the number of safe disjoint units
+- follow-up prover or fixer rows added only for units that failed proof or reported blockers
+
+Why `$mesh`:
+
+- the work is repeated leaf execution after planning is complete
+- each row owns a unique scope and has a concrete acceptance target
+- the batch gets real fanout without inventing synthetic evidence lanes
+
 ### Counterexample: one feature across shared code
 
 Do not use `$mesh` for:
@@ -158,9 +187,11 @@ Why not:
 ## Row Design Rules
 
 - Keep each row objective concrete and bounded.
+- Make each row one substantive unit with a unique scope and acceptance target.
 - Prefer read-only work or disjoint write scopes.
 - Keep result objects structured and comparable across rows.
 - Use stable row ids when you will reconcile outputs later.
+- Do not multiply rows by role or lane on the same scope unless a blocker or failed proof justifies the follow-up.
 - If rows need shared mutable state, stop and switch away from `$mesh`.
 - If a row still needs planning, stop and finish decomposition before running the batch.
 
@@ -179,6 +210,8 @@ See `references/output-contract.md`.
 - doing recursive planning or debate inside the batch workers
 - splitting one tightly coupled implementation across dependent rows
 - overlapping write scopes across rows
+- launching a synthetic evidence wave after the substantive work is already done
+- multiplying coder/reducer/fixer/prover/integrator rows over the same scope without a blocker-triggered reason
 - relying on free-form text instead of structured result fields
 - reusing the same path for `csv_path` and `output_csv_path`
 

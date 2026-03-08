@@ -15,19 +15,20 @@ Goal: execute an OrchPlan safely with parallel workers.
 4. Resolve conflicts per `integration.conflict_policy`.
 5. Re-run relevant validations; proceed to the next wave only when green.
 
-## ORCHPLAN -> $mesh (streaming; CRFIP)
-Goal: execute an OrchPlan as a streaming run with maximum safe parallelism.
+## ORCHPLAN -> $mesh (streaming; substantive-unit fanout)
+Goal: execute an OrchPlan as a streaming run with maximum safe parallelism over substantive units.
 
 1. Ensure each selected task has a tight `scope` list (exclusive lock roots) and at least one `validation` command.
-2. Map each task into a mesh unit envelope:
+2. Map each task into one primary mesh row per substantive unit:
    - `id`: task id
    - `objective`: task title
    - `write_scope`: task `scope`
    - `proof_command`: first `validation` command
    - `risk_tier`: default `med` unless the task is clearly `low|high`
-3. Run `$mesh` with the default lane matrix: `coder x1 + reducer x1 -> fixer -> prover -> integrator`.
-4. Gate for throughput: run prover+integrator only for units where fixer selects a non-`none` candidate.
-5. Artifact retention gate (required): store wave CSVs under `${CODEX_MESH_ARTIFACT_ROOT:-$HOME/.codex/mesh-artifacts}` and fail the handoff if `$seq` reports `csv_rows_missing>0`.
+3. Set `max_concurrency` to the safe row count unless a lower explicit cap is required.
+4. Only create secondary review/reduce/fix/prove/integrate rows for units that reported a concrete blocker, a non-trivial diff requiring reduction, or a failed proof.
+5. Do not multiply rows just to create lane evidence; a clean primary row is already sufficient evidence for that unit.
+6. Artifact retention gate (required): store wave CSVs under `${CODEX_MESH_ARTIFACT_ROOT:-$HOME/.codex/mesh-artifacts}` and fail the handoff if `$seq` reports `csv_rows_missing>0`.
 
 ## PLANS pipeline (manual)
 Goal: iterate `plan-N.md` until the plan is stable and implementation-ready.
@@ -37,14 +38,15 @@ Goal: iterate `plan-N.md` until the plan is stable and implementation-ready.
 3. Use an explicit stop phrase (recommended): end the run by replying exactly `Plan is ready.`
 
 ## SLICES pipeline (manual)
-Goal: keep iterating until all slices are `status: closed`.
+Goal: keep iterating until all slices are `status: closed`, using wave-based execution whenever scopes allow.
 
 1. Create/repair `SLICES.md` by converting the current plan/tasks into slices.
 2. Repeat:
-    - Select the next ready slice (deps satisfied; not closed).
-    - Update `SLICES.md`: set the selected slice `status` to the in-progress token (prefer the token already used in `SLICES.md`; default `in_progress`).
-    - Implement that slice.
-    - Update `SLICES.md`: set the slice `status: closed` and record its verification.
+    - Run `$select` to claim the next safe wave of ready slices (deps satisfied; not closed).
+    - Update `SLICES.md`: set every selected slice in that wave to the in-progress token (prefer the token already used in `SLICES.md`; default `in_progress`).
+    - Implement the selected wave in parallel where scopes remain disjoint; if the wave width is `1`, run serially.
+    - Integrate the wave and run wave-level verification.
+    - Update `SLICES.md`: set each completed slice `status: closed` and record its verification.
 
 ## Optional loop form
 PLANS (loop-ready):
@@ -53,10 +55,10 @@ PLANS (loop-ready):
 Stop when: The assistant replies exactly "Plan is ready."
 ```
 
-SLICES (loop-ready; serial execution):
+SLICES (loop-ready; wave-based):
 ```text
-- Select the next ready slice
-- Mark the selected slice in_progress in SLICES.md
-- Implement the selected slice; update SLICES.md to mark it closed with verification.
+- Select the next safe wave of ready slices
+- Mark the selected wave in_progress in SLICES.md
+- Implement and verify the selected wave; update each completed slice to closed with verification.
 Stop when: All slices in SLICES.md have status: closed.
 ```

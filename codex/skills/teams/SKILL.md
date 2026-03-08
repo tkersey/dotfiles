@@ -1,6 +1,6 @@
 ---
 name: teams
-description: "Coordinate agent teams (multi-session) as the native Codex delegation workflow for composite work: decompose, challenge, and parallelize with `update_plan`, `spawn_agent`, and built-in `explorer`/`worker` roles. Hand only homogeneous leaf batches to `$mesh`."
+description: "Coordinate agent teams (multi-session) as the native Codex delegation workflow for composite work: decompose, challenge, and parallelize the full ready wave with `update_plan`, `spawn_agent`, and built-in `explorer`/`worker` roles. Hand only homogeneous leaf batches to `$mesh`."
 ---
 
 # teams
@@ -15,7 +15,7 @@ Use `$teams` when a task is still composite and parallelism helps, but keep the 
 - `explorer` answers specific codebase questions.
 - `worker` owns bounded execution with explicit ownership.
 
-Canonical name: use `$teams` in policy text and examples; treat `$team` as a user alias.
+Canonical name: use `$teams` in policy text and examples.
 
 Plan first, execute second: use `$teams` to shape or challenge the work, then delegate bounded leaf tasks.
 
@@ -25,7 +25,7 @@ Use `$teams` for composite work:
 
 - the task still needs decomposition, comparison, sequencing, or shared judgment
 - you want parallel research, review, challenge, or design before choosing a path
-- you have several bounded sidecar tasks that are not one repeated row template
+- you have several bounded sidecar tasks or disjoint core branches that are not one repeated row template
 
 Do not reach for `$teams` just because multiple tools exist. If the work is already one repeated row template, use `$mesh` instead.
 
@@ -41,7 +41,7 @@ Use `$teams` when:
 
 Stay local instead when:
 
-- The next critical-path step is urgent and blocked on one task you can do directly.
+- There is only one ready branch and no second independent branch worth spawning yet.
 - The work is tiny, tightly coupled, or not decomposed yet.
 - Multiple agents would need to mutate the same files.
 
@@ -59,15 +59,15 @@ Use `$mesh` instead when:
 
 ## Recommended Workflow
 
-1. Make a short local plan with `update_plan` and decide the immediate critical-path step.
+1. Make a short local plan with `update_plan` and identify the current ready set, not just the next critical-path step.
 2. Identify the composite parts and reshape them into bounded leaf tasks.
-3. Keep the blocking next step local; delegate only sidecar work that can run in parallel.
+3. Keep synthesis, integration, and overlapping-write work local; dispatch every dependency-independent ready branch before the first blocking `wait`.
 4. Pick the right role:
    - `explorer` for specific repository questions
    - `worker` for bounded edits or verification with explicit ownership
 5. Give every teammate a concrete deliverable and, for code changes, a disjoint write scope.
-6. While teammates run, continue non-overlapping local work.
-7. Use `wait` only when you are actually blocked, and prefer longer waits over polling.
+6. While teammates run, continue non-overlapping integration prep, review, or another ready local task.
+7. Use `wait` only when you are actually blocked, prefer longer waits over polling, and do not immediately wait after the first spawn if more ready branches remain.
 8. Reuse context with `send_input` or `resume_agent` when follow-up belongs with the same teammate.
 9. Review, integrate, and close agents when they are no longer needed.
 
@@ -95,18 +95,20 @@ Why `$teams`:
 
 Request:
 
-> Add a new CLI flag, update the docs, and add focused validation. Use teammates where helpful.
+> Add a new config-backed CLI flag that touches parser wiring, config loading, help/completion output, and focused validation. Use teammates where helpful.
 
 Good `$teams` execution:
 
-- keep the parser or core behavior change local because it is on the critical path
-- spawn one `worker` to update the docs in a disjoint file
-- spawn one `worker` to add or adjust a focused test in a disjoint test file
-- integrate both results locally and close the agents
+- keep final synthesis and any overlapping edits local
+- spawn one `worker` for parser/flag wiring in a disjoint CLI scope
+- spawn one `worker` for config loading changes in a disjoint config scope
+- spawn one `worker` for help/completion output in a disjoint shell/help scope
+- spawn one `worker` for focused validation in a disjoint test scope
+- wait only after the full ready wave is in flight, then integrate and close the agents
 
 Why `$teams`:
 
-- the sidecar tasks are bounded and file-disjoint
+- the first ready wave has multiple disjoint core branches, not just sidecars
 - the work is not one repeated row template, so `$mesh` would be the wrong tool
 
 ### Example 3: Handoff from `$teams` to `$mesh`
@@ -130,6 +132,7 @@ Why the handoff:
 
 - Separate planning from execution: do the shaping work before you fan out.
 - Prefer leaf tasks with a single artifact, answer, or bounded edit scope.
+- When two or more ready leaf tasks are dependency-independent, prefer launching them together and use later checkpoint or integration tasks to join them.
 - If a child task would need to negotiate scope with another child, it is not a leaf yet.
 - If the remaining leaf tasks become a uniform row batch, hand that subset to `$mesh`.
 
@@ -143,8 +146,9 @@ Why the handoff:
 
 ## Guardrails
 
-- Do not delegate the immediate next blocking step if you can do it locally.
+- Do not keep core ready branches local just because they feel central; keep only synthesis, integration, or overlapping-write work local.
 - Do not spawn agents for vague goals; narrow each ask to the artifact or answer you need next.
+- Do not wait immediately after the first spawn when additional ready branches remain.
 - Do not duplicate work between the lead and teammates.
 - Do not treat `$teams` as a hidden batch engine; once the work is a uniform row job, hand it to `$mesh`.
 - Do not leave agents running after their contribution has been integrated unless the user explicitly wants them kept alive.

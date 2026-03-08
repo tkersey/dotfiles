@@ -1,6 +1,6 @@
 ---
 name: select
-description: "Swarm-ready work selector: choose one source (invocation list, `SLICES.md`, or `plan-N.md`), refine it into dependency-aware atomic tasks, and emit an OrchPlan (waves + delegation) plus optional pipelines. Use for prompts like `$select`, `use $select`, `pick the next ready slice`, `orchestrate workers from SLICES`, or `what should run in parallel next`. Plan-only; no writeback; orchestration-agnostic."
+description: "Swarm-ready work selector: choose one source (invocation list, `SLICES.md`, or `plan-N.md`), refine it into dependency-aware atomic tasks, and emit an OrchPlan (waves + delegation) plus optional pipelines. Use for prompts like `$select`, `use $select`, `pick the next safe wave`, `pick the next ready slice`, `orchestrate workers from SLICES`, or `what should run in parallel next`. Plan-only; no writeback; orchestration-agnostic."
 ---
 
 # Select
@@ -26,7 +26,7 @@ It may also emit a small pipeline for driving planning artifacts into execution 
 - **Explicit dependencies**: prefer explicit edges over relying on implicit serialization via overlapping `scope`.
 - **Delegation metadata**: include `scope` (required for safe parallelism), plus `location` and `validation` whenever possible.
 - **Unit scope quality**: mark scope as invalid when missing/unknown/overly broad; invalid scope units are not parallel-eligible.
-- **First-ready claim quality**: when emitting `waves[0]`, include claim-ready ids only after dependency and scope checks pass.
+- **First-ready claim quality**: when emitting `waves[0]`, include the full safe first wave only after dependency and scope checks pass.
 - **Review before yielding**: run a separate reviewer-mode pass for missing deps/order/lock overlaps/validation gaps.
 
 ## Decomposition heuristics (parallelism quality)
@@ -54,7 +54,8 @@ If present, interpret these directives from the invocation text:
   - `triage`: only triage `in_progress` and recommend close/reopen/continue.
   - `new`: skip triage and select new work (still warn about `in_progress`).
 - `max_tasks`: `auto|<int>`
-  - If omitted: default `1` for `slices`; otherwise `auto`.
+  - If omitted: default `auto`.
+  - For `slices`, `auto` means: keep any carried-forward `in_progress` task and add every additional dependency-independent task that safely fits in `waves[0]`; it may still resolve to `1` when scope or dependencies only permit one task.
   - Applies after triage decisions.
 - `review`: `required|auto|off`
   - `required` (default): run a reviewer pass and iterate until it passes (or stop+ask if blocked).
@@ -101,8 +102,8 @@ Order (stop when resolved):
    - Normalize each `scope` entry: trim whitespace; drop a leading `./` (normalize `./` to `.`); collapse repeated `/`; remove a trailing `/` (except `/`).
    - Record as `auto_fix: scope_normalize` if any scope entry changed.
 3. **Scope inference (conservative)**:
-   - If `scope` is missing, scan `id`/`title`/`subtasks` for explicit path or glob tokens (contain `/`, `**`, or a file extension).
-   - Only adopt tokens that are existing paths or obvious globs; prefer the narrowest non-overlapping set.
+   - If `scope` is missing, scan `location`, `verification`, `id`, `title`, `description`, and `subtasks` for explicit path or glob tokens (contain `/`, `**`, or a file extension).
+   - Only adopt tokens that are existing paths or obvious globs; prefer file or module globs over directory roots, and keep the narrowest non-overlapping set that still makes ownership explicit.
    - If inferred, set `scope` and suppress the missing-scope warning.
 4. **Orchestrator downgrade**:
    - If `agent: orchestrator` lacks `subtasks`, downgrade to `worker`.
@@ -124,7 +125,7 @@ Parallelism is only scheduled when tasks provide enough metadata to make it defe
 - A task is eligible for parallel waves only if it has a non-empty `scope` list.
 - Two tasks may share a wave only if their `scope` sets do not overlap.
   - Treat `scope` entries as **exclusive locks**.
-  - Recommended lock style: directory roots or tight file globs.
+  - Recommended lock style: tight file or module globs; use directory roots only when finer locks are unavailable.
   - Conservative overlap check: compare **lock roots**, not raw strings.
     - For each `scope` entry: normalize it (drop leading `./`; collapse `/`), drop a trailing `/**` or `/**/*`, then take the prefix up to the first glob metachar (`*`, `?`, `[`).
     - Treat overlap if any lock root is equal OR one lock root is a path-prefix of another.
@@ -219,11 +220,14 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 - `triage`: if any `in_progress` was seen, state: `continue <id>` OR `recommend close <id>` OR `recommend reopen <id>` OR `none`
 - `claim`: `mark <in_progress token> <id,...>` OR `already <in_progress token> <id>` OR `none`
 - `counts`: totals for the chosen source (at minimum: leaf, ready, blocked, in_progress)
+- `fanout_possible`: number of dependency-independent tasks that could safely fit in `waves[0]` after scope checks
+- `fanout_selected`: number of tasks actually placed into `waves[0]`
+- `fanout_left_on_table`: `fanout_possible - fanout_selected`
 - `pick`: selected task id + 3-10 word reason
 - `next2`: next two candidates (or `none`) + 3-10 word reason each
 - `waves`: (recommended when tasks were scheduled) `N` + a compact wave listing (e.g. `w1[t-1,t-2]; w2[t-3]`)
 - `review`: `pass|warn|skipped|blocked` + 0-6 word note
-- `warnings`: list count + top 1-3 keys (e.g. `unknown_deps`, `status_drift`, `cycle`, `broad_scope`, `implicit_order`, `missing_validation`, `linear_graph`, `missing_role`, `missing_checkpoint`)
+- `warnings`: list count + top 1-3 keys (e.g. `unknown_deps`, `status_drift`, `cycle`, `broad_scope`, `implicit_order`, `underfilled_wave`, `missing_validation`, `linear_graph`, `missing_role`, `missing_checkpoint`)
 - `auto_fix`: list count + top 1-3 keys (e.g. `dep_alias`, `scope_normalize`, `scope_infer`)
 
 ## Procedure (high-level)
@@ -246,6 +250,7 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 7.5. If selecting new work, compute `claim` from `waves[0]` and emit instructions to mark those tasks in-progress in the source (when the source supports status).
 8. Reviewer pass (per `review`): check deps/order/locks/validation/delegation gaps; revise as needed.
    - Detect unnecessary linear chains and downgrade advisory edges from `depends_on` to `related_to` when safe.
+   - If `waves[0]` leaves safe ready work unclaimed and `max_tasks` was not explicitly capped, treat it as a planning defect and revise until `fanout_left_on_table=0` or emit a blocking explanation.
    - Require explicit roles/workstreams in multi-wave plans when inference is feasible.
    - Require checkpoint/integration joins when multiple parallel implementation branches converge.
    - In reviewer mode: do not expand scope; do not redesign; only close gaps and reduce risk.
@@ -261,6 +266,7 @@ Build waves using dependency readiness and `scope` locks:
     - Treat missing `scope` as overlapping everything (i.e. it can only be scheduled alone).
     - Treat overly-broad `scope` locks (`""`, `.`, `./`, `/`, `*`, `**`, `**/*`) as overlapping everything.
     - Pick a maximal subset of `ready` whose `scope` lock roots do not overlap (greedy is fine).
+    - When `cap` and `max_tasks` are `auto`, keep the full maximal subset; do not trim to one task merely because the source is `slices`.
     - If `cap` is a number, limit the wave to `cap` tasks.
     - Remove scheduled tasks from the pool; proceed to next wave.
 
@@ -281,6 +287,7 @@ Emit warnings when unresolved (noise-controlled; warn only when it affects this 
 - `missing_validation`: a parallel wave mixed tasks with and without `validation`.
 - `unknown_deps`: a `depends_on` points at an unknown ID.
 - `orchestrator_without_subtasks`: a task declared `agent=orchestrator` without `subtasks`.
+- `underfilled_wave`: `waves[0]` left safe ready tasks unclaimed without an explicit `max_tasks` cap.
 - `linear_graph`: the dependency graph is mostly chain-like and a safe split into workstreams/contracts/checkpoints appears possible.
 - `missing_role`: multi-wave plan lacks role annotations where they are needed for reasoning/review.
 - `missing_checkpoint`: multiple parallel implementation branches have no explicit integration/checkpoint join.

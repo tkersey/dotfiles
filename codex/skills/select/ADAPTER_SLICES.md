@@ -7,12 +7,12 @@
 ## Mode handling
 - `mode: triage`: run triage; emit recommendations; do not select new work.
 - `mode: new`: skip triage; still warn if any slice is `in_progress`; select new work.
-- `mode: both` (default): triage first; if triage selects `continue`, stop; otherwise select new work.
+- `mode: both` (default): triage first; if triage selects `continue`, keep that slice selected and continue selecting additional disjoint ready work. Only stop immediately if `max_tasks: 1` or no other safe ready work exists.
 
 ## Parse + model
 - Parse each slice YAML mapping.
 - Required: `id`, `title`.
-- Optional: `status`, `issue_type`, `priority`, `parent_id`, `dependencies`, `scope`, `verification`.
+- Optional: `status`, `issue_type`, `priority`, `parent_id`, `dependencies`, `scope`, `location`, `verification`, `description`.
 
 Status normalization (before triage/selection):
 - Trim + lowercase.
@@ -60,7 +60,7 @@ Best-effort proofs (read-only checks allowed; stable order; stop at first strong
 
 Decision (plan-only; no writeback):
 - If completion proof exists: recommend closing it; then proceed to select new work.
-- Else if active proof exists: select this slice as the only task to work on; stop.
+- Else if active proof exists: keep this slice selected as carry-forward work, then continue selecting additional disjoint ready slices up to the resolved `max_tasks` or wave cap.
 - Else (no active proof): recommend reopening it (set back to `open`); then proceed to select new work.
 
 Staleness policy:
@@ -72,7 +72,8 @@ New-work candidates:
 - Status is not `closed` and not `in_progress` (after normalization)
 
 Respect `max_tasks`:
-- Default for `slices` is `max_tasks: 1` unless explicitly overridden.
+- Default for `slices` is `max_tasks: auto` unless explicitly overridden.
+- `auto` means: claim the full first safe wave after triage, dependency, and scope checks, even when one carried-forward `in_progress` slice remains selected.
 - If `max_tasks` is a number, select at most that many tasks (in stable source order after tie-breaks).
 
 If no ready new-work candidates exist:
@@ -81,8 +82,11 @@ If no ready new-work candidates exist:
 - If the only blockers are schema/graph integrity issues (unknown dep IDs, cycles, malformed entries), emit a synthetic task `repair-slices` with `scope: ["SLICES.md"]` and explain what to fix.
 
 ## Parallelism
-- SLICES tasks often lack `scope`; schedule sequentially and warn.
+- SLICES tasks often omit `scope`; try safe scope inference before falling back to sequential scheduling.
+- Infer from explicit `scope` first, then `location`, `verification`, and path-bearing text in `id`/`title`/`subtasks`.
+- Prefer file or module globs over directory-root locks when inference is possible.
 - If `scope` can be inferred by auto-remediation, use it and suppress the missing-scope warning.
+- Only schedule sequentially when no defensible narrow scope can be derived.
 - If a slice provides a `scope` list, pass it through to the OrchPlan task.
 - Keep soft dependency intent in `related_to`; do not convert it into blocking edges.
 - If a slice provides `verification`, map it to the OrchPlan task's `validation` (best-effort):
@@ -92,3 +96,6 @@ If no ready new-work candidates exist:
 ## Decision Trace notes
 - `counts` should be computed from derived readiness (not raw `status`).
 - `pick` reason should name the winning tie-break (priority/unlocks/fewest unmet blocks).
+- `fanout_possible` should count the maximum safe first-wave width after triage, dependency, and scope checks.
+- `fanout_selected` is the number of tasks actually placed into `waves[0]`.
+- `fanout_left_on_table` is `fanout_possible - fanout_selected`; it should be `0` unless `max_tasks` was explicitly capped or unresolved overlap remains.
