@@ -15,6 +15,7 @@ EXPECTED_MAIN_HEADINGS = [
     "Changes applied",
     "Pass trace",
     "Validation",
+    "Self-review loop trace",
     "Residual risks / open questions",
 ]
 
@@ -23,6 +24,7 @@ EXPECTED_EMBEDDED_HEADINGS = [
     "Changes applied",
     "Pass trace",
     "Validation",
+    "Self-review loop trace",
     "Residual risks / open questions",
 ]
 
@@ -37,6 +39,11 @@ EXPECTED_VALIDATION_KEYS = [
 EXPECTED_FINDINGS_LINES = [
     "Proof strength: `<characterization|targeted_regression|property_or_fuzz>`",
     "Compatibility impact: `<none|tightening|additive|breaking>`",
+]
+
+EXPECTED_SELF_REVIEW_LINES = [
+    "- If none: `- None (skip_gate)`",
+    "- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_fix_worthy_findings|blocked>`",
 ]
 
 ALLOWED_BLOCKED_BY = [
@@ -55,11 +62,26 @@ EXPECTED_RESIDUAL_LINE = (
     + "> — next=<one action>`"
 )
 
-REQUIRED_USER_LOOP_GUARDRAILS = [
+REQUIRED_SELF_LOOP_GUARDRAILS = [
+    "MUST include a final `Self-review loop trace` section in the deliverable/Fix Record.",
+    "MUST run the final agent-directed self-review loop only after at least one change is applied and validation is passing.",
+    "MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`",
+    "MUST answer that question internally, apply at most one new fix-worthy change per self-round, re-run validation, and repeat until a self-round yields no new fix-worthy finding or only blocked changes.",
+    "MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.",
+    "Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.",
+    "If the answer yields no new fix-worthy finding, record `stop_reason=no_new_fix_worthy_findings` and exit the loop.",
+    "If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and exit the loop.",
+    "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to output.",
+]
+
+FORBIDDEN_USER_LOOP_PHRASES = [
     "MUST ask the final user-directed changeset question only after at least one change is applied and validation is passing.",
     "MUST NOT emit `If you could change one thing about this changeset what would you change?` as a standalone first/only response.",
-    "Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.",
-    "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, do not ask the question; proceed to output.",
+    "MUST, when the user-directed changeset loop precondition gate passes, append the exact question as the final line of the assistant message (after the required sections) and then stop.",
+    "MUST run a final user-directed changeset loop: ask `If you could change one thing about this changeset what would you change?`, apply exactly one requested change at a time, re-run validation, and repeat until the user has no more requested changes.",
+    "### 7) User-directed changeset loop (required final step when a changeset exists)",
+    "If the user-directed changeset loop precondition gate passes (`Changes applied` is not `None` AND the latest validation result is `ok`), append the exact question as the final line after the last section, then stop:",
+    "the final line of the message is exactly: `If you could change one thing about this changeset what would you change?`",
 ]
 
 SECTION_PATTERN = re.compile(r"^\*\*(.+?)\*\*$", re.MULTILINE)
@@ -212,6 +234,22 @@ def run(path: Path) -> int:
                     errors,
                 )
 
+        self_review = extract_heading_section(
+            block, "Self-review loop trace", "Residual risks / open questions", label, errors
+        )
+        if self_review:
+            self_review_block, self_review_start = self_review
+            self_review_line = line_no(text, offset + self_review_start)
+            for expected_line in EXPECTED_SELF_REVIEW_LINES:
+                require_line(
+                    self_review_block,
+                    expected_line,
+                    label,
+                    "Self-review loop trace",
+                    self_review_line,
+                    errors,
+                )
+
         residual = extract_heading_section(
             block, "Residual risks / open questions", None, label, errors
         )
@@ -227,10 +265,17 @@ def run(path: Path) -> int:
                 errors,
             )
 
-    for phrase in REQUIRED_USER_LOOP_GUARDRAILS:
+    for phrase in REQUIRED_SELF_LOOP_GUARDRAILS:
         if phrase not in text:
             errors.append(
-                "user_loop_guardrail missing required phrase: "
+                "self_loop_guardrail missing required phrase: "
+                f"{phrase}"
+            )
+
+    for phrase in FORBIDDEN_USER_LOOP_PHRASES:
+        if phrase in text:
+            errors.append(
+                "forbidden_user_loop_phrase still present: "
                 f"{phrase}"
             )
 

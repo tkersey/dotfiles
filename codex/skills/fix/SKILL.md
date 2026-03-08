@@ -41,6 +41,7 @@ Delegation triggers (deterministic):
   `Pass <n>/<total_planned>: <name> — <start|done>; edits=<yes|no|n/a>; signal=<cmd|n/a>; result=<ok|fail|n/a>`.
 - In `Validation`, include a machine-checkable JSON object with keys:
   `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
+- Keep self-review transcript shapes aligned with `references/self_review_loop_examples.md` when editing this contract.
 
 ### Embedded mode (when $fix is invoked inside another skill)
 - You may emit a compact **Fix Record** instead of the full deliverable.
@@ -70,10 +71,11 @@ Delegation triggers (deterministic):
 - MUST follow the delegation contract in `Skill composition (required)` (including order: `$invariant-ace` -> `$complexity-mitigator`).
 - MUST route skill-self edits (for example `codex/skills/fix`) through `$refine` and run `quick_validate`.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
-- MUST ask the final user-directed changeset question only after at least one change is applied and validation is passing.
-- MUST NOT emit `If you could change one thing about this changeset what would you change?` as a standalone first/only response.
-- MUST, when the user-directed changeset loop precondition gate passes, append the exact question as the final line of the assistant message (after the required sections) and then stop.
-- MUST run a final user-directed changeset loop: ask `If you could change one thing about this changeset what would you change?`, apply exactly one requested change at a time, re-run validation, and repeat until the user has no more requested changes.
+- MUST include a final `Self-review loop trace` section in the deliverable/Fix Record.
+- MUST run the final agent-directed self-review loop only after at least one change is applied and validation is passing.
+- MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`
+- MUST answer that question internally, apply at most one new fix-worthy change per self-round, re-run validation, and repeat until a self-round yields no new fix-worthy finding or only blocked changes.
+- MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.
 - When paired with `$tk` in wave execution, MUST treat `$fix` as the final mutating pass before artifactization:
   - `commit_first`: hand off immediately to `$commit` after passing validation.
   - `patch_first`: hand off immediately to `$patch` after passing validation.
@@ -465,39 +467,37 @@ For findings in severity order:
 1. Re-check `Residual risks / open questions policy`.
 2. Any item without a valid blocker becomes a finding and is fixed (with proof) or dropped.
 
-### 7) User-directed changeset loop (required final step when a changeset exists)
+### 7) Agent-directed self-review loop (required final step when a changeset exists)
 1. Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.
-2. Ask exactly: `If you could change one thing about this changeset what would you change?`
-   - Output rule: when you ask this, it MUST be the final line of the message (no trailing text) so the user can reply.
-3. If the user requests a change:
-    - convert the request into one concrete finding,
+2. Ask internally exactly: `If you could change one thing about this changeset what would you change?`
+3. Summarize the self-round in `Self-review loop trace` with one delta row.
+4. If the answer yields one new fix-worthy finding:
+    - convert it into one concrete finding,
     - apply the smallest sound change,
-    - re-run the chosen validation signal and update findings/proof.
-4. Repeat step 2 after each applied change.
-5. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, do not ask the question; proceed to output.
-6. Exit the loop only when the user explicitly indicates there are no more requested changes.
+    - re-run the chosen validation signal and update findings/proof,
+    - repeat from step 2.
+5. If the answer yields no new fix-worthy finding, record `stop_reason=no_new_fix_worthy_findings` and exit the loop.
+6. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and exit the loop.
+7. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to output.
 
 ### 8) Output lock (required)
 Before sending the final message, verify all are true:
-1. Heading set is exact and complete (`Contract`, `Findings (severity order)`, `Changes applied`, `Pass trace`, `Validation`, `Residual risks / open questions`).
+1. Heading set is exact and complete (`Contract`, `Findings (severity order)`, `Changes applied`, `Pass trace`, `Validation`, `Self-review loop trace`, `Residual risks / open questions`).
 2. `Pass trace` includes planned/executed counts and P1/P2/P3 lines (plus P4/P5 when executed).
 3. Runtime pass updates (`Pass <n>/<total_planned>: ...`) were emitted during execution.
 4. If embedded mode was used, include **Fix Record** in the same assistant message (after any required artifact).
 5. `Validation` includes machine-checkable keys: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
 6. Every acted-on finding includes `Proof strength` and `Compatibility impact` using the allowed enums.
 7. Every residual `blocked_by` uses only: `product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable`.
-8. If `Changes applied` is not `None` AND the latest validation result is `ok`, the final line of the message is exactly: `If you could change one thing about this changeset what would you change?`
+8. If `Changes applied` is not `None` AND the latest validation result is `ok`, `Self-review loop trace` includes a terminal row with `stop_reason=<no_new_fix_worthy_findings|blocked>` and the user-facing final line is not the question.
 
 ## Deliverable format (chat)
 Output exactly these sections in this order.
 
-If the user-directed changeset loop precondition gate passes (`Changes applied` is not `None` AND the latest validation result is `ok`), append the exact question as the final line after the last section, then stop:
-
-If you could change one thing about this changeset what would you change?
-
 If no findings:
 - **Findings (severity order)**: `None`.
 - **Changes applied**: `None`.
+- **Self-review loop trace**: `- None (skip_gate)`.
 - **Residual risks / open questions**: `- None`.
 - Still include **Pass trace** and **Validation**.
 
@@ -531,6 +531,10 @@ For each finding:
 **Validation**
 - <cmd> -> <ok/fail>
 - `{"baseline_cmd":"<cmd|n/a>","baseline_result":"<ok|fail|n/a>","proof_hook":"<test/assert/log|n/a>","final_cmd":"<cmd>","final_result":"<ok|fail>"}` (single-line JSON)
+
+**Self-review loop trace**
+- If none: `- None (skip_gate)`
+- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_fix_worthy_findings|blocked>`
 
 **Residual risks / open questions**
 - If none: `- None`
@@ -567,13 +571,13 @@ For each finding:
 - <cmd> -> <ok/fail>
 - `{"baseline_cmd":"<cmd|n/a>","baseline_result":"<ok|fail|n/a>","proof_hook":"<test/assert/log|n/a>","final_cmd":"<cmd>","final_result":"<ok|fail>"}` (single-line JSON)
 
+**Self-review loop trace**
+- If none: `- None (skip_gate)`
+- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_fix_worthy_findings|blocked>`
+
 **Residual risks / open questions**
 - If none: `- None`
 - Otherwise: `- <file:line or token> — blocked_by=<product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable> — next=<one action>`
-
-If the user-directed changeset loop precondition gate passes (`Changes applied` is not `None` AND the latest validation result is `ok`), append the exact question as the final line after the last section, then stop:
-
-If you could change one thing about this changeset what would you change?
 
 ## Pitfalls
 - Vague advice without locations.
