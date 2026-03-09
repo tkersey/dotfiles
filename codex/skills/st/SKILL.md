@@ -1,6 +1,6 @@
 ---
 name: st
-description: Manage persistent task plans in repo-committed JSONL (`.step/st-plan.jsonl`) so state survives turns/sessions and stays reviewable in git. Use when users ask to "use $st", "resume the plan", "export/import plan state", "checkpoint milestones", "track dependencies/blocked work", "show ready next tasks", "keep shared TODO status on disk", "map a `$select` plan into durable execution state", "prove `$st` works for implementation tracking", or diagnose/repair `st-plan.jsonl` concerns (for example append-only vs mutable semantics, lock-file gitignore policy, or seq/checkpoint integrity).
+description: Manage persistent task plans in repo-committed JSONL (`.step/st-plan.jsonl`) so state survives turns/sessions and stays reviewable in git. Use when users ask to "use $st", "resume the plan", "export/import plan state", "checkpoint milestones", "track dependencies/blocked work", "show ready next tasks", "keep shared TODO status on disk", "map a `$select` plan into durable execution state", "prove `$st` works for implementation tracking", mirror the durable plan into Codex `update_plan` or OpenCode `TodoWrite`, or diagnose/repair `st-plan.jsonl` concerns (for example append-only vs mutable semantics, lock-file gitignore policy, or seq/checkpoint integrity).
 ---
 
 # st
@@ -89,15 +89,18 @@ run_st_tool --help
 ## Workflow
 
 1. Define `run_st_tool` once per shell session to bootstrap/install `st`.
-2. If the run has 3+ dependent steps, likely spans turns, or already uses `update_plan`, adopt `$st` as the durable source of truth before editing.
+2. If the run has 3+ dependent steps, likely spans turns, or already uses a native task surface (`update_plan` in Codex or `TodoWrite` in OpenCode), adopt `$st` as the durable source of truth before editing.
 3. If the plan came from `$select`, map selected units into stable `$st` IDs and dependency edges before execution starts.
 4. Initialize plan storage with `st init` if missing.
 5. Rehydrate current state with `st show` (or focused views via `ready` / `blocked`).
 6. Run `doctor` when ingesting an existing plan file or when integrity is in doubt.
 7. Apply plan mutations through subcommands (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`); do not hand-edit existing JSONL lines.
-8. After each mutation command, consume the emitted `update_plan: {...}` payload and publish `update_plan` in the same turn.
-9. Use `emit-update-plan` to regenerate the payload from durable state when needed.
-10. Export/import snapshots when cross-session handoff is needed.
+8. After each mutation command, consume the emitted `plan_sync: {...}` payload and mirror it into the native runtime tool in the same turn.
+9. Use `emit-plan-sync` to regenerate the payload from durable state when needed.
+10. If `emit-plan-sync` is unavailable because the installed binary is older, fall back:
+   - Codex: use `emit-update-plan`.
+   - OpenCode: use `show --format json`, map `content=item.step`, normalize `blocked`/`deferred` to `pending`, normalize `canceled` to `cancelled`, and default missing priority to `medium`.
+11. Export/import snapshots when cross-session handoff is needed.
 
 ## Commands
 
@@ -105,9 +108,10 @@ Run commands from the target repository root. Commands below use `st` directly; 
 
 ```bash
 st init --file .step/st-plan.jsonl
-st add --file .step/st-plan.jsonl --id st-001 --step "Reproduce failing test" --deps ""
+st add --file .step/st-plan.jsonl --id st-001 --step "Reproduce failing test" --priority high --deps ""
 st add --file .step/st-plan.jsonl --id st-002 --step "Patch core logic" --deps "st-001"
 st set-status --file .step/st-plan.jsonl --id st-001 --status in_progress
+st set-priority --file .step/st-plan.jsonl --id st-002 --priority medium
 st set-deps --file .step/st-plan.jsonl --id st-002 --deps "st-001:blocks,st-003:blocks"
 st set-notes --file .step/st-plan.jsonl --id st-002 --notes "Need benchmark evidence"
 st add-comment --file .step/st-plan.jsonl --id st-002 --text "Pausing until CI clears" --author tk
@@ -116,6 +120,7 @@ st blocked --file .step/st-plan.jsonl --format json
 st show --file .step/st-plan.jsonl --format markdown
 st doctor --file .step/st-plan.jsonl
 st doctor --file .step/st-plan.jsonl --repair-seq
+st emit-plan-sync --file .step/st-plan.jsonl
 st emit-update-plan --file .step/st-plan.jsonl
 st export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
 st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
@@ -125,6 +130,7 @@ st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --
 
 - Keep exactly one `in_progress` item unless `--allow-multiple-in-progress` is explicitly used.
 - Track prerequisites in each item's typed `deps` array; dependencies are part of the canonical JSONL schema.
+- Priorities are canonical in `$st`: allowed values are `high`, `medium`, and `low`; missing legacy values normalize to `medium`.
 - Parse CLI deps as comma-separated `id` or `id:type` tokens; missing type normalizes to `blocks`, and type must be kebab-case.
 - Require dependency integrity:
   - dependency IDs must exist in the current plan,
@@ -135,7 +141,7 @@ st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --
   - `open`, `queued` -> `pending`
   - `active`, `doing` -> `in_progress`
   - `done`, `closed` -> `completed`
-- Mutation commands (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`) automatically print an `update_plan:` payload line after durable write.
+- Mutation commands (`add`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`) automatically print a canonical `plan_sync:` payload line plus a legacy `update_plan:` compatibility line after durable write.
 - Lock sidecar policy: mutating commands require the lock file (`<plan-file>.lock`, for example `.step/st-plan.jsonl.lock`) to be gitignored when inside a git repo; add it to `.gitignore` before first mutation.
 - Storage model: not append-only growth. Mutations rewrite the JSONL file atomically (`temp` + `fsync` + replace) and compact to a canonical `replace` event plus checkpoint snapshot at the current seq watermark.
 - `doctor` is the first-line integrity check for seq/checkpoint contract issues; use `doctor --repair-seq` only when repair is explicitly needed.
@@ -143,27 +149,30 @@ st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --
 - Prefer concise, stable item IDs (`st-001`, `st-002`, ...).
 - Prefer `show --format markdown` for execution: it groups steps into `Ready`, `Waiting on Dependencies`, `In Progress`, and terminal/manual buckets.
 
-## Sync Checklist (`$st` -> `update_plan`)
+## Sync Checklist (`$st` -> native runtime tools)
 
-- After each `$st` mutation (`add`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`), parse the emitted `update_plan: {...}` line and publish `update_plan` in the same turn.
+- After each `$st` mutation (`add`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`), prefer the emitted `plan_sync: {...}` line.
 - If no emitted payload is available (for example after `init` or shell piping), run:
-  - `st emit-update-plan --file .step/st-plan.jsonl`
-- Preserve item ordering from `$st` in `update_plan`.
-- Map statuses:
-  - `in_progress` -> `in_progress`
-  - `completed` -> `completed`
-  - `pending`, `blocked`, `deferred`, `canceled` -> `pending`
-- Keep dependency edges only in `$st` (`deps`); do not encode dependencies in `update_plan`.
-- If an item has `dep_state=waiting_on_deps`, never publish that step as `in_progress` in `update_plan`.
+  - `st emit-plan-sync --file .step/st-plan.jsonl`
+- Preserve item ordering from `$st` in every mirror projection.
+- Codex:
+  - publish `plan_sync.codex.plan` via `update_plan`.
+  - if only a legacy payload is available, use `st emit-update-plan --file .step/st-plan.jsonl`.
+- OpenCode:
+  - publish `plan_sync.opencode.todos` via `TodoWrite`.
+  - if only an older binary is available, use `st show --file .step/st-plan.jsonl --format json` and map `content=item.step`, `status=in_progress|completed|pending|cancelled`, and `priority=item.priority` or `medium` when missing.
+- Keep dependency edges only in `$st` (`deps`); do not encode dependencies in `update_plan` or `TodoWrite`.
+- If an item has `dep_state=waiting_on_deps`, never mirror that item as `in_progress`.
 - Before final response on turns that mutate `$st`, re-check no drift by comparing:
   - `st show --file .step/st-plan.jsonl --format json`
-  - the latest emitted `update_plan` payload.
+  - the latest emitted `plan_sync` payload.
 
 ## Validation
 
 - Run lightweight CLI sanity checks:
   - `run_st_tool --help`
   - `st doctor --file .step/st-plan.jsonl`
+  - `st emit-plan-sync --file .step/st-plan.jsonl`
   - `st emit-update-plan --file .step/st-plan.jsonl`
   - `st show --file .step/st-plan.jsonl --format json`
 

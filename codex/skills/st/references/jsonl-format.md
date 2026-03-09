@@ -32,6 +32,7 @@
   "id": "st-003",
   "step": "Document v3 protocol",
   "status": "pending",
+  "priority": "medium",
   "deps": [{"id": "st-002", "type": "blocks"}],
   "notes": "Capture rollout caveats",
   "comments": [{"ts": "2026-02-09T20:02:00Z", "author": "tk", "text": "Needs review"}]
@@ -41,6 +42,7 @@
 - `deps` is required and is an array of edge objects
 - Edge object shape: `{ "id": "<item-id>", "type": "<edge-type>" }`
 - `type` is kebab-case; missing/empty normalizes to `blocks`
+- `priority` is `high`, `medium`, or `low`; missing values normalize to `medium` on read/import, and canonical writes always emit it
 - `notes` is a string (default `""`)
 - `comments` is an array of `{ts,author,text}` objects (default `[]`)
 
@@ -65,8 +67,42 @@
 - Mutation paths acquire a sidecar file lock at `<plan-file>.lock` (for example `.step/st-plan.jsonl.lock`)
 - In git worktrees, mutating commands require that sidecar path to be ignored (`git check-ignore`) before writes proceed
 
-## Translation contract to `update_plan`
+## Translation contract to native runtime mirrors
 
-- Preserve `$st show --format json` item order
-- Status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `pending`
+- `emit-plan-sync` emits:
+
+```json
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "st-003",
+      "step": "Document v3 protocol",
+      "status": "pending",
+      "priority": "medium",
+      "deps": [{"id": "st-002", "type": "blocks"}],
+      "notes": "Capture rollout caveats",
+      "comments": [],
+      "dep_state": "ready",
+      "waiting_on": []
+    }
+  ],
+  "codex": {
+    "plan": [
+      {"step": "Document v3 protocol", "status": "pending"}
+    ]
+  },
+  "opencode": {
+    "todos": [
+      {"content": "Document v3 protocol", "status": "pending", "priority": "medium"}
+    ]
+  }
+}
+```
+
+- Preserve `$st show --format json` item order across `items`, `codex.plan`, and `opencode.todos`
+- Codex status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `pending`
+- OpenCode status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `cancelled`
+- OpenCode todo mapping: `content = step`, `priority = priority`
 - Guardrail: if `dep_state == "waiting_on_deps"`, translated status must never be `in_progress` (force `pending`)
+- Compatibility: mutation commands also print a legacy `update_plan:` line, and `emit-update-plan` still emits `{"plan":[...]}` for older Codex-only callers
