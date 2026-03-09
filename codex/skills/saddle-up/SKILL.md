@@ -30,6 +30,19 @@ uv run --with pyyaml codex/skills/saddle-up/scripts/saddle_up.py run \
   --opencode-timeout-seconds 180
 ```
 
+If the improver path is the problem and you want to evaluate the current harness as-is:
+
+```bash
+uv run --with pyyaml codex/skills/saddle-up/scripts/saddle_up.py run \
+  --repo /path/to/target-repo \
+  --harness-path AGENTS.md \
+  --model google/gemini-2.5-pro \
+  --skip-improve \
+  --no-commit \
+  --max-cycles 1 \
+  --opencode-timeout-seconds 180
+```
+
 Refresh a Gemini-tuned suite before the next run:
 
 ```bash
@@ -106,6 +119,7 @@ Schema details:
 ## Troubleshooting
 - If `yaml` import fails, run with `uv run --with pyyaml ...`.
 - If a run appears stuck inside `opencode run`, lower or set `--opencode-timeout-seconds` and retry.
+- If the improver child is the part that hangs and you already trust the current harness edits, rerun with `--skip-improve` to evaluate the current harness without another rewrite attempt.
 - If `openrouter/google/gemini-2.5-pro` hits credit or `max_tokens` failures, switch to direct `google/gemini-2.5-pro` before spending more harness cycles.
 - For one-cycle diagnosis without commits or PR side effects, use `--no-commit --max-cycles 1`.
 - If the loop stops with `external_blocker`, clear the provider/auth/network issue first; do not keep cycling a blocked harness.

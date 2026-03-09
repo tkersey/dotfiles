@@ -4,9 +4,11 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import textwrap
@@ -583,17 +585,46 @@ def run_opencode(
         "json",
         message,
     ]
+    start_new_session = os.name != "nt"
+    proc = subprocess.Popen(
+        cmd,
+        cwd=str(repo),
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=start_new_session,
+    )
     try:
-        proc = subprocess.run(
-            cmd,
-            cwd=str(repo),
-            text=True,
-            capture_output=True,
-            timeout=timeout_seconds,
+        deadline = (
+            None if timeout_seconds is None else time.monotonic() + timeout_seconds
         )
+        stdout = ""
+        stderr = ""
+        while True:
+            step_timeout: float | None = None
+            if deadline is not None:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired(cmd=cmd, timeout=timeout_seconds)
+                step_timeout = min(1.0, remaining)
+            try:
+                stdout, stderr = proc.communicate(timeout=step_timeout)
+                break
+            except subprocess.TimeoutExpired:
+                if deadline is None or time.monotonic() < deadline:
+                    continue
+                raise
     except subprocess.TimeoutExpired as exc:
-        stdout = coerce_subprocess_text(exc.stdout)
-        stderr = coerce_subprocess_text(exc.stderr)
+        if start_new_session:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        else:
+            proc.kill()
+        stdout_tail, stderr_tail = proc.communicate()
+        stdout = coerce_subprocess_text(exc.stdout) + coerce_subprocess_text(stdout_tail)
+        stderr = coerce_subprocess_text(exc.stderr) + coerce_subprocess_text(stderr_tail)
         timeout_note = f"opencode timed out after {timeout_seconds}s"
         output_text = timeout_note
         combined = "\n".join(
@@ -619,15 +650,15 @@ def run_opencode(
             "external_blocker": external_blocker,
         }
 
-    events = parse_json_lines(proc.stdout)
+    events = parse_json_lines(stdout)
     output_text = extract_text_from_events(events)
     if not output_text:
-        output_text = (proc.stdout + "\n" + proc.stderr).strip()
+        output_text = (stdout + "\n" + stderr).strip()
     external_blocker = detect_external_blocker(
         returncode=proc.returncode,
         timed_out=False,
-        stdout=proc.stdout,
-        stderr=proc.stderr,
+        stdout=stdout,
+        stderr=stderr,
         output_text=output_text,
     )
     return {
@@ -635,8 +666,8 @@ def run_opencode(
         "returncode": proc.returncode,
         "events": events,
         "output_text": output_text,
-        "stdout": proc.stdout,
-        "stderr": proc.stderr,
+        "stdout": stdout,
+        "stderr": stderr,
         "timed_out": False,
         "external_blocker": external_blocker,
     }
@@ -1163,12 +1194,24 @@ def run_loop(args: argparse.Namespace) -> int:
             cycle_count += 1
             selected_cases = pick_suite_cases(suite, scoring)
 
-            improve_prompt = build_improvement_prompt(
-                harness_rel, failed_case_ids, args.model
-            )
-            improve_result = run_opencode(
-                repo, args.model, improve_prompt, timeout_seconds=timeout_seconds
-            )
+            if args.skip_improve:
+                improve_result = {
+                    "cmd": [],
+                    "returncode": 0,
+                    "events": [],
+                    "output_text": "skip-improve: evaluated current harness without an improve step",
+                    "stdout": "",
+                    "stderr": "",
+                    "timed_out": False,
+                    "external_blocker": None,
+                }
+            else:
+                improve_prompt = build_improvement_prompt(
+                    harness_rel, failed_case_ids, args.model
+                )
+                improve_result = run_opencode(
+                    repo, args.model, improve_prompt, timeout_seconds=timeout_seconds
+                )
 
             case_results, pass_rate = evaluate_iteration(
                 repo,
@@ -1596,6 +1639,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run_parser.add_argument(
         "--no-commit", action="store_true", help="Disable commit/PR/revert actions"
+    )
+    run_parser.add_argument(
+        "--skip-improve",
+        action="store_true",
+        help="Evaluate the current harness without running the improver step",
     )
     run_parser.set_defaults(func=run_loop)
 
