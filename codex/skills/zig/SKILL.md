@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon changes, zig build/test/run/fmt/fetch/lint commands, zlinter integration, comptime/reflection/codegen, allocator ownership and zero-copy parsing, C interop, and performance work (latency, throughput, profiling, SIMD, threading) that must preserve correctness with lint, fuzz, and allocation-failure checks."
+description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon dependency changes, package-management or registry questions, zig build/test/run/fmt/fetch/lint commands, zlinter integration, comptime/reflection/codegen, allocator ownership and zero-copy parsing, C interop, and performance work (latency, throughput, profiling, SIMD, threading) that must preserve correctness with lint, fuzz, and allocation-failure checks."
 ---
 
 # Zig
@@ -21,6 +21,7 @@ zig version
 
 - If the version is not `0.15.2`, stop and state the mismatch.
 - If `zig build lint` is missing in the target repo, stop implementation and bootstrap lint first.
+- Treat `build.zig.zon` as the dependency source of truth when packages are involved.
 - If the request is performance-focused, run in two lanes:
   - Correctness lane (`Debug` or `ReleaseSafe`).
   - Performance lane (`ReleaseFast`) only after correctness passes.
@@ -151,6 +152,30 @@ zig build -Dtarget=aarch64-macos
 # Cleanup
 rm -rf zig-out zig-cache
 ```
+
+## Package management and dependency model
+- State the package story explicitly when dependency workflow or "registry" questions come up.
+- Zig has a built-in package manager, but no official central registry like `crates.io` or `npm`.
+- Treat the ecosystem as decentralized: dependencies are declared in `build.zig.zon`, fetched by URL, and pinned by content hash.
+- Prefer direct source archives or VCS-backed release archives over unofficial package indexes unless the user explicitly asks for third-party registries.
+- When adding a dependency, update `build.zig.zon`, review the saved hash, and keep the provenance URL visible in the diff.
+
+### Standard dependency commands
+```bash
+# Add a dependency and save it into build.zig.zon
+zig fetch --save <url>
+
+# Fetch dependencies declared by the build
+zig build
+
+# Format package metadata edits too
+zig fmt build.zig
+```
+
+### Registry-answer template
+- Say "Zig has a package manager, but not an official central package registry."
+- Point to `build.zig.zon` plus `zig fetch --save` as the normal dependency path.
+- Distinguish official decentralized workflow from community-maintained indexes.
 
 ## Comptime and invariants
 - Prefer compile-time invariant checks for shape, ABI, and required methods.
