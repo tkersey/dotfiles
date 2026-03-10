@@ -1,4 +1,4 @@
 interface:
   display_name: "ms"
-  short_description: "Create and update Codex skills in place"
-  default_prompt: "Use $ms to create or update a Codex skill in this repo."
+  short_description: "Directly create or edit Codex skills in this repo"
+  default_prompt: "Use $ms to directly create or edit a Codex skill in this repo."

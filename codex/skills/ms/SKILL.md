@@ -1,13 +1,13 @@
 ---
 name: ms
-description: Create, update, or refactor Codex skills in this repo, including SKILL.md, frontmatter trigger text, agents/openai.yaml, and scripts/references/assets. Use when asked to create or improve a skill, tighten trigger descriptions from usage evidence (for example via $seq), regenerate/verify agents/openai.yaml, or adjust skill metadata/workflows.
+description: Create, update, or refactor Codex skills in this repo, including SKILL.md, frontmatter trigger text, agents/openai.yaml, and scripts/references/assets. Use when asked to create a skill or make direct in-place edits to a skill now; do not use for read-only analysis or "should we update this?" turns, and treat $refine as the higher-level entrypoint for evidence-driven refinement of an existing skill.
 ---
 
 # ms
 
 ## Overview
 
-Create and update Codex skills with minimal diffs. Work directly in the skill folder (no external registry) and keep the skill lean.
+Create and update Codex skills with minimal diffs. Use this as the direct skill-surgery primitive: work directly in the skill folder (no external registry) and keep the skill lean.
 
 ## Hard constraints
 
@@ -38,6 +38,8 @@ Create and update Codex skills with minimal diffs. Work directly in the skill fo
 
 - If a matching skill already exists: run Update Workflow.
 - If no matching skill exists: run Create Workflow.
+- If the turn is read-only, asks whether a skill should change, or only asks for evidence/proof checklists: do not use `ms` yet.
+- If the user already invoked `$refine` for an existing skill: let `$refine` own the refinement turn and treat `$ms` as implicit/redundant.
 - If the name, location, or triggers are unclear: ask 1-3 targeted questions, then proceed.
 - If refining `ms` itself: run the Seq Feedback Loop first and use that evidence to choose the smallest update set.
 

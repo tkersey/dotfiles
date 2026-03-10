@@ -1,4 +1,4 @@
 interface:
   display_name: "refine"
-  short_description: "Refine other skills via focused $ms changes."
-  default_prompt: "Use $refine to improve a skill via focused $ms changes."
+  short_description: "Refine existing Codex skills in place from evidence"
+  default_prompt: "Use $refine to improve an existing skill in this repo."
