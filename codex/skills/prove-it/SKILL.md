@@ -1,6 +1,6 @@
 ---
 name: prove-it
-description: Gauntlet for absolute claims (always/never/guaranteed/optimal); pressure-test, then refine with explicit boundaries. Use when users ask to prove or disprove strong certainty claims, request devil's-advocate challenge rounds, or want the $prove-it gauntlet to run in default autoloop/full-auto style.
+description: Gauntlet for absolute claims (always/never/guaranteed/optimal); pressure-test, then refine with explicit boundaries. Use when users ask to prove or disprove strong certainty claims, request devil's-advocate challenge rounds, or want the $prove-it gauntlet to run all 10 rounds continuously by default.
 ---
 
 # Prove It
@@ -12,27 +12,33 @@ description: Gauntlet for absolute claims (always/never/guaranteed/optimal); pre
 
 ## Round cadence (mandatory)
 - Definition: one "turn" means one assistant reply.
-- Default: autoloop (no approvals). Run exactly one gauntlet round per assistant turn, publish results, then continue on the next turn until Oracle synthesis.
+- Default: continuous (no approvals). Run rounds 1-10 plus Oracle synthesis in the current assistant turn. Do not rely on a future assistant turn for default behavior.
 - In default mode, after each round, publish:
   - Round Ledger
   - Knowledge Delta
-- If confidence remains low after Oracle synthesis, continue with additional rounds (11+) and publish an updated Oracle synthesis.
+- Round integrity is mandatory:
+  - Execute rounds 1-10 in numeric order, with one distinct gauntlet focus per round.
+  - Emit a separate Round Ledger + Knowledge Delta block for every round; do not merge multiple rounds into one pseudo-round or summarize "rounds 2-9" together.
+  - Do not treat prior prose as implicitly satisfying skipped rounds unless the user explicitly asks to continue from a known checkpoint.
+- If confidence remains low after Oracle synthesis, continue with additional rounds (11+) in the same reply when feasible, then publish an updated Oracle synthesis.
 - Do not ask for permission to continue. In default mode, do not wait for "next" between rounds. Pause only when you must ask the user a question or the user says "stop".
 - Step mode (explicit): if the user asks to "pause" / "step" / "one round at a time", run one round then wait for "next".
-- Full auto mode (explicit): if the user asks for "full auto" / "fast mode", run rounds 1-10 + Oracle synthesis in one assistant turn while still reporting each round in order.
+- Turn autoloop (explicit): if the user asks for "autoloop" / "one round per turn", run exactly one gauntlet round per assistant turn and continue on the next turn until Oracle synthesis.
+- Full auto mode (explicit): "full auto" / "fast mode" is an alias for the default continuous behavior.
 
 ## Mode invocation
 | Mode | Default? | How to invoke | Cadence |
 |------|----------|---------------|---------|
-| Autoloop | yes | (no phrase) | 1 round/turn; auto-continue until Oracle |
+| Continuous | yes | (no phrase) / "continuous" / "don't stop" / "exhaust all rounds" | rounds 1-10 + Oracle in one turn; publish Round Ledger + Knowledge Delta after each round |
 | Step mode | no | "step mode" / "pause each round" / "pause" / "step" / "one round at a time" | 1 round/turn; wait for "next" |
-| Full auto | no | "full auto" / "fast mode" | rounds 1-10 + Oracle in one turn; publish Round Ledger + Knowledge Delta after each round |
+| Turn autoloop | no | "autoloop" / "one round per turn" | 1 round/turn; continue on the next turn until Oracle |
+| Full auto | no | "full auto" / "fast mode" | alias for Continuous |
 
 ## Quick start
 1. Restate the claim and its scope.
-2. Default to autoloop. If the user explicitly requests "step mode" or "full auto", use that instead.
-3. Run round 1 and publish the Round Ledger + Knowledge Delta.
-4. Continue automatically with one round per turn until round 10 (Oracle synthesis).
+2. Default to continuous. If the user explicitly requests "step mode" or "turn autoloop", use that instead.
+3. Run rounds 1-10 plus Oracle synthesis in the same reply, publishing a distinct Round Ledger + Knowledge Delta block after each round.
+4. Treat "continuous", "don't stop", and "exhaust all rounds" as the default continuous mode.
 5. If confidence remains low, run additional rounds (11+) and publish an updated Oracle synthesis.
 
 ## Ten-round gauntlet
@@ -142,9 +148,10 @@ Next tests:
 - Round number + focus.
 - Round Ledger + Knowledge Delta.
 - At most one question for the user (only when blocked).
-- In default autoloop, run one round in that turn and continue to the next round in the next turn.
+- In default continuous mode, run rounds 1-10 + Oracle synthesis in the same reply, with one distinct per-round block per round.
 - In step mode, run one round and wait for "next".
-- In full auto (or "fast mode"), run rounds 1-10 + Oracle synthesis in one turn (repeat the above per round).
+- In turn autoloop, run one round in that turn and continue to the next round on the next turn.
+- In full auto (or "fast mode"), follow the same behavior as default continuous mode.
 
 ## Activation cues
 - "always" / "never" / "guaranteed" / "optimal" / "cannot fail" / "no downside" / "100%"
