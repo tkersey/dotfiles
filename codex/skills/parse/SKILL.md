@@ -1,6 +1,6 @@
 ---
 name: parse
-description: Analyze a local codebase and infer the architecture it is actually using, including repo kind, dominant style, major subsystem variants, confidence, declared-vs-implemented drift, and repo-fit hints for downstream agents. Use when prompts ask what architecture a repo uses, whether docs match code, how a target slice fits a hybrid monorepo, or when `$tk` needs a repo-dialect preflight before making a minimal change.
+description: Analyze a local codebase and infer the architecture it is actually using, including repo kind, best-fit dominant architecture, major subsystem exceptions, confidence, docs-vs-code drift, and repo-fit hints for downstream agents. Use when prompts ask what architecture a repo uses, whether it is really hexagonal or just layered, how a target slice fits a hybrid monorepo, whether documented architecture matches implementation, or when `$tk` needs a repo-dialect preflight before making a minimal change.
 ---
 
 # Parse
@@ -169,15 +169,6 @@ For each section:
 - `event-driven`: explicit publishers, consumers, brokers, or async event flows dominate control flow.
 - `pipeline` / job-oriented: DAGs, jobs, workflows, ETL stages, or scheduled data processing dominate the system.
 - `plugin` / extension-based: hosts, hooks, plugins, extensions, or adapter registries are first-class architecture surfaces.
-
-## Trigger Examples
-
-- "What architecture is this repo using?"
-- "Figure out whether this codebase is actually hexagonal or just layered."
-- "Analyze this monorepo and tell me the dominant architecture plus subsystem exceptions."
-- "Does the documented clean architecture match what the code implements?"
-- "Use `$parse` before `$tk` so the patch fits this repo's architecture."
-- "Tell me how this target slice fits the repo without recommending a redesign."
 
 ## Validation
 
