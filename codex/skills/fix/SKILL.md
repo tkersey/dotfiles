@@ -1,12 +1,13 @@
 ---
 name: fix
-description: Review+fix protocol with safety guardrails (unsoundness, invariants, footguns, incidental complexity). Use when prompts say "$fix this PR", "fix current branch", "fix this diff", "repair CI red", or "apply a minimal patch", and when crash/corruption/invariant-break issues need correction with a validation signal.
+description: Review+fix protocol with safety guardrails (unsoundness, invariants, footguns, incidental complexity). Use when prompts say "$fix this PR", "fix current branch", "fix this diff", "repair CI red", or "apply a minimal patch", and when crash/corruption/invariant-break issues need correction with a validation signal. Stop and hand off once no fix-worthy finding remains.
 ---
 
 # Fix
 
 ## Intent
 Make risky or unclear code safe with the smallest sound, validated change.
+When the defect queue is exhausted, `$fix` stops at that boundary; broader architecture, product, or roadmap analysis belongs to another skill.
 
 ## Double Diamond fit
 `fix` spans the full Double Diamond, but keeps divergence mostly internal to stay autonomous:
@@ -76,6 +77,8 @@ Delegation triggers (deterministic):
 - MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`
 - MUST answer that question internally, apply at most one new fix-worthy change per self-round, re-run validation, and repeat until a self-round yields no new fix-worthy finding or only blocked changes.
 - MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.
+- MUST stop `$fix` once no new fix-worthy finding remains; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.
+- MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.
 - When paired with `$tk` in wave execution, MUST treat `$fix` as the final mutating pass before artifactization:
   - `commit_first`: hand off immediately to `$commit` after passing validation.
   - `patch_first`: hand off immediately to `$patch` after passing validation.
@@ -480,6 +483,15 @@ For findings in severity order:
 6. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and exit the loop.
 7. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to output.
 
+### 7a) Post-fix boundary (required)
+1. If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.
+2. If the user explicitly asks for broader or deeper follow-up after closure, recommend the next skill explicitly:
+   - `$parse` for architecture or purpose analysis
+   - `$grill-me` for interrogation, pressure-testing, or narrowing the next move
+   - `$plan` for a decision-complete roadmap
+   - `$creative-problem-solver` for wider option generation
+3. Do not place those broader opportunities in `Residual risks / open questions` unless a valid blocker from the allowed set applies.
+
 ### 8) Output lock (required)
 Before sending the final message, verify all are true:
 1. Heading set is exact and complete (`Contract`, `Findings (severity order)`, `Changes applied`, `Pass trace`, `Validation`, `Self-review loop trace`, `Residual risks / open questions`).
@@ -583,6 +595,7 @@ For each finding:
 - Vague advice without locations.
 - "Nice-to-have" refactors that don’t reduce risk.
 - Feature creep.
+- Continuing broad repo critique or planning under a completed `$fix` label.
 - Asking for risk tolerance instead of applying the default policy.
 - Tightening presented as optional.
 - Ownership fixes without proven allocator/owner.

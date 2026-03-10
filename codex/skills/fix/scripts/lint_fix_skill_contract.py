@@ -74,6 +74,13 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to output.",
 ]
 
+REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS = [
+    "MUST stop `$fix` once no new fix-worthy finding remains; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
+    "MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.",
+    "If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.",
+    "Do not place those broader opportunities in `Residual risks / open questions` unless a valid blocker from the allowed set applies.",
+]
+
 FORBIDDEN_USER_LOOP_PHRASES = [
     "MUST ask the final user-directed changeset question only after at least one change is applied and validation is passing.",
     "MUST NOT emit `If you could change one thing about this changeset what would you change?` as a standalone first/only response.",
@@ -269,6 +276,13 @@ def run(path: Path) -> int:
         if phrase not in text:
             errors.append(
                 "self_loop_guardrail missing required phrase: "
+                f"{phrase}"
+            )
+
+    for phrase in REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS:
+        if phrase not in text:
+            errors.append(
+                "post_fix_boundary_guardrail missing required phrase: "
                 f"{phrase}"
             )
 

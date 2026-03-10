@@ -34,3 +34,12 @@ Use these examples to keep the visible transcript shape aligned with the interna
 **Self-review loop trace**
 - `S1` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No further fix-worthy adjustments remain.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`; stop_reason=`no_new_fix_worthy_findings`
 ```
+
+## Post-fix handoff
+
+After a clean or closed `$fix` pass, broader follow-up should route to another skill instead of continuing under the `$fix` label.
+
+- Use `$parse` for architecture or codebase-purpose analysis.
+- Use `$grill-me` for pressure-testing or narrowing the next move.
+- Use `$plan` for a decision-complete roadmap.
+- Use `$creative-problem-solver` for broader option generation.
