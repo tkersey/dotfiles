@@ -264,9 +264,7 @@ seq occurrence-export --root ~/.codex/sessions --format jsonl --output occurrenc
 
 ### 7) Bundle a report
 ```bash
-seq report-bundle --root ~/.codex/sessions \
-  --top 20 --skills tk,fix \
-  --sections "Contract,Invariants,Creative Frame,Why This Solution,Incision,Proof"
+seq report-bundle --root ~/.codex/sessions --top 20
 ```
 
 ### 8) Token usage summary
@@ -289,7 +287,12 @@ seq find-session --root ~/.codex/sessions --prompt "adapter=auto" --limit 20
 ### 11) List prompts/messages for one session
 ```bash
 seq session-prompts --root ~/.codex/sessions --session-id <session_id> \
-  --roles user,assistant --strip-skill-blocks --limit 100
+  --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
+```
+Current session from the active Codex thread:
+```bash
+seq session-prompts --root ~/.codex/sessions --current \
+  --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
 ```
 
 ### 12) Cue vs invoked discovery-skill rate
@@ -391,6 +394,7 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `query.params` is now parsed and routed into dataset collectors for dataset-specific source overrides.
 - `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.
 - `session-prompts` defaults to `--roles user`; set `--roles user,assistant` to include both sides of a conversation.
+- `session-prompts --current` resolves the current session from `CODEX_THREAD_ID` and fails closed if that env var is unavailable.
 - `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
 - `orchestration-concurrency` reports both configured (`max_concurrency`) and effective fanout (`min(max_concurrency, csv_rows)`), plus how many times each maximum occurred.
