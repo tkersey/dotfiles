@@ -43,6 +43,21 @@ uv run --with pyyaml codex/skills/saddle-up/scripts/saddle_up.py run \
   --opencode-timeout-seconds 180
 ```
 
+If you want a fast proof of the curated harness only, without replay cases:
+
+```bash
+uv run --with pyyaml codex/skills/saddle-up/scripts/saddle_up.py run \
+  --repo /path/to/target-repo \
+  --harness-path AGENTS.md \
+  --model google/gemini-2.5-pro \
+  --skip-improve \
+  --case-source curated \
+  --case-parallelism 4 \
+  --no-commit \
+  --max-cycles 1 \
+  --opencode-timeout-seconds 600
+```
+
 Refresh a Gemini-tuned suite before the next run:
 
 ```bash
@@ -88,7 +103,9 @@ uv run --with pyyaml codex/skills/saddle-up/scripts/saddle_up.py replay-refresh 
 ## Defaults and Gates
 - `threshold`: `0.80`
 - `stability_window`: `3` consecutive passes
-- `opencode_timeout_seconds`: `180`
+- model-aware `opencode_timeout_seconds` default:
+  - `600` for `google/gemini-2.5-pro`
+  - `180` for other profiles
 - Gemini 2.5 Pro bootstrap mix: `80% curated / 20% replay`
 - generic bootstrap mix: `60% curated / 40% replay`
 - stop file: `.saddle-up/STOP` (override with `--stop-file`)
@@ -118,8 +135,10 @@ Schema details:
 
 ## Troubleshooting
 - If `yaml` import fails, run with `uv run --with pyyaml ...`.
-- If a run appears stuck inside `opencode run`, lower or set `--opencode-timeout-seconds` and retry.
+- If a run appears stuck inside `opencode run`, first verify whether the model-aware default is simply too low for the current model; for Gemini 2.5 Pro the default is `600` seconds, and you can still override it explicitly with `--opencode-timeout-seconds`.
 - If the improver child is the part that hangs and you already trust the current harness edits, rerun with `--skip-improve` to evaluate the current harness without another rewrite attempt.
+- If replay is the slow or noisy part, rerun with `--case-source curated` to prove the curated harness independently before spending more cycles on replay prompts.
+- If curated probes are still too slow one-by-one, raise `--case-parallelism` so the exact-output checks can run concurrently on the same model.
 - If `openrouter/google/gemini-2.5-pro` hits credit or `max_tokens` failures, switch to direct `google/gemini-2.5-pro` before spending more harness cycles.
 - For one-cycle diagnosis without commits or PR side effects, use `--no-commit --max-cycles 1`.
 - If the loop stops with `external_blocker`, clear the provider/auth/network issue first; do not keep cycling a blocked harness.

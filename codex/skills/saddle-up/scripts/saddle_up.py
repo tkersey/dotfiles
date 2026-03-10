@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import datetime as dt
 import json
 import os
@@ -29,7 +30,8 @@ DEFAULT_THRESHOLD = 0.80
 DEFAULT_STABILITY_WINDOW = 3
 DEFAULT_STOP_FILE = ".saddle-up/STOP"
 DEFAULT_SUITE_SIZE = 10
-DEFAULT_OPENCODE_TIMEOUT_SECONDS = 180
+DEFAULT_GENERIC_OPENCODE_TIMEOUT_SECONDS = 180
+DEFAULT_GEMINI_OPENCODE_TIMEOUT_SECONDS = 600
 DEFAULT_GENERIC_MIX = {"curated": 0.6, "replay": 0.4}
 DEFAULT_GEMINI_MIX = {"curated": 0.8, "replay": 0.2}
 REPLAY_FETCH_MULTIPLIER = 8
@@ -223,6 +225,12 @@ def recommended_mix(model: str | None) -> dict[str, float]:
     if model_profile(model) == "gemini-2.5-pro":
         return dict(DEFAULT_GEMINI_MIX)
     return dict(DEFAULT_GENERIC_MIX)
+
+
+def recommended_timeout_seconds(model: str | None) -> int:
+    if model_profile(model) == "gemini-2.5-pro":
+        return DEFAULT_GEMINI_OPENCODE_TIMEOUT_SECONDS
+    return DEFAULT_GENERIC_OPENCODE_TIMEOUT_SECONDS
 
 
 def generic_curated_cases(harness_rel: str) -> list[dict[str, Any]]:
@@ -773,11 +781,23 @@ def evaluate_case(
 
 
 def pick_suite_cases(
-    suite: dict[str, Any], scoring: dict[str, Any]
+    suite: dict[str, Any], scoring: dict[str, Any], source_filter: str = "all"
 ) -> list[dict[str, Any]]:
     cases = [item for item in suite.get("cases", []) if isinstance(item, dict)]
     if not cases:
         raise SystemExit("suite has no cases")
+
+    normalized_filter = source_filter.strip().lower()
+    if normalized_filter not in {"all", "curated", "replay"}:
+        raise SystemExit(f"unsupported --case-source value: {source_filter}")
+    if normalized_filter != "all":
+        cases = [
+            case
+            for case in cases
+            if str(case.get("source", "")).strip().lower() == normalized_filter
+        ]
+        if not cases:
+            raise SystemExit(f"suite has no {normalized_filter} cases")
 
     mix = suite.get("mix") or {}
     curated_ratio = float(mix.get("curated", 0.6))
@@ -1116,25 +1136,33 @@ def evaluate_iteration(
     scoring: dict[str, Any],
     *,
     timeout_seconds: int | None = None,
+    case_parallelism: int = 1,
 ) -> tuple[list[dict[str, Any]], float]:
-    case_results: list[dict[str, Any]] = []
-    for case in selected_cases:
+    def run_case(case: dict[str, Any]) -> dict[str, Any]:
         prompt = str(case.get("prompt", "")).strip()
         if not prompt:
-            case_results.append(
-                {
-                    "id": str(case.get("id", "unknown")),
-                    "source": str(case.get("source", "unknown")),
-                    "passed": False,
-                    "reasons": ["missing-prompt"],
-                    "check_statuses": [],
-                    "returncode": 1,
-                    "output_chars": 0,
-                }
-            )
-            continue
+            return {
+                "id": str(case.get("id", "unknown")),
+                "source": str(case.get("source", "unknown")),
+                "passed": False,
+                "reasons": ["missing-prompt"],
+                "check_statuses": [],
+                "returncode": 1,
+                "output_chars": 0,
+            }
         result = run_opencode(repo, model, prompt, timeout_seconds=timeout_seconds)
-        case_results.append(evaluate_case(case, result, scoring))
+        return evaluate_case(case, result, scoring)
+
+    case_results: list[dict[str, Any]] = []
+    parallelism = max(1, int(case_parallelism))
+    if parallelism == 1 or len(selected_cases) <= 1:
+        for case in selected_cases:
+            case_results.append(run_case(case))
+    else:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=parallelism) as executor:
+            futures = [executor.submit(run_case, case) for case in selected_cases]
+            for future in futures:
+                case_results.append(future.result())
 
     passed = sum(1 for result in case_results if result.get("passed"))
     total = max(1, len(case_results))
@@ -1147,7 +1175,9 @@ def run_loop(args: argparse.Namespace) -> int:
     _, harness_rel = normalize_harness(repo, args.harness_path)
     stop_path = resolve_stop_file(repo, args.stop_file)
     timeout_seconds = (
-        int(args.opencode_timeout_seconds) if args.opencode_timeout_seconds else None
+        int(args.opencode_timeout_seconds)
+        if args.opencode_timeout_seconds
+        else recommended_timeout_seconds(args.model)
     )
     if timeout_seconds is not None and timeout_seconds <= 0:
         raise SystemExit("--opencode-timeout-seconds must be > 0")
@@ -1192,7 +1222,9 @@ def run_loop(args: argparse.Namespace) -> int:
                 break
 
             cycle_count += 1
-            selected_cases = pick_suite_cases(suite, scoring)
+            selected_cases = pick_suite_cases(
+                suite, scoring, source_filter=args.case_source
+            )
 
             if args.skip_improve:
                 improve_result = {
@@ -1219,6 +1251,7 @@ def run_loop(args: argparse.Namespace) -> int:
                 selected_cases,
                 scoring,
                 timeout_seconds=timeout_seconds,
+                case_parallelism=args.case_parallelism,
             )
             improve_failed = improve_result["returncode"] != 0
             external_blocker = first_external_blocker(improve_result, case_results)
@@ -1631,8 +1664,11 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument(
         "--opencode-timeout-seconds",
         type=int,
-        default=DEFAULT_OPENCODE_TIMEOUT_SECONDS,
-        help="Per-opencode-call timeout in seconds",
+        help=(
+            "Per-opencode-call timeout in seconds "
+            f"(defaults: {DEFAULT_GEMINI_OPENCODE_TIMEOUT_SECONDS}s for Gemini 2.5 Pro, "
+            f"{DEFAULT_GENERIC_OPENCODE_TIMEOUT_SECONDS}s otherwise)"
+        ),
     )
     run_parser.add_argument(
         "--max-cycles", type=int, help="Optional cap on completed cycles"
@@ -1644,6 +1680,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--skip-improve",
         action="store_true",
         help="Evaluate the current harness without running the improver step",
+    )
+    run_parser.add_argument(
+        "--case-source",
+        choices=["all", "curated", "replay"],
+        default="all",
+        help="Restrict evaluation to all, curated, or replay cases",
+    )
+    run_parser.add_argument(
+        "--case-parallelism",
+        type=int,
+        default=1,
+        help="Number of eval cases to run concurrently",
     )
     run_parser.set_defaults(func=run_loop)
 
