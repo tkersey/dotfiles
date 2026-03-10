@@ -24,6 +24,22 @@ If the caller already knows the target files or subsystem, pass them as `focus_p
 - Use `focus_paths` to see whether the target slice is a meaningful exception.
 - If the slice differs materially, say so in `Major Subsystems`, `Repo-Fit Advice`, and `Agent Handoff`.
 
+## Weak-Signal Recovery
+
+If the initial repo-wide `parse-arch collect` pass is thin, do one focused collector rerun before broader manual inspection.
+
+- Choose 2-4 likely architecture-defining paths from the first pass or from obvious ownership seams:
+  - build/manifests
+  - entrypoints or public package roots
+  - the dominant runtime/core module
+  - docs/tests/examples only when they materially define the contract
+- Rerun `parse-arch collect` with repeatable `--focus-path` flags for those slices.
+- Compare repo-wide versus focus-path evidence explicitly:
+  - which signal classes stayed thin
+  - which subsystem boundaries only became visible in the focused pass
+  - whether the focused pass changed the dominant label or only clarified subsystem exceptions
+- Only after that focused rerun should you lean heavily on direct source/doc inspection.
+
 ## Investigative Mode
 
 Escalate beyond static inspection only when the architecture is unclear or contradictory.
@@ -59,6 +75,12 @@ Always explain what evidence would raise or lower confidence.
 - Docs can seed hypotheses quickly.
 - Docs do not override implementation.
 - If the repo says "clean architecture" but adapters reach directly into persistence or framework layers, record that as drift and classify the implemented shape instead.
+
+## Caveat Wording
+
+- Prefer caveats like "repo-wide collector signals were thin on dependency direction, so I inspected `build.zig`, `src/core`, and `test/` directly" over generic caveats about the installed binary version.
+- Mention the binary version only when the CLI behavior itself blocked a needed flag or output mode.
+- If the collector under-read the repo, say what it still got right and what evidence classes required compensation.
 
 ## Memo Template
 

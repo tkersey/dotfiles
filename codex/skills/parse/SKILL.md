@@ -97,6 +97,8 @@ run_parse_arch_tool() {
    - Pass `--focus-path` for each target slice when `focus_paths` are available.
    - Use the JSON output to inspect manifests, entrypoints, dependency-direction hints, runtime-boundary hints, architecture-doc claims, scan coverage, subsystem candidates, and focus-path observations.
    - Treat the script as evidence collection only. Do not let it choose the final architecture label for you.
+   - If the first repo-wide pass is thin, do one targeted second pass before broader manual inspection: choose 2-4 likely architecture-defining paths (for example entrypoints, build manifests, the main runtime/core module, or a contract-heavy docs/test slice) and rerun `parse-arch collect` with `--focus-path` for each.
+   - Compare what the repo-wide pass saw with what the focus-path pass surfaced. Use that delta in `Major Subsystems`, `Repo-Fit Advice`, and `Caveats`.
 
 3. Map the evidence to the curated taxonomy.
    - Read [references/taxonomy.md](references/taxonomy.md).
@@ -111,6 +113,8 @@ run_parse_arch_tool() {
 
 5. Escalate only when static evidence is weak or contradictory.
    - Read [references/evidence-playbook.md](references/evidence-playbook.md) before running investigative commands.
+   - If the collector feels weak, name the missing signal classes precisely first: for example missing dependency-direction hints, unclear runtime boundaries, sparse subsystem candidates, or absent architecture docs.
+   - Do not jump straight from one weak repo-wide collector pass to "manual inspection." First prove that a focused collector rerun still leaves the architecture under-determined.
    - Use safe, non-mutating probes only when they add meaningful evidence: builds, tests, dependency inspection, or local command help.
    - Stop if the only available probe mutates tracked files, requires secrets, or depends on network-only truth.
 
@@ -144,9 +148,9 @@ For each section:
 - `Major Subsystems`: List major slices only when they materially differ from the dominant architecture.
 - `Repo-Fit Advice`: Give 3-5 bullets that help a downstream agent fit work to the repo as it exists now. Include likely seams, ownership boundaries, and `do_not_assume` warnings when confidence is weak.
 - `Agent Handoff`: Emit one fenced `yaml` block with stable keys: `repo_kind`, `dominant_architecture`, `confidence`, `focus_scope`, `major_subsystems`, `architecture_drift`, `repo_fit_hints`, `do_not_assume`, and `evidence_paths`.
-- `Evidence`: Prefer concrete paths, module names, entrypoints, and signal summaries over general impressions.
+- `Evidence`: Prefer concrete paths, module names, entrypoints, signal summaries, and the exact collector command shapes you used over general impressions. Say when a focus-path rerun materially changed the read.
 - `Architecture Drift`: Compare docs and implementation when both exist; write `none observed` when there is no meaningful drift.
-- `Caveats`: State uncertainty, missing evidence, or overclaim boundaries.
+- `Caveats`: State uncertainty, missing evidence, or overclaim boundaries. Tie caveats to specific missing signals and the compensating paths you inspected; avoid generic version-centric caveats unless the binary behavior itself is the issue.
 
 ## Guardrails
 
@@ -157,6 +161,7 @@ For each section:
 - Do not confuse framework choice with architecture by default; explain whether the framework is shaping or merely hosting the design.
 - Do not collapse a mixed monorepo into one label without naming important exceptions or `focus_paths` caveats.
 - Do not let a repo-wide label override a slice-local signal when `focus_paths` clearly point at a materially different subsystem.
+- Do not use `parse-arch` version strings as stock caveats. If the collector under-read the repo, say which evidence classes were thin and which concrete paths you inspected to compensate.
 - Do not suggest migrations, modernizations, or follow-up skills unless the user explicitly asks for that next step.
 
 ## Quick Heuristics
