@@ -63,10 +63,10 @@ Treat this as retryable, not fatal. Use exponential backoff with jitter. Do not 
 
 Examples that require opt-in:
 
-- `tool/requestUserInput`
 - `thread/backgroundTerminals/clean`
 - `thread/realtime/*`
 - `item/tool/call` dynamic tool flow
+- `thread/start` dynamic tool and extended-history fields
 
 If opt-in is missing, treat failures as capability negotiation errors before debugging payload shapes.
 
@@ -94,21 +94,21 @@ The notification stream is authoritative for item lifecycle and tool events.
 
 ## Server-Initiated Requests (Must Reply)
 
-Approvals:
+Current native CAS auto-handles:
 
 - `item/commandExecution/requestApproval`
 - `item/fileChange/requestApproval`
-
-Tool requests:
-
+- `item/permissions/requestApproval`
 - `item/tool/call`
 - `item/tool/requestUserInput` (experimental)
+- `mcpServer/elicitation/request`
 
-Auth:
+Other known server requests:
 
 - `account/chatgptAuthTokens/refresh`
 
-For command approvals, preserve optional `approvalId` in routing to avoid callback ambiguity.
+For command approvals, preserve optional `approvalId` in routing to avoid callback ambiguity and prefer `availableDecisions` when present.
+Default CAS responses are conservative: deny permissions, answer request-user-input with first-option labels when present, decline MCP elicitations, and return `success: false` for dynamic tool calls unless the CLI overrides them.
 
 ## requestUserInput Semantics
 
@@ -121,6 +121,8 @@ After responding (or when pending request is cleared by turn lifecycle), server 
 - `serverRequest/resolved` with `{ threadId, requestId }`
 
 Plan for cleanup-resolution events on turn start/complete/interrupt.
+
+Native CAS note: the Zig client can answer this request now, but default auto-answering is intentionally shallow unless the CLI overrides it with an explicit response payload.
 
 ## Notifications (Common)
 
@@ -148,7 +150,7 @@ Common depending on features/config:
 - Review: `review/start`
 - Utility: `command/exec`
 - Discovery: `skills/list`, `app/list`, `model/list`, `collaborationMode/list`
-- Experimental: `experimentalFeature/list`, `thread/backgroundTerminals/clean`, `tool/requestUserInput`
+- Experimental: `experimentalFeature/list`, `thread/backgroundTerminals/clean`, `thread/realtime/*`
 
 ## Routing Rule (Avoid Deadlocks)
 

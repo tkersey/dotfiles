@@ -1,6 +1,6 @@
 ---
 name: cas
-description: Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runner`) for app-server smoke checks, single-request orchestration, and multi-instance request fanout.
+description: Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runner`) for v2 app-server smoke checks, direct thread/turn request execution, and multi-instance fanout when validating method or approval behavior.
 ---
 
 # cas (Zig App-Server Control)
@@ -14,6 +14,8 @@ Use the native `cas` dispatcher and subcommands:
 - `cas smoke_check` for protocol/API smoke checks.
 - `cas instance_runner` for method execution across one or many isolated instances.
 - `run_cas_tool request` (helper alias) for single-request flows via `instance_runner --instances 1`.
+
+Current `cas smoke_check` verifies the native client can complete the v2 handshake and reach `experimentalFeature/list`, `thread/start`, `thread/resume`, and `turn/steer`.
 
 Node runtime paths (`cas_proxy.mjs`, `cas_client.mjs`, and related wrappers) are removed from this skill and must not be used.
 
@@ -138,7 +140,8 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
 ## Trigger Cues
 
 - "instances" / "multi-instance" / "parallel sessions"
-- app-server method checks (`thread/list`, `thread/read`, `thread/resume`, `turn/steer`, `thread/unsubscribe`)
+- app-server method checks (`thread/start`, `thread/resume`, `thread/fork`, `thread/read`, `thread/list`, `thread/archive`, `thread/unarchive`, `thread/rollback`, `turn/start`, `turn/steer`, `turn/interrupt`, `review/start`)
+- command/file approval behavior, especially `availableDecisions`
 - session mining through direct app-server method execution
 - protocol sanity checks before orchestration
 
@@ -153,7 +156,7 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
    - If you see `"Not initialized"` or `"Already initialized"`, treat it as connection-lifecycle error, not a method payload error.
 
 3. Run one direct method request (single-request lane).
-   - `run_cas_tool request --cwd /path/to/workspace --method thread/list --params-json '{"cursor":null,"limit":10}' --json`
+   - `run_cas_tool request --cwd /path/to/workspace --method thread/start --params-json '{"cwd":"/path/to/workspace","experimentalRawEvents":false}' --json`
 
 4. Run fanout/multi-instance requests.
    - `run_cas_tool instance-runner --cwd /path/to/workspace --instances 12 --method thread/list --params-json '{"cursor":null,"limit":1}' --json`
@@ -163,24 +166,36 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
    - Do not treat `-32001` as a permanent protocol mismatch.
 
 6. Drive specific thread/turn methods as needed.
+   - Start thread:
+     - `run_cas_tool request --cwd /path/to/workspace --method thread/start --params-json '{"cwd":"/path/to/workspace","experimentalRawEvents":false}' --json`
+   - Start turn:
+     - `run_cas_tool request --cwd /path/to/workspace --method turn/start --params-json '{"threadId":"thr_123","input":[{"type":"text","text":"summarize the repo status"}]}' --json`
    - Thread read:
      - `run_cas_tool request --cwd /path/to/workspace --method thread/read --params-json '{"threadId":"thr_123","includeTurns":true}' --json`
    - Resume thread:
      - `run_cas_tool request --cwd /path/to/workspace --method thread/resume --params-json '{"threadId":"thr_123"}' --json`
    - Steer turn:
      - `run_cas_tool request --cwd /path/to/workspace --method turn/steer --params-json '{"threadId":"thr_123","expectedTurnId":"turn_abc","input":[{"type":"text","text":"continue"}]}' --json`
+   - Interrupt turn:
+     - `run_cas_tool request --cwd /path/to/workspace --method turn/interrupt --params-json '{"threadId":"thr_123","turnId":"turn_abc"}' --json`
 
 7. Use method-specific params for list/mine flows.
    - `thread/list` supports filter params (`cursor`, `limit`, `searchTerm`, `cwd`, etc.) as provided by your app-server version.
    - `turn/steer` requires `expectedTurnId`.
 
 8. Gate experimental methods and payload fields explicitly.
-   - Methods such as `tool/requestUserInput` and `thread/backgroundTerminals/clean` require `initialize.params.capabilities.experimentalApi = true`.
+   - Experimental surfaces such as `thread/backgroundTerminals/clean`, `thread/realtime/*`, and `thread/start` dynamic-tool fields require `initialize.params.capabilities.experimentalApi = true`.
    - If omitted, treat failures as capability negotiation errors.
+
+9. Respect native CAS server-request limits.
+   - The current Zig client auto-answers `item/commandExecution/requestApproval`, `item/fileChange/requestApproval`, `item/permissions/requestApproval`, `item/tool/requestUserInput`, `mcpServer/elicitation/request`, and `item/tool/call`.
+   - Default native behavior is conservative: permissions requests are denied, request-user-input questions use the first option label when present, MCP elicitations are declined, and dynamic tool calls return `success: false` unless you override with explicit CLI flags.
 
 ## Approval and Request Semantics
 
 - Exec/file approval decisions are handled by the Zig client (`--exec-approval`, `--file-approval`, `--read-only`).
+- Permission approvals can be controlled with `--permissions-approval deny|grant-turn|grant-session`.
+- `item/tool/requestUserInput`, `mcpServer/elicitation/request`, and `item/tool/call` can be overridden with `--request-user-input-response-json`, `--elicitation-action` plus `--elicitation-content-json`, and `--dynamic-tool-response-json`.
 - For command approvals, CAS resolves decisions against server-provided `availableDecisions` when present.
 - Unknown server-request methods are rejected fail-closed in native mode to prevent deadlocks.
 - For overload responses (`-32001`), CAS callers should retry with exponential backoff and jitter.
@@ -189,7 +204,7 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
 
 - This skill no longer exposes a Node JSONL proxy lifecycle.
 - Legacy message envelopes (`cas/request`, `cas/respond`, `cas/send`, `cas/state/get`, `cas/stats/get`) are removed from this skill contract.
-- Dynamic tool reply loops that depend on external server-request forwarding are out of scope for this Zig-only skill surface.
+- Dynamic tool reply loops are supported only through static response payloads passed on the CAS CLI; native CAS is not a full interactive tool-runtime host.
 
 ## Canonical Schema Source
 
