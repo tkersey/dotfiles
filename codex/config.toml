@@ -72,3 +72,12 @@ fast_mode = true
 experimental_mode = "execute"
 status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning"]
 theme = "coldark-dark"
+
+[projects."/Users/tk/workspace/tk/codex"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/shift"]
+trust_level = "trusted"
+
+[projects."/Users/tk/.dotfiles"]
+trust_level = "trusted"
