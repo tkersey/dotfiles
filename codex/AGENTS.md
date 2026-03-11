@@ -170,3 +170,14 @@ Apply these in order:
 - End-of-turn learnings (required for implementation turns): after a proof signal and before the final response, run `$learnings` to append 0-3 high-signal records to `.learnings.jsonl` (prefer 1; skip when no capture checkpoint occurred). Mention the append result briefly.
 - Codify loop (promotion): when a learning is status `codify_now` (or repeats), promote it into durable docs (for example `codex/AGENTS.md` or a relevant skill doc), then append a follow-up learning referencing the durable anchor.
   - Helper: `learnings codify-candidates --min-count 3 --limit 20 --drop-superseded`
+
+## Seq Local-First Routing
+
+- Explicit `$seq` requests and artifact-forensics questions are `seq`-first. Route there before generic shell search or ad hoc JSONL inspection.
+- Treat artifact-forensics broadly: session provenance, "what did that rollout actually say", memory provenance/staleness, tool-call/tooling traces, orchestration ledger proof, and concurrency math all start with `seq`.
+- Preferred ladder:
+  1. `seq artifact-search`.
+  2. The narrowest live specialized follow-up (`find-session`, `session-prompts`, `session-tooling`, `orchestration-concurrency`, memory-file inventory via `seq query` on `memory_files`, or the matching opencode command when explicitly allowed).
+  3. `seq query-diagnose` when a `seq query` run needs lifecycle debugging or deterministic next actions.
+  4. Generic `seq query` only when no specialized command covers the question.
+- Keep the opencode gate literal and fail closed: do not run opencode datasets or commands unless the request text includes the exact word `opencode`.

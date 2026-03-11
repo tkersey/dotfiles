@@ -1,18 +1,36 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, token metrics, prompt-to-session lookup, tool-call/tooling analysis (`tool_calls`, `tool_invocations`, `tool_call_args`, `session-tooling`, `query-diagnose`), memory artifact inventory/routing (`memory_summary.md`, `MEMORY.md`, `rollout_summaries/`, `raw_memories.md`), and orchestration-concurrency analysis from `spawn_agents_on_csv` calls. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
 ---
 
 # seq
 
 ## Overview
-Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consistently with the Zig `seq` CLI. Focus on skill usage, format compliance, token counts, tool-call/tooling forensics, and memory-file mining.
+Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consistently with the Zig `seq` CLI. Explicit `$seq` requests and artifact-forensics questions are `seq`-first. Focus on skill usage, format compliance, token counts, tool-call/tooling forensics, memory-file mining, and session-backed proof.
 
 ## Trigger Cues
+- Explicit `$seq` asks.
 - Questions that ask to verify prior session output using artifacts (`"use $seq to find it"` / `"what did that session actually say"`).
+- Artifact-forensics questions about provenance, trace proof, or "show me the artifact that proves it".
 - Questions about Codex memory artifacts or provenance (`"what's in MEMORY.md"`, `"which rollout produced this memory"`, `"is this memory stale"`, `"how do memory_summary.md and rollout_summaries relate"`).
 - Orchestration ledger forensics from session traces (`Orchestration Ledger`, `spawn_agents_on_csv`, wave CSVs, concurrency counts).
 - Concurrency math validation (`max_concurrency`, effective fanout, occurrences of peak parallelism, planned rows vs actual parallelism).
+
+## Local-First Routing Ladder
+- Stay in `seq` first for explicit `$seq` asks and artifact-forensics work; do not jump to generic shell search unless `seq` cannot cover the need.
+- Preferred entrypoint: `seq artifact-search`.
+- Use this ladder:
+  1. `artifact-search`.
+  2. Specialized follow-ups that already match the artifact shape:
+     - `find-session` for prompt-to-session lookup.
+     - `session-prompts` for "what did that session actually say" and transcript proof.
+     - `session-tooling` for shell/tool summaries.
+     - `orchestration-concurrency` for ledger/concurrency proof.
+     - `query --spec ... memory_files` for memory artifact inventory/routing.
+     - `opencode-prompts` / `opencode-events` only when the literal gate is satisfied.
+  3. `query-diagnose` when a `seq query` run needs lifecycle debugging or deterministic next actions.
+  4. Generic `seq query` only when no specialized command covers the question.
+- Treat `query-diagnose` as a diagnostic tool for `seq query`, not the default artifact-discovery entrypoint.
 
 ## Memory Artifact Model
 - Treat `~/.codex/memories` as a file-backed memory workspace, not an opaque store.
@@ -235,8 +253,8 @@ seq skills-rank --root ~/.codex/sessions
 Common options:
 - `--format json|csv`
 - `--max 20`
-- `--roles user,assistant`
 - `--since 2026-01-01T00:00:00Z`
+- `--until 2026-03-01T00:00:00Z`
 
 ### 2) Trend a skill over time
 ```bash
@@ -245,15 +263,12 @@ seq skill-trend --root ~/.codex/sessions --skill tk --bucket week
 
 ### 3) Report on a specific skill
 ```bash
-seq skill-report --root ~/.codex/sessions --skill tk \
-  --sections "Contract,Invariants,Creative Frame,Why This Solution,Incision,Proof" \
-  --sample-missing 3
+seq skill-report --root ~/.codex/sessions --skill tk
 ```
 Another example:
 ```bash
 seq skill-report --root ~/.codex/sessions --skill fix \
-  --sections "Contract,Findings,Changes applied,Validation,Residual risks / open questions" \
-  --sample-missing 3
+  --since 2026-03-01T00:00:00Z
 ```
 
 ### 4) Role breakdown by skill
@@ -264,9 +279,7 @@ seq role-breakdown --root ~/.codex/sessions --format table
 ### 5) Audit section compliance
 ```bash
 seq section-audit --root ~/.codex/sessions \
-  --sections "Contract,Invariants,Creative Frame" \
-  --contains "Using $tk" \
-  --sample-missing 5
+  --sections "Contract,Invariants,Creative Frame"
 ```
 
 ### 6) Export occurrences
@@ -438,6 +451,7 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `tool_call_args` flattens JSON argument/input leaves with `payload_source`, `arg_path`, `value_kind`, `value_text`, `value_number`, `value_bool`, `is_null`, and `array_index`.
 - `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.
 - `find-session`, `session-prompts`, `session-tooling`, and `query-diagnose` accept ISO-8601 `--since` / `--until` filters for session-backed narrowing.
+- Prefer the routing ladder: `artifact-search`, then specialized follow-ups, then `query-diagnose`, and generic `query` only when needed.
 - `session-prompts` defaults to `--roles user`; set `--roles user,assistant` to include both sides of a conversation.
 - `session-prompts --current` resolves the current session from `CODEX_THREAD_ID` and fails closed if that env var is unavailable.
 - `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
