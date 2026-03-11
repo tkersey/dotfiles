@@ -40,7 +40,7 @@ When iterating on the Zig-backed `learnings`/`append_learning` helper CLI path, 
 - Best-effort and non-blocking: never require extra context; if evidence is thin, either write nothing or persist `review_later` with placeholders.
 - Noise control: if no Capture Checkpoint occurred or nothing decision-shaping emerged, append 0 records; otherwise prefer 1 record (max 3).
 - Completion proof: after an implementation turn with a checkpoint, either (a) produce an `appended: id=...` success line, or (b) state `0 records appended` with a concrete reason.
-- Helper-first write path: use `append_learning`/`run_learnings_tool append` for normal writes; manual `.learnings.jsonl` edits are emergency-only and must include explicit rationale.
+- Helper-first write path: use `learnings append`/`run_learnings_tool append` for normal writes; keep `append_learning` available as a compatibility binary, and treat manual `.learnings.jsonl` edits as emergency-only with explicit rationale.
 
 ## Quick Start
 
@@ -64,7 +64,7 @@ run_learnings_tool() {
   case "$subcommand" in
     append|append-learning|append_learning)
       mode="append"
-      bin="append_learning"
+      bin="learnings"
       marker="append_learning.zig"
       ;;
     datasets|query|recent|recall|codify-candidates|quality-audit|value-report)
@@ -104,9 +104,12 @@ run_learnings_tool() {
   }
 
   local os="$(uname -s)"
-  if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
+  if command -v "$bin" >/dev/null 2>&1 && (
+    [ "$mode" != "append" ] && "$bin" --help 2>&1 | grep -q "$marker" ||
+    [ "$mode" = "append" ] && "$bin" append --help 2>&1 | grep -q "$marker"
+  ); then
     if [ "$mode" = "append" ]; then
-      "$bin" "$@"
+      "$bin" append "$@"
     else
       "$bin" "$subcommand" "$@"
     fi
@@ -122,15 +125,23 @@ run_learnings_tool() {
       echo "brew install tkersey/tap/learnings failed." >&2
       return 1
     fi
-  elif ! (command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"); then
+  elif ! (
+    command -v "$bin" >/dev/null 2>&1 && (
+      [ "$mode" != "append" ] && "$bin" --help 2>&1 | grep -q "$marker" ||
+      [ "$mode" = "append" ] && "$bin" append --help 2>&1 | grep -q "$marker"
+    )
+  ); then
     if ! install_learnings_direct; then
       return 1
     fi
   fi
 
-  if command -v "$bin" >/dev/null 2>&1 && "$bin" --help 2>&1 | grep -q "$marker"; then
+  if command -v "$bin" >/dev/null 2>&1 && (
+    [ "$mode" != "append" ] && "$bin" --help 2>&1 | grep -q "$marker" ||
+    [ "$mode" = "append" ] && "$bin" append --help 2>&1 | grep -q "$marker"
+  ); then
     if [ "$mode" = "append" ]; then
-      "$bin" "$@"
+      "$bin" append "$@"
     else
       "$bin" "$subcommand" "$@"
     fi
@@ -193,7 +204,7 @@ If any answer is no, skip capture (or use `review_later` only when uncertainty i
    - If working under temp paths (`/tmp`, `/var/folders/...`), either skip or mirror only high-signal lessons into a durable repo `.learnings.jsonl`.
 6. Persist immediately.
    - Append each accepted learning to `.learnings.jsonl` in repo root (0 records is valid when nothing qualifies).
-   - Use the `append_learning` helper command (via `run_learnings_tool append`) instead of hand-building JSON.
+   - Use `learnings append` (via `run_learnings_tool append`) instead of hand-building JSON.
 7. Report concise highlights in chat.
    - Summarize the 1-3 highest leverage learnings (or say none).
    - Reference the write result (`.learnings.jsonl` updated, N records appended, or duplicate-skip).
@@ -306,7 +317,7 @@ Promotion rule of thumb:
 - If a learning is repeated (theme appears >= 3 times) or status is `codify_now`, promote it into durable docs (for example `codex/AGENTS.md` or a relevant skill doc).
 - After codifying, append a follow-up learning referencing the durable anchor (use `--related-id`/`--supersedes-id` and a `codified` tag).
 
-Runtime bootstrap policy for `learnings` mirrors `cas`: use Zig binaries only (`learnings`, `append_learning`), default to Homebrew install on macOS, and fallback to direct Zig install from `skills-zig` on non-macOS.
+Runtime bootstrap policy for `learnings` mirrors `cas`: use Zig binaries only (`learnings` with `append` plus `append_learning` compatibility), default to Homebrew install on macOS, and fallback to direct Zig install from `skills-zig` on non-macOS.
 
 ## Guardrails
 
