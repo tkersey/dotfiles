@@ -1,12 +1,12 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, token metrics, prompt-to-session lookup, memory artifact inventory/routing (`memory_summary.md`, `MEMORY.md`, `rollout_summaries/`, `raw_memories.md`), and orchestration-concurrency analysis from `spawn_agents_on_csv` calls. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for skill usage, section/format compliance, trigger evidence, token metrics, prompt-to-session lookup, tool-call/tooling analysis (`tool_calls`, `tool_invocations`, `tool_call_args`, `session-tooling`, `query-diagnose`), memory artifact inventory/routing (`memory_summary.md`, `MEMORY.md`, `rollout_summaries/`, `raw_memories.md`), and orchestration-concurrency analysis from `spawn_agents_on_csv` calls. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
 ---
 
 # seq
 
 ## Overview
-Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consistently with the Zig `seq` CLI. Focus on skill usage, format compliance, token counts, and memory-file mining.
+Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consistently with the Zig `seq` CLI. Focus on skill usage, format compliance, token counts, tool-call/tooling forensics, and memory-file mining.
 
 ## Trigger Cues
 - Questions that ask to verify prior session output using artifacts (`"use $seq to find it"` / `"what did that session actually say"`).
@@ -154,6 +154,18 @@ seq query --root ~/.codex/sessions --spec \
   '{"dataset":"tool_calls","group_by":["tool"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"limit":20,"format":"table"}'
 ```
 
+Inspect lifecycle-enriched tool invocations:
+```bash
+seq query --root ~/.codex/sessions --spec \
+  '{"dataset":"tool_invocations","select":["timestamp","tool_name","command_text","workdir","wall_time_ms","exit_code","running_state"],"sort":["-timestamp"],"limit":20,"format":"table"}'
+```
+
+Flatten tool-call argument leaves:
+```bash
+seq query --root ~/.codex/sessions --spec \
+  '{"dataset":"tool_call_args","where":[{"field":"tool_name","op":"eq","value":"exec_command"}],"select":["timestamp","tool_name","arg_path","value_kind","value_text","value_number","value_bool"],"sort":["-timestamp"],"limit":20,"format":"table"}'
+```
+
 Memory files by category:
 ```bash
 seq query --spec \
@@ -283,16 +295,44 @@ zig build bench -Doptimize=ReleaseFast -- --config perf/frozen/workload_config.j
 ```bash
 seq find-session --root ~/.codex/sessions --prompt "adapter=auto" --limit 20
 ```
+Constrain to a session window:
+```bash
+seq find-session --root ~/.codex/sessions \
+  --prompt "adapter=auto" \
+  --since 2026-03-01T00:00:00Z \
+  --until 2026-03-05T00:00:00Z \
+  --limit 20
+```
 
 ### 11) List prompts/messages for one session
 ```bash
 seq session-prompts --root ~/.codex/sessions --session-id <session_id> \
   --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
 ```
+Constrain to a time window within that session:
+```bash
+seq session-prompts --root ~/.codex/sessions --session-id <session_id> \
+  --roles user,assistant --since 2026-03-01T00:00:00Z --until 2026-03-05T00:00:00Z \
+  --strip-skill-blocks --limit 100 --format jsonl
+```
 Current session from the active Codex thread:
 ```bash
 seq session-prompts --root ~/.codex/sessions --current \
   --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
+```
+
+### Session-backed tooling diagnostics
+Summarize tool/shell activity for one session:
+```bash
+seq session-tooling --root ~/.codex/sessions --session-id <session_id> \
+  --since 2026-03-01T00:00:00Z --until 2026-03-05T00:00:00Z \
+  --summary --group-by executable --format table
+```
+Inspect `seq query` lifecycle health for one session:
+```bash
+seq query-diagnose --root ~/.codex/sessions --session-id <session_id> \
+  --since 2026-03-01T00:00:00Z --until 2026-03-05T00:00:00Z \
+  --threshold-ms 10000 --next-actions --format json
 ```
 
 ### 12) Cue vs invoked discovery-skill rate
@@ -392,11 +432,18 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 - `query.params` is now parsed and routed into dataset collectors for dataset-specific source overrides.
+- Session-tooling datasets now include `tool_invocations` and `tool_call_args` in addition to `tool_calls`.
+- `tool_calls` now exposes raw argument/input text plus command/workdir fields: `arguments_text`, `input_text`, `command_text`, `primary_executable`, `workdir`, `parse_error`.
+- `tool_invocations` adds lifecycle fields such as `end_timestamp`, `pty_session_id`, `wall_time_ms`, `exit_code`, `running_state`, and `unresolved`.
+- `tool_call_args` flattens JSON argument/input leaves with `payload_source`, `arg_path`, `value_kind`, `value_text`, `value_number`, `value_bool`, `is_null`, and `array_index`.
 - `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.
+- `find-session`, `session-prompts`, `session-tooling`, and `query-diagnose` accept ISO-8601 `--since` / `--until` filters for session-backed narrowing.
 - `session-prompts` defaults to `--roles user`; set `--roles user,assistant` to include both sides of a conversation.
 - `session-prompts --current` resolves the current session from `CODEX_THREAD_ID` and fails closed if that env var is unavailable.
 - `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
+- `session-tooling` summarizes per-invocation shell/tool behavior and can aggregate via `--summary --group-by executable|command|tool`.
+- `query-diagnose` emits per-query diagnostics from rollout JSONL and can suggest deterministic follow-up commands with `--next-actions`.
 - `orchestration-concurrency` reports both configured (`max_concurrency`) and effective fanout (`min(max_concurrency, csv_rows)`), plus how many times each maximum occurred.
 - It also emits `effective_peak`, `spawn_substrate`, `mesh_truth_verdict`, direct-lane counters (`spawn_agent_calls`, `wait_calls`, `close_agent_calls`), `serialized_wait_ratio`, and floor-gate fields (`floor_threshold`, `floor_applicable`, `floor_result`).
 - For sessions without `spawn_agents_on_csv`, it returns a structured row with `mesh_truth_verdict=false` and `spawn_substrate=spawn_agent|none` rather than failing.

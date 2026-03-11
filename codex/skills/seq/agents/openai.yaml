@@ -1,4 +1,4 @@
 interface:
   display_name: "seq"
   short_description: "Mine Codex sessions and memories with the Zig seq CLI"
-  default_prompt: "Use $seq (Zig CLI) to inventory and route Codex memories in ~/.codex/memories, especially memory_summary.md, MEMORY.md, rollout_summaries/, and raw_memories.md, then trace memory-backed claims into ~/.codex/sessions when needed; hard gate: run opencode research only when the user request includes literal `opencode`."
+  default_prompt: "Use $seq (Zig CLI) to inventory and route Codex memories in ~/.codex/memories, mine session-backed tooling surfaces in ~/.codex/sessions (`tool_calls`, `tool_invocations`, `tool_call_args`, `session-tooling`, `query-diagnose`), and narrow session-backed commands with `--since`/`--until` when helpful; hard gate: run opencode research only when the user request includes literal `opencode`."

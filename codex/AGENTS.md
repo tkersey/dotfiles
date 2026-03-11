@@ -158,8 +158,14 @@ Apply these in order:
 ## Learnings Lifecycle
 
 - Tool policy: use native `learnings` CLI. If missing, install with `brew install tkersey/tap/learnings`; fail closed if unavailable or incompatible.
-- Task-start learnings recall (required for implementation work): once the first user prompt/request text is available (do not run at empty session start), if `.learnings.jsonl` exists in repo root, run a fast recall and treat results as constraints/invariants (carry into worker prompts when spawning).
-  - Command: `learnings recall --query "<user request>" --limit 5 --drop-superseded`
+- Learnings load-mode routing:
+  - For implementation work, default to `recall` and treat returned items as constraints/invariants to carry into worker prompts.
+  - For interactive browsing, prefer `recent` instead of reflexive `recall`.
+  - For filtered/search/rank/summarize intent, prefer `query` with a saved spec or focused filter.
+- Task-start learnings preflight (required for implementation work): once the first user prompt/request text is available (do not run at empty session start), if `.learnings.jsonl` exists in repo root, run a fast recall before editing.
+  - Implementation preflight: `learnings recall --query "<user request>" --limit 5 --drop-superseded`
+  - Interactive browse: `learnings recent --limit 10`
+  - Filtered browse: `learnings query --spec "@codex/skills/learnings/specs/top-tags.json"`
   - If recall returns nothing relevant, proceed normally (do not invent).
 - End-of-turn learnings (required for implementation turns): after a proof signal and before the final response, run `$learnings` to append 0-3 high-signal records to `.learnings.jsonl` (prefer 1; skip when no capture checkpoint occurred). Mention the append result briefly.
 - Codify loop (promotion): when a learning is status `codify_now` (or repeats), promote it into durable docs (for example `codex/AGENTS.md` or a relevant skill doc), then append a follow-up learning referencing the durable anchor.

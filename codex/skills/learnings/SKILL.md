@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: "Capture and persist evidence-backed execution learnings into `.learnings.jsonl`. Trigger cues/keywords: `$learnings`, lessons learned, takeaways, wrap up, handoff, before commit/PR, after tests pass, fail-to-pass, strategy pivot, footgun, retry loop."
+description: "Capture, browse, and query evidence-backed execution learnings in `.learnings.jsonl`. Trigger cues/keywords: `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, before commit/PR, after tests pass, fail-to-pass, strategy pivot, footgun, retry loop."
 ---
 
 # Learnings
@@ -8,6 +8,7 @@ description: "Capture and persist evidence-backed execution learnings into `.lea
 ## Overview
 
 Capture durable lessons as soon as evidence appears, not only at explicit retrospective requests.
+Also use the same CLI for interactive browsing and filtered search so prior learnings can be loaded deliberately instead of defaulting every read to `recall`.
 Write each validated learning as JSONL so future agents can reuse successful patterns and avoid footguns quickly.
 
 ## Zig CLI Iteration Repos
@@ -20,9 +21,18 @@ When iterating on the Zig-backed `learnings`/`append_learning` helper CLI path, 
 ## Trigger cues
 
 - `$learnings`
+- "browse learnings" / "show recent learnings" / "search learnings"
+- "what do we already know about X" / "summarize learnings about X"
 - "lessons learned" / "takeaways" / "wrap up" / "handoff"
 - Before commit/PR/ship; after a proof signal changes state (`fail->pass`)
 - "strategy pivot" / "footgun" / "gotcha" / "retry loop"
+
+## Load Modes
+
+- `recall`: implementation preflight for a concrete task. Use the active request text as the query and treat hits as constraints/invariants.
+- `recent`: interactive browsing. Use when the user wants to look around, skim the latest learnings, or orient before deciding what matters.
+- `query`: filtered or aggregated browsing. Use when the user wants search, ranking, grouping, or summaries by status/tag/path/time.
+- Routing rule: if the user asks to browse, search, summarize, or rank learnings, do not default to `recall`; start with `recent` or `query`, then switch to `recall` only when transitioning into implementation.
 
 ## Operating Contract (Auto-Capture)
 
@@ -266,15 +276,25 @@ The helper script:
 - Computes a fingerprint for duplicate detection.
 - Appends to `.learnings.jsonl` in repo root by default.
 
-## Mining, Recall, and Codify Loop
+## Browsing, Recall, and Codify Loop
 
-Use the miner script to leverage learnings at task start (once the user prompt is available) and to promote repeated items into durable policy.
+Use the miner script both for interactive browsing and for task-start loading once the user prompt is available.
+
+Routing:
+
+- Browse latest learnings: `run_learnings_tool recent --limit 10`
+- Search or rank learnings: `run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-tags.json"`
+- Search by path concentration: `run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-paths.json"`
+- Implementation preflight: `run_learnings_tool recall --query "<task text>" --limit 5 --drop-superseded`
+- If browse intent is ambiguous, start with `recent` before escalating to `query` or `recall`.
 
 CLI:
 
 ```bash
 run_learnings_tool datasets
 run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/status-rank.json"
+run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-tags.json"
+run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-paths.json"
 run_learnings_tool recent --limit 15
 run_learnings_tool recall --query "fix flaky pre-commit hook" --limit 5
 run_learnings_tool codify-candidates --min-count 3 --limit 20
