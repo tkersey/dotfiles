@@ -74,8 +74,11 @@ Delegation triggers (deterministic):
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 - MUST include a final `Self-review loop trace` section in the deliverable/Fix Record.
 - MUST run the final agent-directed self-review loop only after at least one change is applied and validation is passing.
+- MUST run the self-review loop against the final validated changeset only.
+- MUST invalidate and rerun the self-review loop if any non-self-review edit occurs after a self-review round.
 - MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`
 - MUST answer that question internally, apply at most one new fix-worthy change per self-round, re-run validation, and repeat until a self-round yields no new fix-worthy finding or only blocked changes.
+- MUST NOT report a self-review answer that was already applied before the final self-review round; if the current final validated changeset yields no new fix-worthy change, record `finding=none`.
 - MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.
 - MUST stop `$fix` once no new fix-worthy finding remains; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.
 - MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.
@@ -472,16 +475,19 @@ For findings in severity order:
 
 ### 7) Agent-directed self-review loop (required final step when a changeset exists)
 1. Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.
-2. Ask internally exactly: `If you could change one thing about this changeset what would you change?`
-3. Summarize the self-round in `Self-review loop trace` with one delta row.
-4. If the answer yields one new fix-worthy finding:
+2. Freeze the self-review baseline as the latest validated changeset.
+3. Ask internally exactly: `If you could change one thing about this changeset what would you change?`
+4. Summarize the self-round in `Self-review loop trace` with one delta row.
+5. If the answer yields one new fix-worthy finding:
     - convert it into one concrete finding,
     - apply the smallest sound change,
     - re-run the chosen validation signal and update findings/proof,
     - repeat from step 2.
-5. If the answer yields no new fix-worthy finding, record `stop_reason=no_new_fix_worthy_findings` and exit the loop.
-6. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and exit the loop.
-7. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to output.
+6. If any non-self-review edit occurs after a self-review round, discard the stale self-review state, revalidate, and restart from step 2 against the new final changeset.
+7. If the answer yields no new fix-worthy finding, record `stop_reason=no_new_fix_worthy_findings` and exit the loop.
+   - This check is against the current final validated changeset, not an earlier pre-delta review state.
+8. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and exit the loop.
+9. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to output.
 
 ### 7a) Post-fix boundary (required)
 1. If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.

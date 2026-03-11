@@ -14,6 +14,19 @@ Use these examples to keep the visible transcript shape aligned with the interna
 - `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new fix-worthy findings remain under the current guardrails.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/foo.py::test_bar`; result=`ok`; stop_reason=`no_new_fix_worthy_findings`
 ```
 
+## Standalone invalidated-then-rerun
+
+```md
+**Validation**
+- `uv run pytest tests/flow.py::test_scope_lock` -> ok
+- `{"baseline_cmd":"uv run pytest tests/flow.py::test_scope_lock","baseline_result":"ok","proof_hook":"uv run pytest tests/flow.py::test_scope_lock","final_cmd":"uv run pytest tests/flow.py::test_scope_lock","final_result":"ok"}`
+
+**Self-review loop trace**
+- `S1` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=Preserve the CLI entrypoint while narrowing only the active scope.; finding=`F3`; change_applied=`yes`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`continue`
+- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=Prior self-review state invalidated by a later non-self-review edit; rerunning against the new final validated changeset.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`continue`
+- `S3` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new fix-worthy findings remain on the final validated changeset.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`no_new_fix_worthy_findings`
+```
+
 ## Standalone skip gate
 
 ```md
