@@ -67,6 +67,7 @@ voice_transcription = true
 js_repl = true
 default_mode_request_user_input = true
 fast_mode = true
+codex_hooks = true
 
 [tui]
 experimental_mode = "execute"
