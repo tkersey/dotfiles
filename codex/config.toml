@@ -70,7 +70,7 @@ fast_mode = true
 
 [tui]
 experimental_mode = "execute"
-status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning"]
+status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode"]
 theme = "coldark-dark"
 
 [projects."/Users/tk/workspace/tk/codex"]
