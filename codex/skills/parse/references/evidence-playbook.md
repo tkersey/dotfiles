@@ -4,11 +4,13 @@ Use this playbook when static structure alone is not enough to justify the final
 
 ## Static-First Checklist
 
-Start with the collector script, then inspect only the strongest evidence paths it returns:
+Start with the collector script, then inspect only the strongest evidence paths it returns across code structure, build graph, tests/examples, runtime or deploy surfaces, and docs/ADRs:
 
 - manifests and dependency files
 - top-level entrypoints and runnable surfaces
 - dependency-direction hints and focus-slice observations
+- public package roots, examples, benchmarks, or contract tests in `library-sdk` repos
+- command registries, provider registries, generated boundaries, or workflow definitions when present
 - architecture docs or ADRs
 - folders that imply delivery, domain, persistence, adapters, services, jobs, or plugins
 - framework-specific organization markers
@@ -22,23 +24,42 @@ If the caller already knows the target files or subsystem, pass them as `focus_p
 
 - Use repo-wide signals to understand the dominant story.
 - Use `focus_paths` to see whether the target slice is a meaningful exception.
-- If the slice differs materially, say so in `Major Subsystems`, `Repo-Fit Advice`, and `Agent Handoff`.
+- If the slice differs materially, say so in `Major Subsystems / Coexisting Patterns`, `Repo-Fit Advice`, and `Agent Handoff`.
 
 ## Weak-Signal Recovery
 
 If the initial repo-wide `parse-arch collect` pass is thin, do one focused collector rerun before broader manual inspection.
 
-- Choose 2-4 likely architecture-defining paths from the first pass or from obvious ownership seams:
+- Choose 2-4 likely architecture-defining paths from the first pass or from obvious ownership seams. Include at least one path that should confirm the current dominant read and, when plausible, one that could falsify it or surface a coexisting pattern:
   - build/manifests
   - entrypoints or public package roots
   - the dominant runtime/core module
+  - plugin or provider registries, workflow/job definitions, generated-code roots, or read/write split directories when those are plausible competing patterns
   - docs/tests/examples only when they materially define the contract
 - Rerun `parse-arch collect` with repeatable `--focus-path` flags for those slices.
 - Compare repo-wide versus focus-path evidence explicitly:
   - which signal classes stayed thin
-  - which subsystem boundaries only became visible in the focused pass
-  - whether the focused pass changed the dominant label or only clarified subsystem exceptions
+  - which subsystem boundaries or coexisting patterns only became visible in the focused pass
+  - whether the focused pass changed the dominant label or only clarified subsystem exceptions or secondary patterns
 - Only after that focused rerun should you lean heavily on direct source/doc inspection.
+
+## Coexisting Pattern Sweep
+
+Once a dominant label candidate emerges, do one short sweep for up to 2 directly evidenced secondary patterns.
+
+- Look first at surfaces most likely to encode subtle patterns:
+  - feature-local package trees or repeated capability modules
+  - handlers, commands, queries, or read-model directories
+  - public package roots plus examples/tests-as-contract
+  - plugin/provider registries or extension contracts
+  - workflow, activity, or durable-execution definitions
+  - generated directories and authoritative schemas
+  - translation layers around external or legacy systems
+- For each candidate pattern, record:
+  - strongest evidence path
+  - scope: `repo-wide modifier`, `slice-local variant`, or `near-miss`
+  - why it stays secondary instead of replacing the dominant label
+- If no candidate clears the threshold, write `none observed` rather than stretching the taxonomy.
 
 ## Investigative Mode
 
@@ -90,7 +111,7 @@ Use this exact section order:
 2. `Dominant Architecture`
 3. `Confidence`
 4. `Why This Best Fits`
-5. `Major Subsystems`
+5. `Major Subsystems / Coexisting Patterns`
 6. `Repo-Fit Advice`
 7. `Agent Handoff`
 8. `Evidence`
@@ -100,8 +121,8 @@ Use this exact section order:
 Keep the memo usable for both humans and agents:
 
 - Start with the conclusion, not the evidence dump.
-- Cite concrete paths or surfaces.
-- Keep subsystem notes short unless they materially change the interpretation.
+- Cite concrete paths or surfaces, and when evidence is mixed, say why the nearest competing label or coexisting pattern lost.
+- Keep subsystem and coexisting-pattern notes short unless they materially change the interpretation.
 - Keep critique lightweight and descriptive.
 - Keep `Repo-Fit Advice` current-state-only; do not slide into redesign guidance.
-- In `Agent Handoff`, emit one fenced `yaml` block with stable keys: `repo_kind`, `dominant_architecture`, `confidence`, `focus_scope`, `major_subsystems`, `architecture_drift`, `repo_fit_hints`, `do_not_assume`, and `evidence_paths`.
+- In `Agent Handoff`, emit one fenced `yaml` block with stable keys: `repo_kind`, `dominant_architecture`, `confidence`, `focus_scope`, `major_subsystems`, `coexisting_patterns`, `architecture_drift`, `repo_fit_hints`, `do_not_assume`, and `evidence_paths`.
