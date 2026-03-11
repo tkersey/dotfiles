@@ -82,3 +82,6 @@ trust_level = "trusted"
 
 [projects."/Users/tk/.dotfiles"]
 trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/skills-zig"]
+trust_level = "trusted"
