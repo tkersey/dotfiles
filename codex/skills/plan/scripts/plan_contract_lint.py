@@ -115,6 +115,13 @@ def heading_present(markdown: str, heading: str) -> bool:
     return bool(pattern.search(markdown))
 
 
+def heading_position(markdown: str, heading: str) -> int | None:
+    """Return the start index of a heading, if present."""
+    pattern = re.compile(rf"(?im)^#{{1,6}}\s+{re.escape(heading)}\b")
+    match = pattern.search(markdown)
+    return match.start() if match else None
+
+
 def extract_heading_section(markdown: str, heading: str) -> str:
     """Extract the body of a heading section until the next heading."""
     heading_pattern = re.compile(rf"(?im)^#{{1,6}}\s+{re.escape(heading)}\b.*$")
@@ -339,6 +346,28 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
                 errors.append(
                     f"`{heading}` must be self-contained; carry-forward placeholders like `Unchanged from Iteration N` are not allowed."
                 )
+
+    summary_position = heading_position(body, "Summary")
+    round_delta_position = heading_position(body, "Round Delta")
+    if (
+        summary_position is not None
+        and round_delta_position is not None
+        and summary_position < round_delta_position
+    ):
+        errors.append("`Summary` must appear after `Round Delta`.")
+
+    if summary_position is not None:
+        for heading in (
+            "Iteration Action Log",
+            "Iteration Change Log",
+            "Iteration Reports",
+        ):
+            heading_pos = heading_position(body, heading)
+            if heading_pos is not None and summary_position > heading_pos:
+                errors.append(
+                    "`Summary` must appear before the iteration logs to front-load the execution spine."
+                )
+                break
 
     if ELLIPSIS_PLACEHOLDER_PATTERN.search(body):
         errors.append(
