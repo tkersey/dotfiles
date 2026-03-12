@@ -1,0 +1,4 @@
+interface:
+  display_name: "YO"
+  short_description: "Publish markdown to secret gists and notify on macOS"
+  default_prompt: "Use $yo to publish this content to a secret gist and notify the human via macOS."
