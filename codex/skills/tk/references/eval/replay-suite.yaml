@@ -19,9 +19,14 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
-          - "**Creative Frame**"
-          - "**Why This Solution**"
-      - type: technique_from_picker
+          - "**Cut Rationale**"
+          - "**Proof Plan**"
+      - type: not_contains
+        value: "**Creative Frame**"
+      - type: not_contains
+        value: "**Why This Solution**"
+      - type: regex
+        value: Proof plan
       - type: regex
         value: stable boundary
       - type: regex
@@ -43,9 +48,14 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
-          - "**Creative Frame**"
-          - "**Why This Solution**"
-      - type: technique_from_picker
+          - "**Cut Rationale**"
+          - "**Proof Plan**"
+      - type: not_contains
+        value: "**Creative Frame**"
+      - type: not_contains
+        value: "**Why This Solution**"
+      - type: regex
+        value: Proof plan
       - type: regex
         value: enum|tag|variant
       - type: regex
@@ -67,9 +77,14 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
-          - "**Creative Frame**"
-          - "**Why This Solution**"
-      - type: technique_from_picker
+          - "**Cut Rationale**"
+          - "**Proof Plan**"
+      - type: not_contains
+        value: "**Creative Frame**"
+      - type: not_contains
+        value: "**Why This Solution**"
+      - type: regex
+        value: Proof plan
       - type: regex
         value: delete|remove|collapse|consolidate
       - type: regex
@@ -91,9 +106,14 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
-          - "**Creative Frame**"
-          - "**Why This Solution**"
-      - type: technique_from_picker
+          - "**Cut Rationale**"
+          - "**Proof Plan**"
+      - type: not_contains
+        value: "**Creative Frame**"
+      - type: not_contains
+        value: "**Why This Solution**"
+      - type: regex
+        value: Proof plan
       - type: regex
         value: normalize_tags|normal form|canonical
       - type: regex
@@ -115,9 +135,14 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
-          - "**Creative Frame**"
-          - "**Why This Solution**"
-      - type: technique_from_picker
+          - "**Cut Rationale**"
+          - "**Proof Plan**"
+      - type: not_contains
+        value: "**Creative Frame**"
+      - type: not_contains
+        value: "**Why This Solution**"
+      - type: regex
+        value: Proof plan
       - type: regex
         value: accountid.Parse|stable boundary|canonical
       - type: regex
@@ -186,11 +211,15 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
-          - "**Creative Frame**"
-          - "**Why This Solution**"
+          - "**Cut Rationale**"
           - "**Incision**"
           - "**Proof**"
-      - type: technique_from_picker
+      - type: not_contains
+        value: "**Creative Frame**"
+      - type: not_contains
+        value: "**Why This Solution**"
+      - type: regex
+        value: Proof signal
       - type: regex
         value: parse_token|refined value|normalized
       - type: not_contains

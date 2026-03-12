@@ -20,16 +20,20 @@ REQUIRED_SKILL_PHRASES = [
     "Prefer the highest provable tier, not merely the smallest safe tier.",
     "Selection bias:",
     "Replay suite + shadow-mode notes live under `references/eval/`.",
-    "Use the picker name verbatim in TK output; do not invent or rename technique labels.",
+    "Use the picker name verbatim whenever Creative Frame is surfaced; do not invent or rename technique labels.",
+    "Creative Frame remains required internally after Contract + Invariants, but it is no longer a mandatory visible heading unless the user explicitly asks for options, tradeoffs, or cut-space reasoning.",
+    "Output exactly: Contract, Invariants, Cut Rationale, Proof Plan.",
+    "Output: Contract, Invariants, Cut Rationale, Incision, Proof.",
 ]
 
 REQUIRED_EXEMPLAR_PHRASES = [
     "Keep these synthetic; real session transcripts belong in `references/eval/`, not here.",
     "Strict-output worker mode",
+    "**Cut Rationale**",
 ]
 
 REQUIRED_TECHNIQUE_PHRASES = [
-    "Use the picker name verbatim in TK output so evals can detect off-picker drift.",
+    "Use the picker name verbatim whenever TK surfaces Creative Frame so evals can detect off-picker drift.",
     "Compare candidates first on seam choice, abstraction level, blast radius, and proof posture.",
     "Only use wording/readability as a tie-breaker after the code-shape decision is settled.",
 ]
@@ -136,12 +140,11 @@ def main() -> int:
     require_regex(
         skill_text, r"Output-contract precedence \(required\):", "SKILL.md", errors
     )
+    require_regex(skill_text, r"\*\*Cut Rationale\*\*", "SKILL.md", errors)
+    require_regex(skill_text, r"\*\*Proof Plan\*\*", "SKILL.md", errors)
     require_regex(skill_text, r"\*\*Incision\*\*", "SKILL.md", errors)
     require_regex(skill_text, r"\*\*Proof\*\*", "SKILL.md", errors)
     require_regex(suite_text, r"source_session:", "replay-suite.yaml", errors)
-    require_regex(
-        suite_text, r"type: technique_from_picker", "replay-suite.yaml", errors
-    )
     require_regex(suite_text, r"type: diff_block_count", "replay-suite.yaml", errors)
     require_regex(suite_text, r"type: max_nonempty_lines", "replay-suite.yaml", errors)
 

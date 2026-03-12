@@ -31,12 +31,7 @@ Keep these synthetic; real session transcripts belong in `references/eval/`, not
 - Downstream code only sees trimmed, lowercased emails (no re-validation).
 - Invalid emails never reach `userService.createUser`.
 
-**Creative Frame**
-- Reframe: First principles
-- Technique: Lotus Blossom (why: structured combinations across seams)
-- Representation shift: Replace `string` email with refined `Email` at the boundary.
-
-**Why This Solution**
+**Cut Rationale**
 - Stable boundary: `src/routes/signup.ts` is where untrusted input enters.
 - Not smaller: Another inline `if (...)` check keeps validation scattered and inconsistent.
 - Not larger: Making every email in the repo a branded type is a rewrite; this keeps the cut local.
@@ -63,12 +58,7 @@ Keep these synthetic; real session transcripts belong in `references/eval/`, not
 - Callers receive one canonical representation.
 - Comments do not restate cleanup rules that the code can encode directly.
 
-**Creative Frame**
-- Reframe: First principles
-- Technique: SCAMPER (why: simplify by removing helper layers before adding new ones)
-- Representation shift: Replace three cleanup helpers with one boundary-owned normal form.
-
-**Why This Solution**
+**Cut Rationale**
 - Stable boundary: `normalize_header(raw)` already sits at ingress for the request path.
 - Not smaller: Adding a fourth alias helper preserves the same drift under a new name.
 - Not larger: A `HeaderNormalizer` class is ceremony when the rule is one pure transform.
@@ -95,12 +85,7 @@ Keep these synthetic; real session transcripts belong in `references/eval/`, not
 - Handlers never pass raw account ID strings deeper into the core.
 - Lean code does not mean bypassing the repo's canonical boundary.
 
-**Creative Frame**
-- Reframe: Inversion
-- Technique: TRIZ (why: remove the contradiction between "fewer lines here" and "one rule owner overall")
-- Representation shift: Treat the existing parser package as the lean path because it already owns the invariant.
-
-**Why This Solution**
+**Cut Rationale**
 - Stable boundary: `accountid.Parse` is the repo's shared ingress for account ID validity.
 - Not smaller: Inline `strings.TrimSpace` plus a regex is a second policy path, not a simplification.
 - Not larger: Rebuilding the parser package or changing every caller is unnecessary.
@@ -129,12 +114,7 @@ Lean note:
 - Production default is system time.
 - Tests can freeze time without sleeping.
 
-**Creative Frame**
-- Reframe: Inversion
-- Technique: SCAMPER (why: mutate the current approach without redesigning)
-- Representation shift: Replace implicit global time with an explicit dependency.
-
-**Why This Solution**
+**Cut Rationale**
 - Stable boundary: Time is an effect; a `Clock` seam isolates it.
 - Not smaller: Adding sleeps/retries makes tests slower and still flaky.
 - Not larger: A full scheduler/state-machine refactor is unnecessary for determinism.
@@ -160,12 +140,7 @@ Lean note:
 - Output is sorted, unique, lowercased.
 - Idempotence: `normalizeTags(normalizeTags(x))` equals `normalizeTags(x)`.
 
-**Creative Frame**
-- Reframe: Constraint extremes
-- Technique: Morphological Analysis (why: explore combinations across canonicalization dimensions)
-- Representation shift: Represent tags as a canonical list (normal form), not "whatever the caller sends".
-
-**Why This Solution**
+**Cut Rationale**
 - Stable boundary: The boundary is the constructor/normalizer; everything downstream can assume the invariant.
 - Not smaller: Sprinkling `trim()/toLowerCase()` in callers guarantees drift.
 - Not larger: A dedicated class + fluent API is ceremony until there are 3+ distinct operations.
@@ -189,16 +164,11 @@ Lean note:
 - Rounding happens in one place (no per-call-site rounding).
 - Totals are deterministic across services and platforms.
 
-**Creative Frame**
-- Reframe: First principles
-- Technique: TRIZ (why: resolve a contradiction cleanly)
-- Representation shift: Treat money as integer cents end-to-end; choose rounding only at the parse/boundary.
-
-**Why This Solution**
+**Cut Rationale**
 - Stable boundary: The money parser/constructor is where the rounding rule belongs.
 - Not smaller: Tweaking one caller fixes a symptom and keeps the bug class alive.
 - Not larger: A full money library migration is too much until we agree on semantics.
-- Proof signal: Characterization tests against a handful of real invoices (including half-cent cases).
+- Proof plan: Characterization tests against a handful of real invoices (including half-cent cases).
 
 **Question**
 - For half-way values (e.g., 1.005), do we want half-up (recommended default) or half-even (banker's rounding)?
@@ -215,12 +185,7 @@ Lean note:
 - New core uses one parser (`parsePhoneNumber`) for validity + normalization.
 - Migration leash: `normalizePhone(raw)` equals `legacyNormalizePhone(raw)` for representative inputs.
 
-**Creative Frame**
-- Reframe: Analogy transfer
-- Technique: TRIZ (why: keep legacy API stable while strengthening invariants)
-- Representation shift: Keep the old API stable; migrate by commuting adapters.
-
-**Why This Solution**
+**Cut Rationale**
 - Stable boundary: `normalizePhone` is the boundary that all callers already use.
 - Not smaller: Tweaking a couple of call sites won't stop drift; the rule must live at the boundary.
 - Not larger: Changing every call site to a new type is a repo-wide rewrite.
@@ -256,5 +221,5 @@ diff --git a/src/slug.py b/src/slug.py
 ````
 
 Notes:
-- TK still runs internally here (Contract -> Invariants -> Creative Frame -> Why This Solution).
+- TK still runs internal cut selection before this external contract is emitted.
 - The external contract wins, so only the patch artifact is emitted.

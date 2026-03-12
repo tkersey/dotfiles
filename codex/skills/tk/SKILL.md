@@ -1,6 +1,6 @@
 ---
 name: tk
-description: "Software surgery protocol for proof-backed, minimal-diff implementation: Contract to Invariants to Creative Frame to inevitable incision to Proof. Use when users say \"run $tk\", \"patch-first\", \"keep the diff small\", \"state contract + invariants\", \"one clear incision\", \"fix it with a validation signal\", or orchestration cues like \"workers use $tk\" / \"internally use $tk\"."
+description: "Heuristic-first software surgery for proof-backed, minimal-diff implementation: Contract to Invariants to Cut Rationale to inevitable incision to Proof. Use when users say \"run $tk\", \"patch-first\", \"keep the diff small\", \"state contract + invariants\", \"one clear incision\", \"fix it with a validation signal\", or orchestration cues like \"workers use $tk\" / \"internally use $tk\"."
 ---
 
 # TK (Surgeon's Principle)
@@ -15,6 +15,7 @@ TK is a task-to-incision protocol for writing the *fundamental expression* of a 
 - The patch is as small as correctness allows, and obviously correct.
 - Cleverness is allowed only when it reduces risk and branching.
 - Creativity is deliberate: once seams are named, use reframing + techniques to explore cuts before choosing the incision.
+- The visible output should mimic code-shape judgment, not prose voice.
 
 TK optimizes for:
 - Correctness: illegal states are unrepresentable (or rejected at the boundary).
@@ -45,12 +46,13 @@ Output-contract precedence (required):
 - Do not treat invocation text alone (`$tk` inside prompts/wrappers) as proof that TK output format was executed.
 - When output-shape and code-shape preferences conflict, preserve the outer artifact contract and keep TK's seam/shape discipline internal.
 - Decision order for conflicts: outer artifact contract -> explicit task envelope/write scope -> stable boundary/invariants -> repo dialect. See `references/style-precedence-matrix.md`.
+- Creative Frame remains required internally after Contract + Invariants, but it is no longer a mandatory visible heading unless the user explicitly asks for options, tradeoffs, or cut-space reasoning.
 
 Advice mode (no code change requested):
-- Output exactly: Contract, Invariants, Creative Frame, Why This Solution.
+- Output exactly: Contract, Invariants, Cut Rationale, Proof Plan.
 
 Implementation mode (code change requested):
-- Output: Contract, Invariants, Creative Frame, Why This Solution, Incision, Proof.
+- Output: Contract, Invariants, Cut Rationale, Incision, Proof.
 - Incision is the code change you made: minimal diff, meaningful changes, no churn.
   - Report it as an excellent change summary (not a diff):
     - Lead with the meaningful changes (behavior/invariants/API/tests), not a file inventory.
@@ -61,12 +63,13 @@ Implementation mode (code change requested):
 - Proof includes at least one executed signal (test/typecheck/build/run).
   - If execution is impossible: give exact commands and define "pass".
   - If the chosen incision changes representation or introduces constructors/eliminators, normalization, or combine operations, add the lightest fitting structural check (for example exhaustive handling, round-trip/idempotence, identity/associativity, or constructor/eliminator sanity).
-- If blocked on requirements: output Contract, Invariants, Creative Frame, Why This Solution, Question (no Incision/Proof yet).
+- If blocked on requirements: output Contract, Invariants, Cut Rationale, Question (no Incision/Proof yet).
 
 Template compliance (order is mandatory):
-- Contract → Invariants → Creative Frame → Why This Solution → Incision → Proof (default mode).
+- Advice mode: Contract → Invariants → Cut Rationale → Proof Plan.
+- Contract → Invariants → Cut Rationale → Incision → Proof (default mode).
 - Strict-output override: follow the required external artifact format and keep TK sections internal.
-- If blocked: Contract → Invariants → Creative Frame → Why This Solution → Question.
+- If blocked: Contract → Invariants → Cut Rationale → Question.
 
 **Contract**
 - One sentence: what “working” means (include success criteria / proof target when possible).
@@ -74,13 +77,15 @@ Template compliance (order is mandatory):
 **Invariants**
 - What must remain true; what becomes impossible.
 
-**Creative Frame**
-- Reframe: <Inversion / Analogy transfer / Constraint extremes / First principles>
-- Technique: <one named technique from the creative-problem-solver picker; use the picker name verbatim and include one-line why>
-- Representation shift: <one sentence (or “N/A: no shift needed”)>
-
-**Why This Solution**
-- Argue inevitability: name the stable boundary, rule out at least one smaller and one larger tier, and state the proof signal.
+**Cut Rationale**
+- Surface the seam choice directly:
+  - Stable boundary: <where the rule belongs and why>
+  - Not smaller: <why at least one smaller cut fails invariants>
+  - Not larger: <why at least one larger cut is unnecessary or unsafe today>
+  - Proof signal / Proof plan: <the fastest credible executed check, or the exact next check if execution is impossible>
+  - (Optional) Reversibility: <escape hatch / rollback lever>
+  - (Optional) Residual risk: <what you still don’t know>
+- Run Creative Frame internally before this section is written; emit the visible cut rationale, not the internal ideation transcript.
 
 Everything else (full portfolio, scorecards, scope fence, refactors) happens internally unless the user asks for options/tradeoffs (or you're blocked and must surface the portfolio).
 
@@ -112,6 +117,7 @@ These biases keep TK effective when you control the shape.
 - Gate: no code until Contract + Invariants are written.
 - After Contract + Invariants, run a quick signal check: if the problem is really about variants, repeated validation, shared-key agreement, behavior-as-branching, syntax/execution separation, or lawful combine/identity, consult `$universalist` internally before choosing the cut.
 - Choose the fastest credible proof signal you can actually run (existing unit test > typecheck > targeted script > integration test).
+- Prefer the repo's existing seam before inventing a new helper or wrapper; widen only when the boundary cut removes the bug class more cleanly than the smallest textual diff.
 - Cut the incision at the stable boundary; avoid scattering checks through callers.
 - Close the loop: run the proof signal; iterate until it passes; report the result.
 - In wave-oriented execution paired with `$fix`, a wave is done only after `$tk -> $fix -> validation` and immediate delivery:
@@ -245,7 +251,7 @@ Selection bias:
 Creative frame (required):
 - Reframe used: Inversion / Analogy transfer / Constraint extremes / First principles.
 - Technique used: pick 1 technique using the `$creative-problem-solver` skill’s **Technique selection** section; consult the matching technique reference in that skill.
-  - Use the picker name verbatim in TK output; do not invent or rename technique labels.
+  - Use the picker name verbatim whenever Creative Frame is surfaced; do not invent or rename technique labels.
   - If the technique is Lotus Blossom, apply the TK-specific petals from this skill’s **Creative Techniques** reference.
 - Representation shift: one sentence describing the model/representation change (or “N/A: no shift needed”) that makes the choice feel forced.
   - If no Aha (no meaningful representation shift), pick 1 different technique from a different picker row (max 2) and regenerate.
@@ -303,6 +309,7 @@ TK is calm execution under constraints.
 - **Incision**: the smallest correct patch.
 - **Boundary (stable boundary)**: the interface where validity/effects enter; prefer enforcing the rule once here.
 - **Seam**: an enabling point to substitute/redirect behavior safely.
+- **Cut rationale**: the visible seam-choice argument that survives after internal ideation is compressed away.
 - **Creative Frame**: the reframe + technique + representation shift used to widen the cut-space after seams are named.
 - **Lotus blossom**: breadth-first ideation: center the boundary/contract, expand 8 TK-native petals, then turn petals into candidate incisions.
 - **Proof signal**: the concrete check that makes the change trustworthy (test/typecheck/log/law/diagram).
@@ -319,19 +326,16 @@ Advice mode (no code changes): output exactly:
 **Invariants**
 - <bullet list>
 
-**Creative Frame**
-- Reframe: <Inversion / Analogy transfer / Constraint extremes / First principles>
-- Technique: <one named technique from the creative-problem-solver picker; use the picker name verbatim and include one-line why>
-- Representation shift: <one sentence (or “N/A: no shift needed”)>
-
-**Why This Solution**
+**Cut Rationale**
 - Stable boundary: <where the rule belongs and why>
 - Not smaller: <why at least one smaller-tier cut fails invariants>
 - Not larger: <why at least one larger-tier cut is unnecessary or unsafe today>
-- Proof signal: <what test/typecheck/log/law/diagram check makes this trustworthy>
+- Proof plan: <what test/typecheck/log/law/diagram check would make this trustworthy>
 - (Optional) Reversibility: <escape hatch / rollback lever>
 - (Optional) Residual risk: <what you still don’t know>
-- If `$universalist` was consulted, name the smallest fitting construction inside these existing bullets; do not add a new section.
+
+**Proof Plan**
+- <exact command(s) or check(s) you would run, and what pass means>
 
 Implementation mode (code changes): output exactly:
 
@@ -341,12 +345,7 @@ Implementation mode (code changes): output exactly:
 **Invariants**
 - <bullet list>
 
-**Creative Frame**
-- Reframe: <Inversion / Analogy transfer / Constraint extremes / First principles>
-- Technique: <one named technique from the creative-problem-solver picker; use the picker name verbatim and include one-line why>
-- Representation shift: <one sentence (or “N/A: no shift needed”)>
-
-**Why This Solution**
+**Cut Rationale**
 - Stable boundary: <where the rule belongs and why>
 - Not smaller: <why at least one smaller-tier cut fails invariants>
 - Not larger: <why at least one larger-tier cut is unnecessary or unsafe today>

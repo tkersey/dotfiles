@@ -1,0 +1,4 @@
+interface:
+  display_name: "tk"
+  short_description: "Heuristic-first minimal-incision coding via trusted seams and fast proof"
+  default_prompt: "Use $tk to write the smallest boundary-owned patch, reuse the existing repo seam before inventing a helper, and prove it with the fastest credible executed check."
