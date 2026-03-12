@@ -9,7 +9,7 @@ personality = "pragmatic"
 service_tier = "fast"
 
 [agents]
-max_threads = 48
+max_threads = 96
 max_depth = 3
 
 [agents.coder]
