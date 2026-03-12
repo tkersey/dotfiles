@@ -43,7 +43,7 @@ EXPECTED_FINDINGS_LINES = [
 
 EXPECTED_SELF_REVIEW_LINES = [
     "- If none: `- None (skip_gate)`",
-    "- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_fix_worthy_findings|blocked>`",
+    "- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_actionable_changes|blocked>`",
 ]
 
 ALLOWED_BLOCKED_BY = [
@@ -68,22 +68,35 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "MUST run the self-review loop against the final validated changeset only.",
     "MUST invalidate and rerun the self-review loop if any non-self-review edit occurs after a self-review round.",
     "MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`",
-    "MUST answer that question internally, apply at most one new fix-worthy change per self-round, re-run validation, and repeat until a self-round yields no new fix-worthy finding or only blocked changes.",
-    "MUST NOT report a self-review answer that was already applied before the final self-review round; if the current final validated changeset yields no new fix-worthy change, record `finding=none`.",
+    "MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.",
+    "MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.",
+    "MUST rerun the non-self-review `$fix` passes once after the self-review loop reaches `no_new_actionable_changes` or `blocked`.",
+    "MUST NOT use `scope_guardrail` as the reason to reject a self-review suggestion once the self-review phase has started.",
+    "MUST NOT report a self-review answer that was already applied before the final self-review round; if the current final validated changeset yields no new actionable self-review change, record `finding=none`.",
     "MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.",
     "Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.",
     "Freeze the self-review baseline as the latest validated changeset.",
-    "If any non-self-review edit occurs after a self-review round, discard the stale self-review state, revalidate, and restart from step 2 against the new final changeset.",
-    "If the answer yields no new fix-worthy finding, record `stop_reason=no_new_fix_worthy_findings` and exit the loop.",
-    "If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and exit the loop.",
+    "If that rerun edits code, discard the stale self-review state, revalidate, and restart from step 2 against the new final changeset.",
+    "If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to step 8.",
+    "If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to step 8.",
     "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to output.",
 ]
 
 REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS = [
-    "MUST stop `$fix` once no new fix-worthy finding remains; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
+    "MUST stop `$fix` once no new actionable self-review change remains and the post-self-review rerun is clean; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
     "MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.",
     "If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.",
     "Do not place those broader opportunities in `Residual risks / open questions` unless a valid blocker from the allowed set applies.",
+]
+
+FORBIDDEN_STALE_SELF_REVIEW_PHRASES = [
+    "MUST answer that question internally, apply at most one new fix-worthy change per self-round, re-run validation, and repeat until a self-round yields no new fix-worthy finding or only blocked changes.",
+    "MUST stop `$fix` once no new fix-worthy finding remains; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
+    "If the answer yields no new fix-worthy finding, record `stop_reason=no_new_fix_worthy_findings` and exit the loop.",
+    "stop_reason=`<continue|no_new_fix_worthy_findings|blocked>`",
+    "No new fix-worthy findings remain under the current guardrails.",
+    "No new fix-worthy findings remain on the final validated changeset.",
+    "No further fix-worthy adjustments remain.",
 ]
 
 FORBIDDEN_USER_LOOP_PHRASES = [
@@ -295,6 +308,13 @@ def run(path: Path) -> int:
         if phrase in text:
             errors.append(
                 "forbidden_user_loop_phrase still present: "
+                f"{phrase}"
+            )
+
+    for phrase in FORBIDDEN_STALE_SELF_REVIEW_PHRASES:
+        if phrase in text:
+            errors.append(
+                "forbidden_stale_self_review_phrase still present: "
                 f"{phrase}"
             )
 

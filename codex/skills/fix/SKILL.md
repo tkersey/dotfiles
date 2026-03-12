@@ -1,13 +1,13 @@
 ---
 name: fix
-description: Review+fix protocol with safety guardrails (unsoundness, invariants, footguns, incidental complexity). Use when prompts say "$fix this PR", "fix current branch", "fix this diff", "repair CI red", or "apply a minimal patch", and when crash/corruption/invariant-break issues need correction with a validation signal. Stop and hand off once no fix-worthy finding remains.
+description: Review+fix protocol with safety guardrails (unsoundness, invariants, footguns, incidental complexity). Use when prompts say "$fix this PR", "fix current branch", "fix this diff", "repair CI red", or "apply a minimal patch", and when crash/corruption/invariant-break issues need correction with a validation signal. Stop only after self-review exhausts actionable changes and the post-self-review rerun is clean.
 ---
 
 # Fix
 
 ## Intent
-Make risky or unclear code safe with the smallest sound, validated change.
-When the defect queue is exhausted, `$fix` stops at that boundary; broader architecture, product, or roadmap analysis belongs to another skill.
+Make risky or unclear code safe with the smallest sound, validated change, then keep listening to the final self-review until no actionable self-review change remains.
+When the validated changeset survives the post-self-review rerun, `$fix` stops at that boundary; broader architecture, product, or roadmap analysis belongs to another skill.
 
 ## Double Diamond fit
 `fix` spans the full Double Diamond, but keeps divergence mostly internal to stay autonomous:
@@ -77,10 +77,13 @@ Delegation triggers (deterministic):
 - MUST run the self-review loop against the final validated changeset only.
 - MUST invalidate and rerun the self-review loop if any non-self-review edit occurs after a self-review round.
 - MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`
-- MUST answer that question internally, apply at most one new fix-worthy change per self-round, re-run validation, and repeat until a self-round yields no new fix-worthy finding or only blocked changes.
-- MUST NOT report a self-review answer that was already applied before the final self-review round; if the current final validated changeset yields no new fix-worthy change, record `finding=none`.
+- MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.
+- MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.
+- MUST rerun the non-self-review `$fix` passes once after the self-review loop reaches `no_new_actionable_changes` or `blocked`.
+- MUST NOT use `scope_guardrail` as the reason to reject a self-review suggestion once the self-review phase has started.
+- MUST NOT report a self-review answer that was already applied before the final self-review round; if the current final validated changeset yields no new actionable self-review change, record `finding=none`.
 - MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.
-- MUST stop `$fix` once no new fix-worthy finding remains; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.
+- MUST stop `$fix` once no new actionable self-review change remains and the post-self-review rerun is clean; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.
 - MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.
 - When paired with `$tk` in wave execution, MUST treat `$fix` as the final mutating pass before artifactization:
   - `commit_first`: hand off immediately to `$commit` after passing validation.
@@ -225,6 +228,8 @@ Scope widening trigger (deterministic):
   - the widening is limited to one adjacent seam (at most one additional file/module boundary)
   - one local validation signal can prove the widened fix
 - If any check fails, keep scope fixed and record `blocked_by=scope_guardrail`.
+- This guardrail applies to the core review passes.
+- Once the final agent-directed self-review loop starts, scope expands to the current repo/worktree and `scope_guardrail` is not a valid reason to reject the self-review suggestion.
 
 ### Generated / third-party code guardrail
 - If a file appears generated or is under third-party/build output, do not edit it directly.
@@ -259,6 +264,7 @@ Rules:
   - `generated_output` (generated/third-party output; need source-of-truth + regen)
   - `external_dependency` (needs network/creds/services/hardware)
   - `perf_unmeasurable` (impact plausible; no local measurement)
+- For self-review-originated changes, do not emit `blocked_by=scope_guardrail`; if scope is the only blocker, widen and continue.
 - Every residual bullet MUST include: a location or token, `blocked_by=<product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable>`, and `next=<one action>`.
 - If there are no residual items, output `- None`.
 
@@ -478,16 +484,20 @@ For findings in severity order:
 2. Freeze the self-review baseline as the latest validated changeset.
 3. Ask internally exactly: `If you could change one thing about this changeset what would you change?`
 4. Summarize the self-round in `Self-review loop trace` with one delta row.
-5. If the answer yields one new fix-worthy finding:
+5. If the answer yields one new actionable self-review change:
     - convert it into one concrete finding,
+    - widen anywhere in the current repo/worktree as needed,
     - apply the smallest sound change,
     - re-run the chosen validation signal and update findings/proof,
+    - record the `(validated_changeset_fingerprint, normalized_answer_summary)` pair so repeated suggestions cannot loop forever,
     - repeat from step 2.
-6. If any non-self-review edit occurs after a self-review round, discard the stale self-review state, revalidate, and restart from step 2 against the new final changeset.
-7. If the answer yields no new fix-worthy finding, record `stop_reason=no_new_fix_worthy_findings` and exit the loop.
+6. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to step 8.
+7. If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to step 8.
    - This check is against the current final validated changeset, not an earlier pre-delta review state.
-8. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and exit the loop.
-9. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to output.
+8. Run the non-self-review `$fix` passes once against the full resulting changeset.
+9. If that rerun edits code, discard the stale self-review state, revalidate, and restart from step 2 against the new final changeset.
+10. If that rerun applies no edits, exit the loop and proceed to output.
+11. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to output.
 
 ### 7a) Post-fix boundary (required)
 1. If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.
@@ -507,7 +517,7 @@ Before sending the final message, verify all are true:
 5. `Validation` includes machine-checkable keys: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
 6. Every acted-on finding includes `Proof strength` and `Compatibility impact` using the allowed enums.
 7. Every residual `blocked_by` uses only: `product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable`.
-8. If `Changes applied` is not `None` AND the latest validation result is `ok`, `Self-review loop trace` includes a terminal row with `stop_reason=<no_new_fix_worthy_findings|blocked>` and the user-facing final line is not the question.
+8. If `Changes applied` is not `None` AND the latest validation result is `ok`, `Self-review loop trace` includes a terminal row with `stop_reason=<no_new_actionable_changes|blocked>` and the user-facing final line is not the question.
 
 ## Deliverable format (chat)
 Output exactly these sections in this order.
@@ -552,7 +562,7 @@ For each finding:
 
 **Self-review loop trace**
 - If none: `- None (skip_gate)`
-- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_fix_worthy_findings|blocked>`
+- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_actionable_changes|blocked>`
 
 **Residual risks / open questions**
 - If none: `- None`
@@ -591,7 +601,7 @@ For each finding:
 
 **Self-review loop trace**
 - If none: `- None (skip_gate)`
-- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_fix_worthy_findings|blocked>`
+- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_actionable_changes|blocked>`
 
 **Residual risks / open questions**
 - If none: `- None`
