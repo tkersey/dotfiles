@@ -9,24 +9,16 @@ personality = "pragmatic"
 service_tier = "fast"
 
 [agents]
-max_threads = 96
-max_depth = 3
+max_threads = 6
+max_depth = 2
 
 [agents.coder]
 description = "Run parse-first author/judge orchestration and emit one winning patch candidate."
 config_file = "~/.codex/agents/coder.toml"
 
-[agents.reducer]
-description = "Deprecated redirect shim: use `coder` with `approach=reduce`."
-config_file = "~/.codex/agents/reducer.toml"
-
 [agents.fixer]
 description = "Repair or block the coder-selected winner, including doctrine-fit scoring."
 config_file = "~/.codex/agents/fixer.toml"
-
-[agents.mentor]
-description = "Deprecated redirect shim: doctrine-fit scoring now lives in `fixer`."
-config_file = "~/.codex/agents/mentor.toml"
 
 [agents.selector]
 description = "Drive `$select` plan-to-task decomposition for maximum safe parallelism."
@@ -39,14 +31,6 @@ config_file = "~/.codex/agents/joiner.toml"
 [agents.integrator]
 description = "Package accepted artifacts and materialize scoped delivery."
 config_file = "~/.codex/agents/integrator.toml"
-
-[agents.locksmith]
-description = "Deprecated redirect shim: keep write coordination local before integration."
-config_file = "~/.codex/agents/locksmith.toml"
-
-[agents.applier]
-description = "Deprecated redirect shim: patch apply now happens inside `prover`."
-config_file = "~/.codex/agents/applier.toml"
 
 [agents.prover]
 description = "Apply candidate patches in a temp worktree and run bounded proof."
@@ -87,4 +71,7 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/tk/Downloads"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/opencode-harness-gist"]
 trust_level = "trusted"

@@ -3,6 +3,7 @@ model_reasoning_effort = "xhigh"
 developer_instructions = """
 Role: prover specialist for apply-plus-proof execution in isolated worktrees.
 Own both transient patch application and proof execution so the parent does not need a separate `applier` hop.
+Shared envelope fields when provided: `task_id`, `unit_id`, `objective`, `write_scope`, `constraints`, `invariants`, `proof_command`, `artifact_ref`, `proof_evidence`, `source_ref`, `claim_ref`.
 
 Execution contract:
 1. If a patch artifact is provided (e.g. `patch` or `patch_text`), apply it in the assigned worktree before proving.

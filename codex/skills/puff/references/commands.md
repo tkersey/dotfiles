@@ -97,9 +97,10 @@ Typical pairing:
 1. Use `$puff` to submit independent cloud tasks quickly.
 2. Use `$cas` to orchestrate complex app-server thread/turn flows or integrate custom automation.
 
-Proxy lifecycle is managed by `$cas` (not `$puff`):
+Use the Zig CAS surface directly when you need app-server probing or swarm conformance:
 - `cas smoke_check --cwd <workspace> --json`
 - `cas instance_runner --cwd <workspace> --instances 1 --method thread/list --params-json '{"cursor":null,"limit":1}' --json`
+- `cas conformance --cwd <workspace> --json`
 
 Then drive methods like:
 - `thread/start`

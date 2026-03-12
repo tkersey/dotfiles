@@ -70,11 +70,13 @@ If you still need to decide the row schema, challenge the approach, or compare s
 
 1. Confirm planning is complete and the rows are truly homogeneous and independent.
 2. Build a CSV with stable headers and, when useful, a stable `id_column`; keep one row per substantive unit.
+   - Prefer `task_id` as the stable row id when the batch came from an OrchPlan or `$st` claim set.
 3. Write one instruction template using `{column}` placeholders and one primary deliverable per row.
 4. Choose only the controls you need: `output_schema`, `output_csv_path`, `max_concurrency`, `max_runtime_seconds`; set `max_concurrency` to the safe row count unless a lower cap is required.
 5. Run `spawn_agents_on_csv`.
 6. Only queue secondary rows for units that reported a concrete blocker, a failed proof, or a non-trivial diff needing another pass.
 7. Review the exported CSV and do any integration or follow-up work locally or with `$teams`.
+   - If `$st` owns execution state, reconcile the export with `st import-mesh-results --input <output.csv>` before closing the wave.
 
 ## Concrete Examples
 
@@ -189,6 +191,7 @@ Why not:
 
 - Keep each row objective concrete and bounded.
 - Make each row one substantive unit with a unique scope and acceptance target.
+- Keep `write_scope` aligned with the canonical lock-root contract in `codex/skills/select/references/lock-roots.md`.
 - Prefer read-only work or disjoint write scopes.
 - Keep result objects structured and comparable across rows.
 - Use stable row ids when you will reconcile outputs later.

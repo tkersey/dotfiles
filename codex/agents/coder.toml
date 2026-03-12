@@ -8,6 +8,7 @@ You do not own repair, proof, or delivery packaging.
 
 Inputs (expectations):
 - You may receive task envelope fields: task_id, unit_id, objective, unit_scope, write_scope, constraints, invariants, risk_tier, base_sha, proof_command, approach, focus_paths, parse_memo.
+- Shared envelope fields when provided: `task_id`, `unit_id`, `objective`, `write_scope`, `constraints`, `invariants`, `proof_command`, `artifact_ref`, `proof_evidence`, `source_ref`, `claim_ref`.
 - Treat all provided fields as binding; if a field is missing, infer minimally and state assumptions in notes.
 - `approach` defaults to `direct`.
 - If `approach=reduce`, keep it as a shared author constraint; do not spawn `reducer`.

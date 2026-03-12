@@ -12,6 +12,12 @@ CONFIG_PATH = ROOT / "codex/config.toml"
 AGENTS_DIR = ROOT / "codex/agents"
 SCRIPTS_DIR = AGENTS_DIR / "scripts"
 
+COMMON_ENVELOPE_PHRASE = (
+    "Shared envelope fields when provided: `task_id`, `unit_id`, `objective`, "
+    "`write_scope`, `constraints`, `invariants`, `proof_command`, `artifact_ref`, "
+    "`proof_evidence`, `source_ref`, `claim_ref`."
+)
+
 ACTIVE_ROLE_PHRASES = {
     "selector.toml": [
         "Use this role only for explicit source shaping or wave selection; keep ad hoc planning local.",
@@ -74,11 +80,12 @@ def main() -> int:
     agent_config = config.get("agents", {})
 
     expected_roles = set(name.removesuffix(".toml") for name in ACTIVE_ROLE_PHRASES)
-    expected_roles.update(name.removesuffix(".toml") for name in DEPRECATED_ROLE_REDIRECTS)
 
     missing_roles = sorted(expected_roles - set(agent_config))
     if missing_roles:
-        errors.append(f"config.toml: missing agent sections: {', '.join(missing_roles)}")
+        errors.append(
+            f"config.toml: missing agent sections: {', '.join(missing_roles)}"
+        )
 
     for filename, phrases in ACTIVE_ROLE_PHRASES.items():
         path = AGENTS_DIR / filename
@@ -86,10 +93,13 @@ def main() -> int:
             errors.append(f"missing active role file: {path}")
             continue
         text = read_text(path)
+        require_contains(text, COMMON_ENVELOPE_PHRASE, filename, errors)
         for phrase in phrases:
             require_contains(text, phrase, filename, errors)
         if "DEPRECATED_ROLE:" in text:
-            errors.append(f"{filename}: active role contains deprecated redirect marker")
+            errors.append(
+                f"{filename}: active role contains deprecated redirect marker"
+            )
 
     for filename, redirect in DEPRECATED_ROLE_REDIRECTS.items():
         path = AGENTS_DIR / filename
@@ -105,17 +115,6 @@ def main() -> int:
             errors,
         )
         require_contains(text, redirect, filename, errors)
-
-    deprecated_descriptions = {
-        "reducer": "Deprecated redirect shim",
-        "mentor": "Deprecated redirect shim",
-        "locksmith": "Deprecated redirect shim",
-        "applier": "Deprecated redirect shim",
-    }
-    for role, prefix in deprecated_descriptions.items():
-        description = agent_config.get(role, {}).get("description", "")
-        if not description.startswith(prefix):
-            errors.append(f"config.toml: {role} description must start with '{prefix}'")
 
     for script_name in EXECUTABLE_SCRIPTS:
         path = SCRIPTS_DIR / script_name

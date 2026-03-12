@@ -16,6 +16,7 @@ Use `$teams` when a task is still composite and parallelism helps, but keep the 
 - `worker` owns bounded execution with explicit ownership.
 - Custom roles from `codex/agents/` are specialist edges only: `selector`, `coder`, `fixer`, `prover`, `integrator`, and peripheral `joiner`.
 - Deprecated shims (`reducer`, `mentor`, `locksmith`, `applier`) are compatibility-only and should not receive new work.
+- When the run needs durable coordination across turns or restarts, `$st` should hold the claimed wave and runtime/proof metadata before workers start.
 
 Canonical name: use `$teams` in policy text and examples.
 
@@ -62,6 +63,7 @@ Use `$mesh` instead when:
 ## Recommended Workflow
 
 1. Make a short local plan with `update_plan` and identify the current ready set, not just the next critical-path step.
+   - If the run needs durable shared state, mirror that ready wave into `$st` first.
 2. Identify the composite parts and reshape them into bounded leaf tasks.
 3. Keep synthesis, integration, and overlapping-write work local; dispatch every dependency-independent ready branch before the first blocking `wait`.
 4. Pick the right role:
@@ -73,7 +75,7 @@ Use `$mesh` instead when:
    - `prover` for apply-plus-proof in a temp worktree
    - `integrator` for scoped delivery packaging after proof
    - `joiner` only for GH-only PR routing workflows
-5. Give every teammate a concrete deliverable and, for code changes, a disjoint write scope.
+5. Give every teammate a concrete deliverable and, for code changes, a disjoint write scope using the lock-root contract in `codex/skills/select/references/lock-roots.md`.
 6. While teammates run, continue non-overlapping integration prep, review, or another ready local task.
 7. Use `wait` only when you are actually blocked, prefer longer waits over polling, and do not immediately wait after the first spawn if more ready branches remain.
 8. Reuse context with `send_input` or `resume_agent` when follow-up belongs with the same teammate.
@@ -151,6 +153,7 @@ Why the handoff:
 - Use `fork_context: true` only when the child truly needs the same history, constraints, or diff.
 - Tell `worker` agents they are not alone in the repo and must not revert other edits.
 - Keep write scopes disjoint; one worker should own each mutating scope.
+- If execution is durable, claim the ready wave in `$st` before any spawn and record runtime/proof back into that ledger.
 - Remember that `thread/fork` branches a conversation; it is not a substitute for worker delegation.
 
 ## Guardrails

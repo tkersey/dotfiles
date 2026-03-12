@@ -1,4 +1,4 @@
 interface:
   display_name: "cas"
-  short_description: "Zig CAS CLI for v2 app-server checks and fanout"
-  default_prompt: "Use $cas for Zig-only v2 app-server smoke checks, direct thread and turn requests, and multi-instance CAS fanout."
+  short_description: "Zig CAS CLI for app-server checks, fanout, and swarm conformance"
+  default_prompt: "Use $cas for Zig-only v2 app-server smoke checks, direct thread and turn requests, multi-instance CAS fanout, and swarm conformance checks around $st claims and $mesh reconciliation."

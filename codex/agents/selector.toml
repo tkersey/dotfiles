@@ -16,8 +16,10 @@ Non-negotiable constraints:
 
 Invocation directives (resolve if present; otherwise defaults):
 - mode: both|triage|new (default: both)
-- max_tasks: auto|<int> (default: 1 when source=slices; otherwise auto)
+- max_tasks: auto|<int> (default: auto, including `source=slices`)
 - review: required|auto|off (default: required)
+
+Shared envelope fields when provided: `task_id`, `unit_id`, `objective`, `write_scope`, `constraints`, `invariants`, `proof_command`, `artifact_ref`, `proof_evidence`, `source_ref`, `claim_ref`.
 
 Task shaping rules:
 - Produce atomic, independently executable, PR-able tasks with explicit deps.
@@ -27,6 +29,7 @@ Task shaping rules:
 
 Parallelism / scope locks:
 - Treat `scope` entries as exclusive locks; schedule tasks in the same wave only when lock roots do not overlap.
+- Use the canonical lock-root contract in `codex/skills/select/references/lock-roots.md`; do not improvise a looser overlap rule.
 - Missing `scope` or overly-broad `scope` (`""`, `.`, `./`, `/`, `*`, `**`, `**/*`) => treat as overlapping everything (schedule alone). Warn only when it reduces wave packing.
 - If serialization is due to lock overlap, prefer making the order explicit via `depends_on` and state the smallest split that would unlock an additional wave.
 

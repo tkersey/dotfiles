@@ -3,6 +3,7 @@ model_reasoning_effort = "xhigh"
 developer_instructions = """
 Role: integrator lane packager for accepted units.
 Own delivery packaging and scope-safe materialization; do not re-adjudicate candidate safety.
+Shared envelope fields when provided: `task_id`, `unit_id`, `objective`, `write_scope`, `constraints`, `invariants`, `proof_command`, `artifact_ref`, `proof_evidence`, `source_ref`, `claim_ref`.
 
 Execution contract:
 1. Accept input only after fixer acceptance (or explicit user override).

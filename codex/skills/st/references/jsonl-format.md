@@ -48,6 +48,14 @@
 - Terminal statuses (`completed`, `deferred`, `canceled`) normalize to `in_plan=false`
 - `notes` is a string (default `""`)
 - `comments` is an array of `{ts,author,text}` objects (default `[]`)
+- Optional orchestration fields:
+  - `related_to: ["<item-id>"]` for soft context/order only
+  - `scope`, `location`, `validation`: string arrays carried from OrchPlan/task shaping
+  - `agent`, `role`: shaping metadata for execution handoff
+  - `source: {kind, locator, source_task_id?, wave_id?}`
+  - `claim: {state, owner?, executor?, wave_id?, lock_roots?, claimed_at?, lease_seconds, lease_expires_at?, heartbeat_at?, attempts}`
+  - `runtime: {substrate, thread_id?, agent_id?, row_id?, output_ref?, last_event?}`
+  - `proof: {state, command?, evidence_ref?, last_run_at?}`
 
 ## Read-view derived fields
 
@@ -56,6 +64,10 @@
 - `dep_state`: `ready`, `waiting_on_deps`, `blocked_manual`, or `n/a`
 - `waiting_on`: unresolved dependency IDs
 - `in_plan`: normalized mirrored-plan membership after terminal-state demotion
+- `claim_state`: effective claim state (`none|held|stale|released`)
+- `claim_stale`: derived stale flag from lease state
+- `lock_roots`: canonical lock roots used for wave safety checks
+- `executor_state`: `idle|claimed|running|stale|released`
 
 ## In-Place Rewrite and Seq Watermark
 
@@ -106,11 +118,13 @@
 ```
 
 - `items` is the full durable inventory in `$st` order
+- `items` preserves optional orchestration metadata when present so teams/mesh reconciliation does not lose claim/runtime/proof state
 - `codex.plan`, `opencode.todos`, and legacy `emit-update-plan` emit only items with `in_plan=true`
 - Codex status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `pending`
 - OpenCode status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `cancelled`
 - OpenCode todo mapping: `content = step`, `priority = priority`
 - Guardrail: if `dep_state == "waiting_on_deps"`, translated status must never be `in_progress` (force `pending`)
+- Guardrail: multiple mirrored `in_progress` items are valid only when the underlying durable items prove a safe parallel wave via held non-overlapping claims
 - Compatibility: mutation commands also print a legacy `update_plan:` line, and `emit-update-plan` still emits `{"plan":[...]}` for older Codex-only callers
 
 ## Selection semantics
