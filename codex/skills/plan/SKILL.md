@@ -11,12 +11,14 @@ description: Produce essay-heavy, decision-complete, self-contained plans in pro
 - Primary artifact (when emitting a plan): exactly one `<proposed_plan>` block containing the final plan in normal Markdown.
 - Continuous loop: run refinement passes until improvements are exhausted.
 - Iteration tracking: include `Iteration: N` as the first line inside `<proposed_plan>`, where `N` is the current pass count.
-- Iteration source of truth (in order): latest `Iteration: N` marker in this planning thread, then explicit user-provided iteration, else default `N=0`.
+- Iteration source of truth (in order): latest `Iteration: N` marker from the same plan artifact / same objective in this planning thread, then explicit user-provided iteration, else default `N=0`.
+- Iteration continuity gate: when the user has pivoted to a materially new plan target, reset the counter instead of inheriting a stale high-water mark from an older plan in the same thread.
 - Default iteration behavior: execute refinement passes in one invocation until exhausted and emit only the final plan.
 - Focus cycle (5 lenses, repeat; not a cap): (1) baseline decisions and resolve obvious contradictions; (2) harden architecture/interfaces and remove ambiguity; (3) strengthen operability, failure handling, and risk treatment; (4) lock tests, traceability, rollout, and rollback details; (5) run creativity + press verification + convergence closure (only when exhausted); then repeat from (1). Do not stop at 5; stop only when convergence + exhaustion gates are met.
 - No fixed iteration cap: never stop because you hit a round number (5, 10, etc.). If you must stop due to external limits, set `improvement_exhausted=false` and include the stop reason.
 - Plan-ready fast-path (hardened): only when the input plan indicates `improvement_exhausted=true` and `contract_version=2` in `Contract Signals`, it includes v2 closure proof (typed `Contract Signals`, hysteresis proof in `Convergence Evidence`, and last-two no-delta proof in `Iteration Change Log`), and the user is not asking for further improvements. Only then reply exactly: "Plan is ready." Otherwise treat the flag as untrusted and run at least one refinement pass.
 - Plan style: essay-heavy and decision-complete, with concrete choices and rationale.
+- Value-density gate: preserve the full contract, but front-load the highest-leverage content. `Summary` must open with the decisive path: objective, chosen strategy, first execution wave, and completion bar before the longer supporting sections.
 - Required content in the final plan: title, round delta, iteration action log, iteration change log, iteration reports, summary, non-goals/out of scope, scope change log, interfaces/types/APIs impacted, data flow, edge cases/failure modes, tests/acceptance, requirement-to-test traceability, rollout/monitoring, rollback/abort criteria, assumptions/defaults with provenance (confidence + verification plan, and explicit date when time-sensitive), decision log, decision impact map, open questions, stakeholder signoff matrix, adversarial findings, convergence evidence, contract signals, and implementation brief.
 - Self-contained final-artifact gate: the final emitted plan must stand on its own; do not leave carry-forward placeholders such as `Unchanged from Iteration N`, `same as previous`, `see above`, or `...` rows inside required sections or iteration logs.
 - Named-surface fidelity gate: when the user names a concrete provider, protocol, API, runtime, dependency, or integration surface, preserve it explicitly in the plan contract, interfaces, deliverables, tests, and proof. Do not silently generalize it into a provider-agnostic abstraction unless the user explicitly asks.
@@ -26,6 +28,7 @@ description: Produce essay-heavy, decision-complete, self-contained plans in pro
 - Prefer `request_user_input` for decision questions with meaningful multiple-choice options.
 - If `request_user_input` is unavailable, ask direct concise questions and continue.
 - Interrogation routing: if the user asks to be interrogated / grilled / pressure-tested, do not run interrogation inside `$plan`; instruct them to use `$grill-me` first and stop (no `<proposed_plan>` in that turn). `$plan` is continuous refinement with at most 1 blocking judgment question.
+- Grill-handoff gate: when `$plan` follows a just-completed `$grill-me` pass, treat answered judgment calls as locked inputs. Carry them forward into `Summary`, `Decision Log`, and `Implementation Brief`; do not reopen them as faux `Open Questions`.
 - Adversarial quality floor: before finalizing any round, run critique across at least three lenses: feasibility, operability, and risk.
 - Preserve-intent default: treat existing plan choices as deliberate; prefer additive hardening over removal.
 - Removal/rewrite justification: for each substantial removal or rewrite, quote the target text and state concrete harm-if-kept vs benefit-if-changed.
@@ -52,7 +55,7 @@ description: Produce essay-heavy, decision-complete, self-contained plans in pro
 - Scope-change-log gate: each scope expansion or reduction is recorded with rationale and approval.
 - Decision-impact-map gate: each new or superseded decision lists impacted sections and required follow-up edits.
 - Stakeholder-signoff gate: include owner/status for product, engineering, operations, and security readiness.
-- Implementation-brief gate: include a concise tail section with executable steps, owners, and success criteria.
+- Implementation-brief gate: include a concise tail section with executable steps, owners, and success criteria. Order it as a dependency-aware critical path, with the first execution wave clearly identifiable.
 
 ## Clarification flow (when needed)
 
@@ -90,6 +93,7 @@ Output rules:
 - When inserting source plan text, include it verbatim with no extra quoting, indentation, or code fences.
 - Preserve continuity: each round must incorporate and improve prior-round decisions unless explicitly superseded with rationale.
 - Include a `Round Delta` section describing what changed from the input plan.
+- For implementation-oriented plans, make the opening paragraph of `Summary` a short execution spine: goal, chosen path, first wave, and done condition.
 - Include an `Iteration Action Log` section with one entry per executed round; each entry must include `iteration`, `focus`, `round_decision`, `what_we_did`, and `target_outcome`.
 - Include an `Iteration Change Log` section with one entry per executed round; each entry must include `iteration`, `delta_kind`, `evidence`, `what_we_did`, `change`, and `sections_touched`.
 - Include an `Iteration Reports` section with one entry per executed round; each entry must include `iteration`, `focus`, `round_decision`, `delta_kind`, `delta_summary`, `risk_delta` (`up|down|flat`), `sections_touched`, `iteration_health_score` (`0..3`), and `evidence`.
@@ -113,6 +117,10 @@ If the user names a concrete provider, protocol, API, runtime, dependency, or in
 
 For implementation-oriented plans, make the result truth-preserving: distinguish scaffold proof from real integration proof, state what counts as done, and state what conditions make the result unacceptable.
 
+If this is a new plan target rather than a revision of the same artifact, reset iteration numbering instead of inheriting a stale counter from an older plan in the thread.
+
+When `$plan` follows `$grill-me`, treat resolved answers as locked decisions. Convert them into the plan's chosen path and execution brief; do not echo them back as open issues unless they are still genuinely unresolved.
+
 If you're about to finalize because improvements are exhausted (you're setting `improvement_exhausted=true`), run one extra creativity pass: privately answer the following question, then integrate exactly one resulting addition into the plan (do not include the question verbatim). Make the addition decision-complete and record it in `Round Delta`, `Decision Log`, and `Decision Impact Map`:
 
 What's the single smartest and most radically innovative and accretive and useful and compelling addition you could make to the plan at this point?
@@ -129,10 +137,12 @@ If a round makes no material change, write `no material delta` in the iteration 
 ## Acceptance checks (required before completion)
 
 - Output shape: exactly one `<proposed_plan>` block, with `Iteration: N` as the first line inside the block.
+- Iteration continuity is sensible: materially new plan targets reset to a fresh counter unless the user is explicitly revising the same plan artifact.
 - Default auto-run: run the continuous refinement loop until exhausted and include `improvement_exhausted=true` in `Contract Signals`.
 - No iteration cap: do not stop due to reaching any fixed iteration count; stop only when convergence and exhaustion gates are met (or fail closed with `improvement_exhausted=false` plus a stop reason).
 - Plan-ready fast-path: only if the input plan indicates `improvement_exhausted=true` and `contract_version=2`, it includes v2 closure proof, and the user did not request further improvements; then output exactly `Plan is ready.` and nothing else.
 - Required plan sections are present: title, `Round Delta`, `Iteration Action Log`, `Iteration Change Log`, `Iteration Reports`, summary, `Non-Goals/Out of Scope`, `Scope Change Log`, interfaces/types/APIs impacted, data flow, edge cases/failure modes, tests/acceptance, `Requirement-to-Test Traceability`, rollout/monitoring, `Rollback/Abort Criteria`, assumptions/defaults, `Decision Log`, `Decision Impact Map`, `Open Questions`, `Stakeholder Signoff Matrix`, `Adversarial Findings`, `Convergence Evidence`, `Contract Signals`, and `Implementation Brief`.
+- Value-density proof is explicit: the opening `Summary` paragraph states the objective, chosen path, first execution wave, and completion bar.
 - Iteration action proof is explicit: `Iteration Action Log` contains one entry per executed round, and each entry includes non-empty `what_we_did` and `target_outcome`, plus `focus` and `round_decision`.
 - Iteration change proof is explicit: `Iteration Change Log` contains one entry per executed round, and each entry includes `delta_kind` and non-empty `evidence`, plus non-empty `what_we_did`, non-empty `change`, and at least one `sections_touched` item.
 - Iteration reports proof is explicit: `Iteration Reports` contains one entry per executed round, and each entry includes non-empty `delta_summary`, `risk_delta`, `iteration_health_score`, and `evidence`, plus non-empty `sections_touched`.
@@ -146,6 +156,7 @@ If a round makes no material change, write `no material delta` in the iteration 
 - If rewrite budget threshold is exceeded, `Rewrite Justification` is present.
 - `Requirement-to-Test Traceability` maps each major requirement to at least one acceptance check.
 - `Open Questions` entries include `owner`, `due_date`, and `default_action`.
+- When `$plan` follows `$grill-me`, `Open Questions` excludes tradeoffs already resolved in the grilling pass unless new evidence reopened them.
 - `Decision Impact Map` entries include `decision_id`, `impacted_sections`, and `follow_up_action`.
 - `Scope Change Log` entries include `scope_change`, `reason`, and `approved_by`.
 - `Stakeholder Signoff Matrix` includes `product`, `engineering`, `operations`, and `security` owner/status.
