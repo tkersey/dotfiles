@@ -71,7 +71,7 @@ codex_hooks = true
 
 [tui]
 experimental_mode = "execute"
-status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode"]
+status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode", "session-id"]
 theme = "coldark-dark"
 
 [projects."/Users/tk/workspace/tk/codex"]
