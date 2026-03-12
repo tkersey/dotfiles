@@ -78,10 +78,13 @@ Delegation triggers (deterministic):
 - MUST invalidate and rerun the self-review loop if any non-self-review edit occurs after a self-review round.
 - MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`
 - MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.
+- MUST treat a self-review answer as actionable whenever it identifies a concrete compatible/provable improvement on the current validated changeset, even if the improvement is ergonomic, structural, or API-shaping rather than a baseline bug fix.
 - MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.
+- MUST NOT reject a self-review suggestion solely because the baseline is already green, the concern sounds architectural, or the change would reshape a public/API seam; if it can stay backward-compatible and be revalidated locally, implement it.
+- MUST, when a self-review critique is broader than the smallest bug repair, apply the narrowest compatible/provable slice that materially addresses the critique before considering broader follow-up skills.
 - MUST rerun the non-self-review `$fix` passes once after the self-review loop reaches `no_new_actionable_changes` or `blocked`.
 - MUST NOT use `scope_guardrail` as the reason to reject a self-review suggestion once the self-review phase has started.
-- MUST NOT report a self-review answer that was already applied before the final self-review round; if the current final validated changeset yields no new actionable self-review change, record `finding=none`.
+- MUST NOT report a self-review answer that was already applied before the final self-review round; record `finding=none` only when the current final validated changeset yields no concrete compatible/provable self-review change.
 - MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.
 - MUST stop `$fix` once no new actionable self-review change remains and the post-self-review rerun is clean; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.
 - MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.
@@ -245,6 +248,7 @@ When the baseline signal is ok:
   - reducing effects to a pure helper and unit-testing it
   - using an existing fuzzer/property test harness if present
 - Only if you still cannot create a proof hook without product ambiguity, record the blocker as residual risk.
+- Self-review exception: when the self-review finding is a concrete compatible simplification or auditability improvement on an already-green changeset, a fresh failing hook is preferred but not mandatory; the primary validation bundle may serve as the proof hook if it still proves the improved invariant after the change.
 
 ### Residual risks / open questions policy (last resort)
 
@@ -307,6 +311,7 @@ Pass 5) Surface + proof delta rescan
 Rules:
 - After any pass that edits code, run a local signal before continuing.
 - Do not edit on suspicion: every edit must have a concrete counterexample, invariant_before/after, and a proof hook.
+- During the self-review phase, the counterexample may be an auditability or responsibility-split failure in the current validated changeset; if the change is compatible and locally validated, that is actionable under `$fix` even when the baseline was already green.
 - Merge/de-duplicate findings across passes; final output format stays unchanged.
 - Emit pass progress updates in real time at pass start/end; these updates are required and do not replace the final `Pass trace` section.
 
@@ -486,14 +491,16 @@ For findings in severity order:
 4. Summarize the self-round in `Self-review loop trace` with one delta row.
 5. If the answer yields one new actionable self-review change:
     - convert it into one concrete finding,
+    - treat compatible ergonomic/structural/API-shaping improvements as actionable when they materially improve the current validated changeset and can be proven locally,
     - widen anywhere in the current repo/worktree as needed,
-    - apply the smallest sound change,
+    - apply the smallest sound change that materially addresses the critique,
     - re-run the chosen validation signal and update findings/proof,
     - record the `(validated_changeset_fingerprint, normalized_answer_summary)` pair so repeated suggestions cannot loop forever,
     - repeat from step 2.
 6. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to step 8.
 7. If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to step 8.
    - This check is against the current final validated changeset, not an earlier pre-delta review state.
+   - `already green`, `architectural`, `not fix-shaped`, or `no failing proof hook` are not sufficient reasons by themselves when a concrete compatible/provable improvement still exists.
 8. Run the non-self-review `$fix` passes once against the full resulting changeset.
 9. If that rerun edits code, discard the stale self-review state, revalidate, and restart from step 2 against the new final changeset.
 10. If that rerun applies no edits, exit the loop and proceed to output.

@@ -69,10 +69,13 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "MUST invalidate and rerun the self-review loop if any non-self-review edit occurs after a self-review round.",
     "MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`",
     "MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.",
+    "MUST treat a self-review answer as actionable whenever it identifies a concrete compatible/provable improvement on the current validated changeset, even if the improvement is ergonomic, structural, or API-shaping rather than a baseline bug fix.",
     "MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.",
+    "MUST NOT reject a self-review suggestion solely because the baseline is already green, the concern sounds architectural, or the change would reshape a public/API seam; if it can stay backward-compatible and be revalidated locally, implement it.",
+    "MUST, when a self-review critique is broader than the smallest bug repair, apply the narrowest compatible/provable slice that materially addresses the critique before considering broader follow-up skills.",
     "MUST rerun the non-self-review `$fix` passes once after the self-review loop reaches `no_new_actionable_changes` or `blocked`.",
     "MUST NOT use `scope_guardrail` as the reason to reject a self-review suggestion once the self-review phase has started.",
-    "MUST NOT report a self-review answer that was already applied before the final self-review round; if the current final validated changeset yields no new actionable self-review change, record `finding=none`.",
+    "MUST NOT report a self-review answer that was already applied before the final self-review round; record `finding=none` only when the current final validated changeset yields no concrete compatible/provable self-review change.",
     "MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.",
     "Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.",
     "Freeze the self-review baseline as the latest validated changeset.",
@@ -97,6 +100,9 @@ FORBIDDEN_STALE_SELF_REVIEW_PHRASES = [
     "No new fix-worthy findings remain under the current guardrails.",
     "No new fix-worthy findings remain on the final validated changeset.",
     "No further fix-worthy adjustments remain.",
+    "Because the best self-review idea was architectural, not fix-shaped.",
+    "changing the helper shape would not be a bug repair, it would be a product/API redesign",
+    "there was no failing proof hook for that concern, only a readability/ergonomics argument",
 ]
 
 FORBIDDEN_USER_LOOP_PHRASES = [
