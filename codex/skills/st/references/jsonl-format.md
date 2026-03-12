@@ -10,8 +10,8 @@
 - Optional event/checkpoint metadata envelope: `mutation` (writer audit details such as policy flag/actor/session)
 
 ```json
-{"v":3,"ts":"2026-02-09T20:02:00Z","seq":42,"lane":"event","op":"replace","items":[{"id":"st-001","step":"Reproduce issue","status":"completed","deps":[],"notes":"","comments":[]}],"mutation":{"allow_multiple_in_progress":false,"actor":"tk","pid":12345}}
-{"v":3,"ts":"2026-02-09T20:02:00Z","seq":42,"lane":"checkpoint","items":[{"id":"st-001","step":"Reproduce issue","status":"completed","deps":[],"notes":"","comments":[]}],"mutation":{"allow_multiple_in_progress":false,"actor":"tk","pid":12345}}
+{"v":3,"ts":"2026-02-09T20:02:00Z","seq":42,"lane":"event","op":"replace","items":[{"id":"st-001","step":"Reproduce issue","status":"completed","priority":"medium","in_plan":false,"deps":[],"notes":"","comments":[]}],"mutation":{"allow_multiple_in_progress":false,"actor":"tk","pid":12345}}
+{"v":3,"ts":"2026-02-09T20:02:00Z","seq":42,"lane":"checkpoint","items":[{"id":"st-001","step":"Reproduce issue","status":"completed","priority":"medium","in_plan":false,"deps":[],"notes":"","comments":[]}],"mutation":{"allow_multiple_in_progress":false,"actor":"tk","pid":12345}}
 ```
 
 ## Event ops
@@ -33,6 +33,7 @@
   "step": "Document v3 protocol",
   "status": "pending",
   "priority": "medium",
+  "in_plan": true,
   "deps": [{"id": "st-002", "type": "blocks"}],
   "notes": "Capture rollout caveats",
   "comments": [{"ts": "2026-02-09T20:02:00Z", "author": "tk", "text": "Needs review"}]
@@ -43,6 +44,8 @@
 - Edge object shape: `{ "id": "<item-id>", "type": "<edge-type>" }`
 - `type` is kebab-case; missing/empty normalizes to `blocks`
 - `priority` is `high`, `medium`, or `low`; missing values normalize to `medium` on read/import, and canonical writes always emit it
+- `in_plan` controls whether the item projects into `codex.plan` / `opencode.todos`; missing legacy values normalize to `true`
+- Terminal statuses (`completed`, `deferred`, `canceled`) normalize to `in_plan=false`
 - `notes` is a string (default `""`)
 - `comments` is an array of `{ts,author,text}` objects (default `[]`)
 
@@ -52,6 +55,7 @@
 
 - `dep_state`: `ready`, `waiting_on_deps`, `blocked_manual`, or `n/a`
 - `waiting_on`: unresolved dependency IDs
+- `in_plan`: normalized mirrored-plan membership after terminal-state demotion
 
 ## In-Place Rewrite and Seq Watermark
 
@@ -80,6 +84,7 @@
       "step": "Document v3 protocol",
       "status": "pending",
       "priority": "medium",
+      "in_plan": true,
       "deps": [{"id": "st-002", "type": "blocks"}],
       "notes": "Capture rollout caveats",
       "comments": [],
@@ -100,9 +105,17 @@
 }
 ```
 
-- Preserve `$st show --format json` item order across `items`, `codex.plan`, and `opencode.todos`
+- `items` is the full durable inventory in `$st` order
+- `codex.plan`, `opencode.todos`, and legacy `emit-update-plan` emit only items with `in_plan=true`
 - Codex status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `pending`
 - OpenCode status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `cancelled`
 - OpenCode todo mapping: `content = step`, `priority = priority`
 - Guardrail: if `dep_state == "waiting_on_deps"`, translated status must never be `in_progress` (force `pending`)
 - Compatibility: mutation commands also print a legacy `update_plan:` line, and `emit-update-plan` still emits `{"plan":[...]}` for older Codex-only callers
+
+## Selection semantics
+
+- `add --backlog-only` and `import-plan --backlog-only` write items with `in_plan=false`
+- `select` matches exact IDs plus simple `status` / `priority` filters and auto-includes unresolved dependency closure
+- Completed dependencies do not get pulled back into the mirrored plan
+- `deselect` rejects if it would leave a still-selected item depending on a backlog-only unresolved task
