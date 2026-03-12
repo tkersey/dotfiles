@@ -9,8 +9,8 @@ personality = "pragmatic"
 service_tier = "fast"
 
 [agents]
-max_threads = 6
-max_depth = 2
+max_threads = 96
+max_depth = 3
 
 [agents.coder]
 description = "Run parse-first author/judge orchestration and emit one winning patch candidate."
