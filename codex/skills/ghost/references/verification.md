@@ -39,6 +39,15 @@ This reference exists so the `ghost` skill can generate a first-class `VERIFY.md
 - `SPEC.md` includes required headings: `Conformance Profile`, `Validation Matrix`, `Definition of Done`.
 - `VERIFY.md` includes required headings: `Summary`, `Regenerate`, `Validation Matrix`, `Traceability Matrix`, `Mutation Sensitivity`, `Regeneration Parity`, `Limitations`.
 - For stateful/scenario ghost specs, `SPEC.md` includes: `State Model`, `Transition Triggers`, `Recovery/Idempotency`, `Reference Algorithm`.
+- `coverage_mode=exhaustive` is treated as "all required cases execute and pass"; skipped required cases must move to `sampled` coverage or leave the required set.
+
+Layered-agentic extras (when `inventory.json.contract_class=layered_agentic`):
+- Every executable case in `tests.yaml` has an explicit `case_id`.
+- `SPEC.md` includes: `Interface Surfaces`, `Boundary Contracts`, `Extension Points`, `Persistent Artifacts`.
+- `VERIFY.md` includes: `Normative Source Map`, `Surface Coverage Matrix`, `Boundary Invariants`, `Artifact Contract Coverage`.
+- `verification/evidence/interface_inventory.json` exists and inventories named `surfaces`, `boundary_invariants`, and `artifact_contracts`.
+- `verification/evidence/contract_traceability.csv` exists and covers every declared surface, invariant, and artifact contract target.
+- Every `required_case_ids` entry declared in `interface_inventory.json` exists in `tests.yaml`, appears in the appropriate traceability artifact, and has a baseline pass in `adapter_results.jsonl`.
 
 Scenario-suite extras (when `tests.yaml` uses scenario layout):
 - Each critical scenario has explicit **hard oracles** (final state / side effects) and **trace invariants** (forbidden tools, confirmation-before-side-effects, budget/step limits, injection resistance).
@@ -54,6 +63,7 @@ Required files:
   - `primary_workflows`: list of `{id, requires_reset}`
   - optional `coverage_mode`: `exhaustive` (default) or `sampled`
   - required `sampled_case_ids` when `coverage_mode=sampled`
+  - optional `contract_class`: `default` (implicit) or `layered_agentic`
   - must be set-equal to operation/workflow ids defined in `tests.yaml`
 - `traceability.csv`
   - columns: `target_type,target_id,case_id,proof_artifact,adapter_run_id`
@@ -68,6 +78,13 @@ Required files:
   - `{required_mutations, detected_failures, pass}`
 - `parity.json`
   - `{pass, diff_count, run_a, run_b}`
+- `interface_inventory.json` (`layered_agentic` only)
+  - `surfaces`: list of `{id, kind, layer, source_refs, required_case_ids, provider_specific}`
+  - `boundary_invariants`: list of `{id, description, source_refs, required_case_ids}`
+  - `artifact_contracts`: list of `{id, kind, source_refs, required_fields, required_case_ids}`
+- `contract_traceability.csv` (`layered_agentic` only)
+  - columns: `target_type,target_id,case_id,proof_artifact,adapter_run_id`
+  - `target_type` must be `surface`, `invariant`, or `artifact`
 
 Verifier command:
 - from the ghost skill directory: `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`
@@ -80,6 +97,7 @@ Break-glass policy:
 - Use only for explicit migration windows.
 - Always record rationale and remediation date in `VERIFY.md`.
 - Do not treat bypass runs as final completion proof.
+- Break-glass never downgrades `interface_inventory.json`, `contract_traceability.csv`, or other contract-data failures.
 
 Notes for scenario suites:
 - Interpret `public_operations` as tool ids (what the agent can call).
@@ -109,6 +127,7 @@ Tips:
 - If the source language has weak YAML tooling (notably Zig), parse `tests.yaml` externally and dispatch into the library via a tiny CLI/FFI shim.
 - Re-run the adapter whenever `tests.yaml` or the harness semantics change; the verification summary must match the current test inventory.
 - Record each adapter/sample execution in `adapter_results.jsonl` and keep run ids stable enough to join with `traceability.csv`.
+- For `layered_agentic` systems, build the interface inventory from named contract seams, not from incidental code structure; record normative source refs for each surface, invariant, and artifact contract.
 
 Scenario adapter notes:
 - Treat the environment as a state machine: tool calls emit trace events; state updates; agent observes.
@@ -173,6 +192,11 @@ This ghost repo should be reproducible from the upstream revision.
 | --- | --- | --- |
 | ... | Core Conformance | ... |
 
+## Normative Source Map
+| target id | target type | source refs |
+| --- | --- | --- |
+| ... | surface|invariant|artifact | ... |
+
 ## Test Inventory
 | operation id | cases | error cases |
 | --- | ---: | ---: |
@@ -187,6 +211,21 @@ This ghost repo should be reproducible from the upstream revision.
 | target type | target id | case id | proof artifact | adapter run id |
 | --- | --- | --- | --- | --- |
 | ... | ... | ... | ... | ... |
+
+## Surface Coverage Matrix
+| surface id | kind | required case ids | proof artifact | adapter run id |
+| --- | --- | --- | --- | --- |
+| ... | ... | ... | ... | ... |
+
+## Boundary Invariants
+| invariant id | description | required case ids |
+| --- | --- | --- |
+| ... | ... | ... |
+
+## Artifact Contract Coverage
+| artifact id | required fields | required case ids | proof artifact |
+| --- | --- | --- | --- |
+| ... | ... | ... | ... |
 
 ## Adapter Run Ledger
 | run id | mode | command | result |

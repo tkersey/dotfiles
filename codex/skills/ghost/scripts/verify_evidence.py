@@ -50,6 +50,7 @@ class InventoryContract:
     workflows: list[WorkflowSpec]
     coverage_mode: str
     sampled_case_ids: set[str]
+    contract_class: str
 
 
 @dataclass(frozen=True)
@@ -59,13 +60,51 @@ class TestsContract:
     case_ids: set[str]
     operation_case_count: int
     workflow_case_count: int
+    generated_case_ids: set[str]
+    skipped_case_ids: set[str]
+
+
+@dataclass(frozen=True)
+class InterfaceSurface:
+    surface_id: str
+    kind: str
+    layer: str
+    source_refs: tuple[str, ...]
+    required_case_ids: set[str]
+    provider_specific: bool
+
+
+@dataclass(frozen=True)
+class BoundaryInvariant:
+    invariant_id: str
+    description: str
+    source_refs: tuple[str, ...]
+    required_case_ids: set[str]
+
+
+@dataclass(frozen=True)
+class ArtifactContract:
+    artifact_id: str
+    kind: str
+    source_refs: tuple[str, ...]
+    required_fields: tuple[str, ...]
+    required_case_ids: set[str]
+
+
+@dataclass(frozen=True)
+class InterfaceInventoryContract:
+    surfaces: list[InterfaceSurface]
+    invariants: list[BoundaryInvariant]
+    artifact_contracts: list[ArtifactContract]
 
 
 @dataclass(frozen=True)
 class StructureContract:
     spec_required_headings: tuple[str, ...]
     spec_stateful_required_headings: tuple[str, ...]
+    spec_layered_required_headings: tuple[str, ...]
     verify_required_headings: tuple[str, ...]
+    verify_layered_required_headings: tuple[str, ...]
     source: str
 
 
@@ -81,6 +120,12 @@ DEFAULT_STRUCTURE_CONTRACT = StructureContract(
         "Recovery/Idempotency",
         "Reference Algorithm",
     ),
+    spec_layered_required_headings=(
+        "Interface Surfaces",
+        "Boundary Contracts",
+        "Extension Points",
+        "Persistent Artifacts",
+    ),
     verify_required_headings=(
         "Summary",
         "Regenerate",
@@ -89,6 +134,12 @@ DEFAULT_STRUCTURE_CONTRACT = StructureContract(
         "Mutation Sensitivity",
         "Regeneration Parity",
         "Limitations",
+    ),
+    verify_layered_required_headings=(
+        "Normative Source Map",
+        "Surface Coverage Matrix",
+        "Boundary Invariants",
+        "Artifact Contract Coverage",
     ),
     source="default",
 )
@@ -191,11 +242,22 @@ def _load_inventory(path: Path) -> InventoryContract:
             "inventory.json.sampled_case_ids must be empty unless coverage_mode=sampled"
         )
 
+    contract_class = data.get("contract_class", "default")
+    if not isinstance(contract_class, str) or contract_class.strip() not in {
+        "default",
+        "layered_agentic",
+    }:
+        raise EvidenceError(
+            "inventory.json.contract_class must be default|layered_agentic when present"
+        )
+    contract_class = contract_class.strip()
+
     return InventoryContract(
         operation_ids=normalized_ops,
         workflows=normalized_workflows,
         coverage_mode=coverage_mode,
         sampled_case_ids=sampled_case_ids,
+        contract_class=contract_class,
     )
 
 
@@ -417,6 +479,282 @@ def _load_parity(path: Path) -> tuple[bool, int]:
     return passed, diff_count
 
 
+def _normalize_required_case_ids(value: Any, *, field_name: str) -> set[str]:
+    if not isinstance(value, list) or not value:
+        raise EvidenceError(f"{field_name} must be a non-empty list")
+
+    case_ids: set[str] = set()
+    for idx, raw_case_id in enumerate(value, start=1):
+        if not isinstance(raw_case_id, str) or not raw_case_id.strip():
+            raise EvidenceError(f"{field_name}[{idx}] must be a non-empty string")
+        case_id = raw_case_id.strip()
+        if case_id in case_ids:
+            raise EvidenceError(f"{field_name} contains duplicate case_id: {case_id}")
+        case_ids.add(case_id)
+    return case_ids
+
+
+def _normalize_source_refs(value: Any, *, field_name: str) -> tuple[str, ...]:
+    if not isinstance(value, list) or not value:
+        raise EvidenceError(f"{field_name} must be a non-empty list")
+
+    refs: list[str] = []
+    seen: set[str] = set()
+    for idx, raw_ref in enumerate(value, start=1):
+        if not isinstance(raw_ref, str) or not raw_ref.strip():
+            raise EvidenceError(f"{field_name}[{idx}] must be a non-empty string")
+        ref = raw_ref.strip()
+        if ref in seen:
+            raise EvidenceError(f"{field_name} contains duplicate source ref: {ref}")
+        seen.add(ref)
+        refs.append(ref)
+    return tuple(refs)
+
+
+def _normalize_required_fields(value: Any, *, field_name: str) -> tuple[str, ...]:
+    if not isinstance(value, list) or not value:
+        raise EvidenceError(f"{field_name} must be a non-empty list")
+
+    fields: list[str] = []
+    seen: set[str] = set()
+    for idx, raw_field in enumerate(value, start=1):
+        if not isinstance(raw_field, str) or not raw_field.strip():
+            raise EvidenceError(f"{field_name}[{idx}] must be a non-empty string")
+        field = raw_field.strip()
+        if field in seen:
+            raise EvidenceError(f"{field_name} contains duplicate field: {field}")
+        seen.add(field)
+        fields.append(field)
+    return tuple(fields)
+
+
+def _load_interface_inventory(path: Path) -> InterfaceInventoryContract:
+    data = _load_json(path)
+    if not isinstance(data, dict):
+        raise EvidenceError("interface_inventory.json must be a JSON object")
+
+    raw_surfaces = data.get("surfaces")
+    raw_invariants = data.get("boundary_invariants")
+    raw_artifacts = data.get("artifact_contracts")
+
+    if not isinstance(raw_surfaces, list) or not raw_surfaces:
+        raise EvidenceError("interface_inventory.json.surfaces must be a non-empty list")
+    if not isinstance(raw_invariants, list) or not raw_invariants:
+        raise EvidenceError("interface_inventory.json.boundary_invariants must be a non-empty list")
+    if not isinstance(raw_artifacts, list) or not raw_artifacts:
+        raise EvidenceError("interface_inventory.json.artifact_contracts must be a non-empty list")
+
+    surfaces: list[InterfaceSurface] = []
+    invariants: list[BoundaryInvariant] = []
+    artifact_contracts: list[ArtifactContract] = []
+    seen_ids: set[str] = set()
+
+    for idx, raw_surface in enumerate(raw_surfaces, start=1):
+        if not isinstance(raw_surface, dict):
+            raise EvidenceError(f"interface_inventory.json.surfaces[{idx}] must be an object")
+        surface_id = raw_surface.get("id")
+        kind = raw_surface.get("kind")
+        layer = raw_surface.get("layer")
+        provider_specific = raw_surface.get("provider_specific")
+        if not isinstance(surface_id, str) or not surface_id.strip():
+            raise EvidenceError(f"interface_inventory.json.surfaces[{idx}].id must be non-empty")
+        if not isinstance(kind, str) or not kind.strip():
+            raise EvidenceError(f"interface_inventory.json.surfaces[{idx}].kind must be non-empty")
+        if not isinstance(layer, str) or not layer.strip():
+            raise EvidenceError(f"interface_inventory.json.surfaces[{idx}].layer must be non-empty")
+        if not isinstance(provider_specific, bool):
+            raise EvidenceError(
+                f"interface_inventory.json.surfaces[{idx}].provider_specific must be boolean"
+            )
+        surface_key = surface_id.strip()
+        if surface_key in seen_ids:
+            raise EvidenceError(f"interface_inventory.json contains duplicate id: {surface_key}")
+        seen_ids.add(surface_key)
+        surfaces.append(
+            InterfaceSurface(
+                surface_id=surface_key,
+                kind=kind.strip(),
+                layer=layer.strip(),
+                source_refs=_normalize_source_refs(
+                    raw_surface.get("source_refs"),
+                    field_name=f"interface_inventory.json.surfaces[{idx}].source_refs",
+                ),
+                required_case_ids=_normalize_required_case_ids(
+                    raw_surface.get("required_case_ids"),
+                    field_name=(
+                        f"interface_inventory.json.surfaces[{idx}].required_case_ids"
+                    ),
+                ),
+                provider_specific=provider_specific,
+            )
+        )
+
+    for idx, raw_invariant in enumerate(raw_invariants, start=1):
+        if not isinstance(raw_invariant, dict):
+            raise EvidenceError(
+                f"interface_inventory.json.boundary_invariants[{idx}] must be an object"
+            )
+        invariant_id = raw_invariant.get("id")
+        description = raw_invariant.get("description")
+        if not isinstance(invariant_id, str) or not invariant_id.strip():
+            raise EvidenceError(
+                f"interface_inventory.json.boundary_invariants[{idx}].id must be non-empty"
+            )
+        if not isinstance(description, str) or not description.strip():
+            raise EvidenceError(
+                "interface_inventory.json.boundary_invariants"
+                f"[{idx}].description must be non-empty"
+            )
+        invariant_key = invariant_id.strip()
+        if invariant_key in seen_ids:
+            raise EvidenceError(f"interface_inventory.json contains duplicate id: {invariant_key}")
+        seen_ids.add(invariant_key)
+        invariants.append(
+            BoundaryInvariant(
+                invariant_id=invariant_key,
+                description=description.strip(),
+                source_refs=_normalize_source_refs(
+                    raw_invariant.get("source_refs"),
+                    field_name=(
+                        f"interface_inventory.json.boundary_invariants[{idx}].source_refs"
+                    ),
+                ),
+                required_case_ids=_normalize_required_case_ids(
+                    raw_invariant.get("required_case_ids"),
+                    field_name=(
+                        "interface_inventory.json.boundary_invariants"
+                        f"[{idx}].required_case_ids"
+                    ),
+                ),
+            )
+        )
+
+    for idx, raw_artifact in enumerate(raw_artifacts, start=1):
+        if not isinstance(raw_artifact, dict):
+            raise EvidenceError(
+                f"interface_inventory.json.artifact_contracts[{idx}] must be an object"
+            )
+        artifact_id = raw_artifact.get("id")
+        kind = raw_artifact.get("kind")
+        if not isinstance(artifact_id, str) or not artifact_id.strip():
+            raise EvidenceError(
+                f"interface_inventory.json.artifact_contracts[{idx}].id must be non-empty"
+            )
+        if not isinstance(kind, str) or not kind.strip():
+            raise EvidenceError(
+                f"interface_inventory.json.artifact_contracts[{idx}].kind must be non-empty"
+            )
+        artifact_key = artifact_id.strip()
+        if artifact_key in seen_ids:
+            raise EvidenceError(f"interface_inventory.json contains duplicate id: {artifact_key}")
+        seen_ids.add(artifact_key)
+        artifact_contracts.append(
+            ArtifactContract(
+                artifact_id=artifact_key,
+                kind=kind.strip(),
+                source_refs=_normalize_source_refs(
+                    raw_artifact.get("source_refs"),
+                    field_name=(
+                        f"interface_inventory.json.artifact_contracts[{idx}].source_refs"
+                    ),
+                ),
+                required_fields=_normalize_required_fields(
+                    raw_artifact.get("required_fields"),
+                    field_name=(
+                        f"interface_inventory.json.artifact_contracts[{idx}].required_fields"
+                    ),
+                ),
+                required_case_ids=_normalize_required_case_ids(
+                    raw_artifact.get("required_case_ids"),
+                    field_name=(
+                        "interface_inventory.json.artifact_contracts"
+                        f"[{idx}].required_case_ids"
+                    ),
+                ),
+            )
+        )
+
+    return InterfaceInventoryContract(
+        surfaces=surfaces,
+        invariants=invariants,
+        artifact_contracts=artifact_contracts,
+    )
+
+
+def _load_contract_traceability(
+    path: Path,
+) -> tuple[dict[str, set[str]], dict[str, set[str]], dict[str, set[str]], dict[str, set[str]], set[str]]:
+    try:
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if reader.fieldnames is None:
+                raise EvidenceError("contract_traceability.csv is empty")
+            for col in TRACEABILITY_COLUMNS:
+                if col not in reader.fieldnames:
+                    raise EvidenceError(
+                        f"contract_traceability.csv missing required column: {col}"
+                    )
+
+            surface_to_cases: dict[str, set[str]] = defaultdict(set)
+            invariant_to_cases: dict[str, set[str]] = defaultdict(set)
+            artifact_to_cases: dict[str, set[str]] = defaultdict(set)
+            run_to_cases: dict[str, set[str]] = defaultdict(set)
+            all_cases: set[str] = set()
+            row_count = 0
+
+            for row in reader:
+                row_count += 1
+                target_type = (row.get("target_type") or "").strip().lower()
+                target_id = (row.get("target_id") or "").strip()
+                case_id = (row.get("case_id") or "").strip()
+                proof_artifact = (row.get("proof_artifact") or "").strip()
+                adapter_run_id = (row.get("adapter_run_id") or "").strip()
+
+                if target_type not in {"surface", "invariant", "artifact"}:
+                    raise EvidenceError(
+                        "contract_traceability.csv row "
+                        f"{row_count}: target_type must be surface|invariant|artifact"
+                    )
+                if not target_id:
+                    raise EvidenceError(
+                        f"contract_traceability.csv row {row_count}: target_id is required"
+                    )
+                if not case_id:
+                    raise EvidenceError(
+                        f"contract_traceability.csv row {row_count}: case_id is required"
+                    )
+                if not proof_artifact:
+                    raise EvidenceError(
+                        f"contract_traceability.csv row {row_count}: proof_artifact is required"
+                    )
+                if not adapter_run_id:
+                    raise EvidenceError(
+                        f"contract_traceability.csv row {row_count}: adapter_run_id is required"
+                    )
+
+                if target_type == "surface":
+                    surface_to_cases[target_id].add(case_id)
+                elif target_type == "invariant":
+                    invariant_to_cases[target_id].add(case_id)
+                else:
+                    artifact_to_cases[target_id].add(case_id)
+                run_to_cases[adapter_run_id].add(case_id)
+                all_cases.add(case_id)
+
+            if row_count == 0:
+                raise EvidenceError("contract_traceability.csv must include at least one row")
+
+            return (
+                surface_to_cases,
+                invariant_to_cases,
+                artifact_to_cases,
+                run_to_cases,
+                all_cases,
+            )
+    except FileNotFoundError as exc:
+        raise EvidenceError(f"missing required file: {path}") from exc
+
+
 def _resolve_tests_yaml(bundle_dir: Path) -> Path:
     candidates = (
         bundle_dir.parent.parent / "tests.yaml",
@@ -490,15 +828,27 @@ def _load_structure_contract(bundle_dir: Path) -> StructureContract:
         field_name="spec.stateful_required_headings",
         allow_empty=True,
     )
+    spec_layered_required = _normalize_heading_list(
+        raw_spec.get("layered_required_headings", []),
+        field_name="spec.layered_required_headings",
+        allow_empty=True,
+    )
     verify_required = _normalize_heading_list(
         raw_verify.get("required_headings"),
         field_name="verify.required_headings",
+    )
+    verify_layered_required = _normalize_heading_list(
+        raw_verify.get("layered_required_headings", []),
+        field_name="verify.layered_required_headings",
+        allow_empty=True,
     )
 
     return StructureContract(
         spec_required_headings=spec_required,
         spec_stateful_required_headings=spec_stateful_required,
+        spec_layered_required_headings=spec_layered_required,
         verify_required_headings=verify_required,
+        verify_layered_required_headings=verify_layered_required,
         source="bundle",
     )
 
@@ -537,6 +887,7 @@ def _validate_structure_contract(
     *,
     bundle_dir: Path,
     tests_contract: TestsContract,
+    contract_class: str,
 ) -> tuple[dict[str, Any], list[str]]:
     summary: dict[str, Any] = {}
     errors: list[str] = []
@@ -554,6 +905,12 @@ def _validate_structure_contract(
     spec_required = list(contract.spec_required_headings)
     if stateful_mode:
         spec_required.extend(contract.spec_stateful_required_headings)
+    if contract_class == "layered_agentic":
+        spec_required.extend(contract.spec_layered_required_headings)
+
+    verify_required = list(contract.verify_required_headings)
+    if contract_class == "layered_agentic":
+        verify_required.extend(contract.verify_layered_required_headings)
 
     errors.extend(
         _check_required_headings(
@@ -566,7 +923,7 @@ def _validate_structure_contract(
         _check_required_headings(
             doc_label="VERIFY.md",
             doc_headings=verify_headings,
-            required_headings=contract.verify_required_headings,
+            required_headings=tuple(verify_required),
         )
     )
 
@@ -574,8 +931,9 @@ def _validate_structure_contract(
         {
             "structure_contract_source": contract.source,
             "structure_stateful_mode": stateful_mode,
+            "structure_contract_class": contract_class,
             "structure_spec_required_sections": len(spec_required),
-            "structure_verify_required_sections": len(contract.verify_required_headings),
+            "structure_verify_required_sections": len(verify_required),
             "structure_errors_count": len(errors),
         }
     )
@@ -595,6 +953,11 @@ def _resolve_case_id(target_id: str, case: dict[str, Any], case_index: int) -> s
     if case_index == 1:
         return target_id
     return f"{target_id}::{case_index}"
+
+
+def _has_explicit_case_id(case: dict[str, Any]) -> bool:
+    case_id = case.get("case_id")
+    return isinstance(case_id, str) and bool(case_id.strip())
 
 
 def _load_tests_contract(bundle_dir: Path) -> tuple[TestsContract, list[str]]:
@@ -621,6 +984,8 @@ def _load_tests_contract(bundle_dir: Path) -> tuple[TestsContract, list[str]]:
     mode_errors: list[str] = []
     operation_case_count = 0
     workflow_case_count = 0
+    generated_case_ids: set[str] = set()
+    skipped_case_ids: set[str] = set()
 
     def absorb_targets(targets: dict[str, Any], *, force_workflow: bool) -> None:
         nonlocal operation_case_count, workflow_case_count
@@ -657,6 +1022,16 @@ def _load_tests_contract(bundle_dir: Path) -> tuple[TestsContract, list[str]]:
                 if case_id in case_ids:
                     raise EvidenceError(f"tests.yaml has duplicate case_id: {case_id}")
                 case_ids.add(case_id)
+                if not _has_explicit_case_id(raw_case):
+                    generated_case_ids.add(case_id)
+
+                skip_value = raw_case.get("skip")
+                if skip_value is not None:
+                    if not isinstance(skip_value, str) or not skip_value.strip():
+                        raise EvidenceError(
+                            f"tests.yaml target {target_id} case {case_id} has invalid skip reason"
+                        )
+                    skipped_case_ids.add(case_id)
 
                 input_block = raw_case.get("input")
                 if isinstance(input_block, dict):
@@ -741,6 +1116,8 @@ def _load_tests_contract(bundle_dir: Path) -> tuple[TestsContract, list[str]]:
             case_ids=case_ids,
             operation_case_count=operation_case_count,
             workflow_case_count=workflow_case_count,
+            generated_case_ids=generated_case_ids,
+            skipped_case_ids=skipped_case_ids,
         ),
         mode_errors,
     )
@@ -775,6 +1152,7 @@ def verify_bundle(
         workflows = inventory.workflows
         coverage_mode = inventory.coverage_mode
         sampled_case_ids = inventory.sampled_case_ids
+        contract_class = inventory.contract_class
         tests_contract, mode_errors = _load_tests_contract(bundle_dir)
         op_to_cases, workflow_to_cases, run_to_cases, traceability_cases = _load_traceability(
             bundle_dir / "traceability.csv"
@@ -787,6 +1165,21 @@ def verify_bundle(
             bundle_dir / "mutation_check.json"
         )
         parity_pass, parity_diff_count = _load_parity(bundle_dir / "parity.json")
+        interface_inventory: InterfaceInventoryContract | None = None
+        surface_to_cases: dict[str, set[str]] = {}
+        invariant_to_cases: dict[str, set[str]] = {}
+        artifact_to_cases: dict[str, set[str]] = {}
+        contract_run_to_cases: dict[str, set[str]] = {}
+        contract_traceability_cases: set[str] = set()
+        if contract_class == "layered_agentic":
+            interface_inventory = _load_interface_inventory(bundle_dir / "interface_inventory.json")
+            (
+                surface_to_cases,
+                invariant_to_cases,
+                artifact_to_cases,
+                contract_run_to_cases,
+                contract_traceability_cases,
+            ) = _load_contract_traceability(bundle_dir / "contract_traceability.csv")
     except EvidenceError as exc:
         data_errors.append(str(exc))
         summary.update(
@@ -800,6 +1193,23 @@ def verify_bundle(
         return summary, data_errors, []
 
     data_errors.extend(mode_errors)
+
+    if coverage_mode == "exhaustive" and tests_contract.skipped_case_ids:
+        data_errors.append(
+            "coverage_mode=exhaustive cannot include skipped required cases: "
+            + ", ".join(sorted(tests_contract.skipped_case_ids))
+        )
+    if coverage_mode == "sampled":
+        for case_id in sorted(sampled_case_ids & tests_contract.skipped_case_ids):
+            data_errors.append(
+                "inventory.sampled_case_ids cannot include skipped case: "
+                f"{case_id}"
+            )
+    if contract_class == "layered_agentic":
+        for case_id in sorted(tests_contract.generated_case_ids):
+            data_errors.append(
+                f"layered_agentic tests.yaml case must declare explicit case_id: {case_id}"
+            )
 
     inventory_ops = set(operations)
     inventory_workflows = {workflow.workflow_id for workflow in workflows}
@@ -882,6 +1292,119 @@ def verify_bundle(
             f"{required_case_label} case has no baseline pass in adapter_results.jsonl: {case_id}"
         )
 
+    if contract_class == "layered_agentic" and interface_inventory is not None:
+        surface_ids = {surface.surface_id for surface in interface_inventory.surfaces}
+        invariant_ids = {invariant.invariant_id for invariant in interface_inventory.invariants}
+        artifact_ids = {
+            artifact_contract.artifact_id
+            for artifact_contract in interface_inventory.artifact_contracts
+        }
+
+        for surface in interface_inventory.surfaces:
+            if surface.surface_id not in surface_to_cases:
+                data_errors.append(
+                    f"unmapped interface surface in contract_traceability.csv: {surface.surface_id}"
+                )
+            for case_id in sorted(surface.required_case_ids - tests_contract.case_ids):
+                data_errors.append(
+                    "interface_inventory surface references unknown tests.yaml case_id: "
+                    f"surface={surface.surface_id} case_id={case_id}"
+                )
+            for case_id in sorted(surface.required_case_ids - contract_traceability_cases):
+                data_errors.append(
+                    "interface surface required case missing from contract_traceability.csv: "
+                    f"surface={surface.surface_id} case_id={case_id}"
+                )
+            for case_id in sorted(surface.required_case_ids - baseline_case_ids):
+                data_errors.append(
+                    "interface surface required case has no baseline pass in adapter_results.jsonl: "
+                    f"surface={surface.surface_id} case_id={case_id}"
+                )
+
+        for invariant in interface_inventory.invariants:
+            if invariant.invariant_id not in invariant_to_cases:
+                data_errors.append(
+                    "unmapped boundary invariant in contract_traceability.csv: "
+                    f"{invariant.invariant_id}"
+                )
+            for case_id in sorted(invariant.required_case_ids - tests_contract.case_ids):
+                data_errors.append(
+                    "interface_inventory invariant references unknown tests.yaml case_id: "
+                    f"invariant={invariant.invariant_id} case_id={case_id}"
+                )
+            for case_id in sorted(invariant.required_case_ids - contract_traceability_cases):
+                data_errors.append(
+                    "boundary invariant required case missing from contract_traceability.csv: "
+                    f"invariant={invariant.invariant_id} case_id={case_id}"
+                )
+            for case_id in sorted(invariant.required_case_ids - baseline_case_ids):
+                data_errors.append(
+                    "boundary invariant required case has no baseline pass in adapter_results.jsonl: "
+                    f"invariant={invariant.invariant_id} case_id={case_id}"
+                )
+
+        for artifact_contract in interface_inventory.artifact_contracts:
+            if artifact_contract.artifact_id not in artifact_to_cases:
+                data_errors.append(
+                    "unmapped artifact contract in contract_traceability.csv: "
+                    f"{artifact_contract.artifact_id}"
+                )
+            for case_id in sorted(artifact_contract.required_case_ids - tests_contract.case_ids):
+                data_errors.append(
+                    "artifact contract references unknown tests.yaml case_id: "
+                    f"artifact={artifact_contract.artifact_id} case_id={case_id}"
+                )
+            for case_id in sorted(artifact_contract.required_case_ids - contract_traceability_cases):
+                data_errors.append(
+                    "artifact contract required case missing from contract_traceability.csv: "
+                    f"artifact={artifact_contract.artifact_id} case_id={case_id}"
+                )
+            for case_id in sorted(artifact_contract.required_case_ids - baseline_case_ids):
+                data_errors.append(
+                    "artifact contract required case has no baseline pass in adapter_results.jsonl: "
+                    f"artifact={artifact_contract.artifact_id} case_id={case_id}"
+                )
+
+        for run_id in contract_run_to_cases:
+            if run_id not in known_run_ids:
+                data_errors.append(
+                    "contract_traceability references unknown adapter_run_id: "
+                    f"{run_id}"
+                )
+        for run_id, case_ids in contract_run_to_cases.items():
+            for case_id in case_ids:
+                pair = (run_id, case_id)
+                if pair not in baseline_pass_pairs:
+                    data_errors.append(
+                        "contract_traceability pair has no baseline pass result: "
+                        f"run_id={run_id} case_id={case_id}"
+                    )
+                if pair in baseline_nonpass_pairs:
+                    data_errors.append(
+                        "contract_traceability pair has non-pass baseline result: "
+                        f"run_id={run_id} case_id={case_id}"
+                    )
+
+        for target_id in sorted(surface_to_cases):
+            if target_id not in surface_ids:
+                data_errors.append(
+                    f"contract_traceability.csv references unknown surface id: {target_id}"
+                )
+        for target_id in sorted(invariant_to_cases):
+            if target_id not in invariant_ids:
+                data_errors.append(
+                    f"contract_traceability.csv references unknown invariant id: {target_id}"
+                )
+        for target_id in sorted(artifact_to_cases):
+            if target_id not in artifact_ids:
+                data_errors.append(
+                    f"contract_traceability.csv references unknown artifact id: {target_id}"
+                )
+        for case_id in sorted(contract_traceability_cases - tests_contract.case_ids):
+            data_errors.append(
+                f"contract_traceability.csv references unknown tests.yaml case_id: {case_id}"
+            )
+
     if not mutation_pass:
         data_errors.append("mutation_check.json.pass must be true")
     if detected_failures < required_mutations:
@@ -900,6 +1423,7 @@ def verify_bundle(
         structure_summary, structure_errors = _validate_structure_contract(
             bundle_dir=bundle_dir,
             tests_contract=tests_contract,
+            contract_class=contract_class,
         )
     except EvidenceError as exc:
         structure_errors.append(str(exc))
@@ -908,6 +1432,7 @@ def verify_bundle(
             "structure_stateful_mode": bool(
                 tests_contract.workflow_ids or tests_contract.workflow_case_count > 0
             ),
+            "structure_contract_class": contract_class,
             "structure_spec_required_sections": 0,
             "structure_verify_required_sections": 0,
             "structure_errors_count": len(structure_errors),
@@ -934,7 +1459,22 @@ def verify_bundle(
             "required_cases_expected": len(required_case_ids),
             "tests_operation_cases": tests_contract.operation_case_count,
             "tests_workflow_cases": tests_contract.workflow_case_count,
+            "tests_generated_case_ids": len(tests_contract.generated_case_ids),
+            "tests_skipped_case_ids": len(tests_contract.skipped_case_ids),
             "traceability_cases": len(traceability_cases),
+            "contract_class": contract_class,
+            "interface_surfaces_expected": (
+                len(interface_inventory.surfaces) if interface_inventory is not None else 0
+            ),
+            "boundary_invariants_expected": (
+                len(interface_inventory.invariants) if interface_inventory is not None else 0
+            ),
+            "artifact_contracts_expected": (
+                len(interface_inventory.artifact_contracts)
+                if interface_inventory is not None
+                else 0
+            ),
+            "contract_traceability_cases": len(contract_traceability_cases),
             "baseline_pass_pairs": len(baseline_pass_pairs),
             "required_mutations": required_mutations,
             "detected_failures": detected_failures,

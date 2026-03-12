@@ -17,6 +17,12 @@ Enforce these headings exactly (case-sensitive) so structure checks stay determi
 - `## Recovery/Idempotency`
 - `## Reference Algorithm`
 
+### SPEC.md additional required headings (`layered_agentic` ghost extractions)
+- `## Interface Surfaces`
+- `## Boundary Contracts`
+- `## Extension Points`
+- `## Persistent Artifacts`
+
 ### VERIFY.md required headings (all ghost extractions)
 - `## Summary`
 - `## Regenerate`
@@ -25,6 +31,12 @@ Enforce these headings exactly (case-sensitive) so structure checks stay determi
 - `## Mutation Sensitivity`
 - `## Regeneration Parity`
 - `## Limitations`
+
+### VERIFY.md additional required headings (`layered_agentic` ghost extractions)
+- `## Normative Source Map`
+- `## Surface Coverage Matrix`
+- `## Boundary Invariants`
+- `## Artifact Contract Coverage`
 
 ## SPEC.md (outline)
 - Title + version
@@ -48,6 +60,11 @@ Enforce these headings exactly (case-sensitive) so structure checks stay determi
   - Transition Triggers
   - Recovery/Idempotency
   - Reference Algorithm
+- Layered-agentic additions (required when `inventory.json.contract_class=layered_agentic`):
+  - Interface Surfaces
+  - Boundary Contracts
+  - Extension Points
+  - Persistent Artifacts
 
 ## TESTS_SCHEMA.md (outline, optional)
 
@@ -212,6 +229,7 @@ Notes:
 - Protocol/CLI layout: keep `meta.version` for schema version and use `meta.source_version` for upstream evidence version.
 - Scenario layout: keep `meta.version` for schema version and use `meta.source_version` for upstream evidence version.
 - Prefer explicit `case_id` for every executable case and reuse the same ids in `traceability.csv` and `adapter_results.jsonl`.
+- `layered_agentic` extractions require explicit `case_id` on every executable case; fallback ids are not sufficient for surface/invariant/artifact coverage.
 - Use explicit timestamps/values; avoid "now" or system state.
 - Inputs must be deterministic and YAML-serializable (scalars, sequences, maps).
 - For bytes/buffers, encode as hex or base64 string (document which in `SPEC.md`).
@@ -240,6 +258,7 @@ Notes:
 - Regenerate (required heading)
 - Validation Matrix (required heading; include profile labels)
 - Coverage mode declaration: `exhaustive` (default) or `sampled` with explicit sampled case ids
+- `coverage_mode=exhaustive` means required cases execute and pass; unresolved skips must move to `sampled` coverage instead of staying in the exhaustive set
 - Source-language adapter runner (preferred)
   - How to run it locally
   - What it asserts (outputs/errors match tests.yaml)
@@ -249,8 +268,19 @@ Notes:
 - Evidence bundle verifier (fail-closed)
   - `verification/evidence/` is present and complete
   - `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle verification/evidence` passes
+- Layered-agentic evidence (required when `inventory.json.contract_class=layered_agentic`)
+  - `interface_inventory.json` inventories `surfaces`, `boundary_invariants`, and `artifact_contracts`
+  - `contract_traceability.csv` maps `surface|invariant|artifact` targets to `case_id` and adapter proof
 - Traceability Matrix (required heading)
   - operation/workflow -> case ids -> proof artifact -> adapter run id
+- Normative Source Map (required heading for `layered_agentic`)
+  - which sections are treated as binding contract sources for each named surface or invariant
+- Surface Coverage Matrix (required heading for `layered_agentic`)
+  - surface id -> required case ids -> proof artifact -> adapter run id
+- Boundary Invariants (required heading for `layered_agentic`)
+  - invariant id -> description -> case ids
+- Artifact Contract Coverage (required heading for `layered_agentic`)
+  - artifact id -> required fields -> case ids -> proof artifacts
 - Adapter run ledger
   - run id, mode, command, timestamp, result
 - Workflow loop inventory
