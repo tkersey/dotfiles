@@ -3,7 +3,7 @@
 ## Technique selection (canonical: creative-problem-solver)
 - Pick 1 technique using the `$creative-problem-solver` skill’s **Technique selection** section.
 - Then consult the matching technique reference in that skill.
-- Use the picker name verbatim in TK output so evals can detect off-picker drift.
+- Use the picker name verbatim whenever TK surfaces Creative Frame so evals can detect off-picker drift.
 - If no Aha (no meaningful representation shift), pick 1 more technique from a different picker row (max 2).
 - This file exists for TK-specific Lotus Blossom petals + tier mapping.
 
