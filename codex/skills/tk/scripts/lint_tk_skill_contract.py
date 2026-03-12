@@ -43,11 +43,12 @@ REQUIRED_PRECEDENCE_HEADINGS = [
 ]
 
 REQUIRED_CODER_PHRASES = [
-    "Invoke `$tk` first: restate Contract + Invariants before making any patch.",
-    "If `approach=reduce`, do the reduction work here instead of spawning `reducer`.",
-    "Produce one apply_patch-format candidate artifact or `NO_DIFF:<reason>`.",
+    "Learn the task, then run `$parse` once before author fanout unless a current parse memo is already provided and still fits the scope.",
+    "If `approach=reduce`, keep it as a shared author constraint; do not spawn `reducer`.",
+    "Spawn 5 built-in `worker` author lanes with `fork_context=false` by default; use `fork_context=true` only for a specific child when the packet cannot faithfully carry needed history, constraints, or current diff.",
+    "Each author lane must invoke `$tk` internally and emit exactly one diff or `NO_DIFF:<reason>` plus concise metadata.",
     "When artifact-shape and code-shape preferences conflict, honor the outer artifact contract and keep TK seam/shape reasoning internal.",
-    "Prefer the highest provable seam within scope; widen across modules only when the stable boundary clearly lives there.",
+    "Emit only the winning artifact plus concise why-winner metadata; keep losing diffs internal.",
 ]
 
 

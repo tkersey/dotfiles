@@ -26,7 +26,7 @@ If two layers disagree, satisfy the higher layer and keep the lower-layer discip
 ## Common conflict resolutions
 
 ### Strict-output worker lane
-- Situation: coder lane requires one fenced `diff` block or `NO_DIFF:`.
+- Situation: a strict-output author worker requires one fenced `diff` block or `NO_DIFF:`.
 - Resolve: run TK internally, emit only the required artifact.
 - Keep internal: Contract, Invariants, Creative Frame, Why This Solution.
 

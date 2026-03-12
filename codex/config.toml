@@ -9,11 +9,11 @@ personality = "pragmatic"
 service_tier = "fast"
 
 [agents]
-max_threads = 12
+max_threads = 48
 max_depth = 3
 
 [agents.coder]
-description = "Author bounded patch candidates for the simplified specialist pipeline."
+description = "Run parse-first author/judge orchestration and emit one winning patch candidate."
 config_file = "~/.codex/agents/coder.toml"
 
 [agents.reducer]
@@ -21,7 +21,7 @@ description = "Deprecated redirect shim: use `coder` with `approach=reduce`."
 config_file = "~/.codex/agents/reducer.toml"
 
 [agents.fixer]
-description = "Review and adjudicate candidate artifacts, including doctrine-fit scoring."
+description = "Repair or block the coder-selected winner, including doctrine-fit scoring."
 config_file = "~/.codex/agents/fixer.toml"
 
 [agents.mentor]

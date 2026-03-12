@@ -68,8 +68,8 @@ Use `$mesh` instead when:
    - `explorer` for specific repository questions
    - `worker` for bounded edits or verification with explicit ownership
    - `selector` only for explicit `$select`-class source shaping
-   - `coder` only for bounded artifact authoring when specialist output is actually needed
-   - `fixer` for one-pass review/adjudication when you would otherwise chain reviewer + mentor behavior
+   - `coder` only for parse-first author/judge orchestration when specialist output is actually needed
+   - `fixer` for mandatory winner review/repair when you would otherwise chain reviewer + mentor behavior
    - `prover` for apply-plus-proof in a temp worktree
    - `integrator` for scoped delivery packaging after proof
    - `joiner` only for GH-only PR routing workflows
@@ -147,6 +147,7 @@ Why the handoff:
 ## Forking And Ownership
 
 - Default `fork_context: false` for fresh-eyes research or review.
+- For parse-first author cohorts, run `$parse` once in the parent, freeze the worker packet, and keep `fork_context=false` unless a specific child truly needs the same history, constraints, or diff.
 - Use `fork_context: true` only when the child truly needs the same history, constraints, or diff.
 - Tell `worker` agents they are not alone in the repo and must not revert other edits.
 - Keep write scopes disjoint; one worker should own each mutating scope.

@@ -19,11 +19,12 @@ ACTIVE_ROLE_PHRASES = {
     ],
     "coder.toml": [
         "Use this role only when the parent has already decided a custom specialist is worth the overhead.",
-        "If `approach=reduce`, do the reduction work here instead of spawning `reducer`.",
-        "Produce one apply_patch-format candidate artifact or `NO_DIFF:<reason>`.",
+        "If `approach=reduce`, keep it as a shared author constraint; do not spawn `reducer`.",
+        "Spawn 5 built-in `worker` author lanes with `fork_context=false` by default;",
+        "Emit only the winning artifact plus concise why-winner metadata; keep losing diffs internal.",
     ],
     "fixer.toml": [
-        "Absorb mentor-style doctrine scoring inside one review pass",
+        "Own safety/regression hardening of the coder-selected winner; you do not choose among candidates.",
         "Always emit doctrine-fit scores inline; do not require a separate `mentor` role.",
     ],
     "prover.toml": [

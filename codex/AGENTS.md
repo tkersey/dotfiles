@@ -80,8 +80,8 @@ Apply these in order:
 - Use built-in roles intentionally: `explorer` for focused questions, `worker` for bounded execution.
 - Treat custom roles in `codex/agents/` as specialist edges, not the default path:
   - `selector` for explicit `$select`-class wave shaping
-  - `coder` for bounded artifact authoring, including reduction-style seams via `approach=reduce`
-  - `fixer` for review plus doctrine-fit scoring in one pass
+  - `coder` for parse-first author/judge orchestration that emits one winning candidate, carrying `approach=reduce` as a shared author constraint
+  - `fixer` for mandatory winner review/repair plus doctrine-fit scoring in one pass
   - `prover` for apply-plus-proof in an isolated worktree
   - `integrator` for patch-first or commit-first delivery packaging
   - `joiner` for GH-only PR routing, not for ordinary local tasks
@@ -89,7 +89,7 @@ Apply these in order:
 - Keep synthesis, integration, and overlapping-write work local.
 - Dispatch the full dependency-independent ready set before the first blocking `wait`.
 - Delegate concrete work with explicit deliverables and disjoint write scopes; do not reserve core ready branches for the lead just because they feel central.
-- Default `fork_context: false`; use `true` only when the child truly needs the parent's exact context.
+- Default `fork_context: false`; for parse-first author cohorts, run `$parse` once in the parent, freeze the worker packet, and use `true` only when a specific child truly needs the parent's exact context or diff.
 - While subagents run, continue non-overlapping local work.
 - Close agents once their contribution is integrated.
 
