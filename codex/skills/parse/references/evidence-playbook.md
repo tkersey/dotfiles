@@ -4,7 +4,7 @@ Use this playbook when static structure alone is not enough to justify the final
 
 ## Static-First Checklist
 
-Start with the collector script, then inspect only the strongest evidence paths it returns across code structure, build graph, tests/examples, runtime or deploy surfaces, and docs/ADRs:
+Start with `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh`, then inspect only the strongest evidence paths it returns across code structure, build graph, tests/examples, runtime or deploy surfaces, and docs/ADRs:
 
 - manifests and dependency files
 - top-level entrypoints and runnable surfaces
@@ -28,7 +28,7 @@ If the caller already knows the target files or subsystem, pass them as `focus_p
 
 ## Weak-Signal Recovery
 
-If the initial repo-wide `parse-arch collect` pass is thin, do one focused collector rerun before broader manual inspection.
+If the initial repo-wide helper pass is thin, do one focused collector rerun before broader manual inspection.
 
 - Choose 2-4 likely architecture-defining paths from the first pass or from obvious ownership seams. Include at least one path that should confirm the current dominant read and, when plausible, one that could falsify it or surface a coexisting pattern:
   - build/manifests
@@ -36,7 +36,7 @@ If the initial repo-wide `parse-arch collect` pass is thin, do one focused colle
   - the dominant runtime/core module
   - plugin or provider registries, workflow/job definitions, generated-code roots, or read/write split directories when those are plausible competing patterns
   - docs/tests/examples only when they materially define the contract
-- Rerun `parse-arch collect` with repeatable `--focus-path` flags for those slices.
+- Rerun the helper with repeatable `--focus-path` flags for those slices.
 - Compare repo-wide versus focus-path evidence explicitly:
   - which signal classes stayed thin
   - which subsystem boundaries or coexisting patterns only became visible in the focused pass
@@ -101,6 +101,7 @@ Always explain what evidence would raise or lower confidence.
 
 - Prefer caveats like "repo-wide collector signals were thin on dependency direction, so I inspected `build.zig`, `src/core`, and `test/` directly" over generic caveats about the installed binary version.
 - Mention the binary version only when the CLI behavior itself blocked a needed flag or output mode.
+- If the helper or collector path fails outright, name the exact failed command path and the signal classes you had to recover manually before you lean on source/doc inspection.
 - If the collector under-read the repo, say what it still got right and what evidence classes required compensation.
 
 ## Memo Template

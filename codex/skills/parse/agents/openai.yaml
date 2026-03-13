@@ -1,4 +1,4 @@
 interface:
   display_name: "Parse Architecture"
-  short_description: "Infer dominant architecture and subtle patterns"
-  default_prompt: "Use $parse to identify this repo's dominant architecture, coexisting patterns, drift, and repo-fit hints."
+  short_description: "Infer dominant architecture with helper-first collector evidence"
+  default_prompt: "Use $parse to identify this repo's dominant architecture, coexisting patterns, drift, and repo-fit hints. Prefer /Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh before manual inspection, and if the collector path fails state the exact failure and missing signal classes."

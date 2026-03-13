@@ -21,6 +21,15 @@ When iterating on the Zig-backed `parse-arch` helper CLI, use these two repos:
 ## Quick Start
 
 ```bash
+/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh /path/to/repo --focus-path src --focus-path test
+/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh --repo-path /path/to/repo --json
+```
+
+Use the helper first during normal `$parse` runs. It bootstraps a compatible `parse-arch`, accepts the same paved repo selectors agents actually try (`<repo_path>`, `--repo-path`, `--repo`, `--json`, `--format json`), and always emits JSON.
+
+If you need raw CLI access for release or validation work, use this bootstrap wrapper:
+
+```bash
 run_parse_arch_tool() {
   install_parse_arch_direct() {
     local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
@@ -46,7 +55,7 @@ run_parse_arch_tool() {
   }
 
   local os="$(uname -s)"
-  if command -v parse-arch >/dev/null 2>&1 && parse-arch --help 2>&1 | grep -q "parse_arch.zig"; then
+  if command -v parse-arch >/dev/null 2>&1 && parse-arch --help 2>&1 | grep -q "parse-arch collect --repo-path <repo_path>"; then
     parse-arch "$@"
     return
   fi
@@ -66,7 +75,7 @@ run_parse_arch_tool() {
     fi
   fi
 
-  if command -v parse-arch >/dev/null 2>&1 && parse-arch --help 2>&1 | grep -q "parse_arch.zig"; then
+  if command -v parse-arch >/dev/null 2>&1 && parse-arch --help 2>&1 | grep -q "parse-arch collect --repo-path <repo_path>"; then
     parse-arch "$@"
     return
   fi
@@ -93,11 +102,12 @@ run_parse_arch_tool() {
    - Use repo kind to avoid forcing app-centric labels onto thin libraries or infrastructure repos.
 
 2. Collect static signals first.
-   - Run the Zig collector via `parse-arch collect`.
+   - Run the helper first: `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh <repo_path>`.
    - Pass `--focus-path` for each target slice when `focus_paths` are available.
    - Use the JSON output to inspect manifests, entrypoints, dependency-direction hints, runtime-boundary hints, architecture-doc claims, scan coverage, subsystem candidates, and focus-path observations.
-   - Treat the script as evidence collection only. Do not let it choose the final architecture label for you.
-   - If the first repo-wide pass is thin, do one targeted second pass before broader manual inspection: choose 2-4 likely architecture-defining paths, including at least one path that should confirm the current read and, when plausible, one that could falsify it or surface a coexisting pattern (for example entrypoints, build manifests, the main runtime/core module, public package roots, provider registries, workflow definitions, generated boundaries, or a contract-heavy docs/test slice) and rerun `parse-arch collect` with `--focus-path` for each.
+   - Treat the helper/collector as evidence collection only. Do not let it choose the final architecture label for you.
+   - The raw collector now supports three repo selectors openly: positional `repo_path`, `--repo-path`, and `--repo`. It also accepts `--json` and `--format json` as no-op compatibility flags because output is always JSON.
+   - If the first repo-wide pass is thin, do one targeted second pass before broader manual inspection: choose 2-4 likely architecture-defining paths, including at least one path that should confirm the current read and, when plausible, one that could falsify it or surface a coexisting pattern (for example entrypoints, build manifests, the main runtime/core module, public package roots, provider registries, workflow definitions, generated boundaries, or a contract-heavy docs/test slice) and rerun the helper with `--focus-path` for each.
    - Compare what the repo-wide pass saw with what the focus-path pass surfaced. Use that delta in `Major Subsystems / Coexisting Patterns`, `Repo-Fit Advice`, and `Caveats`.
 
 3. Map the evidence to the curated taxonomy and coexisting-pattern sweep.
@@ -118,6 +128,7 @@ run_parse_arch_tool() {
    - If the collector feels weak, name the missing signal classes precisely first: for example missing dependency-direction hints, unclear runtime boundaries, sparse subsystem candidates, or absent architecture docs.
    - Use the focused rerun to test both the current dominant read and the strongest plausible competing label or coexisting pattern before broader manual inspection.
    - Do not jump straight from one weak repo-wide collector pass to "manual inspection." First prove that a focused collector rerun still leaves the architecture under-determined.
+   - If the helper or collector path fails, continue with source-first manual inspection only after you state the exact failed command path and the specific signal classes the collector did not supply. Do not fall back to vague “couldn’t use the scripts” language.
    - Use safe, non-mutating probes only when they add meaningful evidence: builds, tests, dependency inspection, or local command help.
    - Stop if the only available probe mutates tracked files, requires secrets, or depends on network-only truth.
 
@@ -187,6 +198,7 @@ For each section:
 ## Validation
 
 - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/parse`
+- `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh "$PWD" --focus-path codex/skills/parse/SKILL.md`
 - `run_parse_arch_tool eval --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml"`
 - `run_parse_arch_tool doctor --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml" --repo-path "$PWD"`
 
