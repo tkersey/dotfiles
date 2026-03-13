@@ -31,7 +31,19 @@ For each case:
 A case passes only when all checks above pass.
 
 ## Improvement Loop Prompt
-Before eval in each cycle, the runner sends an improvement prompt requesting harness/doc updates with strict write-scope boundaries. For Gemini 2.5 Pro, that prompt explicitly targets exact-output envelopes, `not run` honesty, local-evidence-first behavior, retry-path wording, workdir discipline, anti-drift, and external hard-stop reporting.
+Before eval in each cycle, the runner sends an improvement prompt requesting harness/doc updates with strict write-scope boundaries. For Gemini 2.5 Pro, that prompt explicitly targets exact-output envelopes, `not run` honesty, local-evidence-first behavior, retry-path wording, workdir discipline, anti-drift, and external hard-stop reporting, while also preserving the canonical retry/workdir/external-blocker/`not run` lines verbatim and forbidding duplicate/paraphrased restatements elsewhere in `AGENTS.md`.
+
+## Post-Improver Curated Gate
+On Gemini 2.5 Pro runs, if the improver edits `AGENTS.md`, the runner immediately reruns all curated cases at fixed parallelism `4` before the ordinary mixed eval. The improver diff is accepted only if that curated gate stays green.
+
+If the curated gate fails without an external blocker:
+- revert only the changed `AGENTS.md` hunks that touch the protected retry/workdir/external-blocker/`not run` rule families,
+- strip newly added duplicate/paraphrased mentions for those same rule families,
+- rerun the curated gate,
+- fall back to a full-file `AGENTS.md` restore if the selective revert cannot restore a curated-green state,
+- mark the cycle failed and skip mixed eval for that cycle.
+
+If the curated gate fails because of an external blocker, the runner reports the blocker and does not treat it as harness churn.
 
 ## Replay Refresh
 `replay-refresh` ranks recent OpenCode prompts and prefers harness-shaped prompts over short/noisy chat fragments. With `--refresh-curated --model google/gemini-2.5-pro`, it also reseeds the curated suite with Gemini-specific exact-output probes.
@@ -41,6 +53,7 @@ The runner marks run failure on:
 - OpenCode invocation errors
 - timed-out OpenCode improve/eval calls
 - detected external blockers such as quota, credits, auth, provider, or network failures
+- post-improver curated gate rejection of a Gemini improver `AGENTS.md` diff
 - pass rate below threshold
 - non-doc file mutations in git status
 - policy/critical error matches
@@ -62,3 +75,5 @@ The runner can auto-promote only when:
 - PR create/update succeeds (if `gh` is available)
 
 Auto-revert is reserved for harness regressions after a prior passing cycle; it does not fire for external provider/quota/auth/network blockers.
+
+The post-improver curated gate is separate from that regression fallback: it protects the current cycle before mixed eval can count an unsafe Gemini improver diff.

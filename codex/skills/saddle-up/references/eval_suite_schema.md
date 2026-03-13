@@ -82,6 +82,15 @@ last_external_blocker: null
 last_result:
   gate_passed: false
   regression_reverted: false
+  post_improver_curated_gate_ran: false
+  post_improver_curated_gate_passed: false
+  post_improver_curated_pass_rate: null
+  post_improver_failed_case_ids: []
+  post_improver_external_blocker: null
+  post_improver_reverted: false
+  post_improver_reverted_rule_ids: []
+  post_improver_reverted_paths: []
+  post_improver_fallback_full_file_revert_used: false
   external_blocker: null
   stop_reason: none
 ```
@@ -90,7 +99,7 @@ last_result:
 One record per continuous cycle.
 
 ```json
-{"run_id":"20260304T041522Z-c00001","continuous_session_id":"20260304T041522Z","cycle":1,"pass_rate":0.8,"gate_passed":true,"external_blocker":null}
+{"run_id":"20260304T041522Z-c00001","continuous_session_id":"20260304T041522Z","cycle":1,"pass_rate":0.8,"gate_passed":true,"external_blocker":null,"post_improver_curated_gate_ran":true,"post_improver_curated_gate_passed":true,"post_improver_reverted":false}
 ```
 
 Required fields:
@@ -107,3 +116,14 @@ Required fields:
 - `stop_reason`
 - `external_blocker`
 - `elapsed_seconds`
+
+Additional Gemini post-improver gate fields:
+- `post_improver_curated_gate_ran`
+- `post_improver_curated_gate_passed`
+- `post_improver_curated_pass_rate`
+- `post_improver_failed_case_ids`
+- `post_improver_external_blocker`
+- `post_improver_reverted`
+- `post_improver_reverted_rule_ids`
+- `post_improver_reverted_paths`
+- `post_improver_fallback_full_file_revert_used`

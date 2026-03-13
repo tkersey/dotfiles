@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import datetime as dt
+import difflib
 import json
 import os
 import re
@@ -125,6 +126,52 @@ REPLAY_NEGATIVE_HINTS = (
     ("<skill>", 6),
     ("</skill>", 6),
 )
+
+POST_IMPROVER_PROTECTED_RULES = (
+    {
+        "rule_id": "retry-path",
+        "curated_case_ids": ("curated-gemini-retry-path",),
+        "canonical_exact_line": "Retry immediately with only required fields; if that fails again, switch to the smallest read/search step or ask one blocking question.",
+        "diff_matchers": (
+            re.compile(r"retry immediately", re.IGNORECASE),
+            re.compile(r"only required fields", re.IGNORECASE),
+            re.compile(r"smallest read/search step", re.IGNORECASE),
+            re.compile(r"blocking question", re.IGNORECASE),
+        ),
+    },
+    {
+        "rule_id": "workdir",
+        "curated_case_ids": ("curated-gemini-workdir",),
+        "canonical_exact_line": "Use workdir instead of cd ... && ...",
+        "diff_matchers": (
+            re.compile(r"use workdir instead of cd", re.IGNORECASE),
+            re.compile(r"\bworkdir\b", re.IGNORECASE),
+            re.compile(r"\bcd\b.*&&", re.IGNORECASE),
+        ),
+    },
+    {
+        "rule_id": "external-blocker",
+        "curated_case_ids": ("curated-gemini-external-blocker",),
+        "canonical_exact_line": "If progress is blocked by an external hard stop such as model quota, auth failure, provider outage, missing required credentials, or network denial, report that blocker immediately with the exact failing command or provider/model and any known retry or reset signal.",
+        "diff_matchers": (
+            re.compile(r"external hard stop", re.IGNORECASE),
+            re.compile(r"quota|auth failure|provider outage|network denial", re.IGNORECASE),
+            re.compile(r"failing command|provider/model", re.IGNORECASE),
+            re.compile(r"retry or reset signal", re.IGNORECASE),
+        ),
+    },
+    {
+        "rule_id": "not-run",
+        "curated_case_ids": ("curated-gemini-proof-honesty",),
+        "canonical_exact_line": "If a command, test, or proof step was not executed in this turn, say `not run`; do not imply success.",
+        "diff_matchers": (
+            re.compile(r"`?not run`?", re.IGNORECASE),
+            re.compile(r"do not imply success", re.IGNORECASE),
+            re.compile(r"proof step", re.IGNORECASE),
+        ),
+    },
+)
+POST_IMPROVER_FIXED_PARALLELISM = 4
 
 
 class CommandError(RuntimeError):
@@ -421,6 +468,26 @@ def default_scoring() -> dict[str, Any]:
     }
 
 
+def default_last_result() -> dict[str, Any]:
+    return {
+        "gate_passed": False,
+        "regression_reverted": False,
+        "failed_case_ids": [],
+        "blocked_paths": [],
+        "external_blocker": None,
+        "stop_reason": "none",
+        "post_improver_curated_gate_ran": False,
+        "post_improver_curated_gate_passed": False,
+        "post_improver_curated_pass_rate": None,
+        "post_improver_failed_case_ids": [],
+        "post_improver_external_blocker": None,
+        "post_improver_reverted": False,
+        "post_improver_reverted_rule_ids": [],
+        "post_improver_reverted_paths": [],
+        "post_improver_fallback_full_file_revert_used": False,
+    }
+
+
 def default_state() -> dict[str, Any]:
     return {
         "version": 1,
@@ -433,14 +500,7 @@ def default_state() -> dict[str, Any]:
         "last_run_at": None,
         "last_pass_rate": 0.0,
         "last_external_blocker": None,
-        "last_result": {
-            "gate_passed": False,
-            "regression_reverted": False,
-            "failed_case_ids": [],
-            "blocked_paths": [],
-            "external_blocker": None,
-            "stop_reason": "none",
-        },
+        "last_result": default_last_result(),
     }
 
 
@@ -491,6 +551,111 @@ def save_yaml(path: Path, payload: dict[str, Any]) -> None:
 def append_jsonl(path: Path, payload: dict[str, Any]) -> None:
     with path.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(payload, sort_keys=True) + "\n")
+
+
+def protected_rules_for_model(model: str) -> tuple[dict[str, Any], ...]:
+    if model_profile(model) == "gemini-2.5-pro":
+        return POST_IMPROVER_PROTECTED_RULES
+    return ()
+
+
+def default_post_improver_gate_result() -> dict[str, Any]:
+    return {
+        "ran": False,
+        "passed": False,
+        "pass_rate": None,
+        "failed_case_ids": [],
+        "external_blocker": None,
+        "reverted": False,
+        "reverted_rule_ids": [],
+        "reverted_paths": [],
+        "fallback_full_file_revert_used": False,
+    }
+
+
+def read_file_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def write_file_text(path: Path, text: str) -> None:
+    path.write_text(text, encoding="utf-8")
+
+
+def curated_cases_for_gate(suite: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        case
+        for case in suite.get("cases", [])
+        if isinstance(case, dict) and str(case.get("source", "")).strip().lower() == "curated"
+    ]
+
+
+def matching_rule_ids(text: str, rules: tuple[dict[str, Any], ...]) -> list[str]:
+    matched: list[str] = []
+    for rule in rules:
+        if any(pattern.search(text) for pattern in rule["diff_matchers"]):
+            matched.append(str(rule["rule_id"]))
+    return matched
+
+
+def selective_revert_protected_hunks(
+    original_text: str,
+    current_text: str,
+    rules: tuple[dict[str, Any], ...],
+) -> tuple[str, list[str]]:
+    if original_text == current_text:
+        return current_text, []
+
+    original_lines = original_text.splitlines(keepends=True)
+    current_lines = current_text.splitlines(keepends=True)
+    matcher = difflib.SequenceMatcher(a=original_lines, b=current_lines)
+    rebuilt: list[str] = []
+    reverted_rule_ids: set[str] = set()
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            rebuilt.extend(current_lines[j1:j2])
+            continue
+
+        changed_chunk = "".join(original_lines[i1:i2]) + "\n" + "".join(current_lines[j1:j2])
+        matched = matching_rule_ids(changed_chunk, rules)
+        if matched:
+            rebuilt.extend(original_lines[i1:i2])
+            reverted_rule_ids.update(matched)
+            continue
+        rebuilt.extend(current_lines[j1:j2])
+
+    return "".join(rebuilt), sorted(reverted_rule_ids)
+
+
+def curated_gate_failed_case_ids(case_results: list[dict[str, Any]]) -> list[str]:
+    return [str(item.get("id")) for item in case_results if not item.get("passed")]
+
+
+def format_post_improver_gate_result(result: dict[str, Any]) -> str:
+    ran = "true" if result.get("ran") else "false"
+    passed = "true" if result.get("passed") else "false"
+    pass_rate = result.get("pass_rate")
+    pass_rate_text = "none" if pass_rate is None else f"{float(pass_rate):.3f}"
+    reverted = "true" if result.get("reverted") else "false"
+    rule_ids = ",".join(result.get("reverted_rule_ids") or []) or "none"
+    failed_ids = ",".join(result.get("failed_case_ids") or []) or "none"
+    fallback = (
+        "true" if result.get("fallback_full_file_revert_used") else "false"
+    )
+    external_blocker = result.get("external_blocker")
+    external_text = "none"
+    if isinstance(external_blocker, dict) and external_blocker:
+        external_text = str(external_blocker.get("kind") or "unknown")
+    return (
+        "post_improver_curated_gate_ran="
+        f"{ran} post_improver_curated_gate_passed={passed} "
+        f"post_improver_curated_pass_rate={pass_rate_text} "
+        f"post_improver_external_blocker={external_text} "
+        f"post_improver_reverted={reverted} "
+        f"post_improver_reverted_rule_ids={rule_ids} "
+        f"post_improver_failed_case_ids={failed_ids} "
+        f"post_improver_fallback_full_file_revert_used={fallback}"
+    )
 
 
 def parse_json_lines(text: str) -> list[dict[str, Any]]:
@@ -1086,6 +1251,12 @@ def build_improvement_prompt(
             - Edit docs only (`*.md`, `docs/`, `{harness_rel}`).
             - Do not modify source code files.
             - Preserve fail-closed safety behavior.
+            - Keep these canonical lines verbatim if they already exist:
+              - Retry immediately with only required fields; if that fails again, switch to the smallest read/search step or ask one blocking question.
+              - Use workdir instead of cd ... && ...
+              - If progress is blocked by an external hard stop such as model quota, auth failure, provider outage, missing required credentials, or network denial, report that blocker immediately with the exact failing command or provider/model and any known retry or reset signal.
+              - If a command, test, or proof step was not executed in this turn, say `not run`; do not imply success.
+            - Do not add duplicate or paraphrased restatements of those four rules elsewhere in the file.
             - Do not spend multiple turns restating the plan.
             - If no high-value doc change is needed, explain why and leave files untouched.
 
@@ -1127,6 +1298,96 @@ def first_external_blocker(
                 **{k: str(v) for k, v in blocker.items()},
             }
     return None
+
+
+def run_post_improver_curated_gate(
+    repo: Path,
+    harness_abs: Path,
+    model: str,
+    suite: dict[str, Any],
+    scoring: dict[str, Any],
+    *,
+    original_text: str,
+    improve_result: dict[str, Any],
+    skip_improve: bool,
+    timeout_seconds: int | None,
+) -> dict[str, Any]:
+    result = default_post_improver_gate_result()
+    if skip_improve:
+        return result
+
+    rules = protected_rules_for_model(model)
+    if not rules:
+        return result
+
+    if improve_result.get("returncode") != 0 or improve_result.get("external_blocker"):
+        return result
+
+    current_text = read_file_text(harness_abs)
+    if current_text == original_text:
+        return result
+
+    curated_cases = curated_cases_for_gate(suite)
+    if not curated_cases:
+        return result
+
+    result["ran"] = True
+    case_results, pass_rate = evaluate_iteration(
+        repo,
+        model,
+        curated_cases,
+        scoring,
+        timeout_seconds=timeout_seconds,
+        case_parallelism=POST_IMPROVER_FIXED_PARALLELISM,
+    )
+    result["pass_rate"] = pass_rate
+    result["failed_case_ids"] = curated_gate_failed_case_ids(case_results)
+    result["external_blocker"] = first_external_blocker(
+        {"external_blocker": None}, case_results
+    )
+    if result["external_blocker"] is not None:
+        return result
+    result["passed"] = pass_rate >= float(scoring.get("threshold", DEFAULT_THRESHOLD))
+    if result["passed"]:
+        return result
+
+    reverted_text, reverted_rule_ids = selective_revert_protected_hunks(
+        original_text, current_text, rules
+    )
+    did_revert = False
+    if reverted_text != current_text:
+        write_file_text(harness_abs, reverted_text)
+        did_revert = True
+    result["reverted"] = did_revert
+    result["reverted_rule_ids"] = reverted_rule_ids
+    result["reverted_paths"] = [harness_abs.name] if did_revert else []
+
+    verify_results, _verify_pass_rate = evaluate_iteration(
+        repo,
+        model,
+        curated_cases,
+        scoring,
+        timeout_seconds=timeout_seconds,
+        case_parallelism=POST_IMPROVER_FIXED_PARALLELISM,
+    )
+    verify_external_blocker = first_external_blocker(
+        {"external_blocker": None}, verify_results
+    )
+    if verify_external_blocker is not None:
+        write_file_text(harness_abs, original_text)
+        result["reverted"] = True
+        result["reverted_paths"] = [harness_abs.name]
+        result["fallback_full_file_revert_used"] = True
+        result["external_blocker"] = verify_external_blocker
+        return result
+    if not all(item.get("passed") for item in verify_results):
+        write_file_text(harness_abs, original_text)
+        result["reverted"] = True
+        result["reverted_paths"] = [harness_abs.name]
+        result["fallback_full_file_revert_used"] = True
+        return result
+
+    return result
 
 
 def evaluate_iteration(
@@ -1172,7 +1433,7 @@ def evaluate_iteration(
 
 def run_loop(args: argparse.Namespace) -> int:
     repo = normalize_repo(args.repo)
-    _, harness_rel = normalize_harness(repo, args.harness_path)
+    harness_abs, harness_rel = normalize_harness(repo, args.harness_path)
     stop_path = resolve_stop_file(repo, args.stop_file)
     timeout_seconds = (
         int(args.opencode_timeout_seconds)
@@ -1225,6 +1486,7 @@ def run_loop(args: argparse.Namespace) -> int:
             selected_cases = pick_suite_cases(
                 suite, scoring, source_filter=args.case_source
             )
+            original_harness_text = read_file_text(harness_abs)
 
             if args.skip_improve:
                 improve_result = {
@@ -1245,20 +1507,38 @@ def run_loop(args: argparse.Namespace) -> int:
                     repo, args.model, improve_prompt, timeout_seconds=timeout_seconds
                 )
 
-            case_results, pass_rate = evaluate_iteration(
+            post_improver_gate = run_post_improver_curated_gate(
                 repo,
+                harness_abs,
                 args.model,
-                selected_cases,
+                suite,
                 scoring,
+                original_text=original_harness_text,
+                improve_result=improve_result,
+                skip_improve=args.skip_improve,
                 timeout_seconds=timeout_seconds,
-                case_parallelism=args.case_parallelism,
             )
+            if post_improver_gate["ran"] and not post_improver_gate["passed"]:
+                case_results = []
+                pass_rate = 0.0
+            else:
+                case_results, pass_rate = evaluate_iteration(
+                    repo,
+                    args.model,
+                    selected_cases,
+                    scoring,
+                    timeout_seconds=timeout_seconds,
+                    case_parallelism=args.case_parallelism,
+                )
             improve_failed = improve_result["returncode"] != 0
-            external_blocker = first_external_blocker(improve_result, case_results)
+            external_blocker = post_improver_gate.get("external_blocker")
+            if external_blocker is None:
+                external_blocker = first_external_blocker(improve_result, case_results)
             gate_passed = (
                 pass_rate >= threshold
                 and not improve_failed
                 and external_blocker is None
+                and (not post_improver_gate["ran"] or post_improver_gate["passed"])
             )
 
             blocked_paths = docs_scope_violations(repo, harness_rel)
@@ -1294,6 +1574,7 @@ def run_loop(args: argparse.Namespace) -> int:
                     and previous_gate
                     and state.get("last_passing_commit")
                     and not args.no_commit
+                    and not post_improver_gate["reverted"]
                 ):
                     reverted_sha = auto_revert_harness(
                         repo, harness_rel, str(state["last_passing_commit"])
@@ -1303,9 +1584,12 @@ def run_loop(args: argparse.Namespace) -> int:
                         pr_url = ensure_pr(repo, args.branch, pass_rate)
 
             reliable = consecutive >= int(args.stability_window)
-            failed_case_ids = [
-                str(item.get("id")) for item in case_results if not item.get("passed")
-            ]
+            failed_case_ids = curated_gate_failed_case_ids(case_results)
+            if post_improver_gate["ran"] and not post_improver_gate["passed"]:
+                failed_case_ids = [
+                    "post-improver-curated-gate",
+                    *post_improver_gate["failed_case_ids"],
+                ]
             if improve_failed:
                 failed_case_ids = ["improve-step", *failed_case_ids]
             if external_blocker and "external-blocker" not in failed_case_ids:
@@ -1337,6 +1621,17 @@ def run_loop(args: argparse.Namespace) -> int:
                 "external_blocker": external_blocker,
                 "improve_returncode": improve_result["returncode"],
                 "improve_timed_out": bool(improve_result.get("timed_out")),
+                "post_improver_curated_gate_ran": post_improver_gate["ran"],
+                "post_improver_curated_gate_passed": post_improver_gate["passed"],
+                "post_improver_curated_pass_rate": post_improver_gate["pass_rate"],
+                "post_improver_failed_case_ids": post_improver_gate["failed_case_ids"],
+                "post_improver_external_blocker": post_improver_gate["external_blocker"],
+                "post_improver_reverted": post_improver_gate["reverted"],
+                "post_improver_reverted_rule_ids": post_improver_gate["reverted_rule_ids"],
+                "post_improver_reverted_paths": post_improver_gate["reverted_paths"],
+                "post_improver_fallback_full_file_revert_used": post_improver_gate[
+                    "fallback_full_file_revert_used"
+                ],
                 "eval_total": len(case_results),
                 "eval_passed": sum(1 for item in case_results if item.get("passed")),
                 "commit_sha": commit_sha,
@@ -1364,6 +1659,17 @@ def run_loop(args: argparse.Namespace) -> int:
                 "external_blocker": external_blocker,
                 "improve_returncode": improve_result["returncode"],
                 "improve_timed_out": bool(improve_result.get("timed_out")),
+                "post_improver_curated_gate_ran": post_improver_gate["ran"],
+                "post_improver_curated_gate_passed": post_improver_gate["passed"],
+                "post_improver_curated_pass_rate": post_improver_gate["pass_rate"],
+                "post_improver_failed_case_ids": post_improver_gate["failed_case_ids"],
+                "post_improver_external_blocker": post_improver_gate["external_blocker"],
+                "post_improver_reverted": post_improver_gate["reverted"],
+                "post_improver_reverted_rule_ids": post_improver_gate["reverted_rule_ids"],
+                "post_improver_reverted_paths": post_improver_gate["reverted_paths"],
+                "post_improver_fallback_full_file_revert_used": post_improver_gate[
+                    "fallback_full_file_revert_used"
+                ],
                 "run_id": run_id,
                 "pr_url": pr_url,
                 "stop_reason": cycle_stop_reason,
@@ -1373,6 +1679,7 @@ def run_loop(args: argparse.Namespace) -> int:
             external_note = ""
             if external_blocker:
                 external_note = f" external_blocker={external_blocker['kind']}"
+            print(format_post_improver_gate_result(post_improver_gate))
             print(
                 f"cycle={cycle_count} pass_rate={pass_rate:.3f} gate_passed={str(gate_passed).lower()} "
                 f"consecutive={consecutive} reliable={str(reliable).lower()} "
@@ -1431,6 +1738,8 @@ def run_loop(args: argparse.Namespace) -> int:
             - failed_case_ids: `{", ".join(failed_case_ids) if failed_case_ids else "none"}`
             - blocked_paths: `{", ".join((state.get("last_result") or {}).get("blocked_paths", [])) or "none"}`
             - external_blocker: `{format_external_blocker(external_blocker)}`
+            - post_improver_curated_gate_passed: `{(state.get("last_result") or {}).get("post_improver_curated_gate_passed")}`
+            - post_improver_reverted_rule_ids: `{", ".join((state.get("last_result") or {}).get("post_improver_reverted_rule_ids", [])) or "none"}`
             """
         ).strip()
         diag_ref = publish_diagnostics(repo, args.branch, summary)

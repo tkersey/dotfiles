@@ -94,11 +94,12 @@ uv run --with pyyaml codex/skills/saddle-up/scripts/saddle_up.py replay-refresh 
 2. Bootstrap `.saddle-up/` files if missing, using model-aware defaults when the target is Gemini 2.5 Pro.
 3. Start explicit-trigger continuous improve+eval cycles.
 4. Use Gemini-oriented curated probes for exact-output blocks, local-evidence-first behavior, `not run` honesty, retry-path wording, workdir discipline, anti-drift, and external hard stops.
-5. Filter replay prompts toward harness-like OpenCode history instead of short/noisy chat fragments.
-6. Enforce pass gate (`>=80%` by default) and docs-scope write policy.
-7. Auto-commit passing changes to `saddle-up/eval` and open/update PR.
-8. Auto-revert harness on regression below gate using the last passing commit, but do not revert for external provider/quota/auth/network blockers.
-9. Stop automatically when reliability reaches 3 consecutive passing cycles, an external blocker is detected, or a manual stop/cycle cap is reached.
+5. On Gemini 2.5 Pro runs, fail closed on improver-written `AGENTS.md` churn: rerun all curated cases immediately after the improver, keep the diff only if that curated gate stays green, and otherwise revert the protected retry/workdir/external-blocker/`not run` rule drift before mixed eval can count it.
+6. Filter replay prompts toward harness-like OpenCode history instead of short/noisy chat fragments.
+7. Enforce pass gate (`>=80%` by default) and docs-scope write policy.
+8. Auto-commit passing changes to `saddle-up/eval` and open/update PR.
+9. Auto-revert harness on regression below gate using the last passing commit, but do not revert for external provider/quota/auth/network blockers.
+10. Stop automatically when reliability reaches 3 consecutive passing cycles, an external blocker is detected, or a manual stop/cycle cap is reached.
 
 ## Defaults and Gates
 - `threshold`: `0.80`
@@ -128,6 +129,7 @@ Schema details:
 - Keep mutation scope to harness/docs plus `.saddle-up/*` state files.
 - Fail fast when the repo already contains non-doc changes before the loop starts.
 - Fail run-level success when non-doc file edits appear.
+- For Gemini 2.5 Pro, improver-generated `AGENTS.md` edits must clear a dedicated curated gate before mixed eval can count them.
 - Do not auto-merge PRs.
 - Require explicit model selection per invocation.
 - Stop and surface external quota/auth/provider/network blockers instead of treating them as harness regressions.
@@ -137,6 +139,7 @@ Schema details:
 - If `yaml` import fails, run with `uv run --with pyyaml ...`.
 - If a run appears stuck inside `opencode run`, first verify whether the model-aware default is simply too low for the current model; for Gemini 2.5 Pro the default is `600` seconds, and you can still override it explicitly with `--opencode-timeout-seconds`.
 - If the improver child is the part that hangs and you already trust the current harness edits, rerun with `--skip-improve` to evaluate the current harness without another rewrite attempt.
+- If Gemini improver edits keep being reverted by the post-improver curated gate, treat that as improver churn, not as proof that `AGENTS.md` needs more literal rewrites; inspect the reverted rule IDs in `status`/`runs.jsonl` first.
 - If replay is the slow or noisy part, rerun with `--case-source curated` to prove the curated harness independently before spending more cycles on replay prompts.
 - If curated probes are still too slow one-by-one, raise `--case-parallelism` so the exact-output checks can run concurrently on the same model.
 - If `openrouter/google/gemini-2.5-pro` hits credit or `max_tokens` failures, switch to direct `google/gemini-2.5-pro` before spending more harness cycles.
