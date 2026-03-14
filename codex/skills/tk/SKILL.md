@@ -15,7 +15,7 @@ TK is a task-to-incision protocol for writing the *fundamental expression* of a 
 - The patch is as small as correctness allows, and obviously correct.
 - Cleverness is allowed only when it reduces risk and branching.
 - Creativity is deliberate: once seams are named, use reframing + techniques to explore cuts before choosing the incision.
-- The visible output should mimic code-shape judgment, not prose voice.
+- The visible output should show the winning reframe, then mimic code-shape judgment instead of prose theater.
 
 TK optimizes for:
 - Correctness: illegal states are unrepresentable (or rejected at the boundary).
@@ -27,7 +27,7 @@ TK optimizes for:
 TK is the converge-heavy half of Double Diamond:
 - Discover: establish the proof signal and read for the cut.
 - Define: write Contract + Invariants (hard gate).
-- Develop: widen the cut-space via Creative Frame + (internal) tiered options.
+- Develop: widen the cut-space via visible Creative Frame + tiered options.
 - Deliver: cut the incision and run Proof.
 
 If the work is still in Discover/Define uncertainty (needs options/tradeoffs, stakeholder alignment, or competing constraints), invoke `creative-problem-solver` first, then return to TK with a chosen tier and success criteria.
@@ -42,17 +42,18 @@ If you must summarize, place it inside **Incision** as the change summary.
 
 Output-contract precedence (required):
 - If a higher-priority instruction requires strict artifact output (for example one fenced `diff` block, one `NO_DIFF:` line, or strict JSON), follow that outer contract.
-- In strict-output contexts, run TK internally (Contract, Invariants, Creative Frame, Why This Solution) and emit only the required external artifact.
+- In strict-output contexts, run TK internally and emit only the required external artifact.
 - Do not treat invocation text alone (`$tk` inside prompts/wrappers) as proof that TK output format was executed.
 - When output-shape and code-shape preferences conflict, preserve the outer artifact contract and keep TK's seam/shape discipline internal.
 - Decision order for conflicts: outer artifact contract -> explicit task envelope/write scope -> stable boundary/invariants -> repo dialect. See `references/style-precedence-matrix.md`.
-- Creative Frame remains required internally after Contract + Invariants, but it is no longer a mandatory visible heading unless the user explicitly asks for options, tradeoffs, or cut-space reasoning.
+- In advice and implementation mode, surface a compact **Creative Frame** after **Invariants**; suppress it only when a higher-priority artifact contract forbids prose.
+- Keep the visible **Creative Frame** to the winning move: truth gap, reframe + technique, representation shift, accretive bet.
 
 Advice mode (no code change requested):
-- Output exactly: Contract, Invariants, Cut Rationale, Proof Plan.
+- Output exactly: Contract, Invariants, Creative Frame, Cut Rationale, Proof Plan.
 
 Implementation mode (code change requested):
-- Output: Contract, Invariants, Cut Rationale, Incision, Proof.
+- Output: Contract, Invariants, Creative Frame, Cut Rationale, Incision, Proof.
 - Incision is the code change you made: minimal diff, meaningful changes, no churn.
   - Report it as an excellent change summary (not a diff):
     - Lead with the meaningful changes (behavior/invariants/API/tests), not a file inventory.
@@ -66,8 +67,8 @@ Implementation mode (code change requested):
 - If blocked on requirements: output Contract, Invariants, Cut Rationale, Question (no Incision/Proof yet).
 
 Template compliance (order is mandatory):
-- Advice mode: Contract → Invariants → Cut Rationale → Proof Plan.
-- Contract → Invariants → Cut Rationale → Incision → Proof (default mode).
+- Advice mode: Contract → Invariants → Creative Frame → Cut Rationale → Proof Plan.
+- Contract → Invariants → Creative Frame → Cut Rationale → Incision → Proof (default mode).
 - Strict-output override: follow the required external artifact format and keep TK sections internal.
 - If blocked: Contract → Invariants → Cut Rationale → Question.
 
@@ -77,6 +78,14 @@ Template compliance (order is mandatory):
 **Invariants**
 - What must remain true; what becomes impossible.
 
+**Creative Frame**
+- Surface the winning reframe directly:
+  - Truth gap: <where the public claim, enforcement boundary, proof harness, or checked artifacts disagree>
+  - Reframe + technique: <picker name + why this reframe was chosen>
+  - Representation shift: <the model, boundary, or artifact change that makes the cut feel forced, or `N/A after second pass`>
+  - Accretive bet: <the highest provable tier and why it earns the blast radius>
+- Show the winning move, not the full ideation transcript.
+
 **Cut Rationale**
 - Surface the seam choice directly:
   - Stable boundary: <where the rule belongs and why>
@@ -85,7 +94,7 @@ Template compliance (order is mandatory):
   - Proof signal / Proof plan: <the fastest credible executed check, or the exact next check if execution is impossible>
   - (Optional) Reversibility: <escape hatch / rollback lever>
   - (Optional) Residual risk: <what you still don’t know>
-- Run Creative Frame internally before this section is written; emit the visible cut rationale, not the internal ideation transcript.
+- Use Creative Frame to expose the winning reframe, then use Cut Rationale to defend the seam choice.
 
 Everything else (full portfolio, scorecards, scope fence, refactors) happens internally unless the user asks for options/tradeoffs (or you're blocked and must surface the portfolio).
 
@@ -141,12 +150,14 @@ TK is not a style; it’s a reduction process:
 2. **Read for the cut**: locate where the meaning lives; name the seams.
 3. **State the contract**: make “working” testable in principle.
 4. **Name invariants**: tighten validity until the code has fewer degrees of freedom.
-5. **Run the universalist signal check**: if the problem is structurally shaped (variants, repeated validation, shared-key agreement, behavior-as-branching, syntax/execution split, or lawful combine), consult `$universalist` internally and pick the smallest fitting construction; otherwise stay on the ordinary TK path.
-6. **Run the lean scan**: ask whether deletion, consolidation, stdlib/repo-local reuse, or a normal form can satisfy the invariant before you introduce a new helper/layer.
-7. **Reframe + run a technique (selected via creative-problem-solver, internal)**: generate a 5-tier portfolio (proof signals + escape hatches).
-8. **Select the most ambitious safe tier**: bias toward Transformative/Moonshot, stay pragmatic.
-9. **Cut the incision**: minimal diff at the stable boundary.
-10. **Close the loop**: run the proof signal.
+5. **Audit the truth surfaces**: compare the public claim, runtime enforcement, proof harness, and checked artifacts; if they disagree, fix the lie before polishing ergonomics.
+6. **Run the universalist signal check**: if the problem is structurally shaped (variants, repeated validation, shared-key agreement, behavior-as-branching, syntax/execution split, or lawful combine), consult `$universalist` internally and pick the smallest fitting construction; otherwise stay on the ordinary TK path.
+7. **Run the lean scan**: ask whether deletion, consolidation, stdlib/repo-local reuse, or a normal form can satisfy the invariant before you introduce a new helper/layer.
+8. **Reframe + run a technique**: generate a 5-tier portfolio, but surface only the winning Creative Frame unless the user asked for more.
+9. **Prove abstraction before extraction**: if a shared helper or kit looks attractive, land one strict instance first, port a second instance through the same seam, then extract.
+10. **Select the most ambitious safe tier**: bias toward Transformative/Moonshot when it remains reviewable, incremental, and provable.
+11. **Cut the incision**: minimal diff at the stable boundary.
+12. **Close the loop**: run the proof signal.
 
 Double Diamond mapping:
 - Discover: 1-2
@@ -170,7 +181,12 @@ Double Diamond mapping:
   4. diagnostic logs as a last resort
 - If the invariant is only in a comment, it isn’t real yet.
 
-### 3) Structure over branching
+### 3) Truth before cleverness
+- Audit the public claim, runtime enforcement, proof harness, and checked artifacts separately; any mismatch is a correctness bug, not a documentation nit.
+- Prefer the move that makes the repo more truthful: a private exact type, a generated checked artifact, or a narrower bounded claim beats optimistic prose.
+- If core behavior is proven but coverage/docs still trail, state the strongest bounded claim and name the remaining drift explicitly.
+
+### 4) Structure over branching
 - Don’t add a branch when a type can encode the distinction.
 - Don’t scatter validation when one boundary parse can refine the value.
 - Don’t add flags/conditionals when a normal form collapses cases.
@@ -181,13 +197,13 @@ A good sign you’re near the inevitable solution:
 - the “impossible” branches disappear,
 - and the remaining code reads like a direct statement of the rule.
 
-### 4) Composition beats control-flow sprawl
+### 5) Composition beats control-flow sprawl
 Use the math, not the sermon:
 - Make transformations small and composable.
 - Push effects (IO, async, globals) to the boundary.
 - Treat refactors as behavior-preserving structure changes; prove with existing tests.
 
-### 5) Minimal incision
+### 6) Minimal incision
 - Prefer the smallest change that could be correct.
 - Delete before you add: first try removing duplicated guards, wrappers, or comments that exist only to explain incidental complexity.
 - Prefer the existing primitive: built-ins and canonical repo helpers beat bespoke wrappers until the invariant proves otherwise.
@@ -205,12 +221,16 @@ These rules keep “inevitability” from becoming scope creep.
 - **Semantic tags for domains**: distinguish IDs, units, and environments with dedicated types/wrappers; never mix same-primitive values.
 - **Raw vs validated separation**: keep untrusted inputs and validated data as different types; parse/normalize at boundaries; never mix.
 - **Resource lifetime**: use scoped/RAII/with-style APIs to guarantee cleanup on all paths.
+- **Truth surface audit**: compare claim, enforcement, proof, and checked artifacts before optimizing or abstracting; if they disagree, treat that mismatch as the real bug.
 - **Evidence before abstraction**: require 3+ concrete instances; capture variance points (mini evidence table); prefer duplication to a wrong abstraction.
+- **Staged abstraction**: when a shared helper looks right, land one strict instance, port a second instance through the same seam, then extract the shared kit.
 - **Seam test for abstractions**: callers stay ignorant of variants; one-sentence behavioral name; new instance fits without flags—otherwise shrink it.
+- **One truthful artifact**: if prose duplicates checked artifacts, prefer generating or deleting the prose instead of maintaining both.
 - **Seams before rewrites**: if the right fix requires cutting a hard-to-test knot, add a seam and move the change to the seam.
 - **Legibility (TRACE)**: guard clauses over nesting; flatten → rename → extract; delete incidental complexity.
 - **One path per rule**: prefer one boundary-owned normal form over parallel helpers that differ only in local cleanup steps.
 - **Footgun defusal (API changes)**: identify likely misuses; make misuse hard via names/types/ordering; lock with a regression check.
+- **Performance truth**: before micro-tuning local statements, look for a model or layer you can delete from the hot path.
 - **Break-glass scenario (abstraction escape hatch)**: name the next likely change that would make it harmful; if it happens, inline into callers, delete dead branches, then re-extract the core.
 - **Seam over slogan**: if a polished explanation points one way but the stable boundary points another, follow the boundary and let the prose explain it afterward.
 
@@ -238,7 +258,7 @@ Moonshot is permitted when it is:
 If moonshot is inevitable, proceed autonomously *only* via incremental cuts.
 
 ## Internal 5-tier portfolio (required, not displayed)
-Always generate these five options before choosing an incision. Keep them internal unless asked for options/tradeoffs.
+Always generate these five options before choosing an incision. Keep the full portfolio internal unless asked for options/tradeoffs.
 
 If entering from `creative-problem-solver`, treat its five-tier portfolio as this internal portfolio; regenerate only if new facts/constraints appear.
 
@@ -248,13 +268,15 @@ Selection bias:
 - Compare candidates primarily on seam choice, abstraction level, blast radius, and proof posture.
 - Prefer the candidate that deletes future branches/checks, even if it crosses one more module today.
 
-Creative frame (required):
+Creative frame (required and visible in non-strict mode):
+- Truth gap: the mismatch or overclaim that makes the current model misleading.
 - Reframe used: Inversion / Analogy transfer / Constraint extremes / First principles.
 - Technique used: pick 1 technique using the `$creative-problem-solver` skill’s **Technique selection** section; consult the matching technique reference in that skill.
   - Use the picker name verbatim whenever Creative Frame is surfaced; do not invent or rename technique labels.
   - If the technique is Lotus Blossom, apply the TK-specific petals from this skill’s **Creative Techniques** reference.
 - Representation shift: one sentence describing the model/representation change (or “N/A: no shift needed”) that makes the choice feel forced.
   - If no Aha (no meaningful representation shift), pick 1 different technique from a different picker row (max 2) and regenerate.
+- Accretive bet: the highest provable tier and why it earns the blast radius.
 
 Technique picker + index: use the `$creative-problem-solver` skill’s **Technique selection** and **Full technique index (grouped)** sections.
 Lotus Blossom (TK adaptation) + tier mapping: this skill’s **Creative Techniques** reference.
@@ -310,7 +332,7 @@ TK is calm execution under constraints.
 - **Boundary (stable boundary)**: the interface where validity/effects enter; prefer enforcing the rule once here.
 - **Seam**: an enabling point to substitute/redirect behavior safely.
 - **Cut rationale**: the visible seam-choice argument that survives after internal ideation is compressed away.
-- **Creative Frame**: the reframe + technique + representation shift used to widen the cut-space after seams are named.
+- **Creative Frame**: the truth gap, reframe + technique, representation shift, and accretive bet that made the winning cut feel forced.
 - **Lotus blossom**: breadth-first ideation: center the boundary/contract, expand 8 TK-native petals, then turn petals into candidate incisions.
 - **Proof signal**: the concrete check that makes the change trustworthy (test/typecheck/log/law/diagram).
 - **Normal form**: a canonical representation used to simplify rules and comparisons.
@@ -325,6 +347,12 @@ Advice mode (no code changes): output exactly:
 
 **Invariants**
 - <bullet list>
+
+**Creative Frame**
+- Truth gap: <where claim, enforcement, proof, or checked artifacts disagree>
+- Reframe + technique: <picker name + why this reframe>
+- Representation shift: <the model, boundary, or artifact change that makes the cut feel forced, or `N/A after second pass`>
+- Accretive bet: <the highest provable tier and why it earns the blast radius>
 
 **Cut Rationale**
 - Stable boundary: <where the rule belongs and why>
@@ -344,6 +372,12 @@ Implementation mode (code changes): output exactly:
 
 **Invariants**
 - <bullet list>
+
+**Creative Frame**
+- Truth gap: <where claim, enforcement, proof, or checked artifacts disagree>
+- Reframe + technique: <picker name + why this reframe>
+- Representation shift: <the model, boundary, or artifact change that makes the cut feel forced, or `N/A after second pass`>
+- Accretive bet: <the highest provable tier and why it earns the blast radius>
 
 **Cut Rationale**
 - Stable boundary: <where the rule belongs and why>

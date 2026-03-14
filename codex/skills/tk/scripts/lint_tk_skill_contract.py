@@ -21,20 +21,26 @@ REQUIRED_SKILL_PHRASES = [
     "Selection bias:",
     "Replay suite + shadow-mode notes live under `references/eval/`.",
     "Use the picker name verbatim whenever Creative Frame is surfaced; do not invent or rename technique labels.",
-    "Creative Frame remains required internally after Contract + Invariants, but it is no longer a mandatory visible heading unless the user explicitly asks for options, tradeoffs, or cut-space reasoning.",
-    "Output exactly: Contract, Invariants, Cut Rationale, Proof Plan.",
-    "Output: Contract, Invariants, Cut Rationale, Incision, Proof.",
+    "In advice and implementation mode, surface a compact **Creative Frame** after **Invariants**; suppress it only when a higher-priority artifact contract forbids prose.",
+    "Keep the visible **Creative Frame** to the winning move: truth gap, reframe + technique, representation shift, accretive bet.",
+    "Output exactly: Contract, Invariants, Creative Frame, Cut Rationale, Proof Plan.",
+    "Output: Contract, Invariants, Creative Frame, Cut Rationale, Incision, Proof.",
+    "Audit the public claim, runtime enforcement, proof harness, and checked artifacts separately; any mismatch is a correctness bug, not a documentation nit.",
+    "Staged abstraction",
 ]
 
 REQUIRED_EXEMPLAR_PHRASES = [
     "Keep these synthetic; real session transcripts belong in `references/eval/`, not here.",
     "Strict-output worker mode",
     "**Cut Rationale**",
+    "**Creative Frame**",
+    "generated artifact",
 ]
 
 REQUIRED_TECHNIQUE_PHRASES = [
     "Use the picker name verbatim whenever TK surfaces Creative Frame so evals can detect off-picker drift.",
     "Compare candidates first on seam choice, abstraction level, blast radius, and proof posture.",
+    "Prefer candidates that make the repo's claims more truthful before candidates that only rearrange local syntax.",
     "Only use wording/readability as a tie-breaker after the code-shape decision is settled.",
 ]
 
@@ -130,6 +136,9 @@ def main() -> int:
         [
             "replay-origin-boundary-cut",
             "replay-total-depravity-doctrine",
+            "replay-truth-gap-before-ergonomics",
+            "replay-stage-abstraction-after-second-port",
+            "replay-generated-artifact-over-duplicate-prose",
             "replay-worker-patch-first",
             "replay-worker-no-diff",
             "replay-incision-summary-no-raw-diff",
@@ -140,6 +149,7 @@ def main() -> int:
     require_regex(
         skill_text, r"Output-contract precedence \(required\):", "SKILL.md", errors
     )
+    require_regex(skill_text, r"\*\*Creative Frame\*\*", "SKILL.md", errors)
     require_regex(skill_text, r"\*\*Cut Rationale\*\*", "SKILL.md", errors)
     require_regex(skill_text, r"\*\*Proof Plan\*\*", "SKILL.md", errors)
     require_regex(skill_text, r"\*\*Incision\*\*", "SKILL.md", errors)

@@ -19,10 +19,9 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
+          - "**Creative Frame**"
           - "**Cut Rationale**"
           - "**Proof Plan**"
-      - type: not_contains
-        value: "**Creative Frame**"
       - type: not_contains
         value: "**Why This Solution**"
       - type: regex
@@ -48,10 +47,9 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
+          - "**Creative Frame**"
           - "**Cut Rationale**"
           - "**Proof Plan**"
-      - type: not_contains
-        value: "**Creative Frame**"
       - type: not_contains
         value: "**Why This Solution**"
       - type: regex
@@ -77,10 +75,9 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
+          - "**Creative Frame**"
           - "**Cut Rationale**"
           - "**Proof Plan**"
-      - type: not_contains
-        value: "**Creative Frame**"
       - type: not_contains
         value: "**Why This Solution**"
       - type: regex
@@ -106,10 +103,9 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
+          - "**Creative Frame**"
           - "**Cut Rationale**"
           - "**Proof Plan**"
-      - type: not_contains
-        value: "**Creative Frame**"
       - type: not_contains
         value: "**Why This Solution**"
       - type: regex
@@ -135,10 +131,9 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
+          - "**Creative Frame**"
           - "**Cut Rationale**"
           - "**Proof Plan**"
-      - type: not_contains
-        value: "**Creative Frame**"
       - type: not_contains
         value: "**Why This Solution**"
       - type: regex
@@ -149,6 +144,79 @@ cases:
         value: repo|shared|helper|dialect
       - type: regex
         value: raw stdlib|inline|second policy path|second rule owner
+  - id: replay-truth-gap-before-ergonomics
+    source: replay
+    source_session: ~/.codex/sessions/2026/03/14/rollout-synthetic-truth-gap-before-ergonomics.jsonl
+    mode: advice
+    prompt: |
+      Run `$tk` in advice mode.
+
+      A library README says every `TokenContext` is validated, but two constructors still accept raw strings and the misuse tests only cover the documented example path.
+
+      Recommend the incision shape that makes the repo truthful before polishing ergonomics.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Cut Rationale**"
+          - "**Proof Plan**"
+      - type: regex
+        value: Truth gap
+      - type: regex
+        value: claim|runtime|proof|artifact|README
+      - type: regex
+        value: constructor|boundary|parser|checked
+  - id: replay-stage-abstraction-after-second-port
+    source: replay
+    source_session: ~/.codex/sessions/2026/03/14/rollout-synthetic-stage-abstraction-after-second-port.jsonl
+    mode: advice
+    prompt: |
+      Run `$tk` in advice mode.
+
+      One checked effect-family adapter is already green. A second sibling family is half-built, and an engineer wants to extract a shared helper immediately because the two files look similar.
+
+      Recommend the incision shape that keeps the abstraction honest.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Cut Rationale**"
+          - "**Proof Plan**"
+      - type: regex
+        value: Truth gap|Accretive bet
+      - type: regex
+        value: first|second|port
+      - type: regex
+        value: extract|shared helper|shared kit|abstraction
+  - id: replay-generated-artifact-over-duplicate-prose
+    source: replay
+    source_session: ~/.codex/sessions/2026/03/14/rollout-synthetic-generated-artifact-over-duplicate-prose.jsonl
+    mode: report_only
+    prompt: |
+      Run `$tk` in implementation-mode reporting only.
+
+      Assume you already replaced a hand-maintained `FORMAL.md` file with a generated artifact emitted from the checked behavior registry. You cannot paste a raw diff, but you should explain the incision shape and give exact proof commands.
+
+      Return the normal TK chat format.
+    checks:
+      - type: ordered_sections
+        value:
+          - "**Contract**"
+          - "**Invariants**"
+          - "**Creative Frame**"
+          - "**Cut Rationale**"
+          - "**Incision**"
+          - "**Proof**"
+      - type: regex
+        value: generated|checked artifact|registry
+      - type: regex
+        value: drift|duplicate prose|FORMAL
+      - type: not_contains
+        value: "diff --git"
   - id: replay-worker-patch-first
     source: replay
     source_session: ~/.codex/sessions/2026/02/03/rollout-2026-02-03T07-37-59-019c2427-44c9-7cf3-83ec-dd869e570461.jsonl
@@ -172,6 +240,8 @@ cases:
         value: 1
       - type: not_contains
         value: "**Contract**"
+      - type: not_contains
+        value: "**Creative Frame**"
       - type: regex
         value: normalize|slugify
       - type: regex
@@ -193,6 +263,8 @@ cases:
       - type: max_nonempty_lines
         value: 1
       - type: not_contains
+        value: "**Creative Frame**"
+      - type: not_contains
         value: "```"
   - id: replay-incision-summary-no-raw-diff
     source: replay
@@ -211,11 +283,10 @@ cases:
         value:
           - "**Contract**"
           - "**Invariants**"
+          - "**Creative Frame**"
           - "**Cut Rationale**"
           - "**Incision**"
           - "**Proof**"
-      - type: not_contains
-        value: "**Creative Frame**"
       - type: not_contains
         value: "**Why This Solution**"
       - type: regex

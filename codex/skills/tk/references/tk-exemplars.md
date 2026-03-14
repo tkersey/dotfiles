@@ -19,6 +19,7 @@
 Copy the shape, then translate into repo dialect (errors, tests, paths, and naming).
 Exemplars below show the expected Incision summary format (no diffs).
 Keep these synthetic; real session transcripts belong in `references/eval/`, not here.
+Unless strict-output mode applies, insert **Creative Frame** between **Invariants** and **Cut Rationale** in the live contract.
 
 ### Exemplar 1 (Brownfield): Parse at the boundary, stop scattered validation (TypeScript)
 
@@ -198,6 +199,103 @@ Lean note:
 
 **Proof**
 - Ran: `pnpm test src/legacy/normalizePhone.migration.test.ts` -> PASS
+````
+
+### Exemplar 5A (Brownfield): Align the truth surface before polishing ergonomics (Go)
+
+````text
+**Contract**
+- `TokenContext` can only be constructed through the checked parser, and the README stops claiming stronger safety than the runtime actually enforces.
+
+**Invariants**
+- Raw token strings never reach the core helpers directly.
+- The public claim, runtime enforcement, and proof harness all describe the same safety boundary.
+- Ergonomic helpers do not outrun what the checked surface can actually guarantee.
+
+**Creative Frame**
+- Truth gap: the README says token access is fully checked, but two constructors still accept raw strings and the misuse tests do not cover them.
+- Reframe + technique: First principles, because the real problem is claim/enforcement/proof drift rather than constructor spelling.
+- Representation shift: move from “documented safe strings” to one private exact parser boundary that owns construction.
+- Accretive bet: Advantage Play, because tightening the boundary plus fixing the claim is more truthful than adding another helper wrapper.
+
+**Cut Rationale**
+- Stable boundary: `ParseTokenContext(raw)` is the shared construction point for the checked value.
+- Not smaller: Updating the README alone keeps the runtime lie alive.
+- Not larger: A repo-wide token API redesign is unnecessary once construction is owned by one checked boundary.
+- Proof signal: Constructor tests + one misuse compile-fail + README docs sanity.
+
+**Incision**
+- Replace raw-string constructors with one checked parser boundary that returns the validated context value.
+- Tighten the public wording so the docs claim exactly what the runtime and tests enforce.
+- Add one regression check that fails if a raw token bypass reaches the core again.
+
+**Proof**
+- Ran: `go test ./internal/tokenctx ./internal/api/...` -> PASS
+````
+
+### Exemplar 5B (Greenfield-to-brownfield seam): Prove one strict instance, then extract the shared kit (Rust)
+
+````text
+**Contract**
+- Add the second effect-family adapter without freezing a shared abstraction until two proven instances agree on the same seam.
+
+**Invariants**
+- The first family stays green while the second family ports through the same checked boundary.
+- Shared helpers are extracted only after the second port proves the common shape is real.
+- Bench and misuse checks stay attached long enough to catch abstraction cost or safety drift.
+
+**Creative Frame**
+- Truth gap: the proposed shared helper looks elegant, but only one family is actually proven, so the abstraction is still hypothetical.
+- Reframe + technique: Constraint extremes, because forcing “extract now” versus “extract after second port” exposes which move carries proof.
+- Representation shift: treat the abstraction as a delayed byproduct of two passing families instead of the starting point.
+- Accretive bet: Strategic Play, because porting the second family first narrows risk while still moving toward the shared kit.
+
+**Cut Rationale**
+- Stable boundary: the family-local checked adapter is the seam both implementations already share.
+- Not smaller: Copy-pasting a third local tweak into the first family does not test whether the abstraction is real.
+- Not larger: A generic effect framework before the second port is premature and hard to unwind.
+- Proof signal: first-family tests stay green, second-family tests pass through the same seam, and the micro benchmark does not regress after extraction.
+
+**Incision**
+- Keep the first family as the reference implementation and port the second family through the same checked adapter surface.
+- Extract the shared helper only after both families pass on the shared seam.
+- Leave the benchmark and misuse checks in place through the extraction wave so the abstraction earns itself.
+
+**Proof**
+- Ran: `cargo test family_one family_two` -> PASS
+- Ran: `cargo bench family_matrix -- --save-baseline before_extract` -> PASS
+````
+
+### Exemplar 5C (Report-only): Replace duplicate prose with a checked artifact (TypeScript)
+
+````text
+**Contract**
+- The formal behavior summary is generated from the checked registry instead of hand-maintained beside it.
+
+**Invariants**
+- One checked source owns the law surface.
+- The generated artifact is validated in CI.
+- Narrative docs stop restating rules that already live in the checked registry.
+
+**Creative Frame**
+- Truth gap: the hand-maintained `FORMAL.md` and the checked registry keep diverging even when the tests stay green.
+- Reframe + technique: Inversion, because the right question is “how do we stop editing this doc?” rather than “how do we keep it in sync?”
+- Representation shift: move from duplicated prose to a generated artifact owned by the checked registry.
+- Accretive bet: Advantage Play, because a generator removes drift without forcing a repo-wide docs rewrite.
+
+**Cut Rationale**
+- Stable boundary: the checked registry already owns the formal behavior entries.
+- Not smaller: More review discipline on the markdown file leaves two rule owners alive.
+- Not larger: A full docs-site rebuild is unnecessary once the law surface is generated.
+- Proof signal: generator run + checked-artifact diff gate + existing registry tests.
+
+**Incision**
+- Add a renderer that emits `FORMAL.md` from the checked registry.
+- Replace hand-edited law prose with the generated artifact and a provenance footer.
+- Keep narrative documentation focused on orientation instead of duplicating the checked law surface.
+
+**Proof**
+- Ran: `pnpm formal-core:write && pnpm formal-core:check` -> PASS
 ````
 
 ### Exemplar 6 (Strict-output worker mode): patch-only external contract (Python)

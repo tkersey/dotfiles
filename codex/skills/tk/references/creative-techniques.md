@@ -9,12 +9,14 @@
 
 ## Lotus Blossom (TK adaptation)
 - Center: stable boundary + contract (one line).
-- Petals: list 8 TK-native levers/subproblems:
+- Petals: list the TK-native levers/subproblems that make the cut more truthful:
   - Stable boundary / seam (push effects + enforcement to the boundary).
   - Seam comparison (compare candidate cuts by where the rule truly lives).
   - Invariant strengthening (types/parse/tests).
+  - Truth surface alignment (compare public claim, runtime enforcement, proof harness, and checked artifacts).
   - Representation / normal form (collapse cases, delete branches).
   - Abstraction level (inline fix vs helper vs algebraic island vs adapter).
+  - Abstraction timing (one strict instance, second port, then extraction).
   - Proof signal (fast check: test/typecheck/log, law check, or commuting diagram).
   - Reversibility lever (rollback, flag, adapter, fallback).
   - Primary failure mode (crash / corruption / logic).
@@ -24,7 +26,12 @@
 
 Scoring reminder:
 - Compare candidates first on seam choice, abstraction level, blast radius, and proof posture.
+- Prefer candidates that make the repo's claims more truthful before candidates that only rearrange local syntax.
 - Only use wording/readability as a tie-breaker after the code-shape decision is settled.
+
+Visible-frame reminder:
+- In non-strict mode, surface only the winning `Creative Frame`: truth gap, reframe + technique, representation shift, accretive bet.
+- Keep the full portfolio internal unless the user explicitly asks for options or tradeoffs.
 
 ## Tiers + selection
 For each tier, attach:
