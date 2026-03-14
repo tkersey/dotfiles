@@ -66,6 +66,18 @@ Apply these in order:
 - Choose `$mesh`: "Classify each support ticket in this CSV by area and urgency." The inputs are row-shaped and the outputs are structured per row.
 - Borderline rule: if you still need to decide the rule, CSV columns, or output fields, start with `$teams`; switch to `$mesh` only after planning is complete.
 
+## Default Start Sequence
+
+Maximize orchestration by maximizing the size and quality of the safe leaf wave, not by spawning agents early or often.
+
+- Start with `$select` when the work is not already a clear row batch or a clear set of disjoint leaf tasks.
+- Use `$st` before execution when wave ownership or proof state needs to survive turns or handoffs.
+- Use `$teams` for the first heterogeneous ready wave, and launch the full dependency-independent ready set before the first blocking `wait`.
+- Hand off to `$mesh` only when the remaining work is a homogeneous batch of independent substantive rows.
+- Use `seq orchestration-concurrency --fail-on-mesh-truth` when claiming mesh concurrency or substrate truth.
+
+Do not treat `$mesh` as the starter tool; it is the execution endpoint after planning, not the planning step.
+
 ## `$select`
 
 - `$select` is the plan-only selector for invocation lists, `SLICES.md`, and `plan-N.md` sources.
