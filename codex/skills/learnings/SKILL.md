@@ -33,13 +33,15 @@ When iterating on the Zig-backed `learnings`/`append_learning` helper CLI path, 
 - `recent`: interactive browsing. Use when the user wants to look around, skim the latest learnings, or orient before deciding what matters.
 - `query`: filtered or aggregated browsing. Use when the user wants search, ranking, grouping, or summaries by status/tag/path/time.
 - Routing rule: if the user asks to browse, search, summarize, or rank learnings, do not default to `recall`; start with `recent` or `query`, then switch to `recall` only when transitioning into implementation.
+- Context-gathering rule: after the first user request is available and before substantial edits, run `recall` during context gathering rather than on empty SessionStart hooks; if early exploration materially narrows the slice, rerun `recall` with the refined query.
 
 ## Operating Contract (Auto-Capture)
 
 - Allowed to run automatically at the end of an implementation turn (success or paused) and at delivery boundaries (commit/PR/handoff).
 - Best-effort and non-blocking: never require extra context; if evidence is thin, either write nothing or persist `review_later` with placeholders.
 - Noise control: if no Capture Checkpoint occurred or nothing decision-shaping emerged, append 0 records; otherwise prefer 1 record (max 3).
-- Completion proof: after an implementation turn with a checkpoint, either (a) produce an `appended: id=...` success line, or (b) state `0 records appended` with a concrete reason.
+- Completion proof: after an implementation turn with a checkpoint or an intentional no-write, produce one exact proof line: `appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`.
+- Stop-hook compatibility: when append dedupes or you intentionally skip capture, keep the proof line on one line with the exact `duplicate-skip:` or `0 records appended:` prefix so hooks can distinguish a valid no-write from a missed capture.
 - Helper-first write path: use `learnings append`/`run_learnings_tool append` for normal writes; keep `append_learning` available as a compatibility binary, and treat manual `.learnings.jsonl` edits as emergency-only with explicit rationale.
 
 ## Quick Start
@@ -207,7 +209,7 @@ If any answer is no, skip capture (or use `review_later` only when uncertainty i
    - Use `learnings append` (via `run_learnings_tool append`) instead of hand-building JSON.
 7. Report concise highlights in chat.
    - Summarize the 1-3 highest leverage learnings (or say none).
-   - Reference the write result (`.learnings.jsonl` updated, N records appended, or duplicate-skip).
+   - Reference the write result with one exact proof line (`appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`).
 
 ## JSONL Contract
 
@@ -296,7 +298,8 @@ Routing:
 - Browse latest learnings: `run_learnings_tool recent --limit 10`
 - Search or rank learnings: `run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-tags.json"`
 - Search by path concentration: `run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-paths.json"`
-- Implementation preflight: `run_learnings_tool recall --query "<task text>" --limit 5 --drop-superseded`
+- Implementation preflight during context gathering: `run_learnings_tool recall --query "<task text>" --limit 5 --drop-superseded`
+- Refined-scope preflight: rerun `run_learnings_tool recall` after `parse`, `seq`, or early file reads if those steps materially narrow the implementation slice.
 - If browse intent is ambiguous, start with `recent` before escalating to `query` or `recall`.
 
 CLI:

@@ -174,12 +174,14 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
   - For implementation work, default to `recall` and treat returned items as constraints/invariants to carry into worker prompts.
   - For interactive browsing, prefer `recent` instead of reflexive `recall`.
   - For filtered/search/rank/summarize intent, prefer `query` with a saved spec or focused filter.
-- Task-start learnings preflight (required for implementation work): once the first user prompt/request text is available (do not run at empty session start), if `.learnings.jsonl` exists in repo root, run a fast recall before editing.
+- Context-gathering learnings preflight (required for implementation work): once the first user prompt/request text is available (do not run at empty session start), if `.learnings.jsonl` exists in repo root, run a fast recall while gathering context and before substantial edits.
   - Implementation preflight: `learnings recall --query "<user request>" --limit 5 --drop-superseded`
+  - Refinement pass: when early exploration materially sharpens the scope (for example after `parse`, `seq`, initial file reads, or a narrowed plan), run `learnings recall` again with the refined query before editing that slice.
   - Interactive browse: `learnings recent --limit 10`
   - Filtered browse: `learnings query --spec "@codex/skills/learnings/specs/top-tags.json"`
   - If recall returns nothing relevant, proceed normally (do not invent).
-- End-of-turn learnings (required for implementation turns): after a proof signal and before the final response, run `$learnings` to append 0-3 high-signal records to `.learnings.jsonl` (prefer 1; skip when no capture checkpoint occurred). Mention the append result briefly.
+  - Do not rely on SessionStart hooks for learnings loading; keep retrieval request-aware and tied to context gathering.
+- End-of-turn learnings (required for implementation turns): after a proof signal and before the final response, run `$learnings` to append 0-3 high-signal records to `.learnings.jsonl` (prefer 1; skip when no capture checkpoint occurred). Mention the append result with one proof line: `appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`.
 - Codify loop (promotion): when a learning is status `codify_now` (or repeats), promote it into durable docs (for example `codex/AGENTS.md` or a relevant skill doc), then append a follow-up learning referencing the durable anchor.
   - Helper: `learnings codify-candidates --min-count 3 --limit 20 --drop-superseded`
 

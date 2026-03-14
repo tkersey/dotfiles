@@ -1,18 +1,5 @@
 {
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "^(startup|resume)$",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "LEARNINGS_SESSIONSTART_LIMIT=5 /Users/tk/.dotfiles/codex/hooks/learnings_session_start.sh",
-            "timeoutSec": 10,
-            "statusMessage": "Loading repo learnings"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [

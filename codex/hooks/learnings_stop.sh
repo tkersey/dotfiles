@@ -17,6 +17,10 @@ looks_like_wrap_up() {
   printf '%s' "${1:-}" | grep -Eiq '\b(done|completed|implemented|updated|changed|configured|wired|fixed|added|removed|created|verification|verified|validated|testing|tested|tests|pass(ed)?|smoke|setup)\b'
 }
 
+has_completion_proof() {
+  printf '%s' "${1:-}" | grep -Eiq '(0 records appended:[[:space:]].+|duplicate-skip:[[:space:]].+)'
+}
+
 json_continue() {
   jq -n '{continue: true}'
 }
@@ -83,7 +87,12 @@ learnings_touched=$(
   exit 0
 }
 
-reason='Repo has .learnings.jsonl and this turn appears to be wrapping up with file changes. Run $learnings append before final handoff, or explicitly report 0 records appended with a concrete reason.'
+has_completion_proof "$last_message" && {
+  json_continue
+  exit 0
+}
+
+reason='Repo has .learnings.jsonl and this turn appears to be wrapping up with file changes. Run $learnings append before final handoff, or report `duplicate-skip: <reason>` / `0 records appended: <reason>`.'
 
 if [ "$mode" = "warn" ]; then
   jq -n --arg msg "$reason" '{continue: true, systemMessage: $msg}'
