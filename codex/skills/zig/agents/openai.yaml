@@ -1,4 +1,4 @@
 interface:
   display_name: "Zig"
-  short_description: "Build, lint, test, fuzz, and manage Zig 0.15.2 dependencies"
-  default_prompt: "Use $zig to handle Zig 0.15.2 dependency workflows and validate changes with lint and correctness-first testing."
+  short_description: "Build, lint, test, fuzz, profile, and manage Zig 0.15.2 workflows"
+  default_prompt: "Use $zig to handle Zig 0.15.2 implementation and performance workflows, including lint, correctness-first testing, and decomposition benchmarks when aggregate perf deltas span multiple abstraction layers."

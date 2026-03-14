@@ -25,6 +25,7 @@ zig version
 - If the request is performance-focused, run in two lanes:
   - Correctness lane (`Debug` or `ReleaseSafe`).
   - Performance lane (`ReleaseFast`) only after correctness passes.
+  - If a benchmark spans multiple abstraction layers and the aggregate result regresses, add decomposition lanes before changing code so you can separate substrate cost, wrapper cost, and full-path cost on the same workload.
 
 ### Lint bootstrap (required when missing)
 1. Add `zlinter` for Zig 0.15.x:
@@ -126,6 +127,18 @@ zig build -Doptimize=ReleaseFast -Dtarget=native -Dcpu=native
 ```
 
 When the request is a broader perf pass with explicit reporting format, apply `$lift` conventions (contract -> baseline -> bottleneck -> experiments -> result -> regression guard).
+
+### Benchmark decomposition rule
+Use this when a Zig perf regression crosses abstraction layers and one aggregate benchmark is not enough to localize the cost.
+
+- Keep the same dataset, warmup, sample count, checksum, allocator, and optimize mode across all lanes.
+- Add 2-4 lanes inside the same harness to isolate:
+  - substrate only
+  - wrapper or shell only
+  - full path
+- Name the lanes concretely (for example `raw_reset_only`, `effect_passthrough`, `full_raw`, `full_effect`) and keep their output adjacent so the subtraction is obvious.
+- Optimize from the decomposed result, not from the aggregate delta alone.
+- Once the bottleneck is understood, either keep the extra lanes as regression guards or gate them behind an explicit benchmark mode; do not leave noisy one-off instrumentation in the default path without a reason.
 
 ## Build and project commands
 ```bash
