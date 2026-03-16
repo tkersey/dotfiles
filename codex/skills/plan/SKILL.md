@@ -46,6 +46,7 @@ description: Produce decision-complete, self-contained plans in proposed_plan bl
 - Round-delta gate: each round must include an explicit `Round Delta` section.
 - Iteration-action gate: `Iteration Action Log` entries include `iteration`, `focus`, `round_decision`, `what_we_did`, and `target_outcome`.
 - Iteration-change gate: `Iteration Change Log` entries include `iteration`, `delta_kind`, `evidence`, `what_we_did`, `change`, and `sections_touched`.
+- Integration sketch gate: when integrating a round's changes, prefer concise git-diff style change sketches for substantive edits when they clarify the revision; keep them minimal and optional, not full patches unless the user asks.
 - Iteration-reports gate: include `Iteration Reports` with one delta-only entry per executed round; entries include `iteration`, `focus`, `round_decision`, `delta_kind`, `delta_summary`, `risk_delta`, `sections_touched`, `iteration_health_score`, and `evidence`.
 - Iteration-report alignment gate: `Iteration Reports`, `Iteration Action Log`, and `Iteration Change Log` must cover the same contiguous iteration range, and shared fields (`focus`, `round_decision`, `delta_kind`) must not conflict.
 - Iteration-reports soft-enforcement gate: treat `Iteration Reports` as a required contract section, but lint as advisory in this rollout; missing or malformed entries should warn, not fail-close.
@@ -103,6 +104,7 @@ Output rules:
 - Campaign cues are binding: if the user asks for uninterrupted completion / branch-campaign behavior or pairs `$plan` with `$st`, express the first wave, later waves, handoff points, and binary done-state in `Summary` and `Implementation Brief`.
 - Include an `Iteration Action Log` section with one entry per executed round; each entry must include `iteration`, `focus`, `round_decision`, `what_we_did`, and `target_outcome`.
 - Include an `Iteration Change Log` section with one entry per executed round; each entry must include `iteration`, `delta_kind`, `evidence`, `what_we_did`, `change`, and `sections_touched`.
+- When useful, represent a round's integrated change as a short git-diff style sketch adjacent to the change summary; prefer concise hunks over extra prose when the exact edit matters.
 - Include an `Iteration Reports` section with one entry per executed round; each entry must include `iteration`, `focus`, `round_decision`, `delta_kind`, `delta_summary`, `risk_delta` (`up|down|flat`), `sections_touched`, `iteration_health_score` (`0..3`), and `evidence`.
 - Include a `Non-Goals/Out of Scope` section to make deliberate exclusions explicit.
 - Include a `Scope Change Log` section for scope expansion/reduction records.
@@ -194,7 +196,7 @@ If a round makes no material change, write `no material delta` in the iteration 
 ## Continuous improvement loop (default)
 
 - Run repeated refinement passes.
-- Each pass must do: identify next high-impact deltas, implement minimal edits, update `Iteration Action Log`/`Iteration Change Log`/`Iteration Reports`, run validation signals, then reassess for remaining high-impact gaps.
+- Each pass must do: identify next high-impact deltas, implement minimal edits, preferring concise git-diff style change sketches when they improve precision, update `Iteration Action Log`/`Iteration Change Log`/`Iteration Reports`, run validation signals, then reassess for remaining high-impact gaps.
 - Stop when two consecutive reassessment passes find no material improvements (only `preferences` remain).
 - At stop, report closure explicitly with `improvement_exhausted=true` in `Contract Signals`.
 - Never stop due to a fixed iteration count; if you cannot continue, leave `improvement_exhausted=false` and state why.
