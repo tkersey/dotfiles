@@ -10,6 +10,7 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 
 ## Trigger Cues
 - Explicit `$seq` asks.
+- Questions that ask to extract or query finalized `$plan` artifacts (`<proposed_plan>` blocks) for a repo, session, or time window.
 - Questions that ask to verify prior session output using artifacts (`"use $seq to find it"` / `"what did that session actually say"`).
 - Artifact-forensics questions about provenance, trace proof, or "show me the artifact that proves it".
 - Questions about Codex memory artifacts or provenance (`"what's in MEMORY.md"`, `"which rollout produced this memory"`, `"is this memory stale"`, `"how do memory_summary.md and rollout_summaries relate"`).
@@ -18,10 +19,11 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 
 ## Local-First Routing Ladder
 - Stay in `seq` first for explicit `$seq` asks and artifact-forensics work; do not jump to generic shell search unless `seq` cannot cover the need.
-- Preferred entrypoint: `seq artifact-search`.
+- Preferred entrypoint: `seq artifact-search` for broad forensics; use `seq plan-search` first when the request is specifically about finalized `<proposed_plan>` artifacts.
 - Use this ladder:
-  1. `artifact-search`.
+  1. `plan-search` for finalized `$plan` artifact retrieval; otherwise `artifact-search`.
   2. Specialized follow-ups that already match the artifact shape:
+     - `plan-search` for strict repo/session/time/text retrieval of complete `<proposed_plan>` blocks.
      - `find-session` for prompt-to-session lookup.
      - `session-prompts` for "what did that session actually say" and transcript proof.
      - `session-tooling` for shell/tool summaries.
@@ -334,6 +336,30 @@ seq session-prompts --root ~/.codex/sessions --current \
   --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
 ```
 
+### 10b) Find finalized plan artifacts
+Repo-scoped metadata rows:
+```bash
+seq plan-search --root ~/.codex/sessions \
+  --repo /Users/tk/workspace/tk/shift \
+  --since 2026-03-01T00:00:00Z \
+  --format table
+```
+Filter by title/body text and show scan counters:
+```bash
+seq plan-search --root ~/.codex/sessions \
+  --repo /Users/tk/workspace/tk/shift \
+  --contains "PromptMode" \
+  --stats \
+  --format jsonl
+```
+Target one known session and include the exact plan block:
+```bash
+seq plan-search --root ~/.codex/sessions \
+  --session-id 019ce80b-9fb4-72a1-9c1e-3d626d4e4913 \
+  --include-body \
+  --format jsonl
+```
+
 ### Session-backed tooling diagnostics
 Summarize tool/shell activity for one session:
 ```bash
@@ -451,7 +477,9 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `tool_call_args` flattens JSON argument/input leaves with `payload_source`, `arg_path`, `value_kind`, `value_text`, `value_number`, `value_bool`, `is_null`, and `array_index`.
 - `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.
 - `find-session`, `session-prompts`, `session-tooling`, and `query-diagnose` accept ISO-8601 `--since` / `--until` filters for session-backed narrowing.
-- Prefer the routing ladder: `artifact-search`, then specialized follow-ups, then `query-diagnose`, and generic `query` only when needed.
+- `plan-search` accepts repo/session/time/text filters for strict `<proposed_plan>` retrieval and defaults to metadata rows sorted newest-first.
+- `plan-search --stats` emits scan counters and filter-usage flags so repo-scoped plan queries can prove they narrowed the corpus.
+- Prefer the routing ladder: `plan-search` for finalized plan artifacts, otherwise `artifact-search`, then specialized follow-ups, then `query-diagnose`, and generic `query` only when needed.
 - `session-prompts` defaults to `--roles user`; set `--roles user,assistant` to include both sides of a conversation.
 - `session-prompts --current` resolves the current session from `CODEX_THREAD_ID` and fails closed if that env var is unavailable.
 - `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
