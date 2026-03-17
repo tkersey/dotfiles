@@ -1,15 +1,16 @@
 ---
 name: zig
-description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon dependency changes, package-management or registry questions, zig build/test/run/fmt/fetch/lint commands, zlinter integration, comptime/reflection/codegen, allocator ownership and zero-copy parsing, C interop, and performance work (latency, throughput, profiling, SIMD, threading) that must preserve correctness with lint, fuzz, and allocation-failure checks."
+description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon dependency changes, lint/test/run/fmt/fetch/build commands, comptime/reflection/codegen, witness-driven parsing and ownership, FFI boundary hardening, concurrency or lock-free code, dependency provenance, and performance work that must preserve correctness with explicit proof lanes."
 ---
 
 # Zig
 
 ## Operating contract
 - Assume Zig 0.15.2 unless the user explicitly requests another version.
-- Treat `zlinter` (`zig build lint`) as a required gate for Zig codebases.
-- Treat correctness as a hard gate before optimization and release work.
+- Prefer witness-driven APIs: if a fact matters to safety, zero-copy legality, FFI soundness, or fast-path legality, represent it in a type or constructor, not a loose bool or comment.
+- Treat hazard class -> proof obligation mapping as required.
 - Prefer minimal incisions with explicit proof signals.
+- If the repo already exposes `zig build lint`, treat it as a hard gate. If lint is missing, prefer bootstrapping when safe; otherwise state `LINT_UNAVAILABLE` and compensate with stronger correctness evidence.
 - Keep fast paths benchmarked, but keep safety checks on during correctness validation.
 
 ## Baseline requirements
@@ -20,14 +21,23 @@ zig version
 ```
 
 - If the version is not `0.15.2`, stop and state the mismatch.
-- If `zig build lint` is missing in the target repo, stop implementation and bootstrap lint first.
 - Treat `build.zig.zon` as the dependency source of truth when packages are involved.
+- Before editing, identify which hazard classes apply.
 - If the request is performance-focused, run in two lanes:
   - Correctness lane (`Debug` or `ReleaseSafe`).
   - Performance lane (`ReleaseFast`) only after correctness passes.
   - If a benchmark spans multiple abstraction layers and the aggregate result regresses, add decomposition lanes before changing code so you can separate substrate cost, wrapper cost, and full-path cost on the same workload.
 
-### Lint bootstrap (required when missing)
+## Hazard classes and required proof
+- `parser/decoder/zero-copy`: unit tests, differential fuzz, validated witness, and backing-storage proof.
+- `allocator-using`: `std.testing.checkAllAllocationFailures`; if a specific schedule fails, pin a fail-nth regression seed too.
+- `ffi/abi`: boundary contract table, wrapper tests, link proof, and centralized raw pointer conversions.
+- `optimizer-sensitive`: scalar reference path plus differential checks across `Debug`, `ReleaseSafe`, and `ReleaseFast`.
+- `concurrency/shared-state`: deterministic schedule seed or replay harness, documented memory orders, and a sequential spec or witness model when lock-free claims are involved.
+- `dependency/provenance`: visible URL/hash plus origin, release, and signer or attestation notes when the pin is security-sensitive or long-lived.
+- If multiple hazard classes apply, satisfy all relevant proof lanes.
+
+### Lint bootstrap (recommended when missing)
 1. Add `zlinter` for Zig 0.15.x:
 
 ```bash
@@ -50,31 +60,33 @@ lint_cmd.dependOn(step: {
 ```
 
 ## Core workflow
-1. State the contract: domain, invariants, error model, and complexity target.
-2. Confirm Zig version and required lint wiring (`zig build lint`).
-3. Run lint autofix pass (`zig build lint -- --fix`).
-4. Re-run strict lint gate with zero warnings (`zig build lint -- --max-warnings 0`).
-5. Build or identify a reference path before touching optimized code.
-6. Add or extend unit tests around edge cases and regressions.
-7. Run fuzz and allocation-failure checks for safety-sensitive paths.
-8. Optimize in order: algorithm -> data layout -> vectorization -> threading -> micro-tuning.
-9. Re-run lint and correctness gates after each optimization step.
+1. State the contract: domain, invariants, error model, ownership model, authority model, and complexity target.
+2. Identify hazard classes and required proof artifacts before touching code.
+3. Confirm Zig version and lint availability.
+4. If lint exists, run `zig build lint -- --fix`, review the diff, then re-run `zig build lint -- --max-warnings 0`.
+5. Build or derive a reference path, schema, or scalar fallback before touching optimized or unsafe code.
+6. Add witness types and boundary tests first.
+7. Run the required proof lanes for the active hazard classes.
+8. Optimize in order: algorithm -> data layout -> zero-copy/batching -> vectorization -> threading -> micro-tuning.
+9. Re-run lint, correctness, and perf gates after each optimization step.
 10. Report proof with exact commands and outcomes.
 
-## Lint gate (required)
-- Every Zig implementation turn must include lint evidence.
+## Lint gate
+- Every Zig implementation turn should include lint evidence when the repo exposes `zig build lint`.
 - Default lint flow:
   - `zig build lint -- --fix`
   - `zig build lint -- --max-warnings 0`
 - If `--fix` changes code, review the diff before continuing.
-- Do not mark work complete if lint step is missing or failing.
+- If lint is unavailable, say `LINT_UNAVAILABLE` and do not pretend the gate passed.
 
 ## Correctness gate (required)
 - Every Zig change needs at least one correctness signal.
-- For parsing, allocation, arithmetic, or safety-sensitive code:
+- For parsing, allocation, arithmetic, zero-copy, or safety-sensitive code:
   - `std.testing.fuzz` is required.
   - `std.testing.checkAllAllocationFailures` is required for allocator-using functions.
+- FFI, bit-level, SIMD, and lock-free or atomic code need boundary-specific or differential tests in addition to ordinary unit tests.
 - Prefer differential fuzzing (optimized path vs reference path).
+- Re-run optimizer-sensitive logic under `Debug`, `ReleaseSafe`, and `ReleaseFast`.
 
 ### Standard correctness commands
 ```bash
@@ -107,38 +119,27 @@ test "allocation failure coverage" {
 }
 ```
 
-## Performance lane and `$lift` handoff
-Use this lane when the request is about speed, latency, throughput, memory, or profiling.
+- When an allocation failure only reproduces at a specific index, pin that fail index as a deterministic regression seed.
+- Reference: `codex/skills/zig/references/fail_nth_alloc.zig`
 
-- If you can run a workload: produce baseline + after numbers and bottleneck evidence.
-- If you cannot run a workload: mark output `UNMEASURED` and provide exact commands.
-- Keep correctness gates before and after each performance change.
+## Boundary witnesses and zero-copy
+- Separate `scan -> validate -> project`.
+- Validation should return a small witness type such as `ValidatedFrame`, `BorrowedView`, `NonEmptySlice`, or `AlignedBytes`.
+- Do not expose typed views, zero-copy projections, or `@ptrCast`-based decoding until validation succeeds.
+- Make borrowed vs owned states explicit in API types; use distinct types or `union(enum)` rather than comments.
+- Do not return slices backed by temporary or stack storage.
+- Fail fast on over-capacity streaming tokens instead of truncating.
+- Prefer one constructor per invariant cluster so fast paths can assume validated state.
+- Reference: `codex/skills/zig/references/boundary_witness.zig`
 
-### Minimal measured loop
-```bash
-# 1) correctness first
-zig build test
-
-# 2) baseline perf sample
-zig build -Doptimize=ReleaseFast -Dtarget=native -Dcpu=native
-
-# 3) variant perf sample (after one change)
-zig build -Doptimize=ReleaseFast -Dtarget=native -Dcpu=native
-```
-
-When the request is a broader perf pass with explicit reporting format, apply `$lift` conventions (contract -> baseline -> bottleneck -> experiments -> result -> regression guard).
-
-### Benchmark decomposition rule
-Use this when a Zig perf regression crosses abstraction layers and one aggregate benchmark is not enough to localize the cost.
-
-- Keep the same dataset, warmup, sample count, checksum, allocator, and optimize mode across all lanes.
-- Add 2-4 lanes inside the same harness to isolate:
-  - substrate only
-  - wrapper or shell only
-  - full path
-- Name the lanes concretely (for example `raw_reset_only`, `effect_passthrough`, `full_raw`, `full_effect`) and keep their output adjacent so the subtraction is obvious.
-- Optimize from the decomposed result, not from the aggregate delta alone.
-- Once the bottleneck is understood, either keep the extra lanes as regression guards or gate them behind an explicit benchmark mode; do not leave noisy one-off instrumentation in the default path without a reason.
+## Schema-derived parse/format flows
+- For wire or storage formats, prefer one comptime schema or policy surface that emits parser, formatter, docs, round-trip tests, and fuzz seeds from the same description.
+- Centralize reflection in one classifier/helper layer instead of scattering raw `@typeInfo` switches across serializers, deserializers, and adapters.
+- Guard `@hasDecl` and `@hasField` behind type-shape checks before duck-typing or custom-hook detection; `@hasDecl` is not valid on every Zig type.
+- Let explicit custom hooks opt out of auto-derivation first, then fall back to a small `Kind` or policy dispatcher.
+- Put rename, flatten, skip, tag, default, and `with` policies in a per-type `pub const` options surface and query it at comptime.
+- Precompute wire names and naming-convention transforms at comptime so field matching and emission do not redo string work per value.
+- Initialize flattened or defaulted sub-objects in dedicated helpers before parsing so the runtime path only fills observed fields and validates missing ones.
 
 ## Build and project commands
 ```bash
@@ -172,6 +173,7 @@ rm -rf zig-out zig-cache
 - Treat the ecosystem as decentralized: dependencies are declared in `build.zig.zon`, fetched by URL, and pinned by content hash.
 - Prefer direct source archives or VCS-backed release archives over unofficial package indexes unless the user explicitly asks for third-party registries.
 - When adding a dependency, update `build.zig.zon`, review the saved hash, and keep the provenance URL visible in the diff.
+- Treat the hash as integrity, not complete provenance. For security-sensitive or long-lived pins, also record origin repo, release tag or commit, fetch date, and signer or attestation notes in sidecar docs or commit notes.
 
 ### Standard dependency commands
 ```bash
@@ -189,10 +191,12 @@ zig fmt build.zig
 - Say "Zig has a package manager, but not an official central package registry."
 - Point to `build.zig.zon` plus `zig fetch --save` as the normal dependency path.
 - Distinguish official decentralized workflow from community-maintained indexes.
+- If provenance matters, add that Zig's content hash answers integrity, while signer and attestation evidence answer publisher trust and freshness.
 
 ## Comptime and invariants
-- Prefer compile-time invariant checks for shape, ABI, and required methods.
+- Prefer compile-time invariant checks for shape, ABI, required methods, and specialization bounds.
 - Use `@compileError` to make illegal states unrepresentable at build time.
+- Promote stable runtime facts to witness types or enums once discovered; do not keep rediscovering them with ad hoc checks.
 - Keep generated specialization knobs small and measurable.
 
 ### Template
@@ -207,12 +211,9 @@ fn assertHasRead(comptime T: type) void {
 ```
 
 ## Serde-style derive patterns
-- Centralize reflection in one classifier/helper layer instead of scattering raw `@typeInfo` switches across serializers, deserializers, and adapters.
-- Guard `@hasDecl` and `@hasField` behind type-shape checks before duck-typing or custom-hook detection; `@hasDecl` is not valid on every Zig type.
-- Let explicit custom hooks opt out of auto-derivation first, then fall back to a small `Kind` or policy dispatcher.
-- Put rename, flatten, skip, tag, default, and `with` policies in a per-type `pub const` options surface and query it at comptime; keep runtime loops limited to I/O and data movement.
-- Precompute wire names and naming-convention transforms at comptime so field matching and emission do not redo string work per value.
-- Initialize flattened or defaulted sub-objects in dedicated helpers before parsing so the runtime path only fills observed fields and validates missing ones.
+- Keep runtime loops limited to I/O and data movement.
+- Prefer schema-derived policy dispatch over ad hoc reflection spread across format-specific code.
+- Use the same per-type options surface for formatting, parsing, round-trip tests, and fuzz seed generation.
 
 ### Safe decl template
 ```zig
@@ -233,17 +234,71 @@ fn classify(comptime T: type) enum { auto, custom } {
 }
 ```
 
-## Zero-copy and ownership checklist
-- Parse into spans/slices that point to stable backing storage.
-- Do not return slices backed by temporary buffers.
-- Make borrowed vs owned states explicit in API types.
-- Fail fast on over-capacity streaming tokens instead of truncating.
+## FFI and C interop boundary
+- Split raw `extern fn` declarations from safe wrappers.
+- Maintain a boundary contract table for each nontrivial symbol: nullability, length source, mutability, ownership in/out, lifetime, thread-safety, error mapping, and linkage.
+- Centralize `@ptrCast`, sentinel handling, null handling, and errno or result translation in one wrapper layer.
+- Mirror C boundary assumptions in Zig wrapper types, asserts, and witness constructors.
+- Test the link step (`linkLibC`, `linkSystemLibrary`) and the unhappy paths, not just happy-path calls.
+- Do not let borrowed C pointers escape past the documented lifetime or thread domain.
+- When a C dependency changes, compare signatures and ABI expectations; if the code is security-sensitive and tooling is available, prefer an `abidiff`-style check before trusting the upgrade.
+- Reference: `codex/skills/zig/references/ffi_contract_template.md`
+
+## Concurrency and weak-memory lane
+- Prefer ownership transfer, sharding, or message passing before lock-free shared-state designs.
+- For shared mutable state, write down the invariant, owner transitions, and memory order for each atomic before editing code.
+- Use seeded schedule fuzzing, deterministic yield injection, or replayable interleavings; check failing seeds into `testdata/`.
+- For lock-free claims, add a sequential spec and, when feasible, a litmus-style or witness model in a sidecar test or notes file.
+- Stress tests alone are not proof of concurrent correctness.
+- Re-run concurrent code under multiple optimize modes and on Linux or CI when platform behavior differs.
+
+## Performance lane and `$lift` handoff
+Use this lane when the request is about speed, latency, throughput, memory, or profiling.
+
+- If you can run a workload: produce baseline + after numbers and bottleneck evidence.
+- If you cannot run a workload: mark output `UNMEASURED` and provide exact commands.
+- Keep correctness gates before and after each performance change.
+- Use statistical discipline for small deltas: fixed dataset, warmups, repeated fresh-process runs, and sample counts. If the delta is small enough to be noisy, report an effect size or interval, not just one median.
+- Prefer causal or progress-point instrumentation when the workload is concurrent or pipeline-shaped and flat hotspots are misleading.
+- Optimize in order: algorithm -> data layout -> zero-copy/batching -> vectorization -> threading -> micro-tuning.
+- Keep scalar fallbacks and differential tests after vectorization or threading changes.
+- For large hot Linux binaries, consider a post-link layout or PGO/BOLT-style lane before invasive source rewrites.
+
+### Minimal measured loop
+```bash
+# 1) correctness first
+zig build test
+
+# 2) safe native build for reference behavior
+zig build -Doptimize=ReleaseSafe -Dtarget=native -Dcpu=native
+
+# 3) fast native build for perf work
+zig build -Doptimize=ReleaseFast -Dtarget=native -Dcpu=native
+
+# 4) if the repo exposes a benchmark step, prefer it
+zig build bench -- --samples 10 --warmup 3
+```
+
+When the request is a broader perf pass with explicit reporting format, apply `$lift` conventions (contract -> baseline -> bottleneck -> experiments -> result -> regression guard).
+
+### Benchmark decomposition rule
+Use this when a Zig perf regression crosses abstraction layers and one aggregate benchmark is not enough to localize the cost.
+
+- Keep the same dataset, warmup, sample count, checksum, allocator, and optimize mode across all lanes.
+- Add 2-4 lanes inside the same harness to isolate:
+  - substrate only
+  - wrapper or shell only
+  - full path
+- Name the lanes concretely (for example `raw_reset_only`, `effect_passthrough`, `full_raw`, `full_effect`) and keep their output adjacent so the subtraction is obvious.
+- Optimize from the decomposed result, not from the aggregate delta alone.
+- Once the bottleneck is understood, either keep the extra lanes as regression guards or gate them behind an explicit benchmark mode; do not leave noisy one-off instrumentation in the default path without a reason.
+- When a pipeline exposes throughput or latency progress points, keep them stable across baseline and variant runs.
 
 ## SIMD and threading policy
-- Use SIMD/threading only when profiling shows CPU-bound hot paths.
+- Use SIMD or threading only when profiling shows a CPU-bound hot path.
 - Keep scalar fallback paths and deterministic behavior.
-- Avoid hidden allocations inside hot loops.
-- Re-run fuzz/tests after vectorization or parallelization changes.
+- Avoid hidden allocations or synchronization inside hot loops.
+- Re-run fuzz, differential tests, and any schedule-sensitive tests after vectorization or parallelization changes.
 
 ## macOS fuzz caveat
 `zig build test --fuzz` may fail on macOS (`InvalidElfMagic`) in Zig 0.15.2.
@@ -276,7 +331,7 @@ uv run python codex/skills/zig/scripts/test_zig_trigger_audit.py
 Notes:
 - The audit uses literal `contains` matching to avoid regex parser limitations in `seq` for dotted literals (for example `.zig`, `build.zig`, `std.simd`).
 - Keep strict-implicit mode enabled when evaluating precision-sensitive routing changes.
-- Lint cues (`zig build lint`, `zlinter`) are tracked as Zig intent.
+- Lint and FFI cues (`zig build lint`, `zlinter`, `extern fn`, `linkSystemLibrary`, `linkLibC`) are tracked as Zig intent.
 
 ## Monthly drift scorecard
 Generate a compact scorecard that combines:
@@ -290,7 +345,13 @@ uv run python codex/skills/zig/scripts/zig_ops_scorecard.py \
   --root ~/.codex/sessions \
   --since 2026-02-01T00:00:00Z \
   --format text
+
+# Regression tests for the scorecard script
+uv run python codex/skills/zig/scripts/test_zig_ops_scorecard.py
 ```
+
+Notes:
+- The scorecard should tolerate local `seq routing-gap` builds that do not yet support `--since`.
 
 ## `skills-zig` evidence lane
 When validating guidance against current Zig production patterns, inspect:
@@ -301,7 +362,10 @@ Recommended checks:
 ```bash
 git -C /Users/tk/workspace/tk/skills-zig log --oneline --max-count=30
 rg -n "std.testing.fuzz|checkAllAllocationFailures|FailingAllocator" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
+rg -n "extern fn|linkSystemLibrary|linkLibC|sqlite3_" /Users/tk/workspace/tk/skills-zig/apps /Users/tk/workspace/tk/skills-zig/build.zig -g"*.zig"
+rg -n "std.atomic|compareExchange|fetchAdd|Thread|spawn" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
 rg -n "std.simd|@Vector|std.Thread.Pool" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
+rg -n "perf_hub|CountingAllocator|warmup|samples" /Users/tk/workspace/tk/skills-zig/apps /Users/tk/workspace/tk/skills-zig/tools -g"*.zig"
 rg -n "@typeInfo|@hasDecl|@hasField|@Type|comptime" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
 ```
 
@@ -309,16 +373,23 @@ Use these results to keep `$zig` guidance aligned with what is true in active Zi
 
 ## Pitfalls
 - Claiming performance wins without measured baseline/after evidence.
-- Running micro-optimizations before removing algorithmic waste.
+- Treating a validated fact as a comment instead of a witness type.
+- Exposing zero-copy or FFI views before validation and lifetime checks.
+- Running micro-optimizations before removing algorithmic or data-movement waste.
 - Skipping allocation-failure coverage in allocator-heavy code.
-- Skipping `zig build lint` or allowing warnings to pass.
+- Claiming lock-free or concurrent correctness from stress tests alone.
+- Skipping `zig build lint` when the repo exposes it, or pretending lint passed when unavailable.
 - Running `zig build lint -- --fix` on a dirty tree without reviewing the resulting diff.
 - Scattering `@typeInfo` and trait-probe logic across format-specific code instead of centralizing the classifier and policy layer first.
 - Treating borrowed memory as owned (or vice versa).
 - Returning stack-backed slices.
+- Treating URL+hash as complete supply-chain provenance.
 - Assuming regex-like query patterns are portable across all tooling without validation.
 
 ## References
+- Boundary witness template: `codex/skills/zig/references/boundary_witness.zig`
+- Deterministic fail-nth allocation pattern: `codex/skills/zig/references/fail_nth_alloc.zig`
+- FFI contract template: `codex/skills/zig/references/ffi_contract_template.md`
 - Differential fuzz template: `codex/skills/zig/references/fuzz_differential.zig`
 - Type-shape dispatcher example: `codex/skills/zig/references/type_switch.zig`
 - `@Type` partial-builder example: `codex/skills/zig/references/partial_type.zig`

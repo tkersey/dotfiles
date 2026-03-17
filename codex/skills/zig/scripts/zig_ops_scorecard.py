@@ -16,6 +16,8 @@ from typing import Any
 
 SAFE_CUES = {
     "cues": [
+        # Keep routing-gap cues compatible with seq's current regex-like matcher;
+        # dotted literals are audited separately in zig_trigger_audit.py.
         {"name": "zig_build", "pattern": "zig build", "case_insensitive": True},
         {"name": "zig_lint", "pattern": "zig build lint", "case_insensitive": True},
         {"name": "zlinter", "pattern": "zlinter", "case_insensitive": True},
@@ -26,6 +28,18 @@ SAFE_CUES = {
         {"name": "comptime", "pattern": "comptime", "case_insensitive": True},
         {"name": "vector", "pattern": "@vector", "case_insensitive": True},
         {"name": "cimport", "pattern": "@cimport", "case_insensitive": True},
+        {"name": "extern_fn", "pattern": "extern fn", "case_insensitive": True},
+        {
+            "name": "link_system_library",
+            "pattern": "linkSystemLibrary",
+            "case_insensitive": True,
+        },
+        {"name": "link_libc", "pattern": "linkLibC", "case_insensitive": True},
+        {
+            "name": "compare_exchange",
+            "pattern": "compareExchange",
+            "case_insensitive": True,
+        },
     ]
 }
 
@@ -62,30 +76,67 @@ def run_trigger_audit(config: ScorecardConfig) -> dict[str, Any]:
     return json.loads(out)
 
 
-def run_routing_gap(config: ScorecardConfig) -> list[dict[str, Any]]:
+def run_routing_gap(config: ScorecardConfig) -> tuple[list[dict[str, Any]], bool]:
     with tempfile.NamedTemporaryFile("w", suffix=".json", delete=True) as tmp:
         json.dump(SAFE_CUES, tmp)
         tmp.flush()
-        out = run_cmd(
-            [
-                "seq",
-                "routing-gap",
-                "--root",
-                config.root,
-                "--since",
-                config.since,
-                "--cue-spec",
-                f"@{tmp.name}",
-                "--discovery-skills",
-                "zig",
-                "--format",
-                "json",
-            ]
-        )
-    return json.loads(out)
+        cmd = [
+            "seq",
+            "routing-gap",
+            "--root",
+            config.root,
+            "--since",
+            config.since,
+            "--cue-spec",
+            f"@{tmp.name}",
+            "--discovery-skills",
+            "zig",
+            "--format",
+            "json",
+        ]
+        try:
+            out = run_cmd(cmd)
+            return json.loads(out), True
+        except RuntimeError as err:
+            if "option --since is not supported" not in str(err):
+                raise
+        except json.JSONDecodeError:
+            pass
+        fallback_cmd = [
+            "seq",
+            "routing-gap",
+            "--root",
+            config.root,
+            "--cue-spec",
+            f"@{tmp.name}",
+            "--discovery-skills",
+            "zig",
+            "--format",
+            "json",
+        ]
+        out = run_cmd(fallback_cmd)
+    return json.loads(out), False
 
 
-def recommendations(skill_lines: int, audit: dict[str, Any], routing: list[dict[str, Any]]) -> list[str]:
+def cue_rate(by_cue: dict[str, dict[str, Any]], name: str) -> float | None:
+    row = by_cue.get(name)
+    if row is None:
+        return None
+    value = row.get("invoked_rate_pct")
+    return float(value) if value is not None else 0.0
+
+
+def cue_has_hits(by_cue: dict[str, dict[str, Any]], name: str) -> bool:
+    row = by_cue.get(name)
+    if row is None:
+        return False
+    value = row.get("cue_sessions")
+    return int(value) > 0 if value is not None else True
+
+
+def recommendations(
+    skill_lines: int, audit: dict[str, Any], routing: list[dict[str, Any]]
+) -> list[str]:
     recs: list[str] = []
 
     if skill_lines > 500:
@@ -100,28 +151,58 @@ def recommendations(skill_lines: int, audit: dict[str, Any], routing: list[dict[
     rates = audit.get("rates", {})
     explicit_recall = float(rates.get("explicit_session_recall_proxy_pct", 0.0))
     if explicit_recall < 70.0:
-        recs.append("Improve explicit $zig handling: audit misses where user asked for $zig but assistant did not invoke it.")
+        recs.append(
+            "Improve explicit $zig handling: audit misses where user asked for $zig but assistant did not invoke it."
+        )
 
     by_cue = {str(row.get("cue", "")): row for row in routing}
     zig_build = by_cue.get("zig_build")
     if zig_build:
-        value = zig_build.get("invoked_rate_pct")
-        rate = float(value) if value is not None else 0.0
+        rate = cue_rate(by_cue, "zig_build") or 0.0
         if rate < 50.0:
-            recs.append("Strengthen frontmatter cues for zig build workflows; current zig_build invoked rate is below 50%.")
+            recs.append(
+                "Strengthen frontmatter cues for zig build workflows; current zig_build invoked rate is below 50%."
+            )
     zig_lint = by_cue.get("zig_lint")
     if zig_lint:
-        value = zig_lint.get("invoked_rate_pct")
-        rate = float(value) if value is not None else 0.0
+        rate = cue_rate(by_cue, "zig_lint") or 0.0
         if rate < 50.0:
-            recs.append("Strengthen lint trigger cues; current zig_lint invoked rate is below 50%.")
+            recs.append(
+                "Strengthen lint trigger cues; current zig_lint invoked rate is below 50%."
+            )
+
+    if cue_has_hits(by_cue, "zig_fetch"):
+        zig_fetch_rate = cue_rate(by_cue, "zig_fetch") or 0.0
+        if zig_fetch_rate < 50.0:
+            recs.append(
+                "Strengthen dependency/provenance trigger cues; current zig_fetch invoked rate is below 50%."
+            )
+
+    ffi_cues = ("extern_fn", "link_system_library", "link_libc")
+    if any(
+        cue_has_hits(by_cue, name) and (cue_rate(by_cue, name) or 0.0) < 50.0
+        for name in ffi_cues
+    ):
+        recs.append(
+            "Strengthen FFI boundary trigger cues; one or more extern/linker cues invoke $zig below 50%."
+        )
+
+    concurrency_cues = ("compare_exchange",)
+    if any(
+        cue_has_hits(by_cue, name) and (cue_rate(by_cue, name) or 0.0) < 50.0
+        for name in concurrency_cues
+    ):
+        recs.append(
+            "Strengthen concurrency/atomics trigger cues; one or more atomic cues invoke $zig below 50%."
+        )
 
     overall = by_cue.get("__all__")
     if overall:
-        value = overall.get("invoked_rate_pct")
-        rate = float(value) if value is not None else 0.0
+        rate = cue_rate(by_cue, "__all__") or 0.0
         if rate < 30.0:
-            recs.append("Review trigger surface with seq routing-gap; overall invoked rate is below 30%.")
+            recs.append(
+                "Review trigger surface with seq routing-gap; overall invoked rate is below 30%."
+            )
 
     if not recs:
         recs.append("No immediate drift action required.")
@@ -134,6 +215,7 @@ def render_text(report: dict[str, Any]) -> str:
         f"generated_at: {report['generated_at']}",
         f"root: {report['root']}",
         f"since: {report['since']}",
+        f"routing_gap_since_applied: {str(report['routing_gap_since_applied']).lower()}",
         f"skill_lines: {report['skill_lines']}",
         "audit_counts:",
     ]
@@ -157,9 +239,15 @@ def render_text(report: dict[str, Any]) -> str:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate a drift scorecard for the zig skill.")
-    parser.add_argument("--root", default=str(Path.home() / ".codex" / "sessions"), help="Sessions root")
-    parser.add_argument("--since", required=True, help="Inclusive ISO timestamp lower bound")
+    parser = argparse.ArgumentParser(
+        description="Generate a drift scorecard for the zig skill."
+    )
+    parser.add_argument(
+        "--root", default=str(Path.home() / ".codex" / "sessions"), help="Sessions root"
+    )
+    parser.add_argument(
+        "--since", required=True, help="Inclusive ISO timestamp lower bound"
+    )
     parser.add_argument("--format", choices=("json", "text"), default="text")
     parser.add_argument("--output", default=None, help="Optional output path")
     return parser.parse_args()
@@ -173,7 +261,7 @@ def main() -> int:
     skill_lines = sum(1 for _ in skill_path.open("r", encoding="utf-8"))
 
     audit = run_trigger_audit(config)
-    routing = run_routing_gap(config)
+    routing, routing_gap_since_applied = run_routing_gap(config)
 
     routing_rates = [
         {
@@ -189,16 +277,19 @@ def main() -> int:
         "generated_at": datetime.now(UTC).isoformat(),
         "root": config.root,
         "since": config.since,
+        "routing_gap_since_applied": routing_gap_since_applied,
         "skill_lines": skill_lines,
         "audit_counts": audit.get("counts", {}),
-        "audit_rates": {
-            k: float(v) for k, v in audit.get("rates", {}).items()
-        },
+        "audit_rates": {k: float(v) for k, v in audit.get("rates", {}).items()},
         "routing_gap_rates": routing_rates,
         "recommendations": recommendations(skill_lines, audit, routing),
     }
 
-    payload = json.dumps(report, indent=2, sort_keys=True) + "\n" if args.format == "json" else render_text(report)
+    payload = (
+        json.dumps(report, indent=2, sort_keys=True) + "\n"
+        if args.format == "json"
+        else render_text(report)
+    )
 
     if args.output:
         output_path = Path(args.output).expanduser()

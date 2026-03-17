@@ -34,6 +34,11 @@ INTENT_TERMS = [
     "std.simd",
     "std.Thread",
     "@cImport",
+    "extern fn",
+    "linkSystemLibrary",
+    "linkLibC",
+    "std.atomic",
+    "compareExchange",
     "allocator",
 ]
 
@@ -69,6 +74,11 @@ STRONG_IMPLICIT_CUES = [
     "std.thread",
     "thread.pool",
     "@cimport",
+    "extern fn",
+    "linksystemlibrary",
+    "linklibc",
+    "std.atomic",
+    "compareexchange",
     "0.15.2",
 ]
 
@@ -88,7 +98,9 @@ def run_seq_query(
 
     proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if proc.returncode != 0:
-        raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or "seq query failed")
+        raise RuntimeError(
+            proc.stderr.strip() or proc.stdout.strip() or "seq query failed"
+        )
 
     rows: list[dict] = []
     since_dt = parse_ts(since)
@@ -235,7 +247,9 @@ def sample_entries(
     ]
 
 
-def build_report(args: argparse.Namespace, intent_rows: list[dict], zig_rows: list[dict]) -> dict:
+def build_report(
+    args: argparse.Namespace, intent_rows: list[dict], zig_rows: list[dict]
+) -> dict:
     path_state: dict[str, dict[str, bool]] = {}
     for row in intent_rows:
         path = row.get("path")
@@ -337,13 +351,16 @@ def build_report(args: argparse.Namespace, intent_rows: list[dict], zig_rows: li
 
     window = f"{args.since or 'begin'} .. {args.until or 'latest'}"
     counts = {
-        "zig_intent_sessions_total": len(explicit_intent_paths) + len(implicit_intent_paths),
+        "zig_intent_sessions_total": len(explicit_intent_paths)
+        + len(implicit_intent_paths),
         "explicit_zig_intent_sessions": len(explicit_intent_paths),
         "implicit_zig_intent_sessions_raw": len(implicit_raw_paths),
         "implicit_noise_filtered_sessions": len(implicit_noise_paths),
         "implicit_low_signal_total_sessions": len(implicit_low_signal_paths),
         "implicit_low_signal_filtered_sessions": len(strict_filtered_paths),
-        "implicit_low_signal_included_sessions": len(implicit_low_signal_included_paths),
+        "implicit_low_signal_included_sessions": len(
+            implicit_low_signal_included_paths
+        ),
         "implicit_zig_intent_sessions": len(implicit_intent_paths),
         "assistant_mentioned_$zig_sessions": len(zig_skill_paths),
         "matched_sessions": len(matched),
@@ -439,8 +456,7 @@ def render_text_report(report: dict) -> str:
     filtered_implicit_sample = report["samples"]["filtered_implicit_sample"]
     if filtered_implicit_sample:
         lines.append(
-            "filtered_implicit_sample "
-            f"(first {len(filtered_implicit_sample)}):"
+            f"filtered_implicit_sample (first {len(filtered_implicit_sample)}):"
         )
         for entry in filtered_implicit_sample:
             lines.append(
