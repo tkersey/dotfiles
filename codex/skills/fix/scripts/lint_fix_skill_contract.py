@@ -13,6 +13,7 @@ EXPECTED_MAIN_HEADINGS = [
     "Contract",
     "Findings (severity order)",
     "Changes applied",
+    "Review loop trace",
     "Pass trace",
     "Validation",
     "Self-review loop trace",
@@ -22,6 +23,7 @@ EXPECTED_MAIN_HEADINGS = [
 EXPECTED_EMBEDDED_HEADINGS = [
     "Findings (severity order)",
     "Changes applied",
+    "Review loop trace",
     "Pass trace",
     "Validation",
     "Self-review loop trace",
@@ -39,6 +41,22 @@ EXPECTED_VALIDATION_KEYS = [
 EXPECTED_FINDINGS_LINES = [
     "Proof strength: `<characterization|targeted_regression|property_or_fuzz>`",
     "Compatibility impact: `<none|tightening|additive|breaking>`",
+]
+
+EXPECTED_REVIEW_LINES = [
+    "- If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`",
+    "- Otherwise: `R#` base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`",
+]
+
+EXPECTED_PASS_LINES = [
+    "- Core passes planned: `3`; core passes executed: `<3>`",
+    "- Delta passes planned: `<0|2>`; delta passes executed: `<0|2>`",
+    "- Total core/delta passes executed: `<3|5>`",
+    "- `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
+    "- `P2 Surface` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
+    "- `P3 Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
+    "- If delta passes executed, also include `P4` and `P5` lines in the same format.",
+    "- `Post-self-review rerun` -> executed=`<yes|no>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
 ]
 
 EXPECTED_SELF_REVIEW_LINES = [
@@ -79,10 +97,35 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.",
     "Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.",
     "Freeze the self-review baseline as the latest validated changeset.",
-    "If that rerun edits code, discard the stale self-review state, revalidate, and restart from step 2 against the new final changeset.",
-    "If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to step 8.",
-    "If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to step 8.",
-    "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to output.",
+    "If that rerun edits code, discard the stale self-review state, revalidate, and restart from phase 4 against the new final validated changeset.",
+    "If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.",
+    "If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.",
+    "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 6.",
+]
+
+REQUIRED_REVIEW_LOOP_GUARDRAILS = [
+    "MUST include a final `Review loop trace` section in the deliverable/Fix Record.",
+    "MUST use the exact diff review prompt from `Diff review loop`, with only `base_branch` and `comparison_sha` substituted.",
+    "MUST verify `comparison_sha` resolves to a commit before activating the diff review loop.",
+    "MUST keep the diff review loop separate from `Pass trace`; report it in `Review loop trace`.",
+    "MUST close the diff review loop only when a review round yields `local_findings=0`.",
+    "MUST carry blocked diff-review findings into `Residual risks / open questions`; they do not keep the diff review loop open.",
+    "MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds.",
+]
+
+FORBIDDEN_REFINE_ROUTING_PHRASES = [
+    "- `$refine`: default path when the task is to improve `fix` itself (or other skills); apply `$refine` workflow and `quick_validate`.",
+    "- Run `$refine` when the requested target is a skill artifact (for example `SKILL.md`, `agents/openai.yaml`, skill scripts/references/assets).",
+    "MUST route skill-self edits (for example `codex/skills/fix`) through `$refine` and run `quick_validate`.",
+    "If the requested target is this skill (or another skill), route through `$refine`:",
+]
+
+REQUIRED_REFERENCE_PHRASES = [
+    "**Review loop trace**",
+    "skip_not_git_repo",
+    "skip_missing_base_context",
+    "blocked_findings=`1`",
+    "stale_findings=`1`",
 ]
 
 REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS = [
@@ -265,6 +308,38 @@ def run(path: Path) -> int:
                     errors,
                 )
 
+        review = extract_heading_section(
+            block, "Review loop trace", "Pass trace", label, errors
+        )
+        if review:
+            review_block, review_start = review
+            review_line = line_no(text, offset + review_start)
+            for expected_line in EXPECTED_REVIEW_LINES:
+                require_line(
+                    review_block,
+                    expected_line,
+                    label,
+                    "Review loop trace",
+                    review_line,
+                    errors,
+                )
+
+        pass_trace = extract_heading_section(
+            block, "Pass trace", "Validation", label, errors
+        )
+        if pass_trace:
+            pass_block, pass_start = pass_trace
+            pass_line = line_no(text, offset + pass_start)
+            for expected_line in EXPECTED_PASS_LINES:
+                require_line(
+                    pass_block,
+                    expected_line,
+                    label,
+                    "Pass trace",
+                    pass_line,
+                    errors,
+                )
+
         self_review = extract_heading_section(
             block, "Self-review loop trace", "Residual risks / open questions", label, errors
         )
@@ -303,6 +378,13 @@ def run(path: Path) -> int:
                 f"{phrase}"
             )
 
+    for phrase in REQUIRED_REVIEW_LOOP_GUARDRAILS:
+        if phrase not in text:
+            errors.append(
+                "review_loop_guardrail missing required phrase: "
+                f"{phrase}"
+            )
+
     for phrase in REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS:
         if phrase not in text:
             errors.append(
@@ -323,6 +405,25 @@ def run(path: Path) -> int:
                 "forbidden_stale_self_review_phrase still present: "
                 f"{phrase}"
             )
+
+    for phrase in FORBIDDEN_REFINE_ROUTING_PHRASES:
+        if phrase in text:
+            errors.append(
+                "forbidden_refine_routing_phrase still present: "
+                f"{phrase}"
+            )
+
+    reference_path = path.parent / "references" / "self_review_loop_examples.md"
+    if not reference_path.exists():
+        errors.append(f"reference_examples missing: {reference_path}")
+    else:
+        reference_text = reference_path.read_text(encoding="utf-8")
+        for phrase in REQUIRED_REFERENCE_PHRASES:
+            if phrase not in reference_text:
+                errors.append(
+                    "reference_examples missing required phrase: "
+                    f"{phrase}"
+                )
 
     if errors:
         print("[FAIL] fix skill contract lint errors:", file=sys.stderr)

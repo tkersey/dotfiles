@@ -1,10 +1,14 @@
-# Self-Review Loop Examples
+# Review and Self-Review Loop Examples
 
-Use these examples to keep the visible transcript shape aligned with the internal self-review loop contract.
+Use these examples to keep the visible transcript shape aligned with the diff review loop and the internal self-review loop contract.
 
-## Standalone success
+## Review loop local-clean after address
 
 ```md
+**Review loop trace**
+- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`2`; blocked_findings=`0`; stale_findings=`0`; change_applied=`yes`; result=`continue`
+- `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; change_applied=`no`; result=`local_clean`
+
 **Validation**
 - `uv run pytest tests/foo.py::test_bar` -> ok
 - `{"baseline_cmd":"uv run pytest tests/foo.py::test_bar","baseline_result":"fail","proof_hook":"uv run pytest tests/foo.py::test_bar","final_cmd":"uv run pytest tests/foo.py::test_bar","final_result":"ok"}`
@@ -14,9 +18,42 @@ Use these examples to keep the visible transcript shape aligned with the interna
 - `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain for the current validated changeset.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/foo.py::test_bar`; result=`ok`; stop_reason=`no_new_actionable_changes`
 ```
 
+## Review loop local-clean with blocked carry-forward
+
+```md
+**Review loop trace**
+- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`1`; stale_findings=`0`; change_applied=`no`; result=`local_clean`
+
+**Residual risks / open questions**
+- `src/legacy_api.py:44` — blocked_by=breaking_change — next=choose an additive compatibility path
+```
+
+## Review loop stale repeat suppression
+
+```md
+**Review loop trace**
+- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; change_applied=`yes`; result=`continue`
+- `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`1`; change_applied=`no`; result=`local_clean`
+```
+
+## Review loop skip reasons
+
+```md
+**Review loop trace**
+- None (skip_missing_base_context)
+```
+
+```md
+**Review loop trace**
+- None (skip_not_git_repo)
+```
+
 ## Standalone invalidated-then-rerun
 
 ```md
+**Review loop trace**
+- None (skip_missing_base_context)
+
 **Validation**
 - `uv run pytest tests/flow.py::test_scope_lock` -> ok
 - `{"baseline_cmd":"uv run pytest tests/flow.py::test_scope_lock","baseline_result":"ok","proof_hook":"uv run pytest tests/flow.py::test_scope_lock","final_cmd":"uv run pytest tests/flow.py::test_scope_lock","final_result":"ok"}`
@@ -31,6 +68,9 @@ Use these examples to keep the visible transcript shape aligned with the interna
 ## Standalone skip gate
 
 ```md
+**Review loop trace**
+- None (skip_not_git_repo)
+
 **Changes applied**
 - None
 
@@ -41,6 +81,10 @@ Use these examples to keep the visible transcript shape aligned with the interna
 ## Embedded Fix Record success
 
 ```md
+**Review loop trace**
+- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; change_applied=`yes`; result=`continue`
+- `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; change_applied=`no`; result=`local_clean`
+
 **Validation**
 - `uv run pytest tests/widget.py::test_safe_default` -> ok
 - `{"baseline_cmd":"uv run pytest tests/widget.py::test_safe_default","baseline_result":"ok","proof_hook":"uv run pytest tests/widget.py::test_rejects_invalid_mode","final_cmd":"uv run pytest tests/widget.py::test_safe_default","final_result":"ok"}`
