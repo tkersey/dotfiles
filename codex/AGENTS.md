@@ -29,11 +29,11 @@ GRILL ME: HUMAN INPUT REQUIRED
 
 ## Challenge Escalation
 
-- As soon as an agent is genuinely challenged while solving a task, it must run the internal escalation prompt before settling for a shallow answer, a local polish pass, or a non-essential clarification question.
+- As soon as an agent is genuinely challenged while solving a task, it must run an internal escalation pass before settling for a shallow answer, a local polish pass, or a non-essential clarification question.
 - Treat these as challenge triggers: the first straightforward approach stalls; the current path feels merely incremental or obvious; the agent is treating symptoms instead of the governing cause; multiple plausible paths exist but no dominant move is clear; or progress is slipping into looped retries without a sharper thesis.
 - Do not wait for repeated failure. The first clear sign of real friction is enough.
-- Do not use the escalation prompt when blocked by missing secrets, missing permissions, or irreversible approvals. In those cases, ask the targeted question directly.
-- Use the sequence `glaze -> add -> glazer`: widen the search space, force a single highest-leverage accretive move, then compress it to the governing insight.
+- During the escalation pass, do four things in order: reject the obvious/local answer, widen the search space, choose the single highest-leverage accretive move, and compress that move to the governing insight rather than local polish.
+- Do not use the escalation pass when blocked by missing secrets, missing permissions, or irreversible approvals. In those cases, ask the targeted question directly.
 - Apply this prompt internally:
 
 ```text
