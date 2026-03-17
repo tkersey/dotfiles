@@ -190,8 +190,8 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
   - For interactive browsing, prefer `recent` instead of reflexive `recall`.
   - For filtered/search/rank/summarize intent, prefer `query` with a saved spec or focused filter.
 - Context-gathering learnings preflight (required for implementation work): once the first user prompt/request text is available (do not run at empty session start), if `.learnings.jsonl` exists in repo root, run a fast recall while gathering context and before substantial edits.
-  - Implementation preflight: `learnings recall --query "<user request>" --limit 5 --drop-superseded`
-  - Refinement pass: when early exploration materially sharpens the scope (for example after `parse`, `seq`, initial file reads, or a narrowed plan), run `learnings recall` again with the refined query before editing that slice.
+  - Implementation preflight: distill the request to a compact topic query first (roughly 4-8 task-defining terms; skip boilerplate, pasted skill blocks, and AGENTS text), then run `learnings recall --query "<focused task terms>" --limit 5 --drop-superseded`
+  - Refinement pass: when early exploration materially sharpens the scope (for example after `parse`, `seq`, initial file reads, or a narrowed plan), run one more `learnings recall` with a tighter focused query before editing that slice; do not replay the full raw prompt.
   - Interactive browse: `learnings recent --limit 10`
   - Filtered browse: `learnings query --spec "@codex/skills/learnings/specs/top-tags.json"`
   - If recall returns nothing relevant, proceed normally (do not invent).

@@ -298,8 +298,8 @@ Routing:
 - Browse latest learnings: `run_learnings_tool recent --limit 10`
 - Search or rank learnings: `run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-tags.json"`
 - Search by path concentration: `run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-paths.json"`
-- Implementation preflight during context gathering: `run_learnings_tool recall --query "<task text>" --limit 5 --drop-superseded`
-- Refined-scope preflight: rerun `run_learnings_tool recall` after `parse`, `seq`, or early file reads if those steps materially narrow the implementation slice.
+- Implementation preflight during context gathering: distill the request to a compact topical query first (roughly 4-8 task-defining terms; skip boilerplate, pasted skill blocks, and AGENTS text), then run `run_learnings_tool recall --query "<focused task terms>" --limit 5 --drop-superseded`
+- Refined-scope preflight: rerun `run_learnings_tool recall` once after `parse`, `seq`, or early file reads only if those steps materially narrow the implementation slice; tighten the query rather than replaying the full prompt.
 - If browse intent is ambiguous, start with `recent` before escalating to `query` or `recall`.
 
 CLI:
