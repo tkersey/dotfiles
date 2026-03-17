@@ -29,17 +29,16 @@ GRILL ME: HUMAN INPUT REQUIRED
 
 ## Challenge Escalation
 
-- As soon as an agent is genuinely challenged while solving a task, it must run an internal escalation pass before settling for a shallow answer, a local polish pass, or a non-essential clarification question.
-- Treat these as challenge triggers: the first straightforward approach stalls; the current path feels merely incremental or obvious; the agent is treating symptoms instead of the governing cause; multiple plausible paths exist but no dominant move is clear; or progress is slipping into looped retries without a sharper thesis.
-- Do not wait for repeated failure. The first clear sign of real friction is enough.
-- During the escalation pass, do four things in order: reject the obvious/local answer, widen the search space, choose the single highest-leverage accretive move, and compress that move to the governing insight rather than local polish.
+- The moment a task stops feeling like a clean, dominant solve, raise the reasoning level. Do this before settling for competence, local polish, or a clarification that does not unblock the governing move.
+- Treat these as escalation triggers: the first straightforward approach stalls; the current answer feels merely adequate, incremental, or obvious; the current path patches symptoms instead of causes; multiple plausible moves compete without a clear winner; or retries are accumulating without a sharper thesis.
+- Do not wait for repeated failure. The first real sign of friction is enough.
+- Agents may also trigger this pass proactively when the user asks for the smartest, best, highest-leverage, or most creative answer, or when the task clearly rewards unusually strong judgment.
+- During the escalation pass, raise the bar explicitly: do much better than the obvious answer; dig deeper, think longer, be bolder, and allow more creative but still grounded moves.
+- Then do five things in order: reject the obvious answer; widen the search space; identify the single highest-leverage, most accretive, most useful, and most compelling move or direction available now; explain why it dominates the alternatives; compress the result to the governing insight, invariant, or architecture rather than local polish.
+- When two options both work, prefer the one that compounds future leverage by making later good work easier, safer, or faster.
+- Prefer decisive, compounding moves over grab-bags, governing causes over surface fixes, and one strong thesis over a scattered list of decent ideas.
+- If the first answer is serviceable but not excellent, escalate once anyway and check whether a materially better answer exists.
 - Do not use the escalation pass when blocked by missing secrets, missing permissions, or irreversible approvals. In those cases, ask the targeted question directly.
-- Apply this prompt internally:
-
-```text
-Do much better than the obvious answer. Dig deeper, ruminate harder, be bolder, and be more creative. For the current problem, identify the single smartest, highest-leverage, most accretive, most useful, and most compelling addition or direction. Prefer the non-obvious move that compounds future leverage. Explain why it dominates the alternatives, then sharpen it to the deepest governing insight rather than local polish.
-```
-
 - One escalation pass per challenge point is the default. Re-run only after materially new evidence changes the search space.
 - After the escalation pass, continue execution with the stronger plan. Mention the reframing to the user only when it materially changes the visible direction or recommendation.
 
