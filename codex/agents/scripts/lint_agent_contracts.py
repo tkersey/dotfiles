@@ -71,6 +71,13 @@ def require_non_empty_name(path: Path, errors: list[str]) -> None:
         errors.append(f"{path.name}: must define a non-empty name")
 
 
+def require_non_empty_description(path: Path, errors: list[str]) -> None:
+    config = tomllib.loads(path.read_text(encoding="utf-8"))
+    description = config.get("description")
+    if not isinstance(description, str) or not description.strip():
+        errors.append(f"{path.name}: must define a non-empty description")
+
+
 def require_contains(text: str, needle: str, label: str, errors: list[str]) -> None:
     if needle not in text:
         errors.append(f"{label}: missing phrase: {needle}")
@@ -114,6 +121,7 @@ def main() -> int:
             errors.append(f"missing deprecated role file: {path}")
             continue
         require_non_empty_name(path, errors)
+        require_non_empty_description(path, errors)
         text = read_text(path)
         require_contains(text, "This role is retired.", filename, errors)
         require_contains(

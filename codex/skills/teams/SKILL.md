@@ -11,7 +11,7 @@ Use `$teams` when a task is still composite and parallelism helps, but keep the 
 
 - `update_plan` tracks the shared checklist.
 - `spawn_agent` handles heterogeneous delegation.
-- `send_input`, `resume_agent`, `wait`, and `close_agent` manage running agents.
+- `send_input`, `resume_agent`, `wait_agent`, and `close_agent` manage running agents.
 - `explorer` answers specific codebase questions.
 - `worker` owns bounded execution with explicit ownership.
 - Custom roles from `codex/agents/` are specialist edges only: `selector`, `coder`, `fixer`, `prover`, `integrator`, and peripheral `joiner`.
@@ -65,7 +65,7 @@ Use `$mesh` instead when:
 1. Make a short local plan with `update_plan` and identify the current ready set, not just the next critical-path step.
    - If the run needs durable shared state, mirror that ready wave into `$st` first.
 2. Identify the composite parts and reshape them into bounded leaf tasks.
-3. Keep synthesis, integration, and overlapping-write work local; dispatch every dependency-independent ready branch before the first blocking `wait`.
+3. Keep synthesis, integration, and overlapping-write work local; dispatch every dependency-independent ready branch before the first blocking `wait_agent`.
 4. Pick the right role:
    - `explorer` for specific repository questions
    - `worker` for bounded edits or verification with explicit ownership
@@ -77,7 +77,7 @@ Use `$mesh` instead when:
    - `joiner` only for GH-only PR routing workflows
 5. Give every teammate a concrete deliverable and, for code changes, a disjoint write scope using the lock-root contract in `codex/skills/select/references/lock-roots.md`.
 6. While teammates run, continue non-overlapping integration prep, review, or another ready local task.
-7. Use `wait` only when you are actually blocked, prefer longer waits over polling, and do not immediately wait after the first spawn if more ready branches remain.
+7. Use `wait_agent` only when you are actually blocked, prefer longer waits over polling, and do not immediately call `wait_agent` after the first spawn if more ready branches remain.
 8. Reuse context with `send_input` or `resume_agent` when follow-up belongs with the same teammate.
 9. Review, integrate, and close agents when they are no longer needed.
 
@@ -94,7 +94,7 @@ Good `$teams` execution:
 - keep the recommendation and final synthesis local
 - spawn one `explorer` to inspect API docs and examples
 - spawn one `explorer` to inspect runtime handlers and tool specs
-- wait only when blocked, then combine both findings into one recommendation
+- call `wait_agent` only when blocked, then combine both findings into one recommendation
 
 Why `$teams`:
 
@@ -114,7 +114,7 @@ Good `$teams` execution:
 - spawn one `worker` for config loading changes in a disjoint config scope
 - spawn one `worker` for help/completion output in a disjoint shell/help scope
 - spawn one `worker` for focused validation in a disjoint test scope
-- wait only after the full ready wave is in flight, then integrate and close the agents
+- call `wait_agent` only after the full ready wave is in flight, then integrate and close the agents
 
 Why `$teams`:
 
@@ -160,7 +160,7 @@ Why the handoff:
 
 - Do not keep core ready branches local just because they feel central; keep only synthesis, integration, or overlapping-write work local.
 - Do not spawn agents for vague goals; narrow each ask to the artifact or answer you need next.
-- Do not wait immediately after the first spawn when additional ready branches remain.
+- Do not call `wait_agent` immediately after the first spawn when additional ready branches remain.
 - Do not duplicate work between the lead and teammates.
 - Do not treat `$teams` as a hidden batch engine; once the work is a uniform row job, hand it to `$mesh`.
 - Do not spawn deprecated shims for fresh work; replace `reducer` with `coder approach=reduce`, `mentor` with `fixer`, `applier` with `prover`, and keep write coordination local instead of using `locksmith`.

@@ -1,4 +1,5 @@
 name = "reducer"
+description = "Deprecated compatibility shim that redirects reduction-oriented authoring requests to coder with approach=reduce."
 model = "gpt-5.4"
 model_reasoning_effort = "xhigh"
 developer_instructions = """

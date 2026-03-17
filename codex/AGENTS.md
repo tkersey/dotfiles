@@ -27,6 +27,22 @@ GRILL ME: HUMAN INPUT REQUIRED
 1. ...
 ```
 
+## Challenge Escalation
+
+- As soon as an agent is genuinely challenged while solving a task, it must run the internal escalation prompt before settling for a shallow answer, a local polish pass, or a non-essential clarification question.
+- Treat these as challenge triggers: the first straightforward approach stalls; the current path feels merely incremental or obvious; the agent is treating symptoms instead of the governing cause; multiple plausible paths exist but no dominant move is clear; or progress is slipping into looped retries without a sharper thesis.
+- Do not wait for repeated failure. The first clear sign of real friction is enough.
+- Do not use the escalation prompt when blocked by missing secrets, missing permissions, or irreversible approvals. In those cases, ask the targeted question directly.
+- Use the sequence `glaze -> add -> glazer`: widen the search space, force a single highest-leverage accretive move, then compress it to the governing insight.
+- Apply this prompt internally:
+
+```text
+Do much better than the obvious answer. Dig deeper, ruminate harder, be bolder, and be more creative. For the current problem, identify the single smartest, highest-leverage, most accretive, most useful, and most compelling addition or direction. Prefer the non-obvious move that compounds future leverage. Explain why it dominates the alternatives, then sharpen it to the deepest governing insight rather than local polish.
+```
+
+- One escalation pass per challenge point is the default. Re-run only after materially new evidence changes the search space.
+- After the escalation pass, continue execution with the stronger plan. Mention the reframing to the user only when it materially changes the visible direction or recommendation.
+
 # Local Codex orchestration guidance
 
 Keep multi-agent work aligned with native Codex primitives.
@@ -72,7 +88,7 @@ Maximize orchestration by maximizing the size and quality of the safe leaf wave,
 
 - Start with `$select` when the work is not already a clear row batch or a clear set of disjoint leaf tasks.
 - Use `$st` before execution when wave ownership or proof state needs to survive turns or handoffs.
-- Use `$teams` for the first heterogeneous ready wave, and launch the full dependency-independent ready set before the first blocking `wait`.
+- Use `$teams` for the first heterogeneous ready wave, and launch the full dependency-independent ready set before the first blocking `wait_agent`.
 - Hand off to `$mesh` only when the remaining work is a homogeneous batch of independent substantive rows.
 - Use `seq orchestration-concurrency --fail-on-mesh-truth` when claiming mesh concurrency or substrate truth.
 
@@ -88,7 +104,7 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
 ## `$teams`
 
 - `$teams` is the native heterogeneous orchestration path.
-- Use `update_plan`, `spawn_agent`, `send_input`, `resume_agent`, `wait`, and `close_agent`.
+- Use `update_plan`, `spawn_agent`, `send_input`, `resume_agent`, `wait_agent`, and `close_agent`.
 - Use built-in roles intentionally: `explorer` for focused questions, `worker` for bounded execution.
 - Treat custom roles in `codex/agents/` as specialist edges, not the default path:
   - `selector` for explicit `$select`-class wave shaping
@@ -99,7 +115,7 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
   - `joiner` for GH-only PR routing, not for ordinary local tasks
   - `reducer`, `mentor`, `locksmith`, and `applier` are compatibility shims only; do not route new work to them
 - Keep synthesis, integration, and overlapping-write work local.
-- Dispatch the full dependency-independent ready set before the first blocking `wait`.
+- Dispatch the full dependency-independent ready set before the first blocking `wait_agent`.
 - Delegate concrete work with explicit deliverables and disjoint write scopes; do not reserve core ready branches for the lead just because they feel central.
 - Default `fork_context: false`; for parse-first author cohorts, run `$parse` once in the parent, freeze the worker packet, and use `true` only when a specific child truly needs the parent's exact context or diff.
 - While subagents run, continue non-overlapping local work.
@@ -117,11 +133,11 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
 - If a secondary specialist row is justified, use live roles only (`coder`, `fixer`, `prover`, `integrator`); do not route new work through deprecated shims.
 - If rows share mutable state, depend on each other, or need debate or design, stop and use `$teams` or local execution instead.
 
-## Wait semantics
+## `wait_agent` Semantics
 
-- `wait` is not a join; it returns when any agent reaches a final state.
-- In `$teams`-class runs, launch the full ready set before the first blocking `wait` when scopes are disjoint.
-- Avoid tight polling loops; wait only when you are actually blocked on the remaining agents.
+- `wait_agent` is not a join; it returns when any agent reaches a final state.
+- In `$teams`-class runs, launch the full ready set before the first blocking `wait_agent` when scopes are disjoint.
+- Avoid tight polling loops; call `wait_agent` only when you are actually blocked on the remaining agents.
 
 ## Reporting
 

@@ -487,7 +487,7 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `session-tooling` summarizes per-invocation shell/tool behavior and can aggregate via `--summary --group-by executable|command|tool`.
 - `query-diagnose` emits per-query diagnostics from rollout JSONL and can suggest deterministic follow-up commands with `--next-actions`.
 - `orchestration-concurrency` reports both configured (`max_concurrency`) and effective fanout (`min(max_concurrency, csv_rows)`), plus how many times each maximum occurred.
-- It also emits `effective_peak`, `spawn_substrate`, `mesh_truth_verdict`, direct-lane counters (`spawn_agent_calls`, `wait_calls`, `close_agent_calls`), `serialized_wait_ratio`, and floor-gate fields (`floor_threshold`, `floor_applicable`, `floor_result`).
+- It also emits `effective_peak`, `spawn_substrate`, `mesh_truth_verdict`, direct-lane counters (`spawn_agent_calls`, `wait_agent_calls`, `close_agent_calls`), `serialized_wait_agent_ratio`, and floor-gate fields (`floor_threshold`, `floor_applicable`, `floor_result`).
 - For sessions without `spawn_agents_on_csv`, it returns a structured row with `mesh_truth_verdict=false` and `spawn_substrate=spawn_agent|none` rather than failing.
 - Use `--fail-on-mesh-truth` to enforce fail-closed preflight for `$mesh` claims.
 
