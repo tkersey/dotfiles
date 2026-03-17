@@ -26,6 +26,7 @@ When iterating on the Zig-backed `parse-arch` helper CLI, use these two repos:
 ```
 
 Use the helper first during normal `$parse` runs. It bootstraps a compatible `parse-arch`, accepts the same paved repo selectors agents actually try (`<repo_path>`, `--repo-path`, `--repo`, `--json`, `--format json`), and always emits JSON.
+On repo-wide runs without explicit `--focus-path`, the helper also reports `read_depth_verdict`, `thin_signal_classes`, and `suggested_focus_paths`. Treat `read_depth_verdict: thin_repo_wide` as a required second-pass trigger, not a suggestion.
 
 If you need raw CLI access for release or validation work, use this bootstrap wrapper:
 
@@ -104,10 +105,11 @@ run_parse_arch_tool() {
 2. Collect static signals first.
    - Run the helper first: `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh <repo_path>`.
    - Pass `--focus-path` for each target slice when `focus_paths` are available.
-   - Use the JSON output to inspect manifests, entrypoints, dependency-direction hints, runtime-boundary hints, architecture-doc claims, scan coverage, subsystem candidates, and focus-path observations.
+   - Use the JSON output to inspect manifests, entrypoints, dependency-direction hints, runtime-boundary hints, architecture-doc claims, scan coverage, subsystem candidates, focus-path observations, `read_depth_verdict`, `thin_signal_classes`, and `suggested_focus_paths`.
    - Treat the helper/collector as evidence collection only. Do not let it choose the final architecture label for you.
    - The raw collector now supports three repo selectors openly: positional `repo_path`, `--repo-path`, and `--repo`. It also accepts `--json` and `--format json` as no-op compatibility flags because output is always JSON.
-   - If the first repo-wide pass is thin, do one targeted second pass before broader manual inspection: choose 2-4 likely architecture-defining paths, including at least one path that should confirm the current read and, when plausible, one that could falsify it or surface a coexisting pattern (for example entrypoints, build manifests, the main runtime/core module, public package roots, provider registries, workflow definitions, generated boundaries, or a contract-heavy docs/test slice) and rerun the helper with `--focus-path` for each.
+   - If the repo-wide helper pass reports `read_depth_verdict: thin_repo_wide`, rerun the helper immediately with its `suggested_focus_paths` before broader manual inspection. Do not stop at the repo-wide JSON just because one architecture signal has a non-zero score.
+   - If the helper does not emit usable `suggested_focus_paths`, do one targeted second pass yourself: choose 2-4 likely architecture-defining paths, including at least one path that should confirm the current read and, when plausible, one that could falsify it or surface a coexisting pattern (for example entrypoints, build manifests, the main runtime/core module, public package roots, provider registries, workflow definitions, generated boundaries, or a contract-heavy docs/test slice) and rerun the helper with `--focus-path` for each.
    - Compare what the repo-wide pass saw with what the focus-path pass surfaced. Use that delta in `Major Subsystems / Coexisting Patterns`, `Repo-Fit Advice`, and `Caveats`.
 
 3. Map the evidence to the curated taxonomy and coexisting-pattern sweep.
@@ -125,8 +127,9 @@ run_parse_arch_tool() {
 
 5. Escalate only when static evidence is weak or contradictory.
    - Read [references/evidence-playbook.md](references/evidence-playbook.md) before running investigative commands.
-   - If the collector feels weak, name the missing signal classes precisely first: for example missing dependency-direction hints, unclear runtime boundaries, sparse subsystem candidates, or absent architecture docs.
+   - If the collector feels weak, name the missing signal classes precisely first. Prefer the helper's `thin_signal_classes` when present; otherwise derive them directly from the JSON evidence summary.
    - Use the focused rerun to test both the current dominant read and the strongest plausible competing label or coexisting pattern before broader manual inspection.
+   - For `library-sdk` and `cli-tooling` repos, do not accept a repo-wide helper pass as "good enough" when `read_depth_verdict` is thin. Contract surfaces, public roots, staged passes, examples, tests, and docs often carry the architecture-defining seams.
    - Do not jump straight from one weak repo-wide collector pass to "manual inspection." First prove that a focused collector rerun still leaves the architecture under-determined.
    - If the helper or collector path fails, continue with source-first manual inspection only after you state the exact failed command path and the specific signal classes the collector did not supply. Do not fall back to vague “couldn’t use the scripts” language.
    - Use safe, non-mutating probes only when they add meaningful evidence: builds, tests, dependency inspection, or local command help.
@@ -164,7 +167,7 @@ For each section:
 - `Major Subsystems / Coexisting Patterns`: List major slices only when they materially differ from the dominant architecture. Also list 0-2 directly evidenced coexisting patterns when they shape seams, contracts, or control flow. For each coexisting pattern, state its scope (`repo-wide modifier`, `slice-local variant`, or `near-miss`) and why it does not replace the dominant label.
 - `Repo-Fit Advice`: Give 3-5 bullets that help a downstream agent fit work to the repo as it exists now. Include likely seams, ownership boundaries, and `do_not_assume` warnings when confidence is weak.
 - `Agent Handoff`: Emit one fenced `yaml` block with stable keys: `repo_kind`, `dominant_architecture`, `confidence`, `focus_scope`, `major_subsystems`, `coexisting_patterns`, `architecture_drift`, `repo_fit_hints`, `do_not_assume`, and `evidence_paths`.
-- `Evidence`: Prefer concrete paths, module names, entrypoints, signal summaries, and the exact collector command shapes you used over general impressions. Say when a focus-path rerun materially changed the read or surfaced a coexisting pattern.
+- `Evidence`: Prefer concrete paths, module names, entrypoints, signal summaries, the helper's `thin_signal_classes` when present, and the exact collector command shapes you used over general impressions. Say when a focus-path rerun materially changed the read or surfaced a coexisting pattern.
 - `Architecture Drift`: Compare docs and implementation when both exist; write `none observed` when there is no meaningful drift.
 - `Caveats`: State uncertainty, missing evidence, or overclaim boundaries. Tie caveats to specific missing signals and the compensating paths you inspected, and name plausible but unproven competing labels or patterns explicitly. Avoid generic version-centric caveats unless the binary behavior itself is the issue.
 
@@ -194,11 +197,14 @@ For each section:
 - `plugin` / extension-based: hosts, hooks, plugins, extensions, or adapter registries are first-class architecture surfaces.
 - `library-sdk` / `cli-tooling` repo kinds: exported API roots, examples/tests-as-contract, command registries, provider/plugin seams, or staged passes can matter more than app-style entrypoints.
 - `coexisting patterns`: package-by-feature, vertical slices, command/query separation, functional-core/imperative-shell, generated-code boundaries, and plugin seams often refine the read without replacing the dominant label.
+- Treat helper-reported `thin_repo_wide` results as an under-read warning even when the top architecture score is non-zero. The second pass is about deepening the evidence, not rewording the same thin read.
 
 ## Validation
 
 - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/parse`
 - `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh "$PWD" --focus-path codex/skills/parse/SKILL.md`
+- `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh /Users/tk/workspace/tk/shift --json | jq -e '.read_depth_verdict == "thin_repo_wide" and (.suggested_focus_paths | index("src"))'`
+- `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh /Users/tk/.dotfiles --json | jq -e '.read_depth_verdict == "thin_repo_wide" and (.suggested_focus_paths | length > 0)'`
 - `run_parse_arch_tool eval --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml"`
 - `run_parse_arch_tool doctor --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml" --repo-path "$PWD"`
 

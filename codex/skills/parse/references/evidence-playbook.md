@@ -18,6 +18,15 @@ Start with `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh`
 
 Prefer concrete paths and dependency direction clues over folder-name aesthetics.
 
+## Repo-Wide Read Depth Gate
+
+Treat the helper's repo-wide JSON as a gate, not just a blob of hints.
+
+- If `read_depth_verdict` is `thin_repo_wide`, the repo-wide pass under-read the repo even when one architecture signal has a non-zero score.
+- Name the helper's `thin_signal_classes` explicitly in the memo or your working notes before you compensate.
+- If `suggested_focus_paths` is non-empty, reuse those exact paths for the second helper pass before you invent your own.
+- Only choose your own focus paths when the helper emitted none or the suggested set is clearly mismatched to the repo shape.
+
 ## Target Slice First When You Have One
 
 If the caller already knows the target files or subsystem, pass them as `focus_paths` to the collector and compare slice-local evidence with repo-wide evidence.
@@ -30,13 +39,15 @@ If the caller already knows the target files or subsystem, pass them as `focus_p
 
 If the initial repo-wide helper pass is thin, do one focused collector rerun before broader manual inspection.
 
-- Choose 2-4 likely architecture-defining paths from the first pass or from obvious ownership seams. Include at least one path that should confirm the current dominant read and, when plausible, one that could falsify it or surface a coexisting pattern:
+- Prefer the helper's `suggested_focus_paths` first when they exist.
+- Otherwise choose 2-4 likely architecture-defining paths from the first pass or from obvious ownership seams. Include at least one path that should confirm the current dominant read and, when plausible, one that could falsify it or surface a coexisting pattern:
   - build/manifests
   - entrypoints or public package roots
   - the dominant runtime/core module
   - plugin or provider registries, workflow/job definitions, generated-code roots, or read/write split directories when those are plausible competing patterns
   - docs/tests/examples only when they materially define the contract
 - Rerun the helper with repeatable `--focus-path` flags for those slices.
+- For `library-sdk` and `cli-tooling` repos, keep the second pass biased toward public roots, contract-heavy examples/tests, staged passes, and docs. Those are often the architecture-defining surfaces that repo-wide collection misses.
 - Compare repo-wide versus focus-path evidence explicitly:
   - which signal classes stayed thin
   - which subsystem boundaries or coexisting patterns only became visible in the focused pass
@@ -100,6 +111,7 @@ Always explain what evidence would raise or lower confidence.
 ## Caveat Wording
 
 - Prefer caveats like "repo-wide collector signals were thin on dependency direction, so I inspected `build.zig`, `src/core`, and `test/` directly" over generic caveats about the installed binary version.
+- When the helper emitted `thin_signal_classes` or `suggested_focus_paths`, carry them into the caveat or evidence section instead of paraphrasing vaguely.
 - Mention the binary version only when the CLI behavior itself blocked a needed flag or output mode.
 - If the helper or collector path fails outright, name the exact failed command path and the signal classes you had to recover manually before you lean on source/doc inspection.
 - If the collector under-read the repo, say what it still got right and what evidence classes required compensation.
