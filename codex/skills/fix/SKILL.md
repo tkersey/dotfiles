@@ -82,6 +82,10 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST close the diff review loop only when a review round yields `local_findings=0`.
 - MUST carry blocked diff-review findings into `Residual risks / open questions`; they do not keep the diff review loop open.
 - MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds.
+- MUST enumerate every PROVEN_USED external surface touched by code/docs/examples before closing the core-pass phase.
+- MUST assign each enumerated public/documented surface exactly one dedicated proof hook or one explicit blocker; a sibling or nearby proof hook does not discharge another advertised form.
+- MUST NOT accept a heuristic fallback or compatibility-sensitive public-seam change as done while the advertised/documented form it changes is still unproven.
+- MUST NOT mark a diff-review finding stale when it targets a PROVEN_USED external surface that still lacks a dedicated proof hook or explicit blocker.
 - MUST include a final `Self-review loop trace` section in the deliverable/Fix Record.
 - MUST run the final agent-directed self-review loop only after at least one change is applied and validation is passing.
 - MUST run the self-review loop against the final validated changeset only.
@@ -90,6 +94,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.
 - MUST treat a self-review answer as actionable whenever it identifies a concrete compatible/provable improvement on the current validated changeset, even if the improvement is ergonomic, structural, or API-shaping rather than a baseline bug fix.
 - MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.
+- MUST, when public/documented surfaces are touched, answer that question by first inventorying which advertised surface remains unproven; `finding=none` is allowed only when every such surface is proved or explicitly blocked.
 - MUST NOT reject a self-review suggestion solely because the baseline is already green, the concern sounds architectural, or the change would reshape a public/API seam; if it can stay backward-compatible and be revalidated locally, implement it.
 - MUST, when a self-review critique is broader than the smallest bug repair, apply the narrowest compatible/provable slice that materially addresses the critique before considering broader follow-up skills.
 - MUST rerun the non-self-review `$fix` passes once after the self-review loop reaches `no_new_actionable_changes` or `blocked`.
@@ -162,6 +167,26 @@ API/migration rules:
 - IF a fix touches an externally-used surface (use `Externally-used surface checklist`),
   THEN prefer additive/backward-compatible changes (new option/new function/adapter) over breaking changes.
 - IF a breaking change is unavoidable, THEN stop and ask.
+
+### Surface proof coverage (deterministic)
+Goal: prevent public/documented surfaces from closing on partial or sibling proof.
+
+Algorithm:
+1. Enumerate `proof surfaces` from the touched slice:
+   - every PROVEN_USED external surface touched by code changes
+   - every docs/example form changed by the diff that advertises caller-visible behavior on that surface
+2. Split one API seam into multiple proof surfaces when callers observe distinct forms separately (for example inferred vs explicit errors, omitted vs provided config, or separate constructor/helper forms).
+3. For each proof surface, record:
+   - surface token/form
+   - evidence that it is PROVEN_USED
+   - exact proof hook OR explicit blocker
+   - status=`proved|blocked`
+4. Do not close the diff review loop or the core-pass phase while any proof surface is still unproved.
+
+Rules:
+- A failing/proving hook for one lexical lane does not discharge a different advertised/documented form on the same public surface.
+- Docs/examples edits create proof obligations for the advertised forms they change; they are not commentary-only when they describe caller-visible behavior.
+- If a public seam fix introduces a heuristic fallback, unresolved-default, or compatibility-sensitive narrowing, treat that seam as unproved until the exact advertised/documented form is covered by a dedicated proof hook or blocker.
 
 Performance rules:
 - MUST avoid obvious asymptotic regressions in hot paths.
@@ -252,12 +277,15 @@ Scope widening trigger (deterministic):
 ### Proof discipline for passing baselines
 When the baseline signal is ok:
 - For every acted-on finding, prefer a proof hook that fails before the fix (focused regression/characterization test).
+- For every enumerated proof surface under `Surface proof coverage (deterministic)`, prefer a failing proof hook before the fix; only an explicit blocker may replace that hook.
 - If you cannot produce a failing proof hook, do not edit; attempt to create one first by:
   - turning the counterexample into a focused regression/characterization test
   - enforcing the invariant at a single boundary seam (parse/refine once) and testing the new error
   - reducing effects to a pure helper and unit-testing it
   - using an existing fuzzer/property test harness if present
 - Only if you still cannot create a proof hook without product ambiguity, record the blocker as residual risk.
+- A proof hook for one sibling, lexical, or nearby form does not satisfy another advertised proof surface.
+- If the fix changes a public seam by adding a heuristic fallback or narrowing unresolved behavior, treat that seam as unproved until the exact advertised/documented form has a dedicated proof hook or blocker.
 - Self-review exception: when the self-review finding is a concrete compatible simplification or auditability improvement on an already-green changeset, a fresh failing hook is preferred but not mandatory; the primary validation bundle may serve as the proof hook if it still proves the improved invariant after the change.
 
 ### Residual risks / open questions policy (last resort)
@@ -341,6 +369,7 @@ For every issue you act on, construct this record before editing:
 - proven_used: <yes/no + evidence if yes>
 - external_surface: <yes/no + why>
 - diff_touch: <yes/no>
+- proof_target: <exact advertised/documented form covered by the proof>
 - counterexample: <input/timeline>
 - invariant_before: <what is allowed/assumed today>
 - invariant_after: <what becomes guaranteed/rejected>
@@ -408,24 +437,28 @@ Algorithm:
 4. Emit one `Review loop trace` row per review round.
 5. If `local_findings > 0`, run `Address all review findings.`, re-run the chosen validation signal, then repeat from step 2.
 6. If a repeated locally-fixable finding is stale, suppress it from loop continuation and count it under `stale_findings`.
-7. Close the diff review loop only when a review round yields `local_findings=0`.
-8. Carry any `blocked_findings` forward to `Residual risks / open questions`; they do not keep this phase open.
+   - Do not mark a finding stale if it targets a PROVEN_USED external surface that still lacks a dedicated proof hook or explicit blocker.
+7. Re-check `Surface proof coverage (deterministic)` against the current diff before closing the round.
+8. Close the diff review loop only when a review round yields `local_findings=0` AND every enumerated proof surface is `proved|blocked`.
+9. Carry any `blocked_findings` forward to `Residual risks / open questions`; they do not keep this phase open.
 
 ### 2) Core passes
 1. Determine PROVEN_USED behavior:
    - Apply `PROVEN_USED evidence checklist` to the behavior tokens affected by the slice.
-2. Derive contract without asking (in this order):
+2. Enumerate proof surfaces:
+   - Apply `Surface proof coverage (deterministic)` to the touched code/docs/examples before deriving closure.
+3. Derive contract without asking (in this order):
    - tests that exercise the slice
    - callsites in the repo
    - docs/README/examples
    - if none: add a characterization test for current behavior
-3. Write contract (1 sentence): "Working means …".
-4. Run baseline signal once; record result.
-5. If baseline signal is ok, apply `Proof discipline for passing baselines`.
-6. Enumerate candidate failure modes for the slice.
-7. Rank security > crash > corruption > logic.
-8. For each issue you will act on, create a finding record.
-9. Run the `Multi-pass loop (default)` for the touched slice.
+4. Write contract (1 sentence): "Working means …".
+5. Run baseline signal once; record result.
+6. If baseline signal is ok, apply `Proof discipline for passing baselines`.
+7. Enumerate candidate failure modes for the slice.
+8. Rank security > crash > corruption > logic.
+9. For each issue you will act on, create a finding record.
+10. Run the `Multi-pass loop (default)` for the touched slice.
 
 #### 2a) Unsoundness scan
 For each hazard class that applies:
@@ -492,17 +525,18 @@ Algorithm:
 3. If simplification depends on an unstated invariant, run/refresh `$invariant-ace` first.
 4. Keep complexity-only cleanup out of scope unless it closes a concrete risk.
 
-10. Implement fixes (per finding).
+11. Implement fixes (per finding).
 For findings in severity order:
 1. Implement the smallest sound fix that removes the bug-class.
 2. Apply correctness tightening when allowed.
 3. Ensure invariants + ownership hold on all paths.
 4. Keep diff reviewable; avoid drive-by refactors.
 
-11. Close the core-pass phase.
+12. Close the core-pass phase.
    - Run the chosen validation signal.
    - If it fails, update findings with the new counterexample, apply the smallest additional fix, and re-run the SAME signal.
    - Repeat until the signal passes.
+   - Re-check `Surface proof coverage (deterministic)` and do not close while any proof surface remains unproved.
    - If you cannot make progress after 3 repair cycles, stop and ask with the last failing output, what you tried, and the smallest remaining decision that blocks you.
 
 ### 3) Residual risk sweep (required)
@@ -513,8 +547,9 @@ For findings in severity order:
 1. Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.
 2. Freeze the self-review baseline as the latest validated changeset.
 3. Ask internally exactly: `If you could change one thing about this changeset what would you change?`
-4. Summarize the self-round in `Self-review loop trace` with one delta row.
-5. If the answer yields one new actionable self-review change:
+4. If public/documented surfaces are touched, answer that question by first inventorying which advertised proof surface remains unproven.
+5. Summarize the self-round in `Self-review loop trace` with one delta row.
+6. If the answer yields one new actionable self-review change:
    - convert it into one concrete finding,
    - treat compatible ergonomic/structural/API-shaping improvements as actionable when they materially improve the current validated changeset and can be proven locally,
    - widen anywhere in the current repo/worktree as needed,
@@ -522,11 +557,12 @@ For findings in severity order:
    - re-run the chosen validation signal and update findings/proof,
    - record the `(validated_changeset_fingerprint, normalized_answer_summary)` pair so repeated suggestions cannot loop forever,
    - repeat from step 2.
-6. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.
-7. If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.
+7. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.
+8. If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.
+   - `finding=none` is allowed only when every enumerated proof surface is `proved|blocked`.
    - This check is against the current final validated changeset, not an earlier pre-delta review state.
    - `already green`, `architectural`, `not fix-shaped`, or `no failing proof hook` are not sufficient reasons by themselves when a concrete compatible/provable improvement still exists.
-8. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 6.
+9. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 6.
 
 ### 5) Post-self-review rerun (required)
 1. Run the non-self-review core passes once against the full resulting changeset.

@@ -89,6 +89,7 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.",
     "MUST treat a self-review answer as actionable whenever it identifies a concrete compatible/provable improvement on the current validated changeset, even if the improvement is ergonomic, structural, or API-shaping rather than a baseline bug fix.",
     "MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.",
+    "MUST, when public/documented surfaces are touched, answer that question by first inventorying which advertised surface remains unproven; `finding=none` is allowed only when every such surface is proved or explicitly blocked.",
     "MUST NOT reject a self-review suggestion solely because the baseline is already green, the concern sounds architectural, or the change would reshape a public/API seam; if it can stay backward-compatible and be revalidated locally, implement it.",
     "MUST, when a self-review critique is broader than the smallest bug repair, apply the narrowest compatible/provable slice that materially addresses the critique before considering broader follow-up skills.",
     "MUST rerun the non-self-review `$fix` passes once after the self-review loop reaches `no_new_actionable_changes` or `blocked`.",
@@ -101,6 +102,7 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.",
     "If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.",
     "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 6.",
+    "`finding=none` is allowed only when every enumerated proof surface is `proved|blocked`.",
 ]
 
 REQUIRED_REVIEW_LOOP_GUARDRAILS = [
@@ -111,6 +113,10 @@ REQUIRED_REVIEW_LOOP_GUARDRAILS = [
     "MUST close the diff review loop only when a review round yields `local_findings=0`.",
     "MUST carry blocked diff-review findings into `Residual risks / open questions`; they do not keep the diff review loop open.",
     "MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds.",
+    "MUST enumerate every PROVEN_USED external surface touched by code/docs/examples before closing the core-pass phase.",
+    "MUST assign each enumerated public/documented surface exactly one dedicated proof hook or one explicit blocker; a sibling or nearby proof hook does not discharge another advertised form.",
+    "MUST NOT accept a heuristic fallback or compatibility-sensitive public-seam change as done while the advertised/documented form it changes is still unproven.",
+    "MUST NOT mark a diff-review finding stale when it targets a PROVEN_USED external surface that still lacks a dedicated proof hook or explicit blocker.",
 ]
 
 FORBIDDEN_REFINE_ROUTING_PHRASES = [
@@ -126,6 +132,14 @@ REQUIRED_REFERENCE_PHRASES = [
     "skip_missing_base_context",
     "blocked_findings=`1`",
     "stale_findings=`1`",
+    "## Public surface proof coverage",
+    "proof_target=",
+]
+
+REQUIRED_PROOF_COVERAGE_PHRASES = [
+    "### Surface proof coverage (deterministic)",
+    "A failing/proving hook for one lexical lane does not discharge a different advertised/documented form on the same public surface.",
+    "If a public seam fix introduces a heuristic fallback, unresolved-default, or compatibility-sensitive narrowing, treat that seam as unproved until the exact advertised/documented form is covered by a dedicated proof hook or blocker.",
 ]
 
 REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS = [
@@ -382,6 +396,13 @@ def run(path: Path) -> int:
         if phrase not in text:
             errors.append(
                 "review_loop_guardrail missing required phrase: "
+                f"{phrase}"
+            )
+
+    for phrase in REQUIRED_PROOF_COVERAGE_PHRASES:
+        if phrase not in text:
+            errors.append(
+                "proof_coverage_guardrail missing required phrase: "
                 f"{phrase}"
             )
 

@@ -48,6 +48,21 @@ Use these examples to keep the visible transcript shape aligned with the diff re
 - None (skip_not_git_repo)
 ```
 
+## Public surface proof coverage
+
+```md
+**Findings (severity order)**
+- `F1` `src/with_api.zig:88` — logic — advertised anonymous inferred `!T` form is unproven on a public seam
+  - Surface: Tokens=shift.with anonymous inferred !T; PROVEN_USED=yes (README + examples); External=yes; Diff_touch=yes
+  - proof_target=anonymous inferred `!T` in `shift.with(...)`
+  - Proof: `zig test test/with_api_inferred_errors.zig --test-filter anonymous_inferred_error` -> ok
+
+- `F2` `src/algebraic.zig:144` — logic — algebraic handler-error inference remains unproven on the documented form
+  - Surface: Tokens=shift.algebraic.Program handler inferred errors; PROVEN_USED=yes (docs + examples); External=yes; Diff_touch=yes
+  - proof_target=handler inferred errors in `shift.algebraic.Program(...)`
+  - Proof: `zig test test/algebraic_inferred_errors.zig --test-filter handler_inferred_error` -> ok
+```
+
 ## Standalone invalidated-then-rerun
 
 ```md
