@@ -1,13 +1,13 @@
 ---
 name: fix
-description: Review+fix protocol with optional pre-core git diff review and safety guardrails (unsoundness, invariants, footguns, incidental complexity). Use when prompts say "$fix this PR", "fix current branch", "fix this diff", "repair CI red", or "apply a minimal patch", and when crash/corruption/invariant-break issues need correction with a validation signal. Stop only after self-review exhausts actionable changes and the post-self-review rerun is clean.
+description: Review+fix protocol with optional pre-core git diff review and safety guardrails (unsoundness, invariants, footguns, incidental complexity). Use when prompts say "$fix this PR", "fix current branch", "fix this diff", "repair CI red", or "apply a minimal patch", and when crash/corruption/invariant-break issues need correction with a validation signal. Stop only after self-review exhausts actionable changes, the post-self-review rerun is clean, and two consecutive terminal diff-review closure rounds are clean.
 ---
 
 # Fix
 
 ## Intent
-Make risky or unclear code safe with the smallest sound, validated change, then keep listening to the final self-review until no actionable self-review change remains.
-When the validated changeset survives the post-self-review rerun, `$fix` stops at that boundary; broader architecture, product, or roadmap analysis belongs to another skill.
+Make risky or unclear code safe with the smallest sound, validated change, then keep listening to the final self-review until no actionable self-review change remains and the unchanged final diff is review-clean across two consecutive terminal diff-review rounds.
+When the validated changeset survives the post-self-review rerun and two consecutive terminal diff-review closure rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every proof surface is `proved|blocked`, `$fix` stops at that boundary; broader architecture, product, or roadmap analysis belongs to another skill.
 Skill-artifact refinement belongs to `$refine`; `$fix` stays focused on code/diff repair turns.
 
 ## Execution spine
@@ -16,7 +16,7 @@ Skill-artifact refinement belongs to `$refine`; `$fix` stays focused on code/dif
 - `Core passes`
 - `Residual risk sweep`
 - `Agent-directed self-review loop`
-- `Post-self-review rerun`
+- `Post-self-review rerun + final diff review closure`
 - `Output / handoff`
 
 ## Double Diamond fit
@@ -66,6 +66,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST include machine-checkable validation evidence keys in `Validation`: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
 - MUST use the exact heading names from `Deliverable format (chat)` / `Fix Record`; do not alias or shorten heading labels.
 - MUST produce a complete finding record for every acted-on issue:
+  - proof_target
   - counterexample
   - invariant_before
   - invariant_after
@@ -77,11 +78,18 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 - MUST include a final `Review loop trace` section in the deliverable/Fix Record.
 - MUST use the exact diff review prompt from `Diff review loop`, with only `base_branch` and `comparison_sha` substituted.
+- MUST run every `R#` review round, including the terminal closure rounds, in a fresh isolated reviewer turn/agent with no authoring or prior-review context beyond the frozen reviewer packet for that round. The reviewer packet MUST include the literal prompt, diff-review finding/comment/priority bars, diff-review output schema, frozen `base_branch`/`comparison_sha`, and the same repo/worktree snapshot binding as the fixer (`repo_root`/`worktree_path` or equivalent). The execution substrate is implementation-defined; do not require a direct `/review` command. The fixer may address findings but must not both generate and adjudicate the same review round.
+- MUST derive `base_branch` and `comparison_sha` from repo state for any git-backed run with a live diff when they are omitted, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base. For git-backed live diffs, missing review context after derivation is a blocker, not a successful `skip_missing_base_context` path.
 - MUST verify `comparison_sha` resolves to a commit before activating the diff review loop.
 - MUST keep the diff review loop separate from `Pass trace`; report it in `Review loop trace`.
-- MUST close the diff review loop only when a review round yields `local_findings=0`.
-- MUST carry blocked diff-review findings into `Residual risks / open questions`; they do not keep the diff review loop open.
-- MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds.
+- MUST close a pre-terminal diff review round only when a review round yields `local_findings=0`; the terminal final-diff closure round additionally requires `blocked_findings=0` and `stale_findings=0`.
+- MUST rerun the exact diff review loop against the current final diff after the self-review loop and after any post-self-review rerun edits; do not close `$fix` until two consecutive terminal review rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`.
+- MUST treat blocked/stale diff-review carry-forward as pre-terminal only. A terminal final-diff closure round with any `blocked_findings` or `stale_findings` is not review-clean and does not close `$fix`.
+- MUST NOT treat a terminal final-diff review round with `blocked_findings>0` as closed or `local_clean`; if a fresh reviewer still emits any finding, `$fix` is not done.
+- MUST NOT treat a terminal final-diff review round with `stale_findings>0` as closed or `local_clean`; if a fresh reviewer still emits a repeated finding, `$fix` is not done.
+- MUST use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
+- MUST require two consecutive clean terminal review rows on the unchanged final diff (same frozen `base_branch`/`comparison_sha`, no intervening edits) before closing `$fix`.
+- MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds and the current proof bundle directly disproves the finding or the implicated diff hunk/form no longer exists; unchanged repetition alone is not enough.
 - MUST judge diff-review findings by author-fix-worthiness: flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them.
 - MUST prefer zero diff-review findings over speculative or assumption-heavy output; do not flag pre-existing issues, intentional behavior changes, or style-only nits.
 - MUST require every diff-review finding that claims broader impact to name the concrete callers/files/functions that are provably affected, and keep each finding comment to one matter-of-fact paragraph that states the triggering scenario or inputs.
@@ -93,19 +101,21 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST include a final `Self-review loop trace` section in the deliverable/Fix Record.
 - MUST run the final agent-directed self-review loop only after at least one change is applied and validation is passing.
 - MUST run the self-review loop against the final validated changeset only.
-- MUST invalidate and rerun the self-review loop if any non-self-review edit occurs after a self-review round.
+- MUST invalidate and rerun the self-review loop if any non-self-review edit occurs after a self-review round, including edits from the post-self-review rerun or final diff review closure loop.
 - MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`
 - MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.
+- MUST, when answering the self-review question, first inventory unresolved review-qualifying findings on the current final diff using `Diff review finding bar (required)`; if any exist, choose the highest-severity unresolved one before considering ergonomic/structural/API-shaping improvements.
 - MUST treat a self-review answer as actionable whenever it identifies a concrete compatible/provable improvement on the current validated changeset, even if the improvement is ergonomic, structural, or API-shaping rather than a baseline bug fix.
 - MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.
-- MUST, when public/documented surfaces are touched, answer that question by first inventorying which advertised surface remains unproven; `finding=none` is allowed only when every such surface is proved or explicitly blocked.
+- MUST, when public/documented surfaces are touched, answer that question by first inventorying which advertised surface remains unproven; `finding=none` is allowed only when every such surface is proved or explicitly blocked and the current final diff yields zero qualifying findings under the diff review bars.
 - MUST NOT reject a self-review suggestion solely because the baseline is already green, the concern sounds architectural, or the change would reshape a public/API seam; if it can stay backward-compatible and be revalidated locally, implement it.
 - MUST, when a self-review critique is broader than the smallest bug repair, apply the narrowest compatible/provable slice that materially addresses the critique before considering broader follow-up skills.
 - MUST rerun the non-self-review `$fix` passes once after the self-review loop reaches `no_new_actionable_changes` or `blocked`.
 - MUST NOT use `scope_guardrail` as the reason to reject a self-review suggestion once the self-review phase has started.
-- MUST NOT report a self-review answer that was already applied before the final self-review round; record `finding=none` only when the current final validated changeset yields no concrete compatible/provable self-review change.
+- MUST NOT carry a terminal final-diff review finding as `blocked_by=scope_guardrail`; after self-review starts, treat it as `local_findings` or block it for another allowed reason.
+- MUST NOT report a self-review answer that was already applied before the final self-review round; record `finding=none` only when the current final validated changeset yields no concrete compatible/provable self-review change and no qualifying diff-review finding remains.
 - MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.
-- MUST stop `$fix` once no new actionable self-review change remains and the post-self-review rerun is clean; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.
+- MUST stop `$fix` once no new actionable self-review change remains, the post-self-review rerun is clean, and the terminal final-diff review rerun is clean; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.
 - MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.
 - When paired with `$tk` in wave execution, MUST treat `$fix` as the final mutating pass before artifactization:
   - `commit_first`: hand off immediately to `$commit` after passing validation.
@@ -388,6 +398,7 @@ Use this as the reference shape when writing findings.
 ```md
 F1 `src/config_loader.py:88` — crash — untrusted config type causes uncaught attribute access
   - Surface: Tokens=config.path; PROVEN_USED=yes (tests/config/test_loader.py::test_reads_path); External=yes; Diff_touch=yes
+  - Proof target: explicit rejection of null `config.path` before `cfg.path.strip()`
   - Counterexample: `{"path":null}` reaches `cfg.path.strip()` and raises `AttributeError`
   - Invariant (before): loader assumes `path` is a non-empty string
   - Invariant (after): loader accepts only non-empty string `path`; invalid type returns explicit error
@@ -411,15 +422,17 @@ Residual risks / open questions
 4. Apply `PR/diff scope guardrail` for review mode.
 5. Apply `Generated / third-party code guardrail` before editing.
 6. Determine review-loop activation:
-   - If `git rev-parse --is-inside-work-tree` fails, set `Review loop trace` to `- None (skip_not_git_repo)` and continue.
-   - If the repo is git-backed but `base_branch` or `comparison_sha` is missing, set `Review loop trace` to `- None (skip_missing_base_context)` and continue.
-   - Otherwise verify `comparison_sha` with `git rev-parse --verify <comparison_sha>^{commit}` and freeze the canonical commit for the rest of the run.
+    - If `git rev-parse --is-inside-work-tree` fails, set `Review loop trace` to `- None (skip_not_git_repo)` and continue.
+    - If the repo is git-backed and there is a live diff while `base_branch` or `comparison_sha` is missing, derive them from repo state, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base; omitted-but-derivable git context is not a skip case.
+    - If the repo is git-backed and there is a live diff, but `base_branch` or `comparison_sha` is still missing after derivation, stop and ask with the derivation attempts; do not emit `skip_missing_base_context`.
+    - If there is no live diff and no review target can be derived, set `Review loop trace` to `- None (skip_missing_base_context)` and continue.
+    - Otherwise verify `comparison_sha` with `git rev-parse --verify <comparison_sha>^{commit}` and freeze the canonical commit for the rest of the run.
    - If that verification fails, stop before editing and report the failed command as a blocker.
 7. Select validation signal (or create proof hook).
 8. If signal/proof creation fails, stop before editing and return `blocked_by=no_repro_or_proof` with attempted commands.
 
 ### 1) Diff review loop
-This phase runs after preflight and before core passes.
+This phase runs after preflight and before core passes, then runs again as the final closure gate on the current final diff after self-review/post-self-review edits settle.
 
 ### Diff review finding bar (required)
 - Flag only discrete, actionable bugs introduced by the diff that materially impact correctness, performance, security, or maintainability.
@@ -471,10 +484,21 @@ Rules:
 - `code_location` is required, must overlap the diff, and should stay as tight as possible.
 - Return all qualifying findings, not just the first. If there is no finding the author would definitely want to fix, return an empty `findings` list and set the overall verdict accordingly.
 
+### Reviewer packet (required)
+- Every isolated reviewer turn receives a frozen reviewer packet containing:
+  - the literal review prompt,
+  - `Diff review finding bar (required)`,
+  - `Diff review comment bar (required)`,
+  - `Diff review priority bar (required)`,
+  - `Diff review output schema (required)`,
+  - the frozen `base_branch` label and canonical `comparison_sha`,
+  - the same repo/worktree snapshot binding as the fixer (`repo_root`/`worktree_path` or equivalent)
+- Do not rely on ambient skill context inside the isolated reviewer turn; the packet must be sufficient on its own.
+
 Literal prompts (required):
 
 ```text
-Review the code changes against the base branch '<base_branch>'. The merge base commit for this comparison is <comparison_sha>. Run `git diff <comparison_sha>` to inspect the changes relative to <base_branch> and return JSON-only findings using the review bars and output schema in this skill. Flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them. Do not flag pre-existing issues, intentional behavior changes, speculative risks, or style-only nits. When claiming broader impact, name the concrete callers/files/functions that are provably affected. Prefer no findings over weak findings. Prefix each title with `[P0]`..`[P3]`, include numeric `priority`, keep `code_location` tight and diff-overlapping, and include an `overall_correctness` verdict.
+Review the code changes against the base branch '<base_branch>'. The merge base commit for this comparison is <comparison_sha>. Run `git diff <comparison_sha>` to inspect the changes relative to <base_branch> and return JSON-only findings using the review bars and output schema in the reviewer packet for this run. Flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them. Do not flag pre-existing issues, intentional behavior changes, speculative risks, or style-only nits. When claiming broader impact, name the concrete callers/files/functions that are provably affected. Prefer no findings over weak findings. Prefix each title with `[P0]`..`[P3]`, include numeric `priority`, keep `code_location` tight and diff-overlapping, and include an `overall_correctness` verdict.
 ```
 
 ```text
@@ -483,18 +507,19 @@ Address all review findings.
 
 Algorithm:
 1. If `Review loop trace` already contains a skip line from preflight, continue to phase 2.
-2. Run the literal review prompt using the frozen `base_branch` label and canonical `comparison_sha`.
+2. Run the literal review prompt in a fresh isolated reviewer turn/agent with no authoring or prior-review context beyond the frozen reviewer packet for that round, bound to the same repo/worktree snapshot as the fixer.
 3. Partition the returned findings into:
-   - `local_findings`: locally fixable under ordinary `$fix` guardrails
+   - `local_findings`: locally fixable under the active guardrails for the current phase
    - `blocked_findings`: findings that are blocked under the existing blocker model
    - `stale_findings`: repeated locally-fixable findings whose normalized fingerprint and implicated path set did not change across consecutive rounds after an address round
+   - Once self-review has started, the terminal final-diff closure loop is current-worktree scoped and `scope_guardrail` is not a valid blocker.
 4. Emit one `Review loop trace` row per review round.
 5. If `local_findings > 0`, run `Address all review findings.`, re-run the chosen validation signal, then repeat from step 2.
-6. If a repeated locally-fixable finding is stale, suppress it from loop continuation and count it under `stale_findings`.
+6. If a repeated locally-fixable finding is stale, suppress it from loop continuation and count it under `stale_findings` only when its normalized fingerprint and implicated path set did not change across consecutive rounds and the current proof bundle directly disproves the finding or the implicated diff hunk/form no longer exists.
    - Do not mark a finding stale if it targets a PROVEN_USED external surface that still lacks a dedicated proof hook or explicit blocker.
 7. Re-check `Surface proof coverage (deterministic)` against the current diff before closing the round.
-8. Close the diff review loop only when a review round yields `local_findings=0` AND every enumerated proof surface is `proved|blocked`.
-9. Carry any `blocked_findings` forward to `Residual risks / open questions`; they do not keep this phase open.
+8. In this pre-core invocation, close the diff review loop only when a review round yields `local_findings=0` AND every enumerated proof surface is `proved|blocked`.
+9. Treat any `blocked_findings` or `stale_findings` carried from this pre-core invocation as pre-terminal only: they may continue into later phases/`Residual risks / open questions`, but they do not count as review-clean and cannot satisfy the terminal closure gate.
 
 ### 2) Core passes
 1. Determine PROVEN_USED behavior:
@@ -601,9 +626,10 @@ For findings in severity order:
 1. Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.
 2. Freeze the self-review baseline as the latest validated changeset.
 3. Ask internally exactly: `If you could change one thing about this changeset what would you change?`
-4. If public/documented surfaces are touched, answer that question by first inventorying which advertised proof surface remains unproven.
-5. Summarize the self-round in `Self-review loop trace` with one delta row.
-6. If the answer yields one new actionable self-review change:
+4. Before considering ergonomic/structural/API-shaping improvements, inventory unresolved review-qualifying findings on the current final diff using `Diff review finding bar (required)`; if any exist, choose the highest-severity unresolved one.
+5. If public/documented surfaces are touched, answer that question by first inventorying which advertised proof surface remains unproven.
+6. Summarize the self-round in `Self-review loop trace` with one delta row.
+7. If the answer yields one new actionable self-review change:
    - convert it into one concrete finding,
    - treat compatible ergonomic/structural/API-shaping improvements as actionable when they materially improve the current validated changeset and can be proven locally,
    - widen anywhere in the current repo/worktree as needed,
@@ -611,17 +637,22 @@ For findings in severity order:
    - re-run the chosen validation signal and update findings/proof,
    - record the `(validated_changeset_fingerprint, normalized_answer_summary)` pair so repeated suggestions cannot loop forever,
    - repeat from step 2.
-7. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.
-8. If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.
-   - `finding=none` is allowed only when every enumerated proof surface is `proved|blocked`.
+8. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.
+9. If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.
+   - `finding=none` is allowed only when every enumerated proof surface is `proved|blocked` and the current final diff yields zero qualifying findings under the diff review bars.
    - This check is against the current final validated changeset, not an earlier pre-delta review state.
-   - `already green`, `architectural`, `not fix-shaped`, or `no failing proof hook` are not sufficient reasons by themselves when a concrete compatible/provable improvement still exists.
-9. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 6.
+   - `already green`, `architectural`, `not fix-shaped`, or `no failing proof hook` are not sufficient reasons by themselves when a concrete compatible/provable improvement or review-qualifying finding still exists.
+10. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 6.
 
-### 5) Post-self-review rerun (required)
+### 5) Post-self-review rerun + final diff review closure (required)
 1. Run the non-self-review core passes once against the full resulting changeset.
 2. If that rerun edits code, discard the stale self-review state, revalidate, and restart from phase 4 against the new final validated changeset.
-3. If that rerun applies no edits, continue to phase 6.
+3. If that rerun applies no edits and `Review loop trace` already contains a skip line from preflight, continue to phase 6.
+4. Otherwise rerun phase 1 `Diff review loop` against the current final diff using the frozen `base_branch` label and canonical `comparison_sha`.
+5. If that terminal diff review loop applies edits, discard the stale self-review state, revalidate, and restart from phase 4 against the new final validated changeset.
+6. If that terminal diff review loop yields `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`, rerun the same terminal diff review once more on the unchanged final diff (same frozen `base_branch`/`comparison_sha`, no intervening edits).
+7. If that confirmation round is also clean under the same criteria, continue to phase 6.
+8. Otherwise treat the confirmation round as the new terminal output: if it introduces new local findings, address/revalidate and restart from phase 4; if it still yields `blocked_findings > 0`, `stale_findings > 0`, or `overall_correctness="patch is incorrect"`, stop and report those findings/verdict as blockers.
 
 ### 6) Output / handoff (required)
 1. If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.
@@ -633,7 +664,7 @@ For findings in severity order:
 3. Do not place those broader opportunities in `Residual risks / open questions` unless a valid blocker from the allowed set applies.
 4. Output lock (required):
    1. Heading set is exact and complete (`Contract`, `Findings (severity order)`, `Changes applied`, `Review loop trace`, `Pass trace`, `Validation`, `Self-review loop trace`, `Residual risks / open questions`).
-   2. `Review loop trace` includes either a skip line or at least one terminal review row with `local_findings=0`.
+    2. `Review loop trace` includes either a skip line or at least two consecutive terminal final-diff review rows on the unchanged final diff with `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
    3. `Pass trace` includes planned/executed counts and P1/P2/P3 lines (plus P4/P5 when executed) plus `Post-self-review rerun`.
    4. Runtime pass updates (`Pass <n>/<total_planned>: ...`) were emitted during execution.
    5. If embedded mode was used, include **Fix Record** in the same assistant message (after any required artifact).
@@ -660,6 +691,7 @@ If no findings:
 For each finding:
 - `F#` `<file:line>` — `<security|crash|corruption|logic>` — <issue>
   - Surface: Tokens=<...>; PROVEN_USED=<yes/no + evidence>; External=<yes/no>; Diff_touch=<yes/no>
+  - Proof target: <exact advertised/documented form covered by the proof>
   - Counterexample: <input/timeline>
   - Invariant (before): <what was assumed/allowed>
   - Invariant (after): <what is now guaranteed/rejected>
@@ -673,7 +705,11 @@ For each finding:
 
 **Review loop trace**
 - If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`
-- Otherwise: `R#` base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
+- Otherwise: `R#` base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
+- Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
+- Each `R#` row comes from a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet and the same repo/worktree snapshot; the fixer does not self-grade that round.
+- Terminal closure requires two consecutive clean rows on the unchanged final diff.
+- Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
 
 **Pass trace**
 - Core passes planned: `3`; core passes executed: `<3>`
@@ -704,6 +740,7 @@ Use only when $fix is invoked inside another skill.
 For each finding:
 - `F#` `<file:line>` — `<security|crash|corruption|logic>` — <issue>
   - Surface: Tokens=<...>; PROVEN_USED=<yes/no + evidence>; External=<yes/no>; Diff_touch=<yes/no>
+  - Proof target: <exact advertised/documented form covered by the proof>
   - Counterexample: <input/timeline>
   - Invariant (before): <what was assumed/allowed>
   - Invariant (after): <what is now guaranteed/rejected>
@@ -717,7 +754,11 @@ For each finding:
 
 **Review loop trace**
 - If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`
-- Otherwise: `R#` base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
+- Otherwise: `R#` base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
+- Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
+- Each `R#` row comes from a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet and the same repo/worktree snapshot; the fixer does not self-grade that round.
+- Terminal closure requires two consecutive clean rows on the unchanged final diff.
+- Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
 
 **Pass trace**
 - Core passes planned: `3`; core passes executed: `<3>`

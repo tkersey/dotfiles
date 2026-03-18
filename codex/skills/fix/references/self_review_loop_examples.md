@@ -2,27 +2,35 @@
 
 Use these examples to keep the visible transcript shape aligned with the diff review loop and the internal self-review loop contract.
 
+When review context exists, the terminal `Review loop trace` rows are the post-self-review final-diff closure rounds against the unchanged final diff.
+Each `R#` row comes from a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet (literal prompt + review bars + schema + frozen base/comparison + same repo/worktree snapshot).
+Terminal closure requires two consecutive clean `R#` rows on the unchanged final diff.
+
 ## Review loop local-clean after address
 
 ```md
 **Review loop trace**
-- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`2`; blocked_findings=`0`; stale_findings=`0`; change_applied=`yes`; result=`continue`
-- `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; change_applied=`no`; result=`local_clean`
+- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`2`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
+- `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R3` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R4` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 
 **Validation**
 - `uv run pytest tests/foo.py::test_bar` -> ok
 - `{"baseline_cmd":"uv run pytest tests/foo.py::test_bar","baseline_result":"fail","proof_hook":"uv run pytest tests/foo.py::test_bar","final_cmd":"uv run pytest tests/foo.py::test_bar","final_result":"ok"}`
 
 **Self-review loop trace**
-- `S1` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=Split the overloaded helper so branch choice and post-resume normalization are no longer coupled, even though the baseline bundle was already green.; finding=`F2`; change_applied=`yes`; proof=`uv run pytest tests/foo.py::test_bar`; result=`ok`; stop_reason=`continue`
-- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain for the current validated changeset.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/foo.py::test_bar`; result=`ok`; stop_reason=`no_new_actionable_changes`
+- `S1` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=The current final diff still leaves the overloaded helper coupling branch choice with post-resume normalization, which is the highest-severity remaining review-qualifying maintainability risk on the validated changeset.; finding=`F2`; change_applied=`yes`; proof=`uv run pytest tests/foo.py::test_bar`; result=`ok`; stop_reason=`continue`
+- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain and the current final diff is review-clean under the diff review bars.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/foo.py::test_bar`; result=`ok`; stop_reason=`no_new_actionable_changes`
 ```
 
-## Review loop local-clean with blocked carry-forward
+## Review loop blocked carry-forward
+
+In the terminal final-diff closure round, blocked findings cannot use `scope_guardrail`, and closure still requires `blocked_findings=0`.
 
 ```md
 **Review loop trace**
-- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`1`; stale_findings=`0`; change_applied=`no`; result=`local_clean`
+- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`1`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`no`; result=`continue`
 
 **Residual risks / open questions**
 - `src/legacy_api.py:44` — blocked_by=breaking_change — next=choose an additive compatibility path
@@ -30,13 +38,17 @@ Use these examples to keep the visible transcript shape aligned with the diff re
 
 ## Review loop stale repeat suppression
 
+Use stale suppression only when a dedicated proof hook/blocker already discharges the repeated finding or the targeted diff hunk/form is gone, and terminal closure still requires `stale_findings=0`.
+
 ```md
 **Review loop trace**
-- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; change_applied=`yes`; result=`continue`
-- `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`1`; change_applied=`no`; result=`local_clean`
+- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
+- `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`1`; overall_correctness=`patch is incorrect`; change_applied=`no`; result=`continue`
 ```
 
 ## Review loop skip reasons
+
+Use `skip_missing_base_context` only when there is no live git diff and no derivable review target; a live git diff must derive review context or stop blocked.
 
 ```md
 **Review loop trace**
@@ -54,12 +66,12 @@ Use these examples to keep the visible transcript shape aligned with the diff re
 **Findings (severity order)**
 - `F1` `src/with_api.zig:88` — logic — advertised anonymous inferred `!T` form is unproven on a public seam
   - Surface: Tokens=shift.with anonymous inferred !T; PROVEN_USED=yes (README + examples); External=yes; Diff_touch=yes
-  - proof_target=anonymous inferred `!T` in `shift.with(...)`
+  - Proof target: anonymous inferred `!T` in `shift.with(...)`
   - Proof: `zig test test/with_api_inferred_errors.zig --test-filter anonymous_inferred_error` -> ok
 
 - `F2` `src/algebraic.zig:144` — logic — algebraic handler-error inference remains unproven on the documented form
   - Surface: Tokens=shift.algebraic.Program handler inferred errors; PROVEN_USED=yes (docs + examples); External=yes; Diff_touch=yes
-  - proof_target=handler inferred errors in `shift.algebraic.Program(...)`
+  - Proof target: handler inferred errors in `shift.algebraic.Program(...)`
   - Proof: `zig test test/algebraic_inferred_errors.zig --test-filter handler_inferred_error` -> ok
 ```
 
@@ -75,9 +87,9 @@ Use these examples to keep the visible transcript shape aligned with the diff re
 
 **Self-review loop trace**
 - `S1` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=Preserve the CLI entrypoint while widening into the adjacent helper the original diff did not touch.; finding=`F3`; change_applied=`yes`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`continue`
-- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain for the current validated changeset.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`no_new_actionable_changes`
+- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain for the current validated changeset and every proof surface is proved or blocked.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`no_new_actionable_changes`
 - `S3` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=Prior self-review state invalidated by the post-self-review core-pass rerun; rerunning against the new final validated changeset.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`continue`
-- `S4` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain on the final validated changeset after the rerun.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`no_new_actionable_changes`
+- `S4` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain on the final validated changeset after the rerun, and every proof surface is proved or blocked.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`no_new_actionable_changes`
 ```
 
 ## Standalone skip gate
@@ -97,8 +109,10 @@ Use these examples to keep the visible transcript shape aligned with the diff re
 
 ```md
 **Review loop trace**
-- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; change_applied=`yes`; result=`continue`
-- `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; change_applied=`no`; result=`local_clean`
+- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
+- `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R3` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R4` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 
 **Validation**
 - `uv run pytest tests/widget.py::test_safe_default` -> ok
@@ -106,7 +120,7 @@ Use these examples to keep the visible transcript shape aligned with the diff re
 
 **Self-review loop trace**
 - `S1` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=Inline the ambiguous fallback path into the explicit safe-default seam so the public helper is easier to audit.; finding=`F4`; change_applied=`yes`; proof=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`; stop_reason=`continue`
-- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No further actionable self-review changes remain.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`; stop_reason=`no_new_actionable_changes`
+- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No further actionable self-review changes remain and the current final diff is review-clean under the diff review bars.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`; stop_reason=`no_new_actionable_changes`
 ```
 
 ## Post-fix handoff

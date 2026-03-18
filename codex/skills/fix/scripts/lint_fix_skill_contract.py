@@ -39,13 +39,18 @@ EXPECTED_VALIDATION_KEYS = [
 ]
 
 EXPECTED_FINDINGS_LINES = [
+    "Proof target: <exact advertised/documented form covered by the proof>",
     "Proof strength: `<characterization|targeted_regression|property_or_fuzz>`",
     "Compatibility impact: `<none|tightening|additive|breaking>`",
 ]
 
 EXPECTED_REVIEW_LINES = [
     "- If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`",
-    "- Otherwise: `R#` base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`",
+    "- Otherwise: `R#` base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`",
+    '- Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.',
+    "- Each `R#` row comes from a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet and the same repo/worktree snapshot; the fixer does not self-grade that round.",
+    "- Terminal closure requires two consecutive clean rows on the unchanged final diff.",
+    '- Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.',
 ]
 
 EXPECTED_PASS_LINES = [
@@ -84,17 +89,19 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "MUST include a final `Self-review loop trace` section in the deliverable/Fix Record.",
     "MUST run the final agent-directed self-review loop only after at least one change is applied and validation is passing.",
     "MUST run the self-review loop against the final validated changeset only.",
-    "MUST invalidate and rerun the self-review loop if any non-self-review edit occurs after a self-review round.",
+    "MUST invalidate and rerun the self-review loop if any non-self-review edit occurs after a self-review round, including edits from the post-self-review rerun or final diff review closure loop.",
     "MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`",
     "MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.",
+    "MUST, when answering the self-review question, first inventory unresolved review-qualifying findings on the current final diff using `Diff review finding bar (required)`; if any exist, choose the highest-severity unresolved one before considering ergonomic/structural/API-shaping improvements.",
     "MUST treat a self-review answer as actionable whenever it identifies a concrete compatible/provable improvement on the current validated changeset, even if the improvement is ergonomic, structural, or API-shaping rather than a baseline bug fix.",
     "MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.",
-    "MUST, when public/documented surfaces are touched, answer that question by first inventorying which advertised surface remains unproven; `finding=none` is allowed only when every such surface is proved or explicitly blocked.",
+    "MUST, when public/documented surfaces are touched, answer that question by first inventorying which advertised surface remains unproven; `finding=none` is allowed only when every such surface is proved or explicitly blocked and the current final diff yields zero qualifying findings under the diff review bars.",
     "MUST NOT reject a self-review suggestion solely because the baseline is already green, the concern sounds architectural, or the change would reshape a public/API seam; if it can stay backward-compatible and be revalidated locally, implement it.",
     "MUST, when a self-review critique is broader than the smallest bug repair, apply the narrowest compatible/provable slice that materially addresses the critique before considering broader follow-up skills.",
     "MUST rerun the non-self-review `$fix` passes once after the self-review loop reaches `no_new_actionable_changes` or `blocked`.",
     "MUST NOT use `scope_guardrail` as the reason to reject a self-review suggestion once the self-review phase has started.",
-    "MUST NOT report a self-review answer that was already applied before the final self-review round; record `finding=none` only when the current final validated changeset yields no concrete compatible/provable self-review change.",
+    "MUST NOT carry a terminal final-diff review finding as `blocked_by=scope_guardrail`; after self-review starts, treat it as `local_findings` or block it for another allowed reason.",
+    "MUST NOT report a self-review answer that was already applied before the final self-review round; record `finding=none` only when the current final validated changeset yields no concrete compatible/provable self-review change and no qualifying diff-review finding remains.",
     "MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.",
     "Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.",
     "Freeze the self-review baseline as the latest validated changeset.",
@@ -102,17 +109,24 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.",
     "If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.",
     "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 6.",
-    "`finding=none` is allowed only when every enumerated proof surface is `proved|blocked`.",
+    "`finding=none` is allowed only when every enumerated proof surface is `proved|blocked` and the current final diff yields zero qualifying findings under the diff review bars.",
 ]
 
 REQUIRED_REVIEW_LOOP_GUARDRAILS = [
     "MUST include a final `Review loop trace` section in the deliverable/Fix Record.",
     "MUST use the exact diff review prompt from `Diff review loop`, with only `base_branch` and `comparison_sha` substituted.",
+    "MUST run every `R#` review round, including the terminal closure rounds, in a fresh isolated reviewer turn/agent with no authoring or prior-review context beyond the frozen reviewer packet for that round. The reviewer packet MUST include the literal prompt, diff-review finding/comment/priority bars, diff-review output schema, frozen `base_branch`/`comparison_sha`, and the same repo/worktree snapshot binding as the fixer (`repo_root`/`worktree_path` or equivalent). The execution substrate is implementation-defined; do not require a direct `/review` command. The fixer may address findings but must not both generate and adjudicate the same review round.",
+    "MUST derive `base_branch` and `comparison_sha` from repo state for any git-backed run with a live diff when they are omitted, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base. For git-backed live diffs, missing review context after derivation is a blocker, not a successful `skip_missing_base_context` path.",
     "MUST verify `comparison_sha` resolves to a commit before activating the diff review loop.",
     "MUST keep the diff review loop separate from `Pass trace`; report it in `Review loop trace`.",
-    "MUST close the diff review loop only when a review round yields `local_findings=0`.",
-    "MUST carry blocked diff-review findings into `Residual risks / open questions`; they do not keep the diff review loop open.",
-    "MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds.",
+    "MUST close a pre-terminal diff review round only when a review round yields `local_findings=0`; the terminal final-diff closure round additionally requires `blocked_findings=0` and `stale_findings=0`.",
+    'MUST rerun the exact diff review loop against the current final diff after the self-review loop and after any post-self-review rerun edits; do not close `$fix` until two consecutive terminal review rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`.',
+    "MUST treat blocked/stale diff-review carry-forward as pre-terminal only. A terminal final-diff closure round with any `blocked_findings` or `stale_findings` is not review-clean and does not close `$fix`.",
+    "MUST NOT treat a terminal final-diff review round with `blocked_findings>0` as closed or `local_clean`; if a fresh reviewer still emits any finding, `$fix` is not done.",
+    "MUST NOT treat a terminal final-diff review round with `stale_findings>0` as closed or `local_clean`; if a fresh reviewer still emits a repeated finding, `$fix` is not done.",
+    'MUST use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.',
+    "MUST require two consecutive clean terminal review rows on the unchanged final diff (same frozen `base_branch`/`comparison_sha`, no intervening edits) before closing `$fix`.",
+    "MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds and the current proof bundle directly disproves the finding or the implicated diff hunk/form no longer exists; unchanged repetition alone is not enough.",
     "MUST judge diff-review findings by author-fix-worthiness: flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them.",
     "MUST prefer zero diff-review findings over speculative or assumption-heavy output; do not flag pre-existing issues, intentional behavior changes, or style-only nits.",
     "MUST require every diff-review finding that claims broader impact to name the concrete callers/files/functions that are provably affected, and keep each finding comment to one matter-of-fact paragraph that states the triggering scenario or inputs.",
@@ -134,8 +148,11 @@ REQUIRED_DIFF_REVIEW_INTENT_PHRASES = [
     "### Diff review priority bar (required)",
     "Mirror the title priority in numeric `priority` using `0` for `P0`, `1` for `P1`, `2` for `P2`, and `3` for `P3`.",
     "### Diff review output schema (required)",
-    "\"overall_correctness\": \"\\\"patch is correct\\\" | \\\"patch is incorrect\\\"\"",
+    '"overall_correctness": "\\"patch is correct\\" | \\"patch is incorrect\\""',
     "The diff review output is JSON-only: no fences, no prose, no fix patch.",
+    "### Reviewer packet (required)",
+    "Do not rely on ambient skill context inside the isolated reviewer turn; the packet must be sufficient on its own.",
+    "the same repo/worktree snapshot binding as the fixer (`repo_root`/`worktree_path` or equivalent)",
 ]
 
 FORBIDDEN_REFINE_ROUTING_PHRASES = [
@@ -146,13 +163,18 @@ FORBIDDEN_REFINE_ROUTING_PHRASES = [
 ]
 
 REQUIRED_REFERENCE_PHRASES = [
+    "post-self-review final-diff closure rounds against the unchanged final diff",
+    "Each `R#` row comes from a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet (literal prompt + review bars + schema + frozen base/comparison + same repo/worktree snapshot).",
+    "In the terminal final-diff closure round, blocked findings cannot use `scope_guardrail`, and closure still requires `blocked_findings=0`.",
+    "Use stale suppression only when a dedicated proof hook/blocker already discharges the repeated finding or the targeted diff hunk/form is gone, and terminal closure still requires `stale_findings=0`.",
+    "Use `skip_missing_base_context` only when there is no live git diff and no derivable review target; a live git diff must derive review context or stop blocked.",
     "**Review loop trace**",
     "skip_not_git_repo",
     "skip_missing_base_context",
     "blocked_findings=`1`",
     "stale_findings=`1`",
     "## Public surface proof coverage",
-    "proof_target=",
+    "Proof target:",
 ]
 
 REQUIRED_PROOF_COVERAGE_PHRASES = [
@@ -162,10 +184,13 @@ REQUIRED_PROOF_COVERAGE_PHRASES = [
 ]
 
 REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS = [
-    "MUST stop `$fix` once no new actionable self-review change remains and the post-self-review rerun is clean; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
+    "Stop only after self-review exhausts actionable changes, the post-self-review rerun is clean, and two consecutive terminal diff-review closure rounds are clean.",
+    'When the validated changeset survives the post-self-review rerun and two consecutive terminal diff-review closure rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every proof surface is `proved|blocked`, `$fix` stops at that boundary; broader architecture, product, or roadmap analysis belongs to another skill.',
+    "MUST stop `$fix` once no new actionable self-review change remains, the post-self-review rerun is clean, and the terminal final-diff review rerun is clean; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
     "MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.",
     "If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.",
     "Do not place those broader opportunities in `Residual risks / open questions` unless a valid blocker from the allowed set applies.",
+    '`Review loop trace` includes either a skip line or at least two consecutive terminal final-diff review rows on the unchanged final diff with `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.',
 ]
 
 FORBIDDEN_STALE_SELF_REVIEW_PHRASES = [
@@ -192,7 +217,9 @@ FORBIDDEN_USER_LOOP_PHRASES = [
 ]
 
 SECTION_PATTERN = re.compile(r"^\*\*(.+?)\*\*$", re.MULTILINE)
-JSON_LINE_PATTERN = re.compile(r"^\s*-\s*`(\{.*\})`\s*\(single-line JSON\)\s*$", re.MULTILINE)
+JSON_LINE_PATTERN = re.compile(
+    r"^\s*-\s*`(\{.*\})`\s*\(single-line JSON\)\s*$", re.MULTILINE
+)
 
 
 def line_no(text: str, offset: int) -> int:
@@ -209,7 +236,9 @@ def extract_block(text: str, start_marker: str, end_marker: str) -> tuple[str, i
     return text[start:end], start
 
 
-def extract_heading_lines(block: str, base_offset: int, full_text: str) -> list[tuple[str, int]]:
+def extract_heading_lines(
+    block: str, base_offset: int, full_text: str
+) -> list[tuple[str, int]]:
     results: list[tuple[str, int]] = []
     for match in SECTION_PATTERN.finditer(block):
         heading = match.group(1).strip()
@@ -256,7 +285,9 @@ def check_heading_order(
 ) -> None:
     found_names = [name for name, _ in found]
     if found_names != expected:
-        errors.append(f"{label}: heading_order mismatch: expected={expected} actual={found_names}")
+        errors.append(
+            f"{label}: heading_order mismatch: expected={expected} actual={found_names}"
+        )
 
 
 def extract_heading_section(
@@ -271,9 +302,13 @@ def extract_heading_section(
     if next_heading is None:
         end = len(block)
     else:
-        end_match = re.search(rf"(?m)^\*\*{re.escape(next_heading)}\*\*$", block[start + 1 :])
+        end_match = re.search(
+            rf"(?m)^\*\*{re.escape(next_heading)}\*\*$", block[start + 1 :]
+        )
         if not end_match:
-            errors.append(f"{label}: missing **{next_heading}** section after **{heading}**")
+            errors.append(
+                f"{label}: missing **{next_heading}** section after **{heading}**"
+            )
             return None
         end = start + 1 + end_match.start()
     return block[start:end], start
@@ -312,19 +347,25 @@ def run(path: Path) -> int:
     main_headings = extract_heading_lines(main_block, main_offset, text)
     embedded_headings = extract_heading_lines(embedded_block, embedded_offset, text)
     check_heading_order(main_headings, EXPECTED_MAIN_HEADINGS, "main", errors)
-    check_heading_order(embedded_headings, EXPECTED_EMBEDDED_HEADINGS, "embedded", errors)
+    check_heading_order(
+        embedded_headings, EXPECTED_EMBEDDED_HEADINGS, "embedded", errors
+    )
 
-    main_keys = extract_validation_json_keys(main_block, main_offset, text, "main", errors)
+    main_keys = extract_validation_json_keys(
+        main_block, main_offset, text, "main", errors
+    )
     embedded_keys = extract_validation_json_keys(
         embedded_block, embedded_offset, text, "embedded", errors
     )
     if main_keys and embedded_keys and main_keys != embedded_keys:
         errors.append(
-            "validation_json_sync mismatch: "
-            f"main={main_keys} embedded={embedded_keys}"
+            f"validation_json_sync mismatch: main={main_keys} embedded={embedded_keys}"
         )
 
-    for label, block, offset in (("main", main_block, main_offset), ("embedded", embedded_block, embedded_offset)):
+    for label, block, offset in (
+        ("main", main_block, main_offset),
+        ("embedded", embedded_block, embedded_offset),
+    ):
         findings = extract_heading_section(
             block, "Findings (severity order)", "Changes applied", label, errors
         )
@@ -374,7 +415,11 @@ def run(path: Path) -> int:
                 )
 
         self_review = extract_heading_section(
-            block, "Self-review loop trace", "Residual risks / open questions", label, errors
+            block,
+            "Self-review loop trace",
+            "Residual risks / open questions",
+            label,
+            errors,
         )
         if self_review:
             self_review_block, self_review_start = self_review
@@ -406,59 +451,37 @@ def run(path: Path) -> int:
 
     for phrase in REQUIRED_SELF_LOOP_GUARDRAILS:
         if phrase not in text:
-            errors.append(
-                "self_loop_guardrail missing required phrase: "
-                f"{phrase}"
-            )
+            errors.append(f"self_loop_guardrail missing required phrase: {phrase}")
 
     for phrase in REQUIRED_REVIEW_LOOP_GUARDRAILS:
         if phrase not in text:
-            errors.append(
-                "review_loop_guardrail missing required phrase: "
-                f"{phrase}"
-            )
+            errors.append(f"review_loop_guardrail missing required phrase: {phrase}")
 
     for phrase in REQUIRED_DIFF_REVIEW_INTENT_PHRASES:
         if phrase not in text:
-            errors.append(
-                "diff_review_intent missing required phrase: "
-                f"{phrase}"
-            )
+            errors.append(f"diff_review_intent missing required phrase: {phrase}")
 
     for phrase in REQUIRED_PROOF_COVERAGE_PHRASES:
         if phrase not in text:
-            errors.append(
-                "proof_coverage_guardrail missing required phrase: "
-                f"{phrase}"
-            )
+            errors.append(f"proof_coverage_guardrail missing required phrase: {phrase}")
 
     for phrase in REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS:
         if phrase not in text:
             errors.append(
-                "post_fix_boundary_guardrail missing required phrase: "
-                f"{phrase}"
+                f"post_fix_boundary_guardrail missing required phrase: {phrase}"
             )
 
     for phrase in FORBIDDEN_USER_LOOP_PHRASES:
         if phrase in text:
-            errors.append(
-                "forbidden_user_loop_phrase still present: "
-                f"{phrase}"
-            )
+            errors.append(f"forbidden_user_loop_phrase still present: {phrase}")
 
     for phrase in FORBIDDEN_STALE_SELF_REVIEW_PHRASES:
         if phrase in text:
-            errors.append(
-                "forbidden_stale_self_review_phrase still present: "
-                f"{phrase}"
-            )
+            errors.append(f"forbidden_stale_self_review_phrase still present: {phrase}")
 
     for phrase in FORBIDDEN_REFINE_ROUTING_PHRASES:
         if phrase in text:
-            errors.append(
-                "forbidden_refine_routing_phrase still present: "
-                f"{phrase}"
-            )
+            errors.append(f"forbidden_refine_routing_phrase still present: {phrase}")
 
     reference_path = path.parent / "references" / "self_review_loop_examples.md"
     if not reference_path.exists():
@@ -467,10 +490,26 @@ def run(path: Path) -> int:
         reference_text = reference_path.read_text(encoding="utf-8")
         for phrase in REQUIRED_REFERENCE_PHRASES:
             if phrase not in reference_text:
-                errors.append(
-                    "reference_examples missing required phrase: "
-                    f"{phrase}"
-                )
+                errors.append(f"reference_examples missing required phrase: {phrase}")
+        if re.search(
+            r"blocked_findings=`[1-9][0-9]*`.*result=`local_clean`", reference_text
+        ):
+            errors.append(
+                "reference_examples contains blocked_findings>0 with result=local_clean"
+            )
+        if re.search(
+            r"stale_findings=`[1-9][0-9]*`.*result=`local_clean`", reference_text
+        ):
+            errors.append(
+                "reference_examples contains stale_findings>0 with result=local_clean"
+            )
+        if re.search(
+            r"overall_correctness=`patch is incorrect`.*result=`local_clean`",
+            reference_text,
+        ):
+            errors.append(
+                "reference_examples contains patch is incorrect with result=local_clean"
+            )
 
     if errors:
         print("[FAIL] fix skill contract lint errors:", file=sys.stderr)
