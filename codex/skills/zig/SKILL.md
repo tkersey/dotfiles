@@ -5,7 +5,23 @@ description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain w
 
 # Zig
 
+## Zen of Zig
+- Communicate intent precisely.
+- Edge cases matter.
+- Favor reading code over writing code.
+- Only one obvious way to do things.
+- Runtime crashes are better than bugs.
+- Compile errors are better than runtime crashes.
+- Incremental improvements.
+- Avoid local maximums.
+- Reduce the amount one must remember.
+- Focus on code rather than style.
+- Resource allocation may fail; resource deallocation must succeed.
+- Memory is a resource.
+- Together we serve the users.
+
 ## Operating contract
+- Start from the Zen of Zig above. If a recommendation conflicts with it, revisit the recommendation before proceeding.
 - Assume Zig 0.15.2 unless the user explicitly requests another version.
 - Prefer witness-driven APIs: if a fact matters to safety, zero-copy legality, FFI soundness, or fast-path legality, represent it in a type or constructor, not a loose bool or comment.
 - Treat hazard class -> proof obligation mapping as required.
