@@ -113,10 +113,29 @@ REQUIRED_REVIEW_LOOP_GUARDRAILS = [
     "MUST close the diff review loop only when a review round yields `local_findings=0`.",
     "MUST carry blocked diff-review findings into `Residual risks / open questions`; they do not keep the diff review loop open.",
     "MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds.",
+    "MUST judge diff-review findings by author-fix-worthiness: flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them.",
+    "MUST prefer zero diff-review findings over speculative or assumption-heavy output; do not flag pre-existing issues, intentional behavior changes, or style-only nits.",
+    "MUST require every diff-review finding that claims broader impact to name the concrete callers/files/functions that are provably affected, and keep each finding comment to one matter-of-fact paragraph that states the triggering scenario or inputs.",
+    "MUST emit diff-review output as JSON-only matching `Diff review output schema (required)`, with `[P0]`..`[P3]` finding titles, numeric `priority`, tight diff-overlapping `code_location`, and an `overall_correctness` verdict.",
     "MUST enumerate every PROVEN_USED external surface touched by code/docs/examples before closing the core-pass phase.",
     "MUST assign each enumerated public/documented surface exactly one dedicated proof hook or one explicit blocker; a sibling or nearby proof hook does not discharge another advertised form.",
     "MUST NOT accept a heuristic fallback or compatibility-sensitive public-seam change as done while the advertised/documented form it changes is still unproven.",
     "MUST NOT mark a diff-review finding stale when it targets a PROVEN_USED external surface that still lacks a dedicated proof hook or explicit blocker.",
+]
+
+REQUIRED_DIFF_REVIEW_INTENT_PHRASES = [
+    "### Diff review finding bar (required)",
+    "Flag only discrete, actionable bugs introduced by the diff that materially impact correctness, performance, security, or maintainability.",
+    "Apply the author-fix-worthiness bar: the issue should be something the original author would likely fix if it were pointed out.",
+    "Do not rely on unstated assumptions about intent or environment; when claiming broader impact, identify the concrete callers/files/functions that are provably affected.",
+    "Prefer no findings over weak findings.",
+    "### Diff review comment bar (required)",
+    "Keep the body to one paragraph in a matter-of-fact tone. Explain why it is a bug, how severe it is in context, and the scenario or inputs required for it to arise.",
+    "### Diff review priority bar (required)",
+    "Mirror the title priority in numeric `priority` using `0` for `P0`, `1` for `P1`, `2` for `P2`, and `3` for `P3`.",
+    "### Diff review output schema (required)",
+    "\"overall_correctness\": \"\\\"patch is correct\\\" | \\\"patch is incorrect\\\"\"",
+    "The diff review output is JSON-only: no fences, no prose, no fix patch.",
 ]
 
 FORBIDDEN_REFINE_ROUTING_PHRASES = [
@@ -396,6 +415,13 @@ def run(path: Path) -> int:
         if phrase not in text:
             errors.append(
                 "review_loop_guardrail missing required phrase: "
+                f"{phrase}"
+            )
+
+    for phrase in REQUIRED_DIFF_REVIEW_INTENT_PHRASES:
+        if phrase not in text:
+            errors.append(
+                "diff_review_intent missing required phrase: "
                 f"{phrase}"
             )
 

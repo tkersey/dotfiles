@@ -82,6 +82,10 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST close the diff review loop only when a review round yields `local_findings=0`.
 - MUST carry blocked diff-review findings into `Residual risks / open questions`; they do not keep the diff review loop open.
 - MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds.
+- MUST judge diff-review findings by author-fix-worthiness: flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them.
+- MUST prefer zero diff-review findings over speculative or assumption-heavy output; do not flag pre-existing issues, intentional behavior changes, or style-only nits.
+- MUST require every diff-review finding that claims broader impact to name the concrete callers/files/functions that are provably affected, and keep each finding comment to one matter-of-fact paragraph that states the triggering scenario or inputs.
+- MUST emit diff-review output as JSON-only matching `Diff review output schema (required)`, with `[P0]`..`[P3]` finding titles, numeric `priority`, tight diff-overlapping `code_location`, and an `overall_correctness` verdict.
 - MUST enumerate every PROVEN_USED external surface touched by code/docs/examples before closing the core-pass phase.
 - MUST assign each enumerated public/documented surface exactly one dedicated proof hook or one explicit blocker; a sibling or nearby proof hook does not discharge another advertised form.
 - MUST NOT accept a heuristic fallback or compatibility-sensitive public-seam change as done while the advertised/documented form it changes is still unproven.
@@ -417,10 +421,60 @@ Residual risks / open questions
 ### 1) Diff review loop
 This phase runs after preflight and before core passes.
 
+### Diff review finding bar (required)
+- Flag only discrete, actionable bugs introduced by the diff that materially impact correctness, performance, security, or maintainability.
+- Apply the author-fix-worthiness bar: the issue should be something the original author would likely fix if it were pointed out.
+- Do not flag pre-existing issues, intentional behavior changes, speculative risks, or style-only nits unless they obscure meaning or violate documented standards.
+- Do not rely on unstated assumptions about intent or environment; when claiming broader impact, identify the concrete callers/files/functions that are provably affected.
+- Prefer no findings over weak findings.
+
+### Diff review comment bar (required)
+- Use one finding per distinct issue and keep the line range as short as possible while still pinpointing the problem.
+- Keep the body to one paragraph in a matter-of-fact tone. Explain why it is a bug, how severe it is in context, and the scenario or inputs required for it to arise.
+- Avoid long code excerpts; do not include code blocks longer than 3 lines.
+
+### Diff review priority bar (required)
+- Prefix each finding title with `[P0]`, `[P1]`, `[P2]`, or `[P3]`.
+- `P0`: universal/blocking release or major usage issue with no special assumptions.
+- `P1`: urgent; should be fixed in the next cycle.
+- `P2`: normal; should be fixed eventually.
+- `P3`: low; nice to have.
+- Mirror the title priority in numeric `priority` using `0` for `P0`, `1` for `P1`, `2` for `P2`, and `3` for `P3`.
+
+### Diff review output schema (required)
+
+```json
+{
+  "findings": [
+    {
+      "title": "<= 80 chars, starts with [P0]-[P3]>",
+      "body": "<one-paragraph Markdown explaining why this is a bug and when it occurs>",
+      "confidence_score": "<float 0.0-1.0>",
+      "priority": "<int 0-3>",
+      "code_location": {
+        "absolute_file_path": "<absolute file path>",
+        "line_range": {
+          "start": "<int>",
+          "end": "<int>"
+        }
+      }
+    }
+  ],
+  "overall_correctness": "\"patch is correct\" | \"patch is incorrect\"",
+  "overall_explanation": "<1-3 sentence explanation>",
+  "overall_confidence_score": "<float 0.0-1.0>"
+}
+```
+
+Rules:
+- The diff review output is JSON-only: no fences, no prose, no fix patch.
+- `code_location` is required, must overlap the diff, and should stay as tight as possible.
+- Return all qualifying findings, not just the first. If there is no finding the author would definitely want to fix, return an empty `findings` list and set the overall verdict accordingly.
+
 Literal prompts (required):
 
 ```text
-Review the code changes against the base branch '<base_branch>'. The merge base commit for this comparison is <comparison_sha>. Run `git diff <comparison_sha>` to inspect the changes relative to <base_branch>. Provide prioritized, actionable findings.
+Review the code changes against the base branch '<base_branch>'. The merge base commit for this comparison is <comparison_sha>. Run `git diff <comparison_sha>` to inspect the changes relative to <base_branch> and return JSON-only findings using the review bars and output schema in this skill. Flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them. Do not flag pre-existing issues, intentional behavior changes, speculative risks, or style-only nits. When claiming broader impact, name the concrete callers/files/functions that are provably affected. Prefer no findings over weak findings. Prefix each title with `[P0]`..`[P3]`, include numeric `priority`, keep `code_location` tight and diff-overlapping, and include an `overall_correctness` verdict.
 ```
 
 ```text
