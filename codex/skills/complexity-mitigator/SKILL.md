@@ -10,6 +10,7 @@ Reduce incidental complexity (understanding cost) while preserving essential dom
 
 ## Core Mindset
 - Keep essential complexity, vaporize the incidental.
+- There is no silver bullet refactor; identify the dominant source of understanding cost before prescribing moves.
 - Optimize for reader comprehension first, then for extraction.
 - Minimal incision, maximal precision: change only what reduces cognitive load.
 - Prefer boring, local clarity over cleverness.
@@ -21,15 +22,25 @@ Reduce incidental complexity (understanding cost) while preserving essential dom
 - When you break a default (e.g., extract before flatten), state the reason (what it unlocks).
 
 ## Definitions (Essential vs Incidental)
-- Essential complexity: domain rules, invariants, boundaries, and required state transitions (simplifying it changes correct behavior or meaning).
+- Essential complexity: domain rules, invariants, boundaries, required state transitions, and irreducible external conformity/change pressure (simplifying it changes correct behavior or meaning).
 - Incidental (accidental) complexity: complexity introduced by implementation choices (simplifying it preserves behavior and clarifies intent).
 - Quick test (imperfect): if a reader must mentally execute the code to infer intent or allowed states, incidental complexity may be hiding the essential. Exception: some algorithms/concurrency require real simulation.
+
+## Brooks Lens (No Silver Bullet)
+- Do not assume one move (`extract`, `rename`, `state machine`, `types`) will dissolve the whole problem.
+- Ask four questions before recommending a cut:
+  - Complexity: is the code hard because the real state space is large and interlocked?
+  - Conformity: is the code hard because it must match awkward external APIs, schemas, laws, or legacy behavior?
+  - Changeability: is the code hard because the surrounding requirements or extension pressure are genuinely moving?
+  - Invisibility: is the code hard because intent is split across overlapping views (control flow, data flow, ownership, lifecycle, dependency)?
+- Prefer recommendations that expose these constraints over recommendations that merely rearrange syntax.
 
 ## Engage When
 - A review stalls because readers can't follow the flow.
 - You need an explanation of what the code is doing (analysis-first) before changing anything.
 - You see deep nesting (>3 levels is a good heuristic), long if/else chains, or duplicated branching.
 - Progress requires cross-file hops or simulating shared/mutable state.
+- The real question may be whether the complexity is in the code or in the requirements/boundaries the code must conform to.
 
 ## Guardrails
 - No file edits, no commits.
@@ -44,6 +55,9 @@ Reduce incidental complexity (understanding cost) while preserving essential dom
   - Boolean soup count (booleans/flags that gate behavior, especially combined)
   - Cross-file hops (distinct definitions you must open to understand)
   - State to simulate (mutable vars, implicit globals, order dependencies)
+  - External conformity burden (legacy behavior, API/schema/policy obligations)
+  - Change pressure (how much of the branching exists to preserve extension points or evolving cases)
+  - Views to reconcile (control/data/lifecycle/ownership spread across multiple representations)
 - Call out hotspots in one line each: `path:line - [metrics] - why it is hard`.
 - Tag each hotspot: `essential` (domain) vs `incidental` (implementation) vs `mixed` (domain hidden by noise).
 - Separate essential domain logic from incidental implementation noise before proposing changes.
@@ -53,7 +67,7 @@ Reduce incidental complexity (understanding cost) while preserving essential dom
 1. Choose the slice: entrypoint, inputs, outputs, state.
 2. Heat read: name hotspots and what makes them hard.
 3. Trace behavior (if meaning is unclear): happy path + key failure paths; call out mutations/IO.
-4. Verdict: separate essential domain logic from incidental implementation noise.
+4. Verdict: separate essential domain logic, external conformity/change burden, and incidental implementation noise.
 5. Simplify in order (default): flatten -> rename -> extract (do not extract until flatten/rename reveals stable shapes).
 6. Options: rank by effort vs impact and state the smallest viable cut.
 7. Sketch: show the improved structure (types + flow), not the full implementation.
@@ -64,6 +78,7 @@ Reduce incidental complexity (understanding cost) while preserving essential dom
   - Lead with guard clauses and early returns; keep the happy path linear.
   - Split nested conditionals into separate paths (small helpers or separate functions per path); keep helpers close to avoid extra cross-file hops.
   - Make temporal coupling explicit (state machine / explicit step enum) when ordering materially affects correctness.
+  - Do not flatten away required protocol steps, compatibility branches, or lifecycle edges; if they are essential, make them explicit instead.
 - Rename:
   - Replace vague verbs (`process`, `handle`, `do`) with domain actions; align nouns with domain entities.
   - Fix boolean naming (prefer positive, avoid double negatives); eliminate boolean-flag arguments when possible.
@@ -81,6 +96,7 @@ Reduce incidental complexity (understanding cost) while preserving essential dom
 - Prefer local, checkable evidence over universal claims.
 - Use before/after indicators where possible:
   - Nesting/branching/flags/hops/state-to-simulate (from the heat read)
+  - Which external constraints remain essential versus which ones became localized
   - Which invariant becomes explicit (type/constructor/assertion/test)
   - What tradeoff you accepted (e.g., more functions in exchange for linear flow)
 
@@ -99,6 +115,7 @@ Reduce incidental complexity (understanding cost) while preserving essential dom
 
 **2) Essential vs Incidental**
 - Essential: ...
+- Conformity/change pressure: ...
 - Incidental: ...
 
 **3) Options (ranked by effort vs impact)**

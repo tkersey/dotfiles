@@ -28,10 +28,10 @@ Skill-artifact refinement belongs to `$refine`; `$fix` stays focused on code/dif
 
 If a fix requires a product-sensitive choice (cannot be derived or characterized safely), stop and ask (or invoke `$creative-problem-solver` when multiple viable strategies exist).
 
-## Auxiliary skills (conditional)
-- `$invariant-ace`: use it when the slice touches stateful boundaries (parse/construct/API/DB/lock/txn/retry ordering), ownership/lifetime, or any "should never happen" claim.
-- `$complexity-mitigator`: use it when auditability is at risk (for example: branch soup, deep nesting, cross-file reasoning, or unclear ownership/control flow).
-- If both triggers fire, run `$invariant-ace` first, then `$complexity-mitigator`.
+## Auxiliary skills (mandatory)
+- `$invariant-ace`: run it on every `$fix` cycle to lock owner/scope, counterexamples, and enforcement boundaries before deciding how to repair the slice.
+- `$complexity-mitigator`: run it on every `$fix` cycle after `$invariant-ace` to separate essential complexity from auditability noise before reshaping code.
+- Required order: run `$invariant-ace` first, then `$complexity-mitigator`, and import both outputs into `$fix`.
 
 ## Inputs
 - User request text.
@@ -74,7 +74,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
   - proof
   - proof_strength
   - compatibility_impact
-- MUST follow the delegation contract in `Auxiliary skills (conditional)` (including order: `$invariant-ace` -> `$complexity-mitigator`).
+- MUST follow the delegation contract in `Auxiliary skills (mandatory)` (including order: `$invariant-ace` -> `$complexity-mitigator`) on every `$fix` cycle.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 - MUST include a final `Review loop trace` section in the deliverable/Fix Record.
 - MUST use the exact diff review prompt from `Diff review loop`, with only `base_branch` and `comparison_sha` substituted.
@@ -359,7 +359,7 @@ Pass 2) Surface (compat + misuse)
 Pass 3) Audit (invariants + ownership + proof quality)
 - Scope: final diff slice.
 - Focus: invariants enforced at strongest cheap boundary; ownership release-on-all-paths; proof strength.
-- Delegation: run `$invariant-ace` first for invariant framing, then `$complexity-mitigator` for complexity verdicts that affect auditability.
+- Delegation: always run `$invariant-ace` first for invariant framing, then `$complexity-mitigator` for complexity verdicts that affect auditability.
 - Change budget: no refactors unless they directly reduce risk/auditability of invariants.
 
 Early exit (stop after pass 3):
@@ -582,7 +582,7 @@ Language cues (examples only):
 - C/C++: raw pointers, unchecked casts, manual `malloc/free`.
 
 #### 2b) Invariant strengthening scan
-When invariant triggers fire, delegate to `$invariant-ace` and import its artifacts into `fix`.
+Run `$invariant-ace` on every `$fix` cycle and import its artifacts into `fix`.
 
 Default execution:
 1. Run `$invariant-ace` Compact Mode first.
@@ -614,7 +614,7 @@ For top-ranked misuse paths:
 3. Lock with a regression test or boundary assertion.
 
 #### 2d) Complexity scan (risk-driven)
-When complexity triggers fire, delegate to `$complexity-mitigator` for analysis; implement only via `fix`.
+Run `$complexity-mitigator` on every `$fix` cycle after `$invariant-ace`; implement only via `fix`.
 
 Rule: reshape only when it reduces risk and improves auditability of invariants/ownership.
 
