@@ -46,23 +46,25 @@ EXPECTED_FINDINGS_LINES = [
 
 EXPECTED_REVIEW_LINES = [
     "- If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`",
-    "- Otherwise: `R#` base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`",
+    "- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`",
     '- Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.',
     "- Each `R#` row comes from the terminal diff review closure loop in a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet and the same repo/worktree snapshot; the fixer does not self-grade that round.",
-    "- Terminal closure requires two consecutive clean rows on the unchanged final diff.",
+    "- Terminal closure requires two consecutive clean rows on the unchanged final diff within the same cycle.",
     '- Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.',
 ]
 
 EXPECTED_PASS_LINES = [
-    "- Core passes planned: `4`; core passes executed: `<4>`",
-    "- Delta passes planned: `<0|2>`; delta passes executed: `<0|2>`",
-    "- Total core/delta passes executed: `<4|6>`",
-    "- `P0 Core Review` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
-    "- `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
-    "- `P2 Surface` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
-    "- `P3 Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
-    "- If delta passes executed, also include `P4` and `P5` lines in the same format.",
-    "- `Post-self-review rerun` -> executed=`<yes|no>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
+    "- `Cycle C#` -> zero_edit_cycle_streak=`<0|1|2>`; edits=`<yes|no>`; review_context=`<comparison_sha|skip_not_git_repo|skip_missing_base_context>`; fingerprint=`<same|changed|n/a>`; result=`<restart|continue|close>`",
+    "- For each executed cycle, include:",
+    "  - Core passes planned: `4`; core passes executed: `<4>`",
+    "  - Delta passes planned: `<0|2>`; delta passes executed: `<0|2>`",
+    "  - Total core/delta passes executed: `<4|6>`",
+    "  - `P0 Core Review` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
+    "  - `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
+    "  - `P2 Surface` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
+    "  - `P3 Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
+    "  - If delta passes executed, also include `P4` and `P5` lines in the same format.",
+    "  - `Post-self-review rerun` -> executed=`<yes|no>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
 ]
 
 EXPECTED_SELF_REVIEW_LINES = [
@@ -109,7 +111,7 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "If that rerun edits code, discard the stale self-review state, revalidate, and restart from phase 4 against the new final validated changeset.",
     "If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.",
     "If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.",
-    "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 6.",
+    "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 7.",
     "`finding=none` is allowed only when every enumerated proof surface is `proved|blocked` and the current final diff yields zero qualifying findings under the diff review bars.",
 ]
 
@@ -172,6 +174,9 @@ REQUIRED_REFERENCE_PHRASES = [
     "In the terminal final-diff closure round, blocked findings cannot use `scope_guardrail`, and closure still requires `blocked_findings=0`.",
     "Use stale suppression only when a dedicated proof hook/blocker already discharges the repeated finding or the targeted diff hunk/form is gone, and terminal closure still requires `stale_findings=0`.",
     "Use `skip_missing_base_context` only when there is no live git diff and no derivable review target; a live git diff must derive review context or stop blocked.",
+    "Cycle <c>: Pass <n>/<total_planned>:",
+    "two consecutive clean `R#` rows on the unchanged final diff within the same cycle.",
+    "`Cycle C1` -> zero_edit_cycle_streak=`0`",
     "**Pass trace**",
     "**Review loop trace**",
     "skip_not_git_repo",
@@ -189,13 +194,23 @@ REQUIRED_PROOF_COVERAGE_PHRASES = [
 ]
 
 REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS = [
-    "Stop only after self-review exhausts actionable changes, the post-self-review rerun is clean, and two consecutive terminal diff-review closure rounds are clean.",
-    'When the validated changeset survives the post-self-review rerun and two consecutive terminal diff-review closure rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every proof surface is `proved|blocked`, `$fix` stops at that boundary; broader architecture, product, or roadmap analysis belongs to another skill.',
-    "MUST stop `$fix` once no new actionable self-review change remains, the post-self-review rerun is clean, and the terminal final-diff review rerun is clean; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
+    "Stop only after self-review exhausts actionable changes, each full cycle reaches post-self-review rerun plus terminal diff-review closure, and two consecutive zero-edit full cycles are clean.",
+    "When a full cycle reaches post-self-review rerun plus two consecutive clean terminal diff-review closure rounds on the unchanged final diff, and that cycle also ends with `cycle_edit_tally=0` plus an unchanged review-context receipt (`fingerprint=same` for review-backed runs or the same skip reason for skipped-review runs), increment `zero_edit_cycle_streak`; `$fix` stops only when that streak reaches `2`. Broader architecture, product, or roadmap analysis belongs to another skill.",
+    "MUST stop `$fix` once no new actionable self-review change remains, the current cycle reaches clean terminal final-diff review closure, and `zero_edit_cycle_streak=2`; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
     "MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.",
     "If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.",
     "Do not place those broader opportunities in `Residual risks / open questions` unless a valid blocker from the allowed set applies.",
-    '`Review loop trace` includes either a skip line or at least two consecutive terminal final-diff review rows on the unchanged final diff with `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.',
+    '`Review loop trace` includes either a skip line or cycle-annotated `R#` rows, and any closing cycle still shows at least two consecutive terminal final-diff review rows on the unchanged final diff with `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.',
+]
+
+REQUIRED_FIXED_POINT_GUARDRAILS = [
+    "MUST treat `$fix` as a whole-skill outer fixed-point loop: complete the current cycle through post-self-review rerun plus terminal final-diff review closure, then decide whether to restart from preflight using the same frozen review context.",
+    "MUST record `cycle_index`, `cycle_edit_tally`, `zero_edit_cycle_streak`, and `review_context_receipt` for each full cycle; use `git diff --no-ext-diff <comparison_sha>` as the fingerprint source for review-backed cycles.",
+    "MUST count a cycle as zero-edit only when `cycle_edit_tally=0` and the cycle's review-context receipt is unchanged (`fingerprint=same` for review-backed runs or the same skip reason for skipped-review runs).",
+    "MUST require two consecutive zero-edit full cycles, even when the first full cycle applies no edits.",
+    "MUST NOT add a new top-level transcript section for cycle reporting; keep cycle visibility inside runtime pass updates, `Pass trace`, and `Review loop trace`.",
+    "MUST NOT add an explicit outer-cycle cap; keep looping until `zero_edit_cycle_streak=2` or another existing blocker stops the run.",
+    "4. Runtime pass updates (`Cycle <c>: Pass <n>/<total_planned>: ...`) were emitted during execution.",
 ]
 
 FORBIDDEN_STALE_SELF_REVIEW_PHRASES = [
@@ -475,6 +490,10 @@ def run(path: Path) -> int:
             errors.append(
                 f"post_fix_boundary_guardrail missing required phrase: {phrase}"
             )
+
+    for phrase in REQUIRED_FIXED_POINT_GUARDRAILS:
+        if phrase not in text:
+            errors.append(f"fixed_point_guardrail missing required phrase: {phrase}")
 
     for phrase in FORBIDDEN_USER_LOOP_PHRASES:
         if phrase in text:
