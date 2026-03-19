@@ -1,19 +1,35 @@
 # Review and Self-Review Loop Examples
 
-Use these examples to keep the visible transcript shape aligned with the diff review loop and the internal self-review loop contract.
+Use these examples to keep the visible transcript shape aligned with the fixer-owned `P0 Core Review` pass, the terminal diff review closure loop, and the internal self-review loop contract.
 
 When review context exists, the terminal `Review loop trace` rows are the post-self-review final-diff closure rounds against the unchanged final diff.
+`P0 Core Review` iterations belong in `Pass trace`, not `Review loop trace`.
 Each `R#` row comes from a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet (literal prompt + review bars + schema + frozen base/comparison + same repo/worktree snapshot).
 Terminal closure requires two consecutive clean `R#` rows on the unchanged final diff.
+
+## P0 local-clean before downstream passes
+
+`P0 Core Review` loops as a fixer-owned pass until no `local_findings` remain, then the remaining core passes and post-self-review rerun continue normally.
+
+```md
+**Pass trace**
+- Core passes planned: `4`; core passes executed: `4`
+- Delta passes planned: `0`; delta passes executed: `0`
+- Total core/delta passes executed: `4`
+- `P0 Core Review` -> `done`; edits=`yes`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P1 Safety` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P2 Surface` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P3 Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+```
 
 ## Review loop local-clean after address
 
 ```md
 **Review loop trace**
-- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`2`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
+- `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
 - `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 - `R3` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
-- `R4` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 
 **Validation**
 - `uv run pytest tests/foo.py::test_bar` -> ok
@@ -108,11 +124,20 @@ Use `skip_missing_base_context` only when there is no live git diff and no deriv
 ## Embedded Fix Record success
 
 ```md
+**Pass trace**
+- Core passes planned: `4`; core passes executed: `4`
+- Delta passes planned: `0`; delta passes executed: `0`
+- Total core/delta passes executed: `4`
+- `P0 Core Review` -> `done`; edits=`yes`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
+- `P1 Safety` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
+- `P2 Surface` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
+- `P3 Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
+- `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
+
 **Review loop trace**
 - `R1` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
 - `R2` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 - `R3` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
-- `R4` base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`git diff 9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 
 **Validation**
 - `uv run pytest tests/widget.py::test_safe_default` -> ok

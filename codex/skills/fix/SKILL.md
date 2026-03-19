@@ -12,7 +12,6 @@ Skill-artifact refinement belongs to `$refine`; `$fix` stays focused on code/dif
 
 ## Execution spine
 - `Preflight`
-- `Diff review loop`
 - `Core passes`
 - `Residual risk sweep`
 - `Agent-directed self-review loop`
@@ -78,13 +77,15 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 - MUST include a final `Review loop trace` section in the deliverable/Fix Record.
 - MUST use the exact diff review prompt from `Diff review loop`, with only `base_branch` and `comparison_sha` substituted.
-- MUST run every `R#` review round, including the terminal closure rounds, in a fresh isolated reviewer turn/agent with no authoring or prior-review context beyond the frozen reviewer packet for that round. The reviewer packet MUST include the literal prompt, diff-review finding/comment/priority bars, diff-review output schema, frozen `base_branch`/`comparison_sha`, and the same repo/worktree snapshot binding as the fixer (`repo_root`/`worktree_path` or equivalent). The execution substrate is implementation-defined; do not require a direct `/review` command. The fixer may address findings but must not both generate and adjudicate the same review round.
+- MUST run `P0 Core Review` as the first core pass, using the exact diff review prompt and JSON-only findings schema against the frozen `comparison_sha` as a fixer-owned pass that is reported in `Pass trace`, not `Review loop trace`.
+- MUST classify `P0 Core Review` output into `local_findings` and `blocked_findings` only; `stale_findings` are terminal-review-only.
+- MUST stop `P0 Core Review` only when no `local_findings` remain; blocked `P0 Core Review` findings may carry forward as pre-terminal only and do not close `$fix`.
+- MUST run every terminal `R#` review round in a fresh isolated reviewer turn/agent with no authoring or prior-review context beyond the frozen reviewer packet for that round. The reviewer packet MUST include the literal prompt, diff-review finding/comment/priority bars, diff-review output schema, frozen `base_branch`/`comparison_sha`, and the same repo/worktree snapshot binding as the fixer (`repo_root`/`worktree_path` or equivalent). The execution substrate is implementation-defined; do not require a direct `/review` command. The fixer may address findings but must not both generate and adjudicate the same review round.
 - MUST derive `base_branch` and `comparison_sha` from repo state for any git-backed run with a live diff when they are omitted, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base. For git-backed live diffs, missing review context after derivation is a blocker, not a successful `skip_missing_base_context` path.
-- MUST verify `comparison_sha` resolves to a commit before activating the diff review loop.
-- MUST keep the diff review loop separate from `Pass trace`; report it in `Review loop trace`.
-- MUST close a pre-terminal diff review round only when a review round yields `local_findings=0`; the terminal final-diff closure round additionally requires `blocked_findings=0` and `stale_findings=0`.
+- MUST verify `comparison_sha` resolves to a commit before activating `P0 Core Review` or the terminal diff review loop.
+- MUST keep the terminal diff review loop separate from `Pass trace`; report it in `Review loop trace`.
 - MUST rerun the exact diff review loop against the current final diff after the self-review loop and after any post-self-review rerun edits; do not close `$fix` until two consecutive terminal review rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`.
-- MUST treat blocked/stale diff-review carry-forward as pre-terminal only. A terminal final-diff closure round with any `blocked_findings` or `stale_findings` is not review-clean and does not close `$fix`.
+- MUST treat blocked `P0 Core Review` carry-forward as pre-terminal only. A terminal final-diff closure round with any `blocked_findings` or `stale_findings` is not review-clean and does not close `$fix`.
 - MUST NOT treat a terminal final-diff review round with `blocked_findings>0` as closed or `local_clean`; if a fresh reviewer still emits any finding, `$fix` is not done.
 - MUST NOT treat a terminal final-diff review round with `stale_findings>0` as closed or `local_clean`; if a fresh reviewer still emits a repeated finding, `$fix` is not done.
 - MUST use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
@@ -328,7 +329,14 @@ Rules:
 
 Goal: reduce missed issues in PR/diff reviews without widening scope.
 
-Run 3 core passes (mandatory). Run 2 additional delta passes only if pass 3 edits code.
+Run 4 core passes (mandatory). Run 2 additional delta passes only if pass 3 edits code.
+
+Pass 0) Core Review
+- Scope: diff-driven slice against the frozen `comparison_sha`.
+- Focus: run the exact diff review prompt and JSON-only findings schema as a fixer-owned analysis lens before `P1`.
+- Loop: classify returned findings into `local_findings` and `blocked_findings`, fix `local_findings`, re-run the local signal, and repeat until no `local_findings` remain.
+- Reporting: record `P0 Core Review` in `Pass trace` and runtime pass updates; reserve `Review loop trace` for terminal isolated closure only.
+- Carry-forward: blocked `P0 Core Review` findings may continue as pre-terminal only and can later become residual items if they stay valid.
 
 Pass 1) Safety (highest severity)
 - Scope: diff-driven slice + required boundary seams.
@@ -432,7 +440,7 @@ Residual risks / open questions
 8. If signal/proof creation fails, stop before editing and return `blocked_by=no_repro_or_proof` with attempted commands.
 
 ### 1) Diff review loop
-This phase runs after preflight and before core passes, then runs again as the final closure gate on the current final diff after self-review/post-self-review edits settle.
+This phase runs only as the final closure gate on the current final diff after self-review/post-self-review edits settle. `P0 Core Review` reuses the exact diff review prompt and JSON-only findings schema inside `Core passes`, but it is fixer-owned and reported in `Pass trace`, not `Review loop trace`.
 
 ### Diff review finding bar (required)
 - Flag only discrete, actionable bugs introduced by the diff that materially impact correctness, performance, security, or maintainability.
@@ -513,13 +521,12 @@ Algorithm:
    - `blocked_findings`: findings that are blocked under the existing blocker model
    - `stale_findings`: repeated locally-fixable findings whose normalized fingerprint and implicated path set did not change across consecutive rounds after an address round
    - Once self-review has started, the terminal final-diff closure loop is current-worktree scoped and `scope_guardrail` is not a valid blocker.
-4. Emit one `Review loop trace` row per review round.
+4. Emit one `Review loop trace` row per terminal review round.
 5. If `local_findings > 0`, run `Address all review findings.`, re-run the chosen validation signal, then repeat from step 2.
 6. If a repeated locally-fixable finding is stale, suppress it from loop continuation and count it under `stale_findings` only when its normalized fingerprint and implicated path set did not change across consecutive rounds and the current proof bundle directly disproves the finding or the implicated diff hunk/form no longer exists.
    - Do not mark a finding stale if it targets a PROVEN_USED external surface that still lacks a dedicated proof hook or explicit blocker.
 7. Re-check `Surface proof coverage (deterministic)` against the current diff before closing the round.
-8. In this pre-core invocation, close the diff review loop only when a review round yields `local_findings=0` AND every enumerated proof surface is `proved|blocked`.
-9. Treat any `blocked_findings` or `stale_findings` carried from this pre-core invocation as pre-terminal only: they may continue into later phases/`Residual risks / open questions`, but they do not count as review-clean and cannot satisfy the terminal closure gate.
+8. Close the terminal diff review loop only when a review round yields `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`.
 
 ### 2) Core passes
 1. Determine PROVEN_USED behavior:
@@ -537,7 +544,7 @@ Algorithm:
 7. Enumerate candidate failure modes for the slice.
 8. Rank security > crash > corruption > logic.
 9. For each issue you will act on, create a finding record.
-10. Run the `Multi-pass loop (default)` for the touched slice.
+10. Run the `Multi-pass loop (default)` for the touched slice, starting with `P0 Core Review`.
 
 #### 2a) Unsoundness scan
 For each hazard class that applies:
@@ -665,7 +672,7 @@ For findings in severity order:
 4. Output lock (required):
    1. Heading set is exact and complete (`Contract`, `Findings (severity order)`, `Changes applied`, `Review loop trace`, `Pass trace`, `Validation`, `Self-review loop trace`, `Residual risks / open questions`).
     2. `Review loop trace` includes either a skip line or at least two consecutive terminal final-diff review rows on the unchanged final diff with `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
-   3. `Pass trace` includes planned/executed counts and P1/P2/P3 lines (plus P4/P5 when executed) plus `Post-self-review rerun`.
+   3. `Pass trace` includes planned/executed counts and P0/P1/P2/P3 lines (plus P4/P5 when executed) plus `Post-self-review rerun`.
    4. Runtime pass updates (`Pass <n>/<total_planned>: ...`) were emitted during execution.
    5. If embedded mode was used, include **Fix Record** in the same assistant message (after any required artifact).
    6. `Validation` includes machine-checkable keys: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
@@ -707,14 +714,15 @@ For each finding:
 - If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`
 - Otherwise: `R#` base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
 - Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
-- Each `R#` row comes from a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet and the same repo/worktree snapshot; the fixer does not self-grade that round.
+- Each `R#` row comes from the terminal diff review closure loop in a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet and the same repo/worktree snapshot; the fixer does not self-grade that round.
 - Terminal closure requires two consecutive clean rows on the unchanged final diff.
 - Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
 
 **Pass trace**
-- Core passes planned: `3`; core passes executed: `<3>`
+- Core passes planned: `4`; core passes executed: `<4>`
 - Delta passes planned: `<0|2>`; delta passes executed: `<0|2>`
-- Total core/delta passes executed: `<3|5>`
+- Total core/delta passes executed: `<4|6>`
+- `P0 Core Review` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
 - `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
 - `P2 Surface` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
 - `P3 Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
@@ -756,14 +764,15 @@ For each finding:
 - If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`
 - Otherwise: `R#` base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
 - Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
-- Each `R#` row comes from a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet and the same repo/worktree snapshot; the fixer does not self-grade that round.
+- Each `R#` row comes from the terminal diff review closure loop in a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet and the same repo/worktree snapshot; the fixer does not self-grade that round.
 - Terminal closure requires two consecutive clean rows on the unchanged final diff.
 - Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
 
 **Pass trace**
-- Core passes planned: `3`; core passes executed: `<3>`
+- Core passes planned: `4`; core passes executed: `<4>`
 - Delta passes planned: `<0|2>`; delta passes executed: `<0|2>`
-- Total core/delta passes executed: `<3|5>`
+- Total core/delta passes executed: `<4|6>`
+- `P0 Core Review` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
 - `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
 - `P2 Surface` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
 - `P3 Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
@@ -794,7 +803,7 @@ For each finding:
 - Editing generated/third-party outputs instead of source-of-truth.
 - Code edits without a failing proof hook when baseline was ok.
 - Recomputing the diff-review comparison or mutating the literal review prompt text.
-- Folding the diff review loop into `Pass trace` instead of `Review loop trace`.
+- Folding the terminal diff review loop into `Pass trace` instead of keeping `Review loop trace` terminal-only.
 - Using `Residual risks / open questions` as a substitute for fixable findings.
 
 ## Activation cues
