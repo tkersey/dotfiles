@@ -43,6 +43,7 @@ When iterating on the Zig-backed `learnings`/`append_learning` helper CLI path, 
 - Completion proof: after an implementation turn with a checkpoint or an intentional no-write, produce one exact proof line: `appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`.
 - Stop-hook compatibility: when append dedupes or you intentionally skip capture, keep the proof line on one line with the exact `duplicate-skip:` or `0 records appended:` prefix so hooks can distinguish a valid no-write from a missed capture.
 - Helper-first write path: use `learnings append`/`run_learnings_tool append` for normal writes; keep `append_learning` available as a compatibility binary, and treat manual `.learnings.jsonl` edits as emergency-only with explicit rationale.
+- Commit coupling: if this workflow updates `.learnings.jsonl` and a git commit follows in the same turn, include the current-turn `.learnings.jsonl` rows in that next commit by default. If the file also holds unrelated fresh rows, stage only the session-owned rows with an index patch rather than leaving all learnings for a follow-up commit. Skip only when the user explicitly narrows commit scope to exclude learnings.
 
 ## Quick Start
 
@@ -207,6 +208,7 @@ If any answer is no, skip capture (or use `review_later` only when uncertainty i
 6. Persist immediately.
    - Append each accepted learning to `.learnings.jsonl` in repo root (0 records is valid when nothing qualifies).
    - Use `learnings append` (via `run_learnings_tool append`) instead of hand-building JSON.
+   - If a commit will happen after the append, stage the current-turn `.learnings.jsonl` rows into that next commit immediately; if unrelated rows are present, use a targeted index patch instead of postponing the learnings write.
 7. Report concise highlights in chat.
    - Summarize the 1-3 highest leverage learnings (or say none).
    - Reference the write result with one exact proof line (`appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`).
