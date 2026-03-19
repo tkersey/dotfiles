@@ -77,16 +77,16 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST follow the delegation contract in `Auxiliary skills (mandatory)` (including order: `$invariant-ace` -> `$complexity-mitigator`) on every `$fix` cycle.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 - MUST include a final `Review loop trace` section in the deliverable/Fix Record.
-- MUST use the exact diff review prompt from `Diff review loop`, with only `base_branch` and `comparison_sha` substituted.
-- MUST run `P0 Core Review` as the first core pass, using the exact diff review prompt and JSON-only findings schema against the frozen `comparison_sha` as a fixer-owned pass that is reported in `Pass trace`, not `Review loop trace`.
+- MUST use native `codex review` invocations for git-backed review rounds instead of copying the review prompt into this skill: default to `codex review --base <base_branch>` for branch-diff review context, and reserve `codex review --commit <sha>` only for explicitly commit-scoped runs.
+- MUST run `P0 Core Review` as the first core pass, using native `codex review` output against the frozen review context as a fixer-owned pass that is reported in `Pass trace`, not `Review loop trace`.
 - MUST classify `P0 Core Review` output into `local_findings` and `blocked_findings` only; `stale_findings` are terminal-review-only.
 - MUST stop `P0 Core Review` only when no `local_findings` remain; blocked `P0 Core Review` findings may carry forward as pre-terminal only and do not close `$fix`.
-- MUST run every terminal `R#` review round in a fresh isolated reviewer turn/agent with no authoring or prior-review context beyond the frozen reviewer packet for that round. The reviewer packet MUST include the literal prompt, diff-review finding/comment/priority bars, diff-review output schema, frozen `base_branch`/`comparison_sha`, and the same repo/worktree snapshot binding as the fixer (`repo_root`/`worktree_path` or equivalent). The execution substrate is implementation-defined; do not require a direct `/review` command. The fixer may address findings but must not both generate and adjudicate the same review round.
+- MUST run every terminal `R#` review round in a fresh `codex review` CLI invocation with no authoring carry-over from the fixer. For `codex review --base <base_branch>` rounds, first confirm the live merge base still matches the frozen `comparison_sha`; if it drifts, stop blocked and refresh review context in a new `$fix` run. The fixer may address findings but must not both author and adjudicate the same review round.
 - MUST derive `base_branch` and `comparison_sha` from repo state for any git-backed run with a live diff when they are omitted, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base. For git-backed live diffs, missing review context after derivation is a blocker, not a successful `skip_missing_base_context` path.
 - MUST verify `comparison_sha` resolves to a commit before activating `P0 Core Review` or the terminal diff review loop.
 - MUST freeze that canonical review context for every outer cycle in the run once preflight verification succeeds.
 - MUST keep the terminal diff review loop separate from `Pass trace`; report it in `Review loop trace`.
-- MUST rerun the exact diff review loop against the current final diff after the self-review loop and after any post-self-review rerun edits; do not close `$fix` until two consecutive terminal review rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`.
+- MUST rerun the native `codex review` loop against the current final diff after the self-review loop and after any post-self-review rerun edits; do not close `$fix` until two consecutive terminal review rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`.
 - MUST treat blocked `P0 Core Review` carry-forward as pre-terminal only. A terminal final-diff closure round with any `blocked_findings` or `stale_findings` is not review-clean and does not close `$fix`.
 - MUST NOT treat a terminal final-diff review round with `blocked_findings>0` as closed or `local_clean`; if a fresh reviewer still emits any finding, `$fix` is not done.
 - MUST NOT treat a terminal final-diff review round with `stale_findings>0` as closed or `local_clean`; if a fresh reviewer still emits a repeated finding, `$fix` is not done.
@@ -96,7 +96,8 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST judge diff-review findings by author-fix-worthiness: flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them.
 - MUST prefer zero diff-review findings over speculative or assumption-heavy output; do not flag pre-existing issues, intentional behavior changes, or style-only nits.
 - MUST require every diff-review finding that claims broader impact to name the concrete callers/files/functions that are provably affected, and keep each finding comment to one matter-of-fact paragraph that states the triggering scenario or inputs.
-- MUST emit diff-review output as JSON-only matching `Diff review output schema (required)`, with `[P0]`..`[P3]` finding titles, numeric `priority`, tight diff-overlapping `code_location`, and an `overall_correctness` verdict.
+- MUST consume native `codex review` output for diff-review findings and normalize it into the local bookkeeping with `[P0]`..`[P3]` titles, numeric `priority`, tight diff-overlapping `code_location`, and an `overall_correctness` verdict.
+- MUST NOT try to append a custom prompt to `codex review --base` or `codex review --commit`; the CLI target owns the review prompt, and the optional `[PROMPT]` argument is only for the standalone custom-review mode.
 - MUST enumerate every PROVEN_USED external surface touched by code/docs/examples before closing the core-pass phase.
 - MUST assign each enumerated public/documented surface exactly one dedicated proof hook or one explicit blocker; a sibling or nearby proof hook does not discharge another advertised form.
 - MUST NOT accept a heuristic fallback or compatibility-sensitive public-seam change as done while the advertised/documented form it changes is still unproven.
@@ -341,7 +342,7 @@ Run 4 core passes (mandatory). Run 2 additional delta passes only if pass 3 edit
 
 Pass 0) Core Review
 - Scope: diff-driven slice against the frozen `comparison_sha`.
-- Focus: run the exact diff review prompt and JSON-only findings schema as a fixer-owned analysis lens before `P1`.
+- Focus: run native `codex review` against the frozen review context as a fixer-owned analysis lens before `P1`.
 - Loop: classify returned findings into `local_findings` and `blocked_findings`, fix `local_findings`, re-run the local signal, and repeat until no `local_findings` remain.
 - Reporting: record `P0 Core Review` in `Pass trace` and runtime pass updates; reserve `Review loop trace` for terminal isolated closure only.
 - Carry-forward: blocked `P0 Core Review` findings may continue as pre-terminal only and can later become residual items if they stay valid.
@@ -442,7 +443,7 @@ Residual risks / open questions
     - If the repo is git-backed and there is a live diff while `base_branch` or `comparison_sha` is missing, derive them from repo state, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base; omitted-but-derivable git context is not a skip case.
     - If the repo is git-backed and there is a live diff, but `base_branch` or `comparison_sha` is still missing after derivation, stop and ask with the derivation attempts; do not emit `skip_missing_base_context`.
     - If there is no live diff and no review target can be derived, set `Review loop trace` to `- None (skip_missing_base_context)` and continue.
-    - Otherwise verify `comparison_sha` with `git rev-parse --verify <comparison_sha>^{commit}` and freeze the canonical commit for the rest of the run and every outer cycle.
+    - Otherwise verify `comparison_sha` with `git rev-parse --verify <comparison_sha>^{commit}` and freeze the canonical commit for the rest of the run and every outer cycle. For base-branch review runs, also freeze `review_cmd=codex review --base <base_branch>` and require later CLI rounds to re-derive the same merge base before invoking the reviewer.
    - If that verification fails, stop before editing and report the failed command as a blocker.
 7. Select validation signal (or create proof hook).
 8. If signal/proof creation fails, stop before editing and return `blocked_by=no_repro_or_proof` with attempted commands.
@@ -453,7 +454,7 @@ Residual risks / open questions
    - when review context exists, use `git diff --no-ext-diff <comparison_sha>` as the fingerprint source for every cycle receipt
 
 ### 1) Diff review loop
-This phase runs only as the final closure gate on the current final diff after self-review/post-self-review edits settle. `P0 Core Review` reuses the exact diff review prompt and JSON-only findings schema inside `Core passes`, but it is fixer-owned and reported in `Pass trace`, not `Review loop trace`.
+This phase runs only as the final closure gate on the current final diff after self-review/post-self-review edits settle. `P0 Core Review` reuses native `codex review` inside `Core passes`, but it is fixer-owned and reported in `Pass trace`, not `Review loop trace`.
 
 ### Diff review finding bar (required)
 - Flag only discrete, actionable bugs introduced by the diff that materially impact correctness, performance, security, or maintainability.
@@ -505,37 +506,24 @@ Rules:
 - `code_location` is required, must overlap the diff, and should stay as tight as possible.
 - Return all qualifying findings, not just the first. If there is no finding the author would definitely want to fix, return an empty `findings` list and set the overall verdict accordingly.
 
-### Reviewer packet (required)
-- Every isolated reviewer turn receives a frozen reviewer packet containing:
-  - the literal review prompt,
-  - `Diff review finding bar (required)`,
-  - `Diff review comment bar (required)`,
-  - `Diff review priority bar (required)`,
-  - `Diff review output schema (required)`,
-  - the frozen `base_branch` label and canonical `comparison_sha`,
-  - the same repo/worktree snapshot binding as the fixer (`repo_root`/`worktree_path` or equivalent)
-- Do not rely on ambient skill context inside the isolated reviewer turn; the packet must be sufficient on its own.
-
-Literal prompts (required):
-
-```text
-Review the code changes against the base branch '<base_branch>'. The merge base commit for this comparison is <comparison_sha>. Run `git diff <comparison_sha>` to inspect the changes relative to <base_branch> and return JSON-only findings using the review bars and output schema in the reviewer packet for this run. Flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them. Do not flag pre-existing issues, intentional behavior changes, speculative risks, or style-only nits. When claiming broader impact, name the concrete callers/files/functions that are provably affected. Prefer no findings over weak findings. Prefix each title with `[P0]`..`[P3]`, include numeric `priority`, keep `code_location` tight and diff-overlapping, and include an `overall_correctness` verdict.
-```
-
-```text
-Address all review findings.
-```
+### Native codex review command (required)
+- Default git-backed review command: `codex review --base <base_branch>`.
+- Explicit commit-scoped review command: `codex review --commit <sha>`.
+- `codex review --base <base_branch>` resolves the merge base internally; before each round, confirm that the currently derived merge base still matches the frozen `comparison_sha`.
+- Do not paste the built-in review prompt into this skill. `codex review` owns the reviewer rubric and target prompt internally.
+- The optional `[PROMPT]` argument belongs only to standalone custom-review mode; with `--base` or `--commit`, the target flag wins and the prompt argument is ignored.
+- Consume the CLI's native prioritized findings plus `overall_correctness`, then normalize them into the local `local_findings` / `blocked_findings` / `stale_findings` bookkeeping.
 
 Algorithm:
 1. If `Review loop trace` already contains a skip line from preflight, continue to phase 2.
-2. Run the literal review prompt in a fresh isolated reviewer turn/agent with no authoring or prior-review context beyond the frozen reviewer packet for that round, bound to the same repo/worktree snapshot as the fixer.
+2. Run `codex review --base <base_branch>` in a fresh CLI invocation after confirming the live merge base still matches the frozen `comparison_sha`.
 3. Partition the returned findings into:
    - `local_findings`: locally fixable under the active guardrails for the current phase
    - `blocked_findings`: findings that are blocked under the existing blocker model
    - `stale_findings`: repeated locally-fixable findings whose normalized fingerprint and implicated path set did not change across consecutive rounds after an address round
    - Once self-review has started, the terminal final-diff closure loop is current-worktree scoped and `scope_guardrail` is not a valid blocker.
 4. Emit one `Review loop trace` row per terminal review round.
-5. If `local_findings > 0`, run `Address all review findings.`, re-run the chosen validation signal, then repeat from step 2.
+5. If `local_findings > 0`, address all review findings, re-run the chosen validation signal, then repeat from step 2.
 6. If a repeated locally-fixable finding is stale, suppress it from loop continuation and count it under `stale_findings` only when its normalized fingerprint and implicated path set did not change across consecutive rounds and the current proof bundle directly disproves the finding or the implicated diff hunk/form no longer exists.
    - Do not mark a finding stale if it targets a PROVEN_USED external surface that still lacks a dedicated proof hook or explicit blocker.
 7. Re-check `Surface proof coverage (deterministic)` against the current diff before closing the round.
@@ -668,9 +656,9 @@ For findings in severity order:
 1. Run the non-self-review core passes once against the full resulting changeset.
 2. If that rerun edits code, discard the stale self-review state, revalidate, and restart from phase 4 against the new final validated changeset.
 3. If that rerun applies no edits and `Review loop trace` already contains a skip line from preflight, continue to phase 6.
-4. Otherwise rerun phase 1 `Diff review loop` against the current final diff using the frozen `base_branch` label and canonical `comparison_sha`.
+4. Otherwise rerun phase 1 `Diff review loop` against the current final diff using the frozen `base_branch` label, canonical `comparison_sha`, and native `codex review` command.
 5. If that terminal diff review loop applies edits, discard the stale self-review state, revalidate, and restart from phase 4 against the new final validated changeset.
-6. If that terminal diff review loop yields `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`, rerun the same terminal diff review once more on the unchanged final diff (same frozen `base_branch`/`comparison_sha`, no intervening edits).
+6. If that terminal diff review loop yields `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`, rerun the same terminal diff review once more on the unchanged final diff (same frozen `base_branch`/`comparison_sha`, same `codex review --base <base_branch>` command, no intervening edits).
 7. If that confirmation round is also clean under the same criteria, continue to phase 6.
 8. Otherwise treat the confirmation round as the new terminal output: if it introduces new local findings, address/revalidate and restart from phase 4; if it still yields `blocked_findings > 0`, `stale_findings > 0`, or `overall_correctness="patch is incorrect"`, stop and report those findings/verdict as blockers.
 
@@ -737,9 +725,9 @@ For each finding:
 
 **Review loop trace**
 - If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`
-- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
+- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`codex review --base <name>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
 - Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
-- Each `R#` row comes from the terminal diff review closure loop in a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet and the same repo/worktree snapshot; the fixer does not self-grade that round.
+- Each `R#` row comes from the terminal diff review closure loop in a fresh `codex review` CLI invocation after confirming the live merge base still matches the frozen `comparison_sha`; the fixer does not self-grade that round.
 - Terminal closure requires two consecutive clean rows on the unchanged final diff within the same cycle.
 - Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
 
@@ -789,9 +777,9 @@ For each finding:
 
 **Review loop trace**
 - If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`
-- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`git diff <sha>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
+- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`codex review --base <name>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
 - Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
-- Each `R#` row comes from the terminal diff review closure loop in a fresh isolated reviewer turn/agent seeded with the frozen reviewer packet and the same repo/worktree snapshot; the fixer does not self-grade that round.
+- Each `R#` row comes from the terminal diff review closure loop in a fresh `codex review` CLI invocation after confirming the live merge base still matches the frozen `comparison_sha`; the fixer does not self-grade that round.
 - Terminal closure requires two consecutive clean rows on the unchanged final diff within the same cycle.
 - Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
 
@@ -831,7 +819,7 @@ For each finding:
 - Ownership fixes without proven allocator/owner.
 - Editing generated/third-party outputs instead of source-of-truth.
 - Code edits without a failing proof hook when baseline was ok.
-- Recomputing the diff-review comparison or mutating the literal review prompt text.
+- Recomputing the diff-review comparison, letting the live merge base drift, or trying to append a custom prompt onto `codex review --base`.
 - Closing after one zero-edit full cycle or re-deriving review context between cycles.
 - Folding the terminal diff review loop into `Pass trace` instead of keeping `Review loop trace` terminal-only.
 - Adding a new top-level cycle-reporting section instead of embedding cycle state in runtime pass updates, `Pass trace`, and `Review loop trace`.
@@ -840,7 +828,7 @@ For each finding:
 ## Activation cues
 - "resolve" / "fix" / "crash" / "data corruption"
 - "$fix this PR" / "$fix current branch" / "fix this branch"
-- "Review the code changes against the base branch" / "merge base commit" / "git diff <sha>"
+- "Review the code changes against the base branch" / "merge base commit" / "codex review --base"
 - "CI failed" / "fix the red checks" / "repair failing PR"
 - "footgun" / "misuse" / "should never happen"
 - "invariant" / "lifetime" / "nullable surprise"
