@@ -10,7 +10,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[4]
 SKILL_PATH = ROOT / "codex/skills/tk/SKILL.md"
 EXEMPLARS_PATH = ROOT / "codex/skills/tk/references/tk-exemplars.md"
-TECHNIQUES_PATH = ROOT / "codex/skills/tk/references/creative-techniques.md"
 PRECEDENCE_PATH = ROOT / "codex/skills/tk/references/style-precedence-matrix.md"
 SUITE_PATH = ROOT / "codex/skills/tk/references/eval/replay-suite.yaml"
 CODER_PATH = ROOT / "codex/agents/coder.toml"
@@ -20,9 +19,8 @@ REQUIRED_SKILL_PHRASES = [
     "Prefer the highest provable tier, not merely the smallest safe tier.",
     "Selection bias:",
     "Replay suite + shadow-mode notes live under `references/eval/`.",
-    "Use the picker name verbatim whenever Creative Frame is surfaced; do not invent or rename technique labels.",
     "In advice and implementation mode, surface a compact **Creative Frame** after **Invariants**; suppress it only when a higher-priority artifact contract forbids prose.",
-    "Keep the visible **Creative Frame** to the winning move: truth gap, reframe + technique, representation shift, accretive bet.",
+    "Keep the visible **Creative Frame** to the winning move: truth gap, reframe, representation shift, accretive bet.",
     "Output exactly: Contract, Invariants, Creative Frame, Cut Rationale, Proof Plan.",
     "Output: Contract, Invariants, Creative Frame, Cut Rationale, Incision, Proof.",
     "Audit the public claim, runtime enforcement, proof harness, and checked artifacts separately; any mismatch is a correctness bug, not a documentation nit.",
@@ -35,13 +33,6 @@ REQUIRED_EXEMPLAR_PHRASES = [
     "**Cut Rationale**",
     "**Creative Frame**",
     "generated artifact",
-]
-
-REQUIRED_TECHNIQUE_PHRASES = [
-    "Use the picker name verbatim whenever TK surfaces Creative Frame so evals can detect off-picker drift.",
-    "Compare candidates first on seam choice, abstraction level, blast radius, and proof posture.",
-    "Prefer candidates that make the repo's claims more truthful before candidates that only rearrange local syntax.",
-    "Only use wording/readability as a tie-breaker after the code-shape decision is settled.",
 ]
 
 REQUIRED_PRECEDENCE_HEADINGS = [
@@ -96,7 +87,6 @@ def main() -> int:
     paths = [
         SKILL_PATH,
         EXEMPLARS_PATH,
-        TECHNIQUES_PATH,
         PRECEDENCE_PATH,
         SUITE_PATH,
         CODER_PATH,
@@ -111,7 +101,6 @@ def main() -> int:
 
     skill_text = SKILL_PATH.read_text(encoding="utf-8")
     exemplars_text = EXEMPLARS_PATH.read_text(encoding="utf-8")
-    techniques_text = TECHNIQUES_PATH.read_text(encoding="utf-8")
     precedence_text = PRECEDENCE_PATH.read_text(encoding="utf-8")
     suite_text = SUITE_PATH.read_text(encoding="utf-8")
     coder_text = CODER_PATH.read_text(encoding="utf-8")
@@ -120,8 +109,6 @@ def main() -> int:
         require_contains(skill_text, phrase, "SKILL.md", errors)
     for phrase in REQUIRED_EXEMPLAR_PHRASES:
         require_contains(exemplars_text, phrase, "tk-exemplars.md", errors)
-    for phrase in REQUIRED_TECHNIQUE_PHRASES:
-        require_contains(techniques_text, phrase, "creative-techniques.md", errors)
     for phrase in REQUIRED_CODER_PHRASES:
         require_contains(coder_text, phrase, "coder.toml", errors)
 

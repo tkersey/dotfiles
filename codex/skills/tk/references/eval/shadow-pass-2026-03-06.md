@@ -43,7 +43,7 @@
 - Blast radius: `pass` - narrows to the two handlers plus one job entrypoint.
 - Proof posture: `pass` - explicitly says proof was not run, then gives exact commands and pass criteria.
 - Output-contract compliance: `pass` - correct implementation-mode section order; `Incision` is a change summary, not a diff.
-- Drift: `minor doctrine drift` - uses `Subtraction` as the named technique, which is outside the current creative-problem-solver picker list.
+- Drift: `minor doctrine drift` - uses a named technique label in the visible frame instead of a plain-language reframe.
 - Verdict: `pass`
 
 ### `shadow-strict-diff`
@@ -73,4 +73,4 @@
 - Seam/shape bar: `5/5` sampled sessions preserved the intended TK seam/boundary decision.
 - Critical output-contract violations: `0`
 - Faux-proof claims: `0`
-- Follow-up: monitor the technique-name drift in `shadow-implementation-summary`; do not add a new replay case unless it recurs or starts affecting seam/shape decisions.
+- Follow-up: monitor visible-frame wording drift in `shadow-implementation-summary`; do not add a new replay case unless it recurs or starts affecting seam/shape decisions.

@@ -14,9 +14,8 @@ Purpose: generate a five-tier portfolio that compounds (Artifact Spine), then st
 - Always include a five-tier portfolio: Quick Win, Strategic Play, Advantage Play, Transformative Move, Moonshot.
 - For each option: accretive artifact + expected signal + escape hatch.
 - Run an Aha Check after reframing.
-- Track provenance (technique → Aha Y/N). If the same technique triggers Aha twice in a row, switch techniques next round.
 - Keep a short Knowledge Snapshot (facts/risks/assets) + Decision Log.
-- Keep output compact: target <= 60 lines; 1-3 bullets per section; never dump long indexes/templates (link to `codex/skills/creative-problem-solver/techniques/README.md` or `codex/skills/creative-problem-solver/TEMPLATES.md` instead).
+- Keep output compact: target <= 60 lines; 1-3 bullets per section.
 
 ## When to use
 - Progress is stalled or blocked.
@@ -27,12 +26,12 @@ Purpose: generate a five-tier portfolio that compounds (Artifact Spine), then st
 ## Quick start
 1. Choose Double Diamond stage: Discover / Define / Develop / Deliver.
 2. Choose lane: Fast Spark or Full Session.
-3. Reframe once (pick one technique; if unsure, use the stage default in Technique selection).
-4. Aha Check. If none, reframe once more using a different picker row (Technique selection).
+3. Reframe once using the supported technique for the stage.
+4. Aha Check. If none, run one second and final pass with First Principles.
 5. Define gate: state a one-line problem statement + success criteria (or mark unknown and ask).
-6. Define an Artifact Spine (1–3 shared artifacts) so the tiers can stack.
+6. Define an Artifact Spine (1-3 shared artifacts) so the tiers can stack.
 7. Generate the five-tier portfolio (learning moves in Discover/Define; solution moves in Develop/Deliver).
-8. Score options (1–5): Signal, Accretion, Ease, Reversibility, Speed.
+8. Score options (1-5): Signal, Accretion, Ease, Reversibility, Speed.
 9. Ask the user to choose a tier or update constraints.
 10. Close with an Insights Summary.
 
@@ -48,40 +47,22 @@ Purpose: generate a five-tier portfolio that compounds (Artifact Spine), then st
 
 ## Lane selector
 - Fast Spark: skip ideation; produce the portfolio directly.
-- Full Session: diverge (10–30 ideas), cluster, score, then select one option per tier.
+- Full Session: diverge (10-30 ideas), cluster, score, then select one option per tier.
 
-## Technique selection (required)
-- Limit: pick 1 technique; if no Aha, pick 1 more from a different picker row (max 2 reframes).
-- Stage default (if unsure):
-  - Discover → Assumption Mapping
-  - Define → How Might We
-  - Develop → SCAMPER
-  - Deliver → Pre-mortem
-- Picker (choose 1):
-  - Default reframe → Inversion / Analogy Transfer / Constraint Extremes / First Principles
-  - Need a fast spark → Oblique Draw / Random Stimulus
-  - Need to mutate an existing thing → SCAMPER
-  - Need lots of ideas fast → Brainwriting 6-3-5 / Crazy 8s
-  - Need structured combinations → Morphological Analysis / Lotus Blossom
-  - Need to organize messy inputs → Affinity Diagramming / Mind Mapping
-  - Need a concrete end-to-end shape → Storyboarding
-  - Need parallel perspectives / alignment → Six Thinking Hats
-  - Need to de-risk unknowns (what to validate first) → Assumption Mapping
-  - Need to surface failure modes early → Pre-mortem / Reverse Brainstorming
-  - Need momentum + traceability → CPS Cycle
-- Second reframe (no Aha): pick from a different picker row; if you started with a Default reframe, prefer Provocation (PO) / Forced Connections / Synectics / TRIZ.
-- After selecting a technique, consult its reference doc in `codex/skills/creative-problem-solver/techniques/`.
-- Chat disclosure: include only `Reframe used: <technique>` + a one-line “why”.
-- Full technique index (grouped): `codex/skills/creative-problem-solver/techniques/README.md`.
-
-## Oblique draw (optional)
-Use when framing is stale. Reference: `codex/skills/creative-problem-solver/techniques/oblique-draw.md` (includes a mini-deck).
-1. Draw 4 prompts, pick 1, apply it.
-2. Translate it into a concrete lever/constraint.
+## Reframe selection (required)
+- Supported techniques:
+  - Discover default -> Assumption Mapping
+  - Define default -> How Might We
+  - Develop default -> SCAMPER
+  - Deliver default -> Pre-mortem
+  - Final fallback -> First Principles
+- Rule: start with the stage default. If there is no Aha, run exactly one second pass with First Principles.
+- If the user asks for an out-of-catalog technique, choose the nearest supported technique and disclose the supported `Reframe used`.
+- Chat disclosure: include only `Reframe used: <technique>` + a one-line `why`.
 
 ## Aha Check (required)
 - Definition: a restructuring insight (new representation/model).
-- Output: one-line insight. If none, reframe once more before generating options.
+- Output: one-line insight. If none after the second pass, state `N/A after second pass` and continue with the most conservative portfolio that still satisfies the contract.
 
 ## Portfolio rule
 - Every response must include all five tiers.
@@ -91,12 +72,12 @@ Use when framing is stale. Reference: `codex/skills/creative-problem-solver/tech
 ## Accretion (required)
 - Accretive artifact: a durable asset you keep even if the option is wrong (measurement, harness, spec, test, automation, interface, dataset, doc).
 - Rule: every tier must name one accretive artifact.
-- Artifact Spine: define 1-3 named artifacts shared across tiers; each tier’s artifact must be one of these or an extension of one (otherwise explicitly state why it is a different spine).
-- Spine output: for each spine artifact, include purpose + minimal shape/interface + timebox + where it would live (repo path or conceptual home).
-- Ladder: prefer stacking (Quick Win builds the base; higher tiers reuse/extend it). If it doesn’t ladder, say so explicitly.
+- Artifact Spine: define 1-3 named artifacts shared across tiers; each tier's artifact must be one of these or an extension of one (otherwise explicitly state why it is a different spine).
+- Spine output: for each spine artifact, include purpose + minimal shape/interface + timebox + where it lives (repo path or conceptual home).
+- Ladder: prefer stacking (Quick Win builds the base; higher tiers reuse/extend it). If it does not ladder, say so explicitly.
 
 ## Option template
-```
+```text
 Quick Win:
 - Accretive artifact (spine):
 - Expected signal:
@@ -123,7 +104,7 @@ Moonshot:
 - Escape hatch:
 ```
 
-## Scoring rubric (1–5, no weights)
+## Scoring rubric (1-5, no weights)
 - Signal: how much new information this yields.
 - Accretion: durable value you keep even if you're wrong.
 - Ease: effort/complexity to try.
@@ -131,11 +112,6 @@ Moonshot:
 - Speed: time-to-learn.
 
 Preference: high Signal + Accretion + Reversibility, then Ease + Speed.
-
-## Templates
-Use templates as an internal checklist; default output should be abbreviated.
-
-Full templates: `codex/skills/creative-problem-solver/TEMPLATES.md`.
 
 ## Deliverable format
 - Lane (Fast Spark / Full Session).
@@ -155,12 +131,13 @@ Full templates: `codex/skills/creative-problem-solver/TEMPLATES.md`.
 ## Fast Spark example (compact)
 ```text
 Lane: Fast Spark
-Stage: Develop
+Stage: Deliver
 
 Problem: Search API p95 latency is ~800ms; target <= 200ms at current infra cost.
 Success: p95<=200ms, p99<=400ms, CPU +<=10%, no relevancy regression.
 
-Reframe used: SCAMPER (why: mutate the current pipeline instead of redesigning)
+Reframe used: Pre-mortem
+Why: the current system already exists, so the main risk is choosing a move that adds work without cutting the real latency driver.
 Aha: The dominant cost is JSON serialization + payload size, not the query.
 
 Artifact Spine:

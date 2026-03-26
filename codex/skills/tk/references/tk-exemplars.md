@@ -214,7 +214,7 @@ Lean note:
 
 **Creative Frame**
 - Truth gap: the README says token access is fully checked, but two constructors still accept raw strings and the misuse tests do not cover them.
-- Reframe + technique: First principles, because the real problem is claim/enforcement/proof drift rather than constructor spelling.
+- Reframe: treat the bug as claim/enforcement/proof drift rather than constructor spelling, so the boundary becomes the fix target.
 - Representation shift: move from “documented safe strings” to one private exact parser boundary that owns construction.
 - Accretive bet: Advantage Play, because tightening the boundary plus fixing the claim is more truthful than adding another helper wrapper.
 
@@ -246,7 +246,7 @@ Lean note:
 
 **Creative Frame**
 - Truth gap: the proposed shared helper looks elegant, but only one family is actually proven, so the abstraction is still hypothetical.
-- Reframe + technique: Constraint extremes, because forcing “extract now” versus “extract after second port” exposes which move carries proof.
+- Reframe: compare “extract now” against “extract after second port” and choose the path that keeps proof attached to the seam.
 - Representation shift: treat the abstraction as a delayed byproduct of two passing families instead of the starting point.
 - Accretive bet: Strategic Play, because porting the second family first narrows risk while still moving toward the shared kit.
 
@@ -279,7 +279,7 @@ Lean note:
 
 **Creative Frame**
 - Truth gap: the hand-maintained `FORMAL.md` and the checked registry keep diverging even when the tests stay green.
-- Reframe + technique: Inversion, because the right question is “how do we stop editing this doc?” rather than “how do we keep it in sync?”
+- Reframe: solve “how do we stop editing this doc?” rather than “how do we keep it in sync?”
 - Representation shift: move from duplicated prose to a generated artifact owned by the checked registry.
 - Accretive bet: Advantage Play, because a generator removes drift without forcing a repo-wide docs rewrite.
 

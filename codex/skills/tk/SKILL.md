@@ -14,7 +14,7 @@ TK is a task-to-incision protocol for writing the *fundamental expression* of a 
 - The chosen seam/boundary determines the shape of the code (more than the prose does).
 - The patch is as small as correctness allows, and obviously correct.
 - Cleverness is allowed only when it reduces risk and branching.
-- Creativity is deliberate: once seams are named, use reframing + techniques to explore cuts before choosing the incision.
+- Creativity is deliberate: once seams are named, run a small reframe search before choosing the incision.
 - The visible output should show the winning reframe, then mimic code-shape judgment instead of prose theater.
 
 TK optimizes for:
@@ -47,7 +47,7 @@ Output-contract precedence (required):
 - When output-shape and code-shape preferences conflict, preserve the outer artifact contract and keep TK's seam/shape discipline internal.
 - Decision order for conflicts: outer artifact contract -> explicit task envelope/write scope -> stable boundary/invariants -> repo dialect. See `references/style-precedence-matrix.md`.
 - In advice and implementation mode, surface a compact **Creative Frame** after **Invariants**; suppress it only when a higher-priority artifact contract forbids prose.
-- Keep the visible **Creative Frame** to the winning move: truth gap, reframe + technique, representation shift, accretive bet.
+- Keep the visible **Creative Frame** to the winning move: truth gap, reframe, representation shift, accretive bet.
 
 Advice mode (no code change requested):
 - Output exactly: Contract, Invariants, Creative Frame, Cut Rationale, Proof Plan.
@@ -81,7 +81,7 @@ Template compliance (order is mandatory):
 **Creative Frame**
 - Surface the winning reframe directly:
   - Truth gap: <where the public claim, enforcement boundary, proof harness, or checked artifacts disagree>
-  - Reframe + technique: <picker name + why this reframe was chosen>
+  - Reframe: <the plain-language model/boundary shift and why it wins>
   - Representation shift: <the model, boundary, or artifact change that makes the cut feel forced, or `N/A after second pass`>
   - Accretive bet: <the highest provable tier and why it earns the blast radius>
 - Show the winning move, not the full ideation transcript.
@@ -153,7 +153,7 @@ TK is not a style; it’s a reduction process:
 5. **Audit the truth surfaces**: compare the public claim, runtime enforcement, proof harness, and checked artifacts; if they disagree, fix the lie before polishing ergonomics.
 6. **Run the universalist signal check**: if the problem is structurally shaped (variants, repeated validation, shared-key agreement, behavior-as-branching, syntax/execution split, or lawful combine), consult `$universalist` internally and pick the smallest fitting construction; otherwise stay on the ordinary TK path.
 7. **Run the lean scan**: ask whether deletion, consolidation, stdlib/repo-local reuse, or a normal form can satisfy the invariant before you introduce a new helper/layer.
-8. **Reframe + run a technique**: generate a 5-tier portfolio, but surface only the winning Creative Frame unless the user asked for more.
+8. **Reframe the cut-space**: generate a 5-tier portfolio, but surface only the winning Creative Frame unless the user asked for more.
 9. **Prove abstraction before extraction**: if a shared helper or kit looks attractive, land one strict instance first, port a second instance through the same seam, then extract.
 10. **Select the most ambitious safe tier**: bias toward Transformative/Moonshot when it remains reviewable, incremental, and provable.
 11. **Cut the incision**: minimal diff at the stable boundary.
@@ -270,16 +270,10 @@ Selection bias:
 
 Creative frame (required and visible in non-strict mode):
 - Truth gap: the mismatch or overclaim that makes the current model misleading.
-- Reframe used: Inversion / Analogy transfer / Constraint extremes / First principles.
-- Technique used: pick 1 technique using the `$creative-problem-solver` skill’s **Technique selection** section; consult the matching technique reference in that skill.
-  - Use the picker name verbatim whenever Creative Frame is surfaced; do not invent or rename technique labels.
-  - If the technique is Lotus Blossom, apply the TK-specific petals from this skill’s **Creative Techniques** reference.
+- Reframe: describe the winning model, boundary, or assumption shift in plain language.
 - Representation shift: one sentence describing the model/representation change (or “N/A: no shift needed”) that makes the choice feel forced.
-  - If no Aha (no meaningful representation shift), pick 1 different technique from a different picker row (max 2) and regenerate.
+  - If no Aha (no meaningful representation shift), run one second and final reframe pass, then continue with `N/A after second pass` rather than widening into a larger catalog.
 - Accretive bet: the highest provable tier and why it earns the blast radius.
-
-Technique picker + index: use the `$creative-problem-solver` skill’s **Technique selection** and **Full technique index (grouped)** sections.
-Lotus Blossom (TK adaptation) + tier mapping: this skill’s **Creative Techniques** reference.
 Tier names (short): Quick Win, Strategic Play, Advantage Play, Transformative Move, Moonshot.
 
 ## Algebra (quietly)
@@ -332,7 +326,7 @@ TK is calm execution under constraints.
 - **Boundary (stable boundary)**: the interface where validity/effects enter; prefer enforcing the rule once here.
 - **Seam**: an enabling point to substitute/redirect behavior safely.
 - **Cut rationale**: the visible seam-choice argument that survives after internal ideation is compressed away.
-- **Creative Frame**: the truth gap, reframe + technique, representation shift, and accretive bet that made the winning cut feel forced.
+- **Creative Frame**: the truth gap, reframe, representation shift, and accretive bet that made the winning cut feel forced.
 - **Lotus blossom**: breadth-first ideation: center the boundary/contract, expand 8 TK-native petals, then turn petals into candidate incisions.
 - **Proof signal**: the concrete check that makes the change trustworthy (test/typecheck/log/law/diagram).
 - **Normal form**: a canonical representation used to simplify rules and comparisons.
@@ -350,7 +344,7 @@ Advice mode (no code changes): output exactly:
 
 **Creative Frame**
 - Truth gap: <where claim, enforcement, proof, or checked artifacts disagree>
-- Reframe + technique: <picker name + why this reframe>
+- Reframe: <the plain-language model/boundary shift and why it wins>
 - Representation shift: <the model, boundary, or artifact change that makes the cut feel forced, or `N/A after second pass`>
 - Accretive bet: <the highest provable tier and why it earns the blast radius>
 
@@ -375,7 +369,7 @@ Implementation mode (code changes): output exactly:
 
 **Creative Frame**
 - Truth gap: <where claim, enforcement, proof, or checked artifacts disagree>
-- Reframe + technique: <picker name + why this reframe>
+- Reframe: <the plain-language model/boundary shift and why it wins>
 - Representation shift: <the model, boundary, or artifact change that makes the cut feel forced, or `N/A after second pass`>
 - Accretive bet: <the highest provable tier and why it earns the blast radius>
 

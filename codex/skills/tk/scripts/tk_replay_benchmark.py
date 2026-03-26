@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import functools
 import json
 import re
 import subprocess
@@ -17,12 +16,6 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_SUITE = ROOT / "codex/skills/tk/references/eval/replay-suite.yaml"
-CPS_SKILL_PATH = ROOT / "codex/skills/creative-problem-solver/SKILL.md"
-CPS_TECHNIQUES_INDEX_PATH = (
-    ROOT / "codex/skills/creative-problem-solver/techniques/README.md"
-)
-TECHNIQUE_LINE_PATTERN = re.compile(r"(?im)^-\s*Technique:\s*(.+?)\s*$")
-TECHNIQUE_README_PATTERN = re.compile(r"(?m)^-\s+(.+?)\s+-\s+`")
 
 
 def load_suite(path: Path) -> dict[str, Any]:
@@ -56,110 +49,6 @@ def parse_required_int(raw: Any, label: str) -> int:
         raise SystemExit(f"invalid integer value for {label}: {raw!r}") from exc
 
 
-def normalize_technique_name(raw: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "", raw.lower())
-
-
-def add_technique_alias(aliases: set[str], raw: str) -> None:
-    cleaned = raw.strip().strip("`")
-    if not cleaned:
-        return
-    aliases.add(cleaned)
-    without_parens = re.sub(r"\s*\([^)]*\)", "", cleaned).strip()
-    if without_parens:
-        aliases.add(without_parens)
-
-
-@functools.cache
-def load_allowed_picker_techniques() -> dict[str, tuple[str, ...]]:
-    picker_aliases: set[str] = set()
-
-    try:
-        cps_skill_text = CPS_SKILL_PATH.read_text(encoding="utf-8")
-        picker_block = cps_skill_text.split("## Technique selection (required)", 1)[1]
-        picker_block = picker_block.split("## Oblique draw", 1)[0]
-    except (FileNotFoundError, IndexError) as exc:
-        raise SystemExit(
-            f"failed to load creative-problem-solver picker from {CPS_SKILL_PATH}"
-        ) from exc
-
-    for raw_line in picker_block.splitlines():
-        line = raw_line.strip()
-        if "→" in line:
-            rhs = line.split("→", 1)[1]
-            for part in rhs.split("/"):
-                add_technique_alias(picker_aliases, part)
-        if line.startswith("- Second reframe"):
-            match = re.search(r"prefer\s+(.+?)\.", line)
-            if match:
-                for part in match.group(1).split("/"):
-                    add_technique_alias(picker_aliases, part)
-
-    normalized: dict[str, set[str]] = {}
-    for alias in picker_aliases:
-        key = normalize_technique_name(alias)
-        if key:
-            normalized.setdefault(key, set()).add(alias)
-
-    try:
-        cps_index_text = CPS_TECHNIQUES_INDEX_PATH.read_text(encoding="utf-8")
-    except FileNotFoundError as exc:
-        raise SystemExit(
-            f"failed to load creative-problem-solver technique index from {CPS_TECHNIQUES_INDEX_PATH}"
-        ) from exc
-
-    for match in TECHNIQUE_README_PATTERN.finditer(cps_index_text):
-        readme_aliases: set[str] = set()
-        add_technique_alias(readme_aliases, match.group(1))
-        matching_keys = [
-            normalize_technique_name(alias)
-            for alias in readme_aliases
-            if normalize_technique_name(alias) in normalized
-        ]
-        if matching_keys:
-            target_key = sorted(matching_keys, key=len, reverse=True)[0]
-            normalized[target_key].update(readme_aliases)
-
-    if not normalized:
-        raise SystemExit("no creative-problem-solver techniques were discovered")
-
-    return {
-        key: tuple(sorted(values, key=str.lower))
-        for key, values in sorted(normalized.items())
-    }
-
-
-def extract_technique_line(output: str) -> str | None:
-    match = TECHNIQUE_LINE_PATTERN.search(output)
-    if not match:
-        return None
-    return match.group(1).strip()
-
-
-def resolve_picker_technique(raw: str) -> str | None:
-    normalized_output = normalize_technique_name(raw)
-    for key, aliases in sorted(
-        load_allowed_picker_techniques().items(),
-        key=lambda item: len(item[0]),
-        reverse=True,
-    ):
-        if normalized_output.startswith(key):
-            return aliases[0]
-    return None
-
-
-def allowed_technique_examples(limit: int = 10) -> str:
-    names = sorted(
-        {
-            alias
-            for aliases in load_allowed_picker_techniques().values()
-            for alias in aliases
-        },
-        key=str.lower,
-    )
-    return ", ".join(names[:limit])
-
-
 def validate_checks(checks: list[dict[str, Any]], case_id: str) -> None:
     supported = {
         "contains",
@@ -169,7 +58,6 @@ def validate_checks(checks: list[dict[str, Any]], case_id: str) -> None:
         "ordered_sections",
         "diff_block_count",
         "max_nonempty_lines",
-        "technique_from_picker",
     }
     for index, check in enumerate(checks, start=1):
         check_type = check.get("type")
@@ -177,8 +65,6 @@ def validate_checks(checks: list[dict[str, Any]], case_id: str) -> None:
             raise SystemExit(
                 f"case {case_id} has unsupported check type at index {index}: {check_type!r}"
             )
-        if check_type == "technique_from_picker":
-            load_allowed_picker_techniques()
 
 
 def check_case(output: str, checks: list[dict[str, Any]]) -> tuple[bool, list[str]]:
@@ -223,16 +109,6 @@ def check_case(output: str, checks: list[dict[str, Any]]) -> tuple[bool, list[st
                 failures.append(
                     f"{label}: expected <= {max_lines} non-empty lines, got {actual}"
                 )
-        elif check_type == "technique_from_picker":
-            raw_technique = extract_technique_line(output)
-            if raw_technique is None:
-                failures.append(f"{label}: missing '- Technique: ...' line")
-            else:
-                matched = resolve_picker_technique(raw_technique)
-                if matched is None:
-                    failures.append(
-                        f"{label}: technique is outside creative-problem-solver picker: {raw_technique!r}; allowed examples: {allowed_technique_examples()}"
-                    )
         else:
             failures.append(f"{label}: unsupported check type")
     return (not failures), failures
