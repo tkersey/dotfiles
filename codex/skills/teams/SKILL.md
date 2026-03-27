@@ -65,7 +65,8 @@ Use `$mesh` instead when:
 ## Recommended Workflow
 
 1. Make a short local plan with `update_plan` and identify the current ready set, not just the next critical-path step.
-   - If the run needs durable shared state, mirror that ready wave into `$st` first.
+   - For non-trivial orchestration, durable `$st` is the default handoff: import the OrchPlan and claim the ready wave in `$st` first.
+   - Same-turn execution without `$st` is an explicit opt-out and must still use the same structured OrchPlan + `wave_id` + `executor` packet instead of prose-only handoff.
 2. Identify the composite parts and reshape them into bounded leaf tasks.
 3. Keep synthesis, integration, and overlapping-write work local; dispatch every dependency-independent ready branch before the first blocking `wait_agent`.
 4. Pick the right role:
@@ -159,7 +160,7 @@ Why the handoff:
 - Prefer stable task names for long-lived teammates so later `assign_task`, `send_message`, `wait_agent`, and `close_agent` calls can target paths cleanly.
 - Tell `worker` agents they are not alone in the repo and must not revert other edits.
 - Keep write scopes disjoint; one worker should own each mutating scope.
-- If execution is durable, claim the ready wave in `$st` before any spawn and record runtime/proof back into that ledger.
+- By default, claim the ready wave in `$st` before any spawn and record runtime/proof back into that ledger.
 - Remember that `thread/fork` branches a conversation; it is not a substitute for worker delegation.
 
 ## Guardrails

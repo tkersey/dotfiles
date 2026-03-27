@@ -86,7 +86,9 @@ Apply these in order:
 Maximize orchestration by maximizing the size and quality of the safe leaf wave, not by spawning agents early or often.
 
 - Start with `$select` when the work is not already a clear row batch or a clear set of disjoint leaf tasks.
-- Use `$st` before execution when wave ownership or proof state needs to survive turns or handoffs.
+- For non-trivial orchestration, use `$st` before execution so wave ownership and proof state stay durable across the handoff from planning to execution.
+- The canonical durable handoff is `st import-orchplan --input <orchplan>` followed by `st claim --wave <wN> --executor teams|mesh` before any worker starts.
+- Same-turn execution that skips `$st` is an explicit opt-out; it must still use the same structured OrchPlan + `wave_id` + `executor` packet semantics and must not fall back to prose-only handoff.
 - Use `$teams` for the first heterogeneous ready wave, and launch the full dependency-independent ready set before the first blocking `wait_agent`.
 - Hand off to `$mesh` only when the remaining work is a homogeneous batch of independent substantive rows.
 - Use `seq orchestration-concurrency --fail-on-mesh-truth` when claiming mesh concurrency or substrate truth.

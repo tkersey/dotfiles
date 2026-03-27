@@ -93,7 +93,8 @@ run_st_tool --help
 2. If the run has 3+ dependent steps, likely spans turns, or already uses a native task surface (`update_plan` in Codex or `TodoWrite` in OpenCode), adopt `$st` as the durable source of truth before editing.
 3. If the plan came from `$select`, import the OrchPlan into `$st` and claim the first safe wave before execution starts.
    - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
-   - `st claim --file .step/st-plan.jsonl --ids "cfg,ui" --executor teams --wave w1`
+   - `st claim --file .step/st-plan.jsonl --wave w1 --executor teams`
+   - For OrchPlan-backed claims, `--wave` is the canonical selector and same-turn execution that skips `$st` is an explicit opt-out only.
 4. Initialize plan storage with `st init` if missing.
 5. Rehydrate current state with `st show` (or focused views via `ready` / `blocked`).
    - Default surface is `plan`.
@@ -137,7 +138,7 @@ st emit-update-plan --file .step/st-plan.jsonl
 st export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
 st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
 st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml --replace
-st claim --file .step/st-plan.jsonl --ids "st-001,st-002" --executor teams --wave w1
+st claim --file .step/st-plan.jsonl --wave w1 --executor teams
 st heartbeat --file .step/st-plan.jsonl --id st-001
 st set-runtime --file .step/st-plan.jsonl --id st-001 --substrate spawn_agent --thread-id thread-123 --agent-id agent-1
 st set-proof --file .step/st-plan.jsonl --id st-001 --proof-state pass --command "zig build test-st" --evidence-ref .step/proof.log
@@ -150,6 +151,7 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
 
 - Keep exactly one `in_progress` item unless `$st` can prove a safe parallel wave.
 - Safe parallel `in_progress` is allowed automatically when every active item has `claim.state=held`, a non-empty `claim.wave_id`, `claim.executor=teams|mesh`, and pairwise non-overlapping `claim.lock_roots`.
+- For OrchPlan-backed durable execution, `claim.wave_id` is authoritative and should be derived from the imported wave, not reconstructed from ad hoc `--ids`.
 - `in_plan=true` is the mirrored-plan membership flag. Missing legacy values normalize to `true`.
 - Terminal statuses (`completed`, `deferred`, `canceled`) auto-demote items out of the mirrored plan while keeping them on disk.
 - Track prerequisites in each item's typed `deps` array; dependencies are part of the canonical JSONL schema.

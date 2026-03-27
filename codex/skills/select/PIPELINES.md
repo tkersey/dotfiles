@@ -4,7 +4,8 @@
 Goal: execute an OrchPlan safely with parallel workers.
 
 1. For each wave `wN` in order:
-    - If durable execution is in play, run `st import-orchplan --input <orchplan>` once, then `st claim --ids <wave task ids> --executor teams|mesh --wave wN` before any worker starts.
+    - Durable execution is the default for non-trivial orchestration: run `st import-orchplan --input <orchplan>` once, then `st claim --wave wN --executor teams|mesh` before any worker starts.
+    - Same-turn execution that skips `$st` is an explicit opt-out; it must still use the same structured OrchPlan + `wave_id` + `executor` handoff packet and must not rely on prose-only wave summaries.
     - If the task source supports status and no durable ledger is being used, claim the tasks in `wN` first by marking them in-progress (use the source token; default `in_progress`).
     - Treat `depends_on` as mandatory ordering and `related_to` as advisory ordering/context only.
     - Prefer executing `role: contract` tasks early when they unlock multiple downstream tasks.
@@ -20,17 +21,18 @@ Goal: execute an OrchPlan safely with parallel workers.
 Goal: execute an OrchPlan as a streaming run with maximum safe parallelism over substantive units.
 
 1. Ensure each selected task has a tight `scope` list (exclusive lock roots) and at least one `validation` command.
-2. Map each task into one primary mesh row per substantive unit:
+2. If the batch came from an OrchPlan and durable execution is in play, import and claim the selected wave in `$st` before building the CSV; skipping `$st` is an explicit opt-out only.
+3. Map each task into one primary mesh row per substantive unit:
    - `task_id`: task id
    - `objective`: task title
    - `write_scope`: task `scope`
    - `proof_command`: first `validation` command
    - `risk_tier`: default `med` unless the task is clearly `low|high`
-3. Set `id_column=task_id` and `max_concurrency` to the safe row count unless a lower explicit cap is required.
-4. Only create secondary review/reduce/fix/prove/integrate rows for units that reported a concrete blocker, a non-trivial diff requiring reduction, or a failed proof.
-5. Do not multiply rows just to create lane evidence; a clean primary row is already sufficient evidence for that unit.
-6. Artifact retention gate (required): store wave CSVs under `${CODEX_MESH_ARTIFACT_ROOT:-$HOME/.codex/mesh-artifacts}` and fail the handoff if `$seq` reports `csv_rows_missing>0`.
-7. If `$st` is the durable source of truth, reconcile the output CSV with `st import-mesh-results --input <output.csv>` before advancing the wave.
+4. Set `id_column=task_id` and `max_concurrency` to the safe row count unless a lower explicit cap is required.
+5. Only create secondary review/reduce/fix/prove/integrate rows for units that reported a concrete blocker, a non-trivial diff requiring reduction, or a failed proof.
+6. Do not multiply rows just to create lane evidence; a clean primary row is already sufficient evidence for that unit.
+7. Artifact retention gate (required): store wave CSVs under `${CODEX_MESH_ARTIFACT_ROOT:-$HOME/.codex/mesh-artifacts}` and fail the handoff if `$seq` reports `csv_rows_missing>0`.
+8. If `$st` is the durable source of truth, reconcile the output CSV with `st import-mesh-results --input <output.csv>` before advancing the wave.
 
 ## PLANS pipeline (manual)
 Goal: iterate `plan-N.md` until the plan is stable and implementation-ready.

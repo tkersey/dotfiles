@@ -155,7 +155,8 @@ When `$select` selects work to *start now* (i.e., the tasks in the first schedul
   - Accept common variants as equivalent when reading/triaging: `in progress`, `in-progress`, `in_progress`
   - When emitting a claim, prefer the token already used by the source; otherwise default to `in_progress`.
 - If the source is `list` or `plan`, emit `claim: none`.
-- If the resulting OrchPlan will feed durable execution, the follow-through path is `st import-orchplan` then `st claim` before any `spawn_agent` or `$mesh` run.
+- If the resulting OrchPlan will feed durable execution, the canonical follow-through path is `st import-orchplan` once, then `st claim --wave <wN> --executor teams|mesh` before any `spawn_agent` or `$mesh` run.
+- Same-turn execution without `$st` is an explicit opt-out; it must still pass the same structured OrchPlan + `wave_id` + `executor` handoff packet and may not rely on prose-only wave descriptions.
 
 This is still plan-only: `$select` does not perform the writeback; it spells out what to change.
 
@@ -249,7 +250,7 @@ After the OrchPlan YAML, emit a short plaintext trace (tight and structured):
 5. Normalize tasks: ensure `id`; apply orchestrator rule; treat unknown deps as blocked (pending auto-remediation).
 6. Run warning auto-remediation (above); finalize warnings.
 7. Schedule waves using `depends_on` + `scope` locks.
-7.5. If selecting new work, compute `claim` from `waves[0]`; for source-backed flows emit manual status writeback, and for durable execution handoffs keep the first-wave ids ready for `st import-orchplan` + `st claim`.
+7.5. If selecting new work, compute `claim` from `waves[0]`; for source-backed flows emit manual status writeback, and for durable execution handoffs keep the first-wave `wave_id` plus executor decision ready for `st import-orchplan` + `st claim --wave <wN> --executor teams|mesh`.
 8. Reviewer pass (per `review`): check deps/order/locks/validation/delegation gaps; revise as needed.
    - Detect unnecessary linear chains and downgrade advisory edges from `depends_on` to `related_to` when safe.
    - If `waves[0]` leaves safe ready work unclaimed and `max_tasks` was not explicitly capped, treat it as a planning defect and revise until `fanout_left_on_table=0` or emit a blocking explanation.

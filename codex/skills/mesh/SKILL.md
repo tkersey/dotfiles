@@ -69,13 +69,15 @@ If you still need to decide the row schema, challenge the approach, or compare s
 ## Recommended Flow
 
 1. Confirm planning is complete and the rows are truly homogeneous and independent.
-2. Build a CSV with stable headers and, when useful, a stable `id_column`; keep one row per substantive unit.
+2. Durable `$st` is the default handoff for non-trivial OrchPlan execution: import and claim the selected wave before building the CSV.
+3. Same-turn execution without `$st` is an explicit opt-out and must still use the same structured OrchPlan + `wave_id` + `executor` packet instead of prose-only wave handoff.
+4. Build a CSV with stable headers and, when useful, a stable `id_column`; keep one row per substantive unit.
    - Prefer `task_id` as the stable row id when the batch came from an OrchPlan or `$st` claim set.
-3. Write one instruction template using `{column}` placeholders and one primary deliverable per row.
-4. Choose only the controls you need: `output_schema`, `output_csv_path`, `max_concurrency`, `max_runtime_seconds`; set `max_concurrency` to the safe row count unless a lower cap is required.
-5. Run `spawn_agents_on_csv`.
-6. Only queue secondary rows for units that reported a concrete blocker, a failed proof, or a non-trivial diff needing another pass.
-7. Review the exported CSV and do any integration or follow-up work locally or with `$teams`.
+5. Write one instruction template using `{column}` placeholders and one primary deliverable per row.
+6. Choose only the controls you need: `output_schema`, `output_csv_path`, `max_concurrency`, `max_runtime_seconds`; set `max_concurrency` to the safe row count unless a lower cap is required.
+7. Run `spawn_agents_on_csv`.
+8. Only queue secondary rows for units that reported a concrete blocker, a failed proof, or a non-trivial diff needing another pass.
+9. Review the exported CSV and do any integration or follow-up work locally or with `$teams`.
    - If `$st` owns execution state, reconcile the export with `st import-mesh-results --input <output.csv>` before closing the wave.
 
 ## Concrete Examples

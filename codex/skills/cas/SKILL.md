@@ -168,7 +168,7 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
 
 2. For swarm-hardening runs, treat `$st` as the durable source of truth before any worker starts.
    - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
-   - `st claim --file .step/st-plan.jsonl --ids "cfg,ui" --executor teams --wave w1`
+   - `st claim --file .step/st-plan.jsonl --wave w1 --executor teams`
    - CAS probes the wave; it does not replace the durable claim ledger.
 
 3. Enforce handshake assumptions when diagnosing failures.
