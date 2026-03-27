@@ -23,27 +23,27 @@ FILES = {
 REQUIRED = {
     "AGENTS.md": [
         "The canonical durable handoff is `st import-orchplan --input <orchplan>` followed by `st claim --wave <wN> --executor teams|mesh` before any worker starts.",
-        "Same-turn execution that skips `$st` is an explicit opt-out; it must still use the same structured OrchPlan + `wave_id` + `executor` packet semantics and must not fall back to prose-only handoff.",
+        "Do not document or preserve a public same-turn non-`$st` handoff. If a helper still exists, it must auto-route into the same durable path and remain an implementation detail.",
     ],
     "select/SKILL.md": [
         "the canonical follow-through path is `st import-orchplan` once, then `st claim --wave <wN> --executor teams|mesh` before any `spawn_agent` or `$mesh` run.",
-        "Same-turn execution without `$st` is an explicit opt-out; it must still pass the same structured OrchPlan + `wave_id` + `executor` handoff packet and may not rely on prose-only wave descriptions.",
+        "Do not describe or preserve a public same-turn non-`$st` handoff; if a helper still exists, it must auto-route into the same durable path internally.",
     ],
     "select/PIPELINES.md": [
         "Durable execution is the default for non-trivial orchestration: run `st import-orchplan --input <orchplan>` once, then `st claim --wave wN --executor teams|mesh` before any worker starts.",
-        "Same-turn execution that skips `$st` is an explicit opt-out; it must still use the same structured OrchPlan + `wave_id` + `executor` handoff packet and must not rely on prose-only wave summaries.",
+        "Do not preserve a public same-turn non-`$st` fallback. If a helper still exists, it must auto-route internally into the same durable handoff and remain undocumented as a separate mode.",
     ],
     "teams/SKILL.md": [
         "For non-trivial orchestration, durable `$st` is the default handoff: import the OrchPlan and claim the ready wave in `$st` first.",
-        "Same-turn execution without `$st` is an explicit opt-out and must still use the same structured OrchPlan + `wave_id` + `executor` packet instead of prose-only handoff.",
+        "Do not preserve a public same-turn non-`$st` handoff. If a helper still exists, it must auto-route into the same durable path internally.",
     ],
     "mesh/SKILL.md": [
         "Durable `$st` is the default handoff for non-trivial OrchPlan execution: import and claim the selected wave before building the CSV.",
-        "Same-turn execution without `$st` is an explicit opt-out and must still use the same structured OrchPlan + `wave_id` + `executor` packet instead of prose-only wave handoff.",
+        "Do not preserve a public same-turn non-`$st` handoff. If a helper still exists, it must auto-route into the same durable path internally.",
     ],
     "st/SKILL.md": [
         "`st claim --file .step/st-plan.jsonl --wave w1 --executor teams`",
-        "For OrchPlan-backed claims, `--wave` is the canonical selector and same-turn execution that skips `$st` is an explicit opt-out only.",
+        "For OrchPlan-backed claims, `--wave` is the canonical selector and there is no public same-turn non-`$st` handoff.",
         "For OrchPlan-backed durable execution, `claim.wave_id` is authoritative and should be derived from the imported wave, not reconstructed from ad hoc `--ids`.",
     ],
     "cas/SKILL.md": [
@@ -98,10 +98,8 @@ def main() -> int:
                 f"orchestration docs: stale OrchPlan-backed claim example still present: {forbidden}"
             )
 
-    if "prose-only handoff" not in doc_text:
-        errors.append(
-            "orchestration docs: missing explicit prohibition on prose-only handoff"
-        )
+    if "public same-turn non-`$st` handoff" not in doc_text:
+        errors.append("orchestration docs: missing explicit prohibition on a public same-turn non-$st handoff")
 
     if errors:
         print("[FAIL] orchestration handoff contract lint errors:", file=sys.stderr)

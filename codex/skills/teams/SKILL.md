@@ -66,7 +66,7 @@ Use `$mesh` instead when:
 
 1. Make a short local plan with `update_plan` and identify the current ready set, not just the next critical-path step.
    - For non-trivial orchestration, durable `$st` is the default handoff: import the OrchPlan and claim the ready wave in `$st` first.
-   - Same-turn execution without `$st` is an explicit opt-out and must still use the same structured OrchPlan + `wave_id` + `executor` packet instead of prose-only handoff.
+   - Do not preserve a public same-turn non-`$st` handoff. If a helper still exists, it must auto-route into the same durable path internally.
 2. Identify the composite parts and reshape them into bounded leaf tasks.
 3. Keep synthesis, integration, and overlapping-write work local; dispatch every dependency-independent ready branch before the first blocking `wait_agent`.
 4. Pick the right role:

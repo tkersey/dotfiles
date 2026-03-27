@@ -70,7 +70,7 @@ If you still need to decide the row schema, challenge the approach, or compare s
 
 1. Confirm planning is complete and the rows are truly homogeneous and independent.
 2. Durable `$st` is the default handoff for non-trivial OrchPlan execution: import and claim the selected wave before building the CSV.
-3. Same-turn execution without `$st` is an explicit opt-out and must still use the same structured OrchPlan + `wave_id` + `executor` packet instead of prose-only wave handoff.
+3. Do not preserve a public same-turn non-`$st` handoff. If a helper still exists, it must auto-route into the same durable path internally.
 4. Build a CSV with stable headers and, when useful, a stable `id_column`; keep one row per substantive unit.
    - Prefer `task_id` as the stable row id when the batch came from an OrchPlan or `$st` claim set.
 5. Write one instruction template using `{column}` placeholders and one primary deliverable per row.

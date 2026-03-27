@@ -5,7 +5,7 @@ Goal: execute an OrchPlan safely with parallel workers.
 
 1. For each wave `wN` in order:
     - Durable execution is the default for non-trivial orchestration: run `st import-orchplan --input <orchplan>` once, then `st claim --wave wN --executor teams|mesh` before any worker starts.
-    - Same-turn execution that skips `$st` is an explicit opt-out; it must still use the same structured OrchPlan + `wave_id` + `executor` handoff packet and must not rely on prose-only wave summaries.
+    - Do not preserve a public same-turn non-`$st` fallback. If a helper still exists, it must auto-route internally into the same durable handoff and remain undocumented as a separate mode.
     - If the task source supports status and no durable ledger is being used, claim the tasks in `wN` first by marking them in-progress (use the source token; default `in_progress`).
     - Treat `depends_on` as mandatory ordering and `related_to` as advisory ordering/context only.
     - Prefer executing `role: contract` tasks early when they unlock multiple downstream tasks.
@@ -21,7 +21,7 @@ Goal: execute an OrchPlan safely with parallel workers.
 Goal: execute an OrchPlan as a streaming run with maximum safe parallelism over substantive units.
 
 1. Ensure each selected task has a tight `scope` list (exclusive lock roots) and at least one `validation` command.
-2. If the batch came from an OrchPlan and durable execution is in play, import and claim the selected wave in `$st` before building the CSV; skipping `$st` is an explicit opt-out only.
+2. If the batch came from an OrchPlan and durable execution is in play, import and claim the selected wave in `$st` before building the CSV.
 3. Map each task into one primary mesh row per substantive unit:
    - `task_id`: task id
    - `objective`: task title

@@ -156,7 +156,7 @@ When `$select` selects work to *start now* (i.e., the tasks in the first schedul
   - When emitting a claim, prefer the token already used by the source; otherwise default to `in_progress`.
 - If the source is `list` or `plan`, emit `claim: none`.
 - If the resulting OrchPlan will feed durable execution, the canonical follow-through path is `st import-orchplan` once, then `st claim --wave <wN> --executor teams|mesh` before any `spawn_agent` or `$mesh` run.
-- Same-turn execution without `$st` is an explicit opt-out; it must still pass the same structured OrchPlan + `wave_id` + `executor` handoff packet and may not rely on prose-only wave descriptions.
+- Do not describe or preserve a public same-turn non-`$st` handoff; if a helper still exists, it must auto-route into the same durable path internally.
 
 This is still plan-only: `$select` does not perform the writeback; it spells out what to change.
 

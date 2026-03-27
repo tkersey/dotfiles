@@ -94,7 +94,7 @@ run_st_tool --help
 3. If the plan came from `$select`, import the OrchPlan into `$st` and claim the first safe wave before execution starts.
    - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
    - `st claim --file .step/st-plan.jsonl --wave w1 --executor teams`
-   - For OrchPlan-backed claims, `--wave` is the canonical selector and same-turn execution that skips `$st` is an explicit opt-out only.
+   - For OrchPlan-backed claims, `--wave` is the canonical selector and there is no public same-turn non-`$st` handoff.
 4. Initialize plan storage with `st init` if missing.
 5. Rehydrate current state with `st show` (or focused views via `ready` / `blocked`).
    - Default surface is `plan`.
