@@ -1,0 +1,4 @@
+interface:
+  display_name: "glazer"
+  short_description: "Force a second, harder escalation pass"
+  default_prompt: "Use $glazer and preserve the original verbatim escalation text."

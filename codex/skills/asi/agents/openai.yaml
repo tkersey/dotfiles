@@ -1,0 +1,4 @@
+interface:
+  display_name: "asi"
+  short_description: "Force a deeper, bolder creative pass"
+  default_prompt: "Use $asi and preserve the original verbatim escalation text."

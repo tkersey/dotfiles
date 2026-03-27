@@ -1,0 +1,4 @@
+interface:
+  display_name: "glaze"
+  short_description: "Force a deeper, bolder creative pass"
+  default_prompt: "Use $glaze and preserve the original verbatim escalation text."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "accretive"
+  short_description: "Pick the highest-leverage accretive move"
+  default_prompt: "Use $accretive with target=addition and preserve the original verbatim prompt wording."
