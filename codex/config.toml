@@ -58,6 +58,7 @@ codex_hooks = true
 experimental_mode = "execute"
 status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode", "session-id"]
 theme = "coldark-dark"
+terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
 
 [projects."/Users/tk/workspace/tk/codex"]
 trust_level = "trusted"
@@ -82,3 +83,6 @@ trust_level = "trusted"
 
 [notice]
 hide_rate_limit_model_nudge = true
+
+[plugins."github@openai-curated"]
+enabled = true
