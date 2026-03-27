@@ -1,6 +1,6 @@
 ---
 name: mesh
-description: "Use `$mesh` for homogeneous leaf-batch execution over `spawn_agents_on_csv`: once planning has shaped repeated independent units, prefer one substantive row per unit with structured results and explicit concurrency."
+description: "Use `$mesh` only for homogeneous leaf-batch execution over `spawn_agents_on_csv`: once planning has shaped repeated independent units, prefer one substantive row per unit with structured results and explicit concurrency."
 ---
 
 # mesh
@@ -26,7 +26,7 @@ Do not use it when:
 - the task still needs decomposition or shared judgment
 - tasks share context or depend on one another
 - multiple workers would touch the same mutable scope
-- direct `spawn_agent` delegation or local execution is clearer
+- `$teams` or local execution is clearer
 
 ## Native Architecture Fit
 
@@ -45,7 +45,7 @@ Do not use it when:
 - run the same bounded transformation over a file list with disjoint outputs
 - execute one disjoint implementation unit per row after `$select` or `$teams` has already shaped the wave
 
-If the work is heterogeneous, use `$teams` or direct `spawn_agent` instead.
+If the work is heterogeneous, use `$teams` or local execution instead.
 
 ## Composite vs Leaf Fit
 

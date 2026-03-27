@@ -1,6 +1,6 @@
 ---
 name: teams
-description: "Coordinate agent teams (multi-session) as the native Codex delegation workflow for composite work: decompose, challenge, and parallelize the full ready wave with `update_plan`, `spawn_agent`, and built-in `explorer`/`worker` roles. Hand only homogeneous leaf batches to `$mesh`."
+description: "Coordinate heterogeneous MultiAgentV2 task trees with `update_plan`, `spawn_agent`, `assign_task`, `send_message`, `list_agents`, and built-in `explorer`/`worker` roles. Hand only homogeneous leaf batches to `$mesh`."
 ---
 
 # teams
@@ -10,8 +10,9 @@ description: "Coordinate agent teams (multi-session) as the native Codex delegat
 Use `$teams` when a task is still composite and parallelism helps, but keep the workflow aligned with how Codex actually works:
 
 - `update_plan` tracks the shared checklist.
-- `spawn_agent` handles heterogeneous delegation.
-- `send_input`, `resume_agent`, `wait_agent`, and `close_agent` manage running agents.
+- `spawn_agent` handles heterogeneous delegation and should use explicit `task_name` values when the teammate will receive follow-up work.
+- `assign_task` and `send_message` are the live task-handoff tools; keep both available and choose based on whether the target should run now or queue the note.
+- `list_agents`, `wait_agent`, and `close_agent` manage the live task tree after it exists.
 - `explorer` answers specific codebase questions.
 - `worker` owns bounded execution with explicit ownership.
 - Custom roles from `codex/agents/` are specialist edges only: `selector`, `coder`, `fixer`, `prover`, `integrator`, and peripheral `joiner`.
@@ -58,6 +59,7 @@ Use `$mesh` instead when:
 
 - Codex is thread-centric: public integrations use `thread/start`, `thread/resume`, `thread/fork`, and `turn/start`.
 - Collaboration activity appears as `collabToolCall` items, not as a separate public teams protocol.
+- The live task surface is path-first: named agents can be targeted by relative or canonical paths such as `worker` or `/root/worker`.
 - `$teams` should therefore stay close to the native collab tools and roles instead of inventing a second orchestration stack.
 
 ## Recommended Workflow
@@ -76,10 +78,12 @@ Use `$mesh` instead when:
    - `integrator` for scoped delivery packaging after proof
    - `joiner` only for GH-only PR routing workflows
 5. Give every teammate a concrete deliverable and, for code changes, a disjoint write scope using the lock-root contract in `codex/skills/select/references/lock-roots.md`.
-6. While teammates run, continue non-overlapping integration prep, review, or another ready local task.
-7. Use `wait_agent` only when you are actually blocked, prefer longer waits over polling, and do not immediately call `wait_agent` after the first spawn if more ready branches remain.
-8. Reuse context with `send_input` or `resume_agent` when follow-up belongs with the same teammate.
-9. Review, integrate, and close agents when they are no longer needed.
+6. Prefer explicit `task_name` values for teammates that will receive follow-up work, and use task paths rather than raw thread ids when the path is stable.
+7. While teammates run, continue non-overlapping integration prep, review, or another ready local task.
+8. Use `wait_agent` only when you are actually blocked, prefer longer waits over polling, and do not immediately call `wait_agent` after the first spawn if more ready branches remain.
+9. Use `assign_task` and `send_message` with equal weight when reusing context: `assign_task` wakes the target now, while `send_message` queues a note without forcing immediate execution.
+10. Use `list_agents` when you need to confirm the live task tree or filter by task-path prefix before routing a follow-up.
+11. Review, integrate, and close agents when they are no longer needed.
 
 ## Concrete Examples
 
@@ -92,8 +96,8 @@ Request:
 Good `$teams` execution:
 
 - keep the recommendation and final synthesis local
-- spawn one `explorer` to inspect API docs and examples
-- spawn one `explorer` to inspect runtime handlers and tool specs
+- spawn one `explorer` with a stable task name such as `docs_scan` to inspect API docs and examples
+- spawn one `explorer` with a stable task name such as `runtime_scan` to inspect runtime handlers and tool specs
 - call `wait_agent` only when blocked, then combine both findings into one recommendation
 
 Why `$teams`:
@@ -110,10 +114,11 @@ Request:
 Good `$teams` execution:
 
 - keep final synthesis and any overlapping edits local
-- spawn one `worker` for parser/flag wiring in a disjoint CLI scope
-- spawn one `worker` for config loading changes in a disjoint config scope
-- spawn one `worker` for help/completion output in a disjoint shell/help scope
-- spawn one `worker` for focused validation in a disjoint test scope
+- spawn one `worker` with a stable task name for parser/flag wiring in a disjoint CLI scope
+- spawn one `worker` with a stable task name for config loading changes in a disjoint config scope
+- spawn one `worker` with a stable task name for help/completion output in a disjoint shell/help scope
+- spawn one `worker` with a stable task name for focused validation in a disjoint test scope
+- use `list_agents` if you need to verify the live tree before sending follow-up work by task path
 - call `wait_agent` only after the full ready wave is in flight, then integrate and close the agents
 
 Why `$teams`:
@@ -151,6 +156,7 @@ Why the handoff:
 - Default `fork_context: false` for fresh-eyes research or review.
 - For parse-first author cohorts, run `$parse` once in the parent, freeze the worker packet, and keep `fork_context=false` unless a specific child truly needs the same history, constraints, or diff.
 - Use `fork_context: true` only when the child truly needs the same history, constraints, or diff.
+- Prefer stable task names for long-lived teammates so later `assign_task`, `send_message`, `wait_agent`, and `close_agent` calls can target paths cleanly.
 - Tell `worker` agents they are not alone in the repo and must not revert other edits.
 - Keep write scopes disjoint; one worker should own each mutating scope.
 - If execution is durable, claim the ready wave in `$st` before any spawn and record runtime/proof back into that ledger.

@@ -103,7 +103,7 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
 ## `$teams`
 
 - `$teams` is the native heterogeneous orchestration path.
-- Use `update_plan`, `spawn_agent`, `send_input`, `resume_agent`, `wait_agent`, and `close_agent`.
+- Use `update_plan`, `spawn_agent`, `assign_task`, `send_message`, `list_agents`, `wait_agent`, and `close_agent`.
 - Use built-in roles intentionally: `explorer` for focused questions, `worker` for bounded execution.
 - Treat custom roles in `codex/agents/` as specialist edges, not the default path:
   - `selector` for explicit `$select`-class wave shaping
@@ -116,7 +116,10 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
 - Keep synthesis, integration, and overlapping-write work local.
 - Dispatch the full dependency-independent ready set before the first blocking `wait_agent`.
 - Delegate concrete work with explicit deliverables and disjoint write scopes; do not reserve core ready branches for the lead just because they feel central.
+- Prefer explicit `task_name` values for long-lived teammates and target follow-up work by relative or canonical task path when the name is stable.
 - Default `fork_context: false`; for parse-first author cohorts, run `$parse` once in the parent, freeze the worker packet, and use `true` only when a specific child truly needs the parent's exact context or diff.
+- Treat `assign_task` and `send_message` as co-equal v2 coordination tools: use `assign_task` when the target should run now, and `send_message` when the target should queue the note for later.
+- Use `list_agents` when you need to inspect the live task tree before routing follow-up work.
 - While subagents run, continue non-overlapping local work.
 - Close agents once their contribution is integrated.
 
