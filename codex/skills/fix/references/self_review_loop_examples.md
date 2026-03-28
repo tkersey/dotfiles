@@ -4,7 +4,7 @@ Use these examples to keep the visible transcript shape aligned with the fixer-o
 
 When review context exists, the terminal `Review loop trace` rows are the post-self-review final-diff closure rounds against the unchanged final diff.
 `P0 Core Review` iterations belong in `Pass trace`, not `Review loop trace`.
-Each `R#` row comes from a fresh `codex review --base <base_branch>` invocation after confirming the live merge base still matches the frozen `comparison_sha`.
+Each `R#` row comes from a fresh `cas review_session start --wait --cwd <cwd> --base <base_branch> --json` invocation after confirming the live merge base still matches the frozen `comparison_sha`.
 Runtime pass updates use `Cycle <c>: Pass <n>/<total_planned>: ...`.
 Terminal closure requires two consecutive clean `R#` rows on the unchanged final diff within the same cycle.
 
@@ -67,19 +67,19 @@ Cycle 3: Pass 1/4: P0 Core Review — done; edits=no; signal=uv run pytest tests
 - `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 
 **Review loop trace**
-- `R1` cycle=`C2`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
-- `R2` cycle=`C2`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
-- `R3` cycle=`C3`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
-- `R4` cycle=`C3`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R1` cycle=`C2`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R2` cycle=`C2`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R3` cycle=`C3`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R4` cycle=`C3`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 ```
 
 ## Review loop local-clean after address
 
 ```md
 **Review loop trace**
-- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
-- `R2` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
-- `R3` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
+- `R2` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R3` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 
 **Validation**
 - `uv run pytest tests/foo.py::test_bar` -> ok
@@ -96,7 +96,7 @@ In the terminal final-diff closure round, blocked findings cannot use `scope_gua
 
 ```md
 **Review loop trace**
-- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`0`; blocked_findings=`1`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`no`; result=`continue`
+- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`0`; blocked_findings=`1`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`no`; result=`continue`
 
 **Residual risks / open questions**
 - `src/legacy_api.py:44` — blocked_by=breaking_change — next=choose an additive compatibility path
@@ -108,8 +108,8 @@ Use stale suppression only when a dedicated proof hook/blocker already discharge
 
 ```md
 **Review loop trace**
-- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
-- `R2` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`0`; blocked_findings=`0`; stale_findings=`1`; overall_correctness=`patch is incorrect`; change_applied=`no`; result=`continue`
+- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
+- `R2` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`0`; blocked_findings=`0`; stale_findings=`1`; overall_correctness=`patch is incorrect`; change_applied=`no`; result=`continue`
 ```
 
 ## Review loop skip reasons
@@ -186,9 +186,9 @@ Use `skip_missing_base_context` only when there is no live git diff and no deriv
 - `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
 
 **Review loop trace**
-- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
-- `R2` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
-- `R3` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`codex review --base main`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
+- `R2` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R3` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 
 **Validation**
 - `uv run pytest tests/widget.py::test_safe_default` -> ok

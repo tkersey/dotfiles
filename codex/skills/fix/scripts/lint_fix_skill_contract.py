@@ -46,9 +46,9 @@ EXPECTED_FINDINGS_LINES = [
 
 EXPECTED_REVIEW_LINES = [
     "- If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`",
-    "- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`codex review --base <name>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`",
+    "- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_cmd=`cas review_session start --wait --cwd <cwd> --base <name> --json`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`",
     '- Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.',
-    "- Each `R#` row comes from the terminal diff review closure loop in a fresh `codex review` CLI invocation after confirming the live merge base still matches the frozen `comparison_sha`; the fixer does not self-grade that round.",
+    "- Each `R#` row comes from the terminal diff review closure loop in a fresh `cas review_session start --wait --cwd <cwd> --base <base_branch> --json` invocation after confirming the live merge base still matches the frozen `comparison_sha`; the fixer does not self-grade that round.",
     "- Terminal closure requires two consecutive clean rows on the unchanged final diff within the same cycle.",
     '- Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.',
 ]
@@ -117,15 +117,15 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
 
 REQUIRED_REVIEW_LOOP_GUARDRAILS = [
     "MUST include a final `Review loop trace` section in the deliverable/Fix Record.",
-    "MUST use native `codex review` invocations for git-backed review rounds instead of copying the review prompt into this skill: default to `codex review --base <base_branch>` for branch-diff review context, and reserve `codex review --commit <sha>` only for explicitly commit-scoped runs.",
-    "MUST run `P0 Core Review` as the first core pass, using native `codex review` output against the frozen review context as a fixer-owned pass that is reported in `Pass trace`, not `Review loop trace`.",
+    "MUST use `cas review_session start --wait --cwd <cwd> --base <base_branch> --json` for git-backed branch-diff review rounds, and reserve `cas review_session start --wait --cwd <cwd> --commit <sha> --json` only for explicitly commit-scoped runs; do not fall back to native `codex review`.",
+    "MUST run `P0 Core Review` as the first core pass, using CAS `reviewResult` output against the frozen review context as a fixer-owned pass that is reported in `Pass trace`, not `Review loop trace`.",
     "MUST classify `P0 Core Review` output into `local_findings` and `blocked_findings` only; `stale_findings` are terminal-review-only.",
     "MUST stop `P0 Core Review` only when no `local_findings` remain; blocked `P0 Core Review` findings may carry forward as pre-terminal only and do not close `$fix`.",
-    "MUST run every terminal `R#` review round in a fresh `codex review` CLI invocation with no authoring carry-over from the fixer. For `codex review --base <base_branch>` rounds, first confirm the live merge base still matches the frozen `comparison_sha`; if it drifts, stop blocked and refresh review context in a new `$fix` run. The fixer may address findings but must not both author and adjudicate the same review round.",
+    "MUST run every terminal `R#` review round in a fresh `cas review_session start --wait --cwd <cwd> --base <base_branch> --json` invocation with no authoring carry-over from the fixer. For branch-diff rounds, first confirm the live merge base still matches the frozen `comparison_sha`; if it drifts, stop blocked and refresh review context in a new `$fix` run. The fixer may address findings but must not both author and adjudicate the same review round.",
     "MUST derive `base_branch` and `comparison_sha` from repo state for any git-backed run with a live diff when they are omitted, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base. For git-backed live diffs, missing review context after derivation is a blocker, not a successful `skip_missing_base_context` path.",
     "MUST verify `comparison_sha` resolves to a commit before activating `P0 Core Review` or the terminal diff review loop.",
     "MUST keep the terminal diff review loop separate from `Pass trace`; report it in `Review loop trace`.",
-    'MUST rerun the native `codex review` loop against the current final diff after the self-review loop and after any post-self-review rerun edits; do not close `$fix` until two consecutive terminal review rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`.',
+    'MUST rerun the CAS review loop against the current final diff after the self-review loop and after any post-self-review rerun edits; do not close `$fix` until two consecutive terminal review rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`.',
     "MUST treat blocked `P0 Core Review` carry-forward as pre-terminal only. A terminal final-diff closure round with any `blocked_findings` or `stale_findings` is not review-clean and does not close `$fix`.",
     "MUST NOT treat a terminal final-diff review round with `blocked_findings>0` as closed or `local_clean`; if a fresh reviewer still emits any finding, `$fix` is not done.",
     "MUST NOT treat a terminal final-diff review round with `stale_findings>0` as closed or `local_clean`; if a fresh reviewer still emits a repeated finding, `$fix` is not done.",
@@ -135,8 +135,8 @@ REQUIRED_REVIEW_LOOP_GUARDRAILS = [
     "MUST judge diff-review findings by author-fix-worthiness: flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them.",
     "MUST prefer zero diff-review findings over speculative or assumption-heavy output; do not flag pre-existing issues, intentional behavior changes, or style-only nits.",
     "MUST require every diff-review finding that claims broader impact to name the concrete callers/files/functions that are provably affected, and keep each finding comment to one matter-of-fact paragraph that states the triggering scenario or inputs.",
-    "MUST consume native `codex review` output for diff-review findings and normalize it into the local bookkeeping with `[P0]`..`[P3]` titles, numeric `priority`, tight diff-overlapping `code_location`, and an `overall_correctness` verdict.",
-    "MUST NOT try to append a custom prompt to `codex review --base` or `codex review --commit`; the CLI target owns the review prompt, and the optional `[PROMPT]` argument is only for the standalone custom-review mode.",
+    "MUST consume CAS `reviewResult` output for diff-review findings and normalize its camelCase fields back into the local bookkeeping with `[P0]`..`[P3]` titles, numeric `priority`, tight diff-overlapping `code_location`, and an `overall_correctness` verdict.",
+    "MUST NOT pass steady-state `--custom-instructions` to `cas review_session start --wait`; the `review/start` target owns the reviewer rubric for normal git-backed `$fix` rounds.",
     "MUST enumerate every PROVEN_USED external surface touched by code/docs/examples before closing the core-pass phase.",
     "MUST assign each enumerated public/documented surface exactly one dedicated proof hook or one explicit blocker; a sibling or nearby proof hook does not discharge another advertised form.",
     "MUST NOT accept a heuristic fallback or compatibility-sensitive public-seam change as done while the advertised/documented form it changes is still unproven.",
@@ -156,10 +156,10 @@ REQUIRED_DIFF_REVIEW_INTENT_PHRASES = [
     "### Diff review output schema (required)",
     '"overall_correctness": "\\"patch is correct\\" | \\"patch is incorrect\\""',
     "The diff review output is JSON-only: no fences, no prose, no fix patch.",
-    "### Native codex review command (required)",
-    "Do not paste the built-in review prompt into this skill. `codex review` owns the reviewer rubric and target prompt internally.",
-    "The optional `[PROMPT]` argument belongs only to standalone custom-review mode; with `--base` or `--commit`, the target flag wins and the prompt argument is ignored.",
-    "Consume the CLI's native prioritized findings plus `overall_correctness`, then normalize them into the local `local_findings` / `blocked_findings` / `stale_findings` bookkeeping.",
+    "### CAS review_session command (required)",
+    "Do not paste the built-in review prompt into this skill or pass steady-state `--custom-instructions`; the `review/start` target owns the reviewer rubric internally.",
+    "Reserve `--custom-instructions` for explicit custom-review runs only; do not use it for normal git-backed `$fix` rounds.",
+    "Consume CAS `reviewResult` JSON and normalize its camelCase fields back into the local `local_findings` / `blocked_findings` / `stale_findings` bookkeeping plus `overall_correctness`.",
 ]
 
 FORBIDDEN_REFINE_ROUTING_PHRASES = [
@@ -172,8 +172,8 @@ FORBIDDEN_REFINE_ROUTING_PHRASES = [
 REQUIRED_REFERENCE_PHRASES = [
     "post-self-review final-diff closure rounds against the unchanged final diff",
     "`P0 Core Review` iterations belong in `Pass trace`, not `Review loop trace`.",
-    "Each `R#` row comes from a fresh `codex review --base <base_branch>` invocation after confirming the live merge base still matches the frozen `comparison_sha`.",
-    "review_cmd=`codex review --base main`",
+    "Each `R#` row comes from a fresh `cas review_session start --wait --cwd <cwd> --base <base_branch> --json` invocation after confirming the live merge base still matches the frozen `comparison_sha`.",
+    "review_cmd=`cas review_session start --wait --cwd <cwd> --base main --json`",
     "In the terminal final-diff closure round, blocked findings cannot use `scope_guardrail`, and closure still requires `blocked_findings=0`.",
     "Use stale suppression only when a dedicated proof hook/blocker already discharges the repeated finding or the targeted diff hunk/form is gone, and terminal closure still requires `stale_findings=0`.",
     "Use `skip_missing_base_context` only when there is no live git diff and no derivable review target; a live git diff must derive review context or stop blocked.",

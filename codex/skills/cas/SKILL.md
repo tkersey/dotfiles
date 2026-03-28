@@ -31,11 +31,22 @@ Current `cas conformance` covers these swarm-hardening scenarios:
 Current `cas review_session` is the review-control lane:
 
 - `start` launches detached `review/start` on a supplied or freshly created parent thread
+- `start --wait` keeps the originating CAS process alive until the review reaches a terminal state and returns the normalized `reviewResult` payload inline
 - `status` reads the detached review thread from a fresh CAS process
 - `wait` polls detached review progress until terminal state
 - `interrupt` sends `turn/interrupt` for the persisted detached review turn
 
 `reviewThreadId` is the recoverable handle. Session records live under `~/.codex/cas/review_sessions/`, and CAS appends raw request/response artifacts to a per-review NDJSON log beside that record.
+
+When `start --wait`, `status`, or `wait` can observe a materialized review result, JSON output includes:
+
+- `reviewResultAvailable`
+- `reviewResultSource`
+- `reviewResult`
+  - `findings`
+  - `overallCorrectness`
+  - `overallExplanation`
+  - `overallConfidenceScore`
 
 Compatibility note: if detached review on a freshly created parent thread still fails with `no rollout found`, the installed `codex` binary is older than the parent-rollout fix. In that case, upgrade `codex` or pass `--parent-thread-id` for an already materialized parent thread.
 
@@ -190,6 +201,7 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
      - `cas review_session start --cwd /path/to/workspace --base main --json`
      - `cas review_session start --cwd /path/to/workspace --commit <sha> --title "<subject>" --json`
      - `cas review_session start --cwd /path/to/workspace --custom-instructions @review.txt --json`
+     - `cas review_session start --wait --cwd /path/to/workspace --base main --json`
    - Read current status from a fresh process:
      - `cas review_session status --review-thread-id <reviewThreadId> --json`
    - Wait for the detached review turn to settle:
@@ -201,6 +213,7 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 3. Detached review is the public review-control path; do not route review-session control through `instance_runner`.
    - `instance_runner` remains a method probe lane and is still useful for schema sanity checks.
    - `review_session` owns persisted review handles, fresh-process status polling, wait loops, and interruption.
+   - For workflows that need the actual review verdict in one shot, prefer `cas review_session start --wait ... --json`; this is the stable path for `$fix`-style consumers.
 
 4. For swarm-hardening runs, treat `$st` as the durable source of truth before any worker starts.
    - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
