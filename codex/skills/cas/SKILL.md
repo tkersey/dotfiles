@@ -1,6 +1,6 @@
 ---
 name: cas
-description: Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runner`, `cas_conformance_suite`) for v2 app-server smoke checks, direct thread/turn request execution, multi-instance fanout, and swarm conformance checks around `$st` claim sets and `$mesh` reconciliation.
+description: Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server smoke checks, direct thread/turn request execution, detached review-session control, multi-instance fanout, and swarm conformance checks around `$st` claim sets and `$mesh` reconciliation.
 ---
 
 # cas (Zig App-Server Control)
@@ -14,6 +14,7 @@ Use the native `cas` dispatcher and subcommands:
 - `cas conformance` for swarm conformance checks around `$st` claims, `$mesh` reconciliation, and retry policy.
 - `cas smoke_check` for protocol/API smoke checks.
 - `cas instance_runner` for method execution across one or many isolated instances.
+- `cas review_session` for detached `review/start` lifecycle control with persisted `reviewThreadId` handles.
 - `run_cas_tool request` (helper alias) for single-request flows via `instance_runner --instances 1`.
 
 Current `cas smoke_check` verifies the native client can complete the v2 handshake and reach `experimentalFeature/list`, `thread/start`, `thread/resume`, and `turn/steer`.
@@ -26,6 +27,17 @@ Current `cas conformance` covers these swarm-hardening scenarios:
 - `overload_backoff`: verify the bounded retry/backoff policy with a deterministic synthetic overload script
 
 `cas conformance` is the harness; it is not the owner of durable claims or mesh state. `$st` remains the source of truth for claims/runtime/proof metadata.
+
+Current `cas review_session` is the review-control lane:
+
+- `start` launches detached `review/start` on a supplied or freshly created parent thread
+- `status` reads the detached review thread from a fresh CAS process
+- `wait` polls detached review progress until terminal state
+- `interrupt` sends `turn/interrupt` for the persisted detached review turn
+
+`reviewThreadId` is the recoverable handle. Session records live under `~/.codex/cas/review_sessions/`, and CAS appends raw request/response artifacts to a per-review NDJSON log beside that record.
+
+Compatibility note: if detached review on a freshly created parent thread still fails with `no rollout found`, the installed `codex` binary is older than the parent-rollout fix. In that case, upgrade `codex` or pass `--parent-thread-id` for an already materialized parent thread.
 
 Node runtime paths (`cas_proxy.mjs`, `cas_client.mjs`, and related wrappers) are removed from this skill and must not be used.
 
@@ -44,7 +56,7 @@ When iterating on the Zig-backed `cas` helper CLI path, use these two repos:
 run_cas_tool() {
   local subcommand="${1:-}"
   if [ -z "$subcommand" ]; then
-    echo "usage: run_cas_tool <conformance|conformance-suite|smoke-check|smoke_check|instance-runner|instance_runner|request> [args...]" >&2
+    echo "usage: run_cas_tool <conformance|conformance-suite|smoke-check|smoke_check|instance-runner|instance_runner|review-session|review_session|request> [args...]" >&2
     return 2
   fi
   shift || true
@@ -64,6 +76,10 @@ run_cas_tool() {
     instance-runner|instance_runner)
       cas_subcommand="instance_runner"
       marker="cas_instance_runner.zig"
+      ;;
+    review-session|review_session)
+      cas_subcommand="review_session"
+      marker="cas_review_session.zig"
       ;;
     request)
       cas_subcommand="instance_runner"
@@ -143,6 +159,7 @@ run_cas_tool() {
 }
 
 run_cas_tool smoke-check --cwd /path/to/workspace --json
+run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 ```
 
 ## Terminology (Instances)
@@ -154,6 +171,7 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
 ## Trigger Cues
 
 - "instances" / "multi-instance" / "parallel sessions"
+- "review session" / "detached review" / "reviewThreadId" / "interrupt review"
 - "swarm conformance" / "claim-safe wave" / "stale-claim reclaim" / "mesh row accountability"
 - app-server method checks (`thread/start`, `thread/resume`, `thread/fork`, `thread/read`, `thread/list`, `thread/archive`, `thread/unarchive`, `thread/rollback`, `turn/start`, `turn/steer`, `turn/interrupt`, `review/start`)
 - command/file approval behavior, especially `availableDecisions`
@@ -166,32 +184,50 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
    - `run_cas_tool smoke-check --cwd /path/to/workspace --json`
    - Treat this as a protocol preflight before any fanout run.
 
-2. For swarm-hardening runs, treat `$st` as the durable source of truth before any worker starts.
+2. Use `review_session` when the real job is detached review lifecycle control rather than one-shot probing.
+   - Start detached review:
+     - `cas review_session start --cwd /path/to/workspace --uncommitted --json`
+     - `cas review_session start --cwd /path/to/workspace --base main --json`
+     - `cas review_session start --cwd /path/to/workspace --commit <sha> --title "<subject>" --json`
+     - `cas review_session start --cwd /path/to/workspace --custom-instructions @review.txt --json`
+   - Read current status from a fresh process:
+     - `cas review_session status --review-thread-id <reviewThreadId> --json`
+   - Wait for the detached review turn to settle:
+     - `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 60000 --json`
+   - Interrupt the detached review turn:
+     - `cas review_session interrupt --review-thread-id <reviewThreadId> --json`
+   - `reviewThreadId` is the handle; do not invent a second review session id.
+
+3. Detached review is the public review-control path; do not route review-session control through `instance_runner`.
+   - `instance_runner` remains a method probe lane and is still useful for schema sanity checks.
+   - `review_session` owns persisted review handles, fresh-process status polling, wait loops, and interruption.
+
+4. For swarm-hardening runs, treat `$st` as the durable source of truth before any worker starts.
    - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
    - `st claim --file .step/st-plan.jsonl --wave w1 --executor teams`
    - CAS probes the wave; it does not replace the durable claim ledger.
 
-3. Enforce handshake assumptions when diagnosing failures.
+5. Enforce handshake assumptions when diagnosing failures.
    - Confirm the session completed `initialize` then `initialized` before method calls.
    - If you see `"Not initialized"` or `"Already initialized"`, treat it as connection-lifecycle error, not a method payload error.
 
-4. Run one direct method request (single-request lane).
+6. Run one direct method request (single-request lane).
    - `run_cas_tool request --cwd /path/to/workspace --method thread/start --params-json '{"cwd":"/path/to/workspace","experimentalRawEvents":false}' --json`
 
-5. Run fanout/multi-instance requests.
+7. Run fanout/multi-instance requests.
    - `run_cas_tool instance-runner --cwd /path/to/workspace --instances 12 --method thread/list --params-json '{"cursor":null,"limit":1}' --json`
 
-6. Run the conformance suite when you need repeatable swarm checks around claims, mesh closeout, or retry policy.
+8. Run the conformance suite when you need repeatable swarm checks around claims, mesh closeout, or retry policy.
    - `cas conformance --cwd /path/to/workspace --json`
    - Narrow to one scenario when debugging: `cas conformance --cwd /path/to/workspace --scenario mesh_row_accountability --json`
    - Use `--skip-smoke-check` only when you intentionally want the local `$st`/mesh scenarios without the live CAS preflight.
 
-7. Apply overload handling on request saturation.
+9. Apply overload handling on request saturation.
    - If app-server returns JSON-RPC error code `-32001` (`"Server overloaded; retry later."`), retry with exponential backoff and jitter.
    - Do not treat `-32001` as a permanent protocol mismatch.
    - In `cas conformance`, the retry policy scenario is currently synthetic and should be treated as retry-policy proof, not live saturation proof.
 
-8. Drive specific thread/turn methods as needed.
+10. Drive specific thread/turn methods as needed.
    - Start thread:
      - `run_cas_tool request --cwd /path/to/workspace --method thread/start --params-json '{"cwd":"/path/to/workspace","experimentalRawEvents":false}' --json`
    - Start turn:
@@ -205,19 +241,19 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
    - Interrupt turn:
      - `run_cas_tool request --cwd /path/to/workspace --method turn/interrupt --params-json '{"threadId":"thr_123","turnId":"turn_abc"}' --json`
 
-9. Use method-specific params for list/mine flows.
+11. Use method-specific params for list/mine flows.
    - `thread/list` supports filter params (`cursor`, `limit`, `searchTerm`, `cwd`, etc.) as provided by your app-server version.
    - `turn/steer` requires `expectedTurnId`.
 
-10. After a mesh batch, reconcile the exported CSV back into `$st`.
+12. After a mesh batch, reconcile the exported CSV back into `$st`.
     - `st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv`
     - CAS may validate the wave around that closeout, but it does not own the CSV reconciliation.
 
-11. Gate experimental methods and payload fields explicitly.
+13. Gate experimental methods and payload fields explicitly.
    - Experimental surfaces such as `thread/backgroundTerminals/clean`, `thread/realtime/*`, and `thread/start` dynamic-tool fields require `initialize.params.capabilities.experimentalApi = true`.
    - If omitted, treat failures as capability negotiation errors.
 
-12. Respect native CAS server-request limits.
+14. Respect native CAS server-request limits.
    - The current Zig client auto-answers `item/commandExecution/requestApproval`, `item/fileChange/requestApproval`, `item/permissions/requestApproval`, `item/tool/requestUserInput`, `mcpServer/elicitation/request`, and `item/tool/call`.
    - Default native behavior is conservative: permissions requests are denied, request-user-input questions use the first option label when present, MCP elicitations are declined, and dynamic tool calls return `success: false` unless you override with explicit CLI flags.
 
@@ -235,6 +271,7 @@ run_cas_tool smoke-check --cwd /path/to/workspace --json
 - This skill no longer exposes a Node JSONL proxy lifecycle.
 - Legacy message envelopes (`cas/request`, `cas/respond`, `cas/send`, `cas/state/get`, `cas/stats/get`) are removed from this skill contract.
 - Dynamic tool reply loops are supported only through static response payloads passed on the CAS CLI; native CAS is not a full interactive tool-runtime host.
+- `cas review_session` persists raw request/response artifacts and detached review handles; it is not a generalized streaming event mirror for all app-server notifications.
 
 ## Canonical Schema Source
 
@@ -257,9 +294,11 @@ Read `references/codex_app_server_contract.md` for API/method notes that inform 
 
 - `cas` binary dispatcher:
   - `cas conformance`
+  - `cas review_session`
   - `cas smoke_check`
   - `cas instance_runner`
 - `cas_conformance_suite` binary: swarm conformance around `$st` claims, `$mesh` closeout, and retry policy.
+- `cas_review_session` binary: detached review start/status/wait/interrupt with persisted `reviewThreadId` handles.
 - `cas_smoke_check` binary: protocol/API smoke validation.
 - `cas_instance_runner` binary: single or multi-instance method execution.
 
