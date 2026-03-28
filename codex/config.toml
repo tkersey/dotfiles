@@ -81,8 +81,8 @@ trust_level = "trusted"
 [projects."/Users/tk/workspace/tk/nullclaw"]
 trust_level = "trusted"
 
+[projects."/Users/tk/workspace/art/interview/point"]
+trust_level = "trusted"
+
 [notice]
 hide_rate_limit_model_nudge = true
-
-[plugins."github@openai-curated"]
-enabled = true
