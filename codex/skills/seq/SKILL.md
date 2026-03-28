@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups such as `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, and `orchestration-concurrency`, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
 ---
 
 # seq
@@ -23,6 +23,7 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 - Use this ladder:
   1. `plan-search` for finalized `$plan` artifact retrieval; otherwise `artifact-search`.
   2. Specialized follow-ups that already match the artifact shape:
+     - `skill-blocks` for exact historical `<skill>...</skill>` extraction by skill name, with full block bodies and distinct-version history.
      - `plan-search` for strict repo/session/time/text retrieval of complete `<proposed_plan>` blocks.
      - `find-session` for prompt-to-session lookup.
      - `session-prompts` for "what did that session actually say" and transcript proof.
@@ -336,6 +337,33 @@ seq session-prompts --root ~/.codex/sessions --current \
   --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
 ```
 
+### 11b) Extract exact historical skill blocks
+Return all distinct historical versions for one skill:
+```bash
+seq skill-blocks --root ~/.codex/sessions --skill accretive --format jsonl
+```
+Target one known session:
+```bash
+seq skill-blocks --root ~/.codex/sessions \
+  --skill accretive \
+  --session-id 019d2d3e-3f14-7e23-b5b9-cf4899a456df \
+  --format jsonl
+```
+Return every exact occurrence instead of distinct versions:
+```bash
+seq skill-blocks --root ~/.codex/sessions \
+  --skill accretive \
+  --history all \
+  --format jsonl
+```
+Return only the newest distinct version:
+```bash
+seq skill-blocks --root ~/.codex/sessions \
+  --skill accretive \
+  --history latest \
+  --format json
+```
+
 ### 10b) Find finalized plan artifacts
 Repo-scoped metadata rows:
 ```bash
@@ -483,6 +511,8 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `session-prompts` defaults to `--roles user`; set `--roles user,assistant` to include both sides of a conversation.
 - `session-prompts --current` resolves the current session from `CODEX_THREAD_ID` and fails closed if that env var is unavailable.
 - `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
+- `skill-blocks` is the exact-body recovery surface for session-injected skills; it returns full `<skill>...</skill>` envelopes, not loose `$skill` mentions or narrative references.
+- `skill-blocks` defaults to `--history distinct` and `--format jsonl`; use `--history all` to keep repeated identical injections and `--history latest` to select the newest distinct version.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
 - `session-tooling` summarizes per-invocation shell/tool behavior and can aggregate via `--summary --group-by executable|command|tool`.
 - `query-diagnose` emits per-query diagnostics from rollout JSONL and can suggest deterministic follow-up commands with `--next-actions`.
