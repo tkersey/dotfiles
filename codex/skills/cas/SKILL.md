@@ -31,15 +31,20 @@ Current `cas conformance` covers these swarm-hardening scenarios:
 Current `cas review_session` is the review-control lane:
 
 - `start` launches detached `review/start` on a supplied or freshly created parent thread
-- `start --wait` keeps the originating CAS process alive until the review reaches a terminal state and returns the normalized `reviewResult` payload inline
+- `wait` is the primary completion path: poll the detached review thread until terminal state and consume the normalized `reviewResult` payload when available
+- `start --wait` is a convenience wrapper over the same `start` then `wait` lifecycle; it is not a separate stronger contract
 - `status` reads the detached review thread from a fresh CAS process
-- `wait` polls detached review progress until terminal state
 - `interrupt` sends `turn/interrupt` for the persisted detached review turn
 
 `reviewThreadId` is the recoverable handle. Session records live under `~/.codex/cas/review_sessions/`, and CAS appends raw request/response artifacts to a per-review NDJSON log beside that record.
 
-When `start --wait`, `status`, or `wait` can observe a materialized review result, JSON output includes:
+When `start`, `start --wait`, `status`, or `wait` emit JSON, the output includes the detached review handle/result fields plus launch compatibility metadata:
 
+- `resolvedCodexPath`
+- `resolvedCodexVersion`
+- `compatibilityVerdict`
+- `failureCode`
+- `failureHint`
 - `reviewResultAvailable`
 - `reviewResultSource`
 - `reviewResult`
@@ -47,6 +52,14 @@ When `start --wait`, `status`, or `wait` can observe a materialized review resul
   - `overallCorrectness`
   - `overallExplanation`
   - `overallConfidenceScore`
+
+Use the fields this way:
+
+- `compatibilityVerdict="compatible"` means the detached review launch path succeeded under the resolved `codex` binary
+- `compatibilityVerdict="incompatible"` means CAS identified a detached-review runtime mismatch and failed closed
+- `compatibilityVerdict="not_checked"` means no compatibility verdict was persisted for that record yet (older session record or pre-launch failure)
+- `failureCode="wait_timed_out"` means retry `cas review_session wait` on the same `reviewThreadId` or increase `--timeout-ms`; it is not a successful review
+- `failureCode="review_result_unavailable"` means the review turn reached terminal state without a materialized `reviewResult`; callers may choose a documented fallback, but CAS itself stays strict
 
 Compatibility note: if detached review on a freshly created parent thread still fails with `no rollout found`, the installed `codex` binary is older than the parent-rollout fix. In that case, upgrade `codex` or pass `--parent-thread-id` for an already materialized parent thread.
 
@@ -118,12 +131,16 @@ run_cas_tool() {
       echo "direct Zig build failed in $repo." >&2
       return 1
     fi
-    if [ ! -x "$repo/zig-out/bin/cas" ]; then
-      echo "direct Zig build did not produce $repo/zig-out/bin/cas." >&2
+    if [ ! -x "$repo/zig-out/bin/cas" ] || [ ! -x "$repo/zig-out/bin/cas_review_session" ] || [ ! -x "$repo/zig-out/bin/cas_smoke_check" ] || [ ! -x "$repo/zig-out/bin/cas_instance_runner" ] || [ ! -x "$repo/zig-out/bin/cas_conformance_suite" ]; then
+      echo "direct Zig build did not produce the full CAS binary set in $repo/zig-out/bin." >&2
       return 1
     fi
     mkdir -p "$HOME/.local/bin"
     install -m 0755 "$repo/zig-out/bin/cas" "$HOME/.local/bin/cas"
+    install -m 0755 "$repo/zig-out/bin/cas_review_session" "$HOME/.local/bin/cas_review_session"
+    install -m 0755 "$repo/zig-out/bin/cas_smoke_check" "$HOME/.local/bin/cas_smoke_check"
+    install -m 0755 "$repo/zig-out/bin/cas_instance_runner" "$HOME/.local/bin/cas_instance_runner"
+    install -m 0755 "$repo/zig-out/bin/cas_conformance_suite" "$HOME/.local/bin/cas_conformance_suite"
   }
 
   local os="$(uname -s)"
@@ -201,11 +218,12 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
      - `cas review_session start --cwd /path/to/workspace --base main --json`
      - `cas review_session start --cwd /path/to/workspace --commit <sha> --title "<subject>" --json`
      - `cas review_session start --cwd /path/to/workspace --custom-instructions @review.txt --json`
-     - `cas review_session start --wait --cwd /path/to/workspace --base main --json`
    - Read current status from a fresh process:
      - `cas review_session status --review-thread-id <reviewThreadId> --json`
    - Wait for the detached review turn to settle:
-     - `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 60000 --json`
+     - `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 300000 --json`
+   - Convenience wrapper when you truly want one process:
+     - `cas review_session start --wait --cwd /path/to/workspace --base main --json`
    - Interrupt the detached review turn:
      - `cas review_session interrupt --review-thread-id <reviewThreadId> --json`
    - `reviewThreadId` is the handle; do not invent a second review session id.
@@ -213,7 +231,8 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 3. Detached review is the public review-control path; do not route review-session control through `instance_runner`.
    - `instance_runner` remains a method probe lane and is still useful for schema sanity checks.
    - `review_session` owns persisted review handles, fresh-process status polling, wait loops, and interruption.
-   - For workflows that need the actual review verdict in one shot, prefer `cas review_session start --wait ... --json`; this is the stable path for `$fix`-style consumers.
+   - For workflows that need the actual review verdict, prefer `start ... --json`, keep the returned `reviewThreadId`, then call `wait ... --json`; reserve `start --wait` as a convenience wrapper over that same path.
+   - Treat `failureCode` as authoritative. CAS never silently falls back to native `codex review`; callers that want a temporary fallback must do it explicitly at their own layer.
 
 4. For swarm-hardening runs, treat `$st` as the durable source of truth before any worker starts.
    - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
