@@ -1,3 +1,3 @@
 interface:
   display_name: "Fix"
-  short_description: "Help with Fix diff review, repair loops, and rerun workflows"
+  short_description: "Help with Fix diff review, footgun discovery, repair loops, and rerun workflows"

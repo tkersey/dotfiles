@@ -61,8 +61,8 @@ EXPECTED_PASS_LINES = [
     "  - Total core/delta passes executed: `<4|6>`",
     "  - `P0 Core Review` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
     "  - `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
-    "  - `P2 Surface` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
-    "  - `P3 Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
+    "  - `P2 Footguns` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
+    "  - `P3 Surface + Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
     "  - If delta passes executed, also include `P4` and `P5` lines in the same format.",
     "  - `Post-self-review rerun` -> executed=`<yes|no>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`",
 ]
@@ -96,6 +96,7 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`",
     "MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.",
     "MUST, when answering the self-review question, first inventory unresolved review-qualifying findings on the current final diff using `Diff review finding bar (required)`; if any exist, choose the highest-severity unresolved one before considering ergonomic/structural/API-shaping improvements.",
+    "MUST, when answering the self-review question, also inventory unresolved actionable footgun findings on the touched surfaces or adjacent seam before considering broader ergonomic/structural/API-shaping improvements.",
     "MUST treat a self-review answer as actionable whenever it identifies a concrete compatible/provable improvement on the current validated changeset, even if the improvement is ergonomic, structural, or API-shaping rather than a baseline bug fix.",
     "MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.",
     "MUST, when public/documented surfaces are touched, answer that question by first inventorying which advertised surface remains unproven; `finding=none` is allowed only when every such surface is proved or explicitly blocked and the current final diff yields zero qualifying findings under the diff review bars.",
@@ -112,7 +113,19 @@ REQUIRED_SELF_LOOP_GUARDRAILS = [
     "If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.",
     "If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.",
     "Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 7.",
-    "`finding=none` is allowed only when every enumerated proof surface is `proved|blocked` and the current final diff yields zero qualifying findings under the diff review bars.",
+    "`finding=none` is allowed only when every enumerated proof surface is `proved|blocked`, the current final diff yields zero qualifying findings under the diff review bars, and no actionable footgun on the touched surfaces or adjacent seam remains unresolved.",
+]
+
+REQUIRED_FOOTGUN_GUARDRAILS = [
+    "MUST run `P2 Footguns` as a first-class core pass before `P3 Surface + Audit`.",
+    "MUST inspect every touched public/documented surface plus at most one adjacent caller, constructor, parser, wrapper, or config boundary seam when needed to prove or defuse misuse.",
+    "MUST, in `P2 Footguns`, produce at least one top-ranked misuse path or an explicit `none_with_reason` for every touched public/documented surface.",
+    "MUST treat any concrete compatible/provable footgun mitigation on the touched surface or adjacent seam as a normal finding that blocks closure until it is fixed, proved, or blocked.",
+    "### Footgun discovery bar (required)",
+    "Treat a footgun as in-scope only when it is a concrete, plausible misuse on a touched public/documented surface or on one adjacent caller, constructor, parser, wrapper, or config boundary seam.",
+    "Apply the author-fix-worthiness bar here too: the scenario should be something the original author would likely guard against if shown the misuse path.",
+    "For each qualifying footgun, include a minimal misuse snippet or timeline plus the surprising behavior it triggers.",
+    "For each touched public/documented surface, produce at least one top-ranked misuse path or an explicit `none_with_reason`.",
 ]
 
 REQUIRED_REVIEW_LOOP_GUARDRAILS = [
@@ -189,6 +202,13 @@ REQUIRED_REFERENCE_PHRASES = [
     "blocked_findings=`1`",
     "stale_findings=`1`",
     "## Public surface proof coverage",
+    "## P2 footgun closure on a public surface",
+    "## Adjacent seam footgun without widened closure",
+    "## Clean close with no actionable footguns",
+    "`P2 Footguns` -> `done`",
+    "`P3 Surface + Audit` -> `done`",
+    "no actionable footguns remain",
+    "adjacent seam",
     "Proof target:",
 ]
 
@@ -201,7 +221,7 @@ REQUIRED_PROOF_COVERAGE_PHRASES = [
 REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS = [
     "Stop only after self-review exhausts actionable changes, each full cycle reaches post-self-review rerun plus terminal diff-review closure, and two consecutive zero-edit full cycles are clean.",
     "When a full cycle reaches post-self-review rerun plus two consecutive clean terminal diff-review closure rounds on the unchanged final diff, and that cycle also ends with `cycle_edit_tally=0` plus an unchanged review-context receipt (`fingerprint=same` for review-backed runs or the same skip reason for skipped-review runs), increment `zero_edit_cycle_streak`; `$fix` stops only when that streak reaches `2`. Broader architecture, product, or roadmap analysis belongs to another skill.",
-    "MUST stop `$fix` once no new actionable self-review change remains, the current cycle reaches clean terminal final-diff review closure, and `zero_edit_cycle_streak=2`; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
+    "MUST stop `$fix` once no new actionable self-review change remains, no actionable footgun on the touched surfaces or adjacent seam remains unresolved, the current cycle reaches clean terminal final-diff review closure, and `zero_edit_cycle_streak=2`; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
     "MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.",
     "If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.",
     "Do not place those broader opportunities in `Residual risks / open questions` unless a valid blocker from the allowed set applies.",
@@ -485,6 +505,10 @@ def run(path: Path) -> int:
     for phrase in REQUIRED_DIFF_REVIEW_INTENT_PHRASES:
         if phrase not in text:
             errors.append(f"diff_review_intent missing required phrase: {phrase}")
+
+    for phrase in REQUIRED_FOOTGUN_GUARDRAILS:
+        if phrase not in text:
+            errors.append(f"footgun_guardrail missing required phrase: {phrase}")
 
     for phrase in REQUIRED_PROOF_COVERAGE_PHRASES:
         if phrase not in text:

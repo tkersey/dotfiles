@@ -6,7 +6,7 @@ description: Review+fix protocol with optional pre-core git diff review and safe
 # Fix
 
 ## Intent
-Make risky or unclear code safe with the smallest sound, validated change, then keep rerunning the whole `$fix` skill as an outer fixed-point loop until no actionable self-review change remains, the unchanged final diff is review-clean across two consecutive terminal diff-review rounds within the current cycle, and two consecutive full cycles end with zero edits on the same frozen review context.
+Make risky or unclear code safe with the smallest sound, validated change, then keep rerunning the whole `$fix` skill as an outer fixed-point loop until no actionable self-review change remains, no actionable footgun on the touched surfaces or adjacent seam remains unresolved, the unchanged final diff is review-clean across two consecutive terminal diff-review rounds within the current cycle, and two consecutive full cycles end with zero edits on the same frozen review context.
 When a full cycle reaches post-self-review rerun plus two consecutive clean terminal diff-review closure rounds on the unchanged final diff, and that cycle also ends with `cycle_edit_tally=0` plus an unchanged review-context receipt (`fingerprint=same` for review-backed runs or the same skip reason for skipped-review runs), increment `zero_edit_cycle_streak`; `$fix` stops only when that streak reaches `2`. Broader architecture, product, or roadmap analysis belongs to another skill.
 Skill-artifact refinement belongs to `$refine`; `$fix` stays focused on code/diff repair turns.
 
@@ -77,6 +77,10 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST follow the delegation contract in `Auxiliary skills (mandatory)` (including order: `$invariant-ace` -> `$complexity-mitigator`) on every `$fix` cycle.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 - MUST include a final `Review loop trace` section in the deliverable/Fix Record.
+- MUST run `P2 Footguns` as a first-class core pass before `P3 Surface + Audit`.
+- MUST inspect every touched public/documented surface plus at most one adjacent caller, constructor, parser, wrapper, or config boundary seam when needed to prove or defuse misuse.
+- MUST, in `P2 Footguns`, produce at least one top-ranked misuse path or an explicit `none_with_reason` for every touched public/documented surface.
+- MUST treat any concrete compatible/provable footgun mitigation on the touched surface or adjacent seam as a normal finding that blocks closure until it is fixed, proved, or blocked.
 - MUST use `cas review_session start --wait --cwd <cwd> --base <base_branch> --json` for git-backed branch-diff review rounds, and reserve `cas review_session start --wait --cwd <cwd> --commit <sha> --json` only for explicitly commit-scoped runs. If CAS exits with `failureCode` in `missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_result_unavailable`, a temporary caller-owned fallback to native `codex review --base <base_branch>` or `codex review --commit <sha>` is allowed; record `review_transport=native_fallback` and `fallback_reason=<failureCode>`.
 - MUST run `P0 Core Review` as the first core pass, using CAS `reviewResult` output against the frozen review context as a fixer-owned pass that is reported in `Pass trace`, not `Review loop trace`.
 - MUST classify `P0 Core Review` output into `local_findings` and `blocked_findings` only; `stale_findings` are terminal-review-only.
@@ -110,6 +114,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`
 - MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.
 - MUST, when answering the self-review question, first inventory unresolved review-qualifying findings on the current final diff using `Diff review finding bar (required)`; if any exist, choose the highest-severity unresolved one before considering ergonomic/structural/API-shaping improvements.
+- MUST, when answering the self-review question, also inventory unresolved actionable footgun findings on the touched surfaces or adjacent seam before considering broader ergonomic/structural/API-shaping improvements.
 - MUST treat a self-review answer as actionable whenever it identifies a concrete compatible/provable improvement on the current validated changeset, even if the improvement is ergonomic, structural, or API-shaping rather than a baseline bug fix.
 - MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.
 - MUST, when public/documented surfaces are touched, answer that question by first inventorying which advertised surface remains unproven; `finding=none` is allowed only when every such surface is proved or explicitly blocked and the current final diff yields zero qualifying findings under the diff review bars.
@@ -126,7 +131,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST require two consecutive zero-edit full cycles, even when the first full cycle applies no edits.
 - MUST NOT add a new top-level transcript section for cycle reporting; keep cycle visibility inside runtime pass updates, `Pass trace`, and `Review loop trace`.
 - MUST NOT add an explicit outer-cycle cap; keep looping until `zero_edit_cycle_streak=2` or another existing blocker stops the run.
-- MUST stop `$fix` once no new actionable self-review change remains, the current cycle reaches clean terminal final-diff review closure, and `zero_edit_cycle_streak=2`; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.
+- MUST stop `$fix` once no new actionable self-review change remains, no actionable footgun on the touched surfaces or adjacent seam remains unresolved, the current cycle reaches clean terminal final-diff review closure, and `zero_edit_cycle_streak=2`; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.
 - MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.
 - When paired with `$tk` in wave execution, MUST treat `$fix` as the final mutating pass before artifactization:
   - `commit_first`: hand off immediately to `$commit` after passing validation.
@@ -353,14 +358,15 @@ Pass 1) Safety (highest severity)
 - Focus: security/crash/corruption hazards, unsafe tightening, missing error propagation.
 - Change budget: smallest sound fix only.
 
-Pass 2) Surface (compat + misuse)
-- Scope: externally-used surfaces touched by the diff (exports/CLI/config/format/docs).
-- Focus: additive compatibility, defuse top footguns, clearer errors.
-- Change budget: additive/wrapper/adapter preferred; breaking change => stop and ask.
+Pass 2) Footguns
+- Scope: every touched public/documented surface plus at most one adjacent caller, constructor, parser, wrapper, or config boundary seam when needed to prove misuse.
+- Focus: concrete plausible misuse, surprising defaults, ambiguous booleans, implicit units, sentinel returns, partially validated option combinations, order dependence, overloaded helpers, and silent fallbacks.
+- Output: for each touched public/documented surface, produce at least one top-ranked misuse path or an explicit `none_with_reason`.
+- Change budget: additive/clarifying defusals preferred; if the compatible/provable mitigation is concrete, it becomes a normal finding and blocks closure until fixed, proved, or blocked.
 
-Pass 3) Audit (invariants + ownership + proof quality)
-- Scope: final diff slice.
-- Focus: invariants enforced at strongest cheap boundary; ownership release-on-all-paths; proof strength.
+Pass 3) Surface + Audit
+- Scope: externally-used surfaces touched by the diff plus the final diff slice.
+- Focus: additive compatibility, public/documented proof surfaces, invariants enforced at strongest cheap boundary, ownership release-on-all-paths, and proof strength.
 - Delegation: always run `$invariant-ace` first for invariant framing, then `$complexity-mitigator` for complexity verdicts that affect auditability.
 - Change budget: no refactors unless they directly reduce risk/auditability of invariants.
 
@@ -373,8 +379,9 @@ Pass 4) Safety delta rescan
 - Scope: ONLY lines/paths changed by passes 1-3 and their immediate boundaries.
 - Focus: new security/crash/corruption hazards introduced by the fixes.
 
-Pass 5) Surface + proof delta rescan
+Pass 5) Footgun + surface/proof delta rescan
 - Re-enumerate behavior tokens from the FINAL diff (including newly introduced errors/flags/exports/config keys).
+- Re-run the footgun discovery bar on newly introduced or narrowed surfaces and adjacent seam obligations.
 - Re-run PROVEN_USED/external-surface checks for newly introduced tokens.
 - Ensure proof is still strong for the final diff.
 
@@ -463,6 +470,13 @@ This phase runs only as the final closure gate on the current final diff after s
 - Do not flag pre-existing issues, intentional behavior changes, speculative risks, or style-only nits unless they obscure meaning or violate documented standards.
 - Do not rely on unstated assumptions about intent or environment; when claiming broader impact, identify the concrete callers/files/functions that are provably affected.
 - Prefer no findings over weak findings.
+
+### Footgun discovery bar (required)
+- Treat a footgun as in-scope only when it is a concrete, plausible misuse on a touched public/documented surface or on one adjacent caller, constructor, parser, wrapper, or config boundary seam.
+- Apply the author-fix-worthiness bar here too: the scenario should be something the original author would likely guard against if shown the misuse path.
+- Prefer silent fallback, ambiguous booleans, implicit units, sentinel returns, partially validated option combinations, order dependence, overloaded helpers, and surprising defaults over cosmetic API cleanups.
+- For each qualifying footgun, include a minimal misuse snippet or timeline plus the surprising behavior it triggers.
+- Prefer no footgun finding over an abstract ergonomics complaint that lacks a concrete misuse path.
 
 ### Diff review comment bar (required)
 - Use one finding per distinct issue and keep the line range as short as possible while still pinpointing the problem.
@@ -593,8 +607,9 @@ Default execution:
 4. Escalate to full `$invariant-ace` protocol if Compact Mode does not yield an inductive predicate.
 
 #### 2c) Footgun scan + defusal
-Trigger: you touched an API surface OR a caller can plausibly misuse the code.
+Trigger: you touched a public/documented surface OR one adjacent caller, constructor, parser, wrapper, or config boundary seam can plausibly misuse the code.
 
+For each touched public/documented surface, produce at least one top-ranked misuse path or an explicit `none_with_reason`.
 For top-ranked misuse paths:
 1. Provide minimal misuse snippet + surprising behavior.
 2. Defuse by changing the surface:
@@ -604,6 +619,7 @@ For top-ranked misuse paths:
    - richer returns (no sentinels)
    - separate pure computation from effects
 3. Lock with a regression test or boundary assertion.
+4. If the mitigation is concrete, compatible, and locally provable, treat it as a normal finding; do not leave it advisory at closure time.
 
 #### 2d) Complexity scan (risk-driven)
 Run `$complexity-mitigator` on every `$fix` cycle after `$invariant-ace`; implement only via `fix`.
@@ -639,9 +655,10 @@ For findings in severity order:
 2. Freeze the self-review baseline as the latest validated changeset.
 3. Ask internally exactly: `If you could change one thing about this changeset what would you change?`
 4. Before considering ergonomic/structural/API-shaping improvements, inventory unresolved review-qualifying findings on the current final diff using `Diff review finding bar (required)`; if any exist, choose the highest-severity unresolved one.
-5. If public/documented surfaces are touched, answer that question by first inventorying which advertised proof surface remains unproven.
-6. Summarize the self-round in `Self-review loop trace` with one delta row.
-7. If the answer yields one new actionable self-review change:
+5. Before considering broader ergonomic/structural/API-shaping improvements, inventory unresolved actionable footgun findings on the touched surfaces or adjacent seam and choose the highest-severity one if any remain.
+6. If public/documented surfaces are touched, answer that question by first inventorying which advertised proof surface remains unproven.
+7. Summarize the self-round in `Self-review loop trace` with one delta row.
+8. If the answer yields one new actionable self-review change:
    - convert it into one concrete finding,
    - treat compatible ergonomic/structural/API-shaping improvements as actionable when they materially improve the current validated changeset and can be proven locally,
    - widen anywhere in the current repo/worktree as needed,
@@ -649,12 +666,12 @@ For findings in severity order:
    - re-run the chosen validation signal and update findings/proof,
    - record the `(validated_changeset_fingerprint, normalized_answer_summary)` pair so repeated suggestions cannot loop forever,
    - repeat from step 2.
-8. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.
-9. If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.
-   - `finding=none` is allowed only when every enumerated proof surface is `proved|blocked` and the current final diff yields zero qualifying findings under the diff review bars.
+9. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.
+10. If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.
+   - `finding=none` is allowed only when every enumerated proof surface is `proved|blocked`, the current final diff yields zero qualifying findings under the diff review bars, and no actionable footgun on the touched surfaces or adjacent seam remains unresolved.
    - This check is against the current final validated changeset, not an earlier pre-delta review state.
    - `already green`, `architectural`, `not fix-shaped`, or `no failing proof hook` are not sufficient reasons by themselves when a concrete compatible/provable improvement or review-qualifying finding still exists.
-10. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 7.
+11. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 7.
 
 ### 5) Post-self-review rerun + final diff review closure (required per cycle)
 1. Run the non-self-review core passes once against the full resulting changeset.
@@ -696,6 +713,7 @@ For findings in severity order:
    7. Every acted-on finding includes `Proof strength` and `Compatibility impact` using the allowed enums.
    8. Every residual `blocked_by` uses only: `product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable`.
    9. If `Changes applied` is not `None` AND the latest validation result is `ok`, `Self-review loop trace` includes a terminal row with `stop_reason=<no_new_actionable_changes|blocked>` and the user-facing final line is not the question.
+   10. `finding=none` requires zero unresolved actionable footguns on the touched surfaces or adjacent seam.
 
 ## Deliverable format (chat)
 Output exactly these sections in this order.
@@ -743,8 +761,8 @@ For each finding:
   - Total core/delta passes executed: `<4|6>`
   - `P0 Core Review` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
   - `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - `P2 Surface` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - `P3 Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+  - `P2 Footguns` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+  - `P3 Surface + Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
   - If delta passes executed, also include `P4` and `P5` lines in the same format.
   - `Post-self-review rerun` -> executed=`<yes|no>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
 
@@ -795,8 +813,8 @@ For each finding:
   - Total core/delta passes executed: `<4|6>`
   - `P0 Core Review` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
   - `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - `P2 Surface` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - `P3 Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+  - `P2 Footguns` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+  - `P3 Surface + Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
   - If delta passes executed, also include `P4` and `P5` lines in the same format.
   - `Post-self-review rerun` -> executed=`<yes|no>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
 

@@ -1,6 +1,6 @@
 # Review and Self-Review Loop Examples
 
-Use these examples to keep the visible transcript shape aligned with the fixer-owned `P0 Core Review` pass, the terminal diff review closure loop, and the internal self-review loop contract.
+Use these examples to keep the visible transcript shape aligned with the fixer-owned `P0 Core Review` pass, the first-class `P2 Footguns` pass, the terminal diff review closure loop, and the internal self-review loop contract.
 
 When review context exists, the terminal `Review loop trace` rows are the post-self-review final-diff closure rounds against the unchanged final diff.
 `P0 Core Review` iterations belong in `Pass trace`, not `Review loop trace`.
@@ -9,6 +9,7 @@ Each `R#` row comes from a fresh CAS review invocation after confirming the live
 Use `review_transport=`<cas|native_fallback>` and `fallback_reason=`<none|missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_result_unavailable>` on every review-loop row.
 Runtime pass updates use `Cycle <c>: Pass <n>/<total_planned>: ...`.
 Terminal closure requires two consecutive clean `R#` rows on the unchanged final diff within the same cycle.
+`P2 Footguns` must either fix, prove, or block any actionable misuse on the touched public/documented surfaces or adjacent seam before closure.
 
 ## P0 local-clean before downstream passes
 
@@ -22,8 +23,8 @@ Terminal closure requires two consecutive clean `R#` rows on the unchanged final
 - Total core/delta passes executed: `4`
 - `P0 Core Review` -> `done`; edits=`yes`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 - `P1 Safety` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
-- `P2 Surface` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
-- `P3 Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P2 Footguns` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P3 Surface + Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 - `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 ```
 
@@ -46,8 +47,8 @@ Cycle 3: Pass 1/4: P0 Core Review — done; edits=no; signal=uv run pytest tests
 - Total core/delta passes executed: `4`
 - `P0 Core Review` -> `done`; edits=`yes`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 - `P1 Safety` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
-- `P2 Surface` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
-- `P3 Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P2 Footguns` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P3 Surface + Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 - `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 - `Cycle C2` -> zero_edit_cycle_streak=`1`; edits=`no`; review_context=`comparison_sha`; fingerprint=`same`; result=`continue`
 - Core passes planned: `4`; core passes executed: `4`
@@ -55,8 +56,8 @@ Cycle 3: Pass 1/4: P0 Core Review — done; edits=no; signal=uv run pytest tests
 - Total core/delta passes executed: `4`
 - `P0 Core Review` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 - `P1 Safety` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
-- `P2 Surface` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
-- `P3 Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P2 Footguns` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P3 Surface + Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 - `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 - `Cycle C3` -> zero_edit_cycle_streak=`2`; edits=`no`; review_context=`comparison_sha`; fingerprint=`same`; result=`close`
 - Core passes planned: `4`; core passes executed: `4`
@@ -64,8 +65,8 @@ Cycle 3: Pass 1/4: P0 Core Review — done; edits=no; signal=uv run pytest tests
 - Total core/delta passes executed: `4`
 - `P0 Core Review` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 - `P1 Safety` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
-- `P2 Surface` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
-- `P3 Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P2 Footguns` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
+- `P3 Surface + Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 - `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 
 **Review loop trace**
@@ -89,7 +90,7 @@ Cycle 3: Pass 1/4: P0 Core Review — done; edits=no; signal=uv run pytest tests
 
 **Self-review loop trace**
 - `S1` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=The current final diff still leaves the overloaded helper coupling branch choice with post-resume normalization, which is the highest-severity remaining review-qualifying maintainability risk on the validated changeset.; finding=`F2`; change_applied=`yes`; proof=`uv run pytest tests/foo.py::test_bar`; result=`ok`; stop_reason=`continue`
-- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain and the current final diff is review-clean under the diff review bars.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/foo.py::test_bar`; result=`ok`; stop_reason=`no_new_actionable_changes`
+- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain, no actionable footguns remain on the touched surfaces or adjacent seam, and the current final diff is review-clean under the diff review bars.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/foo.py::test_bar`; result=`ok`; stop_reason=`no_new_actionable_changes`
 ```
 
 ## Review loop blocked carry-forward
@@ -143,6 +144,47 @@ Use `skip_missing_base_context` only when there is no live git diff and no deriv
   - Proof: `zig test test/algebraic_inferred_errors.zig --test-filter handler_inferred_error` -> ok
 ```
 
+## P2 footgun closure on a public surface
+
+```md
+**Findings (severity order)**
+- `F3` `src/widget.py:44` — logic — the documented `mode` flag accepts truthy strings and silently routes into the unsafe branch
+  - Surface: Tokens=widget --mode, widget(mode=...); PROVEN_USED=yes (README + examples); External=yes; Diff_touch=yes
+  - Proof target: explicit rejection of truthy string inputs for public `mode`
+  - Counterexample: `widget --mode yes` reaches the same branch as `--mode=true` and silently opts into the risky path
+  - Invariant (before): truthy string inputs are coerced and silently accepted on the public surface
+  - Invariant (after): only explicit supported mode values are accepted; ambiguous truthy strings fail loudly
+  - Fix: narrow the public parser to explicit mode values and return a clear error
+  - Proof: `uv run pytest tests/widget.py::test_rejects_truthy_mode_string` -> ok
+
+**Pass trace**
+- `Cycle C1` -> zero_edit_cycle_streak=`0`; edits=`yes`; review_context=`comparison_sha`; fingerprint=`changed`; result=`restart`
+- Core passes planned: `4`; core passes executed: `4`
+- Delta passes planned: `0`; delta passes executed: `0`
+- Total core/delta passes executed: `4`
+- `P0 Core Review` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_rejects_truthy_mode_string`; result=`ok`
+- `P1 Safety` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_rejects_truthy_mode_string`; result=`ok`
+- `P2 Footguns` -> `done`; edits=`yes`; signal=`uv run pytest tests/widget.py::test_rejects_truthy_mode_string`; result=`ok`
+- `P3 Surface + Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_rejects_truthy_mode_string`; result=`ok`
+- `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/widget.py::test_rejects_truthy_mode_string`; result=`ok`
+```
+
+## Adjacent seam footgun without widened closure
+
+Use the adjacent seam only when one directly connected caller, constructor, parser, wrapper, or config boundary is needed to prove the misuse path; do not widen further than that adjacent seam.
+
+```md
+**Findings (severity order)**
+- `F4` `src/config.py:71` — logic — the public helper is safe only when its adjacent seam normalizes timeout units, but the touched wrapper now bypasses that adjacent seam and treats milliseconds as seconds
+  - Surface: Tokens=client timeout; PROVEN_USED=yes (docs + callsites); External=yes; Diff_touch=yes
+  - Proof target: explicit unit normalization on the adjacent seam before timeout reaches the helper
+  - Counterexample: config `timeout_ms=500` passes through the touched wrapper and becomes a 500 second timeout
+  - Invariant (before): the adjacent seam silently assumes all timeout values are already normalized
+  - Invariant (after): the adjacent seam normalizes timeout units before the helper observes them
+  - Fix: normalize timeout units in the adjacent seam instead of relying on helper call order
+  - Proof: `uv run pytest tests/config.py::test_timeout_ms_normalized_at_adjacent_seam` -> ok
+```
+
 ## Standalone invalidated-then-rerun
 
 ```md
@@ -155,9 +197,9 @@ Use `skip_missing_base_context` only when there is no live git diff and no deriv
 
 **Self-review loop trace**
 - `S1` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=Preserve the CLI entrypoint while widening into the adjacent helper the original diff did not touch.; finding=`F3`; change_applied=`yes`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`continue`
-- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain for the current validated changeset and every proof surface is proved or blocked.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`no_new_actionable_changes`
+- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain for the current validated changeset, no actionable footguns remain on the touched surfaces or adjacent seam, and every proof surface is proved or blocked.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`no_new_actionable_changes`
 - `S3` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=Prior self-review state invalidated by the post-self-review core-pass rerun; rerunning against the new final validated changeset.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`continue`
-- `S4` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain on the final validated changeset after the rerun, and every proof surface is proved or blocked.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`no_new_actionable_changes`
+- `S4` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain on the final validated changeset after the rerun, no actionable footguns remain on the touched surfaces or adjacent seam, and every proof surface is proved or blocked.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/flow.py::test_scope_lock`; result=`ok`; stop_reason=`no_new_actionable_changes`
 ```
 
 ## Standalone skip gate
@@ -183,8 +225,8 @@ Use `skip_missing_base_context` only when there is no live git diff and no deriv
 - Total core/delta passes executed: `4`
 - `P0 Core Review` -> `done`; edits=`yes`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
 - `P1 Safety` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
-- `P2 Surface` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
-- `P3 Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
+- `P2 Footguns` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
+- `P3 Surface + Audit` -> `done`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
 - `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`
 
 **Review loop trace**
@@ -198,7 +240,14 @@ Use `skip_missing_base_context` only when there is no live git diff and no deriv
 
 **Self-review loop trace**
 - `S1` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=Inline the ambiguous fallback path into the explicit safe-default seam so the public helper is easier to audit.; finding=`F4`; change_applied=`yes`; proof=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`; stop_reason=`continue`
-- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No further actionable self-review changes remain and the current final diff is review-clean under the diff review bars.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`; stop_reason=`no_new_actionable_changes`
+- `S2` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No further actionable self-review changes remain, no actionable footguns remain on the touched surfaces or adjacent seam, and the current final diff is review-clean under the diff review bars.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/widget.py::test_safe_default`; result=`ok`; stop_reason=`no_new_actionable_changes`
+```
+
+## Clean close with no actionable footguns
+
+```md
+**Self-review loop trace**
+- `S1` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=No new actionable self-review changes remain, no actionable footguns remain on the touched surfaces or adjacent seam, and every proof surface is proved or blocked.; finding=`none`; change_applied=`no`; proof=`uv run pytest tests/foo.py::test_bar`; result=`ok`; stop_reason=`no_new_actionable_changes`
 ```
 
 ## Post-fix handoff
