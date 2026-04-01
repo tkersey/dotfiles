@@ -1,0 +1,4 @@
+interface:
+  display_name: "logophile"
+  short_description: "Precision-first rewrites and naming for skill prose"
+  default_prompt: "Use $logophile for wording or naming work; replace vague phrases before generic tightening."
