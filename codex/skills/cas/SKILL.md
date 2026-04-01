@@ -31,6 +31,7 @@ Current `cas conformance` covers these swarm-hardening scenarios:
 Current `cas review_session` is the review-control lane:
 
 - `start` launches detached `review/start` on a supplied or freshly created parent thread
+- `start` supports `--parent-mode auto|fresh|reuse`; `reuse` rejects unsafe or unmaterialized parent threads, and fresh-parent startup retries once after a bootstrap materialization turn when the installed `codex` needs it
 - `wait` is the primary completion path: poll the detached review thread until terminal state and consume the normalized `reviewResult` payload when available
 - `start --wait` is a convenience wrapper over the same `start` then `wait` lifecycle; it is not a separate stronger contract
 - `status` reads the detached review thread from a fresh CAS process
@@ -52,6 +53,11 @@ When `start`, `start --wait`, `status`, or `wait` emit JSON, the output includes
   - `overallCorrectness`
   - `overallExplanation`
   - `overallConfidenceScore`
+- `fallbackUsed`
+- `fallbackTransport`
+- `fallbackExitCode`
+- `fallbackOutputText`
+- `fallbackErrorText`
 
 Use the fields this way:
 
@@ -59,9 +65,14 @@ Use the fields this way:
 - `compatibilityVerdict="incompatible"` means CAS identified a detached-review runtime mismatch and failed closed
 - `compatibilityVerdict="not_checked"` means no compatibility verdict was persisted for that record yet (older session record or pre-launch failure)
 - `failureCode="wait_timed_out"` means retry `cas review_session wait` on the same `reviewThreadId` or increase `--timeout-ms`; it is not a successful review
-- `failureCode="review_result_unavailable"` means the review turn reached terminal state without a materialized `reviewResult`; callers may choose a documented fallback, but CAS itself stays strict
+- `failureCode="review_interrupted"` means the detached review was interrupted before it emitted a structured review result
+- `failureCode="approval_denied"` means the detached review stopped on an approval or permissions denial before it emitted a structured review result
+- `failureCode="review_failed"` means the detached review failed or errored before it emitted a structured review result
+- `failureCode="review_output_missing"` means the detached review reached terminal state without a structured review result even though it was not classified as an interrupt or approval failure
+- `failureCode="parent_thread_not_materialized"` or `failureCode="unsafe_parent_thread_state"` means the supplied parent thread is not safe to reuse for detached review
+- `fallbackUsed=true` means `--fallback native-review` ran `codex review` and returned its raw text output instead of a structured detached-review result
 
-Compatibility note: if detached review on a freshly created parent thread still fails with `no rollout found`, the installed `codex` binary is older than the parent-rollout fix. In that case, upgrade `codex` or pass `--parent-thread-id` for an already materialized parent thread.
+Compatibility note: if detached review on a freshly created parent thread still fails with `no rollout found`, CAS now retries once after a bootstrap materialization turn. If that still fails, the installed `codex` binary is older than the parent-rollout fix; upgrade `codex`, pass `--parent-thread-id` for a clean materialized parent thread, or use `--fallback native-review`.
 
 Node runtime paths (`cas_proxy.mjs`, `cas_client.mjs`, and related wrappers) are removed from this skill and must not be used.
 
@@ -216,8 +227,10 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
    - Start detached review:
      - `cas review_session start --cwd /path/to/workspace --uncommitted --json`
      - `cas review_session start --cwd /path/to/workspace --base main --json`
+     - `cas review_session start --cwd /path/to/workspace --parent-thread-id <threadId> --parent-mode reuse --base main --json`
      - `cas review_session start --cwd /path/to/workspace --commit <sha> --title "<subject>" --json`
      - `cas review_session start --cwd /path/to/workspace --custom-instructions @review.txt --json`
+     - `cas review_session start --wait --cwd /path/to/workspace --base main --fallback native-review --json`
    - Read current status from a fresh process:
      - `cas review_session status --review-thread-id <reviewThreadId> --json`
    - Wait for the detached review turn to settle:
@@ -294,6 +307,7 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 - Exec/file approval decisions are handled by the Zig client (`--exec-approval`, `--file-approval`, `--read-only`).
 - Permission approvals can be controlled with `--permissions-approval deny|grant-turn|grant-session`.
 - `item/tool/requestUserInput`, `mcpServer/elicitation/request`, and `item/tool/call` can be overridden with `--request-user-input-response-json`, `--elicitation-action` plus `--elicitation-content-json`, and `--dynamic-tool-response-json`.
+- `cas review_session` now accepts the same approval/runtime overrides as `cas instance_runner`; use them when detached review must be permissioned or fully deterministic under approval prompts.
 - For command approvals, CAS resolves decisions against server-provided `availableDecisions` when present.
 - Unknown server-request methods are rejected fail-closed in native mode to prevent deadlocks.
 - For overload responses (`-32001`), CAS callers should retry with exponential backoff and jitter.
