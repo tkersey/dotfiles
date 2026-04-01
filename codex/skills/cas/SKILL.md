@@ -39,6 +39,13 @@ Current `cas review_session` is the review-control lane:
 
 `reviewThreadId` is the recoverable handle. Session records live under `~/.codex/cas/review_sessions/`, and CAS appends raw request/response artifacts to a per-review NDJSON log beside that record.
 
+Review boundary:
+
+- Use `cas review_session` when you need detached lifecycle control: persisted `reviewThreadId`, fresh-process polling, explicit interrupt, compatibility diagnostics, or approval/runtime overrides on the detached lane.
+- If you only need a one-shot git-backed review verdict and do not need detached control, prefer native `codex review --base ...` or `codex review --commit ...` instead of introducing CAS transport risk.
+- `cas smoke_check` is never review proof; it only proves handshake/method reachability.
+- `cas instance_runner` is never the production review lane; it is for method probing and schema sanity checks.
+
 When `start`, `start --wait`, `status`, or `wait` emit JSON, the output includes the detached review handle/result fields plus launch compatibility metadata:
 
 - `resolvedCodexPath`
@@ -71,6 +78,12 @@ Use the fields this way:
 - `failureCode="review_output_missing"` means the detached review reached terminal state without a structured review result even though it was not classified as an interrupt or approval failure
 - `failureCode="parent_thread_not_materialized"` or `failureCode="unsafe_parent_thread_state"` means the supplied parent thread is not safe to reuse for detached review
 - `fallbackUsed=true` means `--fallback native-review` ran `codex review` and returned its raw text output instead of a structured detached-review result
+
+Review result classification:
+
+- Detached review success requires all of: `compatibilityVerdict="compatible"`, `fallbackUsed=false`, `reviewResultAvailable=true`, and no blocking `failureCode`.
+- Native-fallback success is a different class of result: `fallbackUsed=true` means the review text came from native `codex review`, not detached CAS review. Report it as native fallback, not detached-review proof.
+- Transport progress is not review success: `reviewThreadId` creation, `start --wait` returning, or `status` showing a terminal turn is insufficient unless the result fields above classify it as success.
 
 Compatibility note: if detached review on a freshly created parent thread still fails with `no rollout found`, CAS now retries once after a bootstrap materialization turn. If that still fails, the installed `codex` binary is older than the parent-rollout fix; upgrade `codex`, pass `--parent-thread-id` for a clean materialized parent thread, or use `--fallback native-review`.
 
@@ -224,6 +237,9 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
    - Treat this as a protocol preflight before any fanout run.
 
 2. Use `review_session` when the real job is detached review lifecycle control rather than one-shot probing.
+   - Default decision rule:
+     - Need persisted handle, polling, interruption, or compatibility diagnostics: use `cas review_session`.
+     - Need only a one-shot git-backed verdict: use native `codex review` unless a caller contract explicitly requires CAS-first review transport.
    - Start detached review:
      - `cas review_session start --cwd /path/to/workspace --uncommitted --json`
      - `cas review_session start --cwd /path/to/workspace --base main --json`
@@ -240,6 +256,11 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
    - Interrupt the detached review turn:
      - `cas review_session interrupt --review-thread-id <reviewThreadId> --json`
    - `reviewThreadId` is the handle; do not invent a second review session id.
+   - Review hygiene:
+     - Prefer `start ... --json` followed by `wait ... --json` when the verdict matters; it leaves a recoverable handle if wait times out or the process dies.
+     - Use `start --wait` only as a convenience wrapper when you accept one-process fragility and do not need intermediate status checks.
+     - Reuse a parent thread only with `--parent-mode reuse` plus a known materialized parent; otherwise let CAS choose `auto` or force `fresh`.
+     - Treat `reviewResultAvailable`, `compatibilityVerdict`, `fallbackUsed`, and `failureCode` as the verdict surface. Do not infer success from process exit alone.
 
 3. Detached review is the public review-control path; do not route review-session control through `instance_runner`.
    - `instance_runner` remains a method probe lane and is still useful for schema sanity checks.
