@@ -49,6 +49,7 @@ multi_agent = true
 multi_agent_v2 = true
 prevent_idle_sleep = true
 voice_transcription = true
+realtime_conversation = true
 js_repl = true
 default_mode_request_user_input = true
 fast_mode = true
