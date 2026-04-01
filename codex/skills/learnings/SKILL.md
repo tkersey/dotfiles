@@ -43,6 +43,8 @@ When iterating on the Zig-backed `learnings`/`append_learning` helper CLI path, 
 - Completion proof: after an implementation turn with a checkpoint or an intentional no-write, produce one exact proof line: `appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`.
 - Stop-hook compatibility: when append dedupes or you intentionally skip capture, keep the proof line on one line with the exact `duplicate-skip:` or `0 records appended:` prefix so hooks can distinguish a valid no-write from a missed capture.
 - Helper-first write path: use `learnings append`/`run_learnings_tool append` for normal writes; keep `append_learning` available as a compatibility binary, and treat manual `.learnings.jsonl` edits as emergency-only with explicit rationale.
+- Repo-root fail-closed rule: only append from a verified git repo root. If `git rev-parse --show-toplevel` fails or the active task lives in a non-repo workspace such as `~/.codex/memories`, skip capture and emit `0 records appended: non-repo cwd`.
+- Path-drift rule: append from the verified repo root with `--path .learnings.jsonl`; if the CLI reports a different target path, treat that append as failed, repair the stray write if needed, and reappend correctly before closing.
 - Commit coupling: if this workflow updates `.learnings.jsonl` and a git commit follows in the same turn, include the current-turn `.learnings.jsonl` rows in that next commit by default. If the file also holds unrelated fresh rows, stage only the session-owned rows with an index patch rather than leaving all learnings for a follow-up commit. Skip only when the user explicitly narrows commit scope to exclude learnings.
 
 ## Quick Start
@@ -81,6 +83,37 @@ run_learnings_tool() {
       ;;
   esac
 
+  learnings_repo_root() {
+    git rev-parse --show-toplevel 2>/dev/null
+  }
+
+  run_learnings_append() {
+    local repo_root=""
+    local expected_path=""
+    local output=""
+    local status=0
+    local actual_path=""
+
+    repo_root="$(learnings_repo_root)" || {
+      echo "0 records appended: non-repo cwd" >&2
+      return 3
+    }
+    expected_path="$repo_root/.learnings.jsonl"
+    output="$(
+      cd "$repo_root" &&
+      "$bin" append --path .learnings.jsonl "$@"
+    )"
+    status=$?
+    printf '%s\n' "$output"
+    [ $status -ne 0 ] && return $status
+
+    actual_path="$(printf '%s\n' "$output" | sed -n 's/.* path=//p' | tail -n 1)"
+    if [ -n "$actual_path" ] && [ "$actual_path" != "$expected_path" ]; then
+      echo "append-path-mismatch: expected $expected_path got $actual_path" >&2
+      return 4
+    fi
+  }
+
   install_learnings_direct() {
     local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
     if ! command -v zig >/dev/null 2>&1; then
@@ -112,7 +145,7 @@ run_learnings_tool() {
     [ "$mode" = "append" ] && "$bin" append --help 2>&1 | grep -q "$marker"
   ); then
     if [ "$mode" = "append" ]; then
-      "$bin" append "$@"
+      run_learnings_append "$@"
     else
       "$bin" "$subcommand" "$@"
     fi
@@ -144,7 +177,7 @@ run_learnings_tool() {
     [ "$mode" = "append" ] && "$bin" append --help 2>&1 | grep -q "$marker"
   ); then
     if [ "$mode" = "append" ]; then
-      "$bin" append "$@"
+      run_learnings_append "$@"
     else
       "$bin" "$subcommand" "$@"
     fi
@@ -206,8 +239,10 @@ If any answer is no, skip capture (or use `review_later` only when uncertainty i
    - `status` reflects intent (avoid defaulting to `do_more` when `codify_now`/`investigate_more`/`avoid_for_now` is more accurate).
    - If working under temp paths (`/tmp`, `/var/folders/...`), either skip or mirror only high-signal lessons into a durable repo `.learnings.jsonl`.
 6. Persist immediately.
-   - Append each accepted learning to `.learnings.jsonl` in repo root (0 records is valid when nothing qualifies).
-   - Use `learnings append` (via `run_learnings_tool append`) instead of hand-building JSON.
+   - Verify the target repo root first with `git rev-parse --show-toplevel`; if that fails, skip capture with `0 records appended: non-repo cwd` unless the user explicitly names another durable target.
+   - Append each accepted learning to `.learnings.jsonl` in that repo root (0 records is valid when nothing qualifies).
+   - Use `learnings append` via `run_learnings_tool append`, which changes into the verified repo root and passes `--path .learnings.jsonl`.
+   - If the append output reports `path=...`, require an exact match with `$repo_root/.learnings.jsonl`; treat any mismatch as a failed append and repair/reappend before finishing.
    - If a commit will happen after the append, stage the current-turn `.learnings.jsonl` rows into that next commit immediately; if unrelated rows are present, use a targeted index patch instead of postponing the learnings write.
 7. Report concise highlights in chat.
    - Summarize the 1-3 highest leverage learnings (or say none).
@@ -278,10 +313,15 @@ run_learnings_tool append \
   --tag testing
 ```
 
+Call the wrapper from a real repo checkout only; for non-repo tasks such as memory-folder maintenance, default to `0 records appended: non-repo cwd` unless the user explicitly names a target repo/file.
+
 The helper script:
 - Normalizes `status` to snake_case.
 - Defaults `status` to `review_later` when omitted.
 - Enforces strict quality by default (condition+action learning statement, anchored evidence, concrete application, and non-temporary repo path unless explicitly allowed).
+- Refuses append in non-repo cwd instead of guessing a target `.learnings.jsonl`.
+- Runs append from the verified repo root and passes `--path .learnings.jsonl`.
+- Treats reported target-path drift as failure instead of silently accepting the wrong file.
 - Supports explicit escape hatches:
   - `--quality-mode best_effort` for intentional thin capture.
   - `--allow-temp-path` when temporary-repo capture is unavoidable.
@@ -330,6 +370,8 @@ Runtime bootstrap policy for `learnings` mirrors `cas`: use Zig binaries only (`
 - Do not write pure changelog bullets; write decision-shaping rules.
 - Keep `status` action-oriented and semantically meaningful for the situation.
 - Capture essence, not chronology: avoid storing every step if one inflection explains the outcome.
+- Do not let append target resolution depend on ambient non-repo cwd; verify repo root first or skip capture.
+- If a JSON learning row lands in source/docs or any file other than the intended `.learnings.jsonl`, revert it immediately and reappend through the verified repo-root CLI path.
 - Avoid duplicate entries; the helper script skips exact duplicates by fingerprint.
   - If you have materially new evidence for an existing learning, append a follow-up record (adjust `status` and/or make the `learning` statement more specific) or re-run with `--allow-duplicate` intentionally.
   - Do not hand-edit existing JSONL lines in place.

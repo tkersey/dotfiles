@@ -1,4 +1,4 @@
 interface:
   display_name: "learnings"
   short_description: "Capture, browse, and search execution learnings"
-  default_prompt: "Use $learnings to load or capture execution learnings: prefer `recent` or `query` for browsing, `recall` for implementation preflight, and `append` for end-of-turn capture. Finish implementation turns with one proof line: `appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`."
+  default_prompt: "Use $learnings to load or capture execution learnings: prefer `recent` or `query` for browsing, `recall` for implementation preflight, and `append` for end-of-turn capture only from a verified repo root. If no repo root is available, fail closed with `0 records appended: non-repo cwd`. Finish implementation turns with one proof line: `appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`."
