@@ -11,6 +11,7 @@ from pathlib import Path
 
 EXPECTED_MAIN_HEADINGS = [
     "Contract",
+    "Review reconciliation",
     "Findings (severity order)",
     "Changes applied",
     "Review loop trace",
@@ -21,6 +22,7 @@ EXPECTED_MAIN_HEADINGS = [
 ]
 
 EXPECTED_EMBEDDED_HEADINGS = [
+    "Review reconciliation",
     "Findings (severity order)",
     "Changes applied",
     "Review loop trace",
@@ -39,9 +41,15 @@ EXPECTED_VALIDATION_KEYS = [
 ]
 
 EXPECTED_FINDINGS_LINES = [
+    "Provenance: Origin=`<review_seed|p0_core_review|proof_hook|footgun_scan|self_review|terminal_review>`; Seeded review=`<yes|no>`",
     "Proof target: <exact advertised/documented form covered by the proof>",
     "Proof strength: `<characterization|targeted_regression|property_or_fuzz>`",
     "Compatibility impact: `<none|tightening|additive|breaking>`",
+]
+
+EXPECTED_RECONCILIATION_LINES = [
+    "- `review_seed_count=<N|0>`; `seeded_findings_closed=<N|0>`; `seeded_findings_still_open=<N|0>`; `fix_discovered_count=<N|0>`",
+    "- `origin_tally=<review_seed:N,p0_core_review:N,proof_hook:N,footgun_scan:N,self_review:N,terminal_review:N>`",
 ]
 
 EXPECTED_REVIEW_LINES = [
@@ -184,6 +192,9 @@ FORBIDDEN_REFINE_ROUTING_PHRASES = [
 ]
 
 REQUIRED_REFERENCE_PHRASES = [
+    "**Review reconciliation**",
+    "Provenance: Origin=`review_seed`; Seeded review=`yes`",
+    "Provenance: Origin=`proof_hook`; Seeded review=`no`",
     "post-self-review final-diff closure rounds against the unchanged final diff",
     "`P0 Core Review` iterations belong in `Pass trace`, not `Review loop trace`.",
     "Each `R#` row comes from a fresh CAS review invocation after confirming the live merge base still matches the frozen `comparison_sha`.",
@@ -411,6 +422,22 @@ def run(path: Path) -> int:
         ("main", main_block, main_offset),
         ("embedded", embedded_block, embedded_offset),
     ):
+        reconciliation = extract_heading_section(
+            block, "Review reconciliation", "Findings (severity order)", label, errors
+        )
+        if reconciliation:
+            reconciliation_block, reconciliation_start = reconciliation
+            reconciliation_line = line_no(text, offset + reconciliation_start)
+            for expected_line in EXPECTED_RECONCILIATION_LINES:
+                require_line(
+                    reconciliation_block,
+                    expected_line,
+                    label,
+                    "Review reconciliation",
+                    reconciliation_line,
+                    errors,
+                )
+
         findings = extract_heading_section(
             block, "Findings (severity order)", "Changes applied", label, errors
         )

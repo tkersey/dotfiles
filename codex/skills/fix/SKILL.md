@@ -42,6 +42,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 ## Outputs (chat)
 - Emit the exact sections in `Deliverable format (chat)`.
 - Use section headings verbatim (for example, `**Findings (severity order)**`, not `Findings`).
+- Every complete finding report must make provenance visible enough to answer whether the issue came from the frozen input review seed or from `$fix` itself.
 - During execution, emit one-line pass progress updates at pass start and pass end using:
   `Cycle <c>: Pass <n>/<total_planned>: <name> — <start|done>; edits=<yes|no|n/a>; signal=<cmd|n/a>; result=<ok|fail|n/a>`.
 - In `Validation`, include a machine-checkable JSON object with keys:
@@ -65,7 +66,10 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST include a final `Pass trace` section in the deliverable/Fix Record with executed pass count and per-pass outcomes.
 - MUST include machine-checkable validation evidence keys in `Validation`: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
 - MUST use the exact heading names from `Deliverable format (chat)` / `Fix Record`; do not alias or shorten heading labels.
+- MUST include a final `Review reconciliation` section in the deliverable/Fix Record.
 - MUST produce a complete finding record for every acted-on issue:
+  - origin
+  - seeded_review
   - proof_target
   - counterexample
   - invariant_before
@@ -74,6 +78,7 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
   - proof
   - proof_strength
   - compatibility_impact
+- MUST, when a frozen input review seed exists, report `review_seed_count`, `seeded_findings_closed`, `seeded_findings_still_open`, `fix_discovered_count`, and `origin_tally` in `Review reconciliation`.
 - MUST follow the delegation contract in `Auxiliary skills (mandatory)` (including order: `$invariant-ace` -> `$complexity-mitigator`) on every `$fix` cycle.
 - MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
 - MUST include a final `Review loop trace` section in the deliverable/Fix Record.
@@ -404,6 +409,8 @@ For every issue you act on, construct this record before editing:
 - location: `file:line`
 - severity: `security|crash|corruption|logic`
 - issue: <one sentence>
+- origin: `review_seed|p0_core_review|proof_hook|footgun_scan|self_review|terminal_review`
+- seeded_review: `yes|no`
 - tokens: <affected behavior tokens; empty if none>
 - proven_used: <yes/no + evidence if yes>
 - external_surface: <yes/no + why>
@@ -423,6 +430,7 @@ Use this as the reference shape when writing findings.
 ```md
 F1 `src/config_loader.py:88` — crash — untrusted config type causes uncaught attribute access
   - Surface: Tokens=config.path; PROVEN_USED=yes (tests/config/test_loader.py::test_reads_path); External=yes; Diff_touch=yes
+  - Provenance: Origin=review_seed; Seeded review=yes
   - Proof target: explicit rejection of null `config.path` before `cfg.path.strip()`
   - Counterexample: `{"path":null}` reaches `cfg.path.strip()` and raises `AttributeError`
   - Invariant (before): loader assumes `path` is a non-empty string
@@ -451,11 +459,12 @@ Residual risks / open questions
     - If the repo is git-backed and there is a live diff while `base_branch` or `comparison_sha` is missing, derive them from repo state, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base; omitted-but-derivable git context is not a skip case.
     - If the repo is git-backed and there is a live diff, but `base_branch` or `comparison_sha` is still missing after derivation, stop and ask with the derivation attempts; do not emit `skip_missing_base_context`.
     - If there is no live diff and no review target can be derived, set `Review loop trace` to `- None (skip_missing_base_context)` and continue.
-    - Otherwise verify `comparison_sha` with `git rev-parse --verify <comparison_sha>^{commit}` and freeze the canonical commit for the rest of the run and every outer cycle. For base-branch review runs, also freeze `review_cmd=cas review_session start --wait --cwd <cwd> --base <base_branch> --json` and require later CLI rounds to re-derive the same merge base before invoking the reviewer.
+   - Otherwise verify `comparison_sha` with `git rev-parse --verify <comparison_sha>^{commit}` and freeze the canonical commit for the rest of the run and every outer cycle. For base-branch review runs, also freeze `review_cmd=cas review_session start --wait --cwd <cwd> --base <base_branch> --json` and require later CLI rounds to re-derive the same merge base before invoking the reviewer.
    - If that verification fails, stop before editing and report the failed command as a blocker.
 7. Select validation signal (or create proof hook).
 8. If signal/proof creation fails, stop before editing and return `blocked_by=no_repro_or_proof` with attempted commands.
-9. Initialize outer fixed-point state:
+9. If pasted `/review` comments or another explicit reviewer finding set is present, freeze a normalized `review_seed` set before the first code edit; otherwise set `review_seed=none`.
+10. Initialize outer fixed-point state:
    - set `cycle_index=1`
    - set `zero_edit_cycle_streak=0`
    - reuse the same frozen `base_branch`/canonical `comparison_sha` and validation signal across all later cycles
@@ -552,18 +561,22 @@ Algorithm:
    - Apply `PROVEN_USED evidence checklist` to the behavior tokens affected by the slice.
 2. Enumerate proof surfaces:
    - Apply `Surface proof coverage (deterministic)` to the touched code/docs/examples before deriving closure.
-3. Derive contract without asking (in this order):
+3. If `review_seed` exists, normalize it into discrete seeded findings before adding any new finding records so later reconciliation can distinguish seeded closures from `$fix`-discovered issues.
+4. Derive contract without asking (in this order):
    - tests that exercise the slice
    - callsites in the repo
    - docs/README/examples
    - if none: add a characterization test for current behavior
-4. Write contract (1 sentence): "Working means …".
-5. Run baseline signal once; record result.
-6. If baseline signal is ok, apply `Proof discipline for passing baselines`.
-7. Enumerate candidate failure modes for the slice.
-8. Rank security > crash > corruption > logic.
-9. For each issue you will act on, create a finding record.
-10. Run the `Multi-pass loop (default)` for the touched slice, starting with `P0 Core Review`.
+5. Write contract (1 sentence): "Working means …".
+6. Run baseline signal once; record result.
+7. If baseline signal is ok, apply `Proof discipline for passing baselines`.
+8. Enumerate candidate failure modes for the slice.
+9. Rank security > crash > corruption > logic.
+10. For each issue you will act on, create a finding record.
+11. Assign each finding `origin` and `seeded_review` deterministically:
+   - `review_seed` with `Seeded review=yes` when the acted-on issue matches the frozen input review seed
+   - `p0_core_review`, `proof_hook`, `footgun_scan`, `self_review`, or `terminal_review` with `Seeded review=no` when `$fix` discovered the issue after preflight
+12. Run the `Multi-pass loop (default)` for the touched slice, starting with `P0 Core Review`.
 
 #### 2a) Unsoundness scan
 For each hazard class that applies:
@@ -704,21 +717,23 @@ For findings in severity order:
    - `$creative-problem-solver` for wider option generation
 3. Do not place those broader opportunities in `Residual risks / open questions` unless a valid blocker from the allowed set applies.
 4. Output lock (required):
-   1. Heading set is exact and complete (`Contract`, `Findings (severity order)`, `Changes applied`, `Review loop trace`, `Pass trace`, `Validation`, `Self-review loop trace`, `Residual risks / open questions`).
+   1. Heading set is exact and complete (`Contract`, `Review reconciliation`, `Findings (severity order)`, `Changes applied`, `Review loop trace`, `Pass trace`, `Validation`, `Self-review loop trace`, `Residual risks / open questions`).
     2. `Review loop trace` includes either a skip line or cycle-annotated `R#` rows, and any closing cycle still shows at least two consecutive terminal final-diff review rows on the unchanged final diff with `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
-   3. `Pass trace` includes cycle summary rows plus planned/executed counts and P0/P1/P2/P3 lines (plus P4/P5 when executed) and `Post-self-review rerun` for every executed cycle.
-   4. Runtime pass updates (`Cycle <c>: Pass <n>/<total_planned>: ...`) were emitted during execution.
-   5. If embedded mode was used, include **Fix Record** in the same assistant message (after any required artifact).
-   6. `Validation` includes machine-checkable keys: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
-   7. Every acted-on finding includes `Proof strength` and `Compatibility impact` using the allowed enums.
-   8. Every residual `blocked_by` uses only: `product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable`.
-   9. If `Changes applied` is not `None` AND the latest validation result is `ok`, `Self-review loop trace` includes a terminal row with `stop_reason=<no_new_actionable_changes|blocked>` and the user-facing final line is not the question.
-   10. `finding=none` requires zero unresolved actionable footguns on the touched surfaces or adjacent seam.
+    3. `Pass trace` includes cycle summary rows plus planned/executed counts and P0/P1/P2/P3 lines (plus P4/P5 when executed) and `Post-self-review rerun` for every executed cycle.
+    4. Runtime pass updates (`Cycle <c>: Pass <n>/<total_planned>: ...`) were emitted during execution.
+    5. If embedded mode was used, include **Fix Record** in the same assistant message (after any required artifact).
+    6. `Validation` includes machine-checkable keys: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
+    7. Every acted-on finding includes `Origin`, `Seeded review`, `Proof strength`, and `Compatibility impact` using the allowed enums.
+    8. Every residual `blocked_by` uses only: `product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable`.
+    9. If `Changes applied` is not `None` AND the latest validation result is `ok`, `Self-review loop trace` includes a terminal row with `stop_reason=<no_new_actionable_changes|blocked>` and the user-facing final line is not the question.
+    10. `finding=none` requires zero unresolved actionable footguns on the touched surfaces or adjacent seam.
 
 ## Deliverable format (chat)
 Output exactly these sections in this order.
 
 If no findings:
+- **Review reconciliation**: `- review_seed_count=<N|0>`; `seeded_findings_closed=<N|0>`; `seeded_findings_still_open=<N|0>`; `fix_discovered_count=<N|0>`
+- `- origin_tally=<review_seed:N,p0_core_review:N,proof_hook:N,footgun_scan:N,self_review:N,terminal_review:N>`
 - **Findings (severity order)**: `None`.
 - **Changes applied**: `None`.
 - **Review loop trace**: either a skip line or one or more `R#` rows.
@@ -729,10 +744,15 @@ If no findings:
 **Contract**
 - <one sentence>
 
+**Review reconciliation**
+- `review_seed_count=<N|0>`; `seeded_findings_closed=<N|0>`; `seeded_findings_still_open=<N|0>`; `fix_discovered_count=<N|0>`
+- `origin_tally=<review_seed:N,p0_core_review:N,proof_hook:N,footgun_scan:N,self_review:N,terminal_review:N>`
+
 **Findings (severity order)**
 For each finding:
 - `F#` `<file:line>` — `<security|crash|corruption|logic>` — <issue>
   - Surface: Tokens=<...>; PROVEN_USED=<yes/no + evidence>; External=<yes/no>; Diff_touch=<yes/no>
+  - Provenance: Origin=`<review_seed|p0_core_review|proof_hook|footgun_scan|self_review|terminal_review>`; Seeded review=`<yes|no>`
   - Proof target: <exact advertised/documented form covered by the proof>
   - Counterexample: <input/timeline>
   - Invariant (before): <what was assumed/allowed>
@@ -781,10 +801,15 @@ For each finding:
 ### Fix Record (embedded mode only)
 Use only when $fix is invoked inside another skill.
 
+**Review reconciliation**
+- `review_seed_count=<N|0>`; `seeded_findings_closed=<N|0>`; `seeded_findings_still_open=<N|0>`; `fix_discovered_count=<N|0>`
+- `origin_tally=<review_seed:N,p0_core_review:N,proof_hook:N,footgun_scan:N,self_review:N,terminal_review:N>`
+
 **Findings (severity order)**
 For each finding:
 - `F#` `<file:line>` — `<security|crash|corruption|logic>` — <issue>
   - Surface: Tokens=<...>; PROVEN_USED=<yes/no + evidence>; External=<yes/no>; Diff_touch=<yes/no>
+  - Provenance: Origin=`<review_seed|p0_core_review|proof_hook|footgun_scan|self_review|terminal_review>`; Seeded review=`<yes|no>`
   - Proof target: <exact advertised/documented form covered by the proof>
   - Counterexample: <input/timeline>
   - Invariant (before): <what was assumed/allowed>

@@ -10,6 +10,40 @@ Use `review_transport=`<cas|native_fallback>` and `fallback_reason=`<none|missin
 Runtime pass updates use `Cycle <c>: Pass <n>/<total_planned>: ...`.
 Terminal closure requires two consecutive clean `R#` rows on the unchanged final diff within the same cycle.
 `P2 Footguns` must either fix, prove, or block any actionable misuse on the touched public/documented surfaces or adjacent seam before closure.
+Every complete deliverable or Fix Record also includes `**Review reconciliation**` plus per-finding provenance in the form `Provenance: Origin=...; Seeded review=...`.
+
+## Review seed reconciliation and finding provenance
+
+```md
+**Review reconciliation**
+- `review_seed_count=3`; `seeded_findings_closed=3`; `seeded_findings_still_open=0`; `fix_discovered_count=2`
+- `origin_tally=<review_seed:3,p0_core_review:1,proof_hook:0,footgun_scan:1,self_review:0,terminal_review:0>`
+
+**Findings (severity order)**
+- `F1` `src/widget.py:44` — logic — the pasted review comment about `mode` coercion is reproducible on the public CLI surface
+  - Surface: Tokens=widget --mode; PROVEN_USED=yes (README + examples); External=yes; Diff_touch=yes
+  - Provenance: Origin=`review_seed`; Seeded review=`yes`
+  - Proof target: explicit rejection of truthy string inputs for public `mode`
+  - Counterexample: `widget --mode yes` reaches the unsafe branch
+  - Invariant (before): truthy string inputs are silently coerced
+  - Invariant (after): ambiguous truthy strings fail loudly
+  - Fix: narrow the public parser to explicit mode values and return a clear error
+  - Proof: `uv run pytest tests/widget.py::test_rejects_truthy_mode_string` -> ok
+  - Proof strength: `targeted_regression`
+  - Compatibility impact: `tightening`
+
+- `F2` `src/widget.py:71` — logic — the proof hook exposed one adjacent parser seam that the input review did not mention
+  - Surface: Tokens=widget config parser; PROVEN_USED=yes (tests + callsites); External=no; Diff_touch=yes
+  - Provenance: Origin=`proof_hook`; Seeded review=`no`
+  - Proof target: parser rejects duplicate mode declarations before the public helper sees them
+  - Counterexample: config plus CLI duplicate `mode` values diverge after the first fix
+  - Invariant (before): duplicate mode declarations survive into the helper
+  - Invariant (after): duplicate declarations fail closed at the parser seam
+  - Fix: reject duplicate declarations before helper dispatch
+  - Proof: `uv run pytest tests/widget.py::test_rejects_duplicate_mode_sources` -> ok
+  - Proof strength: `targeted_regression`
+  - Compatibility impact: `tightening`
+```
 
 ## P0 local-clean before downstream passes
 
