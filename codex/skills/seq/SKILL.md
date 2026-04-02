@@ -162,6 +162,7 @@ Daily token totals (from `token_count` events):
 seq query --root ~/.codex/sessions --spec \
   '{"dataset":"token_deltas","group_by":["day"],"metrics":[{"op":"sum","field":"delta_total_tokens","as":"tokens"}],"sort":["day"],"format":"table"}'
 ```
+Use `token-usage --tz ...` instead when the user means local calendar days or asks for averages/summaries rather than raw UTC buckets.
 
 Top sessions by total tokens:
 ```bash
@@ -298,6 +299,29 @@ seq report-bundle --root ~/.codex/sessions --top 20
 ### 8) Token usage summary
 ```bash
 seq token-usage --root ~/.codex/sessions --top 10
+```
+Local-day summary with averages:
+```bash
+seq token-usage --root ~/.codex/sessions \
+  --since 2026-03-26T00:00:00-07:00 \
+  --tz local \
+  --summary \
+  --format json
+```
+Local-day rows without post-processing:
+```bash
+seq token-usage --root ~/.codex/sessions \
+  --since 2026-03-26T00:00:00-07:00 \
+  --tz local \
+  --format table
+```
+Path-heavy scope check:
+```bash
+seq token-usage --root ~/.codex/sessions \
+  --since 2026-03-26T00:00:00-07:00 \
+  --group-by path \
+  --top 20 \
+  --format table
 ```
 
 ### 9) Reproducible perf harness
@@ -499,6 +523,8 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 - `query.params` is now parsed and routed into dataset collectors for dataset-specific source overrides.
+- `token-usage` now supports `--tz utc|local|+HH:MM|-HH:MM`, `--summary`, `--group-by day|path`, and `--path` / `--session-id` targeting for exact scope reporting.
+- Prefer `token-usage` over generic `query` for "since yesterday/last Thursday", daily averages, or local-calendar token questions; reserve `token_deltas` queries for lower-level accounting checks.
 - Session-tooling datasets now include `tool_invocations` and `tool_call_args` in addition to `tool_calls`.
 - `tool_calls` now exposes raw argument/input text plus command/workdir fields: `arguments_text`, `input_text`, `command_text`, `primary_executable`, `workdir`, `parse_error`.
 - `tool_invocations` adds lifecycle fields such as `end_timestamp`, `pty_session_id`, `wall_time_ms`, `exit_code`, `running_state`, and `unresolved`.
