@@ -86,11 +86,11 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST inspect every touched public/documented surface plus at most one adjacent caller, constructor, parser, wrapper, or config boundary seam when needed to prove or defuse misuse.
 - MUST, in `P2 Footguns`, produce at least one top-ranked misuse path or an explicit `none_with_reason` for every touched public/documented surface.
 - MUST treat any concrete compatible/provable footgun mitigation on the touched surface or adjacent seam as a normal finding that blocks closure until it is fixed, proved, or blocked.
-- MUST use `cas review_session start --wait --cwd <cwd> --base <base_branch> --json` for git-backed branch-diff review rounds, and reserve `cas review_session start --wait --cwd <cwd> --commit <sha> --json` only for explicitly commit-scoped runs. If CAS exits with `failureCode` in `missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_result_unavailable`, a temporary caller-owned fallback to native `codex review --base <base_branch>` or `codex review --commit <sha>` is allowed; record `review_transport=native_fallback` and `fallback_reason=<failureCode>`.
+- MUST use split detached-review lifecycle commands for git-backed branch-diff review rounds: `cas review_session start --cwd <cwd> --base <base_branch> --json` plus `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json`, and reserve the same `start` + `wait` split with `--commit <sha>` only for explicitly commit-scoped runs. Treat one detached CAS attempt as one `start` plus any `wait` retries on the returned `reviewThreadId`, keyed by frozen review target + `comparison_sha` + resolved Codex runtime. If CAS exits with `failureCode` in `missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state`, a temporary caller-owned fallback to native `codex review --base <base_branch>` or `codex review --commit <sha>` is allowed; record `review_transport=native_fallback` and `fallback_reason=<failureCode>`.
 - MUST run `P0 Core Review` as the first core pass, using CAS `reviewResult` output against the frozen review context as a fixer-owned pass that is reported in `Pass trace`, not `Review loop trace`.
 - MUST classify `P0 Core Review` output into `local_findings` and `blocked_findings` only; `stale_findings` are terminal-review-only.
 - MUST stop `P0 Core Review` only when no `local_findings` remain; blocked `P0 Core Review` findings may carry forward as pre-terminal only and do not close `$fix`.
-- MUST run every terminal `R#` review round in a fresh CAS-first review invocation with no authoring carry-over from the fixer. For branch-diff rounds, first confirm the live merge base still matches the frozen `comparison_sha`; if it drifts, stop blocked and refresh review context in a new `$fix` run. Native fallback rows are allowed only when the immediately preceding CAS attempt failed with an allowed fallback `failureCode`. The fixer may address findings but must not both author and adjudicate the same review round.
+- MUST run every terminal `R#` review round in a fresh CAS-first review invocation with no authoring carry-over from the fixer. For branch-diff rounds, first confirm the live merge base still matches the frozen `comparison_sha`; if it drifts, stop blocked and refresh review context in a new `$fix` run. Native fallback rows are allowed only when the immediately preceding detached CAS attempt for the same run-local `cas_attempt_key` failed with an allowed fallback `failureCode`. The fixer may address findings but must not both author and adjudicate the same review round.
 - MUST derive `base_branch` and `comparison_sha` from repo state for any git-backed run with a live diff when they are omitted, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base. For git-backed live diffs, missing review context after derivation is a blocker, not a successful `skip_missing_base_context` path.
 - MUST verify `comparison_sha` resolves to a commit before activating `P0 Core Review` or the terminal diff review loop.
 - MUST freeze that canonical review context for every outer cycle in the run once preflight verification succeeds.
@@ -106,8 +106,8 @@ If a fix requires a product-sensitive choice (cannot be derived or characterized
 - MUST prefer zero diff-review findings over speculative or assumption-heavy output; do not flag pre-existing issues, intentional behavior changes, or style-only nits.
 - MUST require every diff-review finding that claims broader impact to name the concrete callers/files/functions that are provably affected, and keep each finding comment to one matter-of-fact paragraph that states the triggering scenario or inputs.
 - MUST consume CAS `reviewResult` output for diff-review findings and normalize its camelCase fields back into the local bookkeeping with `[P0]`..`[P3]` titles, numeric `priority`, tight diff-overlapping `code_location`, and an `overall_correctness` verdict.
-- MUST NOT pass steady-state `--custom-instructions` to `cas review_session start --wait`; the `review/start` target owns the reviewer rubric for normal git-backed `$fix` rounds.
-- MUST NOT fall back to native `codex review` when CAS returns `failureCode=wait_timed_out` or `failureCode=review_turn_failed`; those are transport/runtime failures that must be retried or reported, not masked.
+- MUST NOT pass steady-state `--custom-instructions` to `cas review_session start`; the `review/start` target owns the reviewer rubric for normal git-backed `$fix` rounds.
+- MUST NOT fall back to native `codex review` when CAS returns `failureCode=wait_timed_out|review_failed|review_interrupted|approval_denied`; those are transport/runtime failures that must be retried on the same `reviewThreadId` or reported, not masked.
 - MUST enumerate every PROVEN_USED external surface touched by code/docs/examples before closing the core-pass phase.
 - MUST assign each enumerated public/documented surface exactly one dedicated proof hook or one explicit blocker; a sibling or nearby proof hook does not discharge another advertised form.
 - MUST NOT accept a heuristic fallback or compatibility-sensitive public-seam change as done while the advertised/documented form it changes is still unproven.
@@ -353,7 +353,7 @@ Run 4 core passes (mandatory). Run 2 additional delta passes only if pass 3 edit
 
 Pass 0) Core Review
 - Scope: diff-driven slice against the frozen `comparison_sha`.
-- Focus: run `cas review_session start --wait --cwd <cwd> --base <base_branch> --json` against the frozen review context as a fixer-owned analysis lens before `P1`, then normalize CAS `reviewResult` fields back into local bookkeeping.
+- Focus: run `cas review_session start --cwd <cwd> --base <base_branch> --json` plus `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json` against the frozen review context as a fixer-owned analysis lens before `P1`, then normalize CAS `reviewResult` fields back into local bookkeeping.
 - Loop: classify returned findings into `local_findings` and `blocked_findings`, fix `local_findings`, re-run the local signal, and repeat until no `local_findings` remain.
 - Reporting: record `P0 Core Review` in `Pass trace` and runtime pass updates; reserve `Review loop trace` for terminal isolated closure only.
 - Carry-forward: blocked `P0 Core Review` findings may continue as pre-terminal only and can later become residual items if they stay valid.
@@ -459,7 +459,7 @@ Residual risks / open questions
     - If the repo is git-backed and there is a live diff while `base_branch` or `comparison_sha` is missing, derive them from repo state, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base; omitted-but-derivable git context is not a skip case.
     - If the repo is git-backed and there is a live diff, but `base_branch` or `comparison_sha` is still missing after derivation, stop and ask with the derivation attempts; do not emit `skip_missing_base_context`.
     - If there is no live diff and no review target can be derived, set `Review loop trace` to `- None (skip_missing_base_context)` and continue.
-   - Otherwise verify `comparison_sha` with `git rev-parse --verify <comparison_sha>^{commit}` and freeze the canonical commit for the rest of the run and every outer cycle. For base-branch review runs, also freeze `review_cmd=cas review_session start --wait --cwd <cwd> --base <base_branch> --json` and require later CLI rounds to re-derive the same merge base before invoking the reviewer.
+   - Otherwise verify `comparison_sha` with `git rev-parse --verify <comparison_sha>^{commit}` and freeze the canonical commit for the rest of the run and every outer cycle. For base-branch review runs, also freeze `review_start_cmd=cas review_session start --cwd <cwd> --base <base_branch> --json`, `review_wait_timeout_ms=<timeout_ms>`, and the per-run detached-review attempt budget for the frozen review target so later CLI rounds can re-derive the same merge base before invoking the reviewer.
    - If that verification fails, stop before editing and report the failed command as a blocker.
 7. Select validation signal (or create proof hook).
 8. If signal/proof creation fails, stop before editing and return `blocked_by=no_repro_or_proof` with attempted commands.
@@ -531,30 +531,38 @@ Rules:
 - Return all qualifying findings, not just the first. If there is no finding the author would definitely want to fix, return an empty `findings` list and set the overall verdict accordingly.
 
 ### CAS review_session command (required)
-- Default git-backed review command: `cas review_session start --wait --cwd <cwd> --base <base_branch> --json`.
-- Explicit commit-scoped review command: `cas review_session start --wait --cwd <cwd> --commit <sha> --json`.
-- `cas review_session start --wait --cwd <cwd> --base <base_branch> --json` resolves the merge base internally; before each round, confirm that the currently derived merge base still matches the frozen `comparison_sha`.
+- Default git-backed review start command: `cas review_session start --cwd <cwd> --base <base_branch> --json`.
+- Default git-backed review wait command: `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json`.
+- Explicit commit-scoped review start command: `cas review_session start --cwd <cwd> --commit <sha> --json`.
+- Explicit commit-scoped review wait command: `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json`.
+- The `start` command resolves the merge base internally for `--base <base_branch>` runs; before each round, confirm that the currently derived merge base still matches the frozen `comparison_sha`.
 - Do not paste the built-in review prompt into this skill or pass steady-state `--custom-instructions`; the `review/start` target owns the reviewer rubric internally.
 - Reserve `--custom-instructions` for explicit custom-review runs only; do not use it for normal git-backed `$fix` rounds.
 - Consume CAS `reviewResult` JSON and normalize its camelCase fields back into the local `local_findings` / `blocked_findings` / `stale_findings` bookkeeping plus `overall_correctness`.
-- If CAS exits with `failureCode` in `missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_result_unavailable`, one temporary native fallback review round is allowed with the same frozen review context. Record `review_transport=native_fallback`, set `fallback_reason=<failureCode>`, and treat the native reviewer output as the round verdict.
-- If CAS exits with `failureCode=wait_timed_out` or `failureCode=review_turn_failed`, do not fall back; retry or stop blocked.
+- Treat one detached CAS attempt as one `start` plus any `wait` retries on the returned `reviewThreadId`, keyed by the frozen review target + `comparison_sha` + resolved runtime. If a detached attempt for the current key returns `failureCode=incompatible_codex_review_runtime`, do not launch detached CAS again for that key in the same run.
+- If CAS exits with `failureCode` in `missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state`, one temporary native fallback review round is allowed with the same frozen review context. Record `review_transport=native_fallback`, set `fallback_reason=<failureCode>`, and treat the native reviewer output as the round verdict.
+- If CAS exits with `failureCode=wait_timed_out`, retry `wait` once on the same `reviewThreadId` with a longer timeout or stop blocked.
+- If CAS exits with `failureCode=review_failed|review_interrupted|approval_denied`, do not fall back; stop blocked and report the detached CAS failure.
 
 Algorithm:
 1. If `Review loop trace` already contains a skip line from preflight, continue to phase 2.
-2. Run `cas review_session start --wait --cwd <cwd> --base <base_branch> --json` in a fresh CAS invocation after confirming the live merge base still matches the frozen `comparison_sha`.
-3. If CAS exits with an allowed fallback `failureCode`, run one native `codex review` round on the same frozen review context, record `review_transport=native_fallback` and `fallback_reason=<failureCode>`, and use the native reviewer output as the round verdict.
-4. Otherwise read `reviewResult` from the CAS JSON response and partition `reviewResult.findings` into:
+2. Run `cas review_session start --cwd <cwd> --base <base_branch> --json` in a fresh CAS invocation after confirming the live merge base still matches the frozen `comparison_sha`.
+3. Capture `reviewThreadId`, `resolvedCodexPath`, and `resolvedCodexVersion` from the `start` JSON response and derive `cas_attempt_key=<review_target_kind>|<comparison_sha>|<resolvedCodexPath>|<resolvedCodexVersion>`.
+4. If `start` exits with an allowed fallback `failureCode`, run one native `codex review` round on the same frozen review context, record `review_transport=native_fallback` and `fallback_reason=<failureCode>`, and use the native reviewer output as the round verdict.
+5. Otherwise run `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json`.
+6. If `wait` exits with `failureCode=wait_timed_out`, retry `wait` once on the same `reviewThreadId` with a longer timeout; if it still times out, stop blocked.
+7. If `wait` exits with an allowed fallback `failureCode`, run one native `codex review` round on the same frozen review context, record `review_transport=native_fallback` and `fallback_reason=<failureCode>`, and use the native reviewer output as the round verdict.
+8. Otherwise read `reviewResult` from the final CAS JSON response and partition `reviewResult.findings` into:
    - `local_findings`: locally fixable under the active guardrails for the current phase
    - `blocked_findings`: findings that are blocked under the existing blocker model
    - `stale_findings`: repeated locally-fixable findings whose normalized fingerprint and implicated path set did not change across consecutive rounds after an address round
    - Once self-review has started, the terminal final-diff closure loop is current-worktree scoped and `scope_guardrail` is not a valid blocker.
-5. Emit one `Review loop trace` row per terminal review round.
-6. If `local_findings > 0`, address all review findings, re-run the chosen validation signal, then repeat from step 2.
-7. If a repeated locally-fixable finding is stale, suppress it from loop continuation and count it under `stale_findings` only when its normalized fingerprint and implicated path set did not change across consecutive rounds and the current proof bundle directly disproves the finding or the implicated diff hunk/form no longer exists.
+9. Emit one `Review loop trace` row per terminal review round.
+10. If `local_findings > 0`, address all review findings, re-run the chosen validation signal, then repeat from step 2.
+11. If a repeated locally-fixable finding is stale, suppress it from loop continuation and count it under `stale_findings` only when its normalized fingerprint and implicated path set did not change across consecutive rounds and the current proof bundle directly disproves the finding or the implicated diff hunk/form no longer exists.
    - Do not mark a finding stale if it targets a PROVEN_USED external surface that still lacks a dedicated proof hook or explicit blocker.
-8. Re-check `Surface proof coverage (deterministic)` against the current diff before closing the round.
-9. Close the terminal diff review loop only when a review round yields `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`. If `review_transport=cas`, closure also requires `reviewResultAvailable=true`.
+12. Re-check `Surface proof coverage (deterministic)` against the current diff before closing the round.
+13. Close the terminal diff review loop only when a review round yields `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`. If `review_transport=cas`, closure also requires `reviewResultAvailable=true`.
 
 ### 2) Core passes
 1. Determine PROVEN_USED behavior:
@@ -767,9 +775,9 @@ For each finding:
 
 **Review loop trace**
 - If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`
-- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_transport=`<cas|native_fallback>`; fallback_reason=`<none|missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_result_unavailable>`; review_cmd=`<cas review_session start --wait --cwd <cwd> --base <name> --json|codex review --base <name>>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
+- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_transport=`<cas|native_fallback>`; fallback_reason=`<none|missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state>`; review_start_cmd=`<cas review_session start --cwd <cwd> --base <name> --json|n/a>`; review_wait_cmd=`<cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json|n/a>`; review_thread_id=`<thr_*|none>`; cas_attempt_key=`<review_target_kind|comparison_sha|resolvedCodexPath|resolvedCodexVersion|none>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
 - Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
-- Each `R#` row comes from the terminal diff review closure loop in a fresh CAS review invocation after confirming the live merge base still matches the frozen `comparison_sha`; the fixer does not self-grade that round. Native fallback rows are allowed only when the immediately preceding CAS attempt failed with an allowed fallback `failureCode`.
+- Each `R#` row comes from the terminal diff review closure loop in a fresh split CAS review invocation (`start` then `wait`) after confirming the live merge base still matches the frozen `comparison_sha`; the fixer does not self-grade that round. Native fallback rows are allowed only when the immediately preceding detached CAS attempt for the same run-local `cas_attempt_key` failed with an allowed fallback `failureCode`.
 - Terminal closure requires two consecutive clean rows on the unchanged final diff within the same cycle.
 - Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
 
@@ -824,9 +832,9 @@ For each finding:
 
 **Review loop trace**
 - If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`
-- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_transport=`<cas|native_fallback>`; fallback_reason=`<none|missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_result_unavailable>`; review_cmd=`<cas review_session start --wait --cwd <cwd> --base <name> --json|codex review --base <name>>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
+- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_transport=`<cas|native_fallback>`; fallback_reason=`<none|missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state>`; review_start_cmd=`<cas review_session start --cwd <cwd> --base <name> --json|n/a>`; review_wait_cmd=`<cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json|n/a>`; review_thread_id=`<thr_*|none>`; cas_attempt_key=`<review_target_kind|comparison_sha|resolvedCodexPath|resolvedCodexVersion|none>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
 - Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
-- Each `R#` row comes from the terminal diff review closure loop in a fresh CAS review invocation after confirming the live merge base still matches the frozen `comparison_sha`; the fixer does not self-grade that round. Native fallback rows are allowed only when the immediately preceding CAS attempt failed with an allowed fallback `failureCode`.
+- Each `R#` row comes from the terminal diff review closure loop in a fresh split CAS review invocation (`start` then `wait`) after confirming the live merge base still matches the frozen `comparison_sha`; the fixer does not self-grade that round. Native fallback rows are allowed only when the immediately preceding detached CAS attempt for the same run-local `cas_attempt_key` failed with an allowed fallback `failureCode`.
 - Terminal closure requires two consecutive clean rows on the unchanged final diff within the same cycle.
 - Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
 

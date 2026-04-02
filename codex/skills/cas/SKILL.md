@@ -257,9 +257,10 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
      - `cas review_session interrupt --review-thread-id <reviewThreadId> --json`
    - `reviewThreadId` is the handle; do not invent a second review session id.
    - Review hygiene:
-     - Prefer `start ... --json` followed by `wait ... --json` when the verdict matters; it leaves a recoverable handle if wait times out or the process dies.
-     - Use `start --wait` only as a convenience wrapper when you accept one-process fragility and do not need intermediate status checks.
-     - Reuse a parent thread only with `--parent-mode reuse` plus a known materialized parent; otherwise let CAS choose `auto` or force `fresh`.
+  - Prefer `start ... --json` followed by `wait ... --json` when the verdict matters; it leaves a recoverable handle if wait times out or the process dies.
+  - Use `start --wait` only as a convenience wrapper when you accept one-process fragility and do not need intermediate status checks.
+  - In first-party caller workflows, treat one detached CAS attempt as one `start` plus any `wait` retries on the returned `reviewThreadId`, keyed by the frozen review target plus resolved Codex path/version. If that attempt returns `incompatible_codex_review_runtime`, stop relaunching detached CAS for the same key in that run and let the caller decide whether to switch to native `codex review`.
+  - Reuse a parent thread only with `--parent-mode reuse` plus a known materialized parent; otherwise let CAS choose `auto` or force `fresh`.
      - Treat `reviewResultAvailable`, `compatibilityVerdict`, `fallbackUsed`, and `failureCode` as the verdict surface. Do not infer success from process exit alone.
 
 3. Detached review is the public review-control path; do not route review-session control through `instance_runner`.
