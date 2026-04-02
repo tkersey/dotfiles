@@ -57,7 +57,7 @@ codex_hooks = true
 
 [tui]
 experimental_mode = "execute"
-status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode", "session-id"]
+status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode", "session-id", "five-hour-limit", "weekly-limit"]
 theme = "coldark-dark"
 terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
 
