@@ -7,10 +7,21 @@ When review context exists, the terminal `Review loop trace` rows are the post-s
 Each `R#` row comes from a fresh `cas review_session start --cwd <cwd> --base <base_branch> --json` plus `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json` invocation after confirming the live merge base still matches the frozen `comparison_sha`.
 Each `R#` row comes from a fresh split CAS review invocation after confirming the live merge base still matches the frozen `comparison_sha`.
 Use `review_transport=`<cas|native_fallback>`, `fallback_reason=`<none|missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state>`, `review_thread_id=...`, and `cas_attempt_key=...` on every review-loop row.
+Standard git-backed branch-diff closure reviews stay on the same frozen whole diff for CAS and native fallback; do not narrow to touched files or another ad hoc sub-scope unless preflight explicitly chose commit/worktree scope.
+Use a cumulative long-poll wait budget before declaring review transport blocked: `review_wait_timeout_ladder_ms=60000,120000,300000,600000`, `review_wait_budget_ms=1080000`.
 Runtime pass updates use `Cycle <c>: Pass <n>/<total_planned>: ...`.
 Terminal closure requires two consecutive clean `R#` rows on the unchanged final diff within the same cycle.
 `P2 Footguns` must either fix, prove, or block any actionable misuse on the touched public/documented surfaces or adjacent seam before closure.
 Every complete deliverable or Fix Record also includes `**Review reconciliation**` plus per-finding provenance in the form `Provenance: Origin=...; Seeded review=...`.
+
+## Native fallback long-poll on the frozen whole diff
+
+```md
+**Review loop trace**
+- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_transport=`native_fallback`; fallback_reason=`incompatible_codex_review_runtime`; review_start_cmd=`cas review_session start --cwd <cwd> --base main --json`; review_wait_cmd=`cas review_session wait --review-thread-id thr_r1 --timeout-ms 60000 --json`; review_thread_id=`thr_r1`; cas_attempt_key=`branch_diff|9b75f2cdfff1de7b38f288f8409b5df00e4bd84b|/opt/homebrew/bin/codex|0.118.0`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`continue`
+- Native fallback stayed on the frozen `main...comparison_sha` branch diff; it was not narrowed to the touched files even though the immediate fix seam was smaller.
+- Native fallback wait budget: `review_wait_timeout_ladder_ms=60000,120000,300000,600000`; `review_wait_budget_ms=1080000`
+```
 
 ## Review seed reconciliation and finding provenance
 

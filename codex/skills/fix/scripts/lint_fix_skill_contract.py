@@ -57,6 +57,7 @@ EXPECTED_REVIEW_LINES = [
     "- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_transport=`<cas|native_fallback>`; fallback_reason=`<none|missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state>`; review_start_cmd=`<cas review_session start --cwd <cwd> --base <name> --json|n/a>`; review_wait_cmd=`<cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json|n/a>`; review_thread_id=`<thr_*|none>`; cas_attempt_key=`<review_target_kind|comparison_sha|resolvedCodexPath|resolvedCodexVersion|none>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`",
     '- Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.',
     "- Each `R#` row comes from the terminal diff review closure loop in a fresh split CAS review invocation (`start` then `wait`) after confirming the live merge base still matches the frozen `comparison_sha`; the fixer does not self-grade that round. Native fallback rows are allowed only when the immediately preceding detached CAS attempt for the same run-local `cas_attempt_key` failed with an allowed fallback `failureCode`.",
+    "- Standard git-backed branch-diff closure rows stay on the same frozen whole diff for CAS and native fallback; do not narrow to touched files or another ad hoc sub-scope unless preflight explicitly chose commit/worktree scope.",
     "- Terminal closure requires two consecutive clean rows on the unchanged final diff within the same cycle.",
     '- Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.',
 ]
@@ -139,6 +140,8 @@ REQUIRED_FOOTGUN_GUARDRAILS = [
 REQUIRED_REVIEW_LOOP_GUARDRAILS = [
     "MUST include a final `Review loop trace` section in the deliverable/Fix Record.",
     "MUST use split detached-review lifecycle commands for git-backed branch-diff review rounds: `cas review_session start --cwd <cwd> --base <base_branch> --json` plus `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json`, and reserve the same `start` + `wait` split with `--commit <sha>` only for explicitly commit-scoped runs. Treat one detached CAS attempt as one `start` plus any `wait` retries on the returned `reviewThreadId`, keyed by frozen review target + `comparison_sha` + resolved Codex runtime. If CAS exits with `failureCode` in `missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state`, a temporary caller-owned fallback to native `codex review --base <base_branch>` or `codex review --commit <sha>` is allowed; record `review_transport=native_fallback` and `fallback_reason=<failureCode>`.",
+    "MUST keep standard git-backed branch-diff review scope on the entire frozen `base_branch`/`comparison_sha` diff. Once preflight freezes a branch-diff review context, neither CAS nor native fallback may be narrowed to touched files, the current uncommitted patch, or another ad hoc sub-scope unless the run was explicitly commit-scoped or explicitly worktree-scoped from preflight.",
+    "MUST treat a slow native fallback whole-diff review as the intended closure lane for standard branch-backed `$fix` runs; do not relabel it as non-convergent or abandon it solely because the branch diff is larger than the immediate fix seam.",
     "MUST run `P0 Core Review` as the first core pass, using CAS `reviewResult` output against the frozen review context as a fixer-owned pass that is reported in `Pass trace`, not `Review loop trace`.",
     "MUST classify `P0 Core Review` output into `local_findings` and `blocked_findings` only; `stale_findings` are terminal-review-only.",
     "MUST stop `P0 Core Review` only when no `local_findings` remain; blocked `P0 Core Review` findings may carry forward as pre-terminal only and do not close `$fix`.",
@@ -159,6 +162,7 @@ REQUIRED_REVIEW_LOOP_GUARDRAILS = [
     "MUST consume CAS `reviewResult` output for diff-review findings and normalize its camelCase fields back into the local bookkeeping with `[P0]`..`[P3]` titles, numeric `priority`, tight diff-overlapping `code_location`, and an `overall_correctness` verdict.",
     "MUST NOT pass steady-state `--custom-instructions` to `cas review_session start`; the `review/start` target owns the reviewer rubric for normal git-backed `$fix` rounds.",
     "MUST NOT fall back to native `codex review` when CAS returns `failureCode=wait_timed_out|review_failed|review_interrupted|approval_denied`; those are transport/runtime failures that must be retried on the same `reviewThreadId` or reported, not masked.",
+    "MUST use a cumulative long-poll wait budget before declaring review transport blocked: for detached CAS waits, keep waiting on the same `reviewThreadId` across a run-local timeout ladder of `60000`, `120000`, `300000`, and `600000` ms (total `1080000` ms) before stopping blocked; for native fallback on the same frozen review context, continue polling/waiting up to that same cumulative budget before declaring the review lane blocked.",
     "MUST enumerate every PROVEN_USED external surface touched by code/docs/examples before closing the core-pass phase.",
     "MUST assign each enumerated public/documented surface exactly one dedicated proof hook or one explicit blocker; a sibling or nearby proof hook does not discharge another advertised form.",
     "MUST NOT accept a heuristic fallback or compatibility-sensitive public-seam change as done while the advertised/documented form it changes is still unproven.",
@@ -179,9 +183,12 @@ REQUIRED_DIFF_REVIEW_INTENT_PHRASES = [
     '"overall_correctness": "\\"patch is correct\\" | \\"patch is incorrect\\""',
     "The diff review output is JSON-only: no fences, no prose, no fix patch.",
     "### CAS review_session command (required)",
+    "Standard branch-backed `$fix` closure reviews the whole frozen branch diff, not just the local fix seam; keep the same review target for detached CAS and native fallback unless preflight explicitly selected commit/worktree scope.",
     "Do not paste the built-in review prompt into this skill or pass steady-state `--custom-instructions`; the `review/start` target owns the reviewer rubric internally.",
     "Reserve `--custom-instructions` for explicit custom-review runs only; do not use it for normal git-backed `$fix` rounds.",
     "Consume CAS `reviewResult` JSON and normalize its camelCase fields back into the local `local_findings` / `blocked_findings` / `stale_findings` bookkeeping plus `overall_correctness`.",
+    "If CAS exits with `failureCode=wait_timed_out`, keep waiting on the same `reviewThreadId` across the frozen timeout ladder `60000`, `120000`, `300000`, `600000` until either a verdict arrives or the cumulative `review_wait_budget_ms=1080000` is exhausted.",
+    "If native fallback is active on a frozen branch-diff context, keep it on that same frozen whole-diff review target and continue polling/waiting up to the same cumulative `review_wait_budget_ms=1080000` before declaring the lane blocked.",
 ]
 
 FORBIDDEN_REFINE_ROUTING_PHRASES = [
@@ -198,6 +205,8 @@ REQUIRED_REFERENCE_PHRASES = [
     "post-self-review final-diff closure rounds against the unchanged final diff",
     "`P0 Core Review` iterations belong in `Pass trace`, not `Review loop trace`.",
     "Each `R#` row comes from a fresh split CAS review invocation after confirming the live merge base still matches the frozen `comparison_sha`.",
+    "review_wait_budget_ms=1080000",
+    "review_wait_timeout_ladder_ms=60000,120000,300000,600000",
     "review_transport=`<cas|native_fallback>`",
     "fallback_reason=`<none|missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state>`",
     "In the terminal final-diff closure round, blocked findings cannot use `scope_guardrail`, and closure still requires `blocked_findings=0`.",
