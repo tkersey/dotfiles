@@ -32,17 +32,17 @@ Current `cas review_session` is the review-control lane:
 
 - `start` launches detached `review/start` on a supplied or freshly created parent thread
 - `start` supports `--parent-mode auto|fresh|reuse`; `reuse` rejects unsafe or unmaterialized parent threads, and fresh-parent startup retries once after a bootstrap materialization turn when the installed `codex` needs it
-- `wait` is the primary completion path: poll the detached review thread until terminal state and consume the normalized `reviewResult` payload when available
-- `start --wait` is a convenience wrapper over the same `start` then `wait` lifecycle; it is not a separate stronger contract
-- `status` reads the detached review thread from a fresh CAS process
+- `wait` is the primary completion path only on runtimes that keep detached review alive across connections
+- On Codex `0.118.x` over stdio, detached review output is connection-scoped, so `start --wait` is the supported detached-result lane and split fresh-process `start`/`wait` should fail closed until CAS has a websocket-backed transport
+- `status` reads the detached review thread from a fresh CAS process when that runtime path is supported
 - `interrupt` sends `turn/interrupt` for the persisted detached review turn
 
 `reviewThreadId` is the recoverable handle. Session records live under `~/.codex/cas/review_sessions/`, and CAS appends raw request/response artifacts to a per-review NDJSON log beside that record.
 
 Review boundary:
 
-- Use `cas review_session` when you need detached lifecycle control: persisted `reviewThreadId`, fresh-process polling, explicit interrupt, compatibility diagnostics, or approval/runtime overrides on the detached lane.
-- If you only need a one-shot git-backed review verdict and do not need detached control, prefer native `codex review --base ...` or `codex review --commit ...` instead of introducing CAS transport risk.
+- Use `cas review_session` when you need detached lifecycle control: persisted `reviewThreadId`, explicit interrupt, compatibility diagnostics, or approval/runtime overrides on the detached lane. On Codex `0.118.x` stdio, same-process `start --wait` is the supported review-result path; fresh-process polling is not.
+- If you only need a one-shot git-backed review verdict and do not need detached control, prefer native `codex review --base ...` or `codex review --commit ...` instead of introducing CAS transport risk. First-party caller flows such as `$fix` should treat native review as the default path.
 - `cas smoke_check` is never review proof; it only proves handshake/method reachability.
 - `cas instance_runner` is never the production review lane; it is for method probing and schema sanity checks.
 
@@ -85,7 +85,7 @@ Review result classification:
 - Native-fallback success is a different class of result: `fallbackUsed=true` means the review text came from native `codex review`, not detached CAS review. Report it as native fallback, not detached-review proof.
 - Transport progress is not review success: `reviewThreadId` creation, `start --wait` returning, or `status` showing a terminal turn is insufficient unless the result fields above classify it as success.
 
-Compatibility note: if detached review on a freshly created parent thread still fails with `no rollout found`, CAS now retries once after a bootstrap materialization turn. If that still fails, the installed `codex` binary is older than the parent-rollout fix; upgrade `codex`, pass `--parent-thread-id` for a clean materialized parent thread, or use `--fallback native-review`.
+Compatibility note: on Codex `0.118.x` stdio, detached review requires two compatibility moves. First, a fresh parent thread must be materialized before detached `review/start`, so CAS `--parent-mode auto` now pre-materializes that path and `fresh` retries once after bootstrap materialization when needed. Second, detached review output streams on the live app-server connection, so split fresh-process `start`/`wait` should fail closed; use `start --wait`, native `codex review`, or a future websocket-backed CAS lane.
 
 Node runtime paths (`cas_proxy.mjs`, `cas_client.mjs`, and related wrappers) are removed from this skill and must not be used.
 
@@ -238,8 +238,9 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 
 2. Use `review_session` when the real job is detached review lifecycle control rather than one-shot probing.
    - Default decision rule:
-     - Need persisted handle, polling, interruption, or compatibility diagnostics: use `cas review_session`.
-     - Need only a one-shot git-backed verdict: use native `codex review` unless a caller contract explicitly requires CAS-first review transport.
+     - Need detached control on Codex `0.118.x` stdio: use `cas review_session start --wait`.
+     - Need detached control on a runtime that keeps detached review alive across connections: use `cas review_session` split `start` plus `wait`.
+     - Need only a one-shot git-backed verdict: use native `codex review` unless the caller explicitly needs detached control. `$fix`-style repair loops should not CAS-first by default.
    - Start detached review:
      - `cas review_session start --cwd /path/to/workspace --uncommitted --json`
      - `cas review_session start --cwd /path/to/workspace --base main --json`
@@ -247,18 +248,18 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
      - `cas review_session start --cwd /path/to/workspace --commit <sha> --title "<subject>" --json`
      - `cas review_session start --cwd /path/to/workspace --custom-instructions @review.txt --json`
      - `cas review_session start --wait --cwd /path/to/workspace --base main --fallback native-review --json`
-   - Read current status from a fresh process:
+   - Read current status from a fresh process when the runtime supports detached polling:
      - `cas review_session status --review-thread-id <reviewThreadId> --json`
-   - Wait for the detached review turn to settle:
+   - Wait for the detached review turn to settle when the runtime supports detached polling:
      - `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 300000 --json`
-   - Convenience wrapper when you truly want one process:
+   - Supported same-process lane on Codex `0.118.x` stdio:
      - `cas review_session start --wait --cwd /path/to/workspace --base main --json`
    - Interrupt the detached review turn:
      - `cas review_session interrupt --review-thread-id <reviewThreadId> --json`
    - `reviewThreadId` is the handle; do not invent a second review session id.
    - Review hygiene:
-  - Prefer `start ... --json` followed by `wait ... --json` when the verdict matters; it leaves a recoverable handle if wait times out or the process dies.
-  - Use `start --wait` only as a convenience wrapper when you accept one-process fragility and do not need intermediate status checks.
+  - On Codex `0.118.x` stdio, prefer `start --wait ... --json` when the detached verdict matters; that is the supported lane because review items stream on the live connection.
+  - On runtimes that keep detached review alive across connections, prefer `start ... --json` followed by `wait ... --json` when the verdict matters; it leaves a recoverable handle if wait times out or the process dies.
   - In first-party caller workflows, treat one detached CAS attempt as one `start` plus any `wait` retries on the returned `reviewThreadId`, keyed by the frozen review target plus resolved Codex path/version. If that attempt returns `incompatible_codex_review_runtime`, stop relaunching detached CAS for the same key in that run and let the caller decide whether to switch to native `codex review`.
   - Reuse a parent thread only with `--parent-mode reuse` plus a known materialized parent; otherwise let CAS choose `auto` or force `fresh`.
      - Treat `reviewResultAvailable`, `compatibilityVerdict`, `fallbackUsed`, and `failureCode` as the verdict surface. Do not infer success from process exit alone.
@@ -266,7 +267,7 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 3. Detached review is the public review-control path; do not route review-session control through `instance_runner`.
    - `instance_runner` remains a method probe lane and is still useful for schema sanity checks.
    - `review_session` owns persisted review handles, fresh-process status polling, wait loops, and interruption.
-   - For workflows that need the actual review verdict, prefer `start ... --json`, keep the returned `reviewThreadId`, then call `wait ... --json`; reserve `start --wait` as a convenience wrapper over that same path.
+   - For workflows that need the actual review verdict, use the live connection lane the runtime supports: `start --wait` on Codex `0.118.x` stdio, or split `start ... --json` then `wait ... --json` on runtimes that keep detached review alive across connections.
    - Treat `failureCode` as authoritative. CAS never silently falls back to native `codex review`; callers that want a temporary fallback must do it explicitly at their own layer.
 
 4. For swarm-hardening runs, treat `$st` as the durable source of truth before any worker starts.
