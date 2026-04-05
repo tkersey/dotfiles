@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Rigor Mode Finder"
+  short_description: "Derive task-specific rigor words, mode stacks, and prompts"
+  default_prompt: "Use the rigor-mode-finder skill to derive task-specific rigor modes for this task."
