@@ -88,5 +88,8 @@ trust_level = "trusted"
 [projects."/Users/tk/workspace/art/gamelan"]
 trust_level = "trusted"
 
+[projects."/Users/tk/workspace/tk"]
+trust_level = "trusted"
+
 [notice]
 hide_rate_limit_model_nudge = true
