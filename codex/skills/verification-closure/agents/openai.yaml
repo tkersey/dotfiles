@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Verification Closure"
+  short_description: "Deterministic regression proof and final readiness decisions"
+  default_prompt: "Use the verification-closure skill for this task."
