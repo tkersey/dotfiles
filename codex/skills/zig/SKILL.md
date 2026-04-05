@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon dependency changes, lint/test/run/fmt/fetch/build commands, comptime/reflection/codegen, witness-driven parsing and ownership, FFI boundary hardening, concurrency or lock-free code, dependency provenance, and performance work that must preserve correctness with explicit proof lanes."
+description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon dependency changes, lint/test/run/fmt/fetch/build commands, profiling and performance work, comptime/reflection/codegen, witness-driven parsing and ownership, FFI boundary hardening, concurrency or lock-free code, dependency provenance, and measured optimization with explicit proof lanes."
 ---
 
 # Zig
@@ -28,6 +28,7 @@ description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain w
 - Prefer minimal incisions with explicit proof signals.
 - If the repo already exposes `zig build lint`, treat it as a hard gate. If lint is missing, prefer bootstrapping when safe; otherwise state `LINT_UNAVAILABLE` and compensate with stronger correctness evidence.
 - Keep fast paths benchmarked, but keep safety checks on during correctness validation.
+- Treat benchmarking and profiling as separate lanes: benchmarks prove the delta, profilers explain where the time or bytes went.
 
 ## Baseline requirements
 - Confirm toolchain version first:
@@ -42,6 +43,7 @@ zig version
 - If the request is performance-focused, run in two lanes:
   - Correctness lane (`Debug` or `ReleaseSafe`).
   - Performance lane (`ReleaseFast`) only after correctness passes.
+  - Choose the profiling instrument by symptom before changing code: `zprof` for allocator or leak questions, system or telemetry profilers for CPU or lock contention, and benchmark lanes for regression proof.
   - If a benchmark spans multiple abstraction layers and the aggregate result regresses, add decomposition lanes before changing code so you can separate substrate cost, wrapper cost, and full-path cost on the same workload.
 
 ## Hazard classes and required proof
@@ -268,12 +270,90 @@ fn classify(comptime T: type) enum { auto, custom } {
 - Stress tests alone are not proof of concurrent correctness.
 - Re-run concurrent code under multiple optimize modes and on Linux or CI when platform behavior differs.
 
+## Profiling stack
+Use this section when the request is about speed, latency, throughput, memory growth, leaks, or hotspot analysis.
+
+- Start by naming the symptom precisely:
+  - allocation churn, live-bytes growth, leaks, or unexplained allocator pressure -> use `zprof`
+  - unknown CPU hotspot, cache issue, branchy slow path, or lock contention -> use a system sampler first and optionally telemetry tooling if the repo already supports it
+  - broad regression proof or before/after validation -> use the repo benchmark or perf harness first
+- Do not flatten all profiling into one tool. `zprof` is the default allocator profiler, not a substitute for CPU sampling.
+- If the repo already ships benchmark or perf steps, run those before adding new instrumentation so you preserve the existing proof surface.
+
+### `zprof` default lane
+Deep-research default: prefer [`zprof`](https://github.com/ANDRVV/zprof) first for allocator-focused profiling. As of 2026-04-04, upstream `v3.0.1` is current, `build.zig.zon` declares `minimum_zig_version = "0.15.1"`, and the library wraps any Zig allocator while exposing `allocated`, `alloc_count`, `free_count`, `live_peak`, `live_bytes`, plus `hasLeaks()` and `reset()`.
+
+Installation path to encourage by default:
+
+```bash
+# Verify if a newer upstream tag exists when freshness matters.
+gh api repos/ANDRVV/zprof/releases/latest --jq '{tag_name,published_at,html_url}'
+
+# Current researched example
+zig fetch --save https://github.com/ANDRVV/zprof/archive/v3.0.1.zip
+```
+
+`build.zig` wiring:
+
+```zig
+const zprof_dep = b.dependency("zprof", .{
+    .target = target,
+    .optimize = optimize,
+});
+exe.root_module.addImport("zprof", zprof_dep.module("zprof"));
+```
+
+Minimal usage pattern:
+
+```zig
+const std = @import("std");
+const Zprof = @import("zprof").Zprof;
+
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+
+    var prof: Zprof(.{}) = .init(gpa.allocator(), undefined);
+    const allocator = prof.allocator();
+
+    const buf = try allocator.alloc(u8, 4096);
+    defer allocator.free(buf);
+
+    std.debug.print(
+        "allocs={d} frees={d} live={d} peak={d}\n",
+        .{
+            prof.profiler.alloc_count.get(),
+            prof.profiler.free_count.get(),
+            prof.profiler.live_bytes.get(),
+            prof.profiler.live_peak.get(),
+        },
+    );
+}
+```
+
+`zprof` operating rules:
+- Wrap the allocator boundary closest to the suspected waste so the counters stay local and explanatory.
+- Keep workload, dataset, optimize mode, and child allocator identical across baseline and variant runs.
+- Use `prof.profiler.reset()` between phases if one process captures multiple steps.
+- Enable `.thread_safe = true` only when multiple threads truly share the wrapped allocator; otherwise prefer one profiler per thread or per subsystem to keep attribution sharp.
+- Disable unneeded counters when chasing a narrow question so overhead stays low and the signal is easier to read.
+- Pair `zprof` with ordinary benchmarks. Allocator counters can explain why a variant regressed, but they do not prove the user-visible delta by themselves.
+- Pair `zprof` with correctness gates. A lower allocation count is not a win if it changes semantics or hides a leak elsewhere.
+
+### CPU and telemetry lane
+- If `zprof` counters stay flat while wall time regresses, switch to a CPU sampler instead of guessing.
+- On Linux, prefer `perf record` and `perf report` for sampled call stacks on optimized binaries.
+- On macOS, prefer Instruments Time Profiler for sampled CPU hotspots.
+- For long-running concurrent or frame-oriented systems where time-series causality matters, consider Tracy if the repo already supports it or the user explicitly wants instrumentation. Tracy is strong for CPU, locks, context switches, and telemetry; it is not the first move for a small allocator-only question.
+- Do not add heavy profiler integrations before a smaller benchmark or allocator-profile pass rules them in.
+
 ## Performance lane and `$lift` handoff
 Use this lane when the request is about speed, latency, throughput, memory, or profiling.
 
 - If you can run a workload: produce baseline + after numbers and bottleneck evidence.
 - If you cannot run a workload: mark output `UNMEASURED` and provide exact commands.
 - Keep correctness gates before and after each performance change.
+- Pick the profiling stack deliberately: benchmark for proof, `zprof` for allocator questions, CPU samplers for hot-path localization, and telemetry tools only when the workload shape justifies them.
 - Use statistical discipline for small deltas: fixed dataset, warmups, repeated fresh-process runs, and sample counts. If the delta is small enough to be noisy, report an effect size or interval, not just one median.
 - Prefer causal or progress-point instrumentation when the workload is concurrent or pipeline-shaped and flat hotspots are misleading.
 - Optimize in order: algorithm -> data layout -> zero-copy/batching -> vectorization -> threading -> micro-tuning.
@@ -293,6 +373,9 @@ zig build -Doptimize=ReleaseFast -Dtarget=native -Dcpu=native
 
 # 4) if the repo exposes a benchmark step, prefer it
 zig build bench -- --samples 10 --warmup 3
+
+# 5) allocator-focused lane when bytes or leaks are the question
+gh api repos/ANDRVV/zprof/releases/latest --jq '{tag_name,published_at,html_url}'
 ```
 
 When the request is a broader perf pass with explicit reporting format, apply `$lift` conventions (contract -> baseline -> bottleneck -> experiments -> result -> regression guard).
@@ -389,6 +472,7 @@ Use these results to keep `$zig` guidance aligned with what is true in active Zi
 
 ## Pitfalls
 - Claiming performance wins without measured baseline/after evidence.
+- Treating allocator counters as a substitute for CPU hotspot data, or CPU samples as a substitute for allocation evidence.
 - Treating a validated fact as a comment instead of a witness type.
 - Exposing zero-copy or FFI views before validation and lifetime checks.
 - Running micro-optimizations before removing algorithmic or data-movement waste.
@@ -406,6 +490,7 @@ Use these results to keep `$zig` guidance aligned with what is true in active Zi
 - Boundary witness template: `codex/skills/zig/references/boundary_witness.zig`
 - Deterministic fail-nth allocation pattern: `codex/skills/zig/references/fail_nth_alloc.zig`
 - FFI contract template: `codex/skills/zig/references/ffi_contract_template.md`
+- Profiling playbook: `codex/skills/zig/references/profiling_playbook.md`
 - Differential fuzz template: `codex/skills/zig/references/fuzz_differential.zig`
 - Type-shape dispatcher example: `codex/skills/zig/references/type_switch.zig`
 - `@Type` partial-builder example: `codex/skills/zig/references/partial_type.zig`
