@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Rigor Doctrine"
+  short_description: "Unsound, mechanistic, accretive, traceable coding mode"
+  default_prompt: "Use the rigor-doctrine skill for this task."
