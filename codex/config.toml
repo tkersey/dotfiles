@@ -93,3 +93,11 @@ trust_level = "trusted"
 
 [notice]
 hide_rate_limit_model_nudge = true
+
+[profiles.ollama-launch]
+openai_base_url = "http://127.0.0.1:11434/v1/"
+forced_login_method = "api"
+model_provider = "ollama-launch"
+[model_providers.ollama-launch]
+name = "Ollama"
+base_url = "http://127.0.0.1:11434/v1/"
