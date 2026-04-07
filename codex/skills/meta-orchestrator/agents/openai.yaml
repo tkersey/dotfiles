@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Meta Orchestrator"
-  short_description: "Coordinates build, review, and verification across doctrine skills"
+  short_description: "Coordinates exhaustive build, review, and verification to a material fixed point"
   default_prompt: "Use the meta-orchestrator skill for this task."
