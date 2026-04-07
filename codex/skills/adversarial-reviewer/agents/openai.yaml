@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Adversarial Reviewer"
-  short_description: "Skeptical audit for unsound reasoning, regressions, and missing verification"
-  default_prompt: "Use the adversarial-reviewer skill for this task."
+  short_description: "Full-scope de novo review to a material fixed-point judgment"
+  default_prompt: "Use the adversarial-reviewer skill in full-scope de novo mode for this task."
