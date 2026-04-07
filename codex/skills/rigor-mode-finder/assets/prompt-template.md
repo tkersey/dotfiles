@@ -1,21 +1,23 @@
-Use $rigor-mode-finder for this task.
-
-Task:
+<task>
 [describe the task]
+</task>
 
-Audience:
-[describe who will read or receive the output]
+<audience>
+[who this is for]
+</audience>
 
-Goal:
-[describe what better rigor should improve]
+<goal>
+Find the best rigor words and doctrine stack for this task.
+</goal>
 
-Constraints:
-[optional]
-
-Return:
-- task frame
-- failure map
-- candidate rigor words
-- strict / balanced / exploratory stacks
-- best stack unpacked
-- ready-to-paste prompts
+<return>
+- Task Reading
+- Dominant Failure Pressures
+- Recommended Rigor Stack
+- Why These Words
+- Unpacked Doctrine
+- Prompt-Ready Mode Block
+- Stricter Variant
+- Lighter Variant
+- Words to Avoid
+</return>

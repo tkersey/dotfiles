@@ -1,0 +1,43 @@
+# Specialist subagent strategy
+
+Use the specialist swarm to strengthen the orchestrator without turning it into a parallel write free-for-all.
+
+## Principle
+
+The orchestrator stays responsible for:
+- scope
+- routing
+- remediation decisions
+- fixed-point judgment
+- final readiness
+
+Subagents contribute:
+- evidence maps
+- invariant ledgers
+- foot-gun ledgers
+- complexity grading
+- verification audits
+
+## Swarm rules
+
+- Spawn specialists only for read-heavy work.
+- Wait for all relevant results before synthesis.
+- Require packet-native briefings that follow `specialist-briefing-contract.md`.
+- Treat specialists as lenses, not authorities.
+- In exhaustive subagent mode, after each material validation or remediation, rerun the full-scope swarm over the current artifact set.
+
+## When to run the full swarm
+
+Run the full swarm when:
+- the user explicitly asks for subagents or parallel specialist review
+- the artifact set spans multiple modules or subsystems
+- a prior loop surfaced invariant, hazard, complexity, or verification concerns
+- the work is broad enough that a single-thread review is likely to miss second-order effects
+
+## When not to run the full swarm
+
+Avoid the full swarm when:
+- the task is trivial
+- the review surface is tiny and obvious
+- the next work is write-heavy remediation rather than read-heavy analysis
+- environment constraints make parallel agent work unreliable

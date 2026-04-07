@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Adversarial Reviewer"
-  short_description: "Full-scope de novo review to a material fixed-point judgment"
-  default_prompt: "Use the adversarial-reviewer skill in full-scope de novo mode for this task."
+  short_description: "Full-scope de novo adversarial review with invariants, complexity, and foot-gun grading"
+  default_prompt: "Use $adversarial-reviewer for this task."

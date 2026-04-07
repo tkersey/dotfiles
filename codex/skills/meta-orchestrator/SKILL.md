@@ -1,17 +1,20 @@
 ---
 name: meta-orchestrator
-description: Use this skill to coordinate iterative execution across rigor-doctrine, adversarial-reviewer, and verification-closure when a coding task needs exhaustive discovery of material issues, full de novo re-litigation after every validation or remediation step, and explicit routing based on reviewer remediation posture (validating-check-only, accretive-remediation, structural-remediation) until the in-scope artifact set reaches a material fixed point. Trigger for requests like harden this patch exhaustively, keep re-reviewing from scratch after every check or fix, find all impactful changes, take this through build-review-verify until nothing materially new emerges, or route reviewer findings intelligently instead of treating every issue as code change. Do not trigger for trivial one-step tasks or when the user explicitly wants only a single narrow phase.
+description: Use this skill to coordinate exhaustive build-review-verify workflows across accretive-implementer, adversarial-reviewer, and verification-closure when a coding task needs de novo re-litigation, optional read-only specialist subagents, signal-aware routing by invariants foot-guns complexity and verification, packet-native specialist briefings, and a canonical Closure Handoff Packet that always passes the latest ledgers into verification-closure. Trigger for requests like harden this patch exhaustively, use subagents for broad review, keep re-reviewing from scratch, find all impactful changes, or take this to closure with a fixed handoff schema.
 ---
 
 # Meta Orchestrator
 
 This skill coordinates three narrow companion skills:
 
-- `rigor-doctrine` for diagnosis and implementation
+- `accretive-implementer` for implementation, adaptation, and remediation
 - `adversarial-reviewer` for skeptical full-scope review
 - `verification-closure` for targeted evidence checks and final readiness decisions
 
-Default posture: drive the in-scope artifact set to an evidence-backed **material fixed point** through repeated **de novo adversarial re-litigation**, explicit **remediation-posture routing**, and **accretive remediation by default**. When exhaustive mode is requested, do not substitute delta review for full review.
+It optionally uses a **read-only specialist subagent swarm** for parallel evidence gathering.
+The orchestrator remains the decider.
+
+Default posture: drive the in-scope artifact set to an evidence-backed **material fixed point** through repeated **de novo adversarial re-litigation**, **signal-aware routing**, **accretive implementation or remediation by default**, **packet-native specialist briefings**, and a **canonical Closure Handoff Packet** refreshed before every validation or closure pass.
 
 ## Global doctrine
 
@@ -24,201 +27,187 @@ Every phase inherits **UNSOUND**, **MECHANISTIC**, **ACCRETIVE**, and **TRACEABL
 
 Additional orchestration pressures:
 
-- **EXHAUSTIVE**: re-examine the entire in-scope state, not just changed lines or previously flagged surfaces.
-- **DE NOVO**: each review pass re-adjudicates from the current artifact state rather than inheriting prior conclusions by default.
-- **ADVERSARIAL**: actively try to falsify the diagnosis, break the patch, expose hidden assumptions, and find second-order regressions.
-- **SATURATING**: assume later loops may surface new material issues; continue until a full pass adds nothing materially new.
-- **MATERIAL**: focus on correctness, safety, security, reliability, compatibility, performance regressions, verification sufficiency, and consequential maintainability risks; do not let low-consequence style nits drive the loop.
-- **FIXED-POINT**: stop only when the current in-scope artifact set yields no new material findings under full de novo review and closure verification.
+- **EXHAUSTIVE**
+- **DE NOVO**
+- **ADVERSARIAL**
+- **SATURATING**
+- **MATERIAL**
+- **FIXED-POINT**
+- **PARSIMONIOUS**
+- **INVARIANT-GRADED**
+- **HAZARD-SEEKING**
+- **CANONICAL**
+- **LEDGERIZED**
 
-## When to use which phase
+## Phase selection
 
-1. Start with **`rigor-doctrine`** when the task involves implementation, diagnosis, bug fixing, refactoring, or no patch exists yet.
-2. Start with **`adversarial-reviewer`** when a diagnosis, plan, or patch already exists and the user wants exhaustive challenge, re-litigation, or red-teaming.
+1. Start with **`accretive-implementer`** when the task involves implementation, diagnosis, bug fixing, refactoring, or no patch exists yet.
+2. Start with **`adversarial-reviewer`** when a diagnosis, plan, or patch already exists and the user wants exhaustive challenge or re-litigation.
 3. Use **`verification-closure`** in two ways:
-   - **targeted validation subpass** for material `validating-check-only` findings
+   - **targeted validation subpass** for material evidence gaps or `validating-check-only` findings
    - **final closure pass** for readiness on the current stabilized artifact set
-4. Run the **full chain** when the request implies end-to-end completion, merge readiness, exhaustive hardening, or full-scope iterative review.
+4. Use the **subagent swarm** when the next work is primarily read-heavy: exploration, evidence collection, invariant audit, hazard hunt, complexity grading, or verification audit.
+5. Keep remediation single-threaded and reviewable. Do not use concurrent write-heavy subagents.
 
 ## Entry-state detection
 
 Before choosing a phase path, classify the task into one of these states:
+- no patch yet
+- patch in progress
+- patch exists
+- review only
+- verify only
 
-- **no patch yet**
-- **patch in progress**
-- **patch exists**
-- **review only**
-- **verify only**
+If the user explicitly asks for the full workflow, exhaustive hardening, or full re-litigation, do not collapse the request to a single phase even if one phase appears sufficient at first glance.
 
-If the user explicitly asks for the whole workflow, exhaustive hardening, or full re-litigation, do not collapse the request to a single phase even if one phase appears sufficient at first glance.
+## Canonical ledgers
 
-## Handoff protocol
+Maintain these ledgers across the whole workflow and refresh them after every meaningful pass:
 
-Before switching phases, carry forward:
+1. **Findings Ledger**
+   - `finding_id`
+   - `materiality`
+   - `severity`
+   - `category`
+   - `status`
+   - `remediation_posture`
+   - `evidence`
+   - `why_it_matters`
+   - `implicated_surfaces`
+   - `impacted_invariants`
+   - `next_action`
 
-- objective and requested behavior
-- scope and constraints
-- likely diagnosis or current design rationale
-- changed files, symbols, commands run, and relevant outputs
-- invariants and contracts that must still hold
-- verification evidence already collected
-- prior findings and their status
-- residual uncertainty
+2. **Invariant Ledger**
+   - `invariant_id`
+   - `name`
+   - `tier`
+   - `status`
+   - `confidence`
+   - `blast_radius`
+   - `supporting_evidence`
+   - `open_question`
 
-When carrying findings from `adversarial-reviewer`, preserve this ledger per finding:
+3. **Foot-Gun Register**
+   - `hazard_id`
+   - `trigger`
+   - `impact`
+   - `ease_of_misuse`
+   - `status`
+   - `evidence`
+   - `narrowest_bounding_action`
 
-- materiality
-- severity
-- category
-- evidence
-- why it matters
-- implicated surfaces
-- remediation posture: `validating-check-only` | `accretive-remediation` | `structural-remediation`
-- narrowest remediation or validating check
-- current status: open | disproved | remediated | needs-decision | blocked
+4. **Complexity Ledger**
+   - `overall_delta`
+   - `materiality`
+   - `drivers`
+   - `evidence`
+   - `bounded_by`
 
-Later phases should reuse grounded evidence, but **review judgments must be re-derived de novo from the current state** rather than merely rubber-stamping earlier conclusions.
+5. **Verification Ledger**
+   - `direct_changed_path`
+   - `claimed_failure_mechanism`
+   - `regression_surface`
+   - `checks_run`
 
-## Remediation-posture routing
+6. **Specialist Briefing Ledger**
+   - `role`
+   - `artifact_state_label`
+   - `scope`
+   - `top_material_signals`
+   - `unresolved_signals`
+   - `agreement_pressure`
+   - `stale`
 
-Consume `adversarial-reviewer` findings explicitly.
+7. **Residual Uncertainty**
+   - assumptions
+   - environment limits
+   - known unknowns
 
-### `validating-check-only`
-Route to a targeted validation subpass using **`verification-closure` discipline**.
+Use durable statuses. Do not silently drop or rename fields between phases.
 
-Use this route when the reviewer says the next highest-value action is evidence collection rather than code change.
+## Packet-native specialist briefings
+
+When subagent mode is active and custom agents are available, require specialist outputs to follow the contract in `references/specialist-briefing-contract.md`.
 
 Rules:
-- perform the narrowest high-signal check that can confirm or falsify the concern
-- do not edit code before the validating check unless the user explicitly requests immediate remediation despite incomplete evidence
-- if the check disproves the concern, mark the finding `disproved`
-- if the check confirms a material issue or reveals a stronger failure mode, update the evidence ledger and re-run **full-scope de novo `adversarial-reviewer`** before deciding whether the issue is now `accretive-remediation` or `structural-remediation`
-- do not skip re-review after a targeted validation subpass
+- pass the current `artifact_state_label` into each specialist prompt when possible
+- require concise sectioned outputs, not essays
+- specialists should emit packet-native fields so the orchestrator mostly reconciles rather than rewrites
+- the orchestrator still computes `agreement_pressure` and `stale`
+- if a specialist briefing is malformed, repair only the minimum needed and record the repair in the workflow notes
 
-### `accretive-remediation`
-Route to **`rigor-doctrine`** constrained to the narrowest consequential remediation.
+## Specialist subagent swarm
 
-Rules:
-- batch compatible findings only when they share a mechanism or surface and the bundle remains reviewable
-- preserve contracts unless the task explicitly changes behavior
-- after remediation, record what changed and what was re-verified
-- then re-run **full-scope de novo `adversarial-reviewer`**
+Preferred read-only swarm:
+- `evidence_mapper`
+- `invariant_auditor`
+- `hazard_hunter`
+- `complexity_auditor`
+- `verification_auditor`
 
-### `structural-remediation`
-Route to **`rigor-doctrine`** with an explicit structural-remediation brief.
+Swarm rules:
+- spawn specialists only for read-heavy work
+- wait for all relevant results before synthesis
+- treat specialists as lenses, not authorities
+- after each material validation or remediation, rerun the full-scope swarm in exhaustive subagent mode rather than restricting the next pass to the diff
 
-Use this route only when the reviewer has justified why accretive remediation is insufficient.
+## Canonical Closure Handoff Packet
 
-Rules:
-- state the structural reason the narrower fix fails
-- bound the broadened scope as tightly as the structural issue allows
-- keep redesign limited to what is necessary to close the material finding
-- if explicit task constraints forbid the necessary structural change, do not paper over the issue with an inadequate narrow patch; surface `needs-decision` or `blocked` with evidence
-- after structural remediation, re-run **full-scope de novo `adversarial-reviewer`**
+Before **every** call to `verification-closure`—both targeted validation and final closure—you must compile a **Closure Handoff Packet** using the exact schema in `references/closure-handoff-contract.md`.
 
-### Mixed posture findings
-If a pass yields multiple material findings with different remediation postures:
+Required rules:
+- use the required headings in the required order
+- pass the latest version of all ledgers, not free-form prose
+- if the artifact set changed after a specialist briefing, mark that briefing `stale: yes`
+- if a previously open material issue is no longer open, change its `status` and include the evidence that changed it
+- include the exact `Requested Closure Questions` for the next closure pass
+- if a field is unknown, write `unknown`; do not omit it
 
-1. Resolve `validating-check-only` findings first when they could falsify, narrow, or reprioritize higher-cost remediation.
-2. Otherwise remediate the highest-confidence highest-severity material finding first.
-3. Bundle compatible `accretive-remediation` findings when that reduces churn without hiding causality.
-4. Do not bury a confirmed structural issue behind unrelated accretive cleanup.
-5. After any validating check or remediation, re-run **full-scope de novo `adversarial-reviewer`** over the entire in-scope artifact set.
+## Signal-aware routing
 
-## Orchestration algorithm
+Use:
+- remediation posture
+- invariant ledger
+- foot-gun register
+- complexity ledger
+- verification gaps
 
-1. Establish the entry state.
-2. Choose the initial phase path:
-   - implement only: `rigor-doctrine`
-   - review only: `adversarial-reviewer`
-   - verify only: `verification-closure`
-   - implement + exhaustive confidence: `rigor-doctrine` -> saturation loop -> `verification-closure`
-   - review + exhaustive verify: saturation loop -> `verification-closure`
-3. Run the **saturation loop**:
-   - During `rigor-doctrine`, produce a grounded diagnosis, the narrowest appropriate remediation, and first-pass verification.
-   - During `adversarial-reviewer`, perform a **full-scope de novo adversarial review** of the current in-scope artifact set. Do not restrict attention to the changed surface.
-   - Normalize material findings by remediation posture: `validating-check-only`, `accretive-remediation`, `structural-remediation`.
-   - If any open `validating-check-only` finding is currently the highest-value next action, run a targeted validation subpass, update the evidence ledger, and then re-run **full-scope de novo `adversarial-reviewer`**.
-   - If open `accretive-remediation` findings remain, run `rigor-doctrine` on the narrowest consequential remediation set, then re-run **full-scope de novo `adversarial-reviewer`**.
-   - If open `structural-remediation` findings remain, run `rigor-doctrine` with an explicit structural brief or surface `needs-decision` / `blocked` if constraints forbid the required change, then re-run **full-scope de novo `adversarial-reviewer`** if remediation occurred.
-   - Continue looping until the artifact set reaches a **material fixed point**: a full de novo adversarial review yields no unresolved material findings, no material severity upgrades, no newly implicated surfaces requiring change, and no material validation gap that would reasonably reopen remediation.
-4. Run `verification-closure` against the stabilized artifact set.
-5. If `verification-closure` uncovers a material gap, route it the same way:
-   - evidence-only gap -> targeted validation subpass -> full de novo re-review
-   - fixable narrow defect -> `rigor-doctrine` accretive remediation -> full de novo re-review
-   - structural defect -> `rigor-doctrine` structural remediation or `needs-decision` / `blocked`
-   - after any closure-triggered action, return to the saturation loop before attempting final closure again
-6. Stop when one of these states is justified:
-   - **blocked**: hard external blocker or missing prerequisite evidence prevents further progress
-   - **needs-decision**: a material structural issue remains and the current task constraints do not permit the necessary change
-   - **needs remediation**: unresolved material issues remain and further work is still possible
-   - **conditionally ready**: direct verification succeeded and no unresolved material issues remain, but bounded non-material concerns or environment limits still exist
-   - **ready**: the artifact set reached a material fixed point, direct verification succeeded, and no unresolved material issue remains
+Routing reference: `references/signal-aware-routing.md`
 
-## Companion skill invocation
+### Routing intent
+- `validating-check-only` -> run the narrowest decisive check first
+- `accretive-remediation` -> route to `accretive-implementer` for the narrowest consequential change
+- `structural-remediation` -> widen scope only with explicit justification
 
-When supported in the current Codex client, explicitly use these companion skills by name:
+## Loop rules
 
-- `$rigor-doctrine`
-- `$adversarial-reviewer`
-- `$verification-closure`
-
-If explicit nested skill invocation is not available in the current environment, follow the same phase contracts directly inside this workflow rather than skipping a phase.
-
-## Phase rules
-
-### Build phase (`rigor-doctrine`)
-- Diagnose before editing.
-- Prefer the smallest accretive fix that resolves the current material issue without speculative redesign.
-- Preserve existing contracts unless the task explicitly changes behavior.
-- Produce a clear first-pass verification record after each remediation.
-- When invoked for `structural-remediation`, state why the broader change is necessary and keep the redesign bounded.
-
-### Review phase (`adversarial-reviewer`)
-- Re-adjudicate the current artifact state de novo.
-- Pressure-test the diagnosis, patch, and verification record.
-- Search for unsound assumptions, invariant breaks, regression risk, hidden blast radius, stale reasoning, untested branches, and second-order effects.
-- Emit findings using the remediation-posture ledger so routing is explicit rather than implied.
-
-### Validation / closure phase (`verification-closure`)
-- For targeted validation, run the narrowest high-signal check that can confirm or falsify the open concern.
-- For final closure, verify the changed behavior directly and check at least one plausible regression or contract surface.
-- Classify readiness using evidence, not tone.
-- Reopen the loop if material verification gaps remain.
-
-## Hard rules
-
-- Never impose an arbitrary maximum number of loops.
-- Never terminate the workflow merely because many loops have already occurred.
-- Never substitute delta review for full re-litigation when exhaustive mode is requested.
-- Never anchor exclusively on prior findings; each review must be de novo against the current state.
-- Never let low-consequence style nits prevent closure unless they rise to material risk.
-- Never treat passing tests as proof when the changed path or implicated contracts were not directly exercised.
-- Never conclude `ready` while any unresolved material issue remains.
-- Never leave a material `verification-closure` finding outside the loop; closure must be able to reopen remediation.
-- Never skip re-review after a targeted validation subpass or a remediation pass.
-- Never force an accretive patch when the evidence says the issue is structural.
-- Never let the orchestrator become a monolith; each phase should stay narrow and explicit.
+- There is **no max-round cap**.
+- In exhaustive mode, perform full-scope de novo review, not delta-only review.
+- Continue until the artifact set reaches a **material fixed point** or a concrete external blocker makes further progress impossible.
+- A material fixed point requires:
+  - no unresolved material finding
+  - no unresolved critical invariant
+  - no unbounded material foot-gun
+  - no unresolved material complexity hazard
+  - no material verification gap that would reasonably reopen remediation
 
 ## Definition of done
 
 The workflow is done only when:
+1. the current artifact set reached a material fixed point or a concrete blocker was recorded,
+2. the latest ledgers are current,
+3. the latest Closure Handoff Packet is canonical and complete enough for closure,
+4. `verification-closure` issued a grounded readiness decision.
 
-1. the in-scope artifact set has reached a **material fixed point** under full de novo adversarial review, or a concrete external blocker / decision gate is identified,
-2. direct closure verification has been run on the stabilized artifact set,
-3. no unresolved material issue remains,
-4. the final report states why the chosen state is justified and names any residual non-material risks or environment limits.
+## Response shape
 
-## Final report shape
-
-Use concise sections:
-
+Use concise sections in this order:
 - Workflow
-- Entry State
+- Current State
+- Subagent Mode
 - Routing
-- Iteration Status
-- Findings / Changes
-- Evidence
-- Fixed-Point Test
-- Final Readiness
-- Remaining Non-Material Risks
+- Ledgers Updated
+- Next Phase
+- Closure Handoff
+- Fixed-Point Status
+- Residual Uncertainty

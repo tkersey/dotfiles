@@ -1,111 +1,128 @@
 ---
 name: verification-closure
-description: Use this skill for final-pass verification of a diagnosis, patch, or reviewed change when you need deterministic checks, regression proof, explicit merge or release confidence, and a grounded done or not-done decision. Trigger for final validation, CI closure, pre-merge confidence, bug-fix confirmation, migration completion, refactor validation, release gating, flaky-test triage, and tasks phrased as verify, validate, regression-check, close out, readiness, is this done, or is this safe to merge. Do not trigger for initial implementation or broad design review unless the task explicitly asks for verification-first. Do not trigger for trivial formatting, rote renames, or purely informational questions with no artifact or command surface to verify.
+description: Use this skill for targeted validation and final readiness decisions when a coding task needs direct evidence, explicit closure gates, and a canonical Closure Handoff Packet from meta-orchestrator carrying the latest findings invariants hazards complexity verification and specialist ledgers. Trigger for requests like verify this patch is actually ready, run closure gates, resolve material verification gaps, or decide if the artifact set reached a material fixed point. Do not trigger for broad redesign or general code review without a closure question.
 ---
 
 # Verification Closure
 
-This is a **verification** skill. Default posture: verify claims, close evidence gaps, and decide readiness. Do **not** redesign or re-implement unless the user explicitly asks for changes after the verification pass.
+Use this skill for **proof and gating**, not for broad redesign or de novo architecture work. The goal is to decide whether the current artifact set is actually ready by consuming a canonical handoff, running the narrowest decisive checks, and assigning grounded closure states.
 
-Operate in **UNSOUND**, **MECHANISTIC**, **ACCRETIVE**, and **TRACEABLE** mode, with **DETERMINISTIC** verification discipline.
+## Global doctrine
 
-## Core doctrine
+Operate in **UNSOUND**, **MECHANISTIC**, **TRACEABLE**, **MATERIAL**, **FIXED-POINT**, **CANONICAL**, and **LEDGER-AWARE** mode.
 
-### UNSOUND
-- Reject claims of correctness, completion, or safety that are not supported by evidence.
-- Separate what was observed, what was inferred, and what remains assumed.
-- Treat passing checks as evidence, not proof.
-- If the direct behavior was not exercised, do not say the change is verified.
+- **UNSOUND**: do not upgrade claims beyond the evidence.
+- **MECHANISTIC**: verify the claimed failure mechanism and the actual changed path, not just nearby symptoms.
+- **TRACEABLE**: tie every closure call to concrete checks, outputs, files, or ledgers.
+- **MATERIAL**: close consequential gates; do not turn closure into style review.
+- **FIXED-POINT**: decide whether the artifact set has actually stopped yielding unresolved material closure pressure.
+- **CANONICAL**: prefer the fixed handoff schema over ad hoc summaries.
+- **LEDGER-AWARE**: consume and preserve distinctions among findings, invariants, hazards, complexity, verification, and specialist signals.
 
-### MECHANISTIC
-- Verify through causal paths, state transitions, contracts, and invariants.
-- Map each check to the behavior, code path, or failure mechanism it is meant to exercise.
-- Distinguish root-cause validation from incidental green tests.
-- Prefer checks that directly falsify or support the claimed fix.
+## Canonical handoff intake
 
-### ACCRETIVE
-- Start with the smallest high-signal verification that can confirm or falsify the claim.
-- Expand verification only as risk, failure, or uncertainty justifies it.
-- Prefer existing project scripts, canonical test entry points, and targeted checks before broader suites.
-- Avoid verification theater: do not run large, low-signal suites when a smaller direct check is more informative.
+If a **Closure Handoff Packet** is present, read it first. Use the schema in `references/closure-handoff-contract.md`.
 
-### TRACEABLE
-- Tie confidence to concrete evidence: commands, test files, outputs, logs, diffs, changed symbols, and user constraints.
-- Keep a clear ledger of what was run, why it was run, and what it showed.
-- State which surfaces remain unverified.
-- Make the final readiness judgment auditable.
+Packet intake rules:
+1. validate the packet headings and order
+2. record **Handoff Contract Status** as `complete`, `incomplete`, or `stale`
+3. treat packet fields as structured claims, not proof
+4. seed the **Closure Gate Ledger** from the packet's ledgers
+5. if a required field is missing, reconstruct the missing part from context if possible and mark the contract `incomplete`
+6. if a specialist briefing's `artifact_state_label` differs from the packet's current state label, mark it stale and do not treat it as current proof
+7. if specialist briefings already follow the packet-native specialist contract, ingest them directly and reconcile only the missing fields
+8. if the packet is absent, reconstruct the minimum viable intake from context and mark the contract `incomplete`
 
-### DETERMINISTIC
-- Prefer reproducible commands, fixed seeds, stable inputs, and controlled environment assumptions when available.
-- Call out checks whose results may vary with time, concurrency, randomness, network state, or external services.
-- If a result is flaky or non-deterministic, classify it as instability, not proof.
-- When determinism is not possible, name the dependency and bound the uncertainty.
+## Closure Gate Ledger
+
+Always produce these gate statuses:
+- `direct_changed_path`: `satisfied` | `open` | `blocked` | `conflicting`
+- `claimed_failure_mechanism`: `satisfied` | `open` | `blocked` | `conflicting`
+- `regression_surface`: `satisfied` | `open` | `blocked` | `conflicting`
+- `critical_invariants`: `preserved` | `strained` | `broken` | `unknown`
+- `material_foot_guns`: `bounded` | `unbounded` | `unknown` | `accepted-risk`
+- `material_complexity_hazards`: `bounded` | `unbounded` | `unknown` | `residual-design-risk`
+- `briefing_agreement`: `aligned` | `mixed` | `conflicting`
+- `external_blockers`: `none` | `present`
 
 ## Operating procedure
 
-1. Establish the closure target:
-   - requested behavior or bug fix
-   - changed files, symbols, and affected surfaces
-   - claimed diagnosis and expected outcome
-   - known regression risk and invariants that must still hold
-   - current verification evidence and merge or release bar
+1. read the packet and current task context
+2. build the **Closure Gate Ledger** from:
+   - the packet
+   - direct code or artifact inspection
+   - tests, commands, logs, and outputs
+   - reviewer output
+   - specialist briefings
+3. build a minimal evidence plan in this priority order:
+   - direct changed-path proof
+   - highest-tier unresolved invariant
+   - highest-confidence material verification gap
+   - material foot-gun or misuse path that can be directly exercised or bounded
+   - plausible regression surface
+   - broader integration checks only if narrower checks cannot close the open gates
+4. execute verification in tiers:
+   - **Tier 0: intake and reconciliation**
+   - **Tier 1: direct proof**
+   - **Tier 2: contract and invariant proof**
+   - **Tier 3: hazard bounding**
+   - **Tier 4: broader confidence**
+5. make two separate judgments:
+   - **Fixed-Point Test**
+     - `appears reached` only if no unresolved material gate remains
+     - `not reached` if any unresolved material gate remains
+     - `indeterminate` if evidence is missing, contradictory, or too environment-dependent for a grounded call
+   - **Readiness**
+     - `ready`
+     - `conditionally ready`
+     - `not ready`
+     - `indeterminate`
+6. if readiness is not `ready` or `conditionally ready`, say which gate should reopen the orchestrator loop
 
-2. Build a minimal evidence plan:
-   - direct check for the changed behavior
-   - at least one likely regression or contract check
-   - one adversarial or negative-path check when relevant
-   - broader integration or end-to-end checks only if the risk profile requires them
+## Specialist briefings
 
-3. Execute verification in tiers:
-   - Tier 1: direct changed-path checks
-   - Tier 2: adjacent regression, contract, or invariant checks
-   - Tier 3: broader suite or environment validation only if earlier evidence is insufficient or risk remains material
+Specialist briefings are high-signal inputs. They are not proof by themselves.
 
-4. Classify the outcome:
-   - **ready**: direct behavior verified, regression surface reasonably checked, no material unexplained failures
-   - **conditionally ready**: core behavior verified, but named evidence gaps or environment limits remain
-   - **not ready**: direct behavior unverified, failures unexplained, or material risks remain open
+Use them to answer:
+- which critical invariant is still open,
+- which material foot-gun is still unbounded,
+- which complexity concern is a real closure blocker versus a residual design risk,
+- which single next check has the highest closure value.
 
-5. Report in this order:
-   - verification target
-   - evidence run
-   - results
-   - readiness judgment
-   - residual risks and exact next checks if needed
-
-## Verification checklist
-
-Challenge the work against these questions:
-- Was the changed behavior exercised directly, or only indirectly?
-- Does the evidence actually touch the claimed root cause and fix path?
-- Are public contracts, data shape, nullability, defaults, timing, retries, cleanup, and persistence still safe?
-- Was at least one plausible regression surface checked?
-- Are any green results explained by mocks, stale artifacts, caching, or skipped code paths?
-- Are external services, clocks, randomness, concurrency, or feature flags hiding uncertainty?
-- Is the readiness claim stronger than the evidence supports?
+If briefings materially conflict and no resolving check was run, use `indeterminate` rather than averaging them away.
 
 ## Hard rules
-- Never say "verified" if the direct path was not exercised.
-- Never hide failed, flaky, skipped, or blocked checks.
+- Never say `verified` or `ready` if the direct changed path was not exercised, unless a concrete blocker is stated and readiness is therefore not granted.
+- Never treat the packet as proof without supporting evidence.
+- Never hide failed, flaky, skipped, blocked, stale, or contradictory checks.
 - Never let unrelated green tests substitute for missing direct evidence.
-- Never collapse uncertainty into confidence.
-- Never broaden into implementation unless explicitly asked.
-- Never claim release safety without naming any unverified surfaces.
+- Never call a critical invariant preserved without naming the supporting evidence.
+- Never ignore a material foot-gun just because happy-path tests pass.
+- Never dismiss a material complexity hazard unless you can explain why it is bounded or non-blocking.
+- Never say fixed point reached when any material gate remains open.
+- Never silently repair an incomplete handoff contract; report the missing pieces.
 
 ## Definition of done
-A verification pass is done only when:
-1. the direct behavior was exercised or a concrete blocker was identified,
-2. at least one regression, contract, or invariant check was run or explicitly justified as unnecessary,
-3. the final output assigns a readiness state: ready, conditionally ready, or not ready,
-4. residual risks, assumptions, and unverified edges are stated plainly.
+
+A closure pass is done only when:
+1. **Handoff Contract Status** was assigned,
+2. the **Closure Gate Ledger** was produced,
+3. the direct changed behavior was exercised or a concrete blocker was identified,
+4. at least one regression, contract, or critical-invariant check was run or explicitly justified,
+5. material foot-guns and material complexity hazards were explicitly adjudicated,
+6. both a **Fixed-Point Test** and a **Readiness** state were assigned,
+7. exact next checks or reopen conditions were stated when closure was not granted.
 
 ## Response shape
+
 Use concise sections in this order:
+- Handoff Contract Status
 - Verification Target
+- Evidence Inputs
+- Closure Gate Ledger
 - Evidence Run
 - Results
+- Fixed-Point Test
 - Readiness
 - Residual Risks
 - Next Checks
-
-If evidence is incomplete, say exactly what check would close the gap.

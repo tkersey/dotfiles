@@ -1,38 +1,40 @@
 # Example invocations
 
 ## Research memo
+
 ```md
 Use $rigor-mode-finder for this task.
 
-Task: I need an LLM prompt for a research memo comparing two battery technologies for grid storage.
-Audience: technical policy team.
-Goal: find rigor words that improve causal analysis, uncertainty handling, and recommendation quality.
-Output: mode stacks plus ready-to-paste prompts.
+Task:
+Prepare a public-source research memo on the competitive landscape for AI coding agents.
+
+Audience:
+Executive team.
+
+Goal:
+Find the rigor words that will force better truth-tracking, source quality, and concise synthesis.
 ```
 
-## Sales email
+## Hiring rubric
+
 ```md
 Use $rigor-mode-finder for this task.
 
-Task: I need rigor words for an LLM that drafts outbound sales emails to skeptical enterprise buyers.
-Audience: procurement and security-conscious stakeholders.
-Goal: keep the writing persuasive without sounding puffed-up or pushy.
+Task:
+Design an interview rubric for a senior staff backend engineer.
+
+Goal:
+Find the rigor stack that forces non-vacuous evaluation, strong signal extraction, and good calibration.
 ```
 
-## Lesson plan
+## Product strategy
+
 ```md
 Use $rigor-mode-finder for this task.
 
-Task: I want rigor words for an LLM that teaches recursion to new programmers.
-Audience: beginners.
-Goal: reduce misconceptions and keep explanations concrete and scaffolded.
-```
+Task:
+Write a product strategy memo for entering the SMB security market.
 
-## Negotiation note
-```md
-Use $rigor-mode-finder for this task.
-
-Task: I want rigor words for an LLM that helps draft a difficult partnership negotiation note.
-Audience: counterpart is defensive and politically sensitive.
-Goal: stay persuasive, face-preserving, and non-escalatory.
+Goal:
+Find the words that bias the agent toward incentives, second-order effects, bounded claims, and decision usefulness.
 ```

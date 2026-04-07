@@ -1,51 +1,35 @@
 # Example invocations
 
-## Exhaustive re-review after a fix
+## Exhaustive review
 
 ```md
 Use $adversarial-reviewer for this task.
 
-Review the current state of:
-- auth/session.ts
-- auth/session.test.ts
-- any directly implicated helpers or config
-
-Mode:
-- full-scope
-- de novo
-- exhaustive
-- material
-
-Goal:
-- re-review from scratch after the latest remediation
-- do not trust prior passes
-- find anything still materially wrong
-- decide whether the current state appears at a material fixed point
+Perform a full-scope de novo adversarial review.
+Do not limit review to the diff.
+Treat prior findings as non-binding context only.
+Grade:
+- complexity delta
+- invariant ledger
+- foot-gun register
+- verification gaps
 
 Return:
 - Review Basis
 - Material Findings
-- Non-Material Concerns
-- Verification Gaps
+- Complexity Delta
+- Invariant Ledger
+- Foot-Gun Register
 - Fixed-Point Judgment
 - Suggested Next Moves
-- Residual Uncertainty
 ```
 
-## Audit a stabilized patch before closure
+## Re-review after remediation
 
 ```md
 Use $adversarial-reviewer for this task.
 
-Artifact set:
-- src/cache.py
-- tests/test_cache.py
-- migration notes
-
-Task:
-Perform a full-scope de novo adversarial review of the current artifact set.
-Do not limit review to the diff.
-Treat prior findings as non-binding context only.
-Focus on correctness, compatibility, and verification sufficiency.
-End with a fixed-point judgment.
+Re-review the current artifact set from scratch after the latest remediation.
+Do not assume earlier conclusions still hold.
+Only call for structural remediation when an accretive fix is genuinely insufficient.
 ```

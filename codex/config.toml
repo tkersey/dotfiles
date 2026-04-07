@@ -12,30 +12,6 @@ service_tier = "fast"
 max_threads = 96
 max_depth = 3
 
-[agents.coder]
-description = "Run parse-first author/judge orchestration and emit one winning patch candidate."
-config_file = "~/.codex/agents/coder.toml"
-
-[agents.fixer]
-description = "Repair or block the coder-selected winner, including doctrine-fit scoring."
-config_file = "~/.codex/agents/fixer.toml"
-
-[agents.selector]
-description = "Drive `$select` plan-to-task decomposition for maximum safe parallelism."
-config_file = "~/.codex/agents/selector.toml"
-
-[agents.joiner]
-description = "Peripheral GH-only PR routing specialist."
-config_file = "~/.codex/agents/joiner.toml"
-
-[agents.integrator]
-description = "Package accepted artifacts and materialize scoped delivery."
-config_file = "~/.codex/agents/integrator.toml"
-
-[agents.prover]
-description = "Apply candidate patches in a temp worktree and run bounded proof."
-config_file = "~/.codex/agents/prover.toml"
-
 [features]
 unified_exec = true
 steer = true
