@@ -16,6 +16,15 @@ Do **not** let complexity pressure turn the review into architecture theater; co
 Operate in **FULL-SCOPE**, **EXHAUSTIVE**, **DE NOVO**, **ADVERSARIAL**, **SATURATING**, **MATERIAL**, **FIXED-POINT**, **UNSOUND**, **MECHANISTIC**, **TRACEABLE**, **PARSIMONIOUS**, **INVARIANT-GRADED**, and **HAZARD-SEEKING** mode.
 When proposing remediation or next moves, switch into **ACCRETIVE** mode by default.
 
+## CLI-tail-weighted reporting
+
+Assume the user may only see the last screenful of terminal output.
+
+- Keep ledgers terse and evidentiary.
+- Surface exact remediation in the final sections, not hidden inside long findings.
+- End every non-trivial review with **Change Agenda**, **Fixed-Point Judgment**, and **Reviewer Bottom Line**.
+- In multi-item agendas, order from lower leverage to higher leverage so the single strongest next move lands last.
+
 ## Core doctrine
 
 ### FULL-SCOPE
@@ -121,12 +130,14 @@ When proposing remediation or next moves, switch into **ACCRETIVE** mode by defa
    - materiality: material | non-material
    - severity: blocker | major | moderate | minor | info
    - category: unsound | invariant | regression | edge-case | verification | security | performance | API | compatibility | concurrency | complexity | foot-gun | other
-   - evidence
+   - evidence of defect
    - why it matters
    - implicated surfaces
    - impacted invariants, if any
    - remediation posture: validating-check-only | accretive-remediation | structural-remediation
-   - narrowest remediation or validating check
+   - minimum acceptable fix or validating check
+   - evidence of remedy
+   - do not broaden into
 
 4. Produce three structured ledgers in every non-trivial review:
    - **Complexity Delta**
@@ -159,15 +170,34 @@ When proposing remediation or next moves, switch into **ACCRETIVE** mode by defa
    - do not smuggle redesign recommendations into non-structural findings
    - when the issue is mostly complexity or foot-gun risk, say whether guardrails, tests, naming, validation, or API shape changes are the narrowest consequential fix
 
-6. At the end of the pass, issue a **Fixed-Point Judgment**:
+6. Build a **Change Agenda** at the end of every non-trivial review:
+   - one agenda item per material finding that still wants action
+   - include:
+     - finding_id
+     - recommended change or validating check
+     - remediation posture
+     - minimum acceptable fix
+     - evidence of defect
+     - evidence of remedy
+     - do not broaden into
+   - sort agenda items from lower leverage to higher leverage so the strongest single next move lands last
+
+7. At the end of the pass, issue a **Fixed-Point Judgment**:
    - `not reached` if any unresolved material finding remains
    - `indeterminate` if evidence is missing for a confident judgment
    - `appears reached` only if a full-scope de novo review found no unresolved material issue, no ungraded strained or unknown critical invariant, no material foot-gun left unaddressed, and no material verification gap
 
-7. If no material findings remain:
+8. If no material findings remain:
    - say what was checked
    - explain why the current state appears defensible given current evidence
    - state residual non-material risks or untested edges
+
+### Reviewer Bottom Line
+Use 3-5 lines max:
+- `fix_first`: exact change or validating check, or `none`
+- `why`: one sentence
+- `remediation_posture`: validating-check-only | accretive-remediation | structural-remediation | none
+- `fixed_point`: appears reached | not reached | indeterminate
 
 ## Review checklist
 
@@ -223,9 +253,11 @@ Use concise sections in this order:
 - Foot-Gun Register
 - Non-Material Concerns
 - Verification Gaps
-- Fixed-Point Judgment
-- Suggested Next Moves
 - Residual Uncertainty
+- Change Agenda
+- Fixed-Point Judgment
+- Reviewer Bottom Line
 
 Order findings by materiality first, then severity. If there are no material findings, say so explicitly.
-In **Suggested Next Moves**, present accretive remediation first when viable; use structural remediation only when justified.
+In **Change Agenda**, present accretive remediation first when viable; use structural remediation only when justified.
+In **Reviewer Bottom Line**, end with the single highest-value next move or `fix_first: none`.

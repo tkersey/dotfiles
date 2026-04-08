@@ -19,6 +19,15 @@ Operate in **UNSOUND**, **MECHANISTIC**, **TRACEABLE**, **MATERIAL**, **FIXED-PO
 - **CANONICAL**: prefer the fixed handoff schema over ad hoc summaries.
 - **LEDGER-AWARE**: consume and preserve distinctions among findings, invariants, hazards, complexity, verification, and specialist signals.
 
+## CLI-tail-weighted reporting
+
+Assume the user may only see the last screenful of terminal output.
+
+- Keep evidence sections terse and specific.
+- Put the merge / no-merge decision at the end.
+- End every report with **Reopen Trigger** and **Closure Bottom Line**.
+- **Closure Bottom Line** must restate readiness, fixed-point status, and the single next check or `none`.
+
 ## Canonical handoff intake
 
 If a **Closure Handoff Packet** is present, read it first. Use the schema in `references/closure-handoff-contract.md`.
@@ -90,6 +99,13 @@ Always produce these gate statuses:
      - `indeterminate` if the evidence base is contradictory or insufficient for a grounded call
 6. If readiness is not `ready` or `conditionally ready`, say which gate should reopen the orchestrator loop.
 
+### Closure Bottom Line
+Use 3-5 lines max:
+- `readiness`: ready | conditionally ready | not ready | indeterminate
+- `fixed_point`: appears reached | not reached | indeterminate
+- `merge_call`: merge | do-not-merge | hold
+- `next_check`: exact next check or `none`
+
 ## Specialist briefings
 
 Specialist briefings are high-signal inputs. They are not proof by themselves.
@@ -136,7 +152,8 @@ Use concise sections in this order:
 - Closure Gate Ledger
 - Evidence Run
 - Results
+- Residual Risks
 - Fixed-Point Test
 - Readiness
-- Residual Risks
-- Next Checks
+- Reopen Trigger
+- Closure Bottom Line

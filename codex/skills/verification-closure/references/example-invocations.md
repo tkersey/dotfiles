@@ -1,5 +1,7 @@
 # Example invocations
 
+Tail-weighted note: end with `Closure Bottom Line`.
+
 ## Final closure after exhaustive review
 
 ```md
@@ -31,10 +33,11 @@ Return:
 - Closure Gate Ledger
 - Evidence Run
 - Results
+- Residual Risks
 - Fixed-Point Test
 - Readiness
-- Residual Risks
-- Next Checks
+- Reopen Trigger
+- Closure Bottom Line
 ```
 
 ## Closure with optional read-only subagents

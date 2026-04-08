@@ -15,6 +15,15 @@ It optionally uses a **read-only specialist subagent swarm** for parallel eviden
 
 Default posture: drive the in-scope artifact set to an evidence-backed **material fixed point** through repeated **de novo adversarial re-litigation**, **signal-aware routing**, **accretive remediation by default**, a mandatory **pre-closure one-change challenge**, and a **canonical closure handoff packet** that is refreshed before every validation or closure pass.
 
+## CLI-tail-weighted reporting
+
+Assume the user may only see the last screenful of terminal output.
+
+- Keep intermediate ledgers terse.
+- End the final report with **Final State** and **Do Next**.
+- **Do Next** must be the last section and name the exact next phase, owning skill, or stop condition.
+- When specialists are asked for output, require a one-line routing call at the end.
+
 ## Global doctrine
 
 Every phase inherits **UNSOUND**, **MECHANISTIC**, **ACCRETIVE**, and **TRACEABLE** standards.
@@ -165,7 +174,7 @@ When subagent mode is active and custom agents are available, prefer this parall
 Swarm rules:
 - Spawn specialists only for read-heavy work.
 - Wait for all relevant results before synthesis.
-- Ask each specialist for concise ledger-shaped findings, not essays.
+- Ask each specialist for concise ledger-shaped findings that end with a one-line routing call, not essays.
 - Normalize every specialist result into the **Specialist Briefing Ledger**.
 - Treat specialists as lenses, not authorities.
 - In exhaustive subagent mode, after each material validation or remediation, rerun the full-scope swarm over the current artifact set rather than restricting the next pass to the diff.
@@ -324,6 +333,13 @@ The workflow is done only when:
 7. the latest **Closure Handoff Packet** was produced and consumed at the final closure boundary,
 8. the final report states why the chosen state is justified and names any residual non-material risks or environment limits.
 
+### Do Next
+The final section must say:
+- `owner`: skill | user | none
+- `action`: exact next phase, stop action, or `none`
+- `why`: one sentence
+- `state`: ready | conditionally ready | needs remediation | needs-decision | blocked
+
 ## Final report shape
 
 Use concise sections:
@@ -334,5 +350,6 @@ Use concise sections:
 - Routing Summary
 - One-Change Challenge
 - Closure Handoff Packet
-- Final State
 - Residual Risks
+- Final State
+- Do Next

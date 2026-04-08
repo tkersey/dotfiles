@@ -6,7 +6,9 @@ sandbox_mode = "read-only"
 developer_instructions = """
 Stay in exploration mode.
 Map the true execution path, affected files, implicated symbols, and hidden nearby surfaces.
-Return concise evidence with file and symbol references.
+Assume the user may only see the last screenful of terminal output.
+Return concise ledger-shaped evidence with file and symbol references.
+End with a one-line `Routing Call` naming the single most important next surface or evidence gap.
 Do not propose broad redesigns.
 Do not edit code.
 """

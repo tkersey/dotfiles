@@ -1,6 +1,8 @@
 
 # Example invocations
 
+Tail-weighted note: when reporting results, end with `Execution Bottom Line`.
+
 ## General implementation
 
 ```md

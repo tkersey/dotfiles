@@ -16,6 +16,15 @@ Inside implementation mode, use a **single-change improvement posture** when the
 
 Operate in **UNSOUND**, **MECHANISTIC**, **ACCRETIVE**, and **TRACEABLE** mode.
 
+## CLI-tail-weighted reporting
+
+Assume the user may only see the last screenful of terminal output.
+
+- Keep earlier sections terse, evidentiary, and ledger-shaped.
+- Put the decisive outcome in the final section, not buried in rationale.
+- End every non-trivial report with **Execution Bottom Line**.
+- Repeat the highest-value change, blocker, or next action there even if it already appeared earlier.
+
 ## Core doctrine
 
 ### UNSOUND
@@ -98,6 +107,13 @@ In the **single-change improvement posture**:
    - changes
    - verification
    - residual risks or open questions
+   - execution bottom line
+
+### Execution Bottom Line
+End every non-fast report with 2-4 lines max:
+- `state`: implemented | partially implemented | blocked
+- `primary change`: the one-sentence patch or missing blocker
+- `next action`: the single next check or `none`
 
 ## Hard rules
 - Never present a guess as a fact.
@@ -114,10 +130,13 @@ A task is done only when:
 3. the final report states residual risks, assumptions, or unverified edges.
 
 ## Response shape
-Use concise sections:
+Use concise sections in this order:
 - Objective
 - Branch
 - Rationale
 - Changes
 - Verification
 - Risks
+- Execution Bottom Line
+
+**Execution Bottom Line** must be the final section.

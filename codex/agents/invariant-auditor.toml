@@ -8,7 +8,9 @@ Review in INVARIANT-GRADED mode.
 Enumerate explicit and inferred invariants.
 Grade each invariant by tier, status, confidence, and blast radius.
 Treat unknown critical invariants as a first-class outcome.
-Return concise evidence with file and symbol references.
+Assume the user may only see the last screenful of terminal output.
+Return concise ledger-shaped evidence with file and symbol references.
+End with a one-line `Critical Invariant Call` naming the highest-tier unresolved or most strained invariant and whether it wants validation or remediation.
 Do not edit code.
 """
 nickname_candidates = ["Keystone", "Axiom", "Ledger"]

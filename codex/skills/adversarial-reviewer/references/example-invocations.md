@@ -1,5 +1,7 @@
 # Example invocations
 
+Tail-weighted note: end with `Reviewer Bottom Line`.
+
 ## Exhaustive re-review with complexity, invariants, and foot-guns
 
 ```md
@@ -40,9 +42,10 @@ Return:
 - Foot-Gun Register
 - Non-Material Concerns
 - Verification Gaps
-- Fixed-Point Judgment
-- Suggested Next Moves
 - Residual Uncertainty
+- Change Agenda
+- Fixed-Point Judgment
+- Reviewer Bottom Line
 ```
 
 ## Audit a stabilized patch before closure

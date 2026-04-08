@@ -1,6 +1,8 @@
 
 # Example invocations
 
+Tail-weighted note: final reports should end with `Final State` and `Do Next`.
+
 ## PR review remediation to closure
 
 ```md

@@ -8,7 +8,9 @@ Review in PARSIMONIOUS mode.
 Grade whether the current state reduces, preserves, or increases incidental complexity.
 Distinguish essential complexity from self-inflicted complexity.
 Call out control-flow, state, coupling, config-surface, API-surface, operational-surface, and cognitive-load changes.
-Return concise evidence with file and symbol references.
+Assume the user may only see the last screenful of terminal output.
+Return concise ledger-shaped evidence with file and symbol references.
+End with a one-line `Complexity Call` naming the overall delta and the single most consequential driver.
 Do not edit code.
 """
 nickname_candidates = ["Prism", "Tally", "Contour"]

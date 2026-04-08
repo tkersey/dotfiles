@@ -44,21 +44,28 @@ Precision through sophistication, brevity through vocabulary, clarity through st
 - Do not print the motto unless the user explicitly invokes `$logophile` or asks for it.
 - If printed, print it once per conversation and never in `fast` mode.
 
+## CLI-tail-weighted output
+Assume the user may only see the last screenful of terminal output.
+- In multi-part outputs, place analysis earlier and the selected wording, doctrine block, or best pick at the end.
+- In multi-candidate outputs, end with `Best Pick:` or `Use This:` so the preferred option is visible at the tail.
+- In `fast` mode, keep the revised-text-only contract.
+
 ## Output
 - `fast` (default): revised text only.
-- `annotated`: revised text + `Edits:` bullets with `substitutions`, `structural`, and `meaning-safety`.
+- `annotated`: `Edits:` first; `Revised Text:` last.
 - `delta`: minimal-diff rewrite in a `diff` block; use when asked or when reduction is large enough that the diff is clearer than prose.
-- naming tasks: return 3-7 candidates (best first) unless the user asks for a single name.
-- `doctrine-fast`: recommended stack + prompt-ready doctrine block only.
-- `doctrine`: 
+- naming tasks: return 3-7 candidates unless the user asks for a single name. If multiple candidates are shown, end with `Best Pick: <candidate>`.
+- `doctrine-fast`: analysis omitted; end with the prompt-ready doctrine block.
+- `doctrine`:
   - Task Reading
   - Dominant Failure Pressures
-  - Recommended Stack
-  - Prompt-Ready Doctrine Block
   - Stricter Variant
   - Lighter Variant
   - Words to Avoid
-- `doctrine-annotated`: same as `doctrine` + per-word rationale.
+  - Recommended Stack
+  - Prompt-Ready Doctrine Block
+  - Use This
+- `doctrine-annotated`: same as `doctrine` + per-word rationale before the final doctrine block and `Use This`.
 - Backward-compatible aliases:
   - `rigor-fast` -> `doctrine-fast`
   - `rigor` -> `doctrine`
@@ -85,12 +92,14 @@ We need to handle malformed inputs better.
 
 Output:
 ```text
-We need to reject malformed inputs fail-closed.
-```
 Edits:
 - substitutions: `handle` -> `reject`; `better` -> `fail-closed`.
 - structural: removed the generic helper phrase.
 - meaning-safety: kept the same obligation and scope.
+
+Revised Text:
+We need to reject malformed inputs fail-closed.
+```
 
 ### delta
 Input:
@@ -116,6 +125,8 @@ Pre-Release Checklist
 Release Prep
 Release Readiness
 Pre-Release Tasks
+
+Best Pick: Pre-Release Checklist
 ```
 
 ### doctrine-fast
@@ -155,19 +166,6 @@ Dominant Failure Pressures
 - overclaiming from weak evidence
 - bloated synthesis
 
-Recommended Stack
-- adversarial
-- source-disciplined
-- calibrated
-- synthetic
-
-Prompt-Ready Doctrine Block
-Operate in ADVERSARIAL, SOURCE-DISCIPLINED, CALIBRATED, and SYNTHETIC mode.
-- Challenge first-pass claims before accepting them.
-- Prefer primary and authoritative sources over commentary.
-- Match confidence to evidence and label uncertainty.
-- Compress many signals into a concise comparative synthesis.
-
 Stricter Variant
 - adversarial
 - source-disciplined
@@ -183,6 +181,25 @@ Words to Avoid
 - insightful
 - nuanced
 - sophisticated
+
+Recommended Stack
+- adversarial
+- source-disciplined
+- calibrated
+- synthetic
+
+Prompt-Ready Doctrine Block
+Operate in ADVERSARIAL, SOURCE-DISCIPLINED, CALIBRATED, and SYNTHETIC mode.
+- Challenge first-pass claims before accepting them.
+- Prefer primary and authoritative sources over commentary.
+- Match confidence to evidence and label uncertainty.
+- Compress many signals into a concise comparative synthesis.
+
+Use This
+- adversarial
+- source-disciplined
+- calibrated
+- synthetic
 ```
 Edits:
 - substitutions: selected words that change procedure, not just tone.
@@ -204,12 +221,12 @@ Doctrine defaults: stakes=infer; target_agent=local context; failure_pressures=i
 
 ## Naming mode (when the task is renaming)
 - Goal: shorter, more specific, and more distinctive.
-- Output: 3-7 candidates; put the best first; keep each <= 3 words unless the domain requires more.
+- Output: 3-7 candidates; put the best first; keep each <= 3 words unless the domain requires more. If multiple candidates are shown, end with `Best Pick:` repeating the preferred one.
 - Rubric: name the axis, then the object; avoid `util`, `manager`, `stuff`, or novelty abbreviations unless the surrounding repo already uses them.
 
 ## Doctrine mode (when the task is to find thinking-posture words)
 - Goal: find semantically dense words that compress a useful operating doctrine for a task.
-- Output: 1-3 doctrine stacks, best first; each stack should usually be 3-6 words.
+- Output: 1-3 doctrine stacks, best first; each stack should usually be 3-6 words. End with `Use This:` repeating the preferred stack.
 - Rubric:
   - each word must add a distinct procedural gain
   - prefer task-fit over novelty
