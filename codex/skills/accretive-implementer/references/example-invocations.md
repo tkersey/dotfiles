@@ -1,42 +1,21 @@
+
 # Example invocations
 
-## Planned feature
+## General implementation
 
 ```md
 Use $accretive-implementer for this task.
 
-Goal: add a "remember device" option to the sign-in flow.
+Goal:
+Add an expiration banner to the admin session view.
+
 Context:
-- auth/session.ts
-- auth/session.test.ts
-- auth/ui/LoginForm.tsx
+- admin/session.tsx
+- admin/session.test.tsx
+
 Constraints:
-- preserve the current public API
-- fit the existing auth architecture
-- keep the change reviewable
-Done when:
-- the new behavior works end to end
-- affected invariants still hold
-- targeted verification passes
-```
-
-## Bug fix
-
-```md
-Use $accretive-implementer for this task.
-
-Goal: fix the session refresh regression.
-Context:
-- auth/session.ts
-- auth/session.test.ts
-- failing CI logs
-Constraints:
-- preserve the current public API
-- no broad refactor
-Done when:
-- the failure mechanism is identified
-- the narrowest defensible patch is applied
-- targeted verification passes
+- preserve existing props
+- avoid broad UI refactor
 ```
 
 ## Review remediation
@@ -44,16 +23,32 @@ Done when:
 ```md
 Use $accretive-implementer for this task.
 
-Goal: address the review finding about retry ordering on the queue worker.
+Goal:
+Address reviewer finding F-03 about stale refresh state.
+
 Context:
-- queue/retry.ts
-- queue/retry.test.ts
-- reviewer notes about ordering and duplicate delivery
+- auth/session.ts
+- auth/session.test.ts
+- reviewer notes pasted below
+
 Constraints:
-- preserve ordering and at-least-once behavior
-- keep the change small and reviewable
-Done when:
-- the material review finding is resolved
-- invariants are preserved
-- verification covers the changed path
+- preserve the current public API
+- keep the fix accretive
+```
+
+## Single-change improvement posture
+
+```md
+Use $accretive-implementer for this task.
+
+Goal:
+If you could change one thing about this changeset what would you change? Pick the single highest-leverage remaining change and implement it.
+
+Context:
+- current branch vs main
+- relevant files: auth/session.ts, auth/session.test.ts
+
+Constraints:
+- one change only unless a tightly coupled follow-on edit is strictly required
+- preserve the public API unless the selected change proves that is insufficient
 ```

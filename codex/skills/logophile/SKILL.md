@@ -50,7 +50,7 @@ Precision through sophistication, brevity through vocabulary, clarity through st
 - `delta`: minimal-diff rewrite in a `diff` block; use when asked or when reduction is large enough that the diff is clearer than prose.
 - naming tasks: return 3-7 candidates (best first) unless the user asks for a single name.
 - `doctrine-fast`: recommended stack + prompt-ready doctrine block only.
-- `doctrine`:
+- `doctrine`: 
   - Task Reading
   - Dominant Failure Pressures
   - Recommended Stack

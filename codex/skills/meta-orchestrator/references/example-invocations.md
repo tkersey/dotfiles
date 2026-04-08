@@ -1,37 +1,45 @@
+
 # Example invocations
+
+## PR review remediation to closure
+
+```md
+Use $meta-orchestrator for this task.
+
+Goal:
+Address the current PR review comments and bring the branch to review-ready closure.
+
+Context:
+- current branch vs main
+- reviewer comments pasted below
+- relevant files: auth/session.ts, auth/session.test.ts
+
+Constraints:
+- preserve public APIs unless a review comment proves they are insufficient
+- after the artifact set reaches a candidate material fixed point, ask: "If you could change one thing about this changeset what would you change?"
+- route any accepted answer to $accretive-implementer
+- after that implementation, rerun full-scope de novo review before closure
+
+Done when:
+- every material review comment is either implemented or rebutted with evidence
+- the one-change challenge yields no impactful accretive improvement
+- verification-closure says the branch is ready or clearly states the blocking gaps
+```
 
 ## Exhaustive hardening with subagents
 
 ```md
 Use $meta-orchestrator for this task.
 
-Goal: find all impactful changes, keep re-reviewing from scratch, use parallel specialist subagents, and decide whether the current artifact set is actually ready.
+Goal:
+Find all impactful changes, use specialist subagents for read-heavy analysis, and take the artifact set to closure.
 
 Context:
-- auth/session.ts
-- auth/session.test.ts
-- failing CI logs
+- relevant files and tests
+- current CI output
 
 Constraints:
-- preserve the current public API unless structural evidence proves that is insufficient
-- keep writes single-threaded and reviewable
-- subagents should be read-only and return packet-native briefings
-- regenerate the closure handoff packet after every material validation or remediation
-
-Done when:
-- the artifact set reaches a material fixed point
-- no unresolved critical invariant, material foot-gun, or material complexity hazard remains
-- direct closure verification succeeds
-```
-
-## Review-only exhaustive pass
-
-```md
-Use $meta-orchestrator for this task.
-
-Review the current branch against main.
-Use parallel specialist subagents.
-Wait for all results.
-Run a full-scope de novo adversarial synthesis.
-Then emit a canonical Closure Handoff Packet before final verification.
+- keep remediation single-threaded
+- rerun the full-scope subagent swarm before each de novo review pass
+- ask the one-change challenge before final closure
 ```

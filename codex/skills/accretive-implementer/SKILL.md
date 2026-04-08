@@ -1,6 +1,6 @@
 ---
 name: accretive-implementer
-description: Use this skill for non-trivial coding tasks where the job is to implement, adapt, or repair code in a narrow, reviewable, evidence-backed way. Trigger for planned features, net-new code, implementation from a design or plan, refactors with correctness pressure, migrations, review-driven changes, bug fixes, regressions, or failing tests. In implementation mode, realize the requested behavior through the canonical existing architecture with minimal blast radius. In remediation mode, diagnose the likely failure mechanism before editing. Do not trigger for trivial formatting, rote renames, or purely informational questions that do not require code changes or verification.
+description: Use this skill for non-trivial coding tasks where the job is to implement, adapt, harden, or repair code in a narrow, reviewable, evidence-backed way. Trigger for planned features, net-new code, implementation from a design or plan, refactors with correctness pressure, migrations, review-driven changes, bug fixes, regressions, failing tests, or single-change hardening tasks such as asking what one thing should change in the current changeset and then implementing that answer. In implementation mode, realize the requested behavior through the canonical existing architecture with minimal blast radius. In remediation mode, diagnose the likely failure mechanism before editing. Do not trigger for trivial formatting, rote renames, or purely informational questions that do not require code changes or verification.
 ---
 
 # Accretive Implementer
@@ -9,8 +9,10 @@ This is the general coding and build skill.
 
 It has two entry branches:
 
-- **Implementation mode** for planned features, net-new behavior, or turning a design or plan into code.
+- **Implementation mode** for planned features, net-new behavior, turning a design or plan into code, or implementing one clearly dominant follow-on improvement to an existing changeset.
 - **Remediation mode** for bugs, regressions, failing tests, review findings, or broken invariants.
+
+Inside implementation mode, use a **single-change improvement posture** when the task is: "If you could change one thing about this changeset what would you change?" In that posture, identify the single highest-leverage remaining change, explain why it outranks nearby alternatives, and implement only that one change unless a tightly coupled follow-on is strictly required.
 
 Operate in **UNSOUND**, **MECHANISTIC**, **ACCRETIVE**, and **TRACEABLE** mode.
 
@@ -42,11 +44,16 @@ Operate in **UNSOUND**, **MECHANISTIC**, **ACCRETIVE**, and **TRACEABLE** mode.
 
 ## Entry branch selection
 
-Use **Implementation mode** when the task is a feature, plan, spec, design, migration, refactor, or other request to add or reshape behavior.
+Use **Implementation mode** when the task is a feature, plan, spec, design, migration, refactor, or other request to add or reshape behavior. Also use implementation mode when the task is to choose and implement exactly one highest-leverage remaining change to an existing changeset.
 
 Use **Remediation mode** when the task is a review finding, bug, regression, failing test, incident, or other request to repair behavior that is wrong or risky.
 
 If both are present, start in remediation mode for the broken path, then continue in implementation mode only for the smallest follow-on change required to realize the requested outcome.
+
+In the **single-change improvement posture**:
+- compare candidate changes only enough to identify the dominant one
+- prefer improvements that strengthen correctness, misuse resistance, invariant clarity, verification strength, or consequential maintainability
+- do not bundle sibling improvements unless they are inseparable from the chosen change
 
 ## Operating procedure
 
@@ -63,6 +70,8 @@ If both are present, start in remediation mode for the broken path, then continu
    - identify the canonical integration path
    - list affected surfaces, contracts, and invariants
    - note unknowns that could materially change the implementation shape
+   - if this is a single-change improvement task, identify the highest-leverage remaining change by impact, blast radius, reviewability, and fit with the current artifact set
+   - say why this change outranks the nearest plausible alternatives
 
    **Remediation mode**
    - identify the likely failure mechanism
@@ -71,6 +80,7 @@ If both are present, start in remediation mode for the broken path, then continu
 
 3. Change code accretively:
    - implement the narrowest change that realizes the behavior or resolves the issue
+   - in single-change improvement posture, implement one change only and keep any coupled follow-on edits strictly minimal and explicit
    - preserve public contracts unless the task explicitly changes them
    - avoid unrelated edits
 
@@ -79,6 +89,7 @@ If both are present, start in remediation mode for the broken path, then continu
    - expand verification only as needed
    - in remediation mode, try at least one adversarial or regression-oriented check against the first plausible fix when the task is non-trivial
    - in implementation mode, verify the direct behavior and at least one likely regression or invariant surface when the task is non-trivial
+   - in single-change improvement posture, verify both the direct benefit of the chosen improvement and one nearby surface that could regress because of it
 
 5. Report in this order:
    - objective
@@ -94,6 +105,7 @@ If both are present, start in remediation mode for the broken path, then continu
 - Never broaden scope without stating why.
 - Never hide uncertainty; label it.
 - Never optimize for elegance over correctness, fit, and reviewability.
+- When asked for one change, do not silently implement two. Name any tightly coupled follow-on edit and justify why it is inseparable.
 
 ## Definition of done
 A task is done only when:

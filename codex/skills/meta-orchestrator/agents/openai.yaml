@@ -1,6 +1,7 @@
+
 policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Meta Orchestrator"
-  short_description: "Exhaustive build-review-verify workflow with canonical ledgers, closure handoff, and optional specialist subagents"
-  default_prompt: "Use $meta-orchestrator for this task."
+  short_description: "Exhaustive build-review-improve-verify orchestration"
+  default_prompt: "Use the meta-orchestrator skill for this task."

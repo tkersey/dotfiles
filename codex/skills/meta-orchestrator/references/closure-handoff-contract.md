@@ -1,7 +1,7 @@
 # Canonical Closure Handoff Packet
 
 Use this packet whenever `meta-orchestrator` hands work to `verification-closure`.
-The packet is a canonical, ledgerized phase-boundary object.
+The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job is to move the latest state across the phase boundary without collapsing important distinctions into prose.
 
 ## Packet rules
 
@@ -20,7 +20,7 @@ The packet is a canonical, ledgerized phase-boundary object.
    - `final-closure`
 
 2. **Artifact State Label**
-   - a stable state label such as `loop-03-post-review`
+   - A stable state label such as `loop-03-post-review`.
 
 3. **Objective**
    - requested outcome
@@ -46,16 +46,17 @@ The packet is a canonical, ledgerized phase-boundary object.
 7. **Change Ledger**
    - one entry per pass with:
      - `pass_id`
-     - `pass_type`: `build` | `review` | `validation` | `closure`
+     - `pass_type`: `build` | `validation` | `review` | `closure`
      - `rationale`
      - `touched_surfaces`
      - `status`: `completed` | `partial` | `blocked`
+   - record the most recent pre-closure one-change challenge as a `review` pass even when it results in no code change
 
 8. **Findings Ledger**
    - one entry per finding with:
      - `finding_id`
      - `materiality`: `material` | `non-material`
-     - `severity`: `blocker` | `major` | `moderate` | `minor` | `info`
+     - `severity`: `blocker` | `major` | `minor` | `info`
      - `category`
      - `status`: `open` | `disproved` | `remediated` | `needs-decision` | `blocked` | `accepted-risk`
      - `remediation_posture`: `validating-check-only` | `accretive-remediation` | `structural-remediation`
@@ -87,7 +88,7 @@ The packet is a canonical, ledgerized phase-boundary object.
       - `narrowest_bounding_action`
 
 11. **Complexity Ledger**
-    - `overall_delta`: `reduces` | `neutral` | `increases` | `indeterminate`
+    - `overall_delta`: `reduces` | `neutral` | `increases`
     - `materiality`: `material` | `non-material` | `unknown`
     - `drivers`
     - `evidence`
@@ -128,3 +129,116 @@ The packet is a canonical, ledgerized phase-boundary object.
     - assumptions
     - environment limits
     - known unknowns
+
+## Minimal template
+
+```md
+### Closure Handoff Packet
+
+#### Handoff Kind
+final-closure
+
+#### Artifact State Label
+loop-03-post-review
+
+#### Objective
+- requested_outcome: ...
+- claimed_behavior_change: ...
+- current_phase_state: ...
+
+#### Scope and Constraints
+- in_scope_artifacts: ...
+- constraints: ...
+- done_condition: ...
+
+#### Artifact Set
+- changed_files: ...
+- changed_symbols: ...
+- implicated_untouched_surfaces: ...
+
+#### Diagnosis Ledger
+- primary_mechanism: ...
+- confidence: plausible
+- supporting_evidence: ...
+- superseded_diagnoses: none
+
+#### Change Ledger
+- pass_id: ...
+  pass_type: ...
+  rationale: ...
+  touched_surfaces: ...
+  status: ...
+
+#### Findings Ledger
+- finding_id: ...
+  materiality: material
+  severity: major
+  category: ...
+  status: open
+  remediation_posture: accretive-remediation
+  evidence: ...
+  why_it_matters: ...
+  implicated_surfaces: ...
+  impacted_invariants: ...
+  next_action: ...
+
+#### Invariant Ledger
+- invariant_id: ...
+  name: ...
+  tier: critical
+  status: strained
+  confidence: plausible
+  blast_radius: module
+  supporting_evidence: ...
+  open_question: ...
+
+#### Foot-Gun Register
+- hazard_id: ...
+  trigger: ...
+  impact: ...
+  ease_of_misuse: high
+  status: unbounded
+  evidence: ...
+  narrowest_bounding_action: ...
+
+#### Complexity Ledger
+- overall_delta: neutral
+- materiality: non-material
+- drivers: ...
+- evidence: ...
+- bounded_by: ...
+
+#### Verification Ledger
+- direct_changed_path: satisfied
+- claimed_failure_mechanism: open
+- regression_surface: open
+- checks_run:
+  - check_id: ...
+    target: ...
+    result: pass
+    what_it_proves: ...
+    limitations: ...
+
+#### Specialist Briefing Ledger
+- role: invariant_auditor
+  artifact_state_label: loop-03-post-review
+  scope: ...
+  top_material_signals: ...
+  unresolved_signals: ...
+  agreement_pressure: aligned
+  stale: no
+
+#### Closure Gate Preview
+- critical_invariants: strained
+- material_foot_guns: unbounded
+- material_complexity_hazards: bounded
+- briefing_agreement: mixed
+- external_blockers: none
+
+#### Requested Closure Questions
+- Is the changed path directly verified?
+- Is invariant INV-02 now bounded?
+
+#### Residual Uncertainty
+- ...
+```

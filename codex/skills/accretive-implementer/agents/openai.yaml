@@ -1,6 +1,7 @@
+
 policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Accretive Implementer"
-  short_description: "General coding skill: implement, adapt, or repair with minimal blast radius"
-  default_prompt: "Use $accretive-implementer for this task."
+  short_description: "Narrow, evidence-backed implementation and remediation"
+  default_prompt: "Use the accretive-implementer skill for this task."
