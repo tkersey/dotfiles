@@ -1,4 +1,4 @@
 interface:
   display_name: "accretive"
-  short_description: "Pick the highest-leverage accretive move"
-  default_prompt: "Use $accretive with target=addition and preserve the original verbatim prompt wording."
+  short_description: "Find one dominant accretive move and prove it"
+  default_prompt: "Use $accretive. Preserve the original verbatim prompt wording. If no target is supplied, choose the highest-leverage target lane from the current project state. Return exactly one dominant move or an explicit abstention if none dominates, and include concrete evidence plus a first proof signal."

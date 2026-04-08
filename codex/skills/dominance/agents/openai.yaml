@@ -1,0 +1,4 @@
+interface:
+  display_name: "dominance"
+  short_description: "Adversarially score candidate moves"
+  default_prompt: "Use $dominance to evaluate candidate moves against a strict dominance test. Name a winner only if one clearly dominates; otherwise reject the set and say what evidence would resolve it."
