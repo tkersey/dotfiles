@@ -1,13 +1,13 @@
 ---
 name: st
-description: Manage persistent task plans in repo-committed JSONL (`.step/st-plan.jsonl`) so state survives turns/sessions and stays reviewable in git. Use when users ask to "use $st", "resume the plan", "export/import plan state", "checkpoint milestones", "track dependencies/blocked work", "show ready next tasks", "keep shared TODO status on disk", "store backlog tasks on disk without loading them into `update_plan` yet", "select which durable tasks enter the mirrored plan", "map a `$select` plan into durable execution state", "prove `$st` works for implementation tracking", mirror the durable plan into Codex `update_plan` or OpenCode `TodoWrite`, or diagnose/repair `st-plan.jsonl` concerns (for example append-only vs mutable semantics, lock-file gitignore policy, or seq/checkpoint integrity).
+description: Manage persistent task plans in `.step/st-plan.jsonl`, with an explicit first-use choice between repo-committed storage and local-only ignore via `.git/info/exclude`, so state survives turns/sessions and can stay reviewable in git when desired. Use when users ask to "use $st", "resume the plan", "export/import plan state", "checkpoint milestones", "track dependencies/blocked work", "show ready next tasks", "keep shared TODO status on disk", "store backlog tasks on disk without loading them into `update_plan` yet", "select which durable tasks enter the mirrored plan", "map a `$select` plan into durable execution state", "prove `$st` works for implementation tracking", mirror the durable plan into Codex `update_plan` or OpenCode `TodoWrite`, or diagnose/repair `st-plan.jsonl` concerns (for example append-only vs mutable semantics, lock-file ignore policy, or seq/checkpoint integrity).
 ---
 
 # st
 
 ## Overview
 
-Maintain a durable task inventory in the repo (default: `.step/st-plan.jsonl`) using in-place JSONL v3 persistence with dual lanes:
+Maintain a durable task inventory in the repo worktree (default: `.step/st-plan.jsonl`) using in-place JSONL v3 persistence with dual lanes:
 
 - `event` lane for mutations
 - `checkpoint` lane for periodic full-state snapshots
@@ -91,26 +91,31 @@ run_st_tool --help
 
 1. Define `run_st_tool` once per shell session to bootstrap/install `st`.
 2. If the run has 3+ dependent steps, likely spans turns, or already uses a native task surface (`update_plan` in Codex or `TodoWrite` in OpenCode), adopt `$st` as the durable source of truth before editing.
-3. If the plan came from `$select`, import the OrchPlan into `$st` and claim the first safe wave before execution starts.
+3. Before the first `st init` or mutation in a repo, determine the plan-file storage policy.
+   - If `.step/st-plan.jsonl` is already tracked, or already ignored by repo policy, respect that existing choice and do not re-ask.
+   - If the repo has not yet made the choice obvious, ask one targeted question: should `.step/st-plan.jsonl` be committed to the repo, or kept local by adding it to `.git/info/exclude`?
+   - Shared mode: keep `.step/st-plan.jsonl` tracked and make sure only the lock sidecar is ignored.
+   - Local mode: add both `.step/st-plan.jsonl` and `.step/st-plan.jsonl.lock` to `.git/info/exclude` before first mutation.
+4. If the plan came from `$select`, import the OrchPlan into `$st` and claim the first safe wave before execution starts.
    - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
    - `st claim --file .step/st-plan.jsonl --wave w1 --executor teams`
    - For OrchPlan-backed claims, `--wave` is the canonical selector and there is no public same-turn non-`$st` handoff.
-4. Initialize plan storage with `st init` if missing.
-5. Rehydrate current state with `st show` (or focused views via `ready` / `blocked`).
+5. Initialize plan storage with `st init` if missing.
+6. Rehydrate current state with `st show` (or focused views via `ready` / `blocked`).
    - Default surface is `plan`.
    - Use `--surface all` to inspect the full durable inventory.
    - Use `--surface backlog` to inspect durable tasks not currently mirrored into the plan.
-6. Run `doctor` when ingesting an existing plan file or when integrity is in doubt.
-7. Apply plan mutations through subcommands (`add`, `select`, `deselect`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`, `import-mesh-results`); do not hand-edit existing JSONL lines.
+7. Run `doctor` when ingesting an existing plan file or when integrity is in doubt.
+8. Apply plan mutations through subcommands (`add`, `select`, `deselect`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`, `import-mesh-results`); do not hand-edit existing JSONL lines.
    - Use `add --backlog-only` or `import-plan --backlog-only` to update the durable inventory without loading those items into the mirrored plan yet.
    - Use `select` to add backlog items into the mirrored plan.
    - Use `deselect` to remove items from the mirrored plan without deleting them from disk.
-8. After each mutation command, consume the emitted `plan_sync: {...}` payload and mirror it into the native runtime tool in the same turn.
-9. Use `emit-plan-sync` to regenerate the payload from durable state when needed.
-10. If `emit-plan-sync` is unavailable because the installed binary is older, fall back:
+9. After each mutation command, consume the emitted `plan_sync: {...}` payload and mirror it into the native runtime tool in the same turn.
+10. Use `emit-plan-sync` to regenerate the payload from durable state when needed.
+11. If `emit-plan-sync` is unavailable because the installed binary is older, fall back:
    - Codex: use `emit-update-plan`.
    - OpenCode: use `show --format json`, map `content=item.step`, normalize `blocked`/`deferred` to `pending`, normalize `canceled` to `cancelled`, and default missing priority to `medium`.
-11. Export/import snapshots when cross-session handoff is needed.
+12. Export/import snapshots when cross-session handoff is needed.
 
 ## Commands
 
@@ -151,6 +156,7 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
 
 - Keep exactly one `in_progress` item unless `$st` can prove a safe parallel wave.
 - Safe parallel `in_progress` is allowed automatically when every active item has `claim.state=held`, a non-empty `claim.wave_id`, `claim.executor=teams|mesh`, and pairwise non-overlapping `claim.lock_roots`.
+- First-use plan-file policy: if `.step/st-plan.jsonl` is not yet tracked and not already ignored, ask whether the repo wants shared tracked state or local-only state via `.git/info/exclude` before the first mutation.
 - For OrchPlan-backed durable execution, `claim.wave_id` is authoritative and should be derived from the imported wave, not reconstructed from ad hoc `--ids`.
 - `in_plan=true` is the mirrored-plan membership flag. Missing legacy values normalize to `true`.
 - Terminal statuses (`completed`, `deferred`, `canceled`) auto-demote items out of the mirrored plan while keeping them on disk.
@@ -172,7 +178,7 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
   - `active`, `doing` -> `in_progress`
   - `done`, `closed` -> `completed`
 - Mutation commands (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`, `import-mesh-results`) automatically print a canonical `plan_sync:` payload line plus a legacy `update_plan:` compatibility line after durable write.
-- Lock sidecar policy: mutating commands require the lock file (`<plan-file>.lock`, for example `.step/st-plan.jsonl.lock`) to be gitignored when inside a git repo; add it to `.gitignore` before first mutation.
+- Lock sidecar policy: mutating commands require the lock file (`<plan-file>.lock`, for example `.step/st-plan.jsonl.lock`) to be ignored when inside a git repo. In shared mode, add the lock sidecar to `.gitignore`; in local-only mode, add both the plan file and the lock sidecar to `.git/info/exclude`.
 - Storage model: not append-only growth. Mutations rewrite the JSONL file atomically (`temp` + `fsync` + replace) and compact to a canonical `replace` event plus checkpoint snapshot at the current seq watermark.
 - `doctor` is the first-line integrity check for seq/checkpoint contract issues; use `doctor --repair-seq` only when repair is explicitly needed.
 - `import-plan --replace` atomically resets the full durable inventory in the same in-place write model.

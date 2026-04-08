@@ -78,10 +78,18 @@
 - Replay contract: latest checkpoint + records with `seq` greater than checkpoint `seq` must equal full replay
 - Repair path: `st doctor --file .step/st-plan.jsonl --repair-seq` rewrites a canonical replace+checkpoint stream at the current watermark
 
+## Plan-file storage policy
+
+- The JSONL format is the same whether `.step/st-plan.jsonl` is repo-tracked or locally ignored
+- On first use in a repo, ask which policy should govern `.step/st-plan.jsonl` unless the repo already makes the choice obvious
+- Shared mode: keep `.step/st-plan.jsonl` tracked and ignore only the lock sidecar
+- Local mode: add both `.step/st-plan.jsonl` and `.step/st-plan.jsonl.lock` to `.git/info/exclude`
+
 ## Lock sidecar policy
 
 - Mutation paths acquire a sidecar file lock at `<plan-file>.lock` (for example `.step/st-plan.jsonl.lock`)
 - In git worktrees, mutating commands require that sidecar path to be ignored (`git check-ignore`) before writes proceed
+- Use `.gitignore` for the sidecar in shared mode, or `.git/info/exclude` for both plan and sidecar in local-only mode
 
 ## Translation contract to native runtime mirrors
 
