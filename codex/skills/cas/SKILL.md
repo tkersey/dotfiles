@@ -32,16 +32,16 @@ Current `cas review_session` is the review-control lane:
 
 - `start` launches detached `review/start` on a supplied or freshly created parent thread
 - `start` supports `--parent-mode auto|fresh|reuse`; `reuse` rejects unsafe or unmaterialized parent threads, and fresh-parent startup retries once after a bootstrap materialization turn when the installed `codex` needs it
-- `wait` is the primary completion path only on runtimes that keep detached review alive across connections
-- On Codex `0.118.x` over stdio, detached review output is connection-scoped, so `start --wait` is the supported detached-result lane and split fresh-process `start`/`wait` should fail closed until CAS has a websocket-backed transport
-- `status` reads the detached review thread from a fresh CAS process when that runtime path is supported
+- `start` now prefers a CAS-managed loopback websocket app-server so detached review survives the launching CLI process and fresh-process `status` / `wait` / `interrupt` can reconnect to the same review session
+- `wait` is the primary completion path for persisted detached review handles and reconnects through the stored websocket session metadata when present
+- `status` reads the detached review thread from a fresh CAS process through the persisted transport metadata when that runtime path is supported
 - `interrupt` sends `turn/interrupt` for the persisted detached review turn
 
 `reviewThreadId` is the recoverable handle. Session records live under `~/.codex/cas/review_sessions/`, and CAS appends raw request/response artifacts to a per-review NDJSON log beside that record.
 
 Review boundary:
 
-- Use `cas review_session` when you need detached lifecycle control: persisted `reviewThreadId`, explicit interrupt, compatibility diagnostics, or approval/runtime overrides on the detached lane. On Codex `0.118.x` stdio, same-process `start --wait` is the supported review-result path; fresh-process polling is not.
+- Use `cas review_session` when you need detached lifecycle control: persisted `reviewThreadId`, explicit interrupt, compatibility diagnostics, or approval/runtime overrides on the detached lane. The websocket-backed lane is local-only and CAS-managed in this repo.
 - If you only need a one-shot git-backed review verdict and do not need detached control, prefer native `codex review --base ...` or `codex review --commit ...` instead of introducing CAS transport risk. First-party caller flows such as `$fix` should treat native review as the default path.
 - `cas smoke_check` is never review proof; it only proves handshake/method reachability.
 - `cas instance_runner` is never the production review lane; it is for method probing and schema sanity checks.
@@ -51,6 +51,13 @@ When `start`, `start --wait`, `status`, or `wait` emit JSON, the output includes
 - `resolvedCodexPath`
 - `resolvedCodexVersion`
 - `compatibilityVerdict`
+- `selectedTransport`
+- `selectionReason`
+- `degradedFallback`
+- `managedServerPid`
+- `managedServerListenUrl`
+- `managedServerStderrLogPath`
+- `orphanTtlSeconds`
 - `failureCode`
 - `failureHint`
 - `reviewResultAvailable`
@@ -71,21 +78,25 @@ Use the fields this way:
 - `compatibilityVerdict="compatible"` means the detached review launch path succeeded under the resolved `codex` binary
 - `compatibilityVerdict="incompatible"` means CAS identified a detached-review runtime mismatch and failed closed
 - `compatibilityVerdict="not_checked"` means no compatibility verdict was persisted for that record yet (older session record or pre-launch failure)
+- `selectedTransport="websocket"` means CAS used the managed loopback websocket lane for the detached review session
+- `selectedTransport="native-review"` with `degradedFallback=true` means CAS preserved the review verdict by degrading to native `codex review`; it is not detached-control proof
 - `failureCode="wait_timed_out"` means retry `cas review_session wait` on the same `reviewThreadId` or increase `--timeout-ms`; it is not a successful review
 - `failureCode="review_interrupted"` means the detached review was interrupted before it emitted a structured review result
 - `failureCode="approval_denied"` means the detached review stopped on an approval or permissions denial before it emitted a structured review result
 - `failureCode="review_failed"` means the detached review failed or errored before it emitted a structured review result
 - `failureCode="review_output_missing"` means the detached review reached terminal state without a structured review result even though it was not classified as an interrupt or approval failure
+- `failureCode="websocket_bootstrap_failed"` means CAS could not launch or connect to the managed websocket app-server before detached review startup completed
+- `failureCode="review_transport_lost"` means a persisted websocket-backed detached review could not be reconnected and CAS had to fail closed or degrade to explicit native fallback
 - `failureCode="parent_thread_not_materialized"` or `failureCode="unsafe_parent_thread_state"` means the supplied parent thread is not safe to reuse for detached review
 - `fallbackUsed=true` means `--fallback native-review` ran `codex review` and returned its raw text output instead of a structured detached-review result
 
 Review result classification:
 
-- Detached review success requires all of: `compatibilityVerdict="compatible"`, `fallbackUsed=false`, `reviewResultAvailable=true`, and no blocking `failureCode`.
+- Detached review success requires all of: `compatibilityVerdict="compatible"`, `selectedTransport="websocket"`, `fallbackUsed=false`, `reviewResultAvailable=true`, and no blocking `failureCode`.
 - Native-fallback success is a different class of result: `fallbackUsed=true` means the review text came from native `codex review`, not detached CAS review. Report it as native fallback, not detached-review proof.
 - Transport progress is not review success: `reviewThreadId` creation, `start --wait` returning, or `status` showing a terminal turn is insufficient unless the result fields above classify it as success.
 
-Compatibility note: on Codex `0.118.x` stdio, detached review requires two compatibility moves. First, a fresh parent thread must be materialized before detached `review/start`, so CAS `--parent-mode auto` now pre-materializes that path and `fresh` retries once after bootstrap materialization when needed. Second, detached review output streams on the live app-server connection, so split fresh-process `start`/`wait` should fail closed; use `start --wait`, native `codex review`, or a future websocket-backed CAS lane.
+Compatibility note: on Codex `0.118.x` stdio, detached review still requires fresh-parent materialization before detached `review/start`, so CAS `--parent-mode auto` keeps that pre-materialization path. The websocket-backed review lane exists specifically to restore truthful fresh-process detached control across commands instead of depending on stdio connection lifetime.
 
 Node runtime paths (`cas_proxy.mjs`, `cas_client.mjs`, and related wrappers) are removed from this skill and must not be used.
 
