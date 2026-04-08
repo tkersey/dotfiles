@@ -58,7 +58,7 @@ EXPECTED_REVIEW_LINES = [
     '- Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.',
     "- Each `R#` row comes from the terminal diff review closure loop in a fresh isolated review invocation on the frozen review context; the fixer does not self-grade that round. Native rows use `codex review --base <base_branch>` or `codex review --commit <sha>`; detached rows use split CAS `start` then `wait` after confirming the live merge base still matches the frozen `comparison_sha`; native fallback rows are allowed only when the immediately preceding detached CAS attempt for the same run-local `cas_attempt_key` failed with an allowed fallback `failureCode`.",
     "- Standard git-backed branch-diff closure rows stay on the same frozen whole diff for native, CAS, and native fallback; do not narrow to touched files or another ad hoc sub-scope unless preflight explicitly chose commit/worktree scope.",
-    "- Terminal closure requires two consecutive clean rows on the unchanged final diff within the same cycle.",
+    "- Terminal closure requires one clean row on the unchanged final diff within the same cycle by default, and two consecutive clean rows only after a terminal-review-driven edit or `review_transport=native_fallback`.",
     '- Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.',
 ]
 
@@ -144,17 +144,17 @@ REQUIRED_REVIEW_LOOP_GUARDRAILS = [
     "MUST treat a slow native whole-diff review (`review_transport=native|native_fallback`) as the intended closure lane for standard branch-backed `$fix` runs; do not relabel it as non-convergent or abandon it solely because the branch diff is larger than the immediate fix seam.",
     "MUST run `P0 Core Review` as the first core pass, using the frozen review context's active review transport (`review_transport=native` by default, `review_transport=cas` only for explicit detached-control runs) as a fixer-owned pass that is reported in `Pass trace`, not `Review loop trace`.",
     "MUST classify `P0 Core Review` output into `local_findings` and `blocked_findings` only; `stale_findings` are terminal-review-only.",
-    "MUST stop `P0 Core Review` only when no `local_findings` remain; blocked `P0 Core Review` findings may carry forward as pre-terminal only and do not close `$fix`.",
+    "MUST treat `P0 Core Review` as a single frozen discovery pass per outer cycle; use its output to seed local repair work for that cycle instead of rerunning whole-diff review after each local fix.",
     "MUST run every terminal `R#` review round in a fresh isolated review invocation with no authoring carry-over from the fixer. For branch-diff rounds, first confirm the live merge base still matches the frozen `comparison_sha`; if it drifts, stop blocked and refresh review context in a new `$fix` run. Native rows use fresh `codex review --base <base_branch>` on the frozen whole diff; detached rows use fresh split CAS `start` plus `wait`; native fallback rows are allowed only when the immediately preceding detached CAS attempt for the same run-local `cas_attempt_key` failed with an allowed fallback `failureCode`. The fixer may address findings but must not both author and adjudicate the same review round.",
     "MUST derive `base_branch` and `comparison_sha` from repo state for any git-backed run with a live diff when they are omitted, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base. For git-backed live diffs, missing review context after derivation is a blocker, not a successful `skip_missing_base_context` path.",
     "MUST verify `comparison_sha` resolves to a commit before activating `P0 Core Review` or the terminal diff review loop.",
     "MUST keep the terminal diff review loop separate from `Pass trace`; report it in `Review loop trace`.",
-    'MUST rerun the isolated review loop against the current final diff after the self-review loop and after any post-self-review rerun edits; do not close `$fix` until two consecutive terminal review rounds on the unchanged final diff yield `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`.',
+    'MUST rerun the isolated review loop against the current final diff after the self-review loop and after any post-self-review rerun edits; by default, close terminal review after one clean round on the unchanged final diff with `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface `proved|blocked`. Require a second clean confirmation round only when the same cycle had a terminal-review-driven edit or used `review_transport=native_fallback`.',
     "MUST treat blocked `P0 Core Review` carry-forward as pre-terminal only. A terminal final-diff closure round with any `blocked_findings` or `stale_findings` is not review-clean and does not close `$fix`.",
     "MUST NOT treat a terminal final-diff review round with `blocked_findings>0` as closed or `local_clean`; if a fresh reviewer still emits any finding, `$fix` is not done.",
     "MUST NOT treat a terminal final-diff review round with `stale_findings>0` as closed or `local_clean`; if a fresh reviewer still emits a repeated finding, `$fix` is not done.",
     'MUST use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.',
-    "MUST require two consecutive clean terminal review rows on the unchanged final diff (same frozen `base_branch`/`comparison_sha`, no intervening edits) before closing `$fix`.",
+    "MUST require two consecutive clean terminal review rows on the unchanged final diff only when the same cycle had a terminal-review-driven edit or used `review_transport=native_fallback`; otherwise one clean row is sufficient.",
     "MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds and the current proof bundle directly disproves the finding or the implicated diff hunk/form no longer exists; unchanged repetition alone is not enough.",
     "MUST judge diff-review findings by author-fix-worthiness: flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them.",
     "MUST prefer zero diff-review findings over speculative or assumption-heavy output; do not flag pre-existing issues, intentional behavior changes, or style-only nits.",
@@ -213,7 +213,7 @@ REQUIRED_REFERENCE_PHRASES = [
     "Use stale suppression only when a dedicated proof hook/blocker already discharges the repeated finding or the targeted diff hunk/form is gone, and terminal closure still requires `stale_findings=0`.",
     "Use `skip_missing_base_context` only when there is no live git diff and no derivable review target; a live git diff must derive review context or stop blocked.",
     "Cycle <c>: Pass <n>/<total_planned>:",
-    "two consecutive clean `R#` rows on the unchanged final diff within the same cycle.",
+    "one clean terminal row by default and two consecutive clean `R#` rows only after terminal-review-driven edits or `review_transport=native_fallback`.",
     "`Cycle C1` -> zero_edit_cycle_streak=`0`",
     "**Pass trace**",
     "**Review loop trace**",
@@ -239,22 +239,22 @@ REQUIRED_PROOF_COVERAGE_PHRASES = [
 ]
 
 REQUIRED_POST_FIX_BOUNDARY_GUARDRAILS = [
-    "Stop only after self-review exhausts actionable changes, each full cycle reaches post-self-review rerun plus terminal diff-review closure, and two consecutive zero-edit full cycles are clean.",
-    "When a full cycle reaches post-self-review rerun plus two consecutive clean terminal diff-review closure rounds on the unchanged final diff, and that cycle also ends with `cycle_edit_tally=0` plus an unchanged review-context receipt (`fingerprint=same` for review-backed runs or the same skip reason for skipped-review runs), increment `zero_edit_cycle_streak`; `$fix` stops only when that streak reaches `2`. Broader architecture, product, or roadmap analysis belongs to another skill.",
-    "MUST stop `$fix` once no new actionable self-review change remains, no actionable footgun on the touched surfaces or adjacent seam remains unresolved, the current cycle reaches clean terminal final-diff review closure, and `zero_edit_cycle_streak=2`; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
+    "Stop only after self-review exhausts actionable changes, each full cycle reaches post-self-review rerun plus terminal diff-review closure, and any required confirmation cycles are clean.",
+    "Make risky or unclear code safe with the smallest sound, validated change, then keep rerunning the whole `$fix` skill as an outer fixed-point loop until no actionable self-review change remains, no actionable footgun on the touched surfaces or adjacent seam remains unresolved, and the unchanged final diff is review-clean under the frozen whole-diff review context. By default, a cycle closes after one clean terminal diff-review round plus one zero-edit clean cycle on the unchanged fingerprint; require a confirming clean terminal round only when the same cycle had a terminal-review-driven edit or used `review_transport=native_fallback`, and require a second zero-edit clean cycle only when the first clean cycle included self-review edits, terminal-review edits, or `native_fallback`. Broader architecture, product, or roadmap analysis belongs to another skill.",
+    "MUST stop `$fix` once no new actionable self-review change remains, no actionable footgun on the touched surfaces or adjacent seam remains unresolved, the current cycle reaches clean terminal final-diff review closure, and any required zero-edit confirmation cycles are complete; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.",
     "MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.",
     "If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.",
     "Do not place those broader opportunities in `Residual risks / open questions` unless a valid blocker from the allowed set applies.",
-    '`Review loop trace` includes either a skip line or cycle-annotated `R#` rows, and any closing cycle still shows at least two consecutive terminal final-diff review rows on the unchanged final diff with `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.',
+    '`Review loop trace` includes either a skip line or cycle-annotated `R#` rows. A closing cycle shows one clean terminal final-diff review row on the unchanged final diff by default, and two consecutive clean rows only when the same cycle had a terminal-review-driven edit or used `review_transport=native_fallback`; every closing row still requires `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.',
 ]
 
 REQUIRED_FIXED_POINT_GUARDRAILS = [
     "MUST treat `$fix` as a whole-skill outer fixed-point loop: complete the current cycle through post-self-review rerun plus terminal final-diff review closure, then decide whether to restart from preflight using the same frozen review context.",
     "MUST record `cycle_index`, `cycle_edit_tally`, `zero_edit_cycle_streak`, and `review_context_receipt` for each full cycle; use `git diff --no-ext-diff <comparison_sha>` as the fingerprint source for review-backed cycles.",
     "MUST count a cycle as zero-edit only when `cycle_edit_tally=0` and the cycle's review-context receipt is unchanged (`fingerprint=same` for review-backed runs or the same skip reason for skipped-review runs).",
-    "MUST require two consecutive zero-edit full cycles, even when the first full cycle applies no edits.",
+    "MUST require a second zero-edit full cycle only when the first clean zero-edit cycle included self-review edits, terminal-review edits, or `review_transport=native_fallback`; otherwise the first clean zero-edit cycle is sufficient for closure.",
     "MUST NOT add a new top-level transcript section for cycle reporting; keep cycle visibility inside runtime pass updates, `Pass trace`, and `Review loop trace`.",
-    "MUST NOT add an explicit outer-cycle cap; keep looping until `zero_edit_cycle_streak=2` or another existing blocker stops the run.",
+    "MUST NOT add an explicit outer-cycle cap; keep looping until the required zero-edit confirmation cycles are complete or another existing blocker stops the run.",
     "4. Runtime pass updates (`Cycle <c>: Pass <n>/<total_planned>: ...`) were emitted during execution.",
 ]
 

@@ -11,7 +11,7 @@ Use `review_transport=`<native|cas|native_fallback>`, `fallback_reason=`<none|mi
 Standard git-backed branch-diff closure reviews stay on the same frozen whole diff for native, CAS, and native fallback; do not narrow to touched files or another ad hoc sub-scope unless preflight explicitly chose commit/worktree scope.
 Use a cumulative review wall-clock budget before declaring review transport blocked: detached CAS waits use `review_wait_timeout_ladder_ms=60000,120000,300000,600000`, and all review rows stay within `review_wait_budget_ms=1080000`.
 Runtime pass updates use `Cycle <c>: Pass <n>/<total_planned>: ...`.
-Terminal closure requires two consecutive clean `R#` rows on the unchanged final diff within the same cycle.
+Terminal closure requires one clean terminal row by default and two consecutive clean `R#` rows only after terminal-review-driven edits or `review_transport=native_fallback`.
 `P2 Footguns` must either fix, prove, or block any actionable misuse on the touched public/documented surfaces or adjacent seam before closure.
 Every complete deliverable or Fix Record also includes `**Review reconciliation**` plus per-finding provenance in the form `Provenance: Origin=...; Seeded review=...`.
 
@@ -19,8 +19,9 @@ Every complete deliverable or Fix Record also includes `**Review reconciliation*
 
 ```md
 **Review loop trace**
-- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_transport=`native`; fallback_reason=`none`; review_start_cmd=`codex review --base main`; review_wait_cmd=`n/a`; review_thread_id=`none`; cas_attempt_key=`none`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`continue`
+- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_transport=`native`; fallback_reason=`none`; review_start_cmd=`codex review --base main`; review_wait_cmd=`n/a`; review_thread_id=`none`; cas_attempt_key=`none`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 - Native review stayed on the frozen `main...comparison_sha` branch diff; it was not narrowed to the touched files even though the immediate fix seam was smaller.
+- No confirmation row was required because there was no terminal-review-driven edit and no `native_fallback`.
 - Native review wall-clock budget: `review_wait_budget_ms=1080000`
 ```
 
@@ -74,9 +75,9 @@ Every complete deliverable or Fix Record also includes `**Review reconciliation*
 - `Post-self-review rerun` -> executed=`yes`; edits=`no`; signal=`uv run pytest tests/foo.py::test_bar`; result=`ok`
 ```
 
-## Outer fixed-point two-cycle close
+## Conditional zero-edit confirmation close
 
-Two zero-edit cycles are required even when the first fully clean cycle already made no edits.
+Require a second zero-edit cycle only when the first clean cycle still had late-phase churn.
 
 ```md
 Cycle 1: Pass 1/4: P0 Core Review — start; edits=n/a; signal=uv run pytest tests/foo.py::test_bar; result=n/a
@@ -120,6 +121,15 @@ Cycle 3: Pass 1/4: P0 Core Review — done; edits=no; signal=uv run pytest tests
 - `R2` cycle=`C2`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_transport=`cas`; fallback_reason=`none`; review_start_cmd=`cas review_session start --cwd <cwd> --base main --json`; review_wait_cmd=`cas review_session wait --review-thread-id thr_r2 --timeout-ms 300000 --json`; review_thread_id=`thr_r2`; cas_attempt_key=`branch_diff|9b75f2cdfff1de7b38f288f8409b5df00e4bd84b|/opt/homebrew/bin/codex|0.118.0`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 - `R3` cycle=`C3`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_transport=`cas`; fallback_reason=`none`; review_start_cmd=`cas review_session start --cwd <cwd> --base main --json`; review_wait_cmd=`cas review_session wait --review-thread-id thr_r3 --timeout-ms 300000 --json`; review_thread_id=`thr_r3`; cas_attempt_key=`branch_diff|9b75f2cdfff1de7b38f288f8409b5df00e4bd84b|/opt/homebrew/bin/codex|0.118.0`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 - `R4` cycle=`C3`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_transport=`cas`; fallback_reason=`none`; review_start_cmd=`cas review_session start --cwd <cwd> --base main --json`; review_wait_cmd=`cas review_session wait --review-thread-id thr_r4 --timeout-ms 300000 --json`; review_thread_id=`thr_r4`; cas_attempt_key=`branch_diff|9b75f2cdfff1de7b38f288f8409b5df00e4bd84b|/opt/homebrew/bin/codex|0.118.0`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+```
+
+## Conditional confirmation round after terminal-review edit
+
+```md
+**Review loop trace**
+- `R1` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_transport=`native_fallback`; fallback_reason=`incompatible_codex_review_runtime`; review_start_cmd=`codex review --base main`; review_wait_cmd=`n/a`; review_thread_id=`none`; cas_attempt_key=`none`; local_findings=`1`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is incorrect`; change_applied=`yes`; result=`continue`
+- `R2` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_transport=`native_fallback`; fallback_reason=`incompatible_codex_review_runtime`; review_start_cmd=`codex review --base main`; review_wait_cmd=`n/a`; review_thread_id=`none`; cas_attempt_key=`none`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
+- `R3` cycle=`C1`; base_branch=`main`; comparison_sha=`9b75f2cdfff1de7b38f288f8409b5df00e4bd84b`; review_transport=`native_fallback`; fallback_reason=`incompatible_codex_review_runtime`; review_start_cmd=`codex review --base main`; review_wait_cmd=`n/a`; review_thread_id=`none`; cas_attempt_key=`none`; local_findings=`0`; blocked_findings=`0`; stale_findings=`0`; overall_correctness=`patch is correct`; change_applied=`no`; result=`local_clean`
 ```
 
 ## Review loop local-clean after address
