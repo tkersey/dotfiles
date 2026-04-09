@@ -1,4 +1,3 @@
-
 # Single-change improvement posture
 
 Use this posture when the task is effectively:
@@ -17,6 +16,15 @@ Prefer the candidate that most improves one or more of these at acceptable churn
 - invariant clarity or preservation
 - verification strength
 - consequential maintainability
+
+## Required internal check
+
+Before implementing the winning candidate, determine:
+- the contract delta it improves
+- the invariant it strengthens, preserves, or clarifies
+- the stable boundary where the change should live
+- why the change should not be smaller and should not be larger
+- the proof signal that will confirm the benefit
 
 ## Rules
 
