@@ -42,7 +42,8 @@ Context:
 
 Constraints:
 - keep remediation single-threaded
-- rerun the full-scope subagent swarm before each de novo review pass
-- specialist outputs are internal packets only: no `Echo:`, no instruction acknowledgements, and no verbatim subagent trace leakage into the parent report
+- start with the smallest informative specialist set and only expand to the full swarm if the surface is broad and packet transport is clean
+- rerun the full-scope subagent swarm before each de novo review pass only when transport remains clean; otherwise fall back to local synthesis
+- specialist outputs must be exactly one `<SPECIALIST_PACKET ...>` or one `SPECIALIST_PACKET_INVALID: <reason>` line; no `Echo:`, no instruction acknowledgements, and no verbatim subagent trace leakage into the parent report
 - ask the one-change challenge before final closure
 ```

@@ -22,8 +22,8 @@ Assume the user may only see the last screenful of terminal output.
 - Keep intermediate ledgers terse.
 - End the final report with **Final State** and **Do Next**.
 - **Do Next** must be the last section and name the exact next phase, owning skill, or stop condition.
-- When specialists are asked for output, require a one-line routing call at the end.
-- Specialist outputs are internal packets, not user-facing final reports: do not ask for or preserve `Echo:`, instruction acknowledgements, or progress-only chatter in specialist results.
+- When specialists are asked for output, require the exact packet contract from `references/specialist-briefing-contract.md`, including one `routing_call:` line inside the packet.
+- Specialist outputs are internal packets, not user-facing final reports: do not ask for or preserve `Echo:`, instruction acknowledgements, progress-only chatter, markdown fences, or prose before/after the packet.
 
 ## Global doctrine
 
@@ -131,11 +131,15 @@ Maintain these ledgers across the whole workflow and refresh them after every me
 
 7. **Specialist Briefing Ledger**
    - `role`
+   - `child_session_id`
    - `artifact_state_label`
    - `scope`
    - `top_material_signals`
    - `unresolved_signals`
    - `agreement_pressure`
+   - `packet_status`
+   - `rejection_reason`
+   - `used_for_evidence`
    - `stale`
 
 8. **Residual Uncertainty**
@@ -174,12 +178,15 @@ When subagent mode is active and custom agents are available, prefer this parall
 
 Swarm rules:
 - Spawn specialists only for read-heavy work.
+- Default to no specialists on narrow remediation or obvious review-fix turns. When specialists are justified, start with the smallest informative set, usually one or two roles.
 - Wait for all relevant results before synthesis.
-- Ask each specialist for concise ledger-shaped findings that end with a one-line routing call, not essays.
-- Treat specialist turns as machine-to-machine handoffs: require packet-native briefing output only, with no `Echo:`, no repo-instructions acknowledgement, and no progress-only commentary.
-- If a specialist returns only an instruction acknowledgement, `Echo:`, malformed packet, or other non-briefing output, mark that result invalid, exclude it from evidence, and do not surface it to the user verbatim.
+- Ask each specialist for the exact packet in `references/specialist-briefing-contract.md` and nothing else.
+- Treat specialist turns as machine-to-machine handoffs: require packet-native briefing output only, with no `Echo:`, no repo-instructions acknowledgement, no progress-only commentary, and no prose before or after the packet.
+- If a specialist returns only an instruction acknowledgement, `Echo:`, malformed packet, or other non-briefing output, mark that result `packet_status: invalid`, record the `rejection_reason`, exclude it from evidence, and do not surface it to the user verbatim.
 - Normalize every specialist result into the **Specialist Briefing Ledger**.
 - Treat specialists as lenses, not authorities.
+- On the first invalid specialist result in a turn, mark specialist transport `degraded` for the current artifact state, stop broad fanout on that state, and continue locally rather than rerunning the same noisy swarm.
+- Do not rerun the same specialist role on an unchanged artifact state after it returned an invalid packet. Retry only if the artifact set changed materially and the narrower retry is still the highest-value move.
 - If specialist transport is noisy or unreliable, reduce or skip the swarm and continue locally rather than rerunning broad fanout just to restate the same failure.
 - In exhaustive subagent mode, after each material validation or remediation, rerun the full-scope swarm over the current artifact set rather than restricting the next pass to the diff.
 
@@ -251,11 +258,11 @@ Challenge rules:
    - verify only: `verification-closure`
    - implement + exhaustive confidence: `accretive-implementer` -> saturation loop -> pre-closure one-change challenge -> `verification-closure`
    - review + exhaustive verify: saturation loop -> pre-closure one-change challenge -> `verification-closure`
-3. Optionally run an initial read-only specialist swarm when the scope is broad or unclear.
+3. Optionally run an initial read-only specialist swarm when the scope is broad or unclear and specialist transport is not already degraded for the current artifact state. Start with the smallest informative set before expanding to the full swarm.
 4. Run the **saturation loop**:
-   - During `accretive-implementer`, produce a grounded diagnosis or integration rationale, the narrowest appropriate remediation or implementation, and first-pass verification.
-   - Before each full review pass in subagent mode, run the full-scope specialist swarm, wait for all relevant results, and normalize them into the **Specialist Briefing Ledger**.
-   - In subagent mode, fail closed on transport junk: invalid specialist outputs do not count as evidence, and repeated instruction-ack/no-briefing returns are a signal to fall back to local review or a narrower swarm.
+    - During `accretive-implementer`, produce a grounded diagnosis or integration rationale, the narrowest appropriate remediation or implementation, and first-pass verification.
+    - Before each full review pass in subagent mode, run the smallest justified specialist set first; expand to the full-scope swarm only when the artifact set is broad enough to justify it and specialist transport is still clean for the current artifact state.
+    - In subagent mode, fail closed on transport junk: invalid specialist outputs do not count as evidence, the first invalid packet degrades specialist transport for the current artifact state, and degraded transport is a signal to fall back to local review or a narrower swarm.
    - During `adversarial-reviewer`, perform a **full-scope de novo adversarial review** of the current artifact set. Do not restrict attention to the changed surface.
    - Normalize material findings by remediation posture: `validating-check-only`, `accretive-remediation`, `structural-remediation`.
    - Route the highest-value next action using findings, invariants, foot-guns, complexity, and verification gaps.
@@ -324,6 +331,7 @@ If these custom agents do not exist, do not fail the workflow. Fall back to buil
 - Never promote a cosmetic or preference-only suggestion as the one remaining change worth doing.
 - Never bundle more than one discretionary improvement from the one-change challenge unless a tightly coupled follow-on edit is strictly required.
 - Never let a one-change improvement bypass full re-review.
+- Never rerun the same specialist role on the same artifact state after it returned `packet_status: invalid`.
 
 ## Definition of done
 
