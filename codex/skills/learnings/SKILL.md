@@ -45,7 +45,7 @@ When iterating on the Zig-backed `learnings`/`append_learning` helper CLI path, 
 - Helper-first write path: use `learnings append`/`run_learnings_tool append` for normal writes; keep `append_learning` available as a compatibility binary, and treat manual `.learnings.jsonl` edits as emergency-only with explicit rationale.
 - Repo-root fail-closed rule: only append from a verified git repo root. If `git rev-parse --show-toplevel` fails or the active task lives in a non-repo workspace such as `~/.codex/memories`, skip capture and emit `0 records appended: non-repo cwd`.
 - Path-drift rule: append from the verified repo root with `--path .learnings.jsonl`; if the CLI reports a different target path, treat that append as failed, repair the stray write if needed, and reappend correctly before closing.
-- Commit coupling: if this workflow updates `.learnings.jsonl` and a git commit follows in the same turn, include the current-turn `.learnings.jsonl` rows in that next commit by default. If the file also holds unrelated fresh rows, stage only the session-owned rows with an index patch rather than leaving all learnings for a follow-up commit. Skip only when the user explicitly narrows commit scope to exclude learnings.
+- Commit coupling: if this workflow updates `.learnings.jsonl` and a git commit follows in the same turn, include the current-turn `.learnings.jsonl` rows in that next commit by default. Exception: if `git check-ignore -v --no-index .learnings.jsonl` reports `.git/info/exclude`, treat the file as local-only: do not `git add -f`, stage, or commit it unless the user explicitly asks to publish it. If the shared file also holds unrelated fresh rows, stage only the session-owned rows with an index patch rather than leaving all learnings for a follow-up commit.
 
 ## Quick Start
 
@@ -243,7 +243,9 @@ If any answer is no, skip capture (or use `review_later` only when uncertainty i
    - Append each accepted learning to `.learnings.jsonl` in that repo root (0 records is valid when nothing qualifies).
    - Use `learnings append` via `run_learnings_tool append`, which changes into the verified repo root and passes `--path .learnings.jsonl`.
    - If the append output reports `path=...`, require an exact match with `$repo_root/.learnings.jsonl`; treat any mismatch as a failed append and repair/reappend before finishing.
-   - If a commit will happen after the append, stage the current-turn `.learnings.jsonl` rows into that next commit immediately; if unrelated rows are present, use a targeted index patch instead of postponing the learnings write.
+   - If a commit will happen after the append, stage the current-turn `.learnings.jsonl` rows into that next commit by default.
+   - If `git check-ignore -v --no-index .learnings.jsonl` reports `.git/info/exclude`, treat the file as local-only, leave it unstaged, and never use `git add -f` to satisfy commit coupling, even if `.learnings.jsonl` is already tracked.
+   - If unrelated rows are present in a shared `.learnings.jsonl`, use a targeted index patch instead of postponing the learnings write.
 7. Report concise highlights in chat.
    - Summarize the 1-3 highest leverage learnings (or say none).
    - Reference the write result with one exact proof line (`appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`).
@@ -372,6 +374,7 @@ Runtime bootstrap policy for `learnings` mirrors `cas`: use Zig binaries only (`
 - Capture essence, not chronology: avoid storing every step if one inflection explains the outcome.
 - Do not let append target resolution depend on ambient non-repo cwd; verify repo root first or skip capture.
 - If a JSON learning row lands in source/docs or any file other than the intended `.learnings.jsonl`, revert it immediately and reappend through the verified repo-root CLI path.
+- If `.learnings.jsonl` matches `.git/info/exclude`, treat it as local-only state even if the file is already tracked: keep capture local, and do not force-add, stage, or commit it unless the user explicitly requests publication.
 - Avoid duplicate entries; the helper script skips exact duplicates by fingerprint.
   - If you have materially new evidence for an existing learning, append a follow-up record (adjust `status` and/or make the `learning` statement more specific) or re-run with `--allow-duplicate` intentionally.
   - Do not hand-edit existing JSONL lines in place.

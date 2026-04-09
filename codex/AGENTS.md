@@ -158,6 +158,7 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
 ### GIT
 
 - **Important:** Prefix both `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true` (for example, `GIT_EDITOR=true git merge --continue`) so the commands finish without waiting on an editor.
+- **Local-only exclude boundary:** Treat a `.git/info/exclude` match as an explicit local-only/private publication boundary, even for tracked files. Do not `git add -f`, stage, or commit a path that matches `.git/info/exclude` just because another workflow usually commit-couples it. Before staging artifacts that are often local-only such as `.learnings.jsonl` or a local-only `.step/st-plan.jsonl`, check `git check-ignore -v --no-index <path>`; if the reported source is `.git/info/exclude`, keep it out of the commit unless the user explicitly asks to publish it.
 
 ### GitHub CLI (gh)
 
@@ -202,7 +203,7 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
   - If recall returns nothing relevant, proceed normally (do not invent).
   - Do not rely on SessionStart hooks for learnings loading; keep retrieval request-aware and tied to context gathering.
 - End-of-turn learnings (required for implementation turns): after a proof signal and before the final response, run `$learnings` to append 0-3 high-signal records to `.learnings.jsonl` (prefer 1; skip when no capture checkpoint occurred). Mention the append result with one proof line: `appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`.
-- Commit coupling rule: if `$learnings` appends or otherwise updates `.learnings.jsonl` during the turn and a git commit happens afterward, include the current-turn `.learnings.jsonl` rows in that very next commit by default. If `.learnings.jsonl` also contains unrelated fresh rows, stage only the session-owned rows with an index patch instead of deferring the learnings commit. Skip this only when the user explicitly asks to exclude learnings from the commit scope.
+- Commit coupling rule: if `$learnings` appends or otherwise updates `.learnings.jsonl` during the turn and a git commit happens afterward, include the current-turn `.learnings.jsonl` rows in that very next commit by default. Exception: if `git check-ignore -v --no-index .learnings.jsonl` reports `.git/info/exclude`, treat the file as local-only and do not `git add -f`, stage, or commit it unless the user explicitly asks to publish it. If the shared file also contains unrelated fresh rows, stage only the session-owned rows with an index patch instead of deferring the learnings commit.
 - Codify loop (promotion): when a learning is status `codify_now` (or repeats), promote it into durable docs (for example `codex/AGENTS.md` or a relevant skill doc), then append a follow-up learning referencing the durable anchor.
   - Helper: `learnings codify-candidates --min-count 3 --limit 20 --drop-superseded`
 
