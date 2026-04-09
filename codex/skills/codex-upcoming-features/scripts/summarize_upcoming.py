@@ -63,7 +63,6 @@ PR_NUMBER_RE = re.compile(r"\(#(\d+)\)")
 TYPE_PREFIX_RE = re.compile(r"^\s*([a-zA-Z]+)(?:\([^)]*\))?:")
 
 REQUIRED_SOURCE_FILES: list[str] = [
-    "codex-rs/core/src/features.rs",
     "codex-rs/tui/src/chatwidget.rs",
     "codex-rs/core/src/codex.rs",
     "codex-rs/app-server/src/codex_message_processor.rs",
@@ -75,7 +74,6 @@ REQUIRED_SOURCE_FILES: list[str] = [
 ]
 
 REQUIRED_SOURCE_MARKERS: dict[str, str] = {
-    "codex-rs/core/src/features.rs": "pub const FEATURES",
     "codex-rs/tui/src/chatwidget.rs": "open_experimental_popup",
     "codex-rs/core/src/codex.rs": "build_model_client_beta_features_header",
     "codex-rs/app-server/src/codex_message_processor.rs": "experimental_feature_list",
@@ -85,6 +83,17 @@ REQUIRED_SOURCE_MARKERS: dict[str, str] = {
     "codex-rs/tui/src/tooltips.rs": "experimental_announcement",
     "announcement_tip.toml": "[[announcements]]",
 }
+
+FEATURES_REGISTRY_CANDIDATES: list[str] = [
+    "codex-rs/features/src/lib.rs",
+    "codex-rs/core/src/features.rs",
+]
+FEATURES_REGISTRY_MARKER = "pub const FEATURES"
+FEATURES_REGISTRY_HINTS = (
+    "FeatureSpec",
+    "Stage::Experimental",
+    "Stage::UnderDevelopment",
+)
 
 
 @dataclass
@@ -112,6 +121,7 @@ class SourceFeature:
     display_name: str | None
     menu_description: str | None
     announcement: str | None
+    source_path: str
     source_line: int
 
 
@@ -437,8 +447,47 @@ def make_commit_item(repo: str, commit: CommitRef, pr_cache: dict[int, dict[str,
 
 
 def ensure_required_source_files(local_repo: Path) -> list[str]:
+    resolved = resolve_required_source_files(local_repo)
+    return [resolved["features_registry"], *REQUIRED_SOURCE_FILES]
+
+
+def resolve_features_registry_path(local_repo: Path) -> str:
+    for rel in FEATURES_REGISTRY_CANDIDATES:
+        path = local_repo / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if FEATURES_REGISTRY_MARKER in text:
+            return rel
+
+    discovered: list[str] = []
+    for path in (local_repo / "codex-rs").rglob("*.rs"):
+        rel = path.relative_to(local_repo).as_posix()
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if FEATURES_REGISTRY_MARKER not in text:
+            continue
+        if all(hint in text for hint in FEATURES_REGISTRY_HINTS):
+            discovered.append(rel)
+
+    if len(discovered) == 1:
+        return discovered[0]
+    if len(discovered) > 1:
+        fail(
+            "Feature registry path drift detected but could not resolve uniquely. "
+            f"Known candidates: {', '.join(FEATURES_REGISTRY_CANDIDATES)}. "
+            f"Discovered matches: {', '.join(discovered)}."
+        )
+    fail(
+        "Could not resolve the feature registry source file. "
+        f"Known candidates: {', '.join(FEATURES_REGISTRY_CANDIDATES)}. "
+        f"Expected marker: {FEATURES_REGISTRY_MARKER}."
+    )
+
+
+def resolve_required_source_files(local_repo: Path) -> dict[str, str]:
     missing: list[str] = []
     marker_missing: list[str] = []
+    resolved = {"features_registry": resolve_features_registry_path(local_repo)}
 
     for rel in REQUIRED_SOURCE_FILES:
         path = local_repo / rel
@@ -465,7 +514,7 @@ def ensure_required_source_files(local_repo: Path) -> list[str]:
             + ". Update marker expectations or source mining logic."
         )
 
-    return REQUIRED_SOURCE_FILES.copy()
+    return resolved
 
 
 def find_line_number(text: str, needle: str) -> int | None:
@@ -803,7 +852,7 @@ def parse_announcement_tip_file(announcement_tip_toml: Path) -> dict[str, Any]:
     }
 
 
-def parse_features_registry(features_rs: Path) -> list[SourceFeature]:
+def parse_features_registry(features_rs: Path, source_rel: str) -> list[SourceFeature]:
     text = features_rs.read_text(encoding="utf-8", errors="replace")
     lines = text.splitlines()
 
@@ -894,6 +943,7 @@ def parse_features_registry(features_rs: Path) -> list[SourceFeature]:
                 display_name=display_name,
                 menu_description=menu_description,
                 announcement=announcement,
+                source_path=source_rel,
                 source_line=start_line,
             )
         )
@@ -921,10 +971,16 @@ def summarize_feature_stage_counts(features: list[SourceFeature]) -> dict[str, i
     return counts
 
 
-def mine_source_supporting_evidence(local_repo: Path, all_source_features: list[SourceFeature]) -> dict[str, Any]:
+def mine_source_supporting_evidence(
+    local_repo: Path,
+    all_source_features: list[SourceFeature],
+    resolved_source_files: dict[str, str],
+) -> dict[str, Any]:
+    features_registry_path = resolved_source_files["features_registry"]
     return {
         "features_registry": {
-            "source": "codex-rs/core/src/features.rs",
+            "source": features_registry_path,
+            "resolved_from_candidates": FEATURES_REGISTRY_CANDIDATES,
             "total_feature_specs": len(all_source_features),
             "stage_counts": summarize_feature_stage_counts(all_source_features),
         },
@@ -1004,7 +1060,7 @@ def build_markdown(
                 lines.append(f"   - Summary: {feat.menu_description}")
             if feat.announcement:
                 lines.append(f"   - Announcement: {feat.announcement}")
-            lines.append(f"   - Evidence: `codex-rs/core/src/features.rs:{feat.source_line}`")
+            lines.append(f"   - Evidence: `{feat.source_path}:{feat.source_line}`")
     lines.append("")
 
     lines.append("### Under development")
@@ -1017,7 +1073,7 @@ def build_markdown(
             )
             if feat.menu_description:
                 lines.append(f"   - Summary: {feat.menu_description}")
-            lines.append(f"   - Evidence: `codex-rs/core/src/features.rs:{feat.source_line}`")
+            lines.append(f"   - Evidence: `{feat.source_path}:{feat.source_line}`")
     lines.append("")
 
     lines.append("## Cross-file source evidence (primary)")
@@ -1025,7 +1081,7 @@ def build_markdown(
     stage_counts = registry.get("stage_counts", {})
     counts_text = ", ".join(f"{k}={v}" for k, v in sorted(stage_counts.items()))
     lines.append(
-        "- `codex-rs/core/src/features.rs`: "
+        f"- `{registry.get('source', 'features registry')}`: "
         f"{registry.get('total_feature_specs', 0)} feature specs parsed"
         + (f" ({counts_text})" if counts_text else "")
     )
@@ -1141,7 +1197,7 @@ def build_json(
                     "display_name": feat.display_name,
                     "menu_description": feat.menu_description,
                     "announcement": feat.announcement,
-                    "source": f"codex-rs/core/src/features.rs:{feat.source_line}",
+                    "source": f"{feat.source_path}:{feat.source_line}",
                 }
                 for feat in beta_features
             ],
@@ -1153,7 +1209,7 @@ def build_json(
                     "display_name": feat.display_name,
                     "menu_description": feat.menu_description,
                     "announcement": feat.announcement,
-                    "source": f"codex-rs/core/src/features.rs:{feat.source_line}",
+                    "source": f"{feat.source_path}:{feat.source_line}",
                 }
                 for feat in under_dev_features
             ],
@@ -1232,11 +1288,17 @@ def main() -> None:
     ensure_tag_exists(local_repo, stable_tag)
 
     # Primary feature mining from source files.
+    resolved_source_files = resolve_required_source_files(local_repo)
     source_files_mined = ensure_required_source_files(local_repo)
-    features_registry = local_repo / "codex-rs/core/src/features.rs"
-    all_source_features = parse_features_registry(features_registry)
+    features_registry_rel = resolved_source_files["features_registry"]
+    features_registry = local_repo / features_registry_rel
+    all_source_features = parse_features_registry(features_registry, features_registry_rel)
     beta_features, under_dev_features = select_primary_features(all_source_features)
-    supporting_evidence = mine_source_supporting_evidence(local_repo, all_source_features)
+    supporting_evidence = mine_source_supporting_evidence(
+        local_repo,
+        all_source_features,
+        resolved_source_files,
+    )
 
     # Secondary evidence from commit history.
     commits = list_unreleased_commits(repo, local_repo, stable_tag, branch)

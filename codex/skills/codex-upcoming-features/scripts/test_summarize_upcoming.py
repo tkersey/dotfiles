@@ -226,7 +226,6 @@ ANNOUNCEMENT_TIP = textwrap.dedent(
 ).strip() + "\n"
 
 FIXTURES = {
-    "codex-rs/core/src/features.rs": FEATURES_RS,
     "codex-rs/tui/src/chatwidget.rs": CHATWIDGET_RS,
     "codex-rs/core/src/codex.rs": CODEX_RS,
     "codex-rs/app-server/src/codex_message_processor.rs": PROCESSOR_RS,
@@ -238,7 +237,10 @@ FIXTURES = {
 }
 
 
-def write_fixture_repo(base: Path) -> None:
+def write_fixture_repo(base: Path, *, features_registry_rel: str = "codex-rs/features/src/lib.rs") -> None:
+    target = base / features_registry_rel
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(FEATURES_RS, encoding="utf-8")
     for rel, content in FIXTURES.items():
         target = base / rel
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -251,7 +253,22 @@ class SummarizeUpcomingRegressionTests(unittest.TestCase):
             repo = Path(td)
             write_fixture_repo(repo)
             mined = MODULE.ensure_required_source_files(repo)
-            self.assertEqual(mined, MODULE.REQUIRED_SOURCE_FILES)
+            self.assertEqual(mined[0], "codex-rs/features/src/lib.rs")
+            self.assertEqual(mined[1:], MODULE.REQUIRED_SOURCE_FILES)
+
+    def test_legacy_features_registry_path_still_supported(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            write_fixture_repo(repo, features_registry_rel="codex-rs/core/src/features.rs")
+            mined = MODULE.ensure_required_source_files(repo)
+            self.assertEqual(mined[0], "codex-rs/core/src/features.rs")
+
+    def test_features_registry_path_drift_is_auto_discovered(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            write_fixture_repo(repo, features_registry_rel="codex-rs/experimental_features/src/lib.rs")
+            mined = MODULE.ensure_required_source_files(repo)
+            self.assertEqual(mined[0], "codex-rs/experimental_features/src/lib.rs")
 
     def test_required_markers_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -267,14 +284,19 @@ class SummarizeUpcomingRegressionTests(unittest.TestCase):
             repo = Path(td)
             write_fixture_repo(repo)
 
-            features = MODULE.parse_features_registry(repo / "codex-rs/core/src/features.rs")
+            features_rel = MODULE.resolve_required_source_files(repo)["features_registry"]
+            features = MODULE.parse_features_registry(repo / features_rel, features_rel)
             self.assertEqual(len(features), 2)
 
             beta, under_dev = MODULE.select_primary_features(features)
             self.assertEqual(len(beta), 1)
             self.assertEqual(len(under_dev), 1)
 
-            evidence = MODULE.mine_source_supporting_evidence(repo, features)
+            evidence = MODULE.mine_source_supporting_evidence(
+                repo,
+                features,
+                {"features_registry": features_rel},
+            )
             self.assertIn("features_registry", evidence)
             self.assertIn("chatwidget_experimental_popup", evidence)
             self.assertIn("beta_header", evidence)
@@ -291,6 +313,7 @@ class SummarizeUpcomingRegressionTests(unittest.TestCase):
                 ["beta", "underDevelopment", "stable", "deprecated", "removed"],
             )
             self.assertEqual(evidence["announcement_tip_file"]["entry_count"], 2)
+            self.assertEqual(evidence["features_registry"]["source"], "codex-rs/features/src/lib.rs")
 
 
 if __name__ == "__main__":

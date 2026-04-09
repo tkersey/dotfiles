@@ -20,7 +20,7 @@ Primary evidence comes from source files that define feature stages and user-fac
 3. If clone is missing, clone from `https://github.com/<owner>/<repo>.git`.
 4. Sync local clone on every run (`git fetch --tags --prune origin`, checkout default branch, `git pull --ff-only`).
 5. Mine these source files on every run (fail closed if missing):
-- `codex-rs/core/src/features.rs`
+- feature registry: resolve dynamically from known candidates, currently `codex-rs/features/src/lib.rs` with legacy fallback `codex-rs/core/src/features.rs`; if neither exists, search for the unique registry file containing `pub const FEATURES` plus stage markers and fail closed if resolution is ambiguous
 - `codex-rs/tui/src/chatwidget.rs`
 - `codex-rs/core/src/codex.rs`
 - `codex-rs/app-server/src/codex_message_processor.rs`
@@ -29,7 +29,7 @@ Primary evidence comes from source files that define feature stages and user-fac
 - `codex-rs/app-server/README.md`
 - `codex-rs/tui/src/tooltips.rs`
 - `announcement_tip.toml`
-6. Extract source-derived upcoming feature data from `features.rs`:
+6. Extract source-derived upcoming feature data from the resolved feature-registry source:
 - `Stage::Experimental` (beta/user-facing now)
 - `Stage::UnderDevelopment` (upcoming but not broadly ready)
 - include `name`, `menu_description`, and `announcement` where available
@@ -113,6 +113,7 @@ Read [references/classification-rules.md](references/classification-rules.md) be
 
 - Do not use stale local commit snapshots; clone if missing and sync (fetch/pull) on every run.
 - Fail closed if local repo origin does not match the requested `owner/repo`.
+- Detect registry path drift explicitly: record the resolved feature-registry path in output and fail closed if the registry cannot be resolved uniquely.
 - Keep release resolution live (GitHub API), source feature extraction local (from mined files), and commit extraction local (synced git history).
 - Treat commit messages as supporting evidence only; never treat commits as primary feature truth when source files disagree.
 - Do not infer future roadmap from open issues or open PRs in this skill version.
