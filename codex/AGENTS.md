@@ -17,7 +17,7 @@ In this repo, that stop-and-ask behavior is explicitly disabled:
 
 ## Response Format
 
-- Echo: include `Echo:` with the most recent user message (max two lines, truncate with `...`) exactly once per user turn, in the final assistant response only. Do not include Echo in intermediary/progress updates. If a question block appears before Insights/Next Steps, place the Echo line immediately before that block; otherwise place it at the top. This requirement applies even when using skills or templates. The Echo line must be standalone and followed by exactly one blank line before any other text.
+- Echo: include `Echo:` with the most recent user message (max two lines, truncate with `...`) exactly once per user turn, in the final assistant response only. Do not include Echo in intermediary/progress updates. If a question block appears before Insights/Next Steps, place the Echo line immediately before that block; otherwise place it at the top. This requirement applies even when using skills or templates. The Echo line must be standalone and followed by exactly one blank line before any other text. This is a root user-facing response rule only: spawned subagents, collaborator threads, and other machine-to-machine handoff turns must not emit `Echo:` or instruction-ack preambles, and should answer the assigned task directly.
 
 Example:
 

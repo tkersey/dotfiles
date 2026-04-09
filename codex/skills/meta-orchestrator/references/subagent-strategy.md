@@ -23,6 +23,8 @@ Subagents contribute:
 - Spawn specialists only for read-heavy work.
 - Wait for all relevant results before synthesis.
 - Require packet-native briefings that follow `specialist-briefing-contract.md`.
+- Treat specialist turns as internal packets, not user-facing responses: no `Echo:`, no instruction acknowledgements, no progress-only chatter.
+- If specialists return handshake junk or malformed packets, fail closed and reduce or skip the swarm instead of rerunning the same noisy fanout.
 - Treat specialists as lenses, not authorities.
 - In exhaustive subagent mode, after each material validation or remediation, rerun the full-scope swarm over the current artifact set.
 
@@ -41,3 +43,4 @@ Avoid the full swarm when:
 - the review surface is tiny and obvious
 - the next work is write-heavy remediation rather than read-heavy analysis
 - environment constraints make parallel agent work unreliable
+- recent specialist turns returned instruction acknowledgements or other non-briefing output

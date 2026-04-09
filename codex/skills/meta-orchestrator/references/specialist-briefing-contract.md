@@ -52,5 +52,6 @@ Where practical:
 - Be concise.
 - Cite files, symbols, tests, commands, logs, or outputs.
 - If a field is unknown, write `unknown`.
+- This is an internal specialist packet, not a user-facing final answer: do not include `Echo:`, repo-instruction acknowledgements, progress updates, or any other response wrapper.
 - Do not turn the briefing into a general essay.
 - Do not propose code changes unless the parent explicitly asks for remediation advice.

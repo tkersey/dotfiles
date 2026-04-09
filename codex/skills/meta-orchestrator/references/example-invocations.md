@@ -43,5 +43,6 @@ Context:
 Constraints:
 - keep remediation single-threaded
 - rerun the full-scope subagent swarm before each de novo review pass
+- specialist outputs are internal packets only: no `Echo:`, no instruction acknowledgements, and no verbatim subagent trace leakage into the parent report
 - ask the one-change challenge before final closure
 ```
