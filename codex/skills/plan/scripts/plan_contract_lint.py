@@ -8,9 +8,8 @@ import re
 import sys
 from pathlib import Path
 
-REQUIRED_HEADINGS = [
+CORE_REQUIRED_HEADINGS = [
     "Round Delta",
-    "Iteration Action Log",
     "Iteration Change Log",
     "Summary",
     "Non-Goals/Out of Scope",
@@ -32,6 +31,7 @@ REQUIRED_HEADINGS = [
     "Contract Signals",
     "Implementation Brief",
 ]
+STRICT_ONLY_HEADINGS = ["Iteration Action Log", "Iteration Reports"]
 
 FINDINGS_SCHEMA_FIELDS = ["lens", "type", "severity", "section", "decision", "status"]
 FINDINGS_TAXONOMY = ["errors", "risks", "preferences"]
@@ -46,6 +46,8 @@ ITERATION_ACTION_FIELDS = [
 ]
 ITERATION_CHANGE_FIELDS = [
     "iteration",
+    "focus",
+    "round_decision",
     "delta_kind",
     "evidence",
     "what_we_did",
@@ -107,6 +109,14 @@ CARRY_FORWARD_PATTERN = re.compile(
     r"(?i)\b(?:unchanged from iteration|same as previous|same as above|see above|see previous iteration)\b"
 )
 ELLIPSIS_PLACEHOLDER_PATTERN = re.compile(r"(?m)^\|.*\.\.\..*\|\s*$")
+
+
+def required_headings_for_profile(profile: str) -> list[str]:
+    """Return required headings for the given strictness profile."""
+    headings = list(CORE_REQUIRED_HEADINGS)
+    if profile == "strict":
+        headings.extend(STRICT_ONLY_HEADINGS)
+    return headings
 
 
 def heading_present(markdown: str, heading: str) -> bool:
@@ -188,6 +198,16 @@ def parse_float(raw: str) -> float | None:
         return float(raw.strip())
     except ValueError:
         return None
+
+
+def detect_strictness_profile(markdown: str) -> str:
+    """Best-effort detection of strictness profile from Contract Signals."""
+    contract_signals = extract_heading_section(markdown, "Contract Signals")
+    if not contract_signals:
+        return "balanced"
+    values, _, _ = parse_contract_signals(contract_signals)
+    profile = values.get("strictness_profile", "").strip().lower()
+    return profile if profile in STRICTNESS_PROFILES else "balanced"
 
 
 def parse_contract_signals(
@@ -324,6 +344,7 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
         return errors, warnings
 
     body = text.split("<proposed_plan>", 1)[1].split("</proposed_plan>", 1)[0].strip()
+    strictness_profile_hint = detect_strictness_profile(body)
     first_line = first_non_empty_line(body)
     iteration_header: int | None = None
     match = re.match(r"^Iteration:\s*(\d+)$", first_line)
@@ -337,7 +358,7 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
     if not re.search(r"(?im)^#\s+\S", body):
         errors.append("Plan body must include a title heading (for example `# Title`).")
 
-    for heading in REQUIRED_HEADINGS:
+    for heading in required_headings_for_profile(strictness_profile_hint):
         if not heading_present(body, heading):
             errors.append(f"Missing required heading: `{heading}`.")
         else:
@@ -447,6 +468,28 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
                 )
                 continue
 
+            fallback_action = action_by_iter.get(iteration, {})
+
+            focus = parse_int_field(entry, "focus")
+            if focus is None:
+                fallback_focus = fallback_action.get("focus")
+                if isinstance(fallback_focus, int):
+                    focus = fallback_focus
+            if focus is None or not (1 <= focus <= 5):
+                errors.append(
+                    f"`Iteration Change Log` entry {idx} must include `focus: 1..5` (or `focus=...`)."
+                )
+
+            round_decision = parse_enum_field(entry, "round_decision", ROUND_DECISIONS)
+            if round_decision is None:
+                fallback_round_decision = fallback_action.get("round_decision")
+                if isinstance(fallback_round_decision, str):
+                    round_decision = fallback_round_decision
+            if round_decision is None:
+                errors.append(
+                    f"`Iteration Change Log` entry {idx} must include `round_decision: continue|close` (or `round_decision=...`)."
+                )
+
             delta_kind = parse_enum_field(entry, "delta_kind", DELTA_KINDS)
             if delta_kind is None:
                 errors.append(
@@ -475,9 +518,25 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
                 )
 
             change_by_iter[iteration] = {
+                "focus": focus,
+                "round_decision": round_decision,
                 "delta_kind": delta_kind,
                 "evidence_ok": evidence_ok,
             }
+
+    if change_by_iter:
+        change_iters = sorted(change_by_iter.keys())
+        min_iter = min(change_iters)
+        max_iter = max(change_iters)
+        expected = list(range(min_iter, max_iter + 1))
+        if change_iters != expected:
+            errors.append(
+                "`Iteration Change Log` must cover a contiguous iteration range with no gaps."
+            )
+        if iteration_header is not None and max_iter != iteration_header:
+            errors.append(
+                f"`Iteration Change Log` max iteration={max_iter} must equal plan header `Iteration: {iteration_header}`."
+            )
 
     if action_by_iter and change_by_iter:
         action_iters = sorted(action_by_iter.keys())
@@ -497,26 +556,29 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
                     + ", ".join(map(str, missing_in_changes))
                     + "."
                 )
-        else:
-            iters = action_iters
-            min_iter = min(iters)
-            max_iter = max(iters)
-            expected = list(range(min_iter, max_iter + 1))
-            if iters != expected:
+        for iter_value in sorted(set(action_iters) & set(change_iters)):
+            action_entry = action_by_iter.get(iter_value, {})
+            change_entry = change_by_iter.get(iter_value, {})
+            if (
+                action_entry.get("focus") is not None
+                and change_entry.get("focus") is not None
+                and action_entry.get("focus") != change_entry.get("focus")
+            ):
                 errors.append(
-                    "Iteration logs must cover a contiguous iteration range with no gaps."
+                    f"Iteration log alignment mismatch at iteration={iter_value}: `focus` conflicts between `Iteration Action Log` and `Iteration Change Log`."
                 )
-            if iteration_header is not None and max_iter != iteration_header:
+            if (
+                action_entry.get("round_decision") is not None
+                and change_entry.get("round_decision") is not None
+                and action_entry.get("round_decision")
+                != change_entry.get("round_decision")
+            ):
                 errors.append(
-                    f"Iteration logs max iteration={max_iter} must equal plan header `Iteration: {iteration_header}`."
+                    f"Iteration log alignment mismatch at iteration={iter_value}: `round_decision` conflicts between `Iteration Action Log` and `Iteration Change Log`."
                 )
 
     iteration_reports = extract_heading_section(body, "Iteration Reports")
-    if not iteration_reports:
-        warnings.append(
-            "`Iteration Reports` is missing (advisory in current rollout; not fail-closed)."
-        )
-    else:
+    if iteration_reports:
         report_entries = extract_bullet_entries(iteration_reports)
         if not report_entries:
             warnings.append(
@@ -601,6 +663,52 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
                 f"`Iteration Reports` max iteration={max_iter} should match plan header `Iteration: {iteration_header}`."
             )
 
+        if change_by_iter:
+            change_iters = sorted(change_by_iter.keys())
+            if set(report_iters) != set(change_iters):
+                missing_in_reports = sorted(set(change_iters) - set(report_iters))
+                missing_in_changes = sorted(set(report_iters) - set(change_iters))
+                if missing_in_reports:
+                    warnings.append(
+                        "Iteration report alignment mismatch: reports missing iterations "
+                        + ", ".join(map(str, missing_in_reports))
+                        + "."
+                    )
+                if missing_in_changes:
+                    warnings.append(
+                        "Iteration report alignment mismatch: change log missing iterations "
+                        + ", ".join(map(str, missing_in_changes))
+                        + "."
+                    )
+            for iter_value in sorted(set(report_iters) & set(change_iters)):
+                report_entry = report_by_iter.get(iter_value, {})
+                change_entry = change_by_iter.get(iter_value, {})
+                if (
+                    report_entry.get("focus") is not None
+                    and change_entry.get("focus") is not None
+                    and report_entry.get("focus") != change_entry.get("focus")
+                ):
+                    warnings.append(
+                        f"Iteration report alignment mismatch at iteration={iter_value}: `focus` conflicts with `Iteration Change Log`."
+                    )
+                if (
+                    report_entry.get("round_decision") is not None
+                    and change_entry.get("round_decision") is not None
+                    and report_entry.get("round_decision")
+                    != change_entry.get("round_decision")
+                ):
+                    warnings.append(
+                        f"Iteration report alignment mismatch at iteration={iter_value}: `round_decision` conflicts with `Iteration Change Log`."
+                    )
+                if (
+                    report_entry.get("delta_kind") is not None
+                    and change_entry.get("delta_kind") is not None
+                    and report_entry.get("delta_kind") != change_entry.get("delta_kind")
+                ):
+                    warnings.append(
+                        f"Iteration report alignment mismatch at iteration={iter_value}: `delta_kind` conflicts with `Iteration Change Log`."
+                    )
+
         if action_by_iter:
             action_iters = sorted(action_by_iter.keys())
             if set(report_iters) != set(action_iters):
@@ -637,35 +745,6 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
                 ):
                     warnings.append(
                         f"Iteration report alignment mismatch at iteration={iter_value}: `round_decision` conflicts with `Iteration Action Log`."
-                    )
-
-        if change_by_iter:
-            change_iters = sorted(change_by_iter.keys())
-            if set(report_iters) != set(change_iters):
-                missing_in_reports = sorted(set(change_iters) - set(report_iters))
-                missing_in_changes = sorted(set(report_iters) - set(change_iters))
-                if missing_in_reports:
-                    warnings.append(
-                        "Iteration report alignment mismatch: reports missing iterations "
-                        + ", ".join(map(str, missing_in_reports))
-                        + "."
-                    )
-                if missing_in_changes:
-                    warnings.append(
-                        "Iteration report alignment mismatch: change log missing iterations "
-                        + ", ".join(map(str, missing_in_changes))
-                        + "."
-                    )
-            for iter_value in sorted(set(report_iters) & set(change_iters)):
-                report_entry = report_by_iter.get(iter_value, {})
-                change_entry = change_by_iter.get(iter_value, {})
-                if (
-                    report_entry.get("delta_kind") is not None
-                    and change_entry.get("delta_kind") is not None
-                    and report_entry.get("delta_kind") != change_entry.get("delta_kind")
-                ):
-                    warnings.append(
-                        f"Iteration report alignment mismatch at iteration={iter_value}: `delta_kind` conflicts with `Iteration Change Log`."
                     )
 
     traceability = extract_heading_section(body, "Requirement-to-Test Traceability")
@@ -872,23 +951,23 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
                 "Stop invariant violated: if `improvement_exhausted=false`, `stop_reason` must not be `none`."
             )
 
-    if contract_improvement_exhausted is True and action_by_iter and change_by_iter:
-        iters = sorted(action_by_iter.keys())
+    if contract_improvement_exhausted is True and change_by_iter:
+        iters = sorted(change_by_iter.keys())
         if len(iters) < 2:
             errors.append(
                 "Anti-churn gate: closing requires at least two iterations in the iteration logs."
             )
         else:
             last_iter = iters[-1]
-            last_action = action_by_iter.get(last_iter, {})
-            if last_action.get("round_decision") != "close":
+            last_change = change_by_iter.get(last_iter, {})
+            if last_change.get("round_decision") != "close":
                 errors.append(
                     "Close-decision gate: final iteration must have `round_decision=close` when `improvement_exhausted=true`."
                 )
 
             for prior_iter in iters[:-1]:
-                prior_action = action_by_iter.get(prior_iter, {})
-                if prior_action.get("round_decision") == "close":
+                prior_change = change_by_iter.get(prior_iter, {})
+                if prior_change.get("round_decision") == "close":
                     errors.append(
                         "Close-decision gate: only the final iteration may set `round_decision=close`."
                     )
@@ -903,10 +982,10 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
                     )
                     break
 
-    if contract_improvement_exhausted is False and action_by_iter:
-        last_iter = max(action_by_iter.keys())
-        last_action = action_by_iter.get(last_iter, {})
-        if last_action.get("round_decision") == "close":
+    if contract_improvement_exhausted is False and change_by_iter:
+        last_iter = max(change_by_iter.keys())
+        last_change = change_by_iter.get(last_iter, {})
+        if last_change.get("round_decision") == "close":
             errors.append(
                 "Stop gate: when `improvement_exhausted=false`, final `round_decision` must be `continue`."
             )
