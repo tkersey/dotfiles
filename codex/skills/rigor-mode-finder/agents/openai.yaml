@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: false
-interface:
-  display_name: "Rigor Mode Finder"
-  short_description: "Find the right rigor words and doctrine stack for a task"
-  default_prompt: "Use $rigor-mode-finder for this task."
