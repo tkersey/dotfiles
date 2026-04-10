@@ -6,7 +6,7 @@ Tail-weighted note: final reports should end with `Final State` and `Do Next`.
 ## PR review remediation to closure
 
 ```md
-Use $meta-orchestrator for this task.
+Use $fixed-point-driver for this task.
 
 Goal:
 Address the current PR review comments and bring the branch to review-ready closure.
@@ -31,7 +31,7 @@ Done when:
 ## Exhaustive hardening with subagents
 
 ```md
-Use $meta-orchestrator for this task.
+Use $fixed-point-driver for this task.
 
 Goal:
 Find all impactful changes, use specialist subagents for read-heavy analysis, and take the artifact set to closure.
@@ -42,8 +42,6 @@ Context:
 
 Constraints:
 - keep remediation single-threaded
-- start with the smallest informative specialist set and only expand to the full swarm if the surface is broad and packet transport is clean
-- rerun the full-scope subagent swarm before each de novo review pass only when transport remains clean; otherwise fall back to local synthesis
-- specialist outputs must be exactly one `<SPECIALIST_PACKET ...>` or one `SPECIALIST_PACKET_INVALID: <reason>` line; no `Echo:`, no instruction acknowledgements, and no verbatim subagent trace leakage into the parent report
+- rerun the full-scope subagent swarm before each de novo review pass
 - ask the one-change challenge before final closure
 ```

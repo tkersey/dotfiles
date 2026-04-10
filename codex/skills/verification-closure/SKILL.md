@@ -1,6 +1,6 @@
 ---
 name: verification-closure
-description: Use this skill for targeted validation and final readiness decisions when a coding task needs direct evidence, explicit closure gates, and a canonical Closure Handoff Packet from meta-orchestrator carrying the latest findings invariants hazards complexity verification and specialist ledgers. Trigger for requests like verify this patch is actually ready, run closure gates, resolve material verification gaps, or decide if the artifact set reached a material fixed point. Do not trigger for broad redesign or general code review without a closure question.
+description: Use this skill for targeted validation and final readiness decisions when a coding task needs direct evidence, explicit closure gates, and a canonical Closure Handoff Packet from fixed-point-driver carrying the latest findings invariants hazards complexity verification and specialist ledgers. Trigger for requests like verify this patch is actually ready, run closure gates, resolve material verification gaps, or decide if the artifact set reached a material fixed point. Do not trigger for broad redesign or general code review without a closure question.
 ---
 
 # Verification Closure
@@ -97,7 +97,7 @@ Always produce these gate statuses:
      - `conditionally ready` if core behavior is verified but bounded non-material gaps or accepted risks remain
      - `not ready` if any material gate remains open or failed
      - `indeterminate` if the evidence base is contradictory or insufficient for a grounded call
-6. If readiness is not `ready` or `conditionally ready`, say which gate should reopen the orchestrator loop.
+6. If readiness is not `ready` or `conditionally ready`, say which gate should reopen the fixed-point-driver loop.
 
 ### Closure Bottom Line
 Use 3-5 lines max:

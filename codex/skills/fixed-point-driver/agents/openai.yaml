@@ -1,0 +1,7 @@
+
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Fixed-Point Driver"
+  short_description: "Drive changesets to a material fixed point"
+  default_prompt: "Use the fixed-point-driver skill for this task."

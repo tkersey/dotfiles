@@ -1,6 +1,6 @@
 # Canonical Closure Handoff Packet
 
-Use this packet whenever `meta-orchestrator` hands work to `verification-closure`.
+Use this packet whenever `fixed-point-driver` hands work to `verification-closure`.
 The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job is to move the latest state across the phase boundary without collapsing important distinctions into prose.
 
 ## Packet rules
