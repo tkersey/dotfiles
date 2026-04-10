@@ -1,903 +1,166 @@
 ---
 name: fix
-description: Review+fix protocol with optional pre-core git diff review and safety guardrails (unsoundness, invariants, footguns, incidental complexity). Use when prompts say "$fix this PR", "fix current branch", "fix this diff", "repair CI red", or "apply a minimal patch", and when crash/corruption/invariant-break issues need correction with a validation signal. Stop only after self-review exhausts actionable changes, each full cycle reaches post-self-review rerun plus terminal diff-review closure, and any required confirmation cycles are clean.
+description: Explicit repair loop for a branch diff, current branch, PR, or commit. Run native `codex review` against a frozen local base branch or commit, hand actionable findings to `$fixed-point-driver`, validate, and repeat until a fresh native review is clean. Use when prompts say "$fix this PR", "fix current branch", "fix this diff", "address review comments", or "repair this branch to review-clean closure".
 ---
 
 # Fix
 
 ## Intent
-Make risky or unclear code safe with the smallest sound, validated change, then keep rerunning the whole `$fix` skill as an outer fixed-point loop until no actionable self-review change remains, no actionable footgun on the touched surfaces or adjacent seam remains unresolved, and the unchanged final diff is review-clean under the frozen whole-diff review context. By default, a cycle closes after one clean terminal diff-review round plus one zero-edit clean cycle on the unchanged fingerprint; require a confirming clean terminal round only when the same cycle had a terminal-review-driven edit or used `review_transport=native_fallback`, and require a second zero-edit clean cycle only when the first clean cycle included self-review edits, terminal-review edits, or `native_fallback`. Broader architecture, product, or roadmap analysis belongs to another skill.
-Skill-artifact refinement belongs to `$refine`; `$fix` stays focused on code/diff repair turns.
-
-## Execution spine
-- `Preflight + frozen review context`
-- `Core passes`
-- `Residual risk sweep`
-- `Agent-directed self-review loop`
-- `Post-self-review rerun + final diff review closure`
-- `Outer fixed-point cycle convergence`
-- `Output / handoff`
-
-## Double Diamond fit
-`fix` spans the full Double Diamond, but keeps divergence mostly internal to stay autonomous:
-- Discover: reproduce/characterize + collect counterexamples.
-- Define: state the contract and invariants (before/after).
-- Develop: (internal) consider 2-3 plausible fix strategies; pick the smallest sound one per default policy.
-- Deliver: implement + prove with a real validation signal.
-
-If a fix requires a product-sensitive choice (cannot be derived or characterized safely), stop and ask (or invoke `$creative-problem-solver` when multiple viable strategies exist).
-
-## Compact risk framing prepass (mandatory)
-- Run one compact prepass on every `$fix` cycle before `P0 Core Review`.
-- The prepass replaces separate expansive `$invariant-ace` and `$complexity-mitigator` narration, but it must preserve both analyses.
-- The prepass artifact must record: working contract, `invariant_before`, `invariant_after`, enforcement boundary, touched public/documented surfaces, top-ranked misuse path or `none_with_reason`, proof-surface list, proof-hook mapping, and the smallest viable cut.
-- Use `$invariant-ace` concepts first, then `$complexity-mitigator` concepts, but keep the visible contract compact and reuse the same artifact throughout the cycle.
-
-## Inputs
-- User request text.
-- Repo state (code + tests + scripts).
-- Optional git review context: `base_branch` + `comparison_sha`.
-- Validation signal (failing test/repro/log) OR a proof hook you create.
-
-## Outputs (chat)
-- Emit the exact sections in `Deliverable format (chat)`.
-- Use section headings verbatim (for example, `**Findings (severity order)**`, not `Findings`).
-- Every complete finding report must make provenance visible enough to answer whether the issue came from the frozen input review seed or from `$fix` itself.
-- During execution, emit one-line pass progress updates at pass start and pass end using:
-  `Cycle <c>: Pass <n>/<total_planned>: <name> — <start|done>; edits=<yes|no|n/a>; signal=<cmd|n/a>; result=<ok|fail|n/a>`.
-- In `Validation`, include a machine-checkable JSON object with keys:
-  `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
-- Keep review/self-review transcript shapes aligned with `references/self_review_loop_examples.md` when editing this contract.
-
-### Embedded mode (when $fix is invoked inside another skill)
-- You may emit a compact **Fix Record** instead of the full deliverable.
-- If another skill requires a primary artifact (for example patch-only diff), append **Fix Record** immediately after that artifact in the same assistant message.
-- Do not mention “Using $fix” without emitting either the full deliverable or a Fix Record.
-
-## Hard rules (MUST / MUST NOT)
-- MUST default to review + implement (unless review-only is requested).
-- MUST triage and present findings in severity order: security > crash > corruption > logic.
-- MUST NOT claim done without a passing validation signal.
-- MUST NOT edit when no local signal/proof hook can be found or created under `Validation signal selection`; fail fast and report blocker.
-- MUST NOT do product/feature work.
-- MUST NOT do intentional semantic changes without clarifying, except correctness tightening.
-- MUST resolve trade-offs using `Default policy (non-interactive)`.
-- MUST emit pass progress updates while running the multi-pass loop.
-- MUST include a final `Pass trace` section in the deliverable/Fix Record with executed pass count and per-pass outcomes.
-- MUST include machine-checkable validation evidence keys in `Validation`: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
-- MUST use the exact heading names from `Deliverable format (chat)` / `Fix Record`; do not alias or shorten heading labels.
-- MUST include a final `Review reconciliation` section in the deliverable/Fix Record.
-- MUST produce a complete finding record for every acted-on issue:
-  - origin
-  - seeded_review
-  - proof_target
-  - counterexample
-  - invariant_before
-  - invariant_after
-  - fix
-  - proof
-  - proof_strength
-  - compatibility_impact
-- MUST, when a frozen input review seed exists, report `review_seed_count`, `seeded_findings_closed`, `seeded_findings_still_open`, `fix_discovered_count`, and `origin_tally` in `Review reconciliation`.
-- MUST run the `Compact risk framing prepass (mandatory)` on every `$fix` cycle before `P0 Core Review`, preserving invariant framing and complexity reduction in one compact artifact.
-- MUST NOT put fixable items in `Residual risks / open questions`; if it is fixable under the autonomy gate + guardrails, treat it as a finding and fix it.
-- MUST include a final `Review loop trace` section in the deliverable/Fix Record.
-- MUST run `P2 Footguns` as a first-class core pass before `P3 Surface + Audit`.
-- MUST inspect every touched public/documented surface plus at most one adjacent caller, constructor, parser, wrapper, or config boundary seam when needed to prove or defuse misuse.
-- MUST, in `P2 Footguns`, produce at least one top-ranked misuse path or an explicit `none_with_reason` for every touched public/documented surface.
-- MUST treat any concrete compatible/provable footgun mitigation on the touched surface or adjacent seam as a normal finding that blocks closure until it is fixed, proved, or blocked.
-- MUST default git-backed branch-diff and commit review rounds to native `codex review --base <base_branch>` or `codex review --commit <sha>` when the run only needs a one-shot verdict on the frozen review context. Reserve split detached-review lifecycle commands (`cas review_session start ...` plus `wait ...`) for runs that explicitly need detached lifecycle control: persisted `reviewThreadId`, fresh-process polling after launch, explicit interrupt, compatibility diagnostics, or approval/runtime overrides. If an explicitly detached CAS round exits with `failureCode` in `missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state`, one temporary caller-owned fallback to native `codex review --base <base_branch>` or `codex review --commit <sha>` is allowed; record `review_transport=native_fallback` and `fallback_reason=<failureCode>`.
-- MUST keep standard git-backed branch-diff review scope on the entire frozen `base_branch`/`comparison_sha` diff. Once preflight freezes a branch-diff review context, neither native review, detached CAS, nor native fallback may be narrowed to touched files, the current uncommitted patch, or another ad hoc sub-scope unless the run was explicitly commit-scoped or explicitly worktree-scoped from preflight.
-- MUST treat a slow native whole-diff review (`review_transport=native|native_fallback`) as the intended closure lane for standard branch-backed `$fix` runs; do not relabel it as non-convergent or abandon it solely because the branch diff is larger than the immediate fix seam.
-- MUST run `P0 Core Review` as the first core pass, using the frozen review context's active review transport (`review_transport=native` by default, `review_transport=cas` only for explicit detached-control runs) as a fixer-owned pass that is reported in `Pass trace`, not `Review loop trace`.
-- MUST classify `P0 Core Review` output into `local_findings` and `blocked_findings` only; `stale_findings` are terminal-review-only.
-- MUST treat `P0 Core Review` as a single frozen discovery pass per outer cycle; use its output to seed local repair work for that cycle instead of rerunning whole-diff review after each local fix.
-- MUST run every terminal `R#` review round in a fresh isolated review invocation with no authoring carry-over from the fixer. For branch-diff rounds, first confirm the live merge base still matches the frozen `comparison_sha`; if it drifts, stop blocked and refresh review context in a new `$fix` run. Native rows use fresh `codex review --base <base_branch>` on the frozen whole diff; detached rows use fresh split CAS `start` plus `wait`; native fallback rows are allowed only when the immediately preceding detached CAS attempt for the same run-local `cas_attempt_key` failed with an allowed fallback `failureCode`. The fixer may address findings but must not both author and adjudicate the same review round.
-- MUST derive `base_branch` and `comparison_sha` from repo state for any git-backed run with a live diff when they are omitted, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base. For git-backed live diffs, missing review context after derivation is a blocker, not a successful `skip_missing_base_context` path.
-- MUST verify `comparison_sha` resolves to a commit before activating `P0 Core Review` or the terminal diff review loop.
-- MUST freeze that canonical review context for every outer cycle in the run once preflight verification succeeds.
-- MUST keep the terminal diff review loop separate from `Pass trace`; report it in `Review loop trace`.
-- MUST rerun the isolated review loop against the current final diff after the self-review loop and after any post-self-review rerun edits; by default, close terminal review after one clean round on the unchanged final diff with `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface `proved|blocked`. Require a second clean confirmation round only when the same cycle had a terminal-review-driven edit or used `review_transport=native_fallback`.
-- MUST treat blocked `P0 Core Review` carry-forward as pre-terminal only. A terminal final-diff closure round with any `blocked_findings` or `stale_findings` is not review-clean and does not close `$fix`.
-- MUST NOT treat a terminal final-diff review round with `blocked_findings>0` as closed or `local_clean`; if a fresh reviewer still emits any finding, `$fix` is not done.
-- MUST NOT treat a terminal final-diff review round with `stale_findings>0` as closed or `local_clean`; if a fresh reviewer still emits a repeated finding, `$fix` is not done.
-- MUST use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
-- MUST require two consecutive clean terminal review rows on the unchanged final diff only when the same cycle had a terminal-review-driven edit or used `review_transport=native_fallback`; otherwise one clean row is sufficient.
-- MUST suppress a repeated diff-review finding only when its normalized fingerprint and implicated path set did not change across consecutive review rounds and the current proof bundle directly disproves the finding or the implicated diff hunk/form no longer exists; unchanged repetition alone is not enough.
-- MUST judge diff-review findings by author-fix-worthiness: flag only discrete, actionable bugs introduced by the diff that materially affect correctness, performance, security, or maintainability and that the original author would likely fix if they knew about them.
-- MUST prefer zero diff-review findings over speculative or assumption-heavy output; do not flag pre-existing issues, intentional behavior changes, or style-only nits.
-- MUST require every diff-review finding that claims broader impact to name the concrete callers/files/functions that are provably affected, and keep each finding comment to one matter-of-fact paragraph that states the triggering scenario or inputs.
-- MUST consume CAS `reviewResult` output for diff-review findings and normalize its camelCase fields back into the local bookkeeping with `[P0]`..`[P3]` titles, numeric `priority`, tight diff-overlapping `code_location`, and an `overall_correctness` verdict.
-- MUST NOT pass steady-state `--custom-instructions` to `cas review_session start` when detached CAS is in use; the `review/start` target owns the reviewer rubric for normal git-backed `$fix` rounds.
-- MUST NOT fall back to native `codex review` when CAS returns `failureCode=wait_timed_out|review_failed|review_interrupted|approval_denied`; those are transport/runtime failures that must be retried on the same `reviewThreadId` or reported, not masked.
-- MUST use a cumulative long-poll wait budget before declaring review transport blocked: for detached CAS waits, keep waiting on the same `reviewThreadId` across a run-local timeout ladder of `60000`, `120000`, `300000`, and `600000` ms (total `1080000` ms) before stopping blocked; for native fallback on the same frozen review context, continue polling/waiting up to that same cumulative budget before declaring the review lane blocked.
-- MUST enumerate every PROVEN_USED external surface touched by code/docs/examples before closing the core-pass phase.
-- MUST assign each enumerated public/documented surface exactly one dedicated proof hook or one explicit blocker; a sibling or nearby proof hook does not discharge another advertised form.
-- MUST NOT accept a heuristic fallback or compatibility-sensitive public-seam change as done while the advertised/documented form it changes is still unproven.
-- MUST NOT mark a diff-review finding stale when it targets a PROVEN_USED external surface that still lacks a dedicated proof hook or explicit blocker.
-- MUST include a final `Self-review loop trace` section in the deliverable/Fix Record.
-- MUST run the final agent-directed self-review loop only after at least one change is applied and validation is passing.
-- MUST run the self-review loop against the final validated changeset only.
-- MUST invalidate and rerun the self-review loop if any non-self-review edit occurs after a self-review round, including edits from the post-self-review rerun or final diff review closure loop.
-- MUST ask internally exactly: `If you could change one thing about this changeset what would you change?`
-- MUST treat the final agent-directed self-review phase as current-worktree scoped once the first validated changeset exists; do not reject a self-review suggestion solely because it broadens the diff.
-- MUST, when answering the self-review question, first inventory unresolved review-qualifying findings on the current final diff using `Diff review finding bar (required)`; if any exist, choose the highest-severity unresolved one before considering ergonomic/structural/API-shaping improvements.
-- MUST, when answering the self-review question, also inventory unresolved actionable footgun findings on the touched surfaces or adjacent seam before considering broader ergonomic/structural/API-shaping improvements.
-- MUST treat a self-review answer as actionable whenever it identifies a concrete compatible/provable improvement on the current validated changeset, even if the improvement is ergonomic, structural, or API-shaping rather than a baseline bug fix.
-- MUST answer that question internally, apply at most one new actionable self-review change per self-round, re-run validation, and repeat until a self-round yields no new actionable self-review change or only blocked changes.
-- MUST, when public/documented surfaces are touched, answer that question by first inventorying which advertised surface remains unproven; `finding=none` is allowed only when every such surface is proved or explicitly blocked and the current final diff yields zero qualifying findings under the diff review bars.
-- MUST NOT reject a self-review suggestion solely because the baseline is already green, the concern sounds architectural, or the change would reshape a public/API seam; if it can stay backward-compatible and be revalidated locally, implement it.
-- MUST, when a self-review critique is broader than the smallest bug repair, apply the narrowest compatible/provable slice that materially addresses the critique before considering broader follow-up skills.
-- MUST rerun the non-self-review `$fix` passes once after the self-review loop reaches `no_new_actionable_changes` or `blocked`.
-- MUST NOT use `scope_guardrail` as the reason to reject a self-review suggestion once the self-review phase has started.
-- MUST NOT carry a terminal final-diff review finding as `blocked_by=scope_guardrail`; after self-review starts, treat it as `local_findings` or block it for another allowed reason.
-- MUST NOT report a self-review answer that was already applied before the final self-review round; record `finding=none` only when the current final validated changeset yields no concrete compatible/provable self-review change and no qualifying diff-review finding remains.
-- MUST NOT emit `If you could change one thing about this changeset what would you change?` as a user-facing terminal line during normal successful completion.
-- MUST treat `$fix` as a whole-skill outer fixed-point loop: complete the current cycle through post-self-review rerun plus terminal final-diff review closure, then decide whether to restart from preflight using the same frozen review context.
-- MUST record `cycle_index`, `cycle_edit_tally`, `zero_edit_cycle_streak`, and `review_context_receipt` for each full cycle; use `git diff --no-ext-diff <comparison_sha>` as the fingerprint source for review-backed cycles.
-- MUST count a cycle as zero-edit only when `cycle_edit_tally=0` and the cycle's review-context receipt is unchanged (`fingerprint=same` for review-backed runs or the same skip reason for skipped-review runs).
-- MUST require a second zero-edit full cycle only when the first clean zero-edit cycle included self-review edits, terminal-review edits, or `review_transport=native_fallback`; otherwise the first clean zero-edit cycle is sufficient for closure.
-- MUST NOT add a new top-level transcript section for cycle reporting; keep cycle visibility inside runtime pass updates, `Pass trace`, and `Review loop trace`.
-- MUST NOT add an explicit outer-cycle cap; keep looping until the required zero-edit confirmation cycles are complete or another existing blocker stops the run.
-- MUST stop `$fix` once no new actionable self-review change remains, no actionable footgun on the touched surfaces or adjacent seam remains unresolved, the current cycle reaches clean terminal final-diff review closure, and any required zero-edit confirmation cycles are complete; do not continue under `$fix` into broader architecture, product, roadmap, or conceptual analysis.
-- MUST, if the user asks for broader or bolder analysis after a clean or closed `$fix` pass, close the `$fix` deliverable first and recommend the next skill explicitly (`$grill-me`, `$parse`, `$plan`, or `$creative-problem-solver`) instead of continuing under `$fix`.
-- When paired with `$tk` in wave execution, MUST treat `$fix` as the final mutating pass before artifactization:
-  - `commit_first`: hand off immediately to `$commit` after passing validation.
-  - `patch_first`: hand off immediately to `$patch` after passing validation.
-
-## Default policy (non-interactive)
-Use these defaults to maximize autonomy (avoid asking).
-
-Priority order (highest first):
-1. correctness + data safety + security
-2. compatibility for PROVEN_USED behavior
-3. performance
-
-Definitions:
-- PROVEN_USED = behavior with evidence (see checklist below).
-- NON_PROVEN_USED = everything else.
-
-### PROVEN_USED evidence checklist (deterministic)
-Goal: classify behavior as PROVEN_USED vs NON_PROVEN_USED without asking.
-
-Algorithm:
-1. Enumerate affected behavior tokens:
-   - API symbols (functions/types/methods).
-   - CLI flags/commands.
-   - config keys / env vars.
-   - file/wire formats (field names, JSON keys).
-   - error codes/messages consumed by callers.
-2. Collect evidence in this order (stop at first match):
-    - User repro/signal references the token.
-    - Tests assert on the token/behavior.
-    - Docs/README/examples/CHANGELOG/config examples describe or demonstrate the token/behavior.
-    - Repo callsites use the token (non-test, non-doc).
-3. IF any evidence exists, THEN mark PROVEN_USED; ELSE mark NON_PROVEN_USED.
-
-Evidence scan procedure (repo-local):
-- Tests: search `tests/`, `test/`, `__tests__/`, `spec/`, and files matching `*test*` / `*.spec.*`.
-- Docs/examples: search `README*`, `docs/`, `examples/`, `CHANGELOG*`, `config.example*`, and `*.md`.
-- Callsites: search remaining source files.
-- CI/config surfaces: also scan `.github/workflows/` for env vars, flags, and script entrypoints.
-
-Tooling hint: prefer `rg -n "<token>"` with `--glob` filters.
-Deterministic scan command template (run in this order):
-- `rg -n "<token>" tests test __tests__ spec --glob '*test*' --glob '*.spec.*'`
-- `rg -n "<token>" README* docs examples CHANGELOG* config.example* --glob '*.md'`
-- `rg -n "<token>" .github/workflows`
-- `rg -n "<token>" .`
-
-### Externally-used surface checklist (deterministic)
-Treat a surface as external if ANY is true:
-- Token appears in docs/README/examples.
-- Token is a CLI flag/command, config key, env var, or file format field.
-- Token is exported/public API (examples: Rust `pub`, TS/JS `export`, Python in `__all__`, Go exported identifier).
-
-If external use is plausible but uncertain:
-- Prefer an additive compatibility path (wrapper/alias/adapter) if small.
-- Ask only if a breaking change is unavoidable.
-
-Compatibility rules:
-- MUST preserve PROVEN_USED behavior unless it is unsafe (crash/corruption/security). If unsafe, tighten and return a clear error.
-- For NON_PROVEN_USED behavior, treat it as undefined; tightening is allowed.
-
-API/migration rules:
-- IF a fix touches an externally-used surface (use `Externally-used surface checklist`),
-  THEN prefer additive/backward-compatible changes (new option/new function/adapter) over breaking changes.
-- IF a breaking change is unavoidable, THEN stop and ask.
-
-### Surface proof coverage (deterministic)
-Goal: prevent public/documented surfaces from closing on partial or sibling proof.
-
-Algorithm:
-1. Enumerate `proof surfaces` from the touched slice:
-   - every PROVEN_USED external surface touched by code changes
-   - every docs/example form changed by the diff that advertises caller-visible behavior on that surface
-2. Split one API seam into multiple proof surfaces when callers observe distinct forms separately (for example inferred vs explicit errors, omitted vs provided config, or separate constructor/helper forms).
-3. For each proof surface, record:
-   - surface token/form
-   - evidence that it is PROVEN_USED
-   - exact proof hook OR explicit blocker
-   - status=`proved|blocked`
-4. Do not close the diff review loop or the core-pass phase while any proof surface is still unproved.
-
-Rules:
-- A failing/proving hook for one lexical lane does not discharge a different advertised/documented form on the same public surface.
-- Docs/examples edits create proof obligations for the advertised forms they change; they are not commentary-only when they describe caller-visible behavior.
-- If a public seam fix introduces a heuristic fallback, unresolved-default, or compatibility-sensitive narrowing, treat that seam as unproved until the exact advertised/documented form is covered by a dedicated proof hook or blocker.
-
-Performance rules:
-- MUST avoid obvious asymptotic regressions in hot paths.
-- IF performance impact is plausible but unmeasurable locally,
-  THEN choose the smallest correctness-first fix and record the risk in `Residual risks / open questions` (do not ask).
-
-## Autonomy gate (conviction)
-Proceed without asking only if ALL are true:
-- SIGNAL: you have (or can create) a local repro/signal without product ambiguity.
-- CONTRACT: you can derive contract from repo evidence OR characterize current behavior without product ambiguity.
-- INVARIANT: you can state invariant_before and invariant_after.
-- DIFF: the change is localized and reviewable for the chosen strategy.
-- PROOF: at least one validation signal passes after changes.
-
-If ANY gate fails:
-- Apply Defaults + contract derivation.
-- Ask only if still blocked.
-
-## Correctness tightening (default)
-Definition: tightening = rejecting invalid/ambiguous states earlier, removing silent failure paths, or making undefined behavior explicit.
-
-Rule:
-- IF tightening prevents crash/corruption/security issue,
-  THEN apply it (even if PROVEN_USED), return a clear error, and record the compatibility impact.
-- ELSE IF tightening affects only NON_PROVEN_USED inputs/states,
-  THEN apply it without asking.
-- ELSE (tightening might change PROVEN_USED behavior):
-  - prefer a backward-compatible shape (adapter/additive API), OR
-  - lock current behavior with a characterization test,
-  - ask only if compatibility cannot be preserved.
-
-Allowed tightening moves (examples only):
-- Parse/coerce: implicit coercion/partial parse -> explicit parse + error (JS implicit string->number; Rust `parse().ok()` fallback).
-- Fallbacks: warn+fallback/default-without-signal -> explicit error OR explicit "unknown"/"invalid".
-- Lossy conversion: truncation/clamp/wrap -> checked conversion + error (Rust `as`; C casts; Go int conversions).
-- Partial updates: multi-step mutation -> atomic/transactional boundary OR explicit partial result.
-- Ignored errors: ignore -> propagate with context; if intentionally ignored -> compensating signal (assert/test/metric/log).
-- Sentinels: `-1`/`0`/`""`/`None` -> richer returns.
-
-## Defaults (use only when semantics-preserving for valid inputs)
-
-### Ownership / lifetimes
-- MUST inventory in-slice resources: allocations, handles, sockets, locks, txns, temp files.
-- For each resource, record: acquire_site, owner, release_action.
-- MUST ensure every exit releases exactly once.
-- MUST free/release ONLY via the proven owner/allocator/handle.
-  - Never assume a "free" is safe without proving allocator/ownership.
-  - Arena/bump allocators: per-object `free` is safe only if explicitly documented as permitted/no-op.
-
-### Validation signal selection
-Algorithm:
-1. IF the user provided a command, use it.
-2. ELSE choose the cheapest local signal (no network) in this order:
-   - README/QUICKSTART
-   - `scripts/check` / `scripts/test`
-   - `Makefile` / `justfile` / `Taskfile.yml`
-3. ELSE create a proof hook in this order:
-    - focused regression/characterization test
-    - boundary assertion that fails loudly
-    - scoped + rate-limited diagnostic log tied to ONE invariant (never log secrets/PII)
-
-No-signal fail-fast (deterministic):
-- If no signal/proof hook is available after executing the selection algorithm once, stop before editing.
-- Return one blocker with `blocked_by=no_repro_or_proof` and include the exact commands you attempted.
-
-### PR/diff scope guardrail (default in review mode)
-- Default slice = changed lines/paths (git diff/PR diff) + at most one boundary seam (parse/construct/API edge) required to make the fix sound.
-- Do not fix pre-existing issues outside the slice unless:
-  - severity is security/crash/corruption AND
-  - the fix is localized and provable without widening the slice.
-- Otherwise: record as `Residual risks / open questions`.
-
-Scope widening trigger (deterministic):
-- Widen beyond the diff only when ALL are true:
-  - severity is `security`, `crash`, or `corruption`
-  - you can show a concrete causal chain from a diff token to the out-of-slice location
-  - the widening is limited to one adjacent seam (at most one additional file/module boundary)
-  - one local validation signal can prove the widened fix
-- If any check fails, keep scope fixed and record `blocked_by=scope_guardrail`.
-- This guardrail applies to the core review passes.
-- Once the final agent-directed self-review loop starts, scope expands to the current repo/worktree and `scope_guardrail` is not a valid reason to reject the self-review suggestion.
-
-### Generated / third-party code guardrail
-- If a file appears generated or is under third-party/build output, do not edit it directly.
-- Prefer to locate the source-of-truth + regeneration step; apply fixes there and regenerate as needed.
-- Common no-edit zones (examples): `dist/`, `build/`, `vendor/`, `node_modules/`.
-
-### Proof discipline for passing baselines
-When the baseline signal is ok:
-- For every acted-on finding, prefer a proof hook that fails before the fix (focused regression/characterization test).
-- For every enumerated proof surface under `Surface proof coverage (deterministic)`, prefer a failing proof hook before the fix; only an explicit blocker may replace that hook.
-- If you cannot produce a failing proof hook, do not edit; attempt to create one first by:
-  - turning the counterexample into a focused regression/characterization test
-  - enforcing the invariant at a single boundary seam (parse/refine once) and testing the new error
-  - reducing effects to a pure helper and unit-testing it
-  - using an existing fuzzer/property test harness if present
-- Only if you still cannot create a proof hook without product ambiguity, record the blocker as residual risk.
-- A proof hook for one sibling, lexical, or nearby form does not satisfy another advertised proof surface.
-- If the fix changes a public seam by adding a heuristic fallback or narrowing unresolved behavior, treat that seam as unproved until the exact advertised/documented form has a dedicated proof hook or blocker.
-- Self-review exception: when the self-review finding is a concrete compatible simplification or auditability improvement on an already-green changeset, a fresh failing hook is preferred but not mandatory; the primary validation bundle may serve as the proof hook if it still proves the improved invariant after the change.
-
-### Residual risks / open questions policy (last resort)
-
-Residual risks are a record of what you could not safely fix (not a to-do list).
-
-Rules:
-- Before emitting a residual item, attempt to convert it into an actionable finding:
-  - produce a concrete counterexample
-  - attach a proof hook (test/assert) that fails before the fix
-  - apply the smallest localized fix within guardrails
-  - re-run the validation signal
-- Only emit residual items that are truly blocked by one of these blockers:
-  - `product_ambiguity` (semantics cannot be derived/characterized safely)
-  - `breaking_change` (no additive path; fix would be breaking)
-  - `no_repro_or_proof` (cannot create a repro/proof hook locally)
-  - `scope_guardrail` (outside diff slice and not severe enough to widen)
-  - `generated_output` (generated/third-party output; need source-of-truth + regen)
-  - `external_dependency` (needs network/creds/services/hardware)
-  - `perf_unmeasurable` (impact plausible; no local measurement)
-- For self-review-originated changes, do not emit `blocked_by=scope_guardrail`; if scope is the only blocker, widen and continue.
-- Every residual bullet MUST include: a location or token, `blocked_by=<product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable>`, and `next=<one action>`.
-- If there are no residual items, output `- None`.
-
-## Multi-pass loop (default)
-
-Goal: reduce missed issues in PR/diff reviews without widening scope.
-
-Run 4 core passes (mandatory). Run 2 additional delta passes only if pass 3 edits code.
-
-Pass 0) Core Review
-- Scope: diff-driven slice against the frozen `comparison_sha`.
-- Focus: run one isolated git-backed review against the frozen review context as a fixer-owned analysis lens before `P1`. Prefer native `codex review --base <base_branch>` or `codex review --commit <sha>` for ordinary one-shot verdicts; use split detached CAS (`start` plus `wait`) only when the run explicitly needs detached lifecycle control. Normalize the chosen review transport's output into the same local bookkeeping.
-- Loop: classify returned findings into `local_findings` and `blocked_findings`, then seed the local repair work for this cycle from those findings. Do not rerun whole-diff `P0` review again inside the same cycle unless the user explicitly requested detached lifecycle control and the first `P0` invocation itself failed before producing findings.
-- Reporting: record `P0 Core Review` in `Pass trace` and runtime pass updates; reserve `Review loop trace` for terminal isolated closure only.
-- Carry-forward: blocked `P0 Core Review` findings may continue as pre-terminal only and can later become residual items if they stay valid.
-
-Pass 1) Safety (highest severity)
-- Scope: diff-driven slice + required boundary seams.
-- Focus: security/crash/corruption hazards, unsafe tightening, missing error propagation.
-- Change budget: smallest sound fix only.
-
-Pass 2) Footguns
-- Scope: every touched public/documented surface plus at most one adjacent caller, constructor, parser, wrapper, or config boundary seam when needed to prove misuse.
-- Focus: concrete plausible misuse, surprising defaults, ambiguous booleans, implicit units, sentinel returns, partially validated option combinations, order dependence, overloaded helpers, and silent fallbacks.
-- Output: for each touched public/documented surface, produce at least one top-ranked misuse path or an explicit `none_with_reason`.
-- Change budget: additive/clarifying defusals preferred; if the compatible/provable mitigation is concrete, it becomes a normal finding and blocks closure until fixed, proved, or blocked.
-
-Pass 3) Surface + Audit
-- Scope: externally-used surfaces touched by the diff plus the final diff slice.
-- Focus: additive compatibility, public/documented proof surfaces, invariants enforced at strongest cheap boundary, ownership release-on-all-paths, and proof strength.
-- Delegation: always run `$invariant-ace` first for invariant framing, then `$complexity-mitigator` for complexity verdicts that affect auditability.
-- Change budget: no refactors unless they directly reduce risk/auditability of invariants.
-
-Early exit (stop after pass 3):
-- If pass 3 applies no edits, stop the core-pass phase (after running/confirming the primary validation signal).
-
-Delta passes (only if pass 3 applied edits)
-
-Pass 4) Safety delta rescan
-- Scope: ONLY lines/paths changed by passes 1-3 and their immediate boundaries.
-- Focus: new security/crash/corruption hazards introduced by the fixes.
-
-Pass 5) Footgun + surface/proof delta rescan
-- Re-enumerate behavior tokens from the FINAL diff (including newly introduced errors/flags/exports/config keys).
-- Re-run the footgun discovery bar on newly introduced or narrowed surfaces and adjacent seam obligations.
-- Re-run PROVEN_USED/external-surface checks for newly introduced tokens.
-- Ensure proof is still strong for the final diff.
-
-Rules:
-- After any edit-producing pass, run the dedicated targeted proof hook(s) for the touched finding(s) or proof surface(s) before continuing.
-- Run one full validation bundle after the self-review loop converges and before terminal whole-diff review. If any later phase edits code, rerun targeted proof hook(s) immediately and rerun the full validation bundle once before the next terminal review attempt.
-- Do not edit on suspicion: every edit must have a concrete counterexample, invariant_before/after, and a proof hook.
-- During the self-review phase, the counterexample may be an auditability or responsibility-split failure in the current validated changeset; if the change is compatible and locally validated, that is actionable under `$fix` even when the baseline was already green.
-- Merge/de-duplicate findings across passes; final output format stays unchanged.
-- Emit pass progress updates in real time at pass start/end; these updates are required and do not replace the final `Pass trace` section.
-
-## Clarify before changes
-Stop and ask ONLY if any is true:
-- Behavior is contradictory/product-sensitive AND cannot be derived from tests/docs/callsites AND cannot be characterized safely.
-- A breaking API change or irreversible migration is unavoidable (no backward-compatible path).
-- No local signal/proof hook can be found or created without product ambiguity.
-
-## Finding record schema (internal)
-For every issue you act on, construct this record before editing:
-- id: `F<number>`
-- location: `file:line`
-- severity: `security|crash|corruption|logic`
-- issue: <one sentence>
-- origin: `review_seed|p0_core_review|proof_hook|footgun_scan|self_review|terminal_review`
-- seeded_review: `yes|no`
-- tokens: <affected behavior tokens; empty if none>
-- proven_used: <yes/no + evidence if yes>
-- external_surface: <yes/no + why>
-- diff_touch: <yes/no>
-- proof_target: <exact advertised/documented form covered by the proof>
-- counterexample: <input/timeline>
-- invariant_before: <what is allowed/assumed today>
-- invariant_after: <what becomes guaranteed/rejected>
-- fix: <smallest sound fix that removes the bug-class>
-- proof: <test/assert/log + validation command + result>
-- proof_strength: `characterization|targeted_regression|property_or_fuzz`
-- compatibility_impact: `none|tightening|additive|breaking`
-
-### Canonical finding example (fully-filled)
-Use this as the reference shape when writing findings.
-
-```md
-F1 `src/config_loader.py:88` — crash — untrusted config type causes uncaught attribute access
-  - Surface: Tokens=config.path; PROVEN_USED=yes (tests/config/test_loader.py::test_reads_path); External=yes; Diff_touch=yes
-  - Provenance: Origin=review_seed; Seeded review=yes
-  - Proof target: explicit rejection of null `config.path` before `cfg.path.strip()`
-  - Counterexample: `{"path":null}` reaches `cfg.path.strip()` and raises `AttributeError`
-  - Invariant (before): loader assumes `path` is a non-empty string
-  - Invariant (after): loader accepts only non-empty string `path`; invalid type returns explicit error
-  - Fix: add boundary validation in `parse_config()` and reject invalid `path` before use
-  - Proof: `uv run pytest tests/config/test_loader.py::test_rejects_null_path` -> ok
-  - Proof strength: `targeted_regression`
-  - Compatibility impact: `tightening`
-
-Residual risks / open questions
-- `vendor/generated/config_schema.py` — blocked_by=generated_output — next=edit source schema and regenerate artifact
-```
-
-## Workflow (algorithm)
-
-### 0) Preflight
-1. Determine mode: review-only vs fix.
-2. Define slice:
-   - If in a git repo and there is a diff, derive slice/tokens from the diff (paths, changed symbols/strings).
-   - Otherwise: entrypoint, inputs, outputs, state.
-3. If the request is PR-scoped (for example "`$fix this PR`", "`$fix current branch`", CI failure on a PR), anchor the slice to PR diff/base and keep the work PR-local unless severity widening is required.
-4. Apply `PR/diff scope guardrail` for review mode.
-5. Apply `Generated / third-party code guardrail` before editing.
-6. Determine review-loop activation:
-    - If `git rev-parse --is-inside-work-tree` fails, set `Review loop trace` to `- None (skip_not_git_repo)` and continue.
-    - If the repo is git-backed and there is a live diff while `base_branch` or `comparison_sha` is missing, derive them from repo state, preferring the branch's actual review base plus merge-base commit whenever derivable (tracked/upstream/default base branch). Reserve a current worktree/HEAD fallback only for explicitly worktree-scoped requests with no broader base; omitted-but-derivable git context is not a skip case.
-    - If the repo is git-backed and there is a live diff, but `base_branch` or `comparison_sha` is still missing after derivation, stop and ask with the derivation attempts; do not emit `skip_missing_base_context`.
-    - If there is no live diff and no review target can be derived, set `Review loop trace` to `- None (skip_missing_base_context)` and continue.
-   - Otherwise verify `comparison_sha` with `git rev-parse --verify <comparison_sha>^{commit}` and freeze the canonical commit for the rest of the run and every outer cycle. For review-backed runs, also freeze `review_transport_default=<native|cas>` (`native` for ordinary one-shot branch/commit verdicts; `cas` only for explicit detached-control runs), the frozen review command(s) for that transport, `review_wait_timeout_ladder_ms=60000,120000,300000,600000` for detached CAS waits, `review_wait_budget_ms=1080000` for the total review wall-clock budget, and the per-run detached-review attempt budget for the frozen review target so later CLI rounds can re-derive the same merge base before invoking the reviewer.
-   - If that verification fails, stop before editing and report the failed command as a blocker.
-7. Select validation signal (or create proof hook).
-8. If signal/proof creation fails, stop before editing and return `blocked_by=no_repro_or_proof` with attempted commands.
-9. If pasted `/review` comments or another explicit reviewer finding set is present, freeze a normalized `review_seed` set before the first code edit; otherwise set `review_seed=none`.
-10. Initialize outer fixed-point state:
-   - set `cycle_index=1`
-   - set `zero_edit_cycle_streak=0`
-   - reuse the same frozen `base_branch`/canonical `comparison_sha` and validation signal across all later cycles
-   - when review context exists, use `git diff --no-ext-diff <comparison_sha>` as the fingerprint source for every cycle receipt
-
-### 1) Diff review loop
-This phase runs only as the final closure gate on the current final diff after self-review/post-self-review edits settle. `P0 Core Review` reuses the frozen review transport's findings output inside `Core passes`, but it is fixer-owned and reported in `Pass trace`, not `Review loop trace`.
-
-### Diff review finding bar (required)
-- Flag only discrete, actionable bugs introduced by the diff that materially impact correctness, performance, security, or maintainability.
-- Apply the author-fix-worthiness bar: the issue should be something the original author would likely fix if it were pointed out.
-- Do not flag pre-existing issues, intentional behavior changes, speculative risks, or style-only nits unless they obscure meaning or violate documented standards.
-- Do not rely on unstated assumptions about intent or environment; when claiming broader impact, identify the concrete callers/files/functions that are provably affected.
-- Prefer no findings over weak findings.
-
-### Footgun discovery bar (required)
-- Treat a footgun as in-scope only when it is a concrete, plausible misuse on a touched public/documented surface or on one adjacent caller, constructor, parser, wrapper, or config boundary seam.
-- Apply the author-fix-worthiness bar here too: the scenario should be something the original author would likely guard against if shown the misuse path.
-- Prefer silent fallback, ambiguous booleans, implicit units, sentinel returns, partially validated option combinations, order dependence, overloaded helpers, and surprising defaults over cosmetic API cleanups.
-- For each qualifying footgun, include a minimal misuse snippet or timeline plus the surprising behavior it triggers.
-- Prefer no footgun finding over an abstract ergonomics complaint that lacks a concrete misuse path.
-
-### Diff review comment bar (required)
-- Use one finding per distinct issue and keep the line range as short as possible while still pinpointing the problem.
-- Keep the body to one paragraph in a matter-of-fact tone. Explain why it is a bug, how severe it is in context, and the scenario or inputs required for it to arise.
-- Avoid long code excerpts; do not include code blocks longer than 3 lines.
-
-### Diff review priority bar (required)
-- Prefix each finding title with `[P0]`, `[P1]`, `[P2]`, or `[P3]`.
-- `P0`: universal/blocking release or major usage issue with no special assumptions.
-- `P1`: urgent; should be fixed in the next cycle.
-- `P2`: normal; should be fixed eventually.
-- `P3`: low; nice to have.
-- Mirror the title priority in numeric `priority` using `0` for `P0`, `1` for `P1`, `2` for `P2`, and `3` for `P3`.
-
-### Diff review output schema (required)
-
-```json
-{
-  "findings": [
-    {
-      "title": "<= 80 chars, starts with [P0]-[P3]>",
-      "body": "<one-paragraph Markdown explaining why this is a bug and when it occurs>",
-      "confidence_score": "<float 0.0-1.0>",
-      "priority": "<int 0-3>",
-      "code_location": {
-        "absolute_file_path": "<absolute file path>",
-        "line_range": {
-          "start": "<int>",
-          "end": "<int>"
-        }
-      }
-    }
-  ],
-  "overall_correctness": "\"patch is correct\" | \"patch is incorrect\"",
-  "overall_explanation": "<1-3 sentence explanation>",
-  "overall_confidence_score": "<float 0.0-1.0>"
-}
-```
-
-Rules:
-- The diff review output is JSON-only: no fences, no prose, no fix patch.
-- `code_location` is required, must overlap the diff, and should stay as tight as possible.
-- Return all qualifying findings, not just the first. If there is no finding the author would definitely want to fix, return an empty `findings` list and set the overall verdict accordingly.
-
-### Review transport selection (required)
-- Default git-backed branch-diff review command: `codex review --base <base_branch>`.
-- Default git-backed commit review command: `codex review --commit <sha>`.
-- Detached CAS branch-diff review commands (only when explicit detached lifecycle control is required): `cas review_session start --cwd <cwd> --base <base_branch> --json` plus `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json`.
-- Detached CAS commit-scoped review commands (only when explicit detached lifecycle control is required): `cas review_session start --cwd <cwd> --commit <sha> --json` plus `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json`.
-- Detached CAS `start` resolves the merge base internally for `--base <base_branch>` runs; before each detached round, confirm that the currently derived merge base still matches the frozen `comparison_sha`.
-- Standard branch-backed `$fix` closure reviews the whole frozen branch diff, not just the local fix seam; keep the same review target for native, detached CAS, and native fallback unless preflight explicitly selected commit/worktree scope.
-- Do not paste the built-in review prompt into this skill or pass steady-state `--custom-instructions`; when detached CAS is selected, the `review/start` target owns the reviewer rubric internally.
-- Reserve `--custom-instructions` for explicit custom-review runs only; do not use it for normal git-backed `$fix` rounds.
-- Normalize the chosen review transport's output into the local `local_findings` / `blocked_findings` / `stale_findings` bookkeeping plus `overall_correctness`. When `review_transport=cas`, consume CAS `reviewResult` JSON; when `review_transport=native|native_fallback`, normalize native `codex review` output to that same schema.
-- Treat one detached CAS attempt as one `start` plus any `wait` retries on the returned `reviewThreadId`, keyed by the frozen review target + `comparison_sha` + resolved runtime. If a detached attempt for the current key returns `failureCode=incompatible_codex_review_runtime`, do not launch detached CAS again for that key in the same run.
-- If an explicitly detached CAS round exits with `failureCode` in `missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state`, one temporary native fallback review round is allowed with the same frozen review context. Record `review_transport=native_fallback`, set `fallback_reason=<failureCode>`, and treat the native reviewer output as the round verdict.
-- If CAS exits with `failureCode=wait_timed_out`, keep waiting on the same `reviewThreadId` across the frozen timeout ladder `60000`, `120000`, `300000`, `600000` until either a verdict arrives or the cumulative `review_wait_budget_ms=1080000` is exhausted.
-- If `review_transport=native|native_fallback`, keep the native review on that same frozen whole-diff review target and allow it up to the same `review_wait_budget_ms=1080000` wall-clock budget before declaring the lane blocked.
-- If CAS exits with `failureCode=review_failed|review_interrupted|approval_denied`, do not fall back; stop blocked and report the detached CAS failure.
-
-Algorithm:
-1. If `Review loop trace` already contains a skip line from preflight, continue to phase 2.
-2. Freeze `review_transport_default` from preflight: `native` for ordinary one-shot branch/commit verdicts; `cas` only when the request or current run explicitly needs detached lifecycle control.
-3. If `review_transport_default=native`, run `codex review --base <base_branch>` or `codex review --commit <sha>` on the frozen review context and give that command the full `review_wait_budget_ms=1080000` wall-clock budget.
-4. If `review_transport_default=cas`, run `cas review_session start --cwd <cwd> --base <base_branch> --json` or `cas review_session start --cwd <cwd> --commit <sha> --json` in a fresh CAS invocation after confirming the live merge base still matches the frozen `comparison_sha`.
-5. Capture `reviewThreadId`, `resolvedCodexPath`, and `resolvedCodexVersion` from the detached `start` JSON response and derive `cas_attempt_key=<review_target_kind>|<comparison_sha>|<resolvedCodexPath>|<resolvedCodexVersion>`.
-6. If detached `start` exits with an allowed fallback `failureCode`, run one native `codex review` round on the same frozen review context, record `review_transport=native_fallback` and `fallback_reason=<failureCode>`, and use the native reviewer output as the round verdict.
-7. Otherwise run `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json`.
-8. If `wait` exits with `failureCode=wait_timed_out`, keep reissuing `wait` on the same `reviewThreadId` using the next rung in the frozen timeout ladder (`60000`, `120000`, `300000`, `600000`) until a verdict arrives or the cumulative `review_wait_budget_ms=1080000` is exhausted; only then stop blocked.
-9. If `wait` exits with an allowed fallback `failureCode`, run one native `codex review` round on the same frozen review context, record `review_transport=native_fallback` and `fallback_reason=<failureCode>`, and use the native reviewer output as the round verdict.
-10. Otherwise read the reviewer output from the active review transport and partition its findings into:
-   - `local_findings`: locally fixable under the active guardrails for the current phase
-   - `blocked_findings`: findings that are blocked under the existing blocker model
-   - `stale_findings`: repeated locally-fixable findings whose normalized fingerprint and implicated path set did not change across consecutive rounds after an address round
-   - Once self-review has started, the terminal final-diff closure loop is current-worktree scoped and `scope_guardrail` is not a valid blocker.
-11. Emit one `Review loop trace` row per terminal review round.
-12. If `local_findings > 0`, address all review findings, re-run the chosen validation signal, then repeat from step 2.
-13. If a repeated locally-fixable finding is stale, suppress it from loop continuation and count it under `stale_findings` only when its normalized fingerprint and implicated path set did not change across consecutive rounds and the current proof bundle directly disproves the finding or the implicated diff hunk/form no longer exists.
-   - Do not mark a finding stale if it targets a PROVEN_USED external surface that still lacks a dedicated proof hook or explicit blocker.
-14. Re-check `Surface proof coverage (deterministic)` against the current diff before closing the round.
-15. Close the terminal diff review loop only when a review round yields `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`. If `review_transport=cas`, closure also requires `reviewResultAvailable=true`.
-
-### 2) Core passes
-1. Determine PROVEN_USED behavior:
-   - Apply `PROVEN_USED evidence checklist` to the behavior tokens affected by the slice.
-2. Enumerate proof surfaces:
-   - Apply `Surface proof coverage (deterministic)` to the touched code/docs/examples before deriving closure.
-3. If `review_seed` exists, normalize it into discrete seeded findings before adding any new finding records so later reconciliation can distinguish seeded closures from `$fix`-discovered issues.
-4. Derive contract without asking (in this order):
-   - tests that exercise the slice
-   - callsites in the repo
-   - docs/README/examples
-   - if none: add a characterization test for current behavior
-5. Write contract (1 sentence): "Working means …".
-6. Run baseline signal once; record result.
-7. If baseline signal is ok, apply `Proof discipline for passing baselines`.
-8. Enumerate candidate failure modes for the slice.
-9. Rank security > crash > corruption > logic.
-10. For each issue you will act on, create a finding record.
-11. Assign each finding `origin` and `seeded_review` deterministically:
-   - `review_seed` with `Seeded review=yes` when the acted-on issue matches the frozen input review seed
-   - `p0_core_review`, `proof_hook`, `footgun_scan`, `self_review`, or `terminal_review` with `Seeded review=no` when `$fix` discovered the issue after preflight
-12. Run the `Multi-pass loop (default)` for the touched slice, starting with `P0 Core Review`.
-
-#### 2a) Unsoundness scan
-For each hazard class that applies:
-- Identify the first failure point.
-- Provide a concrete counterexample (input/timeline).
-- Specify the smallest sound fix that removes the bug-class.
-
-Hazard classes:
-- Security boundaries: authz/authn, injection, path traversal, SSRF, unsafe deserialization, secrets/PII handling.
-- Nullability/uninitialized state; sentinel values.
-- Ownership/lifetime: leaks, double-free, use-after-close, lock not released.
-- Concurrency/order/time: races, lock ordering, reentrancy, timeouts/retries, TOCTOU.
-- Bounds/arithmetic: indexing/slicing, overflow/underflow, signedness.
-- Persistence/atomicity: partial writes, torn updates, non-transactional multi-step updates.
-- Encoding/units: bytes vs chars, timezone/locale, unit mismatches, lossy normalization.
-- Error handling: swallowed errors, missing context, silent fallback.
-
-Language cues (examples only):
-- Rust: `unsafe`, `unwrap/expect`, `as` casts.
-- JS/TS: `any`, implicit coercions, `undefined` flows.
-- Python: bare `except`, truthiness-based branching.
-- C/C++: raw pointers, unchecked casts, manual `malloc/free`.
-
-#### 2b) Invariant strengthening scan
-Run the compact risk framing prepass on every `$fix` cycle and preserve `$invariant-ace` semantics inside it.
-
-Default execution:
-1. Capture at minimum:
-   - `Counterexample`
-   - `Invariants`
-   - `Owner and Scope`
-   - `Enforcement Boundary`
-   - `Seam (Before -> After)`
-   - `Verification`
-2. Map these to `fix` finding fields:
-   - `invariant_before` from broken trace + prior scope,
-   - `invariant_after` from chosen predicate(s) + holds scope,
-   - `fix` from seam,
-   - `proof` from verification signal.
-3. Escalate the compact prepass only if it cannot yield an inductive predicate or a smallest viable cut.
-
-#### 2c) Footgun scan + defusal
-Trigger: you touched a public/documented surface OR one adjacent caller, constructor, parser, wrapper, or config boundary seam can plausibly misuse the code.
-
-For each touched public/documented surface, produce at least one top-ranked misuse path or an explicit `none_with_reason`.
-For top-ranked misuse paths:
-1. Provide minimal misuse snippet + surprising behavior.
-2. Defuse by changing the surface:
-   - options structs / named params
-   - split booleans into enums or separate functions
-   - explicit units/encodings
-   - richer returns (no sentinels)
-   - separate pure computation from effects
-3. Lock with a regression test or boundary assertion.
-4. If the mitigation is concrete, compatible, and locally provable, treat it as a normal finding; do not leave it advisory at closure time.
-
-#### 2d) Complexity scan (risk-driven)
-Run the compact risk framing prepass on every `$fix` cycle after invariant framing; implement only via `fix`.
-
-Rule: reshape only when it reduces risk and improves auditability of invariants/ownership.
-
-Algorithm:
-1. Capture a compact essential-vs-incidental verdict on the touched slice, plus the smallest ranked cut that improves auditability without widening scope.
-2. Select the smallest viable cut that directly supports a finding (safety/surface/invariant ownership/proof quality).
-3. If simplification depends on an unstated invariant, refresh the invariant portion of the compact prepass first.
-4. Keep complexity-only cleanup out of scope unless it closes a concrete risk.
-
-11. Implement fixes (per finding).
-For findings in severity order:
-1. Implement the smallest sound fix that removes the bug-class.
-2. Apply correctness tightening when allowed.
-3. Ensure invariants + ownership hold on all paths.
-4. Keep diff reviewable; avoid drive-by refactors.
-
-12. Close the core-pass phase.
-   - Run the targeted proof hook(s) for the last edit-producing pass.
-   - If a targeted proof hook fails, update findings with the new counterexample, apply the smallest additional fix, and re-run the SAME targeted proof hook(s).
-   - Repeat until the targeted proof hook(s) pass.
-   - Re-check `Surface proof coverage (deterministic)` and do not close while any proof surface remains unproved.
-   - If you cannot make progress after 3 repair cycles, stop and ask with the last failing output, what you tried, and the smallest remaining decision that blocks you.
-
-### 3) Residual risk sweep (required)
-1. Re-check `Residual risks / open questions policy`.
-2. Any item without a valid blocker becomes a finding and is fixed (with proof) or dropped.
-
-### 4) Agent-directed self-review loop (required final step when a changeset exists)
-1. Precondition gate: run this step only when `Changes applied` is not `None` and the latest validation signal result is `ok`.
-2. Freeze the self-review baseline as the latest validated changeset.
-3. Ask internally exactly: `If you could change one thing about this changeset what would you change?`
-4. Before considering ergonomic/structural/API-shaping improvements, inventory unresolved review-qualifying findings on the current final diff using `Diff review finding bar (required)`; if any exist, choose the highest-severity unresolved one.
-5. Before considering broader ergonomic/structural/API-shaping improvements, inventory unresolved actionable footgun findings on the touched surfaces or adjacent seam and choose the highest-severity one if any remain.
-6. If public/documented surfaces are touched, answer that question by first inventorying which advertised proof surface remains unproven.
-7. Summarize the self-round in `Self-review loop trace` with one delta row.
-8. If the answer yields one new actionable self-review change:
-   - convert it into one concrete finding,
-   - treat compatible ergonomic/structural/API-shaping improvements as actionable when they materially improve the current validated changeset and can be proven locally,
-   - widen anywhere in the current repo/worktree as needed,
-   - apply the smallest sound change that materially addresses the critique,
-   - re-run the chosen validation signal and update findings/proof,
-   - record the `(validated_changeset_fingerprint, normalized_answer_summary)` pair so repeated suggestions cannot loop forever,
-   - repeat from step 2.
-9. If the answer yields only blocked changes, record `stop_reason=blocked`, carry blockers to `Residual risks / open questions`, and continue to phase 5.
-10. If the answer yields no new actionable self-review change, record `stop_reason=no_new_actionable_changes` and continue to phase 5.
-   - `finding=none` is allowed only when every enumerated proof surface is `proved|blocked`, the current final diff yields zero qualifying findings under the diff review bars, and no actionable footgun on the touched surfaces or adjacent seam remains unresolved.
-   - This check is against the current final validated changeset, not an earlier pre-delta review state.
-   - `already green`, `architectural`, `not fix-shaped`, or `no failing proof hook` are not sufficient reasons by themselves when a concrete compatible/provable improvement or review-qualifying finding still exists.
-11. Skip gate: if `Changes applied` is `None` or the run is blocked before edits, output `- None (skip_gate)` in `Self-review loop trace` and proceed to phase 7.
-
-### 5) Post-self-review rerun + final diff review closure (required per cycle)
-1. Run the non-self-review core passes once against the full resulting changeset.
-2. If that rerun edits code, discard the stale self-review state, revalidate, and restart from phase 4 against the new final validated changeset.
-3. If that rerun applies no edits and `Review loop trace` already contains a skip line from preflight, continue to phase 6.
-4. Otherwise rerun phase 1 `Diff review loop` against the current final diff using the frozen `base_branch` label, canonical `comparison_sha`, and the CAS review command.
-5. If that terminal diff review loop applies edits, discard the stale self-review state, revalidate, and restart from phase 4 against the new final validated changeset.
-6. If that terminal diff review loop yields `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, `overall_correctness="patch is correct"`, and every enumerated proof surface is `proved|blocked`, require a confirmation round only when the same cycle had a terminal-review-driven edit or used `review_transport=native_fallback`.
-7. If a confirmation round is required, rerun the same terminal diff review once more on the unchanged final diff (same frozen `base_branch`/`comparison_sha`, same review transport and command shape for that round, no intervening edits).
-8. If that confirmation round is also clean under the same criteria, continue to phase 6.
-9. Otherwise treat the confirmation round as the new terminal output: if it introduces new local findings, address/revalidate and restart from phase 4; if it still yields `blocked_findings > 0`, `stale_findings > 0`, or `overall_correctness="patch is incorrect"`, stop and report those findings/verdict as blockers.
-10. If no confirmation round is required, continue to phase 6 immediately after the first clean terminal round.
-
-### 6) Outer fixed-point cycle convergence (required)
-1. At cycle start, record `cycle_start_edit_tally=0`; increment it for every code edit applied anywhere in phases 2 through 5.
-2. At cycle start and cycle end, record the cycle review-context receipt:
-   - review-backed runs: `fingerprint=<sha256(git diff --no-ext-diff <comparison_sha>)>`
-   - skipped-review runs: `review_context=<skip_not_git_repo|skip_missing_base_context>`
-3. Emit one cycle summary row in `Pass trace` for the current cycle with `zero_edit_cycle_streak`, `edits`, `review_context`, `fingerprint`, and `result=<restart|continue|close>`.
-4. If `cycle_edit_tally>0`, reset `zero_edit_cycle_streak=0`, increment `cycle_index`, and restart from phase 0 Preflight using the already-frozen review context and validation signal.
-5. If `cycle_edit_tally=0`, count the cycle as zero-edit only when the review-context receipt is unchanged (`fingerprint=same` for review-backed runs or the same skip reason for skipped-review runs); otherwise reset `zero_edit_cycle_streak=0`, increment `cycle_index`, and restart from phase 0.
-6. If the cycle counts as zero-edit, increment `zero_edit_cycle_streak`.
-7. If the first clean zero-edit cycle included self-review edits, terminal-review edits, or `review_transport=native_fallback`, require one confirming zero-edit cycle on the same unchanged review-context receipt.
-8. If a confirming zero-edit cycle is required and `zero_edit_cycle_streak < 2`, increment `cycle_index` and restart from phase 0.
-9. If no confirming zero-edit cycle is required and `zero_edit_cycle_streak = 1`, continue to phase 7 immediately.
-10. If a confirming zero-edit cycle is required and `zero_edit_cycle_streak = 2`, continue to phase 7.
-
-### 7) Output / handoff (required)
-1. If a clean or closed `$fix` pass surfaces broader non-fix opportunities, do not continue exploring them under `$fix`.
-2. If the user explicitly asks for broader or deeper follow-up after closure, recommend the next skill explicitly:
-   - `$parse` for architecture or purpose analysis
-   - `$grill-me` for interrogation, pressure-testing, or narrowing the next move
-   - `$plan` for a decision-complete roadmap
-   - `$creative-problem-solver` for wider option generation
-3. Do not place those broader opportunities in `Residual risks / open questions` unless a valid blocker from the allowed set applies.
-4. Output lock (required):
-   1. Heading set is exact and complete (`Contract`, `Review reconciliation`, `Findings (severity order)`, `Changes applied`, `Review loop trace`, `Pass trace`, `Validation`, `Self-review loop trace`, `Residual risks / open questions`).
-    2. `Review loop trace` includes either a skip line or cycle-annotated `R#` rows. A closing cycle shows one clean terminal final-diff review row on the unchanged final diff by default, and two consecutive clean rows only when the same cycle had a terminal-review-driven edit or used `review_transport=native_fallback`; every closing row still requires `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
-    3. `Pass trace` includes cycle summary rows plus planned/executed counts and P0/P1/P2/P3 lines (plus P4/P5 when executed) and `Post-self-review rerun` for every executed cycle.
-    4. Runtime pass updates (`Cycle <c>: Pass <n>/<total_planned>: ...`) were emitted during execution.
-    5. If embedded mode was used, include **Fix Record** in the same assistant message (after any required artifact).
-    6. `Validation` includes machine-checkable keys: `baseline_cmd`, `baseline_result`, `proof_hook`, `final_cmd`, `final_result`.
-    7. Every acted-on finding includes `Origin`, `Seeded review`, `Proof strength`, and `Compatibility impact` using the allowed enums.
-    8. Every residual `blocked_by` uses only: `product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable`.
-    9. If `Changes applied` is not `None` AND the latest validation result is `ok`, `Self-review loop trace` includes a terminal row with `stop_reason=<no_new_actionable_changes|blocked>` and the user-facing final line is not the question.
-    10. `finding=none` requires zero unresolved actionable footguns on the touched surfaces or adjacent seam.
-
-## Deliverable format (chat)
-Output exactly these sections in this order.
-
-If no findings:
-- **Review reconciliation**: `- review_seed_count=<N|0>`; `seeded_findings_closed=<N|0>`; `seeded_findings_still_open=<N|0>`; `fix_discovered_count=<N|0>`
-- `- origin_tally=<review_seed:N,p0_core_review:N,proof_hook:N,footgun_scan:N,self_review:N,terminal_review:N>`
-- **Findings (severity order)**: `None`.
-- **Changes applied**: `None`.
-- **Review loop trace**: either a skip line or one or more `R#` rows.
-- **Self-review loop trace**: `- None (skip_gate)`.
-- **Residual risks / open questions**: `- None`.
-- Still include **Pass trace** and **Validation**.
-
-**Contract**
-- <one sentence>
-
-**Review reconciliation**
-- `review_seed_count=<N|0>`; `seeded_findings_closed=<N|0>`; `seeded_findings_still_open=<N|0>`; `fix_discovered_count=<N|0>`
-- `origin_tally=<review_seed:N,p0_core_review:N,proof_hook:N,footgun_scan:N,self_review:N,terminal_review:N>`
-
-**Findings (severity order)**
-For each finding:
-- `F#` `<file:line>` — `<security|crash|corruption|logic>` — <issue>
-  - Surface: Tokens=<...>; PROVEN_USED=<yes/no + evidence>; External=<yes/no>; Diff_touch=<yes/no>
-  - Provenance: Origin=`<review_seed|p0_core_review|proof_hook|footgun_scan|self_review|terminal_review>`; Seeded review=`<yes|no>`
-  - Proof target: <exact advertised/documented form covered by the proof>
-  - Counterexample: <input/timeline>
-  - Invariant (before): <what was assumed/allowed>
-  - Invariant (after): <what is now guaranteed/rejected>
-  - Fix: <smallest sound fix summary>
-  - Proof: <test/assert/log + validation command> -> <ok/fail>
-  - Proof strength: `<characterization|targeted_regression|property_or_fuzz>`
-  - Compatibility impact: `<none|tightening|additive|breaking>`
-
-**Changes applied**
-- <file> — <rationale>
-
-**Review loop trace**
-- If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`
-- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_transport=`<native|cas|native_fallback>`; fallback_reason=`<none|missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state>`; review_start_cmd=`<codex review --base <name>|codex review --commit <sha>|cas review_session start --cwd <cwd> --base <name> --json|cas review_session start --cwd <cwd> --commit <sha> --json|n/a>`; review_wait_cmd=`<cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json|n/a>`; review_thread_id=`<thr_*|none>`; cas_attempt_key=`<review_target_kind|comparison_sha|resolvedCodexPath|resolvedCodexVersion|none>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
-- Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
-- Each `R#` row comes from the terminal diff review closure loop in a fresh isolated review invocation on the frozen review context; the fixer does not self-grade that round. Native rows use `codex review --base <base_branch>` or `codex review --commit <sha>`; detached rows use split CAS `start` then `wait` after confirming the live merge base still matches the frozen `comparison_sha`; native fallback rows are allowed only when the immediately preceding detached CAS attempt for the same run-local `cas_attempt_key` failed with an allowed fallback `failureCode`.
-- Standard git-backed branch-diff closure rows stay on the same frozen whole diff for native, CAS, and native fallback; do not narrow to touched files or another ad hoc sub-scope unless preflight explicitly chose commit/worktree scope.
-- Terminal closure requires one clean row on the unchanged final diff within the same cycle by default, and two consecutive clean rows only after a terminal-review-driven edit or `review_transport=native_fallback`.
-- Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
-
-**Pass trace**
-- `Cycle C#` -> zero_edit_cycle_streak=`<0|1|2>`; edits=`<yes|no>`; review_context=`<comparison_sha|skip_not_git_repo|skip_missing_base_context>`; fingerprint=`<same|changed|n/a>`; result=`<restart|continue|close>`
-- For each executed cycle, include:
-  - Core passes planned: `4`; core passes executed: `<4>`
-  - Delta passes planned: `<0|2>`; delta passes executed: `<0|2>`
-  - Total core/delta passes executed: `<4|6>`
-  - `P0 Core Review` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - `P2 Footguns` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - `P3 Surface + Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - If delta passes executed, also include `P4` and `P5` lines in the same format.
-  - `Post-self-review rerun` -> executed=`<yes|no>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
+`$fix` owns the **outer** loop only:
+
+`review -> repair -> validate -> re-review`
+
+Repeat until a **fresh native** `codex review` returns no actionable findings.
+
+There is no wall-clock timeout and no cycle cap inside `$fix`. Long native review rounds, including 10m+ runs, are acceptable.
+
+`$fixed-point-driver` remains unchanged and is the remediation engine inside each loop cycle. Do not move the outer re-review loop into `$fixed-point-driver`.
+
+## Reporting
+Keep user-facing output minimal.
+
+During execution, emit at most one short line per cycle:
+
+`fix C<n>: review=<clean|blocked|N actionable>; action=<repair|stop>; validation=<pass|fail|n/a>`
+
+Final output must contain exactly these sections and nothing else:
+
+- `**Status**`
+- `**Review**`
+- `**Validation**`
+- `**Do Next**`
+
+## Actionable finding bar
+Treat a review comment as actionable only when it is a concrete, author-fix-worthy issue on the in-scope change set.
+
+Actionable findings are:
+- correctness, crash, corruption, security, reliability, or meaningful maintainability regressions
+- concrete compatibility or validation gaps tied to changed code
+- issues with a clear implicated file, symbol, scenario, or diff hunk
+
+Not actionable by default:
+- style-only nits
+- broad redesign requests without a concrete bug or regression
+- comments already disproven by current code and validation
+- comments clearly unrelated to the frozen review scope
+
+If review output is ambiguous, be conservative and do not claim clean unless the round is clearly clean.
+
+## Scope selection
+1. If the user explicitly requests a commit review, use commit scope.
+2. Otherwise use branch-backed review.
+3. Resolve `base_branch` as a **local primary branch** in this order:
+   - explicit user-supplied local `base_branch`
+   - the branch name from `git symbolic-ref --quiet --short refs/remotes/origin/HEAD`, with the `origin/` prefix stripped, but only if the same-named local branch exists
+   - `main` if the local branch exists
+   - `master` if the local branch exists
+4. Never use `@{upstream}` or the current branch's tracking branch as the default `base_branch`.
+5. Never pass remote-tracking refs like `origin/main` or `origin/master` to `codex review --base`; pass a local branch name only.
+6. If no suitable local primary branch exists, stop blocked and tell the user to create or fetch a local `main` or `master`, or pass `base_branch=<local-branch>` explicitly.
+7. Read the current branch name with `git branch --show-current`.
+8. If the resolved `base_branch` equals the current branch name, stop blocked. Do not compare a branch against itself.
+9. For branch-backed runs, freeze `comparison_sha = git merge-base HEAD <base_branch>` before the first review.
+10. Before the first branch-backed review, inspect `git status --porcelain --untracked-files=all`.
+    - If the repo already contains unrelated or noisy untracked/modified files outside the requested scope, stop blocked and tell the user to clean or stash them or use a dedicated worktree.
+    - Changes created by the current `$fix` run are in-scope and do not count as contamination.
+11. Before every branch-backed re-review, recompute `git merge-base HEAD <base_branch>` and stop blocked if it no longer matches the frozen `comparison_sha`.
+
+## Hard rules
+- MUST use native `codex review` for every review round.
+- MUST use `codex review --commit <commit_sha>` for explicit commit scope.
+- MUST use `codex review --base <base_branch>` for branch-backed scope.
+- MUST keep one frozen review context for the whole run.
+- MUST rerun a fresh native review after every remediation cycle.
+- MUST pass the latest actionable review findings into `$fixed-point-driver` and instruct it to resolve those findings on the current artifact state.
+- MUST let `$fixed-point-driver` do the remediation work; `$fix` owns orchestration.
+- MUST require a passing validation signal after each remediation cycle.
+- MUST stop only when a fresh native review is clean or a real blocker prevents forward progress.
+- MUST stop blocked if there is no reliable validation signal.
+- MUST stop blocked on review-scope contamination or merge-base drift.
+- MUST stop blocked when the only resolved default base would compare the branch against itself.
+- MUST detect non-convergence: if two consecutive review rounds produce the same normalized actionable findings and the immediately preceding remediation did not materially change the implicated code or improve validation, stop blocked.
+- MUST keep user-facing reporting to the required minimal format.
+- MUST wait for each native `codex review` process to complete unless the process itself fails, the environment terminates it, or the user interrupts.
+- MUST NOT impose a wall-clock timeout or cycle cap.
+- MUST NOT stop, skip, downgrade, or truncate a review round just because it is taking a long time.
+- MUST NOT treat elapsed time, patience limits, or long review duration as a blocker.
+- MUST NOT narrow or otherwise change review scope mid-run.
+- MUST NOT claim success based on a stale pre-repair review.
+- MUST NOT replace native review with a custom review prompt.
+- MUST NOT use `@{upstream}` or a remote-tracking ref as the default `base_branch`.
+- MUST assume wrappers may need both stdout and stderr from `codex review`.
+
+## Native review commands
+Prefer concrete shell commands over vague intent.
+
+### Commit scope
+- Verify the commit exists with:
+  - `git rev-parse --verify <commit_sha>^{commit}`
+- Review with:
+  - `codex review --commit <commit_sha>`
+
+### Branch-backed scope
+- Read the current branch name with:
+  - `git branch --show-current`
+- If needed, resolve the repo default branch name with:
+  - `git symbolic-ref --quiet --short refs/remotes/origin/HEAD`
+- Verify the local base branch exists with:
+  - `git show-ref --verify --quiet refs/heads/<base_branch>`
+- Freeze and verify `comparison_sha` with:
+  - `git merge-base HEAD <base_branch>`
+  - `git rev-parse --verify <comparison_sha>^{commit}`
+- Review with:
+  - `codex review --base <base_branch>`
+
+## Loop
+1. **Preflight**
+   - Resolve scope.
+   - Resolve a local primary `base_branch` for branch-backed runs.
+   - Freeze review context.
+   - Check contamination for the initial branch-backed run.
+2. **Review**
+   - Run fresh native review on the frozen scope.
+   - Wait for the review command to finish; long-running review rounds are acceptable.
+   - Normalize the results into `clean`, `blocked`, or a short actionable findings set.
+3. **Stop if clean**
+   - If the review is clean, finish.
+4. **Repair**
+   - Invoke `$fixed-point-driver` with the latest actionable findings.
+   - Instruct it to:
+     - resolve exactly those findings on the current artifact state
+     - keep changes narrow and evidence-backed
+     - run the smallest sufficient validation
+     - return control after remediation and validation
+   - Do not let `$fixed-point-driver` own the outer re-review loop.
+5. **Validation gate**
+   - Confirm the post-remediation validation signal passes.
+   - If it fails or no reliable signal exists, stop blocked.
+6. **Re-review**
+   - Re-run fresh native review on the same frozen scope.
+7. **Repeat**
+   - Continue until the review is clean or blocked.
+
+## How to invoke `$fixed-point-driver`
+When handing off to `$fixed-point-driver`, pass all of the following:
+
+- the frozen review scope (`base_branch` + `comparison_sha`, or `commit_sha`)
+- the latest actionable findings from the most recent native review
+- the instruction that the goal is to resolve those findings to closure on the current artifact state
+- the instruction to keep remediation narrow, validated, and ready for another fresh native review round
+
+Use `$fixed-point-driver` as an internal repair phase. Do not mirror its full ledgers back to the user unless the run is blocked and the ledger is the only way to explain the blocker.
+
+## Minimal final response
+Final output must use exactly this shape:
+
+**Status**
+`done` or `blocked`; `cycles=<n>`
+
+**Review**
+`scope=<base ...|commit ...>; last_review=<clean|blocked|N actionable>; last_action=<stop|repaired>`
 
 **Validation**
-- <cmd> -> <ok/fail>
-- `{"baseline_cmd":"<cmd|n/a>","baseline_result":"<ok|fail|n/a>","proof_hook":"<test/assert/log|n/a>","final_cmd":"<cmd>","final_result":"<ok|fail>"}` (single-line JSON)
+`<command/result>` or `blocked: no reliable validation signal`
 
-**Self-review loop trace**
-- If none: `- None (skip_gate)`
-- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_actionable_changes|blocked>`
-
-**Residual risks / open questions**
-- If none: `- None`
-- Otherwise: `- <file:line or token> — blocked_by=<product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable> — next=<one action>`
-
-### Fix Record (embedded mode only)
-Use only when $fix is invoked inside another skill.
-
-**Review reconciliation**
-- `review_seed_count=<N|0>`; `seeded_findings_closed=<N|0>`; `seeded_findings_still_open=<N|0>`; `fix_discovered_count=<N|0>`
-- `origin_tally=<review_seed:N,p0_core_review:N,proof_hook:N,footgun_scan:N,self_review:N,terminal_review:N>`
-
-**Findings (severity order)**
-For each finding:
-- `F#` `<file:line>` — `<security|crash|corruption|logic>` — <issue>
-  - Surface: Tokens=<...>; PROVEN_USED=<yes/no + evidence>; External=<yes/no>; Diff_touch=<yes/no>
-  - Provenance: Origin=`<review_seed|p0_core_review|proof_hook|footgun_scan|self_review|terminal_review>`; Seeded review=`<yes|no>`
-  - Proof target: <exact advertised/documented form covered by the proof>
-  - Counterexample: <input/timeline>
-  - Invariant (before): <what was assumed/allowed>
-  - Invariant (after): <what is now guaranteed/rejected>
-  - Fix: <smallest sound fix summary>
-  - Proof: <test/assert/log + validation command> -> <ok/fail>
-  - Proof strength: `<characterization|targeted_regression|property_or_fuzz>`
-  - Compatibility impact: `<none|tightening|additive|breaking>`
-
-**Changes applied**
-- <file> — <rationale>
-
-**Review loop trace**
-- If skipped: `- None (skip_not_git_repo|skip_missing_base_context)`
-- Otherwise: `R#` cycle=`<C#>`; base_branch=`<name>`; comparison_sha=`<sha>`; review_transport=`<native|cas|native_fallback>`; fallback_reason=`<none|missing_cas_dependency|missing_codex_binary|incompatible_codex_review_runtime|review_output_missing|parent_thread_not_materialized|unsafe_parent_thread_state>`; review_start_cmd=`<codex review --base <name>|codex review --commit <sha>|cas review_session start --cwd <cwd> --base <name> --json|cas review_session start --cwd <cwd> --commit <sha> --json|n/a>`; review_wait_cmd=`<cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms <timeout_ms> --json|n/a>`; review_thread_id=`<thr_*|none>`; cas_attempt_key=`<review_target_kind|comparison_sha|resolvedCodexPath|resolvedCodexVersion|none>`; local_findings=`<N>`; blocked_findings=`<N>`; stale_findings=`<N>`; overall_correctness=`<patch is correct|patch is incorrect>`; change_applied=`<yes|no>`; result=`<continue|local_clean>`
-- Use `result=local_clean` only when `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`; otherwise keep `result=continue`.
-- Each `R#` row comes from the terminal diff review closure loop in a fresh isolated review invocation on the frozen review context; the fixer does not self-grade that round. Native rows use `codex review --base <base_branch>` or `codex review --commit <sha>`; detached rows use split CAS `start` then `wait` after confirming the live merge base still matches the frozen `comparison_sha`; native fallback rows are allowed only when the immediately preceding detached CAS attempt for the same run-local `cas_attempt_key` failed with an allowed fallback `failureCode`.
-- Standard git-backed branch-diff closure rows stay on the same frozen whole diff for native, CAS, and native fallback; do not narrow to touched files or another ad hoc sub-scope unless preflight explicitly chose commit/worktree scope.
-- Terminal closure requires one clean row on the unchanged final diff within the same cycle by default, and two consecutive clean rows only after a terminal-review-driven edit or `review_transport=native_fallback`.
-- Each terminal closure row must have `local_findings=0`, `blocked_findings=0`, `stale_findings=0`, and `overall_correctness="patch is correct"`.
-
-**Pass trace**
-- `Cycle C#` -> zero_edit_cycle_streak=`<0|1|2>`; edits=`<yes|no>`; review_context=`<comparison_sha|skip_not_git_repo|skip_missing_base_context>`; fingerprint=`<same|changed|n/a>`; result=`<restart|continue|close>`
-- For each executed cycle, include:
-  - Core passes planned: `4`; core passes executed: `<4>`
-  - Delta passes planned: `<0|2>`; delta passes executed: `<0|2>`
-  - Total core/delta passes executed: `<4|6>`
-  - `P0 Core Review` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - `P1 Safety` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - `P2 Footguns` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - `P3 Surface + Audit` -> `<done>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-  - If delta passes executed, also include `P4` and `P5` lines in the same format.
-  - `Post-self-review rerun` -> executed=`<yes|no>`; edits=`<yes|no>`; signal=`<cmd|n/a>`; result=`<ok|fail|n/a>`
-
-**Validation**
-- <cmd> -> <ok/fail>
-- `{"baseline_cmd":"<cmd|n/a>","baseline_result":"<ok|fail|n/a>","proof_hook":"<test/assert/log|n/a>","final_cmd":"<cmd>","final_result":"<ok|fail>"}` (single-line JSON)
-
-**Self-review loop trace**
-- If none: `- None (skip_gate)`
-- Otherwise: `S#` prompt=`If you could change one thing about this changeset what would you change?`; answer_summary=<...>; finding=`<F#|none>`; change_applied=`<yes|no>`; proof=`<cmd|n/a>`; result=`<ok|fail|n/a>`; stop_reason=`<continue|no_new_actionable_changes|blocked>`
-
-**Residual risks / open questions**
-- If none: `- None`
-- Otherwise: `- <file:line or token> — blocked_by=<product_ambiguity|breaking_change|no_repro_or_proof|scope_guardrail|generated_output|external_dependency|perf_unmeasurable> — next=<one action>`
-
-## Pitfalls
-- Vague advice without locations.
-- "Nice-to-have" refactors that don’t reduce risk.
-- Feature creep.
-- Continuing broad repo critique or planning under a completed `$fix` label.
-- Asking for risk tolerance instead of applying the default policy.
-- Treating skill-artifact refinement as in-band `$fix` work instead of using `$refine`.
-- Tightening presented as optional.
-- Ownership fixes without proven allocator/owner.
-- Editing generated/third-party outputs instead of source-of-truth.
-- Code edits without a failing proof hook when baseline was ok.
-- Recomputing the diff-review comparison, letting the live merge base drift, or passing steady-state `--custom-instructions` into `cas review_session start --wait`.
-- Closing after one zero-edit full cycle or re-deriving review context between cycles.
-- Folding the terminal diff review loop into `Pass trace` instead of keeping `Review loop trace` terminal-only.
-- Adding a new top-level cycle-reporting section instead of embedding cycle state in runtime pass updates, `Pass trace`, and `Review loop trace`.
-- Using `Residual risks / open questions` as a substitute for fixable findings.
-
-## Activation cues
-- "resolve" / "fix" / "crash" / "data corruption"
-- "$fix this PR" / "$fix current branch" / "fix this branch"
-- "Review the code changes against the base branch" / "merge base commit" / "cas review_session start --wait"
-- "CI failed" / "fix the red checks" / "repair failing PR"
-- "footgun" / "misuse" / "should never happen"
-- "invariant" / "lifetime" / "nullable surprise"
-- "too complex" / "branch soup" / "cross-file hops"
+**Do Next**
+`none` when done; otherwise one exact next step
