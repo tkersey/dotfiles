@@ -29,6 +29,7 @@ js_repl = true
 default_mode_request_user_input = true
 fast_mode = true
 codex_hooks = true
+image_detail_original = true
 
 [tui]
 experimental_mode = "execute"
