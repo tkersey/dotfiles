@@ -1,0 +1,7 @@
+interface:
+  display_name: "Tame Software Complexity"
+  short_description: "Ground software planning in requirements, build-vs-buy, prototyping, and incremental delivery."
+  default_prompt: "Use the tame-software-complexity skill to separate essential from accidental complexity, recommend build vs buy, define a thin prototype or first slice, and propose an incremental delivery plan."
+
+policy:
+  allow_implicit_invocation: true
