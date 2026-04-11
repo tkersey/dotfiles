@@ -71,6 +71,13 @@ Apply these in order:
 5. Otherwise stay local and execute directly.
 6. Escalate to hybrid only when `$select` or `$teams` discovers that the remaining work is a homogeneous leaf batch suitable for `$mesh`.
 
+## Skill routing
+
+- Prefer the `synesthesia` skill for architecture review, debugging weird or flaky behavior, performance diagnosis, codebase readability or maintainability critique, onboarding explanations, and comparisons between implementations when a cross-modal lens could surface structure or friction.
+- Also prefer `synesthesia` when the user's language mentions feel, texture, weight, color, sound, rhythm, noise, smoothness, sharpness, coherence, coupling, friction, or making a system lighter / cleaner / tighter / quieter.
+- Do not use `synesthesia` for exact API syntax, compliance or legal interpretation, security sign-off, or mechanical code edits with no explanatory component.
+- When `synesthesia` is used, translate every metaphor back into concrete engineering implications and specific next actions.
+
 ## Quick routing examples
 
 - Choose `$select`: "Pick the next safe wave from `SLICES.md` and claim ready work." The work needs plan-only selection and first-wave shaping.
