@@ -48,6 +48,7 @@ experimental_mode = "execute"
 status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode", "session-id", "five-hour-limit", "weekly-limit"]
 theme = "coldark-dark"
 terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
+notification_condition = "always"
 
 [notice]
 hide_rate_limit_model_nudge = true
