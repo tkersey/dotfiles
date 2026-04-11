@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Minimal contract linter for codex/skills/fix/SKILL.md."""
+"""Contract linter for codex/skills/fix/SKILL.md."""
+
 from __future__ import annotations
 
 import argparse
@@ -12,6 +13,7 @@ REQUIRED_HEADINGS = [
     "## Intent",
     "## Reporting",
     "## Actionable finding bar",
+    "## Internal saturation state",
     "## Scope selection",
     "## Hard rules",
     "## Native review commands",
@@ -40,6 +42,17 @@ REQUIRED_PHRASES = [
     "Never use `@{upstream}`",
     "Never pass remote-tracking refs like `origin/main`",
     "Do not compare a branch against itself.",
+    "native-review saturation",
+    "candidate clean",
+    "two consecutive clean",
+    "MUST NOT stop on the first clean.",
+    "MUST NOT claim success based on only one clean review.",
+    "resolve the seeded findings to non-recurrence",
+    "proof-hook",
+    "adjacent-seam",
+    "review_reconciliation",
+    "clean_streak",
+    "Origin=review_seed|proof_hook|adjacent_seam|validation_gap",
 ]
 
 REQUIRED_FRONTMATTER = {
@@ -50,15 +63,16 @@ REQUIRED_FRONTMATTER = {
 def read_text(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8")
-    except FileNotFoundError:
-        raise SystemExit(f"missing file: {path}")
+    except FileNotFoundError as exc:
+        raise SystemExit(f"missing file: {path}") from exc
 
 
 def parse_frontmatter(text: str) -> dict[str, str]:
     match = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
     if not match:
         raise SystemExit("SKILL.md is missing YAML frontmatter")
-    front = {}
+
+    front: dict[str, str] = {}
     for raw_line in match.group(1).splitlines():
         line = raw_line.strip()
         if not line or ":" not in line:
@@ -89,6 +103,49 @@ def lint_skill(skill_path: Path) -> list[str]:
         if phrase not in text:
             errors.append(f"missing required phrase: {phrase}")
 
+    intent_match = re.search(r"## Intent\n(.*?)(?:\n## |\Z)", text, re.DOTALL)
+    if intent_match:
+        intent = intent_match.group(1)
+        if "candidate clean" not in intent or "native-review saturation" not in intent:
+            errors.append("intent must define candidate clean and native-review saturation")
+    else:
+        errors.append("could not parse Intent section")
+
+    loop_match = re.search(r"## Loop\n(.*?)(?:\n## |\Z)", text, re.DOTALL)
+    if loop_match:
+        loop_text = loop_match.group(1)
+        ordered_phrases = [
+            "Candidate clean",
+            "Saturation confirmation",
+            "Repair",
+            "Validation gate",
+            "Re-review",
+        ]
+        cursor = 0
+        for phrase in ordered_phrases:
+            idx = loop_text.find(phrase, cursor)
+            if idx == -1:
+                errors.append(f"loop is missing ordered phrase: {phrase}")
+                break
+            cursor = idx + len(phrase)
+        if "Do not finish on this first clean." not in loop_text:
+            errors.append("loop must explicitly forbid finishing on the first clean")
+    else:
+        errors.append("could not parse Loop section")
+
+    handoff_match = re.search(r"## How to invoke `\$fixed-point-driver`\n(.*?)(?:\n## |\Z)", text, re.DOTALL)
+    if handoff_match:
+        handoff = handoff_match.group(1)
+        for phrase in [
+            "seeded_findings_closed",
+            "seeded_findings_still_open",
+            "fix_discovered_count",
+            "Origin=review_seed|proof_hook|adjacent_seam|validation_gap",
+        ]:
+            if phrase not in handoff:
+                errors.append(f"handoff section missing phrase: {phrase}")
+    else:
+        errors.append("could not parse fixed-point-driver handoff section")
 
     return errors
 
