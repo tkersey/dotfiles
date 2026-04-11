@@ -271,7 +271,7 @@ seq skill-report --root ~/.codex/sessions --skill tk
 ```
 Another example:
 ```bash
-seq skill-report --root ~/.codex/sessions --skill fix \
+seq skill-report --root ~/.codex/sessions --skill tk \
   --since 2026-03-01T00:00:00Z
 ```
 

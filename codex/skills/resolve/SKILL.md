@@ -1,11 +1,11 @@
 ---
-name: fix
-description: Explicit repair loop for a branch diff, current branch, PR, or commit. Run fresh native `codex review` against one frozen local base branch or commit, hand actionable findings to `$fixed-point-driver`, validate, and repeat until native-review saturation is reached: two consecutive clean fresh native reviews on the unchanged artifact state with no seeded-finding recurrence.
+name: resolve
+description: "Explicit repair loop for a branch diff, current branch, PR, or commit. Run fresh native `codex review` against one frozen local base branch or commit, hand actionable findings to `$fixed-point-driver`, validate, and repeat until native-review saturation is reached: two consecutive clean fresh native reviews on the unchanged artifact state with no seeded-finding recurrence."
 ---
-# Fix
+# Resolve
 
 ## Intent
-`$fix` owns the **outer** loop only: `review -> repair -> validate -> re-review -> saturation confirmation`
+`$resolve` owns the **outer** loop only: `review -> repair -> validate -> re-review -> saturation confirmation`
 
 Repeat until a **fresh native** `codex review` reaches **native-review saturation** on one frozen local review context.
 
@@ -16,17 +16,17 @@ Native-review saturation means:
 - the latest reliable validation signal still passes
 
 The first clean round after any remediation or actionable review is a **candidate clean**, not closure.
-There is no wall-clock timeout and no cycle cap inside `$fix`.
+There is no wall-clock timeout and no cycle cap inside `$resolve`.
 Long native review rounds, including 10m+ runs, are acceptable.
 `$fixed-point-driver` remains unchanged and is the remediation engine inside each loop cycle.
 Do not move the outer re-review loop into `$fixed-point-driver`.
 
-The purpose of `$fix` is exhaustive native-review discovery on a frozen scope: each remediation cycle should close the current seeded finding cluster tightly enough that the next fresh native review can spend its attention on **other** remaining issues rather than rediscovering the same one.
+The purpose of `$resolve` is exhaustive native-review discovery on a frozen scope: each remediation cycle should close the current seeded finding cluster tightly enough that the next fresh native review can spend its attention on **other** remaining issues rather than rediscovering the same one.
 
 ## Reporting
 Keep user-facing output minimal.
 
-During execution, emit at most one short line per cycle: `fix C: review=; action=; validation=; clean_streak=`
+During execution, emit at most one short line per cycle: `resolve C: review=; action=; validation=; clean_streak=`
 
 Final output must contain exactly these sections and nothing else:
 - `**Status**`
@@ -81,7 +81,7 @@ Rules:
 9. For branch-backed runs, freeze `comparison_sha = git merge-base HEAD <base_branch>` before the first review.
 10. Before the first branch-backed review, inspect `git status --porcelain --untracked-files=all`.
     - If the repo already contains unrelated or noisy untracked/modified files outside the requested scope, stop blocked and tell the user to clean or stash them or use a dedicated worktree.
-    - Changes created by the current `$fix` run are in-scope and do not count as contamination.
+    - Changes created by the current `$resolve` run are in-scope and do not count as contamination.
 11. Before every branch-backed re-review or clean-confirmation review, recompute `git merge-base HEAD <base_branch>` and stop blocked if it no longer matches the frozen `comparison_sha`.
 
 ## Hard rules
@@ -96,7 +96,7 @@ Rules:
 - MUST pass the latest actionable review findings into `$fixed-point-driver` and instruct it to resolve the seeded findings to non-recurrence on the current artifact state.
 - MUST allow `$fixed-point-driver` to close directly exposed proof-hook or adjacent-seam issues when needed to keep the seeded findings closed.
 - MUST require `$fixed-point-driver` to return review reconciliation with seeded-finding status, any fix-discovered findings, and per-finding provenance.
-- MUST let `$fixed-point-driver` do the remediation work; `$fix` owns orchestration.
+- MUST let `$fixed-point-driver` do the remediation work; `$resolve` owns orchestration.
 - MUST require a passing validation signal after each remediation cycle.
 - MUST stop only when a fresh native review is saturated or a real blocker prevents forward progress.
 - MUST stop blocked if there is no reliable validation signal.

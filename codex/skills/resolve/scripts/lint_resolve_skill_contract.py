@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Contract linter for codex/skills/fix/SKILL.md."""
+"""Contract linter for codex/skills/resolve/SKILL.md."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 REQUIRED_HEADINGS = [
-    "# Fix",
+    "# Resolve",
     "## Intent",
     "## Reporting",
     "## Actionable finding bar",
@@ -34,7 +34,7 @@ REQUIRED_PHRASES = [
     "**Validation**",
     "**Do Next**",
     "stdout and stderr from `codex review`",
-    "There is no wall-clock timeout and no cycle cap inside `$fix`.",
+    "There is no wall-clock timeout and no cycle cap inside `$resolve`.",
     "MUST NOT impose a wall-clock timeout or cycle cap.",
     "MUST NOT stop, skip, downgrade, or truncate a review round just because it is taking a long time.",
     "MUST NOT treat elapsed time, patience limits, or long review duration as a blocker.",
@@ -56,7 +56,7 @@ REQUIRED_PHRASES = [
 ]
 
 REQUIRED_FRONTMATTER = {
-    "name": "fix",
+    "name": "resolve",
 }
 
 
@@ -167,7 +167,7 @@ def main() -> int:
             print(f"ERROR: {error}", file=sys.stderr)
         return 1
 
-    print("fix skill contract OK")
+    print("resolve skill contract OK")
     return 0
 
 

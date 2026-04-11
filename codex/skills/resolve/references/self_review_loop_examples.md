@@ -1,6 +1,6 @@
 # Review and Self-Review Loop Examples
 
-Use these examples to keep the visible transcript shape aligned with the fixer-owned remediation cycles, the terminal native-review saturation loop, and the internal review-reconciliation contract. When review context exists, the terminal `Review loop trace` rows are fresh isolated native `codex review` invocations on the unchanged final diff. `P0 Core Review` iterations belong in `Pass trace`, not `Review loop trace`.
+Use these examples to keep the visible transcript shape aligned with the resolver-owned remediation cycles, the terminal native-review saturation loop, and the internal review-reconciliation contract. When review context exists, the terminal `Review loop trace` rows are fresh isolated native `codex review` invocations on the unchanged final diff. `P0 Core Review` iterations belong in `Pass trace`, not `Review loop trace`.
 
 Each `R#` row comes from a fresh isolated review invocation on the frozen review context. Native `codex review --base <base_branch>` or `codex review --commit <commit_sha>` is the default for ordinary one-shot review rows. Detached CAS rows use fresh split `cas review_session start ...` plus `wait ...` only when explicit lifecycle control is required, and only after confirming the live merge base still matches the frozen `comparison_sha`.
 
@@ -8,7 +8,7 @@ Use `review_transport=<...>`, `fallback_reason=<...>`, `review_thread_id=...`, a
 
 Terminal closure requires **two consecutive clean** `R#` rows on the **unchanged artifact state** by default. The first clean row is `candidate_clean`; it never closes by itself. Any actionable finding after `candidate_clean` resets the clean streak and must classify each finding in `**Review reconciliation**` as `recurring_seeded`, `recurring_fix_discovered`, or `fresh_review`.
 
-`P2 Footguns` must either fix, prove, or block any actionable misuse on the touched public/documented surfaces or adjacent seam before closure. Every complete deliverable or Fix Record also includes `**Review reconciliation**` plus per-finding provenance in the form `Provenance: Origin=review_seed|proof_hook|adjacent_seam|validation_gap|fresh_review`.
+`P2 Footguns` must either fix, prove, or block any actionable misuse on the touched public/documented surfaces or adjacent seam before closure. Every complete deliverable or Resolve Record also includes `**Review reconciliation**` plus per-finding provenance in the form `Provenance: Origin=review_seed|proof_hook|adjacent_seam|validation_gap|fresh_review`.
 
 ## Native-first saturation on the frozen whole diff
 
@@ -28,7 +28,7 @@ Terminal closure requires **two consecutive clean** `R#` rows on the **unchanged
 
 **Review reconciliation**
 - `F7` fingerprint=`api:parse:empty-config`; classification=`fresh_review`; Provenance: Origin=`fresh_review`; Seeded review=`none`
-- The candidate clean did not close the run. The reopening finding reset the clean streak and seeded the next fixer cycle.
+- The candidate clean did not close the run. The reopening finding reset the clean streak and seeded the next resolver cycle.
 ```
 
 ## Recurring seeded finding blocks for non-convergence

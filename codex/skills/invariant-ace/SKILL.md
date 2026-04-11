@@ -1,6 +1,6 @@
 ---
 name: invariant-ace
-description: "Turn 'should never happen' into 'cannot happen' by defining owned inductive invariants and enforcing them at parse/construct/API/DB/lock/txn boundaries with a verification signal. Use when prompts mention invariants, impossible states, validation sprawl, cache/index drift, idempotency/versioning, retries/duplicates/out-of-order events, race/linearization bugs, loop correctness, or hardening another workflow (for example $fix) with invariant checks first."
+description: "Turn 'should never happen' into 'cannot happen' by defining owned inductive invariants and enforcing them at parse/construct/API/DB/lock/txn boundaries with a verification signal. Use when prompts mention invariants, impossible states, validation sprawl, cache/index drift, idempotency/versioning, retries/duplicates/out-of-order events, race/linearization bugs, loop correctness, or hardening another implementation workflow with invariant checks first."
 ---
 
 # Invariant Ace
@@ -21,7 +21,7 @@ Turn "should never happen" into "cannot happen" with minimal, high-leverage chan
 
 ## Routing Priority
 
-- If a task has invariant/protocol cues and also asks for broad implementation (`$tk`, `$fix`, `$work`), run this skill first to lock invariants, then execute edits.
+- If a task has invariant/protocol cues and also asks for broad implementation (`$tk`, `$work`), run this skill first to lock invariants, then execute edits.
 - If you cannot name state owner + transitions, switch to clarification/discovery before implementation.
 
 ## Core Model (Fast Definitions)

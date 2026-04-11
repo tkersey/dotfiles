@@ -55,7 +55,7 @@ Reduce incidental complexity (understanding cost) while preserving essential dom
 - No file edits, no commits.
 - No running commands unless explicitly requested.
 - If expected behavior is unclear or product-sensitive, do not prescribe refactor first. Identify the missing contract and recommend a learning artifact.
-- If you suspect crash/corruption risk, recommend `$fix`.
+- If you suspect crash/corruption risk, say the problem is no longer complexity-only and hand off to a dedicated remediation workflow.
 - If the user wants greenfield requirements discovery, architecture choice, or delivery sequencing, use a planning skill instead.
 
 ## Quick Scan (Cognitive Heat Read)
@@ -258,5 +258,5 @@ Use when confusing APIs or naming cause misuse.
 
 ## Escalation
 - If repeated algebraic shapes or composable pipelines appear, consider switching to the Universalist skill and framing a minimal algebra + laws.
-- If the user wants implementation, escalate to `$fix`.
+- If the user wants implementation, stop at the analysis artifact and hand off to implementation rather than extending this skill past its boundary.
 - If the problem is primarily greenfield requirements, architecture selection, build-vs-buy, or delivery planning, use a planning/architecture skill instead.

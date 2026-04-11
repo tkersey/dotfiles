@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Behavioral contract tests for the fix skill's review-saturation loop."""
+"""Behavioral contract tests for the resolve skill's review-saturation loop."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import unittest
 from dataclasses import dataclass
 from pathlib import Path
 
-from lint_fix_skill_contract import lint_skill
+from lint_resolve_skill_contract import lint_skill
 
 
 @dataclass
@@ -40,7 +40,7 @@ class SaturationState:
             self.blocked = True
 
 
-class FixSkillBehaviorTests(unittest.TestCase):
+class ResolveSkillBehaviorTests(unittest.TestCase):
     def test_contract_lints(self) -> None:
         skill_path = Path(__file__).resolve().parents[1] / "SKILL.md"
         self.assertEqual(lint_skill(skill_path), [])
