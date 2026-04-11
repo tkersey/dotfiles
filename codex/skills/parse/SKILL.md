@@ -15,6 +15,17 @@ Keep the advice narrow. Describe how to work within the current repo's seams, ow
 
 Use `parse` to classify the repo's current-state architecture and produce narrow repo-fit hints. Do not expand it into broad onboarding notes, full architecture reports, or domain-specific audits. Keep the memo architecture-focused and current-state-only.
 
+## Execution Spine
+
+`parse` is a collector-first classification workflow, not a generic license to "read the repo and think about architecture." The required order for a normal run is:
+
+1. run the helper,
+2. do the required focused rerun when the helper reports `thin_repo_wide` or mixed signals,
+3. only then do the smallest manual trace needed to close the remaining gap,
+4. emit the parse memo.
+
+If `parse` is paired with another skill, `parse` still owns this architecture pass. Do not let the companion skill swallow the collector step or replace the parse memo with freeform repo research.
+
 ## Zig CLI Iteration Repos
 
 When iterating on the Zig-backed `parse-arch` helper CLI, use these two repos:
@@ -143,8 +154,10 @@ Call out docs-vs-code drift explicitly and keep repo-fit advice narrow and curre
 2. Collect static signals first.
    - Run the helper first: `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh <repo_path>`.
    - Pass `--focus-path` for each target slice when `focus_paths` are available.
+   - Treat the helper command as a required proof artifact for normal parse runs. The final `Evidence` section should name the repo-wide helper command shape you used and, when applicable, the focused rerun command shape too.
    - Use the JSON output to inspect manifests, entrypoints, dependency-direction hints, runtime-boundary hints, architecture-doc claims, scan coverage, subsystem candidates, focus-path observations, `read_depth_verdict`, `thin_signal_classes`, and `suggested_focus_paths`.
    - Treat the helper/collector as evidence collection only. Do not let it choose the final architecture label for you.
+   - Do not narrate the parse pass as "now I'm reading source paths" before the helper result is in hand. Manual source inspection is the escalation step after the helper pass, not the substitute for it.
    - The raw collector now supports three repo selectors openly: positional `repo_path`, `--repo-path`, and `--repo`. It also accepts `--json` and `--format json` as no-op compatibility flags because output is always JSON.
    - If the repo-wide helper pass reports `read_depth_verdict: thin_repo_wide`, rerun the helper immediately with its `suggested_focus_paths` before broader manual inspection. Do not stop at the repo-wide JSON just because one architecture signal has a non-zero score.
    - If the helper does not emit usable `suggested_focus_paths`, do one targeted second pass yourself: choose 2-4 likely architecture-defining paths, including at least one path that should confirm the current read and, when plausible, one that could falsify it or surface a coexisting pattern (for example entrypoints, build manifests, the main runtime/core module, public package roots, provider registries, workflow definitions, generated boundaries, or a contract-heavy docs/test slice) and rerun the helper with `--focus-path` for each.
@@ -173,6 +186,7 @@ Call out docs-vs-code drift explicitly and keep repo-fit advice narrow and curre
    - Read [references/evidence-playbook.md](references/evidence-playbook.md) before running investigative commands.
    - If the collector feels weak, name the missing signal classes precisely first. Prefer the helper's `thin_signal_classes` when present; otherwise derive them directly from the JSON evidence summary.
    - Use the focused rerun to test both the current dominant read and the strongest plausible competing label or coexisting pattern before broader manual inspection.
+   - If another skill is also active, finish the parse-specific escalation first and hand the resulting architecture memo or packet to the companion skill. Do not collapse the parse phase into mixed narration that hides whether the helper and focused rerun actually happened.
    - For `library-sdk` and `cli-tooling` repos, do not accept a repo-wide helper pass as "good enough" when `read_depth_verdict` is thin. Contract surfaces, public roots, staged passes, examples, tests, and docs often carry the architecture-defining seams.
    - Do not jump straight from one weak repo-wide collector pass to "manual inspection." First prove that a focused collector rerun still leaves the architecture under-determined.
    - If the helper or collector path fails, continue with source-first manual inspection only after you state the exact failed command path and the specific signal classes the collector did not supply. Do not fall back to vague “couldn’t use the scripts” language.
@@ -233,6 +247,8 @@ For each section:
 - Do not let a repo-wide label override a slice-local signal when `focus_paths` clearly point at a materially different subsystem.
 - Do not use `parse-arch` version strings as stock caveats. If the collector under-read the repo, say which evidence classes were thin and which concrete paths you inspected to compensate.
 - Do not suggest migrations, modernizations, or follow-up skills unless the user explicitly asks for that next step.
+- Do not present `parse` as a freeform source-reading exercise. If the helper ran, say that it ran; if the helper under-read, say that and show the focused rerun before broader manual inspection.
+- Do not let a companion skill such as `liminal`, `codebase-report`, or `codebase-archaeology` absorb the parse workflow. `parse` must still produce an explicit architecture classification pass with collector-backed evidence.
 
 ## Quick Heuristics
 

@@ -1,4 +1,4 @@
 interface:
   display_name: "Parse Architecture"
   short_description: "Infer dominant architecture with helper-first evidence and mandatory thin-read follow-up"
-  default_prompt: "Use $parse to identify this repo's dominant architecture, coexisting patterns, drift, and repo-fit hints. Prefer /Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh before manual inspection, and if the repo-wide output reports read_depth_verdict=thin_repo_wide rerun it with the suggested_focus_paths before broader manual inspection. If the collector path fails, state the exact failure and missing signal classes."
+  default_prompt: "Use $parse to identify this repo's dominant architecture, coexisting patterns, drift, and repo-fit hints. Treat /Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh as the required first pass, and if the repo-wide output reports read_depth_verdict=thin_repo_wide rerun it with the suggested_focus_paths before broader manual inspection. Do not collapse parse into generic source reading or a companion skill's research; if the collector path fails, state the exact failure and missing signal classes."
