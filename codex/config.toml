@@ -31,6 +31,18 @@ fast_mode = true
 codex_hooks = true
 image_detail_original = true
 
+[memories]
+generate_memories = true
+use_memories = true
+max_rollout_age_days = 90
+max_rollouts_per_startup = 128
+min_rollout_idle_hours = 6
+max_raw_memories_for_consolidation = 1024
+max_unused_days = 180
+extract_model = "gpt-5.4-mini"
+consolidation_model = "gpt-5.3-codex"
+no_memories_if_mcp_or_web_search = false
+
 [tui]
 experimental_mode = "execute"
 status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode", "session-id", "five-hour-limit", "weekly-limit"]
