@@ -6,6 +6,7 @@ plan_mode_reasoning_effort = "xhigh"
 suppress_unstable_features_warning = true
 web_search = "live"
 personality = "pragmatic"
+service_tier = "fast"
 
 [agents]
 max_threads = 96
