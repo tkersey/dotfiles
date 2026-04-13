@@ -171,6 +171,21 @@ When subagent mode is active and custom agents are available, prefer this parall
 - `complexity_auditor`: grades incidental complexity, coupling, and surface-area growth
 - `verification_auditor`: audits whether the verification record directly exercises the changed behavior, failure mechanism, regression surfaces, and critical invariants
 
+### Coordinator topology
+
+Subagent mode must use a coordinator subtree, not direct root-to-specialist fanout.
+
+See `references/coordinator-subtree-protocol.md` for the exact topology, packet shapes, and fail-closed gates.
+
+- Root may spawn exactly one direct child for specialist work: `fp_coordinator`.
+- Root must not spawn specialist auditors directly.
+- `fp_coordinator` owns all specialist children and is the only child allowed to send synthesized results back to root.
+- Specialists communicate only with `fp_coordinator`, never with root.
+- Root uses `wait_agent` only as a mailbox/status wakeup and never as a content surface.
+- `fp_coordinator` must deliver one synthesized coordinator result back to root with `send_message`.
+- `fp_coordinator` must not use `followup_task` to target `/root`.
+- Root closes `fp_coordinator` only after integrating the coordinator result or declaring the run blocked.
+
 ### Specialist packet contract
 
 Specialists are machine-to-machine collaborators, not user-facing speakers.
@@ -203,6 +218,15 @@ Treat specialist transport as unreliable unless the packet contract is satisfied
 - After one malformed specialist result for the current artifact state, stop broad swarm reruns for that artifact state. Continue locally, or retry at most one narrowly scoped specialist only if the missing evidence is still material.
 - Only resume full-scope swarm behavior after the artifact state changes materially and a fresh specialist pass returns valid packets.
 
+### Root-output gate
+
+The coordinator workaround counts as successful only if root-visible output stays coordinator-only and clean.
+
+- Treat any root-visible descendant artifact such as `/root/fp_coordinator/fp_*` as a transport failure.
+- Treat any root-visible coordinator artifact containing `Echo:`, `<hook_prompt`, `<subagent_notification>`, or raw outer inter-agent JSON as a transport failure.
+- Root may receive at most one clean coordinator result packet for the run.
+- If the root-output gate fails, stop in `blocked` state with a transport verdict instead of claiming the workaround is fixed.
+
 Swarm rules:
 - Spawn specialists only for read-heavy work.
 - Wait for all relevant results before synthesis.
@@ -210,6 +234,7 @@ Swarm rules:
 - Normalize every specialist result into the **Specialist Briefing Ledger**.
 - Treat specialists as lenses, not authorities.
 - In exhaustive subagent mode, after each material validation or remediation, rerun the full-scope swarm over the current artifact set rather than restricting the next pass to the diff.
+- When subagent mode is enabled, root spawns only `fp_coordinator`; any further swarm fanout happens below that child.
 
 If custom agents are unavailable, continue single-threaded under the same phase contracts.
 
@@ -282,11 +307,11 @@ Challenge rules:
 3. Optionally run an initial read-only specialist swarm when the scope is broad or unclear.
 4. Run the **saturation loop**:
    - During `accretive-implementer`, produce a grounded diagnosis or integration rationale, the narrowest appropriate remediation or implementation, and first-pass verification.
-   - Before each full review pass in subagent mode, run the full-scope specialist swarm only when specialist transport for the current artifact state is healthy, wait for all relevant results, and normalize them into the **Specialist Briefing Ledger**.
+   - Before each full review pass in subagent mode, spawn or reuse `fp_coordinator`, let it run the full-scope specialist swarm only when specialist transport for the current artifact state is healthy, wait for the coordinator mailbox/status signal, then normalize the coordinator's synthesized result into the **Specialist Briefing Ledger**.
    - During `adversarial-reviewer`, perform a **full-scope de novo adversarial review** of the current artifact set. Do not restrict attention to the changed surface.
    - Normalize material findings by remediation posture: `validating-check-only`, `accretive-remediation`, `structural-remediation`.
    - Route the highest-value next action using findings, invariants, foot-guns, complexity, and verification gaps.
-   - After any targeted validation or remediation, rerun full-scope review; in subagent mode, rerun the full-scope swarm first only if the current artifact state's specialist transport is not degraded.
+   - After any targeted validation or remediation, rerun full-scope review; in subagent mode, rerun the coordinator-owned full-scope swarm first only if the current artifact state's specialist transport is not degraded.
    - Continue looping until the artifact set reaches a **candidate material fixed point**: no unresolved material finding remains, no unbounded critical invariant remains `broken`, `unknown`, or materially `strained`, no unresolved material foot-gun remains, no unresolved material complexity hazard remains, and no material validation gap would reasonably reopen remediation.
 5. Run the **pre-closure one-change challenge** on the latest stabilized artifact set.
    - Ask the exact challenge question.
@@ -344,8 +369,10 @@ If these custom agents do not exist, do not fail the workflow. Fall back to buil
 - Never force an accretive patch when the evidence says the issue is structural.
 - Never let subagent summaries replace direct review judgment.
 - Never treat malformed specialist output as evidence.
+- Never let root directly own specialist-auditor children in subagent mode; use the coordinator subtree.
 - Never paste raw specialist transport, `<subagent_notification>` payloads, hook wrappers, or outer inter-agent JSON into user-facing commentary or the final report.
 - Never allow specialists to emit root-only response scaffolding such as `Echo:` or instruction-acknowledgement preambles.
+- Never declare the coordinator workaround fixed if root-visible output contains descendant specialist artifacts or malformed coordinator transport.
 - Never run multiple write-heavy remediations in parallel.
 - Never hand off to `verification-closure` without a fresh **Closure Handoff Packet**.
 - Never let stale specialist briefings masquerade as current evidence.
