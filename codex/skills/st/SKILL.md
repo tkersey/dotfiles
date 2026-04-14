@@ -111,11 +111,13 @@ run_st_tool --help
    - Use `select` to add backlog items into the mirrored plan.
    - Use `deselect` to remove items from the mirrored plan without deleting them from disk.
 9. After each mutation command, consume the emitted `plan_sync: {...}` payload and mirror it into the native runtime tool in the same turn.
+   - In Codex, mirrored plan step strings are hook-safe round-trip identifiers in the form `[st-id] step text`; preserve that prefix when updating `update_plan`.
 10. Use `emit-plan-sync` to regenerate the payload from durable state when needed.
 11. If `emit-plan-sync` is unavailable because the installed binary is older, fall back:
    - Codex: use `emit-update-plan`.
    - OpenCode: use `show --format json`, map `content=item.step`, normalize `blocked`/`deferred` to `pending`, normalize `canceled` to `cancelled`, and default missing priority to `medium`.
-12. Export/import snapshots when cross-session handoff is needed.
+12. When Codex hooks are enabled in a repo that already uses `.step/st-plan.jsonl`, let SessionStart hydrate `update_plan` from the durable ledger and let Stop import the latest Codex mirrored plan back into the durable ledger for mirrored fields only.
+13. Export/import snapshots when cross-session handoff is needed.
 
 ## Commands
 
@@ -140,6 +142,8 @@ st doctor --file .step/st-plan.jsonl
 st doctor --file .step/st-plan.jsonl --repair-seq
 st emit-plan-sync --file .step/st-plan.jsonl
 st emit-update-plan --file .step/st-plan.jsonl
+st import-update-plan --file .step/st-plan.jsonl --input .step/update-plan.json
+st import-update-plan --file .step/st-plan.jsonl --transcript-path /path/to/codex-rollout.jsonl
 st export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
 st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
 st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml --replace
@@ -159,6 +163,7 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
 - First-use plan-file policy: if `.step/st-plan.jsonl` is not yet tracked and not already ignored, ask whether the repo wants shared tracked state or local-only state via `.git/info/exclude` before the first mutation.
 - For OrchPlan-backed durable execution, `claim.wave_id` is authoritative and should be derived from the imported wave, not reconstructed from ad hoc `--ids`.
 - `in_plan=true` is the mirrored-plan membership flag. Missing legacy values normalize to `true`.
+- Codex mirrored-plan identity is the emitted `[st-id] step text` prefix; reverse sync must fail closed rather than guessing when an `update_plan` row cannot be mapped back to a durable item id.
 - Terminal statuses (`completed`, `deferred`, `canceled`) auto-demote items out of the mirrored plan while keeping them on disk.
 - Track prerequisites in each item's typed `deps` array; dependencies are part of the canonical JSONL schema.
 - Priorities are canonical in `$st`: allowed values are `high`, `medium`, and `low`; missing legacy values normalize to `medium`.
@@ -178,6 +183,7 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
   - `active`, `doing` -> `in_progress`
   - `done`, `closed` -> `completed`
 - Mutation commands (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`, `import-mesh-results`) automatically print a canonical `plan_sync:` payload line plus a legacy `update_plan:` compatibility line after durable write.
+- Hook-managed reverse sync from Codex into `$st` is projection-only: it may update mirrored-plan membership, mirrored order, `step`, and `status`, but must preserve durable-only metadata such as `deps`, `notes`, `comments`, `claim`, `runtime`, and `proof`.
 - Lock sidecar policy: mutating commands require the lock file (`<plan-file>.lock`, for example `.step/st-plan.jsonl.lock`) to be ignored when inside a git repo. In shared mode, add the lock sidecar to `.gitignore`; in local-only mode, add both the plan file and the lock sidecar to `.git/info/exclude`.
 - Storage model: not append-only growth. Mutations rewrite the JSONL file atomically (`temp` + `fsync` + replace) and compact to a canonical `replace` event plus checkpoint snapshot at the current seq watermark.
 - `doctor` is the first-line integrity check for seq/checkpoint contract issues; use `doctor --repair-seq` only when repair is explicitly needed.
@@ -193,12 +199,14 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
 - Preserve full inventory order from `$st` in `plan_sync.items`.
 - Codex:
   - publish `plan_sync.codex.plan` via `update_plan`.
+  - preserve the emitted `[st-id]` prefixes in each step string; they are the stable reverse-sync key back into the durable ledger.
   - if only a legacy payload is available, use `st emit-update-plan --file .step/st-plan.jsonl`.
 - OpenCode:
   - publish `plan_sync.opencode.todos` via `TodoWrite`.
   - if only an older binary is available, use `st show --file .step/st-plan.jsonl --format json` and map `content=item.step`, `status=in_progress|completed|pending|cancelled`, and `priority=item.priority` or `medium` when missing.
 - `plan_sync.items` is the full durable inventory. `plan_sync.codex.plan`, `plan_sync.opencode.todos`, and `emit-update-plan` emit only the selected mirrored-plan subset.
 - Keep dependency edges only in `$st` (`deps`); do not encode dependencies in `update_plan` or `TodoWrite`.
+- If hooks re-import a Codex plan at Stop, that reverse sync uses the latest mirrored Codex subset as the source of truth only for projected fields, not for the full durable inventory.
 - If an item has `dep_state=waiting_on_deps`, never mirror that item as `in_progress`.
 - Before final response on turns that mutate `$st`, re-check no drift by comparing:
   - `st show --file .step/st-plan.jsonl --format json`
@@ -211,6 +219,7 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
   - `st doctor --file .step/st-plan.jsonl`
   - `st emit-plan-sync --file .step/st-plan.jsonl`
   - `st emit-update-plan --file .step/st-plan.jsonl`
+  - `st import-update-plan --file .step/st-plan.jsonl --input <captured-update-plan.json>`
   - `st show --file .step/st-plan.jsonl --surface all --format json`
   - `st show --file .step/st-plan.jsonl --format json`
 

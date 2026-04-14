@@ -193,6 +193,8 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
 
 - Apply this protocol whenever both `$st` plan files and Codex `update_plan` are used in the same task.
 - Treat `.step/st-plan.jsonl` as the source of truth: preserve `$st` ordering in `update_plan`, and keep dependency edges only in `$st` (`deps`).
+- When `$st` round-trips through Codex hooks, emit mirrored Codex plan steps with stable prefixes in the form `[st-id] step text` so Stop-time reverse sync can map plan rows back onto durable items safely.
+- In that hook-managed mode, SessionStart hydrates `update_plan` from `.step/st-plan.jsonl`, while Stop may write the mirrored Codex subset back into `.step/st-plan.jsonl`; reverse sync is limited to mirrored-plan fields (`step`, projected membership, order, status) and must not overwrite richer durable-only metadata.
 - After each `$st` mutation, publish `update_plan` in the same turn; never report `in_progress` when `dep_state=waiting_on_deps`; before final response, verify no drift between `$st show --format json` and the latest `update_plan`.
 
 ## Learnings Lifecycle

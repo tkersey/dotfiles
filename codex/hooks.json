@@ -1,6 +1,29 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/tk/.dotfiles/codex/hooks/st_session_start.sh",
+            "timeoutSec": 10,
+            "statusMessage": "Hydrating $st plan"
+          }
+        ]
+      }
+    ],
     "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ST_STOP_MODE=block /Users/tk/.dotfiles/codex/hooks/st_stop.sh",
+            "timeoutSec": 10,
+            "statusMessage": "Synchronizing $st durable plan"
+          }
+        ]
+      },
       {
         "hooks": [
           {
