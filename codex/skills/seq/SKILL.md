@@ -23,6 +23,9 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 - Use this ladder:
   1. `plan-search` for finalized `$plan` artifact retrieval; otherwise `artifact-search`.
   2. Specialized follow-ups that already match the artifact shape:
+     - `memory-provenance` for "why is this memory here now?" / "which rollout introduced it?" questions about one memory thread or rollout summary.
+     - `memory-history` for "what changed over time?" questions about one memory thread or a topic across the memory corpus.
+     - `memory-map` for "what artifacts exist for this topic/thread and what's the fastest evidence path?" questions.
      - `skill-blocks` for exact historical `<skill>...</skill>` extraction by skill name, with full block bodies and distinct-version history.
      - `plan-search` for strict repo/session/time/text retrieval of complete `<proposed_plan>` blocks.
      - `find-session` for prompt-to-session lookup.
@@ -52,6 +55,8 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
   1. Inventory `memory_files` to see what categories and files exist.
   2. If the question is navigational or "what do we know?", route through `memory_summary.md`.
   3. If the question is durable/procedural, route through `MEMORY.md`.
+  3b. If the question is about one memory thread or one rollout summary artifact, prefer `memory-provenance` before manual markdown reads.
+  3c. If the question is about a topic across the memory corpus, prefer `memory-map` or `memory-history` before raw `query`.
   4. If you need provenance for one memory block, inspect the relevant `rollout_summaries/*.md` file.
   5. If you need raw session evidence, follow `rollout_path` into `~/.codex/sessions/...jsonl`; use `seq` session/orchestration commands only when they accept the handle you actually have, otherwise inspect the file directly.
 - Prefer `MEMORY.md` / `memory_summary.md` over `raw_memories.md` when both cover the topic; `raw_memories.md` is a lower-level consolidation input, not the highest-level answer.
@@ -192,6 +197,21 @@ Memory files by category:
 ```bash
 seq query --spec \
   '{"dataset":"memory_files","group_by":["category"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"format":"table"}'
+```
+
+Explain why a memory exists now:
+```bash
+seq memory-provenance --thread-id 019bae5d-7d12-7b01-9cb5-b8bb6046b85b --format table
+```
+
+Map the fastest evidence path for a memory topic:
+```bash
+seq memory-map --contains synesthesia --limit 5 --format table
+```
+
+Show an observed timeline for one memory thread:
+```bash
+seq memory-history --thread-id 019bae5d-7d12-7b01-9cb5-b8bb6046b85b --format table
 ```
 
 Opencode prompts with source override:
@@ -513,9 +533,14 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - Default root: `~/.codex/sessions`.
 - `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` and `params.include_preview`.
 - `memory_files` exposes `path`, `relative_path`, `name`, `category`, `extension`, `size_bytes`, `modified_at`, and `preview`.
+- `memory_stage1_outputs` reads the local Codex state DB and accepts `params.state_db_path`.
+- `memory_extensions` reads `~/.codex/memories_extensions` and accepts `params.extensions_root`.
 - Current memory-file categories are `root`, `rollout_summaries`, and `skills`; `root` may also include non-canonical files, so do not assume every root file is part of the memory contract.
 - `rollout_summaries/*.md` are markdown summaries; the original JSONL evidence lives at the `rollout_path` referenced inside those files.
 - `memory_files` is best for inventory and routing; when the answer depends on markdown body content, use `seq` to find the file and then read that specific file directly.
+- `memory-provenance` is the default archaeology surface for one thread or rollout summary file.
+- `memory-map` is the default archaeology surface for topic- or artifact-routing questions.
+- `memory-history` emits an observed evidence timeline, not a reconstructed historical `MEMORY.md` diff; do not overclaim that it proves exact past memory contents.
 - Opencode datasets (`opencode_prompts`, `opencode_events`) default to `source=auto`, which resolves DB-first (`$HOME/.local/share/opencode/opencode.db`) with JSONL fallback (`$HOME/.local/state/opencode/prompt-history.jsonl`).
 - Opencode params: `params.source`, `params.opencode_db_path`, `params.opencode_path`, `params.include_raw`; `opencode_prompts` also supports `params.include_summary_fallback`.
 - Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, and from `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
