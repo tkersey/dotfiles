@@ -5,7 +5,7 @@ Use this extension only during memory consolidation.
 ## What this source is
 - This extension represents my evidence-backed learnings store.
 - The canonical detailed records come from repo-local `.learnings.jsonl` entries produced by my `learnings` skill.
-- Prefer a generated digest under `resources/` as the first input for this extension. Use raw learnings files only when the digest points to them.
+- Work directly from `.learnings.jsonl` evidence and its existing metadata. Do not assume an extension-local `resources/` digest exists.
 - Never edit, append, or rewrite `.learnings.jsonl` from the memory pipeline.
 
 ## Goal

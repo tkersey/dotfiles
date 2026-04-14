@@ -18,7 +18,9 @@ Its job is to help Codex remember:
 - which repo-specific metaphors or vocabularies should stay local,
 - which failure modes to avoid when using this style.
 
-Prefer curated summaries or generated digests under `resources/` when available.
+`instructions.md` is the only required file for this extension.
+Do not assume a sibling `resources/` directory or generated digest exists.
+Use durable evidence that is already present in the active memory inputs for the current consolidation run.
 Treat raw session notes, transcripts, scratchpads, and chat history as supporting evidence only.
 Never edit or rewrite raw source notes from the memory pipeline.
 
@@ -141,7 +143,7 @@ Preserve only the minimum anchors needed for retrieval, such as:
 - failure pattern,
 - routing cue.
 
-Keep detailed examples and history in the extension source or its digests, not in Codex memory.
+Keep detailed examples and history in the underlying evidence artifacts, not in Codex memory.
 
 ## Artifact targeting
 

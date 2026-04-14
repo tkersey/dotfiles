@@ -6,59 +6,22 @@ Use this extension only during memory consolidation.
 
 - This extension represents my evidence-backed harness guidance store.
 - The canonical detailed records come from session-backed artifacts that capture guardrails, corrections, steering patterns, and interventions that improved coding-agent behavior or outcomes.
-- Prefer `resources/harness_digest.md` as the primary input for this extension. Use raw per-session extracts only when the digest points to them or when the digest is missing a needed evidence detail.
-- The raw evidence may come from mining prior Codex sessions (for example via my `seq` workflow), but this extension should consume the curated harness artifacts, not re-mine session history on its own.
+- `instructions.md` is the only required file for this extension. Do not assume a sibling `resources/` tree, `resources/harness_digest.md`, or any other extension-local artifact exists.
+- Use whichever curated harness artifacts are actually present in the active memory inputs for the current consolidation run. If a compact human-curated summary already exists in those inputs, treat it as a convenience, not a requirement.
+- Use raw per-session extracts only when they are the only evidence available or when a higher-level summary omits a material evidence detail or scope constraint.
+- The raw evidence may come from mining prior Codex sessions (for example via my `seq` workflow), but this extension should consume the evidence already surfaced by the memory pipeline, not re-mine session history on its own.
 - Never edit, append, or rewrite the underlying extracted session artifacts from the memory pipeline.
 
-## Digest contract
+## Source contract
 
-When `resources/harness_digest.md` exists, treat it as the default consolidation source for this extension.
+- `instructions.md` is the only required extension file.
+- Any sibling files are optional and must be ignored when absent.
+- Prefer evidence already present in the current memory pipeline over hypothetical helper files that are not part of the active inputs.
+- When a curated summary and a raw extract disagree, prefer the raw extract only if the summary normalized the lesson incorrectly or dropped a crucial scope constraint.
 
-The digest should be optimized for memory consolidation, not for narrative reading. Favor compact structured markdown over prose.
+## Candidate rule requirements
 
-### Expected digest shape
-
-Use a structure close to this:
-
-```md
-# Harness digest
-
-## Rollup
-- generated_at:
-- window:
-- sessions_scanned:
-- candidate_rules:
-- repeated_themes:
-
-## Promote now
-### H-001 Short rule title
-- normalized_rule:
-- trigger:
-- preferred_behavior:
-- failure_avoided:
-- verification_cue:
-- scope: global | repo | path-family | task-family
-- scope_anchor:
-- target_hint: memory_summary | MEMORY | skill | none
-- evidence_count:
-- repetition_count:
-- source_sessions:
-- source_artifacts:
-- rationale:
-- confidence:
-
-## Watchlist
-### H-00x Short rule title
-- why_not_yet:
-- missing_evidence:
-- next_confirmation_signal:
-
-## Rejected / noise
-### H-00y Short rule title
-- rejection_reason:
-```
-
-The exact headings can vary, but every candidate rule should make the following explicit:
+The source artifacts can take many forms. Whatever the artifact shape, every candidate rule should make the following explicit when the evidence supports it:
 
 - the normalized reusable rule,
 - the trigger or symptom that tells the future agent when to apply it,
@@ -67,8 +30,6 @@ The exact headings can vary, but every candidate rule should make the following 
 - the verification cue or stop condition,
 - the intended scope,
 - the evidence strength.
-
-### Candidate rule requirements
 
 For each candidate, prefer fields with substance over verbose commentary:
 
@@ -87,7 +48,7 @@ For each candidate, prefer fields with substance over verbose commentary:
 - `rationale`: one short line on why the rule matters.
 - `confidence`: `high`, `medium`, or `low` based on evidence quality.
 
-### Digest authoring rules
+## Candidate formatting rules
 
 - Separate `Promote now`, `Watchlist`, and `Rejected / noise` so the consolidator does not need to infer readiness from prose.
 - Keep candidate titles short and retrieval-friendly.
@@ -98,15 +59,11 @@ For each candidate, prefer fields with substance over verbose commentary:
 - If the miner is unsure whether a lesson is durable, place it in `Watchlist` instead of overstating it.
 - If a correction changed the trajectory but the underlying rule is still unclear, capture the failure pattern and missing evidence rather than forcing normalization.
 
-### Preferred digest semantics
+## Readiness semantics
 
-Interpret the digest as follows:
-
-- `Promote now` means the miner believes the lesson is mature enough for memory consolidation.
+- `Promote now` means the lesson is mature enough for memory consolidation.
 - `Watchlist` means the pattern looks real but should usually stay out of memory until repetition or stronger evidence appears.
-- `Rejected / noise` exists to document what was deliberately filtered out so the same weak signals are not repeatedly reconsidered.
-
-When the digest and a raw extract disagree, prefer the raw extract only if it clearly shows the digest normalized the lesson incorrectly or dropped a crucial scope constraint.
+- `Rejected / noise` documents what was deliberately filtered out so the same weak signals are not repeatedly reconsidered.
 
 ## Goal
 
