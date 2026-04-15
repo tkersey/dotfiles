@@ -1,22 +1,18 @@
 # Haskell Examples
 
-## Table of contents
-- Product and terminal object
-- Coproduct and initial object
-- Refined type
-- Pullback witness
-- Exponential
-- Free construction
-- ADD sub-lens
-
 ## Product and terminal object
+
 ```haskell
-data Money = Money { amount :: Int, currency :: String }
+data Money = Money
+  { amount :: Int
+  , currency :: String
+  }
 
 type NoPayload = ()
 ```
 
 ## Coproduct and initial object
+
 ```haskell
 data DocState
   = Draft
@@ -25,11 +21,12 @@ data DocState
 
 renderState :: DocState -> String
 renderState Draft = "draft"
-renderState (InReview reviewers) = "review: " ++ show reviewers
+renderState (InReview reviewers) = "review:" ++ show reviewers
 renderState (Published url) = url
 ```
 
 ## Refined type
+
 ```haskell
 newtype NonEmpty = NonEmpty String deriving (Eq, Show)
 
@@ -40,11 +37,19 @@ mkNonEmpty s
 ```
 
 ## Pullback witness
+
 ```haskell
 newtype AccountId = AccountId String deriving (Eq, Show)
 
-data Customer = Customer { customerAccountId :: AccountId, customerName :: String }
-data Subscription = Subscription { subscriptionAccountId :: AccountId, planName :: String }
+data Customer = Customer
+  { customerAccountId :: AccountId
+  , customerName :: String
+  }
+
+data Subscription = Subscription
+  { subscriptionAccountId :: AccountId
+  , planName :: String
+  }
 
 data CustomerSubscription = CustomerSubscription
   { joinedCustomer :: Customer
@@ -59,6 +64,7 @@ mkCustomerSubscription customer subscription
 ```
 
 ## Exponential
+
 ```haskell
 type Formatter = String -> String
 
@@ -67,6 +73,7 @@ withPrefix prefix = \body -> prefix ++ body
 ```
 
 ## Free construction
+
 ```haskell
 data Expr
   = Lit Int
@@ -82,6 +89,7 @@ pretty (Add a b) = "(" ++ pretty a ++ " + " ++ pretty b ++ ")"
 ```
 
 ## ADD sub-lens
+
 ```haskell
 newtype Log = Log [String] deriving (Eq, Show)
 

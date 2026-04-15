@@ -1,21 +1,14 @@
 # TypeScript Examples
 
-## Table of contents
-- Product and terminal object
-- Coproduct and initial object
-- Refined type
-- Pullback witness
-- Exponential
-- Free construction
-- ADD sub-lens
-
 ## Product and terminal object
+
 ```ts
 type Money = { amount: number; currency: string };
-type NoPayload = Record<never, never>;
+type NoPayload = Record<string, never>;
 ```
 
 ## Coproduct and initial object
+
 ```ts
 type LegacyDocument = {
   status: string;
@@ -52,22 +45,10 @@ function toState(doc: LegacyDocument): DocState | null {
       return null;
   }
 }
-
-function renderState(state: DocState): string {
-  switch (state.tag) {
-    case "Draft":
-      return "draft";
-    case "Approved":
-      return state.approvedBy;
-    case "Published":
-      return state.publishedAt;
-    case "Archived":
-      return state.archivedReason;
-  }
-}
 ```
 
 ## Refined type
+
 ```ts
 type Email = { tag: "Email"; value: string };
 
@@ -78,14 +59,19 @@ function mkEmail(raw: string): Email | null {
 ```
 
 ## Pullback witness
+
 ```ts
 type Customer = { accountId: string; name: string };
 type Subscription = { accountId: string; plan: string };
-type CustomerSubscription = { customer: Customer; subscription: Subscription };
+
+type CustomerSubscription = {
+  customer: Customer;
+  subscription: Subscription;
+};
 
 function mkCustomerSubscription(
   customer: Customer,
-  subscription: Subscription
+  subscription: Subscription,
 ): CustomerSubscription | null {
   return customer.accountId === subscription.accountId
     ? { customer, subscription }
@@ -94,6 +80,7 @@ function mkCustomerSubscription(
 ```
 
 ## Exponential
+
 ```ts
 type Formatter = (body: string) => string;
 
@@ -103,6 +90,7 @@ function withPrefix(prefix: string): Formatter {
 ```
 
 ## Free construction
+
 ```ts
 type Rule =
   | { tag: "All"; rules: Rule[] }
@@ -124,24 +112,13 @@ function evaluateRule(rule: Rule, facts: Facts): boolean {
       return facts[rule.field] === rule.value;
   }
 }
-
-function explainRule(rule: Rule): string {
-  switch (rule.tag) {
-    case "All":
-      return `all(${rule.rules.map(explainRule).join(", ")})`;
-    case "Any":
-      return `any(${rule.rules.map(explainRule).join(", ")})`;
-    case "Not":
-      return `not(${explainRule(rule.rule)})`;
-    case "FieldEq":
-      return `${rule.field} == ${rule.value}`;
-  }
-}
 ```
 
 ## ADD sub-lens
+
 ```ts
 type Log = { lines: string[] };
+
 const emptyLog: Log = { lines: [] };
 
 function combineLog(a: Log, b: Log): Log {

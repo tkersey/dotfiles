@@ -1,40 +1,84 @@
 # Language Encoding Matrix
 
-## Table of contents
-- Capability-first fallback ladder
-- Family matrix
-- Construction notes
-- Validation defaults
-
 ## Capability-first fallback ladder
-Choose the strongest honest encoding the language and repo can support.
-1. Native algebraic data types, exhaustive matching, value objects, and generics.
-2. Sealed hierarchies, enums with payloads, records, and closed interfaces.
-3. Interfaces plus explicit tags, checked constructors, and witness structs.
-4. Runtime validators, wrappers, and disciplined tests in dynamic languages.
 
-Do not pretend a runtime validator gives compile-time guarantees. Say what remains runtime-only.
+Choose the strongest honest encoding the language and repo can support.
+
+1. Native algebraic data types, exhaustive matching, value objects, and generics
+2. Sealed hierarchies, enums with payloads, records, and closed interfaces
+3. Interfaces plus explicit tags, checked constructors, witness structs, and strategy objects
+4. Runtime validators, wrappers, and disciplined tests in dynamic languages
+
+Do not pretend a runtime validator gives compile-time guarantees.
 
 ## Family matrix
-| Language family | Product | Coproduct | Equalizer or refined type | Pullback | Exponential | Free construction |
+
+| Language family | Product | Coproduct | Equalizer / refined type | Pullback | Exponential | Free construction |
 | --- | --- | --- | --- | --- | --- | --- |
-| Typed FP and ADT-rich languages (Haskell, OCaml, F#, Elm, Rust, Swift, Scala) | Record, tuple, unit | ADT, `Void` or `Never` style empty type | Newtype plus smart constructor | Checked witness record | Function, closure, curry, reader-like environment | AST plus fold or interpreter |
-| Modern OO with sealed types (Kotlin, Java, C#, Swift) | Record, data class, value object | Sealed hierarchy, enum with payload, visitor | Factory, constructor guard, value object | Checked aggregate or witness class | Strategy, callable object, lambda | Class hierarchy or AST plus interpreter |
-| Go-style structural typing | Struct, multiple return values, `struct{}` | Interface plus tag or enum-like discriminator | Constructor returning `(T, error)` | Checked struct with constructor and preserved projections | `func` value or interface method | Tagged structs plus evaluator |
-| Dynamic languages (Python, Ruby, JavaScript) | Dataclass, object, dict with constructor helper | Tagged dict or object, class union by convention | Validator plus wrapper or constructor function | Validated pair object or helper constructor | Closure, callable object, higher-order function | Tagged AST objects plus interpreter |
+| ADT-rich languages (Haskell, OCaml, F#, Rust, Swift, Scala) | record, struct, tuple | enum / ADT | newtype + smart constructor | checked witness struct | function / closure | enum AST + interpreter / fold |
+| Modern OO with sealed types (Kotlin, Java, C#) | record, data class, value object | sealed hierarchy, enum with payload, visitor | private constructor + factory / value object | checked aggregate / witness class | lambda, strategy interface, callable object | class or enum AST + interpreter |
+| Go-style structural typing | struct, multiple return values, `struct{}` | interface + tag or discriminator | constructor returning `(T, error)` | checked struct with unexported fields | `func` value or interface | tagged structs + evaluator |
+| Dynamic languages (Python, Ruby, JavaScript) | dataclass / object / dict helper | tagged dict or class union by convention | validator + wrapper + one constructor path | validated pair object | closure, callable object | tagged AST objects + interpreter |
 
 ## Construction notes
-- **Product**: prefer named fields over positional tuples when the domain meaning matters.
-- **Coproduct**: prefer a single discriminant field or sealed hierarchy over multiple booleans.
-- **Equalizer or refined type**: centralize construction so invalid values cannot leak in casually.
-- **Python note**: prefer `@dataclass(frozen=True)` value objects or small wrappers with one `parse` or constructor path; `typing.NewType` helps static tooling but does not enforce runtime validity.
-- **Pullback**: preserve the two projections explicitly and keep the agreement check in one constructor.
-- **Exponential**: choose closures for lightweight customization, strategy objects when the repo favors interfaces, and configuration plus callable objects when dependency injection is already established.
-- **Free construction**: keep constructors dumb and interpreters explicit; do not hide execution inside the AST itself unless the repo already does that.
+
+### Product
+Prefer named fields over positional tuples when domain meaning matters.
+
+### Coproduct
+Prefer one discriminant or one sealed hierarchy over several booleans.
+
+### Refined type
+Centralize construction so invalid values cannot leak in casually. If the repo is dynamic, keep the validator and wrapper next to each other.
+
+### Pullback
+Preserve both projections explicitly and keep the agreement check in one constructor.
+
+### Exponential
+Use closures when the repo already passes functions. Use strategy objects when the repo favors interfaces, dependency injection, or object seams.
+
+### Free construction
+Keep constructors dumb and interpreters explicit. Do not hide execution in the syntax tree unless the repo already does that.
+
+## Boundary prompts by ecosystem
+
+### TypeScript / JavaScript
+Ask:
+- where JSON becomes domain data
+- whether a runtime decoder already exists
+- whether the internal union can stay richer than the wire shape
+- whether one discriminant field can be introduced internally before any API change
+
+### Python
+Ask:
+- where parsing happens today
+- whether a small frozen wrapper can replace repeated raw-string use
+- whether serializers can unwrap explicitly at the edge
+- what remains runtime-only after introducing the wrapper
+
+### Java / Kotlin
+Ask:
+- whether DTOs can stay at the controller boundary
+- whether value objects can avoid bleeding into persistence immediately
+- whether a factory or static constructor can centralize refinement
+- whether a sealed hierarchy can stay internal while Jackson or persistence models remain stable
+
+### Go
+Ask:
+- whether fields can be unexported so the constructor is the only way in
+- whether JSON or DB mapping should stay in a separate package
+- whether the witness should expose preserved projections instead of public fields
+- whether the error path is obvious and testable
+
+### Rust / Swift
+Ask:
+- whether newtypes can hold the invariant cheaply
+- whether `serde` / `Codable` adapters should stay at the edge
+- whether enum exhaustiveness can replace stringly-typed branching directly
 
 ## Validation defaults
-- Prefer the repo's built-in test runner and fixture style.
-- Use property-based testing only when the repo already has support or the user approves it.
-- In dynamic languages, lean harder on golden, round-trip, and differential tests because some guarantees stay runtime-only.
-- In Python, annotate APIs with the refined wrapper and let mypy or pyright reinforce the boundary, but keep runtime validation in the constructor.
-- In OO or Go-style code, make constructors and eliminators easy to test directly; do not rely on incidental framework behavior to prove the design.
+
+- Prefer the repo's built-in test runner and assertion style.
+- Prefer compile, typecheck, and deterministic fixtures before introducing property testing.
+- In dynamic languages, lean harder on boundary tests, round-trips, and differential tests.
+- In OO or Go-style code, make constructors and eliminators easy to test directly.

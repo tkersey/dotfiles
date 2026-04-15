@@ -1,37 +1,59 @@
 # Discovery Signals
 
-## Table of contents
-- How to use this file
-- Core signals
-- Advanced signals
-- Overreach checks
-
 ## How to use this file
-Start from the code smell or API pressure, not the theory label. Match the observed signal to the smallest construction that explains it, then translate that construction into the repo's language and framework conventions.
 
-## Core signals
-| Signal in the repo | Candidate construction | What to verify | Typical encoding | Validation cue |
-| --- | --- | --- | --- | --- |
-| Several fields are always carried together and consumed independently | Product plus terminal object | Are the fields truly independent, or do some combinations need validation? | Record, struct, tuple, or object; empty struct or unit for no payload | Constructor and projection consistency |
-| Status strings, booleans, or nullable fields try to describe one lifecycle | Coproduct plus initial object | Is each value exactly one case? Are impossible combinations leaking through? | Tagged union, sealed interface, enum with payload, interface plus tag | Exhaustive handling and impossible-state tests |
-| The same predicate is checked at many boundaries | Equalizer or refined type | What is the precise subset of legal values? Can one constructor enforce it once? | Smart constructor, value object, parser, normalized wrapper | Accept valid, reject invalid, normalization idempotence |
-| Two records must agree on tenant id, account id, locale, or schema version | Pullback-shaped join | Which projections must agree? Can a checked constructor enforce the witness? | Checked composite struct, witness object, validated pair | Both projections preserved, mismatches rejected |
-| Behavior is hard-coded behind branches but should be supplied by callers | Exponential | Is the real design a function or strategy from input to output? | Closure, function value, callable object, strategy interface | Application and composition examples |
-| A builder, workflow, or rule engine mixes syntax with execution | Free construction or initial algebra | Can syntax be modeled separately from interpreters? Are there multiple interpretations? | AST, IR, command object tree, fold or interpreter | Interpreter consistency, fold law, differential tests |
-| Combination rules dominate once the outer shape is chosen | ADD sub-lens | Is there an associative combine, identity, lattice, semiring, or normalization? | Monoid, lattice, semiring, homomorphism, normal form | Law checks or small model tests |
+Start from the code smell or boundary pressure, not the theory label. Match the
+observed signal to the smallest construction that explains it, then choose the
+smallest seam where that construction can land.
 
-## Advanced signals
-| Signal in the repo | Candidate construction | Default stance |
-| --- | --- | --- |
-| Merge two modules or schemas around a shared interface and quotient overlaps | Pushout or coequalizer | Keep in the advanced tier unless the code already talks about merge semantics formally |
-| A free builder always pairs with an evaluator or forgetful projection | Adjunction | Use as explanation, not as the first code recommendation |
-| Polymorphic representation theorems or optics/profunctor APIs dominate | Yoneda, ends, coends | Use only when the prompt explicitly wants that level |
-| Data migration across schemas or functor-shaped indexing appears directly | Kan extension | Use only when schema or semantics transport is the real problem |
-| Coeffects, handlers, or explicit effect semantics are already first-class | Monads or comonads as categorical abstractions | Follow repo conventions before introducing categorical vocabulary |
+## Core signal table
+
+| Signal in the repo | Default construction | Concrete evidence to look for | First seam to try | Cheapest proof signal | Common false positive |
+| --- | --- | --- | --- | --- | --- |
+| Several booleans, strings, or nullable fields try to describe one lifecycle | Coproduct | `status`, `state`, `phase`, `isApproved`, `publishedAt`, `archivedReason`, optional fields that should be mutually exclusive | DTO-to-domain decoder or one central state module | exhaustive handling + invalid legacy fixture tests | The fields are actually independent and belong in a product |
+| The same predicate is checked at several boundaries | Equalizer / refined type | repeated `validate`, `parse`, `isValid`, trim/lowercase/normalize logic, the same regex or range check in multiple files | constructor, parser, or controller boundary | accept valid / reject invalid / normalization idempotence | The predicate is unstable or depends on external context |
+| Two records must agree on a shared key or projection | Pullback witness | `customer.accountId != subscription.accountId`, repeated tenant/schema/version checks | checked composite constructor | mismatch rejection + preserved projections | A plain pair plus one assertion is good enough because the relationship is not stable |
+| Large branch chooses pricing, rendering, or policy behavior | Exponential | long `switch`, `if/elif`, strategy flags, behavior selected by option bits | function parameter, strategy interface, or callable object seam | fixture parity against old implementation | The problem is state modeling, not behavior injection |
+| A workflow or rule engine mixes syntax with execution and explanation | Free construction / initial algebra | builders that also execute, class trees that both model and evaluate, duplicated interpretive logic | AST + one interpreter | interpreter consistency + differential tests | There is only one execution path and the AST adds no value |
+| Several fields always travel together and are consumed independently | Product | the same argument list or object shape passes through many layers unchanged | constructor, record, or object type | constructor + projection consistency | Hidden coupling means some combinations are actually illegal |
+
+## Seam selection rubric
+
+Score each candidate seam from 0 to 2 on each axis:
+
+- **Locality**: how narrowly can you land the change?
+- **Boundary stability**: can external wire or storage shapes stay stable?
+- **Proofability**: is there an obvious test, compile check, or parity check?
+- **Invariant gain**: how much truth becomes unrepresentable or centralized?
+- **Rollback ease**: can the seam be reverted without repo-wide fallout?
+
+Prefer the seam with the highest total that still uses the smallest
+construction.
 
 ## Overreach checks
+
 - Do not choose a larger construction just because it sounds elegant.
-- Do not claim a pullback when the code only needs a pair and a runtime assertion with no stable shared projection.
-- Do not claim a free construction unless separate interpreters or folds are part of the value.
-- Do not claim an equalizer if the predicate is fuzzy, unstable, or context-dependent.
-- When two constructions compete, choose the smaller one and mention the larger one as an alternative only if it unlocks a concrete follow-up benefit.
+- Do not claim a pullback when the code only needs a pair and one runtime assertion.
+- Do not claim a free construction unless multiple interpreters, folds, or explanation paths are part of the value.
+- Do not claim an equalizer if the predicate is fuzzy, unstable, or depends on mutable external state.
+- When two constructions compete, choose the smaller one first and name the larger one only if it unlocks a concrete next step.
+
+## Cost notes by construction
+
+### Product
+Cheap and local. Prefer it when fields are genuinely independent.
+
+### Coproduct
+Moderate cost. Main pressure comes from decoding legacy shapes and touching exhaustiveness sites.
+
+### Refined type
+Usually cheap if construction can be centralized at boundaries. Cost rises when raw primitives leak deeply into persistence or templates.
+
+### Pullback witness
+Often cheap and high-value when the agreement check already exists in several places.
+
+### Exponential
+Usually cheap if there is already a natural function or strategy seam. More expensive when behavior is spread across shared mutable state.
+
+### Free construction
+Highest cost of the core six. Use only when separate syntax and multiple interpretations produce real value.
