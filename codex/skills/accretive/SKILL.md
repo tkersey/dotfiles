@@ -1,6 +1,16 @@
 ---
 name: accretive
-description: "Activate maximal ambition, then choose one dominant accretive move grounded in the current project state. Preserve the original accretive prompt wording exactly except for an injectable target parameter."
+description: "Choose one dominant accretive move grounded in the current project state. Activates maximal ambition and generates the single best next action to advance the project. Use when you want a bold, high-leverage next step or need to break through analysis paralysis."
+user-invocable: true
+triggers:
+  - what should I do next
+  - give me the best next move
+  - accretive move
+  - what's the highest leverage action
+  - break through this block
+  - what's the most impactful thing to do
+  - maximize project momentum
+  - single best action to take
 ---
 
 # Accretive

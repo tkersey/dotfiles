@@ -1,6 +1,16 @@
 ---
 name: puff
-description: Launch and manage Codex Cloud tasks from the CLI, including detached background watchers that track completion. Use when users ask to run coding work in cloud/background agents, queue multiple cloud tasks, poll task status, fetch cloud diffs, apply cloud outputs locally, or pair cloud kickoff with `$cas` orchestration.
+description: "Launch and manage Codex Cloud tasks from the CLI, including detached background watchers that track completion. Use when running coding work in cloud/background agents, queuing multiple cloud tasks, polling task status, fetching cloud diffs, or applying cloud outputs locally."
+user-invocable: true
+triggers:
+  - run this in cloud
+  - launch a Codex cloud task
+  - background coding agent
+  - queue multiple cloud tasks
+  - poll cloud task status
+  - fetch cloud diff
+  - apply cloud output locally
+  - run in background agent
 ---
 
 # Puff
