@@ -1,9 +1,16 @@
 ---
 name: planning-workflow
-description: >-
-  Comprehensive markdown planning methodology for software projects. Use when
-  starting a new project, creating implementation plans, or refining architecture
-  before coding.
+description: "Comprehensive markdown planning methodology for software projects. Use when starting a new project, creating an implementation plan, architecting a solution, or structuring work before writing code."
+user-invocable: true
+triggers:
+  - create a project plan
+  - plan this implementation
+  - architecture before coding
+  - planning workflow
+  - help me plan this project
+  - structure this project
+  - create a software plan
+  - markdown planning for this feature
 ---
 
 <!-- TOC: Philosophy | THE EXACT PROMPT | Process Overview | References -->

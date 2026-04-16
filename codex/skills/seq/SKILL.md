@@ -1,6 +1,16 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups such as `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, and `orchestration-concurrency`, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
+description: "Mine Codex sessions and file-based memories for artifact forensics, skill blocks, plan searches, and session tooling. Use when searching past sessions for $seq artifacts, debugging orchestration, or querying session history."
+user-invocable: true
+triggers:
+  - search my session history
+  - find artifacts from past sessions
+  - mine codex sessions
+  - search memories for
+  - find skill blocks in sessions
+  - query session history
+  - look up past codex work
+  - find this in my sessions
 ---
 
 # seq
