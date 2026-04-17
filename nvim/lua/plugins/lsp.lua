@@ -27,6 +27,7 @@ return {
         ensure_installed = {
           "eslint_d",   -- Fast ESLint daemon for linting
           "prettierd",  -- Fast Prettier daemon for formatting
+          "stylelint-language-server", -- Stylelint LSP package
         },
         auto_update = true,
         run_on_start = true,
