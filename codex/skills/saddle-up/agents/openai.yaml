@@ -1,4 +1,0 @@
-interface:
-  display_name: "Saddle Up"
-  short_description: "Continuously harden Gemini harnesses with eval loops."
-  default_prompt: "Run $saddle-up on a clean repo with an explicit model, tighten the Gemini 2.5 Pro harness, and report pass rate, blockers, and PR status."
