@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/tk/.dotfiles/codex/hooks/st_session_start.sh",
+            "command": "$HOME/.dotfiles/codex/hooks/st_session_start.sh",
             "timeoutSec": 10,
             "statusMessage": "Hydrating $st plan"
           }

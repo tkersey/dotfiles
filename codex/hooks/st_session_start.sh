@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-. /Users/tk/.dotfiles/codex/hooks/st_hook_common.sh
+. "$HOME/.dotfiles/codex/hooks/st_hook_common.sh"
 
 payload=$(cat)
 source_name=$(printf '%s' "$payload" | jq -r '.source // "startup"')
