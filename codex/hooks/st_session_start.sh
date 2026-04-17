@@ -45,7 +45,7 @@ Repo contains a durable \$st plan at $plan_file.
 On SessionStart, the durable store is the source of truth.
 Before substantive work, call update_plan exactly once with this payload emitted by st:
 $update_plan_payload
-Preserve the emitted [st-id] step prefixes so Stop-time sync can round-trip safely back into the durable ledger.
+Preserve the emitted [st-id] step prefixes so any later manual \$st plan import can map rows back into the durable ledger safely.
 EOF
 )
 

@@ -18,16 +18,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "ST_STOP_MODE=block /Users/tk/.dotfiles/codex/hooks/st_stop.sh",
-            "timeoutSec": 10,
-            "statusMessage": "Synchronizing $st durable plan"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "LEARNINGS_STOP_MODE=block /Users/tk/.dotfiles/codex/hooks/learnings_stop.sh",
             "timeoutSec": 10,
             "statusMessage": "Checking learnings checkpoint"
