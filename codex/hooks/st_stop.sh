@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-. /Users/tk/.dotfiles/codex/hooks/st_hook_common.sh
+. "$HOME/.dotfiles/codex/hooks/st_hook_common.sh"
 
 payload=$(cat)
 stop_hook_active=$(printf '%s' "$payload" | jq -r '.stop_hook_active // false')

@@ -48,7 +48,7 @@ resolve_st_bin() {
     return 0
   fi
 
-  for candidate in /Users/tk/workspace/tk/skills-zig/zig-out/bin/st "$(command -v st 2>/dev/null || true)"; do
+  for candidate in "$HOME"/workspace/tk/skills-zig/zig-out/bin/st "$(command -v st 2>/dev/null || true)"; do
     [ -n "${candidate:-}" ] || continue
     [ -x "$candidate" ] || continue
     if st_supports_command "$candidate" "$required_command"; then

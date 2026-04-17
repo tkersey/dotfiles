@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "LEARNINGS_STOP_MODE=block /Users/tk/.dotfiles/codex/hooks/learnings_stop.sh",
+            "command": "LEARNINGS_STOP_MODE=block $HOME/.dotfiles/codex/hooks/learnings_stop.sh",
             "timeoutSec": 10,
             "statusMessage": "Checking learnings checkpoint"
           }

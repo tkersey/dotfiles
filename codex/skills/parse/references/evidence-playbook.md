@@ -4,7 +4,7 @@ Use this playbook when static structure alone is not enough to justify the final
 
 ## Static-First Checklist
 
-Start with `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh`, then inspect only the strongest evidence paths it returns across code structure, build graph, tests/examples, runtime or deploy surfaces, and docs/ADRs:
+Start with `$HOME/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh`, then inspect only the strongest evidence paths it returns across code structure, build graph, tests/examples, runtime or deploy surfaces, and docs/ADRs:
 
 - manifests and dependency files
 - top-level entrypoints and runnable surfaces

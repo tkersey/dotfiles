@@ -73,8 +73,8 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 
 When iterating on the Zig-backed `seq` helper CLI path, use these two repos:
 
-- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `seq` Zig binary, build/test wiring, and release tags.
-- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `seq` binaries.
+- `skills-zig` (`$HOME/workspace/tk/skills-zig`): source for the `seq` Zig binary, build/test wiring, and release tags.
+- `homebrew-tap` (`$HOME/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `seq` binaries.
 
 ## Quick Start
 ```bash
@@ -412,14 +412,14 @@ seq skill-blocks --root ~/.codex/sessions \
 Repo-scoped metadata rows:
 ```bash
 seq plan-search --root ~/.codex/sessions \
-  --repo /Users/tk/workspace/tk/shift \
+  --repo "$HOME/workspace/tk/shift" \
   --since 2026-03-01T00:00:00Z \
   --format table
 ```
 Filter by title/body text and show scan counters:
 ```bash
 seq plan-search --root ~/.codex/sessions \
-  --repo /Users/tk/workspace/tk/shift \
+  --repo "$HOME/workspace/tk/shift" \
   --contains "PromptMode" \
   --stats \
   --format jsonl

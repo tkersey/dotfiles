@@ -30,14 +30,14 @@ If `parse` is paired with another skill, `parse` still owns this architecture pa
 
 When iterating on the Zig-backed `parse-arch` helper CLI, use these two repos:
 
-- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `parse-arch` binary, build/test wiring, release tags, and eval fixtures.
-- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates and checksum bumps for released `parse-arch` binaries.
+- `skills-zig` (`$HOME/workspace/tk/skills-zig`): source for the `parse-arch` binary, build/test wiring, release tags, and eval fixtures.
+- `homebrew-tap` (`$HOME/workspace/tk/homebrew-tap`): Homebrew formula updates and checksum bumps for released `parse-arch` binaries.
 
 ## Quick Start
 
 ```bash
-/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh /path/to/repo --focus-path src --focus-path test
-/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh --repo-path /path/to/repo --json
+$HOME/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh /path/to/repo --focus-path src --focus-path test
+$HOME/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh --repo-path /path/to/repo --json
 ```
 
 Use the helper first during normal `$parse` runs. It bootstraps a compatible `parse-arch`, accepts the same paved repo selectors agents actually try (`<repo_path>`, `--repo-path`, `--repo`, `--json`, `--format json`), and always emits JSON.
@@ -152,7 +152,7 @@ Call out docs-vs-code drift explicitly and keep repo-fit advice narrow and curre
    - Use repo kind to avoid forcing app-centric labels onto thin libraries or infrastructure repos.
 
 2. Collect static signals first.
-   - Run the helper first: `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh <repo_path>`.
+   - Run the helper first: `$HOME/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh <repo_path>`.
    - Pass `--focus-path` for each target slice when `focus_paths` are available.
    - Treat the helper command as a required proof artifact for normal parse runs. The final `Evidence` section should name the repo-wide helper command shape you used and, when applicable, the focused rerun command shape too.
    - Use the JSON output to inspect manifests, entrypoints, dependency-direction hints, runtime-boundary hints, architecture-doc claims, scan coverage, subsystem candidates, focus-path observations, `read_depth_verdict`, `thin_signal_classes`, and `suggested_focus_paths`.
@@ -267,9 +267,9 @@ For each section:
 ## Validation
 
 - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/parse`
-- `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh "$PWD" --focus-path codex/skills/parse/SKILL.md`
-- `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh /Users/tk/workspace/tk/shift --json | jq -e '.read_depth_verdict == "thin_repo_wide" and (.suggested_focus_paths | index("src"))'`
-- `/Users/tk/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh /Users/tk/.dotfiles --json | jq -e '.read_depth_verdict == "thin_repo_wide" and (.suggested_focus_paths | length > 0)'`
+- `$HOME/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh "$PWD" --focus-path codex/skills/parse/SKILL.md`
+- `$HOME/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh "$HOME/workspace/tk/shift" --json | jq -e '.read_depth_verdict == "thin_repo_wide" and (.suggested_focus_paths | index("src"))'`
+- `$HOME/.dotfiles/codex/skills/parse/scripts/run_parse_collect.sh "$HOME/.dotfiles" --json | jq -e '.read_depth_verdict == "thin_repo_wide" and (.suggested_focus_paths | length > 0)'`
 - `run_parse_arch_tool eval --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml"`
 - `run_parse_arch_tool doctor --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml" --repo-path "$PWD"`
 

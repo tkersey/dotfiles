@@ -15,8 +15,8 @@ Write each validated learning as JSONL so future agents can reuse successful pat
 
 When iterating on the Zig-backed `learnings`/`append_learning` helper CLI path, use these two repos:
 
-- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `learnings` and `append_learning` Zig binaries, build/test wiring, and release tags.
-- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `learnings` binaries.
+- `skills-zig` (`$HOME/workspace/tk/skills-zig`): source for the `learnings` and `append_learning` Zig binaries, build/test wiring, and release tags.
+- `homebrew-tap` (`$HOME/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `learnings` binaries.
 
 ## Trigger cues
 

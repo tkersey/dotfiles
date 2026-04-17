@@ -12,8 +12,8 @@ Use this skill to manage Codex automations through the native Zig `cron` CLI. Ru
 
 When iterating on `cron`, use these two repos:
 
-- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `cron` binary, build/test wiring, release tags.
-- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): formula/checksum updates for released binaries.
+- `skills-zig` (`$HOME/workspace/tk/skills-zig`): source for the `cron` binary, build/test wiring, release tags.
+- `homebrew-tap` (`$HOME/workspace/tk/homebrew-tap`): formula/checksum updates for released binaries.
 
 ## Quick Start
 ```bash

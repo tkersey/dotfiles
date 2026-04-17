@@ -13,8 +13,8 @@ Use this skill to launch Codex Cloud tasks without blocking the local CLI sessio
 
 When iterating on the Zig-backed `puff` helper CLI path, use these two repos:
 
-- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `puff` Zig binary, build/test wiring, and release tags.
-- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `puff` binaries.
+- `skills-zig` (`$HOME/workspace/tk/skills-zig`): source for the `puff` Zig binary, build/test wiring, and release tags.
+- `homebrew-tap` (`$HOME/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `puff` binaries.
 
 ## Quick Start
 

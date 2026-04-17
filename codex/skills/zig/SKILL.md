@@ -454,18 +454,18 @@ Notes:
 
 ## `skills-zig` evidence lane
 When validating guidance against current Zig production patterns, inspect:
-- Source/build/release repo: `/Users/tk/workspace/tk/skills-zig`
-- Formula propagation repo: `/Users/tk/workspace/tk/homebrew-tap`
+- Source/build/release repo: `$HOME/workspace/tk/skills-zig`
+- Formula propagation repo: `$HOME/workspace/tk/homebrew-tap`
 
 Recommended checks:
 ```bash
-git -C /Users/tk/workspace/tk/skills-zig log --oneline --max-count=30
-rg -n "std.testing.fuzz|checkAllAllocationFailures|FailingAllocator" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
-rg -n "extern fn|linkSystemLibrary|linkLibC|sqlite3_" /Users/tk/workspace/tk/skills-zig/apps /Users/tk/workspace/tk/skills-zig/build.zig -g"*.zig"
-rg -n "std.atomic|compareExchange|fetchAdd|Thread|spawn" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
-rg -n "std.simd|@Vector|std.Thread.Pool" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
-rg -n "perf_hub|CountingAllocator|warmup|samples" /Users/tk/workspace/tk/skills-zig/apps /Users/tk/workspace/tk/skills-zig/tools -g"*.zig"
-rg -n "@typeInfo|@hasDecl|@hasField|@Type|comptime" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
+git -C "$HOME/workspace/tk/skills-zig" log --oneline --max-count=30
+rg -n "std.testing.fuzz|checkAllAllocationFailures|FailingAllocator" "$HOME/workspace/tk/skills-zig/apps" -g"*.zig"
+rg -n "extern fn|linkSystemLibrary|linkLibC|sqlite3_" "$HOME/workspace/tk/skills-zig/apps" "$HOME/workspace/tk/skills-zig/build.zig" -g"*.zig"
+rg -n "std.atomic|compareExchange|fetchAdd|Thread|spawn" "$HOME/workspace/tk/skills-zig/apps" -g"*.zig"
+rg -n "std.simd|@Vector|std.Thread.Pool" "$HOME/workspace/tk/skills-zig/apps" -g"*.zig"
+rg -n "perf_hub|CountingAllocator|warmup|samples" "$HOME/workspace/tk/skills-zig/apps" "$HOME/workspace/tk/skills-zig/tools" -g"*.zig"
+rg -n "@typeInfo|@hasDecl|@hasField|@Type|comptime" "$HOME/workspace/tk/skills-zig/apps" -g"*.zig"
 ```
 
 Use these results to keep `$zig` guidance aligned with what is true in active Zig repos.

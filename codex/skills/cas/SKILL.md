@@ -106,8 +106,8 @@ This skill assumes `codex` is available on PATH and does not require access to a
 
 When iterating on the Zig-backed `cas` helper CLI path, use these two repos:
 
-- `skills-zig` (`/Users/tk/workspace/tk/skills-zig`): source for the `cas` Zig binaries, build/test wiring, and release tags.
-- `homebrew-tap` (`/Users/tk/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `cas` binaries.
+- `skills-zig` (`$HOME/workspace/tk/skills-zig`): source for the `cas` Zig binaries, build/test wiring, and release tags.
+- `homebrew-tap` (`$HOME/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `cas` binaries.
 
 ## Quick Start
 
