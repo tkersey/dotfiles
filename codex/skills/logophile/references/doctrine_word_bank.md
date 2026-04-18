@@ -14,6 +14,12 @@ Use these as defaults, not mandates. Pick words for procedural gain, not prestig
 
 ## Reasoning-mode words
 - `mechanistic`: explain causal chains, not symptoms.
+- `witness-bearing`: demand a concrete witness for each material claim.
+- `preservation`: ask what must remain true across each transformation or step.
+- `progress`: ask whether execution can always take a legal next step.
+- `inhabitation-aware`: hunt impossible or half-valid states that are still representable.
+- `total`: prefer exhaustive handling and explicit partiality.
+- `refinement-first`: narrow raw inputs at the boundary before deeper logic depends on them.
 - `falsifiable`: frame claims as testable and disprovable.
 - `canonical`: prefer standard forms and primary paths.
 - `compositional`: break the task into parts with explicit interfaces.

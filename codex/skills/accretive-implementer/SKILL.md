@@ -1,6 +1,6 @@
 ---
 name: accretive-implementer
-description: Use this skill for non-trivial coding tasks where the job is to implement, adapt, harden, or repair code in a narrow, reviewable, contract-first, evidence-backed way. Trigger for planned features, net-new code, implementation from a design or plan, migrations, refactors with correctness pressure, review-driven changes, bug fixes, regressions, failing tests, or single-change hardening tasks such as asking what one thing should change in the current changeset and then implementing that answer. On non-trivial tasks, establish Contract + Invariants before editing, choose a stable boundary, and verify with the fastest credible proof signal you can actually run. In implementation mode, realize the requested behavior through the canonical existing architecture with minimal blast radius. In remediation mode, diagnose the likely failure mechanism before editing. Do not trigger for trivial formatting, rote renames, or purely informational questions that do not require code changes or verification.
+description: Use this skill for non-trivial coding tasks where the job is to implement, adapt, harden, or repair code in a narrow, reviewable, contract-first, evidence-backed, witness-bearing way. Trigger for planned features, net-new code, implementation from a design or plan, migrations, refactors with correctness pressure, review-driven changes, bug fixes, regressions, failing tests, or single-change hardening tasks such as asking what one thing should change in the current changeset and then implementing that answer. On non-trivial tasks, establish Contract + Invariants before editing, choose a stable boundary, and verify with the fastest credible proof signal you can actually run. In implementation mode, realize the requested behavior through the canonical existing architecture with minimal blast radius. In remediation mode, diagnose the likely failure mechanism before editing. Do not trigger for trivial formatting, rote renames, or purely informational questions that do not require code changes or verification.
 ---
 
 # Accretive Implementer
@@ -14,7 +14,7 @@ It has two entry branches:
 
 Inside implementation mode, use a **single-change improvement posture** when the task is: "If you could change one thing about this changeset what would you change?" In that posture, identify the single highest-leverage remaining change, explain why it outranks nearby alternatives, and implement only that one change unless a tightly coupled follow-on is strictly required.
 
-Operate in **UNSOUND**, **CONTRACT-FIRST**, **INVARIANT-FIRST**, **MECHANISTIC**, **ACCRETIVE**, **TRACEABLE**, and **SEAM-DISCIPLINED** mode.
+Operate in **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-AWARE**, **TOTAL**, **REFINEMENT-FIRST**, **CONTRACT-FIRST**, **INVARIANT-FIRST**, **MECHANISTIC**, **ACCRETIVE**, **TRACEABLE**, and **SEAM-DISCIPLINED** mode.
 
 ## CLI-tail-weighted reporting
 
@@ -42,6 +42,32 @@ Assume the user may only see the last screenful of terminal output.
 - Do not guess when evidence is missing.
 - Surface missing premises, hidden assumptions, and ambiguous requirements.
 - Mark unknowns explicitly instead of filling gaps with plausible-sounding claims.
+
+### WITNESS-BEARING
+- Treat every material claim as needing a concrete witness.
+- Prefer witnesses that survive inspection: direct checks, boundary refinement, exhaustive handling, constructor discipline, or targeted tests.
+- Distinguish witnesses from heuristics, assumptions, and stale inherited conclusions.
+- If a claim has no witness, downgrade it or route a validating check.
+
+### PRESERVATION-AWARE
+- Ask what must still be true after each transformation, transition, retry, rollback, normalization, serialization, or boundary crossing.
+- Check that the change preserves contracts, data shape, ordering rules, and critical invariants across the full path, not just at entry.
+- Treat a step that admits invariant loss as a soundness defect, not a style issue.
+
+### PROGRESS-AWARE
+- Ask whether execution can always move to a legal next state or whether it can get stuck in a half-valid, ambiguous, or impossible state.
+- Hunt stuck states: partial initialization, sentinel values, unhandled variants, ambiguous fallbacks, and recovery paths that leave no valid continuation.
+- Prefer representations and control flow that make illegal or stuck states hard to inhabit.
+
+### TOTAL
+- Prefer total helpers and exhaustive eliminations on critical paths.
+- When partial behavior is unavoidable, force handling explicitly through guards, results, options, or typed state.
+- Treat silent defaulting or implicit fallthrough as a soundness risk when it hides missing cases.
+
+### REFINEMENT-FIRST
+- Refine raw inputs at the boundary into validated, narrower representations before deeper logic depends on them.
+- Separate raw, normalized, and validated states when that distinction carries correctness.
+- Prefer construction paths that make illegal states uninhabitable or at least explicit.
 
 ### MECHANISTIC
 - Explain intended behavior, integration paths, or failure mechanisms as causal chains, not symptom lists or vibes.
@@ -137,6 +163,7 @@ Use these defaults when you control the shape:
 
 3. Run a **truth-surface audit** when claims and enforcement may drift:
    - compare the public claim, runtime enforcement, proof harness, and checked artifacts
+   - ask what concrete witness establishes each material claim and whether that witness is direct, stale, partial, or missing
    - if they disagree, treat that mismatch as part of the real bug or implementation gap
 
 4. Choose the cut:
@@ -161,6 +188,7 @@ Use these defaults when you control the shape:
    - in implementation mode, verify the direct behavior and at least one likely regression or invariant surface when the task is non-trivial
    - in single-change improvement posture, verify both the direct benefit of the chosen improvement and one nearby surface that could regress because of it
    - if the change introduces or materially changes normalization, constructors/eliminators, combine operations, or representation boundaries, add the lightest fitting structural check such as exhaustive handling, round-trip, idempotence, identity, associativity, or constructor/eliminator sanity
+   - for non-trivial representation or state changes, ask the lightest matching soundness questions: what is the witness, what must be preserved, and where could execution get stuck
 
 7. Report in this order:
    - objective
@@ -187,6 +215,9 @@ End every non-fast report with 2-4 lines max:
 - Never optimize for elegance over correctness, fit, and reviewability.
 - When asked for one change, do not silently implement two. Name any tightly coupled follow-on edit and justify why it is inseparable.
 - No pretend proofs: never claim PASS without an executed signal; if you cannot run it, say what remains unrun.
+- No witness inflation: do not treat an indirect green signal as a witness for a stronger claim.
+- No partial eliminations on critical states or variants without an explicit bounded guard.
+- No illegal-state leaks: if the change admits an impossible or half-validated state, either refine the boundary or make the state explicit and forced to handle.
 - No shotgun edits: if the diff starts spreading, cut or use a seam instead of chasing callers.
 - No dependency adds without an explicit ask.
 - No in-band signaling when an explicit state, option, result, or enum can force handling more safely.

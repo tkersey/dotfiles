@@ -1,6 +1,6 @@
 ---
 name: fixed-point-driver
-description: Use this skill to drive exhaustive build-review-improve-verify workflows toward a material fixed point across accretive-implementer, adversarial-reviewer, and verification-closure when a coding task needs full de novo re-litigation, optional read-only specialist subagents, signal-aware routing by invariants foot-guns and complexity, a mandatory pre-closure one-change challenge, and a canonical closure handoff packet that always passes the latest ledgers into verification-closure. Trigger for requests like harden this patch exhaustively, address PR reviews to closure, use subagents for broad review, keep re-reviewing from scratch, find all impactful changes, ask what one thing should still change before merge, or drive this changeset to a fixed point with a canonical closure handoff. Do not trigger for trivial one-step tasks or when the user explicitly wants only a single narrow phase.
+description: Use this skill to drive exhaustive build-review-improve-verify workflows toward a material fixed point across accretive-implementer, adversarial-reviewer, and verification-closure when a coding task needs full de novo re-litigation, optional read-only specialist subagents, signal-aware routing by soundness invariants foot-guns and complexity, a mandatory pre-closure one-change challenge, and a canonical closure handoff packet that always passes the latest ledgers into verification-closure. Trigger for requests like harden this patch exhaustively, address PR reviews to closure, use subagents for broad review, keep re-reviewing from scratch, find all impactful changes, ask what one thing should still change before merge, or drive this changeset to a fixed point with a canonical closure handoff. Do not trigger for trivial one-step tasks or when the user explicitly wants only a single narrow phase.
 ---
 
 # Fixed-Point Driver
@@ -26,9 +26,13 @@ Assume the user may only see the last screenful of terminal output.
 
 ## Global doctrine
 
-Every phase inherits **UNSOUND**, **MECHANISTIC**, **ACCRETIVE**, and **TRACEABLE** standards.
+Every phase inherits **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-AWARE**, **REFINEMENT-AWARE**, **MECHANISTIC**, **ACCRETIVE**, and **TRACEABLE** standards.
 
 - **UNSOUND**: reject unsupported conclusions and label unknowns instead of guessing.
+- **WITNESS-BEARING**: require a concrete witness for every material claim; tests only witness the specific behavior they exercise.
+- **PRESERVATION-AWARE**: route on whether critical guarantees survive transformations, retries, persistence hops, and boundary crossings.
+- **PROGRESS-AWARE**: treat stuck, half-valid, or impossible states as material soundness pressure.
+- **REFINEMENT-AWARE**: prefer boundaries that narrow raw values early and keep validated states explicit.
 - **MECHANISTIC**: reason through failure mechanisms, contracts, state transitions, blast radius, and side effects.
 - **ACCRETIVE**: prefer the narrowest additive change that resolves the real issue without speculative redesign.
 - **TRACEABLE**: tie major claims to files, symbols, tests, diffs, commands, logs, or outputs.
@@ -87,7 +91,19 @@ Maintain these ledgers across the whole workflow and refresh them after every me
    - `impacted_invariants`
    - `next_action`
 
-2. **Invariant Ledger**
+2. **Soundness Ledger**
+   - `claim_id`
+   - `claim_or_obligation`
+   - `kind`
+   - `witness_required`
+   - `witness_status`
+   - `preservation`
+   - `progress`
+   - `inhabitance`
+   - `evidence`
+   - `next_action`
+
+3. **Invariant Ledger**
    - `invariant_id`
    - `name`
    - `tier`
@@ -97,7 +113,7 @@ Maintain these ledgers across the whole workflow and refresh them after every me
    - `supporting_evidence`
    - `open_question`
 
-3. **Foot-Gun Register**
+4. **Foot-Gun Register**
    - `hazard_id`
    - `trigger`
    - `impact`
@@ -106,20 +122,20 @@ Maintain these ledgers across the whole workflow and refresh them after every me
    - `evidence`
    - `narrowest_bounding_action`
 
-4. **Complexity Ledger**
+5. **Complexity Ledger**
    - `overall_delta`
    - `materiality`
    - `drivers`
    - `evidence`
    - `bounded_by`
 
-5. **Verification Ledger**
+6. **Verification Ledger**
    - `direct_changed_path`
    - `claimed_failure_mechanism`
    - `regression_surface`
    - `checks_run`
 
-6. **One-Change Challenge Ledger**
+7. **One-Change Challenge Ledger**
    - `question`
    - `status`
    - `candidate_change`
@@ -128,7 +144,7 @@ Maintain these ledgers across the whole workflow and refresh them after every me
    - `evidence`
    - `resulting_state_label`
 
-7. **Specialist Briefing Ledger**
+8. **Specialist Briefing Ledger**
    - `role`
    - `artifact_state_label`
    - `scope`
@@ -137,7 +153,7 @@ Maintain these ledgers across the whole workflow and refresh them after every me
    - `agreement_pressure`
    - `stale`
 
-8. **Residual Uncertainty**
+9. **Residual Uncertainty**
    - assumptions
    - environment limits
    - known unknowns
@@ -166,47 +182,16 @@ Treat the packet as the canonical phase boundary object.
 When subagent mode is active and custom agents are available, prefer this parallel read-only swarm:
 
 - `evidence_mapper`: maps the true execution path, affected surfaces, and artifact set
+- `soundness_auditor`: hunts missing witnesses, broken preservation, stuck states, impossible states, and hidden partiality
 - `invariant_auditor`: enumerates and grades critical, major, and supporting invariants
 - `hazard_hunter`: searches for foot-guns, misuse paths, dangerous defaults, and silent hazards
 - `complexity_auditor`: grades incidental complexity, coupling, and surface-area growth
-- `verification_auditor`: audits whether the verification record directly exercises the changed behavior, failure mechanism, regression surfaces, and critical invariants
-
-### Specialist packet contract
-
-Specialists are machine-to-machine collaborators, not user-facing speakers.
-
-- Root-only response rules stay root-only. Specialists must not emit `Echo:`, instruction acknowledgements, hook wrappers, or any other user-facing preamble.
-- Specialists must not emit transport wrappers such as `<subagent_notification>...</subagent_notification>` or outer JSON envelopes like `{"author":...,"recipient":...,"content":...}`.
-- Ask each specialist to return exactly one packet in this shape:
-
-```text
-<SPECIALIST_PACKET role="..." artifact_state_label="..." status="ok|blocked|transport-invalid">
-scope: ...
-top_material_signals: ...
-unresolved_signals: ...
-agreement_pressure: ...
-Routing Call: ...
-</SPECIALIST_PACKET>
-```
-
-- The packet body may contain concise ledger-shaped lines, but no extra essay before or after the packet.
-- `Routing Call:` is required and must be one line.
-
-### Specialist transport degradation
-
-Treat specialist transport as unreliable unless the packet contract is satisfied.
-
-- If specialist output contains `Echo:`, `<hook_prompt`, `<subagent_notification>`, or an outer inter-agent JSON wrapper, mark it `transport-invalid`.
-- If specialist output does not contain exactly one valid `SPECIALIST_PACKET`, mark it `transport-invalid`.
-- Never relay malformed specialist output verbatim into user-facing commentary, final reports, or closure handoff prose.
-- Normalize malformed output into the **Specialist Briefing Ledger** with `top_material_signals: transport-invalid`, `unresolved_signals: packet contract violated`, `agreement_pressure: degraded`, and `stale: yes`.
-- After one malformed specialist result for the current artifact state, stop broad swarm reruns for that artifact state. Continue locally, or retry at most one narrowly scoped specialist only if the missing evidence is still material.
-- Only resume full-scope swarm behavior after the artifact state changes materially and a fresh specialist pass returns valid packets.
+- `verification_auditor`: audits whether the verification record directly exercises the changed behavior, failure mechanism, regression surfaces, critical invariants, and material soundness claims
 
 Swarm rules:
 - Spawn specialists only for read-heavy work.
 - Wait for all relevant results before synthesis.
-- Ask each specialist for exactly one valid `SPECIALIST_PACKET` that ends with a one-line routing call, not essays.
+- Ask each specialist for concise ledger-shaped findings that end with a one-line routing call, not essays.
 - Normalize every specialist result into the **Specialist Briefing Ledger**.
 - Treat specialists as lenses, not authorities.
 - In exhaustive subagent mode, after each material validation or remediation, rerun the full-scope swarm over the current artifact set rather than restricting the next pass to the diff.
@@ -218,12 +203,21 @@ If custom agents are unavailable, continue single-threaded under the same phase 
 Consume `adversarial-reviewer` outputs explicitly, including:
 
 - remediation posture
+- soundness ledger
 - invariant ledger
 - foot-gun register
 - complexity delta
 - verification gaps
 
 Routing rules:
+
+### Soundness
+- Any material soundness finding with a missing, stale, or contradictory witness prevents fixed-point closure until it is either disproved, directly bounded, or evidenced cleanly enough to downgrade.
+- Any material finding with `preservation = broken` or `progress = stuck` prevents fixed-point closure.
+- Any material finding with `inhabitance = impossible-state-admitted` prevents fixed-point closure unless the state is made explicit and forced to handle or bounded by a direct guard and proof.
+- Missing or stale witnesses usually route to `validating-check-only` first unless the code shape already shows the narrow accretive fix.
+- Broken preservation, hidden partiality, or impossible-state admission often routes to `accretive-remediation` at the nearest truthful boundary; escalate to `structural-remediation` only when the abstraction surface itself is unsound.
+- If a specialist briefing or reviewer note is about the prior artifact state, mark it stale and do not carry the witness forward without revalidation.
 
 ### Invariants
 - Any **critical** invariant with status `broken` is material and prevents fixed-point closure.
@@ -282,12 +276,12 @@ Challenge rules:
 3. Optionally run an initial read-only specialist swarm when the scope is broad or unclear.
 4. Run the **saturation loop**:
    - During `accretive-implementer`, produce a grounded diagnosis or integration rationale, the narrowest appropriate remediation or implementation, and first-pass verification.
-   - Before each full review pass in subagent mode, run the full-scope specialist swarm only when specialist transport for the current artifact state is healthy, wait for all relevant results, and normalize them into the **Specialist Briefing Ledger**.
+   - Before each full review pass in subagent mode, run the full-scope specialist swarm, wait for all relevant results, and normalize them into the **Specialist Briefing Ledger**.
    - During `adversarial-reviewer`, perform a **full-scope de novo adversarial review** of the current artifact set. Do not restrict attention to the changed surface.
    - Normalize material findings by remediation posture: `validating-check-only`, `accretive-remediation`, `structural-remediation`.
    - Route the highest-value next action using findings, invariants, foot-guns, complexity, and verification gaps.
-   - After any targeted validation or remediation, rerun full-scope review; in subagent mode, rerun the full-scope swarm first only if the current artifact state's specialist transport is not degraded.
-   - Continue looping until the artifact set reaches a **candidate material fixed point**: no unresolved material finding remains, no unbounded critical invariant remains `broken`, `unknown`, or materially `strained`, no unresolved material foot-gun remains, no unresolved material complexity hazard remains, and no material validation gap would reasonably reopen remediation.
+   - After any targeted validation or remediation, rerun full-scope review; in subagent mode, rerun the full-scope swarm first.
+   - Continue looping until the artifact set reaches a **candidate material fixed point**: no unresolved material finding remains, no unresolved material soundness gap remains, no unbounded critical invariant remains `broken`, `unknown`, or materially `strained`, no unresolved material foot-gun remains, no unresolved material complexity hazard remains, and no material validation gap would reasonably reopen remediation.
 5. Run the **pre-closure one-change challenge** on the latest stabilized artifact set.
    - Ask the exact challenge question.
    - If the result is an impactful accretive change, route it to `accretive-implementer`, record the result in the **One-Change Challenge Ledger**, then return to the saturation loop after the implementation and its first-pass verification.
@@ -343,9 +337,6 @@ If these custom agents do not exist, do not fail the workflow. Fall back to buil
 - Never skip re-review after a targeted validation subpass or a remediation pass.
 - Never force an accretive patch when the evidence says the issue is structural.
 - Never let subagent summaries replace direct review judgment.
-- Never treat malformed specialist output as evidence.
-- Never paste raw specialist transport, `<subagent_notification>` payloads, hook wrappers, or outer inter-agent JSON into user-facing commentary or the final report.
-- Never allow specialists to emit root-only response scaffolding such as `Echo:` or instruction-acknowledgement preambles.
 - Never run multiple write-heavy remediations in parallel.
 - Never hand off to `verification-closure` without a fresh **Closure Handoff Packet**.
 - Never let stale specialist briefings masquerade as current evidence.

@@ -1,6 +1,6 @@
 ---
 name: verification-closure
-description: Use this skill for targeted validation and final readiness decisions when a coding task needs direct evidence, explicit closure gates, and a canonical Closure Handoff Packet from fixed-point-driver carrying the latest findings invariants hazards complexity verification and specialist ledgers. Trigger for requests like verify this patch is actually ready, run closure gates, resolve material verification gaps, or decide if the artifact set reached a material fixed point. Do not trigger for broad redesign or general code review without a closure question.
+description: Use this skill for targeted validation and final readiness decisions when a coding task needs direct evidence, explicit closure gates, and a canonical Closure Handoff Packet from fixed-point-driver carrying the latest findings soundness invariants hazards complexity verification and specialist ledgers. Trigger for requests like verify this patch is actually ready, run closure gates, resolve material verification gaps, or decide if the artifact set reached a material fixed point. Do not trigger for broad redesign or general code review without a closure question.
 ---
 
 # Verification Closure
@@ -9,9 +9,13 @@ Use this skill for **proof and gating**, not for broad redesign or de novo archi
 
 ## Global doctrine
 
-Operate in **UNSOUND**, **MECHANISTIC**, **TRACEABLE**, **MATERIAL**, **FIXED-POINT**, **CANONICAL**, and **LEDGER-AWARE** mode.
+Operate in **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-AWARE**, **REFINEMENT-AWARE**, **MECHANISTIC**, **TRACEABLE**, **MATERIAL**, **FIXED-POINT**, **CANONICAL**, and **LEDGER-AWARE** mode.
 
 - **UNSOUND**: do not upgrade claims beyond the evidence.
+- **WITNESS-BEARING**: ask what concrete witness closes each material claim or gate.
+- **PRESERVATION-AWARE**: verify that critical guarantees survive the changed path and adjacent transitions.
+- **PROGRESS-AWARE**: look for stuck, partial, or impossible states that still remain reachable.
+- **REFINEMENT-AWARE**: verify that raw-to-validated narrowing and boundary guarantees are still actually enforced.
 - **MECHANISTIC**: verify the claimed failure mechanism and the actual changed path, not just nearby symptoms.
 - **TRACEABLE**: tie every closure call to concrete checks, outputs, files, or ledgers.
 - **MATERIAL**: close consequential gates; do not turn closure into style review.
@@ -52,6 +56,7 @@ Always produce these gate statuses:
 - `direct_changed_path`: `satisfied` | `open` | `blocked` | `conflicting`
 - `claimed_failure_mechanism`: `satisfied` | `open` | `blocked` | `conflicting`
 - `regression_surface`: `satisfied` | `open` | `blocked` | `conflicting`
+- `material_soundness`: `bounded` | `unbounded` | `unknown` | `conflicting`
 - `critical_invariants`: `preserved` | `strained` | `broken` | `unknown`
 - `material_foot_guns`: `bounded` | `unbounded` | `unknown` | `accepted-risk`
 - `material_complexity_hazards`: `bounded` | `unbounded` | `unknown` | `residual-design-risk`
@@ -69,6 +74,7 @@ Always produce these gate statuses:
    - specialist briefings
 3. Build a minimal evidence plan in this priority order:
    - direct changed-path proof
+   - highest-confidence unresolved material soundness claim or missing witness
    - highest-tier unresolved invariant
    - highest-confidence material verification gap
    - material foot-gun or misuse path that can be directly exercised or bounded
@@ -111,10 +117,13 @@ Use 3-5 lines max:
 Specialist briefings are high-signal inputs. They are not proof by themselves.
 
 Use them to answer:
+- which material soundness claim is still missing a witness or leaking preservation or progress,
 - which critical invariant is still open,
 - which material foot-gun is still unbounded,
 - which complexity concern is a real closure blocker versus a residual design risk,
 - which single next check has the highest closure value.
+
+When present, treat `soundness_auditor` as the specialist most responsible for witness / preservation / progress pressure, but still require direct evidence before closure.
 
 If briefings materially conflict and no resolving check was run, use `indeterminate` rather than averaging them away.
 
@@ -124,6 +133,7 @@ If briefings materially conflict and no resolving check was run, use `indetermin
 - Never treat the packet as proof without supporting evidence.
 - Never hide failed, flaky, skipped, blocked, stale, or contradictory checks.
 - Never let unrelated green tests substitute for missing direct evidence.
+- Never call material soundness bounded without naming the witness, preservation support, or progress evidence.
 - Never call a critical invariant preserved without naming the supporting evidence.
 - Never ignore a material foot-gun just because happy-path tests pass.
 - Never dismiss a material complexity hazard unless you can explain why it is bounded or non-blocking.
@@ -138,7 +148,7 @@ A closure pass is done only when:
 2. the **Closure Gate Ledger** was produced,
 3. the direct changed behavior was exercised or a concrete blocker was identified,
 4. at least one regression, contract, or critical-invariant check was run or explicitly justified,
-5. material foot-guns and material complexity hazards were explicitly adjudicated,
+5. material soundness, material foot-guns, and material complexity hazards were explicitly adjudicated,
 6. both a **Fixed-Point Test** and a **Readiness** state were assigned,
 7. exact next checks or reopen conditions were stated when closure was not granted.
 

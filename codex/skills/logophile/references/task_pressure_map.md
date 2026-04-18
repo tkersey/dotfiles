@@ -96,3 +96,19 @@ Default stack candidates:
 Notes:
 - `precise`, `scoped`, and `obligation-preserving` are task-local descriptive labels. Use them only if they produce an actual gain in the doctrine block.
 - Replace generic defaults with sharper domain terms whenever the task supports them.
+
+
+## Representation / state machine / parser / boundary work
+Dominant pressures:
+- illegal states remain inhabitable
+- transitions do not preserve guarantees
+- execution can get stuck in partial states
+- boundary refinement is delayed or duplicated
+
+Default stack candidates:
+- `unsound`
+- `witness-bearing`
+- `preservation`
+- `progress`
+- `total`
+- `refinement-first`

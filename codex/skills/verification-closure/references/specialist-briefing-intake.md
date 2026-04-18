@@ -28,3 +28,5 @@ Use briefings to answer:
 - Which critical invariant is still open?
 - Which material foot-gun is still unbounded?
 - Which complexity concern is a real closure blocker versus a residual design risk?
+
+- `soundness_auditor`: high-signal input for witnesses, preservation, progress, and illegal-state admission.

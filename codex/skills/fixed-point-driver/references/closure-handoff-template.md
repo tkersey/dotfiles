@@ -84,6 +84,19 @@ loop-02-post-review
     - INV-02
   next_action: Add a direct rotated-secret validation check.
 
+#### Soundness Ledger
+- claim_id: S-01
+  claim_or_obligation: The refresh path reads the current persisted secret after rotation.
+  kind: missing-witness
+  witness_required: direct post-rotation exercise on the live store-read path
+  witness_status: missing
+  preservation: unknown
+  progress: safe
+  inhabitance: bounded
+  evidence:
+    - existing tests prove only the happy path
+  next_action: Add one direct rotated-secret validation check.
+
 #### Invariant Ledger
 - invariant_id: INV-02
   name: Refresh uses the current persisted secret, not cached pre-rotation state.
@@ -147,6 +160,7 @@ loop-02-post-review
   stale: no
 
 #### Closure Gate Preview
+- material_soundness: unknown
 - critical_invariants: unknown
 - material_foot_guns: unknown
 - material_complexity_hazards: bounded

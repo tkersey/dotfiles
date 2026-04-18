@@ -34,6 +34,17 @@ Statuses:
 - `blocked`
 - `conflicting`
 
+## Material soundness
+
+Use this gate for missing witnesses, stale witnesses, broken preservation, stuck states, impossible-state admission, and hidden partiality.
+A nearby green path does not close a soundness gap.
+
+Statuses:
+- `bounded`
+- `unbounded`
+- `unknown`
+- `conflicting`
+
 ## Critical invariants
 
 These are closure blockers unless they are preserved or directly bounded.

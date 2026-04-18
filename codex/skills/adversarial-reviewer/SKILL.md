@@ -1,6 +1,6 @@
 ---
 name: adversarial-reviewer
-description: Use this skill for full-scope de novo adversarial review of a diagnosis, plan, diff, patch, or stabilized artifact set when the goal is exhaustive discovery of material issues, fresh re-litigation after each remediation, explicit grading of invariants, pressure against unnecessary complexity, and discovery of foot-guns or misuse hazards. Trigger for requests like review this exhaustively, re-review from scratch, do not trust prior passes, grade the invariants, find any foot-guns, or pressure-test whether the current state has reached a material fixed point. Keep issue discovery unconstrained, but keep remediation guidance accretive unless a material finding is structural. Do not trigger for trivial formatting, rote renames, or quick stylistic review when the user is not asking for correctness, risk, readiness, invariants, or hazard scrutiny.
+description: Use this skill for full-scope de novo adversarial review of a diagnosis, plan, diff, patch, or stabilized artifact set when the goal is exhaustive discovery of material issues, type-theoretic soundness gaps, fresh re-litigation after each remediation, explicit grading of invariants, pressure against unnecessary complexity, and discovery of foot-guns or misuse hazards. Trigger for requests like review this exhaustively, re-review from scratch, do not trust prior passes, grade the invariants, find any foot-guns, or pressure-test whether the current state has reached a material fixed point. Keep issue discovery unconstrained, but keep remediation guidance accretive unless a material finding is structural. Do not trigger for trivial formatting, rote renames, or quick stylistic review when the user is not asking for correctness, risk, readiness, invariants, or hazard scrutiny.
 ---
 
 # Adversarial Reviewer
@@ -13,7 +13,7 @@ Do **not** treat prior review passes as settled authority.
 Do **not** let accretive scope discipline suppress material findings.
 Do **not** let complexity pressure turn the review into architecture theater; complexity matters when it creates concrete risk, fragility, or unnecessary operational burden.
 
-Operate in **FULL-SCOPE**, **EXHAUSTIVE**, **DE NOVO**, **ADVERSARIAL**, **SATURATING**, **MATERIAL**, **FIXED-POINT**, **UNSOUND**, **MECHANISTIC**, **TRACEABLE**, **PARSIMONIOUS**, **INVARIANT-GRADED**, and **HAZARD-SEEKING** mode.
+Operate in **FULL-SCOPE**, **EXHAUSTIVE**, **DE NOVO**, **ADVERSARIAL**, **SATURATING**, **MATERIAL**, **FIXED-POINT**, **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-CHECKING**, **PROGRESS-CHECKING**, **TOTALITY-PRESSURING**, **REFINEMENT-AWARE**, **MECHANISTIC**, **TRACEABLE**, **PARSIMONIOUS**, **INVARIANT-GRADED**, and **HAZARD-SEEKING** mode.
 When proposing remediation or next moves, switch into **ACCRETIVE** mode by default.
 
 ## CLI-tail-weighted reporting
@@ -68,6 +68,32 @@ Assume the user may only see the last screenful of terminal output.
 - Treat passing tests as evidence, not proof.
 - Mark hypotheses explicitly.
 
+### WITNESS-BEARING
+- Treat each material claim, diagnosis, and readiness call as needing a concrete witness.
+- Distinguish witness, assumption, heuristic, and stale inherited belief.
+- Prefer direct witnesses: boundary refinement, exhaustive handling, constructor discipline, direct checks, or targeted tests.
+- A missing, stale, or contradictory witness is itself a review finding.
+
+### PRESERVATION-CHECKING
+- Ask whether key guarantees survive each transformation, retry, rollback, persistence hop, cache round-trip, or API boundary crossing.
+- Look for steps that locally pass but globally leak invariant loss.
+- Treat broken preservation as a material soundness failure.
+
+### PROGRESS-CHECKING
+- Ask whether the system can always make a legal next move or whether it can get stuck in a partial, ambiguous, or impossible state.
+- Hunt partial initialization, sentinel states, unhandled variants, swallowed errors, ambiguous fallbacks, and recovery paths that strand the system.
+- Treat stuck-state risk as a first-class review outcome even if the happy path works.
+
+### TOTALITY-PRESSURING
+- Pressure-test partial functions, non-exhaustive matches, silent fallthrough, unchecked default branches, and APIs that collapse distinct cases.
+- Prefer explicit bounded partiality over hidden partiality.
+- When correctness depends on a case split, ask whether all cases are forced and visible.
+
+### REFINEMENT-AWARE
+- Ask whether raw inputs are refined soon enough and whether narrower representations are preserved through the path.
+- Hunt places where validation is delayed, duplicated inconsistently, or lost after normalization or transformation.
+- Prefer boundaries that make illegal states hard to inhabit.
+
 ### MECHANISTIC
 - Review through causal chains, data flow, control flow, state transitions, timing, ordering, and invariants.
 - Distinguish root cause, trigger, symptom, side effect, and blast radius.
@@ -116,7 +142,8 @@ Assume the user may only see the last screenful of terminal output.
 
 2. Conduct a **full-scope de novo review** in this order:
    - requirement mismatch
-   - unsound reasoning or stale assumptions
+   - unsound reasoning, stale assumptions, missing witnesses, or overclaimed certainty
+   - preservation breaks, stuck states, impossible states, or partial eliminations
    - failure-mechanism mismatch
    - invariant or contract breaks
    - regression surface and blast radius
@@ -129,7 +156,7 @@ Assume the user may only see the last screenful of terminal output.
 3. For each finding, report:
    - materiality: material | non-material
    - severity: blocker | major | moderate | minor | info
-   - category: unsound | invariant | regression | edge-case | verification | security | performance | API | compatibility | concurrency | complexity | foot-gun | other
+   - category: unsound | soundness | invariant | regression | edge-case | verification | security | performance | API | compatibility | concurrency | complexity | foot-gun | other
    - evidence of defect
    - why it matters
    - implicated surfaces
@@ -185,7 +212,7 @@ Assume the user may only see the last screenful of terminal output.
 7. At the end of the pass, issue a **Fixed-Point Judgment**:
    - `not reached` if any unresolved material finding remains
    - `indeterminate` if evidence is missing for a confident judgment
-   - `appears reached` only if a full-scope de novo review found no unresolved material issue, no ungraded strained or unknown critical invariant, no material foot-gun left unaddressed, and no material verification gap
+   - `appears reached` only if a full-scope de novo review found no unresolved material issue, no unresolved material soundness gap, no ungraded strained or unknown critical invariant, no material foot-gun left unaddressed, and no material verification gap
 
 8. If no material findings remain:
    - say what was checked
@@ -202,10 +229,14 @@ Use 3-5 lines max:
 ## Review checklist
 
 Challenge the work against these questions:
+- What is the concrete witness for each major claim, and is that witness direct, stale, partial, or missing?
 - Does the diagnosis still follow from the current evidence, or is it partly stale or speculative?
 - Does the patch address root cause rather than a nearby symptom?
 - What newly implicated surfaces exist beyond the immediate diff?
 - Could the change break callers, data shape, ordering, timing, retries, caching, persistence, cleanup, or rollback?
+- Which guarantees must be preserved across each step, and where do preservation risks appear?
+- Could execution get stuck in a partial, ambiguous, or impossible state?
+- Which variants, defaults, or eliminations are partial when they should be total?
 - Which invariants are critical, and are they preserved, strained, broken, or unknown?
 - Are nullability, empties, bounds, defaults, partial failures, and recovery behavior handled?
 - Are concurrency, reentrancy, resource lifetime, and hidden shared state safe?
