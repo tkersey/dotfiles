@@ -1,0 +1,25 @@
+# Test case template for Karpathy Loop runs.
+# Copy and edit this file for a specific optimization task.
+
+optimization_cases:
+  - case_id: opt_001
+    input: ""
+    context: ""
+    good_output_should:
+      - ""
+    risk_notes: ""
+
+  - case_id: opt_002
+    input: ""
+    context: ""
+    good_output_should:
+      - ""
+    risk_notes: ""
+
+holdout_cases:
+  - case_id: holdout_001
+    input: ""
+    context: ""
+    good_output_should:
+      - ""
+    risk_notes: ""
