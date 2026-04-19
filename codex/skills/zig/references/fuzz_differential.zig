@@ -11,13 +11,25 @@ fn optimized(bytes: []const u8) u64 {
     return reference(bytes);
 }
 
-fn fuzzTarget(_: void, input: []const u8) anyerror!void {
+fn fuzzTarget(_: void, smith: *std.testing.Smith) !void {
+    var storage: [1024]u8 = undefined;
+    for (&storage) |*b| b.* = smith.value(u8);
+
+    const len = smith.value(usize) % (storage.len + 1);
+    const input = storage[0..len];
+
     const ref = reference(input);
     const got = optimized(input);
     try std.testing.expectEqual(ref, got);
 }
 
 test "fuzz target" {
-    const seeds = &[_][]const u8{ "", "0", "needle", "\x00\x00\x00", "\xff\xff\xff" };
+    const seeds = &[_][]const u8{
+        "",
+        "0",
+        "needle",
+        "\x00\x00\x00",
+        "\xff\xff\xff",
+    };
     try std.testing.fuzz({}, fuzzTarget, .{ .corpus = seeds });
 }

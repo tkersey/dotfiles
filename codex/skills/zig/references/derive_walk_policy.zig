@@ -76,12 +76,12 @@ fn walkImpl(
 
         .vector => |info| {
             try policy.begin(.brackets);
-            var i: usize = 0;
-            while (i < info.len) : (i += 1) {
+            const array: [info.len]info.child = value;
+            for (array, 0..) |elem, i| {
                 if (budget.* == 0) return error.BudgetExceeded;
                 budget.* -= 1;
                 if (i != 0) try policy.sep();
-                try walkImpl(info.child, value[i], policy, opts, depth + 1, budget);
+                try walkImpl(info.child, elem, policy, opts, depth + 1, budget);
             }
             try policy.end(.brackets);
         },
@@ -358,7 +358,7 @@ test "derivedHash matches derivedHashAndFormat" {
     const h1 = derivedHash(v, opts);
 
     var buf: [4096]u8 = undefined;
-    var w: std.io.Writer = .fixed(&buf);
+    var w: std.Io.Writer = .fixed(&buf);
 
     const h2 = try derivedHashAndFormat(&w, v, opts);
     try std.testing.expect(h1 == h2);

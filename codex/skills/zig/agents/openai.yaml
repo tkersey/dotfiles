@@ -1,4 +1,4 @@
 interface:
   display_name: "Zig"
-  short_description: "Build, lint, test, fuzz, profile, harden boundaries, and optimize Zig 0.15.2 workflows"
-  default_prompt: "Use $zig to handle Zig 0.15.2 implementation, profiling, FFI, concurrency, and performance workflows. Treat the Zen of Zig as the governing first principle, then emphasize witness-driven boundaries, lint when available, differential fuzz and allocation-failure checks, dependency provenance, and deliberate profiling-stack choice: benchmark for proof, zprof for allocator and leak questions, and system or telemetry profilers for CPU or concurrency hotspots."
+  short_description: "Build, lint, test, fuzz, migrate, harden boundaries, and optimize Zig 0.16.0 workflows"
+  default_prompt: "Use $zig to handle Zig 0.16.0 implementation, migration, profiling, FFI, concurrency, and performance workflows. Treat the Zen of Zig as the governing first principle, then emphasize witness-driven boundaries, lint when available, Smith-based differential fuzzing and allocation-failure checks, std.Io/process.Init migration awareness, build-system translate-c over new @cImport usage, dependency provenance, and deliberate profiling-stack choice: benchmark for proof, zprof for allocator and leak questions, and system or telemetry profilers for CPU or concurrency hotspots."

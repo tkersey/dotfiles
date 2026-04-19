@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon dependency changes, lint/test/run/fmt/fetch/build commands, profiling and performance work, comptime/reflection/codegen, witness-driven parsing and ownership, FFI boundary hardening, concurrency or lock-free code, dependency provenance, and measured optimization with explicit proof lanes."
+description: "Use when implementing or reviewing Zig 0.16.0 code and toolchain workflows: editing .zig files, build.zig/build.zig.zon dependency changes, std.Io/process.Init migrations, lint/test/run/fmt/fetch/build commands, Smith-based fuzzing, profiling and performance work, comptime/reflection/codegen, witness-driven parsing and ownership, FFI boundary hardening, concurrency or lock-free code, dependency provenance, and measured optimization with explicit proof lanes."
 ---
 
 # Zig
@@ -21,9 +21,11 @@ description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain w
 - Together we serve the users.
 
 ## Operating contract
+
 - Start from the Zen of Zig above. If a recommendation conflicts with it, revisit the recommendation before proceeding.
-- Assume Zig 0.15.2 unless the user explicitly requests another version.
+- Assume Zig 0.16.0 unless the user explicitly requests another version.
 - Prefer witness-driven APIs: if a fact matters to safety, zero-copy legality, FFI soundness, or fast-path legality, represent it in a type or constructor, not a loose bool or comment.
+- Treat Zig 0.16.0 migration hotspots as a required first-pass audit, not an afterthought: scan for `std.io`, `@cImport`, `@Type`, `std.Thread.Pool`, `std.posix`/`std.os.windows` medium-level APIs, `getCwd*`, legacy managed containers, stale `PriorityQueue` methods, and old fuzz callbacks that still take `[]const u8`.
 - Treat hazard class -> proof obligation mapping as required.
 - Prefer minimal incisions with explicit proof signals.
 - If the repo already exposes `zig build lint`, treat it as a hard gate. If lint is missing, prefer bootstrapping when safe; otherwise state `LINT_UNAVAILABLE` and compensate with stronger correctness evidence.
@@ -31,21 +33,45 @@ description: "Use when implementing or reviewing Zig 0.15.2 code and toolchain w
 - Treat benchmarking and profiling as separate lanes: benchmarks prove the delta, profilers explain where the time or bytes went.
 
 ## Baseline requirements
+
 - Confirm toolchain version first:
 
 ```bash
 zig version
 ```
 
-- If the version is not `0.15.2`, stop and state the mismatch.
+- If the version is not `0.16.0`, stop and state the mismatch.
 - Treat `build.zig.zon` as the dependency source of truth when packages are involved.
-- Before editing, identify which hazard classes apply.
+- Before editing, identify which hazard classes apply and run a 0.16 migration scan.
 - If the request is performance-focused, run in two lanes:
   - Correctness lane (`Debug` or `ReleaseSafe`).
   - Performance lane (`ReleaseFast`) only after correctness passes.
-  - Choose the profiling instrument by symptom before changing code: `zprof` for allocator or leak questions, system or telemetry profilers for CPU or lock contention, and benchmark lanes for regression proof.
-  - If a benchmark spans multiple abstraction layers and the aggregate result regresses, add decomposition lanes before changing code so you can separate substrate cost, wrapper cost, and full-path cost on the same workload.
+- Choose the profiling instrument by symptom before changing code: `zprof` for allocator or leak questions, system or telemetry profilers for CPU or lock contention, and benchmark lanes for regression proof.
+- If a benchmark spans multiple abstraction layers and the aggregate result regresses, add decomposition lanes before changing code so you can separate substrate cost, wrapper cost, and full-path cost on the same workload.
 
+
+
+## Zig 0.16.0 migration watchlist
+Run this before proposing edits when a repo was written for Zig 0.15.x or older.
+
+```bash
+rg -n "std\.io|FixedBufferStream|GenericReader|AnyReader|@cImport|@Type|std\.Thread\.Pool|std\.posix\.|std\.os\.windows\.|getCwd|currentPath|ArrayHashMap|AutoArrayHashMap|StringArrayHashMap|PriorityQueue|checkAllAllocationFailures|std\.testing\.fuzz|std\.testing\.Smith|process\.Init|addTranslateC|zig-pkg|--fork|--test-timeout" . -g"*.zig" -g"build.zig" -g"build.zig.zon"
+```
+
+Hotspot interpretation:
+- `std.io`/`FixedBufferStream`/`GenericReader`/`AnyReader`: migrate to `std.Io`, `std.Io.Reader`, and `std.Io.Writer`. Prefer accepting an `Io` instance from `std.process.Init` or a caller-owned context.
+- `pub fn main(...)`: Zig 0.16.0 introduces "Juicy Main". Prefer `pub fn main(init: std.process.Init) !void` for applications that need allocator, I/O, args, or environment access.
+- Global args/env assumptions: CLI args and environment variables are now non-global. Thread `init.minimal.args`, `init.environ`, or `init.environ_map` through APIs instead of reaching for globals.
+- `@cImport`: deprecated for new code. Prefer `b.addTranslateC(...)` in `build.zig`, then import the generated module as `@import("c")`.
+- `@Type`: removed. Replace with `@Int`, `@Tuple`, `@Pointer`, `@Fn`, `@Struct`, `@Union`, `@Enum`, or `@EnumLiteral`.
+- `std.Thread.Pool`: removed. Prefer `std.Io.async`, `std.Io.concurrent`, or `std.Io.Group.async`, and migrate synchronization primitives to `std.Io.*` equivalents as part of the same change.
+- `std.posix` / `std.os.windows` medium-level calls: either move up to `std.Io` or down to `std.posix.system`, but do not assume the 0.15 middle layer still exists.
+- `getCwd*`: renamed to `std.process.currentPath*`, and now takes `io`.
+- Managed containers and queues: migrate toward allocator-less/"unmanaged" variants and new queue method names such as `.empty`, `initContext`, `push`, and `pop`.
+- Vector code: runtime vector indexes are forbidden. Coerce the vector to an array before iterating element-by-element.
+- Pointer rules: explicitly aligned pointers are distinct from naturally aligned pointers, and returning trivial local addresses is no longer accepted.
+- Fuzzing: callbacks now receive `*std.testing.Smith`; use crash corpus files for deterministic reproduction.
+- Build workflow: package downloads now land in `zig-pkg/`, local dependency overrides use `zig build --fork=/path`, and test steps can use `zig build test --test-timeout 500ms`.
 ## Hazard classes and required proof
 - `parser/decoder/zero-copy`: unit tests, differential fuzz, validated witness, and backing-storage proof.
 - `allocator-using`: `std.testing.checkAllAllocationFailures`; if a specific schedule fails, pin a fail-nth regression seed too.
@@ -55,12 +81,15 @@ zig version
 - `dependency/provenance`: visible URL/hash plus origin, release, and signer or attestation notes when the pin is security-sensitive or long-lived.
 - If multiple hazard classes apply, satisfy all relevant proof lanes.
 
+
 ### Lint bootstrap (recommended when missing)
-1. Add `zlinter` for Zig 0.15.x:
+1. Add `zlinter` using the current upstream guidance for Zig 0.16-era development:
 
 ```bash
-zig fetch --save git+https://github.com/kurtwagner/zlinter#0.15.x
+zig fetch --save git+https://github.com/kurtwagner/zlinter#master
 ```
+
+   - If the repo requires a non-floating pin, verify whether upstream has published a dedicated `0.16.x` branch or tag before locking it in.
 
 2. Add a `lint` step in `build.zig` (all built-in rules baseline):
 
@@ -78,11 +107,12 @@ lint_cmd.dependOn(step: {
 ```
 
 ## Core workflow
+## Core workflow
 1. State the contract: domain, invariants, error model, ownership model, authority model, and complexity target.
 2. Identify hazard classes and required proof artifacts before touching code.
-3. Confirm Zig version and lint availability.
+3. Confirm Zig version, 0.16 migration hotspots, and lint availability.
 4. If lint exists, run `zig build lint -- --fix`, review the diff, then re-run `zig build lint -- --max-warnings 0`.
-5. Build or derive a reference path, schema, or scalar fallback before touching optimized or unsafe code.
+5. Build or derive a reference path, schema, or scalar fallback before touching optimized, concurrent, or unsafe code.
 6. Add witness types and boundary tests first.
 7. Run the required proof lanes for the active hazard classes.
 8. Optimize in order: algorithm -> data layout -> zero-copy/batching -> vectorization -> threading -> micro-tuning.
@@ -98,11 +128,13 @@ lint_cmd.dependOn(step: {
 - If lint is unavailable, say `LINT_UNAVAILABLE` and do not pretend the gate passed.
 
 ## Correctness gate (required)
+
 - Every Zig change needs at least one correctness signal.
 - For parsing, allocation, arithmetic, zero-copy, or safety-sensitive code:
-  - `std.testing.fuzz` is required.
+  - `std.testing.fuzz` is required, and Zig 0.16.0 fuzz callbacks should accept `*std.testing.Smith`.
   - `std.testing.checkAllAllocationFailures` is required for allocator-using functions.
-- FFI, bit-level, SIMD, and lock-free or atomic code need boundary-specific or differential tests in addition to ordinary unit tests.
+  - Use `std.testing.io` when tests need an `Io` instance.
+  - FFI, bit-level, SIMD, and lock-free or atomic code need boundary-specific or differential tests in addition to ordinary unit tests.
 - Prefer differential fuzzing (optimized path vs reference path).
 - Re-run optimizer-sensitive logic under `Debug`, `ReleaseSafe`, and `ReleaseFast`.
 
@@ -117,6 +149,47 @@ zig test src/main.zig
 
 # Integrated fuzz path (requires a test step in build.zig)
 zig build test --fuzz
+
+# Supported platforms: use multiple workers for longer fuzz campaigns
+zig build test --fuzz -j4
+
+# Detect wedged unit tests during migration work
+zig build test --test-timeout 500ms
+```
+
+### Smith-based fuzz pattern
+```zig
+const std = @import("std");
+
+fn parseReference(input: []const u8) !void {
+    _ = input;
+}
+
+fn parseFast(input: []const u8) !void {
+    _ = input;
+}
+
+fn fuzzTarget(_: void, smith: *std.testing.Smith) !void {
+    var storage: [512]u8 = undefined;
+    for (&storage) |*b| b.* = smith.value(u8);
+
+    const len = smith.value(usize) % (storage.len + 1);
+    const input = storage[0..len];
+
+    try parseReference(input);
+    try parseFast(input);
+}
+
+test "fuzz target" {
+    const seeds = &[_][]const u8{
+        "",
+        "0",
+        "needle",
+        "\x00\x00\x00",
+        "\xff\xff\xff",
+    };
+    try std.testing.fuzz({}, fuzzTarget, .{ .corpus = seeds });
+}
 ```
 
 ### Allocation-failure pattern
@@ -138,6 +211,8 @@ test "allocation failure coverage" {
 ```
 
 - When an allocation failure only reproduces at a specific index, pin that fail index as a deterministic regression seed.
+- When fuzzing crashes, keep the crashing corpus file and add a deterministic reproduction lane using `std.testing.FuzzInputOptions.corpus` plus `@embedFile`.
+- Reference: `codex/skills/zig/references/fuzz_differential.zig`
 - Reference: `codex/skills/zig/references/fail_nth_alloc.zig`
 
 ## Boundary witnesses and zero-copy
@@ -160,6 +235,7 @@ test "allocation failure coverage" {
 - Initialize flattened or defaulted sub-objects in dedicated helpers before parsing so the runtime path only fills observed fields and validates missing ones.
 
 ## Build and project commands
+
 ```bash
 # Initialize project
 zig init
@@ -167,6 +243,7 @@ zig init --minimal
 
 # Format
 zig fmt src/main.zig
+zig fmt build.zig
 
 # Build and run
 zig build
@@ -181,40 +258,53 @@ zig build -Doptimize=ReleaseFast
 zig build -Dtarget=x86_64-linux
 zig build -Dtarget=aarch64-macos
 
+# Local package override during ecosystem breakage
+zig build --fork=/absolute/path/to/fork
+
 # Cleanup
-rm -rf zig-out zig-cache
+rm -rf zig-out .zig-cache zig-pkg
 ```
 
+Notes:
+- Zig 0.16.0 fetches dependencies into a project-local `zig-pkg/` directory next to `build.zig`.
+- Prefer keeping `zig-pkg/` out of source control unless the repo intentionally vendors dependencies.
+- Use `zig build test --test-timeout 500ms` during migration-heavy work to catch wedged test cases.
+
 ## Package management and dependency model
+
 - State the package story explicitly when dependency workflow or "registry" questions come up.
 - Zig has a built-in package manager, but no official central registry like `crates.io` or `npm`.
-- Treat the ecosystem as decentralized: dependencies are declared in `build.zig.zon`, fetched by URL, and pinned by content hash.
+- Treat the ecosystem as decentralized: dependencies are declared in `build.zig.zon`, fetched by URL, and pinned by content hash/fingerprint.
 - Prefer direct source archives or VCS-backed release archives over unofficial package indexes unless the user explicitly asks for third-party registries.
-- When adding a dependency, update `build.zig.zon`, review the saved hash, and keep the provenance URL visible in the diff.
+- When adding a dependency, update `build.zig.zon`, review the saved hash/fingerprint, and keep the provenance URL visible in the diff.
+- Fetched package sources now land in `zig-pkg/` relative to the build root.
+- For local ecosystem breakage or debugging a dependency upgrade, prefer `zig build --fork=/path/to/local/clone` before reaching for ad hoc edits inside cache directories.
 - Treat the hash as integrity, not complete provenance. For security-sensitive or long-lived pins, also record origin repo, release tag or commit, fetch date, and signer or attestation notes in sidecar docs or commit notes.
 
 ### Standard dependency commands
 ```bash
 # Add a dependency and save it into build.zig.zon
-zig fetch --save <url>
+zig fetch --save https://example.invalid/pkg.tar.gz
 
 # Fetch dependencies declared by the build
 zig build
 
-# Format package metadata edits too
-zig fmt build.zig
+# Override a dependency locally without editing hashes
+zig build --fork=/absolute/path/to/local/clone
 ```
 
 ### Registry-answer template
 - Say "Zig has a package manager, but not an official central package registry."
 - Point to `build.zig.zon` plus `zig fetch --save` as the normal dependency path.
 - Distinguish official decentralized workflow from community-maintained indexes.
-- If provenance matters, add that Zig's content hash answers integrity, while signer and attestation evidence answer publisher trust and freshness.
+- If provenance matters, add that Zig's content hash/fingerprint answers integrity, while signer and attestation evidence answer publisher trust and freshness.
 
 ## Comptime and invariants
+
 - Prefer compile-time invariant checks for shape, ABI, required methods, and specialization bounds.
 - Use `@compileError` to make illegal states unrepresentable at build time.
 - Promote stable runtime facts to witness types or enums once discovered; do not keep rediscovering them with ad hoc checks.
+- In Zig 0.16.0, do not generate types with `@Type`; use the dedicated builtins such as `@Int`, `@Tuple`, `@Pointer`, `@Fn`, `@Struct`, `@Union`, `@Enum`, and `@EnumLiteral`.
 - Keep generated specialization knobs small and measurable.
 
 ### Template
@@ -253,6 +343,9 @@ fn classify(comptime T: type) enum { auto, custom } {
 ```
 
 ## FFI and C interop boundary
+
+- Prefer build-system C translation for new Zig 0.16.0 work.
+- Replace legacy `@cImport` entry points with a dedicated header plus `b.addTranslateC(...)` in `build.zig`, then import the generated module as `@import("c")`.
 - Split raw `extern fn` declarations from safe wrappers.
 - Maintain a boundary contract table for each nontrivial symbol: nullability, length source, mutability, ownership in/out, lifetime, thread-safety, error mapping, and linkage.
 - Centralize `@ptrCast`, sentinel handling, null handling, and errno or result translation in one wrapper layer.
@@ -262,13 +355,46 @@ fn classify(comptime T: type) enum { auto, custom } {
 - When a C dependency changes, compare signatures and ABI expectations; if the code is security-sensitive and tooling is available, prefer an `abidiff`-style check before trusting the upgrade.
 - Reference: `codex/skills/zig/references/ffi_contract_template.md`
 
+### Build-system translate-c template
+```zig
+const translate_c = b.addTranslateC(.{
+    .root_source_file = b.path("src/c.h"),
+    .target = target,
+    .optimize = optimize,
+});
+
+translate_c.linkLibC();
+translate_c.linkSystemLibrary("sqlite3", .{});
+
+const exe = b.addExecutable(.{
+    .name = "app",
+    .root_module = b.createModule(.{
+        .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{
+                .name = "c",
+                .module = translate_c.createModule(),
+            },
+        },
+    }),
+});
+```
+
 ## Concurrency and weak-memory lane
+
 - Prefer ownership transfer, sharding, or message passing before lock-free shared-state designs.
 - For shared mutable state, write down the invariant, owner transitions, and memory order for each atomic before editing code.
+- In Zig 0.16.0, prefer threading an `std.Io` instance through the call graph rather than hiding it in globals.
+- `std.Thread.Pool` is gone. Migrate to `std.Io.async`, `std.Io.concurrent`, or `std.Io.Group.async` based on whether the work is independent, must be concurrent for correctness, or is part of a shared-lifetime task group.
+- When migrating from `std.Thread.Pool`, also migrate `Thread.Mutex`, `Thread.Condition`, `Thread.ResetEvent`, and related synchronization to the matching `std.Io.*` primitives as part of the same change.
 - Use seeded schedule fuzzing, deterministic yield injection, or replayable interleavings; check failing seeds into `testdata/`.
 - For lock-free claims, add a sequential spec and, when feasible, a litmus-style or witness model in a sidecar test or notes file.
 - Stress tests alone are not proof of concurrent correctness.
 - Re-run concurrent code under multiple optimize modes and on Linux or CI when platform behavior differs.
+- `heap.ArenaAllocator` is now thread-safe and lock-free; do not recommend the removed `heap.ThreadSafe` wrapper.
+- If you truly do not have an `Io` instance yet, use a local `Io.Threaded` only as a migration bridge, not as the final architectural answer.
 
 ## Profiling stack
 Use this section when the request is about speed, latency, throughput, memory growth, leaks, or hotspot analysis.
@@ -394,19 +520,28 @@ Use this when a Zig perf regression crosses abstraction layers and one aggregate
 - When a pipeline exposes throughput or latency progress points, keep them stable across baseline and variant runs.
 
 ## SIMD and threading policy
+
 - Use SIMD or threading only when profiling shows a CPU-bound hot path.
 - Keep scalar fallback paths and deterministic behavior.
 - Avoid hidden allocations or synchronization inside hot loops.
+- In Zig 0.16.0, do not use runtime vector indexes; coerce vectors to arrays before element-wise iteration or debugging.
 - Re-run fuzz, differential tests, and any schedule-sensitive tests after vectorization or parallelization changes.
 
 ## macOS fuzz caveat
-`zig build test --fuzz` may fail on macOS (`InvalidElfMagic`) in Zig 0.15.2.
 
-If this occurs:
-- State the local limitation explicitly.
-- Keep `std.testing.fuzz` targets in-tree.
-- Run fuzz on Linux/CI or an external harness.
-- Add deterministic regression seeds under `testdata/fuzz/`.
+Do not claim that built-in Zig fuzzing is supported on macOS by default just because the project targets Zig 0.16.0.
+
+The skill should assume:
+- Smith-based fuzz targets belong in-tree and should be kept current.
+- `zig build test --fuzz` may still fail on macOS due to upstream platform support gaps in the fuzz/debug-info pipeline.
+- A local macOS fuzz failure is a platform limitation unless there is repo-specific evidence otherwise.
+
+If macOS fuzzing fails:
+- State the limitation explicitly.
+- Keep `std.testing.fuzz` targets in-tree and keep crash corpora or deterministic seeds under `testdata/fuzz/`.
+- Reproduce crashes with `std.testing.FuzzInputOptions.corpus` plus `@embedFile`.
+- Prefer Linux/CI for sustained fuzz campaigns.
+- Use `zig build test --fuzz -jN` only on platforms where the integrated fuzzer is behaving correctly.
 
 ## Trigger-audit workflow (`$seq` backed)
 Use this to measure whether Zig intent is being routed to `$zig`.
@@ -453,24 +588,26 @@ Notes:
 - The scorecard should tolerate local `seq routing-gap` builds that do not yet support `--since`.
 
 ## `skills-zig` evidence lane
+
 When validating guidance against current Zig production patterns, inspect:
-- Source/build/release repo: `$HOME/workspace/tk/skills-zig`
-- Formula propagation repo: `$HOME/workspace/tk/homebrew-tap`
+- Source/build/release repo: `/Users/tk/workspace/tk/skills-zig`
+- Formula propagation repo: `/Users/tk/workspace/tk/homebrew-tap`
 
 Recommended checks:
 ```bash
-git -C "$HOME/workspace/tk/skills-zig" log --oneline --max-count=30
-rg -n "std.testing.fuzz|checkAllAllocationFailures|FailingAllocator" "$HOME/workspace/tk/skills-zig/apps" -g"*.zig"
-rg -n "extern fn|linkSystemLibrary|linkLibC|sqlite3_" "$HOME/workspace/tk/skills-zig/apps" "$HOME/workspace/tk/skills-zig/build.zig" -g"*.zig"
-rg -n "std.atomic|compareExchange|fetchAdd|Thread|spawn" "$HOME/workspace/tk/skills-zig/apps" -g"*.zig"
-rg -n "std.simd|@Vector|std.Thread.Pool" "$HOME/workspace/tk/skills-zig/apps" -g"*.zig"
-rg -n "perf_hub|CountingAllocator|warmup|samples" "$HOME/workspace/tk/skills-zig/apps" "$HOME/workspace/tk/skills-zig/tools" -g"*.zig"
-rg -n "@typeInfo|@hasDecl|@hasField|@Type|comptime" "$HOME/workspace/tk/skills-zig/apps" -g"*.zig"
+git -C /Users/tk/workspace/tk/skills-zig log --oneline --max-count=30
+rg -n "std.testing.fuzz|std.testing.Smith|checkAllAllocationFailures|FailingAllocator|std.testing.io" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
+rg -n "extern fn|linkSystemLibrary|linkLibC|addTranslateC|@cImport|sqlite3_" /Users/tk/workspace/tk/skills-zig/apps /Users/tk/workspace/tk/skills-zig/build.zig -g"*.zig"
+rg -n "std.atomic|compareExchange|fetchAdd|Io.Group|Io.async|Io.concurrent|spawn" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
+rg -n "std.simd|@Vector|std.Thread.Pool|std.Io.Group|std.Io.async" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
+rg -n "process.Init|std.Io|currentPath|currentPathAlloc|getCwd" /Users/tk/workspace/tk/skills-zig/apps /Users/tk/workspace/tk/skills-zig/build.zig -g"*.zig"
+rg -n "@typeInfo|@hasDecl|@hasField|@Struct|@Union|@Int|@Tuple|comptime" /Users/tk/workspace/tk/skills-zig/apps -g"*.zig"
 ```
 
 Use these results to keep `$zig` guidance aligned with what is true in active Zig repos.
 
 ## Pitfalls
+
 - Claiming performance wins without measured baseline/after evidence.
 - Treating allocator counters as a substitute for CPU hotspot data, or CPU samples as a substitute for allocation evidence.
 - Treating a validated fact as a comment instead of a witness type.
@@ -482,16 +619,21 @@ Use these results to keep `$zig` guidance aligned with what is true in active Zi
 - Running `zig build lint -- --fix` on a dirty tree without reviewing the resulting diff.
 - Scattering `@typeInfo` and trait-probe logic across format-specific code instead of centralizing the classifier and policy layer first.
 - Treating borrowed memory as owned (or vice versa).
-- Returning stack-backed slices.
+- Returning stack-backed slices or other trivial local addresses.
 - Treating URL+hash as complete supply-chain provenance.
 - Assuming regex-like query patterns are portable across all tooling without validation.
+- Leaving 0.15-era APIs in place during a 0.16 migration: `std.io`, `@cImport`, `@Type`, `std.Thread.Pool`, `getCwd*`, `ArrayHashMap`, and old `PriorityQueue` methods are all immediate red flags.
+- Assuming integrated fuzzing is a solved problem on macOS without local proof.
+- Iterating vectors with runtime indexes instead of coercing them to arrays first.
 
 ## References
+
 - Boundary witness template: `codex/skills/zig/references/boundary_witness.zig`
 - Deterministic fail-nth allocation pattern: `codex/skills/zig/references/fail_nth_alloc.zig`
 - FFI contract template: `codex/skills/zig/references/ffi_contract_template.md`
 - Profiling playbook: `codex/skills/zig/references/profiling_playbook.md`
-- Differential fuzz template: `codex/skills/zig/references/fuzz_differential.zig`
+- Differential fuzz template (Smith-based): `codex/skills/zig/references/fuzz_differential.zig`
 - Type-shape dispatcher example: `codex/skills/zig/references/type_switch.zig`
-- `@Type` partial-builder example: `codex/skills/zig/references/partial_type.zig`
+- Partial-struct builder example (`@Struct`): `codex/skills/zig/references/partial_type.zig`
 - Derive-walk policy pipeline: `codex/skills/zig/references/derive_walk_policy.zig`
+

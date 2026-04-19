@@ -1,5 +1,4 @@
 const std = @import("std");
-const Type = std.builtin.Type;
 
 pub fn Partial(comptime S: type) type {
     const info = @typeInfo(S);
@@ -14,37 +13,36 @@ pub fn Partial(comptime S: type) type {
         break :blk count;
     };
 
-    var fields: [n]Type.StructField = undefined;
-    var i: usize = 0;
+    var names: [n][]const u8 = undefined;
+    var types: [n]type = undefined;
+    var attrs: [n]std.builtin.Type.StructField.Attributes = undefined;
 
+    var i: usize = 0;
     inline for (s.fields) |f| {
         if (f.is_comptime) continue;
 
         const FT = f.type;
-        const dv: ?FT = null;
+        const default_value: ?FT = null;
 
-        fields[i] = .{
-            .name = f.name,
-            .type = ?FT,
-            .default_value_ptr = @as(?*const anyopaque, @ptrCast(&dv)),
-            .is_comptime = false,
-            .alignment = @alignOf(?FT),
+        names[i] = f.name;
+        types[i] = ?FT;
+        attrs[i] = .{
+            .default_value_ptr = @as(?*const anyopaque, @ptrCast(&default_value)),
+            .@"align" = @alignOf(?FT),
         };
         i += 1;
     }
 
-    return @Type(.{ .@"struct" = .{
-        .layout = .auto,
-        .fields = &fields,
-        .decls = &.{},
-        .is_tuple = false,
-    } });
+    return @Struct(.auto, null, &names, &types, &attrs);
 }
 
 test "Partial example" {
-    const S = struct { a: u32, b: []const u8 };
-    const P = Partial(S);
+    const S = struct {
+        a: u32,
+        b: []const u8,
+    };
 
+    const P = Partial(S);
     var p: P = .{};
     p.a = 1;
     try std.testing.expect(p.b == null);
