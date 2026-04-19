@@ -267,7 +267,7 @@ rm -rf zig-out .zig-cache zig-pkg
 
 Notes:
 - Zig 0.16.0 fetches dependencies into a project-local `zig-pkg/` directory next to `build.zig`.
-- Prefer keeping `zig-pkg/` out of source control unless the repo intentionally vendors dependencies.
+- Strongly recommend adding `zig-pkg/` to `.gitignore` unless the repo intentionally vendors dependencies.
 - Use `zig build test --test-timeout 500ms` during migration-heavy work to catch wedged test cases.
 
 ## Package management and dependency model
@@ -278,6 +278,7 @@ Notes:
 - Prefer direct source archives or VCS-backed release archives over unofficial package indexes unless the user explicitly asks for third-party registries.
 - When adding a dependency, update `build.zig.zon`, review the saved hash/fingerprint, and keep the provenance URL visible in the diff.
 - Fetched package sources now land in `zig-pkg/` relative to the build root.
+- Unless a repo intentionally vendors dependencies, recommend adding `zig-pkg/` to `.gitignore` so fetched package sources do not get committed accidentally.
 - For local ecosystem breakage or debugging a dependency upgrade, prefer `zig build --fork=/path/to/local/clone` before reaching for ad hoc edits inside cache directories.
 - Treat the hash as integrity, not complete provenance. For security-sensitive or long-lived pins, also record origin repo, release tag or commit, fetch date, and signer or attestation notes in sidecar docs or commit notes.
 
@@ -636,4 +637,3 @@ Use these results to keep `$zig` guidance aligned with what is true in active Zi
 - Type-shape dispatcher example: `codex/skills/zig/references/type_switch.zig`
 - Partial-struct builder example (`@Struct`): `codex/skills/zig/references/partial_type.zig`
 - Derive-walk policy pipeline: `codex/skills/zig/references/derive_walk_policy.zig`
-
