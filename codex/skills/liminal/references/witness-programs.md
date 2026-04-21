@@ -1,7 +1,6 @@
 # Witness Programs
 
-Use this file when an answer needs a concrete separating example rather than only a taxonomy.
-Pick the smallest witness that forces the distinction, then attach the source IDs from `references/sources.md`.
+Use this file when an answer needs a concrete separating example rather than only a taxonomy. Pick the smallest witness that forces the distinction, then attach the source IDs from `references/sources.md`.
 
 ## Table of Contents
 
@@ -70,4 +69,4 @@ Pick the smallest witness that forces the distinction, then attach the source ID
   - what the adjacent abstraction does provide
   - what control capability it does not provide directly
   - whether the relation is semantic equivalence, compilation strategy, or only a teaching analogy
-- Source anchors: `[JS-GEN]`, `[JS-ASYNC]`, `[OCAML-MANUAL]`, plus the relevant core control source
+- Source anchors: `[JS-GEN]`, `[JS-ASYNC]`, `[OCAML-MANUAL]`, plus the relevant core control source.

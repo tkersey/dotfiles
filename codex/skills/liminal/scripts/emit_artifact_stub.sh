@@ -28,7 +28,6 @@ EOF
 
 kind="${1:-}"
 language="${2:-agnostic}"
-
 [[ -n "$kind" ]] || usage
 
 case "$language" in
@@ -48,12 +47,14 @@ EOF
       cat <<'EOF'
 - Language target: Racket
 - Prefer evaluation contexts, prompt-oriented examples, and runnable reduction witnesses.
+- Check `racket/control` names against `[RKT-REF]` before making API claims.
 EOF
       ;;
     ocaml)
       cat <<'EOF'
 - Language target: OCaml
 - Name typing constraints, runtime representation choices, and effect-handler adjacency where relevant.
+- Distinguish OCaml 5 one-shot effects from general multi-shot delimited continuations.
 EOF
       ;;
     haskell)
@@ -90,17 +91,19 @@ $(language_notes)
 ## Concrete Witness
 
 - Choose the smallest term, program, or trace that forces the distinction.
+- State the delimiter or prompt boundary.
 - State what the user should observe if the explanation is right.
 
 ## Semantic Core
 
-- Name the continuation boundary.
+- Name the continuation slice that is captured or resumed.
 - State the relevant reduction or evaluation-context rule.
 - Identify the nontrivial distinction that must survive the explanation.
 
 ## Claim Ledger
 
 - Claim:
+  - category: semantic | translation | implementation | ecosystem
   - source ids:
   - safe wording:
   - boundary or counterexample:
@@ -121,7 +124,7 @@ $(language_notes)
 
 ## Sources
 
-- List the primary paper or manual sections to cite.
+- List primary paper, manual, or artifact IDs.
 EOF
     ;;
   evaluator-project)
@@ -146,7 +149,8 @@ $(language_notes)
 1. Implement the core language.
 2. Add the delimiter and capture operators.
 3. Add trace output for one witness example.
-4. Write a comparison example against a nearby operator family.
+4. Add a comparison example against a nearby operator family.
+5. Add a source ledger for each semantic rule.
 
 ## Source Anchors
 
@@ -172,7 +176,9 @@ $(language_notes)
 
 ## Target Fragment
 
-- Define value continuations and any needed meta-continuation layer.
+- Define value continuations.
+- Define any needed meta-continuation layer.
+- State answer-type changes if typing matters.
 
 ## Translation Cases
 
@@ -186,7 +192,7 @@ $(language_notes)
 
 - preserve evaluation order
 - preserve delimiter boundaries
-- make answer-type changes explicit when typing matters
+- preserve or expose answer-type changes
 
 ## Validation
 
@@ -399,7 +405,5 @@ $(language_notes)
 - what shortcut explanation would get this witness wrong?
 EOF
     ;;
-  *)
-    usage
-    ;;
+  *) usage ;;
 esac

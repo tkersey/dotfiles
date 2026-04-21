@@ -19,12 +19,12 @@ Minimal mental model:
 
 ```text
 Before:
-let f = (lambda x. x + n) in f 10
+  let f = (lambda x. x + n) in f 10
 
 After:
-data Fun = F_AddN(n)
-apply(F_AddN(n), x) = x + n
-let f = F_AddN(n) in apply(f, 10)
+  data Fun = F_AddN(n)
+  apply(F_AddN(n), x) = x + n
+  let f = F_AddN(n) in apply(f, 10)
 ```
 
 Use this transformation vocabulary when the user asks to:
@@ -45,11 +45,11 @@ Use this transformation vocabulary when the user asks to:
 
 Mention the variant that matches the problem:
 
-- `type-driven defunctionalization`: when preserving typability is central; cite `[DEF-DN-2001]` for the core transform and `[DEF-DT-2023]` when the type-preservation proof itself is central
-- `polymorphic typed defunctionalization`: when constructor explosion or polymorphism matters
-- `modular defunctionalization`: when separate compilation is part of the constraint
-- `dependent-type defunctionalization`: when ordinary closure encodings break proof obligations; use `[DEF-DT-2023]`
-- `mechanized typed control`: when the user wants a checked artifact around multiple control operators; use `[TYPE4D-2022]` and `[TYPE4D-ARTIFACT]`
+- `type-driven defunctionalization`: when preserving typability is central; cite `[DEF-DN-2001]` for the core transform and `[DEF-DT-2023]` when the type-preservation proof itself is central.
+- `polymorphic typed defunctionalization`: when constructor explosion or polymorphism matters.
+- `modular defunctionalization`: when separate compilation is part of the constraint.
+- `dependent-type defunctionalization`: when ordinary closure encodings break proof obligations; use `[DEF-DT-2023]`.
+- `mechanized typed control`: when the user wants a checked artifact around multiple control operators; use `[TYPE4D-2022]` and `[TYPE4D-ARTIFACT]`.
 
 ## Functional correspondence
 
@@ -57,15 +57,13 @@ The standard evaluator-to-machine story is:
 
 ```text
 definitional evaluator
--> closure conversion when functions and environments must be made explicit
--> CPS transformation
--> defunctionalized continuations
--> abstract machine
+  -> closure conversion when functions and environments must be made explicit
+  -> CPS transformation
+  -> defunctionalized continuations
+  -> abstract machine
 ```
 
-Use this chain when the user wants to derive a machine instead of inventing one.
-Use `[DEF-AGER-2003]` when the closure-conversion step matters.
-Name refunctionalization when the prompt asks how to move back from a machine to a higher-order interpreter.
+Use this chain when the user wants to derive a machine instead of inventing one. Use `[DEF-AGER-2003]` when the closure-conversion step matters. Name refunctionalization when the prompt asks how to move back from a machine to a higher-order interpreter.
 
 ## Engineering heuristics
 

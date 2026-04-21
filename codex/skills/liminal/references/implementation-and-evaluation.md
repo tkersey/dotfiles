@@ -47,8 +47,7 @@ Pair the workload with the semantic contract it assumes: one-shot or multi-shot,
 - one-shot versus multi-shot restrictions
 - semantic overhead introduced by delimiter reinstatement or prompt tagging
 
-Use `[RT-FOLKLORE-2020]` for comparative implementation methodology and `[OCAML-RETROEFF-2021]` for a concrete modern runtime case study.
-Do not cite `[OCAML-MANUAL]`, `[RKT-REF]`, or `[JS-ASYNC]` for performance claims; use them for semantics and operational boundaries instead.
+Use `[RT-FOLKLORE-2020]` for comparative implementation methodology and `[OCAML-RETROEFF-2021]` for a concrete modern runtime case study. Do not cite `[OCAML-MANUAL]`, `[RKT-REF]`, or `[JS-ASYNC]` for performance claims; use them for semantics and operational boundaries instead.
 
 ## Common tradeoff patterns
 

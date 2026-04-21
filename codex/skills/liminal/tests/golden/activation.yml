@@ -1,0 +1,39 @@
+# Lightweight activation tests. These are not full golden answers; they record
+# expected use/non-use behavior and answer properties.
+
+cases:
+  - prompt: "Compare shift/reset and control/prompt with a concrete example."
+    should_use_skill: true
+    response_tier: memo
+    expected:
+      - names delimiter reinstatement
+      - includes a separating witness
+      - cites [DC-AC-1990] and one of [DC-DYN-2005] or [DC-STC-2004]
+      - does not claim the operators are interchangeable
+
+  - prompt: "How do I derive an abstract machine from this CPS evaluator?"
+    should_use_skill: true
+    response_tier: memo
+    expected:
+      - identifies continuation constructors
+      - mentions defunctionalization
+      - includes evaluator-to-machine correspondence
+      - cites [DEF-DN-2001] and [DEF-AGER-2003]
+
+  - prompt: "Is JavaScript async/await just delimited continuations?"
+    should_use_skill: true
+    response_tier: compact
+    expected:
+      - says no, not semantically identical
+      - distinguishes promise scheduling from arbitrary delimited-context capture
+      - cites [JS-ASYNC] and a core delimited-control source
+
+  - prompt: "Optimize this React component render path."
+    should_use_skill: false
+    expected:
+      - no delimited-continuation framing unless the user introduces it
+
+  - prompt: "Explain monads to a beginner."
+    should_use_skill: false
+    expected:
+      - no use unless the user asks about Filinski, reflection, reification, or delimited control

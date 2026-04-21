@@ -37,8 +37,7 @@ Use these as the canonical contrast when a prompt asks about static versus dynam
 (prompt E[control k . e]) -> (prompt ((lambda k. e) (lambda x. E[x])))
 ```
 
-Use `[DC-AC-1990]` for the `shift/reset` rule family and pair it with `[DC-FP-1988]`, `[DC-DYN-2005]`, or `[DC-STC-2004]` when the question turns on prompt-centered behavior.
-Do not quote the rules without explaining the operational consequence.
+Use `[DC-AC-1990]` for the `shift/reset` rule family and pair it with `[DC-FP-1988]`, `[DC-DYN-2005]`, or `[DC-STC-2004]` when the question turns on prompt-centered behavior. Do not quote the rules without explaining the operational consequence.
 
 ## Why the extra delimiter matters
 

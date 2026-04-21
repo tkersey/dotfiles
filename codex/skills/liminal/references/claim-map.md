@@ -1,7 +1,7 @@
 # Claim Map
 
-Use this file to choose citations before writing a theory-heavy answer.
-Start here, then pull exact titles and links from `references/sources.md`.
+Use this file to choose citations before writing a theory-heavy answer. Start here, then pull exact titles and links from `references/sources.md`. For machine-readable source boundaries, consult `references/sources.yml`.
+
 Before picking sources, pick the smallest separating witness from `references/witness-programs.md` that forces the distinction you need.
 
 ## Semantics and operator comparison
@@ -11,7 +11,7 @@ Before picking sources, pick the smallest separating witness from `references/wi
   - Do not lean on: `[JS-GEN]`, `[JS-ASYNC]`
 - Claim: `shift/reset` re-delimits resumed work, while `control/prompt` does not.
   - Sources: `[DC-AC-1990]`, `[DC-DYN-2005]`, `[DC-STC-2004]`
-  - Good witness: BFS from `[DC-DYN-2005]`
+  - Good witness: BFS or nested-resumption behavior from `[DC-DYN-2005]`
 - Claim: delimiter hierarchies or prompt families matter.
   - Sources: `[DC-HIER-1990]`, `[DC-MFDC-2007]`, `[RKT-REF]`
 
@@ -46,7 +46,7 @@ Before picking sources, pick the smallest separating witness from `references/wi
   - Sources: `[DC-DIRECT-2002]`, `[DC-DIRECT-2009]`
 - Claim: one-shot continuations expose a real implementation opportunity.
   - Sources: `[RT-ONE-SHOT-1996]`, `[OCAML-MANUAL]`, `[OCAML-RETROEFF-2021]`
-  - Good witness: resume the same continuation twice and state whether the surface forbids, traps, or clones it
+  - Good witness: resume the same continuation twice and state whether the surface forbids, traps, or clones it.
 - Claim: modern implementation comparisons should be benchmark-backed rather than folklore-backed.
   - Sources: `[RT-FOLKLORE-2020]`, `[OCAML-RETROEFF-2021]`
 - Claim: OCaml effects are adjacent to delimited control but come with one-shot and operational constraints.
@@ -58,8 +58,8 @@ Before picking sources, pick the smallest separating witness from `references/wi
   - Sources: `[OCAML-DELIMCC-2010]`, `[OCAML-DELIMCC-2012]`
 - Claim: Scala continuations rely on a historical compiler-plugin CPS transform with answer-type modification.
   - Sources: `[SCALA-CONT]`, `[SCALA-CONT-DOC]`
-- Claim: JavaScript generators and `async` or `await` are analogies or compilation targets, not semantic equivalents.
+- Claim: JavaScript generators and `async`/`await` are analogies or compilation targets, not semantic equivalents.
   - Sources: `[JS-GEN]`, `[JS-ASYNC]`
-  - Good witness: a control scenario that needs capture of an arbitrary delimited context rather than coroutine-style suspension
+  - Good witness: a control scenario that needs capture of an arbitrary delimited context rather than coroutine-style suspension.
 - Claim: zero operators or subcontinuations matter.
   - Sources: `[DC-0OPS-2005]`, `[DC-MFDC-2007]`, `[RKT-REF]`

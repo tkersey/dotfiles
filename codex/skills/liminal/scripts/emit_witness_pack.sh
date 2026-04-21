@@ -26,14 +26,12 @@ EOF
 
 topic="${1:-}"
 language="${2:-agnostic}"
-
 [[ -n "$topic" ]] || usage
 
 case "$topic" in
   static-vs-dynamic|multi-prompt|answer-type|one-shot|machine-derivation|analogy-boundary) ;;
   *) usage ;;
 esac
-
 case "$language" in
   agnostic|racket|ocaml|haskell|scala|javascript) ;;
   *) usage ;;
@@ -80,192 +78,161 @@ EOF
   esac
 }
 
-header() {
-  cat <<EOF
-# Witness Pack
+cat <<EOF
+# Witness Pack: $topic / $language
 
-- Topic: $topic
 $(language_notes)
-
-## Goal
 EOF
-}
 
 case "$topic" in
   static-vs-dynamic)
-    header
     cat <<'EOF'
-- Force the difference between `shift/reset` and `control/prompt` to become observable.
+## Distinction
 
-## Minimal Witness Shape
+`shift/reset` reinstalls the captured continuation under a delimiter; `control/prompt` resumes without the same automatic re-delimitation.
 
-- choose a nested-resume or BFS-style example
-- mark the delimiter that should or should not be reinstated
-- resume the captured continuation in a context where dynamic extent changes the outcome
+## Minimal Rule Contrast
 
-## What To Observe
+```text
+(reset E[shift k . e])
+  -> reset((lambda k. e) (lambda x. reset E[x]))
 
-- whether resumed work stays delimited
-- whether traversal order, nesting, or continuation composition changes
-- which explanation fails if you pretend the two operator families are interchangeable
+(prompt E[control k . e])
+  -> prompt((lambda k. e) (lambda x. E[x]))
+```
+
+## Observable Witness Shape
+
+Use a nested-resume or BFS-style traversal where the extra `reset` changes whether later captures see the same boundary.
 
 ## Source Anchors
 
-- `[DC-AC-1990]`
-- `[DC-DYN-2005]`
-- `[DC-STC-2004]`
-
-## Failure Modes
-
-- describing the difference as only "more dynamic" without naming the delimiter story
-- giving a rule without a witness or a witness without the rule
+- [DC-AC-1990]
+- [DC-DYN-2005]
+- [DC-STC-2004]
 EOF
     ;;
   multi-prompt)
-    header
     cat <<'EOF'
-- Force prompt identity to matter.
+## Distinction
+
+A single undifferentiated delimiter cannot model modular prompt identity. A capture under prompt tag `p` must not accidentally cross an unrelated prompt tag `q`.
 
 ## Minimal Witness Shape
 
-- introduce two prompt identities or tags
-- capture under one boundary and explain why the other must remain intact
-- show the smallest operation that would go wrong if prompts were collapsed into one undifferentiated delimiter
+```text
+pushPrompt p (
+  A;
+  pushPrompt q (
+    B;
+    capture q k . ...
+  );
+  C
+)
+```
 
-## What To Observe
-
-- which prompt owns the captured continuation slice
-- why typed or modular APIs care about prompt identity
-- what breaks if prompt tags are ignored
+The captured continuation for `q` includes the `q`-local context but must not capture through the `p` boundary unless the operator explicitly targets it.
 
 ## Source Anchors
 
-- `[DC-MFDC-2007]`
-- `[RKT-REF]`
-- `[OCAML-DELIMCC-2012]`
-
-## Failure Modes
-
-- talking about multi-prompt libraries as if they only rename `reset`
-- omitting prompt identity from the example
+- [DC-MFDC-2007]
+- [RKT-REF]
+- [OCAML-DELIMCC-2012]
 EOF
     ;;
   answer-type)
-    header
     cat <<'EOF'
-- Make answer-type modification visible instead of treating typing as a side note.
+## Distinction
+
+Delimited control can expose answer-type pressure: the captured continuation may be used in a context with a different answer type from the surrounding computation.
 
 ## Minimal Witness Shape
 
-- choose a computation whose captured continuation changes the surrounding answer type
-- point to the exact operator or annotation where that pressure appears
-- explain whether the host language exposes the change directly
+```text
+reset { 1 + shift k . "answer changed" }
+```
 
-## What To Observe
-
-- where the source answer type and continuation answer type diverge
-- whether the API, type system, or translation accounts for that divergence
-- what misconception appears if answer types are flattened away
+The sketch is not a full typing derivation. Its purpose is to force the answer type of the captured continuation and the answer type of the whole delimited expression to be named.
 
 ## Source Anchors
 
-- `[DC-MFDC-2007]`
-- `[TYPE4D-2022]`
-- `[SCALA-CONT-DOC]`
-
-## Failure Modes
-
-- describing typed delimited control without naming answer-type modification
-- using an example whose answer type never changes
+- [DC-MFDC-2007]
+- [TYPE4D-2022]
+- [SCALA-CONT-DOC]
 EOF
     ;;
   one-shot)
-    header
     cat <<'EOF'
-- Force the runtime contract around reuse of continuations to become visible.
+## Distinction
+
+A multi-shot continuation can be invoked repeatedly; a one-shot continuation can be resumed at most once unless the implementation clones or rejects the second use.
 
 ## Minimal Witness Shape
 
-- resume the same captured continuation twice, or explain why the workload would require that ability
-- state whether the runtime forbids, traps, clones, or reuses the continuation
-- tie the witness to one workload such as search, generators, or repeated suspension
+```text
+capture k;
+resume k 1;
+resume k 2;  -- allowed, rejected, or cloned?
+```
 
-## What To Observe
-
-- whether the continuation is linear or reusable
-- what the runtime wins by enforcing one-shot use
-- what semantic behaviors become awkward or impossible without cloning
+The answer must state whether the surface language forbids the second resume statically, traps dynamically, or copies continuation state.
 
 ## Source Anchors
 
-- `[RT-ONE-SHOT-1996]`
-- `[OCAML-MANUAL]`
-- `[OCAML-RETROEFF-2021]`
-
-## Failure Modes
-
-- treating one-shot as only a performance optimization
-- forgetting to say whether the surface is handlers, delimited control, or a specific runtime contract
+- [RT-ONE-SHOT-1996]
+- [OCAML-MANUAL]
+- [OCAML-RETROEFF-2021]
 EOF
     ;;
   machine-derivation)
-    header
     cat <<'EOF'
-- Show how one evaluator trace becomes one machine trace.
+## Distinction
+
+Defunctionalization does not merely "remove lambdas"; it makes the evaluator's latent continuation shapes explicit as first-order machine frames.
 
 ## Minimal Witness Shape
 
-- pick one small source term with a nontrivial continuation shape
-- show the evaluator continuation before defunctionalization
-- show the machine frame or constructor after defunctionalization
-- say whether closure conversion matters to the step you are showing
+```text
+Source: ((lambda x. x + 1) 41)
+Continuation before defunctionalization: lambda v. v
+Machine frame after defunctionalization: Halt
+Application frame: Arg(term, env, kont) or Fun(value, kont)
+```
 
-## What To Observe
-
-- which higher-order continuation becomes which first-order artifact
-- where the derivation preserves behavior rather than inventing a machine
-- how refunctionalization would recover the higher-order view
+Track one evaluator step and the corresponding machine transition.
 
 ## Source Anchors
 
-- `[DEF-DN-2001]`
-- `[DEF-AGER-2003]`
-- `[DEF-REFUNC-2007]`
-
-## Failure Modes
-
-- skipping straight from evaluator to machine without naming the derivation chain
-- describing defunctionalization only as closure replacement
+- [DEF-DN-2001]
+- [DEF-AGER-2003]
+- [DEF-REFUNC-2007]
 EOF
     ;;
   analogy-boundary)
-    header
     cat <<'EOF'
-- Keep analogies honest when the prompt reaches for generators, `async` or `await`, or effect handlers.
+## Distinction
+
+Generators, `async`/`await`, and effect handlers can be useful analogies or compilation targets, but they are not automatically semantic equivalents to delimited continuations.
 
 ## Minimal Witness Shape
 
-- pick a control scenario that needs arbitrary delimited-context capture, multi-shot reuse, or prompt identity
-- compare it with the adjacent surface that offers only suspension, promises, or one-shot handlers
-- state whether the relationship is semantic, compilational, or pedagogical
-
-## What To Observe
-
-- what the adjacent abstraction does provide
-- what it does not provide directly
-- which false equivalence the witness prevents
+Use a scenario that requires capturing an arbitrary delimited evaluation context rather than yielding only from the current generator frame or awaiting a promise.
 
 ## Source Anchors
 
-- `[JS-GEN]`
-- `[JS-ASYNC]`
-- `[OCAML-MANUAL]`
-- one relevant core control source from `references/sources.md`
-
-## Failure Modes
-
-- calling the adjacent abstraction "the same thing" without boundaries
-- using implementation similarity as proof of semantic equivalence
+- [JS-GEN]
+- [JS-ASYNC]
+- [OCAML-MANUAL]
+- plus the relevant core control source, usually [DC-AC-1990] or [DC-DYN-2005]
 EOF
     ;;
 esac
+
+cat <<'EOF'
+
+## Failure Modes To Avoid
+
+- Replacing the witness with taxonomy.
+- Citing an analogy source for a semantic equivalence claim.
+- Dropping the delimiter or resumption contract.
+EOF

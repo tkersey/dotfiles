@@ -36,8 +36,7 @@ Good answer pattern:
 3. point to a non-toy witness such as BFS
 4. if needed, lift that witness into a translation or runtime consequence
 
-Use `[DC-DYN-2005]` for the BFS witness and `[DC-STC-2004]` when the prompt asks about expressiveness or CPS relations.
-Use `references/witness-programs.md` when you need a teaching-ready separating example instead of a bare claim.
+Use `[DC-DYN-2005]` for the BFS witness and `[DC-STC-2004]` when the prompt asks about expressiveness or CPS relations. Use `references/witness-programs.md` when you need a teaching-ready separating example instead of a bare claim.
 
 ## Subcontinuations and zero operators
 
@@ -48,10 +47,10 @@ Use `references/witness-programs.md` when you need a teaching-ready separating e
 
 ## Typing pressure points
 
-- `answer-type modification`: central for typed delimited control; do not ignore it when a prompt asks about typing or embedding
-- `prompt typing`: multi-prompt systems often need prompt tags with typed boundaries
-- `one-shot versus multi-shot`: this is a semantic and implementation distinction, not just a performance tweak
-- `effects versus continuations`: effect handlers can be described through delimited control, but the mapping must name the handler discipline and runtime constraints
+- `answer-type modification`: central for typed delimited control; do not ignore it when a prompt asks about typing or embedding.
+- `prompt typing`: multi-prompt systems often need prompt tags with typed boundaries.
+- `one-shot versus multi-shot`: this is a semantic and implementation distinction, not just a performance tweak.
+- `effects versus continuations`: effect handlers can be described through delimited control, but the mapping must name the handler discipline and runtime constraints.
 
 Use `[DC-MFDC-2007]`, `[TYPE4D-2022]`, and `[OCAML-MANUAL]` when the prompt makes the type or one-shot surface explicit.
 
@@ -64,5 +63,4 @@ Bring in CPS, handlers, or prompt hierarchies when they make one of these tasks 
 - explaining a runtime strategy
 - translating a high-level semantics into a machine or implementation
 
-Keep the answer narrower when the user only wants a local semantic fact.
-If the prompt is pedagogical, prefer one witness from `references/witness-programs.md` before widening the scope.
+Keep the answer narrower when the user only wants a local semantic fact. If the prompt is pedagogical, prefer one witness from `references/witness-programs.md` before widening the scope.

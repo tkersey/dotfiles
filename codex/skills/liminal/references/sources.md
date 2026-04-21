@@ -1,8 +1,6 @@
 # Sources
 
-Use these as the primary citation surface.
-Prefer DOI landings, official manuals, and maintained project pages over brittle direct-PDF links.
-Use the `Use for` note to stay inside the safe claim surface, and browse live primary docs when the prompt is time-sensitive.
+Use these as the primary citation surface. Prefer DOI landings, official manuals, maintained project pages, and checked artifacts over brittle direct-PDF links. Use the `Use for` note to stay inside the safe claim surface, and browse live primary docs when the prompt is time-sensitive.
 
 ## Delimited control
 
