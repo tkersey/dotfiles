@@ -68,7 +68,8 @@ Move through these stages in order, skipping only when the user's prompt or the 
 
 5. Confirm
    - Before emitting the final output, confirm the brief with the smallest bounded set of questions that checks: what are we solving, for whom, what is out of scope, what constraints bind us, and how success will be measured.
-   - Ask for a free-form restatement only if bounded confirmation still leaves a material ambiguity that cannot be resolved from artifacts or prior answers.
+   - Do not ask for a free-form restatement, prose brief, or user-authored prompt just to confirm understanding.
+   - If bounded confirmation still leaves a material ambiguity, ask one more bounded question when possible; otherwise carry the ambiguity forward as an explicit assumption, deferred item, or immaterial note.
    - If the confirmation conflicts with the working Snapshot, reconcile the gap before closure.
 
 ## Question modes
@@ -107,6 +108,7 @@ Apply these rules in order:
 - If verification, monitoring, or acceptance criteria remain unclear, add follow-ups that force concrete proof expectations.
 - If an answer contains a `user_note` with multiple distinct requirements, split it into multiple follow-up questions, but keep each question atomic and single-sentence.
 - If a follow-up would otherwise be free-form, first try to compress it into 2-3 explicit choices derived from artifacts or prior answers; only keep it free-form when compression would hide a material distinction.
+- If the only remaining gap is confirmation of your current understanding, prefer a bounded yes/no or keep/adjust question over asking the user to restate the brief.
 - If a follow-up would ask for a discoverable fact, do not ask it; inspect available artifacts instead and update Snapshot Facts.
 - If artifacts do not exist or are insufficient, ask the user only for what cannot be discovered directly.
 
@@ -233,6 +235,7 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Leading the user toward a preferred solution unless you are presenting explicit options with clear trade-offs.
 - Using rhetorical or performative "gotcha" questions instead of diagnostic ones.
 - Smuggling an architecture or product choice into the wording of a question.
+- Asking the user to restate the brief in their own words when bounded confirmation or explicit assumptions would suffice.
 - Asking the user for a prose brief, prompt draft, or prompt examples when bounded confirmation would resolve the same uncertainty.
 - Summarizing, planning, or implementing while material open questions remain.
 - Skipping final confirmation before final clarification output.
@@ -250,7 +253,7 @@ Open questions are exhausted only when every material line of inquiry is one of:
 - made into an explicit assumption
 - explicitly deferred
 - marked immaterial
-- confirmed as materially consistent through the user's bounded confirmation or, if truly necessary, a free-form restatement
+- confirmed as materially consistent through the user's bounded confirmation
 
 If any material ambiguity remains unclassified, or if the user's confirmation conflicts with the working Snapshot, keep asking.
 
