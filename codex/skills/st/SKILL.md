@@ -116,7 +116,8 @@ run_st_tool --help
 11. If `emit-plan-sync` is unavailable because the installed binary is older, fall back:
    - Codex: use `emit-update-plan`.
    - OpenCode: use `show --format json`, map `content=item.step`, normalize `blocked`/`deferred` to `pending`, normalize `canceled` to `cancelled`, and default missing priority to `medium`.
-12. When Codex hooks are enabled in a repo that already uses `.step/st-plan.jsonl`, let SessionStart hydrate `update_plan` from the durable ledger, and if the repo opts into the Bash `PreToolUse` guard, require shell work to wait until the transcript shows the exact SessionStart-emitted `update_plan` payload.
+12. When Codex hooks are enabled in a repo that already uses `.step/st-plan.jsonl`, let SessionStart hydrate `update_plan` from the durable ledger only when the mirrored Codex plan is non-empty, and if the repo opts into the Bash `PreToolUse` guard, require shell work to wait until the transcript shows the exact SessionStart-emitted `update_plan` payload.
+   - Short-circuit SessionStart sync when the durable inventory is empty or all durable items are terminal/backlog-only; do not emit `update_plan {"plan":[]}` just to satisfy the hook.
 13. Export/import snapshots when cross-session handoff is needed.
 
 ## Commands
@@ -209,6 +210,7 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
 - `plan_sync.items` is the full durable inventory. `plan_sync.codex.plan`, `plan_sync.opencode.todos`, and `emit-update-plan` emit only the selected mirrored-plan subset.
 - Keep dependency edges only in `$st` (`deps`); do not encode dependencies in `update_plan` or `TodoWrite`.
 - If hooks re-import a Codex plan at Stop, that reverse sync uses the latest mirrored Codex subset as the source of truth only for projected fields, not for the full durable inventory.
+- SessionStart hook hydration must no-op when the mirrored Codex plan is empty after terminal-state demotion or backlog-only filtering.
 - If repo-local hooks use the Bash `PreToolUse` guard, keep the guard state local to `$st`; do not write transient hook/session guard state into `.step/st-plan.jsonl`.
 - If an item has `dep_state=waiting_on_deps`, never mirror that item as `in_progress`.
 - Before final response on turns that mutate `$st`, re-check no drift by comparing:

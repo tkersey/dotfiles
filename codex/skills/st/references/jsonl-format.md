@@ -128,6 +128,7 @@
 - `items` is the full durable inventory in `$st` order
 - `items` preserves optional orchestration metadata when present so teams/mesh reconciliation does not lose claim/runtime/proof state
 - `codex.plan`, `opencode.todos`, and legacy `emit-update-plan` emit only items with `in_plan=true`
+- Hook-managed SessionStart hydration must short-circuit when `codex.plan` would be empty after terminal-state demotion or backlog-only filtering
 - Codex status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `pending`
 - OpenCode status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `cancelled`
 - OpenCode todo mapping: `content = step`, `priority = priority`
