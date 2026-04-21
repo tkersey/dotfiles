@@ -157,6 +157,12 @@ zig build test --fuzz -j4
 zig build test --test-timeout 500ms
 ```
 
+### Repo-fronted test harnesses
+- Do not assume repo test frontends preserve the raw Zig CLI shape. Check `zig build -h` or the relevant build step first, because runner flags such as `--test-filter`, `--seed`, or `--test-timeout` may need to go after `--`, and mixed step invocations may assign shared-tail ownership differently.
+- If a focused seam test fails with missing modules, generated imports, or package-harness symbols, treat that as evidence that bare `zig test` is bypassing repo wiring. Prefer the repo harness lane (`zig build test`, a dedicated `zig build <step>`, or `zig test build.zig`) for those slices.
+- Do not trust a filtered green by itself when the purpose is to prove selection or a negative boundary. Add one fail-closed probe such as an impossible filter, an invalid runner arg, or a known non-match so you prove the filter path is actually active instead of silently ignored.
+- For compile-fail or boundary-contract proofs, prefer an unfiltered raw compile target plus `expect_errors` when filtering can prune the failing instantiation or when `builtin.is_test` changes semantics. Keep the witness at top-level comptime if a `main()`-only path would hide the failure in test mode.
+
 ### Smith-based fuzz pattern
 ```zig
 const std = @import("std");
@@ -637,3 +643,4 @@ Use these results to keep `$zig` guidance aligned with what is true in active Zi
 - Type-shape dispatcher example: `codex/skills/zig/references/type_switch.zig`
 - Partial-struct builder example (`@Struct`): `codex/skills/zig/references/partial_type.zig`
 - Derive-walk policy pipeline: `codex/skills/zig/references/derive_walk_policy.zig`
+{"id":"lrn-20260421T021108Z-48731d2f","captured_at":"2026-04-21T02:11:08Z","status":"codify_now","learning":"When refining Zig testing guidance from shift test-filtering archaeology, codify wrapper-owned test CLI rules explicitly: verify whether runner args belong after --, prefer repo harness lanes over bare zig test when build wiring matters, and avoid filtered compile-fail probes when filters or builtin.is_test can prune the failure.","evidence":["seq/session evidence showed repeated repo-fronted filter hazards: mixed-step tails needed explicit ownership, bare zig test missed build-harness imports, and filtered compile-fail probes could prune the failing instantiation."],"application":"Add wrapper/harness/filter-proof guidance to the Zig skill's testing section and validate the skill after the edit.","context":{"repo":"shift","branch":"unknown","paths":[]},"source":"codex","fingerprint":"48731d2fb1ce4324","tags":["shift","zig","testing","build_harness","test_filtering"]}
