@@ -116,7 +116,7 @@ run_st_tool --help
 11. If `emit-plan-sync` is unavailable because the installed binary is older, fall back:
    - Codex: use `emit-update-plan`.
    - OpenCode: use `show --format json`, map `content=item.step`, normalize `blocked`/`deferred` to `pending`, normalize `canceled` to `cancelled`, and default missing priority to `medium`.
-12. When Codex hooks are enabled in a repo that already uses `.step/st-plan.jsonl`, let SessionStart hydrate `update_plan` from the durable ledger and let Stop import the latest Codex mirrored plan back into the durable ledger for mirrored fields only.
+12. When Codex hooks are enabled in a repo that already uses `.step/st-plan.jsonl`, let SessionStart hydrate `update_plan` from the durable ledger, and if the repo opts into the Bash `PreToolUse` guard, require shell work to wait until the transcript shows the exact SessionStart-emitted `update_plan` payload.
 13. Export/import snapshots when cross-session handoff is needed.
 
 ## Commands
@@ -144,6 +144,8 @@ st emit-plan-sync --file .step/st-plan.jsonl
 st emit-update-plan --file .step/st-plan.jsonl
 st import-update-plan --file .step/st-plan.jsonl --input .step/update-plan.json
 st import-update-plan --file .step/st-plan.jsonl --transcript-path /path/to/codex-rollout.jsonl
+st guard-session-start --file .step/st-plan.jsonl --session-id thread-123
+st guard-pre-tool-use --file .step/st-plan.jsonl --session-id thread-123 --transcript-path /path/to/codex-rollout.jsonl
 st export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
 st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
 st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml --replace
@@ -207,6 +209,7 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
 - `plan_sync.items` is the full durable inventory. `plan_sync.codex.plan`, `plan_sync.opencode.todos`, and `emit-update-plan` emit only the selected mirrored-plan subset.
 - Keep dependency edges only in `$st` (`deps`); do not encode dependencies in `update_plan` or `TodoWrite`.
 - If hooks re-import a Codex plan at Stop, that reverse sync uses the latest mirrored Codex subset as the source of truth only for projected fields, not for the full durable inventory.
+- If repo-local hooks use the Bash `PreToolUse` guard, keep the guard state local to `$st`; do not write transient hook/session guard state into `.step/st-plan.jsonl`.
 - If an item has `dep_state=waiting_on_deps`, never mirror that item as `in_progress`.
 - Before final response on turns that mutate `$st`, re-check no drift by comparing:
   - `st show --file .step/st-plan.jsonl --format json`

@@ -5,6 +5,7 @@ set -eu
 
 payload=$(cat)
 source_name=$(printf '%s' "$payload" | jq -r '.source // "startup"')
+session_id=$(printf '%s' "$payload" | jq -r '.session_id // ""')
 mode="${ST_SESSIONSTART_MODE:-inject}"
 
 [ "$mode" != "off" ] || {
@@ -27,14 +28,18 @@ repo_root=$(find_st_root "$PWD" || true)
   exit 0
 }
 plan_file=$(st_plan_file "$repo_root")
+[ -n "${session_id:-}" ] || {
+  json_continue
+  exit 0
+}
 
-st_bin=$(resolve_st_bin "import-update-plan" || true)
+st_bin=$(resolve_st_bin "guard-session-start" || true)
 [ -n "${st_bin:-}" ] || {
   json_continue
   exit 0
 }
 
-update_plan_payload=$(cd "$repo_root" && "$st_bin" emit-update-plan --file .step/st-plan.jsonl 2>/dev/null || true)
+update_plan_payload=$(cd "$repo_root" && "$st_bin" guard-session-start --file .step/st-plan.jsonl --session-id "$session_id" 2>/dev/null || true)
 [ -n "${update_plan_payload:-}" ] || {
   json_continue
   exit 0
