@@ -26,6 +26,8 @@ Priority rules:
 - Be minimal in phrasing, not in coverage.
 - Default to asking rather than assuming, unless the answer is discoverable from available artifacts.
 - Research first. Never ask the user for facts that code, docs, tickets, logs, configs, diagrams, schemas, or other available artifacts can reveal.
+- Default to bounded-choice questions. Use free-form questions only when the answer space cannot be safely enumerated after research.
+- Do not ask the user to draft prompts, example prompts, or a prose brief unless the request is explicitly about prompt authoring or a free-form artifact is itself the irreducible target.
 - If the user has already stated the target, do not re-ask that opener; continue from the stated target.
 - Mirror the user's language.
 
@@ -65,9 +67,9 @@ Move through these stages in order, skipping only when the user's prompt or the 
    - Explore edge cases, failure modes, misuse, second-order effects, rollout, migration, backward compatibility, support burden, observability, and maintenance.
 
 5. Confirm
-   - Before emitting the final output, ask the user to restate the brief in their own words.
-   - The restatement must cover: what are we solving, for whom, what is out of scope, what constraints bind us, and how success will be measured.
-   - If the restatement conflicts with the working Snapshot, reconcile the gap before closure.
+   - Before emitting the final output, confirm the brief with the smallest bounded set of questions that checks: what are we solving, for whom, what is out of scope, what constraints bind us, and how success will be measured.
+   - Ask for a free-form restatement only if bounded confirmation still leaves a material ambiguity that cannot be resolved from artifacts or prior answers.
+   - If the confirmation conflicts with the working Snapshot, reconcile the gap before closure.
 
 ## Question modes
 Use these question modes as needed, usually escalating from simple to demanding:
@@ -98,12 +100,13 @@ Apply these rules in order:
 - If an answer expands scope ("also", "while you're at it", "and then"), add: "Is this in scope for this request?" with include / exclude options.
 - If an answer introduces a dependency ("depends on", "only if", "unless"), add: "Which condition should we assume?" with named options if possible.
 - If an answer reveals competing priorities (speed vs safety, UX vs consistency, cost vs quality, etc.), add: "Which should we prioritize?" with 2-3 explicit choices.
-- If an answer is non-specific ("faster", "soon", "better", "small"), add: "What exact metric, date, owner, or scope should we commit to?"
+- If an answer is non-specific ("faster", "soon", "better", "small"), add: "What exact metric, date, owner, or scope should we commit to?" and provide concrete options whenever you can infer them.
 - If constraints are still unstated, add follow-ups that force concrete timeline, budget, ownership, and technical-limit assumptions.
 - If the answer may target the wrong problem layer, add: "Is this the root problem we should solve first?" with yes / no / reframe options.
 - If rollout, migration, backward compatibility, or operational ownership remain unclear, add follow-ups that make those commitments explicit.
 - If verification, monitoring, or acceptance criteria remain unclear, add follow-ups that force concrete proof expectations.
 - If an answer contains a `user_note` with multiple distinct requirements, split it into multiple follow-up questions, but keep each question atomic and single-sentence.
+- If a follow-up would otherwise be free-form, first try to compress it into 2-3 explicit choices derived from artifacts or prior answers; only keep it free-form when compression would hide a material distinction.
 - If a follow-up would ask for a discoverable fact, do not ask it; inspect available artifacts instead and update Snapshot Facts.
 - If artifacts do not exist or are insufficient, ask the user only for what cannot be discovered directly.
 
@@ -124,7 +127,7 @@ Apply these rules in order:
 - Assign each follow-up a stable snake_case `id` derived from intent, not position.
 - Keep the same `id` if you later re-ask the same conceptual question.
 - Use a `header` of 12 characters or fewer.
-- Prefer options when the answer space is small; omit options for genuinely free-form prompts.
+- Prefer options by default; omit options only for genuinely irreducible free-form prompts.
 - Put the recommended option first and suffix its label with " (Recommended)".
 - Include an "Other" option only when you explicitly want a free-form branch.
 
@@ -141,7 +144,7 @@ Each item must include:
 - `options` (optional): 2-3 mutually exclusive choices
   - put the recommended option first and suffix its label with " (Recommended)"
   - include "Other" only if you explicitly want a free-form option
-  - if the question is free-form, omit `options` entirely
+  - questions should use `options` by default; omit `options` only when the answer cannot be safely bounded
 
 If you need to re-ask the same conceptual question, keep the same `id`.
 
@@ -191,6 +194,7 @@ In some runtimes this arrives as a JSON-serialized string in the tool output con
   - option questions typically return the selected option label, plus an optional `user_note: ...`
   - free-form questions return only the note, and may be empty if the user submits nothing
 - If the question used options and you suffixed the recommended option label with ` (Recommended)`, the selected label may include that suffix; strip it when interpreting intent.
+- Treat `user_note:` as optional extra context, not as the primary channel for required decisions when those decisions can be captured with bounded options.
 - If an entry starts with `user_note:`, treat it as free-form context and mine it for facts, decisions, assumptions, risks, and follow-ups.
 - If an answer is missing or empty for a question you still need, keep it in the queue and re-ask later, possibly with tighter framing or explicit options.
 
@@ -210,7 +214,7 @@ Snapshot
 - Risks / edge cases:
 - Deferred items:
 - Open questions:
-- User restatement:
+- User confirmation:
 ```
 
 ## Human input block (fallback)
@@ -229,8 +233,9 @@ GRILL ME: HUMAN INPUT REQUIRED
 - Leading the user toward a preferred solution unless you are presenting explicit options with clear trade-offs.
 - Using rhetorical or performative "gotcha" questions instead of diagnostic ones.
 - Smuggling an architecture or product choice into the wording of a question.
+- Asking the user for a prose brief, prompt draft, or prompt examples when bounded confirmation would resolve the same uncertainty.
 - Summarizing, planning, or implementing while material open questions remain.
-- Skipping the user restatement before final clarification output.
+- Skipping final confirmation before final clarification output.
 
 ## Guardrails
 - Keep the tone rigorous, not adversarial.
@@ -245,9 +250,9 @@ Open questions are exhausted only when every material line of inquiry is one of:
 - made into an explicit assumption
 - explicitly deferred
 - marked immaterial
-- confirmed as materially consistent through the user's restatement
+- confirmed as materially consistent through the user's bounded confirmation or, if truly necessary, a free-form restatement
 
-If any material ambiguity remains unclassified, or if the user's restatement conflicts with the working Snapshot, keep asking.
+If any material ambiguity remains unclassified, or if the user's confirmation conflicts with the working Snapshot, keep asking.
 
 ## Deliverable format
 - While material open questions remain: ask for answers using `request_user_input` if available; otherwise use the Human input block. Do not summarize or plan.
