@@ -1,6 +1,6 @@
 ---
 name: creative-problem-solver
-description: Lateral-thinking playbook that always returns a five-tier strategy portfolio (Quick Win through Moonshot). Use when you need options, alternatives, or trade-offs; when progress is stalled or failing repeatedly; or when you ask to think creatively, reframe constraints, and choose a strategic path before execution.
+description: Lateral-thinking playbook that always returns a diverse five-tier strategy portfolio (Quick Win through Moonshot) with a default-basin check. Use when you need options, alternatives, or trade-offs; when progress is stalled or failing repeatedly; or when you ask to think creatively, reframe constraints, and choose a strategic path before execution.
 ---
 
 # Creative Problem Solver
@@ -12,6 +12,7 @@ Purpose: generate a five-tier portfolio that compounds (Artifact Spine), then st
 - If Define is weak: propose a one-line working definition + success criteria, and treat the portfolio as learning moves.
 - Deliver options, then stop and ask for human input before executing.
 - Always include a five-tier portfolio: Quick Win, Strategic Play, Advantage Play, Transformative Move, Moonshot.
+- Before generating tiers, name the default solution basin and ensure at least two tiers come from different conceptual frames.
 - For each option: accretive artifact + expected signal + escape hatch.
 - Run an Aha Check after reframing.
 - Keep a short Knowledge Snapshot (facts/risks/assets) + Decision Log.
@@ -29,11 +30,12 @@ Purpose: generate a five-tier portfolio that compounds (Artifact Spine), then st
 3. Reframe once using the supported technique for the stage.
 4. Aha Check. If none, run one second and final pass with First Principles.
 5. Define gate: state a one-line problem statement + success criteria (or mark unknown and ask).
-6. Define an Artifact Spine (1-3 shared artifacts) so the tiers can stack.
-7. Generate the five-tier portfolio (learning moves in Discover/Define; solution moves in Develop/Deliver).
-8. Score options (1-5): Signal, Accretion, Ease, Reversibility, Speed.
-9. Ask the user to choose a tier or update constraints.
-10. Close with an Insights Summary.
+6. Diversity gate: name the default solution basin and choose at least two different conceptual frames for the tiers.
+7. Define an Artifact Spine (1-3 shared artifacts) so the tiers can stack.
+8. Generate the five-tier portfolio (learning moves in Discover/Define; solution moves in Develop/Deliver).
+9. Score options (1-5): Signal, Accretion, Ease, Reversibility, Speed.
+10. Ask the user to choose a tier or update constraints.
+11. Close with an Insights Summary.
 
 ## Double Diamond alignment
 - Discover (diverge): broaden context; focus options on learning (research, instrumentation, repro, characterization).
@@ -68,6 +70,13 @@ Purpose: generate a five-tier portfolio that compounds (Artifact Spine), then st
 - Every response must include all five tiers.
 - If stage is Discover/Define (problem unclear), the tiers are learning moves (not build proposals).
 - If stage is Develop/Deliver (problem clear), the tiers are solution moves.
+
+## Diversity guard
+- Name the default solution basin before generating tiers.
+- Ensure at least two tiers come from different conceptual frames, not just different sizes of the same idea.
+- Valid frame shifts include substrate, interface, constraint, proof surface, incentive, time horizon, operating model, or user ritual.
+- If the five tiers cannot honestly diverge, say so and mark the portfolio as same-basin.
+
 
 ## Accretion (required)
 - Accretive artifact: a durable asset you keep even if the option is wrong (measurement, harness, spec, test, automation, interface, dataset, doc).
@@ -119,6 +128,7 @@ Preference: high Signal + Accretion + Reversibility, then Ease + Speed.
 - Problem statement + success criteria (or marked unknown).
 - Reframe used.
 - Aha Check (one line).
+- Default solution basin + diversity guard.
 - Artifact Spine (1-3 shared artifacts; purpose + minimal interface + where it lives).
 - Five-tier portfolio with accretive artifacts + signals + escape hatches.
 - Scorecard + brief rationale.
@@ -139,6 +149,9 @@ Success: p95<=200ms, p99<=400ms, CPU +<=10%, no relevancy regression.
 Reframe used: Pre-mortem
 Why: the current system already exists, so the main risk is choosing a move that adds work without cutting the real latency driver.
 Aha: The dominant cost is JSON serialization + payload size, not the query.
+
+Default basin: tune the query engine directly.
+Diversity guard: Quick Win/Strategic stay in measurement + payload reduction; Transformative shifts the interface to streaming; Moonshot shifts the substrate to engine bakeoff.
 
 Artifact Spine:
 - bench/search/ (perf harness + fixed dataset; outputs: p50/p95/p99 + diff)
