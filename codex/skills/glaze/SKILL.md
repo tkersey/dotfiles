@@ -1,6 +1,6 @@
 ---
 name: glaze
-description: "Run one explicit escalation pass using the original glaze prompt words verbatim. Use when prompts say `$glaze`, when the first answer feels merely adequate, or when you want the exact original rhetoric preserved while pushing for a materially stronger direction."
+description: "Run one explicit escalation pass using the original glaze prompt words verbatim, requiring a material new frame, invariant, mechanism, or artifact. Use when prompts say `$glaze`, when the first answer feels merely adequate, or when you want the exact original rhetoric preserved while pushing for a materially stronger direction."
 ---
 
 # Glaze
@@ -24,6 +24,7 @@ Force one deeper pass before accepting an answer or plan, while preserving the o
 - Treat the current answer, plan, or instinct as insufficiently strong.
 - Reject the first merely adequate move.
 - Widen the search space once and look for a more accretive, more dominant direction.
+- The stronger move must introduce a new frame, invariant, mechanism, or artifact not present in the previous answer. Intensified wording alone does not count.
 - Prefer one strong thesis over a grab-bag of decent ideas.
 - Keep the result grounded and operational, not hype-driven.
 - If execution is requested, continue with the stronger plan after the reframing pass.
@@ -31,12 +32,13 @@ Force one deeper pass before accepting an answer or plan, while preserving the o
 ## Workflow
 
 1. Name why the current answer underperforms.
-2. Search for a better framing, invariant, or architecture.
-3. Pick the highest-leverage move now available.
-4. Explain why it dominates the obvious alternative.
-5. Compress the result to the governing insight and next action.
+2. Search for a better framing, invariant, mechanism, artifact, or architecture.
+3. Verify the material delta: what is newly introduced that was absent from the previous answer?
+4. Pick the highest-leverage move now available.
+5. Explain why it dominates the obvious alternative.
+6. Compress the result to the governing insight and next action.
 
 ## Output
 
-- Default: `Why the obvious answer loses`, `Stronger move`, `Why it wins`, `Next action`.
+- Default: `Why the obvious answer loses`, `Material delta`, `Stronger move`, `Why it wins`, `Next action`.
 - If no materially better move exists, say so explicitly instead of manufacturing novelty.
