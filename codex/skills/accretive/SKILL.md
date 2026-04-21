@@ -1,6 +1,6 @@
 ---
 name: accretive
-description: "Activate maximal ambition, then choose one dominant accretive move grounded in the current project state. Preserve the original accretive prompt wording exactly except for an injectable target parameter."
+description: "Activate maximal ambition, include a non-obvious candidate frame, then choose one dominant accretive move grounded in the current project state. Preserve the original accretive prompt wording exactly except for an injectable target parameter."
 ---
 
 # Accretive
@@ -29,6 +29,7 @@ Think with maximal ambition. Decide with maximal discipline.
 - Inspect the current project state before choosing the move.
 - Ground the choice in concrete evidence from the present state: code paths, interfaces, tests, docs, bottlenecks, failure modes, TODOs, repetition, missing capabilities, or missing proof.
 - Generate a small set of plausible moves and choose exactly one only if it clearly dominates nearby alternatives.
+- At least one candidate must come from a non-obvious frame, not merely from the current roadmap, conventional architecture, or nearest visible TODO.
 - Keep the candidate set crisp enough that it can be handed to a separate evaluator without being rewritten.
 - Prefer moves that compound future leverage: new capabilities, simpler architecture, stronger invariants, better tooling, tighter proof surfaces, cleaner interfaces, reusable artifacts, or reduced future cost of change.
 - Reject churn, cosmetic polish, and broad cleanup without a governing payoff.
@@ -71,7 +72,7 @@ Validation must be concrete whenever possible. Prefer one or more of:
 1. Inspect the current state and note concrete evidence.
 2. Resolve the target parameter from the request, or choose one if absent.
 3. Form the governing prompt sentence using the exact historical wording.
-4. Generate two to four plausible moves within the chosen target lane.
+4. Generate two to four plausible moves within the chosen target lane, including at least one non-obvious frame candidate.
 5. Compare them by leverage, accretion, reversibility, and proof value.
 6. Pick the single dominant move, or abstain if none dominates.
 7. State the governing reason it wins, or why the decision is blocked.
