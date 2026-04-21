@@ -126,6 +126,27 @@ Combining underscores with asterisks lets us mix and match the emphasis styles. 
 ```
 ![More Styles]({{ page.rel_root }}/img/slide-17.md.png)
 
+You can also use an inline HTML `span` to apply a small set of style overrides to part of a text run:
+
+```markdown
+# Inline Span Styling
+
+Use <span style="color: #FF3366">color</span>,
+<span style="line-height: 1.2">line height</span>,
+<span style="letter-spacing: 1.5">letter spacing</span>,
+and <span style="text-transform: uppercase">text transform</span>.
+```
+
+Supported `span` style properties:
+
+- `color`
+- `line-height`
+- `letter-spacing`
+- `kern`
+- `text-transform: uppercase`
+- `text-transform: capitalize`
+- `text-transform: none`
+
 
 # Quotes
 
@@ -515,6 +536,22 @@ To lay out your content in columns, use the `[.column]` command to start a new c
 
 Column widths are automatically generated using the available space divided evenly by the number of columns specified.
 
+To create uneven columns, add a relative width to the column command:
+
+```markdown
+
+[.column: width(3)]
+
+Main content
+
+[.column: width(1)]
+
+Key takeaway
+
+```
+
+Column widths are distributed proportionally, so `width(3)` and `width(1)` create a `3/4` and `1/4` split. Columns without an explicit width default to `width(1)`.
+
 You can add as many columns as you like, but the more you add, the smaller the available width will be.
 
 Combine columns with [Auto-Scaling](https://docs.deckset.com/English.lproj/Formatting/13-auto-scaling.html) to automatically scale down the text size so it fits on the slide.
@@ -588,6 +625,46 @@ Use the `filtered` keyword to apply the theme's filter to an image that isn't fi
 ```
 ![Force Apply Filter]({{ page.rel_root }}/img/slide-27.md.png)
 
+## Built-in Image Modifiers
+```markdown
+![left bn](image1.jpg)
+![right vivid](image2.jpg)
+![left noir](image1.jpg)
+![right chrome](image2.jpg)
+![left fade](image1.jpg)
+```
+
+Use `bn` (or `bw`) for black-and-white, `vivid` for boosted color/contrast,
+and `noir`/`chrome`/`fade` for Core Image photo effect presets.
+
+These modifiers replace the theme filter for that specific image.
+
+## Saturation
+```markdown
+![left saturation(0.6)](image1.jpg)
+![right vivid saturation(0.9)](image2.jpg)
+```
+
+Use `saturation(value)` to set saturation directly (`0...2`, clamped).  
+When combined with `bn` or `vivid`, explicit `saturation(...)` wins for saturation.
+
+## Composable Filters
+```markdown
+![left sepia(0.7) vignette(0.5)](image1.jpg)
+![right blur(0.35) contrast(1.2) brightness(0.05)](image2.jpg)
+```
+
+Mix and match filters freely. Deckset applies them in a consistent order, so you always get the same result.
+
+Additional supported controls include:
+- `blur(0...1)`
+- `contrast(0...2)`
+- `brightness(-1...1)`
+- `exposure(-2...2)`
+- `vignette(0...1)`
+- `sepia(0...1)`
+- `sharpen(0...1)`
+
 ## Split Slides with Fit
 ```markdown
 ![right fit](image2.jpg)
@@ -659,6 +736,29 @@ You can set corner radius of images using following Markdown:
 
 This currently only works for plain static images. Let us know if you'd like it to work for other media too.
 
+## Inline Filter Modifiers
+
+Use custom filter modifiers on inline images too:
+
+```markdown
+![inline bn](image1.jpg)
+![inline vivid](image2.jpg)
+![inline saturation(1.4)](image3.jpg)
+![inline noir](image1.jpg)
+![inline chrome](image2.jpg)
+![inline fade](image3.jpg)
+```
+
+`bn` and `bw` are aliases. `saturation(value)` accepts `0...2` and overrides saturation from `bn`/`vivid` when combined.
+`noir`, `chrome`, and `fade` apply photo effect presets.
+
+You can also compose multiple filters inline:
+
+```markdown
+![inline sepia(0.7) vignette(0.5)](image1.jpg)
+![inline blur(0.3) contrast(1.1) sharpen(0.4)](image2.jpg)
+```
+
 
 # Videos
 
@@ -682,6 +782,16 @@ This currently only works for plain static images. Let us know if you'd like it 
 You can also use URL parameters like `?t=30s` to specify a start time for the clip.
 ```
 ![YouTube Embeds]({{ page.rel_root }}/img/slide-35.md.png)
+
+## Start Time Offsets
+
+Start offsets also work for local video and audio files, not just YouTube embeds.
+
+```markdown
+![](video.mov?t=30s)
+```
+
+You can use seconds directly or combine hours, minutes, and seconds, for example `45`, `90s`, `1m30s`, or `1h2m3s`.
 
 ```markdown
 ![left](video.mov)
@@ -905,7 +1015,9 @@ slide-transition: true
 
 You can control the duration of the transition by passing in the value in seconds: `slide-transition: fade(0.3)`.
 
-You may also use this command on a single slide, like so: `[.slide-transition: fade(0.3)]` or `[.slide-transition: false]`.
+Available transition styles include `fade`, `fadeThroughColor`, `push`, `move`, `reveal`, `flip`, `wipe`, `zoom`, `barnDoor`, `wipeFromCenter`, `iris`, and `spotlight`.
+
+You may also use this command on a single slide, like so: `[.slide-transition: fade(0.3)]`, `[.slide-transition: flip(0.6, horizontal)]`, `[.slide-transition: wipe(0.45, left)]`, `[.slide-transition: zoom(0.4)]`, `[.slide-transition: barnDoor(0.5, vertical)]`, `[.slide-transition: wipeFromCenter(0.5, horizontal)]`, `[.slide-transition: iris(0.5)]`, or `[.slide-transition: false]`.
 
 ## Use headers as slide dividers
 
@@ -1273,11 +1385,18 @@ The following transition styles are available:
 * `push(horizontal|vertical|top|right|bottom|left)` — the next slide pushes the previous one out of the viewport. Use `horizontal` or `vertical` (or a direction) to control the movement when advancing or going back.
 * `move(horizontal|vertical|top|right|bottom|left)` — the next slide moves over the top of the current slide. Direction parameters work the same way as with `push`.
 * `reveal(horizontal|vertical|top|right|bottom|left)` — the current slide moves away to reveal the next slide underneath. Direction parameters again control the direction of travel when moving forward or backward.
+* `flip(horizontal|vertical|top|right|bottom|left)` — flips between slides with a 3D card-like motion. `horizontal` and `vertical` choose the default forward/backward hinge direction.
+* `wipe(horizontal|vertical|top|right|bottom|left)` — reveals the next slide with an edge wipe. `horizontal` and `vertical` map to forward/backward wipe directions.
+* `zoom` — scales and fades between slides.
+* `barnDoor(horizontal|vertical)` — opens the current slide away from the center like two doors.
+* `wipeFromCenter(horizontal|vertical)` — reveals the next slide from the center outward using a rectangular wipe.
+* `iris` — reveals the next slide from the center outward.
+* `spotlight` — hides the current slide into the center.
 
 You can choose one of these transitions by specifying it in the command:
 
 ```markdown
-slide-transition: push(vertical)
+slide-transition: push(0.3, vertical)
 ``` 
 
 ## Transition timing
@@ -1290,7 +1409,7 @@ slide-transition: fade(0.3)
 
 ## Transitions on individual slides
 
-You may also use the transition command on a single slide, for example: `[.slide-transition: push(horizontal, 0.3)]` or `[.slide-transition: false]`.
+You may also use the transition command on a single slide, for example: `[.slide-transition: push(0.3, horizontal)]`, `[.slide-transition: zoom(0.4)]`, `[.slide-transition: barnDoor(0.5, vertical)]`, `[.slide-transition: wipeFromCenter(0.5, horizontal)]`, `[.slide-transition: iris(0.5)]`, or `[.slide-transition: false]`.
 
 
 # AI Slide Builder Skill
