@@ -1,6 +1,6 @@
 ---
 name: latent-move
-description: Use this skill when a coding task needs read-only move selection before implementation: surface latent frames, collect project-state evidence with optional read-only subagents, generate a five-tier option portfolio, nominate one accretive move, adversarially validate whether it dominates, and stop with a canonical Dominant Move Brief. Trigger for ambiguous architecture, refactor, debugging, performance, integration, migration, stalled work, repeated failures, competing implementation paths, or requests to use latent-diver, creative-problem-solver, accretive, and dominance together. Do not edit code, run write-heavy agents, or invoke an executor from this skill.
+description: "Use this skill when a coding task needs read-only move selection before implementation: surface latent frames, collect project-state evidence with optional read-only subagents, generate a five-tier option portfolio, nominate one accretive move, adversarially validate whether it dominates, and stop with a canonical Dominant Move Brief. Trigger for ambiguous architecture, refactor, debugging, performance, integration, migration, stalled work, repeated failures, competing implementation paths, or requests to use latent-diver, creative-problem-solver, accretive, and dominance together. Do not edit code, run write-heavy agents, or invoke an executor from this skill."
 ---
 
 # Latent Move
