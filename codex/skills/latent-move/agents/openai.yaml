@@ -1,0 +1,4 @@
+interface:
+  display_name: "Latent Move"
+  short_description: "Select the dominant coding move before execution"
+  default_prompt: "Use $latent-move to surface latent frames, adjudicate candidate moves, and stop with a Dominant Move Brief."
