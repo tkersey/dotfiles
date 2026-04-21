@@ -1,4 +1,5 @@
-interface:
-  display_name: "Latent Move"
-  short_description: "Select the dominant coding move before execution"
-  default_prompt: "Use $latent-move to surface latent frames, adjudicate candidate moves, and stop with a Dominant Move Brief."
+# Optional Codex skill metadata.
+# This file is not a custom subagent definition.
+# Custom subagents for this package live under .codex/agents/*.toml.
+display_name: Latent Move
+summary: Read-only workflow for discovering and validating a dominant next coding move.
