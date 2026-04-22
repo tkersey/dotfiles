@@ -9,6 +9,23 @@ targeted-validation
 #### Artifact State Label
 loop-02-post-review
 
+#### Closure Freshness
+- freshness_mode: fresh
+- unchanged_since: none
+- reuse_basis: none
+- stale_assumption_recheck: none
+- missing_focused_witnesses:
+  - direct rotated-secret exercise on the live store-read path
+
+#### Escalation Ledger
+- level: 1-focused
+- active_triggers:
+  - critical invariant INV-02 unknown
+  - changed path lacks direct witness
+- resolved_triggers: none
+- why_this_level_is_sufficient_or_required: uncertainty is material but bounded to refreshSession plus token-store contract
+- last_escalation_decision: escalated from Level 0 to Level 1 after review found a missing changed-path witness
+
 #### Objective
 - requested_outcome: Eliminate the session refresh regression without changing the public API.
 - claimed_behavior_change: The refresh path should re-issue a valid token only when the stored refresh secret is still current.
@@ -54,17 +71,11 @@ loop-02-post-review
   status: completed
 - pass_id: review-01
   pass_type: review
-  rationale: Full de novo adversarial review
+  rationale: Focused de novo adversarial review at Level 1
   touched_surfaces:
     - auth/session.ts
     - auth/session.test.ts
     - auth/token-store.ts
-  status: completed
-- pass_id: challenge-01
-  pass_type: review
-  rationale: Pre-closure one-change challenge found no remaining impactful accretive improvement.
-  touched_surfaces:
-    - none
   status: completed
 
 #### Findings Ledger
@@ -138,6 +149,18 @@ loop-02-post-review
     result: pass
     what_it_proves: Basic refresh flow still succeeds.
     limitations: Does not exercise rotated-secret state.
+
+#### One-Change Challenge Ledger
+- question: If you could change one thing about this changeset what would you change?
+- status: not-run
+- outcome: unknown
+- acceptance: unknown
+- candidate_change: unknown
+- why_this_one: not yet at candidate material fixed point
+- routed_to: none
+- evidence: targeted-validation packet precedes final closure
+- artifact_state_before: unknown
+- artifact_state_after: loop-02-post-review
 
 #### Specialist Briefing Ledger
 - role: invariant_auditor
