@@ -111,4 +111,4 @@ For each comment, optionally record a `Reply Stance` to help later handoff to `$
 - [seq-rationale-ladder.md](references/seq-rationale-ladder.md)
 - [adjudication-ledger.md](references/adjudication-ledger.md)
 - [example-invocations.md](references/example-invocations.md)
-- [common-routing-vocabulary.md](../../../references/common-routing-vocabulary.md)
+- [common-routing-vocabulary.md](references/common-routing-vocabulary.md)

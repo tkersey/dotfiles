@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Verification Closure"
-  short_description: "Signal-aware final verification and readiness gating"
-  default_prompt: "Use the verification-closure skill for this task."
+  short_description: "Proof and gating for final readiness decisions"
+  default_prompt: "Use $verification-closure for this task."

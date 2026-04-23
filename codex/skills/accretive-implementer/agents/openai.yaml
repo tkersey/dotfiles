@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Accretive Implementer"
-  short_description: "Contract-first accretive implementation and remediation"
-  default_prompt: "Use the accretive-implementer skill for this task."
+  short_description: "Contract-first implementation and remediation with witness-bearing proofs"
+  default_prompt: "Use $accretive-implementer for this task."

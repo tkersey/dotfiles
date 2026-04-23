@@ -104,6 +104,6 @@ Use concise sections in this order:
 ## Resources
 - [grading-rubrics.md](references/grading-rubrics.md)
 - [example-invocations.md](references/example-invocations.md)
-- [common-soundness.md](../../../references/common-soundness.md)
-- [common-ledgers.md](../../../references/common-ledgers.md)
-- [common-cli-reporting.md](../../../references/common-cli-reporting.md)
+- [common-soundness.md](references/common-soundness.md)
+- [common-ledgers.md](references/common-ledgers.md)
+- [common-cli-reporting.md](references/common-cli-reporting.md)

@@ -1,6 +1,6 @@
 # Canonical Closure Handoff Packet
 
-Use this packet whenever `fixed-point-driver` hands work to `verification-closure`.
+Use this packet whenever `meta-orchestrator` hands work to `verification-closure`.
 The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job is to move the latest state across the phase boundary without collapsing important distinctions into prose.
 
 ## Packet rules
@@ -50,7 +50,6 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
      - `rationale`
      - `touched_surfaces`
      - `status`: `completed` | `partial` | `blocked`
-   - record the most recent pre-closure one-change challenge as a `review` pass even when it results in no code change
 
 8. **Findings Ledger**
    - one entry per finding with:
@@ -66,20 +65,7 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
      - `impacted_invariants`
      - `next_action`
 
-9. **Soundness Ledger**
-   - one entry per soundness claim with:
-     - `claim_id`
-     - `claim_or_obligation`
-     - `kind`: `missing-witness` | `stale-witness` | `contradictory-witness` | `preservation-break` | `stuck-state` | `impossible-state` | `partial-elimination` | `overclaim`
-     - `witness_required`
-     - `witness_status`: `present` | `partial` | `stale` | `missing` | `contradictory`
-     - `preservation`: `preserved` | `strained` | `broken` | `unknown`
-     - `progress`: `safe` | `stuck` | `unknown`
-     - `inhabitance`: `bounded` | `impossible-state-admitted` | `unknown`
-     - `evidence`
-     - `next_action`
-
-10. **Invariant Ledger**
+9. **Invariant Ledger**
    - one entry per invariant with:
      - `invariant_id`
      - `name`
@@ -90,7 +76,7 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
      - `supporting_evidence`
      - `open_question`
 
-11. **Foot-Gun Register**
+10. **Foot-Gun Register**
     - one entry per hazard with:
       - `hazard_id`
       - `trigger`
@@ -100,14 +86,14 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `evidence`
       - `narrowest_bounding_action`
 
-12. **Complexity Ledger**
+11. **Complexity Ledger**
     - `overall_delta`: `reduces` | `neutral` | `increases`
     - `materiality`: `material` | `non-material` | `unknown`
     - `drivers`
     - `evidence`
     - `bounded_by`
 
-13. **Verification Ledger**
+12. **Verification Ledger**
     - `direct_changed_path`: `satisfied` | `open` | `blocked` | `conflicting`
     - `claimed_failure_mechanism`: `satisfied` | `open` | `blocked` | `conflicting`
     - `regression_surface`: `satisfied` | `open` | `blocked` | `conflicting`
@@ -118,18 +104,7 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `what_it_proves`
       - `limitations`
 
-
-14. **Review Comment Ledger** (optional)
-    - one entry per adjudicated comment with:
-      - `comment_id`
-      - `disposition`
-      - `status`
-      - `rationale_match`
-      - `materiality`
-      - `next_action`
-
-15. **Specialist Briefing Ledger**
-
+13. **Specialist Briefing Ledger**
     - one entry per specialist with:
       - `role`
       - `artifact_state_label`
@@ -139,18 +114,17 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `agreement_pressure`: `aligned` | `mixed` | `conflicting`
       - `stale`: `yes` | `no`
 
-16. **Closure Gate Preview**
-    - `material_soundness`: `bounded` | `unbounded` | `unknown` | `conflicting`
+14. **Closure Gate Preview**
     - `critical_invariants`: `preserved` | `strained` | `broken` | `unknown`
     - `material_foot_guns`: `bounded` | `unbounded` | `unknown` | `accepted-risk`
     - `material_complexity_hazards`: `bounded` | `unbounded` | `unknown` | `residual-design-risk`
     - `briefing_agreement`: `aligned` | `mixed` | `conflicting`
     - `external_blockers`: `none` | `present`
 
-17. **Requested Closure Questions**
+15. **Requested Closure Questions**
     - the specific questions `verification-closure` must answer
 
-18. **Residual Uncertainty**
+16. **Residual Uncertainty**
     - assumptions
     - environment limits
     - known unknowns
@@ -207,18 +181,6 @@ loop-03-post-review
   impacted_invariants: ...
   next_action: ...
 
-#### Soundness Ledger
-- claim_id: S-01
-  claim_or_obligation: Refresh reads the current persisted secret after rotation.
-  kind: missing-witness
-  witness_required: direct rotated-secret exercise on the live read path
-  witness_status: missing
-  preservation: unknown
-  progress: safe
-  inhabitance: bounded
-  evidence: no direct post-rotation witness yet
-  next_action: add one direct rotated-secret validation check
-
 #### Invariant Ledger
 - invariant_id: ...
   name: ...
@@ -256,14 +218,6 @@ loop-03-post-review
     what_it_proves: ...
     limitations: ...
 
-#### Review Comment Ledger
-- comment_id: ...
-  disposition: ...
-  status: ...
-  rationale_match: ...
-  materiality: ...
-  next_action: ...
-
 #### Specialist Briefing Ledger
 - role: invariant_auditor
   artifact_state_label: loop-03-post-review
@@ -274,7 +228,6 @@ loop-03-post-review
   stale: no
 
 #### Closure Gate Preview
-- material_soundness: unknown
 - critical_invariants: strained
 - material_foot_guns: unbounded
 - material_complexity_hazards: bounded

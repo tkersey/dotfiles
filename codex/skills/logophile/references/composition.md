@@ -1,15 +1,13 @@
-
 # Composition
 
-Other skills should invoke `$logophile` explicitly when they need:
-- a wording pass
-- a naming pass
-- a doctrine-word pass
+Use `$logophile` explicitly when another skill needs wording, naming, or doctrine synthesis.
 
-Do not assume hidden global style policy. Ask for the specific output shape you want:
-- `fast`
-- `annotated`
-- `delta`
-- `doctrine-fast`
-- `doctrine`
-- `doctrine-annotated`
+## Good compositions
+- after `review-adjudication`, draft a concise rebuttal or acknowledgement
+- after `adversarial-reviewer`, sharpen the final Change Agenda wording
+- before naming a new skill or subagent, generate 3-7 candidates
+- when the user asks for doctrine words, use doctrine mode directly
+
+## Bad compositions
+- silently rewriting every output in the workspace
+- replacing implementation, review, or closure work with wording work

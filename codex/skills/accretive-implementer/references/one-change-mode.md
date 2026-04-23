@@ -1,35 +1,16 @@
-# Single-change improvement posture
+# One-change mode
 
-Use this posture when the task is effectively:
-
-> If you could change one thing about this changeset what would you change?
-
-## Goal
-
-Choose and implement the single highest-leverage remaining change without turning the task into a grab bag of extras.
-
-## Selection rubric
-
-Prefer the candidate that most improves one or more of these at acceptable churn:
-- correctness
-- misuse resistance
-- invariant clarity or preservation
-- verification strength
-- consequential maintainability
-
-## Required internal check
-
-Before implementing the winning candidate, determine:
-- the contract delta it improves
-- the invariant it strengthens, preserves, or clarifies
-- the stable boundary where the change should live
-- why the change should not be smaller and should not be larger
-- the proof signal that will confirm the benefit
+Use this mode when the task is: "If you could change one thing about this changeset, what would you change?"
 
 ## Rules
+- Pick exactly one discretionary improvement unless a tightly coupled follow-on edit is strictly required.
+- Prefer the highest-leverage accretive change.
+- Prefer a change that improves correctness, soundness, reviewability, or misuse resistance before style or taste.
+- Explain why this one change beats the nearest alternatives.
+- After implementation, verify the direct benefit and at least one plausible nearby regression surface.
 
-- Compare alternatives only enough to identify the dominant change.
-- Keep the implementation singular.
-- Do not smuggle in sibling cleanups or second-choice improvements.
-- If the best remaining change is blocked by constraints or requires structural redesign, say so explicitly.
-- If no remaining change is clearly worth the churn, say `no impactful accretive improvement`.
+## Good outputs
+- the chosen change
+- why it dominates
+- the narrowest cut
+- the proof signal

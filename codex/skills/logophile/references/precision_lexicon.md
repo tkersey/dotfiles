@@ -1,13 +1,18 @@
-
 # Precision lexicon
 
-Use these as guarded defaults, not mandatory swaps.
+Use these as guarded phrase upgrades, not mandatory substitutions.
 
-- iterate on improvements -> find accretive changes
-- handle malformed inputs better -> reject malformed inputs fail-closed
-- make sure -> verify
-- get better -> become tighter
-- deal with -> bound | reject | route | remediate (choose by action type)
-- thing -> change | artifact | constraint | surface | hazard (choose by referent)
+## Good upgrades
+- `make better` -> `tighten`
+- `handle malformed input` -> `reject malformed input`
+- `do more checking` -> `add a direct validating check`
+- `improve reliability` -> `bound failure behavior`
+- `something is wrong` -> `the change is unsound` (only when the stronger claim is warranted)
+- `works in more cases` -> `covers the previously partial path`
+- `uses old state` -> `reads stale state`
+- `hard to review` -> `increases incidental complexity`
 
-Only substitute when the new phrase is more exact in scope, action, evidence, or failure behavior.
+## Guardrails
+- only swap when the new phrase is strictly more exact
+- preserve obligations, uncertainty, agency, and sequence
+- do not force repo jargon when the local text does not support it

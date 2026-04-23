@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Adversarial Reviewer"
-  short_description: "Full-scope de novo review with complexity, invariant, and foot-gun grading"
-  default_prompt: "Use the adversarial-reviewer skill in full-scope de novo mode; grade complexity delta, invariants, and foot-guns, and keep remediation guidance accretive unless the issue is structural."
+  short_description: "Full-scope de novo review with explicit change agenda and soundness ledger"
+  default_prompt: "Use $adversarial-reviewer for this task."
