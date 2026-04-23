@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Review Adjudication"
+  short_description: "Adjudicate PR review comments using evidence and $seq rationale recovery"
+  default_prompt: "Use $review-adjudication for this task."
