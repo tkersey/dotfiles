@@ -64,8 +64,8 @@ Keep multi-agent work aligned with native Codex primitives.
 
 Apply these in order:
 
-1. Explicit `$select`, `SLICES.md`, or a request like "pick the next safe wave" / "what should run in parallel next" -> use `$select`.
-2. Multiple independent questions or file-disjoint core branches / sidecar tasks -> use native `spawn_agent` directly with built-in roles.
+1. Explicit `SLICES.md`, `plan-N.md`, or a request like "pick the next safe wave" / "what should run in parallel next" -> do a local selection pass first, then publish the chosen wave with `update_plan`.
+2. Multiple independent questions or file-disjoint core branches / sidecar tasks -> use native `spawn_agent` directly with accessible roles.
 3. Already-shaped row-batch work -> use the smallest local script, CLI, or direct worker pattern that preserves disjoint scopes and structured results.
 4. Otherwise stay local and execute directly.
 
@@ -78,7 +78,7 @@ Apply these in order:
 
 ## Quick routing examples
 
-- Choose `$select`: "Pick the next safe wave from `SLICES.md` and claim ready work." The work needs plan-only selection and first-wave shaping.
+- Choose local selection: "Pick the next safe wave from `SLICES.md` and claim ready work." The work needs plan-only selection and first-wave shaping.
 - Choose native `spawn_agent`: "Compare the thread API with the collab tool surface, then recommend the native path." The work benefits from parallel research plus shared judgment.
 - Choose native `spawn_agent`: "Add a config-backed CLI flag that touches parser wiring, config loading, help output, and focused validation." The work has multiple disjoint branches that can be delegated with explicit ownership.
 - Choose local row processing: "Audit each file in this CSV for missing frontmatter and export one result row per file." The same bounded instruction runs independently per row.
@@ -88,38 +88,35 @@ Apply these in order:
 
 Maximize orchestration by maximizing the size and quality of the safe leaf wave, not by spawning agents early or often.
 
-- Start with `$select` when the work is not already a clear row batch or a clear set of disjoint leaf tasks.
+- Start with a local selection pass when the work is not already a clear row batch or a clear set of disjoint leaf tasks.
 - For non-trivial orchestration, use `$st` before execution so wave ownership and proof state stay durable across the handoff from planning to execution.
 - The canonical durable handoff is `st import-orchplan --input <orchplan>` followed by `st claim --wave <wN> --executor codex` before any worker starts.
 - Do not document or preserve a public same-turn non-`$st` handoff. If a helper still exists, it must auto-route into the same durable path and remain an implementation detail.
 - For native subagent work, launch the full dependency-independent ready set before the first blocking `wait_agent`.
 - Keep batch execution boring: one substantive unit per row or task, disjoint scopes, structured output, and local integration.
 
-## `$select`
+## Selection Pass
 
-- `$select` is the plan-only selector for invocation lists, `SLICES.md`, and `plan-N.md` sources.
+- Selection is the plan-only pass for invocation lists, `SLICES.md`, and `plan-N.md` sources.
 - Default to claiming the full safe first wave when dependency and scope checks allow it; do not default to one slice unless safety or an explicit cap forces it.
 - Prefer file/module ownership hints over broad directory locks when shaping `scope`.
 - Treat underfilled first waves without an explicit cap as a planning defect to fix, not as the steady-state default.
 
 ## Native Subagents
 
-- Use `update_plan`, `spawn_agent`, `assign_task`, `send_message`, `list_agents`, `wait_agent`, and `close_agent`.
-- Use built-in roles intentionally: `explorer` for focused questions, `worker` for bounded execution.
-- Treat custom roles in `codex/agents/` as specialist edges, not the default path:
-  - `selector` for explicit `$select`-class wave shaping
-  - `coder` for parse-first author/judge orchestration that emits one winning candidate, carrying `approach=reduce` as a shared author constraint
-  - `fixer` for mandatory winner review/repair plus doctrine-fit scoring in one pass
-  - `prover` for apply-plus-proof in an isolated worktree
-  - `integrator` for patch-first or commit-first delivery packaging
-  - `joiner` for GH-only PR routing, not for ordinary local tasks
-  - `reducer`, `mentor`, `locksmith`, and `applier` are compatibility shims only; do not route new work to them
+- Use `update_plan`, `spawn_agent`, `send_message`, `followup_task`, `list_agents`, `wait_agent`, and `close_agent`.
+- Use execution roles intentionally: `explorer` for focused questions and `worker` for bounded implementation.
+- Use specialist roles only when their current role exists and the task matches their narrow purpose:
+  - `state_cartographer`, `constraint_miner`, `latent_frame_scout`, `latent_evidence_scout`, and `proof_surface_mapper` for read-only state, constraint, latent-frame, evidence, and proof-surface mapping.
+  - `candidate_red_team` and `brief_auditor` for read-only dominance pressure testing and handoff-readiness checks.
+  - `evidence_mapper`, `complexity_auditor`, `hazard_hunter`, `invariant_auditor`, `soundness_auditor`, and `verification_auditor` for read-only implementation review from their named lenses.
+- Treat remembered roles that are not exposed by the current `spawn_agent` surface or present in `codex/agents/` as unavailable; do not route work to stale agent names.
 - Keep synthesis, integration, and overlapping-write work local.
 - Dispatch the full dependency-independent ready set before the first blocking `wait_agent`.
 - Delegate concrete work with explicit deliverables and disjoint write scopes; do not reserve core ready branches for the lead just because they feel central.
 - Prefer explicit `task_name` values for long-lived teammates and target follow-up work by relative or canonical task path when the name is stable.
-- Default `fork_context: false`; for parse-first author cohorts, run `$parse` once in the parent, freeze the worker packet, and use `true` only when a specific child truly needs the parent's exact context or diff.
-- Treat `assign_task` and `send_message` as co-equal v2 coordination tools: use `assign_task` when the target should run now, and `send_message` when the target should queue the note for later.
+- Default to a narrow `fork_turns` value for subagents; for parse-first author cohorts, run `$parse` once in the parent, freeze the worker packet, and fork only the turns a child truly needs.
+- Use `followup_task` when an existing subagent should run on a new instruction now, and `send_message` when the target should queue the note for later.
 - Use `list_agents` when you need to inspect the live task tree before routing follow-up work.
 - While subagents run, continue non-overlapping local work.
 - Close agents once their contribution is integrated.
