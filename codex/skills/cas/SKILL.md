@@ -1,6 +1,6 @@
 ---
 name: cas
-description: Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server smoke checks, direct thread/turn request execution, detached review-session control, multi-instance fanout, and swarm conformance checks around `$st` claim sets and `$mesh` reconciliation.
+description: Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server smoke checks, direct thread/turn request execution, detached review-session control, multi-instance fanout, and swarm conformance checks around `$st` claim sets and retry policy.
 ---
 
 # cas (Zig App-Server Control)
@@ -11,7 +11,7 @@ description: Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runner
 
 Use the native `cas` dispatcher and subcommands:
 
-- `cas conformance` for swarm conformance checks around `$st` claims, `$mesh` reconciliation, and retry policy.
+- `cas conformance` for swarm conformance checks around `$st` claims and retry policy.
 - `cas smoke_check` for protocol/API smoke checks.
 - `cas instance_runner` for method execution across one or many isolated instances.
 - `cas review_session` for detached `review/start` lifecycle control with persisted `reviewThreadId` handles.
@@ -23,10 +23,9 @@ Current `cas conformance` covers these swarm-hardening scenarios:
 
 - `claim_safe_wave`: verify two disjoint `$st` claims can run in parallel without overlapping lock roots
 - `stale_claim_reclaim`: verify expired held claims become stale and return to pending
-- `mesh_row_accountability`: verify imported mesh output completes only reported rows and leaves missing rows outstanding
 - `overload_backoff`: verify the bounded retry/backoff policy with a deterministic synthetic overload script
 
-`cas conformance` is the harness; it is not the owner of durable claims or mesh state. `$st` remains the source of truth for claims/runtime/proof metadata.
+`cas conformance` is the harness; it is not the owner of durable claims. `$st` remains the source of truth for claims/runtime/proof metadata.
 
 Current `cas review_session` is the review-control lane:
 
@@ -235,7 +234,7 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 
 - "instances" / "multi-instance" / "parallel sessions"
 - "review session" / "detached review" / "reviewThreadId" / "interrupt review"
-- "swarm conformance" / "claim-safe wave" / "stale-claim reclaim" / "mesh row accountability"
+- "swarm conformance" / "claim-safe wave" / "stale-claim reclaim"
 - app-server method checks (`thread/start`, `thread/resume`, `thread/fork`, `thread/read`, `thread/list`, `thread/archive`, `thread/unarchive`, `thread/rollback`, `turn/start`, `turn/steer`, `turn/interrupt`, `review/start`)
 - command/file approval behavior, especially `availableDecisions`
 - session mining through direct app-server method execution
@@ -283,7 +282,7 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 
 4. For swarm-hardening runs, treat `$st` as the durable source of truth before any worker starts.
    - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
-   - `st claim --file .step/st-plan.jsonl --wave w1 --executor teams`
+   - `st claim --file .step/st-plan.jsonl --wave w1 --executor codex`
    - CAS probes the wave; it does not replace the durable claim ledger.
 
 5. Enforce handshake assumptions when diagnosing failures.
@@ -296,10 +295,10 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 7. Run fanout/multi-instance requests.
    - `run_cas_tool instance-runner --cwd /path/to/workspace --instances 12 --method thread/list --params-json '{"cursor":null,"limit":1}' --json`
 
-8. Run the conformance suite when you need repeatable swarm checks around claims, mesh closeout, or retry policy.
+8. Run the conformance suite when you need repeatable swarm checks around claims or retry policy.
    - `cas conformance --cwd /path/to/workspace --json`
-   - Narrow to one scenario when debugging: `cas conformance --cwd /path/to/workspace --scenario mesh_row_accountability --json`
-   - Use `--skip-smoke-check` only when you intentionally want the local `$st`/mesh scenarios without the live CAS preflight.
+   - Narrow to one scenario when debugging with `--scenario <name>`.
+   - Use `--skip-smoke-check` only when you intentionally want local `$st` scenarios without the live CAS preflight.
 
 9. Apply overload handling on request saturation.
    - If app-server returns JSON-RPC error code `-32001` (`"Server overloaded; retry later."`), retry with exponential backoff and jitter.
@@ -324,15 +323,11 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
    - `thread/list` supports filter params (`cursor`, `limit`, `searchTerm`, `cwd`, etc.) as provided by your app-server version.
    - `turn/steer` requires `expectedTurnId`.
 
-12. After a mesh batch, reconcile the exported CSV back into `$st`.
-    - `st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv`
-    - CAS may validate the wave around that closeout, but it does not own the CSV reconciliation.
-
-13. Gate experimental methods and payload fields explicitly.
+12. Gate experimental methods and payload fields explicitly.
    - Experimental surfaces such as `thread/backgroundTerminals/clean`, `thread/realtime/*`, and `thread/start` dynamic-tool fields require `initialize.params.capabilities.experimentalApi = true`.
    - If omitted, treat failures as capability negotiation errors.
 
-14. Respect native CAS server-request limits.
+13. Respect native CAS server-request limits.
    - The current Zig client auto-answers `item/commandExecution/requestApproval`, `item/fileChange/requestApproval`, `item/permissions/requestApproval`, `item/tool/requestUserInput`, `mcpServer/elicitation/request`, and `item/tool/call`.
    - Default native behavior is conservative: permissions requests are denied, request-user-input questions use the first option label when present, MCP elicitations are declined, and dynamic tool calls return `success: false` unless you override with explicit CLI flags.
 
@@ -377,7 +372,7 @@ Read `references/codex_app_server_contract.md` for API/method notes that inform 
   - `cas review_session`
   - `cas smoke_check`
   - `cas instance_runner`
-- `cas_conformance_suite` binary: swarm conformance around `$st` claims, `$mesh` closeout, and retry policy.
+- `cas_conformance_suite` binary: swarm conformance around `$st` claims and retry policy.
 - `cas_review_session` binary: detached review start/status/wait/interrupt with persisted `reviewThreadId` handles.
 - `cas_smoke_check` binary: protocol/API smoke validation.
 - `cas_instance_runner` binary: single or multi-instance method execution.

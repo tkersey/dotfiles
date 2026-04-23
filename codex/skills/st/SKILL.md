@@ -98,7 +98,7 @@ run_st_tool --help
    - Local mode: add both `.step/st-plan.jsonl` and `.step/st-plan.jsonl.lock` to `.git/info/exclude` before first mutation.
 4. If the plan came from `$select`, import the OrchPlan into `$st` and claim the first safe wave before execution starts.
    - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
-   - `st claim --file .step/st-plan.jsonl --wave w1 --executor teams`
+   - `st claim --file .step/st-plan.jsonl --wave w1 --executor codex`
    - For OrchPlan-backed claims, `--wave` is the canonical selector and there is no public same-turn non-`$st` handoff.
 5. Initialize plan storage with `st init` if missing.
 6. Rehydrate current state with `st show` (or focused views via `ready` / `blocked`).
@@ -106,7 +106,7 @@ run_st_tool --help
    - Use `--surface all` to inspect the full durable inventory.
    - Use `--surface backlog` to inspect durable tasks not currently mirrored into the plan.
 7. Run `doctor` when ingesting an existing plan file or when integrity is in doubt.
-8. Apply plan mutations through subcommands (`add`, `select`, `deselect`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`, `import-mesh-results`); do not hand-edit existing JSONL lines.
+8. Apply plan mutations through subcommands (`add`, `select`, `deselect`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`); do not hand-edit existing JSONL lines.
    - Use `add --backlog-only` or `import-plan --backlog-only` to update the durable inventory without loading those items into the mirrored plan yet.
    - Use `select` to add backlog items into the mirrored plan.
    - Use `deselect` to remove items from the mirrored plan without deleting them from disk.
@@ -150,19 +150,18 @@ st guard-pre-tool-use --file .step/st-plan.jsonl --session-id thread-123 --trans
 st export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
 st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
 st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml --replace
-st claim --file .step/st-plan.jsonl --wave w1 --executor teams
+st claim --file .step/st-plan.jsonl --wave w1 --executor codex
 st heartbeat --file .step/st-plan.jsonl --id st-001
 st set-runtime --file .step/st-plan.jsonl --id st-001 --substrate spawn_agent --thread-id thread-123 --agent-id agent-1
 st set-proof --file .step/st-plan.jsonl --id st-001 --proof-state pass --command "zig build test-st" --evidence-ref .step/proof.log
 st release --file .step/st-plan.jsonl --id st-001 --reason proof_complete
 st reclaim-stale --file .step/st-plan.jsonl --now 2026-03-12T00:00:00Z
-st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
 ```
 
 ## Operating Rules
 
 - Keep exactly one `in_progress` item unless `$st` can prove a safe parallel wave.
-- Safe parallel `in_progress` is allowed automatically when every active item has `claim.state=held`, a non-empty `claim.wave_id`, `claim.executor=teams|mesh`, and pairwise non-overlapping `claim.lock_roots`.
+- Safe parallel `in_progress` is allowed automatically when every active item has `claim.state=held`, a non-empty `claim.wave_id`, a non-empty `claim.executor`, and pairwise non-overlapping `claim.lock_roots`.
 - First-use plan-file policy: if `.step/st-plan.jsonl` is not yet tracked and not already ignored, ask whether the repo wants shared tracked state or local-only state via `.git/info/exclude` before the first mutation.
 - For OrchPlan-backed durable execution, `claim.wave_id` is authoritative and should be derived from the imported wave, not reconstructed from ad hoc `--ids`.
 - `in_plan=true` is the mirrored-plan membership flag. Missing legacy values normalize to `true`.
@@ -185,7 +184,7 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
   - `open`, `queued` -> `pending`
   - `active`, `doing` -> `in_progress`
   - `done`, `closed` -> `completed`
-- Mutation commands (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`, `import-mesh-results`) automatically print a canonical `plan_sync:` payload line plus a legacy `update_plan:` compatibility line after durable write.
+- Mutation commands (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`) automatically print a canonical `plan_sync:` payload line plus a legacy `update_plan:` compatibility line after durable write.
 - Hook-managed reverse sync from Codex into `$st` is projection-only: it may update mirrored-plan membership, mirrored order, `step`, and `status`, but must preserve durable-only metadata such as `deps`, `notes`, `comments`, `claim`, `runtime`, and `proof`.
 - Lock sidecar policy: mutating commands require the lock file (`<plan-file>.lock`, for example `.step/st-plan.jsonl.lock`) to be ignored when inside a git repo. In shared mode, add the lock sidecar to `.gitignore`; in local-only mode, add both the plan file and the lock sidecar to `.git/info/exclude`.
 - Storage model: not append-only growth. Mutations rewrite the JSONL file atomically (`temp` + `fsync` + replace) and compact to a canonical `replace` event plus checkpoint snapshot at the current seq watermark.
@@ -196,7 +195,7 @@ st import-mesh-results --file .step/st-plan.jsonl --input .step/mesh-output.csv
 
 ## Sync Checklist (`$st` -> native runtime tools)
 
-- After each `$st` mutation (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`, `import-mesh-results`), prefer the emitted `plan_sync: {...}` line.
+- After each `$st` mutation (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`), prefer the emitted `plan_sync: {...}` line.
 - If no emitted payload is available (for example after `init` or shell piping), run:
   - `st emit-plan-sync --file .step/st-plan.jsonl`
 - Preserve full inventory order from `$st` in `plan_sync.items`.

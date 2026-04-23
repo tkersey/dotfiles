@@ -42,34 +42,32 @@ GRILL ME: HUMAN INPUT REQUIRED
 - One escalation pass per challenge point is the default. Re-run only after materially new evidence changes the search space.
 - After the escalation pass, continue execution with the stronger plan. Mention the reframing to the user only when it materially changes the visible direction or recommendation.
 
-# Local Codex orchestration guidance
+# Local Codex execution guidance
 
 Keep multi-agent work aligned with native Codex primitives.
 
 ## Native model
 
 - Codex is thread-centric: public work centers on `thread/start`, `thread/resume`, `thread/fork`, and `turn/start`.
-- Collaboration appears as `collabToolCall` items; there is no separate public teams protocol.
+- Collaboration appears as `collabToolCall` items; there is no separate public coordination protocol.
 - `update_plan` is the main user-visible planning surface.
-- Do not invent a second orchestration stack when the runtime already provides the primitive you need.
+- Do not invent a second execution stack when the runtime already provides the primitive you need.
 
 ## Composite vs leaf tasks
 
 - Treat a composite task as work that still needs decomposition, comparison, sequencing, or shared judgment.
 - Treat a leaf task as one bounded answer or artifact with clear inputs, outputs, and ownership.
 - Plan and decompose first; execute second.
-- Borrow the tree-to-leaf mindset when it helps, but keep execution on native Codex tools rather than importing an external runtime.
+- Borrow the tree-to-leaf mindset when it helps, but keep execution on native Codex tools.
 
 ## Routing
 
 Apply these in order:
 
-1. Explicit `$mesh`, CSV fanout, or an obvious row-batch workload -> use `$mesh`.
-2. Explicit `$select`, `SLICES.md`, or a request like "pick the next safe wave" / "what should run in parallel next" -> use `$select`.
-3. Explicit `$teams` -> use `$teams`.
-4. Multiple independent questions or file-disjoint core branches / sidecar tasks -> use `$teams`.
-5. Otherwise stay local and execute directly.
-6. Escalate to hybrid only when `$select` or `$teams` discovers that the remaining work is a homogeneous leaf batch suitable for `$mesh`.
+1. Explicit `$select`, `SLICES.md`, or a request like "pick the next safe wave" / "what should run in parallel next" -> use `$select`.
+2. Multiple independent questions or file-disjoint core branches / sidecar tasks -> use native `spawn_agent` directly with built-in roles.
+3. Already-shaped row-batch work -> use the smallest local script, CLI, or direct worker pattern that preserves disjoint scopes and structured results.
+4. Otherwise stay local and execute directly.
 
 ## Skill routing
 
@@ -81,12 +79,10 @@ Apply these in order:
 ## Quick routing examples
 
 - Choose `$select`: "Pick the next safe wave from `SLICES.md` and claim ready work." The work needs plan-only selection and first-wave shaping.
-- Choose `$teams`: "Compare the thread API with the collab tool surface, then recommend the native path." The work still needs parallel research plus shared judgment.
-- Choose `$teams`: "Add a config-backed CLI flag across parser, config loading, help output, and focused validation." The work has multiple disjoint core branches, not just sidecars.
-- Choose `$mesh`: "Audit each file in this CSV for missing frontmatter and export one result row per file." The same bounded instruction runs independently per row.
-- Choose `$mesh`: "Execute the first four disjoint OrchPlan units with one row per unit." The work is already shaped into repeated leaf execution.
-- Choose `$mesh`: "Classify each support ticket in this CSV by area and urgency." The inputs are row-shaped and the outputs are structured per row.
-- Borderline rule: if you still need to decide the rule, CSV columns, or output fields, start with `$teams`; switch to `$mesh` only after planning is complete.
+- Choose native `spawn_agent`: "Compare the thread API with the collab tool surface, then recommend the native path." The work benefits from parallel research plus shared judgment.
+- Choose native `spawn_agent`: "Add a config-backed CLI flag that touches parser wiring, config loading, help output, and focused validation." The work has multiple disjoint branches that can be delegated with explicit ownership.
+- Choose local row processing: "Audit each file in this CSV for missing frontmatter and export one result row per file." The same bounded instruction runs independently per row.
+- Stay local first: if you still need to decide the rule, row schema, or output fields, finish that shaping before fanout.
 
 ## Default Start Sequence
 
@@ -94,13 +90,10 @@ Maximize orchestration by maximizing the size and quality of the safe leaf wave,
 
 - Start with `$select` when the work is not already a clear row batch or a clear set of disjoint leaf tasks.
 - For non-trivial orchestration, use `$st` before execution so wave ownership and proof state stay durable across the handoff from planning to execution.
-- The canonical durable handoff is `st import-orchplan --input <orchplan>` followed by `st claim --wave <wN> --executor teams|mesh` before any worker starts.
+- The canonical durable handoff is `st import-orchplan --input <orchplan>` followed by `st claim --wave <wN> --executor codex` before any worker starts.
 - Do not document or preserve a public same-turn non-`$st` handoff. If a helper still exists, it must auto-route into the same durable path and remain an implementation detail.
-- Use `$teams` for the first heterogeneous ready wave, and launch the full dependency-independent ready set before the first blocking `wait_agent`.
-- Hand off to `$mesh` only when the remaining work is a homogeneous batch of independent substantive rows.
-- Use `seq orchestration-concurrency --fail-on-mesh-truth` when claiming mesh concurrency or substrate truth.
-
-Do not treat `$mesh` as the starter tool; it is the execution endpoint after planning, not the planning step.
+- For native subagent work, launch the full dependency-independent ready set before the first blocking `wait_agent`.
+- Keep batch execution boring: one substantive unit per row or task, disjoint scopes, structured output, and local integration.
 
 ## `$select`
 
@@ -109,9 +102,8 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
 - Prefer file/module ownership hints over broad directory locks when shaping `scope`.
 - Treat underfilled first waves without an explicit cap as a planning defect to fix, not as the steady-state default.
 
-## `$teams`
+## Native Subagents
 
-- `$teams` is the native heterogeneous orchestration path.
 - Use `update_plan`, `spawn_agent`, `assign_task`, `send_message`, `list_agents`, `wait_agent`, and `close_agent`.
 - Use built-in roles intentionally: `explorer` for focused questions, `worker` for bounded execution.
 - Treat custom roles in `codex/agents/` as specialist edges, not the default path:
@@ -132,22 +124,10 @@ Do not treat `$mesh` as the starter tool; it is the execution endpoint after pla
 - While subagents run, continue non-overlapping local work.
 - Close agents once their contribution is integrated.
 
-## `$mesh`
-
-- `$mesh` is the high-fanout homogeneous batch path over `spawn_agents_on_csv` once repeated leaf work is shaped.
-- Use it for already-shaped substantive rows that can run independently.
-- Prefer one primary row per substantive unit with a unique scope and acceptance target.
-- Each worker must call `report_agent_job_result` exactly once.
-- Planning and decomposition do not happen inside `$mesh`; they happen before the batch starts.
-- Prefer structured outputs, optionally constrained with `output_schema`, then review the exported CSV locally or with `$teams`.
-- Do not create synthetic evidence waves or multiply lanes on the same scope unless a concrete blocker or failed proof justifies the follow-up row.
-- If a secondary specialist row is justified, use live roles only (`coder`, `fixer`, `prover`, `integrator`); do not route new work through deprecated shims.
-- If rows share mutable state, depend on each other, or need debate or design, stop and use `$teams` or local execution instead.
-
 ## `wait_agent` Semantics
 
 - `wait_agent` is not a join; it returns when any agent reaches a final state.
-- In `$teams`-class runs, launch the full ready set before the first blocking `wait_agent` when scopes are disjoint.
+- In native subagent runs, launch the full ready set before the first blocking `wait_agent` when scopes are disjoint.
 - Avoid tight polling loops; call `wait_agent` only when you are actually blocked on the remaining agents.
 
 ## Reporting

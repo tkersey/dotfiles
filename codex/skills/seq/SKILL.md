@@ -14,7 +14,7 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 - Questions that ask to verify prior session output using artifacts (`"use $seq to find it"` / `"what did that session actually say"`).
 - Artifact-forensics questions about provenance, trace proof, or "show me the artifact that proves it".
 - Questions about Codex memory artifacts or provenance (`"what's in MEMORY.md"`, `"which rollout produced this memory"`, `"is this memory stale"`, `"how do memory_summary.md and rollout_summaries relate"`).
-- Orchestration ledger forensics from session traces (`Orchestration Ledger`, `spawn_agents_on_csv`, wave CSVs, concurrency counts).
+- Execution ledger forensics from session traces (`Orchestration Ledger`, subagent lifecycle events, concurrency counts).
 - Concurrency math validation (`max_concurrency`, effective fanout, occurrences of peak parallelism, planned rows vs actual parallelism).
 
 ## Local-First Routing Ladder
@@ -454,7 +454,7 @@ seq routing-gap --root ~/.codex/sessions \
   --format table
 ```
 
-### 13) Orchestration concurrency summary
+### 13) Execution concurrency summary
 ```bash
 seq orchestration-concurrency --root ~/.codex/sessions --session-id <session_id> --format table
 ```
@@ -466,11 +466,6 @@ Assert the floor gate for non-trivial runs:
 ```bash
 seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl \
   --floor-threshold 3 --fail-on-floor --format table
-```
-Assert mesh-truth for claim eligibility:
-```bash
-seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl \
-  --fail-on-mesh-truth --format table
 ```
 
 ### 14) Query Opencode prompt history
@@ -567,10 +562,8 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
 - `session-tooling` summarizes per-invocation shell/tool behavior and can aggregate via `--summary --group-by executable|command|tool`.
 - `query-diagnose` emits per-query diagnostics from rollout JSONL and can suggest deterministic follow-up commands with `--next-actions`.
-- `orchestration-concurrency` reports both configured (`max_concurrency`) and effective fanout (`min(max_concurrency, csv_rows)`), plus how many times each maximum occurred.
-- It also emits `effective_peak`, `spawn_substrate`, `mesh_truth_verdict`, direct-lane counters (`spawn_agent_calls`, `wait_agent_calls`, `close_agent_calls`), `serialized_wait_agent_ratio`, and floor-gate fields (`floor_threshold`, `floor_applicable`, `floor_result`).
-- For sessions without `spawn_agents_on_csv`, it returns a structured row with `mesh_truth_verdict=false` and `spawn_substrate=spawn_agent|none` rather than failing.
-- Use `--fail-on-mesh-truth` to enforce fail-closed preflight for `$mesh` claims.
+- `orchestration-concurrency` reports configured and effective fanout, plus how many times each maximum occurred.
+- It also emits `effective_peak`, `spawn_substrate`, direct-lane counters (`spawn_agent_calls`, `wait_agent_calls`, `close_agent_calls`), `serialized_wait_agent_ratio`, and floor-gate fields (`floor_threshold`, `floor_applicable`, `floor_result`).
 
 ## Resources
 - `seq` binary: CLI for ranking skills, auditing sections, querying datasets, and summarizing token usage.
