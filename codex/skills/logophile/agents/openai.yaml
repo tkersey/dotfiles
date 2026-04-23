@@ -1,4 +1,6 @@
+policy:
+  allow_implicit_invocation: false
 interface:
-  display_name: "logophile"
-  short_description: "Precision-first rewrites and naming for skill prose"
-  default_prompt: "Use $logophile for wording or naming work; replace vague phrases before generic tightening."
+  display_name: "Logophile"
+  short_description: "Precision rewrites, naming, and doctrine synthesis"
+  default_prompt: "Use $logophile for this task."

@@ -1,13 +1,10 @@
-# Logophile Doctrine Patch Notes
+# Integration notes
 
-## What changed
-- Added doctrine synthesis as a first-class `logophile` submode.
-- Kept rewrite and naming behavior intact.
-- Kept trigger boundary hard: wording, naming, or doctrine output must be explicitly requested.
-- Made `doctrine` the canonical mode name.
-- Preserved backward-compatible aliases: `rigor`, `rigor-fast`, `rigor-annotated`.
+`logophile` is explicit-only and should not be used as a hidden style policy.
 
-## Why this shape
-- One lexical skill now covers rewrite, naming, and doctrine-word synthesis.
-- The skill still does not claim operational work such as implementation, review, or orchestration.
-- Doctrine mode produces word stacks plus an unpacked doctrine block, not naked lists.
+Use it when you need:
+- sharper wording
+- better names
+- doctrine stacks for a task
+
+Do not route coding, review, or orchestration work through `logophile` unless the user explicitly wants wording, naming, or doctrine synthesis output.

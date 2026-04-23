@@ -1,199 +1,117 @@
-# Example Closure Handoff Packet
+# Closure handoff template
 
 ```md
 ### Closure Handoff Packet
 
 #### Handoff Kind
-targeted-validation
+final-closure
 
 #### Artifact State Label
-loop-02-post-review
-
-#### Closure Freshness
-- freshness_mode: fresh
-- unchanged_since: none
-- reuse_basis: none
-- stale_assumption_recheck: none
-- missing_focused_witnesses:
-  - direct rotated-secret exercise on the live store-read path
-
-#### Escalation Ledger
-- level: 1-focused
-- active_triggers:
-  - critical invariant INV-02 unknown
-  - changed path lacks direct witness
-- resolved_triggers: none
-- why_this_level_is_sufficient_or_required: uncertainty is material but bounded to refreshSession plus token-store contract
-- last_escalation_decision: escalated from Level 0 to Level 1 after review found a missing changed-path witness
+loop-03-post-review
 
 #### Objective
-- requested_outcome: Eliminate the session refresh regression without changing the public API.
-- claimed_behavior_change: The refresh path should re-issue a valid token only when the stored refresh secret is still current.
-- current_phase_state: targeted validation before any additional remediation.
+- requested_outcome: ...
+- claimed_behavior_change: ...
+- current_phase_state: ...
 
 #### Scope and Constraints
-- in_scope_artifacts:
-  - auth/session.ts
-  - auth/session.test.ts
-  - auth/token-store.ts
-- constraints:
-  - preserve the current public API
-  - keep remediation accretive unless structural evidence proves otherwise
-- done_condition:
-  - root cause is bounded
-  - changed path is directly verified
-  - no unresolved material finding remains
+- in_scope_artifacts: ...
+- constraints: ...
+- done_condition: ...
 
 #### Artifact Set
-- changed_files:
-  - auth/session.ts
-- changed_symbols:
-  - refreshSession
-  - validateRefreshSecret
-- implicated_untouched_surfaces:
-  - auth/token-store.ts
+- changed_files: ...
+- changed_symbols: ...
+- implicated_untouched_surfaces: ...
 
 #### Diagnosis Ledger
-- primary_mechanism: The refresh path reads a stale secret from a cached store snapshot during token rotation.
+- primary_mechanism: ...
 - confidence: plausible
-- supporting_evidence:
-  - failing CI log on token rotation scenario
-  - reviewer finding F-03
-- superseded_diagnoses:
-  - transient clock skew hypothesis
+- supporting_evidence: ...
+- superseded_diagnoses: none
 
 #### Change Ledger
-- pass_id: build-01
+- pass_id: ...
   pass_type: build
-  rationale: Narrow fix for stale secret lookup
-  touched_surfaces:
-    - auth/session.ts
+  rationale: ...
+  touched_surfaces: ...
   status: completed
-- pass_id: review-01
-  pass_type: review
-  rationale: Focused de novo adversarial review at Level 1
-  touched_surfaces:
-    - auth/session.ts
-    - auth/session.test.ts
-    - auth/token-store.ts
-  status: completed
+  artifact_state_label: loop-03-post-build
 
 #### Findings Ledger
-- finding_id: F-03
+- finding_id: ...
   materiality: material
   severity: major
-  category: stale-state regression
+  category: ...
   status: open
-  remediation_posture: validating-check-only
-  evidence:
-    - reviewer observed missing direct exercise of rotated-secret path
-  why_it_matters: The fix may pass happy-path tests while still minting a token against stale state.
-  implicated_surfaces:
-    - auth/session.ts
-    - auth/token-store.ts
-  impacted_invariants:
-    - INV-02
-  next_action: Add a direct rotated-secret validation check.
+  remediation_posture: accretive-remediation
+  evidence: ...
+  why_it_matters: ...
+  implicated_surfaces: ...
+  impacted_invariants: ...
+  next_action: ...
 
 #### Soundness Ledger
-- claim_id: S-01
-  claim_or_obligation: The refresh path reads the current persisted secret after rotation.
+- claim_id: ...
+  claim_or_obligation: ...
   kind: missing-witness
-  witness_required: direct post-rotation exercise on the live store-read path
+  witness_required: ...
   witness_status: missing
   preservation: unknown
   progress: safe
   inhabitance: bounded
-  evidence:
-    - existing tests prove only the happy path
-  next_action: Add one direct rotated-secret validation check.
+  evidence: ...
+  next_action: ...
 
 #### Invariant Ledger
-- invariant_id: INV-02
-  name: Refresh uses the current persisted secret, not cached pre-rotation state.
-  tier: critical
-  status: unknown
-  confidence: plausible
-  blast_radius: module
-  supporting_evidence:
-    - no direct rotated-secret check yet
-  open_question: Does refreshSession re-read the store after rotation?
+none
 
 #### Foot-Gun Register
-- hazard_id: H-01
-  trigger: Retry a refresh immediately after token rotation under cached store state.
-  impact: Incorrect token issuance on an operational edge path.
-  ease_of_misuse: medium
-  status: unknown
-  evidence:
-    - inferred from missing direct exercise of the edge path
-  narrowest_bounding_action: Add a direct retry-after-rotation test.
+none
 
 #### Complexity Ledger
 - overall_delta: neutral
 - materiality: non-material
-- drivers:
-  - one extra helper call
-- evidence:
-  - localized change only
-- bounded_by:
-  - no new public surface or branching beyond the existing refresh path
+- drivers: ...
+- evidence: ...
+- bounded_by: ...
 
 #### Verification Ledger
-- direct_changed_path: open
+- direct_changed_path: satisfied
 - claimed_failure_mechanism: open
-- regression_surface: satisfied
+- regression_surface: open
 - checks_run:
-  - check_id: T-01
-    target: auth/session.test.ts existing refresh happy-path suite
+  - check_id: ...
+    target: ...
     result: pass
-    what_it_proves: Basic refresh flow still succeeds.
-    limitations: Does not exercise rotated-secret state.
+    what_it_proves: ...
+    limitations: ...
 
-#### One-Change Challenge Ledger
-- question: If you could change one thing about this changeset what would you change?
-- status: not-run
-- outcome: unknown
-- acceptance: unknown
-- candidate_change: unknown
-- why_this_one: not yet at candidate material fixed point
-- routed_to: none
-- evidence: targeted-validation packet precedes final closure
-- artifact_state_before: unknown
-- artifact_state_after: loop-02-post-review
+#### Review Comment Ledger
+none
 
 #### Specialist Briefing Ledger
-- role: invariant_auditor
-  artifact_state_label: loop-02-post-review
-  scope: refreshSession + token-store contract
-  top_material_signals:
-    - INV-02 remains unknown
-  unresolved_signals:
-    - need direct proof of post-rotation store read
-  agreement_pressure: aligned
-  stale: no
-- role: verification_auditor
-  artifact_state_label: loop-02-post-review
-  scope: direct path and regression coverage
-  top_material_signals:
-    - changed path not directly exercised
-  unresolved_signals:
-    - rotated-secret retry path untested
+- role: soundness_auditor
+  artifact_state_label: loop-03-post-review
+  scope: ...
+  top_material_signals: ...
+  unresolved_signals: ...
   agreement_pressure: aligned
   stale: no
 
 #### Closure Gate Preview
-- material_soundness: unknown
-- critical_invariants: unknown
-- material_foot_guns: unknown
+- material_soundness: unbounded
+- critical_invariants: preserved
+- material_foot_guns: bounded
 - material_complexity_hazards: bounded
 - briefing_agreement: aligned
 - external_blockers: none
 
 #### Requested Closure Questions
-- Does the changed path now directly prove post-rotation secret correctness?
-- Is INV-02 bounded or still open?
+- Is the material soundness gap now bounded?
 
 #### Residual Uncertainty
-- The store implementation may cache snapshots differently under production adapters.
+- assumptions: ...
+- environment_limits: ...
+- known_unknowns: ...
 ```

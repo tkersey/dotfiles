@@ -118,7 +118,18 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `what_it_proves`
       - `limitations`
 
-14. **Specialist Briefing Ledger**
+
+14. **Review Comment Ledger** (optional)
+    - one entry per adjudicated comment with:
+      - `comment_id`
+      - `disposition`
+      - `status`
+      - `rationale_match`
+      - `materiality`
+      - `next_action`
+
+15. **Specialist Briefing Ledger**
+
     - one entry per specialist with:
       - `role`
       - `artifact_state_label`
@@ -128,7 +139,7 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `agreement_pressure`: `aligned` | `mixed` | `conflicting`
       - `stale`: `yes` | `no`
 
-15. **Closure Gate Preview**
+16. **Closure Gate Preview**
     - `material_soundness`: `bounded` | `unbounded` | `unknown` | `conflicting`
     - `critical_invariants`: `preserved` | `strained` | `broken` | `unknown`
     - `material_foot_guns`: `bounded` | `unbounded` | `unknown` | `accepted-risk`
@@ -136,10 +147,10 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
     - `briefing_agreement`: `aligned` | `mixed` | `conflicting`
     - `external_blockers`: `none` | `present`
 
-16. **Requested Closure Questions**
+17. **Requested Closure Questions**
     - the specific questions `verification-closure` must answer
 
-17. **Residual Uncertainty**
+18. **Residual Uncertainty**
     - assumptions
     - environment limits
     - known unknowns
@@ -244,6 +255,14 @@ loop-03-post-review
     result: pass
     what_it_proves: ...
     limitations: ...
+
+#### Review Comment Ledger
+- comment_id: ...
+  disposition: ...
+  status: ...
+  rationale_match: ...
+  materiality: ...
+  next_action: ...
 
 #### Specialist Briefing Ledger
 - role: invariant_auditor

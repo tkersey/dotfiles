@@ -1,89 +1,44 @@
 # Example invocations
 
-## General implementation
-
+## Implementation from a plan
 ```md
 Use $accretive-implementer for this task.
 
 Goal:
-Add an expiration banner to the admin session view.
-
-Context:
-- admin/session.tsx
-- admin/session.test.tsx
-
-Constraints:
-- preserve existing props
-- avoid broad UI refactor
-
-Done when:
-- the banner appears only for expiring sessions
-- existing session rendering still passes tests
-```
-
-## Review remediation
-
-```md
-Use $accretive-implementer for this task.
-
-Goal:
-Address reviewer finding F-03 about stale refresh state.
+Implement session refresh retry fencing.
 
 Context:
 - auth/session.ts
 - auth/session.test.ts
-- reviewer notes pasted below
+- design notes pasted below
 
 Constraints:
 - preserve the current public API
-- keep the fix accretive
+- prefer the canonical existing auth path
 
 Done when:
-- the stale refresh path is fixed
-- the relevant regression check passes
+- the feature is implemented
+- the changed path is directly checked
+- assumptions and witnesses are surfaced
 ```
 
-## Non-trivial implementation with explicit seam choice
-
+## Remediation from review-adjudication handoff
 ```md
 Use $accretive-implementer for this task.
 
+Agenda Intake:
+- Act On: comments 2 and 5
+- Need Evidence: comment 4
+- Handoff Agenda: narrow accretive remediation in auth/session.ts
+
 Goal:
-Add request normalization for incoming webhook IDs.
-
-Context:
-- webhook/parse.ts
-- webhook/types.ts
-- webhook/parse.test.ts
-
-Constraints:
-- keep raw input and validated IDs separate
-- prefer boundary normalization over caller-side cleanup
-- avoid new dependencies
-
-Done when:
-- normalized IDs are produced at the boundary
-- invalid raw input is rejected or represented explicitly
-- a targeted proof signal passes
+Implement the accepted review agenda without reopening broad adjudication.
 ```
 
-## Single-change improvement posture
-
+## Fast mode
 ```md
-Use $accretive-implementer for this task.
+Use $accretive-implementer in Fast mode for this task.
 
 Goal:
-If you could change one thing about this changeset what would you change? Pick the single highest-leverage remaining change and implement it.
-
-Context:
-- current branch vs main
-- relevant files: auth/session.ts, auth/session.test.ts
-
-Constraints:
-- one change only unless a tightly coupled follow-on edit is strictly required
-- preserve the public API unless the selected change proves that is insufficient
-
-Done when:
-- one dominant improvement is implemented
-- its direct benefit and one nearby regression surface are verified
+Apply the one accepted accretive fix and show only the execution bottom line.
 ```

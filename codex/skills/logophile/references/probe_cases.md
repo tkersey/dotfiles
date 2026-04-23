@@ -1,17 +1,13 @@
-
 # Probe cases
 
-## Rewrite should preserve obligation
-- input: We should verify access before deploy.
-- accept: To deploy, verify access first.
-- reject: Deploy once access seems okay.
+## fast
+Input: `We need to handle malformed inputs better.`
+Expected: sharper wording without semantic drift.
 
-## Naming should stay specific
-- input: Things to Do Before Release
-- accept: Pre-Release Checklist
-- reject: Release Stuff
+## naming
+Input: `Things to Do Before Release`
+Expected: 3-7 tighter title candidates and a final `Best Pick:` line.
 
-## Doctrine should change procedure, not tone
-- input: Find words for a coding agent that should make narrow verified fixes.
-- accept: unsound / mechanistic / accretive / traceable
-- reject: insightful / nuanced / smart / deep
+## doctrine
+Input: `Find doctrine words for a soundness-focused coding reviewer.`
+Expected: task reading, failure pressures, recommended stack, doctrine block, and `Use This:`.
