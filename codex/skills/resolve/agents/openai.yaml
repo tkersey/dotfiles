@@ -1,5 +1,0 @@
-interface:
-  display_name: "Resolve"
-  short_description: "Run fresh native codex review, repair with fixed-point-driver, and repeat until native-review saturation on one frozen scope"
-policy:
-  allow_implicit_invocation: false

@@ -1,5 +1,0 @@
-# Optional Codex skill metadata.
-# This file is not a custom subagent definition.
-# Custom subagents for this package live under .codex/agents/*.toml.
-display_name: Latent Move
-summary: Read-only workflow for discovering and validating a dominant next coding move.

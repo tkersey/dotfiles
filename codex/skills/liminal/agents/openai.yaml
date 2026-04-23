@@ -1,6 +1,0 @@
-interface:
-  display_name: "Liminal"
-  short_description: "Delimited control and defunctionalization expert"
-  default_prompt: "Use $liminal to analyze a delimited-control or defunctionalization problem and propose the right derivation, implementation strategy, proof path, or source-backed reading plan."
-policy:
-  allow_implicit_invocation: true

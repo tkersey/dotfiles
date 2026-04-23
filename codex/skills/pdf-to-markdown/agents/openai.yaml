@@ -1,5 +1,0 @@
-interface:
-  display_name: "PDF to Markdown"
-  short_description: "Convert local PDFs into Markdown with a bundled parser and upstream-style document heuristics."
-policy:
-  allow_implicit_invocation: false

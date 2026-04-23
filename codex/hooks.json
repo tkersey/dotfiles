@@ -13,19 +13,6 @@
         ]
       }
     ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.dotfiles/codex/hooks/st_pre_tool_use.sh",
-            "timeoutSec": 10,
-            "statusMessage": "Checking $st plan sync"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [
