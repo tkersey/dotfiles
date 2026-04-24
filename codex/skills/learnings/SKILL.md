@@ -58,7 +58,7 @@ LEARNINGS_SPECS_DIR="$CODEX_SKILLS_HOME/skills/learnings/specs"
 run_learnings_tool() {
   local subcommand="${1:-}"
   if [ -z "$subcommand" ]; then
-    echo "usage: run_learnings_tool <datasets|query|recent|recall|codify-candidates|quality-audit|value-report|append> [args...]" >&2
+    echo "usage: run_learnings_tool <datasets|query|recent|recall|codify-candidates|quality-audit|value-report|memory-digest|append> [args...]" >&2
     return 2
   fi
   shift || true
@@ -72,7 +72,7 @@ run_learnings_tool() {
       bin="learnings"
       marker="append_learning.zig"
       ;;
-    datasets|query|recent|recall|codify-candidates|quality-audit|value-report)
+    datasets|query|recent|recall|codify-candidates|quality-audit|value-report|memory-digest)
       mode="learnings"
       bin="learnings"
       marker="learnings.zig"
@@ -342,6 +342,7 @@ Routing:
 - Browse latest learnings: `run_learnings_tool recent --limit 10`
 - Search or rank learnings: `run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-tags.json"`
 - Search by path concentration: `run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-paths.json"`
+- Refresh disposable memory consolidation digest: `run_learnings_tool memory-digest` (defaults to `$CODEX_HOME/memories_extensions/learnings/resources/latest_learnings_digest.md`, falling back to `$HOME/.codex/...` when `CODEX_HOME` is unset)
 - Implementation preflight during context gathering: distill the request to a compact topical query first (roughly 4-8 task-defining terms; skip boilerplate, pasted skill blocks, and AGENTS text), then run `run_learnings_tool recall --query "<focused task terms>" --limit 5 --drop-superseded`
 - Refined-scope preflight: rerun `run_learnings_tool recall` once after `parse`, `seq`, or early file reads only if those steps materially narrow the implementation slice; tighten the query rather than replaying the full prompt.
 - If browse intent is ambiguous, start with `recent` before escalating to `query` or `recall`.
@@ -358,6 +359,7 @@ run_learnings_tool recall --query "fix flaky pre-commit hook" --limit 5
 run_learnings_tool codify-candidates --min-count 3 --limit 20
 run_learnings_tool quality-audit --since 2026-02-01 --until 2026-03-05 --format json
 run_learnings_tool value-report --sessions-root "$HOME/.codex/sessions" --since 2026-03-01 --comparator impl_nonrecall --format json
+run_learnings_tool memory-digest --limit-candidates 12
 ```
 
 Promotion rule of thumb:
