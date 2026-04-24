@@ -51,6 +51,9 @@ theme = "coldark-dark"
 terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
 notification_condition = "always"
 
+[tui.model_availability_nux]
+"gpt-5.5" = 1
+
 [notice]
 hide_rate_limit_model_nudge = true
 
