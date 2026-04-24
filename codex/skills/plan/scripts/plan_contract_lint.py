@@ -1,6 +1,5 @@
 #!/usr/bin/env -S uv run python
 """Lint $plan outputs against key contract markers."""
-
 from __future__ import annotations
 
 import argparse
@@ -31,6 +30,7 @@ CORE_REQUIRED_HEADINGS = [
     "Contract Signals",
     "Implementation Brief",
 ]
+
 STRICT_ONLY_HEADINGS = ["Iteration Action Log", "Iteration Reports"]
 
 FINDINGS_SCHEMA_FIELDS = ["lens", "type", "severity", "section", "decision", "status"]
@@ -84,7 +84,6 @@ CONTRACT_SIGNAL_FIELDS = [
     "improvement_exhausted",
     "stop_reason",
 ]
-
 STRICTNESS_PROFILES = {"fast", "balanced", "strict"}
 ROUND_DECISIONS = {"continue", "close"}
 DELTA_KINDS = {"material", "preference", "none"}
@@ -99,7 +98,6 @@ STOP_REASONS = {
     "safety_stop",
     "other",
 }
-
 MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
 ABSOLUTE_DATE_PATTERN = re.compile(
     rf"\b\d{{4}}-\d{{2}}-\d{{2}}\b|\b(?:{MONTHS})\s+\d{{1,2}},\s+\d{{4}}\b",
@@ -112,7 +110,6 @@ ELLIPSIS_PLACEHOLDER_PATTERN = re.compile(r"(?m)^\|.*\.\.\..*\|\s*$")
 
 
 def required_headings_for_profile(profile: str) -> list[str]:
-    """Return required headings for the given strictness profile."""
     headings = list(CORE_REQUIRED_HEADINGS)
     if profile == "strict":
         headings.extend(STRICT_ONLY_HEADINGS)
@@ -120,20 +117,15 @@ def required_headings_for_profile(profile: str) -> list[str]:
 
 
 def heading_present(markdown: str, heading: str) -> bool:
-    """Return True if markdown contains a heading with the given title."""
-    pattern = re.compile(rf"(?im)^#{{1,6}}\s+{re.escape(heading)}\b")
-    return bool(pattern.search(markdown))
+    return bool(re.search(rf"(?im)^#{{1,6}}\s+{re.escape(heading)}\b", markdown))
 
 
 def heading_position(markdown: str, heading: str) -> int | None:
-    """Return the start index of a heading, if present."""
-    pattern = re.compile(rf"(?im)^#{{1,6}}\s+{re.escape(heading)}\b")
-    match = pattern.search(markdown)
+    match = re.search(rf"(?im)^#{{1,6}}\s+{re.escape(heading)}\b", markdown)
     return match.start() if match else None
 
 
 def extract_heading_section(markdown: str, heading: str) -> str:
-    """Extract the body of a heading section until the next heading."""
     heading_pattern = re.compile(rf"(?im)^#{{1,6}}\s+{re.escape(heading)}\b.*$")
     match = heading_pattern.search(markdown)
     if not match:
@@ -141,14 +133,11 @@ def extract_heading_section(markdown: str, heading: str) -> str:
     section_start = match.end()
     remainder = markdown[section_start:]
     next_heading = re.search(r"(?im)^#{1,6}\s+\S", remainder)
-    section_end = (
-        section_start + next_heading.start() if next_heading else len(markdown)
-    )
+    section_end = section_start + next_heading.start() if next_heading else len(markdown)
     return markdown[section_start:section_end].strip()
 
 
 def first_non_empty_line(text: str) -> str:
-    """Return the first non-empty line from text."""
     for line in text.splitlines():
         stripped = line.strip()
         if stripped:
@@ -157,33 +146,36 @@ def first_non_empty_line(text: str) -> str:
 
 
 def section_uses_carry_forward_placeholder(section_text: str) -> bool:
-    """Return True if a section body is just carrying forward prior content."""
     stripped = section_text.strip()
-    if not stripped:
-        return False
-    if CARRY_FORWARD_PATTERN.search(stripped):
-        return True
-    return False
+    return bool(stripped and CARRY_FORWARD_PATTERN.search(stripped))
 
 
-def parse_rewrite_ratio(markdown: str) -> float | None:
-    """Parse rewrite_ratio marker if present."""
-    match = re.search(r"(?im)\brewrite_ratio\s*[:=]\s*([0-9]*\.?[0-9]+)\b", markdown)
-    if not match:
-        return None
-    try:
-        return float(match.group(1))
-    except ValueError:
-        return None
+def parse_contract_signals(section_text: str) -> tuple[dict[str, str], dict[str, str], list[str]]:
+    values: dict[str, str] = {}
+    delimiters: dict[str, str] = {}
+    duplicate_keys: list[str] = []
+    for raw_line in section_text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        line = re.sub(r"^[-*]\s+", "", line)
+        match = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)\s*([:=])\s*(.+?)\s*$", line)
+        if not match:
+            continue
+        key = match.group(1).strip().lower()
+        delimiter = match.group(2)
+        value = match.group(3).strip()
+        if key in values and key not in duplicate_keys:
+            duplicate_keys.append(key)
+        values[key] = value
+        delimiters[key] = delimiter
+    return values, delimiters, duplicate_keys
 
 
-def parse_bool(raw: str) -> bool | None:
-    value = raw.strip().lower()
-    if value in {"true", "1", "yes"}:
-        return True
-    if value in {"false", "0", "no"}:
-        return False
-    return None
+def detect_strictness_profile(markdown: str) -> str:
+    values, _, _ = parse_contract_signals(extract_heading_section(markdown, "Contract Signals"))
+    profile = values.get("strictness_profile", "").strip().lower()
+    return profile if profile in STRICTNESS_PROFILES else "balanced"
 
 
 def parse_int(raw: str) -> int | None:
@@ -200,50 +192,13 @@ def parse_float(raw: str) -> float | None:
         return None
 
 
-def detect_strictness_profile(markdown: str) -> str:
-    """Best-effort detection of strictness profile from Contract Signals."""
-    contract_signals = extract_heading_section(markdown, "Contract Signals")
-    if not contract_signals:
-        return "balanced"
-    values, _, _ = parse_contract_signals(contract_signals)
-    profile = values.get("strictness_profile", "").strip().lower()
-    return profile if profile in STRICTNESS_PROFILES else "balanced"
-
-
-def parse_contract_signals(
-    section_text: str,
-) -> tuple[dict[str, str], dict[str, str], list[str]]:
-    """Parse Contract Signals section into key/value pairs.
-
-    Returns (values, delimiters, duplicate_keys).
-    Required keys must use '=' (not ':') to be machine-parseable.
-    """
-
-    values: dict[str, str] = {}
-    delimiters: dict[str, str] = {}
-    duplicate_keys: list[str] = []
-
-    for raw_line in section_text.splitlines():
-        line = raw_line.strip()
-        if not line:
-            continue
-        line = re.sub(r"^[-*]\s+", "", line)
-
-        match = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)\s*([:=])\s*(.+?)\s*$", line)
-        if not match:
-            continue
-
-        key = match.group(1).strip().lower()
-        delim = match.group(2)
-        value = match.group(3).strip()
-
-        if key in values and key not in duplicate_keys:
-            duplicate_keys.append(key)
-
-        values[key] = value
-        delimiters[key] = delim
-
-    return values, delimiters, duplicate_keys
+def parse_bool(raw: str) -> bool | None:
+    value = raw.strip().lower()
+    if value in {"true", "1", "yes"}:
+        return True
+    if value in {"false", "0", "no"}:
+        return False
+    return None
 
 
 def parse_int_field(entry: str, field: str) -> int | None:
@@ -261,9 +216,7 @@ def parse_enum_field(entry: str, field: str, allowed: set[str]) -> str | None:
     if not match:
         return None
     value = match.group(1).strip().lower()
-    if value not in allowed:
-        return None
-    return value
+    return value if value in allowed else None
 
 
 def parse_text_field(entry: str, field: str) -> str | None:
@@ -275,27 +228,16 @@ def parse_text_field(entry: str, field: str) -> str | None:
 
 
 def field_has_value_or_list(entry: str, field: str) -> bool:
-    """Return True if entry has a non-empty `field: value` (or `field=value`) or
-    a `field:` line followed by at least one list item.
-    """
-
     if parse_text_field(entry, field) is not None:
         return True
-
     match = re.search(rf"(?im)^\s*(?:[-*]\s+)?{re.escape(field)}\b\s*[:=]\s*$", entry)
     if not match:
         return False
-
     remainder = entry[match.end() :]
     return bool(re.search(r"(?m)^\s*[-*]\s+\S", remainder))
 
 
 def extract_bullet_entries(section_text: str) -> list[str]:
-    """Extract top-level bullet entry blocks from a section.
-
-    Each entry is the bullet line plus any following indented lines until the next
-    top-level bullet.
-    """
     lines = section_text.splitlines()
     bullet_indents: list[int] = []
     for line in lines:
@@ -304,7 +246,6 @@ def extract_bullet_entries(section_text: str) -> list[str]:
             bullet_indents.append(len(match.group(1)))
     if not bullet_indents:
         return []
-
     top_indent = min(bullet_indents)
     entries: list[str] = []
     i = 0
@@ -314,44 +255,173 @@ def extract_bullet_entries(section_text: str) -> list[str]:
             start = i
             i += 1
             while i < len(lines):
-                match = re.match(r"^(\s*)- ", lines[i])
-                if match and len(match.group(1)) == top_indent:
+                next_match = re.match(r"^(\s*)- ", lines[i])
+                if next_match and len(next_match.group(1)) == top_indent:
                     break
                 i += 1
             entries.append("\n".join(lines[start:i]).strip())
             continue
         i += 1
-
     return entries
 
 
+def parse_rewrite_ratio(markdown: str) -> float | None:
+    match = re.search(r"(?im)\brewrite_ratio\s*[:=]\s*([0-9]*\.?[0-9]+)\b", markdown)
+    if not match:
+        return None
+    return parse_float(match.group(1))
+
+
+def lint_iteration_action_log(section: str) -> tuple[list[str], dict[int, dict[str, object]]]:
+    errors: list[str] = []
+    by_iter: dict[int, dict[str, object]] = {}
+    entries = extract_bullet_entries(section)
+    if not entries:
+        return ["`Iteration Action Log` must contain at least one bullet entry."], by_iter
+    for idx, entry in enumerate(entries, start=1):
+        iteration = parse_int_field(entry, "iteration")
+        if iteration is None:
+            errors.append(f"`Iteration Action Log` entry {idx} must include `iteration: ` (or `iteration=`).")
+            continue
+        if iteration in by_iter:
+            errors.append(f"`Iteration Action Log` contains duplicate iteration={iteration}.")
+            continue
+        focus = parse_int_field(entry, "focus")
+        if focus is None or not 1 <= focus <= 5:
+            errors.append(f"`Iteration Action Log` entry {idx} must include `focus: 1..5` (or `focus=...`).")
+        round_decision = parse_enum_field(entry, "round_decision", ROUND_DECISIONS)
+        if round_decision is None:
+            errors.append(f"`Iteration Action Log` entry {idx} must include `round_decision: continue|close` (or `round_decision=...`).")
+        for field in ("what_we_did", "target_outcome"):
+            if not field_has_value_or_list(entry, field):
+                errors.append(f"`Iteration Action Log` entry {idx} must include non-empty `{field}` (value or list).")
+        by_iter[iteration] = {"focus": focus, "round_decision": round_decision}
+    return errors, by_iter
+
+
+def lint_iteration_change_log(section: str, action_by_iter: dict[int, dict[str, object]], iteration_header: int | None) -> tuple[list[str], dict[int, dict[str, object]]]:
+    errors: list[str] = []
+    by_iter: dict[int, dict[str, object]] = {}
+    entries = extract_bullet_entries(section)
+    if not entries:
+        return ["`Iteration Change Log` must contain at least one bullet entry."], by_iter
+    for idx, entry in enumerate(entries, start=1):
+        iteration = parse_int_field(entry, "iteration")
+        if iteration is None:
+            errors.append(f"`Iteration Change Log` entry {idx} must include `iteration: ` (or `iteration=`).")
+            continue
+        if iteration in by_iter:
+            errors.append(f"`Iteration Change Log` contains duplicate iteration={iteration}.")
+            continue
+        fallback = action_by_iter.get(iteration, {})
+        focus = parse_int_field(entry, "focus")
+        if focus is None and isinstance(fallback.get("focus"), int):
+            focus = fallback["focus"]  # type: ignore[assignment]
+        if focus is None or not 1 <= focus <= 5:
+            errors.append(f"`Iteration Change Log` entry {idx} must include `focus: 1..5` (or `focus=...`).")
+        round_decision = parse_enum_field(entry, "round_decision", ROUND_DECISIONS)
+        if round_decision is None and isinstance(fallback.get("round_decision"), str):
+            round_decision = fallback["round_decision"]  # type: ignore[assignment]
+        if round_decision is None:
+            errors.append(f"`Iteration Change Log` entry {idx} must include `round_decision: continue|close` (or `round_decision=...`).")
+        delta_kind = parse_enum_field(entry, "delta_kind", DELTA_KINDS)
+        if delta_kind is None:
+            errors.append(f"`Iteration Change Log` entry {idx} must include `delta_kind: material|preference|none` (or `delta_kind=...`).")
+        for field in ("evidence", "what_we_did", "change", "sections_touched"):
+            if not field_has_value_or_list(entry, field):
+                errors.append(f"`Iteration Change Log` entry {idx} must include non-empty `{field}` (value or list).")
+        by_iter[iteration] = {
+            "focus": focus,
+            "round_decision": round_decision,
+            "delta_kind": delta_kind,
+        }
+    if by_iter:
+        iters = sorted(by_iter)
+        expected = list(range(min(iters), max(iters) + 1))
+        if iters != expected:
+            errors.append("`Iteration Change Log` must cover a contiguous iteration range with no gaps.")
+        if iteration_header is not None and max(iters) != iteration_header:
+            errors.append(f"`Iteration Change Log` max iteration={max(iters)} must equal plan header `Iteration: {iteration_header}`.")
+    return errors, by_iter
+
+
+def lint_iteration_reports(section: str, iteration_header: int | None) -> tuple[list[str], dict[int, dict[str, object]]]:
+    warnings: list[str] = []
+    by_iter: dict[int, dict[str, object]] = {}
+    entries = extract_bullet_entries(section)
+    if not entries:
+        return ["`Iteration Reports` should contain at least one bullet entry."], by_iter
+    for idx, entry in enumerate(entries, start=1):
+        iteration = parse_int_field(entry, "iteration")
+        if iteration is None:
+            warnings.append(f"`Iteration Reports` entry {idx} should include `iteration: ` (or `iteration=`).")
+            continue
+        if iteration in by_iter:
+            warnings.append(f"`Iteration Reports` contains duplicate iteration={iteration}.")
+            continue
+        focus = parse_int_field(entry, "focus")
+        if focus is None or not 1 <= focus <= 5:
+            warnings.append(f"`Iteration Reports` entry {idx} should include `focus: 1..5` (or `focus=...`).")
+        round_decision = parse_enum_field(entry, "round_decision", ROUND_DECISIONS)
+        if round_decision is None:
+            warnings.append(f"`Iteration Reports` entry {idx} should include `round_decision: continue|close` (or `round_decision=...`).")
+        delta_kind = parse_enum_field(entry, "delta_kind", DELTA_KINDS)
+        if delta_kind is None:
+            warnings.append(f"`Iteration Reports` entry {idx} should include `delta_kind: material|preference|none` (or `delta_kind=...`).")
+        if not field_has_value_or_list(entry, "delta_summary"):
+            warnings.append(f"`Iteration Reports` entry {idx} should include non-empty `delta_summary` (value or list).")
+        risk_delta = parse_enum_field(entry, "risk_delta", RISK_DELTAS)
+        if risk_delta is None:
+            warnings.append(f"`Iteration Reports` entry {idx} should include `risk_delta: up|down|flat` (or `risk_delta=...`).")
+        if not field_has_value_or_list(entry, "sections_touched"):
+            warnings.append(f"`Iteration Reports` entry {idx} should include non-empty `sections_touched` (value or list).")
+        health = parse_int_field(entry, "iteration_health_score")
+        if health is None or not 0 <= health <= 3:
+            warnings.append(f"`Iteration Reports` entry {idx} should include `iteration_health_score: 0..3` (or `iteration_health_score=...`).")
+        if not field_has_value_or_list(entry, "evidence"):
+            warnings.append(f"`Iteration Reports` entry {idx} should include non-empty `evidence` (value or list).")
+        by_iter[iteration] = {
+            "focus": focus,
+            "round_decision": round_decision,
+            "delta_kind": delta_kind,
+        }
+    if by_iter:
+        iters = sorted(by_iter)
+        expected = list(range(min(iters), max(iters) + 1))
+        if iters != expected:
+            warnings.append("`Iteration Reports` should cover a contiguous iteration range with no gaps.")
+        if iteration_header is not None and max(iters) != iteration_header:
+            warnings.append(f"`Iteration Reports` max iteration={max(iters)} should match plan header `Iteration: {iteration_header}`.")
+    return warnings, by_iter
+
+
+def check_field_markers(section: str, heading: str, fields: list[str], severity: str = "error") -> list[str]:
+    messages: list[str] = []
+    for field in fields:
+        if not re.search(rf"(?i)\b{re.escape(field)}\b", section):
+            article = "schema marker" if heading == "Adversarial Findings" else "marker"
+            messages.append(f"`{heading}` must include {article} `{field}`.")
+    return messages
+
+
 def lint_plan(text: str) -> tuple[list[str], list[str]]:
-    """Return (errors, warnings) from contract checks."""
     errors: list[str] = []
     warnings: list[str] = []
 
-    action_by_iter: dict[int, dict[str, object]] = {}
-    change_by_iter: dict[int, dict[str, object]] = {}
-    report_by_iter: dict[int, dict[str, object]] = {}
-
     open_count = text.count("<proposed_plan>")
     close_count = text.count("</proposed_plan>")
-
     if open_count != 1 or close_count != 1:
-        errors.append(
-            "Output must contain exactly one <proposed_plan> and one </proposed_plan>."
-        )
+        errors.append("Output must contain exactly one `<proposed_plan>` and one `</proposed_plan>`.")
         return errors, warnings
 
     body = text.split("<proposed_plan>", 1)[1].split("</proposed_plan>", 1)[0].strip()
     strictness_profile_hint = detect_strictness_profile(body)
+
     first_line = first_non_empty_line(body)
     iteration_header: int | None = None
     match = re.match(r"^Iteration:\s*(\d+)$", first_line)
     if not match:
-        errors.append(
-            "First non-empty line inside <proposed_plan> must be `Iteration: N`."
-        )
+        errors.append("First non-empty line inside `<proposed_plan>` must be `Iteration: N`.")
     else:
         iteration_header = int(match.group(1))
 
@@ -370,404 +440,84 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
 
     summary_position = heading_position(body, "Summary")
     round_delta_position = heading_position(body, "Round Delta")
-    if (
-        summary_position is not None
-        and round_delta_position is not None
-        and summary_position < round_delta_position
-    ):
+    if summary_position is not None and round_delta_position is not None and summary_position < round_delta_position:
         errors.append("`Summary` must appear after `Round Delta`.")
-
     if summary_position is not None:
-        for heading in (
-            "Iteration Action Log",
-            "Iteration Change Log",
-            "Iteration Reports",
-        ):
+        for heading in ("Iteration Action Log", "Iteration Change Log", "Iteration Reports"):
             heading_pos = heading_position(body, heading)
             if heading_pos is not None and summary_position > heading_pos:
-                errors.append(
-                    "`Summary` must appear before the iteration logs to front-load the execution spine."
-                )
+                errors.append("`Summary` must appear before the iteration logs to front-load the execution spine.")
                 break
 
     if ELLIPSIS_PLACEHOLDER_PATTERN.search(body):
-        errors.append(
-            "Final plan must not contain ellipsis placeholder table rows such as `| ... |`."
-        )
+        errors.append("Final plan must not contain ellipsis placeholder table rows such as `| ... |`.")
 
     round_delta = extract_heading_section(body, "Round Delta")
     if round_delta and len(round_delta.strip()) < 10:
-        errors.append(
-            "`Round Delta` must describe concrete changes from the input plan."
-        )
+        errors.append("`Round Delta` must describe concrete changes from the input plan.")
 
-    iteration_action_log = extract_heading_section(body, "Iteration Action Log")
-    if iteration_action_log:
-        action_entries = extract_bullet_entries(iteration_action_log)
-        if not action_entries:
-            errors.append(
-                "`Iteration Action Log` must contain at least one bullet entry."
-            )
-        for idx, entry in enumerate(action_entries, start=1):
-            iteration = parse_int_field(entry, "iteration")
-            if iteration is None:
-                errors.append(
-                    f"`Iteration Action Log` entry {idx} must include `iteration: <int>` (or `iteration=<int>`)."
-                )
-                continue
-            if iteration in action_by_iter:
-                errors.append(
-                    f"`Iteration Action Log` contains duplicate iteration={iteration}."
-                )
-                continue
+    action_errors, action_by_iter = ([], {})
+    action_section = extract_heading_section(body, "Iteration Action Log")
+    if action_section:
+        action_errors, action_by_iter = lint_iteration_action_log(action_section)
+        errors.extend(action_errors)
 
-            focus = parse_int_field(entry, "focus")
-            if focus is None or not (1 <= focus <= 5):
-                errors.append(
-                    f"`Iteration Action Log` entry {idx} must include `focus: 1..5` (or `focus=...`)."
-                )
-
-            round_decision = parse_enum_field(entry, "round_decision", ROUND_DECISIONS)
-            if round_decision is None:
-                errors.append(
-                    f"`Iteration Action Log` entry {idx} must include `round_decision: continue|close` (or `round_decision=...`)."
-                )
-
-            if not field_has_value_or_list(entry, "what_we_did"):
-                errors.append(
-                    f"`Iteration Action Log` entry {idx} must include non-empty `what_we_did` (value or list)."
-                )
-
-            if not field_has_value_or_list(entry, "target_outcome"):
-                errors.append(
-                    f"`Iteration Action Log` entry {idx} must include non-empty `target_outcome` (value or list)."
-                )
-
-            action_by_iter[iteration] = {
-                "focus": focus,
-                "round_decision": round_decision,
-            }
-
-    iteration_change_log = extract_heading_section(body, "Iteration Change Log")
-    if iteration_change_log:
-        change_entries = extract_bullet_entries(iteration_change_log)
-        if not change_entries:
-            errors.append(
-                "`Iteration Change Log` must contain at least one bullet entry."
-            )
-        for idx, entry in enumerate(change_entries, start=1):
-            iteration = parse_int_field(entry, "iteration")
-            if iteration is None:
-                errors.append(
-                    f"`Iteration Change Log` entry {idx} must include `iteration: <int>` (or `iteration=<int>`)."
-                )
-                continue
-            if iteration in change_by_iter:
-                errors.append(
-                    f"`Iteration Change Log` contains duplicate iteration={iteration}."
-                )
-                continue
-
-            fallback_action = action_by_iter.get(iteration, {})
-
-            focus = parse_int_field(entry, "focus")
-            if focus is None:
-                fallback_focus = fallback_action.get("focus")
-                if isinstance(fallback_focus, int):
-                    focus = fallback_focus
-            if focus is None or not (1 <= focus <= 5):
-                errors.append(
-                    f"`Iteration Change Log` entry {idx} must include `focus: 1..5` (or `focus=...`)."
-                )
-
-            round_decision = parse_enum_field(entry, "round_decision", ROUND_DECISIONS)
-            if round_decision is None:
-                fallback_round_decision = fallback_action.get("round_decision")
-                if isinstance(fallback_round_decision, str):
-                    round_decision = fallback_round_decision
-            if round_decision is None:
-                errors.append(
-                    f"`Iteration Change Log` entry {idx} must include `round_decision: continue|close` (or `round_decision=...`)."
-                )
-
-            delta_kind = parse_enum_field(entry, "delta_kind", DELTA_KINDS)
-            if delta_kind is None:
-                errors.append(
-                    f"`Iteration Change Log` entry {idx} must include `delta_kind: material|preference|none` (or `delta_kind=...`)."
-                )
-
-            evidence_ok = field_has_value_or_list(entry, "evidence")
-            if not evidence_ok:
-                errors.append(
-                    f"`Iteration Change Log` entry {idx} must include non-empty `evidence` (value or list)."
-                )
-
-            if not field_has_value_or_list(entry, "what_we_did"):
-                errors.append(
-                    f"`Iteration Change Log` entry {idx} must include non-empty `what_we_did` (value or list)."
-                )
-
-            if not field_has_value_or_list(entry, "change"):
-                errors.append(
-                    f"`Iteration Change Log` entry {idx} must include non-empty `change` (value or list)."
-                )
-
-            if not field_has_value_or_list(entry, "sections_touched"):
-                errors.append(
-                    f"`Iteration Change Log` entry {idx} must include non-empty `sections_touched` (value or list)."
-                )
-
-            change_by_iter[iteration] = {
-                "focus": focus,
-                "round_decision": round_decision,
-                "delta_kind": delta_kind,
-                "evidence_ok": evidence_ok,
-            }
-
-    if change_by_iter:
-        change_iters = sorted(change_by_iter.keys())
-        min_iter = min(change_iters)
-        max_iter = max(change_iters)
-        expected = list(range(min_iter, max_iter + 1))
-        if change_iters != expected:
-            errors.append(
-                "`Iteration Change Log` must cover a contiguous iteration range with no gaps."
-            )
-        if iteration_header is not None and max_iter != iteration_header:
-            errors.append(
-                f"`Iteration Change Log` max iteration={max_iter} must equal plan header `Iteration: {iteration_header}`."
-            )
+    change_section = extract_heading_section(body, "Iteration Change Log")
+    if change_section:
+        change_errors, change_by_iter = lint_iteration_change_log(change_section, action_by_iter, iteration_header)
+        errors.extend(change_errors)
+    else:
+        change_by_iter = {}
 
     if action_by_iter and change_by_iter:
-        action_iters = sorted(action_by_iter.keys())
-        change_iters = sorted(change_by_iter.keys())
+        action_iters = sorted(action_by_iter)
+        change_iters = sorted(change_by_iter)
         if set(action_iters) != set(change_iters):
             missing_in_actions = sorted(set(change_iters) - set(action_iters))
             missing_in_changes = sorted(set(action_iters) - set(change_iters))
             if missing_in_actions:
-                errors.append(
-                    "Iteration log alignment mismatch: action log missing iterations "
-                    + ", ".join(map(str, missing_in_actions))
-                    + "."
-                )
+                errors.append("Iteration log alignment mismatch: action log missing iterations " + ", ".join(map(str, missing_in_actions)) + ".")
             if missing_in_changes:
-                errors.append(
-                    "Iteration log alignment mismatch: change log missing iterations "
-                    + ", ".join(map(str, missing_in_changes))
-                    + "."
-                )
+                errors.append("Iteration log alignment mismatch: change log missing iterations " + ", ".join(map(str, missing_in_changes)) + ".")
         for iter_value in sorted(set(action_iters) & set(change_iters)):
-            action_entry = action_by_iter.get(iter_value, {})
-            change_entry = change_by_iter.get(iter_value, {})
-            if (
-                action_entry.get("focus") is not None
-                and change_entry.get("focus") is not None
-                and action_entry.get("focus") != change_entry.get("focus")
-            ):
-                errors.append(
-                    f"Iteration log alignment mismatch at iteration={iter_value}: `focus` conflicts between `Iteration Action Log` and `Iteration Change Log`."
-                )
-            if (
-                action_entry.get("round_decision") is not None
-                and change_entry.get("round_decision") is not None
-                and action_entry.get("round_decision")
-                != change_entry.get("round_decision")
-            ):
-                errors.append(
-                    f"Iteration log alignment mismatch at iteration={iter_value}: `round_decision` conflicts between `Iteration Action Log` and `Iteration Change Log`."
-                )
+            action_entry = action_by_iter[iter_value]
+            change_entry = change_by_iter[iter_value]
+            if action_entry.get("focus") is not None and change_entry.get("focus") is not None and action_entry.get("focus") != change_entry.get("focus"):
+                errors.append(f"Iteration log alignment mismatch at iteration={iter_value}: `focus` conflicts between `Iteration Action Log` and `Iteration Change Log`.")
+            if action_entry.get("round_decision") is not None and change_entry.get("round_decision") is not None and action_entry.get("round_decision") != change_entry.get("round_decision"):
+                errors.append(f"Iteration log alignment mismatch at iteration={iter_value}: `round_decision` conflicts between `Iteration Action Log` and `Iteration Change Log`.")
 
-    iteration_reports = extract_heading_section(body, "Iteration Reports")
-    if iteration_reports:
-        report_entries = extract_bullet_entries(iteration_reports)
-        if not report_entries:
-            warnings.append(
-                "`Iteration Reports` should contain at least one bullet entry."
-            )
-        for idx, entry in enumerate(report_entries, start=1):
-            iteration = parse_int_field(entry, "iteration")
-            if iteration is None:
-                warnings.append(
-                    f"`Iteration Reports` entry {idx} should include `iteration: <int>` (or `iteration=<int>`)."
-                )
-                continue
-            if iteration in report_by_iter:
-                warnings.append(
-                    f"`Iteration Reports` contains duplicate iteration={iteration}."
-                )
-                continue
-
-            focus = parse_int_field(entry, "focus")
-            if focus is None or not (1 <= focus <= 5):
-                warnings.append(
-                    f"`Iteration Reports` entry {idx} should include `focus: 1..5` (or `focus=...`)."
-                )
-
-            round_decision = parse_enum_field(entry, "round_decision", ROUND_DECISIONS)
-            if round_decision is None:
-                warnings.append(
-                    f"`Iteration Reports` entry {idx} should include `round_decision: continue|close` (or `round_decision=...`)."
-                )
-
-            delta_kind = parse_enum_field(entry, "delta_kind", DELTA_KINDS)
-            if delta_kind is None:
-                warnings.append(
-                    f"`Iteration Reports` entry {idx} should include `delta_kind: material|preference|none` (or `delta_kind=...`)."
-                )
-
-            if not field_has_value_or_list(entry, "delta_summary"):
-                warnings.append(
-                    f"`Iteration Reports` entry {idx} should include non-empty `delta_summary` (value or list)."
-                )
-
-            risk_delta = parse_enum_field(entry, "risk_delta", RISK_DELTAS)
-            if risk_delta is None:
-                warnings.append(
-                    f"`Iteration Reports` entry {idx} should include `risk_delta: up|down|flat` (or `risk_delta=...`)."
-                )
-
-            if not field_has_value_or_list(entry, "sections_touched"):
-                warnings.append(
-                    f"`Iteration Reports` entry {idx} should include non-empty `sections_touched` (value or list)."
-                )
-
-            iteration_health_score = parse_int_field(entry, "iteration_health_score")
-            if iteration_health_score is None or not (0 <= iteration_health_score <= 3):
-                warnings.append(
-                    f"`Iteration Reports` entry {idx} should include `iteration_health_score: 0..3` (or `iteration_health_score=...`)."
-                )
-
-            evidence_ok = field_has_value_or_list(entry, "evidence")
-            if not evidence_ok:
-                warnings.append(
-                    f"`Iteration Reports` entry {idx} should include non-empty `evidence` (value or list)."
-                )
-
-            report_by_iter[iteration] = {
-                "focus": focus,
-                "round_decision": round_decision,
-                "delta_kind": delta_kind,
-            }
-
-    if report_by_iter:
-        report_iters = sorted(report_by_iter.keys())
-        min_iter = min(report_iters)
-        max_iter = max(report_iters)
-        expected = list(range(min_iter, max_iter + 1))
-        if report_iters != expected:
-            warnings.append(
-                "`Iteration Reports` should cover a contiguous iteration range with no gaps."
-            )
-        if iteration_header is not None and max_iter != iteration_header:
-            warnings.append(
-                f"`Iteration Reports` max iteration={max_iter} should match plan header `Iteration: {iteration_header}`."
-            )
-
+    report_section = extract_heading_section(body, "Iteration Reports")
+    if report_section:
+        report_warnings, report_by_iter = lint_iteration_reports(report_section, iteration_header)
+        warnings.extend(report_warnings)
         if change_by_iter:
-            change_iters = sorted(change_by_iter.keys())
-            if set(report_iters) != set(change_iters):
-                missing_in_reports = sorted(set(change_iters) - set(report_iters))
-                missing_in_changes = sorted(set(report_iters) - set(change_iters))
+            if set(report_by_iter) != set(change_by_iter):
+                missing_in_reports = sorted(set(change_by_iter) - set(report_by_iter))
+                missing_in_changes = sorted(set(report_by_iter) - set(change_by_iter))
                 if missing_in_reports:
-                    warnings.append(
-                        "Iteration report alignment mismatch: reports missing iterations "
-                        + ", ".join(map(str, missing_in_reports))
-                        + "."
-                    )
+                    warnings.append("Iteration report alignment mismatch: reports missing iterations " + ", ".join(map(str, missing_in_reports)) + ".")
                 if missing_in_changes:
-                    warnings.append(
-                        "Iteration report alignment mismatch: change log missing iterations "
-                        + ", ".join(map(str, missing_in_changes))
-                        + "."
-                    )
-            for iter_value in sorted(set(report_iters) & set(change_iters)):
-                report_entry = report_by_iter.get(iter_value, {})
-                change_entry = change_by_iter.get(iter_value, {})
-                if (
-                    report_entry.get("focus") is not None
-                    and change_entry.get("focus") is not None
-                    and report_entry.get("focus") != change_entry.get("focus")
-                ):
-                    warnings.append(
-                        f"Iteration report alignment mismatch at iteration={iter_value}: `focus` conflicts with `Iteration Change Log`."
-                    )
-                if (
-                    report_entry.get("round_decision") is not None
-                    and change_entry.get("round_decision") is not None
-                    and report_entry.get("round_decision")
-                    != change_entry.get("round_decision")
-                ):
-                    warnings.append(
-                        f"Iteration report alignment mismatch at iteration={iter_value}: `round_decision` conflicts with `Iteration Change Log`."
-                    )
-                if (
-                    report_entry.get("delta_kind") is not None
-                    and change_entry.get("delta_kind") is not None
-                    and report_entry.get("delta_kind") != change_entry.get("delta_kind")
-                ):
-                    warnings.append(
-                        f"Iteration report alignment mismatch at iteration={iter_value}: `delta_kind` conflicts with `Iteration Change Log`."
-                    )
+                    warnings.append("Iteration report alignment mismatch: change log missing iterations " + ", ".join(map(str, missing_in_changes)) + ".")
+            for iter_value in sorted(set(report_by_iter) & set(change_by_iter)):
+                report_entry = report_by_iter[iter_value]
+                change_entry = change_by_iter[iter_value]
+                for field in ("focus", "round_decision", "delta_kind"):
+                    if report_entry.get(field) is not None and change_entry.get(field) is not None and report_entry.get(field) != change_entry.get(field):
+                        warnings.append(f"Iteration report alignment mismatch at iteration={iter_value}: `{field}` conflicts with `Iteration Change Log`.")
 
-        if action_by_iter:
-            action_iters = sorted(action_by_iter.keys())
-            if set(report_iters) != set(action_iters):
-                missing_in_reports = sorted(set(action_iters) - set(report_iters))
-                missing_in_actions = sorted(set(report_iters) - set(action_iters))
-                if missing_in_reports:
-                    warnings.append(
-                        "Iteration report alignment mismatch: reports missing iterations "
-                        + ", ".join(map(str, missing_in_reports))
-                        + "."
-                    )
-                if missing_in_actions:
-                    warnings.append(
-                        "Iteration report alignment mismatch: action log missing iterations "
-                        + ", ".join(map(str, missing_in_actions))
-                        + "."
-                    )
-            for iter_value in sorted(set(report_iters) & set(action_iters)):
-                report_entry = report_by_iter.get(iter_value, {})
-                action_entry = action_by_iter.get(iter_value, {})
-                if (
-                    report_entry.get("focus") is not None
-                    and action_entry.get("focus") is not None
-                    and report_entry.get("focus") != action_entry.get("focus")
-                ):
-                    warnings.append(
-                        f"Iteration report alignment mismatch at iteration={iter_value}: `focus` conflicts with `Iteration Action Log`."
-                    )
-                if (
-                    report_entry.get("round_decision") is not None
-                    and action_entry.get("round_decision") is not None
-                    and report_entry.get("round_decision")
-                    != action_entry.get("round_decision")
-                ):
-                    warnings.append(
-                        f"Iteration report alignment mismatch at iteration={iter_value}: `round_decision` conflicts with `Iteration Action Log`."
-                    )
-
-    traceability = extract_heading_section(body, "Requirement-to-Test Traceability")
-    if traceability:
-        for field in TRACEABILITY_FIELDS:
-            if not re.search(rf"(?i)\b{field}\b", traceability):
-                errors.append(
-                    f"`Requirement-to-Test Traceability` must include `{field}` markers."
-                )
-
-    scope_change_log = extract_heading_section(body, "Scope Change Log")
-    if scope_change_log:
-        for field in SCOPE_CHANGE_FIELDS:
-            if not re.search(rf"(?i)\b{field}\b", scope_change_log):
-                errors.append(f"`Scope Change Log` must include `{field}` markers.")
-
-    rollback = extract_heading_section(body, "Rollback/Abort Criteria")
-    if rollback:
-        for field in ROLLBACK_FIELDS:
-            if not re.search(rf"(?i)\b{field}\b", rollback):
-                errors.append(
-                    f"`Rollback/Abort Criteria` must include `{field}` markers."
-                )
+    sections_to_fields = [
+        ("Requirement-to-Test Traceability", TRACEABILITY_FIELDS),
+        ("Scope Change Log", SCOPE_CHANGE_FIELDS),
+        ("Rollback/Abort Criteria", ROLLBACK_FIELDS),
+        ("Decision Impact Map", DECISION_IMPACT_FIELDS),
+        ("Stakeholder Signoff Matrix", SIGNOFF_FIELDS),
+        ("Implementation Brief", IMPLEMENTATION_BRIEF_FIELDS),
+    ]
+    for heading, fields in sections_to_fields:
+        section = extract_heading_section(body, heading)
+        if section:
+            errors.extend(check_field_markers(section, heading, fields))
 
     decision_log = extract_heading_section(body, "Decision Log")
     if decision_log:
@@ -776,241 +526,123 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
         if not re.search(r"(?i)\bsupersedes\b", decision_log):
             errors.append("`Decision Log` should include `supersedes` markers.")
 
-    decision_impact_map = extract_heading_section(body, "Decision Impact Map")
-    if decision_impact_map:
-        for field in DECISION_IMPACT_FIELDS:
-            if not re.search(rf"(?i)\b{field}\b", decision_impact_map):
-                errors.append(f"`Decision Impact Map` must include `{field}` markers.")
-
     open_questions = extract_heading_section(body, "Open Questions")
-    if open_questions and not re.search(r"(?i)\bnone\b|\bn\/a\b", open_questions):
-        for field in OPEN_QUESTION_FIELDS:
-            if not re.search(rf"(?i)\b{field}\b", open_questions):
-                errors.append(f"`Open Questions` must include `{field}` markers.")
-
-    signoff_matrix = extract_heading_section(body, "Stakeholder Signoff Matrix")
-    if signoff_matrix:
-        for field in SIGNOFF_FIELDS:
-            if not re.search(rf"(?i)\b{field}\b", signoff_matrix):
-                errors.append(
-                    f"`Stakeholder Signoff Matrix` must include `{field}` markers."
-                )
+    if open_questions and not re.search(r"(?i)\bnone\b|\bn/a\b", open_questions):
+        errors.extend(check_field_markers(open_questions, "Open Questions", OPEN_QUESTION_FIELDS))
 
     findings = extract_heading_section(body, "Adversarial Findings")
     if findings:
-        for field in FINDINGS_SCHEMA_FIELDS:
-            if not re.search(rf"(?i)\b{field}\b", findings):
-                errors.append(
-                    f"`Adversarial Findings` must include schema marker `{field}`."
-                )
+        errors.extend(check_field_markers(findings, "Adversarial Findings", FINDINGS_SCHEMA_FIELDS))
         for token in FINDINGS_TAXONOMY:
             if not re.search(rf"(?i)\b{token}\b", findings):
-                errors.append(
-                    f"`Adversarial Findings` must include taxonomy marker `{token}`."
-                )
+                errors.append(f"`Adversarial Findings` must include taxonomy marker `{token}`.")
         if re.search(r"(?i)\brisks?\b", findings):
-            for field in RISK_DETAIL_FIELDS:
-                if not re.search(rf"(?i)\b{field}\b", findings):
-                    errors.append(
-                        f"`Adversarial Findings` risk entries must include `{field}`."
-                    )
+            errors.extend(check_field_markers(findings, "Adversarial Findings", RISK_DETAIL_FIELDS))
 
     assumptions = extract_heading_section(body, "Assumptions/Defaults")
     if assumptions:
         if not re.search(r"(?i)\bconfidence\b", assumptions):
-            errors.append(
-                "`Assumptions/Defaults` must include confidence for critical assumptions."
-            )
+            errors.append("`Assumptions/Defaults` must include confidence for critical assumptions.")
         if not re.search(r"(?i)verification\s+plan|\bverify\b", assumptions):
-            errors.append(
-                "`Assumptions/Defaults` must include a verification plan for critical assumptions."
-            )
-        if re.search(r"(?i)time-sensitive|as of|latest|today|current", assumptions):
-            if not ABSOLUTE_DATE_PATTERN.search(assumptions):
-                errors.append(
-                    "Time-sensitive assumptions must include a concrete absolute date."
-                )
+            errors.append("`Assumptions/Defaults` must include a verification plan for critical assumptions.")
+        if re.search(r"(?i)time-sensitive|as of|latest|today|current", assumptions) and not ABSOLUTE_DATE_PATTERN.search(assumptions):
+            errors.append("Time-sensitive assumptions must include a concrete absolute date.")
 
     convergence = extract_heading_section(body, "Convergence Evidence")
     if convergence:
-        clean_rounds_match = re.search(
-            r"(?i)\bclean_rounds\b\s*[:=]\s*(\d+)\b", convergence
-        )
-        clean_rounds_ok = bool(
-            clean_rounds_match and int(clean_rounds_match.group(1)) >= 2
-        )
-        press_pass_clean = bool(
-            re.search(r"(?i)\bpress_pass_clean\b\s*[:=]\s*(true|yes|1)\b", convergence)
-        )
+        clean_rounds_match = re.search(r"(?i)\bclean_rounds\b\s*[:=]\s*(\d+)\b", convergence)
+        clean_rounds_ok = bool(clean_rounds_match and int(clean_rounds_match.group(1)) >= 2)
+        press_pass_clean = bool(re.search(r"(?i)\bpress_pass_clean\b\s*[:=]\s*(true|yes|1)\b", convergence))
         no_new_errors = bool(re.search(r"(?i)\bnew_errors\b\s*[:=]\s*0\b", convergence))
-        press_pass_ok = press_pass_clean and no_new_errors
-        if not (clean_rounds_ok or press_pass_ok):
-            errors.append(
-                "`Convergence Evidence` must show hysteresis proof: "
-                "`clean_rounds >= 2` or (`press_pass_clean=true` and `new_errors=0`)."
-            )
+        if not (clean_rounds_ok or (press_pass_clean and no_new_errors)):
+            errors.append("`Convergence Evidence` must show hysteresis proof: `clean_rounds >= 2` or (`press_pass_clean=true` and `new_errors=0`).")
 
     contract_improvement_exhausted: bool | None = None
     contract_stop_reason: str | None = None
-
     contract_signals = extract_heading_section(body, "Contract Signals")
     if contract_signals:
         values, delimiters, duplicate_keys = parse_contract_signals(contract_signals)
-
         for key in duplicate_keys:
             warnings.append(f"Duplicate Contract Signals key: `{key}` (last one wins).")
-
         for field in CONTRACT_SIGNAL_FIELDS:
             if field not in values:
-                errors.append(f"`Contract Signals` must include `{field}=...`. ")
+                errors.append(f"`Contract Signals` must include `{field}=...`.")
             elif delimiters.get(field) != "=":
-                errors.append(
-                    f"`Contract Signals` field `{field}` must use `=` (not `:`) to be machine-parseable."
-                )
+                errors.append(f"`Contract Signals` field `{field}` must use `=` (not `:`) to be machine-parseable.")
 
         contract_version = parse_int(values.get("contract_version", ""))
         if contract_version != 2:
             errors.append("`Contract Signals` must include `contract_version=2`.")
-
         strictness_profile = values.get("strictness_profile", "").strip().lower()
         if strictness_profile not in STRICTNESS_PROFILES:
-            errors.append(
-                "`Contract Signals` must include `strictness_profile=fast|balanced|strict`."
-            )
-
+            errors.append("`Contract Signals` must include `strictness_profile=fast|balanced|strict`.")
         blocking_errors = parse_int(values.get("blocking_errors", ""))
         if blocking_errors is None or blocking_errors < 0:
-            errors.append("`Contract Signals` must include `blocking_errors=<int>`. ")
-
+            errors.append("`Contract Signals` must include `blocking_errors=<nonnegative-int>`.")
         material_risks_open = parse_int(values.get("material_risks_open", ""))
         if material_risks_open is None or material_risks_open < 0:
-            errors.append(
-                "`Contract Signals` must include `material_risks_open=<int>`. "
-            )
-
+            errors.append("`Contract Signals` must include `material_risks_open=<nonnegative-int>`.")
         clean_rounds = parse_int(values.get("clean_rounds", ""))
         if clean_rounds is None or clean_rounds < 0:
-            errors.append("`Contract Signals` must include `clean_rounds=<int>`. ")
-
+            errors.append("`Contract Signals` must include `clean_rounds=<nonnegative-int>`.")
         press_pass_clean = parse_bool(values.get("press_pass_clean", ""))
         if press_pass_clean is None:
-            errors.append(
-                "`Contract Signals` must include `press_pass_clean=true|false`. "
-            )
-
+            errors.append("`Contract Signals` must include `press_pass_clean=true|false`.")
         new_errors = parse_int(values.get("new_errors", ""))
         if new_errors is None or new_errors < 0:
-            errors.append("`Contract Signals` must include `new_errors=<int>`. ")
-
+            errors.append("`Contract Signals` must include `new_errors=<nonnegative-int>`.")
         rewrite_ratio = parse_float(values.get("rewrite_ratio", ""))
-        if rewrite_ratio is None or not (0.0 <= rewrite_ratio <= 1.0):
-            errors.append(
-                "`Contract Signals` must include `rewrite_ratio=<float 0..1>`. "
-            )
-
+        if rewrite_ratio is None or not 0.0 <= rewrite_ratio <= 1.0:
+            errors.append("`Contract Signals` must include `rewrite_ratio=<0..1>`.")
         external_inputs_trusted = parse_bool(values.get("external_inputs_trusted", ""))
         if external_inputs_trusted is None:
-            errors.append(
-                "`Contract Signals` must include `external_inputs_trusted=true|false`. "
-            )
-
-        contract_improvement_exhausted = parse_bool(
-            values.get("improvement_exhausted", "")
-        )
+            errors.append("`Contract Signals` must include `external_inputs_trusted=true|false`.")
+        contract_improvement_exhausted = parse_bool(values.get("improvement_exhausted", ""))
         if contract_improvement_exhausted is None:
-            errors.append(
-                "`Contract Signals` must include `improvement_exhausted=true|false`. "
-            )
-
+            errors.append("`Contract Signals` must include `improvement_exhausted=true|false`.")
         contract_stop_reason = values.get("stop_reason", "").strip().lower() or None
         if contract_stop_reason not in STOP_REASONS:
-            errors.append(
-                "`Contract Signals` must include `stop_reason=` with an allowed value."
-            )
+            errors.append("`Contract Signals` must include `stop_reason=` with an allowed value.")
 
         if contract_improvement_exhausted is True:
             if contract_stop_reason != "none":
-                errors.append(
-                    "Close invariant violated: if `improvement_exhausted=true`, `stop_reason=none`."
-                )
+                errors.append("Close invariant violated: if `improvement_exhausted=true`, `stop_reason=none`.")
             if blocking_errors not in (None, 0):
-                errors.append(
-                    "Close invariant violated: if `improvement_exhausted=true`, `blocking_errors=0`."
-                )
+                errors.append("Close invariant violated: if `improvement_exhausted=true`, `blocking_errors=0`.")
             if material_risks_open not in (None, 0):
-                errors.append(
-                    "Close invariant violated: if `improvement_exhausted=true`, `material_risks_open=0`."
-                )
+                errors.append("Close invariant violated: if `improvement_exhausted=true`, `material_risks_open=0`.")
             if new_errors not in (None, 0):
-                errors.append(
-                    "Close invariant violated: if `improvement_exhausted=true`, `new_errors=0`."
-                )
-
+                errors.append("Close invariant violated: if `improvement_exhausted=true`, `new_errors=0`.")
         if contract_improvement_exhausted is False and contract_stop_reason == "none":
-            errors.append(
-                "Stop invariant violated: if `improvement_exhausted=false`, `stop_reason` must not be `none`."
-            )
+            errors.append("Stop invariant violated: if `improvement_exhausted=false`, `stop_reason` must not be `none`.")
 
     if contract_improvement_exhausted is True and change_by_iter:
-        iters = sorted(change_by_iter.keys())
+        iters = sorted(change_by_iter)
         if len(iters) < 2:
-            errors.append(
-                "Anti-churn gate: closing requires at least two iterations in the iteration logs."
-            )
+            errors.append("Anti-churn gate: closing requires at least two iterations in the iteration logs.")
         else:
             last_iter = iters[-1]
-            last_change = change_by_iter.get(last_iter, {})
-            if last_change.get("round_decision") != "close":
-                errors.append(
-                    "Close-decision gate: final iteration must have `round_decision=close` when `improvement_exhausted=true`."
-                )
-
-            for prior_iter in iters[:-1]:
-                prior_change = change_by_iter.get(prior_iter, {})
-                if prior_change.get("round_decision") == "close":
-                    errors.append(
-                        "Close-decision gate: only the final iteration may set `round_decision=close`."
-                    )
-                    break
-
-            last_two = iters[-2:]
-            for iter_value in last_two:
-                change = change_by_iter.get(iter_value, {})
-                if change.get("delta_kind") != "none":
-                    errors.append(
-                        "Anti-churn gate: last two iterations must have `delta_kind=none` when closing."
-                    )
-                    break
-
+            if change_by_iter[last_iter].get("round_decision") != "close":
+                errors.append("Close-decision gate: final iteration must have `round_decision=close` when `improvement_exhausted=true`.")
+            if any(change_by_iter[i].get("round_decision") == "close" for i in iters[:-1]):
+                errors.append("Close-decision gate: only the final iteration may set `round_decision=close`.")
+            if any(change_by_iter[i].get("delta_kind") != "none" for i in iters[-2:]):
+                errors.append("Anti-churn gate: last two iterations must have `delta_kind=none` when closing.")
     if contract_improvement_exhausted is False and change_by_iter:
-        last_iter = max(change_by_iter.keys())
-        last_change = change_by_iter.get(last_iter, {})
-        if last_change.get("round_decision") == "close":
-            errors.append(
-                "Stop gate: when `improvement_exhausted=false`, final `round_decision` must be `continue`."
-            )
-
-    implementation_brief = extract_heading_section(body, "Implementation Brief")
-    if implementation_brief:
-        for field in IMPLEMENTATION_BRIEF_FIELDS:
-            if not re.search(rf"(?i)\b{field}\b", implementation_brief):
-                errors.append(f"`Implementation Brief` must include `{field}` markers.")
+        last_iter = max(change_by_iter)
+        if change_by_iter[last_iter].get("round_decision") == "close":
+            errors.append("Stop gate: when `improvement_exhausted=false`, final `round_decision` must be `continue`.")
 
     rewrite_ratio = parse_rewrite_ratio(body)
     if rewrite_ratio is None:
-        errors.append(
-            "Missing required `rewrite_ratio` marker (expected in `Contract Signals` as `rewrite_ratio=<float>`)."
-        )
+        errors.append("Missing required `rewrite_ratio` marker (expected in `Contract Signals` as `rewrite_ratio=`).")
     elif rewrite_ratio > 0.35 and not heading_present(body, "Rewrite Justification"):
-        errors.append(
-            "`Rewrite Justification` is required when `rewrite_ratio` exceeds 0.35."
-        )
+        errors.append("`Rewrite Justification` is required when `rewrite_ratio` exceeds 0.35.")
 
     return errors, warnings
 
 
 def load_text(file_path: str | None) -> str:
-    """Load plan text from file or stdin."""
     if file_path:
         return Path(file_path).read_text()
     if not sys.stdin.isatty():
@@ -1019,19 +651,13 @@ def load_text(file_path: str | None) -> str:
 
 
 def main() -> int:
-    """CLI entrypoint."""
     parser = argparse.ArgumentParser(description="Lint $plan contract markers.")
     parser.add_argument("--file", help="Path to markdown output to lint.")
     args = parser.parse_args()
-
     text = load_text(args.file)
     if not text.strip():
-        print(
-            "[FAIL] No input. Provide --file <path> or pipe markdown to stdin.",
-            file=sys.stderr,
-        )
+        print("[FAIL] No input. Provide --file <path> or pipe markdown to stdin.", file=sys.stderr)
         return 2
-
     errors, warnings = lint_plan(text)
     for warning in warnings:
         print(f"[WARN] {warning}")
@@ -1039,7 +665,6 @@ def main() -> int:
         for error in errors:
             print(f"[FAIL] {error}")
         return 1
-
     print("[OK] Plan contract checks passed.")
     return 0
 
