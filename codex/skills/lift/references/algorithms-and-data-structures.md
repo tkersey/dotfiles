@@ -1,62 +1,78 @@
 # Algorithms and Data Structures
 
-## Table of contents
+## Complexity-First Thinking
 
-1. Complexity-first thinking
-2. Reduce work
-3. Reduce input size
-4. Precompute and reuse
-5. Data structure leverage
-6. Locality and access patterns
-7. Approximation and relaxation
-8. Parallel-friendly algorithms
+A complexity-class improvement usually dominates local tuning. Start by asking:
 
-## 1. Complexity-first thinking
+- Is the hot path doing repeated work?
+- Is there a monotone/sorted structure to exploit?
+- Can queries be answered by an index, precomputation, or streaming state?
+- Is the exact result required, or is a bounded approximation acceptable?
+- Can the workload be partitioned without coordination?
 
-- Prefer algorithmic improvements over micro-optimizations.
-- Change O(n^2) to O(n log n) or O(n) whenever possible.
-- Measure constants, but never ignore complexity class.
+## Tier 1 Patterns
 
-## 2. Reduce work
+| Pattern | Recognition | Typical win | Proof concern |
+|---|---|---|---|
+| N+1 -> batch | repeated external calls | fewer round trips | order, retries, errors |
+| scan -> hash/index | repeated keyed lookup | O(n) -> O(1)/O(log n) | key equality, order |
+| memoization | repeated pure call | avoid recompute | purity, invalidation |
+| preallocation | growth in hot loop | fewer allocs | bounds, memory cap |
+| stream instead of materialize | large one-pass data | lower RSS | chunk semantics |
+| compile regex once | regex in loop | lower CPU/allocs | same flags/pattern |
 
-- Remove redundant computation and repeated parsing.
-- Fuse passes when it preserves clarity and correctness.
-- Short-circuit early; exploit monotonicity and bounds.
-- Cache intermediate results with explicit invalidation rules.
+## Tier 2 Algorithmic Patterns
 
-## 3. Reduce input size
+| Pattern | Use when | Complexity shift |
+|---|---|---|
+| binary search | sorted or monotone predicate | O(n) -> O(log n) |
+| two-pointer | sorted pair/range problem | O(n²) -> O(n) |
+| sliding window | fixed/monotone window | O(nk) -> O(n) |
+| prefix sums | repeated static range sums | O(n) query -> O(1) |
+| Fenwick/segment tree | dynamic range queries | O(n) -> O(log n) |
+| heap/top-k | select best k | O(n log n) -> O(n log k) |
+| union-find | connectivity/merge queries | near O(1) amortized |
+| topological DP | DAG repeated traversal | O(V+E) after ordering |
+| Dijkstra/A* | weighted shortest path | guided graph search |
 
-- Filter and prune early.
-- Use indexing or partitioning to avoid full scans.
-- Stream data instead of materializing full collections.
+## Tier 3 Structure and Layout Patterns
 
-## 4. Precompute and reuse
+| Access pattern | Structure |
+|---|---|
+| point lookup | hash map / perfect hash |
+| ordered/range lookup | B-tree / skip list / segment tree |
+| prefix lookup | trie / radix tree / FST |
+| top-k/min/max | binary heap / pairing heap |
+| FIFO/sliding window | deque / ring buffer |
+| sparse set ops | hash set / bitset / roaring bitmap |
+| mostly-small collections | small-vector / inline array |
+| many same-lifetime objects | arena / bump allocator |
+| approximate membership | Bloom/Cuckoo/Xor filter |
+| distinct counting | HyperLogLog |
+| heavy hitters | Count-Min Sketch |
 
-- Precompute lookup tables for hot paths.
-- Use memoization for repeated calls with identical inputs.
-- Pre-sort or bucketize to reduce per-request work.
+## Locality and Layout
 
-## 5. Data structure leverage
+- Prefer ID-indexed arrays over pointer-heavy maps when the key domain permits.
+- Store hot fields together and cold fields separately.
+- Use SoA for field-wise numeric operations and AoS for whole-record operations.
+- Traverse in memory order and reduce random pointer chasing.
+- Flatten recursion or graph storage when stack/cache behavior dominates.
 
-- Use arrays or contiguous buffers for tight loops and locality.
-- Use hash maps for sparse lookups; keep load factor reasonable.
-- Use heaps or balanced trees for ordered queries and top-k.
-- Replace pointer-heavy structures with flat storage when possible.
+## Approximation and Relaxation
 
-## 6. Locality and access patterns
+Approximation requires explicit acceptance in the contract. Document:
 
-- Traverse in memory order to maximize cache hits.
-- Use structure-of-arrays for vectorizable data.
-- Avoid random pointer chasing in hot paths.
+- false-positive/false-negative behavior
+- error bound
+- memory bound
+- fallback authoritative check
+- effect on user-visible behavior
 
-## 7. Approximation and relaxation
+## Parallel-Friendly Algorithms
 
-- Use approximate algorithms when exactness is not required.
-- Trade precision for speed with bounded error and clear limits.
-- Use sampling, sketches, or probabilistic data structures when safe.
-
-## 8. Parallel-friendly algorithms
-
-- Prefer data-parallel designs over shared-state designs.
-- Use partitioning and reduce patterns to minimize coordination.
+- Partition input into independent chunks.
+- Use map/reduce instead of shared mutation.
 - Avoid global locks and per-item synchronization.
+- Make merge order deterministic if output order is observable.
+- Measure overhead; parallelism can regress small workloads.

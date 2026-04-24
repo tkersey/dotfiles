@@ -1,58 +1,88 @@
 # Optimization Tactics Catalog
 
-## Table of contents
+Use this catalog after profiling identifies a bound. Every tactic still requires a
+score gate and behavior proof.
 
-1. Algorithmic tactics
-2. Data layout tactics
-3. Concurrency tactics
-4. I/O tactics
-5. Memory tactics
-6. Micro-architecture tactics
-7. Runtime and compiler tactics
+## Delete Work
 
-## 1. Algorithmic tactics
+- Remove redundant parsing, validation, serialization, logging, or sorting.
+- Short-circuit when the result is known.
+- Hoist invariant checks out of loops.
+- Cache stable expensive results with explicit invalidation.
+- Avoid materializing collections that are consumed once.
 
-- Remove redundant work and repeated parsing.
-- Replace nested loops with indexed lookups.
-- Precompute and cache stable results.
-- Use streaming to avoid materialization.
+## Algorithmic Tactics
 
-## 2. Data layout tactics
+- Replace repeated scans with indexes or hash maps.
+- Use binary search on sorted/monotone data.
+- Use two-pointer or sliding-window techniques on ordered sequences.
+- Use prefix sums or Fenwick/segment trees for repeated range queries.
+- Use heaps or selection algorithms for top-k instead of full sort.
+- Use graph reductions, DP, or shortest-path formulations when structure exists.
+- Use streaming/sublinear sketches only when approximation is acceptable.
 
-- Flatten object graphs into contiguous arrays.
-- Reorder fields by access frequency.
-- Use SoA for vectorizable operations.
-- Reduce pointer chasing in hot paths.
+## Data Structure and Layout Tactics
 
-## 3. Concurrency tactics
+- Prefer contiguous arrays/buffers for hot traversal.
+- Use `HashMap` for point lookup and `BTreeMap`/ordered index for ranges.
+- Use `VecDeque` for FIFO and heap for priority scheduling.
+- Use tries/FSTs for prefix lookups.
+- Use structure-of-arrays for vectorizable numeric loops.
+- Replace pointer-heavy graphs with flat storage or ID-indexed arrays.
+- Use bounded probabilistic filters to avoid expensive authoritative checks.
 
-- Shard state by key to reduce contention.
-- Use read-copy-update patterns for read-heavy paths.
-- Batch work to reduce coordination overhead.
-- Prefer message passing over shared mutation when feasible.
+## Memory and Allocation Tactics
 
-## 4. I/O tactics
+- Pre-size vectors/maps/builders.
+- Reuse buffers outside hot loops.
+- Use arenas for many same-lifetime allocations.
+- Pool expensive objects with clear reset semantics and caps.
+- Avoid temporary strings and format calls on hot paths.
+- Reduce live heap and working set before tuning GC.
+- Cap caches and document eviction policy.
 
-- Reduce syscalls by batching and buffering.
-- Use async I/O for latency hiding where appropriate.
-- Eliminate redundant serialization or copies.
+## Concurrency Tactics
 
-## 5. Memory tactics
+- Batch small tasks to amortize scheduling and synchronization.
+- Use bounded queues for backpressure.
+- Shard locks/state by key.
+- Reduce lock scope and lock frequency.
+- Prefer immutable snapshots/RCU for read-heavy paths.
+- Avoid goroutine/task per tiny item unless overhead is proven acceptable.
+- Verify reductions are associative/commutative or merge deterministically.
 
-- Reduce allocation rate and object churn.
-- Use arenas for short-lived objects.
-- Cap caches to avoid memory blowups.
+## I/O and Serialization Tactics
 
-## 6. Micro-architecture tactics
+- Eliminate N+1 calls and duplicate requests.
+- Batch reads/writes and use buffered or vectored I/O.
+- Reduce payload size and copies.
+- Stream large payloads rather than materializing full objects.
+- Prefer compact/binary encoding internally when schema/compatibility permits.
+- Cache external responses only with correct invalidation and bounds.
 
-- Avoid unpredictable branches.
-- Align hot data to cache lines.
-- Use SIMD and vectorized libraries.
-- Reduce instruction dependencies in tight loops.
+## Tail-Latency Tactics
 
-## 7. Runtime and compiler tactics
+- Bound queue length and batch size.
+- Add timeouts and cancellation propagation.
+- Reduce head-of-line blocking.
+- Apply admission control when saturation drives p99.
+- Remove convoying locks and long critical sections.
+- Separate cold-start and warm steady-state paths.
 
-- Enable profile-guided optimization where supported.
-- Tune GC thresholds to reduce pause frequency.
-- Remove dynamic dispatch in hot paths.
-- Avoid reflection or dynamic allocation in tight loops.
+## Micro-Architecture Tactics
+
+- Improve branch predictability.
+- Traverse memory in cache-friendly order.
+- Align and pad to avoid false sharing where proven.
+- Use SIMD/vectorized libraries for bulk numeric/string operations.
+- Reduce dependencies in tight loops.
+- Use prefetch only after counters show cache misses and simpler layout wins are
+  exhausted.
+
+## Runtime and Compiler Tactics
+
+- Enable release/optimized builds before comparing.
+- Use PGO/LTO only after workload and correctness are stable.
+- Tune GC only after allocation reductions.
+- Avoid reflection/dynamic dispatch/boxing in hot paths.
+- Verify runtime flags do not trade unacceptable memory or startup cost.

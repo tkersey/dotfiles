@@ -3,70 +3,88 @@
 Date: <yyyy-mm-dd>
 Owner: <name/team>
 System: <component>
+Mode: <measured|unmeasured|audit>
 
 ## Performance Contract
 
 - Metric:
-- Target:
+- Target / goal:
 - Percentile:
 - Workload command:
 - Dataset:
 - Environment:
 - Constraints:
 
+## Correctness Oracle
+
+- Oracle type: <tests|golden|differential|property|invariant|canary>
+- Command(s):
+- Baseline result:
+
 ## Baseline
 
 - Measurement method:
+- Warmup:
 - Sample size:
-- Results (p50/p95/p99):
-- Notes:
+- Results (min/p50/p95/p99/max or throughput/RSS):
+- Secondary metrics:
+- Noise floor / variance notes:
 
 ## Bottleneck Evidence
 
-- Profile or trace summary:
-- Hot paths:
-- Bound classification (CPU/memory/I/O/lock/tail):
+- Tool(s):
+- Artifact path(s):
+- Top hot paths / waits:
+- Bound classification:
 
-## Hypothesis
+## Opportunity Matrix
 
-- Cause:
-- Expected impact:
-- Risks:
+| Rank | Candidate | Evidence | Impact | Confidence | Effort | Score | Decision |
+|---:|---|---|---:|---:|---:|---:|---|
+| 1 |  |  |  |  |  |  |  |
 
-## Experiment Plan
+## Behavior Proof
 
-- Change description:
-- Control variables:
-- Success criteria:
+- Change:
+- Inputs covered:
+- Ordering preserved:
+- Tie-breaking unchanged:
+- Floating-point semantics:
+- RNG/time/concurrency determinism:
+- Error handling and edge cases:
+- Golden/differential/property check:
 
-## Results
+## Experiments
+
+| Experiment | Hypothesis | Change | Result | Delta | Confidence | Decision |
+|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |
+
+## Result
 
 - Variant measurements:
 - Delta vs baseline:
 - Confidence:
-
-## Trade-offs
-
-- Correctness:
-- Maintainability:
-- Cost or resource impact:
+- Trade-offs:
+- Regressions checked:
 
 ## Regression Guard
 
-- Benchmark or budget:
-- Alert or threshold:
+- Benchmark / budget / monitor:
+- Threshold:
+- CI or rollout status:
 
 ## Validation
 
 - Correctness command(s) -> pass/fail:
 - Performance command(s) -> numbers:
+- Profile/trace/counter command(s) -> evidence:
+- Lift CLI proof if applicable:
+
+## Residual Risks / Next Steps
+
+-
 
 ## Lift Compliance
 
-- mode (measured|unmeasured):
-- proof artifacts (bench + profile paths):
-
-## Next Steps
-
-- Follow-up experiments:
-- Rollout plan:
+`lift_compliance: mode=<measured|unmeasured|audit>; workload=<cmd>; baseline=<yes/no>; after=<yes/no>; correctness=<yes/no>; bottleneck_evidence=<yes/no>; behavior_proof=<yes/no>; score_gate=<yes/no>`

@@ -1,82 +1,83 @@
 # Systems and Architecture Tactics
 
-## Table of contents
+## CPU and Pipelines
 
-1. CPU and pipelines
-2. Caches and memory hierarchy
-3. Data layout and alignment
-4. Branch prediction and control flow
-5. SIMD and vectorization
-6. Allocation and GC pressure
-7. Concurrency and contention
-8. NUMA and memory locality
-9. I/O and syscalls
-10. Network and serialization
-11. Observability overhead
-
-## 1. CPU and pipelines
-
-- Reduce instruction count in the hottest path.
-- Increase instruction-level parallelism by removing dependencies.
+- Reduce instruction count on the hottest path.
+- Hoist invariant work out of loops.
 - Avoid unpredictable branches in tight loops.
+- Separate hot fast paths from cold error paths.
+- Reduce call overhead only after profiling proves it matters.
 
-## 2. Caches and memory hierarchy
+## Caches and Memory Hierarchy
 
-- Maximize spatial and temporal locality.
-- Minimize cache misses and working set size.
-- Avoid false sharing across threads.
+- Shrink working set before tuning hardware counters.
+- Prefer contiguous traversal and spatial locality.
+- Reuse hot data while it remains in cache.
+- Avoid random pointer chasing.
+- Verify LLC/cache-miss problems with counters.
 
-## 3. Data layout and alignment
+## Data Layout and Alignment
 
-- Prefer contiguous buffers over pointer-heavy graphs.
-- Use structure-of-arrays for hot numeric loops.
-- Align frequently accessed data to cache lines.
+- Use structure-of-arrays for vectorizable field-wise loops.
+- Pack hot fields together and separate cold fields.
+- Align or pad only when false sharing or misalignment is measured.
+- Prefer flat arrays/IDs over heap-node graphs in hot paths.
 
-## 4. Branch prediction and control flow
+## Branch Prediction and Control Flow
 
-- Replace unpredictable branches with table lookups or masks.
-- Hoist invariant checks outside loops.
-- Flatten hot-path error handling.
+- Replace unpredictable branches with table lookup, masks, or split hot/cold
+  paths when proof is easy.
+- Sort or group data to improve predictability if order is not observable.
+- Avoid branch-heavy validation inside tight loops.
 
-## 5. SIMD and vectorization
+## SIMD and Vectorization
 
-- Batch similar operations to enable vectorization.
-- Prefer fixed-size loops with predictable strides.
-- Avoid aliasing that blocks compiler vectorization.
+- Batch similar operations.
+- Use vectorized library routines before hand-written SIMD.
+- Keep data aligned/contiguous and avoid aliasing.
+- Prove floating-point semantics and tolerances before accepting SIMD math.
 
-## 6. Allocation and GC pressure
+## Allocation and GC Pressure
 
-- Reduce short-lived allocations in hot paths.
-- Use object pools or arenas when safe and bounded.
-- Keep allocation rates below GC threshold triggers.
+- Remove short-lived allocations in hot paths.
+- Reuse buffers with clear lifetime and reset semantics.
+- Pool only when construction cost or allocation rate is proven high.
+- Avoid unbounded caches and pools.
+- Tune GC after reducing allocation rate and live heap.
 
-## 7. Concurrency and contention
+## Concurrency and Contention
 
 - Reduce lock scope and lock frequency.
-- Shard by key to reduce contention.
-- Avoid global locks on read-heavy paths.
-- Use lock-free or wait-free structures when proven safe.
+- Shard state by key when contention is measured.
+- Use bounded queues to enforce backpressure.
+- Prefer immutable snapshots for read-heavy workloads.
+- Treat lock-free structures as high-proof-burden changes.
 
-## 8. NUMA and memory locality
+## NUMA and Locality
 
-- Pin threads to cores when latency matters.
-- Keep memory local to the NUMA node that uses it.
-- Avoid cross-node memory thrash.
+- Pin threads and allocate memory locally only for latency-critical systems where
+  counters show cross-node effects.
+- Avoid migrating hot state across worker pools.
+- Partition state by worker/core where possible.
 
-## 9. I/O and syscalls
+## I/O and Syscalls
 
-- Reduce syscalls and context switches.
-- Batch I/O and use buffers to amortize overhead.
-- Avoid synchronous I/O on latency-critical paths.
+- Batch small reads/writes.
+- Use buffered or vectored I/O.
+- Reduce context switches and syscalls.
+- Avoid synchronous I/O on latency-critical event loops.
+- Validate async conversion with tail-latency measurements.
 
-## 10. Network and serialization
+## Network and Serialization
 
-- Reduce payload size and round trips.
-- Prefer binary or compact encodings when safe.
-- Avoid redundant serialization and copying.
+- Reduce payload size, copies, and round trips.
+- Cache or prefetch only with correct invalidation.
+- Use compact encodings internally when compatibility permits.
+- Stream large objects when full materialization is unnecessary.
 
-## 11. Observability overhead
+## Observability Overhead
 
-- Measure tracing and logging overhead.
-- Sample or aggregate metrics when overhead is high.
-- Avoid string formatting in hot paths.
+- Measure logging/tracing/metrics overhead.
+- Avoid string formatting on hot paths.
+- Sample or aggregate high-cardinality metrics.
+- Keep debug instrumentation out of measured release paths unless intentional.

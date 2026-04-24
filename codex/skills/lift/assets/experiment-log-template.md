@@ -6,19 +6,31 @@
 - Baseline version:
 - Dataset:
 - Environment:
-- Metric/percentile:
+- Metric / percentile:
+- Workload command:
+- Correctness oracle:
+- Noise floor:
+
+## Opportunity Matrix
+
+| Rank | Candidate | Evidence | Impact | Confidence | Effort | Score | Decision |
+|---:|---|---|---:|---:|---:|---:|---|
+| 1 |  |  |  |  |  |  |  |
 
 ## Experiment Entries
 
-### <date> - <short title>
+### <yyyy-mm-dd> — <experiment name>
 
 - Hypothesis:
-- Change:
+- Change lever:
 - Control variables:
+- Proof burden:
+- Correctness command(s):
 - Sample size:
-- Result (p50/p95/p99):
+- Baseline result:
+- Variant result:
 - Delta vs baseline:
+- Secondary regressions:
 - Confidence:
-- Trade-offs:
 - Decision:
 - Next step:

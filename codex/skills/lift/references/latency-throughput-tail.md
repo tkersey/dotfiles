@@ -1,47 +1,55 @@
 # Latency, Throughput, and Tail Behavior
 
-## Table of contents
+## Core Relationships
 
-1. Core relationships
-2. Tail latency drivers
-3. Queueing and utilization
-4. Controlling variance
-5. Admission control and backpressure
-6. Batching and pipelining
+Latency and throughput are coupled through queueing. As utilization approaches
+saturation, queues grow and tail latency can explode. Use Little's Law,
+`L = lambda * W`, to reason about work in system, arrival rate, and wait time.
 
-## 1. Core relationships
+## Tail Latency Drivers
 
-- Treat throughput and latency as coupled via queueing.
-- Keep utilization below saturation to protect tail latency.
-- Use Little's Law: L = lambda * W to reason about queues.
+- variance in service time
+- head-of-line blocking
+- lock convoying
+- GC pauses and page faults
+- cold starts and cache misses
+- retry storms and network jitter
+- unbounded queues and oversized batches
+- noisy neighbors or resource saturation
 
-## 2. Tail latency drivers
+## Queueing and Utilization
 
-- Variance in service time.
-- Head-of-line blocking and lock convoying.
-- GC pauses, page faults, and context switches.
-- Network jitter and cross-zone latency.
+- Keep critical services below saturation.
+- Measure queue depth, wait time, service time, and utilization separately.
+- Distinguish arrival bursts from slow service.
+- Bound queues so overload fails predictably instead of thrashing.
 
-## 3. Queueing and utilization
+## Variance Reduction
 
-- Expect tail latency to explode near high utilization.
-- Keep critical services below a safe utilization threshold.
-- Use load shaping to reduce burstiness.
+- Remove outlier work from the common path.
+- Split slow and fast paths.
+- Propagate cancellation to avoid wasted work.
+- Use timeouts for external dependencies.
+- Avoid global locks and blocking operations in request paths.
+- Normalize batch sizes when large batches create p99 spikes.
 
-## 4. Controlling variance
-
-- Reduce per-request variance and outliers.
-- Use timeouts and cancelation for stragglers.
-- Apply hedged requests only when it reduces overall latency.
-
-## 5. Admission control and backpressure
+## Admission Control and Backpressure
 
 - Shed load when SLOs cannot be met.
-- Apply backpressure to avoid unbounded queues.
-- Favor graceful degradation over thrashing.
+- Apply backpressure at queue boundaries.
+- Prefer graceful degradation to unbounded latency.
+- Make overload behavior explicit in the performance contract.
 
-## 6. Batching and pipelining
+## Batching and Pipelining
 
-- Batch to improve throughput when latency budgets allow it.
-- Pipeline stages to reduce idle time and increase utilization.
-- Bound batch size to avoid tail spikes.
+Batching improves throughput when it amortizes overhead, but it can hurt tail
+latency. Bound batch size and max wait time. Pipeline stages when idle time or
+sequential dependency dominates, but measure queueing between stages.
+
+## Tail Experiment Checklist
+
+- Compare p50, p95, p99, max, and variance.
+- Capture queue depth and service time histograms.
+- Check retries, timeouts, and cancellation counts.
+- Measure under representative concurrency.
+- Ensure the fix does not just shift tail to another subsystem.

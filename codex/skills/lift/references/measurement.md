@@ -1,60 +1,88 @@
 # Measurement and Benchmarking
 
-## Table of contents
+## Required Baseline Fields
 
-1. Metrics and distributions
-2. Benchmark types
-3. Noise control
-4. Sampling vs tracing
-5. Statistical sanity
-6. Microbenchmark pitfalls
-7. Reporting results
+Capture all of the following before changing code:
 
-## 1. Metrics and distributions
+- command and arguments
+- dataset and input size/shape/skew
+- git commit or build identifier
+- hardware, OS, kernel, runtime, compiler flags
+- concurrency/load level and warmup policy
+- sample count and raw sample location when possible
+- primary metric and secondary metrics
+- correctness command and result
 
-- Track latency distributions, not just averages.
-- Report p50, p90, p95, p99, and max for latency.
-- Tail percentiles need enough samples: treat p99 from small-N runs as unstable; increase N or label as inconclusive.
-- Track throughput, CPU, memory, and GC pause time in parallel.
-- Measure steady state and cold start separately.
+## Metrics
 
-## 2. Benchmark types
+- Latency: p50, p90, p95, p99, max, and sample count.
+- Throughput: QPS/items/sec/MB/sec plus CPU and memory.
+- Batch duration: wall time, CPU time, peak RSS, I/O bytes.
+- Memory: peak RSS, allocation rate, live heap, GC pause, object churn.
+- Tail: p99/max, queue depth, saturation, retries, timeout/cancel counts.
+- Startup: cold and warm separately.
 
-- Microbench: isolate a hot function; use for tight loops and data layout.
-- Macrobench: full workflow; use for user-visible latency and throughput.
-- Soak: long-running tests to catch leaks and JIT or GC drift.
+## Default Commands
 
-## 3. Noise control
+```bash
+# Wall-clock distribution
+hyperfine --warmup 3 --runs 10 'command'
+hyperfine --warmup 3 --runs 30 --export-json baseline.json 'command'
 
-- Pin CPU frequency or use performance mode when possible.
-- Minimize background load and jitter.
-- Warm up caches, JITs, and allocators before measuring.
-- Use consistent datasets and randomized order where needed.
+# Memory and CPU summary
+/usr/bin/time -v command 2>&1 | tee time.txt
 
-## 4. Sampling vs tracing
+# Linux counters
+perf stat -d -- command 2>&1 | tee perf-stat.txt
 
-- Use sampling profilers for low overhead and broad hotspots.
-- Use tracing when you need call order, wait reasons, or latency sources.
-- Validate profiler overhead with a baseline run.
+# Store raw samples for CLI stats
+hyperfine --warmup 3 --runs 30 --export-csv samples.csv 'command'
+```
 
-## 5. Statistical sanity
+When Lift CLIs are available:
 
-- Run enough samples to separate signal from noise.
+```bash
+bench_stats --input samples.txt --unit ms
+perf_report --title "Perf pass" --owner "team" --system "service" --output perf-report.md
+```
+
+## Noise Control
+
+- Warm caches, JITs, allocators, and connection pools before measurement.
+- Keep CPU governor, thermal state, and background load stable when possible.
+- Use the same machine, build mode, dataset, and dependency versions.
+- Randomize run order when comparing variants that can influence cache state.
+- Treat p99 from tiny samples as unstable; increase sample count or label
+  inconclusive.
 - Prefer medians and percentiles over means for skewed distributions.
-- Report variance or a confidence interval when variance is high.
-- Prefer confidence intervals (bootstrap if needed) for medians/percentiles; treat overlapping CIs as no proven change.
-- Reject wins smaller than the noise floor.
+- Report a noise floor; reject changes smaller than noise.
 
-## 6. Microbenchmark pitfalls
+## Microbenchmark Pitfalls
 
-- Avoid timing too-small code blocks; loop inside the benchmark.
-- Avoid dead-code elimination; ensure results are used.
-- Avoid measuring allocation and I/O unless intended.
-- Avoid cross-run cache contamination; control for warm and cold.
+- Avoid measuring code that the compiler can eliminate.
+- Do not benchmark tiny code blocks without looped harness overhead control.
+- Avoid unrealistic input sizes and distributions.
+- Separate setup cost from measured operation unless setup is part of the workload.
+- Do not extrapolate microbenchmarks to system latency without macrobench proof.
 
-## 7. Reporting results
+## Statistical Sanity
 
-- Record environment, dataset, and run conditions.
-- Record baseline and variant side by side.
-- Provide deltas in absolute and percentage terms.
-- Note any trade-offs or regressions.
+For each accepted result, record:
+
+- sample count and warmup count
+- baseline and variant distribution
+- absolute and percent delta
+- variance/noise floor
+- whether confidence is high, medium, low, or inconclusive
+
+If confidence intervals overlap or variance is high, report the result as
+inconclusive and rerun with more samples or a cleaner harness.
+
+## Reporting Template
+
+```text
+baseline: n=<samples>, p50=<>, p95=<>, p99=<>, max=<>
+variant:  n=<samples>, p50=<>, p95=<>, p99=<>, max=<>
+delta:    p95 <absolute>, <percent>; secondary regressions: <yes/no>
+noise:    <estimated>; confidence: <high|medium|low|inconclusive>
+```
