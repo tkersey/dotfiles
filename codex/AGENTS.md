@@ -121,16 +121,70 @@ Use `$seq` for explicit `$seq` requests and for historical session, memory, tran
 
 Use the native `learnings` CLI. If it is missing and the environment allows installation, install with `brew install tkersey/tap/learnings`; otherwise fail closed and continue without inventing records.
 
-- For implementation work, if `.learnings.jsonl` exists in the repo root, run a request-aware recall during context gathering and before substantial edits.
-- Distill the request to a compact 4-8 term query; skip boilerplate, pasted AGENTS text, and unrelated prompt material. Use `learnings recall --query "<terms>" --limit 5 --drop-superseded`.
+Treat learnings as a closed loop: recall before action, capture only decision-shaping evidence, promote repeated lessons into durable policy, and audit whether recalled memory actually improved execution.
+
+### Recall before implementation
+
+- For implementation work, if `.learnings.jsonl` exists in the repo root, run request-aware recall during context gathering and before substantial edits.
+- Distill the request to a compact 4-8 term query; skip boilerplate, pasted AGENTS text, pasted skill text, and unrelated prompt material.
+- Use `learnings recall --query "<focused task terms>" --limit 5 --drop-superseded`.
 - If early exploration materially sharpens the scope, run one additional focused recall before editing that slice.
-- For interactive browsing, prefer `learnings recent --limit 10`. For filtered/search/rank/summarize intent, prefer `learnings query` with a focused spec.
+- Treat relevant recalled learnings as constraints or hypotheses to verify, not as unquestioned truth.
 - If recall returns nothing relevant, proceed normally.
-- After implementation work with a proof signal, run `$learnings` before the final response and append 0-3 high-signal records; prefer 1. Skip when no capture-worthy checkpoint occurred.
-- Mention the append result with one proof line: `appended: id=...`, `duplicate-skip: ...`, or `0 records appended: ...`.
+
+### Browse, query, and digest modes
+
+- For interactive browsing, prefer `learnings recent --limit 10`.
+- For filtered, ranked, grouped, or summarized learning search, prefer `learnings query` with a focused spec.
+- For disposable memory consolidation, use `learnings memory-digest` only as a derived orientation aid; do not treat the digest as a substitute for task-specific recall or the source `.learnings.jsonl` rows.
+- If browse intent is ambiguous, start with `recent`; switch to `recall` only when transitioning into concrete implementation.
+
+### Capture checkpoints
+
+Run `$learnings` before final response, commit, PR, or handoff when implementation work produced a capture checkpoint. A checkpoint exists when any of these occurred:
+
+- Validation changed state: `fail->pass`, `pass->fail`, `timeout->stable`, or a comparable proof transition.
+- A strategy pivot avoided wasted work, replaced a flawed approach, or simplified the governing plan.
+- A footgun, brittle assumption, flaky behavior, hidden dependency, or publication boundary was discovered.
+- A repeatable acceleration pattern emerged.
+- A recalled learning materially helped, failed, was contradicted, or became obsolete.
+- The task is paused after meaningful exploration and the next agent would otherwise lose the lesson.
+- A delivery boundary occurred after real implementation work.
+
+A delivery boundary alone does not justify a record. If no decision-shaping checkpoint occurred, append nothing and report the intentional skip.
+
+### Capture quality gate
+
+Before appending a record, require all three:
+
+1. Decision delta: would this change what the next agent does?
+2. Transferability: does it apply beyond this exact command, log line, file path, or one-off mistake?
+3. Counterfactual: if ignored, is there a predictable failure, cost, or missed leverage?
+
+Write the learning as a rule, not a changelog entry:
+
+- `learning`: condition + action + reason, preferably `When/If X, prefer/do Y because Z`.
+- `evidence`: at least one concrete anchor such as command outcome, exact error, file path, commit SHA, test result, run ID, or observed diff.
+- `application`: what to do next time.
+- `status`: choose the narrowest useful action status, such as `do_more`, `do_less`, `avoid_for_now`, `investigate_more`, `codify_now`, or `review_later`.
+
+Prefer 1 essential learning. Append at most 3 records.
+
+### Write and report
+
+- Use the learnings skill / native append path for normal writes; do not hand-edit existing JSONL rows.
+- Append only from a verified git repo root. If `git rev-parse --show-toplevel` fails, skip capture with `0 records appended: non-repo cwd` unless the user explicitly names another durable target.
+- Require append target resolution to land at the verified repo root's `.learnings.jsonl`; if a row lands in any other file, repair the stray write and reappend correctly.
+- Mention the append result with one proof line: `appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`.
 - If `.learnings.jsonl` is updated and a git commit happens afterward, include the current-turn rows in that next commit unless `git check-ignore -v --no-index .learnings.jsonl` reports `.git/info/exclude`.
 - If the shared learnings file contains unrelated fresh rows, stage only the session-owned rows with an index patch.
-- When a learning is marked `codify_now` or repeats enough to become durable policy, promote it into `AGENTS.md` or the relevant skill/doc, then append a follow-up learning referencing the durable anchor.
+
+### Promotion, supersession, and audit
+
+- When a learning is marked `codify_now` or the same theme appears 3+ times, promote it into `AGENTS.md` or the relevant skill/doc, then append a follow-up learning referencing the durable anchor.
+- If a recalled learning is repeatedly unused, contradicted, too broad, too path-bound, or no longer accurate, append a superseding/refining learning instead of letting stale guidance accumulate.
+- If a prior learning materially changed the current outcome, capture that feedback loop explicitly so future recall ranking can learn which memories are valuable.
+- Periodically use the learnings skill's `codify-candidates`, `quality-audit`, and `value-report` tools to find noisy records, high-value repeated themes, and candidates for durable policy.
 
 ## Tooling standards
 
