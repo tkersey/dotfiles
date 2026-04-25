@@ -93,6 +93,9 @@ trust_level = "trusted"
 [projects."/Users/tk/workspace/tk/actuate"]
 trust_level = "trusted"
 
+[projects."/Users/tk/workspace/tk/ability"]
+trust_level = "trusted"
+
 [marketplaces.openai-bundled]
 last_updated = "2026-04-23T18:38:44Z"
 source_type = "local"
