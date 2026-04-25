@@ -1,0 +1,254 @@
+# Verification Guidance
+
+This reference exists so the `ghost` skill can generate a first-class `VERIFY.md` in every ghost repo.
+
+## Conformance profiles
+- `Core Conformance`:
+  - required for every ghost extraction
+  - deterministic evidence mapping, strict verifier pass, and required heading contracts
+- `Extension Conformance`:
+  - optional enhancements declared by the extraction
+  - include explicit acceptance checks for each claimed extension
+- `Real Integration Profile`:
+  - environment-dependent validation (for example live endpoints or non-local tool surfaces)
+  - may be skipped only with explicit rationale
+
+`VERIFY.md` should label major checks with one of these profile tags.
+
+## Minimum checks (always)
+- `tests.yaml` parses cleanly.
+- Every public operation id (or tool id for scenario suites) has at least one test case.
+- Every public operation id (or tool id) has at least one executable (non-skip) case unless infeasible; document exceptions.
+- Each operation has coverage across success and error paths (when applicable).
+- Each primary stateful workflow (or scenario) has at least one executable end-to-end loop scenario with continuity assertions.
+- Verification evidence bundle exists under `verification/evidence/` with all required files.
+- `inventory.json.public_operations` exactly matches non-workflow operation ids in `tests.yaml`.
+- `inventory.json.primary_workflows` exactly matches workflow/scenario ids in `tests.yaml`.
+- Coverage mode is explicit (`exhaustive` default; `sampled` requires non-empty `sampled_case_ids`).
+- 100% of public operations are mapped in traceability evidence.
+- 100% of primary workflows are mapped in traceability evidence and loop inventory evidence.
+- If coverage mode is `exhaustive`: 100% of `tests.yaml` case ids are mapped in `traceability.csv`.
+- If coverage mode is `sampled`: 100% of `inventory.json.sampled_case_ids` are mapped in `traceability.csv`.
+- Every required case id (all tests for exhaustive; sampled ids for sampled mode) has at least one baseline (`mutated=false`) `pass` row in `adapter_results.jsonl`.
+- Mutation sensitivity gate passes (required mutations detected as failures).
+- Independent regeneration parity passes with zero normalized artifact diffs.
+- Case counts match or exceed the source test suite (when extracting from tests).
+- Skip inventory is explicit (operation/case/reason), with deterministic alternatives attempted first.
+- Stable machine-interface fields are asserted (required keys, lengths/counts, and state effects where relevant).
+- `VERIFY.md` includes provenance + a regeneration recipe.
+- `SPEC.md` includes required headings: `Conformance Profile`, `Validation Matrix`, `Definition of Done`.
+- `VERIFY.md` includes required headings: `Summary`, `Regenerate`, `Validation Matrix`, `Traceability Matrix`, `Mutation Sensitivity`, `Regeneration Parity`, `Limitations`.
+- For stateful/scenario ghost specs, `SPEC.md` includes: `State Model`, `Transition Triggers`, `Recovery/Idempotency`, `Reference Algorithm`.
+- `coverage_mode=exhaustive` is treated as "all required cases execute and pass"; skipped required cases must move to `sampled` coverage or leave the required set.
+
+Layered-agentic extras (when `inventory.json.contract_class=layered_agentic`):
+- Every executable case in `tests.yaml` has an explicit `case_id`.
+- `SPEC.md` includes: `Interface Surfaces`, `Boundary Contracts`, `Extension Points`, `Persistent Artifacts`.
+- `VERIFY.md` includes: `Normative Source Map`, `Surface Coverage Matrix`, `Boundary Invariants`, `Artifact Contract Coverage`.
+- `verification/evidence/interface_inventory.json` exists and inventories named `surfaces`, `boundary_invariants`, and `artifact_contracts`.
+- `verification/evidence/contract_traceability.csv` exists and covers every declared surface, invariant, and artifact contract target.
+- Every `required_case_ids` entry declared in `interface_inventory.json` exists in `tests.yaml`, appears in the appropriate traceability artifact, and has a baseline pass in `adapter_results.jsonl`.
+
+Scenario-suite extras (when `tests.yaml` uses scenario layout):
+- Each critical scenario has explicit **hard oracles** (final state / side effects) and **trace invariants** (forbidden tools, confirmation-before-side-effects, budget/step limits, injection resistance).
+- If the agent is stochastic in production, `VERIFY.md` records reliability runs (N trials), pass rates, and the rule that critical invariant violations are release-blocking.
+
+## Evidence Bundle Contract (fail-closed)
+
+Bundle path: `verification/evidence/`
+
+Required files:
+- `inventory.json`
+  - `public_operations`: list of operation ids
+  - `primary_workflows`: list of `{id, requires_reset}`
+  - optional `coverage_mode`: `exhaustive` (default) or `sampled`
+  - required `sampled_case_ids` when `coverage_mode=sampled`
+  - optional `contract_class`: `default` (implicit) or `layered_agentic`
+  - must be set-equal to operation/workflow ids defined in `tests.yaml`
+- `traceability.csv`
+  - columns: `target_type,target_id,case_id,proof_artifact,adapter_run_id`
+  - `target_type` must be `operation` or `workflow`
+  - must include every required case id (all tests for exhaustive; sampled ids for sampled mode)
+- `workflow_loops.json`
+  - `workflows`: list of `{id,cases,continuity_assertions,reset_assertions}`
+- `adapter_results.jsonl`
+  - one JSON object per executed case: `run_id`, `case_id`, `status`, optional `mutated`
+  - every required case id must appear with baseline `status=pass` at least once
+- `mutation_check.json`
+  - `{required_mutations, detected_failures, pass}`
+- `parity.json`
+  - `{pass, diff_count, run_a, run_b}`
+- `interface_inventory.json` (`layered_agentic` only)
+  - `surfaces`: list of `{id, kind, layer, source_refs, required_case_ids, provider_specific}`
+  - `boundary_invariants`: list of `{id, description, source_refs, required_case_ids}`
+  - `artifact_contracts`: list of `{id, kind, source_refs, required_fields, required_case_ids}`
+- `contract_traceability.csv` (`layered_agentic` only)
+  - columns: `target_type,target_id,case_id,proof_artifact,adapter_run_id`
+  - `target_type` must be `surface`, `invariant`, or `artifact`
+
+Verifier command:
+- from the ghost skill directory: `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`
+- non-zero exit means extraction quality gate failed
+- strict mode is default; legacy bypass is manual break-glass only:
+  - `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence --legacy-allow --legacy-reason "<rationale>"`
+  - bypass downgrades structure-contract errors only; evidence contract failures remain fail-closed
+
+Break-glass policy:
+- Use only for explicit migration windows.
+- Always record rationale and remediation date in `VERIFY.md`.
+- Do not treat bypass runs as final completion proof.
+- Break-glass never downgrades `interface_inventory.json`, `contract_traceability.csv`, or other contract-data failures.
+
+Notes for scenario suites:
+- Interpret `public_operations` as tool ids (what the agent can call).
+- Interpret `primary_workflows` as scenario ids (critical end-to-end loops).
+
+## Adapter Runner (preferred)
+
+Goal: prove the extracted `tests.yaml` matches the original library.
+
+1. Write a temporary adapter runner in the source language.
+   - Put it in a scratch directory or an ignored path.
+   - Do not ship it in the ghost repo.
+2. Load `tests.yaml`.
+3. For each `operation_id` and case:
+   - Call the real surface in the source library.
+   - Functional layout: assert `error: true` vs `output` semantics.
+   - Protocol/CLI layout: assert exit/status/payload/state semantics.
+   - Stateful workflows: assert continuity across steps (persisted ids/chains/context) and reset behavior where applicable.
+4. Record a short summary in `VERIFY.md` (how to run it, pass/fail, skips).
+   - Include upstream repo identity + exact revision.
+   - Include the exact commands used to regenerate artifacts (or one deterministic recipe).
+5. Delete the runner after verification.
+
+Tips:
+- Treat `operation_id` as an identifier: keep an explicit dispatch/mapping table.
+- Force determinism: set timezone/locale explicitly, avoid system clock access, and document any runtime assumptions.
+- If the source language has weak YAML tooling (notably Zig), parse `tests.yaml` externally and dispatch into the library via a tiny CLI/FFI shim.
+- Re-run the adapter whenever `tests.yaml` or the harness semantics change; the verification summary must match the current test inventory.
+- Record each adapter/sample execution in `adapter_results.jsonl` and keep run ids stable enough to join with `traceability.csv`.
+- For `layered_agentic` systems, build the interface inventory from named contract seams, not from incidental code structure; record normative source refs for each surface, invariant, and artifact contract.
+
+Scenario adapter notes:
+- Treat the environment as a state machine: tool calls emit trace events; state updates; agent observes.
+- Prefer assertions over final-text matching: state assertions + trace invariants + forbidden-action checks.
+- For production-like reliability, run scenarios multiple times and record pass rates + cost/latency distributions in `VERIFY.md` and evidence artifacts.
+
+## Sampling Fallback (if adapter infeasible)
+
+If a full adapter runner is infeasible:
+- Run a representative sample across *all* operation ids (typical + boundary + error cases).
+- Document exactly what was sampled and why full verification was infeasible.
+- Call out any behaviors inferred from docs/code rather than executed tests.
+
+## `VERIFY.md` Template
+
+```markdown
+# Verification
+
+## Summary
+- Source verification: adapter|sampling
+- Profile labels used: Core Conformance|Extension Conformance|Real Integration Profile
+- tests.yaml layout: functional|protocol
+- Source repo: <url/path>
+- Source revision: <tag/sha>
+- `tests.yaml` source version: <string>
+- Source language/runtime: <language + versions>
+- Coverage mode: exhaustive|sampled (default exhaustive)
+- Total cases: <total>
+- Executed: <n>
+- Skipped: <k>
+- Loop scenarios executed: <count>
+- Verifier command: `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle verification/evidence`
+- Verifier result: pass|fail
+- Result: pass|fail
+
+## Regenerate (artifact production)
+This ghost repo should be reproducible from the upstream revision.
+
+- Preconditions: <tooling needed; env normalization>
+- Upstream checkout:
+  - <exact commands to obtain upstream at the pinned revision>
+- Extract/update artifacts:
+  - `SPEC.md`: <how it was produced>
+  - `tests.yaml`: <how it was produced>
+  - `INSTALL.md` / `README.md`: <how they were produced>
+  - `LICENSE*`: <what was copied>
+- Verify:
+  - <exact commands to run verification>
+
+## Adapter Runner (preferred)
+- How to run: <exact command>
+- What it validates: outputs/errors match `tests.yaml`
+- Skips/notes: <if any>
+
+## Sampling (fallback)
+- Sampled cases: <what, how many, why these>
+- Sampled case ids: <explicit list>
+- Not verified: <what remains, why>
+
+## Validation Matrix
+| requirement id | profile | acceptance check |
+| --- | --- | --- |
+| ... | Core Conformance | ... |
+
+## Normative Source Map
+| target id | target type | source refs |
+| --- | --- | --- |
+| ... | surface|invariant|artifact | ... |
+
+## Test Inventory
+| operation id | cases | error cases |
+| --- | ---: | ---: |
+| ... | ... | ... |
+
+## Workflow Loop Inventory
+| workflow id | cases | continuity assertions |
+| --- | ---: | --- |
+| ... | ... | ... |
+
+## Traceability Matrix
+| target type | target id | case id | proof artifact | adapter run id |
+| --- | --- | --- | --- | --- |
+| ... | ... | ... | ... | ... |
+
+## Surface Coverage Matrix
+| surface id | kind | required case ids | proof artifact | adapter run id |
+| --- | --- | --- | --- | --- |
+| ... | ... | ... | ... | ... |
+
+## Boundary Invariants
+| invariant id | description | required case ids |
+| --- | --- | --- |
+| ... | ... | ... |
+
+## Artifact Contract Coverage
+| artifact id | required fields | required case ids | proof artifact |
+| --- | --- | --- | --- |
+| ... | ... | ... | ... |
+
+## Adapter Run Ledger
+| run id | mode | command | result |
+| --- | --- | --- | --- |
+| ... | ... | ... | ... |
+
+## Mutation Sensitivity
+| required mutations | detected failures | pass |
+| ---: | ---: | --- |
+| ... | ... | ... |
+
+## Regeneration Parity
+| run a | run b | normalized diff count | pass |
+| --- | --- | ---: | --- |
+| ... | ... | ... | ... |
+
+## Skip Inventory
+| operation id | case | reason |
+| --- | --- | --- |
+| ... | ... | ... |
+
+## Limitations
+- <timezone/locale assumptions>
+- <known gaps>
+- <if break-glass used: rationale + remediation date>
+```
