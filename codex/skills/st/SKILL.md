@@ -15,6 +15,28 @@ Maintain a durable task inventory in the repo worktree (default: `.step/st-plan.
 Items use typed dependency edges (`deps: [{id,type}]`) plus `notes`, `comments`, `in_plan`, and optional execution metadata (`related_to`, `scope`, `location`, `validation`, `source`, `claim`, `runtime`, `proof`).
 `in_plan=true` projects an item into the mirrored Codex/OpenCode plan; `in_plan=false` keeps it on disk as durable backlog only.
 
+## Codex Plan Surface Contract
+
+- Durable steps: `.step/st-plan.jsonl`.
+- Proposed plan: Codex Plan Mode final plan text.
+- Codex TODO projection: Codex `update_plan`.
+- Backlog: durable steps with `in_plan=false`.
+- Frontier: selected executable slice with `in_plan=true`.
+
+Rules:
+
+1. Never call `update_plan` while Codex is in Plan Mode.
+2. After leaving Plan Mode, import the final proposed plan into `st` before execution with `st import-proposed-plan --file .step/st-plan.jsonl --input .step/proposed-plan.md`.
+3. Before shell/file work on multi-step tasks, run `st prime --file .step/st-plan.jsonl` or use a fresh mutation-emitted `plan_sync`.
+4. If `plan_sync.codex.plan` is non-empty, immediately mirror it with Codex `update_plan`.
+5. After every durable `st` mutation, mirror the new `codex.plan`.
+6. Treat `.step/st-plan.jsonl` as source of truth.
+7. Treat Codex `update_plan` as a display/projection.
+8. Preserve `[st-id]` as the first token in every Codex-visible step.
+9. Project no durable-only fields into Codex.
+10. Default to exactly one Codex `in_progress` step.
+11. Do not emit empty `update_plan` payloads just to satisfy a hook.
+
 ## Zig CLI Iteration Repos
 
 When iterating on the Zig-backed `st` helper CLI path, use these two repos:
@@ -112,12 +134,10 @@ run_st_tool --help
    - Use `deselect` to remove items from the mirrored plan without deleting them from disk.
 9. After each mutation command, consume the emitted `plan_sync: {...}` payload and mirror it into the native runtime tool in the same turn.
    - In Codex, mirrored plan step strings are hook-safe round-trip identifiers in the form `[st-id] step text`; preserve that prefix when updating `update_plan`.
-10. Use `emit-plan-sync` to regenerate the payload from durable state when needed.
-11. If `emit-plan-sync` is unavailable because the installed binary is older, fall back:
-   - Codex: use `emit-update-plan`.
-   - OpenCode: use `show --format json`, map `content=item.step`, normalize `blocked`/`deferred` to `pending`, normalize `canceled` to `cancelled`, and default missing priority to `medium`.
-12. When Codex hooks are enabled in a repo that already uses `.step/st-plan.jsonl`, let SessionStart hydrate `update_plan` from the durable ledger only when the mirrored Codex plan is non-empty, and if the repo opts into the Bash `PreToolUse` guard, require shell work to wait until the transcript shows the exact SessionStart-emitted `update_plan` payload.
+10. Use `st prime --file .step/st-plan.jsonl` to regenerate the payload from durable state when needed.
+11. When Codex hooks are enabled in a repo that already uses `.step/st-plan.jsonl`, let SessionStart hydrate `update_plan` from the durable ledger only when the mirrored Codex plan is non-empty, and if the repo opts into the Bash `PreToolUse` guard, require shell work to wait until the transcript semantically matches the SessionStart-emitted `update_plan` payload.
    - Short-circuit SessionStart sync when the durable inventory is empty or all durable items are terminal/backlog-only; do not emit `update_plan {"plan":[]}` just to satisfy the hook.
+12. Before final delivery, run `st assert-projection --file .step/st-plan.jsonl`.
 13. Export/import snapshots when cross-session handoff is needed.
 
 ## Commands
@@ -141,10 +161,11 @@ st blocked --file .step/st-plan.jsonl --surface backlog --format json
 st show --file .step/st-plan.jsonl --format markdown
 st doctor --file .step/st-plan.jsonl
 st doctor --file .step/st-plan.jsonl --repair-seq
-st emit-plan-sync --file .step/st-plan.jsonl
-st emit-update-plan --file .step/st-plan.jsonl
-st import-update-plan --file .step/st-plan.jsonl --input .step/update-plan.json
-st import-update-plan --file .step/st-plan.jsonl --transcript-path /path/to/codex-rollout.jsonl
+st prime --file .step/st-plan.jsonl
+st assert-projection --file .step/st-plan.jsonl
+st reconcile-codex --file .step/st-plan.jsonl --input .step/update-plan.json
+st reconcile-codex --file .step/st-plan.jsonl --transcript-path /path/to/codex-rollout.jsonl
+st import-proposed-plan --file .step/st-plan.jsonl --input .step/proposed-plan.md --select-ready
 st guard-session-start --file .step/st-plan.jsonl --session-id thread-123
 st guard-pre-tool-use --file .step/st-plan.jsonl --session-id thread-123 --transcript-path /path/to/codex-rollout.jsonl
 st export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
@@ -184,7 +205,7 @@ st reclaim-stale --file .step/st-plan.jsonl --now 2026-03-12T00:00:00Z
   - `open`, `queued` -> `pending`
   - `active`, `doing` -> `in_progress`
   - `done`, `closed` -> `completed`
-- Mutation commands (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`) automatically print a canonical `plan_sync:` payload line plus a legacy `update_plan:` compatibility line after durable write.
+- Mutation commands (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`) automatically print a canonical `plan_sync:` payload line after durable write.
 - Hook-managed reverse sync from Codex into `$st` is projection-only: it may update mirrored-plan membership, mirrored order, `step`, and `status`, but must preserve durable-only metadata such as `deps`, `notes`, `comments`, `claim`, `runtime`, and `proof`.
 - Lock sidecar policy: mutating commands require the lock file (`<plan-file>.lock`, for example `.step/st-plan.jsonl.lock`) to be ignored when inside a git repo. In shared mode, add the lock sidecar to `.gitignore`; in local-only mode, add both the plan file and the lock sidecar to `.git/info/exclude`.
 - Storage model: not append-only growth. Mutations rewrite the JSONL file atomically (`temp` + `fsync` + replace) and compact to a canonical `replace` event plus checkpoint snapshot at the current seq watermark.
@@ -195,21 +216,21 @@ st reclaim-stale --file .step/st-plan.jsonl --now 2026-03-12T00:00:00Z
 
 ## Sync Checklist (`$st` -> native runtime tools)
 
-- After each `$st` mutation (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`), prefer the emitted `plan_sync: {...}` line.
+- After each `$st` mutation (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`), consume the emitted `plan_sync: {...}` line.
 - If no emitted payload is available (for example after `init` or shell piping), run:
-  - `st emit-plan-sync --file .step/st-plan.jsonl`
+  - `st prime --file .step/st-plan.jsonl`
 - Preserve full inventory order from `$st` in `plan_sync.items`.
 - Codex:
   - publish `plan_sync.codex.plan` via `update_plan`.
   - preserve the emitted `[st-id]` prefixes in each step string; they are the stable reverse-sync key back into the durable ledger.
-  - if only a legacy payload is available, use `st emit-update-plan --file .step/st-plan.jsonl`.
 - OpenCode:
   - publish `plan_sync.opencode.todos` via `TodoWrite`.
-  - if only an older binary is available, use `st show --file .step/st-plan.jsonl --format json` and map `content=item.step`, `status=in_progress|completed|pending|cancelled`, and `priority=item.priority` or `medium` when missing.
-- `plan_sync.items` is the full durable inventory. `plan_sync.codex.plan`, `plan_sync.opencode.todos`, and `emit-update-plan` emit only the selected mirrored-plan subset.
+  - if only an older binary is available, fail closed until a binary with `prime` is installed.
+- `plan_sync.items` is the full durable inventory. `plan_sync.codex.plan` and `plan_sync.opencode.todos` emit only the selected mirrored-plan subset.
 - Keep dependency edges only in `$st` (`deps`); do not encode dependencies in `update_plan` or `TodoWrite`.
 - If hooks re-import a Codex plan at Stop, that reverse sync uses the latest mirrored Codex subset as the source of truth only for projected fields, not for the full durable inventory.
 - SessionStart hook hydration must no-op when the mirrored Codex plan is empty after terminal-state demotion or backlog-only filtering.
+- SessionStart hook text must warn that `update_plan` is invalid while Codex is in Plan Mode.
 - If repo-local hooks use the Bash `PreToolUse` guard, keep the guard state local to `$st`; do not write transient hook/session guard state into `.step/st-plan.jsonl`.
 - If an item has `dep_state=waiting_on_deps`, never mirror that item as `in_progress`.
 - Before final response on turns that mutate `$st`, re-check no drift by comparing:
@@ -221,9 +242,9 @@ st reclaim-stale --file .step/st-plan.jsonl --now 2026-03-12T00:00:00Z
 - Run lightweight CLI sanity checks:
   - `run_st_tool --help`
   - `st doctor --file .step/st-plan.jsonl`
-  - `st emit-plan-sync --file .step/st-plan.jsonl`
-  - `st emit-update-plan --file .step/st-plan.jsonl`
-  - `st import-update-plan --file .step/st-plan.jsonl --input <captured-update-plan.json>`
+  - `st prime --file .step/st-plan.jsonl`
+  - `st assert-projection --file .step/st-plan.jsonl`
+  - `st reconcile-codex --file .step/st-plan.jsonl --input <captured-update-plan.json>`
   - `st show --file .step/st-plan.jsonl --surface all --format json`
   - `st show --file .step/st-plan.jsonl --format json`
 

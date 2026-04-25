@@ -99,14 +99,15 @@ Use this only when `.step/st-plan.jsonl` participates in the task.
 
 - `$st` is durable truth. `update_plan` is a selected, user-visible mirror, not a second planner.
 - Mutate durable state only through `st` commands. Do not hand-edit existing JSONL rows.
+- Before shell/file work on multi-step `$st` tasks, run `st prime --file .step/st-plan.jsonl` and publish only `plan_sync.codex.plan` via `update_plan` when it is non-empty.
 - After each `$st` mutation, consume the emitted `plan_sync:` payload and publish `plan_sync.codex.plan` via `update_plan` in the same turn.
-- If no payload is available, run `st emit-plan-sync --file .step/st-plan.jsonl`. Use legacy `emit-update-plan` output only as a fallback for older binaries.
+- If no payload is available, run `st prime --file .step/st-plan.jsonl`. Use `emit-plan-sync` only as an older-binary fallback; binaries without `prime` should generally fail closed.
 - Preserve `[st-id]` prefixes exactly. They are the reverse-sync key; if a row cannot be mapped, fail closed rather than guessing.
 - Keep dependencies, notes, comments, claims, runtime metadata, proof, backlog membership, and durable-only context in `$st`; do not encode them into `update_plan` text.
 - Do not mark a mirrored item `in_progress` unless all `$st` dependencies are complete.
 - Do not emit an empty `update_plan` merely to satisfy a hook when the durable inventory is empty, terminal-only, or backlog-only.
-- Hook behavior is conditional on registered hooks. SessionStart may hydrate `update_plan`; PreToolUse and Stop guards run only if configured. Treat hooks as guardrails, not complete enforcement.
-- Before final delivery on `$st` tasks, regenerate or inspect `plan_sync` and resolve visible drift between durable state and the mirrored plan.
+- Hook behavior is conditional on registered hooks. SessionStart may hydrate `update_plan`; PreToolUse and Stop guards run only if configured. Treat hooks as guardrails, not complete enforcement. Guard comparison is semantic canonical JSON comparison, not raw string equality.
+- Before final delivery on `$st` tasks, run `st assert-projection --file .step/st-plan.jsonl` or regenerate/inspect `plan_sync` and resolve visible drift between durable state and the mirrored plan.
 
 ## Seq Local-First Routing
 

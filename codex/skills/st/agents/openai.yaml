@@ -1,4 +1,4 @@
 interface:
   display_name: "st"
-  short_description: "Persistent repo JSONL plan manager"
-  default_prompt: "Use $st to create or update a repo JSONL plan for this task, and on first use ask whether `.step/st-plan.jsonl` should be committed or locally ignored via `.git/info/exclude`."
+  short_description: "Durable repo JSONL step manager and Codex projection source"
+  default_prompt: "Use $st as the durable step source of truth in `.step/st-plan.jsonl`; prime Codex with `st prime`, mirror only `plan_sync.codex.plan` through Codex `update_plan`, and mutate durable state only through `st` commands."
