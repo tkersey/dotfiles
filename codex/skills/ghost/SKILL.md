@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Create a language-agnostic ghost package (spec + portable tests) from an existing repo by extracting SPEC.md, exhaustive tests.yaml (operations and/or scenarios), INSTALL.md, README.md, VERIFY.md, and upstream LICENSE files with provenance and regeneration instructions. Use when prompts say "$ghost", "ghostify this repo", "spec-ify/spec-package this library", "ghost library", or ask to extract portable spec/tests for libraries or tool-using agent loops (scenario testing); do not use for implementation work or editing skills.
+description: Create a language-agnostic ghost package (spec + portable tests) from an existing repo by extracting SPEC.md, exhaustive tests.yaml (operations and/or scenarios), INSTALL.md, README.md, VERIFY.md, and upstream LICENSE files with provenance and regeneration instructions. Use when prompts say "$ghost", "ghostify this repo", "spec-ify/spec-package this library", "ghost library", or ask to extract portable spec/tests for libraries or tool-using agent loops (scenario testing). When prompts ask for Lean-aided, formal, proved, or machine-checked ghost extraction, keep this skill as the Ghost artifact authority and route Lean-specific modeling/proof work through `$lean`; do not use for implementation work or editing skills.
 ---
 
 # ghost
@@ -14,6 +14,8 @@ Preserve behavior, not prose:
 - code/docs/examples only fill gaps (never contradict evidence)
 
 The output is language-agnostic so it can be implemented in any target language or harness.
+
+When formal assurance is requested, use `$lean` as a proof workbench for the Ghost contract: formalize the portable model, prove selected invariants/case obligations, and feed any proof failures back into `SPEC.md`, `tests.yaml`, or `VERIFY.md`. Lean proof work strengthens extraction quality, but `tests.yaml` and upstream evidence remain the portable contract.
 
 Scenario testing frame (for agentic systems / tool loops):
 - **Given** an initial world state + tool surface + user goal
@@ -75,6 +77,12 @@ It gets harder (but is still possible) when the contract depends on time, random
 - MUST require `layered_agentic` extractions to produce `verification/evidence/interface_inventory.json` and `verification/evidence/contract_traceability.csv`.
 - MUST require `layered_agentic` extractions to map named surfaces, boundary invariants, and persisted artifact contracts to explicit `case_id` values; generated fallback case ids are not sufficient in this mode.
 - MUST run the evidence verifier in strict mode by default; legacy bypass is break-glass only (`--legacy-allow --legacy-reason "<rationale>"`) and never default.
+- MUST use `$lean` as the formal proof partner when the user requests Lean-aided Ghost extraction, formal verification, proof of a Ghost spec, or machine-checked invariants; do not presume file-system access to another skill definition such as `../lean/SKILL.md`.
+- MUST treat Lean proof artifacts as supporting evidence about the portable Ghost contract, not as a replacement for `tests.yaml`, upstream tests/traces, or adapter verification against the upstream implementation.
+- MUST keep temporary Lean workbenches, generated Lean files, adapters, and proof scaffolding out of the Ghost repo unless the user explicitly requests a retained formal adjunct; retained adjunct files must be labeled as formal evidence, not target-language implementation.
+- MUST require `$lean` proof work to follow normal Lean proof discipline: pinned toolchain, project-aware build command, no unsolved goals, no `sorry`, no `admit`, no new `axiom`s, no unexplained `partial`, and no unsound shortcuts.
+- MUST record any `$lean` proof pass/fail in `VERIFY.md`, including proof targets, source revision modeled, Ghost artifacts modeled, toolchain, commands, theorem/case counts, placeholder/axiom check, and limitations.
+- MUST NOT claim Lean proved the upstream library correct unless the upstream implementation was actually formalized or linked to the model by a checked refinement proof; normally Lean proves only the formal Ghost model and generated case obligations.
 
 ## Conformance profiles (required)
 - `Core Conformance`:
@@ -153,12 +161,232 @@ Pick one schema and stay consistent:
 - Protocol/CLI layout: keep `meta.version` for test schema version and include `meta.source_version` for upstream evidence version.
 - Scenario layout: keep `meta.version` for schema version and include `meta.source_version` for upstream evidence version.
 
+## Formal proof mode with `$lean` (optional)
+Use this mode only when the user asks for Lean-aided, formal, proved, machine-checked, theorem-backed, or high-assurance Ghost extraction. Do not make Lean a required part of ordinary Ghost packages.
+
+The Ghost skill remains responsible for language-agnostic artifacts. Route Lean-specific design, theorem statements, proof repair, theorem search, Lake/toolchain handling, and placeholder checks through `$lean`. Do not assume local access to `$lean` source files; invoke/use the skill by name and apply its guidance.
+
+### Formal objective
+A `$lean` pass should answer one or more of these questions:
+- Are the generated `SPEC.md` rules internally coherent?
+- Does every modeled `tests.yaml` case satisfy the formal model?
+- Are claimed invariants actually preserved by the modeled operations/workflows?
+- Are normalization, parsing, serialization, merge, ordering, or state-transition laws true under the stated preconditions?
+- Do trace-level scenario predicates rule out forbidden tools, illegal state mutations, missing confirmations, or budget/step violations?
+
+A `$lean` pass must not override upstream evidence. If Lean, `tests.yaml`, and upstream adapter results disagree, fix the model/spec/test extraction or record a limitation; do not silently privilege the proof model.
+
+### Proof boundary
+Lean may certify:
+- formal model consistency
+- generated case obligations over the Ghost contract
+- algebraic, parser/serializer, normalization, state-machine, or trace invariants
+- refinement from an executable reference algorithm to a declarative formal spec
+
+Lean does not automatically certify:
+- the upstream implementation
+- unmodeled source-language runtime behavior
+- live integrations, network behavior, or production stochastic reliability
+- natural-language rubric quality for agentic systems
+
+Use precise wording: “Lean proved the Ghost model satisfies invariant X and all modeled `tests.yaml` cases conform to that model.” Do not write “Lean proved the upstream library correct” unless that is literally true.
+
+### Workbench policy
+When formalization is useful, create a temporary Lean workbench outside the Ghost repo, for example:
+
+```text
+.ghost-lean-workbench/          # ignored / scratch
+  lean-toolchain
+  lakefile.lean
+  GhostFormal/
+    Portable.lean
+    Model.lean
+    Cases.lean
+    Invariants.lean
+    Workflows.lean
+    Soundness.lean
+  GhostFormal.lean
+```
+
+Do not ship this workbench in the Ghost repo by default. If the user explicitly requests retained formal files, put them in a separate adjunct package or clearly marked folder and explain that they are supporting formal evidence, not required implementation artifacts.
+
+### Formal data model
+Lean types must mirror the portable Ghost contract, not source-language internals.
+
+Prefer:
+- exact integers, rationals, scaled decimals, or decimal strings
+- explicit byte encodings (`hex` or `base64` in `tests.yaml`)
+- structures for portable input/output records
+- `Except Error Output` for deterministic success/error behavior
+- relations for nondeterministic behavior
+- explicit state and transition results for stateful APIs
+- trace-event predicates for agentic scenarios
+
+Avoid:
+- target-language exception mechanics
+- hidden environment inputs like “now”, locale, random seed, or filesystem state
+- binary `Float` unless IEEE-754 behavior is truly contractual
+- deterministic functions for nondeterministic APIs
+- Lean theorem names or proof metadata in `tests.yaml`
+
+### Common formalization patterns
+For deterministic operations:
+
+```lean
+inductive ContractError
+  | invalidInput
+  | outOfRange
+  | unsupported
+  deriving DecidableEq, Repr
+
+structure Input where
+  -- portable fields from tests.yaml
+  deriving DecidableEq, Repr
+
+structure Output where
+  -- portable fields from tests.yaml
+  deriving DecidableEq, Repr
+
+def spec (i : Input) : Except ContractError Output :=
+  -- declarative model or reference algorithm
+```
+
+For nondeterministic/spec-only behavior:
+
+```lean
+def SpecRel (i : Input) (o : Output) : Prop :=
+  -- allowed outputs under explicit assumptions
+
+theorem deterministic_if_claimed :
+  ∀ i o1 o2, SpecRel i o1 -> SpecRel i o2 -> o1 = o2 := by
+  -- only prove and claim this if true
+```
+
+For stateful workflows:
+
+```lean
+structure State where
+  -- portable state fields
+  deriving DecidableEq, Repr
+
+structure StepResult where
+  output : Output
+  state' : State
+  deriving DecidableEq, Repr
+
+def step (s : State) (i : Input) : Except ContractError StepResult :=
+  -- transition model
+
+def StateInvariant (s : State) : Prop :=
+  -- lifecycle/continuity invariant
+
+theorem step_preserves_invariant :
+  ∀ s i r, StateInvariant s -> step s i = Except.ok r -> StateInvariant r.state' := by
+  -- proof via $lean
+```
+
+For agentic scenarios, model controlled traces and hard safety predicates:
+
+```lean
+inductive TraceEvent
+  | toolCall : String -> TraceEvent
+  | stateMutation : String -> TraceEvent
+  | userMessage : String -> TraceEvent
+  deriving DecidableEq, Repr
+
+def NoForbiddenTools (tr : List TraceEvent) : Prop :=
+  ∀ ev, ev ∈ tr -> ¬ match ev with
+    | TraceEvent.toolCall "payments.charge" => True
+    | _ => False
+```
+
+### Case obligations from `tests.yaml`
+Every modeled executable case should map to a stable Lean obligation. Generate or transcribe obligations from `tests.yaml`, not from a separate interpretation of the source tests.
+
+Recommended theorem convention:
+
+```lean
+/-- case_id: normalize.trims_ascii_space -/
+theorem case_normalize_trims_ascii_space :
+  normalize "  abc  " = "abc" := by
+  rfl
+```
+
+For finite ground cases, `native_decide` or `decide` is acceptable when all involved definitions are transparent, finite, and auditable. For laws and invariants, prefer structural proofs over proof-by-computation.
+
+### Proof targets to consider
+Select proof targets that materially improve reimplementation fidelity:
+- duplicate normalized inputs have no contradictory outputs
+- normalization is deterministic/idempotent
+- parser/serializer round trips in the direction the spec claims
+- validation error priority is exclusive and evidence-backed
+- state transitions preserve lifecycle invariants
+- retry/recovery/idempotency claims hold under stated preconditions
+- merge/order/collection laws hold where claimed
+- scenario traces exclude forbidden tools or side effects
+- reference algorithm refines declarative rules
+
+Do not promote an attractive theorem to `SPEC.md` unless upstream evidence or an explicit user requirement justifies making it normative.
+
+### Proof failure handling
+Use failed proof attempts as extraction feedback. Classify each failure as:
+- model bug
+- `SPEC.md` overclaim
+- `tests.yaml` contradiction
+- missing precondition
+- normalization gap
+- nondeterminism modeled as determinism
+- state reset/continuity gap
+- empirical-only property that should not be a theorem
+
+Resolution order:
+1. Recheck upstream tests/traces/docs.
+2. Fix the Lean model if it misstates the portable contract.
+3. Fix `SPEC.md` if it overclaims.
+4. Fix `tests.yaml` if the portable case is wrong or contradictory.
+5. Add an explicit precondition or relation when behavior is partial/nondeterministic.
+6. Record unresolved limitations in `VERIFY.md`.
+
+Do not leave a claimed invariant unproved and still mark it verified.
+
+### `VERIFY.md` proof audit
+When `$lean` was used, add a formal proof audit under `VERIFY.md` `Summary` or `Validation Matrix`:
+
+```markdown
+### Lean formal proof audit
+
+- Skill used: `$lean`
+- Workbench: scratch|retained adjunct|not retained
+- Lean toolchain: ...
+- Build/check command: `lake build`
+- Source revision modeled: ...
+- Ghost artifacts modeled: `SPEC.md`, `tests.yaml`
+- Proof result: pass|fail
+- Proof targets:
+  - case conformance: pass|fail|not attempted, N modeled cases
+  - model determinism: pass|fail|not claimed
+  - normalization idempotence: pass|fail|not claimed
+  - invariant preservation: pass|fail|not claimed
+  - workflow/trace safety: pass|fail|not claimed
+- Placeholder/axiom check: no `sorry`, no `admit`, no new `axiom`
+- Limitations: ...
+```
+
+In `traceability.csv`, use `proof_artifact` values like:
+- `lean:GhostFormal.Soundness.case_parse_valid_minimal`
+- `lean:GhostFormal.Invariants.normalize_idempotent`
+- `adapter:<run_id>`
+- `manual:<source-ref>` only when unavoidable and clearly limited
+
+Lean proof evidence and upstream adapter evidence are complementary; both should be visible in `VERIFY.md` when both were used.
+
 ## Workflow (tests-first)
 
 ### 0) Define scope and contract
 - Write a one-line problem statement naming the upstream repo/revision and target ghost output path.
 - Choose one `tests.yaml` layout (functional, protocol/CLI, or scenario) and keep it consistent across `SPEC.md`, `INSTALL.md`, and `VERIFY.md`.
 - Set success criteria: deterministic cases for every public operation, executable loop coverage for primary stateful workflows, and a recorded verification signal in `VERIFY.md`.
+- If the user requested formal assurance, name the `$lean` proof targets up front (case conformance, invariant preservation, determinism, normalization, parser/serializer laws, state-machine safety, or trace safety) and keep those targets aligned with `SPEC.md` claims.
 
 For agentic systems, define success criteria as:
 - critical scenarios expressed in a controlled tool sandbox
@@ -225,6 +453,7 @@ For `layered_agentic` suites, also harvest:
 - Specify every public operation with inputs, outputs, rules, and edge cases.
 - When an operation yields both a "prepared" value and a "persisted delta" (or similar), define the delta derivation mechanically (slice/filter/identity rules) and test it.
 - Specify cross-operation invariants for primary workflows (state transitions, required ordering, and continuity guarantees).
+- If `$lean` formalization is requested, write invariants as precise, evidence-backed rules with explicit preconditions so they can become theorem statements; do not include attractive but unproved laws as normative claims.
 - For scenarios, specify:
   - state model and transition triggers
   - recovery/idempotency behavior
@@ -269,6 +498,17 @@ For `layered_agentic` suites, also harvest:
 - If the extraction is `layered_agentic`, require explicit `case_id` on every executable case and map those ids into surface/invariant/artifact evidence; do not rely on verifier-generated fallback ids.
 - If the source returns floats, prefer defining stable rounding/formatting rules so `output` is exact.
 - Follow the format in `references/templates.md`.
+- If `$lean` formalization is requested, ensure modeled cases have stable `case_id` values and portable inputs/outputs that can be translated directly into Lean obligations without depending on source-language internals.
+
+### 4.5) Optional formal proof pass with `$lean`
+- Use this step only when the prompt asks for Lean-aided/formal/proved Ghost extraction or when formal proof is clearly part of the requested assurance level.
+- Route Lean-specific proof construction, theorem repair, theorem search, Lake/toolchain checks, and placeholder/axiom audits through `$lean`; do not read or assume local skill files.
+- Build the Lean model from the already-normalized Ghost contract (`SPEC.md` + `tests.yaml`), not from a separate, drifting interpretation.
+- Generate or transcribe one Lean case obligation for every modeled executable `case_id`.
+- Prove only properties that the Ghost contract actually claims; remove or weaken any `SPEC.md` claim that fails under the formal model.
+- Keep the Lean workbench temporary unless the user explicitly requests a retained adjunct.
+- Run the project-aware Lean check/build command and record the exact result in `VERIFY.md`.
+- Confirm there are no `sorry`, `admit`, new `axiom`s, unsolved goals, or unsound shortcuts before marking any formal target as passed.
 
 ### 5) Add `INSTALL.md` + `README.md` + `VERIFY.md` + `LICENSE*`
 - `INSTALL.md`: a short prompt for implementing the library in any language, referencing `SPEC.md` and `tests.yaml`.
@@ -282,6 +522,7 @@ For `layered_agentic` suites, also harvest:
   - include the exact commands used to run verification and the resulting pass/skip counts
   - include any environment normalization assumptions
   - include a summary of `verification/evidence/` and the verifier command/result
+  - if `$lean` was used, include a Lean formal proof audit with the skill name `$lean`, toolchain, build command, modeled artifacts, proof targets, theorem/case counts, placeholder/axiom check, pass/fail result, and limitations
   - if legacy verifier bypass is used, include explicit break-glass rationale and follow-up remediation plan
 - `LICENSE*`: preserve the upstream repo’s license files verbatim.
   - copy common files like `LICENSE`, `LICENSE.md`, `COPYING*`
@@ -298,7 +539,7 @@ For `layered_agentic` suites, also harvest:
   - summarize how to run it (and results) in `VERIFY.md`
 - Build a fail-closed evidence bundle in `verification/evidence/`:
   - `inventory.json` (public operations + primary workflows, including reset requirements; optional `coverage_mode`, and `sampled_case_ids` when `coverage_mode=sampled`; optional `contract_class=default|layered_agentic`, defaulting to `default`)
-  - `traceability.csv` (operation/workflow -> case ids -> proof artifact -> adapter run id)
+  - `traceability.csv` (operation/workflow -> case ids -> proof artifact -> adapter run id; when `$lean` is used, `proof_artifact` may cite a named Lean theorem such as `lean:GhostFormal.Soundness.case_<id>`)
   - `workflow_loops.json` (loop cases + continuity assertions + reset assertions when required)
   - `adapter_results.jsonl` (case-level results with `run_id`, `case_id`, `status`, and mutation marker)
   - `mutation_check.json` (required mutation count + detected failures + pass/fail)
@@ -321,6 +562,7 @@ For `layered_agentic` suites, also harvest:
 ## Reproducibility and regen policy
 - The ghost repo must be reproducible: a future developer should be able to point at the upstream revision and rerun the extraction + verification.
 - Do not add regeneration scripts as tracked files unless the user explicitly asks; put the recipe in `VERIFY.md` instead.
+- If `$lean` was used, the regeneration recipe must say how to recreate the formal workbench or proof obligations, run the Lean build/check command, and reconcile proof failures with Ghost artifacts.
 
 ## Output
 Produce only these artifacts in the ghost repo:
