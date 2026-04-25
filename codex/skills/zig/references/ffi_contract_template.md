@@ -1,15 +1,14 @@
-# FFI Contract Template
+# FFI contract template
 
-Use one row per raw symbol. Keep the table next to the wrapper module or in the PR notes.
+Use one row per external symbol or pointer-bearing boundary.
 
-| Symbol | C signature | Zig wrapper | Nullability | Length source | Ownership in/out | Lifetime | Thread-safety | Error mapping | Linkage |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `sqlite3_open` | `int sqlite3_open(const char*, sqlite3**)` | `Db.open` | path non-null, out ptr non-null | N/A | caller owns path buffer, callee initializes handle | handle valid until `sqlite3_close` | thread-safe per SQLite mode | non-zero -> `error.OpenFailed` | `linkLibC` + `linkSystemLibrary("sqlite3")` |
+| Symbol | Direction | Nullability | Length/source | Mutability | Ownership in | Ownership out | Lifetime | Thread-safety | Error mapping | Cleanup | Link proof |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `c.symbol` | Zig -> C | non-null/nullable | explicit len/sentinel/global | const/mut | borrowed/owned/transferred | borrowed/owned/transferred | caller/callee/static | safe/unsafe/locked | errno/result/out-param | `deinit`/`free`/none | command/test |
 
-Checklist:
+Boundary review checklist:
 
-1. Put raw `extern fn` declarations in a small boundary module.
-2. Centralize `@ptrCast`, sentinel conversion, null handling, and errno/result translation in the Zig wrapper layer.
-3. Mirror boundary assumptions in wrapper types, asserts, or witness constructors.
-4. Test happy path, null or invalid inputs, out-param initialization, cleanup, and link wiring.
-5. If the upstream C dependency changes, compare signatures and ABI expectations before trusting the upgrade.
+- Keep translated C imports or raw `extern` declarations in a small boundary module.
+- Centralize `@ptrCast`, `@alignCast`, sentinel conversion, null checks, errno mapping, and cleanup.
+- Test happy path, invalid/null inputs, out-param initialization, cleanup, and link wiring.
+- When ABI or layout matters, use `@sizeOf`, `@alignOf`, `@offsetOf`, explicit enum tag/backing types, and target-aware tests.

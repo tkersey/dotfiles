@@ -1,31 +1,19 @@
+//! Allocation-failure coverage template for Zig 0.16.x.
+
 const std = @import("std");
 
-fn duplicateTwice(alloc: std.mem.Allocator, input: []const u8) !void {
-    const first = try alloc.dupe(u8, input);
-    defer alloc.free(first);
+fn work(allocator: std.mem.Allocator, input: []const u8) !void {
+    const copy = try allocator.dupe(u8, input);
+    defer allocator.free(copy);
 
-    const second = try alloc.dupe(u8, first);
-    defer alloc.free(second);
-
-    try std.testing.expectEqualStrings(input, second);
+    // Add the code path under test here. Keep ownership explicit.
+    try std.testing.expectEqualSlices(u8, input, copy);
 }
 
-test "check all allocation failures" {
+test "allocation failure coverage" {
     try std.testing.checkAllAllocationFailures(
         std.testing.allocator,
-        duplicateTwice,
-        .{"zig"},
-    );
-}
-
-test "pin a fail index as regression seed" {
-    var failing = std.testing.FailingAllocator.init(
-        std.testing.allocator,
-        .{ .fail_index = 0 },
-    );
-
-    try std.testing.expectError(
-        error.OutOfMemory,
-        duplicateTwice(failing.allocator(), "zig"),
+        work,
+        .{"seed"},
     );
 }

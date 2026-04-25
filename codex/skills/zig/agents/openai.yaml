@@ -1,4 +1,27 @@
 interface:
   display_name: "Zig"
-  short_description: "Build, lint, test, fuzz, migrate, harden boundaries, and optimize Zig 0.16.0 workflows"
-  default_prompt: "Use $zig to handle Zig 0.16.0 implementation, migration, profiling, FFI, concurrency, and performance workflows. Treat the Zen of Zig as the governing first principle, then emphasize witness-driven boundaries, lint when available, Smith-based differential fuzzing and allocation-failure checks, std.Io/process.Init migration awareness, build-system translate-c over new @cImport usage, dependency provenance, and deliberate profiling-stack choice: benchmark for proof, zprof for allocator and leak questions, and system or telemetry profilers for CPU or concurrency hotspots."
+  short_description: "Build, lint, test, fuzz, migrate, harden, profile, and design expert Zig 0.16.0 systems code"
+  default_prompt: >-
+    Use $zig for Zig 0.16.0 implementation, migration, build, lint, fuzz,
+    profiling, FFI, concurrency, memory ownership, allocator architecture,
+    unsafe-boundary review, ABI/layout/MMIO/wire-format engineering, explicit
+    std.Io/effect injection, expert comptime/metaprogramming/reflection,
+    dependency, and performance work. Verify the toolchain before
+    version-sensitive edits; treat std.Io/process.Init, build-system
+    translate-c, @Type removal, Smith fuzzing, project-local zig-pkg, --fork,
+    --test-timeout, and Thread.Pool removal as 0.16.0 migration hotspots. For
+    comptime-heavy work, always produce the comptime contract: compile-time
+    inputs, runtime inputs, generated/specialized artifact, runtime path,
+    invalid compile-time failures, cost/specialization risk, and proof fixtures.
+    For low-level systems work, always produce the systems contract: ownership,
+    allocator, lifetime/cleanup, pointer/slice/sentinel/alignment, error-set and
+    failure path, I/O/effect capability, layout/ABI/endian, concurrency/atomic
+    ordering, target/build-mode validation, and test/fuzz/profile evidence.
+    Prefer explicit comptime T: type for type-subject APIs, constrain anytype
+    with a documented typeclass, centralize @typeInfo reflection, and replace
+    removed @Type forms with @Int, @Tuple, @Pointer, @Fn, @Struct, @Union,
+    @Enum, and @EnumLiteral. Prefer built-in formatting/static checks first, use
+    zlinter#0.16.x for third-party linting on stable 0.16, and keep all proof
+    lanes explicit. Benchmark for performance proof, use zprof v4 for allocator
+    and leak questions, and use system or telemetry profilers for CPU, locks,
+    and timeline causality.
