@@ -15,12 +15,14 @@ Context:
 
 Constraints:
 - treat comments as claims, not truths
+- construct the strongest no-change countercase for each comment
 - use $seq if the original why of this PR is unclear
 - do not implement changes yet
 
 Done when:
 - each comment is classified
 - the bottom line says what to act on, rebut, defer, or investigate
+- any governing invariant behind repeated comments is named
 - the handoff agenda says whether this should go to $accretive-implementer or $fixed-point-driver
 ```
 
@@ -34,7 +36,15 @@ Comments:
 3. Please rename the public method to refreshSessionNow.
 4. Add a property-based test.
 
-Return only the fast output.
+Return only:
+- Act On
+- Rebut
+- Defer / Out of Scope
+- Need Evidence
+- Invariant-Level Handoff
+- Acceptance Skew Audit
+- Handoff Agenda
+- Adjudication Bottom Line
 ```
 
 ## Intent recovery first
@@ -48,4 +58,19 @@ Constraints:
 - explicitly use $seq to recover the PR why from sessions and memories
 - prefer session-backed evidence over memory-only recall
 - do not change code
+- if every comment is accepted, justify why this is not rubber-stamping
+```
+
+## Rebuttal-heavy review
+```md
+Use $review-adjudication for this task.
+
+Goal:
+Discriminately evaluate these PR comments. I do not want to ignore real reviews, but I do want to avoid rubber-stamping.
+
+Constraints:
+- for every comment, write the strongest no-change countercase
+- act only when current artifacts defeat that countercase
+- separate valid concern from valid proposed fix
+- cluster repeated comments by governing invariant
 ```

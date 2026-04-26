@@ -35,3 +35,6 @@ Use `$seq` only for rationale recovery, provenance, and artifact-backed why ques
 
 ## Failure rule
 If `$seq` is unavailable or does not yield usable rationale, say so explicitly. Do not fabricate recovered intent.
+
+## Adjudication caveat
+Use `$seq` to recover rationale, not to manufacture obligations. A recovered plan can explain why a comment matters, but current artifacts still decide whether the comment is grounded, stale, or in scope.

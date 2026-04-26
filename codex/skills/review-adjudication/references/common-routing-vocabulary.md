@@ -17,6 +17,28 @@ Use routing terms consistently across adjudication, orchestration, and closure.
 - `defer`
 - `need-evidence`
 
+## No-change countercase status
+- `defeated`
+- `not-defeated`
+- `unresolved`
+
+## Proposed-fix validity
+- `valid`
+- `partially-valid`
+- `wrong-fix`
+- `overbroad`
+- `under-specified`
+- `not-applicable`
+
+## Reframe type
+- `none`
+- `governing-invariant`
+- `source-of-truth-rule`
+- `ownership-boundary`
+- `soundness-obligation`
+- `api-contract`
+- `validation-only`
+
 ## Remediation posture
 - `no-change`
 - `rebut`
@@ -26,8 +48,8 @@ Use routing terms consistently across adjudication, orchestration, and closure.
 
 ## Workflow states
 - `ready`
-- `conditionally ready`
-- `needs remediation`
+- `conditionally-ready`
+- `needs-remediation`
 - `needs-decision`
 - `blocked`
 
