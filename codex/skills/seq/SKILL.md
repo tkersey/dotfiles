@@ -343,6 +343,17 @@ seq token-usage --root ~/.codex/sessions \
   --top 20 \
   --format table
 ```
+Self-auditing accounting proof for user-visible token totals:
+```bash
+seq token-usage --root ~/.codex/sessions \
+  --since 2026-03-26T00:00:00-07:00 \
+  --until 2026-03-27T00:00:00-07:00 \
+  --tz local \
+  --summary \
+  --audit \
+  --format table
+```
+Use `--audit` when the answer needs to explain or defend the number. It reports the monotonic `total_token_usage` delta total, the naive `last_token_usage` total, duplicate-total rows excluded, reset events, null/missing-total rows, requested/observed span days, and bucket counts. State the scope explicitly: this is local `~/.codex/sessions` corpus accounting, not OpenAI billing, organization-wide usage, or server-side metering.
 
 ### 9) Reproducible perf harness
 Run stable workloads with fixed warmup/sample counts and optional baseline comparison.
@@ -543,8 +554,9 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 - `query.params` is now parsed and routed into dataset collectors for dataset-specific source overrides.
-- `token-usage` now supports `--tz utc|local|+HH:MM|-HH:MM`, `--summary`, `--group-by day|path`, and `--path` / `--session-id` targeting for exact scope reporting.
+- `token-usage` now supports `--tz utc|local|+HH:MM|-HH:MM`, `--summary`, `--audit`, `--group-by day|path`, and `--path` / `--session-id` targeting for exact scope reporting.
 - Prefer `token-usage` over generic `query` for "since yesterday/last Thursday", daily averages, or local-calendar token questions; reserve `token_deltas` queries for lower-level accounting checks.
+- For disputed daily averages, run `token-usage --summary --audit` and report both the authoritative monotonic total and the naive last-token overcount fields, with the local-corpus-not-billing boundary.
 - Session-tooling datasets now include `tool_invocations` and `tool_call_args` in addition to `tool_calls`.
 - `tool_calls` now exposes raw argument/input text plus command/workdir fields: `arguments_text`, `input_text`, `command_text`, `primary_executable`, `workdir`, `parse_error`.
 - `tool_invocations` adds lifecycle fields such as `end_timestamp`, `pty_session_id`, `wall_time_ms`, `exit_code`, `running_state`, and `unresolved`.
