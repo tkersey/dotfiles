@@ -1,20 +1,21 @@
-Iteration: 7
+Iteration: 3
 
-# Add Self-Auditing Token Usage Proof To `$seq`
+# Move `$parse` Onto Raw `parse-arch collect`
 
 ## Round Delta
-- Converted the `$grill-me` contract into an additive `seq token-usage --audit` implementation campaign.
-- Locked exact output behavior: stable audit fields, report-only anomalies, appended audit row for grouped output, summary-row enrichment for `--summary`.
-- Added deterministic fixtures, real-corpus proof, release/tap proof, and rollback criteria.
+- Converted the `$grill-me` output into the full `$plan` contract with iteration proof, traceability, rollout, rollback, and signoff surfaces.
+- Locked the campaign order: implement `parse-arch` local-build contract first, delete `.dotfiles` helper against that local proof, then complete release/tap closure.
+- Added explicit stale-CLI contract checking so `$parse` fails closed when raw CLI output lacks the new stable fields.
 
 ## Summary
-Goal: make suspiciously large `seq token-usage` totals self-proving for the local Codex session corpus. Chosen path: add an explicit `--audit` flag to `token-usage` that preserves existing output by default, then emits scan counters, raw duplicate diagnostics, monotonic-vs-naive reconciliation, and clearer day-denominator fields only when requested. First wave: implement the audit collector and output contract in `skills-zig`; done means released `seq` via Homebrew reproduces the audit fields on both deterministic fixtures and `~/.codex/sessions`.
+Objective: make `parse-arch` 0.2.0 own the full `$parse` collection contract so `codex/skills/parse/scripts/run_parse_collect.sh` can be deleted. Chosen path: add stable read-depth diagnostics directly to `parse-arch collect`, validate with local `zig-out/bin/parse-arch`, update `.dotfiles` to raw CLI usage, then publish and prove the Homebrew-installed binary. Done means no helper references remain, local and installed CLIs emit the same contract fields, and tap proof passes.
+
+First execution wave is in `skills-zig`: implement the CLI JSON contract without broad architecture scoring retunes. Second wave is `.dotfiles`: delete the helper and update skill docs/prompts. Third wave is release propagation: publish `parse-arch-v0.2.0` and update `homebrew-tap`.
 
 ## Implementation Brief
-1. step=wire CLI flag; owner=implementer; success_criteria=`seq token-usage --help` documents `--audit` and unsupported commands reject it.
-2. step=add audit collector; owner=implementer; success_criteria=raw bounded token-count events produce duplicate/reset/null/missing-total counters before dedupe.
-3. step=integrate output rows; owner=implementer; success_criteria=summary audit enriches one row and grouped audit appends one `row_kind=audit` row after bucket trimming.
-4. step=add deterministic tests; owner=implementer; success_criteria=fixtures prove duplicate-last overcount, reset handling, all output modes, and non-audit compatibility.
-5. step=update `$seq` docs; owner=implementer; success_criteria=skill shows `--audit` examples and states local-corpus-not-billing scope.
-6. step=validate locally; owner=implementer; success_criteria=`zig build test`, relevant golden tests, `zig build bench -Doptimize=ReleaseFast -- --config perf/frozen/workload_config.json`, and real `~/.codex/sessions` audit run pass.
-7. step=release; owner=implementer; success_criteria=next `seq` patch tag, successful release workflow, Homebrew formula update, strict audit, upgrade/test, installed `seq --version`, and installed `token-usage --audit` proof.
+1. step=implement_cli_contract; owner=skills-zig implementer; success_criteria=`parse-arch collect` always emits stable read-depth fields and focused runs report `focused`.
+2. step=extend_eval_suite; owner=skills-zig implementer; success_criteria=eval cases assert verdict/classes/suggestions and fail on regression.
+3. step=local_build_proof; owner=skills-zig implementer; success_criteria=build/test/eval plus `.dotfiles` and `skills-zig` smoke checks pass using `./zig-out/bin/parse-arch`.
+4. step=delete_dotfiles_helper; owner=.dotfiles implementer; success_criteria=helper file removed, docs/prompts use raw CLI, quick_validate passes, no helper references remain.
+5. step=release_parse_arch_020; owner=release implementer; success_criteria=`parse-arch-v0.2.0` assets published for Darwin arm64 and Linux x86_64.
+6. step=update_homebrew_tap; owner=tap implementer; success_criteria=formula version/SHA updated and brew audit/test/upgrade plus installed field smoke pass.
