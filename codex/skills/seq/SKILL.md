@@ -32,11 +32,18 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
      - `session-prompts` for "what did that session actually say" and transcript proof.
      - `session-tooling` for shell/tool summaries.
      - `orchestration-concurrency` for ledger/concurrency proof.
+     - `sessions` for trace inventory: session ids, paths, cwd/repo, status, model, token totals, and worker kind.
+     - `turns` for canonical turn-level questions: per-turn status, user/final previews, duration, tokens, compaction, and errors.
+     - `session-detail` for full per-session proof: session metadata, turns, tools, graph edges, and warnings in one JSON or markdown artifact.
+     - `tool-lifecycle` when lifecycle completeness matters: declared/completed/failed/unresolved calls, exit/status/output evidence, and typed tool endings.
+     - `session-graph` for worker/orchestrator relationships, including parent/worker proof paths and DOT output.
+     - `tail` for active sessions or one-shot trace event status from the current/newest rollout.
      - `query --spec ... memory_files` for memory artifact inventory/routing.
      - `opencode-prompts` / `opencode-events` only when the literal gate is satisfied.
   3. `query-diagnose` when a `seq query` run needs lifecycle debugging or deterministic next actions.
   4. Generic `seq query` only when no specialized command covers the question.
 - Treat `query-diagnose` as a diagnostic tool for `seq query`, not the default artifact-discovery entrypoint.
+- Preserve the broad artifact-forensics ladder: start with `artifact-search` or `plan-search`, then specialized memory/session/tooling/orchestration/trace surfaces, then `query-diagnose`, and only then generic `query`.
 
 ## Memory Artifact Model
 - Treat `~/.codex/memories` as a file-backed memory workspace, not an opaque store.
