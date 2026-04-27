@@ -92,13 +92,78 @@ Avoid recursion only when the work is intrinsically serial, branch boundaries ar
 
 ## Skill routing
 
-Skills are the canonical source for detailed workflow mechanics. Activate the relevant skill when the request names it or matches its description.
+Skills are workflow selectors, not magic words. Do not wait for an explicit `$skill` when the request clearly matches a skill description or the situation fits one of the routing rules below. Use the smallest useful skill stack. Skill docs remain canonical for command syntax and detailed mechanics; this file owns implicit-trigger policy, side-effect boundaries, challenge escalation, and recursive orchestration posture.
 
-- Use `$st` for durable task state, dependency tracking, selected mirrored plans, claims, execution metadata, proof, checkpoints, and cross-turn resumption.
-- Use `$seq` for session, transcript, artifact, memory, orchestration, provenance, stale-context, and tool-trace forensics.
-- Use `$learnings` for evidence-backed recall, capture, browsing, querying, promotion, supersession, and implementation-turn learning closure.
+When multiple skills apply, prefer this stack shape: understand the repo/context -> escalate the frame if useful -> lock invariants -> implement -> verify/review -> close -> capture learnings.
+
+### Implicit default rails
+
+- Non-trivial implementation, remediation, migration, hardening, repair, or review-driven code changes -> `accretive-implementer`.
+- Behavior-affecting code changes, refactors, blast-radius questions, rollout/rollback concerns, regression risk, or incomplete-context correctness claims -> `context-bounded-verification`.
+- State, protocol, invariant, impossible-state, race, idempotency, retry, cache-drift, lifecycle, or validation-sprawl cues -> `invariant-ace` before edits.
+- Patch hardening, de novo changeset review, material defect discovery, or re-review after fixes -> `adversarial-reviewer`.
+- Final readiness, closure gates, fixed-point claims, or "is this ready?" after material work -> `verification-closure`.
+- Review comments, reviewer suggestions, or "should we act on this?" before implementation -> `review-adjudication`.
+- Exhaustive hardening, repeated review/fix loops, "drive this to closure," or "find all impactful issues" -> `fixed-point-driver`.
+
+### Challenge escalation skills
+
+- If the first answer is merely adequate, obvious, locally polished, stalled, or missing the governing move, invoke escalation skills implicitly.
+- Use `glaze` for a deeper pass, `latent-diver` for non-obvious frames, `accretive` for the single dominant high-leverage move, `dominance` to judge competing moves, and `asi` when the task deserves a 10x/systemic ambition pass with concrete cash-out.
+- Challenge escalation is not capped. Re-run escalation whenever new friction, new evidence, a better frame, or a higher-leverage opportunity appears.
+
+### Repo understanding and structural lenses
+
+- Unfamiliar repo, "what does this do?", onboarding, or systematic codebase exploration -> `codebase-archaeology`.
+- Current architecture, repo dialect, seam fit, implementation placement, dependency direction, or docs-vs-code architecture drift -> `parse`.
+- Local readability, branching, control-flow, cognitive complexity, or "this is too complex" -> `complexity-mitigator`.
+- Need a stronger shape-of-truth, seam, model, invariant boundary, or conceptual compression -> `universalist`.
+- Too many layers, frameworks, dependencies, tools, adapters, abstractions, or indirection -> `reduce`.
+- Behavior-preserving simplification, DRY, isomorphic refactor, or net-negative LOC objective -> `simplify-and-refactor-code-isomorphically`.
+- Broad repo, security, API, UX/accessibility, performance, copy, CLI, maintainability, or launch-readiness audit -> `codebase-audit`; if AGENTS permits recursive orchestration and the audit naturally decomposes into independent read-only scopes, use recursive fanout.
+- Interface, flow, CLI UX, accessibility, cognitive-load, or usability review -> `ux-audit`.
+
+### Performance, language, and proof rails
+
+- Optimization, speed, latency, throughput, memory, allocations, p95/p99, scalability, or performance regression language -> `lift`.
+- Measurement-only hotspot, flamegraph, profile attribution, or "why is this slow?" -> `profiling-software-performance`; hand off to `lift` if code changes are requested.
+- Zig files, `build.zig`, `build.zig.zon`, Zig toolchain, comptime, allocator ownership, FFI, concurrency, or Zig performance -> `zig`.
+- Lean files, Lake, `lean-toolchain`, proof repair, formalization, termination, mathlib, or correctness proofs -> `lean`.
+
+### Discovery, strategy, and planning
+
+- Fuzzy product/project opportunity, "what should we build/improve?", or ideation that needs research-backed narrowing -> `ideate`.
+- Options, tradeoffs, strategy portfolio, divergent approaches, or multiple viable directions before choosing -> `creative-problem-solver`.
+- Ambiguous/conflicting requirements where implementation would be premature -> `grill-me`.
+- Serious planning artifact, plan refinement, architecture plan, implementation campaign, or decision-complete `<proposed_plan>` output -> `plan`; ordinary `update_plan` use alone does not imply `plan` or `$st`.
+
+### Language, wording, and cross-modal lenses
+
 - Use `synesthesia` for architecture review, debugging weird/flaky behavior, performance diagnosis, maintainability critique, onboarding explanations, and implementation comparisons when a cross-modal lens may reveal structure or friction.
 - Do not use `synesthesia` for exact API syntax, compliance/legal interpretation, security sign-off, or mechanical edits with no explanatory component. When used, translate every metaphor back into concrete engineering implications and next actions.
+- Naming, wording, doctrine, terminology, or language craft -> `logophile` only when that output is explicitly requested.
+
+### Lifecycle and publication
+
+- Evidence-backed recall, capture, browsing, querying, promotion, supersession, implementation-turn learning closure, or durable lesson hygiene -> `$learnings`.
+- Durable task state, dependency tracking, selected mirrored plans, claims, execution metadata, proof, checkpoints, and cross-turn resumption -> `$st`. Ordinary `update_plan` use alone does not imply `$st`.
+- Session, transcript, artifact, memory, orchestration, provenance, stale-context, and tool-trace forensics -> `$seq`. Ordinary current-repo code search does not imply `$seq`.
+- Open or update a PR without merging -> `ship`.
+- Merge, land, or finish a PR -> `fin`, after required checks, approvals, and explicit merge/land intent.
+
+### Tightly gated skills
+
+- Use `cas` only on clear app-server transport, detached review-session, or review-session control cues.
+- Use `cron` only on clear local automation or schedule-management intent.
+- Use `ghost` only on explicit or very clear ghost/spec package, portable reproduction bundle, or generated proof/test harness package intent.
+- Use `deckset` only for decks, slides, presentations, or Deckset output.
+- Use `ms` for skill creation/editing; use `refine` for existing-skill refinement.
+- Use `prove-it` for absolute claims, proof gauntlets, adversarial stress tests, or explicit "prove it" requests. Do not trigger its heavy loop merely because ordinary verification is useful.
+
+### Side-effect boundary
+
+- Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `$seq`, `cas`, `cron`, `ship`, `fin`, `ghost`, `deckset`, `ms`, `refine`, `logophile`, and `prove-it` gated to the cues above; do not trigger them merely because they are adjacent.
+- When a skill doc is more conservative about recursive orchestration than this file, this file's recursive-orchestration posture wins. Use recursive delegation for decomposable work when it improves coverage, convergence, evidence quality, or separation of concerns.
 
 ## Plan Sync (`$st` <-> Codex `update_plan`)
 
