@@ -1,235 +1,236 @@
 # Domain Checklists
 
-Use these as starting points. Tailor to the stack and risk profile.
-
----
+Use these as starting points. Tailor the audit to the stack, threat model, and user-provided scope.
 
 ## Security
 
 ### Checklist
-- [ ] Input validation / sanitization
-- [ ] SQL/NoSQL injection prevention
-- [ ] XSS prevention
-- [ ] CSRF protection
-- [ ] Authentication / authorization
-- [ ] Secrets management (no hardcoded keys)
-- [ ] Path traversal prevention
+
+- [ ] Input validation and output encoding
+- [ ] SQL/NoSQL/LDAP/template injection prevention
+- [ ] XSS and unsafe DOM rendering
+- [ ] CSRF protection for state-changing browser actions
+- [ ] Authentication and authorization checks on every sensitive path
+- [ ] Multi-tenant isolation and ownership checks
+- [ ] Secrets management and credential exposure
+- [ ] Path traversal, arbitrary file read/write, and archive extraction safety
+- [ ] Command injection and unsafe subprocess calls
+- [ ] SSRF and unsafe outbound fetches
+- [ ] Deserialization and parser risks
 - [ ] Error message information leakage
-- [ ] Encryption at rest and in transit
-- [ ] Dependency vulnerabilities
+- [ ] Crypto, token, session, and cookie settings
+- [ ] Dependency vulnerabilities and risky transitive packages
 
 ### Quick Grep
+
 ```bash
-# Panics and unsafe unwraps (Rust)
+# Rust panics / unsafe error paths
 rg -n "unwrap\(\)|expect\(|panic!|unreachable!" --type rust
 
-# Code injection (JS/Python)
-rg -n "eval\(|exec\(|Function\(" --type js --type py
+# Code injection primitives
+rg -n "eval\(|exec\(|Function\(|child_process|subprocess|os\.system|popen" --type js --type ts --type py
 
-# DOM injection (Web)
-rg -n "innerHTML|outerHTML|dangerouslySetInnerHTML|v-html" --type ts --type js --type vue
+# DOM injection
+rg -n "innerHTML|outerHTML|dangerouslySetInnerHTML|v-html" --type ts --type tsx --type js --type jsx --type vue
 
 # Hardcoded secrets
-rg -n "password|secret|api_key|private_key|token" --type-not lock -i
-rg -n "sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{36}"  # OpenAI/GitHub
+rg -n "password|secret|api_key|private_key|token|bearer" --type-not lock -i
+rg -n "sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{36}|xox[baprs]-" --type-not lock
 
-# SQL building (potential injection)
-rg -n "format!.*SELECT|execute.*\+" --type rust
-rg -n 'f"SELECT|f\'SELECT' --type py
+# SQL construction
+rg -n "format!.*SELECT|SELECT.*\{|execute.*\+|query.*\+" --type rust --type js --type ts
+rg -n "f\"SELECT|f'SELECT|\.format\(.*SELECT" --type py
+
+# Filesystem traversal candidates
+rg -n "readFile|writeFile|createReadStream|open\(|File\(|PathBuf|join\(|resolve\(" --type js --type ts --type py --type rust
 ```
 
 ### Tools
-```bash
-cargo audit                    # Rust deps
-npm audit --json              # Node deps
-bandit -r . -f json           # Python security
-semgrep --config=p/security-audit .
-gitleaks detect --source .    # Secret detection
-```
 
----
+```bash
+cargo audit
+npm audit --json
+pnpm audit --json
+bandit -r . -f json
+semgrep --config=p/security-audit .
+gitleaks detect --source .
+```
 
 ## UX / Accessibility
 
 ### Checklist
+
 - [ ] Keyboard navigation works end-to-end
-- [ ] Screen reader support (aria-*, labels)
-- [ ] Color contrast meets 4.5:1
-- [ ] Focus indicators visible
-- [ ] Skip links or landmarks exist
-- [ ] Form labels and error messaging clear
-- [ ] Loading and empty states guide users
-- [ ] Mobile responsiveness verified
+- [ ] Focus indicators are visible and logical
+- [ ] Screen reader support: labels, landmarks, ARIA used correctly
+- [ ] Color contrast and non-color affordances
+- [ ] Forms have clear labels, validation, and recovery paths
+- [ ] Loading, empty, error, and success states guide the user
+- [ ] Mobile/responsive behavior is accounted for
+- [ ] Destructive actions have clear confirmation and undo/recovery when appropriate
+- [ ] User flows match likely intent and do not dead-end
 
 ### Quick Grep
+
 ```bash
-# Missing alt text
-rg -n '<img(?![^>]*alt=)' --type html --type tsx
+# Missing alt text candidates
+rg -n "<img(?![^>]*alt=)" --type html --type tsx --type jsx
 
-# ARIA issues
-rg -n 'aria-hidden="true"' --type tsx | grep -i "button\|link\|input"
+# Interactive elements with possible missing labels
+rg -n "<button[^>]*(></button>|aria-label=\"\")|role=\"button\"" --type tsx --type jsx --type html
 
-# Focus management
-rg -n "tabIndex|tabindex" --type tsx --type html
+# ARIA/focus candidates
+rg -n "aria-hidden=\"true\"|tabIndex|tabindex|autoFocus" --type tsx --type jsx --type html
 
-# Forms without labels
-rg -n '<input(?![^>]*(id=|aria-label))' --type html
+# Form fields
+rg -n "<input|<select|<textarea" --type tsx --type jsx --type html
 ```
 
 ### Tools
-```bash
-npx axe-cli https://localhost:3000    # Accessibility
-npx lighthouse --only-categories=accessibility
-```
 
----
+```bash
+npx axe-cli http://localhost:3000
+npx lighthouse --only-categories=accessibility http://localhost:3000
+```
 
 ## Performance
 
 ### Checklist
-- [ ] N+1 query patterns eliminated
-- [ ] Indexes on frequently queried columns
-- [ ] No allocations in hot paths
-- [ ] Caching for expensive operations
-- [ ] No sync blocking in async code
-- [ ] Pagination on large datasets
-- [ ] Memory leaks (unclosed resources)
-- [ ] Bundle size optimized (frontend)
-- [ ] Lazy loading where appropriate
+
+- [ ] N+1 query patterns avoided
+- [ ] Frequently queried columns are indexed
+- [ ] Large lists are paginated or virtualized
+- [ ] Expensive work is cached or memoized where safe
+- [ ] Async code does not contain avoidable serial waits
+- [ ] No blocking I/O in async hot paths
+- [ ] Memory is bounded; large allocations and leaks are avoided
+- [ ] Bundle size, lazy loading, and asset optimization for frontend code
+- [ ] Background jobs and retries have limits/backoff
 
 ### Quick Grep
+
 ```bash
-# Async in loops (potential N+1)
-rg -n "for.*\.await|\.await.*for" --type rust
-rg -n "await.*for|for.*await" --type ts --type js
+# Await in loops / serial async candidates
+rg -n "for .*await|await .*for|\.await.*for|for.*\.await" --type js --type ts --type py --type rust
 
-# Missing LIMIT
-rg -n "SELECT.*FROM" | grep -v -i "LIMIT\|COUNT\|EXISTS"
+# Unbounded SQL candidates
+rg -n "SELECT .* FROM|findMany\(|find\(\{" | grep -vi "limit\|take\|cursor\|offset\|count\|exists"
 
-# Blocking calls in async
-rg -n "std::fs::|std::io::" --type rust  # Should be tokio::fs
+# Blocking I/O in Rust async contexts
+rg -n "std::fs::|std::io::|std::thread::sleep" --type rust
 
 # Large allocations
-rg -n "Vec::with_capacity\([0-9]{5,}\)" --type rust
-rg -n "new Array\([0-9]{5,}\)" --type js
+rg -n "Vec::with_capacity\([0-9]{5,}\)|new Array\([0-9]{5,}\)|Buffer\.alloc\([0-9]{6,}\)" --type rust --type js --type ts
+
+# Frontend bundle/import candidates
+rg -n "import \* as|from ['\"]lodash|from ['\"]moment|dynamic\(|lazy\(" --type js --type ts --type jsx --type tsx
 ```
 
 ### Tools
-```bash
-cargo flamegraph                     # Rust profiling
-node --prof app.js                   # Node profiling
-EXPLAIN ANALYZE SELECT ...           # PostgreSQL query plan
-npx webpack-bundle-analyzer          # Bundle size
-```
 
----
+```bash
+cargo flamegraph
+node --prof app.js
+EXPLAIN ANALYZE SELECT ...
+npx webpack-bundle-analyzer
+npx vite-bundle-visualizer
+```
 
 ## API
 
 ### Checklist
-- [ ] Consistent naming (snake_case vs camelCase)
-- [ ] Correct HTTP methods (GET=read, POST=create, PUT=update, DELETE=remove)
-- [ ] Proper status codes (200, 201, 400, 401, 403, 404, 422, 500)
-- [ ] Consistent error response format
-- [ ] Pagination on list endpoints
-- [ ] Rate limiting in place
-- [ ] Versioning strategy (URL, header, or content-type)
-- [ ] OpenAPI/Swagger documentation complete
+
+- [ ] HTTP methods match semantics
+- [ ] Status codes are precise and consistent
+- [ ] Error response shape is consistent and actionable
+- [ ] Input validation is explicit and close to the boundary
+- [ ] Authn/authz behavior is consistent across endpoints
+- [ ] List endpoints have pagination, sorting, and filtering limits
+- [ ] Idempotency for retries on creates/payment-like operations
+- [ ] Versioning and deprecation strategy
+- [ ] OpenAPI/Swagger/schema docs match implementation
+- [ ] Rate limiting and abuse protection exist where needed
 
 ### Quick Grep
+
 ```bash
-# Mixed naming conventions
-rg -n '"[a-z]+_[a-z]+".*:' --type json  # snake_case
-rg -n '"[a-z]+[A-Z][a-z]+".*:' --type json  # camelCase
+# Routes / handlers
+rg -n "router\.|app\.(get|post|put|patch|delete)|Route::|axum::|fastapi|@app\.|Controller" --type js --type ts --type py --type rust
 
-# Status code usage
-rg -n "status.*[0-9]{3}|StatusCode::" --type rust --type ts
+# Status codes
+rg -n "status\(|StatusCode::|HTTP_[0-9]{3}|Response\(" --type js --type ts --type py --type rust
 
-# Missing pagination
-rg -n "GET.*\[" | grep -v "page\|limit\|cursor\|offset"
+# Error shapes
+rg -n "error|message|code|details" --type js --type ts --type py --type rust
+
+# Pagination candidates
+rg -n "GET|list|findMany|SELECT" | grep -vi "limit\|page\|cursor\|offset\|take"
 ```
 
 ### Tools
+
 ```bash
 npx @stoplight/spectral-cli lint openapi.yaml
 npx @apidevtools/swagger-cli validate openapi.yaml
 ```
 
----
-
 ## Copy
 
 ### Checklist
-- [ ] Tone consistent across UI
-- [ ] No grammar/spelling errors
-- [ ] CTAs (buttons) say what they do
-- [ ] Error messages explain AND suggest fix
-- [ ] No jargon in user-facing text
-- [ ] Inclusive language used
-- [ ] No placeholder text ("Lorem ipsum", "TODO")
+
+- [ ] Tone is consistent across UI and docs
+- [ ] CTAs describe the action and outcome
+- [ ] Error messages explain what happened and how to recover
+- [ ] No avoidable jargon in user-facing text
+- [ ] Inclusive, precise language
+- [ ] No placeholder/TODO/lorem ipsum text in shipped surfaces
 - [ ] Empty states have guidance
-- [ ] Loading states communicate progress
+- [ ] Loading and success messages set correct expectations
+- [ ] Strings are ready for localization where relevant
 
 ### Quick Grep
+
 ```bash
 # Placeholder/TODO text
-rg -n "lorem|ipsum|TODO|FIXME|placeholder" -i --type tsx --type html
+rg -n "lorem|ipsum|TODO|FIXME|placeholder|coming soon" -i --type tsx --type jsx --type html --type md
 
 # Vague errors
-rg -n '"error"|"Error"|"failed"' | grep -v -i "message\|description"
+rg -n "Something went wrong|Error occurred|failed|invalid|try again" --type tsx --type jsx --type js --type ts --type py
 
-# Hardcoded strings (i18n candidates)
-rg -n '>[A-Z][a-z].{10,}</' --type tsx  # JSX text content
+# User-facing hardcoded strings
+rg -n ">[A-Z][^<]{8,}<|title=\"|aria-label=\"|placeholder=\"" --type tsx --type jsx --type html
 ```
-
-### Tools
-```bash
-npx cspell "**/*.{ts,tsx,md}"    # Spell check
-vale .                            # Prose linter
-```
-
----
 
 ## CLI
 
 ### Checklist
-- [ ] `--help` / `-h` comprehensive
-- [ ] `--version` / `-V` works
-- [ ] Exit codes correct (0=success, 1=error, 2=usage)
-- [ ] Error messages actionable
-- [ ] Progress feedback for long operations
-- [ ] `--quiet` / `--verbose` modes
-- [ ] Shell completion available
-- [ ] stdout=data, stderr=diagnostics
-- [ ] Colors respect NO_COLOR env
 
-### Quick Tests
+- [ ] `--help` exists, is discoverable, and covers commands/options
+- [ ] `--version` works
+- [ ] Unknown commands/flags produce useful diagnostics
+- [ ] Exit codes distinguish success and failure
+- [ ] stdout is machine-readable when appropriate; diagnostics go to stderr
+- [ ] Color respects TTY, `NO_COLOR`, and `FORCE_COLOR`
+- [ ] Progress output does not break pipes or CI logs
+- [ ] Config/env var precedence is documented and predictable
+- [ ] Shell completion/docs are present for mature CLIs
+
+### Quick Commands
+
 ```bash
-# Help exists and is useful
-./tool --help | head -20
-./tool -h 2>&1 | grep -i "usage\|options"
-
-# Version works
+./tool --help | head -40
 ./tool --version
-
-# Exit codes
-./tool valid-command && echo "Exit: 0"
-./tool --bad-flag 2>/dev/null; echo "Exit: $?"
-./tool nonexistent 2>/dev/null; echo "Exit: $?"
-
-# Color handling
-NO_COLOR=1 ./tool --help | cat -v  # Should have no escapes
+./tool --bad-flag 2>&1; echo "Exit: $?"
+./tool nonexistent 2>&1; echo "Exit: $?"
+NO_COLOR=1 ./tool --help | cat -v
+./tool --help | grep -Ei "usage|options|commands"
 ```
 
-### Patterns to Check
+### Quick Grep
+
 ```bash
-# Exit code handling
-rg -n "exit\(|process\.exit\(|std::process::exit" --type rust --type ts
-
-# Progress indicators
-rg -n "indicatif|progress|spinner" --type rust
-rg -n "ora|progress|cli-progress" --type ts
-
-# Color handling
-rg -n "NO_COLOR|FORCE_COLOR|isatty" --type rust --type ts
+rg -n "exit\(|process\.exit\(|std::process::exit|ExitCode" --type rust --type js --type ts --type py
+rg -n "NO_COLOR|FORCE_COLOR|isatty|is_terminal|stderr|stdout" --type rust --type js --type ts --type py
+rg -n "clap|commander|yargs|click|argparse|cobra" --type rust --type js --type ts --type py --type go
+rg -n "progress|spinner|indicatif|ora|cli-progress" --type rust --type js --type ts --type py
 ```

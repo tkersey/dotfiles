@@ -1,38 +1,54 @@
 # Tools and Signals
 
-Use these to accelerate audits. Favor primary tooling for the stack.
+Favor tools already present in the repository. Do not install new tools or hit the network unless the user asked and the current Codex approval/sandbox policy allows it.
 
 ## General
-- rg: fast text search (entry points, error handling, TODOs)
-- ast-grep: structural matching for refactors and pattern checks
-- ubs: bug scanner for Rust codebases
+
+- `rg`: fast code search for entry points, risky constructs, and user-facing text
+- `git grep`: fallback when ripgrep is unavailable
+- `git diff`, `git status`: understand current worktree and avoid reporting already-fixed issues
+- language tests and linters already configured by the repo
+- AST-aware tools such as `ast-grep` when already installed
 
 ## Security
-- cargo audit / npm audit (dependency CVEs)
-- rg patterns for secrets and injection primitives
-- ubs / clippy for unsafe patterns
+
+- `cargo audit`, `npm audit`, `pnpm audit`, `pip-audit`, `bundle audit`
+- `semgrep` security rules
+- `bandit` for Python
+- `gitleaks` for secret discovery
+- framework-specific route and middleware review
 
 ## UX / Accessibility
-- Lighthouse (accessibility score)
-- axe-core (a11y issues)
-- Manual keyboard navigation and screen reader checks
+
+- manual component/flow inspection
+- `axe-core` / `axe-cli`
+- Lighthouse accessibility category
+- Storybook and component tests when present
 
 ## Performance
-- profilers (perf, flamegraphs, pprof, chrome devtools)
-- query logs for N+1 detection
-- bundle analyzers for frontend payloads
+
+- query plans and slow query logs when available
+- profilers: `perf`, flamegraphs, pprof, Chrome DevTools
+- frontend bundle analyzers
+- benchmarks already present in the repo
 
 ## API
-- OpenAPI/Swagger validation
-- contract tests for request/response shapes
-- schema validators (zod, joi, serde)
+
+- OpenAPI/Swagger validators
+- contract tests
+- schema validators such as zod, joi, pydantic, serde, JSON Schema
+- route maps and API integration tests
 
 ## Copy
-- spell/grammar checks
-- UX writing lint rules
-- consistent tone guidelines
+
+- user-facing string search
+- docs and UI snapshots
+- localization catalogs
+- spelling/grammar tooling already present
 
 ## CLI
-- --help coverage review
-- shellcheck for bash scripts
-- snapshot tests for output
+
+- direct `--help`, `--version`, bad flag, and pipe behavior checks
+- snapshot tests for CLI output
+- shellcheck for shell scripts
+- completion tests when present
