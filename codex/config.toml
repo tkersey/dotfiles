@@ -6,7 +6,6 @@ plan_mode_reasoning_effort = "xhigh"
 suppress_unstable_features_warning = true
 web_search = "live"
 personality = "pragmatic"
-service_tier = "fast"
 
 [agents]
 max_depth = 3
@@ -57,6 +56,7 @@ notification_condition = "always"
 
 [notice]
 hide_rate_limit_model_nudge = true
+fast_default_opt_out = true
 
 [projects."/Users/tk/workspace/tk/codex"]
 trust_level = "trusted"
