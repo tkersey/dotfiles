@@ -1,6 +1,6 @@
 # zig_trigger_audit.py update notes
 
-Add these cues to `INTENT_TERMS` and `STRONG_IMPLICIT_CUES` so the skill routes current Zig 0.16.0, comptime-heavy, and low-level systems-engineering work reliably:
+Add these cues to `INTENT_TERMS` and `STRONG_IMPLICIT_CUES` so the skill routes current Zig 0.16.0, comptime-heavy, and low-level systems-engineering, cache hygiene, and disk-pressure work reliably:
 
 ```python
 ADDITIONAL_INTENT_TERMS = [
@@ -93,7 +93,31 @@ ADDITIONAL_INTENT_TERMS = [
     "ReleaseSafe",
     "ReleaseFast",
     "ReleaseSmall",
+    "disk space",
+    "out of disk",
+    "no space left on device",
+    "cache drain",
+    "cache hygiene",
+    ".zig-cache",
+    "zig-cache",
+    "zig-out",
+    "global cache",
+    "ZIG_GLOBAL_CACHE_DIR",
+    "--cache-dir",
+    "--global-cache-dir",
+    "build artifacts",
+    "stale build outputs",
+    "dependency cache",
+    "package cache",
+    "prune cache",
 ]
 ```
 
 Also treat bare `allocator`, `pointer`, `packed`, `extern`, and `atomic` as low-signal unless accompanied by a Zig cue such as `.zig`, `std.mem.Allocator`, `std.atomic`, `@ptrCast`, `build.zig`, `zprof`, `std.testing.allocator`, or `checkAllAllocationFailures`.
+
+
+Cache/disk-pressure routing notes:
+
+- Treat `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, `global cache`, `--cache-dir`, and `--global-cache-dir` as strong Zig-routing terms when paired with Zig, `.zig`, `build.zig`, `zig build`, or `zig env`.
+- Treat generic `cache`, `disk space`, and `out of disk` as low-signal unless the user also mentions Zig, a Zig path, or a Zig command.
+- Route `No space left on device` with `zig build` or `.zig-cache` to the cache hygiene lane.

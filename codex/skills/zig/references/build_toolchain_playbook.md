@@ -104,3 +104,15 @@ For profiling, debug info matters. Be careful with linker flags or incremental l
 - Local forks are not accidentally committed as permanent overrides.
 - C translation uses matching target/cflags.
 - Build cache and `zig-pkg` policy is explicit.
+
+## Cache and disk-pressure handoff
+
+When build work becomes a disk-pressure or cache-growth issue, hand off to `references/cache_hygiene_playbook.md` instead of suggesting blind deletion.
+
+Rules:
+
+- `.zig-cache` / `zig-cache` are local build caches and can be drained first.
+- `zig-out` is build output/install prefix and should be treated as an artifact/output decision.
+- `zig-pkg` is dependency working state in Zig 0.16 and requires modification/fork/vendor checks before deletion.
+- `--cache-dir` and `--global-cache-dir` are the preferred recurring-disk-pressure controls.
+- After dependency/global cache changes, run `zig build --fetch=needed` and the normal build lane.

@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Use when implementing, reviewing, migrating, linting, testing, fuzzing, profiling, optimizing, or hardening Zig 0.16.0 code: .zig files, build.zig/build.zig.zon, std.Io/process.Init migration, C interop, expert comptime/metaprogramming/reflection/codegen, allocator ownership, FFI boundaries, concurrency, dependencies, and measured performance work."
+description: "Use when implementing, reviewing, migrating, linting, testing, fuzzing, profiling, optimizing, or hardening Zig 0.16.0 code: .zig files, build.zig/build.zig.zon, std.Io/process.Init migration, C interop, expert comptime/metaprogramming/reflection/codegen, allocator ownership, FFI boundaries, concurrency, dependencies, cache hygiene/disk-pressure operations, and measured performance work."
 ---
 
 # Zig
@@ -20,21 +20,23 @@ Keep proof lanes separate:
 - Builds/tests/fuzzing prove correctness.
 - Benchmarks prove user-visible performance deltas.
 - Profilers explain where time, allocations, locks, or bytes went.
+- Cache hygiene proves which Zig cache/output/dependency paths are safe to drain, how much space is reclaimed, and whether the build refetches/rebuilds afterward.
 
-When a lane cannot be run, say so with a stable label: `LINT_UNAVAILABLE`, `TEST_UNAVAILABLE`, `FUZZ_UNAVAILABLE`, `PROFILE_UNAVAILABLE`, `COMPTIME_PROOF_UNAVAILABLE`, or `UNMEASURED`.
+When a lane cannot be run, say so with a stable label: `LINT_UNAVAILABLE`, `TEST_UNAVAILABLE`, `FUZZ_UNAVAILABLE`, `PROFILE_UNAVAILABLE`, `COMPTIME_PROOF_UNAVAILABLE`, `CACHE_PATH_UNDISCOVERED`, `CACHE_REBUILD_UNVERIFIED`, or `UNMEASURED`.
 
 ## First-pass workflow
 
-1. Classify the request: migration, API design, correctness bug, dependency/build work, lint/tooling, FFI, concurrency, comptime/codegen, or performance.
+1. Classify the request: migration, API design, correctness bug, dependency/build work, cache/disk-pressure work, lint/tooling, FFI, concurrency, comptime/codegen, or performance.
 2. If the request involves `comptime`, `anytype`, reflection, generated types, format/schema derivation, or specialization, produce a comptime contract before producing code.
 3. Confirm repo shape: find `build.zig`, `build.zig.zon`, existing `zig build` steps, tests, benchmarks, and lint steps.
 4. Confirm toolchain version with `zig version` before executing 0.16.0-sensitive commands.
 5. Run the 0.16.0 migration scan when touching code written for 0.15.x or older.
 6. Run the comptime audit scan when touching generic, reflective, or generated-type code.
 7. Run the systems audit scan when touching allocators, ownership, pointers, casts, C/ABI, packed/extern layout, I/O effects, atomics, concurrency, or low-level performance.
-8. Identify hazard classes and proof requirements before editing.
-9. Make the smallest change that satisfies the contract.
-10. Re-run the appropriate proof lanes and report exact commands plus outcomes.
+8. Run the cache hygiene protocol when the request involves `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, global cache, custom `--cache-dir`/`--global-cache-dir`, disk pressure, or CI cache bloat.
+9. Identify hazard classes and proof requirements before editing.
+10. Make the smallest change that satisfies the contract.
+11. Re-run the appropriate proof lanes and report exact commands plus outcomes.
 
 ## Zig 0.16.0 migration scan
 
@@ -77,6 +79,7 @@ Interpretation:
 | `optimizer-sensitive` | Scalar/reference path plus differential checks across `Debug`, `ReleaseSafe`, and `ReleaseFast`. |
 | `concurrency/shared-state` | Sequential spec or witness model, documented memory orders, deterministic seed/replay/yield harness, timeout/stress lane, and cancellation/lifetime proof. |
 | `dependency/provenance` | Visible URL/hash/fingerprint, origin repo, release tag or commit, and signer/attestation notes for security-sensitive or long-lived pins. |
+| `cache/disk-pressure` | Cache/output taxonomy, dry-run inventory, dependency-edit protection, exact reclaimed-size report, and post-drain fetch/build validation. |
 | `comptime/metaprogramming` | Comptime contract, shape validation before reflection, intentional diagnostics, positive and negative fixtures, and compile-time cost/binary-size review when specialization cardinality is nontrivial. |
 
 Satisfy every active hazard class. Do not use a green smoke test as proof for unsafe, FFI, lock-free, layout-sensitive, or optimizer-sensitive code.
@@ -192,6 +195,60 @@ Rules:
 - Use `--fork` for ephemeral local dependency overrides.
 - For C translation, match target and cflags; isolate translated imports behind wrappers.
 - Validate low-level code in relevant optimization modes and targets, not Debug only.
+
+
+## Cache hygiene and disk-pressure operations
+
+Use `references/cache_hygiene_playbook.md` when the user reports disk pressure, stale Zig caches, `No space left on device`, CI cache bloat, or asks about `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, the global cache, `--cache-dir`, or `--global-cache-dir`.
+
+Do not blindly delete paths. Produce a cache contract:
+
+1. which Zig version and cache layout are in use;
+2. which paths are local build cache, generated output, dependency working tree, or global shared cache;
+3. which paths are safe to delete immediately;
+4. which paths require modification/fork checks;
+5. how much space will be reclaimed;
+6. how the build will be refetched/revalidated afterward;
+7. how future builds should route or bound cache growth.
+
+Rules:
+
+- Inventory before deletion with `scripts/zig_cache_report.sh` or equivalent `du`/`zig env` commands.
+- Treat `.zig-cache` and `zig-cache` as disposable local build cache.
+- Treat `zig-out` as generated output/install prefix, not merely cache; delete only if the outputs are no longer needed.
+- Treat `zig-pkg` as a Zig 0.16 dependency working tree; do not delete it automatically if modified, forked, vendored, or intentionally committed.
+- Treat global cache as shared infrastructure; drain explicitly and preferably by age/size policy.
+- Default destructive scripts to dry-run. Require explicit `--yes` for deletion.
+- Refuse cache drains while active Zig builds are detected.
+- After touching dependency/global cache state, run `zig build --fetch=needed` or `zig build --fetch=all`, then `zig build --summary all` or the repo’s normal build lane.
+- For recurring disk pressure, recommend `--cache-dir` and `--global-cache-dir` routing instead of repeated manual deletion.
+
+Useful commands:
+
+```bash
+scripts/zig_cache_report.sh .
+scripts/zig_cache_drain.sh --root .
+scripts/zig_cache_drain.sh --root . --yes
+scripts/zig_cache_drain.sh --root . --include-zig-out --include-global --older-than 14
+scripts/zig_cache_rebuild_probe.sh .
+```
+
+Cache result labels:
+
+- `CACHE_AUDITED`
+- `CACHE_DRY_RUN_ONLY`
+- `CACHE_LOCAL_DRAINED`
+- `CACHE_OUTPUT_DRAINED`
+- `CACHE_GLOBAL_DRAINED`
+- `CACHE_ZIG_PKG_DRAINED`
+- `CACHE_ZIG_PKG_SKIPPED`
+- `CACHE_MODIFIED_DEPENDENCY_UNTOUCHED`
+- `CACHE_ACTIVE_BUILD_REFUSED`
+- `CACHE_REBUILD_VERIFIED`
+- `CACHE_REBUILD_UNVERIFIED`
+- `CACHE_PATH_UNDISCOVERED`
+
+Use `references/cache_ci_policy.md` for CI cache keys, TTLs, and drain order.
 
 ## Atomics, concurrency, and cancellation
 

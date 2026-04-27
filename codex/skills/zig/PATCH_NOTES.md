@@ -1,6 +1,6 @@
-# Zig skill upgrade notes — comptime + systems expert edition
+# Zig skill upgrade notes — comptime + systems + cache hygiene expert edition
 
-This bundle supersedes the previous `zig_skill_upgrade` and `zig_skill_comptime_expert` bundles.
+This bundle supersedes the previous `zig_skill_upgrade`, `zig_skill_comptime_expert`, and `zig_skill_ultimate_systems_bundle` bundles.
 
 ## High-impact fixes retained from the 0.16.0 upgrade
 
@@ -42,6 +42,17 @@ This bundle supersedes the previous `zig_skill_upgrade` and `zig_skill_comptime_
 12. Added `scripts/systems_audit_rg.sh` for project-level scans of allocators, ownership, raw pointers, layout, I/O, atomics, error paths, C interop, build modes, and migration cues.
 13. Updated `agents/openai.yaml` and trigger-audit notes with memory/allocator, unsafe-boundary, ABI/layout, I/O/effects, atomics, error-set, and performance-routing terms.
 
+## New cache hygiene and disk-pressure subsystem
+
+1. Added a top-level cache hygiene lane for Zig disk-pressure reports, stale caches, `No space left on device`, CI cache bloat, `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, global cache, `--cache-dir`, and `--global-cache-dir`.
+2. Added `references/cache_hygiene_playbook.md` with cache/output taxonomy, safe drain order, dependency-edit protection, dry-run policy, result labels, fast triage commands, cache relocation guidance, CI rules, and review checklist.
+3. Added `references/cache_ci_policy.md` with CI cache key inputs, recommended layout, drain order, and anti-patterns.
+4. Added `scripts/zig_cache_report.sh` for non-destructive inventory of project-local and global Zig cache/output candidates.
+5. Added `scripts/zig_cache_drain.sh`, a guarded dry-run-first drain script with `--yes`, `--include-zig-out`, `--include-zig-pkg`, `--include-global`, `--global-path`, and `--older-than` controls.
+6. Added `scripts/zig_cache_rebuild_probe.sh` to verify `zig build --fetch=needed` and `zig build --summary all` after cache draining.
+7. Added cache result labels: `CACHE_AUDITED`, `CACHE_DRY_RUN_ONLY`, `CACHE_LOCAL_DRAINED`, `CACHE_OUTPUT_DRAINED`, `CACHE_GLOBAL_DRAINED`, `CACHE_ZIG_PKG_DRAINED`, `CACHE_ZIG_PKG_SKIPPED`, `CACHE_MODIFIED_DEPENDENCY_UNTOUCHED`, `CACHE_ACTIVE_BUILD_REFUSED`, `CACHE_REBUILD_VERIFIED`, `CACHE_REBUILD_UNVERIFIED`, and `CACHE_PATH_UNDISCOVERED`.
+8. Updated `SKILL.md`, `agents/openai.yaml`, and trigger-audit notes so cache/disk-pressure work routes to the Zig skill and is handled as operational systems work, not as blind `rm -rf`.
+
 ## Files in this bundle
 
 - `SKILL.md` — drop-in replacement.
@@ -56,6 +67,8 @@ This bundle supersedes the previous `zig_skill_upgrade` and `zig_skill_comptime_
 - `references/atomics_concurrency_playbook.md` — concurrency/atomics/cancellation reference.
 - `references/testing_failure_discovery_playbook.md` — testing/fuzzing/failure-discovery reference.
 - `references/performance_engineering_playbook.md` — performance/profiling/cache-layout reference.
+- `references/cache_hygiene_playbook.md` — Zig cache taxonomy, dry-run drain protocol, dependency-edit protection, and post-drain validation reference.
+- `references/cache_ci_policy.md` — CI cache key, TTL, and drain-order guidance.
 - `references/systems_contract_template.md` — systems review/report template.
 - `references/systems_patterns.zig` — systems engineering code patterns.
 - `references/linting_playbook.md` — modular lint reference.
@@ -67,9 +80,12 @@ This bundle supersedes the previous `zig_skill_upgrade` and `zig_skill_comptime_
 - `agents/openai.yaml` — refreshed agent description/prompt.
 - `scripts/comptime_audit_rg.sh` — comptime audit command.
 - `scripts/systems_audit_rg.sh` — systems hazard audit command.
+- `scripts/zig_cache_report.sh` — non-destructive cache/output inventory command.
+- `scripts/zig_cache_drain.sh` — guarded dry-run-first cache drain command.
+- `scripts/zig_cache_rebuild_probe.sh` — post-drain fetch/build validation command.
 - `scripts/zig_trigger_audit_update_notes.md` — trigger terms to add to trigger-audit routing.
 - `SOURCES.md` — primary source anchors used for the 0.16.0/comptime/systems upgrade.
 
 ## Validation note
 
-The markdown and scripts were assembled in this environment, but the Zig snippets were not compiled here because a Zig 0.16.0 toolchain is not installed in the container. Validate in the target repository with `zig version`, `zig fmt --check`, `.zig`-only `zig ast-check`, `zig test`, and the repo's `zig build`/`zig build test` steps. For low-level changes, also run relevant `Debug`, `ReleaseSafe`, `ReleaseFast`, target-matrix, allocation-failure, fuzzing, and profiling lanes.
+The markdown and scripts were assembled in this environment, but the Zig snippets were not compiled here because a Zig 0.16.0 toolchain is not installed in the container. Validate in the target repository with `zig version`, `zig fmt --check`, `.zig`-only `zig ast-check`, `zig test`, and the repo's `zig build`/`zig build test` steps. For low-level changes, also run relevant `Debug`, `ReleaseSafe`, `ReleaseFast`, target-matrix, allocation-failure, fuzzing, and profiling lanes. For cache drains, validate first with `scripts/zig_cache_report.sh`, then use `scripts/zig_cache_drain.sh` in dry-run mode before any destructive run, and finish with `scripts/zig_cache_rebuild_probe.sh` when dependency/global cache state was touched.
