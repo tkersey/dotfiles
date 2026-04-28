@@ -49,8 +49,12 @@ Maintain and refresh these ledgers after every meaningful pass:
 
 Every meaningful pass must stamp the current `artifact_state_label`.
 
-## Subagent swarm
-When subagent mode is active and custom agents are available, prefer this read-only swarm:
+## Subagent mode
+Subagent mode is `off`, `targeted`, or `swarm`.
+
+Default to `targeted`: run no specialists unless a read-heavy uncertainty would materially change the route, then launch at most one or two file-disjoint specialists with narrow scopes.
+
+Use `swarm` only when the task is broad, high-risk, or explicitly asks for exhaustive independent read-only coverage. When swarm mode is justified and custom agents are available, prefer:
 - `evidence_mapper`
 - `soundness_auditor`
 - `invariant_auditor`
@@ -58,7 +62,23 @@ When subagent mode is active and custom agents are available, prefer this read-o
 - `complexity_auditor`
 - `verification_auditor`
 
-Require packet-native output from every specialist:
+Do not use specialist work to run final proof gates. Specialists may map evidence, pressure-test soundness, and recommend focused/full proof lanes. Root owns the authoritative fmt/lint/build/test commands and final verdict.
+
+## Artifact state identity
+Every meaningful pass must carry an `artifact_state_id` in addition to `artifact_state_label`.
+
+`artifact_state_id` must include enough current-state evidence to make stale packets obvious:
+- branch name when available
+- `HEAD` or comparable revision
+- diff hash or changed-file digest
+- touched path set
+- phase label, such as `prepatch`, `postpatch`, `post-fixture-refresh`, or `closure-candidate`
+
+Any material edit, fixture regeneration, dependency update, or proof-surface change invalidates older specialist packets. Close or supersede pre-edit specialists before using post-edit evidence. If specialist input is still needed, spawn fresh specialists with the new `artifact_state_id`.
+
+## Specialist packet validation
+Require exactly one packet-native specialist output from every specialist:
+- `artifact_state_id`
 - `artifact_state_label`
 - `scope`
 - `top_material_signals`
@@ -67,11 +87,20 @@ Require packet-native output from every specialist:
 - `stale`
 - one-line final call
 
+Validate every specialist packet before reading it as evidence:
+- exactly one specialist packet is present
+- no raw `<subagent_notification>`, `<hook_prompt`, `Echo:`, instruction acknowledgement, or queued prompt content is relayed as evidence
+- all required fields are present
+- `artifact_state_id` matches the current root state exactly
+- `scope` matches the assigned scope
+
+If validation fails, mark the packet `transport-invalid`, record the rejection reason in the Specialist Briefing Ledger, and continue locally or relaunch one narrow specialist. Do not repeatedly respawn broad swarms for the same artifact state.
+
 ## Orchestration algorithm
 1. Establish entry state.
 2. If unresolved PR comments exist and relevance is unclear, start with `review-adjudication`.
 3. Choose the initial phase path.
-4. Optionally run the specialist swarm for read-heavy evidence collection.
+4. Choose subagent mode (`off`, `targeted`, or `swarm`) and run only the justified read-only specialist scope.
 5. Run the saturation loop:
    - implement or remediate with `accretive-implementer`
    - review with `adversarial-reviewer`
@@ -79,7 +108,7 @@ Require packet-native output from every specialist:
    - rerun full-scope review after any material validation or remediation
 6. Reach a **candidate material fixed point** only when no unresolved material finding, material soundness gap, unbounded critical invariant, material foot-gun, or material complexity hazard remains.
 7. Run the pre-closure one-change challenge.
-8. Compile the closure handoff packet and run `verification-closure`.
+8. Compile the closure handoff packet, including accepted and rejected specialist packets, and run `verification-closure`.
 9. If closure reopens the loop, route the highest-value next move and continue.
 10. Stop only in a justified terminal state.
 
@@ -114,6 +143,8 @@ The final section must say:
 ## Hard rules
 - Never impose an arbitrary maximum number of loops.
 - Never let stale specialist briefings masquerade as current evidence.
+- Never let specialist packets without a matching `artifact_state_id` enter the closure verdict.
+- Never let specialists own final proof commands or the final pass/fail verdict.
 - Never let review-adjudication quietly disappear once it materially shaped the route.
 - Never declare a candidate fixed point while a material soundness gap remains unresolved.
 - Never skip the pre-closure one-change challenge before a final closure attempt.

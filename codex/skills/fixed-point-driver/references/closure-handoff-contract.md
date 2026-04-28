@@ -10,8 +10,9 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
 - If a section has no entries, write `none`.
 - Preserve stable IDs for findings, invariants, hazards, checks, and passes when the same item survives multiple loops.
 - Never silently drop a previously open material issue. Change its `status` with evidence.
-- Mark specialist briefings `stale: yes` if their `artifact_state_label` does not match the packet's current `artifact_state_label`.
-- Treat specialist outputs as high-signal input, not proof.
+- Mark specialist briefings `stale: yes` if their `artifact_state_id` or `artifact_state_label` does not match the packet's current state.
+- Treat specialist outputs as high-signal input, not proof; root-owned verification commands remain authoritative.
+- Record rejected specialist packets instead of silently dropping them.
 
 ## Required headings
 
@@ -22,28 +23,35 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
 2. **Artifact State Label**
    - A stable state label such as `loop-03-post-review`.
 
-3. **Objective**
+3. **Artifact State ID**
+   - branch or comparable workspace identity
+   - `HEAD` or comparable revision
+   - diff hash or changed-file digest
+   - touched path set
+   - phase label
+
+4. **Objective**
    - requested outcome
    - claimed behavior change
    - current phase state
 
-4. **Scope and Constraints**
+5. **Scope and Constraints**
    - in-scope artifacts
    - explicit constraints
    - done condition
 
-5. **Artifact Set**
+6. **Artifact Set**
    - changed files
    - changed symbols
    - implicated untouched surfaces
 
-6. **Diagnosis Ledger**
+7. **Diagnosis Ledger**
    - `primary_mechanism`
    - `confidence`: `proven` | `plausible` | `speculative`
    - `supporting_evidence`
    - `superseded_diagnoses`
 
-7. **Change Ledger**
+8. **Change Ledger**
    - one entry per pass with:
      - `pass_id`
      - `pass_type`: `build` | `validation` | `review` | `closure`
@@ -51,7 +59,7 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
      - `touched_surfaces`
      - `status`: `completed` | `partial` | `blocked`
 
-8. **Findings Ledger**
+9. **Findings Ledger**
    - one entry per finding with:
      - `finding_id`
      - `materiality`: `material` | `non-material`
@@ -65,7 +73,7 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
      - `impacted_invariants`
      - `next_action`
 
-9. **Invariant Ledger**
+10. **Invariant Ledger**
    - one entry per invariant with:
      - `invariant_id`
      - `name`
@@ -76,7 +84,7 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
      - `supporting_evidence`
      - `open_question`
 
-10. **Foot-Gun Register**
+11. **Foot-Gun Register**
     - one entry per hazard with:
       - `hazard_id`
       - `trigger`
@@ -86,14 +94,14 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `evidence`
       - `narrowest_bounding_action`
 
-11. **Complexity Ledger**
+12. **Complexity Ledger**
     - `overall_delta`: `reduces` | `neutral` | `increases`
     - `materiality`: `material` | `non-material` | `unknown`
     - `drivers`
     - `evidence`
     - `bounded_by`
 
-12. **Verification Ledger**
+13. **Verification Ledger**
     - `direct_changed_path`: `satisfied` | `open` | `blocked` | `conflicting`
     - `claimed_failure_mechanism`: `satisfied` | `open` | `blocked` | `conflicting`
     - `regression_surface`: `satisfied` | `open` | `blocked` | `conflicting`
@@ -104,27 +112,31 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `what_it_proves`
       - `limitations`
 
-13. **Specialist Briefing Ledger**
+14. **Specialist Briefing Ledger**
     - one entry per specialist with:
       - `role`
+      - `artifact_state_id`
       - `artifact_state_label`
       - `scope`
       - `top_material_signals`
       - `unresolved_signals`
       - `agreement_pressure`: `aligned` | `mixed` | `conflicting`
       - `stale`: `yes` | `no`
+      - `packet_status`: `accepted` | `stale` | `transport-invalid` | `wrong-scope` | `timeout` | `superseded`
+      - `used_for`: evidence mapping | soundness pressure | invariant pressure | hazard pressure | complexity pressure | verification planning | none
+      - `rejection_reason`: reason or `none`
 
-14. **Closure Gate Preview**
+15. **Closure Gate Preview**
     - `critical_invariants`: `preserved` | `strained` | `broken` | `unknown`
     - `material_foot_guns`: `bounded` | `unbounded` | `unknown` | `accepted-risk`
     - `material_complexity_hazards`: `bounded` | `unbounded` | `unknown` | `residual-design-risk`
     - `briefing_agreement`: `aligned` | `mixed` | `conflicting`
     - `external_blockers`: `none` | `present`
 
-15. **Requested Closure Questions**
+16. **Requested Closure Questions**
     - the specific questions `verification-closure` must answer
 
-16. **Residual Uncertainty**
+17. **Residual Uncertainty**
     - assumptions
     - environment limits
     - known unknowns
@@ -139,6 +151,13 @@ final-closure
 
 #### Artifact State Label
 loop-03-post-review
+
+#### Artifact State ID
+- branch: ...
+- revision: ...
+- diff_hash: ...
+- touched_paths: ...
+- phase: ...
 
 #### Objective
 - requested_outcome: ...
@@ -220,12 +239,21 @@ loop-03-post-review
 
 #### Specialist Briefing Ledger
 - role: invariant_auditor
+  artifact_state_id:
+    branch: ...
+    revision: ...
+    diff_hash: ...
+    touched_paths: ...
+    phase: ...
   artifact_state_label: loop-03-post-review
   scope: ...
   top_material_signals: ...
   unresolved_signals: ...
   agreement_pressure: aligned
   stale: no
+  packet_status: accepted
+  used_for: invariant pressure
+  rejection_reason: none
 
 #### Closure Gate Preview
 - critical_invariants: strained

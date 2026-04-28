@@ -9,6 +9,14 @@ targeted-validation
 #### Artifact State Label
 loop-02-post-review
 
+#### Artifact State ID
+- branch: feature/session-refresh-fix
+- revision: abc1234
+- diff_hash: auth-session-rotated-secret-v2
+- touched_paths:
+  - auth/session.ts
+- phase: post-review
+
 #### Objective
 - requested_outcome: Eliminate the session refresh regression without changing the public API.
 - claimed_behavior_change: The refresh path should re-issue a valid token only when the stored refresh secret is still current.
@@ -122,6 +130,13 @@ loop-02-post-review
 
 #### Specialist Briefing Ledger
 - role: invariant_auditor
+  artifact_state_id:
+    branch: feature/session-refresh-fix
+    revision: abc1234
+    diff_hash: auth-session-rotated-secret-v2
+    touched_paths:
+      - auth/session.ts
+    phase: post-review
   artifact_state_label: loop-02-post-review
   scope: refreshSession + token-store contract
   top_material_signals:
@@ -130,7 +145,17 @@ loop-02-post-review
     - need direct proof of post-rotation store read
   agreement_pressure: aligned
   stale: no
+  packet_status: accepted
+  used_for: invariant pressure
+  rejection_reason: none
 - role: verification_auditor
+  artifact_state_id:
+    branch: feature/session-refresh-fix
+    revision: abc1234
+    diff_hash: auth-session-rotated-secret-v2
+    touched_paths:
+      - auth/session.ts
+    phase: post-review
   artifact_state_label: loop-02-post-review
   scope: direct path and regression coverage
   top_material_signals:
@@ -139,6 +164,9 @@ loop-02-post-review
     - rotated-secret retry path untested
   agreement_pressure: aligned
   stale: no
+  packet_status: accepted
+  used_for: verification planning
+  rejection_reason: none
 
 #### Closure Gate Preview
 - critical_invariants: unknown
