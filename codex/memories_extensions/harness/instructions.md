@@ -19,6 +19,14 @@ Use this extension only during memory consolidation.
 - Prefer evidence already present in the current memory pipeline over hypothetical helper files that are not part of the active inputs.
 - When a curated summary and a raw extract disagree, prefer the raw extract only if the summary normalized the lesson incorrectly or dropped a crucial scope constraint.
 
+## Optional local resource digests
+
+If curated `resources/*.md` files are present, treat them as short-lived evidence packets, not required inputs, canonical logs, or standing instructions.
+
+Use timestamped Markdown resource files as indexes into evidence already relevant to the consolidation run. Prefer filenames that begin with `YYYY-MM-DDTHH-MM-SS` so the memory system can recognize and prune old resource digests. Do not treat non-timestamped helper files or templates as evidence.
+
+A useful harness digest should separate `Promote now`, `Watchlist`, and `Rejected / noise`, and should include compact fields for `trigger`, `preferred_behavior`, `failure_avoided`, `verification_cue`, `scope`, `evidence_count`, and `confidence`.
+
 ## Candidate rule requirements
 
 The source artifacts can take many forms. Whatever the artifact shape, every candidate rule should make the following explicit when the evidence supports it:
@@ -95,6 +103,28 @@ Examples of the kind of rule worth preserving:
 - `Do not broaden scope; ship the minimal diff and verify it.`
 - `When requirements are underspecified, produce a grounded first pass instead of stalling on clarification.`
 - `For fast-changing or high-stakes facts, prefer official or primary sources first.`
+
+## Chronicle-derived evidence gate
+
+Chronicle-derived context is admissible evidence, not automatically durable memory.
+
+Promote Chronicle-derived observations only when they create a reusable behavioral rule with:
+
+- `trigger`: the future situation where Codex should behave differently,
+- `preferred_behavior`: what Codex should do,
+- `failure_avoided`: what goes wrong if Codex forgets,
+- `verification_cue`: how Codex can check it followed the rule,
+- `scope`: global, repo, project, path, tool, or workflow.
+
+Useful Chronicle-derived harness candidates include:
+
+- active tasks likely to resume,
+- source-of-truth files, repos, tickets, branches, documents, dashboards, commands, or tools,
+- repeated workflows or stable user preferences,
+- known pitfalls and failure shields,
+- unresolved decisions, dependencies, or blockers.
+
+Reject raw chronology, passive browsing context, transient UI state, incidental commands, and closed-task details unless they expose a durable preference, pitfall, workflow, source of truth, or active unresolved task.
 
 ## Promotion rules
 

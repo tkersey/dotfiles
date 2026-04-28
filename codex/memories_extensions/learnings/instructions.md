@@ -16,6 +16,14 @@ Source availability rules:
 2. If no resource digest exists, use only `.learnings.jsonl` rows or paths already present in the active consolidation inputs, such as `raw_memories.md`, rollout summaries, existing memory, or explicit extension input.
 3. If no durable evidence is available, make no memory change.
 
+## Optional local resource digests
+
+If curated `resources/*.md` files are present, treat them as short-lived indexes into repo-local `.learnings.jsonl` evidence, not as canonical learning records.
+
+Prefer timestamped Markdown resource files whose names begin with `YYYY-MM-DDTHH-MM-SS`. A useful digest should include only explicit in-scope paths or learning ids, and should group entries as `Promote`, `Watchlist`, and `Do not promote`.
+
+A digest should never ask the memory pipeline to scan unrelated repositories or infer evidence from missing paths. If a referenced `.learnings.jsonl` row is unavailable, treat the digest as a routing hint only and avoid promotion unless other active consolidation inputs provide enough evidence.
+
 ## Goal
 
 Distill learnings into durable Codex memory that helps future sessions:
@@ -45,6 +53,20 @@ After the gate passes, promote when at least one is true:
 - it would likely save future correction, retries, search work, or user keystrokes.
 
 Do not promote merely because a row exists.
+
+## Chronicle-to-learning promotion rule
+
+Treat Chronicle-derived observations as context for interpreting evidence, not as canonical facts.
+
+Promote a Chronicle-derived fact into durable memory only when it is corroborated by at least one of:
+
+- a repo-local learning,
+- repeated user correction,
+- a stable workflow,
+- a source-of-truth artifact,
+- a concrete high-impact failure shield.
+
+Do not convert ordinary work history, passive screen context, incidental browsing, closed-task chronology, temporary UI state, or one-off commands into memory. Chronicle may identify where to look next, but the promoted memory still needs a decision delta, evidence anchor, clear scope, and actionable future behavior.
 
 ## Status weighting
 

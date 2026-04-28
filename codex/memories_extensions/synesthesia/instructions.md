@@ -20,6 +20,14 @@ Its job is to help Codex remember:
 
 If no durable signal is available, make no memory change.
 
+## Optional local resource digests
+
+If curated `resources/*.md` files are present, treat them as short-lived evidence packets, not as canonical mapping tables or standing style instructions.
+
+Prefer timestamped Markdown resource files whose names begin with `YYYY-MM-DDTHH-MM-SS`. A useful digest should separate `Endorsed mappings`, `Rejected mappings`, and `Failure shields`, and should include the evidence source, scope, use boundary, and engineering translation for each candidate.
+
+Do not promote a mapping from a template, ontology, or assistant-generated phrase unless active consolidation evidence shows user endorsement, correction, repetition, or operational use.
+
 ## Core contract to preserve when evidenced
 
 These rules are load-bearing. Promote them when the evidence shows the user wants them remembered, and otherwise leave them in the skill rather than duplicating them into memory.
@@ -30,6 +38,12 @@ These rules are load-bearing. Promote them when the evidence shows the user want
 - Literal technical correctness outranks sensory style.
 - Strong analysis pattern: literal read -> sensory render -> dissonances -> engineering translation -> recommended changes.
 - For implementation work, use the lens briefly only if it improves decisions, then execute literally.
+
+## Chronicle-derived context guard
+
+Chronicle-derived sensory, visual, or interface context must not become a synesthetic preference unless the user explicitly endorsed the mapping, corrected it as durable, repeated it across contexts, or used it as a stable diagnostic aid.
+
+Use Chronicle-derived context to recover task continuity or locate source material, not to infer taste. Reject passive screen context, incidental UI colors, one-off metaphors, generated descriptions, and ambient chronology unless they translate to a concrete engineering pattern and pass the normal promotion gate.
 
 ## Promotion gate
 
