@@ -19,6 +19,15 @@ Use the native `cas` dispatcher and subcommands:
 
 Current `cas smoke_check` verifies the native client can complete the v2 handshake and reach `experimentalFeature/list`, `thread/start`, `thread/resume`, and `turn/steer`.
 
+Hook policy:
+
+- `--hooks inherit` is the default and lets the resolved Codex runtime load and run hooks normally.
+- `--hooks off` launches CAS-owned app-server processes with `--disable codex_hooks`; this is best-effort control for CAS-owned stdio and managed websocket transports, not authority over an externally supplied app-server URL.
+- `--hooks require-observed` keeps hooks enabled and fails closed with `hook_not_observed` if the lane captured no `hook/started` or `hook/completed` notifications.
+- `hooks_unsupported` means the resolved `codex app-server --help` surface did not prove the app-server can accept the hook control/observation contract.
+- Bad observed hook statuses block the CAS lane with precedence `hook_blocked`, then `hook_failed`, then `hook_stopped`.
+- JSON outputs that observe hooks include `hookSummary`; raw hook notifications are written only to local NDJSON paths referenced by `hookSummary.hookLogPath`.
+
 Current `cas conformance` covers these swarm-hardening scenarios:
 
 - `claim_safe_wave`: verify two disjoint `$st` claims can run in parallel without overlapping lock roots
@@ -86,6 +95,9 @@ Use the fields this way:
 - `failureCode="review_output_missing"` means the detached review reached terminal state without a structured review result even though it was not classified as an interrupt or approval failure
 - `failureCode="websocket_bootstrap_failed"` means CAS could not launch or connect to the managed websocket app-server before detached review startup completed
 - `failureCode="review_transport_lost"` means a persisted websocket-backed detached review could not be reconnected and CAS had to fail closed or degrade to explicit native fallback
+- `failureCode="hooks_unsupported"` means the resolved Codex app-server does not support the requested `--hooks` policy
+- `failureCode="hook_not_observed"` means `--hooks require-observed` was requested and CAS saw no hook notifications in the observed lane
+- `failureCode="hook_blocked"`, `failureCode="hook_failed"`, or `failureCode="hook_stopped"` means Codex ran hooks and CAS failed closed on the worst observed hook status
 - `failureCode="parent_thread_not_materialized"` or `failureCode="unsafe_parent_thread_state"` means the supplied parent thread is not safe to reuse for detached review
 - `fallbackUsed=true` means `--fallback native-review` ran `codex review` and returned its raw text output instead of a structured detached-review result
 

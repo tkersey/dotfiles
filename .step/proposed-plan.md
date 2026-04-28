@@ -1,21 +1,24 @@
-Iteration: 3
-
-# Move `$parse` Onto Raw `parse-arch collect`
-
-## Round Delta
-- Converted the `$grill-me` output into the full `$plan` contract with iteration proof, traceability, rollout, rollback, and signoff surfaces.
-- Locked the campaign order: implement `parse-arch` local-build contract first, delete `.dotfiles` helper against that local proof, then complete release/tap closure.
-- Added explicit stale-CLI contract checking so `$parse` fails closed when raw CLI output lacks the new stable fields.
+# Plan: Add Codex Hook-Aware Control to `$cas`
 
 ## Summary
-Objective: make `parse-arch` 0.2.0 own the full `$parse` collection contract so `codex/skills/parse/scripts/run_parse_collect.sh` can be deleted. Chosen path: add stable read-depth diagnostics directly to `parse-arch collect`, validate with local `zig-out/bin/parse-arch`, update `.dotfiles` to raw CLI usage, then publish and prove the Homebrew-installed binary. Done means no helper references remain, local and installed CLIs emit the same contract fields, and tap proof passes.
 
-First execution wave is in `skills-zig`: implement the CLI JSON contract without broad architecture scoring retunes. Second wave is `.dotfiles`: delete the helper and update skill docs/prompts. Third wave is release propagation: publish `parse-arch-v0.2.0` and update `homebrew-tap`.
+Implement hook-aware `$cas` by adding `--hooks inherit|off|require-observed` across CAS lanes, passing hook policy into `codex app-server`, capturing `hook/started` and `hook/completed`, summarizing outcomes in JSON, and classifying hook failures with explicit `failureCode` values. Codex remains the only hook executor; CAS controls, observes, classifies, and reports.
 
 ## Implementation Brief
-1. step=implement_cli_contract; owner=skills-zig implementer; success_criteria=`parse-arch collect` always emits stable read-depth fields and focused runs report `focused`.
-2. step=extend_eval_suite; owner=skills-zig implementer; success_criteria=eval cases assert verdict/classes/suggestions and fail on regression.
-3. step=local_build_proof; owner=skills-zig implementer; success_criteria=build/test/eval plus `.dotfiles` and `skills-zig` smoke checks pass using `./zig-out/bin/parse-arch`.
-4. step=delete_dotfiles_helper; owner=.dotfiles implementer; success_criteria=helper file removed, docs/prompts use raw CLI, quick_validate passes, no helper references remain.
-5. step=release_parse_arch_020; owner=release implementer; success_criteria=`parse-arch-v0.2.0` assets published for Darwin arm64 and Linux x86_64.
-6. step=update_homebrew_tap; owner=tap implementer; success_criteria=formula version/SHA updated and brew audit/test/upgrade plus installed field smoke pass.
+
+- step=Add shared hook policy model; owner=engineering; success_criteria=all CAS lane CLIs parse `--hooks`, reject invalid modes, and preserve default `inherit`.
+- step=Add Codex launch/config wiring; owner=engineering; success_criteria=stdio and managed websocket app-server paths accept hook policy, with `off` passing `--disable codex_hooks`.
+- step=Add support preflight and classifier; owner=engineering; success_criteria=`off`/`require-observed` fail with `hooks_unsupported` on unsupported runtimes and classify hook statuses deterministically.
+- step=Add hook accumulator/output; owner=engineering; success_criteria=JSON includes compact `hookSummary` and local `hookLogPath`, while raw records stay in NDJSON artifacts.
+- step=Wire all CAS lanes; owner=engineering; success_criteria=smoke, instance, review, and conformance lanes expose consistent policy and verdict behavior.
+- step=Validate locally; owner=engineering; success_criteria=`zig build test-cas`, `zig build build-cas -Doptimize=ReleaseFast`, integration smoke, and `$cas` skill quick-validate pass.
+- step=Release and publish; owner=operations; success_criteria=version bump, tag, release workflow assets, tap formula SHA update, `brew audit`, `brew upgrade`, `brew test`, and installed `cas --version`/help proofs pass.
+
+## Locked Decisions
+
+- `--hooks inherit` is the default and preserves existing behavior.
+- `--hooks off` is best-effort disable through Codex runtime configuration; observed bad hook status still blocks the CAS verdict.
+- `--hooks require-observed` fails with `hook_not_observed` when no hook notifications appear.
+- Bad hook statuses produce blocking failure codes with precedence `blocked > failed > stopped`.
+- Raw hook notifications remain in local CAS artifact logs; JSON responses include summaries and log paths only.
+- Unsupported hook control for `off` or `require-observed` fails with `hooks_unsupported`; `inherit` remains supported.
