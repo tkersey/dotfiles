@@ -1,73 +1,57 @@
 # Example Exploration Sessions
 
-These are short, repeatable walkthroughs you can follow in a new repo. The goal is a fast, accurate mental model.
+These are repeatable walkthroughs for common repository shapes.
 
 ## Example 1: Next.js SaaS
 
-1) Docs first
 ```bash
-cat AGENTS.md README.md | head -80
+cat AGENTS.md README.md 2>/dev/null | head -120
+find . -maxdepth 2 -type f \( -name 'package.json' -o -name '.env.example' -o -name 'next.config.*' \) -print
+find app src/app pages src/pages -maxdepth 4 -type f 2>/dev/null | head -120
+rg -n "export async function (GET|POST|PUT|DELETE)|NextResponse|generateMetadata|createRoot|use server|use client" app src pages
+rg -n "prisma|drizzle|db\.|createClient|server action|fetch\(|axios|tRPC|trpc" src app packages
+rg -n "process\.env|auth\(|NextAuth|clerk|supabase|middleware" src app middleware.ts
 ```
 
-2) Entry points and routes
-```bash
-ls -la src/app
-rg -n "route.ts" src/app/api
-```
-
-3) Config + env
-```bash
-rg -n "@t3-oss/env-nextjs|process\.env" src
-```
-
-4) Data flow (route -> service -> db)
-```bash
-rg -n "export async function GET|POST" src/app/api
-rg -n "db\.|drizzle" src/lib
-```
-
-Deliverable: A 1-page architecture summary with key routes, services, and storage.
-
----
+Deliverable: route map, server/client split, core schemas, auth boundary, and database/API flow.
 
 ## Example 2: Rust CLI
 
-1) Entry point
 ```bash
-rg -n "fn main" --type rust src
+rg -n "fn main\(|#\[tokio::main\]|derive\(.*Parser|Subcommand|Args" src crates
+rg -n "^pub (struct|enum|trait) |impl .* for |thiserror|anyhow|eyre" src crates
+rg -n "reqwest|Client::new|sqlx|rusqlite|File::|fs::|serde::Deserialize|std::env" Cargo.toml src crates
 ```
 
-2) CLI command structure
-```bash
-rg -n "clap::|derive\(.*Parser" src
-```
-
-3) Data flow
-```bash
-rg -n "reqwest|http" src
-rg -n "rusqlite|tantivy" src
-```
-
-Deliverable: Map from CLI args -> command handler -> API/db layer.
-
----
+Deliverable: map from CLI args → command handler → domain/service → HTTP/db/file output.
 
 ## Example 3: Python FastAPI
 
-1) Entry points and routes
 ```bash
-rg -n "FastAPI\(|@app\." src
+rg -n "FastAPI\(|APIRouter|@app\.|@router\.|include_router" src app
+rg -n "BaseModel|@dataclass|class .*Service|def .*_service|Depends\(" src app
+rg -n "BaseSettings|os\.getenv|sqlalchemy|session\.|redis|requests\.|httpx|pytest|TestClient" src app tests
 ```
 
-2) Config + settings
+Deliverable: app factory, route modules, Pydantic schemas, service layer, persistence adapters, and test coverage.
+
+## Example 4: Go HTTP service
+
 ```bash
-rg -n "BaseSettings|pydantic" src
-rg -n "os\.environ|os\.getenv" src
+rg -n "func main\(|http\.HandleFunc|gin\.Default|chi\.NewRouter|mux\.NewRouter|ListenAndServe" .
+rg -n "^type [A-Z].* struct|database/sql|gorm|sqlx|pgx|Repository|Store" .
+rg -n "os\.Getenv|viper|envconfig|func Test|httptest" .
 ```
 
-3) Storage + integrations
+Deliverable: route → handler → service → store flow, config sources, and test strategy.
+
+## Example 5: Monorepo
+
 ```bash
-rg -n "sqlalchemy|psycopg|redis" src
+find . -maxdepth 3 -type f \( -name 'package.json' -o -name 'Cargo.toml' -o -name 'go.mod' -o -name 'pyproject.toml' \) -print
+find . -maxdepth 2 -type d \( -name apps -o -name packages -o -name services -o -name crates -o -name libs \) -print
+rg -n "turbo|nx|bazel|pants|workspace|workspaces|members" package.json pnpm-workspace.yaml Cargo.toml WORKSPACE BUILD.bazel pyproject.toml
+rg -n "main|route|router|command|handler|service|repository" apps services packages crates
 ```
 
-Deliverable: Identify route modules, business services, and storage adapters.
+Deliverable: package graph, app/service entry points, shared libraries, dependency direction, and suggested next package to inspect.
