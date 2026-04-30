@@ -32,6 +32,8 @@ codex_hooks = true
 image_detail_original = true
 chronicle = true
 external_migration = true
+terminal_resize_reflow = true
+goals = true
 
 [memories]
 generate_memories = true
