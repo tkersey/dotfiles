@@ -1,145 +1,81 @@
 # Proof playbook
 
-## Read the goal before touching tactics
+Use this when writing or repairing Lean proofs.
 
-For every stuck proof, identify:
+## First simplification ladder
 
-- the goal's outermost shape: equality, implication, conjunction, existential, inductive constructor, etc.
-- the relevant hypotheses already in context
-- the head symbols in the goal
-- whether the target is really a definitional equality problem in disguise
-
-The fastest proof often comes from restating the goal into a friendlier form, not from adding more automation.
-
-## Tactic ladder
-
-Use this escalation order.
-
-### 1. Definitional equality and simplification
-
-Start with:
+Try the cheapest tactics first:
 
 ```lean
 rfl
-```
-
-then:
-
-```lean
 simp
 simpa
 simp_all
 ```
 
-Common patterns:
+Use `simp [definitionName]` to expose only the definitions needed.
+
+Use `simp only [...]` when proof stability matters.
+
+## Structure the proof
+
+Common structural moves:
 
 ```lean
-simpa [foo, bar] using h
-simp [foo, bar] at h
+intro h
+constructor
+cases h
+rcases h with ⟨a, b, c⟩
+refine ⟨_, _⟩
+have h1 : P := by ...
+suffices h2 : Q by ...
+change NewGoal
+show NewGoal
 ```
 
-Use `simp` when you want canonical simplification and normalization.
-
-### 2. Targeted rewriting
-
-Use `rw` when you want a specific rewrite in a chosen direction.
+## Rewrite deliberately
 
 ```lean
 rw [h]
-rw [← Nat.add_assoc]
+rw [← h]
+nth_rewrite 1 [h]
 ```
 
-Use:
+Use `rw` when the selected rewrite is the central idea. Use `simp` when many canonical simplifications are needed.
 
-- `nth_rewrite` for a specific occurrence
-- `conv` when only a subterm should change
-- `change` when the target is definitionally equal to a better-looking statement
+## Induction strategy
 
-### 3. Structural proof steps
+Use data induction when the theorem follows the shape of an inductive value.
 
-Pick tactics that match the logical shape.
+Use functional induction when the theorem follows the recursive call graph.
 
-- implication / universal quantifier:
-  ```lean
-  intro x
-  intro h
-  ```
+Before induction, consider generalizing:
 
-- conjunction / iff:
-  ```lean
-  constructor
-  ```
+- accumulators
+- suffixes or prefixes
+- environment parameters
+- state values
+- continuation values
 
-- existential:
-  ```lean
-  refine ⟨witness, ?_⟩
-  ```
+A weak theorem often becomes provable after strengthening it.
 
-- disjunction:
-  ```lean
-  left
-  -- or
-  right
-  ```
+## Arithmetic and algebra
 
-- using intermediate claims:
-  ```lean
-  have h1 : P := by
-    ...
-  ```
-
-- goal replacement:
-  ```lean
-  suffices h : Q from ...
-  ```
-
-### 4. Case splits and induction
-
-For data or evidence in context:
+Use tactics that match the domain:
 
 ```lean
-cases h
-rcases h with ...
+omega       -- linear Nat/Int arithmetic
+linarith    -- linear ordered algebra, when available
+nlinarith   -- nonlinear arithmetic, when available
+ring        -- polynomial identities
+norm_num    -- numeric goals
 ```
 
-For recursive structures:
+Only use tactics available in the pinned toolchain and current imports.
 
-```lean
-induction xs with
-| nil => ...
-| cons x xs ih => ...
-```
+## Search suggestions
 
-When the theorem follows a recursive function's call graph more closely than the data structure, prefer:
-
-```lean
-fun_induction f args
-```
-
-This is often the right move for theorems about well-founded or nontrivially recursive definitions.
-
-## `simp` versus `rw`
-
-Keep this distinction sharp:
-
-- `simp` is for canonical simplification, repeated use of simplification lemmas, and inside-out normalization
-- `rw` is for selected rewrites that you want to control manually
-
-As a rule:
-
-- use `simp` to expose the obvious normal form of a goal
-- use `rw` when proof intent depends on a particular algebraic or definitional step
-- do not replace every `simp` with `rw`, and do not expect `rw` to behave like full simplification
-
-When proof stability matters, use:
-
-```lean
-simp only [lemma1, lemma2, ...]
-```
-
-## Automation: use deliberately, not first
-
-Good escalation order after simplification:
+These can be useful during development:
 
 ```lean
 exact?
@@ -147,94 +83,33 @@ apply?
 aesop?
 ```
 
-Then domain-specific automation if imports support it:
+Inspect generated suggestions before finalizing.
 
-- `grind` for SMT-style contradiction search and mixed reasoning
-- `linarith` for linear arithmetic
-- `omega` for Presburger-style natural/integer arithmetic
-- `ring` for polynomial ring equalities
-- `norm_num` for arithmetic normalization on numerals
+## Solver-style automation
 
-Automation is most reliable after the goal has been normalized and irrelevant hypotheses are cleaned up.
+`grind`, `aesop`, and similar tactics can be appropriate after the goal is normalized.
 
-## Generated suggestions
+Avoid using one large automation block as a substitute for a missing invariant, missing helper lemma, or wrong theorem statement.
 
-If a suggestion-producing tactic or command gives a proof:
+For important correctness theorems, prefer small helper lemmas and a readable proof skeleton.
 
-1. verify it really uses available imports
-2. simplify the script if it is noisy
-3. keep the generated version only if it is already short and robust
+## When stuck
 
-A dense, fragile block of automation is usually worse than one helper lemma plus a short concluding proof.
+1. Print the current goal mentally or with editor support.
+2. Replace implicit shape with explicit `show` or `change`.
+3. Unfold exactly one definition.
+4. Search for constructor-specific lemmas.
+5. Prove a local `have` for the key step.
+6. Extract a helper theorem.
+7. Strengthen the induction hypothesis.
+8. Re-run theorem discovery under the local imports.
+9. Consider whether the theorem is false.
 
-## Theorem discovery
+## Counterexample discipline
 
-Never fabricate theorem names.
+If a theorem appears false:
 
-Use this routine:
-
-1. identify the key constants in the goal
-2. inspect candidate declarations with:
-   ```lean
-   #check candidateName
-   #print candidateName
-   ```
-3. search the local repository and imported dependencies
-4. inspect nearby files for the style and theorem names actually in use
-
-In practice, searching for the head symbol or constructor name is often enough to find the right lemma family.
-
-## Local helper lemmas beat giant final proofs
-
-When a proof becomes hard to read, split it.
-
-Prefer:
-
-- one helper lemma per recursion invariant
-- one helper lemma per algebraic normalization step
-- one final theorem that composes those helpers
-
-This makes later maintenance easier and reduces dependence on brittle automation.
-
-## Common proof refactors
-
-### Turn a direct proof into `simpa`
-
-Instead of:
-
-```lean
-have h' := foo h
-exact h'
-```
-
-prefer:
-
-```lean
-simpa using foo h
-```
-
-### Generalize the accumulator
-
-When tail recursion is involved, the induction hypothesis usually needs the accumulator generalized:
-
-```lean
-induction xs generalizing acc with
-| nil => ...
-| cons x xs ih => ...
-```
-
-### State the stronger theorem first
-
-If the desired theorem is too weak for induction, strengthen it, prove the stronger form, then derive the public theorem as a corollary.
-
-## Debugging checklist
-
-If a proof still fails:
-
-- inspect the exact goal state
-- check whether hidden coercions or implicit arguments are changing the target
-- unfold only the necessary definitions
-- see whether a missing import is the real problem
-- try a stronger induction hypothesis
-- try functional induction
-- try proving a more general theorem and specializing it afterward
+- build a concrete counterexample with `#eval` when executable
+- state why the theorem cannot hold
+- propose the minimally corrected theorem
+- do not weaken the theorem silently

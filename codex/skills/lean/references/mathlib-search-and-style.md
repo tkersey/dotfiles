@@ -1,115 +1,89 @@
-# Theorem discovery, mathlib search, and style
+# Mathlib search and style
 
-## Never fabricate library facts
+Use this reference when looking for library theorems, choosing names, or managing simplification.
 
-The single biggest unforced error in Lean work is inventing theorem names that look plausible.
+## Do not invent theorem names
 
-Instead:
-
-1. identify the key symbols in the goal
-2. inspect candidates with `#check`
-3. inspect full declarations with `#print`
-4. search the repo and dependencies for the actual theorem family
-5. use the theorem only after confirming its name and type
-
-If a theorem name is uncertain, qualify the namespace instead of guessing.
-
-## Local search routine
-
-Search in this order:
-
-1. the current file and nearby files
-2. imported modules in the current project
-3. `.lake/packages/...` for dependency sources if available
-4. mathlib docs or project docs if the environment allows it
-
-Search by the head symbol, constructor, or property name rather than by English paraphrase.
-
-## Match local naming and namespace style
-
-Follow the surrounding file.
-
-Common choices you should preserve if already present:
-
-- `namespace ... end`
-- `open scoped ...`
-- local notation blocks
-- qualified names versus unqualified names
-- theorem names that match nearby naming patterns
-
-Do not rename widely used declarations casually.
-
-## `simp` hygiene
-
-Use `simp` with intent.
-
-Good uses:
+Before using a theorem, confirm it by one of:
 
 ```lean
-simp [foo, bar]
-simpa using h
-simp at h
-simp_all
+#check theorem_name
+#print theorem_name
 ```
 
-For more stability:
+or by inspecting local or dependency source files that match the pinned project version.
+
+## Search strategy
+
+Search for:
+
+- the head symbol in the goal
+- constructor names
+- namespace names
+- nearby theorem naming patterns
+- suffixes such as `_assoc`, `_comm`, `_left`, `_right`, `_eq`, `_iff`, `_of_`
+
+Local source search is often better than web search because it matches the pinned dependency version.
+
+## Namespace discipline
+
+Prefer names consistent with nearby files.
+
+If a theorem is ambiguous, qualify it:
 
 ```lean
-simp only [lemma1, lemma2, ...]
+List.map_append
+Nat.add_assoc
 ```
 
-Mark a theorem with `[simp]` only when:
+Open namespaces sparingly in library code. In local proofs, temporary `open` statements are usually fine if they match the file style.
 
-- it rewrites to something clearly simpler
-- the orientation is canonical
-- repeated application will terminate cleanly
-- it will help many goals, not just one special proof
+## Naming new theorems
 
-Do **not** add `[simp]` to expansive rewrites, reversible equations, or lemmas whose right-hand side is not obviously simpler.
+Use names that reveal the statement.
 
-## `rw` hygiene
+For program correctness:
 
-Use `rw` when the selected rewrite itself is the proof idea.
+- `foo_eq_spec`
+- `foo_sound`
+- `foo_complete`
+- `foo_refines_spec`
+- `foo_preserves_inv`
+- `foo_roundtrip`
+- `foo_idempotent`
 
-Examples:
+For helper lemmas, follow local style and make the head symbol discoverable.
 
-- reassociating arithmetic in a chosen place
-- replacing a term using a hypothesis
-- rewriting only one occurrence before another tactic finishes the goal
+## `simp` lemmas
 
-If you find yourself chaining a long sequence of `rw`s just to expose a normal form, switch to `simp` or a helper lemma.
+Add `[simp]` only when the lemma is:
 
-## Imports
+- directionally simplifying
+- terminating under repeated use
+- broadly useful
+- not context-specific
 
-Keep imports minimal but honest.
+Avoid `[simp]` on lemmas that expand definitions into large terms, reverse canonical forms, or create loops.
 
-- add imports only when they really provide required definitions or tactics
-- prefer an existing broader project import if that is the local convention
-- do not remove an import just because your edited declaration no longer needs it if nearby declarations still do
+## Stable proofs
 
-## Axioms and trust
-
-When foundational trust matters, check what the theorem depends on.
-
-Useful final step:
+Prefer:
 
 ```lean
-#print axioms myTheorem
+simp only [foo, bar, baz]
 ```
 
-This is especially valuable if classical logic, choice, or imported heavy machinery might matter to the user.
+when a proof is important and broad `simp` is too sensitive to future library changes.
 
-## Scratch work
+Use broad `simp` freely in small local proofs when maintainability is not harmed.
 
-Use temporary `example` blocks or local helper theorems while searching for the proof. Remove them unless they add lasting explanatory value.
+## Rewriting style
 
-A well-placed private helper theorem is usually better than a dead scratch example left in the file.
+Use `rw` for deliberate transformations and `simp` for canonical simplification.
 
-## Style preference for final answers
+Long chains of `rw` usually indicate one of:
 
-When returning Lean code to the user:
-
-- give the final compilable declaration(s)
-- keep the explanation short
-- mention any nonobvious helper lemma or invariant
-- mention any required import or version-sensitive feature if relevant
+- a missing helper lemma
+- a normalization proof that should use `simp`
+- an associativity/commutativity problem that needs `ring`, `omega`, or a domain tactic
+- a theorem statement that should use a canonical form

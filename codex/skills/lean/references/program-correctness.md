@@ -1,160 +1,168 @@
-# Program correctness patterns
+# Program-correctness patterns
 
-## The default architecture
+Use this when proving correctness of executable Lean code or formal models.
 
-For verified programming in Lean, separate:
+## Core pattern
 
-1. **specification**
-2. **implementation**
-3. **proof of agreement**
-
-Do not jump straight into proving a complicated optimized function correct. First write the simplest mathematically clear model.
-
-## The core refinement pattern
-
-Use this shape repeatedly:
+Separate specification, implementation, and proof.
 
 ```lean
-def spec (input : α) : β := ...
+def spec (i : Input) : Output := ...
 
-def impl (input : α) : β := ...
+def impl (i : Input) : Output := ...
 
-theorem impl_eq_spec (input : α) : impl input = spec input := by
+theorem impl_eq_spec (i : Input) :
+    impl i = spec i := by
   ...
 ```
 
-If the implementation is optimized or tail-recursive, prove helper invariants first.
+## Relational specifications
 
-## Tail-recursive equivalence pattern
-
-A common proof shape:
+Use a relation when the behavior is abstract, nondeterministic, or easier to state as a property.
 
 ```lean
-def sum : List Nat → Nat
-  | [] => 0
-  | x :: xs => x + sum xs
+def SpecRel (i : Input) (o : Output) : Prop := ...
 
-def sumTR (xs : List Nat) : Nat :=
-  let rec go (acc : Nat) : List Nat → Nat
-    | [] => acc
-    | x :: xs => go (acc + x) xs
-  go 0 xs
+def impl (i : Input) : Except Error Output := ...
 
-theorem go_eq (acc : Nat) (xs : List Nat) :
-    (let rec go (acc : Nat) : List Nat → Nat
-      | [] => acc
-      | x :: xs => go (acc + x) xs
-     ; go acc xs) = acc + sum xs := by
-  induction xs generalizing acc with
-  | nil =>
-      simp [sum]
-  | cons x xs ih =>
-      simp [sum, ih, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm]
-```
-
-The public theorem is then usually a one-line corollary obtained by setting the initial accumulator.
-
-The key idea is not the exact syntax above; it is the invariant:  
-**the helper with accumulator equals accumulator combined with the declarative spec**.
-
-## Pure core, impure wrapper
-
-For programs that eventually use `IO`, prefer this split:
-
-```lean
-def core (input : α) : β := ...
-
-def main : IO Unit := do
-  let out := core ...
+theorem impl_sound (i : Input) (o : Output) :
+    impl i = .ok o -> SpecRel i o := by
   ...
 ```
 
-Prove theorems about `core`, not about the entire `IO` program unless the user explicitly wants a semantics-level result.
-
-## Total definitions first
-
-Prefer total recursive functions.
-
-Use well-founded recursion and termination proofs when structural recursion is not obvious.
-
-Typical tools:
-
-- `termination_by`
-- `decreasing_by`
-
-If proving termination is cumbersome, that is often a signal to rethink the recursion or introduce a cleaner helper theorem.
-
-Avoid `partial` for logic-facing definitions. It makes later correctness proofs much worse.
-
-## Invariant-carrying data
-
-When the program manipulates values that should satisfy a predicate, prefer:
-
-- a `structure` bundling fields with proofs
-- a `Subtype`
-- an explicit theorem that the function preserves the predicate
-
-Example shape:
+Completeness is stronger and should be proved only when true.
 
 ```lean
-def PositiveNat := {n : Nat // 0 < n}
+theorem impl_complete (i : Input) (o : Output) :
+    Preconditions i ->
+    SpecRel i o ->
+    impl i = .ok o := by
+  ...
 ```
 
-This is often more maintainable than pushing every invariant into a heavily indexed family of types.
+## Boolean decision procedures
 
-## Arrays and imperative-looking code
+For boolean recognizers, prove a bidirectional theorem.
 
-Lean lets you write efficient code, but the proof strategy should stay mathematical.
+```lean
+def Good (x : α) : Prop := ...
 
-When the implementation uses arrays, loops, or local mutation:
+def isGood (x : α) : Bool := ...
 
-1. define a simple list-like or mathematical specification
-2. relate the low-level state to the spec with an invariant
-3. prove each update preserves the invariant
-4. conclude final equivalence
+theorem isGood_correct (x : α) :
+    isGood x = true ↔ Good x := by
+  constructor
+  · intro h
+    ...
+  · intro h
+    ...
+```
 
-Do not try to prove correctness by staring only at low-level updates. Always introduce a logical model.
+## Error models
 
-## Bounds and local obligations
+Use explicit error types.
 
-With arrays and indexed access, keep proof obligations local.
+```lean
+inductive Error where
+  | invalidInput
+  | outOfRange
+  | unsupported
+  deriving DecidableEq, Repr
+```
 
-Good pattern:
+For error-priority behavior, prove exact results:
 
-- establish the bound exactly where the index is computed
-- pass that proof directly into the indexing operation
-- avoid carrying complicated bound terms far through the code if a local `have` solves it cleanly
+```lean
+theorem invalid_input_takes_priority (i : Input) :
+    invalid i -> impl i = .error .invalidInput := by
+  ...
+```
 
-## Strengthen the theorem when needed
+## State machines
 
-When the public theorem is too weak for induction, prove a stronger helper first.
+Model state transitions purely.
 
-Typical examples:
+```lean
+structure State where
+  -- fields
 
-- generalize an accumulator
-- quantify over an arbitrary suffix or environment
-- strengthen equality to a relational invariant over intermediate states
+inductive Event where
+  -- events
 
-Then recover the final user-facing theorem as a specialization.
+structure StepResult where
+  output : Output
+  state' : State
+  trace : List Event
 
-## Proof placement
+def step (s : State) (i : Input) : Except Error StepResult := ...
 
-Keep these items close together:
+def Inv (s : State) : Prop := ...
 
-- the function
-- its key helper lemmas
-- its main correctness theorem
+theorem step_preserves_inv
+    (s : State) (i : Input) (r : StepResult) :
+    Inv s ->
+    step s i = .ok r ->
+    Inv r.state' := by
+  ...
+```
 
-This prevents the proof architecture from becoming invisible to future readers.
+For many-step properties, define an execution relation or recursive runner and prove preservation by induction over the trace or input list.
 
-## Practical correctness checklist
+## Parser/serializer laws
 
-For every program you verify, ask:
+Be precise about direction.
 
-- what is the cleanest mathematical spec?
-- is the implementation total?
-- if optimized, what is the refinement theorem?
-- what invariant explains the loop or accumulator?
-- can the public theorem be derived from a stronger helper?
-- is `IO` isolated from the pure reasoning core?
-- are all proof obligations discharged without placeholders?
+```lean
+theorem parse_serialize_roundtrip (x : α) :
+    parse (serialize x) = .ok x := by
+  ...
+```
+
+The reverse direction usually requires normalization.
+
+```lean
+theorem serialize_parse_normalizes (s : String) (x : α) :
+    parse s = .ok x ->
+    serialize x = normalize s := by
+  ...
+```
+
+## Normalizers
+
+For normalization functions, the common theorem pair is:
+
+```lean
+theorem normalize_normalized (x : α) :
+    Normalized (normalize x) := by
+  ...
+
+theorem normalize_idempotent (x : α) :
+    normalize (normalize x) = normalize x := by
+  ...
+```
+
+## Arrays and optimized code
+
+For optimized code:
+
+1. Define a simple list or mathematical spec.
+2. Implement the optimized version.
+3. Prove a representation relation.
+4. Prove each loop or helper preserves the relation.
+5. Conclude equivalence to the spec.
+
+Avoid proving the optimized code directly against a vague English requirement.
+
+## IO boundary
+
+Keep IO out of the core theorem when possible.
+
+Good architecture:
+
+- pure parser
+- pure validator
+- pure planner
+- pure state transition
+- small IO wrapper
+
+Prove correctness of the pure core. State that the IO wrapper, filesystem, network, clock, and process environment are outside the Lean proof unless modeled explicitly.
