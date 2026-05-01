@@ -1,4 +1,7 @@
 interface:
   display_name: "reduce"
-  short_description: "Spot costly abstractions and propose lower-level primitives"
-  default_prompt: "Use $reduce to review this codebase, flag high-cost abstractions, and propose lower-level replacements."
+  short_description: "Spot costly abstractions and propose lower-level primitives."
+  brand_color: "#64748B"
+  default_prompt: "Review this codebase with $reduce. Identify high-cost abstractions, score their tax versus proven value, and propose a reversible cut list with lower-level replacements, proof signals, and rollback. Do not implement unless I explicitly ask."
+policy:
+  allow_implicit_invocation: true
