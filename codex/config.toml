@@ -21,7 +21,6 @@ memories = true
 sqlite = true
 responses_websockets_v2 = true
 multi_agent = true
-multi_agent_v2 = true
 prevent_idle_sleep = true
 voice_transcription = true
 realtime_conversation = true
@@ -34,6 +33,10 @@ chronicle = true
 external_migration = true
 terminal_resize_reflow = true
 goals = true
+
+[features.multi_agent_v2]
+enabled = true
+max_concurrent_threads_per_session = 24
 
 [memories]
 generate_memories = true
