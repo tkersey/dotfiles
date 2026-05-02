@@ -1,17 +1,18 @@
 ---
 name: deckset
-description: Generate Deckset markdown presentations from conversation context with high semantic fidelity. Use when requests mention decks, slides, presentations, speaker notes, or Deckset markdown output, especially when converting an existing conversation into a narrative slide flow. This skill refreshes upstream Deckset markdown docs and the configured gist examples on every run before drafting.
+description: Generate Deckset markdown presentations from conversation context with high semantic fidelity. Use when requests mention decks, slides, presentations, speaker notes, or Deckset markdown output, especially when converting an existing conversation into a narrative slide flow. This skill checks upstream Deckset docs/examples before drafting, without mutating tracked reference caches unless substantive upstream content changes.
 ---
 
 # Deckset
 
 ## Workflow
 
-1. Refresh upstream references first, on every invocation (run from this skill directory):
+1. Refresh/check upstream references first, on every invocation (run from this skill directory):
    - `uv run scripts/refresh_sources.py`
    - Optional: set `GH_TOKEN`/`GITHUB_TOKEN` to avoid GitHub API rate limits
    - Optional: `--max-age-sec 3600` to reduce network refreshes
-2. Read refresh metadata:
+   - The refresh script must not rewrite tracked reference files for timestamp/provenance-only changes. Treat clean `cache_not_modified` output as a valid refresh.
+2. Read refresh metadata when it changed, otherwise use the script output plus the existing reference cache:
    - `references/refresh-metadata.json` -> capture `refreshed_at`, `docs_source`, `gist_source`, `used_cache_fallback`
 3. Read the conversation and extract:
    - audience
@@ -21,8 +22,7 @@ description: Generate Deckset markdown presentations from conversation context w
    - constraints (must-include points, required sections, theme/footer if specified)
 4. Build a narrative spine and a slide outline (titles + 1-line intent) before writing slides.
 5. Draft a single Deckset markdown deck.
-6. Add a provenance stamp as a presenter note on slide 1:
-   - `^ deckset-skill refresh: refreshed_at=<...> docs=<...> gist=<...> cache_fallback=<...>`
+6. Do not force a provenance stamp into the deck. Add a short presenter note only when refresh status materially affects delivery, such as cache fallback or unavailable references.
 7. Run quality gates before returning output.
 
 ## Output Contract
@@ -57,7 +57,7 @@ description: Generate Deckset markdown presentations from conversation context w
 - Delivery: presenter notes clarify talking points, not duplicate slide text.
 - Structure: every slide has a title; one major idea per slide.
 - Density: keep slides scannable (<= 6 bullets per slide; move detail into presenter notes).
-- Provenance: slide 1 includes the refresh stamp and it matches `references/refresh-metadata.json`.
+- Provenance: disclose cache fallback or unavailable references in the response summary; do not require timestamp-only reference mutations or deck notes.
 
 ## References
 

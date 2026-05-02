@@ -132,6 +132,13 @@ def atomic_write(path: Path, data: bytes) -> None:
             pass
 
 
+def atomic_write_if_changed(path: Path, data: bytes) -> bool:
+    if path.exists() and path.read_bytes() == data:
+        return False
+    atomic_write(path, data)
+    return True
+
+
 def nonempty_file(path: Path) -> bool:
     return path.exists() and path.is_file() and path.stat().st_size > 0
 
@@ -151,6 +158,20 @@ def get_github_token() -> str | None:
         if value:
             return value
     return None
+
+
+def same_json_ignoring_keys(path: Path, data: bytes, keys: set[str]) -> bool:
+    try:
+        existing = json.loads(path.read_text(encoding="utf-8"))
+        generated = json.loads(data.decode("utf-8"))
+    except Exception:  # noqa: BLE001
+        return False
+    if not isinstance(existing, dict) or not isinstance(generated, dict):
+        return False
+    for key in keys:
+        existing.pop(key, None)
+        generated.pop(key, None)
+    return existing == generated
 
 
 def make_headers(
@@ -235,7 +256,7 @@ def fetch_docs(
         if not body:
             raise RuntimeError(f"empty response body for {docs_url}")
 
-        atomic_write(docs_path, body)
+        atomic_write_if_changed(docs_path, body)
         return FetchResult(
             source="network", message=f"fetched {docs_url}", ok=True
         ), meta
@@ -356,7 +377,7 @@ def fetch_gist_examples(
                     raise RuntimeError(f"empty response body for {raw_url}")
                 data = raw_body
 
-            atomic_write(out_path, data)
+            atomic_write_if_changed(out_path, data)
             written.append(filename)
 
         if not written:
@@ -374,7 +395,12 @@ def fetch_gist_examples(
             "files": sorted(written),
             "source": api_url,
         }
-        atomic_write(index_path, json.dumps(index_payload, indent=2).encode("utf-8"))
+        index_data = json.dumps(index_payload, indent=2).encode("utf-8")
+        if not (
+            nonempty_file(index_path)
+            and same_json_ignoring_keys(index_path, index_data, {"refreshed_at"})
+        ):
+            atomic_write_if_changed(index_path, index_data)
         return FetchResult(
             source="network", message=f"fetched gist {gist_id}", ok=True
         ), meta
@@ -519,6 +545,13 @@ def build_cheatsheet(docs_url: str, generated_at: str, docs_path: Path | None) -
     return "\n".join(lines)
 
 
+def same_cheatsheet_ignoring_generated_at(existing: str, generated: str) -> bool:
+    pattern = re.compile(r"generated_at=[^;]+;")
+    return pattern.sub("generated_at=<ignored>;", existing, count=1) == pattern.sub(
+        "generated_at=<ignored>;", generated, count=1
+    )
+
+
 def write_cheatsheet(
     cheatsheet_path: Path, docs_url: str, docs_path: Path, errors: list[str]
 ) -> FetchResult:
@@ -528,7 +561,15 @@ def write_cheatsheet(
             generated_at=now_utc(),
             docs_path=docs_path if nonempty_file(docs_path) else None,
         )
-        atomic_write(cheatsheet_path, content.encode("utf-8"))
+        if nonempty_file(cheatsheet_path):
+            existing = cheatsheet_path.read_text(encoding="utf-8", errors="replace")
+            if same_cheatsheet_ignoring_generated_at(existing, content):
+                return FetchResult(
+                    source="cache_not_modified",
+                    message="cheatsheet not modified",
+                    ok=True,
+                )
+        atomic_write_if_changed(cheatsheet_path, content.encode("utf-8"))
         return FetchResult(source="generated", message="generated cheatsheet", ok=True)
     except Exception as exc:  # noqa: BLE001
         if nonempty_file(cheatsheet_path):
@@ -555,6 +596,25 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--refs-dir", default=None)
     return parser.parse_args()
+
+
+def metadata_changed(prior: dict[str, Any], summary: dict[str, Any]) -> bool:
+    transient_keys = {
+        "refreshed_at",
+        "docs_source",
+        "gist_source",
+        "cheatsheet_source",
+        "used_cache_fallback",
+        "docs_http_status",
+        "gist_http_status",
+        "errors",
+    }
+    prior_material = dict(prior)
+    summary_material = dict(summary)
+    for key in transient_keys:
+        prior_material.pop(key, None)
+        summary_material.pop(key, None)
+    return prior_material != summary_material
 
 
 def main() -> int:
@@ -612,7 +672,8 @@ def main() -> int:
     }
 
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
-    atomic_write(metadata_path, json.dumps(summary, indent=2).encode("utf-8"))
+    if metadata_changed(prior, summary):
+        atomic_write(metadata_path, json.dumps(summary, indent=2).encode("utf-8"))
 
     print(
         json.dumps(
