@@ -1,148 +1,261 @@
 ---
 name: ideate
-description: Research and interrogate a fuzzy product, project, or feature opportunity; generate many grounded ideas; winnow them hard; check for overlap with existing work; and output the seed of a plan for the strongest direction. Use when the user asks what to build next, how to improve a project, wants rigorous brainstorming, or needs a vague opportunity turned into a plan seed. Do not use when the user already wants task breakdowns, tickets, or implementation.
+description: Mine a codebase for original, evidence-backed ideas for changes, additions, refactors, simplifications, DX, UX, reliability, performance, or architecture cleanup. Use when asking what to build, improve, or refactor next. Output a ranked opportunity portfolio and plan seed; do not implement or create tickets.
 ---
 
 # Ideate
 
-Turn fuzzy opportunities into grounded direction.
+Turn a repository, product surface, or fuzzy improvement area into a ranked portfolio of original, evidence-backed opportunities and one sharp plan seed.
 
-Your job is not to be “creative” in the abstract. Your job is to discover what actually matters, pressure-test it, generate many plausible directions, and leave the user with the seed of a plan they can confidently develop further.
+Your job is not to be creative in the abstract. Your job is to discover latent opportunities from project reality, generate many plausible directions, cut hard, check overlap, and leave the user with a direction that is surprising only because the repository evidence makes it feel obvious in hindsight.
 
 ## Core stance
 
 - Research first. Do not ask the user for facts that available artifacts can reveal.
-- Interrogate before ideating. Do not jump to solutions while material unknowns remain.
-- Generate broadly, then cut ruthlessly.
-- Prefer user value over novelty.
+- Default scope is the current repository or the files the user provided.
+- Treat code, tests, docs, examples, issue exports, and git history as opportunity evidence.
+- Prefer evidence-backed originality over generic cleanup.
 - Prefer leverage over ornament.
-- Prefer a sharp plan seed over a bloated pseudo-plan.
+- Prefer user and maintainer value over novelty.
+- Prefer behavior-preserving refactors when refactoring is the opportunity.
 - Never rely on `br`.
-- Stop before implementation unless the user explicitly asks for more.
+- Do not create tickets, beads, task graphs, dependency graphs, or implementation plans.
+- Stop before implementation unless the user explicitly asks for a separate follow-up.
 
 ## Default workflow
 
-### 1) Ground in reality
+### 1) Establish scope and posture
 
-Inspect the project and surrounding artifacts before asking questions.
+Infer the scope from the prompt. If the user points at a repo, directory, issue export, design doc, or source subset, use that as the scope. If scope is unclear, default to the current repository and state the assumption later.
+
+The default final artifact is:
+
+1. a compressed repo snapshot
+2. an opportunity map
+3. top 5 ideas
+4. next 10 ideas
+5. cut ideas
+6. overlap findings
+7. chosen direction
+8. one plan seed
+
+### 2) Ground in reality
+
+Inspect available artifacts before asking questions.
 
 Look for:
+
 - `AGENTS.md`
 - `README*`
-- `docs/`
-- roadmap, backlog, todo, changelog, notes, decision records
-- tests, benchmarks, package manifests, config files
-- open design docs or planning docs
-- any user-provided files, links, tickets, or issue exports
+- `docs/`, design notes, ADRs, architecture notes
+- roadmap, backlog, TODOs, changelog, release notes
+- tests, benchmarks, fixtures, examples
+- package manifests, build scripts, config files, CI workflows
+- public API surfaces, CLI commands, routes, UI entry points
+- user-provided links, tickets, issue exports, recordings, or notes
+- git history when available and relevant
+
+Optionally run `scripts/ideate-scan.sh` from this skill if shell access is available. Treat its output as a raw signal index, not as conclusions.
 
 Capture an internal snapshot:
-- problem or opportunity as currently stated
-- who the users/stakeholders appear to be
-- constraints already visible
-- known existing work
-- unknowns that truly require user input
 
-Do not ask about repository facts until you have tried to discover them.
+```md
+Snapshot
+- Stage: Scope | Ground | Harvest | Interrogate | Ideate | Winnow | Overlap | Refine | Portfolio
+- Scope:
+- Repo shape:
+- Primary user-facing surfaces:
+- Primary maintainer surfaces:
+- Constraints:
+- Evidence sources inspected:
+- Opportunity signals:
+- Existing work / overlap:
+- Candidate directions:
+- Leading direction:
+- Assumptions:
+- Open questions:
+- Deferred items:
+```
 
-### 2) Interrogate exhaustively
+Surface the snapshot only in compressed form in the final output.
 
-Use `request_user_input` whenever available. Ask 1-3 atomic questions per round.
+### 3) Harvest codebase opportunity signals
+
+Before ideating, perform a read-only signal harvest. The goal is not to audit every file; the goal is to find specific repo evidence that can seed original ideas.
+
+Use `references/CODEBASE_SIGNAL_LANES.md`.
+
+Look especially for:
+
+- **User surface signals**: CLI commands, routes, public APIs, UI flows, examples, docs promises, error messages, onboarding paths.
+- **Friction signals**: TODO/FIXME/HACK comments, repeated workarounds, confusing names, defensive code, noisy logs, manual steps in docs.
+- **Architecture seam signals**: duplicated logic, unstable boundaries, circular dependencies, large modules, repeated adapters, leaky abstractions.
+- **Test intent signals**: tests that reveal intended behavior, missing tests around critical paths, overcomplicated fixtures, repeated setup.
+- **Reliability signals**: retry logic, partial failure paths, validation gaps, cleanup paths, state recovery, idempotency assumptions.
+- **Performance signals**: hot loops, repeated I/O, unnecessary serialization, expensive startup, N+1-shaped access, slow test/build commands.
+- **Developer workflow signals**: package scripts, CI config, local setup pain, flaky tests, poor diagnostics, missing one-shot commands.
+- **History signals**: recent churn, repeated fixes, reverted work, abandoned branches, renamed concepts, closed TODOs.
+- **Negative-space signals**: names, docs, types, tests, or examples that imply a capability the project does not yet expose.
+- **Refactor-enabler signals**: places where behavior-preserving simplification would unlock future feature work.
+
+Capture a compact opportunity map with evidence. Prefer exact `path:line` references when available. If line numbers are not practical, cite the smallest file, symbol, route, command, or test scope.
+
+### 4) Ask only material questions
+
+Use structured interactive input when available; otherwise ask in normal chat. Ask 1-3 atomic questions per round only after inspecting artifacts.
+
+Ask only for decisions that materially change the opportunity portfolio, such as:
+
+- target user or maintainer priority
+- appetite for behavior change vs behavior-preserving refactor
+- near-term product direction not visible in artifacts
+- constraints that cannot be inferred from docs or code
+- whether speculative ideas are allowed when evidence is thin
 
 Question until each material unknown is one of:
+
 - answered by the user
 - resolved from artifacts
 - made into an explicit assumption
 - intentionally deferred
 - judged immaterial
 
-Keep the questioning sharp and specific. Challenge vague language. Pull on every thread that can materially change the choice of idea.
+Use `references/QUESTION_LANES.md` for follow-up prompts. If artifact evidence is enough to proceed, proceed without asking.
 
-Use the questioning lanes in `references/QUESTION_LANES.md`.
+### 5) Generate 30 evidence-backed candidate directions
 
-### 3) Generate many candidate directions
+Generate 30 distinct candidates before selecting winners. Each candidate must be concrete enough to evaluate and must include evidence.
 
-Once the opportunity space is sufficiently understood, generate **30 distinct candidate directions**.
+Default portfolio quotas:
 
-Rules:
-- Keep candidates concrete enough to evaluate.
-- Eliminate obvious duplicates by clustering variants.
-- Avoid ideas that are only implementation details unless that detail is itself the user-facing opportunity.
-- Include adjacent enabling ideas when they may unlock stronger user value later.
-- Prefer ideas that are accretive and pragmatic.
+- 6 user-facing additions or feature ideas
+- 5 DX / CLI / API / workflow improvements
+- 5 refactor or simplification opportunities
+- 4 reliability / correctness / recovery ideas
+- 3 observability / diagnostics ideas
+- 3 performance / scalability ideas
+- 2 documentation / onboarding ideas that are not merely "write more docs"
+- 2 wild-card ideas from negative-space or hidden-primitive lenses
 
-### 4) Winnow to the best 5, then expand to 15
+If the repo type makes a quota irrelevant, reallocate it and state why in the final assumptions or snapshot.
+
+Use this candidate card internally:
+
+```md
+Candidate Card
+- Title:
+- Category: Feature | Addition | Refactor | Simplification | DX | UX | Reliability | Performance | Observability | Docs | Infrastructure
+- Evidence:
+- Originality source:
+- User / maintainer benefit:
+- Why this is not generic:
+- Likely implementation shape, briefly:
+- Validation path:
+- Risks / behavior-change concerns:
+- Overlap status:
+```
+
+### 6) Apply originality lenses
+
+An original codebase idea should be surprising but evidence-backed. It should usually come from one or more of these lenses:
+
+- **Hidden primitive**: the code already has low-level capability that could become a user-facing feature.
+- **Repeated workaround**: several places compensate for the same missing abstraction or affordance.
+- **Negative space**: docs, names, tests, or examples imply something that does not exist yet.
+- **Sharp edge**: users or maintainers can fall into an avoidable trap.
+- **Asymmetric leverage**: a small change makes many future changes easier.
+- **Behavior-preserving unlock**: a refactor does not matter by itself, but unlocks safer future work.
+- **Diagnostic inversion**: internal state exists but is not exposed in a way that helps users debug.
+- **Default-basin escape**: the obvious idea is "add more docs/tests"; propose a more structural improvement when evidence supports it.
+
+Every shortlisted idea must name its originality source and explain why it is not merely generic cleanup.
+
+### 7) Winnow to the best 5, then expand to 15
 
 Evaluate candidates using `references/RUBRIC.md`.
 
 Process:
-1. Hard-cut red flags and low-value ideas.
-2. Rank the remaining ideas.
+
+1. Hard-cut ideas with fatal flaws, weak evidence, obvious duplication, or poor fit.
+2. Score the remaining ideas.
 3. Select the best 5 and explain why they beat the rest.
-4. Expand with the next best 10 or the most complementary 10.
+4. Add the next best 10 or the most complementary 10.
 5. Re-rank the resulting top set.
 6. Choose a leading direction.
 
-If the space is unusually narrow, you may reduce the visible expansion, but you should still think through a broad field before selecting a direction.
+If the space is unusually narrow, you may reduce the visible expansion, but you should still think through a broad candidate field before selecting a direction.
 
-### 5) Check overlap without `br`
+### 8) Check overlap without `br`
 
-Before finalizing the leading direction, inspect available artifacts for overlap with existing or recently completed work.
+Before finalizing, inspect available artifacts for overlap with existing or recently completed work.
+
+Search for:
+
+- matching roadmap items
+- TODOs and backlog notes
+- closed or open issue exports, if provided
+- past attempts or reverted work
+- recently completed adjacent changes
+- naming collisions and scope collisions
+- existing features hidden behind flags, scripts, or undocumented APIs
 
 Classify each shortlisted idea as one of:
+
 - direct duplicate
 - adjacent / should merge mentally with existing work
 - conflicts with current direction
 - genuinely net-new
+- unknown due to thin evidence
 
-Search locally using whatever repo inspection tools are available in the environment. Examples include file browsing plus tools like `rg`, `grep`, `fd`, `find`, and `git log`.
+Search locally using available tools such as file browsing, `rg`, `grep`, `fd`, `find`, and `git log`. Do not use `br`.
 
-Do not create tickets, beads, task graphs, or dependency graphs here. This skill produces a plan seed, not a work-management structure.
+### 9) Refine the leading direction in plan space
 
-### 6) Refine the leading direction in plan space
-
-Run at least 3 critique passes on the leading direction:
+Run at least 4 critique passes on the leading direction:
 
 - **Pass 1 — Value and shape**
   - Is this solving the right problem?
-  - Is the user benefit obvious?
+  - Is the user or maintainer benefit obvious?
   - Is the scope coherent?
-
-- **Pass 2 — Preconditions and risk**
-  - What must already be true?
-  - What could break adoption, delivery, or usefulness?
+- **Pass 2 — Architecture and behavior risk**
+  - Does this fit the current architecture?
+  - What behavior must remain stable?
   - What hidden migration or maintenance costs exist?
-
-- **Pass 3 — Validation and proof**
+- **Pass 3 — Evidence and originality**
+  - Which repo signals support the idea?
+  - What makes it non-obvious but grounded?
+  - What would disconfirm it?
+- **Pass 4 — Validation and proof**
   - How would we know this deserves a full plan?
   - What evidence could we gather cheaply?
   - What success signals would justify planning and building?
 
-Optionally add a fourth pass for naming, sequencing, or sharper boundaries.
+Optionally add a fifth pass for naming, sequencing, or sharper boundaries.
 
 Do not overspecify implementation. The goal is a strong starting shape for planning, not a disguised implementation design.
 
-### 7) Deliver a plan seed
+### 10) Deliver opportunity portfolio plus plan seed
 
-Your final artifact is **the seed of a plan** for the best direction, not tasks or tickets.
+Use the structure in `references/OPPORTUNITY_PORTFOLIO_TEMPLATE.md`.
 
-Use the exact structure from `references/PLAN_SEED_TEMPLATE.md`.
+End with a plan seed using `references/PLAN_SEED_TEMPLATE.md`.
 
-The plan seed should be self-contained enough that a later planning pass can pick it up without re-running the whole ideation exercise.
+The final artifact should be self-contained enough that a later planning pass can pick it up without re-running the ideation exercise.
 
 ## Questioning behavior
 
-When `request_user_input` is available:
+When structured input is available:
 
 - ask 1-3 questions at a time
 - keep each question single-purpose
-- use stable snake_case ids
+- use stable snake_case ids when ids are supported
 - keep headers short
 - prefer options when the answer space is small
 - put the recommended option first and label it `(Recommended)`
 
-If you need to re-ask the same conceptual question, reuse the same `id`.
+If you need to re-ask the same conceptual question, reuse the same id when possible.
 
-If `request_user_input` is unavailable, use this exact fallback heading:
+If structured input is unavailable and questioning is truly necessary, use this fallback heading:
 
 ```md
 IDEATE: HUMAN INPUT REQUIRED
@@ -153,7 +266,7 @@ IDEATE: HUMAN INPUT REQUIRED
 
 ## Follow-up derivation rules
 
-Create a follow-up when an answer introduces or leaves unresolved any material:
+Create a follow-up question when an answer introduces or leaves unresolved any material:
 
 - ambiguity
 - assumption
@@ -165,6 +278,7 @@ Create a follow-up when an answer introduces or leaves unresolved any material:
 - maintenance burden
 - evidence gap
 - overlap concern
+- behavior-change risk
 
 Apply these patterns:
 
@@ -172,49 +286,35 @@ Apply these patterns:
 - If an answer is vague, ask for a threshold, example, metric, date, or comparison point.
 - If an answer implies a hidden dependency, ask whether the seed should assume that dependency is solved or should treat it as part of the opportunity.
 - If an answer reveals a trade-off, force a choice.
-- If an answer sounds like a solution without a validated problem, ask what user pain or opportunity proves it matters.
+- If an answer sounds like a solution without a validated problem, ask what user pain or maintainer friction proves it matters.
 - If a fact is discoverable from artifacts, inspect first instead of asking.
-
-## Internal snapshot
-
-Maintain this internally while working:
-
-```md
-Snapshot
-- Stage: Ground | Interrogate | Ideate | Winnow | Refine | Seed
-- Problem / opportunity:
-- Users / stakeholders:
-- Constraints:
-- Existing work / overlap:
-- Candidate directions:
-- Leading direction:
-- Assumptions:
-- Open questions:
-- Deferred items:
-```
-
-Surface the snapshot only at the end, and only in compressed form.
 
 ## Output contract
 
-When material unknowns remain, keep questioning.
+When material unknowns remain and cannot be reasonably assumed, ask. Otherwise proceed with explicit assumptions.
 
 When the space is sufficiently understood, output:
 
-1. **Compressed snapshot**
-2. **Top 5 ideas** with ranking and rationale
-3. **Next 10** (or a tighter expanded set if the space is genuinely narrow)
-4. **Overlap findings**
-5. **Chosen direction**
-6. **Plan seed** using the template in `references/PLAN_SEED_TEMPLATE.md`
+1. **Compressed repo snapshot**
+2. **Opportunity map** grouped by signal theme
+3. **Top 5 ideas** with ranking, evidence, originality source, rationale, validation path, and overlap status
+4. **Next 10 ideas** in shorter evidence-backed form
+5. **Ideas cut** and why they lost
+6. **Overlap findings**
+7. **Chosen direction**
+8. **Plan seed** using `references/PLAN_SEED_TEMPLATE.md`
 
 ## Anti-patterns
 
 Do not:
-- brainstorm before understanding the problem
+
+- brainstorm before inspecting relevant artifacts
+- ask the user for facts the repo can answer
 - reward flashiness over usefulness
-- stop at “here are some ideas” with no ranking logic
+- stop at "here are some ideas" with no ranking logic
+- propose generic "add tests" or "improve docs" ideas without a sharper underlying opportunity
 - duplicate an existing roadmap item without acknowledging it
+- treat a refactor as valuable unless it reduces risk, unlocks future work, or preserves behavior while simplifying the system
 - convert the result into tickets, beads, or implementation tasks
 - produce a giant speculative architecture document
 - confuse a plan seed with a detailed plan
@@ -222,8 +322,10 @@ Do not:
 ## Closure criteria
 
 You are done only when:
+
 - the leading direction is grounded in discovered context
 - the top choice is justified against alternatives
+- each shortlisted idea has evidence and an originality source
 - overlap with existing work has been checked or explicitly bounded
 - critical assumptions and risks are visible
 - the final output ends in a plan seed, not implementation work

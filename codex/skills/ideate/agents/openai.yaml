@@ -1,4 +1,6 @@
 interface:
   display_name: "ideate"
-  short_description: "Interrogate first, then winnow ideas into a plan seed"
-  default_prompt: "Use $ideate to research the project, ask hard questions, generate many grounded ideas, winnow them, check overlap with existing work, and deliver the seed of a plan without creating tasks or implementing."
+  short_description: "Mine repo evidence into original improvement ideas"
+  default_prompt: "Use $ideate to inspect this codebase, harvest opportunity signals, generate original evidence-backed ideas for changes/additions/refactors, winnow them hard, check overlap with existing work, and deliver a ranked opportunity portfolio plus one plan seed. Do not implement or create tickets."
+policy:
+  allow_implicit_invocation: true
