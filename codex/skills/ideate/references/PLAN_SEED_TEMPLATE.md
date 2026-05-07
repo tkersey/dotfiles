@@ -25,6 +25,17 @@ Why this deserves attention now rather than later.
 
 The concrete user-visible, maintainer-visible, or strategic gain.
 
+## Breakthrough Frame
+
+The concise governing insight produced by the Glaze and ASI gates.
+
+- Baseline idea:
+- Glaze material delta:
+- ASI 10x horizon:
+- Smallest proof-bearing artifact:
+- Cash-out type: Mechanism | Interface | Proof surface | Strategy
+- First proof signal:
+
 ## Boundaries
 
 ### In at seed stage
@@ -51,7 +62,7 @@ Which originality lens or combination of lenses makes this idea non-obvious but 
 
 ## Why This Won
 
-Why this direction beat the other shortlisted ideas.
+Why this direction beat the other shortlisted ideas, including why its escalated version beat the baseline version.
 
 ## Assumptions to Validate
 
@@ -101,3 +112,5 @@ The immediate next action to turn this seed into a real plan.
 - Prefer concrete language over generic strategy jargon.
 - Be explicit about what is still uncertain.
 - For refactor seeds, include a behavior-preservation strategy.
+- Do not let the breakthrough frame expand the seed into a giant implementation plan.
+- The smallest proof-bearing artifact should be small enough to validate before a full commitment.

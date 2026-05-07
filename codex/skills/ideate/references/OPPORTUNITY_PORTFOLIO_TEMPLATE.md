@@ -26,7 +26,29 @@ Group the strongest evidence signals by theme.
 - Opportunity implied:
 - Confidence:
 
-## 3. Top 5 ideas
+## 3. Escalation ledger
+
+Show how the mandatory Glaze and ASI gates changed the portfolio. Keep this compact but specific.
+
+### Chosen direction escalation chain
+
+- Baseline idea:
+- Why the obvious version loses:
+- Glaze material delta:
+- Stronger move:
+- ASI 10x frame:
+- Systemic leverage point:
+- Smallest proof-bearing artifact:
+- Cash-out type: Mechanism | Interface | Proof surface | Strategy
+- First proof signal:
+- Evidence anchor:
+
+### Other high-signal escalations
+
+1. **<idea title>** — baseline → Glaze delta → ASI artifact → result: promoted | kept | demoted | cut.
+2. ...
+
+## 4. Top 5 breakthrough ideas
 
 ### 1. <idea title>
 
@@ -36,6 +58,11 @@ Group the strongest evidence signals by theme.
 - User / maintainer benefit:
 - Why this beats alternatives:
 - Why this is not generic:
+- Glaze material delta:
+- ASI 10x frame:
+- Smallest proof-bearing artifact:
+- Cash-out type:
+- First proof signal:
 - Validation path:
 - Risks / behavior-change concerns:
 - Overlap status:
@@ -44,20 +71,22 @@ Group the strongest evidence signals by theme.
 
 ...
 
-## 4. Next 10 ideas
+## 5. Next 10 ideas
 
-Use shorter cards, but keep evidence.
+Use shorter cards, but keep evidence and escalation status.
 
-1. **<idea title>** — Category; evidence; originality source; benefit; validation path; overlap status.
+1. **<idea title>** — Category; evidence; originality source; benefit; escalation status; validation path; overlap status.
 2. ...
 
-## 5. Ideas cut
+## 6. Ideas cut
 
-Briefly list the most tempting rejected ideas and why they lost.
+Briefly list the most tempting rejected ideas and why they lost. Include escalation failures.
 
 - **<cut idea>** — Cut because ...
+- **<cut idea>** — Glaze failed: no material delta.
+- **<cut idea>** — ASI failed: no proof-bearing artifact.
 
-## 6. Overlap findings
+## 7. Overlap findings
 
 - Direct duplicates:
 - Adjacent / merge mentally:
@@ -65,11 +94,11 @@ Briefly list the most tempting rejected ideas and why they lost.
 - Net-new:
 - Unknown due to thin evidence:
 
-## 7. Chosen direction
+## 8. Chosen direction
 
-Name the leading direction and explain why it won.
+Name the leading direction and explain why it won after ordinary scoring, Glaze, ASI, and overlap checks.
 
-## 8. Plan seed
+## 9. Plan seed
 
 Use `PLAN_SEED_TEMPLATE.md`.
 ```
@@ -80,4 +109,6 @@ Use `PLAN_SEED_TEMPLATE.md`.
 - Do not expose all 30 raw candidates unless the user explicitly asks.
 - Cite file paths, symbols, tests, commands, or docs for evidence.
 - Be clear when an idea is promising but evidence is thin.
+- Be clear when an idea is strong but not actually breakthrough.
+- The escalation ledger should prove the gates were used without turning the answer into process theater.
 - The plan seed should focus on the chosen direction, not the full portfolio.

@@ -176,3 +176,29 @@ Use these decision rules aggressively:
 - If the answer sounds impressive but not useful, ask which user pain or maintainer burden it removes.
 - If the answer suggests competing priorities, force a choice.
 - If artifacts can answer the question, inspect instead of asking.
+
+## 11. Escalation and breakthrough quality
+
+Clarify only when repository evidence cannot resolve whether the user wants a bolder, behavior-changing, or speculative direction.
+
+Clarify:
+
+- whether the user wants breakthrough ideas even if they require larger behavior change
+- whether the first move must be behavior-preserving
+- what level of speculative leap is acceptable beyond repo evidence
+- what kind of proof-bearing artifact would be compelling
+- whether a 10x frame should optimize for users, maintainers, ecosystem adoption, architecture leverage, or institutional workflow
+
+Good forcing questions:
+
+- Should the winning idea be allowed to change user-visible behavior, or should the first proof artifact be behavior-preserving?
+- Which would be more valuable: a new capability surface, a stronger internal invariant, a diagnostic/proof surface, or a strategic sequencing move?
+- What proof signal would make a bold idea feel worth planning instead of merely interesting?
+- How much risk are you willing to tolerate for a genuinely non-obvious direction?
+
+Escalation-specific follow-up rules:
+
+- If a Glaze pass produces rhetoric but no material delta, ask what concrete artifact or mechanism would make it real.
+- If an ASI pass produces a large vision but no small proof-bearing artifact, ask what smallest testable artifact could preserve the 10x insight.
+- If a bold idea conflicts with compatibility expectations, ask whether the proof artifact should avoid behavior change.
+- If the evidence is thin but the idea is compelling, label it speculative and ask whether speculative candidates should remain in the portfolio.

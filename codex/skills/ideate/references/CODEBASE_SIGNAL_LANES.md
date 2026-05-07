@@ -214,3 +214,25 @@ Signal
 - Candidate ideas it could seed:
 - Confidence: High | Medium | Low
 ```
+
+## Escalation prompts by lane
+
+After harvesting signals, use these prompts to find Glaze/ASI-grade opportunities:
+
+- **Public surface → interface shift**: What command, endpoint, API, or UI surface would turn hidden internal capability into a first-class user interaction?
+- **Maintainer friction → coordination shift**: What small tool or protocol would let maintainers coordinate around the system instead of relying on memory and convention?
+- **Architecture seam → invariant shift**: What invariant, if made explicit, would eliminate a recurring class of bugs or simplify future features?
+- **Test intent → proof surface**: What executable artifact could make the system's most important behavior measurable before further change?
+- **Reliability → recovery primitive**: What small mechanism would make partial failure survivable, explainable, or reversible?
+- **Performance → measurement primitive**: What probe would reveal whether optimization is worth doing before committing to a performance project?
+- **Observability → diagnostic inversion**: What internal decision or state could be exposed safely so users or maintainers can debug the system themselves?
+- **Negative space → hidden product**: What capability is already implied by names, tests, docs, or types but has not been promoted into a product surface?
+- **History → strategic ordering**: What sequence of changes would turn a churn-heavy area into a stable platform for future work?
+- **Refactor-enabler → behavior-preserving unlock**: What small refactor would create the proof surface or invariant needed for a later bolder move?
+
+A signal is especially valuable when it can become one of:
+
+- a mechanism that changes system behavior
+- an interface or protocol that changes coordination
+- a proof surface that makes progress measurable
+- a strategy that changes sequencing, incentives, or leverage
