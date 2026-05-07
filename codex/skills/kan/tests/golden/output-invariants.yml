@@ -1,0 +1,13 @@
+invariants:
+  - name: "Heartbeat present"
+    applies_to: [design-memo, implementation-plan, repo-audit]
+    must_include: ["C", "D", "K", "F", "Lan or Ran or Delta", "unit or counit", "witness", "law test"]
+
+  - name: "Claims separated"
+    must_include_one_of: ["mathematical claim", "programming claim", "architecture inference", "engineering interpretation"]
+
+  - name: "No unsupported performance promise"
+    forbidden: ["codensity will always be faster", "guaranteed speedup"]
+
+  - name: "No decorative category theory"
+    forbidden: ["this is a Kan extension"] # unless accompanied by C,D,K,F and unit/counit in evaluator

@@ -1,0 +1,38 @@
+cases:
+  - prompt: "Use Kan extensions to design a plugin API for adding exporters to my existing AST."
+    should_use_skill: true
+    response_mode: design-memo
+    expected:
+      - "names C, D, K, F, and E"
+      - "chooses Lan or Ran with justification"
+      - "includes one exporter witness slice"
+      - "defines unit/counit compatibility as a test"
+      - "marks architecture mapping as an inference"
+
+  - prompt: "Can codensity help optimize my free monad interpreter pipeline?"
+    should_use_skill: true
+    response_mode: implementation-plan
+    expected:
+      - "identifies right Kan/codensity overlap"
+      - "separates semantic equivalence from performance claim"
+      - "proposes before/after workload"
+      - "mentions source [KAN-HINZE-2012]"
+
+  - prompt: "Plan a schema v1 to v2 migration using a left Kan extension."
+    should_use_skill: true
+    response_mode: design-memo
+    expected:
+      - "treats v1 as S or C and v2 as T or D"
+      - "interprets Lan as Sigma/pushforward"
+      - "includes compatibility tests for old fields"
+      - "mentions quotient/merge risks"
+
+  - prompt: "Give me clean architecture advice for a Node service."
+    should_use_skill: false
+    expected:
+      - "no Kan framing unless the user asks for it"
+
+  - prompt: "Compare shift/reset and control/prompt."
+    should_use_skill: false
+    expected:
+      - "belongs to a delimited-continuation skill, not kan"

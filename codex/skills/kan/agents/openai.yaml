@@ -1,0 +1,7 @@
+interface:
+  display_name: "Kan"
+  short_description: "Implement Kan extensions and use them for categorical code architecture."
+  brand_color: "#6D5EF6"
+  default_prompt: "Use $kan to model this implementation or architecture problem with C, D, K, F, Lan/Ran, unit/counit, and law tests."
+policy:
+  allow_implicit_invocation: true
