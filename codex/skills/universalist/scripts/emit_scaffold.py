@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Emit starter code for a chosen construction and language."""
+"""Emit starter code for a chosen universalist construction and language.
 
+Templates are intentionally small, dependency-free, and designed to be parser/typechecker friendly where possible.
+They are scaffolds, not final code.
+"""
 from __future__ import annotations
 
 import argparse
 import sys
 from pathlib import Path
 
-TEMPLATES = {
+TEMPLATES: dict[tuple[str, str], str] = {
     ("product", "typescript"): """type OrderContext = {
   customerId: string;
   currency: string;
@@ -27,29 +30,22 @@ const context: OrderContext = {
 
 function renderState(state: DocState): string {
   switch (state.tag) {
-    case "Draft":
-      return "draft";
-    case "Approved":
-      return `approved by ${state.approvedBy}`;
-    case "Published":
-      return state.publishedAt;
+    case "Draft": return "draft";
+    case "Approved": return `approved by ${state.approvedBy}`;
+    case "Published": return state.publishedAt;
   }
 }
 """,
-    ("refined", "typescript"): """type Email = { tag: "Email"; value: string };
+    ("refined", "typescript"): """type Email = { readonly tag: "Email"; readonly value: string };
 
 function parseEmail(raw: string): Email | null {
   const value = raw.trim().toLowerCase();
-  return value.length === 0 ? null : { tag: "Email", value };
+  return value.indexOf("@") >= 0 ? { tag: "Email", value } : null;
 }
 """,
     ("pullback", "typescript"): """type Customer = { accountId: string; name: string };
 type Subscription = { accountId: string; plan: string };
-
-type CustomerSubscription = {
-  customer: Customer;
-  subscription: Subscription;
-};
+type CustomerSubscription = { customer: Customer; subscription: Subscription };
 
 function mkCustomerSubscription(
   customer: Customer,
@@ -62,10 +58,9 @@ function mkCustomerSubscription(
 """,
     ("exponential", "typescript"): """type PricingPolicy = (subtotal: number) => number;
 
-const withFlatDiscount =
-  (discount: number): PricingPolicy =>
-  subtotal =>
-    Math.max(0, subtotal - discount);
+function withFlatDiscount(discount: number): PricingPolicy {
+  return (subtotal: number) => Math.max(0, subtotal - discount);
+}
 """,
     ("free", "typescript"): """type Rule =
   | { tag: "All"; rules: Rule[] }
@@ -75,20 +70,40 @@ type Facts = Record<string, string>;
 
 function evalRule(rule: Rule, facts: Facts): boolean {
   switch (rule.tag) {
-    case "All":
-      return rule.rules.every(child => evalRule(child, facts));
-    case "FieldEq":
-      return facts[rule.field] === rule.value;
+    case "All": return rule.rules.every((child) => evalRule(child, facts));
+    case "FieldEq": return facts[rule.field] === rule.value;
   }
 }
 
 function explainRule(rule: Rule): string {
   switch (rule.tag) {
-    case "All":
-      return `all(${rule.rules.map(explainRule).join(", ")})`;
-    case "FieldEq":
-      return `${rule.field} == ${rule.value}`;
+    case "All": return `all(${rule.rules.map(explainRule).join(", ")})`;
+    case "FieldEq": return `${rule.field} == ${rule.value}`;
   }
+}
+""",
+    ("protocol", "typescript"): """type CheckoutState =
+  | { tag: "Cart" }
+  | { tag: "Shipping"; addressId: string }
+  | { tag: "Payment"; addressId: string; paymentId: string }
+  | { tag: "Submitted"; orderId: string };
+
+type CheckoutEvent =
+  | { tag: "SetShipping"; addressId: string }
+  | { tag: "SetPayment"; paymentId: string }
+  | { tag: "Submit"; orderId: string };
+
+function transition(state: CheckoutState, event: CheckoutEvent): CheckoutState | null {
+  if (state.tag === "Cart" && event.tag === "SetShipping") {
+    return { tag: "Shipping", addressId: event.addressId };
+  }
+  if (state.tag === "Shipping" && event.tag === "SetPayment") {
+    return { tag: "Payment", addressId: state.addressId, paymentId: event.paymentId };
+  }
+  if (state.tag === "Payment" && event.tag === "Submit") {
+    return { tag: "Submitted", orderId: event.orderId };
+  }
+  return null;
 }
 """,
     ("product", "python"): """from dataclasses import dataclass
@@ -104,14 +119,18 @@ from typing import Union
 
 @dataclass(frozen=True)
 class Draft:
-    tag: str = "draft"
+    pass
 
 @dataclass(frozen=True)
 class Approved:
     approved_by: str
-    tag: str = "approved"
 
-DocState = Union[Draft, Approved]
+@dataclass(frozen=True)
+class Published:
+    approved_by: str
+    published_at: str
+
+DocState = Union[Draft, Approved, Published]
 """,
     ("refined", "python"): """from dataclasses import dataclass
 
@@ -122,8 +141,8 @@ class Email:
     @classmethod
     def parse(cls, raw: str) -> "Email":
         value = raw.strip().lower()
-        if not value:
-            raise ValueError("empty email")
+        if "@" not in value:
+            raise ValueError("invalid email")
         return cls(value)
 """,
     ("pullback", "python"): """from dataclasses import dataclass
@@ -156,7 +175,8 @@ PricingPolicy = Callable[[int], int]
 def with_flat_discount(discount: int) -> PricingPolicy:
     return lambda subtotal: max(0, subtotal - discount)
 """,
-    ("free", "python"): """from dataclasses import dataclass
+    ("free", "python"): """from __future__ import annotations
+from dataclasses import dataclass
 from typing import Union
 
 @dataclass(frozen=True)
@@ -166,7 +186,7 @@ class FieldEq:
 
 @dataclass(frozen=True)
 class All:
-    rules: tuple["Rule", ...]
+    rules: tuple[Rule, ...]
 
 Rule = Union[FieldEq, All]
 
@@ -177,13 +197,40 @@ def eval_rule(rule: Rule, facts: dict[str, str]) -> bool:
         return all(eval_rule(child, facts) for child in rule.rules)
     raise TypeError(rule)
 """,
-    ("product", "go"): """type OrderContext struct {
+    ("protocol", "python"): """from dataclasses import dataclass
+from typing import Union
+
+@dataclass(frozen=True)
+class Cart:
+    pass
+
+@dataclass(frozen=True)
+class Shipping:
+    address_id: str
+
+@dataclass(frozen=True)
+class Payment:
+    address_id: str
+    payment_id: str
+
+CheckoutState = Union[Cart, Shipping, Payment]
+
+def set_payment(state: CheckoutState, payment_id: str) -> Payment:
+    if not isinstance(state, Shipping):
+        raise ValueError("payment requires shipping state")
+    return Payment(address_id=state.address_id, payment_id=payment_id)
+""",
+    ("product", "go"): """package domain
+
+type OrderContext struct {
     CustomerID string
     Currency   string
     Locale     string
 }
 """,
-    ("coproduct", "go"): """type DocState interface{ isDocState() }
+    ("coproduct", "go"): """package domain
+
+type DocState interface{ isDocState() }
 
 type Draft struct{}
 func (Draft) isDocState() {}
@@ -191,17 +238,28 @@ func (Draft) isDocState() {}
 type Approved struct{ ApprovedBy string }
 func (Approved) isDocState() {}
 """,
-    ("refined", "go"): """type Email string
+    ("refined", "go"): """package domain
+
+import (
+    "fmt"
+    "strings"
+)
+
+type Email string
 
 func NewEmail(raw string) (Email, error) {
     value := strings.ToLower(strings.TrimSpace(raw))
-    if value == "" {
-        return "", fmt.Errorf("empty email")
+    if !strings.Contains(value, "@") {
+        return "", fmt.Errorf("invalid email")
     }
     return Email(value), nil
 }
 """,
-    ("pullback", "go"): """type Customer struct {
+    ("pullback", "go"): """package domain
+
+import "fmt"
+
+type Customer struct {
     AccountID string
     Name      string
 }
@@ -212,18 +270,20 @@ type Subscription struct {
 }
 
 type CustomerSubscription struct {
-    customer     Customer
-    subscription Subscription
+    Customer     Customer
+    Subscription Subscription
 }
 
 func NewCustomerSubscription(customer Customer, subscription Subscription) (CustomerSubscription, error) {
     if customer.AccountID != subscription.AccountID {
         return CustomerSubscription{}, fmt.Errorf("account mismatch")
     }
-    return CustomerSubscription{customer: customer, subscription: subscription}, nil
+    return CustomerSubscription{Customer: customer, Subscription: subscription}, nil
 }
 """,
-    ("exponential", "go"): """type PricingPolicy func(int) int
+    ("exponential", "go"): """package domain
+
+type PricingPolicy func(int) int
 
 func WithFlatDiscount(discount int) PricingPolicy {
     return func(subtotal int) int {
@@ -234,7 +294,9 @@ func WithFlatDiscount(discount int) PricingPolicy {
     }
 }
 """,
-    ("free", "go"): """type Rule interface{ isRule() }
+    ("free", "go"): """package domain
+
+type Rule interface{ isRule() }
 
 type FieldEq struct {
     Field string
@@ -261,134 +323,31 @@ func EvalRule(rule Rule, facts map[string]string) bool {
     }
 }
 """,
-    ("product", "java"): """public record OrderContext(String customerId, String currency, String locale) {}
-""",
-    ("coproduct", "java"): """public sealed interface DocState permits Draft, Approved {}
+    ("protocol", "go"): """package domain
 
-public record Draft() implements DocState {}
-public record Approved(String approvedBy) implements DocState {}
-""",
-    ("refined", "java"): """public final class Email {
-    private final String value;
+import "fmt"
 
-    private Email(String value) {
-        this.value = value;
-    }
+type CheckoutState interface{ isCheckoutState() }
 
-    public static Email parse(String raw) {
-        String normalized = raw.trim().toLowerCase();
-        if (normalized.isEmpty()) {
-            throw new IllegalArgumentException("empty email");
-        }
-        return new Email(normalized);
-    }
+type Cart struct{}
+func (Cart) isCheckoutState() {}
 
-    public String value() {
-        return value;
-    }
+type Shipping struct{ AddressID string }
+func (Shipping) isCheckoutState() {}
+
+type Payment struct {
+    AddressID string
+    PaymentID string
 }
-""",
-    ("pullback", "java"): """public record Customer(String accountId, String name) {}
-public record Subscription(String accountId, String plan) {}
+func (Payment) isCheckoutState() {}
 
-public final class CustomerSubscription {
-    private final Customer customer;
-    private final Subscription subscription;
-
-    private CustomerSubscription(Customer customer, Subscription subscription) {
-        this.customer = customer;
-        this.subscription = subscription;
+func SetPayment(state CheckoutState, paymentID string) (Payment, error) {
+    shipping, ok := state.(Shipping)
+    if !ok {
+        return Payment{}, fmt.Errorf("payment requires shipping state")
     }
-
-    public static CustomerSubscription create(Customer customer, Subscription subscription) {
-        if (!customer.accountId().equals(subscription.accountId())) {
-            throw new IllegalArgumentException("account mismatch");
-        }
-        return new CustomerSubscription(customer, subscription);
-    }
+    return Payment{AddressID: shipping.AddressID, PaymentID: paymentID}, nil
 }
-""",
-    ("exponential", "java"): """import java.util.function.Function;
-
-Function<Integer, Integer> withFlatDiscount(int discount) {
-    return subtotal -> Math.max(0, subtotal - discount);
-}
-""",
-    ("free", "java"): """public sealed interface Rule permits FieldEq, All {}
-
-public record FieldEq(String field, String value) implements Rule {}
-public record All(java.util.List<Rule> rules) implements Rule {}
-
-public final class EvalRule {
-    public static boolean eval(Rule rule, java.util.Map<String, String> facts) {
-        if (rule instanceof FieldEq fieldEq) {
-            return java.util.Objects.equals(facts.get(fieldEq.field()), fieldEq.value());
-        }
-        if (rule instanceof All all) {
-            for (Rule child : all.rules()) {
-                if (!eval(child, facts)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        throw new IllegalArgumentException("unknown rule");
-    }
-}
-""",
-    ("product", "kotlin"): """data class OrderContext(
-    val customerId: String,
-    val currency: String,
-    val locale: String,
-)
-""",
-    ("coproduct", "kotlin"): """sealed interface DocState {
-    data object Draft : DocState
-    data class Approved(val approvedBy: String) : DocState
-}
-""",
-    ("refined", "kotlin"): """@JvmInline
-value class Email private constructor(val value: String) {
-    companion object {
-        fun parse(raw: String): Email {
-            val normalized = raw.trim().lowercase()
-            require(normalized.isNotEmpty()) { "empty email" }
-            return Email(normalized)
-        }
-    }
-}
-""",
-    ("pullback", "kotlin"): """data class Customer(val accountId: String, val name: String)
-data class Subscription(val accountId: String, val plan: String)
-
-data class CustomerSubscription private constructor(
-    val customer: Customer,
-    val subscription: Subscription,
-) {
-    companion object {
-        fun create(customer: Customer, subscription: Subscription): CustomerSubscription {
-            require(customer.accountId == subscription.accountId) { "account mismatch" }
-            return CustomerSubscription(customer, subscription)
-        }
-    }
-}
-""",
-    ("exponential", "kotlin"): """typealias PricingPolicy = (Int) -> Int
-
-fun withFlatDiscount(discount: Int): PricingPolicy = { subtotal ->
-    maxOf(0, subtotal - discount)
-}
-""",
-    ("free", "kotlin"): """sealed interface Rule {
-    data class FieldEq(val field: String, val value: String) : Rule
-    data class All(val rules: List<Rule>) : Rule
-}
-
-fun evalRule(rule: Rule, facts: Map<String, String>): Boolean =
-    when (rule) {
-        is Rule.FieldEq -> facts[rule.field] == rule.value
-        is Rule.All -> rule.rules.all { child -> evalRule(child, facts) }
-    }
 """,
     ("product", "rust"): """struct OrderContext {
     customer_id: String,
@@ -399,6 +358,7 @@ fun evalRule(rule: Rule, facts: Map<String, String>): Boolean =
     ("coproduct", "rust"): """enum DocState {
     Draft,
     Approved { approved_by: String },
+    Published { approved_by: String, published_at: String },
 }
 """,
     ("refined", "rust"): """#[derive(Clone, Debug, PartialEq, Eq)]
@@ -407,8 +367,8 @@ struct Email(String);
 impl Email {
     fn parse(raw: &str) -> Result<Self, String> {
         let normalized = raw.trim().to_lowercase();
-        if normalized.is_empty() {
-            return Err("empty email".into());
+        if !normalized.contains('@') {
+            return Err("invalid email".to_string());
         }
         Ok(Self(normalized))
     }
@@ -432,7 +392,7 @@ struct CustomerSubscription {
 impl CustomerSubscription {
     fn create(customer: Customer, subscription: Subscription) -> Result<Self, String> {
         if customer.account_id != subscription.account_id {
-            return Err("account mismatch".into());
+            return Err("account mismatch".to_string());
         }
         Ok(Self { customer, subscription })
     }
@@ -444,15 +404,30 @@ fn with_flat_discount(discount: i64) -> PricingPolicy {
     Box::new(move |subtotal| (subtotal - discount).max(0))
 }
 """,
-    ("free", "rust"): """enum Rule {
+    ("free", "rust"): """use std::collections::HashMap;
+
+enum Rule {
     FieldEq { field: String, value: String },
     All(Vec<Rule>),
 }
 
-fn eval_rule(rule: &Rule, facts: &std::collections::HashMap<String, String>) -> bool {
+fn eval_rule(rule: &Rule, facts: &HashMap<String, String>) -> bool {
     match rule {
         Rule::FieldEq { field, value } => facts.get(field) == Some(value),
         Rule::All(rules) => rules.iter().all(|child| eval_rule(child, facts)),
+    }
+}
+""",
+    ("protocol", "rust"): """enum CheckoutState {
+    Cart,
+    Shipping { address_id: String },
+    Payment { address_id: String, payment_id: String },
+}
+
+fn set_payment(state: CheckoutState, payment_id: String) -> Result<CheckoutState, String> {
+    match state {
+        CheckoutState::Shipping { address_id } => Ok(CheckoutState::Payment { address_id, payment_id }),
+        _ => Err("payment requires shipping state".to_string()),
     }
 }
 """,

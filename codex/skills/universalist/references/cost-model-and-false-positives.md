@@ -1,74 +1,51 @@
-# Cost Model and False Positives
+# Cost model and false positives
 
-## Default rule
+A universal construction is useful only when its maintenance cost is lower than the repeated obligation it eliminates.
 
-Choose the smallest construction that:
+## Cost dimensions
 
-- removes the most repeated obligation
-- lands in one seam
-- has a clear proof signal
-- preserves boundaries when possible
+| Cost | What to inspect |
+|---|---|
+| Edit cost | How many files change for one new case or rule? |
+| Lookup cost | How many files must an agent read before understanding the behavior? |
+| Boundary cost | Does the new model require adapters at API, JSON, DB, queue, or external client surfaces? |
+| Runtime cost | Is the invariant compile-time, parse-time, or runtime-only? |
+| Test cost | What proof must be added or updated? |
+| Concept cost | Does the repo/team language support the construction idiomatically? |
+| Reduction opportunity | Which old checks, flags, adapters, or wrappers become deletable after the lift? |
 
-Elegance is not a reason to choose a larger construction.
+## Positive signals
 
-## Blast-radius checklist
+Climbing is likely worthwhile when:
 
-Score each candidate move as **low**, **medium**, or **high** on:
+- the same check appears in multiple layers;
+- invalid states are currently representable and already guarded against;
+- branch expansion is accelerating;
+- one missing case could cause data loss, security issues, billing errors, or public contract drift;
+- a small constructor/decoder seam can isolate the stronger shape;
+- proof is fast and local.
 
-- file count touched
-- public API impact
-- serializer or wire impact
-- persistence impact
-- testability
-- rollback difficulty
+## False positives
 
-Prefer low-to-medium blast radius unless the user explicitly asked for a broader redesign.
+| Looks like | But may only need | Check before lifting |
+|---|---|---|
+| repeated validation | a shared helper | Is the predicate stable and domain-significant? |
+| booleans/status fields | clearer names | Are impossible combinations actually possible? |
+| branchy policy | a lookup table | Are behaviors independent and supplied from outside? |
+| syntax + execution | one direct function | Are there multiple interpreters: eval, explain, render, log, persist? |
+| agreement check | local assertion | Is agreement checked in several places or across trust boundaries? |
+| local UI flow | reducer/state machine | Are invalid transitions common or consequential? |
 
-## Construction-specific cost profile
+## Reduction preflight summary
 
-| Construction | Usual cost | Main risk | Best first seam |
-| --- | --- | --- | --- |
-| Product | low | hiding illegal combinations in a record | constructor or value object |
-| Coproduct | medium | touching many exhaustiveness sites too early | decoder + one central state consumer |
-| Refined type | low to medium | raw primitive leaks everywhere | parse / factory boundary |
-| Pullback | low | witness is bypassed by public fields or constructors | checked constructor |
-| Exponential | low to medium | injected behavior still depends on hidden mutable global state | policy or handler seam |
-| Free construction | medium to high | AST added without enough interpreter value | one rule or workflow family |
+Before a lift, answer:
 
-## False-positive guide
+```md
+What tax does this construction add?
+What repeated obligation does it delete?
+Could a lower primitive solve this?
+Does it improve agent-editability?
+What proof signal detects a wrong lift?
+```
 
-### Product mistaken for coproduct
-If fields are independently meaningful and legal together, keep a product.
-
-### Coproduct mistaken for product
-If optional fields are really mutually exclusive states, use a coproduct.
-
-### Refined type mistaken for helper validation
-If the same stable predicate appears repeatedly, move it into a constructor or wrapper.
-
-### Pullback mistaken for pair
-If agreement over a shared projection is the main invariant and appears in multiple call sites, create a witness.
-
-### Exponential mistaken for state machine
-If the core problem is "which behavior should run" rather than "which state am I in", prefer supplied behavior.
-
-### Free construction mistaken for object hierarchy
-If syntax and execution are intertwined and multiple interpreters matter, use an AST. If there is only one evaluator and no explanation or translation path, do not.
-
-## Stop conditions
-
-Stop after any of these:
-
-- one seam is stronger and verified
-- external shape is still stable and adapters are explicit
-- the repeated proof obligation is now centralized
-- the next step would materially widen blast radius
-
-## Escalation triggers
-
-Consider a second seam only when:
-
-- the first seam proved the shape and the repo still benefits
-- boundary adapters are already explicit
-- the next seam uses the same construction
-- rollback remains easy
+If the answers are weak, do not universalize. Use `reduce`, hold, or split.

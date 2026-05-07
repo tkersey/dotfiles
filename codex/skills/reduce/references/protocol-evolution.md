@@ -1,107 +1,69 @@
-# Interaction-evolving interfaces
+# Protocol evolution guardrail
 
-Some apparent abstraction is actually a stateful protocol. Reduce incidental wrappers first, but do not flatten essential protocol evolution into a fixed global interface without proof.
+Stateful abstractions often look removable until you model the protocol they encode. Do not flatten them without a transition table.
 
-## What counts as an evolving interface
+## Use this when
 
-An interface is interaction-evolving when the valid operations, required inputs, or output shape changes after events.
-
-Examples:
-
-- Authentication flow: unauthenticated -> MFA pending -> authenticated -> privileged.
-- Checkout flow: cart -> shipping -> payment -> confirmation.
-- Capability protocol: tool unavailable -> granted -> revoked -> expired.
-- Streaming or realtime session: connecting -> subscribed -> backfilled -> live -> closed.
-- Wizard/progressive UI: step-specific fields, validation, and actions.
-- Distributed workflow: pending -> reserved -> committed -> compensated.
-
-## Detection checklist
-
-Before removing a layer that appears to manage interaction state, ask:
-
-```text
-- Does the allowed operation set change after user/system events?
-- Does authorization or capability scope change during the interaction?
-- Are there invalid transitions that must be rejected?
-- Does the output schema depend on state?
-- Are there retries, compensation, expiration, or cancellation states?
-- Do tests assert state transitions or only final output?
-- Is state stored durably, in session, in cache, or in client memory?
-```
-
-If two or more answers are yes, treat the abstraction as protocol-bearing until proven otherwise.
+- allowed operations depend on current status/state/phase;
+- retries, cancellation, timers, audit steps, or human approvals are present;
+- workflow/state manager/tooling is under audit;
+- UI steps, checkout flows, onboarding flows, or background jobs have lifecycle rules;
+- deleting a framework abstraction could leave ad hoc booleans and nullable fields.
 
 ## Required transition table
 
-For protocol-bearing layers, produce a transition table before recommending deletion.
-
-| State | Event/input | Allowed operation set | Side effects | Next state | Proof |
+```md
+| From state | Command/event | Guard | To state | Side effects | Proof |
 |---|---|---|---|---|---|
-| unauthenticated | valid password | submit credentials | create MFA challenge | mfa_pending | auth test |
-| mfa_pending | valid code | verify code | create session | authenticated | auth test |
-
-Use the repository's domain terms rather than generic names when possible.
-
-## Reduction rules
-
-Good reductions:
-
-- Replace hidden runtime checks with an explicit state machine or transition table.
-- Move protocol logic out of framework hooks into pure transition functions.
-- Collapse duplicate state representations into one source of truth.
-- Replace ad-hoc booleans with named states when the protocol is real.
-- Isolate external/session storage behind a small boundary.
-
-Bad reductions:
-
-- Flattening all states into one permissive handler.
-- Removing validation because tests only cover the happy path.
-- Collapsing capability grants/revocations into static roles.
-- Treating state-specific fields as optional global fields.
-- Removing idempotency, retry, expiration, or compensation behavior without proof.
-
-## Protocol value scoring
-
-Protocol-bearing abstractions often earn higher `V` when they prove:
-
-- Invalid transitions are rejected.
-- Authorization/capabilities change safely.
-- Persistence and recovery semantics are tested.
-- External clients depend on state-specific responses.
-- Operational safety depends on idempotency or compensation.
-
-However, the wrapper around the protocol may still be reducible. Separate these two questions:
-
-```text
-1. Is the stateful protocol essential?
-2. Is the current implementation layer the simplest safe representation of that protocol?
 ```
 
-## Preferred primitive
+Add invalid-transition rows too:
 
-The preferred replacement for a hidden evolving interface is usually not a flat function. It is often:
-
-```text
-explicit state enum + transition function + small storage boundary + focused tests
+```md
+| From state | Disallowed command | Expected rejection |
+|---|---|---|
 ```
 
-Example shape:
+## Preserve these facts
 
-```text
-State: Draft | Submitted | Approved | Rejected
-Event: Edit | Submit | Approve | Reject | Reopen
-Transition: (state, event, actor, input) -> { next_state, effects }
+- state set;
+- allowed commands per state;
+- guards;
+- side effects;
+- retries and idempotency;
+- cancellation behavior;
+- audit/logging behavior;
+- persistence shape;
+- public/wire/storage compatibility.
+
+## Good reductions
+
+- workflow engine -> explicit reducer plus job queue for actual async work;
+- global state manager -> local reducer for one flow;
+- framework wizard component -> HTML forms plus explicit transition table;
+- enum + optional fields -> coproduct behind legacy DTO adapter;
+- event bus for local synchronous behavior -> direct function calls plus explicit side-effect boundary.
+
+## Bad reductions
+
+- state machine -> string status plus scattered `if` checks;
+- reducer -> loose DOM event handlers with no invalid-transition tests;
+- workflow engine -> cron script that loses retries/auditability;
+- tagged union -> bag of optional fields;
+- guarded command handler -> public mutation endpoints with duplicated validations.
+
+## Split guidance
+
+When protocol value is real but wrapper tax is high:
+
+```md
+Move: split
+Reduce wrapper:
+Preserve protocol as:
+Transition table:
+First seam:
+Proof:
+Rollback:
 ```
 
-This can be simpler than framework hooks, decorators, or scattered runtime checks while preserving the real protocol.
-
-## Proof signals
-
-Use these proof signals before cutting protocol layers:
-
-- Transition table covers all observed states and events.
-- Tests cover at least one invalid transition per protected state.
-- Public outputs remain compatible for each state.
-- Authorization/capability checks remain state-specific.
-- Recovery/retry/cancellation behavior is preserved where present.
-- Rollback restores prior protocol handling without data migration loss.
+The safest first seam is usually a single command handler or reducer path with old and new behavior compared by fixtures.

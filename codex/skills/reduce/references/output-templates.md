@@ -1,224 +1,72 @@
-# Output templates
+# Reduce output templates
 
-Use the smallest template that satisfies the request and evidence level.
+## Full audit
 
-## Full audit template
-
-```markdown
+```md
 ## Scope and assumptions
+- Scope:
+- Evidence present:
+- Evidence missing:
+- Provisional: yes/no
 
-Inspected:
-- ...
+## Current altitude map
+- Altitude 0 / platform primitives:
+- Altitude 1 / explicit local code:
+- Altitude 2 / domain invariants:
+- Altitude 3 / protocols/interpreters:
+- Altitude 4 / framework/tooling:
+- Altitude 5 / distributed/platform:
 
-Not inspected:
-- ...
+## Evidence ledger
+| Evidence | What it proves | What it does not prove | Confidence |
+|---|---|---|---|
 
-Audit level: Full | Provisional
-
-## Abstraction audit
-
-| Abstraction | Evidence | T | V | D | Confidence | External-obligation risk | Verdict |
-|---|---|---:|---:|---:|---|---|---|
-| ... | ... | 2 | 1 | +1 | Medium | Low | slice |
+## Abstraction audit table
+| Abstraction | Evidence | Tax drivers | Agent counters | Proven value | T | V | D | Confidence | External risk | Essential abstraction | Verdict | Lower primitive / reason to keep |
+|---|---|---|---|---:|---:|---:|---:|---|---|---|---|---|
 
 ## Prioritized cut list
-
-### 1. <cut name>
-
-- Current layer:
-- Why it is costly:
-- Proven value:
-- Lower-level primitive:
-- Smallest seam:
-- Expected simplification:
-- Blast radius:
-- Compatibility risk:
-- Rollback:
+1.
 
 ## Migration plan
+| Phase | Change | Proof | Rollback | Stop condition |
+|---|---|---|---|---|
 
-### Phase 0 — proof and seam
-
-- Change:
-- Proof signal:
-- Stop condition:
-- Rollback:
-
-### Phase 1 — first reduction
-
-- Change:
-- Proof signal:
-- Stop condition:
-- Rollback:
-
-### Phase 2 — deletion or cleanup
-
-- Change:
-- Proof signal:
-- Stop condition:
-- Rollback:
-
-## Patch guidance
-
-- File/path:
-- Suggested edit:
-- Reason:
-- Verification:
+## Patch suggestions
 
 ## Risks and unknowns
-
-- ...
 ```
 
-## Diagnostic template
+## Quick audit
 
-Use this when evidence is incomplete.
-
-```markdown
-## Provisional audit
-
-Available evidence:
-- ...
-
-Missing evidence:
-- ...
-
-## Observed abstraction candidates
-
-| Candidate | Observed evidence | Likely tax | Confidence | Safe next verdict |
-|---|---|---:|---|---|
-| ... | ... | 2 | Low | wrap/slice only |
-
-## Next evidence to collect
-
-1. Inspect `<file>` to confirm build/test entry points.
-2. Trace `<path>` from input to output.
-3. Search for call sites of `<symbol>`.
-
-## Safe near-term simplifications
-
-- ...
-
-## Deferred decisions
-
-Do not recommend deleting/replacing these until evidence is collected:
-- ...
+```md
+Top 3:
+1. <abstraction> — verdict: <keep|wrap|slice|replace|delete>; evidence: <one sentence>; first safe move: <...>; biggest unknown: <...>; essential check: <...>
+2.
+3.
 ```
 
-## Quick profile template
+## Implementation handoff
 
-Use this for a narrow user request or small excerpt.
-
-```markdown
-## Reduce profile
-
-Likely cut: <name>
-Verdict: keep | wrap | slice | replace | delete
-Confidence: low | medium | high
-
-Why:
-- Tax:
-- Value:
-- Risk:
-
-Smallest safe move:
-- ...
-
-Proof:
-- ...
-
-Rollback:
-- ...
+```md
+move: descend | split
+scope:
+layer:
+verdict:
+lower_primitive:
+essential_truth_to_preserve:
+compatibility_boundary:
+first_safe_phase:
+files_expected:
+proof_signal:
+rollback:
+stop_condition:
 ```
 
-## Implementation-ready template
+## Provisional cap language
 
-Use this when the user explicitly asks to implement a reduction.
+Use this when evidence is incomplete:
 
-```markdown
-## Selected implementation phase
-
-Chosen cut:
-Phase:
-Reason this phase is safe:
-
-## Planned edits
-
-| File | Edit | Behavior preserved |
-|---|---|---|
-| ... | ... | ... |
-
-## Verification
-
-Commands/signals:
-- ...
-
-## Rollback
-
-- Revert files:
-- Restore command/config:
-- Re-enable compatibility wrapper:
-
-## Non-goals
-
-- ...
-```
-
-## Evidence ledger template
-
-```text
-Evidence ledger
-- Abstraction:
-- Paths/commands inspected:
-- What the evidence proves:
-- What the evidence does not prove:
-- Agent-tax evidence:
-- Value evidence:
-- External-obligation risk:
-- Confidence:
-```
-
-## Decision record template
-
-Use this for a durable recommendation.
-
-```markdown
-# Reduce decision: <abstraction>
-
-Date:
-Scope:
-
-## Decision
-
-keep | wrap | slice | replace | delete
-
-## Rationale
-
-- T:
-- V:
-- D:
-- Confidence:
-- External-obligation risk:
-
-## Evidence
-
-- ...
-
-## Migration
-
-- Phase 0:
-- Phase 1:
-- Phase 2:
-
-## Proof
-
-- ...
-
-## Rollback
-
-- ...
-
-## Open questions
-
-- ...
+```md
+This audit is provisional because <missing evidence>. I would not recommend delete/replace yet. The safe move is <wrap|slice|hold> until <proof or owner confirmation> exists.
 ```

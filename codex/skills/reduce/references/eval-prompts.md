@@ -1,125 +1,106 @@
-# Eval prompts
+# Reduce eval prompts
 
-Use these prompts to check whether the skill triggers only in the intended situations.
+Use these prompts to test that the skill reduces only incidental tax and preserves essential truth.
 
 ## Should trigger
 
-```text
-This repo feels over-engineered. Use $reduce to find layers we can remove.
-```
+### Static React app
 
-Expected behavior: full or provisional de-abstraction audit with T/V/D scoring.
+Prompt: "This app has React and Vite, but only two static pages and one contact form. Can we remove React?"
 
-```text
-Can we ditch the GraphQL layer and use simpler handlers without breaking clients?
-```
+Expected:
 
-Expected behavior: API-layer audit, external-consumer risk, compatibility-wrapper plan.
+- audit React/build layer;
+- recommend possible descent to HTML/CSS/native JS if evidence supports it;
+- native forms/constraint validation as candidate primitive;
+- behavior parity proof such as form submission fixture, screenshot/accessibility smoke checks, or route checks;
+- rollback via branch/revert or preserved static build path.
 
-```text
-We have a DI container but only one implementation for most services. What can we simplify?
-```
+### Codegen surface too large
 
-Expected behavior: DI/plugin analysis, call-site evidence, slice/replace recommendations.
+Prompt: "This generated client creates 20k lines but only 3 endpoints are used."
 
-```text
-Review this codegen setup. It is making every change expensive.
-```
+Expected:
 
-Expected behavior: generator/source-output inventory, generated import audit, staged replacement plan.
+- inventory generated surface and call sites;
+- slice unused endpoints or replace with narrow handwritten client;
+- preserve schema/contract tests;
+- no delete without proof.
 
-```text
-How much of this Kubernetes/Helm/Terraform setup can we collapse for a single service?
-```
+### DI with one implementation
 
-Expected behavior: infra abstraction audit, environment-variation check, rollback/proof emphasis.
+Prompt: "Every interface has one implementation and the DI container makes changes hard."
 
-```text
-The workflow changes valid actions after each user step. Make the interface simpler without losing that behavior.
-```
+Expected:
 
-Expected behavior: protocol-evolution analysis and transition table before flattening.
+- composition root extraction;
+- direct constructors/explicit parameters;
+- keep interfaces only where variants are real;
+- first seam and rollback.
 
-```text
-Reduce the codebase before we build new features.
-```
+### GraphQL forwarding gateway
 
-Expected behavior: broad abstraction-stack audit, not local style refactoring.
+Prompt: "This GraphQL gateway only forwards one internal call, but external clients use its schema."
 
-## Should not trigger
+Expected:
 
-```text
-Make this function easier to read.
-```
+- external risk medium/high;
+- no immediate delete;
+- wrap/compatibility plan;
+- contract-first replacement or hold.
 
-Expected behavior: local refactoring skill, not `$reduce`.
+### Split move with protocol
 
-```text
-Fix this failing test.
-```
+Prompt: "A workflow engine manages a four-step checkout but most of its features are unused. Can we simplify?"
 
-Expected behavior: debugging/implementation, not de-abstraction audit unless the failure is from an abstraction cut.
+Expected:
 
-```text
-Rename these variables and clean up formatting.
-```
+- essential protocol check;
+- transition table;
+- reduce wrapper maybe to reducer/job queue;
+- do not flatten to optional fields.
 
-Expected behavior: no `$reduce`.
+## Should hold or hand off
 
-```text
-Optimize this SQL query.
-```
+### Missing invariant shape
 
-Expected behavior: performance/database tuning, not `$reduce` unless the ask is to remove ORM/query-builder layers.
+Prompt: "This model has `status` plus five nullable fields. Can we reduce it?"
 
-```text
-Add a new endpoint for exporting reports.
-```
+Expected:
 
-Expected behavior: feature implementation, not `$reduce` unless the user asks to remove layers first.
+- do not flatten further;
+- hand off to `universalist` or recommend coproduct behind decoder;
+- maybe reduce surrounding wrappers only after invariant is preserved.
 
-```text
-Find security vulnerabilities in this service.
-```
+### Unknown external obligation
 
-Expected behavior: security review, not `$reduce` unless security risk is caused by abstraction/tooling layers.
+Prompt: "Delete this API gateway; it seems useless."
 
-## Borderline prompts
+Expected:
 
-```text
-This controller is too complicated.
-```
+- ask for or inspect client/contracts;
+- external risk unknown/high;
+- cap at wrap/slice/hold until proof exists.
 
-Trigger only if the complexity comes from framework hooks, middleware, DI, decorators, generated code, or routing indirection. Otherwise use local complexity cleanup.
+### One local helper
 
-```text
-The build is slow.
-```
+Prompt: "Can we reduce this small helper function?"
 
-Trigger only if the likely cause is task-runner, monorepo, codegen, or tooling abstraction. Otherwise use build-performance analysis.
+Expected:
 
-```text
-Can we simplify auth?
-```
+- not a reduce trigger unless framed as layer removal;
+- normal refactor or no action.
 
-Trigger if the ask is about reducing auth framework/layering. Do not flatten stateful auth/session/capability protocols without a transition table.
+## Scoring rubric for evals
 
-## Routing assertions
+A good answer includes:
 
-A correctly tuned `description` should match:
-
-- de-abstraction
-- fewer layers
-- over-engineered
-- remove framework/plugin/DI/codegen/task runner/ORM/GraphQL/infra
-- lower-level primitives
-- preserve behavior
-
-It should not match ordinary:
-
-- bug fix
-- readability refactor
-- formatting
-- naming
-- isolated performance tuning
-- feature implementation
+- evidence ledger;
+- `T/V/D` and confidence;
+- external obligation risk;
+- essential abstraction check;
+- verdict;
+- lower primitive;
+- first safe seam;
+- proof and rollback;
+- no personal-preference-only cuts.
