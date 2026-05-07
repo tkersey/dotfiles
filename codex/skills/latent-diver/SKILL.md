@@ -7,7 +7,7 @@ description: Divergent originality pass for surfacing non-obvious frames, analog
 
 ## Intent
 
-Surface non-obvious, high-potential creative frames before the model converges on a merely good answer.
+Surface non-obvious, locally promising creative frames before the model converges on a merely good answer.
 
 Treat "latent space" operationally: not as literal hidden-state access, but as deliberate movement through distant conceptual neighborhoods, analogies, inversions, constraints, neglected assumptions, interfaces, proof artifacts, and taboo-but-groundable possibilities.
 
@@ -17,11 +17,13 @@ The goal is not to prove that an idea is globally original or globally best. The
 
 ## Core Rule
 
-Never claim that a frame is globally "original," "best," "high-potential," or "the answer."
+Never make an unbounded claim that a frame is "original," "best," "high-potential," or "the answer."
 
 Instead, make a bounded creative claim:
 
 > "Given the prompt, context inspected, assumptions listed, and proof signals available, this frame appears unusually promising for [specific objective]. Remaining uncertainty: [specific gaps]."
+
+Local promise claims are allowed only when they name the objective, inspected context, assumptions, and first proof signal.
 
 Treat absent context as uncertainty, not as permission to invent freely.
 
@@ -35,12 +37,43 @@ When this skill is active:
 * Prefer strange-but-groundable moves over theatrical weirdness.
 * Every weird idea must have a plausible path to proof.
 * Do not converge until the divergent map exists.
-* Do not output a grab-bag; compress toward the few frames with the highest originality x usefulness potential.
+* Do not output a grab-bag; compress toward the few frames with the strongest local originality x usefulness evidence.
 * Label speculation clearly.
 * State the context boundary: what was known, inspected, assumed, or missing.
 * Identify tacit constraints that may be load-bearing.
 * For high-consequence ideas, include blast radius and validation before recommending execution.
-* Hand off the strongest frame to `accretive` when execution, dominance selection, or compounding refinement is needed.
+* Prefer reusable frame packets over long filled templates when a downstream skill needs to evaluate or execute the result.
+* Hand off concrete candidate packets to `accretive` when execution or compounding refinement is needed.
+* Hand off two to five concrete candidate packets to `dominance` when strict selection or anti-theater judgment is needed.
+
+## Frame Packet Contract
+
+For D1 and higher, make each serious candidate easy for another skill to judge without reconstructing the whole dive.
+
+Each frame packet should include:
+
+* Frame name: A short handle.
+* Obvious basin escaped: The convention this moves away from.
+* Probe used: Substrate shift, constraint inversion, alien discipline, adversarial frame, interface frame, time-shift frame, taboo frame, proof artifact frame, or another named probe.
+* Structural mapping: Why the borrowed frame maps mechanistically rather than metaphorically.
+* Practical mechanism: What would actually change in an artifact, interface, ritual, strategy, or proof surface.
+* First proof artifact: The smallest concrete artifact or observation that would make the frame inspectable.
+* Disconfirmation test: What result would kill or sharply weaken the frame.
+* Assumptions: What must be true for the frame to matter.
+* Risk and reversibility: The main downside and the smallest reversible version.
+* Recommended handoff: Continue divergent exploration, pass to `creative-problem-solver`, pass to `accretive`, pass to `dominance`, run verification, or ask a human owner.
+
+The packet is the handoff object. Downstream skills should receive packets, not a cloud of clever phrases.
+
+## Adjacent Skill Boundary
+
+Use `latent-diver` to widen the search space and package unusual candidates. For D0 and D1, it may rank or recommend a local best bet. For strategic work, do not let it silently become the final decider.
+
+* Use `creative-problem-solver` when the user wants a portfolio of options, trade-offs, or tiered paths.
+* Use `accretive` when a concrete candidate or packet set should become one compounding move.
+* Use `dominance` when two to five concrete candidates need adversarial comparison or anti-theater filtering.
+* Use `glaze` when the current answer is still too conventional and needs one material escalation pass.
+* Use `asi` only when ambition expansion is explicitly useful, then collapse back to a concrete mechanism, interface, proof surface, or strategy.
 
 ## Creative Triage Gate
 
@@ -82,7 +115,7 @@ Expected behavior:
 
 * Use a compact dive.
 * Identify the obvious basin.
-* Generate several dive paths.
+* Generate several compact frame packets.
 * Pressure-test lightly.
 * Provide one best frame and first proof signal.
 
@@ -178,7 +211,7 @@ If context is unavailable, say what is missing. Do not invent hidden history, ma
 
 ### 3. Dive Paths
 
-Generate one candidate frame from each probe. Do not force all probes if the tier is D0 or D1.
+Generate one candidate frame from each productive probe. Do not force all probes if the tier is D0 or D1. For D2 and D3, run the probes internally, but output only productive, meaningfully distinct frame packets unless the user asks for the full scratch map.
 
 #### Substrate Shift
 
@@ -313,17 +346,24 @@ Use these dimensions:
 * Context fit: Does this respect known constraints and stakeholder realities?
 * Risk: What is the downside, confusion, fragility, or blast radius?
 
+Apply these elimination gates before recombination:
+
+* If usefulness is 1-2, discard the frame unless the user explicitly asked for pure speculative range.
+* If proofability is 1-2, mark it as `deep signal` or `do-not-execute-yet`; do not recommend execution.
+* If context fit is 1-2, keep it only as a question or reversible probe.
+* If risk is 5, route to validation, owner questions, or `do-not-execute-yet` unless the risk is exactly the object of the exercise.
+
 For risk, use this direction:
 
 * 1 = low risk
 * 3 = manageable risk
 * 5 = high or unclear risk
 
-Do not let high semantic distance compensate for zero usefulness or zero proofability.
+Risk is not an additive positive score. Do not let high semantic distance compensate for low usefulness, low proofability, or bad context fit.
 
 ### 5. Recombination
 
-Combine the top 2-3 frames into 2-3 hybrid moves.
+Combine the top 2-3 surviving frames into 2-3 hybrid moves.
 
 Each hybrid must include:
 
@@ -333,6 +373,7 @@ Each hybrid must include:
 * the likely failure mode
 * the assumption it depends on
 * the smallest reversible version
+* the frame packet fields needed for downstream judgment
 
 A good hybrid should feel surprising in framing and boring enough in execution that someone could actually test it.
 
@@ -403,7 +444,7 @@ Never imply that a proof signal is proof of global correctness. It is only evide
 
 Choose one of:
 
-* `deep signal`: highest originality, uncertain utility
+* `deep signal`: greatest semantic distance, uncertain utility
 * `bridge move`: unusual but implementable
 * `dominant candidate`: ready for `accretive`
 * `validation-first candidate`: promising but needs proof before execution
@@ -441,6 +482,15 @@ Do not immediately replace the idea. First produce:
 
 Focus critique on originality, leverage, proofability, and context fit, not personal taste.
 
+If reviewing a skill, workflow, prompt contract, or orchestration artifact, also inspect:
+
+* trigger fit: whether the skill activates for the right user intents and stays dormant for adjacent tasks
+* stage boundary: whether the skill cleanly hands off to neighboring skills instead of duplicating their job
+* output burden: whether the template creates useful judgment or just ceremonial sections
+* packet quality: whether the output can be consumed by a downstream evaluator without restating the whole analysis
+* validation hooks: whether the skill names concrete proof artifacts and failure signals
+* misuse path: how an agent is likely to over-apply, under-apply, or theatricalize the workflow
+
 ## Output Modes
 
 Match output to tier.
@@ -464,11 +514,11 @@ Use this structure:
     ### Surface Scan
     - [Obvious answer + why insufficient]
 
-    ### Dive Paths
-    - [3-5 frames]
+    ### Compact Frame Packets
+    - [3-5 short packets, each with frame name, mechanism, and first proof signal]
 
     ### Best Frame
-    - [Chosen frame]
+    - [Chosen packet]
 
     ### First Proof Signal
     - [Smallest evidence-generating action]
@@ -497,21 +547,15 @@ Use this structure:
     - Context missing:
     - Tacit constraints suspected:
 
-    ### Dive Paths
-    - Substrate shift:
-    - Constraint inversion:
-    - Alien discipline:
-    - Adversarial frame:
-    - Interface frame:
-    - Time-shift frame:
-    - Taboo frame:
-    - Proof artifact frame:
+    ### Candidate Frame Packets
+    - [2-5 productive, meaningfully distinct frame packets]
+    - Omitted probes: [probes that produced weak, duplicative, or ungrounded frames]
 
     ### Pressure Test
     - [Scores and short rationale]
 
     ### Recombined Moves
-    - [2-3 hybrids, each with mechanism, proof signal, failure mode, and assumption]
+    - [2-3 hybrids, each with mechanism, proof signal, failure mode, assumption, and smallest reversible version]
 
     ### Idea Blast Radius
     - [Stakeholders, risks, second-order effects, reversibility]
@@ -534,7 +578,7 @@ Use this structure:
     - Remaining uncertainty: [specific gaps]
 
     ### Recommended Handoff
-    - [creative-problem-solver / accretive / glaze / verification / human owner]
+    - [creative-problem-solver / accretive / dominance / glaze / verification / human owner]
 
 ### D3: High-Consequence Dive
 
@@ -607,7 +651,7 @@ A successful use of this skill leaves the user with:
 
 * a named obvious answer basin
 * several genuinely distant but groundable frames
-* a compressed set of high-potential recombinations
+* a compressed set of locally promising recombinations
 * explicit assumptions and context boundaries
 * visible pressure testing
 * a first proof signal or validation ladder
