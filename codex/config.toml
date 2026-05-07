@@ -55,7 +55,7 @@ no_memories_if_mcp_or_web_search = false
 
 [tui]
 experimental_mode = "execute"
-status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode", "session-id", "five-hour-limit", "weekly-limit", "branch-changes"]
+status_line = ["codex-version", "current-dir", "git-branch", "branch-changes", "weekly-limit", "five-hour-limit", "model-with-reasoning", "session-id", "fast-mode", "context-remaining"]
 theme = "coldark-dark"
 terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
 notification_condition = "always"
