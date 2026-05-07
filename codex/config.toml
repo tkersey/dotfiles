@@ -27,7 +27,7 @@ realtime_conversation = true
 js_repl = true
 default_mode_request_user_input = true
 fast_mode = true
-codex_hooks = true
+hooks = true
 image_detail_original = true
 chronicle = true
 external_migration = true
@@ -37,6 +37,9 @@ goals = true
 [features.multi_agent_v2]
 enabled = true
 max_concurrent_threads_per_session = 24
+
+[hooks.state."/Users/tk/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:d7cc0fcbd9d10f3735f973c0d3b69bcc5845f0112daa09b1e678c58fd9c858f4"
 
 [memories]
 generate_memories = true
@@ -52,10 +55,11 @@ no_memories_if_mcp_or_web_search = false
 
 [tui]
 experimental_mode = "execute"
-status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode", "session-id", "five-hour-limit", "weekly-limit"]
+status_line = ["current-dir", "git-branch", "context-remaining", "model-with-reasoning", "codex-version", "fast-mode", "session-id", "five-hour-limit", "weekly-limit", "branch-changes"]
 theme = "coldark-dark"
 terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
 notification_condition = "always"
+status_line_use_colors = true
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
