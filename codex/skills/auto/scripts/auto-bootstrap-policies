@@ -40,19 +40,6 @@ auto_append_ordinary_skill_overlap() {
   esac
 }
 
-auto_is_bootstrap_policy_path() {
-  local check_path="$1"
-  local skill_name
-  case "$check_path" in
-    codex/skills/*/AUTO.md)
-      skill_name="${check_path#codex/skills/}"
-      skill_name="${skill_name%%/*}"
-      ! auto_is_protected_name "$skill_name"
-      ;;
-    *) return 1 ;;
-  esac
-}
-
 auto_is_ordinary_skill_md_path() {
   local check_path="$1"
   local skill_name
@@ -68,9 +55,6 @@ auto_is_ordinary_skill_md_path() {
 
 auto_append_bootstrap_diff_blocker() {
   local check_path="$1"
-  if auto_is_bootstrap_policy_path "$check_path"; then
-    return 0
-  fi
   if auto_is_ordinary_skill_md_path "$check_path"; then
     bootstrap_skill_md_paths="${bootstrap_skill_md_paths}${check_path}"$'\n'
   else
@@ -151,9 +135,7 @@ if [ "$DRY_RUN" -eq 0 ]; then
       R*|C*)
         old_path="${path%%$'\t'*}"
         new_path="${path#*$'\t'}"
-        if ! auto_is_bootstrap_policy_path "$old_path" || ! auto_is_bootstrap_policy_path "$new_path"; then
-          bootstrap_diff_blocker="${bootstrap_diff_blocker}${old_path} -> ${new_path}"$'\n'
-        fi
+        bootstrap_diff_blocker="${bootstrap_diff_blocker}${old_path} -> ${new_path}"$'\n'
         ;;
       *)
         auto_append_bootstrap_diff_blocker "$path"
