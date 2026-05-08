@@ -95,7 +95,7 @@ auto_skill_md_policy_ref_diff_only() {
       -*) return 1 ;;
       *) ;;
     esac
-  done < <(git diff --unified=0 "$base_branch"...HEAD -- "$skill_md")
+  done < <(git diff --unified=0 "$base_ref"...HEAD -- "$skill_md")
 }
 
 auto_auto_md_policy_matches() {
@@ -119,6 +119,9 @@ if [ "$DRY_RUN" -eq 0 ]; then
   if [ -n "$worktree_dirty" ]; then
     printf 'bootstrap_dirty_worktree_blocker:\n%s\n' "$worktree_dirty" >&2
     exit 1
+  fi
+  if ! base_ref="$(git rev-parse --verify --quiet "$base_branch^{commit}")"; then
+    auto_die "base branch not found: $base_branch"
   fi
   overlap=""
   while IFS= read -r status_line; do
@@ -166,7 +169,7 @@ if [ "$DRY_RUN" -eq 0 ]; then
         auto_append_bootstrap_diff_blocker "$path"
         ;;
     esac
-  done < <(git diff --name-status -M -C "$base_branch"...HEAD)
+  done < <(git diff --name-status -M -C "$base_ref"...HEAD)
   while IFS= read -r skill_md_path; do
     [ -n "$skill_md_path" ] || continue
     if ! auto_skill_md_policy_ref_diff_only "$skill_md_path"; then
