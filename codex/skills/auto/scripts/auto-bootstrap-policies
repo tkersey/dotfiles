@@ -53,10 +53,25 @@ auto_is_ordinary_skill_md_path() {
   esac
 }
 
+auto_is_ordinary_auto_md_path() {
+  local check_path="$1"
+  local skill_name
+  case "$check_path" in
+    codex/skills/*/AUTO.md)
+      skill_name="${check_path#codex/skills/}"
+      skill_name="${skill_name%%/*}"
+      ! auto_is_protected_name "$skill_name"
+      ;;
+    *) return 1 ;;
+  esac
+}
+
 auto_append_bootstrap_diff_blocker() {
   local check_path="$1"
   if auto_is_ordinary_skill_md_path "$check_path"; then
     bootstrap_skill_md_paths="${bootstrap_skill_md_paths}${check_path}"$'\n'
+  elif auto_is_ordinary_auto_md_path "$check_path"; then
+    bootstrap_auto_md_paths="${bootstrap_auto_md_paths}${check_path}"$'\n'
   else
     bootstrap_diff_blocker="${bootstrap_diff_blocker}${check_path}"$'\n'
   fi
@@ -81,6 +96,15 @@ auto_skill_md_policy_ref_diff_only() {
       *) ;;
     esac
   done < <(git diff --unified=0 "$base_branch"...HEAD -- "$skill_md")
+}
+
+auto_auto_md_policy_matches() {
+  local auto_md="$1"
+  local skill_name
+  [ -f "$auto_md" ] || return 1
+  skill_name="${auto_md#codex/skills/}"
+  skill_name="${skill_name%%/*}"
+  cmp -s "$auto_md" <(auto_print_conservative_policy "$skill_name")
 }
 
 printf '# auto bootstrap-policies\n'
@@ -127,6 +151,7 @@ if [ "$DRY_RUN" -eq 0 ]; then
   fi
   bootstrap_diff_blocker=""
   bootstrap_skill_md_paths=""
+  bootstrap_auto_md_paths=""
   while IFS= read -r diff_line; do
     [ -n "$diff_line" ] || continue
     status="${diff_line%%$'\t'*}"
@@ -148,6 +173,12 @@ if [ "$DRY_RUN" -eq 0 ]; then
       bootstrap_diff_blocker="${bootstrap_diff_blocker}${skill_md_path}"$'\n'
     fi
   done < <(printf '%s' "$bootstrap_skill_md_paths" | sort -u)
+  while IFS= read -r auto_md_path; do
+    [ -n "$auto_md_path" ] || continue
+    if ! auto_auto_md_policy_matches "$auto_md_path"; then
+      bootstrap_diff_blocker="${bootstrap_diff_blocker}${auto_md_path}"$'\n'
+    fi
+  done < <(printf '%s' "$bootstrap_auto_md_paths" | sort -u)
   if [ -n "$bootstrap_diff_blocker" ]; then
     printf 'bootstrap_branch_diff_blocker:\n%s' "$bootstrap_diff_blocker" >&2
     auto_die "bootstrap branch contains non-policy changes; isolate or recreate branch before continuing"

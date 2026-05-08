@@ -181,14 +181,10 @@ auto_validate_one_skill() {
   uv run --with pyyaml -- python3 "$validator" "$skill_dir"
 }
 
-auto_write_conservative_policy() {
-  local skill_dir="$1"
+auto_print_conservative_policy() {
   local name
-  if [ -e "$skill_dir/AUTO.md" ] || [ -L "$skill_dir/AUTO.md" ]; then
-    return 0
-  fi
-  name="$(basename "$skill_dir")"
-  cat > "$skill_dir/AUTO.md" <<EOF_POLICY
+  name="$1"
+  cat <<EOF_POLICY
 # AUTO
 
 ## Update Intent
@@ -217,6 +213,16 @@ Run the relevant skill validation and any script-specific smoke checks. For ordi
 - Add a concise validation step after observed skipped proof.
 - Update a helper script only when the same deterministic action is repeatedly needed.
 EOF_POLICY
+}
+
+auto_write_conservative_policy() {
+  local skill_dir="$1"
+  local name
+  if [ -e "$skill_dir/AUTO.md" ] || [ -L "$skill_dir/AUTO.md" ]; then
+    return 0
+  fi
+  name="$(basename "$skill_dir")"
+  auto_print_conservative_policy "$name" > "$skill_dir/AUTO.md"
 }
 
 auto_ensure_skill_mentions_auto_policy() {
