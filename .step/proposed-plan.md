@@ -1,24 +1,32 @@
-# Plan: Add Codex Hook-Aware Control to `$cas`
+# Plan: Build `auto` Skill for Evidence-Backed Skill Optimization
 
 ## Summary
 
-Implement hook-aware `$cas` by adding `--hooks inherit|off|require-observed` across CAS lanes, passing hook policy into `codex app-server`, capturing `hook/started` and `hook/completed`, summarizing outcomes in JSON, and classifying hook failures with explicit `failureCode` values. Codex remains the only hook executor; CAS controls, observes, classifies, and reports.
+Build `codex/skills/auto` as a real shell-backed Codex skill for closed-loop skill ecosystem improvement. First implement the tracked skill folder and helper scripts, then validate the full skill corpus through `codex/skills/auto/scripts/auto-validate-corpus codex/skills`, and consider the work done only when `auto scan/status` work read-only, bootstrap can generate advisory policies, optimize-one enforces one strong evidence-backed target, and protected skills remain untouched.
 
 ## Implementation Brief
 
-- step=Add shared hook policy model; owner=engineering; success_criteria=all CAS lane CLIs parse `--hooks`, reject invalid modes, and preserve default `inherit`.
-- step=Add Codex launch/config wiring; owner=engineering; success_criteria=stdio and managed websocket app-server paths accept hook policy, with `off` passing `--disable codex_hooks`.
-- step=Add support preflight and classifier; owner=engineering; success_criteria=`off`/`require-observed` fail with `hooks_unsupported` on unsupported runtimes and classify hook statuses deterministically.
-- step=Add hook accumulator/output; owner=engineering; success_criteria=JSON includes compact `hookSummary` and local `hookLogPath`, while raw records stay in NDJSON artifacts.
-- step=Wire all CAS lanes; owner=engineering; success_criteria=smoke, instance, review, and conformance lanes expose consistent policy and verdict behavior.
-- step=Validate locally; owner=engineering; success_criteria=`zig build test-cas`, `zig build build-cas -Doptimize=ReleaseFast`, integration smoke, and `$cas` skill quick-validate pass.
-- step=Release and publish; owner=operations; success_criteria=version bump, tag, release workflow assets, tap formula SHA update, `brew audit`, `brew upgrade`, `brew test`, and installed `cas --version`/help proofs pass.
+- step=initialize durable plan; owner=implementer; success_criteria=`st import-proposed-plan`, `st prime`, and `update_plan` projection succeed with `[st-id]` prefixes.
+- step=scaffold `codex/skills/auto`; owner=implementer; success_criteria=required files exist and command scripts are executable.
+- step=implement helpers and commands; owner=implementer; success_criteria=read-only commands are side-effect free and mutating commands enforce protected-skill and evidence gates.
+- step=run fixed-point review/repair; owner=implementer; success_criteria=no material findings remain after review pass.
+- step=validate; owner=implementer; success_criteria=`auto-validate-corpus codex/skills`, smoke tests, and `git diff --check` pass.
+- step=ship; owner=implementer; success_criteria=`$ship` opens/updates PR with proof, or reports exact blocker.
 
 ## Locked Decisions
 
-- `--hooks inherit` is the default and preserves existing behavior.
-- `--hooks off` is best-effort disable through Codex runtime configuration; observed bad hook status still blocks the CAS verdict.
-- `--hooks require-observed` fails with `hook_not_observed` when no hook notifications appear.
-- Bad hook statuses produce blocking failure codes with precedence `blocked > failed > stopped`.
-- Raw hook notifications remain in local CAS artifact logs; JSON responses include summaries and log paths only.
-- Unsupported hook control for `off` or `require-observed` fails with `hooks_unsupported`; `inherit` remains supported.
+- Preserve `.system/*` as protected; do not modify `quick_validate.py`.
+- Use `codex/skills/auto/scripts/auto-validate-corpus` as the auto-owned corpus validation wrapper.
+- Implement `auto-optimize-one` as command-assisted `prepare` and `finalize` phases, with the agent owning `$seq`, `$refine`, `$ship`, and `$fin` judgment.
+- Bootstrap policy rollout is the only many-skill exception; later optimization remains one ordinary skill, one evidence-backed change set, one PR.
+- Do not create cron entries, durable local report directories, GitHub issues, `.autoupdate`, scheduler state, or protected-skill patches.
+
+## Validation
+
+- `codex/skills/auto/scripts/auto-validate-corpus codex/skills`
+- `test -f` for all required files.
+- `test -x` for command scripts.
+- `auto-scan` and `auto-status` run without creating files.
+- `auto-optimize-one prepare` rejects protected skill `seq`.
+- `auto-optimize-one prepare` rejects weak-only evidence class.
+- `git diff --check`

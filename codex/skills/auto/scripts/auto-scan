@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=auto-lib.sh
+. "$SCRIPT_DIR/auto-lib.sh"
+
+SINCE_DAYS=90
+FILTER_SKILL=""
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --since-days)
+      [ "$#" -ge 2 ] || auto_die "--since-days requires a value"
+      SINCE_DAYS="$2"
+      shift 2
+      ;;
+    --skill)
+      [ "$#" -ge 2 ] || auto_die "--skill requires a value"
+      FILTER_SKILL="$2"
+      shift 2
+      ;;
+    -h|--help)
+      cat <<'TEXT'
+Usage: auto-scan [--since-days N] [--skill NAME]
+
+Read-only skill inventory and evidence-class guidance.
+TEXT
+      exit 0
+      ;;
+    *)
+      auto_die "unknown argument: $1"
+      ;;
+  esac
+done
+
+REPO_ROOT="$(auto_repo_root)"
+cd "$REPO_ROOT"
+
+printf '# auto scan\n'
+printf 'repo: %s\n' "$REPO_ROOT"
+printf 'window_days: %s\n' "$SINCE_DAYS"
+printf 'mode: read-only\n\n'
+
+printf '## strong evidence classes\n'
+auto_strong_evidence_classes | sed 's/^/- /'
+printf '\n## weak evidence classes\n'
+auto_weak_evidence_classes | sed 's/^/- /'
+
+printf '\n## seq evidence guidance\n'
+cat <<EOF_SEQ
+- Skill usage: seq skills-rank --root ~/.codex/sessions --since "\$(date -u -v-${SINCE_DAYS}d '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d '${SINCE_DAYS} days ago' '+%Y-%m-%dT%H:%M:%SZ')"
+- Skill report: seq skill-report --root ~/.codex/sessions --skill <skill> --since <iso-8601-window-start>
+- Routing gaps: seq routing-gap --root ~/.codex/sessions --cue-spec <cue-spec.json> --discovery-skills <skill>
+- Memory map: seq memory-map --contains <skill> --limit 5 --format table
+EOF_SEQ
+
+printf '\n## candidates\n'
+printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "skill" "status" "evidence_class" "summary" "AUTO.md" "eligible" "suggested_next_action"
+
+while IFS= read -r dir; do
+  name="$(basename "$dir")"
+  if [ -n "$FILTER_SKILL" ] && [ "$name" != "$FILTER_SKILL" ]; then
+    continue
+  fi
+  auto_md="missing"
+  [ -f "$dir/AUTO.md" ] && auto_md="present"
+  if auto_is_protected_path "$dir"; then
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "protected/ineligible" "n/a" "protected skill; do not optimize autonomously" "$auto_md" "no" "inspect only"
+    continue
+  fi
+  evidence="thin_usage_signal"
+  summary="no strong class asserted by scan; agent must verify with seq before optimize-one"
+  eligible="no"
+  next="use seq evidence; optimize only after one strong class is established"
+  if [ "$auto_md" = "missing" ]; then
+    evidence="missing_validation_guidance"
+    next="bootstrap AUTO.md policy before autonomous optimization"
+  fi
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "ordinary" "$evidence" "$(auto_sanitize_summary "$summary")" "$auto_md" "$eligible" "$next"
+done < <(auto_list_skill_dirs)

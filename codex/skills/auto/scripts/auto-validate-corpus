@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=auto-lib.sh
+. "$SCRIPT_DIR/auto-lib.sh"
+
+ROOT_ARG="${1:-codex/skills}"
+REPO_ROOT="$(auto_repo_root)"
+SKILLS_ROOT="$REPO_ROOT/$ROOT_ARG"
+
+case "$ROOT_ARG" in
+  /*) SKILLS_ROOT="$ROOT_ARG" ;;
+esac
+
+[ -d "$SKILLS_ROOT" ] || auto_die "skills corpus not found: $SKILLS_ROOT"
+auto_require_tools git uv python3
+
+failures=0
+count=0
+
+while IFS= read -r skill_dir; do
+  count=$((count + 1))
+  rel="${skill_dir#"$REPO_ROOT"/}"
+  printf '==> validating %s\n' "$rel"
+  if ! auto_validate_one_skill "$skill_dir"; then
+    failures=$((failures + 1))
+  fi
+done < <(find "$SKILLS_ROOT" -mindepth 1 -maxdepth 1 -type d -exec test -f '{}/SKILL.md' ';' -print | sort)
+
+printf 'validated_skills=%s failures=%s\n' "$count" "$failures"
+[ "$count" -gt 0 ] || auto_die "no skill directories found under $SKILLS_ROOT"
+[ "$failures" -eq 0 ]
