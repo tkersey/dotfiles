@@ -122,13 +122,20 @@ auto_slugify() {
 auto_sanitize_summary() {
   local text="${1:-}"
   local home="${HOME:-}"
+  local tmpdir="${TMPDIR:-}"
+  local normalized_tmpdir
   if [ -n "$home" ]; then
     text="${text//$home/\$HOME}"
+  fi
+  if [ -n "$tmpdir" ]; then
+    normalized_tmpdir="${tmpdir%/}"
+    text="${text//$normalized_tmpdir/<temp-path>}"
   fi
   # shellcheck disable=SC2016
   printf '%s' "$text" \
     | sed -E \
       -e 's#/Users/[^[:space:]/]+#\$HOME#g' \
+      -e 's#/(private/)?tmp/[^[:space:]]+#<temp-path>#g' \
       -e 's#/(private/)?var/folders/[^[:space:]]+#<temp-path>#g' \
       -e 's#([[:alnum:]_-]*(token|secret|password|credential|api[_-]?key|access[_-]?key|private[_-]?key)[[:alnum:]_-]*[[:space:]]*[=:][[:space:]]*).*$#\1<redacted>#Ig' \
       -e 's#(authorization[[:space:]]*:[[:space:]]*bearer[[:space:]]+).*$#\1<redacted>#Ig' \
