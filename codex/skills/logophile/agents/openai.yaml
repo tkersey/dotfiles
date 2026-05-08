@@ -1,6 +1,7 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
+
 interface:
   display_name: "Logophile"
   short_description: "Precision rewrites, naming, and doctrine synthesis"
-  default_prompt: "Use $logophile for this task."
+  default_prompt: "Use $logophile for wording, naming, or doctrine synthesis."

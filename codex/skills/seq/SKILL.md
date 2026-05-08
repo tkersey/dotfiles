@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups such as `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, and `orchestration-concurrency`, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups such as `skill-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, and `orchestration-concurrency`, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
 ---
 
 # seq
@@ -30,6 +30,11 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
      - `plan-search` for strict repo/session/time/text retrieval of complete `<proposed_plan>` blocks.
      - `find-session` for prompt-to-session lookup.
      - `session-prompts` for "what did that session actually say" and transcript proof.
+     - `skill-audit` for skill usage summaries, one-skill mention rows, and one-skill daily trends.
+     - `tool-audit` for shell/tool command summaries by executable/tool/session/workdir/command plus row, args, and unresolved modes.
+     - `memory-inventory` for memory category/file/block/stage1/extension inventory without hand-writing `memory_*` query specs.
+     - `message-search` for direct message text search with `--contains`, `--regex`, `--contains-any`, or `--contains-all`.
+     - `workdir-report` for canonical session summaries and session lists by `cwd`.
      - `session-tooling` for shell/tool summaries.
      - `orchestration-concurrency` for ledger/concurrency proof.
      - `sessions` for trace inventory: session ids, paths, cwd/repo, status, model, token totals, and worker kind.
@@ -38,7 +43,6 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
      - `tool-lifecycle` when lifecycle completeness matters: declared/completed/failed/unresolved calls, exit/status/output evidence, and typed tool endings.
      - `session-graph` for worker/orchestrator relationships, including parent/worker proof paths and DOT output.
      - `tail` for active sessions or one-shot trace event status from the current/newest rollout.
-     - `query --spec ... memory_files` for memory artifact inventory/routing.
      - `opencode-prompts` / `opencode-events` only when the literal gate is satisfied.
   3. `query-diagnose` when a `seq query` run needs lifecycle debugging or deterministic next actions.
   4. Generic `seq query` only when no specialized command covers the question.
@@ -59,7 +63,7 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 ## Memory Mining Workflow
 - Use `seq` first for inventory, routing, and timestamp/category analysis; do not pretend it replaces reading the target markdown files.
 - Start broad, then go deeper:
-  1. Inventory `memory_files` to see what categories and files exist.
+  1. Run `seq memory-inventory --mode categories` to see what categories and files exist.
   2. If the question is navigational or "what do we know?", route through `memory_summary.md`.
   3. If the question is durable/procedural, route through `MEMORY.md`.
   3b. If the question is about one memory thread or one rollout summary artifact, prefer `memory-provenance` before manual markdown reads.
@@ -168,6 +172,35 @@ Rank skill usage:
 seq query --root ~/.codex/sessions --spec \
   '{"dataset":"skill_mentions","group_by":["skill"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"limit":20,"format":"table"}'
 ```
+Prefer the lifted shortcut:
+```bash
+seq skill-audit --root ~/.codex/sessions --limit 20 --format table
+seq skill-audit --root ~/.codex/sessions --skill seq --mode trend --format table
+```
+
+Audit command/tool usage:
+```bash
+seq tool-audit --root ~/.codex/sessions --group-by executable --limit 20 --format table
+seq tool-audit --root ~/.codex/sessions --mode unresolved --format jsonl
+```
+
+Inventory file-backed memories:
+```bash
+seq memory-inventory --memory-root ~/.codex/memories --mode categories --format table
+seq memory-inventory --memory-root ~/.codex/memories --mode blocks --contains synesthesia --limit 10 --format table
+```
+
+Search session messages:
+```bash
+seq message-search --root ~/.codex/sessions --contains "release workflow" --roles user,assistant --limit 20 --format table
+seq message-search --root ~/.codex/sessions --contains-any "stale packet,transport-invalid" --format jsonl
+```
+
+Report workdir/cwd session activity:
+```bash
+seq workdir-report --root ~/.codex/sessions --workdir /Users/tk/workspace/tk/skills-zig --format table
+seq workdir-report --root ~/.codex/sessions --contains "/Users/tk/workspace/tk" --mode sessions --limit 20 --format table
+```
 
 Daily token totals (from `token_count` events):
 ```bash
@@ -187,6 +220,10 @@ Rank tool calls:
 seq query --root ~/.codex/sessions --spec \
   '{"dataset":"tool_calls","group_by":["tool"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"limit":20,"format":"table"}'
 ```
+Prefer lifecycle-aware lifted summaries:
+```bash
+seq tool-audit --root ~/.codex/sessions --group-by executable --limit 20 --format table
+```
 
 Inspect lifecycle-enriched tool invocations:
 ```bash
@@ -202,8 +239,7 @@ seq query --root ~/.codex/sessions --spec \
 
 Memory files by category:
 ```bash
-seq query --spec \
-  '{"dataset":"memory_files","group_by":["category"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"format":"table"}'
+seq memory-inventory --mode categories --format table
 ```
 
 Explain why a memory exists now:
@@ -450,6 +486,16 @@ seq plan-search --root ~/.codex/sessions \
   --format jsonl
 ```
 
+### Query-Lift Shortcuts
+Use these before raw `seq query` when the request matches the shape:
+```bash
+seq skill-audit --root ~/.codex/sessions --skill seq --mode trend --since 2026-04-01T00:00:00Z --format table
+seq tool-audit --root ~/.codex/sessions --group-by executable --since 2026-04-01T00:00:00Z --limit 20 --format table
+seq memory-inventory --mode blocks --contains "release" --limit 20 --format table
+seq message-search --root ~/.codex/sessions --contains-any "release,homebrew,tap" --roles user,assistant --limit 20 --format table
+seq workdir-report --root ~/.codex/sessions --workdir "$HOME/workspace/tk/skills-zig" --mode sessions --format table
+```
+
 ### Session-backed tooling diagnostics
 Summarize tool/shell activity for one session:
 ```bash
@@ -579,6 +625,7 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `skill-blocks` is the exact-body recovery surface for session-injected skills; it returns full `<skill>...</skill>` envelopes, not loose `$skill` mentions or narrative references.
 - `skill-blocks` defaults to `--history distinct` and `--format jsonl`; use `--history all` to keep repeated identical injections and `--history latest` to select the newest distinct version.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
+- `skill-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching skill, tool, memory, message, and cwd questions.
 - `session-tooling` summarizes per-invocation shell/tool behavior and can aggregate via `--summary --group-by executable|command|tool`.
 - `query-diagnose` emits per-query diagnostics from rollout JSONL and can suggest deterministic follow-up commands with `--next-actions`.
 - `orchestration-concurrency` reports configured and effective fanout, plus how many times each maximum occurred.
