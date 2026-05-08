@@ -148,6 +148,28 @@ Use when traces/logs/metrics define the observable contract.
 - Candidate: lift through `P`.
 - Law: every synthesized implementation slice projects to accepted traces, or every residual obligation is sound.
 
+## Yoneda/Coyoneda representation layer
+
+After the boundary has been classified, use Yoneda/Coyoneda to normalize the local representation of values crossing that boundary.
+
+| Refactor pressure | Local pass | Boundary artifact | Interpreter/law |
+|---|---|---|---|
+| old clients observe new model | Yoneda | `Observation` cases | `runObservation`, projection coherence |
+| public contract defines visible behavior | Yoneda | `PublicObservation` | observed projection equals required observation |
+| core payload generates target artifact | Coyoneda | `Generated` plus `Path` | `lower`, identity/fusion/unit law |
+| internal candidate realizes public behavior | Coyoneda | `CandidateRealizer` plus `ProjectionPath` | `projectImplementation`, lift realization law |
+| observers or paths need auditability | Defunctionalized Yoneda/Coyoneda | constructors plus payloads | semantic preservation plus selected Kan law |
+
+Practical rule:
+
+```text
+Ran/Rft/P_* boundaries tend to expose Yoneda pressure.
+Lan/Lft boundaries tend to expose Coyoneda pressure.
+Kan lifts often need both: observations on C, realizers/paths on B.
+```
+
+Use this layer only if it changes code shape: centralizes observers, defers transformations, preserves provenance, enables map/path fusion, or creates law-testable boundary data.
+
 ## Defunctionalization layer
 
 After choosing `Lan`, `Ran`, `Δ`, `Lft`, or `Rft`, look for hidden functions at the boundary. Architecture-changing Kan work often becomes practical only after those functions are defunctionalized.

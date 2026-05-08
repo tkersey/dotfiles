@@ -189,6 +189,24 @@ function satisfyObligation(design: InternalDesign, obligation: Obligation): bool
 
 The law is soundness: satisfying the residual obligations is sufficient for the projected behavior to stay within the accepted spec slice.
 
+## Yoneda/Coyoneda before defunctionalization
+
+Yoneda and Coyoneda often identify which functions are worth defunctionalizing.
+
+- Yoneda pass: observations such as `a -> b`, selectors, public queries, policy checks, or test oracles become `Observation` constructors plus `runObservation`.
+- Coyoneda pass: deferred maps such as `b -> a`, migration functions, projection paths, or generated artifact transformations become `Path`/`ProjectionPath` constructors plus `lower` or `interpretPath`.
+
+Use this practical order:
+
+```text
+1. Choose Kan extension/lift boundary.
+2. Run Yoneda/Coyoneda pass to decide observation vs deferred-generation representation.
+3. Defunctionalize only the observations/maps that need auditability, serialization, codegen, or exhaustive tests.
+4. Tie the interpreter back to the selected unit/counit/realization/soundness law.
+```
+
+This prevents defunctionalization from becoming arbitrary enum extraction. The Yoneda/Coyoneda pass explains what the cases mean at the boundary.
+
 ## Architecture payoff
 
 Defunctionalization changes architecture when it creates one of these durable modules:

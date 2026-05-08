@@ -145,6 +145,111 @@ Pick one test/spec slice. Assert residual obligations are sufficient/sound for t
 Add a test for one tempting obligation that violates the spec after projection.
 OUT
     ;;
+  yoneda|observation|yoneda-observation)
+    cat <<OUT
+# Yoneda law-test plan (${language})
+
+## Observation round trip
+
+If an identity observation is available:
+
+observe(toYonedaLike(value), identityObservation) == value
+
+Otherwise choose one canonical public observation and assert it agrees with the old direct accessor.
+
+## Map / observation fusion
+
+For observations or maps f and g:
+
+observe(value, compose(f, g)) == observeMapped(observe(value, f), g)
+
+Use the concrete names in the codebase: selectors, projections, query paths, policy checks, or test oracles.
+
+## Representation independence
+
+Two internal representations that project to the same public behavior must agree on every sanctioned Observation.
+
+## Selected Kan law
+
+- Ran: counit projections through the observer agree with legacy observations.
+- Rft: projected residual obligations are sound for each public observation.
+- P_*: public behavior is produced only through P and observe.
+
+## Failure case
+
+Add one observer that tries to inspect forbidden internals and assert it cannot be expressed or fails validation.
+OUT
+    ;;
+  coyoneda|generation|coyoneda-generation)
+    cat <<OUT
+# Coyoneda law-test plan (${language})
+
+## Identity lowering
+
+If an identity path is available:
+
+lower(identityPath, payload) == payload
+
+Otherwise choose one canonical old/core payload and assert lowering agrees with the old interpreter.
+
+## Map/path fusion
+
+For deferred paths p and q:
+
+lower(composePath(p, q), payload) == lower(q, lower(p, payload))
+
+Use the concrete names in the codebase: migration paths, projection paths, generated artifact lowering, or plugin defaults.
+
+## Provenance preservation
+
+Generated/deferred artifacts must retain source identity and path until lowering.
+
+## Selected Kan law
+
+- Lan: identity/generated path on an old/core artifact agrees with eta / old behavior after embedding.
+- Lft: candidate realizer plus projection path realizes the required behavior through P.
+
+## Failure case
+
+Add one invalid path/payload pairing and assert lowering fails explicitly.
+OUT
+    ;;
+  yoneda-coyoneda|yc|boundary-representation)
+    cat <<OUT
+# Yoneda/Coyoneda boundary-representation law-test plan (${language})
+
+## Yoneda side
+
+- Every sanctioned observation is explicit and runnable.
+- Observations are representation-independent.
+- Overlapping observations commute when the selected construction is Ran/Rft.
+
+## Coyoneda side
+
+- Every generated payload keeps source provenance.
+- Deferred paths lower through one interpreter.
+- Map/path fusion holds on a witness path pair.
+
+## Lift combination
+
+For P : B -> C and F : A -> C:
+
+runObservation(P(realizer(a)), obs) == runObservation(F(a), obs)
+
+for every witness observation obs.
+
+## Defunctionalization link
+
+If observations or paths are functions, replace them with constructors and prove:
+
+runObservation(defunctionalizedObs) == originalObserver
+lower(defunctionalizedPath, payload) == originalMap(payload)
+
+## Failure case
+
+Missing projection path emits an explicit residual obligation.
+OUT
+    ;;
   defunctionalization|defun|boundary-ir)
     cat <<OUT
 # Defunctionalization law-test plan (${language})

@@ -222,3 +222,39 @@ sources:
     - control-operator implementation background
     unsafe_for:
     - architecture claims without concrete boundary model
+  KAN-MILEWSKI-YONEDA:
+    title: Yoneda and Coyoneda
+    kind: expository-blog
+    canonical: https://bartoszmilewski.com/2015/09/01/the-yoneda-lemma/
+    freshness: stable-exposition
+    safe_for:
+    - Yoneda intuition
+    - Coyoneda/free-functor intuition
+    - Haskell-shaped representation examples
+    unsafe_for:
+    - primary formal proof claims
+    - current package APIs
+  KAN-HASKELL-YONEDA:
+    title: Data.Functor.Yoneda documentation
+    kind: library-doc
+    canonical: https://hackage.haskell.org/package/kan-extensions/docs/Data-Functor-Yoneda.html
+    freshness: drift-prone
+    safe_for:
+    - Yoneda Haskell representation
+    - Yoneda as right-Kan-like library vocabulary
+    - lift/lower/map operations in library setting
+    unsafe_for:
+    - formal category theory proofs
+    - non-Haskell architecture claims without interpretation label
+  KAN-HASKELL-COYONEDA:
+    title: Data.Functor.Coyoneda documentation
+    kind: library-doc
+    canonical: https://hackage.haskell.org/package/kan-extensions/docs/Data-Functor-Coyoneda.html
+    freshness: drift-prone
+    safe_for:
+    - Coyoneda Haskell representation
+    - Coyoneda as free functor / left-Kan-like library vocabulary
+    - lift/lower/map operations in library setting
+    unsafe_for:
+    - formal category theory proofs
+    - non-Haskell architecture claims without interpretation label

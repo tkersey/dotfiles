@@ -110,6 +110,93 @@ Lift:
 6. Generalize only after the witness passes.
 OUT
     ;;
+  yoneda|yoneda-observation|observation-boundary|ran-observer)
+    cat <<'OUT'
+# Yoneda observation witness
+
+Boundary data:
+- Construction = Ran / Rft / P_* / codensity / facade
+- Boundary map = K or P
+- Observed value = model / behavior / facade / public output
+- Witness observation = one query / selector / policy / test oracle
+
+Implementation:
+1. List sanctioned observations.
+2. Represent observation-heavy access through observe/runObservation.
+3. Hide raw representation behind the observer boundary.
+4. If needed, defunctionalize observers into Observation constructors.
+5. Tie the observation runner back to the selected Kan law.
+
+Artifacts:
+- Observation case type
+- runObservation(value, observation)
+- coherence validator for overlapping observations
+
+Law tests:
+- observe(lift(value), identityObservation) recovers value, if identity is in scope.
+- observing composed maps equals composing observations.
+- old projections through Ran/Rft remain coherent.
+OUT
+    ;;
+  coyoneda|coyoneda-generation|generation-boundary|lan-generator)
+    cat <<'OUT'
+# Coyoneda generation witness
+
+Boundary data:
+- Construction = Lan / Lft / generated artifact / migration
+- Boundary map = K or P
+- Raw payload = one source artifact / event / command / AST node / realizer
+- Deferred map/path = one target transformation or projection path
+
+Implementation:
+1. Keep raw source payload explicit.
+2. Package it with a deferred map/path into the target.
+3. Lower only through one interpreter/lowering function.
+4. If needed, defunctionalize maps into Path or ProjectionPath constructors.
+5. Tie lowering back to the selected Kan law.
+
+Artifacts:
+- Generated or Deferred case type
+- Path / ProjectionPath case type
+- lower / interpretPath / projectImplementation
+
+Law tests:
+- lower(identityPath, payload) agrees with original payload/behavior.
+- two deferred maps fuse to their composition.
+- source provenance survives until lowering.
+- Lan/Lft unit or realization law still holds.
+OUT
+    ;;
+  yoneda-coyoneda-lift|yc-lift)
+    cat <<'OUT'
+# Yoneda/Coyoneda Kan-lift witness
+
+Lift data:
+- A = requirements/spec cases
+- B = implementation/design choices
+- C = observable behavior
+- P : B -> C = fixed public projection
+- F : A -> C = required public behavior
+- Witness a = one contract/test/feature
+
+Yoneda side:
+- PublicObservation cases define what can be observed in C.
+- runObservation reads a required or projected behavior.
+
+Coyoneda side:
+- CandidateRealizer carries raw internal payload.
+- ProjectionPath carries deferred path through P.
+- projectImplementation lowers the realizer/path pair to observable behavior.
+
+Law test:
+for each observation obs:
+  runObservation(projectImplementation(realizer(a), path), obs)
+  == runObservation(F(a), obs)
+
+Residual:
+if no ProjectionPath exists, emit an explicit Obligation instead of silently passing.
+OUT
+    ;;
   defunctionalization|defun-ran|defun-lan|defun-lift|defun-effects)
     cat <<'OUT'
 # Defunctionalization witness

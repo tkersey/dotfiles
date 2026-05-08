@@ -27,3 +27,11 @@ invariants:
     trigger_terms: ["callback", "continuation", "observer", "handler", "resumption", "predicate", "builder", "defunctionalization"]
     must_include_one_of: ["constructor", "case", "payload", "apply", "interpret", "project", "satisfy"]
     must_include_one_of_law: ["unit", "counit", "comparison", "realization", "soundness", "semantic preservation"]
+
+
+  - name: "Yoneda/Coyoneda representation pass"
+    applies_to: [design-memo, implementation-plan, repo-audit]
+    must_include_one_of: ["Observation", "runObservation", "Generated", "Path", "ProjectionPath", "lower", "interpretPath", "projectImplementation"]
+
+  - name: "No decorative Yoneda/Coyoneda"
+    forbidden: ["Yoneda makes this better automatically", "Coyoneda proves this architecture is correct"]

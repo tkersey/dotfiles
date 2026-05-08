@@ -3,6 +3,15 @@ set -euo pipefail
 kind="${1:-design-memo}"
 language="${2:-agnostic}"
 case "$kind" in
+  yoneda-pass|yoneda|observation-boundary)
+    ./scripts/emit_yoneda_pass.sh observation-boundary "$language"
+    ;;
+  coyoneda-pass|coyoneda|generation-boundary)
+    ./scripts/emit_yoneda_pass.sh generation-boundary "$language"
+    ;;
+  boundary-representation|yoneda-coyoneda)
+    ./scripts/emit_yoneda_pass.sh boundary-representation "$language"
+    ;;
   defunctionalization-pass|defunctionalized-boundary|defun)
     ./scripts/emit_defun_pass.sh boundary-ir "$language"
     ;;
@@ -195,6 +204,16 @@ Choose one:
 - adapter/projection/interpreter:
 - generated/synthesized/default behavior:
 - normalization/coherence/residual strategy:
+
+## Yoneda/Coyoneda pass, if boundary representation matters
+
+- observation-heavy side / Yoneda candidates:
+- sanctioned observations:
+- runObservation/observe function:
+- generation-heavy side / Coyoneda candidates:
+- raw payloads and deferred maps/paths:
+- lower/interpretPath/projectImplementation function:
+- round-trip/fusion/provenance law:
 
 ## Defunctionalization pass, if boundary values are higher-order
 

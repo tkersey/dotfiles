@@ -106,6 +106,25 @@ Lift-aware note:
 - view-update or reverse-migration problems are often lift-shaped through a fixed projection P from source states to views.
 OUT
     ;;
+  yoneda|coyoneda|representation)
+    cat <<'OUT'
+# Source pack: Yoneda/Coyoneda boundary representation
+
+- [KAN-MILEWSKI-YONEDA]: Yoneda/Coyoneda intuition and Haskell-shaped representations.
+- [KAN-HASKELL-YONEDA]: library vocabulary for Yoneda representation and lift/lower/map operations.
+- [KAN-HASKELL-COYONEDA]: library vocabulary for Coyoneda as free-functor/deferred-map representation.
+- [KAN-HASKELL-KAN-EXTENSIONS]: package-level grouping of Kan extensions, lifts, Yoneda, Coyoneda, codensity, and density tools.
+
+Safe claims:
+- Yoneda is useful as an observation-heavy representation lens.
+- Coyoneda is useful as a generation-heavy/deferred-map representation lens.
+- In architecture, these are representation passes, not replacements for identifying the real K or P boundary.
+
+Unsafe:
+- claiming a mainstream-language wrapper is a lawful Yoneda/Coyoneda encoding without laws.
+- using the names when they do not change code shape, tests, provenance, or observer centralization.
+OUT
+    ;;
   skills)
     cat <<'OUT'
 # Source pack: skills
