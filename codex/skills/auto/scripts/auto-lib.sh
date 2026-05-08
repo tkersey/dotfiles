@@ -137,6 +137,12 @@ auto_sanitize_summary() {
       -e 's#/Users/[^[:space:]/]+#\$HOME#g' \
       -e 's#/(private/)?tmp/[^[:space:]]+#<temp-path>#g' \
       -e 's#/(private/)?var/folders/[^[:space:]]+#<temp-path>#g' \
+      -e 's#sk-[A-Za-z0-9_-]{16,}#<redacted-secret>#g' \
+      -e 's#gh[pousr]_[A-Za-z0-9_]{16,}#<redacted-secret>#g' \
+      -e 's#github_pat_[A-Za-z0-9_]{16,}#<redacted-secret>#g' \
+      -e 's#AKIA[0-9A-Z]{16}#<redacted-secret>#g' \
+      -e 's#eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}#<redacted-secret>#g' \
+      -e 's#([Bb]earer[[:space:]]+)[A-Za-z0-9._~+/-]{16,}#\1<redacted>#g' \
       -e 's#([[:alnum:]_-]*(token|secret|password|credential|api[_-]?key|access[_-]?key|private[_-]?key)[[:alnum:]_-]*[[:space:]]*[=:][[:space:]]*).*$#\1<redacted>#Ig' \
       -e 's#(authorization[[:space:]]*:[[:space:]]*bearer[[:space:]]+).*$#\1<redacted>#Ig' \
     | tr '\n' ' ' \
