@@ -48,6 +48,11 @@ printf '\n'
 branch="auto/bootstrap-policies"
 if [ "$DRY_RUN" -eq 0 ]; then
   base_branch="${AUTO_BASE_BRANCH:-main}"
+  worktree_dirty="$(git status --porcelain || true)"
+  if [ -n "$worktree_dirty" ]; then
+    printf 'bootstrap_dirty_worktree_blocker:\n%s\n' "$worktree_dirty" >&2
+    exit 1
+  fi
   overlap=""
   while IFS= read -r status_line; do
     status_path="${status_line#???}"
