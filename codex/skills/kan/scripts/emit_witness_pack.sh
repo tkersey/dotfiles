@@ -45,6 +45,71 @@ Law test:
 Ff(epsilon(c,family)) == epsilon(c', ran_map(Kf,family))
 OUT
     ;;
+  left-kan-lift|lft|lift-realization)
+    cat <<'OUT'
+# Left Kan lift witness
+
+Kan data:
+- A = requirements/features/tests
+- B = implementation/internal choices
+- C = observable/public behavior
+- P = fixed projection B -> C
+- F = desired behavior A -> C
+- Witness a = one requirement or feature
+
+Implementation:
+1. Keep P explicit as the only public projection.
+2. Synthesize or choose L(a) in B.
+3. Provide eta(a): F(a) -> P(L(a)).
+4. In posets: choose least b such that F(a) <= P(b).
+
+Law test:
+F(a) <= P(left_lift(a))
+and no smaller implementation still satisfies that inequality.
+OUT
+    ;;
+  right-kan-lift|rift|lift-obligation)
+    cat <<'OUT'
+# Right Kan lift witness
+
+Kan data:
+- A = requirements/features/tests
+- B = implementation obligations/capabilities
+- C = observable/public behavior
+- P = fixed projection B -> C
+- F = desired or accepted behavior A -> C
+- Witness a = one requirement or test
+
+Implementation:
+1. Keep P explicit as the only public projection.
+2. Derive R(a) in B as residual obligations or sound internal approximation.
+3. Provide epsilon(a): P(R(a)) -> F(a).
+4. In posets: choose greatest b such that P(b) <= F(a).
+
+Law test:
+P(right_lift(a)) <= F(a)
+and no larger implementation remains sound under that inequality.
+OUT
+    ;;
+  architecture-transformation|extension-vs-lift)
+    cat <<'OUT'
+# Architecture transformation witness
+
+1. Name the boundary.
+2. Decide where the unknown sits.
+
+Extension:
+  C --K--> D, known F:C->E, unknown D->E.
+
+Lift:
+  A --?--> B, known P:B->C and F:A->C, unknown A->B.
+
+3. Pick one witness slice.
+4. Write one law test.
+5. Move one module through the new boundary.
+6. Generalize only after the witness passes.
+OUT
+    ;;
   codensity)
     cat <<'OUT'
 # Codensity witness

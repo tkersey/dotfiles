@@ -69,5 +69,95 @@ Tests:
 - no direct bypass around the restriction adapter
 OUT
     ;;
+  left-lift|lft|lift-realization)
+    cat <<OUT
+# Left Kan lift law-test plan (${language})
+
+## Unit/comparison naturality
+
+For h : a -> a' and x in F(a), with eta : F -> P.L:
+
+P(L(h))(eta(a, x)) == eta(a', F(h)(x))
+
+## Realization
+
+For each witness a:
+
+F(a) is related to P(Lft_P F(a)) by eta
+
+In a finite poset approximation:
+
+desired(a) <= project(left_lift(a))
+
+## Minimality / factorization
+
+Given alpha : F -> P.G, implement alphaSharp : Lft_P F -> G.
+Assert:
+
+alpha == (P.alphaSharp) . eta
+
+For posets, assert no smaller implementation still covers desired(a).
+
+## Regression witness
+
+Pick one endpoint/feature/test. Assert the synthesized internal artifact projects to the desired public behavior.
+
+## Failure case
+
+Add a test proving direct public behavior cannot bypass P.
+OUT
+    ;;
+  right-lift|rift|lift-obligation)
+    cat <<OUT
+# Right Kan lift law-test plan (${language})
+
+## Counit/comparison naturality
+
+For h : a -> a' and projected behavior y in P(R(a)), with epsilon : P.R -> F:
+
+F(h)(epsilon(a, y)) == epsilon(a', P(R(h))(y))
+
+## Soundness
+
+For each witness a:
+
+P(Rft_P F(a)) is related to F(a) by epsilon
+
+In a finite poset approximation:
+
+project(right_lift(a)) <= desired(a)
+
+## Maximality / factorization
+
+Given beta : P.G -> F, implement betaSharp : G -> Rft_P F.
+Assert:
+
+beta == epsilon . (P.betaSharp)
+
+For posets, assert no larger implementation remains sound under desired(a).
+
+## Regression witness
+
+Pick one test/spec slice. Assert residual obligations are sufficient/sound for that slice.
+
+## Failure case
+
+Add a test for one tempting obligation that violates the spec after projection.
+OUT
+    ;;
+  postcomposition|pstar)
+    cat <<OUT
+# Postcomposition law-test plan (${language})
+
+For P : B -> C and known implementation G : A -> B:
+
+P_*(G) = P . G
+
+Tests:
+- P preserves identities and composition on the implementation slice
+- public behavior is produced only through P
+- one golden public observation equals P(G(a))
+OUT
+    ;;
   *) echo "Unknown direction: $direction" >&2; exit 2 ;;
 esac

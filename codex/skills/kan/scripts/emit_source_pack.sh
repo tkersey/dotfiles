@@ -9,12 +9,31 @@ case "$track" in
 
 - [KAN-RIEHL-CTIC]: universal properties, Lan/Ran adjunctions around precomposition, pointwise colimit/limit formulas.
 - [KAN-MACLANE-CWM]: classic background, ends/coends, density/codensity.
+- [KAN-NLAB-LIFT]: Kan lifts as postcomposition universal properties.
 
 Safe claims:
 - Nat(Lan_K F, G) ≅ Nat(F, G.K)
 - Nat(G, Ran_K F) ≅ Nat(G.K, F)
 - Lan_K ⊣ K* ⊣ Ran_K when they exist for fixed K
+- Lft_P ⊣ P_* ⊣ Rft_P when they exist for fixed P
 - pointwise Lan/Ran via comma-category colimits/limits
+OUT
+    ;;
+  lifts|kan-lifts)
+    cat <<'OUT'
+# Source pack: Kan lifts
+
+- [KAN-NLAB-LIFT]: left/right Kan lift definitions, postcomposition framing, right-lift/residual intuition.
+
+Safe claims:
+- P_* maps G : A -> B to P.G : A -> C.
+- A left Kan lift has comparison F -> P.Lft_P F.
+- A right Kan lift has comparison P.Rft_P F -> F.
+- Lift notation varies; define notation locally.
+
+Unsafe:
+- claiming minimal/weakest/strongest behavior without specifying the order or 2-cell direction.
+- claiming a codebase has a Kan lift without explicit A, B, C, P, F, and a witness comparison.
 OUT
     ;;
   programming)
@@ -33,6 +52,25 @@ Unsafe:
 - performance guarantees without benchmarks.
 OUT
     ;;
+  architecture)
+    cat <<'OUT'
+# Source pack: architecture interpretation
+
+Mathematical basis:
+- [KAN-RIEHL-CTIC] for Kan extensions.
+- [KAN-NLAB-LIFT] for Kan lifts.
+
+Architecture inferences:
+- Lan: free/generative pushforward across a boundary.
+- Ran: coherent/contextual structure determined by observations.
+- Lft: synthesize implementation behind a projection.
+- Rft: derive residual obligations behind a projection.
+
+Required witness:
+- extension needs C, D, K, F and unit/counit test.
+- lift needs A, B, C, P, F and comparison-cell test.
+OUT
+    ;;
   migration|data)
     cat <<'OUT'
 # Source pack: data migration
@@ -45,6 +83,9 @@ Safe claims:
 - Delta is precomposition/restriction.
 - Sigma is left Kan extension when it exists.
 - Pi is right Kan extension when it exists.
+
+Lift-aware note:
+- view-update or reverse-migration problems are often lift-shaped through a fixed projection P from source states to views.
 OUT
     ;;
   skills)

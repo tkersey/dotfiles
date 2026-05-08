@@ -1,7 +1,13 @@
 invariants:
-  - name: "Heartbeat present"
+  - name: "Extension heartbeat present"
     applies_to: [design-memo, implementation-plan, repo-audit]
-    must_include: ["C", "D", "K", "F", "Lan or Ran or Delta", "unit or counit", "witness", "law test"]
+    must_include_one_of:
+      - ["C", "D", "K", "F", "Lan or Ran or Delta", "unit or counit", "witness", "law test"]
+      - ["A", "B", "C", "P", "F", "Lft or Rft or P_*", "comparison", "witness", "law test"]
+
+  - name: "Lift support is coequal"
+    applies_to: [architecture-transformation, implementation-plan, repo-audit]
+    must_include_one_of: ["Kan lift", "Lft", "Rft", "postcomposition", "P : B -> C"]
 
   - name: "Claims separated"
     must_include_one_of: ["mathematical claim", "programming claim", "architecture inference", "engineering interpretation"]
@@ -10,4 +16,7 @@ invariants:
     forbidden: ["codensity will always be faster", "guaranteed speedup"]
 
   - name: "No decorative category theory"
-    forbidden: ["this is a Kan extension"] # unless accompanied by C,D,K,F and unit/counit in evaluator
+    forbidden: ["this is a Kan extension", "this is a Kan lift"] # unless accompanied by data, comparison, and law test in evaluator
+
+  - name: "No lift without boundary"
+    forbidden: ["weakest obligation"] # unless order/2-cell direction and P boundary are stated

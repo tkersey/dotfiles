@@ -5,7 +5,7 @@ sources:
     canonical: "https://developers.openai.com/codex/skills"
     freshness: "drift-prone"
     safe_for: ["Codex skill directory structure", "progressive disclosure", "implicit invocation via description", "agents/openai.yaml metadata"]
-    unsafe_for: ["category theory claims", "Kan-extension implementation details"]
+    unsafe_for: ["category theory claims", "Kan-extension implementation details", "Kan-lift implementation details"]
   OPENAI-API-SKILLS:
     title: "Skills | OpenAI API"
     kind: "official-doc"
@@ -34,6 +34,13 @@ sources:
     freshness: "stable-theory"
     safe_for: ["classic Kan-extension background", "ends and coends", "adjunctions and universal properties", "density and codensity historical context"]
     unsafe_for: ["software architecture claims without interpretation label", "current package APIs"]
+  KAN-NLAB-LIFT:
+    title: "Kan lift"
+    kind: "reference-wiki"
+    canonical: "https://ncatlab.org/nlab/show/Kan+lift"
+    freshness: "semi-stable"
+    safe_for: ["left and right Kan lift definitions", "postcomposition framing", "right Kan lift as best approximate lifting", "relation/residual intuition"]
+    unsafe_for: ["software architecture claims without interpretation label", "notation choices without explanation"]
   KAN-HINZE-2012:
     title: "Kan Extensions for Program Optimisation, Or: Art and Dan Explain an Old Trick"
     kind: "primary-paper"

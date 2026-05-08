@@ -1,0 +1,179 @@
+# Architecture transformation with Kan extensions and Kan lifts
+
+## Core distinction
+
+Use Kan extensions and Kan lifts to locate the unknown relative to a boundary.
+
+```text
+Extension: unknown is after a boundary.
+
+C --K--> D
+|        |
+F        ?
+v        v
+E
+```
+
+```text
+Lift: unknown is before a boundary.
+
+A --?--> B
+|        |
+F        P
+v        v
+C
+```
+
+Architectural translation:
+
+- `Lan`: freely generate target-side structure.
+- `Ran`: derive target-side structure from coherent observations.
+- `Lft`: synthesize an internal realization behind a fixed boundary.
+- `Rft`: synthesize residual requirements/obligations behind a fixed boundary.
+- `Δ_K`: restrict target semantics to the old/source side.
+- `P_*`: project/check a known implementation through a fixed boundary.
+
+## Boundary inventory
+
+Before refactoring, list boundaries by type.
+
+| Boundary | Typical functor | Unknown usually wants |
+|---|---|---|
+| old API into new API | `K : Old -> New` | `Lan`, `Ran`, or `Δ` |
+| core AST into extended AST | `K : Core -> Extended` | `Lan` for generated semantics |
+| new service projected to legacy clients | `K : LegacyViews -> NewModel` | `Ran` for coherent facade |
+| internal service to public API | `P : Internal -> Public` | `Lft` for realization, `Rft` for obligations |
+| database to public view | `P : SourceDB -> View` | lift for view updates or reverse migrations |
+| implementation to traces | `P : Impl -> Trace` | lift for trace-driven synthesis or residual tests |
+| effectful program to handler result | `P : Program -> Runtime` | lift for inverse handler design |
+| known implementation to public behavior | `P_*` | direct postcomposition/checking |
+
+## Architecture-change playbook
+
+1. **Name the pressure.** What is causing architectural drift: duplicated adapters, invalid generated code, inconsistent old clients, impossible reverse mapping, tests that do not map to implementation obligations?
+2. **Place the unknown.** Is the missing artifact on the target side of an embedding, or inside an implementation side before a projection?
+3. **Choose the universal side.** Use `Lan`/`Ran` for extension; use `Lft`/`Rft` for lift.
+4. **Pick one witness.** One endpoint, AST node, schema table, event, query, policy, or workflow step.
+5. **Write the comparison map.** Unit/counit for extensions; unit/counit-like comparison for lifts.
+6. **Centralize the boundary.** Put `K`, `P`, units, counits, projections, and residual checks in named modules.
+7. **Generate or synthesize through the boundary.** Do not allow ad hoc bypasses.
+8. **Add law tests before bulk migration.** Naturality, factorization, realization, or residual soundness.
+9. **Refactor by slices.** Expand only after the witness slice passes.
+10. **Document the unsafe analogy.** Mark which parts are mathematical, programming, architecture inference, and repo observation.
+
+## Repository layout
+
+A lift-aware and extension-aware repo can be organized like this:
+
+```text
+core/              C, old syntax, old schema, old semantics F
+extended/          D, new syntax, new schema, new surface
+boundaries/        K embeddings, P projections, adapters, handlers
+extensions/        Lan/Ran implementations, generated artifacts, facades
+lifts/             Lft/Rft implementations, residual solvers, obligations
+interpreters/      concrete target semantics and runtime handlers
+laws/              naturality, factorization, realization, residual tests
+witnesses/         smallest examples proving the boundary design works
+migrations/        rollout scripts and compatibility checks
+```
+
+This layout is an architecture inference, not a theorem. Its purpose is to stop universal-property code from dissolving into arbitrary glue.
+
+## Patterns
+
+### Pattern: plugin API as `Lan`
+
+Use when extending a core DSL/AST/interpreter into a plugin surface.
+
+- `C`: core operations.
+- `D`: plugin operations.
+- `K : C -> D`: inclusion.
+- `F : C -> E`: existing interpreter or serializer.
+- Candidate: `Lan_K F`.
+- Law: old nodes embedded through `K` behave the same through generated plugin semantics.
+
+### Pattern: compatibility facade as `Ran`
+
+Use when a new model must satisfy several old clients.
+
+- `C`: legacy observations.
+- `D`: new model/service category.
+- `K`: maps each old observation into the new boundary.
+- `F`: legacy observable behavior.
+- Candidate: `Ran_K F`.
+- Law: old-client projections commute on overlapping observations.
+
+### Pattern: public contract to implementation as `Lft`
+
+Use when a desired public behavior must be implemented behind a fixed public projection.
+
+- `A`: endpoint/feature specs.
+- `B`: internal implementation designs.
+- `C`: public observable behavior.
+- `P : B -> C`: public projection of internal implementation.
+- `F : A -> C`: desired API contract.
+- Candidate: `Lft_P F`.
+- Law: `F -> P · Lft_P F` witness for each endpoint.
+
+### Pattern: tests to obligations as `Rft`
+
+Use when tests/specs should derive constraints on implementation options.
+
+- `A`: tests/spec cases.
+- `B`: implementation obligations/capabilities.
+- `C`: observable behavior.
+- `P : B -> C`: behavior exposed by obligations.
+- `F : A -> C`: accepted/required behavior.
+- Candidate: `Rft_P F`.
+- Law: `P · Rft_P F -> F` soundness witness for each test slice.
+
+### Pattern: view update as lift
+
+Use when a target view update must be realized by a source update.
+
+- `B`: source/internal database state.
+- `C`: view/public schema state.
+- `P : B -> C`: view projection.
+- `F : A -> C`: desired view mutation.
+- Candidate: `Lft` when the update must be realized; `Rft` when deriving safe approximations/obligations.
+
+### Pattern: observability-driven architecture
+
+Use when traces/logs/metrics define the observable contract.
+
+- `B`: implementation traces available through instrumentation.
+- `C`: public observability semantics.
+- `P : B -> C`: observability projection.
+- `F : A -> C`: required trace contract.
+- Candidate: lift through `P`.
+- Law: every synthesized implementation slice projects to accepted traces, or every residual obligation is sound.
+
+## Agent workflow
+
+For agent-assisted architecture work, ask the agent to produce:
+
+1. the boundary map (`K` or `P`);
+2. the candidate universal construction;
+3. one witness slice;
+4. a small executable law test;
+5. a patch plan;
+6. a rollback plan;
+7. a claim ledger that separates theorem, programming encoding, and architecture inference.
+
+Good prompt shape:
+
+```text
+Use $kan. Treat this as an architecture transformation.
+Find the boundary, decide extension vs lift, produce one witness slice,
+and give me the first law test before proposing the full refactor.
+```
+
+## Failure modes prevented
+
+- ad hoc glue paths that bypass the canonical adapter;
+- plugin APIs that reimplement core semantics inconsistently;
+- read models that satisfy one old query while breaking another;
+- public contracts with no derivation to internal obligations;
+- tests that validate behavior but do not constrain architecture;
+- view updates whose source-side effects are guessed by convention;
+- generated clients or migrations with no compatibility witness.

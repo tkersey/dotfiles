@@ -9,6 +9,16 @@ cases:
       - "defines unit/counit compatibility as a test"
       - "marks architecture mapping as an inference"
 
+  - prompt: "Use a Kan lift to derive the internal service design that realizes this public API contract."
+    should_use_skill: true
+    response_mode: architecture-transformation
+    expected:
+      - "names A, B, C, P, and F"
+      - "chooses Lft or Rft by comparison cell"
+      - "includes one endpoint witness slice"
+      - "defines realization or soundness as a test"
+      - "marks architecture mapping as an inference"
+
   - prompt: "Can codensity help optimize my free monad interpreter pipeline?"
     should_use_skill: true
     response_mode: implementation-plan
@@ -27,6 +37,15 @@ cases:
       - "includes compatibility tests for old fields"
       - "mentions quotient/merge risks"
 
+  - prompt: "Use a right Kan lift to derive residual requirements from this test suite."
+    should_use_skill: true
+    response_mode: implementation-plan
+    expected:
+      - "treats tests/specs as A"
+      - "names the fixed projection P"
+      - "uses counit/comparison P.R -> F"
+      - "includes a soundness law test"
+
   - prompt: "Give me clean architecture advice for a Node service."
     should_use_skill: false
     expected:
@@ -35,4 +54,4 @@ cases:
   - prompt: "Compare shift/reset and control/prompt."
     should_use_skill: false
     expected:
-      - "belongs to a delimited-continuation skill, not kan"
+      - "belongs to a delimited-continuation skill unless Kan/codensity is explicitly central"
