@@ -20,13 +20,22 @@ failures=0
 count=0
 
 while IFS= read -r skill_dir; do
+  name="$(basename "$skill_dir")"
+  if [ "$name" = ".system" ]; then
+    continue
+  fi
   count=$((count + 1))
   rel="${skill_dir#"$REPO_ROOT"/}"
   printf '==> validating %s\n' "$rel"
+  if [ ! -f "$skill_dir/SKILL.md" ]; then
+    printf 'SKILL.md not found\n' >&2
+    failures=$((failures + 1))
+    continue
+  fi
   if ! auto_validate_one_skill "$skill_dir"; then
     failures=$((failures + 1))
   fi
-done < <(find "$SKILLS_ROOT" -mindepth 1 -maxdepth 1 -type d -exec test -f '{}/SKILL.md' ';' -print | sort)
+done < <(find "$SKILLS_ROOT" -mindepth 1 -maxdepth 1 -type d -print | sort)
 
 printf 'validated_skills=%s failures=%s\n' "$count" "$failures"
 [ "$count" -gt 0 ] || auto_die "no skill directories found under $SKILLS_ROOT"
