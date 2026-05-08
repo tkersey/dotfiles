@@ -40,6 +40,26 @@ auto_append_ordinary_skill_overlap() {
   esac
 }
 
+auto_is_bootstrap_policy_path() {
+  local check_path="$1"
+  local skill_name
+  case "$check_path" in
+    codex/skills/*/AUTO.md|codex/skills/*/SKILL.md)
+      skill_name="${check_path#codex/skills/}"
+      skill_name="${skill_name%%/*}"
+      ! auto_is_protected_name "$skill_name"
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+auto_append_bootstrap_diff_blocker() {
+  local check_path="$1"
+  if ! auto_is_bootstrap_policy_path "$check_path"; then
+    bootstrap_diff_blocker="${bootstrap_diff_blocker}${check_path}"$'\n'
+  fi
+}
+
 printf '# auto bootstrap-policies\n'
 printf 'starting_status:\n'
 git status --porcelain
@@ -81,6 +101,28 @@ if [ "$DRY_RUN" -eq 0 ]; then
       auto_die "bootstrap must start from $base_branch before creating $branch, got ${current_branch:-detached HEAD}"
     fi
     git switch -c "$branch" "$base_branch"
+  fi
+  bootstrap_diff_blocker=""
+  while IFS= read -r diff_line; do
+    [ -n "$diff_line" ] || continue
+    status="${diff_line%%$'\t'*}"
+    path="${diff_line#*$'\t'}"
+    case "$status" in
+      R*|C*)
+        old_path="${path%%$'\t'*}"
+        new_path="${path#*$'\t'}"
+        if ! auto_is_bootstrap_policy_path "$old_path" || ! auto_is_bootstrap_policy_path "$new_path"; then
+          bootstrap_diff_blocker="${bootstrap_diff_blocker}${old_path} -> ${new_path}"$'\n'
+        fi
+        ;;
+      *)
+        auto_append_bootstrap_diff_blocker "$path"
+        ;;
+    esac
+  done < <(git diff --name-status -M -C "$base_branch"...HEAD)
+  if [ -n "$bootstrap_diff_blocker" ]; then
+    printf 'bootstrap_branch_diff_blocker:\n%s' "$bootstrap_diff_blocker" >&2
+    auto_die "bootstrap branch contains non-policy changes; isolate or recreate branch before continuing"
   fi
 else
   printf 'dry_run: would create_or_reuse_branch=%s\n' "$branch"
