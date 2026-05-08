@@ -34,7 +34,7 @@ else
 fi
 
 printf '\n## recent auto commits\n'
-git log --oneline --all --grep='auto/' -n 20 || true
+git log --oneline --decorate -n 20 --branches='auto/*' --remotes='origin/auto/*' || true
 
 printf '\n## tools\n'
 for tool in git gh uv python3 seq st; do
