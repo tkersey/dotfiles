@@ -1,0 +1,3 @@
+interface:
+  display_name: "spec-retro"
+  short_description: "Mine past practice into future spec automation"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "spec-pipeline"
+  short_description: "Research → grill → gate → spec → challenge → lint"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "spec-gate"
+  short_description: "Block planning until the decision packet is complete"
