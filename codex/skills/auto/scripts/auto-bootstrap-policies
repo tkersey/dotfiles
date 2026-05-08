@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=auto-lib.sh
+# shellcheck source=codex/skills/auto/scripts/auto-lib.sh
 . "$SCRIPT_DIR/auto-lib.sh"
 
 DRY_RUN=0
@@ -25,6 +25,21 @@ REPO_ROOT="$(auto_repo_root)"
 cd "$REPO_ROOT"
 auto_require_tools git
 
+auto_append_ordinary_skill_overlap() {
+  local check_path="$1"
+  local skill_name
+  case "$check_path" in
+    codex/skills/*/*)
+      skill_name="${check_path#codex/skills/}"
+      skill_name="${skill_name%%/*}"
+      if ! auto_is_protected_name "$skill_name"; then
+        overlap="${overlap}${check_path}
+"
+      fi
+      ;;
+  esac
+}
+
 printf '# auto bootstrap-policies\n'
 printf 'starting_status:\n'
 git status --porcelain
@@ -32,27 +47,35 @@ printf '\n'
 
 branch="auto/bootstrap-policies"
 if [ "$DRY_RUN" -eq 0 ]; then
+  base_branch="${AUTO_BASE_BRANCH:-main}"
   overlap=""
-  while IFS= read -r status_path; do
+  while IFS= read -r status_line; do
+    status_path="${status_line#???}"
     case "$status_path" in
-      codex/skills/*/*)
-        skill_name="${status_path#codex/skills/}"
-        skill_name="${skill_name%%/*}"
-        if ! auto_is_protected_name "$skill_name"; then
-          overlap="${overlap}${status_path}
-"
-        fi
+      *" -> "*)
+        auto_append_ordinary_skill_overlap "${status_path%% -> *}"
+        auto_append_ordinary_skill_overlap "${status_path#* -> }"
         ;;
+      *) auto_append_ordinary_skill_overlap "$status_path" ;;
     esac
-  done < <(git status --porcelain | sed -E 's/^...//')
+  done < <(git status --porcelain)
   if [ -n "$overlap" ]; then
     printf 'ordinary_skill_dirty_overlap_blocker:\n%s' "$overlap" >&2
     exit 1
   fi
   if auto_branch_exists "$branch"; then
     git switch "$branch"
+  elif auto_remote_branch_exists "$branch"; then
+    git switch --track -c "$branch" "origin/$branch"
   else
-    git switch -c "$branch"
+    if ! git show-ref --verify --quiet "refs/heads/$base_branch"; then
+      auto_die "base branch not found: $base_branch"
+    fi
+    current_branch="$(git branch --show-current)"
+    if [ "$current_branch" != "$base_branch" ]; then
+      auto_die "bootstrap must start from $base_branch before creating $branch, got ${current_branch:-detached HEAD}"
+    fi
+    git switch -c "$branch" "$base_branch"
   fi
 else
   printf 'dry_run: would create_or_reuse_branch=%s\n' "$branch"
@@ -76,6 +99,7 @@ while IFS= read -r dir; do
 done < <(auto_list_skill_dirs)
 
 printf '\n## seq dry-run guidance\n'
+# shellcheck disable=SC2016
 printf 'Use $seq over the recent 90-day window and memories where useful. Mark low-evidence skills as thin-evidence in the PR body.\n'
 
 if [ "$DRY_RUN" -eq 0 ]; then

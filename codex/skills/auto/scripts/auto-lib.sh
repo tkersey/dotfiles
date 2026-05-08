@@ -125,8 +125,13 @@ auto_sanitize_summary() {
   if [ -n "$home" ]; then
     text="${text//$home/\$HOME}"
   fi
+  # shellcheck disable=SC2016
   printf '%s' "$text" \
-    | sed -E 's#/Users/[^[:space:]/]+#\$HOME#g; s#/(private/)?var/folders/[^[:space:]]+#<temp-path>#g; s#(token|secret|password|credential)[=:][^[:space:]]+#\1=<redacted>#Ig' \
+    | sed -E \
+      -e 's#/Users/[^[:space:]/]+#\$HOME#g' \
+      -e 's#/(private/)?var/folders/[^[:space:]]+#<temp-path>#g' \
+      -e 's#([[:alnum:]_-]*(token|secret|password|credential|api[_-]?key|access[_-]?key|private[_-]?key)[[:alnum:]_-]*[[:space:]]*[=:][[:space:]]*).*$#\1<redacted>#Ig' \
+      -e 's#(authorization[[:space:]]*:[[:space:]]*bearer[[:space:]]+).*$#\1<redacted>#Ig' \
     | tr '\n' ' ' \
     | cut -c 1-260
 }
@@ -212,11 +217,4 @@ auto_ensure_skill_mentions_auto_policy() {
 
 When using `$auto` to evaluate this skill for evidence-backed maintenance, read `AUTO.md` if present. Treat it as advisory guidance, not as a hard constraint.
 EOF_POLICY_REF
-}
-
-auto_revert_owned_target_changes() {
-  local target_dir="$1"
-  [ -d "$target_dir" ] || auto_die "target directory not found for safe revert: $target_dir"
-  git restore -- "$target_dir" 2>/dev/null || true
-  git clean -fd -- "$target_dir"
 }

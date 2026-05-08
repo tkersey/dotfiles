@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=auto-lib.sh
+# shellcheck source=codex/skills/auto/scripts/auto-lib.sh
 . "$SCRIPT_DIR/auto-lib.sh"
 
 usage() {
@@ -52,6 +52,7 @@ if auto_is_protected_path "$SKILL_DIR"; then
 fi
 
 BRANCH="auto/$SKILL/$PROBLEM_SLUG"
+BASE_BRANCH="${AUTO_BASE_BRANCH:-main}"
 
 printf '# auto optimize-one %s\n' "$PHASE"
 printf 'starting_status:\n'
@@ -60,9 +61,9 @@ printf '\n'
 
 case "$PHASE" in
   prepare)
-    target_dirty="$(git status --porcelain -- "codex/skills/$SKILL" || true)"
-    if [ -n "$target_dirty" ]; then
-      printf 'target_skill_dirty_blocker:\n%s\n' "$target_dirty" >&2
+    worktree_dirty="$(git status --porcelain || true)"
+    if [ -n "$worktree_dirty" ]; then
+      printf 'prepare_dirty_worktree_blocker:\n%s\n' "$worktree_dirty" >&2
       exit 1
     fi
     printf 'checking_duplicate_surfaces:\n'
@@ -78,7 +79,14 @@ case "$PHASE" in
     if auto_branch_exists "$BRANCH" || auto_remote_branch_exists "$BRANCH"; then
       auto_die "duplicate branch exists: $BRANCH"
     fi
-    git switch -c "$BRANCH"
+    if ! git show-ref --verify --quiet "refs/heads/$BASE_BRANCH"; then
+      auto_die "base branch not found: $BASE_BRANCH"
+    fi
+    current_branch="$(git branch --show-current)"
+    if [ "$current_branch" != "$BASE_BRANCH" ]; then
+      auto_die "prepare must start from $BASE_BRANCH before creating $BRANCH, got ${current_branch:-detached HEAD}"
+    fi
+    git switch -c "$BRANCH" "$BASE_BRANCH"
     cat <<EOF_PREPARE
 
 ## refine handoff
@@ -95,6 +103,10 @@ Then use \$refine to make the smallest useful edit. Keep changes under codex/ski
 EOF_PREPARE
     ;;
   finalize)
+    current_branch="$(git branch --show-current)"
+    if [ "$current_branch" != "$BRANCH" ]; then
+      auto_die "finalize must run on prepared branch: expected $BRANCH, got ${current_branch:-detached HEAD}"
+    fi
     target_changes="$(git status --porcelain -- "codex/skills/$SKILL" || true)"
     if [ -z "$target_changes" ]; then
       auto_die "no target skill changes found under codex/skills/$SKILL"
@@ -136,8 +148,7 @@ Use $refine for one repair pass, then rerun finalize with --repair-attempted.
 EOF_REPAIR
         exit 1
       fi
-      auto_revert_owned_target_changes "$SKILL_DIR"
-      auto_die "validation failed after repair; reverted target skill changes only"
+      auto_die "validation failed after repair; leaving target changes in place because owned edits cannot be proven"
     fi
     cat <<EOF_FINALIZE
 validation_result=passed

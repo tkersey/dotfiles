@@ -80,13 +80,13 @@ Use `scripts/auto-optimize-one` for at most one autonomous optimization.
 
 1. Run `auto-scan` and select at most one ordinary skill.
 2. Require at least one strong evidence class.
-3. Run `auto-optimize-one prepare` with the selected skill, strong evidence class, short problem slug, and sanitized evidence summary.
+3. From `main`, run `auto-optimize-one prepare` with the selected skill, strong evidence class, short problem slug, and sanitized evidence summary.
 4. Read the target skill's `SKILL.md`.
 5. Read the target skill's `AUTO.md` if present.
 6. Use `$refine` to make the smallest useful skill edit.
 7. Keep changes under the target skill directory.
 8. Run `auto-optimize-one finalize`.
-9. If validation fails, attempt one repair pass. If it still fails, revert only changes owned by this run and stop.
+9. If validation fails, attempt one repair pass. If it still fails, stop and leave changes in place unless an owned baseline proves exactly which edits this run may revert.
 10. If validation passes, use `$ship` to create or update a PR.
 11. Use `$fin` to finish the PR only when its guardrails pass.
 

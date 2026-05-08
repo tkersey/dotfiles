@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=auto-lib.sh
+# shellcheck source=codex/skills/auto/scripts/auto-lib.sh
 . "$SCRIPT_DIR/auto-lib.sh"
 
 SINCE_DAYS=90
