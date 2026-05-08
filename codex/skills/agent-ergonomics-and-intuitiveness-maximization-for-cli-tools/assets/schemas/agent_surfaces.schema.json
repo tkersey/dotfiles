@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example/agent-ergo/agent_surfaces.schema.json",
+  "title": "audit/agent_surfaces.jsonl record",
+  "description": "Phase 2 / Phase 6 aggregated row. One record per (surface_id, pass) tuple. Source of truth: references/methodology/IO-CONTRACTS.md § audit/agent_surfaces.jsonl",
+  "type": "object",
+  "required": ["surface_id", "pass", "rubric_version", "scores", "weighted_score", "score_confidence", "scored_at"],
+  "properties": {
+    "surface_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*__[A-Za-z0-9][A-Za-z0-9._-]*(__[A-Za-z0-9][A-Za-z0-9._-]*)*$"},
+    "pass": {"type": "integer", "minimum": 1},
+    "rubric_version": {"type": "string", "minLength": 1},
+    "scores": {
+      "type": "object",
+      "required": [
+        "agent_intuitiveness", "agent_ergonomics", "agent_ease_of_use",
+        "output_parseability", "error_pedagogy", "intent_inference",
+        "safety_with_recovery", "determinism_and_reproducibility",
+        "self_documentation", "composability", "regression_resistance"
+      ],
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "integer", "minimum": 0, "maximum": 1000}
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "weighted_score": {"type": "integer", "minimum": 0, "maximum": 1000, "description": "Arithmetic mean of present-dim medians, integer-floored."},
+    "score_confidence": {
+      "type": "object",
+      "required": ["spread_max", "tiebroken"],
+      "properties": {
+        "spread_max": {"type": "integer", "minimum": 0},
+        "tiebroken": {"type": "boolean"}
+      }
+    },
+    "evidence": {"type": "object"},
+    "notes": {"type": "string"},
+    "scored_at": {"type": "string", "format": "date-time"}
+  }
+}

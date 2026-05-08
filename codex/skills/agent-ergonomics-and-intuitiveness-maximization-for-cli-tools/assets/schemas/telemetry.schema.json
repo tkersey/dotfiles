@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example/agent-ergo/telemetry.schema.json",
+  "title": "audit/telemetry.jsonl record",
+  "description": "Per-subagent invocation telemetry. Appended by scripts/log-telemetry.sh. One record per subagent or phase-script run. Source: round L #3.",
+  "type": "object",
+  "required": ["subagent", "phase", "started_at", "completed_at", "exit_status"],
+  "properties": {
+    "subagent": {"type": "string", "minLength": 1, "description": "Subagent name (scorer, recommender, applier, etc.) or phase-script name"},
+    "phase": {"type": "string", "description": "Phase number 0..10 or 'preflight'"},
+    "surface_id": {"type": ["string", "null"], "description": "Surface scored / acted on; null for global subagents"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "duration_s": {"type": ["number", "null"], "minimum": 0},
+    "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+    "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+    "exit_status": {"type": "integer"},
+    "error": {"type": ["string", "null"], "description": "Short error tag like rate_limit, context_overflow"}
+  }
+}

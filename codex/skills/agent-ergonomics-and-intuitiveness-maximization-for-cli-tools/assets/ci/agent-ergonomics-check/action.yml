@@ -1,0 +1,101 @@
+name: 'Agent Ergonomics Check'
+description: 'Detect scored CLI surface deletions and flag new unscored surfaces in PRs.'
+author: 'agent-ergonomics-and-intuitiveness-maximization-for-cli-tools'
+
+inputs:
+  target-binary:
+    description: 'Path to the post-build CLI binary (e.g., target/release/mytool).'
+    required: true
+  baseline:
+    description: 'Path to the committed baseline scorecard JSONL (e.g., audit/baseline.jsonl).'
+    required: true
+  skill-path:
+    description: 'Path to the agent-ergonomics skill on the runner.'
+    required: true
+
+outputs:
+  scorecard-html:
+    description: 'Path to the rendered HTML scorecard (uploaded as artifact by caller).'
+    value: ${{ steps.run.outputs.scorecard-html }}
+  surface-delta:
+    description: 'Comma-separated counts: removed=<N>,added=<N>.'
+    value: ${{ steps.run.outputs.surface-delta }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Determine skill path
+      id: skill
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.skill-path }}" ] && [ -d "${{ inputs.skill-path }}" ]; then
+          echo "path=${{ inputs.skill-path }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "::error::skill-path must point to the agent-ergonomics skill directory on this runner"
+          exit 1
+        fi
+
+    - name: Pre-flight
+      shell: bash
+      run: |
+        bash "${{ steps.skill.outputs.path }}/scripts/preflight.sh" "${{ github.workspace }}"
+
+    - name: Check surface set
+      id: run
+      shell: bash
+      run: |
+        SKILL="${{ steps.skill.outputs.path }}"
+        TOOL="${{ inputs.target-binary }}"
+        BASELINE="${{ inputs.baseline }}"
+        WORKSPACE="${{ github.workspace }}/.audit_ci"
+        mkdir -p "$WORKSPACE"
+
+        # Mini-mode pass against the changed binary.
+        bash "$SKILL/scripts/scaffold-workspace.sh" "$WORKSPACE" "${{ github.workspace }}" || true
+        bash "$SKILL/scripts/inventory_surfaces.sh" "$TOOL" --depth 2 \
+          > "$WORKSPACE/audit/surface_inventory.jsonl"
+
+        # NOTE: real scoring requires LLM subagents (out-of-scope for sync CI).
+        # The action's contract: surface-set checks against EXISTING scored
+        # surfaces in the baseline file. If a surface in the baseline no
+        # longer exists in inventory, that's a HARD failure (surface was
+        # removed without a deprecation path). If a NEW surface appears, that's
+        # a WARN (agent ergonomics requires it be scored at next full pass).
+
+        # Surface set delta:
+        cur_sids=$(jq -r '.surface_id' "$WORKSPACE/audit/surface_inventory.jsonl" | sort -u)
+        baseline_sids=$(jq -r '.surface_id' "$BASELINE" | sort -u)
+        removed=$(comm -23 <(echo "$baseline_sids") <(echo "$cur_sids"))
+        added=$(comm -13 <(echo "$baseline_sids") <(echo "$cur_sids"))
+
+        echo "## Surface set delta" >> "$GITHUB_STEP_SUMMARY"
+        if [ -n "$removed" ]; then
+          echo "❌ Removed surfaces (deprecation path required):" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "$removed" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+        fi
+        if [ -n "$added" ]; then
+          echo "ℹ️  New surfaces (need scoring at next full pass):" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "$added" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+        fi
+        removed_count=$(echo "$removed" | grep -c . || true)
+        added_count=$(echo "$added" | grep -c . || true)
+        echo "surface-delta=removed=$removed_count,added=$added_count" >> "$GITHUB_OUTPUT"
+
+        # If a baseline scorecard exists, render HTML + markdown for the PR.
+        if [ -f "$BASELINE" ]; then
+          bash "$SKILL/scripts/render_scorecard_html.sh" "$BASELINE" \
+            > "$WORKSPACE/audit/scorecard.html"
+          echo "scorecard-html=$WORKSPACE/audit/scorecard.html" >> "$GITHUB_OUTPUT"
+        fi
+
+        # Hard failure on removed surfaces.
+        if [ -n "$removed" ]; then
+          echo "::error::PR removed $removed_count scored surfaces without deprecation; see step summary"
+          exit 1
+        fi
+
+        echo "✅ No surface deletions detected. Run a full audit pass for fresh scoring." >> "$GITHUB_STEP_SUMMARY"

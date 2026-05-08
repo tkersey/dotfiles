@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example/agent-ergo/surface_inventory.schema.json",
+  "title": "audit/surface_inventory.jsonl record",
+  "description": "Phase 1 output. One record per discovered surface. Source: IO-CONTRACTS.md § audit/surface_inventory.jsonl",
+  "type": "object",
+  "required": ["surface_id", "kind", "name"],
+  "properties": {
+    "surface_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*__[A-Za-z0-9][A-Za-z0-9._-]*(__[A-Za-z0-9][A-Za-z0-9._-]*)*$"},
+    "subtree": {"type": ["string", "null"], "description": "Subcommand path the surface lives under (e.g. 'auth login'); null for global"},
+    "kind": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "name": {"type": "string", "minLength": 1},
+    "short": {"type": ["string", "null"], "description": "Short form for flags (e.g. '-j' for '--json')"},
+    "type": {"type": ["string", "null"], "description": "Value type for flags (string|int|bool|enum|path|...)"},
+    "enum_values": {"type": ["array", "null"], "items": {"type": "string"}},
+    "source": {
+      "type": "object",
+      "properties": {
+        "file": {"type": ["string", "null"]},
+        "line": {"type": ["integer", "null"]}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "help_excerpt": {"type": ["string", "null"]},
+        "invocation": {"type": "string"},
+        "exit_code": {"type": "integer"}
+      }
+    },
+    "description": {"type": ["string", "null"]},
+    "required": {"type": "boolean"},
+    "deprecated": {"type": "boolean"},
+    "mutates": {"type": ["boolean", "null"], "description": "For verbs only; null = unknown / not yet inferred"},
+    "discovered_at": {"type": "string", "format": "date-time"}
+  }
+}

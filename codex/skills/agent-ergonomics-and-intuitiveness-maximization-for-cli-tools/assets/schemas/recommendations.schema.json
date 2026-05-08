@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example/agent-ergo/recommendations.schema.json",
+  "title": "audit/recommendations.jsonl record",
+  "description": "Phase 4 output, one record per recommendation. Source: IO-CONTRACTS.md § audit/recommendations.jsonl",
+  "type": "object",
+  "required": ["recommendation_id", "pass", "title", "summary", "surface_ids", "diff_sketch", "priority", "priority_components", "applied"],
+  "properties": {
+    "recommendation_id": {"type": "string", "pattern": "^R-[0-9]{3,4}(\\.[a-zA-Z0-9_-]+)?$"},
+    "pass": {"type": "integer", "minimum": 1},
+    "title": {"type": "string", "minLength": 1, "maxLength": 80},
+    "summary": {"type": "string"},
+    "surface_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "diff_sketch": {"type": "string", "minLength": 1},
+    "expected_uplift_per_dim": {"type": "object"},
+    "expected_uplift_total": {"type": "integer", "minimum": 0, "maximum": 1000},
+    "risk": {"type": "string"},
+    "test_plan": {"type": "string"},
+    "priority": {"type": "number", "minimum": 0, "maximum": 1, "description": "Raw product f×sg×br; 4-decimal precision recommended."},
+    "priority_components": {
+      "type": "object",
+      "properties": {
+        "frequency": {"type": "number", "minimum": 0, "maximum": 1},
+        "score_gap": {"type": "number", "minimum": 0, "maximum": 1},
+        "blast_radius": {"type": "number", "minimum": 0, "maximum": 1},
+        "blast_radius_reason": {"type": "string"}
+      }
+    },
+    "anchor_quote": {"type": "string"},
+    "anchor_pattern": {"type": "string"},
+    "counter_example": {"type": "string"},
+    "operators_applied": {"type": "array", "items": {"type": "string"}},
+    "applied": {"type": "boolean"},
+    "applied_at": {"type": ["string", "null"], "format": "date-time"},
+    "applied_commit_sha": {"type": ["string", "null"]},
+    "deferred_reason": {"type": ["string", "null"]},
+    "triangulation": {"type": ["object", "null"]},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"applied": {"const": true}}},
+      "then": {"required": ["applied_at", "applied_commit_sha"], "properties": {"applied_at": {"type": "string"}, "applied_commit_sha": {"type": "string"}}}
+    }
+  ]
+}
