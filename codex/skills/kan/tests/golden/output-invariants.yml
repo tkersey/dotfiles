@@ -20,3 +20,10 @@ invariants:
 
   - name: "No lift without boundary"
     forbidden: ["weakest obligation"] # unless order/2-cell direction and P boundary are stated
+
+
+  - name: "Defunctionalization pass when needed"
+    applies_to: [implementation-plan, architecture-transformation, repo-audit]
+    trigger_terms: ["callback", "continuation", "observer", "handler", "resumption", "predicate", "builder", "defunctionalization"]
+    must_include_one_of: ["constructor", "case", "payload", "apply", "interpret", "project", "satisfy"]
+    must_include_one_of_law: ["unit", "counit", "comparison", "realization", "soundness", "semantic preservation"]

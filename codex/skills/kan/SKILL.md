@@ -1,6 +1,6 @@
 ---
 name: kan
-description: "Use when the user wants to design, implement, audit, or explain code through Kan extensions or Kan lifts as coequal architectural tools: left/right Kan extensions, left/right Kan lifts, precomposition/postcomposition adjunctions, pointwise formulas, codensity, density, Yoneda/Coyoneda, free/cofree completions, residuals, functorial data migration, plugin APIs, DSL interpreters, compatibility facades, implementation synthesis behind boundaries, requirements/obligation derivation, or categorical architecture transformation. Do not use for generic architecture or generic category-theory exposition unless Kan extensions, Kan lifts, or adjacent universal-property implementation is central."
+description: "Use when the user wants to design, implement, audit, or explain code through Kan extensions or Kan lifts as coequal architectural tools: left/right Kan extensions, left/right Kan lifts, precomposition/postcomposition adjunctions, pointwise formulas, codensity, density, Yoneda/Coyoneda, free/cofree completions, residuals, functorial data migration, plugin APIs, DSL interpreters, compatibility facades, implementation synthesis behind boundaries, requirements/obligation derivation, or categorical architecture transformation. Do not use for generic architecture or generic category-theory exposition unless Kan extensions, Kan lifts, defunctionalized boundary representations, or adjacent universal-property implementation is central."
 ---
 
 # Kan
@@ -9,12 +9,13 @@ description: "Use when the user wants to design, implement, audit, or explain co
 
 Act as a code-and-architecture consultant for implementing Kan extensions, implementing Kan lifts, and using both as a design calculus for changing software architectures.
 
-Kan framing must earn its keep. Every substantial answer should identify the categorical data, engineering analogue, code-level witness, and law tests. Do not use Kan vocabulary as decorative naming.
+Kan framing must earn its keep. Every substantial answer should identify the categorical data, engineering analogue, code-level witness, law tests, and—when higher-order boundary values appear—the defunctionalized representation that makes the boundary inspectable. Do not use Kan vocabulary as decorative naming.
 
 Treat **Kan extensions** and **Kan lifts** as coequal tools:
 
 - Kan extensions answer: “How do I transport or complete known meaning across a boundary?”
 - Kan lifts answer: “What must exist behind a fixed boundary to realize or constrain desired meaning?”
+- Defunctionalization answers: “What first-order boundary IR replaces the functions, continuations, observations, paths, resumptions, or obligations that would otherwise be implicit?”
 
 ## Core Heartbeat
 
@@ -79,13 +80,37 @@ Notation note: mathematical notation for Kan lifts varies. This skill uses `Lft_
 
 If these cannot be named, say the Kan framing is premature and use a simpler abstraction.
 
+### Defunctionalization pass: boundary IR
+
+After selecting extension or lift axis, check whether the proposed architecture relies on higher-order values crossing the boundary. If yes, defunctionalize before proposing broad refactors.
+
+Recover:
+
+- Higher-order boundary values: callbacks, continuations, observers, handlers, resumptions, projection functions, path/morphism functions, plugin hooks, requirements predicates, solvers, or implementation builders.
+- Constructor set: the finite or extensible cases that can cross the boundary.
+- Payloads: the free variables each function case carried implicitly.
+- Apply/interpreter/project function: `applyFrame`, `interpretPath`, `runObservation`, `handleOperation`, `projectImplementation`, `satisfyObligation`, or equivalent.
+- Law witness: the test showing the defunctionalized interpreter factors through the intended `Lan`, `Ran`, `Δ`, `Lft`, `Rft`, or `P_*` boundary.
+
+Use this rule of thumb:
+
+```text
+Kan extension/lift = architecture equation.
+Defunctionalization = first-order IR for that equation.
+Interpreter/apply/project = executable witness.
+Law tests = approximation of the universal property.
+```
+
+Do not defunctionalize merely to replace simple callbacks with verbose enums. Defunctionalize when it creates a canonical boundary, makes tests/laws explicit, enables serialization/codegen/auditing, or prevents duplicated semantics.
+
 ## Invocation Boundaries
 
 Use this skill for:
 
 - implementing `Lan`, `Ran`, pointwise Kan extensions, ends/coends, density, codensity, Yoneda/Coyoneda, free/cofree constructions, or adjunction-derived APIs;
 - implementing or using left/right Kan lifts, postcomposition residuals, realization problems, reverse architectural derivations, view-update-like problems, implementation synthesis, requirements derivation, or boundary-constrained planning;
-- designing codebase architecture around extension boundaries, adapter boundaries, projection boundaries, plugins, schemas, migrations, DSLs, interpreters, generated clients, read models, compatibility facades, tests-as-specs, policy obligations, or codensity/CPS optimization;
+- designing codebase architecture around extension boundaries, adapter boundaries, projection boundaries, defunctionalized boundary IRs, plugins, schemas, migrations, DSLs, interpreters, generated clients, read models, compatibility facades, tests-as-specs, policy obligations, or codensity/CPS optimization;
+- defunctionalizing Kan-shaped or continuation-shaped architecture: replacing callbacks, continuations, paths, observers, handler clauses, resumptions, requirements, or implementation realizers with first-order cases plus an interpreter/apply/project function;
 - auditing a repository or proposed abstraction to determine whether a claimed Kan-extension or Kan-lift design is meaningful;
 - writing witness programs, law tests, finite-category/finite-poset computations, or source-backed explanations for Kan implementation.
 
@@ -126,11 +151,12 @@ Use when writing or modifying code.
 
 1. Representation choice.
 2. Data structures.
-3. Construction algorithm.
-4. Unit/counit or lift comparison functions.
-5. Naturality/factorization tests.
-6. Complexity and ergonomics.
-7. Minimal witness code.
+3. Defunctionalized boundary IR, if higher-order values cross the boundary.
+4. Construction algorithm.
+5. Unit/counit or lift comparison functions.
+6. Naturality/factorization tests.
+7. Complexity and ergonomics.
+8. Minimal witness code.
 
 ### Repo audit
 
@@ -153,7 +179,7 @@ Use when the user wants to change a software architecture.
 2. Decide whether the unknown is after the boundary (`Lan`/`Ran`) or before it (`Lft`/`Rft`).
 3. State the universal-property candidate and its engineering analogue.
 4. Design the new module layout.
-5. Identify code that becomes generated, interpreted, projected, synthesized, or constrained.
+5. Identify code that becomes generated, interpreted, projected, synthesized, constrained, or defunctionalized into boundary IR.
 6. Add witness slices and law tests before broad refactoring.
 7. Name migration steps and rollback points.
 
@@ -165,7 +191,7 @@ Use for theory-heavy or source-heavy work.
 2. Programming claim.
 3. Architecture inference.
 4. Unsafe or unproven claim.
-5. Source IDs from `references/claim-map.md` and `references/lift-claim-map.md`.
+5. Source IDs from `references/claim-map.md`, `references/lift-claim-map.md`, and `references/defunctionalization-claim-map.md`.
 
 ## Fast Reference Routing
 
@@ -174,6 +200,8 @@ Read only the files needed for the task:
 - Foundations, formulas, universal properties for extensions: `references/foundations.md`.
 - Kan lift definitions, postcomposition, lift laws, residual readings: `references/kan-lifts.md`.
 - Architecture transformation with extensions and lifts: `references/architecture-transformation.md`.
+- Defunctionalization relationships and first-order boundary IR: `references/defunctionalization.md`.
+- Defunctionalization claim safety: `references/defunctionalization-claim-map.md`.
 - Implementation recipes and algorithms: `references/implementability.md`, `references/implementation-patterns.md`.
 - Lift law tests: `references/lift-law-tests.md`.
 - Haskell encodings: `references/haskell-encodings.md`.
@@ -183,7 +211,7 @@ Read only the files needed for the task:
 - Law tests for extensions: `references/law-tests.md`.
 - Failure modes and anti-patterns: `references/failure-modes.md`, `references/anti-patterns.md`.
 - Concrete witness prompts and examples: `references/witness-programs.md`, `examples/`.
-- Source safety: `references/claim-map.md`, `references/lift-claim-map.md`, `references/sources.md`, `references/sources.yml`.
+- Source safety: `references/claim-map.md`, `references/lift-claim-map.md`, `references/defunctionalization-claim-map.md`, `references/sources.md`, `references/sources.yml`.
 
 ## Extension Selection Rules
 
@@ -241,6 +269,37 @@ If both `Lft` and `Rft` are plausible, do not choose by name. Choose by comparis
 - Need `desired -> projected(implementation)`: left lift.
 - Need `projected(implementation) -> desired`: right lift.
 
+
+## Defunctionalization Selection Rules
+
+Prefer a defunctionalization pass when:
+
+- a `Ran`, codensity, continuation, handler, or facade design represents behavior by callbacks, consumers, or observations;
+- a `Lan` design packages hidden sources together with maps, paths, generators, plugin callbacks, or migrations;
+- a `Lft` design synthesizes implementation builders or realizers behind `P`;
+- a `Rft` design derives predicates, residuals, obligations, or weakest requirements behind `P`;
+- the boundary needs auditability, serialization, deterministic codegen, stable tests, or centralized dispatch;
+- the agent would otherwise scatter anonymous functions across modules.
+
+Do not defunctionalize when:
+
+- the function is local, simple, and not part of the architecture boundary;
+- the set of cases is unknowable and the language's function abstraction is the correct open extension point;
+- defunctionalization would destroy parametricity or introduce invalid inspection of clients;
+- a plain interface plus two law tests gives the same guarantee with less machinery.
+
+Mapping table:
+
+| Kan-shaped boundary | Higher-order shape | Defunctionalized artifact | Interpreter/law |
+|---|---|---|---|
+| `Lan` | hidden source plus `Kc -> d` map | `Path`/`GeneratedCase` plus payload | `interpretPath`, unit naturality |
+| `Ran` | all observations `d -> Kc` | `Observation` cases plus coherent record | `runObservation`, counit naturality |
+| Codensity/Ran | continuation callback | `Frame` stack plus payloads | `applyFrame`, semantic equality |
+| `Δ` | restriction by precomposition | explicit compatibility adapter cases | restriction/golden tests |
+| `Lft` | implementation builder behind `P` | `ImplementationPlan` / `Realizer` cases | `projectImplementation`, realization test |
+| `Rft` | predicates/residuals behind `P` | `Requirement` / `Obligation` cases | `satisfyObligation`, soundness test |
+| Effect handler | operation plus resumption | `Operation` plus `Resume`/handler case | handler law, resumption discipline |
+
 ## Architecture Change Protocol
 
 For architectural refactors, force the work through this sequence:
@@ -249,9 +308,10 @@ For architectural refactors, force the work through this sequence:
 2. Unknown placement: decide whether the unknown artifact is after a boundary (`Lan`/`Ran`) or before a boundary (`Lft`/`Rft`).
 3. Witness-first design: pick one endpoint, table, AST node, handler case, policy, workflow, or plugin.
 4. Law before rollout: write one naturality/factorization/realization test before moving modules.
-5. Module layout: centralize `K`, `P`, units/counits, smart constructors, projections, and residual checks.
-6. Migration: keep old behavior behind `Δ_K` or `P_*` checks until the witness suite is stable.
-7. Generalize only after the witness works.
+5. Defunctionalize boundary values when useful: turn callbacks, paths, observations, resumptions, or obligations into first-order cases plus one interpreter/projector.
+6. Module layout: centralize `K`, `P`, units/counits, smart constructors, projections, residual checks, and boundary IR interpreters.
+7. Migration: keep old behavior behind `Δ_K` or `P_*` checks until the witness suite is stable.
+8. Generalize only after the witness works.
 
 ## Implementation Checklist
 
@@ -267,14 +327,16 @@ For each concrete implementation, answer:
 8. What is `η` or `ε` in code?
 9. What test approximates naturality?
 10. What test approximates universal factorization?
-11. What behavior would refute the Kan framing?
+11. Are higher-order boundary values being hidden in callbacks, continuations, handlers, observers, or predicates?
+12. If yes, what defunctionalized constructors and `apply`/`interpret`/`project` function make them explicit?
+13. What behavior would refute the Kan framing or the defunctionalized IR?
 
 ## Source Discipline
 
 Mark claims as:
 
 - `mathematical`: directly supported by category theory sources;
-- `programming`: supported by programming/codensity/Kan-extension/Kan-lift sources;
+- `programming`: supported by programming/codensity/CPS/defunctionalization/Kan-extension/Kan-lift sources;
 - `architecture inference`: engineering interpretation inspired by the math;
 - `repo observation`: fact observed in the current codebase.
 
@@ -286,13 +348,14 @@ Do not cite a math theorem as proof that a software architecture is correct unle
 - `scripts/emit_witness_pack.sh <topic> [language]`: minimal witness pattern.
 - `scripts/emit_law_test_plan.sh <direction> [language]`: law-test scaffold.
 - `scripts/emit_source_pack.sh <track> [focus]`: source ledger excerpt.
-- `scripts/check_skill.sh`: validate bundle structure, source IDs, script executability, examples, and lift-aware script outputs.
+- `scripts/emit_defun_pass.sh <topic> [language]`: defunctionalization pass scaffold.
+- `scripts/check_skill.sh`: validate bundle structure, source IDs, script executability, examples, lift-aware script outputs, and defunctionalization support.
 
-Supported `kind`: `finite-lan`, `finite-ran`, `schema-migration`, `plugin-api`, `dsl-interpreter`, `adapter-boundary`, `compatibility-facade`, `codensity-optimization`, `kan-lift`, `lift-realization`, `lift-obligation`, `architecture-transformation`, `repo-audit`, `law-test-plan`.
+Supported `kind`: `finite-lan`, `finite-ran`, `schema-migration`, `plugin-api`, `dsl-interpreter`, `adapter-boundary`, `compatibility-facade`, `codensity-optimization`, `kan-lift`, `lift-realization`, `lift-obligation`, `architecture-transformation`, `defunctionalization-pass`, `defunctionalized-boundary`, `repo-audit`, `law-test-plan`.
 
-Supported `topic`: `pointwise-lan`, `pointwise-ran`, `coend-lan`, `end-ran`, `left-kan-lift`, `right-kan-lift`, `architecture-transformation`, `codensity`, `density`, `yoneda`, `coyoneda`, `data-migration`, `lan-vs-ran`, `extension-vs-lift`.
+Supported `topic`: `pointwise-lan`, `pointwise-ran`, `coend-lan`, `end-ran`, `left-kan-lift`, `right-kan-lift`, `architecture-transformation`, `codensity`, `density`, `yoneda`, `coyoneda`, `data-migration`, `lan-vs-ran`, `extension-vs-lift`, `defunctionalization`, `defun-ran`, `defun-lan`, `defun-lift`, `defun-effects`.
 
-Supported `direction`: `lan`, `ran`, `delta`, `left-lift`, `right-lift`, `postcomposition`.
+Supported `direction`: `lan`, `ran`, `delta`, `left-lift`, `right-lift`, `postcomposition`, `defunctionalization`.
 
 Supported `language`: `agnostic`, `haskell`, `typescript`, `rust`, `python`, `scala`, `ocaml`.
 
@@ -304,5 +367,6 @@ Supported `language`: `agnostic`, `haskell`, `typescript`, `rust`, `python`, `sc
 - No extension claims without `C`, `D`, `K`, `F`, direction, and unit/counit.
 - No lift claims without `A`, `B`, `C`, `P`, `F`, direction, and comparison cell.
 - No “minimal” or “maximal” lift language without stating the order or 2-cell direction.
+- No defunctionalization claims without naming constructors, payloads, interpreter/apply/project function, and at least one law test.
 - No performance claims for codensity without semantic tests and measurement.
 - No repo refactor without naming the failure mode the Kan framing prevents.

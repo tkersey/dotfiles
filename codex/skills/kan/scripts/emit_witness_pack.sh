@@ -110,6 +110,34 @@ Lift:
 6. Generalize only after the witness passes.
 OUT
     ;;
+  defunctionalization|defun-ran|defun-lan|defun-lift|defun-effects)
+    cat <<'OUT'
+# Defunctionalization witness
+
+Boundary data:
+- Construction = Lan / Ran / Delta / Lft / Rft / codensity / effect-handler
+- Boundary map = K or P
+- Witness slice = one endpoint / AST node / observation / continuation frame / requirement
+
+Implementation:
+1. Identify callbacks/functions crossing the boundary.
+2. Create one constructor per function shape.
+3. Store each function's free variables as constructor payloads.
+4. Replace function application with one interpreter/apply/project function.
+5. Test that the interpreter preserves the selected Kan law.
+
+Examples:
+- Lan: PathToTarget + interpretPath
+- Ran: Observation + runObservation
+- Codensity: Frame + applyFrame
+- Lft: ImplementationPlan + projectImplementation
+- Rft: Obligation + satisfyObligation
+
+Law test:
+apply(defunctionalizedCase, input) == originalFunction(input)
+and the selected unit/counit/comparison law still holds.
+OUT
+    ;;
   codensity)
     cat <<'OUT'
 # Codensity witness

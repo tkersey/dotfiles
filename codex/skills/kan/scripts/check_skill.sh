@@ -30,6 +30,8 @@ for rel in [
     "references/architecture-transformation.md",
     "references/lift-law-tests.md",
     "references/lift-claim-map.md",
+    "references/defunctionalization.md",
+    "references/defunctionalization-claim-map.md",
 ]:
     if not (root / rel).exists():
         raise SystemExit(f"missing {rel}")
@@ -48,7 +50,7 @@ for script in (root / "scripts").glob("*.sh"):
         errors.append(f"script not executable: {script.relative_to(root)}")
 # Basic coequal support smoke checks.
 skill_text = text.lower()
-for needle in ["kan extensions", "kan lifts", "lft_p", "rft_p", "precomposition", "postcomposition"]:
+for needle in ["kan extensions", "kan lifts", "lft_p", "rft_p", "precomposition", "postcomposition", "defunctionalization", "boundary ir"]:
     if needle not in skill_text:
         errors.append(f"SKILL.md missing coequal support marker: {needle}")
 if errors:
@@ -66,7 +68,12 @@ PY
 ./scripts/emit_law_test_plan.sh right-lift agnostic >/dev/null
 ./scripts/emit_source_pack.sh foundations pointwise >/dev/null
 ./scripts/emit_source_pack.sh lifts residual >/dev/null
+./scripts/emit_source_pack.sh defunctionalization boundary-ir >/dev/null
+./scripts/emit_defun_pass.sh boundary-ir agnostic >/dev/null
+./scripts/emit_witness_pack.sh defunctionalization agnostic >/dev/null
+./scripts/emit_law_test_plan.sh defunctionalization agnostic >/dev/null
 if [ -f examples/python/finite_kan.py ]; then python3 examples/python/finite_kan.py >/dev/null; fi
 if [ -f examples/python/schema_migration_lan.py ]; then python3 examples/python/schema_migration_lan.py >/dev/null; fi
 if [ -f examples/python/codensity_witness.py ]; then python3 examples/python/codensity_witness.py >/dev/null; fi
 python3 examples/python/poset_lift_witness.py >/dev/null
+python3 examples/python/defunctionalized_lift_witness.py >/dev/null

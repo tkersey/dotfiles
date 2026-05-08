@@ -148,6 +148,28 @@ Use when traces/logs/metrics define the observable contract.
 - Candidate: lift through `P`.
 - Law: every synthesized implementation slice projects to accepted traces, or every residual obligation is sound.
 
+## Defunctionalization layer
+
+After choosing `Lan`, `Ran`, `Δ`, `Lft`, or `Rft`, look for hidden functions at the boundary. Architecture-changing Kan work often becomes practical only after those functions are defunctionalized.
+
+| Refactor pressure | Hidden function | Boundary IR | Interpreter/projector |
+|---|---|---|---|
+| plugin defaults drift | `Core -> Plugin` callback | `PathToPlugin` | `interpretPath` |
+| old queries drift | `NewModel -> LegacyResult` callback | `Observation` | `runObservation` |
+| bind-heavy continuation layer | continuation callback | `Frame`/`Kont` | `applyFrame` |
+| public contract lacks internal shape | `Spec -> Implementation` builder | `ImplementationPlan` | `projectImplementation` |
+| tests do not constrain architecture | `Implementation -> Bool` predicate | `Obligation` | `satisfyObligation` |
+
+Defunctionalization should create a new module only when it centralizes a real architecture boundary. A good module exposes constructors, one interpreter/projector, and law tests. A bad module exposes a large enum that merely mirrors arbitrary implementation detail.
+
+Prompt shape:
+
+```text
+Use $kan. After choosing extension vs lift, run a defunctionalization pass.
+Identify boundary functions, replace them with first-order cases, name the interpreter,
+and give one law test showing the interpreter factors through the chosen boundary.
+```
+
 ## Agent workflow
 
 For agent-assisted architecture work, ask the agent to produce:

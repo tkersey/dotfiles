@@ -55,3 +55,19 @@ cases:
     should_use_skill: false
     expected:
       - "belongs to a delimited-continuation skill unless Kan/codensity is explicitly central"
+
+
+  - prompt: "Use Kan plus defunctionalization to refactor this callback-heavy plugin API into an explicit boundary IR."
+    should_use_skill: true
+    response_mode: implementation-plan
+    expected:
+      - "classifies the construction as Lan/Ran/Delta/Lft/Rft before defunctionalizing"
+      - "identifies callbacks or continuations crossing the boundary"
+      - "proposes first-order constructors and payloads"
+      - "names an apply/interpret/project function"
+      - "adds a law test tying the IR to the selected Kan witness"
+
+  - prompt: "Defunctionalize this local helper callback inside one function."
+    should_use_skill: false
+    expected:
+      - "do not invoke kan unless a universal-property boundary or architecture refactor is present"

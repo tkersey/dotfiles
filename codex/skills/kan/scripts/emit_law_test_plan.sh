@@ -145,6 +145,43 @@ Pick one test/spec slice. Assert residual obligations are sufficient/sound for t
 Add a test for one tempting obligation that violates the spec after projection.
 OUT
     ;;
+  defunctionalization|defun|boundary-ir)
+    cat <<OUT
+# Defunctionalization law-test plan (${language})
+
+## Semantic preservation
+
+For every original function value f crossing the boundary and its defunctionalized case df:
+
+apply(df, input) == f(input)
+
+Use the domain-specific interpreter name:
+- interpretPath(path, payload)
+- runObservation(model, observation)
+- applyFrame(frame, value)
+- projectImplementation(plan, case)
+- satisfyObligation(design, obligation)
+
+## Kan witness preservation
+
+Tie the preservation test to the selected construction:
+
+- Lan: interpretPath(identityPath, x) agrees with eta(x) / old behavior after embedding.
+- Ran: runObservation projections commute through epsilon.
+- Delta: restrict(defunctionalizedCase, newModel) equals old fixture.
+- Lft: projectImplementation(plan(a)) realizes F(a).
+- Rft: satisfyObligation obligations are sound for F(a).
+
+## Centralization / factorization
+
+Assert no public path invokes the old anonymous callbacks directly.
+All boundary behavior flows through the case constructors and interpreter.
+
+## Failure case
+
+Add one constructor with invalid payloads or impossible projection and assert it fails explicitly.
+OUT
+    ;;
   postcomposition|pstar)
     cat <<OUT
 # Postcomposition law-test plan (${language})

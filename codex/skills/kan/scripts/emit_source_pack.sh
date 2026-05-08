@@ -52,6 +52,24 @@ Unsafe:
 - performance guarantees without benchmarks.
 OUT
     ;;
+  defunctionalization|defun)
+    cat <<'OUT'
+# Source pack: defunctionalization
+
+- [KAN-REYNOLDS-1972]: origin/background for defunctionalization in definitional interpreters.
+- [KAN-DANVY-NIELSEN-2001]: defunctionalization as higher-order to first-order transformation, constructors plus apply function.
+- [KAN-DANVY-FILINSKI-1990]: CPS/control background when continuations are being exposed before defunctionalization.
+- [KAN-HINZE-2012]: codensity/right-Kan/CPS programming overlap.
+
+Safe claims:
+- Defunctionalization turns a closed set of function shapes into first-order cases plus an apply/interpreter.
+- It can make Kan-shaped boundary functions inspectable and testable.
+
+Unsafe:
+- saying defunctionalization is itself a Kan extension or Kan lift.
+- replacing genuinely open extension points without an escape hatch.
+OUT
+    ;;
   architecture)
     cat <<'OUT'
 # Source pack: architecture interpretation

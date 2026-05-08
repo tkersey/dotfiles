@@ -1,113 +1,224 @@
 sources:
   OPENAI-CODEX-SKILLS:
-    title: "Agent Skills – Codex"
-    kind: "official-doc"
-    canonical: "https://developers.openai.com/codex/skills"
-    freshness: "drift-prone"
-    safe_for: ["Codex skill directory structure", "progressive disclosure", "implicit invocation via description", "agents/openai.yaml metadata"]
-    unsafe_for: ["category theory claims", "Kan-extension implementation details", "Kan-lift implementation details"]
+    title: Agent Skills – Codex
+    kind: official-doc
+    canonical: https://developers.openai.com/codex/skills
+    freshness: drift-prone
+    safe_for:
+    - Codex skill directory structure
+    - progressive disclosure
+    - implicit invocation via description
+    - agents/openai.yaml metadata
+    unsafe_for:
+    - category theory claims
+    - Kan-extension implementation details
+    - Kan-lift implementation details
   OPENAI-API-SKILLS:
-    title: "Skills | OpenAI API"
-    kind: "official-doc"
-    canonical: "https://developers.openai.com/api/docs/guides/tools-skills"
-    freshness: "drift-prone"
-    safe_for: ["skill zip upload", "single top-level folder upload", "hosted-shell skill attachment", "inline skill bundle"]
-    unsafe_for: ["category theory claims"]
+    title: Skills | OpenAI API
+    kind: official-doc
+    canonical: https://developers.openai.com/api/docs/guides/tools-skills
+    freshness: drift-prone
+    safe_for:
+    - skill zip upload
+    - single top-level folder upload
+    - hosted-shell skill attachment
+    - inline skill bundle
+    unsafe_for:
+    - category theory claims
   AGENT-SKILLS-SPEC:
-    title: "Agent Skills Specification"
-    kind: "standard-doc"
-    canonical: "https://agentskills.io/specification"
-    freshness: "drift-prone"
-    safe_for: ["portable skill shape", "SKILL.md manifest conventions", "scripts references assets convention"]
-    unsafe_for: ["OpenAI-specific product behavior"]
+    title: Agent Skills Specification
+    kind: standard-doc
+    canonical: https://agentskills.io/specification
+    freshness: drift-prone
+    safe_for:
+    - portable skill shape
+    - SKILL.md manifest conventions
+    - scripts references assets convention
+    unsafe_for:
+    - OpenAI-specific product behavior
   KAN-RIEHL-CTIC:
-    title: "Category Theory in Context"
-    kind: "textbook"
-    canonical: "https://emilyriehl.github.io/files/context.pdf"
-    freshness: "stable-theory"
-    safe_for: ["universal properties of Kan extensions", "Lan_K adjoint to precomposition", "Ran_K adjoint to precomposition", "pointwise colimit formula for Lan", "pointwise limit formula for Ran", "adjunctions and representability context"]
-    unsafe_for: ["software architecture claims without interpretation label", "current package APIs"]
+    title: Category Theory in Context
+    kind: textbook
+    canonical: https://emilyriehl.github.io/files/context.pdf
+    freshness: stable-theory
+    safe_for:
+    - universal properties of Kan extensions
+    - Lan_K adjoint to precomposition
+    - Ran_K adjoint to precomposition
+    - pointwise colimit formula for Lan
+    - pointwise limit formula for Ran
+    - adjunctions and representability context
+    unsafe_for:
+    - software architecture claims without interpretation label
+    - current package APIs
   KAN-MACLANE-CWM:
-    title: "Categories for the Working Mathematician"
-    kind: "textbook"
-    canonical: "https://doi.org/10.1007/978-1-4757-4721-8"
-    freshness: "stable-theory"
-    safe_for: ["classic Kan-extension background", "ends and coends", "adjunctions and universal properties", "density and codensity historical context"]
-    unsafe_for: ["software architecture claims without interpretation label", "current package APIs"]
+    title: Categories for the Working Mathematician
+    kind: textbook
+    canonical: https://doi.org/10.1007/978-1-4757-4721-8
+    freshness: stable-theory
+    safe_for:
+    - classic Kan-extension background
+    - ends and coends
+    - adjunctions and universal properties
+    - density and codensity historical context
+    unsafe_for:
+    - software architecture claims without interpretation label
+    - current package APIs
   KAN-NLAB-LIFT:
-    title: "Kan lift"
-    kind: "reference-wiki"
-    canonical: "https://ncatlab.org/nlab/show/Kan+lift"
-    freshness: "semi-stable"
-    safe_for: ["left and right Kan lift definitions", "postcomposition framing", "right Kan lift as best approximate lifting", "relation/residual intuition"]
-    unsafe_for: ["software architecture claims without interpretation label", "notation choices without explanation"]
+    title: Kan lift
+    kind: reference-wiki
+    canonical: https://ncatlab.org/nlab/show/Kan+lift
+    freshness: semi-stable
+    safe_for:
+    - left and right Kan lift definitions
+    - postcomposition framing
+    - right Kan lift as best approximate lifting
+    - relation/residual intuition
+    unsafe_for:
+    - software architecture claims without interpretation label
+    - notation choices without explanation
   KAN-HINZE-2012:
-    title: "Kan Extensions for Program Optimisation, Or: Art and Dan Explain an Old Trick"
-    kind: "primary-paper"
-    canonical: "https://www.cs.ox.ac.uk/ralf.hinze/Kan.pdf"
-    freshness: "stable-theory"
-    safe_for: ["right Kan extensions and continuations", "codensity monad", "CPS-style implementation", "Church representations", "backtracking examples"]
-    unsafe_for: ["unmeasured performance claims", "generic software architecture claims"]
+    title: 'Kan Extensions for Program Optimisation, Or: Art and Dan Explain an Old
+      Trick'
+    kind: primary-paper
+    canonical: https://www.cs.ox.ac.uk/ralf.hinze/Kan.pdf
+    freshness: stable-theory
+    safe_for:
+    - right Kan extensions and continuations
+    - codensity monad
+    - CPS-style implementation
+    - Church representations
+    - backtracking examples
+    unsafe_for:
+    - unmeasured performance claims
+    - generic software architecture claims
   KAN-MILEWSKI-2017:
-    title: "Kan Extensions"
-    kind: "expository-blog"
-    canonical: "https://bartoszmilewski.com/2017/04/17/kan-extensions/"
-    freshness: "stable-exposition"
-    safe_for: ["Haskell-shaped Ran encoding", "Haskell-shaped Lan encoding", "end and coend intuition"]
-    unsafe_for: ["primary formal proof claims"]
+    title: Kan Extensions
+    kind: expository-blog
+    canonical: https://bartoszmilewski.com/2017/04/17/kan-extensions/
+    freshness: stable-exposition
+    safe_for:
+    - Haskell-shaped Ran encoding
+    - Haskell-shaped Lan encoding
+    - end and coend intuition
+    unsafe_for:
+    - primary formal proof claims
   KAN-MILEWSKI-POINTWISE-2018:
-    title: "Pointwise Kan Extensions"
-    kind: "expository-blog"
-    canonical: "https://bartoszmilewski.com/2018/01/23/pointwise-kan-extensions/"
-    freshness: "stable-exposition"
-    safe_for: ["approachable pointwise intuition", "translation analogy"]
-    unsafe_for: ["primary formal proof claims"]
+    title: Pointwise Kan Extensions
+    kind: expository-blog
+    canonical: https://bartoszmilewski.com/2018/01/23/pointwise-kan-extensions/
+    freshness: stable-exposition
+    safe_for:
+    - approachable pointwise intuition
+    - translation analogy
+    unsafe_for:
+    - primary formal proof claims
   KAN-HASKELL-KAN-EXTENSIONS:
-    title: "kan-extensions Haskell package"
-    kind: "library-doc"
-    canonical: "https://www.stackage.org/package/kan-extensions"
-    freshness: "drift-prone"
-    safe_for: ["library existence", "Ran Lan Yoneda Coyoneda Codensity Density tools", "Haskell implementation vocabulary"]
-    unsafe_for: ["formal category theory proofs", "current APIs without checking docs"]
+    title: kan-extensions Haskell package
+    kind: library-doc
+    canonical: https://www.stackage.org/package/kan-extensions
+    freshness: drift-prone
+    safe_for:
+    - library existence
+    - Ran Lan Yoneda Coyoneda Codensity Density tools
+    - Haskell implementation vocabulary
+    unsafe_for:
+    - formal category theory proofs
+    - current APIs without checking docs
   KAN-SPIVAK-WISNESKY-FQL-2014:
-    title: "A Functorial Query Language"
-    kind: "paper/slides"
-    canonical: "https://popl.mpi-sws.org/2014/dcp2014/wisnesky.pdf"
-    freshness: "semi-stable"
-    safe_for: ["schemas as categories", "instances as functors", "functorial data model framing"]
-    unsafe_for: ["current FQL/CQL tooling status without browsing"]
+    title: A Functorial Query Language
+    kind: paper/slides
+    canonical: https://popl.mpi-sws.org/2014/dcp2014/wisnesky.pdf
+    freshness: semi-stable
+    safe_for:
+    - schemas as categories
+    - instances as functors
+    - functorial data model framing
+    unsafe_for:
+    - current FQL/CQL tooling status without browsing
   KAN-SCHULTZ-WISNESKY-AQL-2015:
-    title: "Algebraic Data Integration"
-    kind: "primary-paper"
-    canonical: "https://arxiv.org/abs/1503.03571"
-    freshness: "stable-theory"
-    safe_for: ["Sigma Delta Pi data migration adjunctions", "AQL/data integration framing", "schema instances and query composition"]
-    unsafe_for: ["current AQL/CQL tooling status without browsing"]
+    title: Algebraic Data Integration
+    kind: primary-paper
+    canonical: https://arxiv.org/abs/1503.03571
+    freshness: stable-theory
+    safe_for:
+    - Sigma Delta Pi data migration adjunctions
+    - AQL/data integration framing
+    - schema instances and query composition
+    unsafe_for:
+    - current AQL/CQL tooling status without browsing
   KAN-PERRONE-THOLEN-2021:
-    title: "Kan extensions are partial colimits"
-    kind: "primary-paper"
-    canonical: "https://arxiv.org/abs/2101.04531"
-    freshness: "stable-theory"
-    safe_for: ["left Kan extensions as partial colimits", "advanced theoretical interpretation"]
-    unsafe_for: ["routine implementation advice"]
+    title: Kan extensions are partial colimits
+    kind: primary-paper
+    canonical: https://arxiv.org/abs/2101.04531
+    freshness: stable-theory
+    safe_for:
+    - left Kan extensions as partial colimits
+    - advanced theoretical interpretation
+    unsafe_for:
+    - routine implementation advice
   KAN-WEBER-2015:
-    title: "Algebraic Kan extensions along morphisms of internal algebra classifiers"
-    kind: "primary-paper"
-    canonical: "https://arxiv.org/abs/1511.04911"
-    freshness: "stable-theory"
-    safe_for: ["algebraic Kan extensions", "internal algebra classifiers", "Guitart-exactness context"]
-    unsafe_for: ["ordinary codebase architecture"]
+    title: Algebraic Kan extensions along morphisms of internal algebra classifiers
+    kind: primary-paper
+    canonical: https://arxiv.org/abs/1511.04911
+    freshness: stable-theory
+    safe_for:
+    - algebraic Kan extensions
+    - internal algebra classifiers
+    - Guitart-exactness context
+    unsafe_for:
+    - ordinary codebase architecture
   KAN-FRITZ-PERRONE-2018:
-    title: "A Criterion for Kan Extensions of Lax Monoidal Functors"
-    kind: "primary-paper"
-    canonical: "https://arxiv.org/abs/1809.10481"
-    freshness: "stable-theory"
-    safe_for: ["lax monoidal Kan extension criteria", "graded-monad adjacent theory"]
-    unsafe_for: ["simple plugin APIs without monoidal structure"]
+    title: A Criterion for Kan Extensions of Lax Monoidal Functors
+    kind: primary-paper
+    canonical: https://arxiv.org/abs/1809.10481
+    freshness: stable-theory
+    safe_for:
+    - lax monoidal Kan extension criteria
+    - graded-monad adjacent theory
+    unsafe_for:
+    - simple plugin APIs without monoidal structure
   KAN-SHIEBLER-2022:
-    title: "Kan Extensions in Data Science and Machine Learning"
-    kind: "survey/application-paper"
-    canonical: "https://arxiv.org/abs/2203.09018"
-    freshness: "semi-stable"
-    safe_for: ["application-oriented Kan-extension examples", "data science intuition"]
-    unsafe_for: ["core formal definitions when textbook sources are available"]
+    title: Kan Extensions in Data Science and Machine Learning
+    kind: survey/application-paper
+    canonical: https://arxiv.org/abs/2203.09018
+    freshness: semi-stable
+    safe_for:
+    - application-oriented Kan-extension examples
+    - data science intuition
+    unsafe_for:
+    - core formal definitions when textbook sources are available
+  KAN-REYNOLDS-1972:
+    title: Definitional Interpreters for Higher-Order Programming Languages
+    kind: primary-paper
+    canonical: https://dl.acm.org/doi/10.1145/800194.805852
+    freshness: stable-theory
+    safe_for:
+    - origin of defunctionalization idea
+    - higher-order to first-order implementation perspective
+    - definitional interpreter background
+    unsafe_for:
+    - Kan extension claims
+    - modern software architecture claims without interpretation label
+  KAN-DANVY-NIELSEN-2001:
+    title: Defunctionalization at Work
+    kind: technical-report
+    canonical: https://www.brics.dk/RS/01/23/BRICS-RS-01-23.pdf
+    freshness: stable-theory
+    safe_for:
+    - defunctionalization as higher-order to first-order transformation
+    - constructors for function abstractions plus apply function
+    - bridge between higher-order and first-order specifications
+    unsafe_for:
+    - claiming a repository architecture is correct without law tests
+  KAN-DANVY-FILINSKI-1990:
+    title: 'Representing Control: A Study of the CPS Transformation'
+    kind: primary-paper
+    canonical: https://www.cambridge.org/core/journals/mathematical-structures-in-computer-science/article/representing-control-a-study-of-the-cps-transformation/37193FD94F87443338FC7F519783FF0A
+    freshness: stable-theory
+    safe_for:
+    - CPS and control representation
+    - continuation exposure before defunctionalization
+    - control-operator implementation background
+    unsafe_for:
+    - architecture claims without concrete boundary model

@@ -3,6 +3,9 @@ set -euo pipefail
 kind="${1:-design-memo}"
 language="${2:-agnostic}"
 case "$kind" in
+  defunctionalization-pass|defunctionalized-boundary|defun)
+    ./scripts/emit_defun_pass.sh boundary-ir "$language"
+    ;;
   lift-realization|left-lift|lft)
     cat <<OUT
 # Kan left-lift realization stub (${language})
@@ -40,6 +43,13 @@ What desired observable behavior must be realized behind a fixed boundary?
 - synthesized/derived module:
 - central construction function:
 - invalid/partial cases:
+
+## Defunctionalization pass, if realization uses builders/callbacks
+
+- implementation-builder functions to replace:
+- ImplementationPlan/Realizer cases:
+- projectImplementation function:
+- realization law preserved:
 
 ## Law tests
 
@@ -99,6 +109,13 @@ What residual requirements, weakest obligations, or sound internal constraints m
 - residual/obligation module:
 - central soundness check:
 - invalid/partial cases:
+
+## Defunctionalization pass, if residuals use predicates/callbacks
+
+- predicate/residual functions to replace:
+- Requirement/Obligation cases:
+- satisfyObligation/project function:
+- soundness law preserved:
 
 ## Law tests
 
@@ -178,6 +195,14 @@ Choose one:
 - adapter/projection/interpreter:
 - generated/synthesized/default behavior:
 - normalization/coherence/residual strategy:
+
+## Defunctionalization pass, if boundary values are higher-order
+
+- functions/callbacks/continuations/observers/paths/predicates crossing boundary:
+- first-order cases to introduce:
+- payloads/free variables:
+- interpreter/apply/project function:
+- law preserved by interpreter:
 
 ## Law tests
 
