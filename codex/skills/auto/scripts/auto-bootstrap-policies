@@ -44,7 +44,20 @@ auto_is_bootstrap_policy_path() {
   local check_path="$1"
   local skill_name
   case "$check_path" in
-    codex/skills/*/AUTO.md|codex/skills/*/SKILL.md)
+    codex/skills/*/AUTO.md)
+      skill_name="${check_path#codex/skills/}"
+      skill_name="${skill_name%%/*}"
+      ! auto_is_protected_name "$skill_name"
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+auto_is_ordinary_skill_md_path() {
+  local check_path="$1"
+  local skill_name
+  case "$check_path" in
+    codex/skills/*/SKILL.md)
       skill_name="${check_path#codex/skills/}"
       skill_name="${skill_name%%/*}"
       ! auto_is_protected_name "$skill_name"
@@ -55,9 +68,35 @@ auto_is_bootstrap_policy_path() {
 
 auto_append_bootstrap_diff_blocker() {
   local check_path="$1"
-  if ! auto_is_bootstrap_policy_path "$check_path"; then
+  if auto_is_bootstrap_policy_path "$check_path"; then
+    return 0
+  fi
+  if auto_is_ordinary_skill_md_path "$check_path"; then
+    bootstrap_skill_md_paths="${bootstrap_skill_md_paths}${check_path}"$'\n'
+  else
     bootstrap_diff_blocker="${bootstrap_diff_blocker}${check_path}"$'\n'
   fi
+}
+
+auto_skill_md_policy_ref_diff_only() {
+  local skill_md="$1"
+  local diff_line
+  local added
+  local expected_auto_policy_line="When using \`\$auto\` to evaluate this skill for evidence-backed maintenance, read \`AUTO.md\` if present. Treat it as advisory guidance, not as a hard constraint."
+  while IFS= read -r diff_line; do
+    case "$diff_line" in
+      "diff --git "*|"index "*|"--- "*|"+++ "*|"@@ "*) ;;
+      +*)
+        added="${diff_line#+}"
+        case "$added" in
+          ""|"## Auto Policy"|"$expected_auto_policy_line") ;;
+          *) return 1 ;;
+        esac
+        ;;
+      -*) return 1 ;;
+      *) ;;
+    esac
+  done < <(git diff --unified=0 "$base_branch"...HEAD -- "$skill_md")
 }
 
 printf '# auto bootstrap-policies\n'
@@ -103,6 +142,7 @@ if [ "$DRY_RUN" -eq 0 ]; then
     git switch -c "$branch" "$base_branch"
   fi
   bootstrap_diff_blocker=""
+  bootstrap_skill_md_paths=""
   while IFS= read -r diff_line; do
     [ -n "$diff_line" ] || continue
     status="${diff_line%%$'\t'*}"
@@ -120,6 +160,12 @@ if [ "$DRY_RUN" -eq 0 ]; then
         ;;
     esac
   done < <(git diff --name-status -M -C "$base_branch"...HEAD)
+  while IFS= read -r skill_md_path; do
+    [ -n "$skill_md_path" ] || continue
+    if ! auto_skill_md_policy_ref_diff_only "$skill_md_path"; then
+      bootstrap_diff_blocker="${bootstrap_diff_blocker}${skill_md_path}"$'\n'
+    fi
+  done < <(printf '%s' "$bootstrap_skill_md_paths" | sort -u)
   if [ -n "$bootstrap_diff_blocker" ]; then
     printf 'bootstrap_branch_diff_blocker:\n%s' "$bootstrap_diff_blocker" >&2
     auto_die "bootstrap branch contains non-policy changes; isolate or recreate branch before continuing"
