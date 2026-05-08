@@ -20,6 +20,14 @@ Checks
 - avoids tone-only words
 
 ### Prompt
+`Use $logophile in doctrine mode to find another way of saying ideate.`
+
+Checks
+- rejects ornamental synonym lists
+- returns procedural replacements such as `generate`, `winnow`, and `shape`
+- includes an unpacked doctrine block when returning a stack
+
+### Prompt
 `Rename this skill and give me a doctrine stack for how it should think.`
 
 Checks

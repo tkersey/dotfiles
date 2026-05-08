@@ -22,6 +22,12 @@ Replace generic, bloated, or under-specified language with shorter, sharper phra
 - Do not force one canonical repo term for every concept; prefer the most exact phrase for the local text.
 - Do not alter code semantics, identifiers, paths, flags, schemas, machine-consumed artifacts, or operational decisions unless the user explicitly asks for wording/naming help on that surface.
 
+## Usage discipline
+- Use for explicit skill-metadata compression, especially frontmatter descriptions that must keep trigger coverage while fitting validator limits.
+- Use doctrine mode for vague workflow verbs such as `ideate`, `improve`, `review`, or `plan` when the user wants replacement wording or mode words.
+- For machine-consumed text, preserve parse safety: avoid unquoted YAML colon footguns, keep required fields valid, and validate the edited skill afterward.
+- For usage audits, report raw mentions separately from normalized use clusters, and call out noise such as injected `<skill>` blocks, current-analysis turns, or repeated final summaries.
+
 ## Use when
 - The user asks to rewrite, reword, rephrase, tighten, sharpen, compress, polish, or choose final wording.
 - The task asks for names, titles, labels, headings, skill names, subagent names, mode names, or doctrine stacks.

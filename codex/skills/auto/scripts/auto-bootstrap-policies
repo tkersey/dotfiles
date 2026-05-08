@@ -1,0 +1,232 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=codex/skills/auto/scripts/auto-lib.sh
+. "$SCRIPT_DIR/auto-lib.sh"
+
+DRY_RUN=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --dry-run) DRY_RUN=1; shift ;;
+    -h|--help)
+      cat <<'TEXT'
+Usage: auto-bootstrap-policies [--dry-run]
+
+Create conservative AUTO.md policy files for ordinary skills and add SKILL.md references.
+TEXT
+      exit 0
+      ;;
+    *) auto_die "unknown argument: $1" ;;
+  esac
+done
+
+REPO_ROOT="$(auto_repo_root)"
+cd "$REPO_ROOT"
+auto_require_tools git
+
+auto_append_ordinary_skill_overlap() {
+  local check_path="$1"
+  local skill_name
+  case "$check_path" in
+    codex/skills/*/*)
+      skill_name="${check_path#codex/skills/}"
+      skill_name="${skill_name%%/*}"
+      if ! auto_is_protected_name "$skill_name"; then
+        overlap="${overlap}${check_path}
+"
+      fi
+      ;;
+  esac
+}
+
+auto_is_ordinary_skill_md_path() {
+  local check_path="$1"
+  local rel_path
+  local skill_name
+  case "$check_path" in
+    codex/skills/*/SKILL.md)
+      rel_path="${check_path#codex/skills/}"
+      skill_name="${rel_path%%/*}"
+      [ "${rel_path#*/}" = "SKILL.md" ] || return 1
+      ! auto_is_protected_name "$skill_name"
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+auto_is_ordinary_auto_md_path() {
+  local check_path="$1"
+  local rel_path
+  local skill_name
+  case "$check_path" in
+    codex/skills/*/AUTO.md)
+      rel_path="${check_path#codex/skills/}"
+      skill_name="${rel_path%%/*}"
+      [ "${rel_path#*/}" = "AUTO.md" ] || return 1
+      ! auto_is_protected_name "$skill_name"
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+auto_append_bootstrap_diff_blocker() {
+  local check_path="$1"
+  if auto_is_ordinary_skill_md_path "$check_path"; then
+    bootstrap_skill_md_paths="${bootstrap_skill_md_paths}${check_path}"$'\n'
+  elif auto_is_ordinary_auto_md_path "$check_path"; then
+    bootstrap_auto_md_paths="${bootstrap_auto_md_paths}${check_path}"$'\n'
+  else
+    bootstrap_diff_blocker="${bootstrap_diff_blocker}${check_path}"$'\n'
+  fi
+}
+
+auto_skill_md_policy_ref_diff_only() {
+  local skill_md="$1"
+  local diff_line
+  local added
+  local expected_auto_policy_line="When using \`\$auto\` to evaluate this skill for evidence-backed maintenance, read \`AUTO.md\` if present. Treat it as advisory guidance, not as a hard constraint."
+  while IFS= read -r diff_line; do
+    case "$diff_line" in
+      "diff --git "*|"index "*|"--- "*|"+++ "*|"@@ "*) ;;
+      +*)
+        added="${diff_line#+}"
+        case "$added" in
+          ""|"## Auto Policy"|"$expected_auto_policy_line") ;;
+          *) return 1 ;;
+        esac
+        ;;
+      -*) return 1 ;;
+      *) return 1 ;;
+    esac
+  done < <(git diff --unified=0 "$base_ref"...HEAD -- "$skill_md")
+}
+
+auto_auto_md_policy_matches() {
+  local auto_md="$1"
+  local skill_name
+  local summary
+  local expected_summary
+  [ -f "$auto_md" ] || return 1
+  [ ! -L "$auto_md" ] || return 1
+  summary="$(git diff --summary "$base_ref"...HEAD -- "$auto_md")"
+  expected_summary=" create mode 100644 $auto_md"
+  [ "$summary" = "$expected_summary" ] || return 1
+  skill_name="${auto_md#codex/skills/}"
+  skill_name="${skill_name%%/*}"
+  cmp -s "$auto_md" <(auto_print_conservative_policy "$skill_name")
+}
+
+printf '# auto bootstrap-policies\n'
+printf 'starting_status:\n'
+git status --porcelain
+printf '\n'
+
+branch="auto/bootstrap-policies"
+if [ "$DRY_RUN" -eq 0 ]; then
+  base_branch="${AUTO_BASE_BRANCH:-main}"
+  worktree_dirty="$(git status --porcelain || true)"
+  if [ -n "$worktree_dirty" ]; then
+    printf 'bootstrap_dirty_worktree_blocker:\n%s\n' "$worktree_dirty" >&2
+    exit 1
+  fi
+  if ! base_ref="$(git rev-parse --verify --quiet "$base_branch^{commit}")"; then
+    auto_die "base branch not found: $base_branch"
+  fi
+  overlap=""
+  while IFS= read -r status_line; do
+    status_path="${status_line#???}"
+    case "$status_path" in
+      *" -> "*)
+        auto_append_ordinary_skill_overlap "${status_path%% -> *}"
+        auto_append_ordinary_skill_overlap "${status_path#* -> }"
+        ;;
+      *) auto_append_ordinary_skill_overlap "$status_path" ;;
+    esac
+  done < <(git status --porcelain)
+  if [ -n "$overlap" ]; then
+    printf 'ordinary_skill_dirty_overlap_blocker:\n%s' "$overlap" >&2
+    exit 1
+  fi
+  if auto_branch_exists "$branch"; then
+    git switch "$branch"
+  elif auto_remote_branch_exists "$branch"; then
+    git switch --track -c "$branch" "origin/$branch"
+  else
+    if ! git show-ref --verify --quiet "refs/heads/$base_branch"; then
+      auto_die "base branch not found: $base_branch"
+    fi
+    current_branch="$(git branch --show-current)"
+    if [ "$current_branch" != "$base_branch" ]; then
+      auto_die "bootstrap must start from $base_branch before creating $branch, got ${current_branch:-detached HEAD}"
+    fi
+    git switch -c "$branch" "$base_branch"
+  fi
+  bootstrap_diff_blocker=""
+  bootstrap_skill_md_paths=""
+  bootstrap_auto_md_paths=""
+  while IFS= read -r diff_line; do
+    [ -n "$diff_line" ] || continue
+    status="${diff_line%%$'\t'*}"
+    path="${diff_line#*$'\t'}"
+    case "$status" in
+      R*|C*)
+        old_path="${path%%$'\t'*}"
+        new_path="${path#*$'\t'}"
+        bootstrap_diff_blocker="${bootstrap_diff_blocker}${old_path} -> ${new_path}"$'\n'
+        ;;
+      *)
+        auto_append_bootstrap_diff_blocker "$path"
+        ;;
+    esac
+  done < <(git diff --name-status -M -C "$base_ref"...HEAD)
+  while IFS= read -r skill_md_path; do
+    [ -n "$skill_md_path" ] || continue
+    if ! auto_skill_md_policy_ref_diff_only "$skill_md_path"; then
+      bootstrap_diff_blocker="${bootstrap_diff_blocker}${skill_md_path}"$'\n'
+    fi
+  done < <(printf '%s' "$bootstrap_skill_md_paths" | sort -u)
+  while IFS= read -r auto_md_path; do
+    [ -n "$auto_md_path" ] || continue
+    if ! auto_auto_md_policy_matches "$auto_md_path"; then
+      bootstrap_diff_blocker="${bootstrap_diff_blocker}${auto_md_path}"$'\n'
+    fi
+  done < <(printf '%s' "$bootstrap_auto_md_paths" | sort -u)
+  if [ -n "$bootstrap_diff_blocker" ]; then
+    printf 'bootstrap_branch_diff_blocker:\n%s' "$bootstrap_diff_blocker" >&2
+    auto_die "bootstrap branch contains non-policy changes; isolate or recreate branch before continuing"
+  fi
+else
+  printf 'dry_run: would create_or_reuse_branch=%s\n' "$branch"
+fi
+
+printf '\n## ordinary skills\n'
+while IFS= read -r dir; do
+  name="$(basename "$dir")"
+  printf -- '- %s\n' "$name"
+  if [ "$DRY_RUN" -eq 0 ]; then
+    auto_write_conservative_policy "$dir"
+    auto_ensure_skill_mentions_auto_policy "$dir/SKILL.md"
+  fi
+done < <(auto_list_ordinary_skill_dirs)
+
+printf '\n## protected skills excluded\n'
+while IFS= read -r dir; do
+  if auto_is_protected_path "$dir"; then
+    printf -- '- %s\n' "$(basename "$dir")"
+  fi
+done < <(auto_list_skill_dirs)
+
+printf '\n## seq dry-run guidance\n'
+# shellcheck disable=SC2016
+printf 'Use $seq over the recent 90-day window and memories where useful. Mark low-evidence skills as thin-evidence in the PR body.\n'
+
+if [ "$DRY_RUN" -eq 0 ]; then
+  "$SCRIPT_DIR/auto-validate-corpus" codex/skills
+  cat <<'TEXT'
+
+## ship handoff
+Use $ship to open one bulk PR. The bootstrap PR must not self-merge and requires human merge.
+PR body must use sanitized summaries only and identify thin-evidence policies.
+TEXT
+fi

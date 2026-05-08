@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=codex/skills/auto/scripts/auto-lib.sh
+. "$SCRIPT_DIR/auto-lib.sh"
+
+REPO_ROOT="$(auto_repo_root)"
+cd "$REPO_ROOT"
+
+printf '# auto status\n'
+printf 'branch: %s\n' "$(git branch --show-current 2>/dev/null || true)"
+printf 'head: %s\n' "$(git rev-parse --short HEAD 2>/dev/null || true)"
+
+printf '\n## dirty worktree\n'
+git status --porcelain || true
+
+printf '\n## local auto branches\n'
+git branch --list 'auto/*' || true
+
+printf '\n## remote auto branches\n'
+git branch -r --list 'origin/auto/*' || true
+
+printf '\n## github prs\n'
+if auto_have gh; then
+  printf 'open auto PRs:\n'
+  gh pr list --state open --limit 100 --json number,headRefName,title,url \
+    --jq '.[] | select(.headRefName | startswith("auto/")) | "#\(.number)\t\(.headRefName)\t\(.title)\t\(.url)"' || true
+  printf 'recently closed auto PRs:\n'
+  gh pr list --state closed --limit 100 --json number,headRefName,title,url \
+    --jq '.[] | select(.headRefName | startswith("auto/")) | "#\(.number)\t\(.headRefName)\t\(.title)\t\(.url)"' || true
+else
+  printf 'gh: unavailable\n'
+fi
+
+printf '\n## recent auto commits\n'
+git log --oneline --decorate -n 20 --branches='auto/*' --remotes='origin/auto/*' || true
+
+printf '\n## tools\n'
+for tool in git gh uv python3 seq st; do
+  if auto_have "$tool"; then
+    printf '%s: %s\n' "$tool" "$(command -v "$tool")"
+  else
+    printf '%s: missing\n' "$tool"
+  fi
+done
+
+printf '\n## validators\n'
+validator="$(auto_quick_validate)"
+if [ -f "$validator" ]; then
+  printf 'quick_validate: present (%s)\n' "${validator#"$REPO_ROOT"/}"
+else
+  printf 'quick_validate: missing (%s)\n' "${validator#"$REPO_ROOT"/}"
+fi
+
+printf '\n## dependent skills\n'
+for skill in seq refine ship fin cron; do
+  if [ -d "codex/skills/$skill" ]; then
+    printf '%s: present\n' "$skill"
+  else
+    printf '%s: missing\n' "$skill"
+  fi
+done
+
+printf '\n## protected skills\n'
+for skill in seq refine cron auto ship fin; do
+  if [ -d "codex/skills/$skill" ]; then
+    printf '%s: protected\n' "$skill"
+  else
+    printf '%s: protected_missing\n' "$skill"
+  fi
+done
+printf '.system/*: protected\n'
+
+printf '\n## latest validation context\n'
+if [ -n "${AUTO_LATEST_VALIDATION:-}" ]; then
+  printf '%s\n' "$(auto_sanitize_summary "$AUTO_LATEST_VALIDATION")"
+else
+  printf 'none in current shell context\n'
+fi
