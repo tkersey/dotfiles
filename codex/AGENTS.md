@@ -17,44 +17,28 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - This is a root user-facing response rule only: spawned subagents, collaborator threads, and other machine-to-machine handoff turns must not emit `Echo:` or instruction-ack preambles, and should answer the assigned task directly.
 - Do not include `Echo:` inside generated files, patches, code blocks, JSON/YAML/TOML intended for machine consumption, email bodies, PR bodies, commit messages, or any artifact the user asked to copy verbatim. Put Echo only in the surrounding chat response.
 
-Example:
-
-```text
-Echo: Most recent user message goes here, truncated to two lines if needed...
-
-GRILL ME: HUMAN INPUT REQUIRED
-1. ...
-```
-
 ## Challenge Escalation
 
-- The moment a task stops feeling like a clean, dominant solve, raise the reasoning level. Do this before settling for competence, local polish, or a clarification that does not unblock the governing move.
-- Treat these as escalation triggers: the first straightforward approach stalls; the current answer feels merely adequate, incremental, or obvious; the current path patches symptoms instead of causes; multiple plausible moves compete without a clear winner; retries are accumulating without a sharper thesis; the task asks for the smartest, best, highest-leverage, most creative, or most durable answer; or the task clearly rewards unusually strong judgment.
-- Do not wait for repeated failure. The first real sign of friction is enough.
-- During the escalation pass, raise the bar explicitly: do much better than the obvious answer; dig deeper, think longer, be bolder, and allow more creative but still grounded moves.
-- Then do five things in order: reject the obvious answer; widen the search space; identify the single highest-leverage, most accretive, most useful, and most compelling move or direction available now; explain why it dominates the alternatives; compress the result to the governing insight, invariant, or architecture rather than local polish.
-- When two options both work, prefer the one that compounds future leverage by making later good work easier, safer, or faster.
-- Prefer decisive, compounding moves over grab-bags, governing causes over surface fixes, and one strong thesis over a scattered list of decent ideas.
-- If the first answer is serviceable but not excellent, escalate anyway and check whether a materially better answer exists.
-- Escalation is not capped. Re-run escalation whenever new friction, new evidence, a better frame, or a higher-leverage opportunity appears.
-- Challenge escalation does not replace asking a targeted question when missing secrets, missing permissions, or irreversible approvals are the true blocker. In those cases, ask the narrow question directly.
-- After escalation, continue execution with the stronger plan. Mention the reframing to the user only when it materially changes the visible direction or recommendation.
+- Raise the reasoning level as soon as a task stops feeling like a clean, dominant solve.
+- Escalate before settling for competence, local polish, or a clarification that does not unblock the governing move.
+- Trigger escalation when a first approach stalls, the answer feels merely adequate, the path patches symptoms instead of causes, multiple plausible moves compete, retries accumulate, or the task rewards unusually strong judgment.
+- During escalation: reject the obvious answer, widen the search space, identify the highest-leverage move available now, explain why it dominates alternatives, and compress the result to the governing insight/invariant/architecture.
+- Prefer compounding moves that make future good work easier, safer, or faster.
+- Ask a narrow question only when missing secrets, missing permissions, or irreversible approvals are the real blocker.
 
 ## Purpose
 
-This file is a compact, high-authority routing index for Codex in this repo. Keep it practical and durable. Use task-specific skills for detailed procedures.
-
-This file should say when to use a workflow and which invariants must hold; the skill should say how to execute the workflow. If a skill and this file disagree about command syntax or workflow mechanics, trust the skill for that workflow. If they disagree about repository safety, concurrent edits, publication boundaries, response format, challenge escalation, or recursive orchestration posture, this file wins.
+This file is a compact, high-authority routing index for Codex in this repo. Use task-specific skills for detailed procedures. This file owns implicit-trigger policy, side-effect boundaries, repository safety, response format, challenge escalation, and recursive orchestration posture.
 
 ## Core invariants
 
-- Prefer local Codex execution surfaces before externalizing work elsewhere. Local-first does not mean single-agent-first; native planning, skills, subagents, and recursive orchestration are all local Codex surfaces.
-- Use native Codex planning and collaboration surfaces; do not invent a parallel coordination protocol.
+- Prefer local Codex execution surfaces before externalizing work elsewhere.
+- Use native planning, skills, subagents, recursive orchestration, and repository-local tools; do not invent a parallel coordination protocol.
 - Use `update_plan` for non-trivial user-visible planning, but keep it concise and current.
 - Keep durable orchestration state in `$st`, not in prose, memory, or an overloaded `update_plan` row.
 - Keep historical/session/artifact forensics in `$seq`; do not use `$seq` for ordinary current-repo code search.
 - Preserve unrelated user, agent, and tool changes. Do not overwrite or publish unrelated diffs.
-- Verify changed behavior with the most focused relevant checks available. If verification cannot run, say why.
+- Verify changed behavior with the narrowest focused checks available. If verification cannot run, say why.
 - Do not add mode banners, debug prefixes, routing labels, or instruction-ack preambles to user-facing responses other than the required `Echo:` line.
 
 ## Working tree hygiene
@@ -62,39 +46,65 @@ This file should say when to use a workflow and which invariants must hold; the 
 - Never use broad reset/checkout/clean commands to erase working-tree state unless the user explicitly requests that exact destructive operation.
 - Treat `.git/info/exclude` matches as local-only/private publication boundaries, even for tracked-looking workflow artifacts.
 - If a path is already tracked but also matches `.git/info/exclude`, treat new changes to that path as local-only unless the user explicitly asks to publish them.
-- Before staging local-state artifacts such as `.step/st-plan.jsonl`, `.step/*.lock`, or `.learnings.jsonl`, run `git check-ignore -v --no-index <path>` when there is any doubt. If the source is `.git/info/exclude`, do not `git add -f`, stage, or commit the path unless the user explicitly asks to publish it.
+- Before staging local-state artifacts such as `.step/st-plan.jsonl`, `.step/*.lock`, or `.learnings.jsonl`, run `git check-ignore -v --no-index <path>` when in doubt. If the source is `.git/info/exclude`, do not force-add, stage, or commit the path unless explicitly asked.
 
 ## Local Codex execution guidance
 
-Default: use the local Codex execution surface that best matches the shape of the work. Stay direct when the work is bounded or entangled; fan out when the work is naturally decomposed. Do not create a second execution stack.
+Default: use the local Codex execution surface that best matches the shape of the work. Stay direct when work is bounded or entangled; fan out when work is naturally decomposed. Do not create a second execution stack.
 
 Routing order:
 
-1. **Direct local execution** — Use for one bounded change/question, unclear decomposition, overlapping writes, or synthesis/integration work.
-2. **Planning/selection pass** — If the user supplies `SLICES.md`, `plan-N.md`, or asks for the next safe wave, perform local selection first and publish only the selected work in `update_plan`.
-3. **Durable orchestration with `$st`** — Use when work has 3+ dependent steps that must survive turns/sessions, needs claims/proof/dependency state, imports an OrchPlan, already has an active `.step/st-plan.jsonl`, or the user asks to persist/import the current task surface. Ordinary `update_plan` use alone does not require `$st`.
-4. **Native subagents** — Use when delegation is explicitly requested or the active workflow benefits from parallel, independent, file-disjoint branches. The lead keeps synthesis, integration, dependency resolution, publication decisions, and overlapping edits local.
-5. **Row batches** — For same-shaped independent work over many files/items/rows, use the smallest local script, CLI, or direct worker path that produces structured output.
-6. **Fanout discipline** — Launch the dependency-independent ready set before the first blocking wait. When the ready set is broad, prefer parallel dispatch over serial exploration.
-7. **Recursive orchestration** — If recursive orchestration is allowed by the active Codex configuration or workflow, encourage it for naturally hierarchical work. Do not flatten decomposable work merely to avoid child agents.
+1. **Direct local execution** — one bounded change/question, unclear decomposition, overlapping writes, or synthesis/integration work.
+2. **Planning/selection pass** — if the user supplies `SLICES.md`, `plan-N.md`, or asks for the next safe wave, perform local selection first and publish only selected work in `update_plan`.
+3. **Durable orchestration with `$st`** — use when work has 3+ dependent steps that must survive turns/sessions, needs claims/proof/dependency state, imports an OrchPlan, already has active `.step/st-plan.jsonl`, or explicitly needs durable state.
+4. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
+5. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
+6. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
+7. **Recursive orchestration** — encourage when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches.
 
-Use built-in `explorer`, `worker`, and `default` roles unless a custom role is visibly exposed by the active Codex role surface and is a clear narrow fit. Do not route work to remembered or stale custom role names. Close subagents after their contribution is integrated.
-
-### Recursive orchestration posture
-
-Recursive orchestration is desirable when it improves coverage, separation of concerns, verification quality, or convergence speed.
-
-Use recursive delegation when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches. The lead agent owns the root objective, integration boundary, conflict resolution, and final publication, but child agents may spawn their own children when the active configuration permits it and the task shape benefits.
-
-Prefer recursive orchestration for broad audits, multi-file refactors, competing implementation strategies, research plus verification loops, plan selection across many candidate slices, parallel hazard discovery, and independent proof/evidence gathering.
-
-Avoid recursion only when the work is intrinsically serial, branch boundaries are unclear, or multiple agents would compete over the same edit surface without a clear merge owner.
+Use built-in `explorer`, `worker`, and `default` roles unless a custom role is visibly exposed and is a clear narrow fit. Close subagents after their contribution is integrated.
 
 ## Skill routing
 
-Skills are workflow selectors, not magic words. Do not wait for an explicit `$skill` when the request clearly matches a skill description or the situation fits one of the routing rules below. Use the smallest useful skill stack. Skill docs remain canonical for command syntax and detailed mechanics; this file owns implicit-trigger policy, side-effect boundaries, challenge escalation, and recursive orchestration posture.
+Skills are workflow selectors, not magic words. Do not wait for an explicit `$skill` when the request clearly matches a skill description. Use the smallest sufficient skill stack.
 
-When multiple skills apply, prefer this stack shape: understand the repo/context -> escalate the frame if useful -> lock invariants -> implement -> verify/review -> close -> capture learnings.
+When multiple skills apply, prefer this stack shape:
+
+```text
+understand context -> escalate frame if useful -> lock invariants -> implement -> verify/review -> close -> capture learnings
+```
+
+### Skill stack map
+
+Treat skills as stage owners, lenses, validators, or side-effecting workflows rather than interchangeable peers.
+
+- Evidence / recall: `seq`, `chronicle`, `learnings`, `codebase-archaeology`.
+- Divergence / opportunity: `latent-diver`, `ideate`, `creative-problem-solver`, `glaze`, `asi`.
+- Modeling / invariants: `algebra-driven-design`, `kan`, `universalist`, `invariant-ace`.
+- Reduction / simplification: `reduce`, `abstraction-cartographer`, `abstraction-tax-auditor`, `altitude-adjudicator`, `one-seam-operator`.
+- Decision gating: `grill-me`, `spec-gate`, `dominance`, `spec-challenge`.
+- Specification: `spec-pipeline`, `spec-lint`, `plan`.
+- Execution: `accretive-implementer`, `one-seam-operator`, `fixed-point-driver`, `tk`.
+- Verification / closure: `context-bounded-verification`, `adversarial-reviewer`, `prove-it`, `verification-closure`.
+- Publication / lifecycle: `ship`, `fin`, `auto`, `learnings`.
+- Language surface: `logophile`.
+
+Use `codex/skills/.system/routing-regression/skill-stack-map.md` as the fuller stage map.
+
+### Activation cost discipline
+
+Prefer the lowest-cost skill that fully satisfies the task. Escalate only when the current answer is materially underpowered, the prompt explicitly asks for the heavier workflow, or the task's risk/complexity requires it.
+
+Use `codex/skills/.system/routing-regression/activation-costs.json` as the cost manifest.
+
+Default cost posture:
+
+- `low`: safe implicit rails such as `logophile` for human-facing wording only.
+- `medium`: bounded forensic or gate checks such as `seq`, `chronicle`, `spec-gate`, and `spec-lint`.
+- `high`: substantial workflows such as `ideate`, `algebra-driven-design`, `kan`, `reduce`, `universalist`, `spec-pipeline`, and `auto`.
+- `extreme`: multi-turn proof engines such as `prove-it`.
+
+Do not invoke an extreme or high-cost workflow merely because it is adjacent. Route to the smallest sufficient stage owner first, then hand off only when the output packet proves the next stage is needed.
 
 ### Implicit default rails
 
@@ -108,208 +118,137 @@ When multiple skills apply, prefer this stack shape: understand the repo/context
 
 ### Challenge escalation skills
 
-- If the first answer is merely adequate, obvious, locally polished, stalled, or missing the governing move, invoke escalation skills implicitly.
-- Use `glaze` for a deeper pass, `latent-diver` for non-obvious frames, `accretive` for the single dominant high-leverage move, `dominance` to judge competing moves, and `asi` when the task deserves a 10x/systemic ambition pass with concrete cash-out.
-- Challenge escalation is not capped. Re-run escalation whenever new friction, new evidence, a better frame, or a higher-leverage opportunity appears.
+- Use `glaze` for a deeper pass, `latent-diver` for non-obvious frames, `accretive` for the single dominant high-leverage move, `dominance` to judge competing moves, and `asi` when a 10x/systemic ambition pass with concrete cash-out is useful.
+- Escalation is repeatable when new friction, evidence, frames, or leverage appears.
 
 ### Repo understanding and structural lenses
 
-- Unfamiliar repo, "what does this do?", onboarding, or systematic codebase exploration -> `codebase-archaeology`.
-- Current architecture, repo dialect, seam fit, implementation placement, dependency direction, or docs-vs-code architecture drift -> `parse`.
-- Local readability, branching, control-flow, cognitive complexity, or "this is too complex" -> `complexity-mitigator`.
-- Need a stronger shape-of-truth, seam, model, invariant boundary, or conceptual compression -> `universalist`.
+- Unfamiliar repo, onboarding, systematic exploration -> `codebase-archaeology`.
+- Architecture, repo dialect, seam fit, placement, dependency direction, docs-vs-code drift -> `parse`.
+- Local readability, branching, control-flow, cognitive complexity -> `complexity-mitigator`.
+- Stronger shape-of-truth, seam, model, invariant boundary, conceptual compression -> `universalist`.
 - Too many layers, frameworks, dependencies, tools, adapters, abstractions, or indirection -> `reduce`.
-- Behavior-preserving simplification, DRY, isomorphic refactor, or net-negative LOC objective -> `simplify-and-refactor-code-isomorphically`.
-- Broad repo, security, API, UX/accessibility, performance, copy, CLI, maintainability, or launch-readiness audit -> `codebase-audit`; if AGENTS permits recursive orchestration and the audit naturally decomposes into independent read-only scopes, use recursive fanout.
-- Interface, flow, CLI UX, accessibility, cognitive-load, or usability review -> `ux-audit`.
+- Behavior-preserving simplification, DRY, isomorphic refactor, net-negative LOC objective -> `simplify-and-refactor-code-isomorphically`.
+- Broad repo/security/API/UX/performance/copy/CLI/maintainability/launch audit -> `codebase-audit`.
+- Interface/flow/CLI UX/accessibility/cognitive-load/usability review -> `ux-audit`.
 
 ### Performance, language, and proof rails
 
-- Optimization, speed, latency, throughput, memory, allocations, p95/p99, scalability, or performance regression language -> `lift`.
-- Measurement-only hotspot, flamegraph, profile attribution, or "why is this slow?" -> `profiling-software-performance`; hand off to `lift` if code changes are requested.
-- Zig files, `build.zig`, `build.zig.zon`, Zig toolchain, comptime, allocator ownership, FFI, concurrency, or Zig performance -> `zig`.
-- Lean files, Lake, `lean-toolchain`, proof repair, formalization, termination, mathlib, or correctness proofs -> `lean`.
+- Optimization, latency, throughput, memory, p95/p99, scalability, performance regression -> `lift`.
+- Measurement-only hotspot/flamegraph/profile attribution -> `profiling-software-performance`; hand off to `lift` for code changes.
+- Zig files/toolchain/comptime/allocator/FFI/concurrency/performance -> `zig`.
+- Lean/Lake/proof repair/formalization/termination/mathlib -> `lean`.
+- Human-facing wording, naming, terminology, headings, PR/commit text, docs, explanations, error/help text, doctrine words -> `logophile`.
+- Absolute claims, proof gauntlets, adversarial stress tests, or explicit "prove it" requests -> `prove-it`; do not trigger its heavy loop merely because ordinary verification is useful.
 
 ### Discovery, strategy, and planning
 
-- Fuzzy product/project opportunity, "what should we build/improve?", or ideation that needs research-backed narrowing -> `ideate`.
+- Fuzzy product/project opportunity, "what should we build/improve?", or evidence-backed ideation -> `ideate`.
 - Options, tradeoffs, strategy portfolio, divergent approaches, or multiple viable directions before choosing -> `creative-problem-solver`.
 - Ambiguous/conflicting requirements where implementation would be premature -> `grill-me`.
-- Serious planning artifact, plan refinement, architecture plan, implementation campaign, or decision-complete `<proposed_plan>` output -> `plan`; ordinary `update_plan` use alone does not imply `plan` or `$st`.
+- Serious planning artifact, plan refinement, architecture plan, implementation campaign, or decision-complete `<proposed_plan>` output -> `plan`.
+- Decision-complete spec automation -> `spec-pipeline`; plan-readiness gate -> `spec-gate`; implementation-readiness lint -> `spec-lint`; single invariant challenge -> `spec-challenge`.
 
-### Language, wording, and cross-modal lenses
+### Modeling boundaries
 
-- Use `synesthesia` for architecture review, debugging weird/flaky behavior, performance diagnosis, maintainability critique, onboarding explanations, and implementation comparisons when a cross-modal lens may reveal structure or friction.
-- Do not use `synesthesia` for exact API syntax, compliance/legal interpretation, security sign-off, or mechanical edits with no explanatory component. When used, translate every metaphor back into concrete engineering implications and next actions.
-- Human-facing language surfaces -> `logophile` when wording quality matters: naming, phrasing, terminology, headings, PR replies, commit/PR text, docs, user-facing explanations, error/help text, doctrine words, or mode names. Use it implicitly when the requested output includes language that should be sharper, shorter, or more exact.
-- Do not use `logophile` to change code semantics, identifiers, paths, flags, schemas, machine-consumed artifacts, or operational workflow decisions unless the user explicitly asks for wording/naming help on that surface.
-
-### Logophile composition
-
-Use `logophile` implicitly as a final language pass when:
-
-- `review-adjudication` produces reviewer replies, rebuttals, acknowledgements, or a comment disposition summary.
-- `adversarial-reviewer` produces a Change Agenda meant for human action.
-- `fixed-point-driver` produces a PR-facing final summary, closure note, or handoff.
-- `verification-closure` produces readiness wording that will be pasted into a PR, issue, or release note.
-- a skill, subagent, mode, doctrine stack, heading, or label is being named.
-
-Do not route operational work to `logophile`; route only the human-facing language surface.
+- Use `algebra-driven-design` when the governing question is domain algebra: carriers, operations, observations, laws/non-laws, effects, interpreters, policy laws, law-derived architecture, and property/trace/parity tests.
+- Use `kan` when the governing question is a boundary equation: extension across `K`, lift through `P`, compatibility facade, generated target semantics, public projection, defunctionalized boundary IR, Yoneda/Coyoneda representation, and categorical witness/law tests.
+- Use `universalist` when the main question is the smallest honest construction that makes repeated obligations or impossible states explicit.
+- Use `reduce` when the user asks to remove layers or lower abstraction while preserving behavior.
 
 ### Lifecycle and publication
 
-- Evidence-backed recall, capture, browsing, querying, promotion, supersession, implementation-turn learning closure, or durable lesson hygiene -> `$learnings`.
-- Durable task state, dependency tracking, selected mirrored plans, claims, execution metadata, proof, checkpoints, and cross-turn resumption -> `$st`. Ordinary `update_plan` use alone does not imply `$st`.
-- Session, transcript, artifact, memory, orchestration, provenance, stale-context, and tool-trace forensics -> `$seq`. Ordinary current-repo code search does not imply `$seq`.
-- Open or update a PR without merging -> `ship`.
-- Merge, land, or finish a PR -> `fin`, after required checks, approvals, and explicit merge/land intent.
+- Evidence-backed recall/capture/promotion/supersession/learning hygiene -> `$learnings`.
+- Durable task state/dependencies/claims/proof/checkpoints -> `$st`.
+- Session/transcript/artifact/memory/orchestration/provenance/tool-trace forensics -> `$seq`.
+- Open/update a PR without merging -> `ship`.
+- Merge/land/finish a PR -> `fin`, after required checks, approvals, and explicit merge/land intent.
+- Evidence-backed autonomous skill improvement -> `auto`, with protected-skill, sanitized-summary, validation, branch, PR, and merge guardrails.
 
 ### Tightly gated skills
 
-- Use `cas` only on clear app-server transport, detached review-session, or review-session control cues.
-- Use `cron` only on clear local automation or schedule-management intent.
-- Use `ghost` only on explicit or very clear ghost/spec package, portable reproduction bundle, or generated proof/test harness package intent.
-- Use `deckset` only for decks, slides, presentations, or Deckset output.
-- Use `ms` for skill creation/editing; use `refine` for existing-skill refinement.
-- Use `prove-it` for absolute claims, proof gauntlets, adversarial stress tests, or explicit "prove it" requests. Do not trigger its heavy loop merely because ordinary verification is useful.
+- `cas`: only clear app-server transport/detached review-session/review-session control cues.
+- `cron`: only clear local automation or schedule-management intent.
+- `ghost`: only explicit/very clear ghost/spec package, portable reproduction bundle, or generated proof/test harness package intent.
+- `deckset`: only decks/slides/presentations/Deckset output.
+- `ms`: skill creation/editing; `refine`: existing-skill refinement.
 
 ### Side-effect boundary
 
-- Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `$seq`, `cas`, `cron`, `ship`, `fin`, `ghost`, `deckset`, `ms`, `refine`, and `prove-it` gated to the cues above; do not trigger them merely because they are adjacent.
-- `logophile` is a language-surface rail, not a side-effecting workflow. It may trigger implicitly for human-facing wording, naming, terminology, doctrine, or copy surfaces, but must preserve meaning, obligations, uncertainty, agency, code identifiers, paths, flags, and machine-consumed syntax.
-- When a skill doc is more conservative about recursive orchestration than this file, this file's recursive-orchestration posture wins. Use recursive delegation for decomposable work when it improves coverage, convergence, evidence quality, or separation of concerns.
+Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `$seq`, `cas`, `cron`, `ship`, `fin`, `ghost`, `deckset`, `ms`, `refine`, and `prove-it` gated. `logophile` may trigger implicitly for human-facing language but must preserve semantics and machine-consumed syntax.
 
 ## Plan Sync (`$st` <-> Codex `update_plan`)
 
-Use this only when `.step/st-plan.jsonl` participates in the task because the user asked for `$st`, the repo already has active durable state, or the task explicitly needs cross-turn durable orchestration.
+Use only when `.step/st-plan.jsonl` participates because the user asked for `$st`, the repo already has active durable state, or the task explicitly needs cross-turn durable orchestration.
 
-- `$st` is durable truth. `update_plan` is a selected, user-visible mirror, not a second planner.
+- `$st` is durable truth. `update_plan` is a selected, user-visible mirror.
 - Mutate durable state only through `st` commands. Do not hand-edit existing JSONL rows.
-- Before shell/file work on multi-step `$st` tasks, run `st prime --file .step/st-plan.jsonl` and publish only `plan_sync.codex.plan` via `update_plan` when it is non-empty.
-- After each `$st` mutation, consume the emitted `plan_sync:` payload and publish `plan_sync.codex.plan` via `update_plan` in the same turn.
-- If no payload is available, run `st prime --file .step/st-plan.jsonl`. If the active binary lacks `prime`, fail closed until a compatible `st` binary is available.
-- Preserve `[st-id]` prefixes exactly. They are the reverse-sync key; if a row cannot be mapped, fail closed rather than guessing.
-- Keep dependencies, notes, comments, claims, runtime metadata, proof, backlog membership, and durable-only context in `$st`; do not encode them into `update_plan` text.
-- Do not mark a mirrored item `in_progress` unless all `$st` dependencies are complete.
-- Do not emit an empty `update_plan` merely to satisfy a hook when the durable inventory is empty, terminal-only, or backlog-only.
-- Hook behavior is conditional on registered hooks. SessionStart may hydrate `update_plan`; PreToolUse and Stop guards run only if configured. Treat hooks as guardrails, not complete enforcement. Guard comparison is semantic canonical JSON comparison, not raw string equality.
-- Before final delivery on `$st` tasks, run `st assert-projection --file .step/st-plan.jsonl` or regenerate/inspect `plan_sync` and resolve visible drift between durable state and the mirrored plan.
+- Preserve `[st-id]` prefixes exactly; they are the reverse-sync key.
+- Keep dependencies, notes, claims, proof, runtime metadata, and durable-only context in `$st`, not in `update_plan`.
+- Before final delivery on `$st` tasks, assert/regenerate projection and resolve visible drift.
 
 ## Seq Local-First Routing
 
 Use `$seq` for explicit `$seq` requests and for historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Do not use `$seq` for ordinary current-repo code search.
 
-- For finalized `<proposed_plan>` artifacts, start with the `$seq` skill's `plan-search` path.
-- For broad artifact forensics, activate `$seq` and follow its current command ladder.
-- Treat the `$seq` skill as canonical for command names, datasets, and follow-up routing.
-- Run opencode datasets or commands only when the current user request contains the literal word `opencode`.
+- For finalized `<proposed_plan>` artifacts, start with `plan-search`.
+- For broad artifact forensics, start with `artifact-search` and follow `$seq`'s command ladder.
+- Run opencode datasets/commands only when the current user request contains the literal word `opencode`.
 
 ## Learnings lifecycle
 
-Use the native `learnings` CLI. If it is missing and the environment allows installation, install with `brew install tkersey/tap/learnings`; otherwise fail closed and continue without inventing records.
-
-Treat learnings as a closed loop: recall before action, capture only decision-shaping evidence, promote repeated lessons into durable policy, and audit whether recalled memory actually improved execution. The `$learnings` skill is canonical for command syntax, append mechanics, JSONL schema, querying, promotion, supersession, and audit tooling.
+Use the native `learnings` CLI. Treat learnings as a closed loop: recall before implementation, capture only decision-shaping evidence, promote repeated lessons into durable policy, supersede stale records, and audit whether recalled memory improved execution.
 
 ### Recall before implementation
 
-- For implementation work, if `.learnings.jsonl` exists in the repo root, run request-aware recall during context gathering and before substantial edits.
-- Distill the request to a compact 4-8 term query; skip boilerplate, pasted AGENTS text, pasted skill text, and unrelated prompt material.
+- If `.learnings.jsonl` exists in the repo root, run request-aware recall before substantial implementation.
+- Distill the request to 4-8 focused terms.
 - Use `learnings recall --query "<query>" --limit 5 --drop-superseded`.
-- If early exploration materially sharpens the scope, run one additional focused recall before editing that slice.
-- Treat relevant recalled learnings as constraints or hypotheses to verify, not as unquestioned truth.
-- If recall returns nothing relevant, proceed normally.
-
-### Browse, query, and digest modes
-
-- For interactive browsing, prefer `learnings recent --limit 10`.
-- For filtered, ranked, grouped, or summarized learning search, prefer `learnings query` with a focused spec.
-- For disposable memory consolidation, use `learnings memory-digest` only as a derived orientation aid; do not treat the digest as a substitute for task-specific recall or the source `.learnings.jsonl` rows.
-- If browse intent is ambiguous, start with `recent`; switch to `recall` only when transitioning into concrete implementation.
+- Treat recalled learnings as constraints or hypotheses to verify, not unquestioned truth.
 
 ### Capture checkpoints
 
-Run `$learnings` before final response, commit, PR, or handoff when implementation work produced a capture checkpoint. A checkpoint exists when any of these occurred:
+Run `$learnings` before final response, commit, PR, or handoff only when a decision-shaping checkpoint occurred: validation transition, strategy pivot, footgun discovery, acceleration pattern, useful/failed recalled learning, meaningful pause, or delivery after real implementation work.
 
-- Validation changed state: `fail->pass`, `pass->fail`, `timeout->stable`, or a comparable proof transition.
-- A strategy pivot avoided wasted work, replaced a flawed approach, or simplified the governing plan.
-- A footgun, brittle assumption, flaky behavior, hidden dependency, or publication boundary was discovered.
-- A repeatable acceleration pattern emerged.
-- A recalled learning materially helped, failed, was contradicted, or became obsolete.
-- The task is paused after meaningful exploration and the next agent would otherwise lose the lesson.
-- A delivery boundary occurred after real implementation work.
-
-A delivery boundary alone does not justify a record. If no decision-shaping checkpoint occurred, append nothing and report the intentional skip.
-
-### Capture quality gate
-
-Before appending a record, require all three:
+Quality gate:
 
 1. Decision delta: would this change what the next agent does?
-2. Transferability: does it apply beyond this exact command, log line, file path, or one-off mistake?
-3. Counterfactual: if ignored, is there a predictable failure, cost, or missed leverage?
+2. Transferability: does it apply beyond this exact incident?
+3. Counterfactual: if ignored, is there predictable failure/cost/missed leverage?
 
-Write the learning as a rule, not a changelog entry:
-
-- `learning`: condition + action + reason, preferably `When/If X, prefer/do Y because Z`.
-- `evidence`: at least one concrete anchor such as command outcome, exact error, file path, commit SHA, test result, run ID, or observed diff.
-- `application`: what to do next time.
-- `status`: choose the narrowest useful action status, such as `do_more`, `do_less`, `avoid_for_now`, `investigate_more`, `codify_now`, or `review_later`.
-
-Prefer 1 essential learning. Append at most 3 records.
-
-### Write and report
-
-- Use the learnings skill / native append path for normal writes; do not hand-edit existing JSONL rows.
-- Append only from a verified git repo root. If `git rev-parse --show-toplevel` fails, skip capture with `0 records appended: non-repo cwd` unless the user explicitly names another durable target.
-- Require append target resolution to land at the verified repo root's `.learnings.jsonl`; if a row lands in any other file, repair the stray write and reappend correctly.
-- Mention the append result with one proof line: `appended: id=...`, `duplicate-skip: <reason>`, or `0 records appended: <reason>`.
-- If `.learnings.jsonl` is updated and a git commit happens afterward, include the current-turn rows in that next commit unless `git check-ignore -v --no-index .learnings.jsonl` reports `.git/info/exclude`.
-- If the shared learnings file contains unrelated fresh rows, stage only the session-owned rows with an index patch.
-
-### Promotion, supersession, and audit
-
-- When a learning is marked `codify_now` or the same theme appears 3+ times, promote it into `AGENTS.md` or the relevant skill/doc, then append a follow-up learning referencing the durable anchor.
-- If a recalled learning is repeatedly unused, contradicted, too broad, too path-bound, or no longer accurate, append a superseding/refining learning instead of letting stale guidance accumulate.
-- If a prior learning materially changed the current outcome, capture that feedback loop explicitly so future recall ranking can learn which memories are valuable.
-- Periodically use the learnings skill's `codify-candidates`, `quality-audit`, and `value-report` tools to find noisy records, high-value repeated themes, and candidates for durable policy.
+Write rules, not changelog entries. Prefer one essential learning; append at most three.
 
 ## Tooling standards
 
 ### Git
 
-- Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true` so the command does not block on an editor.
+- Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
 - Do not stage unrelated diffs.
-- Do not force-add paths that match `.git/info/exclude` unless the user explicitly asks to publish them.
+- Do not force-add paths matching `.git/info/exclude` unless explicitly asked.
 - Review the diff before final response or commit.
 
 ### GitHub CLI (`gh`)
 
 - Use `gh` for GitHub operations when available and authenticated.
 - Check `gh auth status` before assuming authentication is broken.
-- Use terminal-native PR, issue, Actions, and gist operations where possible instead of browser-only workflows.
+- Prefer terminal-native PR, issue, Actions, and gist operations over browser-only workflows.
 
 ### Python
 
-- Use `uv` for Python package/project operations. Do not use direct `python`, `pip`, `pipx`, `venv`, `virtualenv`, `poetry`, or `conda` unless the user explicitly asks or the repo requires it.
-- Run scripts, tests, linters, and CLIs through `uv run ...`.
-- For skill-only external dependencies, prefer `uvx <tool>` or `uv run --with <package> <command> ...` so dependencies remain ephemeral and non-project-scoped.
-- Do not create or reuse `.venv*` for skill-only tooling. Do not `uv pip install` external packages for skills unless the user explicitly requests a persistent dependency.
-- For projects that intentionally manage Python dependencies, keep `pyproject.toml`/`uv.lock` authoritative with `uv sync` or `uv lock` plus `uv sync`.
-- For Python automation scripts, prefer `#!/usr/bin/env -S uv run python`.
+- Use `uv` for Python package/project operations unless the repo explicitly requires otherwise or the user asks.
+- Run scripts/tests/linters/CLIs through `uv run ...`.
+- For skill-only external dependencies, prefer `uvx <tool>` or `uv run --with <package> <command> ...`.
+- Do not create/reuse `.venv*` for skill-only tooling.
+- Prefer `#!/usr/bin/env -S uv run python` for Python automation scripts.
 
 ## Verification and final response
 
 Before final delivery:
 
-- Check the relevant diff or generated artifact.
-- Run the narrowest meaningful verification for changed behavior. Prefer project-native test/lint/build commands.
-- For `$st` work, confirm the durable plan and mirrored plan are not visibly drifting.
+- Check relevant diff or generated artifact.
+- Run the narrowest meaningful verification.
+- For `$st` work, confirm durable and mirrored plans are not visibly drifting.
 - For delegated work, integrate results locally before presenting conclusions.
-- Clean up temporary files, agents, claims, or local scratch state that should not persist.
+- Clean up temporary files, agents, claims, or scratch state that should not persist.
 
-Final responses should follow the required Response Format and then remain concise and factual:
-
-- State what changed or what was found.
-- Include proof: tests, commands, checks, or explicit reason verification could not run.
-- Mention risks, blockers, or follow-up only when material.
-- Include a short orchestration ledger only when orchestration actually ran: skills used, subagents used, artifacts produced, cleanup status.
+Final responses should follow the required Response Format and then remain concise and factual: state what changed/found, include proof, mention material risks/blockers, and include a short orchestration ledger only when orchestration actually ran.
