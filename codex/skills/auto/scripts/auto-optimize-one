@@ -99,9 +99,33 @@ EOF_PREPARE
     if [ -z "$target_changes" ]; then
       auto_die "no target skill changes found under codex/skills/$SKILL"
     fi
-    non_target_paths="$(git status --porcelain | sed -E 's/^...//' | grep -v "^codex/skills/$SKILL/" || true)"
+    non_target_paths="$(
+      git status --porcelain | while IFS= read -r status_line; do
+        path="${status_line#???}"
+        case "$path" in
+          *" -> "*)
+            old_path="${path%% -> *}"
+            new_path="${path#* -> }"
+            case "$old_path" in
+              "codex/skills/$SKILL/"*) old_path_is_target=1 ;;
+              *) old_path_is_target=0 ;;
+            esac
+            case "$new_path" in
+              "codex/skills/$SKILL/"*) new_path_is_target=1 ;;
+              *) new_path_is_target=0 ;;
+            esac
+            if [ "$old_path_is_target" -eq 0 ] || [ "$new_path_is_target" -eq 0 ]; then
+              printf '%s\n' "$path"
+            fi
+            ;;
+          "codex/skills/$SKILL/"*) ;;
+          *) printf '%s\n' "$path" ;;
+        esac
+      done
+    )"
     if [ -n "$non_target_paths" ]; then
-      printf 'ignored_preexisting_or_unrelated_changes:\n%s\n' "$non_target_paths"
+      printf 'non_target_change_blocker:\n%s\n' "$non_target_paths" >&2
+      auto_die "non-target changes present; isolate or clean worktree before finalize"
     fi
     if ! "$SCRIPT_DIR/auto-validate-corpus" codex/skills; then
       if [ "$REPAIR_ATTEMPTED" -eq 0 ]; then
