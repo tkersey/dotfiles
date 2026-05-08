@@ -1,0 +1,85 @@
+{
+  "skill_name": "algebra-driven-design",
+  "version": "1.0.0",
+  "purpose": "Evaluate whether the skill causes agents to apply ADD deeply: carriers, operations, observations, laws, architecture, implementation, tests, and counterexamples.",
+  "criteria": [
+    "Identifies domain carriers and valid/invalid states",
+    "Lists operations with signatures and effect classification",
+    "Defines observations/equality boundaries",
+    "States laws and non-laws precisely",
+    "Provides counterexamples or preconditions for risky laws",
+    "Maps laws to architecture boundaries and runtime mechanisms",
+    "Maps laws to code artifacts, interfaces, interpreters, and schemas",
+    "Derives property, trace, parity, scenario, or runtime tests from laws",
+    "Separates pure domain logic from effectful interpreters",
+    "Handles destructive actions, approvals, and policy blockers explicitly"
+  ],
+  "evals": [
+    {
+      "id": "payment-lifecycle-architecture",
+      "prompt": "Use Algebra-Driven Design to design the architecture for a payment lifecycle with authorization, capture, void, refund, duplicate webhook handling, and audit requirements.",
+      "expected_output_traits": [
+        "Defines carriers such as PaymentState, PaymentCommand, PaymentEvent, EventStream, PaymentTrace, Money, IdempotencyKey",
+        "Distinguishes refund as compensation rather than inverse of capture under audit/trace observation",
+        "Includes idempotency law for capture/refund commands and duplicate webhooks",
+        "Derives event sourcing or reducer laws where appropriate",
+        "Maps laws to idempotency store, unique constraints, provider ports, and trace tests"
+      ]
+    },
+    {
+      "id": "shopping-cart-refactor",
+      "prompt": "Refactor a shopping cart service using ADD. It currently has a mutable Cart class, duplicate line items, coupon side effects, and flaky checkout retries.",
+      "expected_output_traits": [
+        "Defines Cart, LineItem, Coupon, CartView, CheckoutCommand as carriers",
+        "States merge/add laws and conditions under which commutativity or inverse laws fail",
+        "Introduces observeCart/normalizeCart",
+        "Adds checkout idempotency key and processed command ledger",
+        "Proposes property tests for merge identity/associativity and counterexample tests for remove inverse"
+      ]
+    },
+    {
+      "id": "agentic-research-workflow",
+      "prompt": "Design an agentic research workflow using ADD. The agent must search sources, gather evidence, draft a report, validate citations, repair unsupported claims, and produce a final artifact.",
+      "expected_output_traits": [
+        "Defines carriers such as EvidenceSet, ClaimGraph, Draft, ValidationResult, Report",
+        "Models evidence merge as a semilattice with caveats around recency/source trust",
+        "States validation idempotency over frozen evidence",
+        "Blocks finalization when unsupported claims remain",
+        "Maps operations to tools/interpreters and eval cases"
+      ]
+    },
+    {
+      "id": "config-merge-design",
+      "prompt": "Use ADD to design a configuration merge system for defaults, environment settings, team settings, and user overrides. Include distributed update considerations.",
+      "expected_output_traits": [
+        "Identifies Config, ConfigPatch, SourcePriority, EffectiveConfig as carriers",
+        "Distinguishes priority-ordered merge from commutative semilattice merge",
+        "Requires explicit source priority and deterministic tie-breaking",
+        "Maps semilattice laws to distributed convergence only if laws truly hold",
+        "Includes tests for associativity, commutativity, idempotency, and counterexamples"
+      ]
+    },
+    {
+      "id": "codebase-implementation-plan",
+      "prompt": "Given a service layer with direct database calls, external API calls, and business rules mixed together, produce an ADD codebase implementation plan.",
+      "expected_output_traits": [
+        "Extracts carriers and operations before modules/classes",
+        "Defines observations and law tests",
+        "Separates pure domain core from effectful shell",
+        "Introduces ports/adapters/interpreters",
+        "Proposes reference implementation, optimized implementation, and parity tests"
+      ]
+    },
+    {
+      "id": "skill-generation-from-add",
+      "prompt": "Create an agent skill for applying ADD to architecture and codebase implementation, with all knowledge contained in the skill package.",
+      "expected_output_traits": [
+        "Creates SKILL.md with trigger and operating loop",
+        "Includes references for ADD core, law catalog, architecture, codebase implementation, agentic workflows, examples, and sources",
+        "Includes assets/templates and scripts",
+        "Includes evals that check carriers, operations, observations, laws, architecture, implementation, and tests",
+        "Avoids reducing the skill to a thin wrapper"
+      ]
+    }
+  ]
+}
