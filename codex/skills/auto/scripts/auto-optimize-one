@@ -107,37 +107,72 @@ EOF_PREPARE
     if [ "$current_branch" != "$BRANCH" ]; then
       auto_die "finalize must run on prepared branch: expected $BRANCH, got ${current_branch:-detached HEAD}"
     fi
-    target_changes="$(git status --porcelain -- "codex/skills/$SKILL" || true)"
-    if [ -z "$target_changes" ]; then
-      auto_die "no target skill changes found under codex/skills/$SKILL"
+    if ! git show-ref --verify --quiet "refs/heads/$BASE_BRANCH"; then
+      auto_die "base branch not found: $BASE_BRANCH"
     fi
-    non_target_paths="$(
-      git status --porcelain | while IFS= read -r status_line; do
-        path="${status_line#???}"
-        case "$path" in
-          *" -> "*)
-            old_path="${path%% -> *}"
-            new_path="${path#* -> }"
-            case "$old_path" in
-              "codex/skills/$SKILL/"*) old_path_is_target=1 ;;
-              *) old_path_is_target=0 ;;
-            esac
-            case "$new_path" in
-              "codex/skills/$SKILL/"*) new_path_is_target=1 ;;
-              *) new_path_is_target=0 ;;
-            esac
-            if [ "$old_path_is_target" -eq 0 ] || [ "$new_path_is_target" -eq 0 ]; then
-              printf '%s\n' "$path"
-            fi
-            ;;
-          "codex/skills/$SKILL/"*) ;;
-          *) printf '%s\n' "$path" ;;
-        esac
-      done
-    )"
+    target_root="codex/skills/$SKILL"
+    target_changes_found=0
+    non_target_paths=""
+    append_non_target_path() {
+      non_target_paths="${non_target_paths}${1}"$'\n'
+    }
+    path_is_target() {
+      case "$1" in
+        "$target_root"|"$target_root"/*) return 0 ;;
+        *) return 1 ;;
+      esac
+    }
+    classify_path() {
+      if path_is_target "$1"; then
+        target_changes_found=1
+      else
+        append_non_target_path "$1"
+      fi
+    }
+    classify_pair() {
+      local old_path="$1"
+      local new_path="$2"
+      if path_is_target "$old_path" && path_is_target "$new_path"; then
+        target_changes_found=1
+      else
+        append_non_target_path "$old_path -> $new_path"
+      fi
+    }
+    while IFS= read -r diff_line; do
+      [ -n "$diff_line" ] || continue
+      status="${diff_line%%$'\t'*}"
+      path="${diff_line#*$'\t'}"
+      case "$status" in
+        R*|C*)
+          old_path="${path%%$'\t'*}"
+          new_path="${path#*$'\t'}"
+          classify_pair "$old_path" "$new_path"
+          ;;
+        *)
+          classify_path "$path"
+          ;;
+      esac
+    done < <(git diff --name-status -M -C "$BASE_BRANCH"...HEAD)
+    while IFS= read -r status_line; do
+      [ -n "$status_line" ] || continue
+      path="${status_line#???}"
+      case "$path" in
+        *" -> "*)
+          old_path="${path%% -> *}"
+          new_path="${path#* -> }"
+          classify_pair "$old_path" "$new_path"
+          ;;
+        *)
+          classify_path "$path"
+          ;;
+      esac
+    done < <(git status --porcelain)
     if [ -n "$non_target_paths" ]; then
       printf 'non_target_change_blocker:\n%s\n' "$non_target_paths" >&2
       auto_die "non-target changes present; isolate or clean worktree before finalize"
+    fi
+    if [ "$target_changes_found" -eq 0 ]; then
+      auto_die "no target skill changes found under codex/skills/$SKILL"
     fi
     if ! "$SCRIPT_DIR/auto-validate-corpus" codex/skills; then
       if [ "$REPAIR_ATTEMPTED" -eq 0 ]; then
