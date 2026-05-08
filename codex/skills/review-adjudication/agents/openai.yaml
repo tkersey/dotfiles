@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Review Adjudication"
-  short_description: "Adjudicate PR review comments using evidence and $seq rationale recovery"
-  default_prompt: "Use $review-adjudication for this task."
+  short_description: "Gated adjudication of PR review comments using artifact evidence and $seq rationale recovery"
+  default_prompt: "Use $review-adjudication in Compact-Gated mode for this task."

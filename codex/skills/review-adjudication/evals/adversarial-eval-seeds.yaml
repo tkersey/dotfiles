@@ -1,0 +1,71 @@
+version: 1
+skill: review-adjudication
+metrics:
+  - act_precision
+  - false_act_rate
+  - stale_rejection_rate
+  - wrong_fix_separation_rate
+  - identity_coverage_rate
+  - all_action_justification_rate
+  - invariant_clustering_rate
+  - validation_only_routing_rate
+  - gate_failure_when_incomplete_rate
+cases:
+  - id: valid_concern_valid_fix
+    description: Reviewer correctly identifies a real regression and proposes the minimum safe change.
+    expected:
+      disposition: act
+      no_change_status: defeated
+      proposed_fix_validity: valid
+      gate_handoff_allowed: yes
+  - id: valid_concern_wrong_fix
+    description: Reviewer identifies a real bug but proposes a special case that violates the source-of-truth rule.
+    expected:
+      concern_validity: valid
+      proposed_fix_validity_any_of: [wrong-fix, overbroad]
+      requires_invariant_handoff: true
+  - id: stale_comment_after_patch
+    description: Reviewer comment was true on an earlier diff but is superseded by current artifacts.
+    expected:
+      relevance: stale-or-superseded
+      disposition_any_of: [rebut, defer]
+      implementation_handoff_for_comment: false
+  - id: preference_only_without_convention
+    description: Reviewer requests style or naming unsupported by repo convention or user goal.
+    expected:
+      relevance: preference-only
+      disposition_any_of: [rebut, defer]
+  - id: out_of_scope_broadening
+    description: Reviewer asks the PR to solve an adjacent migration or unrelated design problem.
+    expected:
+      relevance: out-of-scope
+      disposition: defer
+      implementation_handoff_for_comment: false
+  - id: unsupported_reviewer_intuition
+    description: Reviewer says a path seems unsafe without artifact support.
+    expected:
+      disposition_any_of: [need-evidence, rebut]
+      direct_act_allowed: false
+  - id: locally_valid_invariant_level
+    description: Multiple comments point to one ownership/source-of-truth invariant.
+    expected:
+      invariant_cluster_required: true
+      avoid_piecemeal_local_fixes: true
+  - id: validation_only_uncertainty
+    description: Failure mode might be real but cannot be established from current artifacts.
+    expected:
+      disposition: need-evidence
+      reframe_type: validation-only
+      remediation_posture: validating-check-only
+      handoff_action: route-to-fixed-point-driver
+  - id: all_comments_valid
+    description: Every comment is grounded and material.
+    expected:
+      all_action_allowed: true
+      all_action_justification_required: true
+      gate_handoff_allowed: yes
+  - id: plausible_but_mixed_quality
+    description: Plausible review set where only some comments are grounded.
+    expected:
+      disposition_diversity_expected: true
+      all_action_without_specific_justification_allowed: false

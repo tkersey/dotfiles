@@ -1,28 +1,35 @@
-# $seq rationale recovery ladder
+# `$seq` rationale recovery ladder
 
-Use `$seq` only for rationale recovery, provenance, and artifact-backed why questions.
+Use `$seq` only for rationale recovery, provenance, and artifact-backed why
+questions.
 
 ## When to invoke `$seq`
+
+Invoke `$seq` when any of these are true:
+
 - The PR why is missing, ambiguous, disputed, or likely to change adjudication.
 - A review comment seems odd unless an older plan, memory, or session explains it.
 - The user asks what this PR was trying to do.
 - A comment may be stale relative to later changes and you need evidence.
+- Acting without intent would risk broadening the PR beyond its non-goals.
+
+Do not invoke `$seq` merely to make a weak review comment feel supported.
 
 ## Preferred order
-1. `plan-search`
-   - Use when you expect explicit plan artifacts or finalized plan blocks.
-2. `artifact-search`
-   - Use for broad artifact forensics when you need likely rationale evidence but do not know the exact handle yet.
-3. `find-session` + `session-prompts`
-   - Use when you need the exact prompts, commitments, or decision language from a session.
-4. `memory-map`
-   - Use to route broad topic lookups across memories.
-5. `memory-provenance`
-   - Use to answer why a memory exists now or which rollout introduced it.
-6. `memory-history`
-   - Use when the rationale may have changed across time.
+
+1. `plan-search` - Use when you expect explicit plan artifacts or finalized plan
+   blocks.
+2. `artifact-search` - Use for broad artifact forensics when you need likely
+   rationale evidence but do not know the exact handle yet.
+3. `find-session` + `session-prompts` - Use when you need the exact prompts,
+   commitments, or decision language from a session.
+4. `memory-map` - Use to route broad topic lookups across memories.
+5. `memory-provenance` - Use to answer why a memory exists now or which rollout
+   introduced it.
+6. `memory-history` - Use when the rationale may have changed across time.
 
 ## Evidence ranking
+
 1. Current diff, code, tests, and local artifact state
 2. Current-session artifact evidence
 3. Prior-session artifact evidence
@@ -30,11 +37,25 @@ Use `$seq` only for rationale recovery, provenance, and artifact-backed why ques
 5. Reviewer intuition without artifact support
 
 ## Memory defaults
+
 - `memory_summary.md` for broad navigational recall
 - `MEMORY.md` for durable guidance or reusable decisions
 
 ## Failure rule
-If `$seq` is unavailable or does not yield usable rationale, say so explicitly. Do not fabricate recovered intent.
+
+If `$seq` is unavailable or does not yield usable rationale, say so explicitly.
+Do not fabricate recovered intent.
+
+When the missing rationale affects actionability, use:
+
+```md
+disposition: need-evidence
+no_change_countercase_status: unresolved
+handoff_allowed: no
+```
 
 ## Adjudication caveat
-Use `$seq` to recover rationale, not to manufacture obligations. A recovered plan can explain why a comment matters, but current artifacts still decide whether the comment is grounded, stale, or in scope.
+
+Use `$seq` to recover rationale, not to manufacture obligations. A recovered plan
+can explain why a comment matters, but current artifacts still decide whether the
+comment is grounded, stale, or in scope.
