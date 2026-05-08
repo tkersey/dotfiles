@@ -32,14 +32,33 @@ auto_is_protected_name() {
   esac
 }
 
+auto_canonical_path() {
+  local input_path="$1"
+  local dir
+  local base
+  if [ -d "$input_path" ]; then
+    (cd -P "$input_path" && pwd -P)
+    return
+  fi
+  dir="$(dirname "$input_path")"
+  base="$(basename "$input_path")"
+  if [ -d "$dir" ]; then
+    printf '%s/%s\n' "$(cd -P "$dir" && pwd -P)" "$base"
+    return
+  fi
+  printf '%s\n' "$input_path"
+}
+
 auto_is_protected_path() {
-  local path="$1"
+  local input_path="$1"
   local root
-  root="$(auto_skill_root)"
-  case "$path" in
+  local canonical_path
+  root="$(auto_canonical_path "$(auto_skill_root)")"
+  canonical_path="$(auto_canonical_path "$input_path")"
+  case "$canonical_path" in
     "$root/.system"|"$root/.system"/*) return 0 ;;
   esac
-  auto_is_protected_name "$(basename "$path")"
+  auto_is_protected_name "$(basename "$canonical_path")"
 }
 
 auto_list_skill_dirs() {
@@ -147,6 +166,9 @@ auto_validate_one_skill() {
 auto_write_conservative_policy() {
   local skill_dir="$1"
   local name
+  if [ -e "$skill_dir/AUTO.md" ] || [ -L "$skill_dir/AUTO.md" ]; then
+    return 0
+  fi
   name="$(basename "$skill_dir")"
   cat > "$skill_dir/AUTO.md" <<EOF_POLICY
 # AUTO
