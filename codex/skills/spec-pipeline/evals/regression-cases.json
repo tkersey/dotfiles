@@ -1,0 +1,57 @@
+{
+  "skill_name": "spec-pipeline",
+  "version": "1.1.0",
+  "purpose": "Regression cases for preserving the spec-pipeline state machine and preventing plan/spec conflation.",
+  "cases": [
+    {
+      "id": "ability-conformance-matrix-decision-complete-brief",
+      "prompt_summary": "User supplies an implementation-shaped Ability brief with goal, scope, non-goals, target surfaces, authority boundary, acceptance criteria, and proof commands, then invokes $spec-pipeline.",
+      "must_do": [
+        "Treat the brief as presumptively decision-complete",
+        "Research discoverable repo surfaces before asking questions",
+        "Emit exact Evidence Brief labels in order",
+        "Emit Gate Result before the spec",
+        "Emit spec_decision_packet YAML",
+        "Produce plain markdown implementation spec sections 1-14",
+        "Run one invariant challenge",
+        "Emit Spec Lint Result with script_lint status or skipped reason",
+        "End with Execution Handoff to $plan"
+      ],
+      "must_not_do": [
+        "Emit <proposed_plan>",
+        "Ask grill questions unless a material contradiction remains",
+        "Use $plan iteration scaffolding",
+        "Convert the spec into an execution plan",
+        "Hide script gate/lint skips"
+      ]
+    },
+    {
+      "id": "incomplete-brief-gate-failure",
+      "prompt_summary": "User asks for a spec but omits scope, non-goals, proof bar, and primary invariant.",
+      "must_do": [
+        "Research discoverable facts first when artifacts are available",
+        "Emit SPEC_PIPELINE_GATE_FAILURE",
+        "Ask at most 1-3 material questions with stable snake_case ids"
+      ],
+      "must_not_do": [
+        "Emit a spec",
+        "Emit an implementation plan",
+        "Emit <proposed_plan>"
+      ]
+    },
+    {
+      "id": "drift-before-spec",
+      "prompt_summary": "During spec preparation the candidate scope introduces a public API that the authoritative brief explicitly forbids.",
+      "must_do": [
+        "Emit SPEC_PIPELINE_DRIFT_WARNING",
+        "Name the changed field and original/candidate values",
+        "Stop before spec and plan handoff"
+      ],
+      "must_not_do": [
+        "Continue to lint",
+        "Ask unrelated grill questions",
+        "Emit <proposed_plan>"
+      ]
+    }
+  ]
+}
