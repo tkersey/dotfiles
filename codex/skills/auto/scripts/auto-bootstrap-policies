@@ -42,11 +42,13 @@ auto_append_ordinary_skill_overlap() {
 
 auto_is_ordinary_skill_md_path() {
   local check_path="$1"
+  local rel_path
   local skill_name
   case "$check_path" in
     codex/skills/*/SKILL.md)
-      skill_name="${check_path#codex/skills/}"
-      skill_name="${skill_name%%/*}"
+      rel_path="${check_path#codex/skills/}"
+      skill_name="${rel_path%%/*}"
+      [ "${rel_path#*/}" = "SKILL.md" ] || return 1
       ! auto_is_protected_name "$skill_name"
       ;;
     *) return 1 ;;
@@ -55,11 +57,13 @@ auto_is_ordinary_skill_md_path() {
 
 auto_is_ordinary_auto_md_path() {
   local check_path="$1"
+  local rel_path
   local skill_name
   case "$check_path" in
     codex/skills/*/AUTO.md)
-      skill_name="${check_path#codex/skills/}"
-      skill_name="${skill_name%%/*}"
+      rel_path="${check_path#codex/skills/}"
+      skill_name="${rel_path%%/*}"
+      [ "${rel_path#*/}" = "AUTO.md" ] || return 1
       ! auto_is_protected_name "$skill_name"
       ;;
     *) return 1 ;;
@@ -93,7 +97,7 @@ auto_skill_md_policy_ref_diff_only() {
         esac
         ;;
       -*) return 1 ;;
-      *) ;;
+      *) return 1 ;;
     esac
   done < <(git diff --unified=0 "$base_ref"...HEAD -- "$skill_md")
 }
@@ -101,7 +105,13 @@ auto_skill_md_policy_ref_diff_only() {
 auto_auto_md_policy_matches() {
   local auto_md="$1"
   local skill_name
+  local summary
+  local expected_summary
   [ -f "$auto_md" ] || return 1
+  [ ! -L "$auto_md" ] || return 1
+  summary="$(git diff --summary "$base_ref"...HEAD -- "$auto_md")"
+  expected_summary=" create mode 100644 $auto_md"
+  [ "$summary" = "$expected_summary" ] || return 1
   skill_name="${auto_md#codex/skills/}"
   skill_name="${skill_name%%/*}"
   cmp -s "$auto_md" <(auto_print_conservative_policy "$skill_name")
