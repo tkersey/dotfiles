@@ -9,6 +9,16 @@ Checks:
 - sharpens wording
 - keeps structure when useful
 
+## Skill metadata compression should trigger
+Prompt:
+`Use $logophile to compress this SKILL.md description under 1024 characters while preserving the trigger surface.`
+
+Checks:
+- preserves meaning and trigger coverage
+- keeps the frontmatter value YAML parse-safe
+- avoids unquoted colon-space phrases unless the scalar is quoted
+- expects the edited skill to pass `quick_validate.py`
+
 ## Naming should trigger
 Prompt:
 `Use $logophile to rename this skill.`

@@ -17,6 +17,12 @@ Replace generic phrasing with sharper wording, choose better names, and synthesi
 - A doctrine stack is incomplete without an unpacked doctrine block.
 - Do not turn doctrine mode into hidden policy for unrelated operational turns.
 
+## Usage discipline
+- Use for explicit skill-metadata compression, especially frontmatter descriptions that must keep trigger coverage while fitting validator limits.
+- Use doctrine mode for vague workflow verbs such as `ideate`, `improve`, `review`, or `plan` when the user wants replacement wording or mode words.
+- For machine-consumed text, preserve parse safety: avoid unquoted YAML colon footguns, keep required fields valid, and validate the edited skill afterward.
+- For usage audits, report raw mentions separately from normalized use clusters, and call out noise such as injected `<skill>` blocks, current-analysis turns, or repeated final summaries.
+
 ## Modes
 - `fast`: revised text only.
 - `annotated`: edits + revised text.
