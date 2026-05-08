@@ -141,7 +141,20 @@ When multiple skills apply, prefer this stack shape: understand the repo/context
 
 - Use `synesthesia` for architecture review, debugging weird/flaky behavior, performance diagnosis, maintainability critique, onboarding explanations, and implementation comparisons when a cross-modal lens may reveal structure or friction.
 - Do not use `synesthesia` for exact API syntax, compliance/legal interpretation, security sign-off, or mechanical edits with no explanatory component. When used, translate every metaphor back into concrete engineering implications and next actions.
-- Naming, wording, doctrine, terminology, or language craft -> `logophile` only when that output is explicitly requested.
+- Human-facing language surfaces -> `logophile` when wording quality matters: naming, phrasing, terminology, headings, PR replies, commit/PR text, docs, user-facing explanations, error/help text, doctrine words, or mode names. Use it implicitly when the requested output includes language that should be sharper, shorter, or more exact.
+- Do not use `logophile` to change code semantics, identifiers, paths, flags, schemas, machine-consumed artifacts, or operational workflow decisions unless the user explicitly asks for wording/naming help on that surface.
+
+### Logophile composition
+
+Use `logophile` implicitly as a final language pass when:
+
+- `review-adjudication` produces reviewer replies, rebuttals, acknowledgements, or a comment disposition summary.
+- `adversarial-reviewer` produces a Change Agenda meant for human action.
+- `fixed-point-driver` produces a PR-facing final summary, closure note, or handoff.
+- `verification-closure` produces readiness wording that will be pasted into a PR, issue, or release note.
+- a skill, subagent, mode, doctrine stack, heading, or label is being named.
+
+Do not route operational work to `logophile`; route only the human-facing language surface.
 
 ### Lifecycle and publication
 
@@ -162,7 +175,8 @@ When multiple skills apply, prefer this stack shape: understand the repo/context
 
 ### Side-effect boundary
 
-- Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `$seq`, `cas`, `cron`, `ship`, `fin`, `ghost`, `deckset`, `ms`, `refine`, `logophile`, and `prove-it` gated to the cues above; do not trigger them merely because they are adjacent.
+- Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `$seq`, `cas`, `cron`, `ship`, `fin`, `ghost`, `deckset`, `ms`, `refine`, and `prove-it` gated to the cues above; do not trigger them merely because they are adjacent.
+- `logophile` is a language-surface rail, not a side-effecting workflow. It may trigger implicitly for human-facing wording, naming, terminology, doctrine, or copy surfaces, but must preserve meaning, obligations, uncertainty, agency, code identifiers, paths, flags, and machine-consumed syntax.
 - When a skill doc is more conservative about recursive orchestration than this file, this file's recursive-orchestration posture wins. Use recursive delegation for decomposable work when it improves coverage, convergence, evidence quality, or separation of concerns.
 
 ## Plan Sync (`$st` <-> Codex `update_plan`)
