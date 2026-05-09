@@ -1,81 +1,25 @@
-# Universalist Case Studies
+# Case studies
 
-## Case 1 — Workflow flags to coproduct (TypeScript)
+## Boolean matrix to coproduct
 
-**Symptom**
-A document lifecycle is represented by `status`, `approvedBy`, `publishedAt`,
-and `archivedReason`.
+Signal: `isDraft`, `isPublished`, `deletedAt` combinations create impossible states.
+Construction: coproduct lifecycle type.
+Proof: invalid fixture rejection and exhaustive handling.
 
-**Construction**
-Coproduct for lifecycle + product for shared metadata.
+## Repeated validation to refined type
 
-**Seam**
-Legacy DTO decoder -> internal `DocState`.
+Signal: email validation repeated in API, service, and serializer.
+Construction: `EmailAddress` refined type with trusted constructor.
+Proof: valid/invalid table tests.
 
-**Proof**
-- invalid legacy combinations rejected
-- legal transitions preserved
-- one consumer handles variants exhaustively
+## Shared id agreement to pullback
 
-## Case 2 — Shared-id join to pullback witness (Go)
+Signal: repeated `customerId` equality checks.
+Construction: checked aggregate with agreement witness.
+Proof: mismatch rejected; projections preserve ids.
 
-**Symptom**
-A `Customer` and `Subscription` are paired repeatedly with manual `AccountID` checks.
+## Callback plugin registry to explicit IR
 
-**Construction**
-Pullback-shaped witness over `AccountID`.
-
-**Seam**
-`NewCustomerSubscription` checked constructor.
-
-**Proof**
-- matching accepted
-- mismatches rejected
-- both projections preserved
-
-## Case 3 — Repeated validation to refined type (Java or Python)
-
-**Symptom**
-Email addresses or non-empty identifiers are revalidated across layers.
-
-**Construction**
-Refined type or equalizer at the boundary.
-
-**Seam**
-Controller / serializer parse boundary.
-
-**Proof**
-- parse once
-- valid accepted
-- invalid rejected
-- normalization idempotent
-
-## Case 4 — Branchy policy logic to exponential (Java or C#)
-
-**Symptom**
-Pricing or policy logic uses long branches to pick behavior.
-
-**Construction**
-Exponential encoded as strategy, callable object, or closure.
-
-**Seam**
-One policy selection site plus one consumer.
-
-**Proof**
-- fixture parity against old behavior
-- explicit composition order when policies chain
-
-## Case 5 — Rule engine to free construction (TypeScript or Python)
-
-**Symptom**
-Workflow syntax, evaluation, and explanation are tangled together.
-
-**Construction**
-Free construction / initial algebra via AST + interpreters.
-
-**Seam**
-One rule family translated into the AST.
-
-**Proof**
-- evaluation parity on shared corpus
-- explanation aligns with evaluation
+Signal: plugin callbacks duplicate core semantics.
+Construction: free syntax / explicit plugin operation IR.
+Proof: `interpret(embed(coreNode)) == coreInterpreter(coreNode)`.

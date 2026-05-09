@@ -1,0 +1,9 @@
+{
+  "name": "universalist",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Universal construction and canonical boundary artifact skill for code architecture refactors",
+  "scripts": {
+    "check": "bash scripts/check_universalist.sh"
+  }
+}

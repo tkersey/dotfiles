@@ -1,10 +1,12 @@
-# Universalist Report
+# Universal Architecture Report
 
 ## Track
 
 ## Signal
 
 ## Construction
+
+## Canonical boundary artifact
 
 ## Why this instead of nearby alternatives
 
@@ -14,8 +16,12 @@
 
 ## Before -> After
 
-## Verification
+## Law / proof signal
+
+## Negative witness
 
 ## Runtime-only leftovers
+
+## Falsifier
 
 ## Next seam

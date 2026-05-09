@@ -1,0 +1,33 @@
+# Universal Architecture Law Tests
+
+These are practical proof signals, not full formal proofs.
+
+| Artifact | Fastest credible proof signal |
+| --- | --- |
+| Product | construct and project fields consistently |
+| Coproduct | exhaustive handling and invalid legacy shapes rejected |
+| Refined type | valid accepted, invalid rejected, normalization idempotent |
+| Pullback witness | matching inputs accepted, mismatches rejected, projections preserved |
+| Exponential | strategy parity with old branch fixtures |
+| Free syntax | old evaluator and new interpreter match on corpus |
+| Coherent observations | overlapping observations commute |
+| Transported semantics | identity/embedding path preserves behavior |
+| Lifted implementation | `project(realize(case)) == required(case)` |
+| Residual obligations | missing obligation fails, satisfying obligations passes |
+| Yoneda observation | representation change preserves observations |
+| Coyoneda generation | lowering equals direct interpretation |
+| Defunctionalized IR | `apply(encodedCase, x) == oldFunction(x)` |
+
+## Bypass test
+
+A canonical artifact is not canonical if callers bypass it. Add an import, code-search, architecture, or public-API check when feasible.
+
+## Negative witness
+
+Every Track D artifact should have at least one negative witness:
+
+- invalid path/payload pair;
+- missing observation interpreter clause;
+- realizer without required behavior;
+- obligation omitted;
+- callback case not encoded.

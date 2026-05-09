@@ -3,6 +3,7 @@
 ## Track:
 ## Signal:
 ## Construction:
+## Canonical boundary artifact:
 ## Why this construction:
 ## Seam / files:
 ## Public boundaries touched:
@@ -11,6 +12,3 @@
 ## Runtime-only leftovers:
 ## Status: planned / editing / verified / staged
 ## Next seam:
-
-## Change log
-- [timestamp] planned:

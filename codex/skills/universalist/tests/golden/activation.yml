@@ -1,0 +1,9 @@
+cases:
+  - prompt: "Refactor this status/boolean matrix so invalid states are impossible."
+    should_use_skill: true
+    expected: ["coproduct", "one seam", "invalid fixture"]
+  - prompt: "Our generated artifacts lose provenance and old views disagree."
+    should_use_skill: true
+    expected: ["canonical boundary artifact", "generation path", "coherent observations"]
+  - prompt: "Implement an unrelated endpoint with no structural smell."
+    should_use_skill: false

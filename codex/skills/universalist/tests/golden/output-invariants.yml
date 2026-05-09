@@ -1,0 +1,6 @@
+invariants:
+  - name: one_signal_one_seam
+    required: ["Signal", "Construction", "Seam / files", "Verification"]
+  - name: track_d_requires_artifact
+    when: "Track D"
+    required: ["Canonical boundary artifact", "Law / proof signal", "Falsifier"]

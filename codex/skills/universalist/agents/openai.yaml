@@ -1,10 +1,7 @@
 interface:
-  display_name: "universalist"
-  short_description: "Find the smallest honest construction that simplifies the shape of truth."
-  brand_color: "#7C3AED"
-  default_prompt: >
-    Review this codebase with $universalist. Identify structural signals, choose at most one seam,
-    run a reduction preflight, propose the smallest honest construction, preserve boundaries with
-    adapters when needed, and name the fastest proof signal. Do not implement unless I explicitly ask.
+  display_name: "Universalist"
+  short_description: "Choose the smallest universal construction or canonical boundary artifact for a codebase refactor."
+  brand_color: "#5E6AD2"
+  default_prompt: "Use $universalist to identify the signal, choose the smallest honest construction or canonical boundary artifact, stage one seam, and specify law tests."
 policy:
   allow_implicit_invocation: true
