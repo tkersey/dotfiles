@@ -1,6 +1,6 @@
 ---
 name: adversarial-reviewer
-description: Use this skill for non-trivial code review where the job is to challenge the current artifact set, surface material defects, and produce an explicit change agenda. Trigger for exhaustive review, re-review after fixes, patch hardening, review the current changeset, review the accepted agenda before implementation, or full-scope de novo challenge. Use full-scope review rather than diff-only review when exhaustive confidence matters. Do not trigger for trivial wording feedback or final readiness decisions without a review question.
+description: Use this skill for non-trivial code review where the job is to challenge the current artifact set, surface material defects, and produce an explicit change agenda. Trigger for exhaustive review, fresh-eyes second-pass review, re-review after fixes, patch hardening, review the current changeset, review the accepted agenda before implementation, or full-scope de novo challenge. Use full-scope review rather than diff-only review when exhaustive confidence matters. Do not trigger for trivial wording feedback or final readiness decisions without a review question.
 ---
 
 # Adversarial Reviewer
@@ -17,7 +17,38 @@ This skill is the primary falsifier. It does not implement fixes. It makes the *
 - In multi-item agendas, order from lower leverage to higher leverage so the strongest next move lands last.
 
 ## Core doctrine
-Operate in **FULL-SCOPE**, **EXHAUSTIVE**, **DE NOVO**, **ADVERSARIAL**, **SATURATING**, **MATERIAL**, **FIXED-POINT**, **PARSIMONIOUS**, **INVARIANT-GRADED**, **HAZARD-SEEKING**, **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-AWARE**, **TOTAL**, and **TRACEABLE** mode.
+Operate in **FULL-SCOPE**, **EXHAUSTIVE**, **DE NOVO**, **ADVERSARIAL**, **SATURATING**, **MATERIAL**, **FIXED-POINT**, **PARSIMONIOUS**, **INVARIANT-GRADED**, **HAZARD-SEEKING**, **FRESH-EYES**, **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-AWARE**, **TOTAL**, and **TRACEABLE** mode.
+
+### Fresh-eyes reread pass
+Before finalizing a Standard review, run one independent second pass over the full artifact set. Treat the first-pass conclusions as hypotheses, not settled truth.
+
+Use this as the pass objective:
+
+> Check over everything again with fresh eyes, looking for any blunders, mistakes, errors, oversights, omissions, logical issues, problems, misconceptions, confusion, bugs, etc.
+
+During the fresh-eyes pass, re-check:
+- changed files
+- nearby unchanged files
+- stated goals and non-goals
+- review basis and assumptions
+- tests and proof signals
+- output contract compliance
+- soundness, invariant, and foot-gun ledgers
+- residual uncertainty and verification gaps
+
+Explicitly ask:
+- What did the first pass assume without evidence?
+- What important artifact, edge case, dependency, or failure mode was not checked?
+- What finding might be overstated, understated, stale, or aimed at the wrong fix?
+- What current recommendation might broaden too far or fix the wrong layer?
+- What obvious mistake would be embarrassing if it reached the user unchanged?
+- What omission would matter most if the artifact later failed?
+
+If the fresh-eyes pass changes the review result, update **Material Findings**, **Soundness Ledger**, **Complexity Delta**, **Invariant Ledger**, **Foot-Gun Register**, **Verification Gaps**, **Residual Uncertainty**, **Change Agenda**, **Fixed-Point Judgment**, and **Reviewer Bottom Line** as needed.
+
+If it finds no material delta, say so briefly in **Residual Uncertainty** or **Fixed-Point Judgment** rather than inventing low-value findings.
+
+Fast mode may compress this pass, but it must still perform a final fresh-eyes check before emitting **Reviewer Bottom Line**.
 
 ### Soundness pressure
 Do not flatten soundness to generic skepticism. Hunt for:
@@ -100,6 +131,9 @@ Use concise sections in this order:
 - Never let incidental style commentary crowd out material findings.
 - Never recommend structural change without saying why a narrower fix is insufficient.
 - Never promote a guess to a finding.
+- Never finalize a Standard review without a fresh-eyes reread pass.
+- Never let the fresh-eyes pass become a vague ritual; it must either change the review result or explicitly report no material delta.
+- Never invent fresh-eyes findings just to prove the pass happened.
 
 ## Resources
 - [grading-rubrics.md](references/grading-rubrics.md)
