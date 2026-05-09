@@ -112,7 +112,22 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `what_it_proves`
       - `limitations`
 
-14. **Specialist Briefing Ledger**
+14. **Negative Evidence Ledger**
+    - one entry per currently material negative-evidence signal with:
+      - `neg_id`
+      - `hypothesis`
+      - `attempted_change`
+      - `evidence`
+      - `observed_outcome`
+      - `failure_class`: `no-effect` | `local-regression` | `global-regression` | `unsound` | `too-complex` | `stale` | `unknown`
+      - `applicability_conditions`
+      - `current_status`: `active` | `stale` | `superseded` | `reopened` | `unknown`
+      - `exclusion_rule`
+      - `reopening_criteria`
+      - `confidence`: `high` | `medium` | `low` | `unknown`
+      - `next_search_hint`
+
+15. **Specialist Briefing Ledger**
     - one entry per specialist with:
       - `role`
       - `artifact_state_id`
@@ -123,20 +138,20 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `agreement_pressure`: `aligned` | `mixed` | `conflicting`
       - `stale`: `yes` | `no`
       - `packet_status`: `accepted` | `stale` | `transport-invalid` | `wrong-scope` | `timeout` | `superseded`
-      - `used_for`: evidence mapping | soundness pressure | invariant pressure | hazard pressure | complexity pressure | verification planning | none
+      - `used_for`: evidence mapping | negative-evidence pruning | soundness pressure | invariant pressure | hazard pressure | complexity pressure | verification planning | none
       - `rejection_reason`: reason or `none`
 
-15. **Closure Gate Preview**
+16. **Closure Gate Preview**
     - `critical_invariants`: `preserved` | `strained` | `broken` | `unknown`
     - `material_foot_guns`: `bounded` | `unbounded` | `unknown` | `accepted-risk`
     - `material_complexity_hazards`: `bounded` | `unbounded` | `unknown` | `residual-design-risk`
     - `briefing_agreement`: `aligned` | `mixed` | `conflicting`
     - `external_blockers`: `none` | `present`
 
-16. **Requested Closure Questions**
+17. **Requested Closure Questions**
     - the specific questions `verification-closure` must answer
 
-17. **Residual Uncertainty**
+18. **Residual Uncertainty**
     - assumptions
     - environment limits
     - known unknowns
@@ -236,6 +251,20 @@ loop-03-post-review
     result: pass
     what_it_proves: ...
     limitations: ...
+
+#### Negative Evidence Ledger
+- neg_id: NEG-01
+  hypothesis: ...
+  attempted_change: ...
+  evidence: ...
+  observed_outcome: ...
+  failure_class: no-effect
+  applicability_conditions: ...
+  current_status: active
+  exclusion_rule: ...
+  reopening_criteria: ...
+  confidence: medium
+  next_search_hint: ...
 
 #### Specialist Briefing Ledger
 - role: invariant_auditor

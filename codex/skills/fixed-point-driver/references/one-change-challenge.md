@@ -7,8 +7,10 @@ Prompt:
 
 ## Rules
 - seek the single highest-leverage remaining change
+- check the Negative Evidence Ledger before selecting a change
 - prefer impactful accretive improvements
 - if the best remaining move is structural, say why a narrower fix is insufficient
+- if the selected move matches active negative evidence, either choose a different move or show that reopening criteria are now satisfied
 - if there is no impactful remaining change, record `no-impactful-change`
 - after any implemented one-change improvement, rerun full de novo review before closure
 
@@ -19,3 +21,5 @@ Prompt:
 - `why_not_the_next_alternative`
 - `posture`
 - `verification_needed`
+- `negative_evidence_checked`
+- `matched_negative_ids`

@@ -56,6 +56,22 @@ Reject specialist output as `transport-invalid` when it contains raw transport w
 - `regression_surface`
 - `checks_run`
 
+### Negative Evidence Ledger
+- `neg_id`
+- `hypothesis`
+- `attempted_change`
+- `evidence`
+- `observed_outcome`
+- `failure_class`: `no-effect` | `local-regression` | `global-regression` | `unsound` | `too-complex` | `stale` | `unknown`
+- `applicability_conditions`
+- `current_status`: `active` | `stale` | `superseded` | `reopened` | `unknown`
+- `exclusion_rule`
+- `reopening_criteria`
+- `confidence`: `high` | `medium` | `low` | `unknown`
+- `next_search_hint`
+
+Negative evidence is active only when it has concrete evidence and current-state applicability. Mark stale or superseded evidence explicitly; do not silently drop it.
+
 ## State labels
 Use stable, phase-aware labels such as:
 - `loop-01-post-build`

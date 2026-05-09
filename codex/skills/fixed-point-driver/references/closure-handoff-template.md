@@ -128,6 +128,23 @@ loop-02-post-review
     what_it_proves: Basic refresh flow still succeeds.
     limitations: Does not exercise rotated-secret state.
 
+#### Negative Evidence Ledger
+- neg_id: NEG-01
+  hypothesis: Replace the live post-rotation store read with a cached snapshot optimization.
+  attempted_change: Cached refresh-secret snapshot reuse.
+  evidence:
+    - prior stale-state finding shows cached snapshots can mint against old rotation state
+  observed_outcome: Optimization route would re-open the stale-secret failure mechanism unless cache invalidation is directly witnessed.
+  failure_class: unsound
+  applicability_conditions:
+    - applies while refresh correctness depends on a live post-rotation store read
+  current_status: active
+  exclusion_rule: Do not select cached-snapshot reuse as the one-change challenge answer without a direct cache-invalidation witness.
+  reopening_criteria:
+    - cache invalidation is directly verified on the rotated-secret path
+  confidence: medium
+  next_search_hint: Prefer direct live-store validation proof over cache optimization.
+
 #### Specialist Briefing Ledger
 - role: invariant_auditor
   artifact_state_id:

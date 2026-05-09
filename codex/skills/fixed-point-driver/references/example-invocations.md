@@ -1,45 +1,52 @@
 # Example invocations
 
-## Exhaustive hardening to a material fixed point
+Tail-weighted note: final reports should end with `Final State` and `Do Next`.
 
+## PR review remediation to closure
 ```md
 Use $fixed-point-driver for this task.
-
-Goal:
-Drive this changeset to a material fixed point.
-
+Goal: Address the current PR review comments and bring the branch to review-ready closure.
 Context:
 - current branch vs main
-- auth/session.ts
-- auth/session.test.ts
-- CI logs
-
+- reviewer comments pasted below
+- relevant files: auth/session.ts, auth/session.test.ts
 Constraints:
-- keep remediation accretive by default
-- use read-only specialist subagents when broad exploration is needed
-- do not stop just because the first obvious findings are fixed
-
+- preserve public APIs unless a review comment proves they are insufficient
+- after the artifact set reaches a candidate material fixed point, ask: "If you could change one thing about this changeset what would you change?"
+- route any accepted answer to $accretive-implementer
+- after that implementation, rerun full-scope de novo review before closure
 Done when:
-- no unresolved material finding remains
-- the pre-closure one-change challenge yields no impactful accretive improvement
-- verification-closure returns ready or a bounded blocking gate
+- every material review comment is either implemented or rebutted with evidence
+- the one-change challenge yields no impactful accretive improvement
+- verification-closure says the branch is ready or clearly states the blocking gaps
 ```
 
-## PR reviews to closure
-
+## Exhaustive hardening with subagents
 ```md
 Use $fixed-point-driver for this task.
-
-Goal:
-Adjudicate the PR comments, implement accepted work, and drive the branch to closure.
-
+Goal: Find all impactful changes, use specialist subagents for read-heavy analysis, and take the artifact set to closure.
 Context:
-- reviewer comments pasted below
-- current branch vs main
-- relevant files listed below
-
+- relevant files and tests
+- current CI output
 Constraints:
-- start with $review-adjudication if comment relevance is still unclear
-- preserve public APIs unless structural evidence proves they are insufficient
-- rerun full-scope review after any material remediation
+- keep remediation single-threaded
+- rerun the full-scope subagent swarm before each de novo review pass
+- ask the one-change challenge before final closure
+```
+
+## Optimization/search campaign with negative evidence
+```md
+Use $fixed-point-driver for this task.
+Goal: Improve the target benchmark without repeating prior failed routes.
+Context:
+- current branch vs main
+- benchmark command and latest result
+- prior reverted diffs, failed benchmark notes, or `.learnings.jsonl` entries
+Constraints:
+- run `negative-ledger-mapper` only to map evidence and prune stale routes
+- every Negative Evidence Ledger entry needs a witness, applicability conditions, and reopening criteria
+- do not let negative evidence veto a current route unless it applies to the current artifact state
+Done when:
+- the selected next change is not an active previously-disconfirmed hypothesis
+- verification-closure says the changed path and benchmark claim are bounded
 ```

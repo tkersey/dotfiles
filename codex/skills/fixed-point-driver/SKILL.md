@@ -1,6 +1,6 @@
 ---
 name: fixed-point-driver
-description: Use this skill to drive exhaustive build-review-improve-verify workflows toward a material fixed point across accretive-implementer, adversarial-reviewer, review-adjudication, and verification-closure when a coding task needs full de novo re-litigation, optional read-only specialist subagents, signal-aware routing by soundness invariants foot-guns and complexity, a mandatory pre-closure one-change challenge, and a canonical closure handoff packet. Trigger for requests like harden this patch exhaustively, address PR reviews to closure, keep re-reviewing from scratch, find all impactful changes, adjudicate then implement accepted review work, or drive this changeset to a fixed point. Do not trigger for trivial one-step tasks or when the user explicitly wants only a single narrow phase.
+description: Use this skill to drive exhaustive build-review-improve-verify workflows toward a material fixed point across accretive-implementer, adversarial-reviewer, review-adjudication, and verification-closure when a coding task needs full de novo re-litigation, optional read-only specialist subagents, negative-evidence pruning, signal-aware routing by soundness invariants foot-guns and complexity, a mandatory pre-closure one-change challenge, and a canonical closure handoff packet. Trigger for requests like harden this patch exhaustively, address PR reviews to closure, keep re-reviewing from scratch, find all impactful changes, adjudicate then implement accepted review work, or drive this changeset to a fixed point. Do not trigger for trivial one-step tasks or when the user explicitly wants only a single narrow phase.
 ---
 
 # Fixed-Point Driver
@@ -12,6 +12,7 @@ Companion skills:
 - `accretive-implementer` for implementation and remediation
 - `adversarial-reviewer` for full-scope challenge
 - `verification-closure` for decisive proof and gating
+- `learnings` for durable evidence-backed lessons and reusable negative evidence when available
 
 ## Output modes
 - **Standard**: full workflow state.
@@ -43,6 +44,7 @@ Maintain and refresh these ledgers after every meaningful pass:
 - Complexity Ledger
 - Verification Ledger
 - One-Change Challenge Ledger
+- Negative Evidence Ledger (optional, when prior failed attempts, reverted changes, benchmark regressions, or repeated hypotheses materially affect routing)
 - Specialist Briefing Ledger
 - Residual Uncertainty
 - Review Comment Ledger (optional, when review-adjudication is in the workflow)
@@ -54,8 +56,11 @@ Subagent mode is `off`, `targeted`, or `swarm`.
 
 Default to `targeted`: run no specialists unless a read-heavy uncertainty would materially change the route, then launch at most one or two file-disjoint specialists with narrow scopes.
 
+Run `negative-ledger-mapper` only when at least one active signal suggests prior failed or reverted attempts, benchmark regressions, review rejections, repeated dead-end hypotheses, or a search-heavy optimization/debugging space where negative evidence would materially change the next route. Treat it as a read-only pruning specialist, not as a veto authority.
+
 Use `swarm` only when the task is broad, high-risk, or explicitly asks for exhaustive independent read-only coverage. When swarm mode is justified and custom agents are available, prefer:
 - `evidence_mapper`
+- `negative-ledger-mapper`
 - `soundness_auditor`
 - `invariant_auditor`
 - `hazard_hunter`
@@ -100,14 +105,14 @@ If validation fails, mark the packet `transport-invalid`, record the rejection r
 1. Establish entry state.
 2. If unresolved PR comments exist and relevance is unclear, start with `review-adjudication`.
 3. Choose the initial phase path.
-4. Choose subagent mode (`off`, `targeted`, or `swarm`) and run only the justified read-only specialist scope.
+4. Choose subagent mode (`off`, `targeted`, or `swarm`) and run only the justified read-only specialist scope. If negative evidence is material, normalize it before choosing the next implementation route.
 5. Run the saturation loop:
    - implement or remediate with `accretive-implementer`
    - review with `adversarial-reviewer`
-   - normalize findings, soundness, invariants, hazards, complexity, verification, and comment adjudication into ledgers
+   - normalize findings, soundness, invariants, hazards, complexity, verification, negative evidence, and comment adjudication into ledgers
    - rerun full-scope review after any material validation or remediation
 6. Reach a **candidate material fixed point** only when no unresolved material finding, material soundness gap, unbounded critical invariant, material foot-gun, or material complexity hazard remains.
-7. Run the pre-closure one-change challenge.
+7. Run the pre-closure one-change challenge, checking the Negative Evidence Ledger before selecting a change.
 8. Compile the closure handoff packet, including accepted and rejected specialist packets, and run `verification-closure`.
 9. If closure reopens the loop, route the highest-value next move and continue.
 10. Stop only in a justified terminal state.
@@ -143,6 +148,8 @@ The final section must say:
 ## Hard rules
 - Never impose an arbitrary maximum number of loops.
 - Never let stale specialist briefings masquerade as current evidence.
+- Never let negative evidence suppress a route unless it has witness-bearing applicability to the current artifact state.
+- Never treat absence of a negative ledger entry as proof that a proposed route is novel.
 - Never let specialist packets without a matching `artifact_state_id` enter the closure verdict.
 - Never let specialists own final proof commands or the final pass/fail verdict.
 - Never let review-adjudication quietly disappear once it materially shaped the route.
@@ -153,6 +160,8 @@ The final section must say:
 - [closure-handoff-contract.md](references/closure-handoff-contract.md)
 - [closure-handoff-template.md](references/closure-handoff-template.md)
 - [one-change-challenge.md](references/one-change-challenge.md)
+- [negative-ledger.md](references/negative-ledger.md)
+- [negative-ledger-mapper.md](agents/negative-ledger-mapper.md)
 - [example-invocations.md](references/example-invocations.md)
 - [common-soundness.md](references/common-soundness.md)
 - [common-ledgers.md](references/common-ledgers.md)
