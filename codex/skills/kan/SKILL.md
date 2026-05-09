@@ -1,6 +1,6 @@
 ---
 name: kan
-description: "Use when the user wants to design, implement, audit, or explain code through Kan extensions or Kan lifts as coequal architectural tools: left/right Kan extensions, left/right Kan lifts, precomposition/postcomposition adjunctions, pointwise formulas, codensity, density, Yoneda/Coyoneda, free/cofree completions, residuals, functorial data migration, plugin APIs, DSL interpreters, compatibility facades, implementation synthesis behind boundaries, requirements/obligation derivation, outside-in contract-first refactoring, no-exact-lift obstruction reports, or categorical architecture transformation. Do not use for generic architecture or generic category-theory exposition unless Kan extensions, Kan lifts, defunctionalized boundary representations, Yoneda/Coyoneda boundary representations, or adjacent universal-property implementation is central."
+description: "Use when the user wants to design, implement, audit, or explain code through Kan extensions or Kan lifts as coequal architectural tools: left/right Kan extensions, left/right Kan lifts, precomposition/postcomposition adjunctions, pointwise formulas, codensity, density, Yoneda/Coyoneda, free/cofree completions, residuals, Freyd adjoint-functor theorem boundary diagnostics, free-builder existence checks, functorial data migration, plugin APIs, DSL interpreters, compatibility facades, implementation synthesis behind boundaries, requirements/obligation derivation, outside-in contract-first refactoring, no-exact-lift obstruction reports, or categorical architecture transformation. Do not use for generic architecture or generic category-theory exposition unless Kan extensions, Kan lifts, defunctionalized boundary representations, Yoneda/Coyoneda boundary representations, or adjacent universal-property implementation is central."
 ---
 
 # Kan
@@ -17,6 +17,7 @@ Treat **Kan extensions** and **Kan lifts** as coequal tools:
 - Kan lifts answer: “What must exist behind a fixed boundary to realize or constrain desired meaning?”
 - Defunctionalization answers: “What first-order boundary IR replaces the functions, continuations, observations, paths, resumptions, or obligations that would otherwise be implicit?”
 - Yoneda/Coyoneda answer: “Should this boundary value be represented by sanctioned observations, or by a raw payload plus deferred transformation?”
+- Freyd/AFT answers: “Is this projection boundary disciplined enough to admit a canonical free implementation builder?”
 
 ## Core Heartbeat
 
@@ -142,6 +143,50 @@ Law tests = executable approximation of the universal property.
 
 Do not mention Yoneda/Coyoneda if they do not change code placement, observer centralization, deferred transformation, provenance, fusion, auditability, or tests.
 
+
+### Freyd/AFT pass: projection discipline and free builders
+
+Use this pass when a lift-shaped refactor has a concrete projection `P : B -> C` and the user wants to know whether the boundary itself is good enough to support canonical implementation synthesis.
+
+A Kan lift identifies the outside-in architecture question:
+
+```text
+A --?--> B
+|        |
+F        P
+v        v
+C
+```
+
+The Freyd/AFT diagnostic asks whether `P` behaves like a right-adjoint candidate with a left adjoint/free builder:
+
+```text
+Free : C -> B
+Free ⊣ P
+L = Free · F
+```
+
+Recover:
+
+- Projection `P : B -> C`: the public API projection, serializer, view, handler, trace observer, report extractor, contract-test harness, compiler backend, or forgetful boundary.
+- Forgotten/observed structure: what `P` hides and what it exposes.
+- Constraint structure in `B`: products, pullbacks, equalizers, intersections, validation objects, workflow composition, policy meets, schema joins, or other limit-like/constraint-solving artifacts.
+- Preservation tests for `P`: checks that projecting a combined/constrained implementation agrees with combining/constraining projected observations.
+- Solution-set-like templates: a bounded family of implementation strategies through which accepted realizations should factor.
+- Candidate free builder `Free : C -> B`: codegen, skeleton synthesis, workflow builder, free DSL/effect builder, policy builder, or implementation-plan generator.
+- Candidate lift `L = Free · F : A -> B`.
+- Unit/comparison classification: exact, embedding, covering, sound, approximate, or no-exact-lift.
+- Projection law: `P(Free(F(a)))` equals, embeds, covers, or soundly satisfies `F(a)` according to the stated classification.
+
+Use this rule of thumb:
+
+```text
+Kan lift locates the missing internal implementation behind P.
+Freyd/AFT disciplines P and asks whether a canonical Free builder can exist.
+```
+
+Do not claim Freyd's theorem proves a software architecture unless the categories, functors, limits, and solution-set condition are explicit. In normal codebase work, mark this as an architecture diagnostic and back it with projection tests.
+
 ## Invocation Boundaries
 
 Use this skill for:
@@ -149,6 +194,7 @@ Use this skill for:
 - implementing `Lan`, `Ran`, pointwise Kan extensions, ends/coends, density, codensity, Yoneda/Coyoneda, free/cofree constructions, or adjunction-derived APIs;
 - implementing or using left/right Kan lifts, postcomposition residuals, realization problems, reverse architectural derivations, view-update-like problems, implementation synthesis, requirements derivation, or boundary-constrained planning;
 - designing codebase architecture around extension boundaries, adapter boundaries, projection boundaries, defunctionalized boundary IRs, Yoneda-style observation boundaries, Coyoneda-style deferred generation boundaries, plugins, schemas, migrations, DSLs, interpreters, generated clients, read models, compatibility facades, tests-as-specs, policy obligations, or codensity/CPS optimization;
+- running Freyd/AFT boundary diagnostics for lift-shaped refactors: checking whether a projection `P : B -> C` preserves constraints, has bounded implementation templates, and suggests a free builder `Free : C -> B`;
 - running Yoneda/Coyoneda representation passes: centralizing sanctioned observations, deferring generated transformations, preserving provenance, fusing map pipelines, or preparing observation/path functions for defunctionalization;
 - defunctionalizing Kan-shaped or continuation-shaped architecture: replacing callbacks, continuations, paths, observers, handler clauses, resumptions, requirements, or implementation realizers with first-order cases plus an interpreter/apply/project function;
 - auditing a repository or proposed abstraction to determine whether a claimed Kan-extension or Kan-lift design is meaningful;
@@ -179,11 +225,12 @@ Use for architecture, DSL, adapter, migration, plugin, lift, or codebase design.
 3. Kan data.
 4. `Lan`/`Ran`/`Δ` or `Lft`/`Rft`/`P_*` choice.
 5. Proposed architecture.
-6. Compatibility, realization, or residual map.
+6. Freyd/AFT boundary diagnostic if the work is lift-shaped and projection quality determines success.
+7. Compatibility, realization, or residual map.
 7. Witness slice.
 8. Tests and invariants.
-9. Failure modes.
-10. Source boundaries.
+10. Failure modes.
+11. Source boundaries.
 
 ### Implementation plan
 
@@ -232,7 +279,7 @@ Use for theory-heavy or source-heavy work.
 2. Programming claim.
 3. Architecture inference.
 4. Unsafe or unproven claim.
-5. Source IDs from `references/claim-map.md`, `references/lift-claim-map.md`, and `references/defunctionalization-claim-map.md`, and `references/yoneda-coyoneda-claim-map.md`.
+5. Source IDs from `references/claim-map.md`, `references/lift-claim-map.md`, `references/freyd-aft-claim-map.md`, `references/defunctionalization-claim-map.md`, and `references/yoneda-coyoneda-claim-map.md`.
 
 ## Fast Reference Routing
 
@@ -241,6 +288,7 @@ Read only the files needed for the task:
 - Foundations, formulas, universal properties for extensions: `references/foundations.md`.
 - Kan lift definitions, postcomposition, lift laws, residual readings: `references/kan-lifts.md`.
 - Contract-first lift refactors, obligation ledgers, no-exact-lift reports: `references/lift-architecture-playbook.md`, `references/lift-obligation-discovery.md`.
+- Freyd/AFT projection diagnostics and free-builder checks for lift-shaped refactors: `references/freyd-aft.md`, `references/freyd-aft-claim-map.md`.
 - Architecture transformation with extensions and lifts: `references/architecture-transformation.md`.
 - Defunctionalization relationships and first-order boundary IR: `references/defunctionalization.md`.
 - Defunctionalization claim safety: `references/defunctionalization-claim-map.md`, and `references/yoneda-coyoneda-claim-map.md`.
@@ -310,6 +358,23 @@ If both `Lft` and `Rft` are plausible, do not choose by name. Choose by comparis
 
 - Need `desired -> projected(implementation)`: left lift.
 - Need `projected(implementation) -> desired`: right lift.
+
+## Freyd/AFT Lift-Boundary Protocol
+
+Run this protocol after identifying a lift-shaped refactor when the projection `P : B -> C` may determine whether a canonical implementation exists.
+
+1. Projection centrality: name `P` as a concrete module/function/test harness/view, not a metaphor.
+2. Forgotten structure: list what `P` hides and what observations it preserves.
+3. Constraint inventory in `B`: name products, pullbacks, equalizers, joins/meets, validators, workflow composition, state-transition constraints, or other structures used to combine requirements.
+4. Constraint preservation tests: write at least one test showing that `P` does not lie about a compatibility/equality/composition constraint relevant to the refactor.
+5. Solution-set-like templates: list the bounded family of implementation strategies that cover the public requirements.
+6. Free-builder proposal: define a candidate `Free : C -> B` such as a workflow skeleton generator, implementation-plan builder, free DSL/effect builder, or policy builder.
+7. Lift candidate: set `L = Free · F` when plausible.
+8. Unit/comparison classification: exact, embedding, covering, sound, approximate, or no-exact-lift.
+9. Projection law test: assert `P(Free(F(a)))` satisfies `F(a)` according to the classification.
+10. Obstruction report: if no free builder is plausible, identify whether the problem is vague `P`, missing constraints in `B`, constraint loss through `P`, missing templates, or impossible observations.
+
+Use the phrase **Freyd boundary diagnostic** for this pass. Use **free builder** only when the projection law is explicit.
 
 ## Kan Lift Architecture Protocol
 
@@ -437,7 +502,9 @@ For each concrete implementation, answer:
 15. If higher-order values remain, what defunctionalized constructors and `apply`/`interpret`/`project` function make them explicit?
 16. For lifts, what external commitments are in scope, and what obligations do they induce in `B`?
 17. For lifts, can `P` currently produce every observation required by `F`, or is there a no-exact-lift obstruction?
-18. What behavior would refute the Kan framing, Yoneda/Coyoneda representation, or defunctionalized IR?
+18. If using Freyd/AFT practice, what constraints does `B` solve, which does `P` preserve, and what solution-set-like implementation templates bound the search?
+19. If proposing `Free : C -> B`, what projection law tests `P(Free(c))` against `c`?
+20. What behavior would refute the Kan framing, Freyd/AFT diagnostic, Yoneda/Coyoneda representation, or defunctionalized IR?
 
 ## Source Discipline
 
@@ -459,13 +526,14 @@ Do not cite a math theorem as proof that a software architecture is correct unle
 - `scripts/emit_defun_pass.sh <topic> [language]`: defunctionalization pass scaffold.
 - `scripts/emit_yoneda_pass.sh <topic> [language]`: Yoneda/Coyoneda representation pass scaffold.
 - `scripts/emit_lift_playbook.sh <topic> [language]`: outside-in lift refactor, obligation-discovery, and no-exact-lift scaffold.
-- `scripts/check_skill.sh`: validate bundle structure, source IDs, script executability, examples, lift-aware script outputs, defunctionalization support, and Yoneda/Coyoneda support.
+- `scripts/emit_freyd_pass.sh <topic> [language]`: Freyd/AFT boundary diagnostic and free-builder scaffold.
+- `scripts/check_skill.sh`: validate bundle structure, source IDs, script executability, examples, lift-aware script outputs, defunctionalization support, Yoneda/Coyoneda support, and Freyd/AFT support.
 
-Supported `kind`: `finite-lan`, `finite-ran`, `schema-migration`, `plugin-api`, `dsl-interpreter`, `adapter-boundary`, `compatibility-facade`, `codensity-optimization`, `kan-lift`, `lift-realization`, `lift-obligation`, `architecture-transformation`, `outside-in-refactor`, `obligation-discovery`, `no-exact-lift`, `defunctionalization-pass`, `defunctionalized-boundary`, `yoneda-pass`, `coyoneda-pass`, `boundary-representation`, `repo-audit`, `law-test-plan`.
+Supported `kind`: `finite-lan`, `finite-ran`, `schema-migration`, `plugin-api`, `dsl-interpreter`, `adapter-boundary`, `compatibility-facade`, `codensity-optimization`, `kan-lift`, `lift-realization`, `lift-obligation`, `architecture-transformation`, `outside-in-refactor`, `obligation-discovery`, `no-exact-lift`, `freyd-boundary-diagnostic`, `free-builder`, `solution-set-templates`, `defunctionalization-pass`, `defunctionalized-boundary`, `yoneda-pass`, `coyoneda-pass`, `boundary-representation`, `repo-audit`, `law-test-plan`.
 
-Supported `topic`: `pointwise-lan`, `pointwise-ran`, `coend-lan`, `end-ran`, `left-kan-lift`, `right-kan-lift`, `architecture-transformation`, `codensity`, `density`, `yoneda`, `coyoneda`, `data-migration`, `lan-vs-ran`, `extension-vs-lift`, `lift-contract-refactor`, `lift-obligation-discovery`, `no-exact-lift`, `defunctionalization`, `defun-ran`, `defun-lan`, `defun-lift`, `defun-effects`, `yoneda-observation`, `coyoneda-generation`, `yoneda-coyoneda-lift`.
+Supported `topic`: `pointwise-lan`, `pointwise-ran`, `coend-lan`, `end-ran`, `left-kan-lift`, `right-kan-lift`, `architecture-transformation`, `codensity`, `density`, `yoneda`, `coyoneda`, `data-migration`, `lan-vs-ran`, `extension-vs-lift`, `lift-contract-refactor`, `lift-obligation-discovery`, `no-exact-lift`, `freyd-aft`, `freyd-lift-boundary`, `free-builder`, `solution-set`, `defunctionalization`, `defun-ran`, `defun-lan`, `defun-lift`, `defun-effects`, `yoneda-observation`, `coyoneda-generation`, `yoneda-coyoneda-lift`.
 
-Supported `direction`: `lan`, `ran`, `delta`, `left-lift`, `right-lift`, `postcomposition`, `contract-lift`, `obligation-lift`, `no-exact-lift`, `defunctionalization`, `yoneda`, `coyoneda`, `yoneda-coyoneda`.
+Supported `direction`: `lan`, `ran`, `delta`, `left-lift`, `right-lift`, `postcomposition`, `contract-lift`, `obligation-lift`, `no-exact-lift`, `freyd-aft`, `freyd-lift-boundary`, `free-builder`, `solution-set`, `defunctionalization`, `yoneda`, `coyoneda`, `yoneda-coyoneda`.
 
 Supported `language`: `agnostic`, `haskell`, `typescript`, `rust`, `python`, `scala`, `ocaml`.
 
@@ -478,6 +546,7 @@ Supported `language`: `agnostic`, `haskell`, `typescript`, `rust`, `python`, `sc
 - No lift claims without `A`, `B`, `C`, `P`, `F`, direction, and comparison cell.
 - No “minimal” or “maximal” lift language without stating the order or 2-cell direction.
 - No lift-shaped refactor without an explicit projection `P`, commitment inventory, witness case, and exact/covering/sound/no-exact-lift classification.
+- No Freyd/AFT or free-builder claim without naming constraints in `B`, preservation tests for `P`, solution-set-like templates, and the projection law for `P(Free(c))`.
 - No pretending an exact lift exists when required observations are not stored, derivable, projected, or externally obtainable.
 - No Yoneda/Coyoneda claims without naming observations or payload+path, a runner/lowering function, and at least one round-trip/fusion/compatibility test.
 - No defunctionalization claims without naming constructors, payloads, interpreter/apply/project function, and at least one law test.

@@ -21,6 +21,9 @@ case "$kind" in
   no-exact-lift|lift-obstruction)
     ./scripts/emit_lift_playbook.sh no-exact-lift "$language"
     ;;
+  freyd-boundary-diagnostic|freyd-aft|free-builder|solution-set-templates)
+    ./scripts/emit_freyd_pass.sh boundary-diagnostic "$language"
+    ;;
   defunctionalization-pass|defunctionalized-boundary|defun)
     ./scripts/emit_defun_pass.sh boundary-ir "$language"
     ;;
@@ -213,6 +216,18 @@ Choose one:
 - adapter/projection/interpreter:
 - generated/synthesized/default behavior:
 - normalization/coherence/residual strategy:
+
+
+## Freyd/AFT boundary diagnostic, if using lifts and P determines success
+
+- what P observes/forgets:
+- constraints available in B:
+- preservation tests for P:
+- solution-set-like templates:
+- candidate Free : C -> B:
+- L = Free . F candidate:
+- exact / embedding / covering / sound / approximate / no-exact-lift classification:
+- projection law P(Free(F(witness))) ~= F(witness):
 
 ## Yoneda/Coyoneda pass, if boundary representation matters
 

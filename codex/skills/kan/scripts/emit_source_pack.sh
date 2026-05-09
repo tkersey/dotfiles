@@ -152,6 +152,35 @@ Unsafe:
 - using the names when they do not change code shape, tests, provenance, or observer centralization.
 OUT
     ;;
+  freyd|aft|freyd-aft|free-builder)
+    cat <<'OUT'
+# Source pack: Freyd/AFT boundary diagnostics
+
+Mathematical basis:
+- [KAN-RIEHL-CTIC]: adjoint functor theorem, continuous functors, solution-set condition.
+- [KAN-NLAB-AFT]: adjoint functor theorem as conditions for a functor to be a right adjoint.
+- [KAN-NLAB-SOLUTION-SET]: solution-set condition as a weak candidate-family condition.
+- [KAN-NLAB-LIFT]: Kan lifts as postcomposition universal properties.
+
+Architecture inferences:
+- For a lift-shaped refactor, the projection P : B -> C should be concrete and testable.
+- Freyd/AFT practice asks whether P preserves constraints and admits a bounded template menu.
+- If plausible, define Free : C -> B and use L = Free . F as a candidate lift.
+
+Required witness:
+- A, B, C, P, F;
+- constraints available in B;
+- one preservation test for P;
+- solution-set-like implementation templates;
+- exact/embedding/covering/sound/approximate/no-exact-lift classification;
+- projection law for P(Free(F(a))).
+
+Unsafe:
+- theorem claims about a codebase without explicit categorical modeling;
+- calling Free canonical without a projection law;
+- assuming free means smallest or production-optimal.
+OUT
+    ;;
   skills)
     cat <<'OUT'
 # Source pack: skills

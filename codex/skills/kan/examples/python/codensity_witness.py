@@ -1,51 +1,22 @@
 #!/usr/bin/env python3
-"""Codensity-shaped difference-list witness in Python.
+"""Small codensity/CPS-style witness using difference-list intuition."""
+from typing import Callable, TypeVar, Generic
 
-Python does not enforce rank-n parametricity; this is an operational analogy for
-continuation/difference-list optimization, not a formal proof.
-"""
-from __future__ import annotations
-from time import perf_counter
+A = TypeVar("A")
 
-class DList:
-    def __init__(self, run):
+class DList(Generic[A]):
+    def __init__(self, run: Callable[[list[A]], list[A]]):
         self.run = run
-
-    @staticmethod
-    def empty():
-        return DList(lambda xs: xs)
-
-    @staticmethod
-    def singleton(x):
-        return DList(lambda xs: [x] + xs)
-
-    def append(self, other: "DList") -> "DList":
-        return DList(lambda xs: self.run(other.run(xs)))
-
-    def to_list(self):
+    def append(self, xs: list[A]) -> "DList[A]":
+        return DList(lambda tail: self.run(xs + tail))
+    def lower(self) -> list[A]:
         return self.run([])
 
-def direct(n: int):
-    xs = []
-    for i in range(n):
-        xs = xs + [i]
-    return xs
 
-def codensity_like(n: int):
-    xs = DList.empty()
-    for i in range(n):
-        xs = xs.append(DList.singleton(i))
-    return xs.to_list()
-
-def main():
-    n = 200
-    t0 = perf_counter(); a = direct(n); t1 = perf_counter()
-    b = codensity_like(n); t2 = perf_counter()
-    assert a == b
-    print(f"semantic equality: {a[:3]} ... {a[-3:]}")
-    print(f"direct seconds: {t1 - t0:.6f}")
-    print(f"codensity-like seconds: {t2 - t1:.6f}")
-    print("Interpret benchmark cautiously; Python list/function overhead is workload-specific.")
+def main() -> None:
+    d = DList[int](lambda xs: xs).append([1]).append([2, 3])
+    assert d.lower() == [1, 2, 3]
+    print("codensity_witness: ok")
 
 if __name__ == "__main__":
     main()

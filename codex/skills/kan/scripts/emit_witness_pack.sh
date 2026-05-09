@@ -315,6 +315,36 @@ No-exact-lift report:
 - repair by enriching B / changing P / weakening F / adding dependency / accepting approximation:
 OUT
     ;;
+  freyd-aft|freyd-lift-boundary|free-builder|solution-set)
+    cat <<'OUT'
+# Freyd/AFT lift-boundary witness
+
+Lift data:
+- A = public requirements / contract cases / tests
+- B = internal implementation architecture
+- C = observable behavior
+- P = projection B -> C
+- F = required behavior A -> C
+- Witness a = one public commitment
+
+Freyd/AFT diagnostic:
+1. Name P as a concrete projection module/function/test harness.
+2. List what P observes and what it forgets.
+3. List constraint structure available in B.
+4. Add one preservation test proving P respects a relevant constraint.
+5. List solution-set-like implementation templates.
+6. Propose Free : C -> B.
+7. Set L(a) = Free(F(a)).
+8. Classify exact / embedding / covering / sound / approximate / no-exact-lift.
+
+Law test:
+P(Free(F(a))) satisfies F(a)
+under the chosen exactness/refinement relation.
+
+Obstruction:
+If no template covers F(a), emit no-exact-lift with repair options.
+OUT
+    ;;
   *) echo "Unknown topic: $topic" >&2; exit 2 ;;
 esac
 printf '\n# Language hint: %s\n' "$language"

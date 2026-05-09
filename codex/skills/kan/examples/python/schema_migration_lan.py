@@ -1,33 +1,32 @@
 #!/usr/bin/env python3
-"""Toy schema-migration-as-Lan sketch.
+"""Schema migration witness: Σ/Lan-style pushforward with provenance."""
+from dataclasses import dataclass
 
-Two source tables merge into a target Person view by canonical key. The
-quotient/canonicalization is the engineering part corresponding to colimit identification.
-"""
-from collections import defaultdict
+@dataclass(frozen=True)
+class SourceRow:
+    table: str
+    id: int
+    value: str
 
-customers = [
-    {"customer_id": "c1", "email": "a@example.com", "name": "Ada"},
-    {"customer_id": "c2", "email": "b@example.com", "name": "Bea"},
-]
-contacts = [
-    {"contact_id": "k1", "email": "a@example.com", "phone": "111"},
-    {"contact_id": "k2", "email": "c@example.com", "phone": "333"},
-]
+@dataclass(frozen=True)
+class TargetRow:
+    table: str
+    id: int
+    value: str
+    provenance: str
 
-def sigma_lan_person(customers, contacts):
-    by_email = defaultdict(dict)
-    for row in customers:
-        by_email[row["email"]].update({"email": row["email"], "name": row["name"], "source_customer": row["customer_id"]})
-    for row in contacts:
-        by_email[row["email"]].update({"email": row["email"], "phone": row["phone"], "source_contact": row["contact_id"]})
-    return list(by_email.values())
 
-def delta_restrict_persons(persons):
-    return [{"email": p["email"], "name": p.get("name")} for p in persons if "name" in p]
+def sigma_push(row: SourceRow) -> TargetRow:
+    target_table = {"users": "accounts"}.get(row.table, row.table)
+    return TargetRow(target_table, row.id, row.value, f"{row.table}:{row.id}")
+
+
+def main() -> None:
+    row = SourceRow("users", 1, "Ada")
+    out = sigma_push(row)
+    assert out.table == "accounts"
+    assert out.provenance == "users:1"
+    print("schema_migration_lan: ok")
 
 if __name__ == "__main__":
-    persons = sigma_lan_person(customers, contacts)
-    assert {p["email"] for p in persons} == {"a@example.com", "b@example.com", "c@example.com"}
-    assert {r["email"] for r in delta_restrict_persons(persons)} == {"a@example.com", "b@example.com"}
-    print(persons)
+    main()

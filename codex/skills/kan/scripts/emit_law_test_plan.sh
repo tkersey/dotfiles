@@ -368,6 +368,46 @@ After repair, the original projection law must pass:
 observe(P(L(a)), obs) == observe(F(a), obs)
 OUT
     ;;
+  freyd-aft|freyd-lift-boundary|free-builder|solution-set)
+    cat <<OUT
+# Freyd/AFT boundary-diagnostic law-test plan (${language})
+
+## Projection preservation
+
+Choose one constraint operator or compatibility condition in B.
+Assert that projection P preserves it on the witness slice.
+
+Example shapes:
+
+project(combine(x, y)) == combineObserved(project(x), project(y))
+project(equalized(x)) satisfies observed equality
+project(joinOverSharedInterface(x, y)) agrees on the shared observation
+
+## Free-builder law
+
+For required observable behavior c in C:
+
+project(Free(c)) ~= c
+
+where ~= is exact equality, embedding, covering, soundness, or a documented approximation.
+
+## Lift candidate
+
+Given F : A -> C and L = Free . F:
+
+project(L(a)) ~= F(a)
+
+for the witness a.
+
+## Solution-set template coverage
+
+For each public requirement class, at least one bounded implementation template must cover it, or the code must emit a no-exact-lift obstruction.
+
+## Failure case
+
+Add a requirement whose observation is not stored, derivable, externally obtainable, or projected by P, and assert an obstruction report is produced.
+OUT
+    ;;
   postcomposition|pstar)
     cat <<OUT
 # Postcomposition law-test plan (${language})

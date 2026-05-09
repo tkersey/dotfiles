@@ -1,6 +1,6 @@
 sources:
   OPENAI-CODEX-SKILLS:
-    title: Agent Skills – Codex
+    title: "Agent Skills \u2013 Codex"
     kind: official-doc
     canonical: https://developers.openai.com/codex/skills
     freshness: drift-prone
@@ -258,3 +258,37 @@ sources:
     unsafe_for:
     - formal category theory proofs
     - non-Haskell architecture claims without interpretation label
+  KAN-NLAB-AFT:
+    title: Adjoint functor theorem
+    kind: reference-wiki
+    canonical: https://ncatlab.org/nlab/show/adjoint+functor+theorem
+    freshness: semi-stable
+    safe_for:
+    - adjoint functor theorem statement
+    - right adjoint existence conditions
+    - comma-category/initial-object proof intuition
+    unsafe_for:
+    - software architecture claims without interpretation label
+    - current tooling claims
+  KAN-NLAB-SOLUTION-SET:
+    title: Solution set condition
+    kind: reference-wiki
+    canonical: https://ncatlab.org/nlab/show/solution+set+condition
+    freshness: semi-stable
+    safe_for:
+    - solution-set condition intuition
+    - small weakly-initial families
+    - bounded candidate-family analogy
+    unsafe_for:
+    - formal proof claims without checking a textbook
+    - software architecture claims without witness tests
+  KAN-FREYD-1964:
+    title: 'Abelian Categories: An Introduction to the Theory of Functors'
+    kind: book/classic-source
+    canonical: https://doi.org/10.1007/978-3-642-62007-9
+    freshness: stable-theory
+    safe_for:
+    - historical Freyd adjoint functor theorem context
+    - classic categorical background
+    unsafe_for:
+    - software architecture claims without interpretation label

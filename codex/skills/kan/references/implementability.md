@@ -1,101 +1,52 @@
 # Implementability guide
 
-## Choosing a representation
-
-| Setting | Implementation strategy | Typical witness |
+| Setting | Strategy | Witness |
 |---|---|---|
-| Finite categories, `Set`-valued `F` | Build comma category, compute quotient/product with compatibility | runnable Python model |
-| Posets/lattices | Compute joins for `Lan`, meets for `Ran` | policy inheritance, build dependency status |
-| Haskell-like typed programs | Rank-n `Ran`, existential `Lan`, `Codensity`, `Density`, Yoneda/Coyoneda | type-level witness |
-| TypeScript/Rust/Python architecture | Encode as interfaces, existential packages, callbacks, adapters, law tests | module boundary witness |
-| Database schemas | `Σ`/`Δ`/`Π` data migration functors | schema migration test |
-| DSL/interpreters | `Lan` for extending syntax/semantics, `Ran` for observational compatibility | AST node/interpreter case |
+| finite `Set` categories | build comma categories; compute quotients/products | Python finite model |
+| posets/lattices | joins for `Lan`, meets for `Ran`, residuals for lifts | policy/build status |
+| Haskell-like types | existential `Lan`, rank-n `Ran`, codensity, Yoneda/Coyoneda | type witness |
+| mainstream architecture | interfaces, adapters, first-order IR, law tests | module-boundary witness |
+| database schemas | `Σ = Lan`, `Δ`, `Π = Ran`; lift-shaped view updates | migration tests |
 
-## Finite `Set`-valued algorithm
+## Extension algorithms
 
-Input:
+`Lan_K F(d)`:
 
-```text
-C: finite category
-D: finite category
-K: functor C -> D
-F: functor C -> Set
-```
+1. enumerate `K ↓ d`;
+2. create tagged payloads `(c, u : Kc -> d, x ∈ F c)`;
+3. quotient by source morphisms;
+4. implement `η` as identity-path injection.
 
-### Pointwise `Lan_K F(d)`
+`Ran_K F(d)`:
 
-1. Construct the comma category `K ↓ d`.
-2. For every object `(c, u : Kc -> d)`, create tagged elements `(c, u, x)` for each `x ∈ F(c)`.
-3. For every morphism `f : (c,u) -> (c',u')`, impose the relation:
+1. enumerate `d ↓ K`;
+2. build families over all observations;
+3. keep only coherent families;
+4. implement `ε` as identity-observation projection.
 
-```text
-(c, u, x) ~ (c', u', F(f)(x))
-```
+## Lift approximations
 
-4. Return equivalence classes.
-5. Unit map:
+For poset-shaped architecture:
 
 ```text
-η_c(x) = [(c, id_{Kc}, x)] in Lan_K F(Kc)
+left lift:  least b with F(a) <= P(b)
+right lift: greatest b with P(b) <= F(a)
 ```
 
-### Pointwise `Ran_K F(d)`
+Always state the order/refinement relation.
 
-1. Construct the comma category `d ↓ K`.
-2. Start with the product of all sets `F(c)` indexed by objects `(c, u : d -> Kc)`.
-3. Keep only coherent families `x_(c,u)` such that for every morphism `f : (c,u) -> (c',u')`:
+## Freyd/AFT practice
 
-```text
-F(f)(x_(c,u)) = x_(c',u')
-```
+For `P : B -> C`, check:
 
-4. Counit map:
-
-```text
-ε_c(family) = family_(c, id_{Kc})
-```
-
-This is runnable for small categories. For large categories it usually becomes a specification for a database query, optimizer, typeclass, or code generator.
-
-## Engineering translations
-
-### `Lan` implementation forms
-
-- generated code from old/core definitions;
-- default behavior for new API surface;
-- free syntax extension;
-- migration that pushes old rows/events into a new schema;
-- plugin wrapper that constructs target plugins from core semantics;
-- quotient/normalization layer that identifies equivalent constructions.
-
-### `Ran` implementation forms
-
-- compatibility facade determined by old observers;
-- read model with coherent projections;
-- product/intersection of client requirements;
-- coinductive interface;
-- policy aggregation where all old policy views must agree;
-- codensity/CPS optimization.
+- `B` can combine/solve constraints relevant to the refactor;
+- `P` preserves those constraints in tests;
+- each requirement class has bounded implementation templates;
+- candidate `Free : C -> B` has a projection law.
 
 ## Practical constraints
 
-- Most real repositories do not have literal small categories. Treat modules/interfaces/tests as an engineering model unless categories are explicitly defined.
-- Type systems rarely express naturality directly. Use property tests, golden tests, and centralized constructors/projections.
-- Quotients are often awkward in mainstream languages. Implement `Lan` with canonicalization, normalization, or an opaque smart constructor.
-- Limits are often awkward when observations are partial. Implement `Ran` with explicit failure modes or validation results.
-- Existentials require GADTs, trait objects, closures, opaque packages, or erased wrappers depending on language.
-- Rank-n types require Haskell or careful interface simulation; in TypeScript/Python they are only approximations.
-
-## Deciding if implementation is worth it
-
-Use Kan-extension implementation when it prevents one of these concrete problems:
-
-- semantic drift between old and new APIs;
-- duplicated interpreters;
-- inconsistent adapters;
-- ad hoc schema migration paths;
-- plugin contracts without compatibility tests;
-- bind-heavy free structures with measurable overhead;
-- unprincipled generation of target artifacts.
-
-Avoid it when a plain interface, adapter, or helper function gives the same guarantees with less machinery.
+- Quotients need normalization or opaque smart constructors.
+- Limits/coherence need validators and explicit failures.
+- Defunctionalized IR needs an escape hatch if the extension point is intentionally open.
+- Mainstream code rarely proves universal properties; use law tests and source discipline.

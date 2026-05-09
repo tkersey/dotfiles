@@ -1,22 +1,13 @@
 # Glossary
 
-- `C`: source category, often old/core/specified domain.
-- `D`: target category, often new/ambient/extended domain.
-- `E`: category of semantics, implementations, sets, types, modules, database instances, or an engineering approximation.
-- `K : C -> D`: functor representing inclusion, embedding, schema mapping, representation, or boundary.
-- `F : C -> E`: semantics/instance/implementation to extend.
-- `K*`: precomposition/restriction along `K`.
-- `Lan_K F`: left Kan extension; universal free/generative extension of `F` along `K`.
-- `Ran_K F`: right Kan extension; universal coherent/conservative extension of `F` along `K`.
-- `η`: unit of a left Kan extension, `F -> Lan_K F · K`.
-- `ε`: counit of a right Kan extension, `Ran_K F · K -> F`.
-- `K ↓ d`: comma category of objects of `C` mapped by `K` into `d`.
-- `d ↓ K`: comma category of observations from `d` into objects in the image of `K`.
-- `coend`: quotient-like integral notation used for left Kan formulas in `Set`.
-- `end`: coherent-family/product-like integral notation used for right Kan formulas in `Set`.
-- `Codensity`: right-Kan/continuation-shaped representation, commonly `forall b. (a -> m b) -> m b`.
-- `Density`: left-Kan/existential-shaped representation.
-- `Σ`: left data migration / left Kan extension.
-- `Δ`: restriction / precomposition.
-- `Π`: right data migration / right Kan extension.
-- `architecture inference`: an engineering interpretation inspired by the math, not a proof.
+- `K : C -> D`: extension boundary / embedding / schema map.
+- `P : B -> C`: projection / observation / handler / public behavior boundary.
+- `Lan`: free/generative pushforward.
+- `Ran`: coherent observation-based extension.
+- `Lft`: left Kan lift / realizing implementation behind `P`.
+- `Rft`: right Kan lift / residual obligations behind `P`.
+- `Free`: left adjoint/free builder to a projection or forgetful functor.
+- `Yoneda`: observation-heavy representation.
+- `Coyoneda`: raw payload plus deferred map/path.
+- `Defunctionalization`: replacing functions with first-order cases plus interpreter.
+- `No exact lift`: required behavior cannot be realized through current `B` and `P`.

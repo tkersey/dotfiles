@@ -1,35 +1,11 @@
 # Repo audit checklist
 
-## Scan
-
-- Locate core domain models, ASTs, schemas, interpreters, adapters, generated code, plugin points, and compatibility facades.
-- Identify duplicated semantics or drift.
-- Find tests that preserve old behavior across new APIs.
-
-## Model
-
-```text
-C:
-D:
-K:
-F:
-Candidate direction:
-Unit/counit:
-Witness object d:
-```
-
-## Evaluate
-
-- Does `K` preserve identities and composition in the engineering model?
-- Are all old behaviors represented by `F`?
-- Does new code factor through one extension path?
-- Are old projections coherent?
-- Is quotienting/canonicalization explicit?
-- Is the abstraction simpler than the duplication it removes?
-
-## Recommend
-
-- Keep: if laws are already encoded and naming improves clarity.
-- Refactor: if a central unit/counit adapter would remove drift.
-- Downgrade: if plain interfaces are enough.
-- Reject: if no meaningful categorical data exists.
+1. List architecture worlds: core, API, DB, events, tests, runtime, clients.
+2. List boundaries: embeddings `K`, projections `P`, interpreters, serializers, handlers.
+3. Classify each pressure: extension, lift, restriction/checking, ordinary adapter.
+4. Pick one witness slice.
+5. Identify law tests before code movement.
+6. Run Yoneda/Coyoneda pass if observations or generated payloads dominate.
+7. Run defunctionalization pass if functions cross boundaries.
+8. For lifts, run Freyd/AFT diagnostic on `P`.
+9. Record no-exact-lift obstructions.
