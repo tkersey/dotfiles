@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
-plan="${1:-.universalist-plan.md}"
-if [ -e "$plan" ]; then
-  echo "plan already exists: $plan" >&2
+file="${1:-.universalist-plan.md}"
+if [ -e "$file" ]; then
+  echo "$file already exists" >&2
   exit 0
 fi
-cat > "$plan" <<'EOF'
+cat > "$file" <<'OUT'
 # Universalist Plan
 
 ## Track:
 ## Signal:
 ## Construction:
 ## Canonical boundary artifact:
+## Freyd/AFT boundary diagnostic:
 ## Why this construction:
 ## Seam / files:
 ## Public boundaries touched:
@@ -20,5 +21,5 @@ cat > "$plan" <<'EOF'
 ## Runtime-only leftovers:
 ## Status: planned
 ## Next seam:
-EOF
-echo "created $plan"
+OUT
+echo "created $file"

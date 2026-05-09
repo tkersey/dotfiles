@@ -4,6 +4,7 @@
 ## Signal:
 ## Construction:
 ## Canonical boundary artifact:
+## Freyd/AFT boundary diagnostic:
 ## Why this construction:
 ## Seam / files:
 ## Public boundaries touched:

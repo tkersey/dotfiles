@@ -44,13 +44,26 @@ Software reading:
 
 Use lift language when the question is: what must exist behind this fixed projection?
 
+## Freyd/AFT diagnostic inside lift boundaries
+
+When the lift depends on a good projection `P : B -> C`, ask whether `P` supports a canonical free builder `Free : C -> B`.
+
+Operational questions:
+
+- What does `P` forget or observe?
+- What constraints can `B` express?
+- Does `P` preserve those constraints?
+- What bounded family of implementation templates covers required behavior?
+- What builder or obstruction follows?
+
 ## Universalist rule
 
-Never answer with Kan vocabulary alone. Translate it into:
+Never answer with Kan/Freyd vocabulary alone. Translate it into:
 
 - boundary artifact;
 - constructor/interpreter/projection;
 - one witness seam;
-- one proof signal.
+- one proof signal;
+- one falsifier or obstruction.
 
 If those cannot be named, downgrade to ordinary universalist construction or plain adapter.

@@ -1,9 +1,21 @@
 # Go examples
 
-- Product: struct.
-- Coproduct: tagged struct plus constructors, or interface with unexported marker.
-- Refined type: unexported field plus constructor.
-- Pullback: constructor that checks shared keys.
-- Free construction: explicit AST structs plus interpreter.
+Keep examples idiomatic for Go.
 
-Tests should be table-driven and should include invalid states.
+Universalist examples should show:
+
+- one smell;
+- one seam;
+- one smallest honest construction;
+- one proof signal.
+
+Track D examples should show a canonical boundary artifact only when it changes code shape:
+
+- AST plus interpreter;
+- observation enum plus runner;
+- generation path plus lowerer;
+- realizer plus projection;
+- obligation IR plus satisfier;
+- first-order case plus apply.
+
+For lift-shaped cases, name the projection `P` and add a test that projection of the realizer satisfies required behavior.

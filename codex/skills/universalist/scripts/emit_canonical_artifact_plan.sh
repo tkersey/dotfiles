@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 artifact="${1:-canonical-artifact}"
+language="${2:-agnostic}"
 cat <<OUT
-# Canonical Artifact Plan: ${artifact}
+# Canonical Artifact Plan: ${artifact} (${language})
 
 ## Signal
 

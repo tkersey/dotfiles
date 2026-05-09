@@ -13,6 +13,7 @@ These are practical proof signals, not full formal proofs.
 | Coherent observations | overlapping observations commute |
 | Transported semantics | identity/embedding path preserves behavior |
 | Lifted implementation | `project(realize(case)) == required(case)` |
+| Free builder behind projection | `project(free(required(case)))` satisfies `required(case)` or reports obstruction |
 | Residual obligations | missing obligation fails, satisfying obligations passes |
 | Yoneda observation | representation change preserves observations |
 | Coyoneda generation | lowering equals direct interpretation |
@@ -29,5 +30,6 @@ Every Track D artifact should have at least one negative witness:
 - invalid path/payload pair;
 - missing observation interpreter clause;
 - realizer without required behavior;
+- free builder cannot satisfy a behavior because projection loses evidence;
 - obligation omitted;
 - callback case not encoded.

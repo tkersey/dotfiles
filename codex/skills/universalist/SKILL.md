@@ -1,7 +1,7 @@
 ---
 name: universalist
 description: >
-  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, public contracts determining internals, or any need for canonical boundary artifacts. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, and one proof signal.
+  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, public contracts determining internals, forgetful or observational projections that may need a canonical free builder, or any need for canonical boundary artifacts. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, and one proof signal.
 ---
 
 # Universalist
@@ -12,7 +12,7 @@ This is an **inner lens** for choosing the right structural move. It is not a ge
 
 The enriched slogan is:
 
-> Universal architecture is the practice of designing software around canonical boundary artifacts: **free syntax, coherent observations, transported semantics, lifted implementations, explicit IRs, and law tests.**
+> Universal architecture is the practice of designing software around canonical boundary artifacts: **free syntax, coherent observations, transported semantics, lifted implementations, free builders behind projections, explicit IRs, and law tests.**
 
 ## Do not trigger for
 
@@ -20,7 +20,7 @@ The enriched slogan is:
 - Pure performance tuning, infra, UI polish, or docs work.
 - Broad rewrites with no stable seam.
 - Cases where the domain rules are still too unstable to freeze into a stronger model.
-- Category-theory exposition that does not change a concrete seam, construction, or proof signal.
+- Category-theory exposition that does not change a concrete seam, construction, boundary, or proof signal.
 
 ## Quick start: pick a track
 
@@ -71,7 +71,7 @@ Use when the smell is no longer just “choose a better type” but “choose th
 Deliver:
 
 - worlds involved;
-- boundary map, projection, embedding, interpreter, or forgetful API;
+- boundary map, projection, embedding, interpreter, forgetful API, or observation map;
 - known side and unknown artifact;
 - canonical boundary artifact;
 - one executable law test;
@@ -85,7 +85,54 @@ Use Track D for:
 - plugin, workflow, effect, rule-engine, or DSL boundaries;
 - callback/closure/handler behavior that should become explicit IR;
 - old semantics transported to a new target surface;
-- compatibility facades where several old observations must agree.
+- compatibility facades where several old observations must agree;
+- lifted-implementation refactors where `P : internals -> observable behavior` is vague, lossy, or intended to support a canonical implementation builder.
+
+## Freyd/AFT boundary diagnostic for Track D
+
+Use this sub-practice only after a lift-shaped boundary appears:
+
+```text
+A --?--> B
+|        |
+F        P
+v        v
+C        C
+```
+
+Software reading:
+
+- `A`: public cases, contract tests, workflows, requirements, or obligations.
+- `B`: internal implementation world.
+- `C`: observable behavior world.
+- `P : B -> C`: projection, serializer, public API runner, trace observer, report extractor, or forgetful/observational API.
+- `F : A -> C`: required public behavior.
+- `? : A -> B`: implementation realizer, implementation template, or residual obligation artifact.
+
+The lift asks:
+
+```text
+Can we find L : A -> B such that P(L(a)) satisfies F(a)?
+```
+
+The Freyd/AFT diagnostic asks:
+
+```text
+Is P disciplined enough that required behavior in C has a canonical free builder Free : C -> B?
+```
+
+Use it to decide whether the seam needs:
+
+- a concrete projection `P`, not vague “observable behavior”;
+- internal constraint-combining structure in `B`;
+- preservation of those constraints by `P`;
+- a bounded solution-set-like family of implementation templates;
+- a `Free` builder, realizer, or obligation artifact;
+- an obstruction report when no exact/free lift exists.
+
+Do **not** teach Freyd’s theorem in full inside ordinary responses. Translate it to this operational question:
+
+> Does this observation boundary support a canonical implementation builder, or is it too lossy/ad hoc?
 
 ## Non-negotiables
 
@@ -96,6 +143,8 @@ Use Track D for:
 - Use the repo's current language, framework, and test stack before proposing new libraries.
 - Say what remains runtime-only in dynamic or weakly typed environments.
 - Stop after the first verified seam unless the user asked for a sweep.
+- For lift-shaped Track D work, make `P : B -> C` concrete before proposing implementation changes.
+- If proposing a free builder behind `P`, include a Freyd/AFT-style obstruction check: constraint structure, preservation, and bounded templates.
 
 ## Step 0 — Create or update `.universalist-plan.md`
 
@@ -112,6 +161,7 @@ Minimum fields:
 ## Signal:
 ## Construction:
 ## Canonical boundary artifact:
+## Freyd/AFT boundary diagnostic:
 ## Why this construction:
 ## Seam / files:
 ## Public boundaries touched:
@@ -144,7 +194,9 @@ If context compacts, read this file first and resume from its status line.
    - duplicated projections or selectors;
    - generated artifacts with no provenance;
    - public contract/tests implying missing internal obligations;
-   - callbacks/handlers crossing boundaries without explicit IR.
+   - callbacks/handlers crossing boundaries without explicit IR;
+   - public behavior fixed while internals are underdetermined;
+   - a projection/serializer/view loses evidence needed by required behavior.
 
 3. **Pick one seam**
 
@@ -159,7 +211,8 @@ If context compacts, read this file first and resume from its status line.
    - one join helper or aggregate constructor;
    - one projection/query/read-model boundary;
    - one plugin or rule-family adapter;
-   - one public contract case.
+   - one public contract case;
+   - one observation/projection function `P` for a lift-shaped refactor.
 
 4. **Choose the smallest honest construction**
 
@@ -183,6 +236,7 @@ If context compacts, read this file first and resume from its status line.
    | New internals must satisfy old views | Coherent observations | Right Kan / Yoneda | overlapping observations commute |
    | New model must be viewed through old API | Restriction adapter | Precomposition / `Delta` | old golden tests pass through adapter |
    | Public behavior is known before internals | Lifted implementation | Kan lift / realization | `project(realize(case)) == required(case)` |
+   | Public behavior determines internals but `P` is vague or lossy | Free builder / projection diagnostic | Freyd/AFT-style boundary diagnostic for `P : B -> C` | `project(free(required(case)))` satisfies required behavior or reports obstruction |
    | Public policy implies internal checks | Residual obligations | Right-lift / weakest obligation | missing obligation fails projection |
    | Generated payloads lose provenance | Generation path vocabulary | Coyoneda | lowering equals direct interpretation |
    | Query/projection sprawl | Observation vocabulary | Yoneda | representation change preserves observations |
@@ -200,9 +254,23 @@ If context compacts, read this file first and resume from its status line.
    - observation vocabulary;
    - generation path;
    - explicit IR plus interpreter;
-   - projection from implementation to public behavior.
+   - projection from implementation to public behavior;
+   - Freyd/AFT-style free-builder diagnostic for that projection.
 
-7. **Encode idiomatically**
+7. **Run the Freyd/AFT diagnostic when appropriate**
+
+   For a lift-shaped Track D refactor, answer:
+
+   - What exactly is `P : B -> C` in code?
+   - What does `P` forget, observe, serialize, erase, or project?
+   - Can `B` express combined constraints, equalities, products, pullbacks, validations, or workflow composition?
+   - Does `P` preserve those constraints when observed in `C`?
+   - Is there a bounded family of implementation templates for each public behavior?
+   - What `Free : C -> B`, realizer, or obligation artifact is suggested?
+   - Is the unit/projection exact, covering, sound, or approximate?
+   - What obstruction prevents a free/lifted implementation?
+
+8. **Encode idiomatically**
 
    Use the strongest encoding the repo can actually support:
 
@@ -215,9 +283,10 @@ If context compacts, read this file first and resume from its status line.
    - AST + interpreters;
    - observation enum + `runObservation`;
    - generated payload + path + `lowerGenerated`;
-   - realizer/obligation + `project`/`satisfy`.
+   - realizer/obligation + `project`/`satisfy`;
+   - free-builder function + projection test.
 
-8. **Verify with the fastest credible proof signal**
+9. **Verify with the fastest credible proof signal**
 
    Prefer:
 
@@ -230,13 +299,14 @@ If context compacts, read this file first and resume from its status line.
    - parity or differential tests during migration;
    - observation coherence;
    - projection/lift realization test;
+   - free-builder projection test;
    - defunctionalized interpreter equivalence.
 
-9. **Stop or name the next seam**
+10. **Stop or name the next seam**
 
    Do not turn one structural insight into a repo-wide rewrite. Verify one seam, record it, and stop unless the user asked for a broader sweep.
 
-10. **Update `.universalist-plan.md`**
+11. **Update `.universalist-plan.md`**
 
    Record:
 
@@ -244,6 +314,7 @@ If context compacts, read this file first and resume from its status line.
    - which boundary stayed stable;
    - which proof passed;
    - what still remains runtime-only;
+   - whether a Freyd/AFT diagnostic found a builder or an obstruction;
    - next seam, if any.
 
 ## Practical decision guide
@@ -259,6 +330,7 @@ If context compacts, read this file first and resume from its status line.
 | Several old views must agree on new internals | Coherent observations | Independent adapters | read-model/projection boundary | overlapping observation coherence |
 | Generated artifacts lose provenance | Generation path vocabulary | anonymous callbacks | generation/lowering boundary | lowering equals direct interpretation |
 | Public contract determines implementation | Lifted implementation | ad hoc service design | one contract case | projection matches required behavior |
+| Public contract determines implementation but projection loses evidence | Free builder / obstruction report | pretending a lift exists | one projection function | project(free(required)) passes or obstruction named |
 | Callbacks carry architecture behavior | Explicit IR | hidden closure registry | plugin/handler seam | apply/interpreter equivalence |
 
 ## Output contract
@@ -282,6 +354,12 @@ For Track D, also include:
 - **Law / proof signal**
 - **Falsifier**
 
+For lift-shaped Track D, also include:
+
+- **Projection `P : B -> C`**
+- **Freyd/AFT boundary diagnostic** when `P` is vague, lossy, or intended to support a free builder
+- **Builder or obstruction**
+
 For Track B, Track C, or Track D, also update `.universalist-plan.md`.
 
 ## Guardrails
@@ -293,12 +371,13 @@ For Track B, Track C, or Track D, also update `.universalist-plan.md`.
 - Do not widen the seam just because the larger design looks elegant.
 - Call out persistence, serialization, and public API breakage explicitly.
 - Say when a validator is only runtime protection.
-- Do not use Kan/Yoneda/Coyoneda vocabulary unless it produces a concrete artifact and law test.
+- Do not use Kan/Yoneda/Coyoneda/Freyd vocabulary unless it produces a concrete artifact and law test.
 - Defunctionalize only when higher-order behavior crosses a meaningful boundary.
+- Treat Freyd/AFT as a projection diagnostic, not as a theorem recital.
 
 ## Hand-offs and companion skills
 
-- Use **`kan`** when the chosen boundary artifact needs detailed Kan extension/lift, Yoneda/Coyoneda, codensity, or defunctionalization mechanics.
+- Use **`kan`** when the chosen boundary artifact needs detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, or defunctionalization mechanics.
 - Use **`invariant-ace`** when the main job is discovering or pinning down invariants before choosing structure.
 - Use **`accretive-implementer`** after the construction is chosen and the task becomes ordinary implementation.
 - Use **`repeatedly-apply-skill`** when sweeping the repo for multiple seams or doing a multi-pass campaign.
@@ -329,6 +408,7 @@ Universal architecture additions:
 - `references/universal-architecture-ecosystem.md`
 - `references/canonical-boundary-artifacts.md`
 - `references/kan-boundaries-for-universalist.md`
+- `references/freyd-aft-boundary-diagnostic.md`
 - `references/yoneda-coyoneda-defunctionalization.md`
 - `references/universal-architecture-law-tests.md`
 
@@ -348,6 +428,7 @@ Universal architecture additions:
 - `scripts/emit_universal_artifact_matrix.sh`
 - `scripts/emit_canonical_artifact_plan.sh`
 - `scripts/emit_universal_architecture_prompt.sh`
+- `scripts/emit_freyd_boundary_diagnostic.sh`
 - `scripts/check_universalist.sh`
 
 ## Templates
@@ -360,3 +441,4 @@ Existing:
 Additions:
 
 - `templates/universal-architecture-report.md`
+- `templates/freyd-boundary-diagnostic.md`

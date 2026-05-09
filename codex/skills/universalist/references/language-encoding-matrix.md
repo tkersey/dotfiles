@@ -1,15 +1,17 @@
 # Language encoding matrix
 
-| Construction | Haskell / ML / Rust-ish | TypeScript / Kotlin / Java | Go / Python / dynamic |
-| --- | --- | --- | --- |
-| Product | record/struct | object/class | dataclass/struct/map with constructor |
-| Coproduct | ADT/enum payload | sealed class/tagged union | tag + constructor + exhaustive tests |
-| Refined type | newtype/smart constructor | wrapper/value class | checked constructor + runtime validator |
-| Pullback | dependent pair/witness | checked aggregate | constructor enforcing agreement |
-| Exponential | function/closure | strategy/interface | callable object/function |
-| Free construction | AST/GADT/free monad | AST/interface hierarchy | tagged IR + interpreter |
-| Observation vocabulary | enum/GADT | tagged union/sealed class | enum/dataclass + dispatcher |
-| Generation path | GADT/path type | tagged union | dataclass + lowering function |
-| Explicit IR | ADT | tagged union/sealed class | tags + interpreter |
+Choose the strongest encoding the repository language can support without fighting the ecosystem.
 
-When the language cannot enforce a property statically, name the trusted constructor and add tests.
+| Need | Haskell/OCaml/F# | TypeScript | Python | Java/Kotlin | Go | Rust/Swift |
+| --- | --- | --- | --- | --- | --- | --- |
+| Product | record | interface/type | dataclass | record/data class | struct | struct |
+| Coproduct | ADT | tagged union | tagged dataclass | sealed class | tagged struct/interface | enum with payload |
+| Refined type | smart constructor/newtype | branded type + constructor | wrapper + validator | value class/factory | wrapper + constructor | newtype/struct |
+| Pullback witness | dependent pair-ish record | checked pair object | checked dataclass | checked record | checked struct | struct with constructor |
+| Exponential | function/closure | function/strategy | callable/protocol | interface/lambda | interface func | closure/trait |
+| Free syntax | ADT + fold | AST union + interpreter | class/union + visitor | sealed AST + visitor | interface tags | enum AST |
+| Observation vocabulary | ADT | enum/union + runner | enum/class + runner | sealed observation | tagged observation | enum + match |
+| Defunctionalized IR | ADT + apply | union + switch | dataclass variants + match | sealed class + visitor | tagged union | enum + match |
+| Free builder behind projection | algebra/constructor | factory/build plan | builder dataclass | builder/service | builder funcs | builder/trait |
+
+Say what remains runtime-only in dynamic or weakly typed environments.

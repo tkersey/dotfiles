@@ -10,12 +10,13 @@ required=(
   references/examples-haskell.md references/examples-go.md references/examples-typescript.md references/examples-python.md
   references/examples-java-kotlin.md references/examples-rust-swift.md references/sources.md
   references/universal-architecture-ecosystem.md references/canonical-boundary-artifacts.md
-  references/kan-boundaries-for-universalist.md references/yoneda-coyoneda-defunctionalization.md
-  references/universal-architecture-law-tests.md
-  templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md
+  references/kan-boundaries-for-universalist.md references/freyd-aft-boundary-diagnostic.md
+  references/yoneda-coyoneda-defunctionalization.md references/universal-architecture-law-tests.md
+  templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md templates/freyd-boundary-diagnostic.md
   scripts/init_universalist_plan.sh scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py
   scripts/emit_verification_plan.py scripts/emit_law_test_stub.sh scripts/emit_universal_artifact_matrix.sh
-  scripts/emit_canonical_artifact_plan.sh scripts/emit_universal_architecture_prompt.sh
+  scripts/emit_canonical_artifact_plan.sh scripts/emit_universal_architecture_prompt.sh scripts/emit_freyd_boundary_diagnostic.sh
+  tests/golden/activation.yml tests/golden/output-invariants.yml
 )
 for f in "${required[@]}"; do
   test -f "$f" || { echo "missing $f" >&2; exit 1; }
@@ -23,16 +24,20 @@ done
 python3 - <<'PY'
 from pathlib import Path
 text = Path('SKILL.md').read_text()
-for r in ['name: universalist','Track D','Universal architecture','canonical boundary artifact','one signal, one seam']:
+for r in ['name: universalist','Track D','Universal architecture','canonical boundary artifact','one signal, one seam','Freyd/AFT','free builder','P : B -> C']:
     if r not in text:
         raise SystemExit(f'SKILL.md missing {r}')
 print('metadata ok')
 PY
 ./scripts/emit_law_test_stub.sh coproduct typescript >/dev/null
 ./scripts/emit_law_test_stub.sh universal-architecture agnostic >/dev/null
+./scripts/emit_law_test_stub.sh freyd agnostic >/dev/null
 ./scripts/emit_universal_artifact_matrix.sh >/dev/null
 ./scripts/emit_canonical_artifact_plan.sh lifted-implementation typescript >/dev/null
 ./scripts/emit_universal_architecture_prompt.sh >/dev/null
+./scripts/emit_freyd_boundary_diagnostic.sh boundary-diagnostic agnostic >/dev/null
+./scripts/emit_freyd_boundary_diagnostic.sh free-builder typescript >/dev/null
+./scripts/emit_freyd_boundary_diagnostic.sh no-exact-lift agnostic >/dev/null
 python3 scripts/emit_scaffold.py coproduct typescript >/dev/null
 python3 scripts/emit_boundary_adapter.py decoder typescript >/dev/null
 python3 scripts/emit_verification_plan.py coproduct >/dev/null

@@ -1,19 +1,15 @@
 # Testing playbook
 
-Prefer the repo's existing test stack.
+Use the fastest credible proof signal:
 
-Proof signals:
-
-- compile/typecheck;
-- targeted unit test;
-- table-driven fixtures;
+- compile/typecheck for ADT exhaustiveness;
+- targeted unit tests for constructors;
 - invalid fixture rejection;
-- round-trip encode/decode;
-- old/new parity;
-- differential test;
-- exhaustive handling check;
-- observation coherence;
-- projection/lift realization;
-- explicit IR interpreter equivalence.
+- parity tests against old behavior;
+- differential tests during migration;
+- observation coherence tests;
+- projection realization tests;
+- free-builder projection tests;
+- negative witness tests.
 
-Never add new property-testing or effect libraries without explicit approval.
+For Track D, include a falsifier: a case where the artifact catches a bug the old shape could miss.

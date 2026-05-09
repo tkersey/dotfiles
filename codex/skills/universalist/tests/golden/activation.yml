@@ -1,9 +1,37 @@
 cases:
-  - prompt: "Refactor this status/boolean matrix so invalid states are impossible."
+  - prompt: "This service has a status enum plus several booleans and nullable fields. Refactor the shape safely."
     should_use_skill: true
-    expected: ["coproduct", "one seam", "invalid fixture"]
-  - prompt: "Our generated artifacts lose provenance and old views disagree."
+    response_mode: Track B
+    expected:
+      - "one signal"
+      - "one seam"
+      - "coproduct or refined type considered"
+      - "proof signal"
+
+  - prompt: "Our public contract tests define behavior but internals are unclear. Derive obligations before refactoring."
     should_use_skill: true
-    expected: ["canonical boundary artifact", "generation path", "coherent observations"]
-  - prompt: "Implement an unrelated endpoint with no structural smell."
+    response_mode: Track D
+    expected:
+      - "lift-shaped boundary"
+      - "P : B -> C"
+      - "projection test"
+      - "obligations or realizer"
+
+  - prompt: "The projection from internals to API response loses cancellation reason required by the contract."
+    should_use_skill: true
+    response_mode: Track D Freyd/AFT diagnostic
+    expected:
+      - "what P forgets"
+      - "free builder or obstruction"
+      - "no exact lift if evidence is missing"
+      - "negative fixture"
+
+  - prompt: "Explain Freyd's adjoint functor theorem generally."
     should_use_skill: false
+    expected:
+      - "belongs to generic explanation unless tied to a code seam"
+
+  - prompt: "Use Kan extensions to implement a schema migration functor."
+    should_use_skill: false
+    expected:
+      - "handoff to kan for detailed mechanics"

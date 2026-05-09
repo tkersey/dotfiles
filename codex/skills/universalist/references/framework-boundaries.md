@@ -1,13 +1,19 @@
 # Framework boundaries
 
-Before refactoring, locate framework-owned shapes:
+Structural refactors should respect framework seams.
 
-- HTTP request/response DTOs;
-- ORM rows/entities;
-- JSON serializers/deserializers;
-- message bus payloads;
-- CLI argument parsers;
-- UI component props/state;
-- test fixtures and snapshot shapes.
+Good landing spots:
 
-Prefer adapter-first staging. Keep wire/storage shapes stable while introducing a stronger internal model unless the user explicitly wants a breaking change.
+- request decoder / DTO parser;
+- controller or handler boundary;
+- command factory;
+- ORM mapper or repository adapter;
+- serializer/deserializer;
+- projection/read-model layer;
+- plugin registry boundary;
+- policy/rule dispatch boundary;
+- test harness or contract verification boundary.
+
+For public API, storage, queue, or wire formats, keep the external shape stable behind adapters unless the user explicitly asks for a breaking change.
+
+For lift-shaped refactors, identify the projection function `P` concretely: controller response, serializer, trace emitter, report extractor, view builder, or test observation harness.

@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 set -euo pipefail
-"$(cd "$(dirname "$0")" && pwd)/check_universalist.sh"
+"$(dirname "$0")/check_universalist.sh"

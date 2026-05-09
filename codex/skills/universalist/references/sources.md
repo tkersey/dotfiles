@@ -1,18 +1,19 @@
-# Sources and claim boundaries
+# Sources and source discipline
 
-Use sources only to support mathematical/programming claims. Architecture recommendations are engineering interpretations unless the repo explicitly models the relevant category/functor/law.
+This skill is primarily operational. It uses category-theory vocabulary only when it selects a code artifact and proof signal.
 
-Stable references:
+Safe source claims:
 
-- Mac Lane, *Categories for the Working Mathematician*: adjunctions, products/coproducts, limits/colimits, Yoneda, Kan extensions.
-- Riehl, *Category Theory in Context*: modern presentation of universal properties, adjunctions, limits, Kan extensions.
-- Reynolds, “Definitional Interpreters for Higher-Order Programming Languages”: origin context for defunctionalization.
-- Danvy and Nielsen, “Defunctionalization at Work”: higher-order to first-order transformation.
-- Spivak/Wisnesky functorial data migration work: schemas as categories and Sigma/Delta/Pi migration.
+- Products, coproducts, equalizers, pullbacks, exponentials, free constructions, adjunctions, Kan extensions, Kan lifts, Yoneda/Coyoneda, and defunctionalization are stable theory/program-transformation vocabulary.
+- Freyd's adjoint functor theorem can be used as an existence/diagnostic intuition for when a well-behaved projection/forgetful functor admits a free builder.
 
-Mark every nontrivial claim as one of:
+Unsafe source use:
 
-- mathematical;
-- programming;
-- architecture inference;
-- repo observation.
+- Claiming a codebase literally satisfies a theorem without explicit categories, functors, and universal properties.
+- Using Freyd/AFT as proof that an implementation exists without a concrete projection, templates, and tests.
+
+Operational source discipline:
+
+- Label advanced material as an engineering interpretation unless formalized.
+- Prefer law/proof signals and negative fixtures over theorem-name authority.
+- Hand off to `kan` for detailed theorem mechanics.

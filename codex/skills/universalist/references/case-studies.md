@@ -1,25 +1,25 @@
 # Case studies
 
-## Boolean matrix to coproduct
+## Lifecycle matrix to coproduct
 
-Signal: `isDraft`, `isPublished`, `deletedAt` combinations create impossible states.
-Construction: coproduct lifecycle type.
-Proof: invalid fixture rejection and exhaustive handling.
+Signal: booleans and nullable fields encode one lifecycle.
+Construction: coproduct.
+Proof: invalid legacy fixture rejected and all cases handled.
 
-## Repeated validation to refined type
+## Rule syntax to free construction
 
-Signal: email validation repeated in API, service, and serializer.
-Construction: `EmailAddress` refined type with trusted constructor.
-Proof: valid/invalid table tests.
+Signal: rules mix execution, explanation, and logging.
+Construction: explicit rule AST plus interpreters.
+Proof: old execution and new interpreter match fixtures.
 
-## Shared id agreement to pullback
+## Public contract to lifted implementation
 
-Signal: repeated `customerId` equality checks.
-Construction: checked aggregate with agreement witness.
-Proof: mismatch rejected; projections preserve ids.
+Signal: contract tests define internals.
+Construction: lifted implementation.
+Proof: `project(realize(case)) == required(case)`.
 
-## Callback plugin registry to explicit IR
+## Lossy projection to Freyd/AFT obstruction
 
-Signal: plugin callbacks duplicate core semantics.
-Construction: free syntax / explicit plugin operation IR.
-Proof: `interpret(embed(coreNode)) == coreInterpreter(coreNode)`.
+Signal: public behavior requires cancellation reason, but `P` projects an internal order without retaining reason.
+Construction: obstruction report plus obligation IR.
+Proof: fixture fails until the internal model stores or reconstructs reason.

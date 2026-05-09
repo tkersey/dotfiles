@@ -10,6 +10,8 @@ Look for these repo smells:
 - duplicated projections/selectors/query views;
 - generated artifacts without provenance;
 - public contract tests implying hidden internal obligations;
-- callbacks, closures, or handlers crossing architecture boundaries.
+- callbacks, closures, or handlers crossing architecture boundaries;
+- observable/public behavior fixed while internals are underdetermined;
+- a projection, serializer, or report loses evidence required by public behavior.
 
 Classify each signal by the smallest construction that would make the invariant obvious.

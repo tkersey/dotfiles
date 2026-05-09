@@ -7,6 +7,7 @@ free syntax
 coherent observations
 transported semantics
 lifted implementations
+free builders behind projections
 explicit IRs
 law tests
 ```
@@ -32,6 +33,7 @@ The boundary artifact is valuable only if it changes code shape or tests.
 | Pullback | two views agree on shared projection | witness pair with preserved projections |
 | Exponential | behavior supplied as value | strategy/function seam |
 | Free construction / initial algebra | syntax before interpretation | AST/IR plus interpreters |
+| Freyd/AFT-style diagnostic | projection supports a free builder | builder or obstruction for `P : B -> C` |
 | Left Kan-style transport | source semantics moves to target | generation path / transported semantics |
 | Right Kan-style observation | target satisfies old views | observation vocabulary / coherent facade |
 | Kan lift-style realization | public behavior determines internals | realizer plus projection test |
@@ -47,6 +49,6 @@ Do not reach for advanced terms first. Ask:
 1. Is a product/coproduct/refined type/pullback/exponential/free construction enough?
 2. If not, is the smell a boundary artifact smell?
 3. Can a single witness slice and law test make the artifact honest?
-4. Would the artifact prevent drift, duplication, or hidden behavior?
+4. Would the artifact prevent drift, duplication, hidden behavior, or lossy projection?
 
 If the answer to 3 or 4 is no, do not escalate.

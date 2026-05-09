@@ -71,6 +71,32 @@ Proof signal:
 project(realize(case)) == requiredBehavior(case)
 ```
 
+## Free builder behind a projection
+
+Use when public behavior determines internals and the projection `P : B -> C` should support a canonical implementation-side builder.
+
+Code shape:
+
+```text
+data RequiredBehavior = ...
+data ImplementationTemplate = ...
+data FreeRealizer = ...
+free : RequiredBehavior -> FreeRealizer
+project : FreeRealizer -> PublicBehavior
+```
+
+Proof signals:
+
+```text
+project(free(required(case))) satisfies required(case)
+```
+
+and, for obstructions:
+
+```text
+project(free(required(case))) fails because missing evidence/template is named
+```
+
 ## Residual obligations
 
 Use when public requirements imply internal checks, fields, events, resources, or capabilities.

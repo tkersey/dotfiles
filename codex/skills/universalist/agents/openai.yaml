@@ -1,7 +1,7 @@
 interface:
   display_name: "Universalist"
-  short_description: "Choose the smallest universal construction or canonical boundary artifact for a codebase refactor."
-  brand_color: "#5E6AD2"
-  default_prompt: "Use $universalist to identify the signal, choose the smallest honest construction or canonical boundary artifact, stage one seam, and specify law tests."
+  short_description: "Choose and stage the smallest honest structural refactor, escalating to universal boundary artifacts only when needed."
+  brand_color: "#4F46E5"
+  default_prompt: "Use $universalist to identify one structural signal, one seam, one smallest honest construction, one boundary artifact if warranted, and one proof signal."
 policy:
   allow_implicit_invocation: true

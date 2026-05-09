@@ -1,10 +1,21 @@
 # Python examples
 
-- Product: dataclass.
-- Coproduct: dataclass variants or tagged dictionaries with constructors.
-- Refined type: class with validating constructor.
-- Pullback: factory function returning checked aggregate.
-- Free construction: dataclass IR variants plus interpreter.
-- Explicit IR: enums/dataclasses plus dispatcher.
+Keep examples idiomatic for Python.
 
-Because Python is dynamic, always name the trusted constructor and add invalid fixture tests.
+Universalist examples should show:
+
+- one smell;
+- one seam;
+- one smallest honest construction;
+- one proof signal.
+
+Track D examples should show a canonical boundary artifact only when it changes code shape:
+
+- AST plus interpreter;
+- observation enum plus runner;
+- generation path plus lowerer;
+- realizer plus projection;
+- obligation IR plus satisfier;
+- first-order case plus apply.
+
+For lift-shaped cases, name the projection `P` and add a test that projection of the realizer satisfies required behavior.

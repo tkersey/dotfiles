@@ -1,37 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cat <<'OUT'
-Use $universalist.
+Use $universalist Track D.
 
-I want to change this architecture:
+Goal:
+<describe architecture pressure>
 
-Current:
-<modules/APIs/data flow>
+Current worlds:
+- source/core/legacy:
+- target/new/internal:
+- observable/public behavior:
 
-Desired:
-<target behavior or architecture>
+Boundary:
+- embedding/projection/interpreter/forgetful API:
+- known side:
+- unknown artifact:
 
-Classify the core seam as one of:
-- product / coproduct / refined type / pullback / exponential / free construction
-- coherent observations
-- transported semantics
-- lifted implementation
-- residual obligation
-- explicit IR / defunctionalization
-- ordinary adapter, no universal architecture needed
+Please produce:
+1. observed signal
+2. why smaller constructions are not enough
+3. canonical boundary artifact
+4. first seam/files
+5. constructor and eliminator/interpreter/projection
+6. one law/proof signal
+7. one falsifier
+8. stop point after one verified seam
 
-Then produce:
-1. Track
-2. Signal
-3. Construction
-4. Why this instead of nearby alternatives
-5. Seam / files
-6. Boundary and compatibility plan
-7. Before -> After
-8. Verification
-9. Runtime-only leftovers
-10. Canonical boundary artifact, if Track D
-11. Law / witness test
-12. De-escalation check
-13. Next seam, if any
+If lift-shaped, make P : B -> C explicit and run the Freyd/AFT boundary diagnostic.
 OUT
