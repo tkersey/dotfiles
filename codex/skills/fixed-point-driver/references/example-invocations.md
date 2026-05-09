@@ -43,10 +43,29 @@ Context:
 - benchmark command and latest result
 - prior reverted diffs, failed benchmark notes, or `.learnings.jsonl` entries
 Constraints:
-- run `negative-ledger-mapper` only to map evidence and prune stale routes
+- use `$negative-ledger` before choosing the next implementation route
+- allow `negative-ledger-mapper` to run read-only `learnings recall/query` when available
 - every Negative Evidence Ledger entry needs a witness, applicability conditions, and reopening criteria
+- let `$negative-ledger` query `$learnings` as a source when available, but do not treat a hit as active without current applicability
 - do not let negative evidence veto a current route unless it applies to the current artifact state
 Done when:
 - the selected next change is not an active previously-disconfirmed hypothesis
+- newly disconfirmed attempts are captured through `$negative-ledger` and, when durable, `$learnings`
 - verification-closure says the changed path and benchmark claim are bounded
+```
+
+## Dedicated negative-ledger preflight before fixed-point work
+```md
+Use $negative-ledger first, then $fixed-point-driver.
+Goal: Before another remediation pass, map what we already tried and which failures still apply.
+Context:
+- current branch and changed paths
+- latest test/benchmark output
+- commit/revert notes
+- `.learnings.jsonl` is available in the repo root
+Output:
+- active negative evidence
+- stale or reopened evidence
+- safest next search frontier
+- any learnings rows worth appending after this turn
 ```

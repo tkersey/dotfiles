@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Negative Ledger"
+  short_description: "Map failed hypotheses into routing constraints"
+  default_prompt: "Use $negative-ledger for this task."

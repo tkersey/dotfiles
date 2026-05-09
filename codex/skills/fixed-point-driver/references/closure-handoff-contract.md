@@ -117,6 +117,8 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `neg_id`
       - `hypothesis`
       - `attempted_change`
+      - `source_refs`
+      - `learning_source_ids` when sourced from `.learnings.jsonl` or `learnings recall/query`
       - `evidence`
       - `observed_outcome`
       - `failure_class`: `no-effect` | `local-regression` | `global-regression` | `unsound` | `too-complex` | `stale` | `unknown`
@@ -126,6 +128,7 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `reopening_criteria`
       - `confidence`: `high` | `medium` | `low` | `unknown`
       - `next_search_hint`
+    - A `learnings` hit is candidate evidence only; closure must still decide whether its witness and applicability bind the current artifact state.
 
 15. **Specialist Briefing Ledger**
     - one entry per specialist with:
@@ -256,6 +259,11 @@ loop-03-post-review
 - neg_id: NEG-01
   hypothesis: ...
   attempted_change: ...
+  source_refs:
+    - kind: learning
+      ref: lrn-...
+  learning_source_ids:
+    - lrn-...
   evidence: ...
   observed_outcome: ...
   failure_class: no-effect

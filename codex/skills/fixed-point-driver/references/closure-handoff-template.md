@@ -130,20 +130,28 @@ loop-02-post-review
 
 #### Negative Evidence Ledger
 - neg_id: NEG-01
-  hypothesis: Replace the live post-rotation store read with a cached snapshot optimization.
-  attempted_change: Cached refresh-secret snapshot reuse.
+  hypothesis: Reuse cached store snapshots during token refresh to avoid the extra store read.
+  attempted_change: Prior fast-path prototype skipped the post-rotation store read.
+  source_refs:
+    - kind: learning
+      ref: lrn-auth-refresh-cache-fast-path
+    - kind: failing-test
+      ref: auth/session.test.ts::test_rejects_stale_refresh_secret
+  learning_source_ids:
+    - lrn-auth-refresh-cache-fast-path
   evidence:
-    - prior stale-state finding shows cached snapshots can mint against old rotation state
-  observed_outcome: Optimization route would re-open the stale-secret failure mechanism unless cache invalidation is directly witnessed.
+    - Prior fast path passed the happy path but failed rotated-secret retry coverage.
+  observed_outcome: Removed a read but reopened stale-secret token issuance.
   failure_class: unsound
   applicability_conditions:
-    - applies while refresh correctness depends on a live post-rotation store read
+    - applies while refresh correctness depends on reading the current persisted secret after rotation
   current_status: active
-  exclusion_rule: Do not select cached-snapshot reuse as the one-change challenge answer without a direct cache-invalidation witness.
+  exclusion_rule: Do not select a cache-snapshot refresh optimization unless it proves post-rotation secret freshness directly.
   reopening_criteria:
-    - cache invalidation is directly verified on the rotated-secret path
+    - store snapshot semantics are replaced with a current-secret witness
+    - direct rotated-secret retry test passes under the new design
   confidence: medium
-  next_search_hint: Prefer direct live-store validation proof over cache optimization.
+  next_search_hint: Prefer validating the persisted-secret read rather than optimizing it away.
 
 #### Specialist Briefing Ledger
 - role: invariant_auditor
