@@ -12,4 +12,3 @@ codex/skills/.system/
 **/node_modules
 
 .step/st-plan.jsonl.lock
-codex/memories_extensions/learnings/resources/latest_learnings_digest.md

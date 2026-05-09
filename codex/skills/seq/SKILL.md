@@ -593,7 +593,7 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` and `params.include_preview`.
 - `memory_files` exposes `path`, `relative_path`, `name`, `category`, `extension`, `size_bytes`, `modified_at`, and `preview`.
 - `memory_stage1_outputs` reads the local Codex state DB and accepts `params.state_db_path`.
-- `memory_extensions` reads `~/.codex/memories_extensions` and accepts `params.extensions_root`.
+- `memory_extensions` reads `~/.codex/memories/extensions` and accepts `params.extensions_root`.
 - Current memory-file categories are `root`, `rollout_summaries`, and `skills`; `root` may also include non-canonical files, so do not assume every root file is part of the memory contract.
 - `rollout_summaries/*.md` are markdown summaries; the original JSONL evidence lives at the `rollout_path` referenced inside those files.
 - `memory_files` is best for inventory and routing; when the answer depends on markdown body content, use `seq` to find the file and then read that specific file directly.

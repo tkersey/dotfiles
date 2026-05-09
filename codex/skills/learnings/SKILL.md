@@ -342,7 +342,7 @@ Routing:
 - Browse latest learnings: `run_learnings_tool recent --limit 10`
 - Search or rank learnings: `run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-tags.json"`
 - Search by path concentration: `run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/top-paths.json"`
-- Refresh disposable memory consolidation digest: `run_learnings_tool memory-digest` (defaults to `$CODEX_HOME/memories_extensions/learnings/resources/latest_learnings_digest.md`, falling back to `$HOME/.codex/...` when `CODEX_HOME` is unset)
+- Refresh disposable memory consolidation digest: `run_learnings_tool memory-digest` (defaults to `$CODEX_HOME/memories/extensions/learnings/resources/latest_learnings_digest.md`, falling back to `$HOME/.codex/...` when `CODEX_HOME` is unset)
 - Implementation preflight during context gathering: distill the request to a compact topical query first (roughly 4-8 task-defining terms; skip boilerplate, pasted skill blocks, and AGENTS text), then run `run_learnings_tool recall --query "<focused task terms>" --limit 5 --drop-superseded`
 - Refined-scope preflight: rerun `run_learnings_tool recall` once after `parse`, `seq`, or early file reads only if those steps materially narrow the implementation slice; tighten the query rather than replaying the full prompt.
 - If browse intent is ambiguous, start with `recent` before escalating to `query` or `recall`.
