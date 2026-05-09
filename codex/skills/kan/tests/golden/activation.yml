@@ -89,3 +89,23 @@ cases:
     expected:
       - "rejects decorative Yoneda if it does not change code shape or tests"
       - "asks for sanctioned observations and a law test"
+
+  - prompt: "Use $kan to refactor this service outside-in from its public contract; derive obligations before moving modules."
+    should_use_skill: true
+    response_mode: architecture-transformation
+    expected:
+      - "names A, B, C, P, and F"
+      - "inventories external commitments"
+      - "keeps P as a concrete projection"
+      - "produces an obligation ledger"
+      - "classifies exact, covering, sound, approximate, or no-exact-lift"
+      - "adds projection law tests before broad refactoring"
+
+  - prompt: "This public report requires a field that the new domain model no longer stores; use Kan lifts to analyze it."
+    should_use_skill: true
+    response_mode: implementation-plan
+    expected:
+      - "emits a no-exact-lift report if P cannot produce the observation"
+      - "names missing data, transition, capability, or projection path"
+      - "offers repairs by enriching B, changing P, weakening F, or adding a dependency"
+      - "adds a failing witness test and repair acceptance test"

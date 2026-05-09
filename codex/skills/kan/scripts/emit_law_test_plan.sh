@@ -287,6 +287,87 @@ All boundary behavior flows through the case constructors and interpreter.
 Add one constructor with invalid payloads or impossible projection and assert it fails explicitly.
 OUT
     ;;
+  contract-lift|lift-contract|outside-in-refactor)
+    cat <<OUT
+# Contract-first Kan lift law-test plan (${language})
+
+## Projection law
+
+For witness case a, candidate implementation L(a), projection P, and required behavior F(a):
+
+observe(P(L(a)), obs) == observe(F(a), obs)
+
+for every public observation obs in the witness suite.
+
+## Approximation variant
+
+If exact equality is not the goal, state the relation explicitly:
+
+required(a) <= project(L(a))        # covering / realization
+project(R(a)) <= required(a)        # sound residual
+
+## Projection centrality
+
+Assert all public outputs, traces, reports, and contract checks flow through P.
+
+## No-exact-lift failure
+
+Add one required observation that current P cannot produce and assert the code emits an explicit no-exact-lift/obligation report.
+OUT
+    ;;
+  obligation-lift|lift-obligations|residual-obligations)
+    cat <<OUT
+# Kan lift obligation law-test plan (${language})
+
+## Obligation soundness
+
+For each derived obligation R(a):
+
+project(R(a)) <= required(a)
+
+State the order: containment, implication, trace refinement, policy order, snapshot equivalence, or exact equality.
+
+## Necessity approximation
+
+For finite witness suites, removing a required obligation should make at least one observation fail.
+
+## Obligation ledger coherence
+
+Observations that refer to the same public fact agree after projection.
+
+## Repair tests
+
+For every no-exact-lift obstruction, add a failing test first and a repair acceptance test after enriching B, changing P, or weakening F.
+OUT
+    ;;
+  no-exact-lift|obstruction)
+    cat <<OUT
+# No-exact-lift law-test plan (${language})
+
+## Obstruction witness
+
+Choose one case a and observation obs such that F(a) requires behavior P cannot produce from current B.
+
+Test:
+
+assertNoExactLift(a, obs)
+
+## Report completeness
+
+The obstruction report must name:
+- required observation;
+- current projection result;
+- missing data / transition / capability / temporal guarantee / projection path;
+- repair options;
+- approximation status.
+
+## Repair law
+
+After repair, the original projection law must pass:
+
+observe(P(L(a)), obs) == observe(F(a), obs)
+OUT
+    ;;
   postcomposition|pstar)
     cat <<OUT
 # Postcomposition law-test plan (${language})

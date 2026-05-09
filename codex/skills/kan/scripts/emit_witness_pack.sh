@@ -263,6 +263,58 @@ Tests:
 - provenance preserved
 OUT
     ;;
+  lift-contract-refactor|contract-refactor|outside-in-refactor)
+    cat <<'OUT'
+# Kan lift contract-first refactor witness
+
+Lift data:
+- A = public contract/golden-test cases
+- B = internal architecture/design candidates
+- C = observable public behavior
+- P = fixed projection from internals to public behavior
+- F = required behavior for each case
+- Witness a = one endpoint/workflow/report/policy case
+
+Implementation:
+1. Inventory external commitments for a.
+2. Implement or centralize P.
+3. Encode F(a) as observations/fixtures.
+4. Choose candidate L(a) in B.
+5. Project candidate through P and compare to F(a).
+6. If equality/coverage fails, emit obligations rather than broad refactoring.
+
+Law test:
+for each observation obs:
+  observe(P(L(a)), obs) == observe(F(a), obs)
+
+or use a stated preorder/refinement.
+OUT
+    ;;
+  lift-obligation-discovery|obligation-discovery|no-exact-lift)
+    cat <<'OUT'
+# Kan lift obligation-discovery witness
+
+Lift data:
+- A = requirements/tests/policies/reports
+- B = internal obligations/capabilities/resources
+- C = observable behavior
+- P = projection from obligations/capabilities to observations
+- F = required behavior
+- Witness a = one public commitment
+
+Implementation:
+1. Enumerate observations required by F(a).
+2. For each observation, ask whether current P can produce it from B.
+3. Record missing data, transitions, capabilities, temporal guarantees, projection paths, and coherence requirements.
+4. Classify exact, covering, sound, approximate, or no-exact-lift.
+5. Add one failing or passing witness test per obligation.
+
+No-exact-lift report:
+- required observation:
+- why P cannot produce it:
+- repair by enriching B / changing P / weakening F / adding dependency / accepting approximation:
+OUT
+    ;;
   *) echo "Unknown topic: $topic" >&2; exit 2 ;;
 esac
 printf '\n# Language hint: %s\n' "$language"

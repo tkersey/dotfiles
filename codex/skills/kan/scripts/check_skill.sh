@@ -34,6 +34,9 @@ for rel in [
     "references/defunctionalization-claim-map.md",
     "references/yoneda-coyoneda.md",
     "references/yoneda-coyoneda-claim-map.md",
+    "references/lift-architecture-playbook.md",
+    "references/lift-obligation-discovery.md",
+    "scripts/emit_lift_playbook.sh",
 ]:
     if not (root / rel).exists():
         raise SystemExit(f"missing {rel}")
@@ -52,7 +55,7 @@ for script in (root / "scripts").glob("*.sh"):
         errors.append(f"script not executable: {script.relative_to(root)}")
 # Basic coequal support smoke checks.
 skill_text = text.lower()
-for needle in ["kan extensions", "kan lifts", "lft_p", "rft_p", "precomposition", "postcomposition", "defunctionalization", "boundary ir", "yoneda", "coyoneda", "observation", "deferred"]:
+for needle in ["kan extensions", "kan lifts", "lft_p", "rft_p", "precomposition", "postcomposition", "defunctionalization", "boundary ir", "yoneda", "coyoneda", "observation", "deferred", "outside-in", "no exact lift", "obligation ledger"]:
     if needle not in skill_text:
         errors.append(f"SKILL.md missing coequal support marker: {needle}")
 if errors:
@@ -70,19 +73,28 @@ PY
 ./scripts/emit_law_test_plan.sh right-lift agnostic >/dev/null
 ./scripts/emit_source_pack.sh foundations pointwise >/dev/null
 ./scripts/emit_source_pack.sh lifts residual >/dev/null
+./scripts/emit_source_pack.sh lift-playbook outside-in >/dev/null
 ./scripts/emit_source_pack.sh defunctionalization boundary-ir >/dev/null
 ./scripts/emit_defun_pass.sh boundary-ir agnostic >/dev/null
 ./scripts/emit_yoneda_pass.sh observation-boundary agnostic >/dev/null
 ./scripts/emit_yoneda_pass.sh generation-boundary agnostic >/dev/null
 ./scripts/emit_yoneda_pass.sh lift agnostic >/dev/null
+./scripts/emit_lift_playbook.sh contract-refactor agnostic >/dev/null
+./scripts/emit_lift_playbook.sh obligation-discovery agnostic >/dev/null
+./scripts/emit_lift_playbook.sh no-exact-lift agnostic >/dev/null
 ./scripts/emit_witness_pack.sh defunctionalization agnostic >/dev/null
 ./scripts/emit_witness_pack.sh yoneda-observation agnostic >/dev/null
 ./scripts/emit_witness_pack.sh coyoneda-generation agnostic >/dev/null
 ./scripts/emit_witness_pack.sh yoneda-coyoneda-lift agnostic >/dev/null
+./scripts/emit_witness_pack.sh lift-contract-refactor agnostic >/dev/null
+./scripts/emit_witness_pack.sh lift-obligation-discovery agnostic >/dev/null
 ./scripts/emit_law_test_plan.sh defunctionalization agnostic >/dev/null
 ./scripts/emit_law_test_plan.sh yoneda agnostic >/dev/null
 ./scripts/emit_law_test_plan.sh coyoneda agnostic >/dev/null
 ./scripts/emit_law_test_plan.sh yoneda-coyoneda agnostic >/dev/null
+./scripts/emit_law_test_plan.sh contract-lift agnostic >/dev/null
+./scripts/emit_law_test_plan.sh obligation-lift agnostic >/dev/null
+./scripts/emit_law_test_plan.sh no-exact-lift agnostic >/dev/null
 ./scripts/emit_source_pack.sh yoneda representation >/dev/null
 if [ -f examples/python/finite_kan.py ]; then python3 examples/python/finite_kan.py >/dev/null; fi
 if [ -f examples/python/schema_migration_lan.py ]; then python3 examples/python/schema_migration_lan.py >/dev/null; fi
@@ -90,3 +102,4 @@ if [ -f examples/python/codensity_witness.py ]; then python3 examples/python/cod
 python3 examples/python/poset_lift_witness.py >/dev/null
 python3 examples/python/defunctionalized_lift_witness.py >/dev/null
 python3 examples/python/yoneda_coyoneda_witness.py >/dev/null
+python3 examples/python/lift_contract_obligations.py >/dev/null

@@ -35,3 +35,12 @@ invariants:
 
   - name: "No decorative Yoneda/Coyoneda"
     forbidden: ["Yoneda makes this better automatically", "Coyoneda proves this architecture is correct"]
+
+  - name: "Lift refactor obligation discipline"
+    applies_to: [architecture-transformation, implementation-plan, repo-audit]
+    trigger_terms: ["outside-in", "public contract", "contract-first", "obligation", "no exact lift", "public commitments"]
+    must_include_one_of: ["commitment inventory", "obligation ledger", "projection P", "P : B -> C", "no-exact-lift", "exact lift", "covering", "sound"]
+    must_include_one_of_law: ["P(L", "P(R", "projectImplementation", "observe(P", "projection law", "required <= projected", "projected <= required"]
+
+  - name: "No fake exact lift"
+    forbidden: ["exact lift exists"] # unless every required observation is shown to be produced by P or the response marks this as a theorem with data/laws

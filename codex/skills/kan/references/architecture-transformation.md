@@ -221,3 +221,64 @@ and give me the first law test before proposing the full refactor.
 - tests that validate behavior but do not constrain architecture;
 - view updates whose source-side effects are guessed by convention;
 - generated clients or migrations with no compatibility witness.
+
+## Outside-in lift refactor pattern
+
+Use this when a mature system must change internally while keeping externally visible behavior stable.
+
+Data:
+
+- `A`: public commitments, contract cases, golden tests, reports, policies, or user stories.
+- `B`: internal architecture choices: domain model, service graph, workflow engine, storage model, handlers, resources.
+- `C`: observable behavior: responses, traces, views, rendered output, policy results.
+- `P : B -> C`: projection from internals to public behavior.
+- `F : A -> C`: required behavior.
+
+Process:
+
+1. Treat every external commitment as input, not as after-the-fact validation.
+2. Centralize `P` before moving modules.
+3. Derive an obligation ledger before implementation.
+4. Choose exact, covering, sound, approximate, or no-exact-lift classification per witness.
+5. Refactor one witness slice through `P`.
+6. Generalize only after all bypass paths are removed.
+
+This is the architecture-preimage problem: find a good internal object whose projection is the public behavior already owed.
+
+## No-exact-lift pattern
+
+When no candidate internal design can project to the required behavior, do not force a fake lift.
+
+Emit:
+
+```text
+No exact lift for witness a.
+Required observation:
+Current P can produce:
+Missing internal artifact:
+Repair options:
+Witness test:
+```
+
+Repair options:
+
+- enrich `B` with missing data, transition, resource, or capability;
+- change `P` so existing internal information becomes observable;
+- weaken or negotiate `F`;
+- add an external dependency;
+- accept an approximate lift with documented residual risk.
+
+## Contract-first prompt
+
+```text
+Use $kan.
+Treat this as an outside-in Kan lift refactor.
+A = public contract/golden-test cases.
+B = internal architecture choices.
+C = observable behavior.
+P = projection from internals to public behavior.
+F = required public behavior.
+
+First derive the obligation ledger and no-exact-lift obstructions.
+Then implement one witness slice only, with projection tests before module movement.
+```

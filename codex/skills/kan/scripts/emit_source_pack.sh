@@ -70,6 +70,33 @@ Unsafe:
 - replacing genuinely open extension points without an escape hatch.
 OUT
     ;;
+  lift-playbook|outside-in|obligations)
+    cat <<'OUT'
+# Source pack: Kan lift architecture playbook
+
+Mathematical basis:
+- [KAN-NLAB-LIFT]: Kan lifts as postcomposition universal properties and residual/best-approximation intuition.
+
+Architecture inferences:
+- Lift-shaped refactors are outside-in: public commitments determine internal architecture.
+- `P : B -> C` must be a concrete projection from internals to observable behavior.
+- `F : A -> C` should be backed by contract cases, golden tests, reports, policies, or trace expectations.
+- Left-lift mode synthesizes/chooses an implementation-side realizer.
+- Right-lift mode derives residual obligations, missing capabilities, and no-exact-lift obstructions.
+
+Required witness:
+- A, B, C, P, F;
+- one witness a in A;
+- exact/covering/sound/no-exact-lift classification;
+- projection law test;
+- obligation ledger if any observation is missing.
+
+Unsafe:
+- claiming an exact lift when P cannot produce a required observation;
+- using minimal/weakest language without an order or comparison relation;
+- refactoring internals before writing projection tests.
+OUT
+    ;;
   architecture)
     cat <<'OUT'
 # Source pack: architecture interpretation

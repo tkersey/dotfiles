@@ -12,6 +12,15 @@ case "$kind" in
   boundary-representation|yoneda-coyoneda)
     ./scripts/emit_yoneda_pass.sh boundary-representation "$language"
     ;;
+  contract-refactor|outside-in-refactor|lift-contract)
+    ./scripts/emit_lift_playbook.sh contract-refactor "$language"
+    ;;
+  obligation-discovery|lift-obligations|residual-obligations)
+    ./scripts/emit_lift_playbook.sh obligation-discovery "$language"
+    ;;
+  no-exact-lift|lift-obstruction)
+    ./scripts/emit_lift_playbook.sh no-exact-lift "$language"
+    ;;
   defunctionalization-pass|defunctionalized-boundary|defun)
     ./scripts/emit_defun_pass.sh boundary-ir "$language"
     ;;
@@ -223,9 +232,18 @@ Choose one:
 - interpreter/apply/project function:
 - law preserved by interpreter:
 
+## Lift-specific obligation ledger, if using Lft/Rft
+
+- external commitments in scope:
+- required observations:
+- missing data/transitions/capabilities/temporal guarantees/projection paths:
+- exact / covering / sound / approximate / no-exact-lift classification:
+- repair options for no-exact-lift cases:
+
 ## Law tests
 
 - unit/counit or comparison naturality:
+- projection law P(candidate) ~= F(witness):
 - factorization/centralization:
 - golden/regression witness:
 
