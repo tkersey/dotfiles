@@ -65,6 +65,28 @@ Statuses:
 - `unknown`
 - `residual-design-risk`
 
+## Negative evidence closure gate
+
+Use this gate for active, current-state-applicable negative evidence: failed hypotheses, reverted routes, no-effect attempts, benchmark regressions, review-rejected fixes, and repeated dead-end hypotheses.
+
+This gate is closed only when active negative evidence does not conflict with the current route, or when reopening criteria are satisfied by current proof.
+
+Fields:
+- `status`: `satisfied` | `open` | `blocked` | `unavailable`
+- `active_exclusions_count`
+- `repeated_failed_route_used`
+- `reopening_criteria_satisfied`
+- `learnings_hits_applicability_checked`
+- `reason`
+
+Statuses:
+- `satisfied`: no active applicable negative evidence blocks the route, or reopening criteria are satisfied with proof
+- `open`: active applicable negative evidence conflicts with the current route and reopening criteria are not satisfied
+- `blocked`: relevant evidence exists but cannot be checked
+- `unavailable`: negative-ledger/learnings tooling is unavailable and no in-session evidence can check the relevant source
+
+A passing test suite does not close this gate if the current route repeats a previously disconfirmed path without a new witness.
+
 ## Briefing agreement
 
 This gate summarizes reviewer and specialist alignment.
@@ -74,3 +96,11 @@ Statuses:
 - `aligned`
 - `mixed`
 - `conflicting`
+
+## External blockers
+
+Use this gate for missing environment, missing secrets, unavailable history, unavailable learnings, inaccessible CI, or user decisions.
+
+Statuses:
+- `none`
+- `present`
