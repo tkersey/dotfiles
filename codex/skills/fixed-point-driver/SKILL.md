@@ -256,6 +256,14 @@ Use `swarm` only when justified by the lane rules. When custom agents are availa
 
 Do not use specialist work to run final proof gates. Specialists may map evidence, pressure-test soundness, classify negative evidence, and recommend focused/full proof lanes. Root owns authoritative fmt/lint/build/test commands and final verdict.
 
+## Shared specialist packet contract
+
+All specialist prompts, packets, rejections, waits, and closure handoffs must follow the shared contract at `../references/specialist-packet-contract.md`.
+
+The root must assign an `artifact_state_id`, `artifact_state_label`, and exact `scope` before launch. An accepted packet must be packet-native, scoped to the assignment, evidence-bearing, current for the assigned artifact state, and free of transport wrappers, queued prompts, instruction acknowledgements, and root-only `Echo:` text.
+
+Reject acknowledgement-only packets as `low-value`. Reject late packets as `stale` or `superseded` when the artifact state changed before they arrived. Close stale workers and continue with local proof when the assigned uncertainty has been resolved locally or is no longer route-changing.
+
 ## Specialist value receipt
 
 For every specialist packet, accepted or rejected, record a value receipt:
@@ -263,7 +271,7 @@ For every specialist packet, accepted or rejected, record a value receipt:
 ```yaml
 specialist_value_receipt:
   role: verification_auditor | hazard_hunter | evidence_mapper | soundness_auditor | invariant_auditor | complexity_auditor | negative-ledger-mapper | other
-  packet_status: accepted | stale | transport-invalid | wrong-scope | timeout | superseded
+  packet_status: accepted | stale | transport-invalid | wrong-scope | timeout | superseded | low-value
   artifact_state_id_match: yes | no | unknown
   scope_match: yes | no | unknown
   uncertainty_class: evidence | soundness | invariant | hazard | complexity | verification | negative-evidence | other
@@ -278,6 +286,7 @@ specialist_value_receipt:
 
 Acceptance rules:
 - `accepted` requires `artifact_state_id_match: yes` and `scope_match: yes`.
+- `accepted` requires at least one scoped material signal with an artifact reference.
 - `value: positive` requires at least one of `route_changed`, `finding_added`, `proof_changed`, or `risk_retired` to be `yes`.
 - `risk_retired: yes` requires a plausible material hazard or negative-evidence route to have been ruled out.
 - Rejected packets still appear in the Specialist Briefing Ledger and Specialist Value Receipts.
@@ -297,15 +306,15 @@ Any material edit, fixture regeneration, dependency update, proof-surface change
 
 ## Specialist packet validation
 
-Require exactly one packet-native specialist output from every specialist:
+Require exactly one packet-native specialist output from every specialist, using the shared packet contract fields:
 - `artifact_state_id`
 - `artifact_state_label`
 - `scope`
-- `top_material_signals`
+- `top_material_signals` with artifact references
 - `unresolved_signals`
 - `agreement_pressure`
 - `stale`
-- one-line final call
+- `final_call`
 
 Validate every specialist packet before reading it as evidence:
 - exactly one specialist packet is present
@@ -313,8 +322,9 @@ Validate every specialist packet before reading it as evidence:
 - all required fields are present
 - `artifact_state_id` matches the current root state exactly
 - `scope` matches the assigned scope
+- at least one scoped answer has an artifact reference
 
-If validation fails, mark the packet `transport-invalid`, `wrong-scope`, `stale`, or `superseded`, record the rejection reason in the Specialist Briefing Ledger, add a Specialist Value Receipt, and continue locally or relaunch one narrow specialist. Do not repeatedly respawn broad swarms for the same artifact state.
+If validation fails, mark the packet `transport-invalid`, `wrong-scope`, `stale`, `superseded`, `timeout`, or `low-value`, record the rejection reason in the Specialist Briefing Ledger, add a Specialist Value Receipt, and continue locally or relaunch one narrow specialist only when the missing uncertainty remains route-changing. Do not repeatedly respawn broad swarms for the same artifact state.
 
 ## One-change challenge as local falsifier
 
@@ -431,7 +441,7 @@ The final section must say:
 - Never launch specialists before declaring `fixed_point_lane` and specialist budget.
 - Never exceed the lane budget without a recorded `budget_exception`.
 - Never count a specialist as value-positive without a Specialist Value Receipt.
-- Never omit rejected, stale, superseded, or transport-invalid specialist packets from the Specialist Briefing Ledger.
+- Never omit rejected, stale, superseded, timeout, wrong-scope, transport-invalid, or low-value specialist packets from the Specialist Briefing Ledger.
 - Never let stale specialist briefings masquerade as current evidence.
 - Never let specialist packets without a matching `artifact_state_id` enter the closure verdict.
 - Never let specialists own final proof commands or the final pass/fail verdict.
@@ -459,3 +469,4 @@ The final section must say:
 - [common-ledgers.md](references/common-ledgers.md)
 - [common-cli-reporting.md](references/common-cli-reporting.md)
 - [common-routing-vocabulary.md](references/common-routing-vocabulary.md)
+- [specialist-packet-contract.md](../references/specialist-packet-contract.md)

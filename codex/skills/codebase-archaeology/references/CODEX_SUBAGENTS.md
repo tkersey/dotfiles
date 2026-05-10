@@ -49,7 +49,7 @@ For a smaller repository or a broad first pass, use only `archaeology_explorer`.
 Deep parallel exploration:
 
 ```text
-Use $codebase-archaeology with Codex subagents. Spawn archaeology_docs, archaeology_entrypoints, archaeology_domain, archaeology_dataflow, archaeology_integrations, and archaeology_tests. Keep all agents read-only. Wait for all agents, then synthesize one architecture summary with file:line evidence, open questions, and suggested next dives.
+Use $codebase-archaeology with Codex subagents. Spawn archaeology_docs, archaeology_entrypoints, archaeology_domain, archaeology_dataflow, archaeology_integrations, and archaeology_tests. Keep all agents read-only. Require the shared specialist packet contract, wait only while packets make progress, then synthesize one architecture summary from valid file:line evidence, open questions, and suggested next dives.
 ```
 
 Single general worker:
@@ -61,12 +61,12 @@ Use $codebase-archaeology. Spawn archaeology_explorer to map this repo read-only
 Focused feature trace:
 
 ```text
-Use $codebase-archaeology with Codex subagents for the billing feature. Have archaeology_entrypoints find routes/commands, archaeology_domain map billing entities, archaeology_dataflow trace request to persistence, and archaeology_tests identify the relevant test coverage. Wait for all, then synthesize.
+Use $codebase-archaeology with Codex subagents for the billing feature. Have archaeology_entrypoints find routes/commands, archaeology_domain map billing entities, archaeology_dataflow trace request to persistence, and archaeology_tests identify the relevant test coverage. Require packet-native evidence-bearing outputs, then synthesize.
 ```
 
 ## Parent synthesis contract
 
-The parent agent should not merely concatenate worker responses. It should de-duplicate repeated findings, normalize terminology, resolve or call out disagreements, separate source-backed facts from inferences, and produce the final architecture summary in the template from `SKILL.md`.
+The parent agent should not merely concatenate worker responses. It should assign `artifact_state_id`, validate packets against `../../references/specialist-packet-contract.md`, reject stale or low-value packets before synthesis, de-duplicate repeated findings, normalize terminology, resolve or call out disagreements, separate source-backed facts from inferences, and produce the final architecture summary in the template from `SKILL.md`.
 
 ## Safety and scope
 

@@ -104,6 +104,8 @@ When useful and available, ask the parent to spawn read-only subagents:
 Spawn spec_evidence_cartographer, spec_constraint_miner, and spec_proof_surface_mapper to gather current-state evidence, hard constraints, and proof surfaces, then synthesize their packets before asking questions.
 ```
 
+When those specialists are used, assign the current `artifact_state_id`, exact scope, and the shared specialist packet contract at `../references/specialist-packet-contract.md`. Consume only packet-native, scoped, evidence-bearing, current packets. Reject stale, wrong-scope, wrapper-leaking, acknowledgement-only, or no-evidence packets before they affect the Evidence Brief, decision packet, gate, spec, challenge, or lint.
+
 ## Exact Evidence Brief contract
 
 The Evidence Brief must contain exactly these labels, in this order. Do not rename, omit, reorder, or merge labels:

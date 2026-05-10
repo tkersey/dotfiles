@@ -7,7 +7,7 @@ Specialist count is not the same as specialist value. Record a receipt for every
 ```yaml
 specialist_value_receipt:
   role: verification_auditor | hazard_hunter | evidence_mapper | soundness_auditor | invariant_auditor | complexity_auditor | negative-ledger-mapper | other
-  packet_status: accepted | stale | transport-invalid | wrong-scope | timeout | superseded
+  packet_status: accepted | stale | transport-invalid | wrong-scope | timeout | superseded | low-value
   artifact_state_id_match: yes | no | unknown
   scope_match: yes | no | unknown
   uncertainty_class: evidence | soundness | invariant | hazard | complexity | verification | negative-evidence | other
@@ -24,11 +24,12 @@ specialist_value_receipt:
 
 - `positive`: changed the route, added a material finding, changed the proof lane, or retired a plausible material risk.
 - `neutral`: valid packet with no material decision delta.
-- `negative`: stale, wrong-scope, transport-invalid, misleading, or avoidably duplicative.
+- `negative`: stale, wrong-scope, timeout, transport-invalid, low-value, misleading, or avoidably duplicative.
 
 ## Acceptance rules
 
 - `accepted` requires `artifact_state_id_match: yes` and `scope_match: yes`.
+- `accepted` requires at least one scoped material signal with an artifact reference.
 - `risk_retired: yes` requires a plausible material risk to have been ruled out by evidence.
 - Rejected packets still receive receipts.
 - A `negative-ledger-mapper` packet is value-positive when it changes active exclusions, reopening criteria, route choice, proof selection, or safest next frontier.

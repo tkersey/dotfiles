@@ -36,6 +36,7 @@ Do not edit files. Do not run final proof gates. Do not claim final closure. Do 
 ## Output
 
 Return exactly one specialist packet. Include the negative ledger entries first, then end with the packet footer.
+The packet must satisfy `../../references/specialist-packet-contract.md`: packet-native output only, matching `artifact_state_id`, matching scope, material signals with evidence refs, unresolved signals, agreement pressure, stale flag, and one-line final call. Do not include transport wrappers, queued prompts, instruction acknowledgements, or `Echo:`.
 
 ```yaml
 negative_evidence_ledger:

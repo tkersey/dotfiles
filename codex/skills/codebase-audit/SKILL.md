@@ -27,6 +27,7 @@ This skill is written for Codex only.
 - Codex custom agents are separate TOML files under `.codex/agents/` or `~/.codex/agents/`.
 - Codex subagents are expensive and should be used only when the user explicitly asks for parallel work, subagents, one agent per domain, or a multi-agent audit.
 - When subagents are used, workers must stay read-only and return concise findings; the parent agent owns severity normalization, de-duplication, and final synthesis.
+- When subagent output may shape final findings, require the shared specialist packet contract at `../references/specialist-packet-contract.md`; reject stale, wrong-scope, wrapper-leaking, acknowledgement-only, or no-evidence packets before synthesis.
 
 ## Inputs
 
@@ -137,9 +138,11 @@ Use this section only when the user explicitly asks for Codex subagents, paralle
    - `copy` → `audit_copy`
    - `cli` → `audit_cli`
 3. Give every worker the same scope, depth, output schema, and instruction to avoid file edits.
-4. Wait for all requested workers before final synthesis.
-5. Merge results by domain, de-duplicate overlapping findings, normalize severity, and keep disagreements visible in `Needs Verification`.
-6. If the custom agents are not installed, use Codex built-in `explorer` agents with the same domain-specific instructions, or run locally and state which fallback was used.
+4. Assign the current `artifact_state_id`, exact domain/scope, and required packet fields from the shared specialist packet contract.
+5. Wait only while packets are making progress; close stale workers when the root can finish from current source evidence.
+6. Validate every packet before synthesis. Rejected packets still get a value receipt and must not become findings.
+7. Merge results by domain, de-duplicate overlapping findings, normalize severity, and keep disagreements visible in `Needs Verification`.
+8. If the custom agents are not installed, use Codex built-in `explorer` agents with the same domain-specific instructions, or run locally and state which fallback was used.
 
 ### Worker Prompt Template
 
@@ -152,6 +155,7 @@ Do not edit files.
 Return findings only when backed by concrete source evidence.
 For each finding include title, severity, location, issue, root cause, impact, recommended fix, and verification.
 Also return Needs Verification and Positive Signals.
+End with exactly one specialist packet using ../references/specialist-packet-contract.md fields: artifact_state_id, artifact_state_label, scope, top_material_signals with evidence_ref, unresolved_signals, agreement_pressure, stale, and final_call.
 Keep output concise; the parent agent will synthesize the final report.
 ```
 
@@ -170,3 +174,4 @@ Keep output concise; the parent agent will synthesize the final report.
 - `references/TOOLS.md` — tool suggestions by domain
 - `references/EXAMPLES.md` — report examples
 - `references/CODEX_SUBAGENTS.md` — Codex-only subagent prompts and install notes
+- `../references/specialist-packet-contract.md` — shared specialist packet validation, value receipts, and wait bounds

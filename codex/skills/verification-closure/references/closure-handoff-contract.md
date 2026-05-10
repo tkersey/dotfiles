@@ -13,7 +13,8 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
 - Never silently drop a previously open material issue. Change its `status` with evidence.
 - Mark specialist briefings `stale: yes` if their `artifact_state_id` or `artifact_state_label` does not match the packet's current state.
 - Treat specialist outputs as high-signal input, not proof; root-owned verification commands remain authoritative.
-- Record accepted, rejected, stale, superseded, timeout, wrong-scope, and transport-invalid specialist packets instead of silently dropping them.
+- Validate packets against `../../references/specialist-packet-contract.md` before using them as evidence.
+- Record accepted, rejected, stale, superseded, timeout, wrong-scope, transport-invalid, and low-value specialist packets instead of silently dropping them.
 - Include a Specialist Value Receipt for every specialist packet.
 - Include the pre-closure Negative Ledger Handoff even when no active exclusions exist.
 - A `learnings` hit is candidate evidence only; closure must still decide whether its witness and applicability bind the current artifact state.
@@ -182,14 +183,14 @@ The packet is a **canonical, ledgerized, schema-disciplined handoff**. Its job i
       - `unresolved_signals`
       - `agreement_pressure`: `aligned` | `mixed` | `conflicting` | `unknown`
       - `stale`: `yes` | `no` | `unknown`
-      - `packet_status`: `accepted` | `stale` | `transport-invalid` | `wrong-scope` | `timeout` | `superseded`
+      - `packet_status`: `accepted` | `stale` | `transport-invalid` | `wrong-scope` | `timeout` | `superseded` | `low-value`
       - `used_for`: evidence mapping | negative-evidence pruning | soundness pressure | invariant pressure | hazard pressure | complexity pressure | verification planning | none
       - `rejection_reason`: reason or `none`
 
 20. **Specialist Value Receipts**
     - one entry per specialist packet with:
       - `role`
-      - `packet_status`: `accepted` | `stale` | `transport-invalid` | `wrong-scope` | `timeout` | `superseded`
+      - `packet_status`: `accepted` | `stale` | `transport-invalid` | `wrong-scope` | `timeout` | `superseded` | `low-value`
       - `artifact_state_id_match`: `yes` | `no` | `unknown`
       - `scope_match`: `yes` | `no` | `unknown`
       - `uncertainty_class`: `evidence` | `soundness` | `invariant` | `hazard` | `complexity` | `verification` | `negative-evidence` | `other`
