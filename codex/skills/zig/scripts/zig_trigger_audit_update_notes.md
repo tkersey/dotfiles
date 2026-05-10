@@ -1,10 +1,17 @@
 # zig_trigger_audit.py update notes
 
-Add these cues to `INTENT_TERMS` and `STRONG_IMPLICIT_CUES` so the skill routes current Zig 0.16.0, comptime-heavy, and low-level systems-engineering, cache hygiene, and disk-pressure work reliably:
+Add these cues to `INTENT_TERMS` and `STRONG_IMPLICIT_CUES` so the skill routes current Zig 0.16.0, comptime-heavy, low-level systems-engineering, formatting, cache hygiene, and disk-pressure work reliably:
 
 ```python
 ADDITIONAL_INTENT_TERMS = [
     "zig ast-check",
+    "zig fmt",
+    "zig fmt --check",
+    "zig fmt steering",
+    "format steering",
+    "trailing comma",
+    "array column layout",
+    "columnar array",
     "std.Io",
     "std.process.Init",
     "std.testing.Smith",
@@ -113,8 +120,13 @@ ADDITIONAL_INTENT_TERMS = [
 ]
 ```
 
-Also treat bare `allocator`, `pointer`, `packed`, `extern`, and `atomic` as low-signal unless accompanied by a Zig cue such as `.zig`, `std.mem.Allocator`, `std.atomic`, `@ptrCast`, `build.zig`, `zprof`, `std.testing.allocator`, or `checkAllAllocationFailures`.
+Also treat bare `allocator`, `pointer`, `packed`, `extern`, `atomic`, and `trailing comma` as low-signal unless accompanied by a Zig cue such as `.zig`, `std.mem.Allocator`, `std.atomic`, `@ptrCast`, `build.zig`, `zprof`, `std.testing.allocator`, `checkAllAllocationFailures`, `zig fmt`, or `zig fmt --check`.
 
+Formatting routing notes:
+
+- Treat `zig fmt`, `zig fmt --check`, `zig fmt steering`, `format steering`, and Zig-specific `trailing comma` questions as strong Zig-routing terms.
+- Route array column layout and command-vector layout questions to Zig only when paired with Zig, `.zig`, `zig fmt`, or Zig literal syntax.
+- Distinguish general style-preference requests from Zig formatter steering requests; `zig fmt` layout is controlled by durable source-level cues, not configuration.
 
 Cache/disk-pressure routing notes:
 

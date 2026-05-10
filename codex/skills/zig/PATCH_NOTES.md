@@ -2,6 +2,15 @@
 
 This bundle supersedes the previous `zig_skill_upgrade`, `zig_skill_comptime_expert`, and `zig_skill_ultimate_systems_bundle` bundles.
 
+## 2026-05-10 `zig fmt` steering addition
+
+1. Updated the skill trigger description to include formatting and `zig fmt` steering.
+2. Added formatting as a first-class workflow and hazard/proof concern alongside linting.
+3. Added top-level `zig fmt` rules for trailing-comma steering, array column shaping, `++`-composed array chunks, and real-comment layout anchors.
+4. Added `references/linting_playbook.md` guidance with compact-vs-expanded call examples, columnar array examples, and command vector examples.
+5. Updated agent routing text and trigger-audit notes with `zig fmt`, `zig fmt --check`, `zig fmt steering`, `format steering`, `trailing comma`, and column-layout cues.
+6. Added Matklad's 2026-05-08 "Steering Zig Fmt" as a source anchor and summarized its formatting cues.
+
 ## High-impact fixes retained from the 0.16.0 upgrade
 
 1. Updated lint guidance from `zlinter#master` to `zlinter#0.16.x` for stable Zig 0.16.x.
@@ -56,36 +65,12 @@ This bundle supersedes the previous `zig_skill_upgrade`, `zig_skill_comptime_exp
 ## Files in this bundle
 
 - `SKILL.md` — drop-in replacement.
-- `references/comptime_playbook.md` — expert comptime reference.
-- `references/comptime_patterns.zig` — comptime examples and review snippets.
-- `references/memory_ownership_playbook.md` — allocator and ownership reference.
-- `references/unsafe_boundary_playbook.md` — pointer/cast/sentinel/alignment reference.
-- `references/layout_abi_playbook.md` — layout/ABI/MMIO/wire-format reference.
-- `references/error_failure_playbook.md` — error-set and failure-path reference.
-- `references/io_effects_playbook.md` — Zig 0.16 explicit I/O/effects reference.
-- `references/build_toolchain_playbook.md` — build/cross-compilation/package/C interop reference.
-- `references/atomics_concurrency_playbook.md` — concurrency/atomics/cancellation reference.
-- `references/testing_failure_discovery_playbook.md` — testing/fuzzing/failure-discovery reference.
-- `references/performance_engineering_playbook.md` — performance/profiling/cache-layout reference.
-- `references/cache_hygiene_playbook.md` — Zig cache taxonomy, dry-run drain protocol, dependency-edit protection, and post-drain validation reference.
-- `references/cache_ci_policy.md` — CI cache key, TTL, and drain-order guidance.
-- `references/systems_contract_template.md` — systems review/report template.
-- `references/systems_patterns.zig` — systems engineering code patterns.
-- `references/linting_playbook.md` — modular lint reference.
-- `references/profiling_playbook.md` — profiling reference.
-- `references/boundary_witness.zig` — scan/validate/project witness example.
-- `references/fuzz_differential.zig` — Smith fuzzing template.
-- `references/fail_nth_alloc.zig` — allocation-failure coverage template.
-- `references/ffi_contract_template.md` — FFI review table.
-- `agents/openai.yaml` — refreshed agent description/prompt.
-- `scripts/comptime_audit_rg.sh` — comptime audit command.
-- `scripts/systems_audit_rg.sh` — systems hazard audit command.
-- `scripts/zig_cache_report.sh` — non-destructive cache/output inventory command.
-- `scripts/zig_cache_drain.sh` — guarded dry-run-first cache drain command.
-- `scripts/zig_cache_rebuild_probe.sh` — post-drain fetch/build validation command.
-- `scripts/zig_trigger_audit_update_notes.md` — trigger terms to add to trigger-audit routing.
-- `SOURCES.md` — primary source anchors used for the 0.16.0/comptime/systems upgrade.
+- `references/linting_playbook.md` — updated built-in checks, `zig fmt` steering, and `zlinter` guidance.
+- `agents/openai.yaml` — refreshed routing prompt with formatting/steering terms.
+- `scripts/zig_trigger_audit_update_notes.md` — updated trigger-audit terms.
+- `SOURCES.md` — primary source anchors used for the 0.16.0/comptime/systems/cache/formatting upgrade.
+- Existing unmodified references and scripts remain part of the surrounding skill directory.
 
 ## Validation note
 
-The markdown and scripts were assembled in this environment, but the Zig snippets were not compiled here because a Zig 0.16.0 toolchain is not installed in the container. Validate in the target repository with `zig version`, `zig fmt --check`, `.zig`-only `zig ast-check`, `zig test`, and the repo's `zig build`/`zig build test` steps. For low-level changes, also run relevant `Debug`, `ReleaseSafe`, `ReleaseFast`, target-matrix, allocation-failure, fuzzing, and profiling lanes. For cache drains, validate first with `scripts/zig_cache_report.sh`, then use `scripts/zig_cache_drain.sh` in dry-run mode before any destructive run, and finish with `scripts/zig_cache_rebuild_probe.sh` when dependency/global cache state was touched.
+The markdown in this drop-in bundle was assembled in this environment, but Zig snippets were not compiled here because a Zig 0.16.0 toolchain is not installed in the container. Validate in the target repository with `zig version`, `zig fmt --check`, `.zig`-only `zig ast-check`, `zig test`, and the repo's `zig build`/`zig build test` steps. For low-level changes, also run relevant `Debug`, `ReleaseSafe`, `ReleaseFast`, target-matrix, allocation-failure, fuzzing, and profiling lanes. For cache drains, validate first with `scripts/zig_cache_report.sh`, then use `scripts/zig_cache_drain.sh` in dry-run mode before any destructive run, and finish with `scripts/zig_cache_rebuild_probe.sh` when dependency/global cache state was touched.

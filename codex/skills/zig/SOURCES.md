@@ -7,6 +7,7 @@ Primary sources used for this upgrade:
 - Zig build system guide: https://ziglang.org/learn/build-system/
 - Zlinter 0.16.x README: https://raw.githubusercontent.com/KurtWagner/zlinter/0.16.x/README.md
 - zprof repository/README: https://github.com/ANDRVV/zprof
+- Matklad, "Steering Zig Fmt" (2026-05-08): https://matklad.github.io/2026/05/08/steering-zig-fmt.html
 
 Official Zig 0.16.0 anchors reviewed:
 
@@ -27,6 +28,14 @@ Official Zig 0.16.0 anchors reviewed:
 - Zig build system, cross-compilation, C translation, `@cImport` deprecation in the 0.16.0 release notes, `addTranslateC`, package `--fork`, project-local `zig-pkg`, `--test-timeout`, and build error-style changes.
 - `std.Io`, `std.process.Init`/"Juicy Main", non-global args/env, preopens, current path, cancellation, and `std.testing.io`.
 - Build modes: Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
+
+Additional formatting anchors reviewed for this update:
+
+- `zig fmt` is intentionally steerable through syntactic cues already present in the file.
+- For call-like comma-separated constructs, a trailing comma selects expanded one-item-per-line layout; no trailing comma allows compact layout when possible.
+- For arrays, a trailing comma plus the first intentional line break can request aligned columnar layout.
+- Array concatenation with `++` can compose differently shaped chunks, such as a compact command prefix followed by aligned option/value rows.
+- Meaningful comments can anchor layout; dummy comments should not be used solely to pin formatter output.
 
 Additional cache hygiene anchors reviewed for this update:
 

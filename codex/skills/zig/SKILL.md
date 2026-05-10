@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Use when implementing, reviewing, migrating, linting, testing, fuzzing, profiling, optimizing, or hardening Zig 0.16.0 code: .zig files, build.zig/build.zig.zon, std.Io/process.Init migration, C interop, expert comptime/metaprogramming/reflection/codegen, allocator ownership, FFI boundaries, concurrency, dependencies, cache hygiene/disk-pressure operations, and measured performance work."
+description: "Use when implementing, reviewing, migrating, formatting/zig fmt steering, linting, testing, fuzzing, profiling, optimizing, or hardening Zig 0.16.0 code: .zig files, build.zig/build.zig.zon, std.Io/process.Init migration, C interop, expert comptime/metaprogramming/reflection/codegen, allocator ownership, FFI boundaries, concurrency, dependencies, cache hygiene/disk-pressure operations, and measured performance work."
 ---
 
 # Zig
@@ -16,7 +16,7 @@ Prefer witness-driven design. If a fact affects safety, ownership, zero-copy leg
 Keep proof lanes separate:
 
 - Comptime contracts prove what must be known at compile time, what gets generated or specialized, which invalid shapes fail at compile time, and which runtime path remains.
-- Formatting/linting proves style and static policy.
+- Formatting/linting proves canonical layout, formatter steering intent, and static policy.
 - Builds/tests/fuzzing prove correctness.
 - Benchmarks prove user-visible performance deltas.
 - Profilers explain where time, allocations, locks, or bytes went.
@@ -26,17 +26,18 @@ When a lane cannot be run, say so with a stable label: `LINT_UNAVAILABLE`, `TEST
 
 ## First-pass workflow
 
-1. Classify the request: migration, API design, correctness bug, dependency/build work, cache/disk-pressure work, lint/tooling, FFI, concurrency, comptime/codegen, or performance.
+1. Classify the request: migration, API design, correctness bug, dependency/build work, cache/disk-pressure work, formatting/lint/tooling, FFI, concurrency, comptime/codegen, or performance.
 2. If the request involves `comptime`, `anytype`, reflection, generated types, format/schema derivation, or specialization, produce a comptime contract before producing code.
-3. Confirm repo shape: find `build.zig`, `build.zig.zon`, existing `zig build` steps, tests, benchmarks, and lint steps.
+3. Confirm repo shape: find `build.zig`, `build.zig.zon`, existing `zig build` steps, tests, benchmarks, lint steps, and formatting conventions.
 4. Confirm toolchain version with `zig version` before executing 0.16.0-sensitive commands.
 5. Run the 0.16.0 migration scan when touching code written for 0.15.x or older.
 6. Run the comptime audit scan when touching generic, reflective, or generated-type code.
 7. Run the systems audit scan when touching allocators, ownership, pointers, casts, C/ABI, packed/extern layout, I/O effects, atomics, concurrency, or low-level performance.
 8. Run the cache hygiene protocol when the request involves `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, global cache, custom `--cache-dir`/`--global-cache-dir`, disk pressure, or CI cache bloat.
-9. Identify hazard classes and proof requirements before editing.
-10. Make the smallest change that satisfies the contract.
-11. Re-run the appropriate proof lanes and report exact commands plus outcomes.
+9. For formatting requests, identify the intended layout before running `zig fmt`; use trailing commas, first-row array shaping, comments, or clearer intermediate declarations rather than hand-aligned whitespace.
+10. Identify hazard classes and proof requirements before editing.
+11. Make the smallest change that satisfies the contract.
+12. Re-run the appropriate proof lanes and report exact commands plus outcomes.
 
 ## Zig 0.16.0 migration scan
 
@@ -63,8 +64,6 @@ Interpretation:
 - Profiling/debug info: the new ELF linker is useful for incremental builds, but do not select it for DWARF-dependent profiling unless the debug-info limitation has been resolved in the target toolchain.
 - Comptime metadata: audit old assumptions about zero-bit tuple fields being implicitly `comptime`; Zig 0.16.0 reverted that behavior for `std.builtin.StructField.is_comptime` inspection.
 
-
-
 ## Hazard classes and proof obligations
 
 | Hazard class | Required proof |
@@ -81,8 +80,9 @@ Interpretation:
 | `dependency/provenance` | Visible URL/hash/fingerprint, origin repo, release tag or commit, and signer/attestation notes for security-sensitive or long-lived pins. |
 | `cache/disk-pressure` | Cache/output taxonomy, dry-run inventory, dependency-edit protection, exact reclaimed-size report, and post-drain fetch/build validation. |
 | `comptime/metaprogramming` | Comptime contract, shape validation before reflection, intentional diagnostics, positive and negative fixtures, and compile-time cost/binary-size review when specialization cardinality is nontrivial. |
+| `formatting/zig-fmt-steering` | Formatter intent described in source-level cues, `zig fmt`/`zig fmt --check` run, and diff reviewed for token-level steering changes such as trailing-comma add/remove. |
 
-Satisfy every active hazard class. Do not use a green smoke test as proof for unsafe, FFI, lock-free, layout-sensitive, or optimizer-sensitive code.
+Satisfy every active hazard class. Do not use a green smoke test as proof for unsafe, FFI, lock-free, layout-sensitive, optimizer-sensitive, or allocation-sensitive code.
 
 ## Low-level systems engineering contract
 
@@ -196,7 +196,6 @@ Rules:
 - For C translation, match target and cflags; isolate translated imports behind wrappers.
 - Validate low-level code in relevant optimization modes and targets, not Debug only.
 
-
 ## Cache hygiene and disk-pressure operations
 
 Use `references/cache_hygiene_playbook.md` when the user reports disk pressure, stale Zig caches, `No space left on device`, CI cache bloat, or asks about `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, the global cache, `--cache-dir`, or `--global-cache-dir`.
@@ -220,7 +219,7 @@ Rules:
 - Treat global cache as shared infrastructure; drain explicitly and preferably by age/size policy.
 - Default destructive scripts to dry-run. Require explicit `--yes` for deletion.
 - Refuse cache drains while active Zig builds are detected.
-- After touching dependency/global cache state, run `zig build --fetch=needed` or `zig build --fetch=all`, then `zig build --summary all` or the repo’s normal build lane.
+- After touching dependency/global cache state, run `zig build --fetch=needed` or `zig build --fetch=all`, then `zig build --summary all` or the repo's normal build lane.
 - For recurring disk pressure, recommend `--cache-dir` and `--global-cache-dir` routing instead of repeated manual deletion.
 
 Useful commands:
@@ -275,9 +274,9 @@ Rules:
 - Keep benchmark dataset, allocator, optimize mode, and checksum fixed between baseline and variant.
 - Preserve fuzz crash corpora and exact reproduction commands.
 
-## Linting and static checks
+## Linting, formatting, and static checks
 
-Use the repo’s existing lint surface first. If `zig build lint` exists, treat it as a hard gate and run the repo-supported invocation. If lint is absent, mark `LINT_UNAVAILABLE` unless the user asked to add tooling or the change safely fits a lint bootstrap.
+Use the repo's existing lint surface first. If `zig build lint` exists, treat it as a hard gate and run the repo-supported invocation. If lint is absent, mark `LINT_UNAVAILABLE` unless the user asked to add tooling or the change safely fits a lint bootstrap.
 
 Baseline built-in checks:
 
@@ -293,11 +292,71 @@ find . -name '*.zig' \
 Rules:
 
 - `zig fmt` is the canonical formatter. Use `zig fmt` for intentional formatting changes and review the diff.
+- Treat `zig fmt` as steerable. Add or remove syntax-level layout cues before formatting instead of fighting the formatted result with manual whitespace.
+- For call-like comma-separated constructs, a trailing comma is a layout decision: without it, `zig fmt` may collapse the construct to one line; with it, `zig fmt` expands to one item per line.
+- For arrays and array literals, a trailing comma plus an intentional first line break can request columnar layout. `zig fmt` uses the first row width as the column shape and aligns later rows.
+- Use `++` to compose array chunks when a single array needs mixed layout, such as a compact command prefix followed by aligned `--flag`, `value` pairs.
+- Comments are layout anchors. Keep real explanatory comments; avoid dummy comments whose only purpose is to pin formatter output.
+- Prefer format-shaping only when it makes the domain structure clearer. Do not change data shape or introduce misleading grouping merely to obtain a preferred layout.
 - `zig ast-check` is a syntax/simple-compile-error lane for `.zig` files. Do not run it on `build.zig.zon`.
 - Do not equate `zig ast-check` with a full semantic compile. Follow with `zig build`/`zig test`.
 - For third-party linting in Zig 0.16.x, prefer `zlinter#0.16.x`. Use `#master` only when intentionally targeting 0.17.x-dev.
 - Do not enable all `zlinter` built-in rules as a permanent CI default without review; upstream calls that mode pedantic and mainly suitable for exploration. Use a curated rule set, then add more rules incrementally.
 - Run `--fix` only on a clean working tree or after taking a backup. Re-run until no fixes are applied, then review the diff before proceeding.
+
+### Steering `zig fmt`
+
+Use `zig fmt` layout cues intentionally:
+
+```zig
+// No trailing comma: prefer compact call layout when it fits.
+f(1, 2,
+    3);
+
+// zig fmt:
+f(1, 2, 3);
+
+// Trailing comma: force one argument per line.
+f(1, 2,
+    3,
+);
+
+// zig fmt:
+f(
+    1,
+    2,
+    3,
+);
+```
+
+For array data, use an early line break plus a trailing comma to communicate a table shape:
+
+```zig
+const matrix = .{ 1, 2, 3,
+    4, 5, 6, 7, 8, 9, 10, 11,
+};
+```
+
+`zig fmt` preserves the intent as aligned rows with the first row defining the column count. For heterogeneous command vectors or option tables, compose chunks with `++` so each chunk can have its own readable shape:
+
+```zig
+try run(&(.{ "aws", "s3", "sync", path, url } ++ .{
+    "--include",            "*.html",
+    "--include",            "*.xml",
+    "--metadata-directive", "REPLACE",
+    "--cache-control",      "max-age=0",
+}));
+```
+
+Review protocol:
+
+```bash
+zig fmt path/to/file.zig
+git diff -- path/to/file.zig
+zig fmt --check .
+```
+
+When a diff is formatting-only, identify the intentional token-level steering change, usually a trailing-comma add/remove, first-row array break, meaningful comment, or introduction of an intermediate declaration. Do not claim `zig fmt` proves semantics; follow with the repo's build/test lanes.
 
 `zlinter` bootstrap for Zig 0.16.x:
 
@@ -558,300 +617,44 @@ Use Zig 0.16 type constructors instead of removed `@Type` forms:
 | Old pattern | Zig 0.16 pattern |
 | --- | --- |
 | `@Type(.{ .int = ... })` | `@Int(.signed/.unsigned, bits)` |
-| `std.meta.Int` | `@Int` |
-| `std.meta.Tuple` | `@Tuple` |
-| `@Type(.{ .pointer = ... })` | `@Pointer` |
-| `@Type(.{ .@"fn" = ... })` | `@Fn` |
-| `@Type(.{ .@"struct" = ... })` | `@Struct` |
-| `@Type(.{ .@"union" = ... })` | `@Union` |
-| `@Type(.{ .@"enum" = ... })` | `@Enum` |
-| `@Type(.enum_literal)` or `@TypeOf(.foo)` as a constructor | `@EnumLiteral()` |
-| Reified error sets | Explicit `error{...}` declarations |
+| `std.meta.Int(.signed, bits)` | `@Int(.signed, bits)` |
+| `std.meta.Int(.unsigned, bits)` | `@Int(.unsigned, bits)` |
+| `std.meta.Tuple(&.{ T, U })` | `@Tuple(&.{ T, U })` |
+| generated pointer type through `@Type` | `@Pointer(...)` |
+| generated function type through `@Type` | `@Fn(...)` |
+| generated struct/union/enum through `@Type` | `@Struct(...)`, `@Union(...)`, `@Enum(...)` |
+| enum literal type through `@Type` | `@EnumLiteral()` |
 
-Do not generate types unless a named static type, ordinary array syntax, optional syntax, error-union syntax, opaque declaration, or explicit error-set declaration cannot express the shape more clearly.
+Prefer normal syntax for arrays, optionals, error unions, opaques, and explicit error sets. In migrations, remove old `@Type` helpers instead of building compatibility wrappers unless a large API requires a staged migration.
 
-Common replacements:
+### Diagnostics and negative proof
 
-```zig
-fn Array(comptime len: usize, comptime Elem: type, comptime sentinel: ?Elem) type {
-    return if (sentinel) |s| [len:s]Elem else [len]Elem;
-}
+Compile-time APIs need deliberate diagnostics:
 
-fn UInt(comptime bits: u16) type {
-    return @Int(.unsigned, bits);
-}
-
-fn Pair(comptime A: type, comptime B: type) type {
-    const names = [_][]const u8{ "first", "second" };
-    const types = [_]type{ A, B };
-    const attrs = [_]std.builtin.Type.StructField.Attributes{ .{}, .{} };
-    return @Struct(.auto, null, &names, &types, &attrs);
-}
-```
-
-### Diagnostics rubric
-
-Bad:
-
-```zig
-@compileError("unsupported type");
-```
-
-Good:
-
-```zig
-@compileError(
-    "deriveJson(" ++ @typeName(T) ++ "): expected struct with public fields; " ++
-    "define pub fn jsonSerialize or pass Options.custom_serialize"
-);
-```
-
-A good comptime diagnostic names:
-
-- the API that rejected the input;
-- the offending type or comptime value;
-- the unsupported shape or invariant;
-- the intended escape hatch;
-- the smallest action the caller can take.
-
-Avoid dumping raw `std.builtin.Type` unless the user is actively debugging internals.
+- Validate shape before projecting fields, declarations, payloads, or tags.
+- Put `@compileError` at the public API boundary with the API name and `@typeName(T)`.
+- Keep error messages actionable: expected shape, actual shape, and one valid example.
+- Use positive fixtures for supported types and negative compile-fail fixtures or documented manual probes for unsupported shapes.
+- Remove `@compileLog` before committing unless the user explicitly asked for active debugging output.
 
 ### Compile-time cost governance
 
-Audit cost when the comptime code reflects over many types, parses large strings, emits generated types, or specializes by value:
+Specialization is a design cost:
 
-- How many specializations are generated?
-- Are compile-time value parameters high cardinality?
-- Is a large string/table parsed for every instantiation?
-- Is reflection repeated in multiple generic functions?
-- Can derived metadata be centralized in one type-level plan?
-- Does `@setEvalBranchQuota` hide unbounded work?
-- Does the generated code increase binary size?
-- Did the code build in Debug and at least one Release mode?
+- Name which values are truly required at comptime and keep everything else runtime.
+- Avoid high-cardinality comptime values such as user strings, file contents, or runtime-like data unless the generated artifact is the point.
+- Treat `@setEvalBranchQuota` as a smell. It is acceptable for a bounded compile-time parser/table generator when the bound is stated and tested.
+- For large generated tables or many specializations, report binary-size/build-time risk and consider a compact runtime plan.
 
-Avoid comptime when a runtime table is clearer, performance is unproven, or specialization would generate many near-identical functions.
+## Reporting expectations
 
-### Positive and negative proof
+When answering Zig work, report:
 
-Comptime-heavy libraries need positive and negative fixtures.
+- active hazard classes;
+- version observed or `VERSION_MISMATCH`;
+- exact commands run and outcomes;
+- proof lanes unavailable with stable labels;
+- format-steering tokens changed when formatting is relevant;
+- remaining risk and the next proof lane needed.
 
-Positive proof:
-
-- valid type derives successfully;
-- valid custom hook overrides default behavior;
-- runtime behavior matches the derived plan;
-- comptime and runtime calls agree when both are supported.
-
-Negative proof:
-
-- invalid type produces intentional `@compileError`;
-- missing hook produces a clear diagnostic;
-- bad field/ABI/policy combination is rejected;
-- removed Zig 0.15-era constructs are absent.
-
-If the environment cannot run compile-fail tests, report `COMPTIME_PROOF_UNAVAILABLE` and include the exact invalid fixture the user should build locally.
-
-### Expert review checklist
-
-- Identify comptime inputs and runtime inputs.
-- State why comptime is required: type construction, shape validation, table generation, ABI proof, or measured specialization.
-- Reject unsupported shapes with `@compileError` before using `@field`, `@FieldType`, `@hasDecl`, or `@hasField` unsafely.
-- Prefer explicit `comptime T: type` when the type is the API subject.
-- Avoid unconstrained `anytype`; document the implicit typeclass.
-- Use `inline for` only for semantic comptime iteration or benchmark-proven unrolling.
-- Prefer `inline else` for tagged-union exhaustiveness when applicable.
-- For Zig 0.16, replace removed `@Type` patterns with `@Int`, `@Tuple`, `@Pointer`, `@Fn`, `@Struct`, `@Union`, `@Enum`, and `@EnumLiteral`.
-- Treat `@compileLog` as temporary debugging only.
-- Treat `@setEvalBranchQuota` as a cost smell unless bounded and justified.
-- Add positive and negative tests for derived APIs.
-- Measure binary size/build time if specialization cardinality is nontrivial.
-
-## FFI and C interop
-
-For new Zig 0.16.0 code, prefer build-system C translation:
-
-```zig
-const translate_c = b.addTranslateC(.{
-    .root_source_file = b.path("src/c.h"),
-    .target = target,
-    .optimize = optimize,
-});
-translate_c.linkLibC();
-translate_c.linkSystemLibrary("sqlite3", .{});
-
-const exe = b.addExecutable(.{
-    .name = "app",
-    .root_module = b.createModule(.{
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{.{
-            .name = "c",
-            .module = translate_c.createModule(),
-        }},
-    }),
-});
-```
-
-Boundary rules:
-
-- Keep raw `extern fn` declarations or translated C imports in a small boundary module.
-- Maintain a contract table for each nontrivial symbol: nullability, length source, mutability, ownership in/out, lifetime, thread-safety, error mapping, and linkage.
-- Centralize `@ptrCast`, sentinel conversion, null checks, errno/result translation, and cleanup.
-- Test happy paths, invalid/null inputs, out-param initialization, cleanup, and link wiring.
-- If the C dependency changes, compare signatures and ABI expectations before trusting the upgrade.
-
-## Concurrency and weak-memory lane
-
-Prefer ownership transfer, sharding, or message passing before lock-free shared state.
-
-For shared mutable state, write down:
-
-- invariant,
-- owner transitions,
-- memory order for each atomic,
-- cancellation and lifetime model,
-- replay or deterministic seed strategy.
-
-When migrating from `std.Thread.Pool`, choose:
-
-- `std.Io.async` for independent asynchronous work,
-- `std.Io.Group.async` for shared-lifetime task groups,
-- `std.Io.concurrent` when tasks must synchronize with the caller or async is semantically wrong.
-
-Stress tests are not correctness proof for lock-free code. Add a sequential spec or witness model when lock-free behavior is claimed.
-
-## Dependency and package workflow
-
-Treat `build.zig.zon` as the dependency source of truth when packages are involved.
-
-```bash
-zig fetch --save https://example.invalid/pkg.tar.gz
-zig fetch --save git+https://github.com/example/pkg#v1.2.3
-zig build
-zig build --fork=/absolute/path/to/local/clone
-```
-
-Rules:
-
-- Review URL, hash/fingerprint, package name, and paths in every dependency diff.
-- Keep `zig-pkg/` out of source control unless intentionally vendoring.
-- Do not edit `.zig-cache` as a dependency override.
-- Use `--fork` for temporary local debugging of ecosystem breakage.
-- For security-sensitive pins, record origin repo, release tag/commit, fetch date, and signer or attestation evidence.
-
-## Performance and profiling
-
-Use this lane for speed, latency, throughput, allocation pressure, memory growth, leaks, or hotspot analysis.
-
-First name the symptom:
-
-- End-to-end latency/throughput/regression: benchmark first.
-- Allocation churn, live bytes, leaks, or allocator pressure: use `zprof`.
-- CPU hotspots, cache misses, branchy paths, or lock contention: use a system CPU sampler.
-- Long-running concurrent or frame-oriented telemetry: consider Tracy only when the workload shape justifies instrumentation or the repo already supports it.
-
-Minimum measured loop:
-
-```bash
-zig build test
-zig build -Doptimize=ReleaseSafe -Dtarget=native -Dcpu=native
-zig build -Doptimize=ReleaseFast -Dtarget=native -Dcpu=native
-zig build bench -- --samples 10 --warmup 3
-```
-
-If no benchmark exists, either add a small harness with a checksum/regression guard or report `UNMEASURED` with exact commands the user can run.
-
-`zprof` lane:
-
-- Use current upstream release guidance; as of the researched 0.16.0 update, the latest release is v4.0.0.
-- `zprof` wraps any Zig allocator and tracks logical allocation metrics. It is not a CPU profiler and does not replace wall-clock benchmarks.
-- Metrics in v4 use fields such as `allocated`, `freed`, `alloc_count`, `free_count`, `live_requested`, and `peak_requested`.
-- Enable `.thread_safe = true` only when multiple threads share the wrapped allocator; otherwise prefer one profiler per subsystem/thread for attribution.
-- Keep child allocator, dataset, work count, and optimize mode fixed between baseline and variant.
-- Use `profiler.reset()` between phases when one process captures multiple workloads.
-
-Install/wire example:
-
-```bash
-zig fetch --save https://github.com/ANDRVV/zprof/archive/v4.0.0.zip
-```
-
-```zig
-const zprof_dep = b.dependency("zprof", .{
-    .target = target,
-    .optimize = optimize,
-});
-exe.root_module.addImport("zprof", zprof_dep.module("zprof"));
-```
-
-Minimal usage:
-
-```zig
-const std = @import("std");
-const Zprof = @import("zprof").Zprof;
-
-fn runWorkload(allocator: std.mem.Allocator) !void {
-    const data = try allocator.alloc(u8, 1024);
-    defer allocator.free(data);
-}
-
-test "profile allocator pressure" {
-    var prof: Zprof(.{}) = .init(std.testing.allocator, undefined);
-    try runWorkload(prof.allocator());
-
-    try std.testing.expect(!prof.profiler.hasLeaks());
-    try std.testing.expectEqual(@as(usize, 0), prof.profiler.live_requested.get());
-}
-```
-
-CPU sampling lane:
-
-```bash
-# Linux
-perf record --call-graph dwarf -- ./zig-out/bin/app
-perf report
-
-# macOS
-# Use Instruments Time Profiler on the optimized binary.
-```
-
-If allocator counters are flat and wall time regresses, switch to CPU sampling instead of guessing.
-
-Benchmark decomposition rule: when a regression spans abstraction layers, add 2-4 lanes in the same harness with the same dataset, warmup, sample count, checksum, allocator, and optimize mode: substrate only, wrapper/shell only, full path, and optionally reference/scalar path. Optimize from the decomposed result, not from the aggregate number alone.
-
-## Reporting contract
-
-Always end Zig implementation/review work with:
-
-- version observed,
-- changed files or proposed changes,
-- active hazard classes,
-- commands run,
-- results and failures,
-- unavailable proof lanes with stable labels,
-- remaining risk.
-
-Do not claim correctness, lint cleanliness, fuzz coverage, or speedup without evidence.
-
-## References inside this skill
-
-- `codex/skills/zig/references/linting_playbook.md`
-- `codex/skills/zig/references/profiling_playbook.md`
-- `codex/skills/zig/references/comptime_playbook.md`
-- `codex/skills/zig/references/comptime_patterns.zig`
-- `codex/skills/zig/references/memory_ownership_playbook.md`
-- `codex/skills/zig/references/unsafe_boundary_playbook.md`
-- `codex/skills/zig/references/layout_abi_playbook.md`
-- `codex/skills/zig/references/error_failure_playbook.md`
-- `codex/skills/zig/references/io_effects_playbook.md`
-- `codex/skills/zig/references/build_toolchain_playbook.md`
-- `codex/skills/zig/references/atomics_concurrency_playbook.md`
-- `codex/skills/zig/references/testing_failure_discovery_playbook.md`
-- `codex/skills/zig/references/performance_engineering_playbook.md`
-- `codex/skills/zig/references/systems_contract_template.md`
-- `codex/skills/zig/references/systems_patterns.zig`
-- `codex/skills/zig/references/boundary_witness.zig`
-- `codex/skills/zig/references/fuzz_differential.zig`
-- `codex/skills/zig/references/fail_nth_alloc.zig`
-- `codex/skills/zig/references/ffi_contract_template.md`
+Never imply that formatting, linting, `ast-check`, a smoke test, or a benchmark alone proves unsafe memory, ABI layout, allocation failure handling, concurrency correctness, or FFI soundness.
