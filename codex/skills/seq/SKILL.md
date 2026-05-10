@@ -44,6 +44,11 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
      - `tool-lifecycle` when lifecycle completeness matters: declared/completed/failed/unresolved calls, exit/status/output evidence, and typed tool endings.
      - `session-graph` for worker/orchestrator relationships, including parent/worker proof paths and DOT output.
      - `tail` for active sessions or one-shot trace event status from the current/newest rollout.
+     - `message-audit` for role/session summaries around repeated message searches, especially when the next step would otherwise be `jq` grouping.
+     - `skill-cohort` for "what else appears in sessions that used this skill?" cohort work.
+     - `tool-search` for lifecycle-aware command/tool text search plus summary or argument grouping.
+     - `memory-extension-audit` for live memory extension inventory; treat its provenance fields as inventory evidence, not causal proof of behavior.
+     - `token-window` for max rolling token windows over timestamp-sorted `token_deltas`.
      - `opencode-prompts` / `opencode-events` only when the literal gate is satisfied.
   3. `query-diagnose` when a `seq query` run needs lifecycle debugging or deterministic next actions.
   4. Generic `seq query` only when no specialized command covers the question.
@@ -197,6 +202,16 @@ Search session messages:
 ```bash
 seq message-search --root ~/.codex/sessions --contains "release workflow" --roles user,assistant --limit 20 --format table
 seq message-search --root ~/.codex/sessions --contains-any "stale packet,transport-invalid" --format jsonl
+seq message-audit --root ~/.codex/sessions --contains-any "jq,seq query" --roles user,assistant --exclude-current --format table
+seq message-audit --root ~/.codex/sessions --contains "release workflow" --mode sessions --show-query --format json
+```
+
+Audit skill cohorts and tool searches without ad hoc post-processing:
+```bash
+seq skill-cohort --root ~/.codex/sessions --skill seq --since 2026-04-01T00:00:00Z --exclude-current --format table
+seq skill-cohort --root ~/.codex/sessions --skill fixed-point-driver --mode mentions --format jsonl
+seq tool-search --root ~/.codex/sessions --contains "seq query" --mode rows --exclude-current --format table
+seq tool-search --root ~/.codex/sessions --contains "jq " --mode args --format jsonl
 ```
 
 Report workdir/cwd session activity:
@@ -211,11 +226,22 @@ seq query --root ~/.codex/sessions --spec \
   '{"dataset":"token_deltas","group_by":["day"],"metrics":[{"op":"sum","field":"delta_total_tokens","as":"tokens"}],"sort":["day"],"format":"table"}'
 ```
 Use `token-usage --tz ...` instead when the user means local calendar days or asks for averages/summaries rather than raw UTC buckets.
+Use `token-window` when the question is a rolling window, not a calendar bucket:
+```bash
+seq token-window --root ~/.codex/sessions --window-hours 24 --since 2026-04-01T00:00:00Z --exclude-current --format table
+seq token-window --root ~/.codex/sessions --window-hours 6 --mode rows --format jsonl
+```
 
 Top sessions by total tokens:
 ```bash
 seq query --root ~/.codex/sessions --spec \
   '{"dataset":"token_sessions","select":["path","total_total_tokens"],"sort":["-total_total_tokens"],"limit":10,"format":"table"}'
+```
+
+Audit memory extensions without implying behavioral causality:
+```bash
+seq memory-extension-audit --extensions-root ~/.codex/memories/extensions --mode rows --format table
+seq memory-extension-audit --extensions-root ~/.codex/memories/extensions --mode summary --format json
 ```
 
 Rank tool calls:
