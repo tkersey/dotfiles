@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups such as `skill-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, and `orchestration-concurrency`, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups such as `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, and `orchestration-concurrency`, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
 ---
 
 # seq
@@ -31,6 +31,7 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
      - `find-session` for prompt-to-session lookup.
      - `session-prompts` for "what did that session actually say" and transcript proof.
      - `skill-audit` for skill usage summaries, one-skill mention rows, and one-skill daily trends.
+     - `workflow-audit` for workflow-cohort utilization reports across text, skill mentions, tool traces, session graph roles, and outcome signals.
      - `tool-audit` for shell/tool command summaries by executable/tool/session/workdir/command plus row, args, and unresolved modes.
      - `memory-inventory` for memory category/file/block/stage1/extension inventory without hand-writing `memory_*` query specs.
      - `message-search` for direct message text search with `--contains`, `--regex`, `--contains-any`, or `--contains-all`.
@@ -176,6 +177,8 @@ Prefer the lifted shortcut:
 ```bash
 seq skill-audit --root ~/.codex/sessions --limit 20 --format table
 seq skill-audit --root ~/.codex/sessions --skill seq --mode trend --format table
+seq workflow-audit --root ~/.codex/sessions --workflow fixed-point-driver --mode summary --since 2026-04-01T00:00:00Z --format table
+seq workflow-audit --root ~/.codex/sessions --workflow fixed-point-driver --mode report --since 2026-04-01T00:00:00Z --format markdown
 ```
 
 Audit command/tool usage:
@@ -490,6 +493,7 @@ seq plan-search --root ~/.codex/sessions \
 Use these before raw `seq query` when the request matches the shape:
 ```bash
 seq skill-audit --root ~/.codex/sessions --skill seq --mode trend --since 2026-04-01T00:00:00Z --format table
+seq workflow-audit --root ~/.codex/sessions --workflow fixed-point-driver --mode report --since 2026-04-01T00:00:00Z --format markdown
 seq tool-audit --root ~/.codex/sessions --group-by executable --since 2026-04-01T00:00:00Z --limit 20 --format table
 seq memory-inventory --mode blocks --contains "release" --limit 20 --format table
 seq message-search --root ~/.codex/sessions --contains-any "release,homebrew,tap" --roles user,assistant --limit 20 --format table
@@ -607,6 +611,8 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 - `query.params` is now parsed and routed into dataset collectors for dataset-specific source overrides.
+- `query.joins` can enrich one dataset with another by `left`/`right` keys, optional `type=inner|left`, optional `prefix`, and join-local `where`/`params`.
+- `workflow_signals` normalizes `$workflow` mentions, cleaned skill mentions, deterministic outcome signals, tool calls, and session-graph agent roles into one session-derived dataset.
 - `token-usage` now supports `--tz utc|local|+HH:MM|-HH:MM`, `--summary`, `--audit`, `--group-by day|path`, and `--path` / `--session-id` targeting for exact scope reporting.
 - Prefer `token-usage` over generic `query` for "since yesterday/last Thursday", daily averages, or local-calendar token questions; reserve `token_deltas` queries for lower-level accounting checks.
 - For disputed daily averages, run `token-usage --summary --audit` and report both the authoritative monotonic total and the naive last-token overcount fields, with the local-corpus-not-billing boundary.
@@ -625,7 +631,8 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `skill-blocks` is the exact-body recovery surface for session-injected skills; it returns full `<skill>...</skill>` envelopes, not loose `$skill` mentions or narrative references.
 - `skill-blocks` defaults to `--history distinct` and `--format jsonl`; use `--history all` to keep repeated identical injections and `--history latest` to select the newest distinct version.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
-- `skill-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching skill, tool, memory, message, and cwd questions.
+- `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching skill, workflow, tool, memory, message, and cwd questions.
+- `workflow-audit` selects sessions by exact workflow or skill mention after stripping injected skill blocks, then reports source breakdown, outcomes, sessions, or a markdown report without Python post-processing.
 - `session-tooling` summarizes per-invocation shell/tool behavior and can aggregate via `--summary --group-by executable|command|tool`.
 - `query-diagnose` emits per-query diagnostics from rollout JSONL and can suggest deterministic follow-up commands with `--next-actions`.
 - `orchestration-concurrency` reports configured and effective fanout, plus how many times each maximum occurred.
