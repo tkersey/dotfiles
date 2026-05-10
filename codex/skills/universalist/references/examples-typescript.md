@@ -1,21 +1,11 @@
 # TypeScript examples
 
-Keep examples idiomatic for TypeScript.
+- Product: interface/object.
+- Coproduct: discriminated union.
+- Refined type: branded type plus parser/constructor.
+- Pullback: constructor returning checked aggregate.
+- Free construction: tagged AST plus interpreter.
+- Observation vocabulary: discriminated union plus `runObservation`.
+- Generation path: discriminated union plus `lowerGenerated`.
 
-Universalist examples should show:
-
-- one smell;
-- one seam;
-- one smallest honest construction;
-- one proof signal.
-
-Track D examples should show a canonical boundary artifact only when it changes code shape:
-
-- AST plus interpreter;
-- observation enum plus runner;
-- generation path plus lowerer;
-- realizer plus projection;
-- obligation IR plus satisfier;
-- first-order case plus apply.
-
-For lift-shaped cases, name the projection `P` and add a test that projection of the realizer satisfies required behavior.
+Use exhaustive `never` checks when possible.

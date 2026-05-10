@@ -1,30 +1,27 @@
 # Universal Architecture Report
 
 ## Track
-Track D — Universal architecture boundary
 
 ## Signal
 
-## Worlds involved
-
-## Boundary map / projection / embedding
+## Worlds and boundary
 
 ## Known side and unknown artifact
 
+## Smallest honest construction
+
 ## Canonical boundary artifact
 
-## Constructor / introduction form
+## Why this instead of nearby alternatives
 
-## Eliminator / interpreter / projection
+## Seam / files
+
+## Before -> After
 
 ## Law / proof signal
 
 ## Falsifier
 
-## Freyd/AFT boundary diagnostic, if lift-shaped
+## Runtime-only leftovers
 
-## Seam / files
-
-## Compatibility plan
-
-## Stop point
+## Next seam

@@ -1,23 +1,46 @@
 #!/usr/bin/env python3
+"""Lightweight Universalist signal detector.
+
+Heuristic only: this guides inspection, not architecture decisions. The scanner is
+line-oriented to avoid pathological regex behavior on large files.
+"""
 from __future__ import annotations
-import re, sys
 from pathlib import Path
-PATTERNS = {
-    "boolean/status matrix": [r"\bis[A-Z]", r"\bhas[A-Z]", r"status", r"state", r"null"],
-    "repeated validation": [r"validate", r"assert", r"throw", r"raise"],
-    "shared-key agreement": [r"accountId", r"customerId", r"tenantId", r"version"],
-    "branchy policy": [r"if .*policy", r"switch", r"case"],
-    "callback boundary": [r"callback", r"handler", r"lambda", r"=>", r"function"],
-    "projection/lift": [r"project", r"serialize", r"toDTO", r"contract", r"required"],
-}
-def main() -> int:
-    paths = [Path(p) for p in sys.argv[1:]] or [Path('.')]
-    for path in paths:
-        files = [path] if path.is_file() else [p for p in path.rglob('*') if p.is_file() and p.suffix in {'.ts','.js','.py','.go','.rs','.java','.kt','.swift','.hs','.md'}]
-        for f in files[:200]:
-            try: text = f.read_text(errors='ignore')
-            except Exception: continue
-            hits = [name for name,pats in PATTERNS.items() if any(re.search(p, text) for p in pats)]
-            if hits: print(f"{f}: {', '.join(sorted(set(hits)))}")
-    return 0
-if __name__ == '__main__': raise SystemExit(main())
+import re
+import sys
+
+root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.cwd()
+patterns = [
+    ("boolean/status matrix", re.compile(r"\b(is[A-Z][A-Za-z0-9_]*|has[A-Z][A-Za-z0-9_]*|status|state|deletedAt|publishedAt)\b")),
+    ("repeated validation", re.compile(r"validate|is_valid|isValid|assert|guard|check|parse[A-Z]", re.I)),
+    ("shared-id agreement", re.compile(r"\b(customerId|accountId|tenantId|userId|version)\b")),
+    ("callback/handler boundary", re.compile(r"callback|handler|register|subscribe|on[A-Z]|strategy", re.I)),
+    ("projection/query sprawl", re.compile(r"project|view|select|query|toDto|fromDto", re.I)),
+    ("syntax/execution mix", re.compile(r"evaluate|interpret|execute|render|compile", re.I)),
+]
+skip_dirs = {".git", "node_modules", "target", "dist", "build", ".venv", "__pycache__"}
+suffixes = {".ts", ".tsx", ".js", ".jsx", ".py", ".go", ".rs", ".java", ".kt", ".swift", ".hs", ".md"}
+
+if root.is_file():
+    paths = [root]
+else:
+    paths = [p for p in root.rglob("*") if p.is_file() and not any(part in skip_dirs for part in p.parts)]
+
+for path in paths:
+    if path.suffix.lower() not in suffixes:
+        continue
+    try:
+        lines = path.read_text(errors="ignore").splitlines()[:5000]
+    except Exception:
+        continue
+    hits: list[str] = []
+    for line in lines:
+        if len(line) > 2000:
+            line = line[:2000]
+        for name, pat in patterns:
+            if name not in hits and pat.search(line):
+                hits.append(name)
+        if len(hits) >= 4:
+            break
+    if hits:
+        print(f"{path}: {', '.join(hits)}")

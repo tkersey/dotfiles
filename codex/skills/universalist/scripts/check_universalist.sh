@@ -9,9 +9,11 @@ required=(
   references/testing-playbook.md references/migration-playbooks.md references/case-studies.md
   references/examples-haskell.md references/examples-go.md references/examples-typescript.md references/examples-python.md
   references/examples-java-kotlin.md references/examples-rust-swift.md references/sources.md
-  references/universal-architecture-ecosystem.md references/canonical-boundary-artifacts.md
+  references/universal-architecture-kernel.md references/universal-architecture-ecosystem.md
+  references/artifact-selection-by-unknown-location.md references/canonical-boundary-artifacts.md
   references/kan-boundaries-for-universalist.md references/freyd-aft-boundary-diagnostic.md
-  references/yoneda-coyoneda-defunctionalization.md references/universal-architecture-law-tests.md
+  references/effects-and-coalgebras.md references/yoneda-coyoneda-defunctionalization.md
+  references/universal-architecture-law-tests.md
   templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md templates/freyd-boundary-diagnostic.md
   scripts/init_universalist_plan.sh scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py
   scripts/emit_verification_plan.py scripts/emit_law_test_stub.sh scripts/emit_universal_artifact_matrix.sh
@@ -24,7 +26,22 @@ done
 python3 - <<'PY'
 from pathlib import Path
 text = Path('SKILL.md').read_text()
-for r in ['name: universalist','Track D','Universal architecture','canonical boundary artifact','one signal, one seam','Freyd/AFT','free builder','P : B -> C']:
+required = [
+    'name: universalist',
+    'Track D',
+    'Universal architecture',
+    'canonical boundary artifact',
+    'one signal, one seam',
+    'Freyd/AFT',
+    'free builder',
+    'obstruction report',
+    'Behavioral coalgebra',
+    'Effect signature',
+    'P : B -> C',
+    'Allow arbitrary domain primitives',
+    'Unknown-location artifact selector',
+]
+for r in required:
     if r not in text:
         raise SystemExit(f'SKILL.md missing {r}')
 print('metadata ok')
@@ -32,8 +49,15 @@ PY
 ./scripts/emit_law_test_stub.sh coproduct typescript >/dev/null
 ./scripts/emit_law_test_stub.sh universal-architecture agnostic >/dev/null
 ./scripts/emit_law_test_stub.sh freyd agnostic >/dev/null
+./scripts/emit_law_test_stub.sh obstruction agnostic >/dev/null
+./scripts/emit_law_test_stub.sh behavioral-coalgebra agnostic >/dev/null
+./scripts/emit_law_test_stub.sh effect-handler agnostic >/dev/null
 ./scripts/emit_universal_artifact_matrix.sh >/dev/null
 ./scripts/emit_canonical_artifact_plan.sh lifted-implementation typescript >/dev/null
+./scripts/emit_canonical_artifact_plan.sh free-builder typescript >/dev/null
+./scripts/emit_canonical_artifact_plan.sh obstruction-report agnostic >/dev/null
+./scripts/emit_canonical_artifact_plan.sh behavioral-coalgebra typescript >/dev/null
+./scripts/emit_canonical_artifact_plan.sh effect-handler typescript >/dev/null
 ./scripts/emit_universal_architecture_prompt.sh >/dev/null
 ./scripts/emit_freyd_boundary_diagnostic.sh boundary-diagnostic agnostic >/dev/null
 ./scripts/emit_freyd_boundary_diagnostic.sh free-builder typescript >/dev/null

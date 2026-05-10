@@ -1,9 +1,6 @@
 {
-  "name": "universalist-skill",
-  "version": "2.0.0-freyd",
-  "private": true,
-  "description": "Universalist Codex skill with Track D universal architecture and Freyd/AFT projection diagnostics.",
-  "scripts": {
-    "check": "./scripts/check_universalist.sh"
-  }
+  "name": "universalist",
+  "version": "2.0.0",
+  "description": "Structural universal-construction-driven architecture skill with canonical boundary artifacts.",
+  "private": true
 }

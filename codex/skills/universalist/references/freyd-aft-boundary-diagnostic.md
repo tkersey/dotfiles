@@ -1,15 +1,8 @@
 # Freyd/AFT Boundary Diagnostic
 
-This is a Track D sub-practice for lift-shaped architecture. It is not a request to teach Freyd's adjoint functor theorem in full.
+Use this only for lift-shaped Track D refactors.
 
-## Operational slogan
-
-```text
-Lift identifies the outside-in refactor.
-Freyd/AFT diagnoses whether the projection can support a canonical free builder.
-```
-
-Given:
+Shape:
 
 ```text
 A --?--> B
@@ -19,72 +12,59 @@ v        v
 C        C
 ```
 
-Ask:
+Software reading:
+
+- `A`: public cases, contract tests, workflows, requirements, or obligations.
+- `B`: internal implementation world.
+- `C`: observable behavior world.
+- `P : B -> C`: projection, serializer, public API runner, trace observer, report extractor, or forgetful API.
+- `F : A -> C`: required public behavior.
+- `? : A -> B`: realizer, implementation template, free builder output, or residual obligation.
+
+## Diagnostic questions
+
+1. What exactly is `P` in code?
+2. What does `P` forget, observe, serialize, erase, or project?
+3. Can `B` express combined constraints, equalities, products, pullbacks, validations, or workflow composition?
+4. Does `P` preserve those constraints when observed in `C`?
+5. Is there a bounded family of implementation templates for each public behavior?
+6. What `Free : C -> B`, realizer, or obligation artifact is suggested?
+7. Is the unit/projection exact, covering, sound, or approximate?
+8. What obstruction prevents a free/lifted implementation?
+
+## Positive artifact: free builder behind projection
+
+Use when `P` is disciplined enough to support a canonical implementation-side builder.
+
+Code shape:
 
 ```text
-Is P : B -> C a well-behaved observation/forgetful projection?
-Can required behavior in C be freely/canonically realized in B?
+free : RequiredBehavior -> ImplementationTemplate
+project : ImplementationTemplate -> PublicBehavior
 ```
 
-## Software reading of the theorem's conditions
-
-| Theorem-flavored condition | Software reading |
-| --- | --- |
-| `B` has enough limits/constraint structure | internals can combine requirements, express equality, validate overlap, compose workflows, or join views |
-| `P` preserves limits/constraints | observing after combining internals agrees with combining observations |
-| solution-set condition | each public behavior has a bounded menu of implementation templates |
-| left adjoint/free builder exists | there is a canonical builder `Free : C -> B` or a principled realizer/obligation artifact |
-
-## Diagnostic checklist
-
-1. Name `P` in code: serializer, controller runner, test harness, report view, trace observer, projection, or forgetful API.
-2. Name what `P` forgets or erases.
-3. Name the constraints in `B` that matter.
-4. Check whether `P` preserves those constraints.
-5. List implementation templates for each public requirement.
-6. Propose `Free`, `realize`, or `deriveObligations`.
-7. Classify the law: exact, covering, sound, or approximate.
-8. Add an obstruction if no exact/free lift exists.
-
-## Output shape
-
-```text
-Projection P:
-What P forgets:
-Required behavior F:
-Candidate builder Free:
-Template family:
-Constraint preservation check:
-Law/proof signal:
-Obstruction:
-```
-
-## Proof signals
-
-Exact:
-
-```text
-project(free(required(case))) == required(case)
-```
-
-Covering:
-
-```text
-required(case) embeds into project(free(required(case)))
-```
-
-Sound:
+Proof signal:
 
 ```text
 project(free(required(case))) satisfies required(case)
 ```
 
-Obstruction:
+## Negative artifact: obstruction report
+
+Use when no exact/free lift exists.
+
+Common obstructions:
+
+- `P` forgets evidence needed by `F`;
+- `B` cannot combine constraints required by `F`;
+- templates are unbounded or not enumerable;
+- public behavior is inconsistent;
+- implementation world lacks the resource/capability.
+
+Proof signal:
 
 ```text
-no exact lift because P discards <evidence> or B lacks <constraint/template>
+required(case) cannot be realized because named evidence/template/constraint is missing
 ```
 
-## Guardrail
-
-Use the diagnostic only when it changes code shape, tests, or migration risk. Otherwise it is category-theory cosplay.
+Do not recite the theorem in ordinary responses. Translate it into the operational projection diagnostic.

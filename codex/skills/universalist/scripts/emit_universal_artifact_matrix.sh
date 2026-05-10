@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cat <<'OUT'
-# Universal Artifact Matrix
-
-| Pressure | Canonical artifact | First seam | Proof signal |
-|---|---|---|---|
-| Many consumers interpret commands differently | Free syntax / AST | one command/rule | interpreter parity |
-| New internals must satisfy old views | Coherent observations | one endpoint/query | old view parity + overlap coherence |
-| Source semantics must move to target surface | Transported semantics | one generated/plugin case | old behavior through embedding |
-| Public behavior known before internals | Lifted implementation | one contract case | projection(realizer) == required |
-| Public behavior known before internals but P is vague/lossy | Free builder / projection diagnostic | one projection function | project(free(required)) passes or obstruction named |
-| Public policy implies internal checks | Residual obligation | one policy clause | missing obligation fails |
-| Generated payloads lose provenance | Deferred generation artifact | one generated item | lowering preserves provenance |
-| Query/projection sprawl | Observation vocabulary | one projection family | representation-independent observation |
-| Callback boundary hides semantics | Explicit IR | one callback family | apply(encoded) == callback fixture |
+| Smell | Canonical boundary artifact | Universal reading | First proof signal |
+| --- | --- | --- | --- |
+| Many consumers interpret commands differently | Free syntax / explicit AST | Free object / initial algebra | interpreters agree on fixtures |
+| New target surface must preserve old source behavior | Transported semantics | Left Kan / generated path | identity or embedding path preserves behavior |
+| New internals must satisfy old views | Coherent observations | Right Kan / Yoneda | overlapping observations commute |
+| New model must be viewed through old API | Restriction adapter | Precomposition / Delta | old golden tests pass through adapter |
+| Public behavior is known before internals | Lifted implementation | Kan lift / realization | project(realize(case)) == required(case) |
+| Public behavior determines internals and P supports building | Free builder behind projection | Freyd/AFT-style diagnostic | project(free(required(case))) satisfies required |
+| Public behavior determines internals but P loses evidence | Obstruction report | failed lift/free-builder diagnostic | missing evidence/template/constraint named |
+| Public policy implies internal checks | Residual obligations | Right-lift / weakest obligation | missing obligation fails projection |
+| Stateful behavior unfolds over time | Behavioral coalgebra | coalgebra / observation over traces | trace law and invalid transition rejection |
+| Operations need multiple handlers | Effect signature + handlers | algebraic effects / free operation syntax | handler observation parity |
+| Generated payloads lose provenance | Generation path vocabulary | Coyoneda | lowering equals direct interpretation |
+| Query/projection sprawl | Observation vocabulary | Yoneda | representation change preserves observations |
+| Callbacks/closures cross boundaries | Explicit first-order IR | Defunctionalization | apply(encodedCase,x) == oldCallback(x) |
 OUT

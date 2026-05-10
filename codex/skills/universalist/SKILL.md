@@ -1,7 +1,7 @@
 ---
 name: universalist
 description: >
-  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, public contracts determining internals, forgetful or observational projections that may need a canonical free builder, or any need for canonical boundary artifacts. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, and one proof signal.
+  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, protocols or state machines with unclear observations, effect/workflow operations needing multiple handlers, public contracts determining internals, forgetful or observational projections that may need a canonical free builder, or any need for canonical boundary artifacts. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, and one proof signal.
 ---
 
 # Universalist
@@ -12,7 +12,13 @@ This is an **inner lens** for choosing the right structural move. It is not a ge
 
 The enriched slogan is:
 
-> Universal architecture is the practice of designing software around canonical boundary artifacts: **free syntax, coherent observations, transported semantics, lifted implementations, free builders behind projections, explicit IRs, and law tests.**
+> Universal architecture is the practice of designing software around canonical boundary artifacts: **free syntax, coherent observations, transported semantics, lifted implementations, free builders behind projections, obstruction reports, behavioral coalgebras, effect signatures with handlers, explicit IRs, and law tests.**
+
+Core discipline:
+
+> Allow arbitrary domain primitives, but do not allow arbitrary composition across architecture boundaries.
+
+Ordinary code may live inside a boundary: I/O, math, parsing, vendor APIs, database drivers, model calls, clocks, randomness, local algorithms, and low-level loops. Composition boundaries should be explicit artifacts: syntax, observations, projections, transports, lifts, handlers, state transitions, IRs, or law tests.
 
 ## Do not trigger for
 
@@ -83,10 +89,53 @@ Use Track D for:
 - generated artifacts losing provenance;
 - public contract determining internal implementation obligations;
 - plugin, workflow, effect, rule-engine, or DSL boundaries;
+- protocols, state machines, streams, actors, schedulers, or distributed processes whose behavior is best specified by observations over time;
+- effect or workflow operations that need test, production, audit, explanation, simulation, and retry handlers;
 - callback/closure/handler behavior that should become explicit IR;
 - old semantics transported to a new target surface;
 - compatibility facades where several old observations must agree;
 - lifted-implementation refactors where `P : internals -> observable behavior` is vague, lossy, or intended to support a canonical implementation builder.
+
+## Universal Architecture Kernel
+
+Use this kernel for Track D decisions:
+
+1. **Worlds** — source, target, implementation, observable behavior, syntax, runtime, API, DB, UI, policy, tests.
+2. **Boundaries** — embedding `K`, projection `P`, interpreter, serializer, handler, report/view, compiler, observer.
+3. **Free syntax** — AST/IR/effect/workflow syntax before interpretation.
+4. **Coherent observations** — sanctioned observations/views that must agree.
+5. **Transported semantics** — old/source semantics carried to a new target surface.
+6. **Lifted implementations** — public behavior determines internal realizer/implementation.
+7. **Free builders behind projections** — a disciplined `P : B -> C` supports canonical construction back into `B`.
+8. **Obstruction reports** — a free/lifted implementation cannot exist because lost evidence, missing internal structure, or unbounded templates are named.
+9. **Behavioral coalgebras** — state/process behavior specified by transitions and observations over time.
+10. **Effect signatures and handlers** — operation syntax separated from runtime interpretation.
+11. **Explicit IR** — callbacks, handlers, continuations, predicates, mappers, and rules become data plus interpreter.
+12. **Law tests** — executable witnesses that the boundary artifact does what it claims.
+
+## Unknown-location artifact selector
+
+Choose by where the unknown lives:
+
+| Unknown lives... | Default artifact | First proof signal |
+| --- | --- | --- |
+| In independent fields | Product | projections round-trip |
+| In exclusive cases | Coproduct | exhaustive handling, invalid cases rejected |
+| In a stable predicate | Refined type / equalizer | constructor accepts valid and rejects invalid |
+| In shared projection agreement | Pullback witness | mismatches rejected, projections preserved |
+| In configurable supplied behavior | Exponential / strategy | fixture parity with old branch |
+| In structured syntax from generators | Free construction / initial algebra | interpreter agrees with old evaluator |
+| In ongoing behavior over time | Behavioral coalgebra | traces/unfolds satisfy observations |
+| In effectful operations with handlers | Effect signature / free effect syntax | test and production handlers agree on declared observations |
+| After a source-to-target boundary `K` | Transported semantics / Lan-style | identity or embedding path preserves behavior |
+| In coherent behavior under observations | Coherent observations / Ran/Yoneda-style | overlapping observations commute |
+| Behind a projection `P` | Lifted implementation / Kan-lift-style | `project(realize(case)) == required(case)` |
+| Behind `P`, but canonical construction is possible | Free builder behind projection | `project(free(required(case)))` satisfies required behavior |
+| Behind `P`, but construction is impossible | Obstruction report | named loss of evidence/template/constraint |
+| In internal checks implied by public behavior | Residual obligations | missing obligation fails projection |
+| In generated payloads and deferred maps | Generation path vocabulary / Coyoneda-style | lowering equals direct interpretation |
+| In duplicated selectors/projections | Observation vocabulary / Yoneda-style | representation change preserves observations |
+| In callbacks/functions crossing boundaries | Explicit first-order IR / defunctionalization | `apply(encodedCase, x) == oldCallback(x)` |
 
 ## Freyd/AFT boundary diagnostic for Track D
 
@@ -139,12 +188,15 @@ Do **not** teach Freyd’s theorem in full inside ordinary responses. Translate 
 - One signal, one seam, one smallest honest construction.
 - Prefer products, coproducts, refined types, pullbacks, exponentials, and free constructions before advanced machinery.
 - Escalate to universal architecture only when the boundary artifact changes code shape or tests.
+- Allow arbitrary domain primitives; require explicit universal artifacts at architecture boundaries.
 - Keep wire and storage shapes stable behind adapters unless the user explicitly wants a breaking change.
 - Use the repo's current language, framework, and test stack before proposing new libraries.
 - Say what remains runtime-only in dynamic or weakly typed environments.
 - Stop after the first verified seam unless the user asked for a sweep.
 - For lift-shaped Track D work, make `P : B -> C` concrete before proposing implementation changes.
 - If proposing a free builder behind `P`, include a Freyd/AFT-style obstruction check: constraint structure, preservation, and bounded templates.
+- If proposing effects/handlers, include operation syntax, at least one handler, and a handler observation law.
+- If proposing coalgebra/protocol structure, include transition, observation, trace law, and invalid-transition witness.
 
 ## Step 0 — Create or update `.universalist-plan.md`
 
@@ -196,7 +248,9 @@ If context compacts, read this file first and resume from its status line.
    - public contract/tests implying missing internal obligations;
    - callbacks/handlers crossing boundaries without explicit IR;
    - public behavior fixed while internals are underdetermined;
-   - a projection/serializer/view loses evidence needed by required behavior.
+   - a projection/serializer/view loses evidence needed by required behavior;
+   - protocols/state machines whose observations are duplicated or informal;
+   - effect/workflow operations with multiple implicit handlers.
 
 3. **Pick one seam**
 
@@ -212,7 +266,9 @@ If context compacts, read this file first and resume from its status line.
    - one projection/query/read-model boundary;
    - one plugin or rule-family adapter;
    - one public contract case;
-   - one observation/projection function `P` for a lift-shaped refactor.
+   - one observation/projection function `P` for a lift-shaped refactor;
+   - one state transition plus observer;
+   - one effect operation plus handler.
 
 4. **Choose the smallest honest construction**
 
@@ -227,20 +283,12 @@ If context compacts, read this file first and resume from its status line.
 
 5. **Escalate to canonical boundary artifacts only when needed**
 
-   Use this matrix when the ordinary construction ladder is not enough:
+   Use the unknown-location selector and the canonical boundary artifact matrix. Escalate only when it produces:
 
-   | Smell | Canonical boundary artifact | Universal reading | First proof signal |
-   | --- | --- | --- | --- |
-   | Many consumers interpret the same commands differently | Free syntax / explicit AST | Free object / initial algebra | interpreters agree on fixtures |
-   | New target surface must preserve old source behavior | Transported semantics | Left Kan / generated path | identity or embedding path preserves behavior |
-   | New internals must satisfy old views | Coherent observations | Right Kan / Yoneda | overlapping observations commute |
-   | New model must be viewed through old API | Restriction adapter | Precomposition / `Delta` | old golden tests pass through adapter |
-   | Public behavior is known before internals | Lifted implementation | Kan lift / realization | `project(realize(case)) == required(case)` |
-   | Public behavior determines internals but `P` is vague or lossy | Free builder / projection diagnostic | Freyd/AFT-style boundary diagnostic for `P : B -> C` | `project(free(required(case)))` satisfies required behavior or reports obstruction |
-   | Public policy implies internal checks | Residual obligations | Right-lift / weakest obligation | missing obligation fails projection |
-   | Generated payloads lose provenance | Generation path vocabulary | Coyoneda | lowering equals direct interpretation |
-   | Query/projection sprawl | Observation vocabulary | Yoneda | representation change preserves observations |
-   | Callbacks/closures cross architecture boundaries | Explicit first-order IR | Defunctionalization | `apply(encodedCase, x) == oldCallback(x)` |
+   - an explicit artifact;
+   - an interpreter/projection/handler/lowering function;
+   - a proof signal;
+   - a concrete reduction in drift, duplication, hidden behavior, or lossy projection.
 
 6. **Plan the boundary**
 
@@ -255,6 +303,8 @@ If context compacts, read this file first and resume from its status line.
    - generation path;
    - explicit IR plus interpreter;
    - projection from implementation to public behavior;
+   - state transition plus observer;
+   - effect operation plus handler;
    - Freyd/AFT-style free-builder diagnostic for that projection.
 
 7. **Run the Freyd/AFT diagnostic when appropriate**
@@ -284,7 +334,9 @@ If context compacts, read this file first and resume from its status line.
    - observation enum + `runObservation`;
    - generated payload + path + `lowerGenerated`;
    - realizer/obligation + `project`/`satisfy`;
-   - free-builder function + projection test.
+   - free-builder function + projection test;
+   - state transition + `observe`;
+   - operation signature + handlers.
 
 9. **Verify with the fastest credible proof signal**
 
@@ -300,7 +352,10 @@ If context compacts, read this file first and resume from its status line.
    - observation coherence;
    - projection/lift realization test;
    - free-builder projection test;
-   - defunctionalized interpreter equivalence.
+   - obstruction report fixture;
+   - defunctionalized interpreter equivalence;
+   - trace law for coalgebra/protocol behavior;
+   - handler parity/observation test for effects.
 
 10. **Stop or name the next seam**
 
@@ -330,8 +385,11 @@ If context compacts, read this file first and resume from its status line.
 | Several old views must agree on new internals | Coherent observations | Independent adapters | read-model/projection boundary | overlapping observation coherence |
 | Generated artifacts lose provenance | Generation path vocabulary | anonymous callbacks | generation/lowering boundary | lowering equals direct interpretation |
 | Public contract determines implementation | Lifted implementation | ad hoc service design | one contract case | projection matches required behavior |
-| Public contract determines implementation but projection loses evidence | Free builder / obstruction report | pretending a lift exists | one projection function | project(free(required)) passes or obstruction named |
+| Public contract determines implementation but projection loses evidence | Free builder or obstruction report | pretending a lift exists | one projection function | project(free(required)) passes or obstruction named |
+| Public policy implies internal checks | Residual obligations | ad hoc validators | one policy case | missing obligation fails projection |
 | Callbacks carry architecture behavior | Explicit IR | hidden closure registry | plugin/handler seam | apply/interpreter equivalence |
+| Stateful behavior is duplicated across handlers | Behavioral coalgebra | scattered mutation branches | one transition + observer | trace law and invalid transition rejection |
+| Operation syntax needs multiple runtimes | Effect signature + handlers | callbacks embedded in workflow | one operation + test handler | handler observation parity |
 
 ## Output contract
 
@@ -360,12 +418,24 @@ For lift-shaped Track D, also include:
 - **Freyd/AFT boundary diagnostic** when `P` is vague, lossy, or intended to support a free builder
 - **Builder or obstruction**
 
+For behavioral Track D, also include:
+
+- **State/transition shape**
+- **Observation function**
+- **Trace law**
+
+For effect-handler Track D, also include:
+
+- **Operation signature**
+- **Handler(s)**
+- **Handler observation law**
+
 For Track B, Track C, or Track D, also update `.universalist-plan.md`.
 
 ## Guardrails
 
 - Prefer plain engineering language over category jargon when both say the same thing.
-- Do not claim a universal construction without naming the constructor, eliminator, or factorization behavior it buys.
+- Do not claim a universal construction without naming the constructor, eliminator, comparison, or factorization behavior it buys.
 - Do not recommend HKT-heavy or typeclass-heavy patterns where the language cannot carry them cleanly.
 - Do not propose new validation or property-test libraries without user approval.
 - Do not widen the seam just because the larger design looks elegant.
@@ -374,17 +444,19 @@ For Track B, Track C, or Track D, also update `.universalist-plan.md`.
 - Do not use Kan/Yoneda/Coyoneda/Freyd vocabulary unless it produces a concrete artifact and law test.
 - Defunctionalize only when higher-order behavior crosses a meaningful boundary.
 - Treat Freyd/AFT as a projection diagnostic, not as a theorem recital.
+- Treat opaque subsystems as primitives behind explicit observation/projection boundaries.
 
 ## Hand-offs and companion skills
 
 - Use **`kan`** when the chosen boundary artifact needs detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, or defunctionalization mechanics.
+- Do not hand off to `kan` until `universalist` has identified the signal, seam, candidate artifact, witness slice, and proof signal.
 - Use **`invariant-ace`** when the main job is discovering or pinning down invariants before choosing structure.
 - Use **`accretive-implementer`** after the construction is chosen and the task becomes ordinary implementation.
 - Use **`repeatedly-apply-skill`** when sweeping the repo for multiple seams or doing a multi-pass campaign.
 
 ## References
 
-Existing references:
+Core references:
 
 - `references/universalist-overview.md`
 - `references/discovery-signals.md`
@@ -395,26 +467,21 @@ Existing references:
 - `references/testing-playbook.md`
 - `references/migration-playbooks.md`
 - `references/case-studies.md`
-- `references/examples-haskell.md`
-- `references/examples-go.md`
-- `references/examples-typescript.md`
-- `references/examples-python.md`
-- `references/examples-java-kotlin.md`
-- `references/examples-rust-swift.md`
 - `references/sources.md`
 
-Universal architecture additions:
+Universal architecture references:
 
+- `references/universal-architecture-kernel.md`
 - `references/universal-architecture-ecosystem.md`
+- `references/artifact-selection-by-unknown-location.md`
 - `references/canonical-boundary-artifacts.md`
 - `references/kan-boundaries-for-universalist.md`
 - `references/freyd-aft-boundary-diagnostic.md`
+- `references/effects-and-coalgebras.md`
 - `references/yoneda-coyoneda-defunctionalization.md`
 - `references/universal-architecture-law-tests.md`
 
 ## Scripts
-
-Existing scripts:
 
 - `scripts/init_universalist_plan.sh`
 - `scripts/detect_signals.py`
@@ -422,9 +489,6 @@ Existing scripts:
 - `scripts/emit_boundary_adapter.py`
 - `scripts/emit_verification_plan.py`
 - `scripts/emit_law_test_stub.sh`
-
-Universal architecture additions:
-
 - `scripts/emit_universal_artifact_matrix.sh`
 - `scripts/emit_canonical_artifact_plan.sh`
 - `scripts/emit_universal_architecture_prompt.sh`
@@ -433,12 +497,7 @@ Universal architecture additions:
 
 ## Templates
 
-Existing:
-
 - `templates/universalist-plan.md`
 - `templates/universalist-report.md`
-
-Additions:
-
 - `templates/universal-architecture-report.md`
 - `templates/freyd-boundary-diagnostic.md`

@@ -1,12 +1,14 @@
 # Freyd/AFT Boundary Diagnostic
 
-## Lift shape
+## A: public cases/contracts/workflows
 
-- A:
-- B:
-- C:
-- P : B -> C:
-- F : A -> C:
+## B: internal implementation world
+
+## C: observable behavior world
+
+## P : B -> C
+
+## F : A -> C
 
 ## What P forgets or observes
 
@@ -14,14 +16,10 @@
 
 ## Preservation by P
 
-## Template family / solution-set-like menu
+## Bounded implementation templates
 
-## Candidate Free : C -> B / realizer / obligation artifact
+## Candidate builder / realizer / obligation
 
-## Law classification
+## Obstruction, if any
 
-## Proof signal
-
-## Obstruction
-
-## First seam
+## Projection law

@@ -1,18 +1,6 @@
 invariants:
-  - name: "One seam discipline"
-    applies_to: [Track B, Track C, Track D]
-    must_include: ["one seam", "proof signal"]
-
-  - name: "Track D artifact honesty"
-    applies_to: [Track D]
-    must_include: ["canonical boundary artifact", "law", "falsifier"]
-
-  - name: "Lift projection explicit"
-    applies_to: [lifted implementation, residual obligation, Freyd/AFT diagnostic]
-    must_include: ["P : B -> C", "project", "required"]
-
-  - name: "No theorem cosplay"
-    forbidden: ["Freyd proves this code is correct", "this architecture is a theorem"]
-
-  - name: "No repo sweep by default"
-    forbidden: ["refactor the entire repository immediately"]
+  - name: one_signal_one_seam
+    required: ["Signal", "Construction", "Seam / files", "Verification"]
+  - name: track_d_requires_artifact
+    when: "Track D"
+    required: ["Canonical boundary artifact", "Law / proof signal", "Falsifier"]

@@ -67,7 +67,6 @@ For a lifted-implementation boundary:
 - Yoneda side: public observations.
 - Coyoneda side: candidate implementation payload plus projection path.
 - Defunctionalization: observations and paths become first-order constructors.
-- Freyd/AFT side: ask whether the projection supports a canonical builder or exposes an obstruction.
 
 Proof signal:
 

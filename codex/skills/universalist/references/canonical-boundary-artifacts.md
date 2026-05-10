@@ -73,28 +73,43 @@ project(realize(case)) == requiredBehavior(case)
 
 ## Free builder behind a projection
 
-Use when public behavior determines internals and the projection `P : B -> C` should support a canonical implementation-side builder.
+Use when public behavior determines internals and the projection `P : B -> C` supports a canonical implementation-side builder.
 
 Code shape:
 
 ```text
 data RequiredBehavior = ...
 data ImplementationTemplate = ...
-data FreeRealizer = ...
-free : RequiredBehavior -> FreeRealizer
-project : FreeRealizer -> PublicBehavior
+free : RequiredBehavior -> ImplementationTemplate
+project : ImplementationTemplate -> PublicBehavior
 ```
 
-Proof signals:
+Proof signal:
 
 ```text
 project(free(required(case))) satisfies required(case)
 ```
 
-and, for obstructions:
+## Obstruction report behind a projection
+
+Use when public behavior determines internals but no exact/free lifted implementation can honestly exist.
+
+Code shape:
 
 ```text
-project(free(required(case))) fails because missing evidence/template is named
+data RequiredBehavior = ...
+data Obstruction
+  = MissingEvidence(...)
+  | MissingCapability(...)
+  | InconsistentRequirement(...)
+  | UnboundedTemplates(...)
+explainObstruction : RequiredBehavior -> Obstruction
+```
+
+Proof signal:
+
+```text
+project(free(required(case))) fails because missing evidence/template/constraint is named
 ```
 
 ## Residual obligations
@@ -115,6 +130,44 @@ Proof signals:
 - satisfying obligations makes projection possible;
 - missing one obligation fails;
 - each obligation has an owner module.
+
+## Behavioral coalgebra
+
+Use when stateful or ongoing behavior is better described by transitions plus observations than by one-shot construction.
+
+Code shape:
+
+```text
+data State = ...
+data Input = ...
+data Observation = ...
+step : State × Input -> State
+observe : State -> ObservationResult
+```
+
+Proof signals:
+
+- expected trace matches `observe` after repeated `step`;
+- invalid transition is rejected;
+- states claimed equivalent produce equivalent observations.
+
+## Effect signature and handlers
+
+Use when operations need multiple interpreters: production, test, audit, explanation, simulation, retry, or scheduling.
+
+Code shape:
+
+```text
+data Operation = ...
+data Program = Pure | Perform(Operation, Continuation)
+handle : Program -> Runtime
+```
+
+Proof signals:
+
+- test and production handlers agree on declared observations;
+- every operation has a handler case;
+- handler omits operation -> failing test or exhaustive-match failure.
 
 ## Explicit IR
 

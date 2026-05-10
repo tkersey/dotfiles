@@ -5,96 +5,69 @@ language="${2:-agnostic}"
 case "$mode" in
   boundary-diagnostic|diagnostic)
     cat <<OUT
-# Freyd/AFT Boundary Diagnostic (${language})
+# Freyd/AFT-style boundary diagnostic (${language})
 
-## Lift shape
+## Lift-shaped seam
+- A (public cases/contracts/workflows):
+- B (internal implementation world):
+- C (observable behavior world):
+- P : B -> C (concrete projection in code):
+- F : A -> C (required public behavior):
 
-- A = public cases / requirements:
-- B = internal implementation world:
-- C = observable behavior world:
-- P : B -> C = projection/observer:
-- F : A -> C = required behavior:
+## Projection analysis
+- What P forgets/observes/projects:
+- Evidence lost by P:
+- Does B combine constraints/products/equalities/pullbacks/workflows?
+- Does P preserve those combinations in C?
+- Bounded implementation templates for each required behavior?
 
-## What P forgets or observes
+## Result
+- Candidate free builder / realizer / obligation artifact:
+- Or obstruction:
+- Exact / covering / sound / approximate comparison:
 
-## Constraint structure available in B
-
-- products / combined requirements:
-- equalities / agreement checks:
-- pullbacks / shared interfaces:
-- workflow or state composition:
-- validation or normalization:
-
-## Does P preserve those constraints?
-
-## Solution-set-like template family
-
-For each public requirement, list bounded implementation templates.
-
-## Candidate Free : C -> B / realizer / obligation artifact
-
-## Law classification
-
-- exact: P(Free(c)) == c
-- covering: c embeds into P(Free(c))
-- sound: P(Free(c)) satisfies c
-- approximate: documented approximation
-
-## Obstruction, if any
-
-## First witness test
+## Proof signal
+project(candidate(required(case))) satisfies required(case), or obstruction reproduces failure.
 OUT
     ;;
-  free-builder|builder)
+  free-builder)
     cat <<OUT
-# Free Builder Plan (${language})
+# Free builder behind projection (${language})
 
-## Required behavior type C
+## Artifact
+- RequiredBehavior:
+- ImplementationTemplate:
+- free : RequiredBehavior -> ImplementationTemplate
+- project : ImplementationTemplate -> PublicBehavior
 
-## Internal realizer type B
-
-## Builder
-
-free : RequiredBehavior -> FreeRealizer
-
-## Projection
-
-project : FreeRealizer -> PublicBehavior
-
-## Template cases
-
-## Tests
-
+## Law
 project(free(required(case))) satisfies required(case)
 
-## Negative fixtures
-
-- missing evidence
-- unsupported template
-- projection loses data
+## Negative witness
+A required behavior outside the builder's supported template set reports an obstruction.
 OUT
     ;;
-  obstruction|no-exact-lift)
+  no-exact-lift|obstruction)
     cat <<OUT
-# No-Exact-Lift Obstruction Report (${language})
+# Obstruction report behind projection (${language})
 
-## Required behavior that cannot be realized
+## Required behavior
 
-## Projection P that loses or hides evidence
+## Projection P loses
 
-## Missing internal data / structure / template
+## Internal world B cannot express
 
-## Options
+## Template set problem
 
-1. enrich B
-2. enrich P
-3. weaken F
-4. introduce obligation IR
+## Obstruction constructors
+- MissingEvidence
+- MissingCapability
+- InconsistentRequirement
+- UnboundedTemplates
 
-## Failing witness
-
-## Smallest next seam
+## Proof signal
+The obstruction is reproducible by applying P or attempting construction for one witness case.
 OUT
     ;;
-  *) echo "Unknown mode: $mode" >&2; exit 2 ;;
+  *) echo "unknown Freyd diagnostic mode: $mode" >&2; exit 2 ;;
 esac

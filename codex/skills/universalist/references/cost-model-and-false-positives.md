@@ -1,13 +1,13 @@
 # Cost model and false positives
 
-Prefer a stronger construction only when it buys concrete safety.
+A universalist refactor is worth it when it reduces semantic drift, invalid states, duplicated validation, branch complexity, projection sprawl, or integration ambiguity.
 
-False positives:
+Avoid it when:
 
-- a one-off boolean does not justify a coproduct;
-- a predicate used twice may not justify a refined type if it is not stable;
-- a callback is fine if it does not cross a meaningful boundary;
-- an adapter is enough when no universal boundary artifact changes code shape;
-- a Freyd/AFT diagnostic is overkill if `P` is already a simple local projection and no canonical implementation builder is needed.
+- a local helper would solve the issue;
+- the domain rules are not stable;
+- the stronger model would increase onboarding cost more than it reduces bug risk;
+- the chosen construction cannot be tested;
+- public API or persistence changes are not acceptable.
 
-Escalation is justified when it prevents drift, duplicated interpretation, impossible states, lossy projections, hidden obligations, or untestable behavior.
+Always compare to the nearby boring alternative.
