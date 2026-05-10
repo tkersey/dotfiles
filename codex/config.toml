@@ -1,6 +1,4 @@
 model = "gpt-5.5"
-model_context_window = 1000000
-model_auto_compact_token_limit = 900000
 model_reasoning_effort = "high"
 plan_mode_reasoning_effort = "xhigh"
 suppress_unstable_features_warning = true
@@ -13,25 +11,14 @@ max_depth = 3
 
 [features]
 unified_exec = true
-steer = true
-collaboration_modes = true
-apps = true
 personality = true
 memories = true
-sqlite = true
-responses_websockets_v2 = true
-multi_agent = true
 prevent_idle_sleep = true
-voice_transcription = true
 realtime_conversation = true
-js_repl = true
 default_mode_request_user_input = true
 fast_mode = true
-hooks = true
-image_detail_original = true
 chronicle = true
 external_migration = true
-terminal_resize_reflow = true
 goals = true
 
 [features.multi_agent_v2]
@@ -51,10 +38,8 @@ max_raw_memories_for_consolidation = 1024
 max_unused_days = 180
 extract_model = "gpt-5.4-mini"
 consolidation_model = "gpt-5.3-codex"
-no_memories_if_mcp_or_web_search = false
 
 [tui]
-experimental_mode = "execute"
 status_line = ["codex-version", "current-dir", "git-branch", "branch-changes", "weekly-limit", "five-hour-limit", "model-with-reasoning", "session-id", "fast-mode", "context-remaining"]
 theme = "coldark-dark"
 terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
