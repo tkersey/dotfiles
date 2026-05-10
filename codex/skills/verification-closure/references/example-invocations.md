@@ -53,7 +53,7 @@ Context:
 
 Constraints:
 - use verification_auditor and invariant_auditor only if needed
-- wait for all relevant briefings before the final judgment
+- require packet-native evidence-bearing briefings and wait only while they make progress before the final judgment
 - keep closure single-threaded and evidence-backed
 ```
 

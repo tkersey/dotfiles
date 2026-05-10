@@ -35,11 +35,11 @@ This package includes both:
 Use explicit language so Codex is allowed to spawn subagents:
 
 ```text
-Use $codebase-audit with Codex subagents. Spawn one agent for security, one for performance, and one for API. Wait for all agents, then synthesize a prioritized report with file:line evidence.
+Use $codebase-audit with Codex subagents. Spawn one agent for security, one for performance, and one for API. Require the shared specialist packet contract, wait only while packets make progress, then synthesize a prioritized report from valid packets and file:line evidence.
 ```
 
 ```text
-Run a parallel codebase audit with one Codex subagent per domain: security, UX, performance, API, copy, and CLI. Keep all subagents read-only and return the top 3 findings per domain.
+Run a parallel codebase audit with one Codex subagent per domain: security, UX, performance, API, copy, and CLI. Keep all subagents read-only and require packet-native, scoped, evidence-bearing outputs.
 ```
 
 ## Parent-Agent Synthesis Rules
@@ -48,11 +48,13 @@ The parent agent should:
 
 1. launch all independent domain workers before waiting;
 2. keep workers read-only;
-3. wait for all workers before final synthesis;
-4. de-duplicate overlapping findings;
-5. normalize severity across domains;
-6. preserve uncertainty under `Needs Verification` instead of promoting it to a finding;
-7. return a final report, not raw worker transcripts.
+3. assign `artifact_state_id` and exact scope for every worker;
+4. validate packets against `../../references/specialist-packet-contract.md`;
+5. close stale or low-value workers when local evidence is enough to synthesize;
+6. de-duplicate overlapping findings;
+7. normalize severity across domains;
+8. preserve uncertainty under `Needs Verification` instead of promoting it to a finding;
+9. return a final report, not raw worker transcripts.
 
 ## Fallback
 

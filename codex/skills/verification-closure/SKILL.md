@@ -22,6 +22,7 @@ Operate in **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-
 ## Gate discipline
 
 - Treat reviewer and specialist outputs as signals, not proof.
+- Validate specialist packets against `../references/specialist-packet-contract.md` before using them as routing or closure evidence.
 - Treat unresolved **material soundness** as a hard closure gate.
 - Treat unresolved critical invariants, material foot-guns, and material complexity hazards as closure gates.
 - Treat active, applicable negative evidence as a closure gate when the current route repeats a disconfirmed path without satisfying reopening criteria.
@@ -57,8 +58,10 @@ If the packet is stale or incomplete, say so before evaluating readiness. If the
 
 Validate every specialist packet and value receipt:
 - packet status is recorded
-- artifact state ID matches or packet is marked stale/superseded
+- artifact state ID matches or packet is marked stale/superseded/timeout
 - scope matches or packet is marked wrong-scope
+- transport wrappers, queued prompts, instruction acknowledgements, and root-only `Echo:` text are absent or the packet is marked transport-invalid
+- accepted packets include at least one scoped material signal with an artifact reference
 - value receipt exists for accepted and rejected packets
 - `value: positive` is justified by route change, finding addition, proof change, or risk retirement
 
@@ -132,12 +135,14 @@ Use concise sections in this order:
 - Never ignore an active negative evidence entry; mark it active, stale, superseded, reopened, accepted-risk, or not applicable.
 - Never reopen the loop without naming the exact gate and narrowest next move.
 - Never treat specialist value receipts as proof commands or pass/fail verdicts.
+- Never accept acknowledgement-only, no-evidence, wrong-scope, stale, timeout, or wrapper-leaking specialist output as closure evidence.
 
 ## Resources
 - [closure-gates.md](references/closure-gates.md)
 - [handoff-intake-checklist.md](references/handoff-intake-checklist.md)
 - [specialist-briefing-intake.md](references/specialist-briefing-intake.md)
 - [closure-handoff-contract.md](references/closure-handoff-contract.md)
+- [specialist-packet-contract.md](../references/specialist-packet-contract.md)
 - [example-invocations.md](references/example-invocations.md)
 - [common-soundness.md](references/common-soundness.md)
 - [common-ledgers.md](references/common-ledgers.md)

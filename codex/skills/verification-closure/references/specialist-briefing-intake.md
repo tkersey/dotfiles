@@ -15,7 +15,7 @@ Specialist briefings are high-signal inputs. They are not proof by themselves.
 
 1. Normalize every briefing into one or more closure gates.
 2. Look for direct supporting evidence before upgrading confidence.
-3. Validate `artifact_state_id`, `artifact_state_label`, scope, packet status, and stale flag.
+3. Validate `artifact_state_id`, `artifact_state_label`, scope, packet status, stale flag, and artifact references against `../../references/specialist-packet-contract.md`.
 4. Require a Specialist Value Receipt for every specialist packet.
 5. If two briefings materially conflict, design the smallest resolving check.
 6. If a briefing raises a material concern that cannot be directly tested, decide whether it is:
@@ -32,7 +32,7 @@ Every packet should have:
 ```yaml
 specialist_value_receipt:
   role: "..."
-  packet_status: accepted | stale | transport-invalid | wrong-scope | timeout | superseded
+  packet_status: accepted | stale | transport-invalid | wrong-scope | timeout | superseded | low-value
   artifact_state_id_match: yes | no | unknown
   scope_match: yes | no | unknown
   uncertainty_class: evidence | soundness | invariant | hazard | complexity | verification | negative-evidence | other
@@ -46,6 +46,7 @@ specialist_value_receipt:
 ```
 
 `value: positive` requires at least one material decision delta: route change, finding addition, proof change, or risk retirement.
+`accepted` requires a scoped material signal with an artifact reference; acknowledgement-only or no-evidence packets are `low-value`, not closure evidence.
 
 ## Negative-ledger-mapper intake
 

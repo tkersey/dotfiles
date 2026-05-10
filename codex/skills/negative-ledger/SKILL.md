@@ -13,6 +13,7 @@ It is not a generic reviewer and not a final gate. Negative evidence is advisory
 - Use `learnings` as the preferred durable source and write path for reusable negative evidence.
 - Use `fixed-point-driver` when negative evidence participates in a full build-review-improve-verify loop.
 - Use `negative-ledger-mapper` as the read-only specialist when the work is search-heavy and prior failures materially change routing.
+- When `negative-ledger-mapper` or any read-only specialist is used, require the shared specialist packet contract at `../references/specialist-packet-contract.md`; reject stale, wrong-scope, wrapper-leaking, acknowledgement-only, or no-evidence packets before converting them into exclusions.
 
 ## Trigger cues
 Use this skill when the user asks about or the task contains:
@@ -168,6 +169,7 @@ Then add a bottom-line handoff:
 ## Resources
 - [negative-ledger-mapper](agents/negative-ledger-mapper.md)
 - [negative-ledger-contract.md](references/negative-ledger-contract.md)
+- [specialist-packet-contract.md](../references/specialist-packet-contract.md)
 - [learnings-source.md](references/learnings-source.md)
 - [fixed-point-integration.md](references/fixed-point-integration.md)
 - [negative-ledger-jsonl.md](references/negative-ledger-jsonl.md)

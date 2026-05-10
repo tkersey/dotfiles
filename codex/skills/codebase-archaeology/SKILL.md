@@ -34,6 +34,7 @@ This skill is written for Codex CLI, Codex IDE, and Codex app.
 - Codex custom agents are standalone TOML files under `.codex/agents/` for project-scoped agents or `~/.codex/agents/` for personal agents.
 - Codex only spawns subagents when the user explicitly asks for subagents, parallel agents, one agent per topic, or equivalent multi-agent work.
 - Subagents are read-only by default in this package. They gather evidence and return summaries; the parent agent performs synthesis.
+- When subagent output may shape synthesis, require the shared specialist packet contract at `../references/specialist-packet-contract.md`; reject stale, wrong-scope, wrapper-leaking, acknowledgement-only, or no-evidence packets before using them as architecture evidence.
 
 ## Inputs
 
@@ -150,7 +151,7 @@ If the custom agents are not installed, use Codex's built-in `explorer` agent wi
 
 ### Parent orchestration rules
 
-When using subagents: give every worker the same scope and constraints; instruct workers not to edit files; require file/symbol evidence; wait for all workers; merge into one mental model; de-duplicate facts; resolve disagreements; distinguish facts from inferences and open questions.
+When using subagents: give every worker the same scope and constraints; assign the current `artifact_state_id`; instruct workers not to edit files; require file/symbol evidence; require exactly one specialist packet using the shared contract; wait only while packets are making progress; merge valid packets into one mental model; preserve rejected/stale packets as rejected signals; de-duplicate facts; resolve disagreements; distinguish facts from inferences and open questions.
 
 ### Worker prompt template
 
@@ -165,6 +166,7 @@ Return:
 3. Evidence table with path:line and symbol/module
 4. Open questions or assumptions
 5. Suggested next places to inspect
+6. Exactly one specialist packet using ../references/specialist-packet-contract.md fields: artifact_state_id, artifact_state_label, scope, top_material_signals with evidence_ref, unresolved_signals, agreement_pressure, stale, and final_call
 Keep the result concise; the parent agent will synthesize the final architecture summary.
 ```
 
@@ -241,7 +243,7 @@ Use $codebase-archaeology to map this repo. Start with docs, then find entry poi
 Codex subagent exploration:
 
 ```text
-Use $codebase-archaeology with Codex subagents. Spawn archaeology_docs, archaeology_entrypoints, archaeology_domain, archaeology_dataflow, archaeology_integrations, and archaeology_tests. Keep all agents read-only, wait for all of them, then synthesize one architecture summary with evidence and open questions.
+Use $codebase-archaeology with Codex subagents. Spawn archaeology_docs, archaeology_entrypoints, archaeology_domain, archaeology_dataflow, archaeology_integrations, and archaeology_tests. Keep all agents read-only, require packet-native evidence-bearing outputs, wait only while packets make progress, then synthesize one architecture summary with evidence and open questions.
 ```
 
 Feature-specific trace:
@@ -267,6 +269,7 @@ Use $codebase-archaeology to trace how [feature/route/command] works from entry 
 | Need | File |
 |---|---|
 | Codex subagent setup and examples | `references/CODEX_SUBAGENTS.md` |
+| Specialist packet contract | `../references/specialist-packet-contract.md` |
 | Language-specific searches | `references/LANGUAGES.md` |
 | Architecture pattern recognition | `references/PATTERNS.md` |
 | Example exploration sessions | `references/EXAMPLES.md` |

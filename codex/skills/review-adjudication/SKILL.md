@@ -89,6 +89,13 @@ before final adjudication:
 Use them only to sharpen grounding, soundness, or hazard questions. They do not
 replace the adjudication judgment.
 
+When specialists are used, assign the current artifact state and exact comment
+or file scope, then require the shared packet contract at
+`../references/specialist-packet-contract.md`. Consume only
+packet-native, scoped, evidence-bearing, current packets. Reject stale,
+wrong-scope, wrapper-leaking, acknowledgement-only, or no-evidence packets and
+keep them out of `act`/`rebut`/`defer` decisions.
+
 ## Required input context
 
 When possible, build a compact context pack before adjudication:
