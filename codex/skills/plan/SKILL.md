@@ -10,7 +10,7 @@ description: Produce decision-complete, self-contained plans in proposed_plan bl
 - Single operating model: Plan-Mode-native planning.
 - Primary artifact (when emitting a plan): exactly one `<proposed_plan>` block containing the final plan in normal Markdown.
 - Continuous loop: run refinement passes until improvements are exhausted.
-- Iteration tracking: include `Iteration: N` as the first line inside `<proposed_plan>`, where `N` is the current pass count.
+- Iteration tracking: include `Iteration: N` as the first line inside `<proposed_plan>`, where `N` is the current pass count; repeat the same `Iteration: N` as the final non-empty line inside `<proposed_plan>`, after `Implementation Brief` and before `</proposed_plan>`.
 - Iteration source of truth (in order): latest `Iteration: N` marker from the same plan artifact / same objective in this planning thread, then explicit user-provided iteration, else default `N=0`.
 - Iteration continuity gate: when the user has pivoted to a materially new plan target, reset the counter instead of inheriting a stale high-water mark from an older plan in the same thread.
 - Default iteration behavior: execute refinement passes in one invocation until exhausted and emit only the final plan.
@@ -66,7 +66,7 @@ description: Produce decision-complete, self-contained plans in proposed_plan bl
 - Scope-change-log gate: each scope expansion or reduction is recorded with rationale and approval.
 - Decision-impact-map gate: each new or superseded decision lists impacted sections and required follow-up edits.
 - Stakeholder-signoff gate: include owner/status for product, engineering, operations, and security readiness.
-- Implementation-brief gate: include a concise tail section with executable steps, owners, and success criteria. Order it as a dependency-aware critical path, with the first execution wave clearly identifiable.
+- Implementation-brief gate: include a concise tail section with executable steps, owners, and success criteria. Order it as a dependency-aware critical path, with the first execution wave clearly identifiable. It remains the final required section and is followed only by the repeated `Iteration: N` footer.
 
 ## Clarification flow (when needed)
 
@@ -107,7 +107,7 @@ Output rules:
 - Preserve continuity: each round must incorporate and improve prior-round decisions unless explicitly superseded with rationale.
 - For sparse greenfield targets, apply the greenfield bootstrap pass before the first draft. Convert its outputs into existing required sections rather than adding a standalone bootstrap section.
 - Include a `Round Delta` section describing what changed from the input plan.
-- Order for value density: after the title and `Round Delta`, place `Summary` before any present iteration logs; keep `Implementation Brief` trailing, but make it read like the dependency-aware execution campaign.
+- Order for value density: after the title and `Round Delta`, place `Summary` before any present iteration logs; keep `Implementation Brief` as the trailing required section, but make it read like the dependency-aware execution campaign and follow it only with the repeated `Iteration: N` footer.
 - Reaffirmations are continuity signals: if the user says `continue`, repeats the ask, or gives blanket approval, preserve the current objective and locked decisions; keep refining instead of restarting from zero.
 - For implementation-oriented plans, make the opening paragraph of `Summary` a short execution spine: goal, chosen path, first wave, and done condition.
 - Campaign cues are binding: if the user asks for uninterrupted completion / branch-campaign behavior or pairs `$plan` with `$st`, express the first wave, later waves, handoff points, and binary done-state in `Summary` and `Implementation Brief`.
@@ -122,7 +122,7 @@ Output rules:
 - Include a `Scope Change Log` section for scope expansion/reduction records.
 - Include an `Adversarial Findings` section in the plan body that summarizes lens results (`errors`, `risks`, `preferences`) and current resolution status.
 - Include a `Convergence Evidence` section in the plan body when finalizing a round.
-- Include `Decision Log`, `Decision Impact Map`, `Open Questions`, `Requirement-to-Test Traceability`, `Rollback/Abort Criteria`, `Stakeholder Signoff Matrix`, `Contract Signals`, and a trailing `Implementation Brief` section in the plan body.
+- Include `Decision Log`, `Decision Impact Map`, `Open Questions`, `Requirement-to-Test Traceability`, `Rollback/Abort Criteria`, `Stakeholder Signoff Matrix`, `Contract Signals`, and a trailing `Implementation Brief` section in the plan body, followed only by the repeated `Iteration: N` footer.
 - Rewrite budget guardrail: if changes exceed 35% of prior plan lines, include `Rewrite Justification` with the reason full rewrite was necessary and why incremental edits were insufficient.
 - Finalization carry-forward ban: when emitting the final plan, roll forward full content in required sections instead of placeholder references to prior iterations.
 
@@ -165,7 +165,7 @@ If a round makes no material change, write `no material delta` in the iteration 
 
 ## Acceptance checks (required before completion)
 
-- Output shape: exactly one `<proposed_plan>` block, with `Iteration: N` as the first line inside the block.
+- Output shape: exactly one `<proposed_plan>` block, with `Iteration: N` as the first line inside the block and the same `Iteration: N` as the final non-empty line inside the block.
 - Iteration continuity is sensible: materially new plan targets reset to a fresh counter unless the user is explicitly revising the same plan artifact.
 - Default auto-run: run the continuous refinement loop until exhausted and include `improvement_exhausted=true` in `Contract Signals`.
 - No iteration cap: do not stop due to reaching any fixed iteration count; stop only when convergence and exhaustion gates are met (or fail closed with `improvement_exhausted=false` plus a stop reason).

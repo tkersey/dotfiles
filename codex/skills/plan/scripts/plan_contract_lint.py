@@ -145,6 +145,14 @@ def first_non_empty_line(text: str) -> str:
     return ""
 
 
+def last_non_empty_line(text: str) -> str:
+    for line in reversed(text.splitlines()):
+        stripped = line.strip()
+        if stripped:
+            return stripped
+    return ""
+
+
 def section_uses_carry_forward_placeholder(section_text: str) -> bool:
     stripped = section_text.strip()
     return bool(stripped and CARRY_FORWARD_PATTERN.search(stripped))
@@ -424,6 +432,13 @@ def lint_plan(text: str) -> tuple[list[str], list[str]]:
         errors.append("First non-empty line inside `<proposed_plan>` must be `Iteration: N`.")
     else:
         iteration_header = int(match.group(1))
+
+    last_line = last_non_empty_line(body)
+    if iteration_header is None:
+        if not re.match(r"^Iteration:\s*\d+$", last_line):
+            errors.append("Final non-empty line inside `<proposed_plan>` must be `Iteration: N`.")
+    elif last_line != f"Iteration: {iteration_header}":
+        errors.append(f"Final non-empty line inside `<proposed_plan>` must repeat `Iteration: {iteration_header}`.")
 
     if not re.search(r"(?im)^#\s+\S", body):
         errors.append("Plan body must include a title heading (for example `# Title`).")
