@@ -40,3 +40,14 @@ Do not allow arbitrary composition across architecture boundaries.
 ```
 
 Ordinary code lives inside boundaries. Universal artifacts live at boundaries.
+
+## Worlds and boundaries practice
+
+This version makes worlds and boundaries the first Track D step. Before selecting Kan, Freyd/AFT, Yoneda/Coyoneda, defunctionalization, effects, or coalgebras, the skill asks for worlds, objects, transformations, invariants, observations, primitives, composition rules, boundary kind, what is preserved/forgotten/generated/observed, and the law that would catch drift.
+
+The rule is:
+
+```text
+Allow arbitrary primitives.
+Do not allow arbitrary composition across architecture boundaries.
+```

@@ -11,13 +11,14 @@ required=(
   references/examples-java-kotlin.md references/examples-rust-swift.md references/sources.md
   references/universal-architecture-kernel.md references/universal-architecture-ecosystem.md
   references/artifact-selection-by-unknown-location.md references/canonical-boundary-artifacts.md
+  references/world-boundary-inventory.md references/boundary-law-catalogue.md
   references/kan-boundaries-for-universalist.md references/freyd-aft-boundary-diagnostic.md
   references/effects-and-coalgebras.md references/yoneda-coyoneda-defunctionalization.md
   references/universal-architecture-law-tests.md
-  templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md templates/freyd-boundary-diagnostic.md
+  templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md templates/freyd-boundary-diagnostic.md templates/world-boundary-inventory.md
   scripts/init_universalist_plan.sh scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py
   scripts/emit_verification_plan.py scripts/emit_law_test_stub.sh scripts/emit_universal_artifact_matrix.sh
-  scripts/emit_canonical_artifact_plan.sh scripts/emit_universal_architecture_prompt.sh scripts/emit_freyd_boundary_diagnostic.sh
+  scripts/emit_canonical_artifact_plan.sh scripts/emit_universal_architecture_prompt.sh scripts/emit_freyd_boundary_diagnostic.sh scripts/emit_world_boundary_inventory.sh scripts/emit_boundary_law_catalogue.sh
   tests/golden/activation.yml tests/golden/output-invariants.yml
 )
 for f in "${required[@]}"; do
@@ -40,6 +41,9 @@ required = [
     'P : B -> C',
     'Allow arbitrary domain primitives',
     'Unknown-location artifact selector',
+    'World and Boundary Inventory',
+    'Boundary Kind Taxonomy',
+    'Boundary Law Catalogue',
 ]
 for r in required:
     if r not in text:
@@ -62,6 +66,9 @@ PY
 ./scripts/emit_freyd_boundary_diagnostic.sh boundary-diagnostic agnostic >/dev/null
 ./scripts/emit_freyd_boundary_diagnostic.sh free-builder typescript >/dev/null
 ./scripts/emit_freyd_boundary_diagnostic.sh no-exact-lift agnostic >/dev/null
+./scripts/emit_world_boundary_inventory.sh architecture typescript >/dev/null
+./scripts/emit_boundary_law_catalogue.sh all >/dev/null
+./scripts/emit_boundary_law_catalogue.sh projection >/dev/null
 python3 scripts/emit_scaffold.py coproduct typescript >/dev/null
 python3 scripts/emit_boundary_adapter.py decoder typescript >/dev/null
 python3 scripts/emit_verification_plan.py coproduct >/dev/null

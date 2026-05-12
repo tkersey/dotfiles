@@ -28,6 +28,128 @@ Ordinary code may live inside a boundary: I/O, math, parsing, vendor APIs, datab
 - Cases where the domain rules are still too unstable to freeze into a stronger model.
 - Category-theory exposition that does not change a concrete seam, construction, boundary, or proof signal.
 
+## Step -1 — World and Boundary Inventory
+
+Before choosing Track A/B/C/D for any non-trivial structural request, inventory the worlds and boundaries. This prevents fake category labels and keeps the response anchored in repo reality.
+
+A **world** is a structured domain where some objects, transformations, invariants, observations, primitives, and composition rules make sense.
+
+A **boundary** is a map between worlds: embedding, projection, forgetful API, interpreter, compiler, serializer, view/query, handler, observer, migration, or adapter.
+
+For each candidate world, record:
+
+```text
+World:
+Objects:
+Transformations:
+Invariants:
+Observations:
+Primitives:
+Composition rules:
+Equality/coherence notion:
+```
+
+For each candidate boundary, record:
+
+```text
+Boundary:
+Kind:
+Source world:
+Target world:
+Preserved:
+Forgotten:
+Generated:
+Observed:
+Unknown location:
+Candidate artifact:
+Law test:
+Falsifier:
+```
+
+If this inventory cannot be filled for the seam, do not escalate to Track D.
+
+## Boundary Kind Taxonomy
+
+Classify boundary maps before choosing canonical artifacts.
+
+| Boundary kind | Software shape | Usually suggests |
+| --- | --- | --- |
+| Embedding | old/core included in new/target | transported semantics, `Lan`, `Delta`, compatibility witness |
+| Projection | internals observed as public behavior | lifted implementation, residual obligations, Freyd/AFT diagnostic |
+| Forgetful map | rich structure erased to raw view | free builder / left adjoint question |
+| Interpreter | syntax/program/effect -> behavior | free syntax, algebra/handler/fold |
+| Compiler/lowering | source syntax/IR -> target IR/code | transported semantics, Coyoneda path, lowering law |
+| Serializer/codec | internal model -> wire/storage | adapter, projection law, round-trip/invariant preservation |
+| View/query | model -> read/report/client view | coherent observations, Yoneda observation vocabulary |
+| Handler | effect syntax -> runtime behavior | effect signature, handler laws, defunctionalized operations |
+| Observer | subject -> observation result | Yoneda vocabulary, law-test oracle |
+| Migration | old schema/world -> new schema/world | `Delta`, `Lan`/Sigma, `Ran`/Pi, provenance path |
+
+Do not skip this taxonomy. It decides whether the seam is an extension, a lift, a free-builder question, a coalgebra, an effect handler, or just an adapter.
+
+## World Quality Diagnostic
+
+A module or domain deserves to be treated as a world only if it has enough structure to support boundary laws.
+
+A proposed world is too weak if:
+
+- it has only nouns and no transformations;
+- it cannot say what counts as equality, compatibility, or coherence;
+- its invariants are unknown or still unstable;
+- its primitives and composition rules are mixed together;
+- it has no sanctioned observations;
+- no law test can observe the boundary;
+- calling it a world would not change code shape, tests, or failure modes.
+
+When a world is too weak, use ordinary refactoring language and strengthen the model before applying universal architecture.
+
+## Boundary Drift Smells
+
+Boundary drift means two worlds communicate through uncoordinated paths or hidden assumptions.
+
+Common drift signals:
+
+- semantic drift: old/source semantics reimplemented differently in each target;
+- observation drift: duplicated selectors, reports, queries, or public projections disagree;
+- implementation drift: internals are invented without projecting to public behavior;
+- generation drift: generated artifacts lose source/provenance/path information;
+- control-flow drift: callbacks, closures, handlers, or continuations carry architecture semantics invisibly;
+- behavioral drift: protocols, state machines, or distributed traces are tested by snapshots but not boundary laws;
+- effect drift: operations are interpreted differently by test, production, audit, retry, or simulation handlers.
+
+Map drift to artifacts:
+
+```text
+semantic drift        -> transported semantics / Lan-style artifact
+observation drift     -> coherent observations / Ran / Yoneda vocabulary
+implementation drift  -> lifted implementation / Freyd diagnostic
+creation drift        -> free builder behind projection or obstruction report
+generation drift      -> Coyoneda-style generation path vocabulary
+control-flow drift    -> defunctionalized explicit IR
+behavioral drift      -> behavioral coalgebra / protocol observation law
+effect drift          -> effect signature + handler laws
+```
+
+## Boundary Law Catalogue
+
+Use these named law shapes when designing proof signals:
+
+| Boundary | Law shape |
+| --- | --- |
+| Embedding law | `new(embed(old)) == old(old)` |
+| Projection law | `observe(project(internal)) == expectedPublicBehavior` |
+| Forgetful law | `forget(combineRich(a,b)) == combineRaw(forget(a), forget(b))` |
+| Interpreter law | `interpret(translate(syntax)) == oldBehavior(syntax)` |
+| Serializer law | `decode(encode(internal))` preserves public invariants |
+| Migration law | `oldReport(old) == oldReport(restrict(migrate(old)))` |
+| Handler law | `run(handler(program))` satisfies operation observations |
+| Coalgebra law | `observe(step(state,input))` satisfies protocol trace expectations |
+| Generation law | `lowerGenerated(payload,path) == directInterpret(path,payload)` |
+| Observation law | `runObservation(obs,repack(subject)) == runObservation(obs,subject)` |
+| Defunctionalization law | `apply(encodedCase,x) == oldFunction(x)` |
+
+Every Track D artifact should have one positive law test and one falsifier/negative witness.
+
 ## Quick start: pick a track
 
 ### Track A — Diagnosis only
@@ -213,6 +335,9 @@ Minimum fields:
 ## Signal:
 ## Construction:
 ## Canonical boundary artifact:
+## Worlds / boundaries inventory:
+## Boundary kind:
+## Boundary law:
 ## Freyd/AFT boundary diagnostic:
 ## Why this construction:
 ## Seam / files:
@@ -408,6 +533,8 @@ For any non-trivial response, produce these headings in order:
 
 For Track D, also include:
 
+- **World / boundary inventory**
+- **Boundary kind**
 - **Canonical boundary artifact**
 - **Law / proof signal**
 - **Falsifier**
@@ -448,7 +575,7 @@ For Track B, Track C, or Track D, also update `.universalist-plan.md`.
 
 ## Hand-offs and companion skills
 
-- Use **`kan`** when the chosen boundary artifact needs detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, or defunctionalization mechanics.
+- Use **`kan`** only after `universalist` has identified the signal, seam, worlds, boundary kind, candidate artifact, witness slice, and proof signal; then use `kan` for detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, or defunctionalization mechanics.
 - Do not hand off to `kan` until `universalist` has identified the signal, seam, candidate artifact, witness slice, and proof signal.
 - Use **`invariant-ace`** when the main job is discovering or pinning down invariants before choosing structure.
 - Use **`accretive-implementer`** after the construction is chosen and the task becomes ordinary implementation.
