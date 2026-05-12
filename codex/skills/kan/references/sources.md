@@ -1,5 +1,3 @@
 # Sources
 
-See `sources.yml` for the authoritative source ledger.
-
-Use stable category theory sources for mathematical claims and label all software architecture uses as engineering interpretations unless the model is explicit.
+Source IDs appear in `sources.yml`. Use sources for theory claims, not as proof that a software architecture is correct.

@@ -1,31 +1,80 @@
 ---
 name: kan
-description: "Use when the user wants to design, implement, audit, or explain code through Kan extensions or Kan lifts as coequal architectural tools: left/right Kan extensions, left/right Kan lifts, precomposition/postcomposition adjunctions, pointwise formulas, codensity, density, Yoneda/Coyoneda, free/cofree completions, residuals, Freyd adjoint-functor theorem boundary diagnostics, free-builder existence checks, functorial data migration, plugin APIs, DSL interpreters, compatibility facades, implementation synthesis behind boundaries, requirements/obligation derivation, outside-in contract-first refactoring, no-exact-lift obstruction reports, or categorical architecture transformation. Do not use for generic architecture or generic category-theory exposition unless Kan extensions, Kan lifts, defunctionalized boundary representations, Yoneda/Coyoneda boundary representations, or adjacent universal-property implementation is central."
+description: >
+  Use when universalist or the user has identified a concrete world/boundary seam that needs detailed Kan mechanics: Kan extensions, Kan lifts, precomposition/postcomposition, Freyd/AFT free-builder diagnostics, Yoneda/Coyoneda boundary representations, defunctionalized boundary IRs, codensity/density, pointwise formulas, free/cofree completions, functorial data migration, compatibility facades, lifted implementations, residual obligations, or categorical law tests. Do not use for generic architecture unless worlds, boundary kind, known side, unknown location, witness slice, and proof signal are named or must be recovered.
 ---
 
 # Kan
 
 ## Mission
 
-Act as a code-and-architecture consultant for implementing Kan extensions, implementing Kan lifts, and using both as a design calculus for changing software architectures.
+Use this skill for the detailed categorical mechanics behind universal architecture boundaries.
 
-Kan framing must earn its keep. Every substantial answer should identify the categorical data, engineering analogue, code-level witness, law tests, and—when higher-order boundary values appear—the defunctionalized representation that makes the boundary inspectable. Do not use Kan vocabulary as decorative naming.
+`universalist` chooses whether a seam deserves a canonical artifact. `kan` elaborates the selected artifact: Kan extension, Kan lift, Freyd/AFT diagnostic, Yoneda/Coyoneda representation, defunctionalized IR, codensity, data migration, or law tests.
 
-Treat **Kan extensions** and **Kan lifts** as coequal tools:
+Core rule:
 
-- Kan extensions answer: “How do I transport or complete known meaning across a boundary?”
-- Kan lifts answer: “What must exist behind a fixed boundary to realize or constrain desired meaning?”
-- Defunctionalization answers: “What first-order boundary IR replaces the functions, continuations, observations, paths, resumptions, or obligations that would otherwise be implicit?”
-- Yoneda/Coyoneda answer: “Should this boundary value be represented by sanctioned observations, or by a raw payload plus deferred transformation?”
-- Freyd/AFT answers: “Is this projection boundary disciplined enough to admit a canonical free implementation builder?”
+```text
+Do not start with category labels.
+Start with worlds, boundary kind, known side, unknown location, witness, and law.
+```
+
+## Required Handoff Contract
+
+Do not begin detailed Kan mechanics unless the prompt or prior analysis provides, or you first recover:
+
+- signal / smell;
+- seam;
+- source and target worlds;
+- boundary kind;
+- known side;
+- unknown location;
+- candidate artifact;
+- witness slice;
+- proof signal;
+- falsifier.
+
+If these are absent, first produce a short world/boundary inventory and ask whether to proceed, unless the user requested a best-effort implementation.
+
+## Step -1 — World Model Preamble
+
+Before naming `Lan`, `Ran`, `Lft`, `Rft`, Yoneda, Coyoneda, or Freyd/AFT, record the worlds.
+
+For each world:
+
+```text
+World:
+Objects:
+Transformations:
+Invariants:
+Observations:
+Primitives:
+Composition rules:
+Equality/coherence notion:
+```
+
+A world is too weak for Kan mechanics if it has only nouns, no transformations, no equality/coherence notion, no observations, unstable invariants, or no law test.
+
+## Boundary Kind to Kan Mapping
+
+| Boundary kind | Software shape | Kan/categorical reading | First law |
+| --- | --- | --- | --- |
+| Embedding | old/core included in new/target | `Lan`, `Ran`, `Delta` | `new(embed(old)) == old(old)` |
+| Projection | internals observed as public behavior | Kan lift, `P_*`, Freyd diagnostic | `observe(P(internal)) == required` |
+| Forgetful map | rich structure erased to raw view | adjunction / free builder | `forget(free(raw))` satisfies raw behavior |
+| Interpreter | syntax/effect/program -> behavior | algebra, fold, handler | interpreter agrees on fixtures |
+| Compiler/lowering | source syntax/IR -> target IR/code | transported semantics, Coyoneda path | lowering preserves semantics |
+| Serializer/codec | internal model -> wire/storage | projection/restriction, possible lift obstruction | round-trip or invariant preservation |
+| View/query | model -> report/client view | `Ran`, Yoneda observation | overlapping observations commute |
+| Handler | effect syntax -> runtime behavior | free effects, handler, defunctionalized operations | handler satisfies operation observations |
+| Observer | subject -> observation result | Yoneda / `Ran` / `Rft` | representation change preserves observation |
+| Migration | old schema -> new schema | `Delta`, `Lan`/Sigma, `Ran`/Pi | old reports pass through migration |
 
 ## Core Heartbeat
 
-Before giving a design or implementation answer, first classify the composition problem.
+### Extension axis: unknown after a boundary
 
-### Extension axis: precomposition
-
-Use when the unknown lives **after** a boundary map.
+Use when known source semantics must be transported or completed across `K`.
 
 ```text
 C --K--> D
@@ -37,518 +86,188 @@ E
 
 Recover:
 
-- `C`: source/core/legacy/specified category.
-- `D`: target/ambient/expanded category.
-- `E`: semantic/artifact/instance category.
-- `K : C -> D`: inclusion, embedding, schema map, AST embedding, API-version map, module-boundary map, or representation functor.
-- `F : C -> E`: existing semantics, interpreter, implementation, instance, test oracle, runtime behavior, schema meaning, or artifact functor.
+- `C`: source/core/legacy/specified world.
+- `D`: target/ambient/expanded world.
+- `E`: semantic/artifact/instance world.
+- `K : C -> D`: embedding, schema map, API-version map, AST embedding, representation functor.
+- `F : C -> E`: existing semantics, interpreter, instance, behavior, test oracle.
 - Direction:
-  - `Lan_K F` for free/generative/push-forward extension.
-  - `Ran_K F` for coherent/conservative/contextual extension by observations.
-  - `K*` or `Δ_K` for restriction/precomposition.
-- Unit or counit:
-  - `η : F -> Lan_K F · K` for a left Kan extension.
-  - `ε : Ran_K F · K -> F` for a right Kan extension.
-- Witness object `d ∈ D`: one endpoint, AST node, plugin, schema table, module, query, event, build target, or feature slice.
-- Testable square: one naturality, compatibility, or factorization property that could be approximated by tests.
+  - `Lan_K F`: free/generative/push-forward extension.
+  - `Ran_K F`: coherent/conservative extension by observations.
+  - `K*` / `Delta_K`: restriction/precomposition.
+- Unit/counit:
+  - `η : F -> Lan_K F · K`.
+  - `ε : Ran_K F · K -> F`.
+- Witness `d ∈ D` and one law test.
 
-### Lift axis: postcomposition
+### Lift axis: unknown before a fixed boundary
 
-Use when the unknown lives **before** a fixed boundary/projection/interpreter.
+Use when public behavior is known and the implementation-side artifact must be solved behind `P`.
 
 ```text
 A --?--> B
 |        |
 F        P
 v        v
-C
+C0
 ```
 
 Recover:
 
-- `A`: requirement/spec/client/workflow/test/feature category.
-- `B`: implementation/internal/resource/runtime/design category.
-- `C`: observable/public/external/semantic/output category.
-- `P : B -> C`: fixed projection, public API, compiler backend, handler, persistence boundary, deployment boundary, view, forgetful functor, instrumentation map, or externalization function.
-- `F : A -> C`: desired observable behavior, public contract, test oracle, migration target, workflow semantics, compliance requirement, or external behavior functor.
+- `A`: cases/contracts/tests/workflows/requirements.
+- `B`: implementation/internal/runtime/resource world.
+- `C0`: observable/public/external behavior world.
+- `P : B -> C0`: projection, public API, view, handler, serializer, trace observer, compiler backend.
+- `F : A -> C0`: required observable behavior.
 - Direction:
-  - `Lft_P F` for left Kan lift: solve for a realizing implementation with unit `η : F -> P · Lft_P F`.
-  - `Rft_P F` for right Kan lift: solve for a residual/constraint implementation with counit `ε : P · Rft_P F -> F`.
-  - `P_*` for direct postcomposition/checking when the implementation is already known.
-- Witness object `a ∈ A`: one feature, endpoint, test case, user story, query, policy, workflow step, or migration slice.
-- Testable triangle: one realization, soundness, residual, or factorization property that could be approximated by tests.
+  - `Lft_P F`: realization behind `P`, comparison `F -> P · Lft_P F`.
+  - `Rft_P F`: residual/sound obligation behind `P`, comparison `P · Rft_P F -> F`.
+  - `P_*`: direct projection/checking when implementation is already known.
+- Witness `a ∈ A` and one projection law.
 
-Notation note: mathematical notation for Kan lifts varies. This skill uses `Lft_P` and `Rft_P` to avoid confusing lifts with ordinary `Lan`/`Ran` along precomposition.
+Use local notation `Lft_P` and `Rft_P` because Kan lift notation varies.
 
-If these cannot be named, say the Kan framing is premature and use a simpler abstraction.
+## Representation Passes
 
-### Defunctionalization pass: boundary IR
+### Yoneda: observations first
 
-After selecting extension or lift axis, check whether the proposed architecture relies on higher-order values crossing the boundary. If yes, defunctionalize before proposing broad refactors.
+Use when the boundary is observation-heavy: views, reports, public API projections, policy checks, contract assertions, test oracles, capability consumers, continuations.
 
-Recover:
-
-- Higher-order boundary values: callbacks, continuations, observers, handlers, resumptions, projection functions, path/morphism functions, plugin hooks, requirements predicates, solvers, or implementation builders.
-- Constructor set: the finite or extensible cases that can cross the boundary.
-- Payloads: the free variables each function case carried implicitly.
-- Apply/interpreter/project function: `applyFrame`, `interpretPath`, `runObservation`, `handleOperation`, `projectImplementation`, `satisfyObligation`, or equivalent.
-- Law witness: the test showing the defunctionalized interpreter factors through the intended `Lan`, `Ran`, `Δ`, `Lft`, `Rft`, or `P_*` boundary.
-
-Use this rule of thumb:
+Artifact:
 
 ```text
-Kan extension/lift = architecture equation.
-Defunctionalization = first-order IR for that equation.
-Interpreter/apply/project = executable witness.
-Law tests = approximation of the universal property.
+data Observation = ...
+runObservation : Observation -> Subject -> Result
 ```
 
-Do not defunctionalize merely to replace simple callbacks with verbose enums. Defunctionalize when it creates a canonical boundary, makes tests/laws explicit, enables serialization/codegen/auditing, or prevents duplicated semantics.
-
-### Yoneda/Coyoneda pass: boundary representation
-
-After selecting extension or lift axis, and before broad refactoring, decide whether the boundary is observation-heavy or generation-heavy.
-
-Use **Yoneda** when the boundary is observation-heavy:
-
-- public API views, legacy client projections, read models, query endpoints, policy checks, audit traces, test oracles, capability consumers, continuation/codensity-like consumers;
-- architecture reading: represent a value by sanctioned observations rather than by leaking its internal representation;
-- implementation artifact: `Observation` constructors plus `runObservation`, `observe`, `project`, or equivalent;
-- law witness: observation round-trip, map/observation fusion, representation independence, or `Ran`/`Rft` counit compatibility.
-
-Use **Coyoneda** when the boundary is generation-heavy:
-
-- plugin operations, AST extensions, event envelopes, command payloads, schema migrations, generated clients, workflow steps, build artifacts, candidate implementation realizers;
-- architecture reading: package a raw source payload together with a deferred map/path into the target;
-- implementation artifact: `Generated`, `Deferred`, `Path`, `ProjectionPath`, or `CandidateRealizer` constructors plus `lower`, `interpretPath`, or `projectImplementation`;
-- law witness: identity lowering, map/path fusion, provenance preservation, or `Lan`/`Lft` unit compatibility.
-
-For Kan lifts, often use both:
+Law:
 
 ```text
-Yoneda side: public observations defining F : A -> C.
-Coyoneda side: candidate B-side realizers plus deferred projection paths through P : B -> C.
-Defunctionalization: make observations, realizers, and projection paths first-order.
-Law test: projectImplementation(realizer(a), observation) satisfies F(a, observation).
+runObservation(obs, repack(subject)) == runObservation(obs, subject)
 ```
 
-Use this hierarchy:
+### Coyoneda: deferred generation first
+
+Use when the boundary is generation-heavy: generated DTOs, plugin operations, migrations, AST extensions, workflow steps, candidate realizers.
+
+Artifact:
 
 ```text
-Kan extensions/lifts = architecture-scale boundary equation.
-Yoneda/Coyoneda = object-scale boundary representation.
-Defunctionalization = first-order editable IR for that representation.
-Law tests = executable approximation of the universal property.
+data Generated = { payload, path }
+lowerGenerated : Generated -> Target
 ```
 
-Do not mention Yoneda/Coyoneda if they do not change code placement, observer centralization, deferred transformation, provenance, fusion, auditability, or tests.
-
-
-### Freyd/AFT pass: projection discipline and free builders
-
-Use this pass when a lift-shaped refactor has a concrete projection `P : B -> C` and the user wants to know whether the boundary itself is good enough to support canonical implementation synthesis.
-
-A Kan lift identifies the outside-in architecture question:
+Law:
 
 ```text
-A --?--> B
-|        |
-F        P
-v        v
-C
+lowerGenerated(payload,path) == directInterpret(path,payload)
 ```
 
-The Freyd/AFT diagnostic asks whether `P` behaves like a right-adjoint candidate with a left adjoint/free builder:
+### Defunctionalization: first-order boundary IR
+
+Use when functions cross architecture boundaries: callbacks, continuations, observers, selectors, handlers, predicates, builders, maps, resumptions.
+
+Artifact:
 
 ```text
-Free : C -> B
-Free ⊣ P
-L = Free · F
+data BoundaryCase = ...captured fields...
+apply/interpret/project : BoundaryCase -> Meaning
 ```
 
-Recover:
-
-- Projection `P : B -> C`: the public API projection, serializer, view, handler, trace observer, report extractor, contract-test harness, compiler backend, or forgetful boundary.
-- Forgotten/observed structure: what `P` hides and what it exposes.
-- Constraint structure in `B`: products, pullbacks, equalizers, intersections, validation objects, workflow composition, policy meets, schema joins, or other limit-like/constraint-solving artifacts.
-- Preservation tests for `P`: checks that projecting a combined/constrained implementation agrees with combining/constraining projected observations.
-- Solution-set-like templates: a bounded family of implementation strategies through which accepted realizations should factor.
-- Candidate free builder `Free : C -> B`: codegen, skeleton synthesis, workflow builder, free DSL/effect builder, policy builder, or implementation-plan generator.
-- Candidate lift `L = Free · F : A -> B`.
-- Unit/comparison classification: exact, embedding, covering, sound, approximate, or no-exact-lift.
-- Projection law: `P(Free(F(a)))` equals, embeds, covers, or soundly satisfies `F(a)` according to the stated classification.
-
-Use this rule of thumb:
+Law:
 
 ```text
-Kan lift locates the missing internal implementation behind P.
-Freyd/AFT disciplines P and asks whether a canonical Free builder can exist.
+apply(encode(oldFunction), input) == oldFunction(input)
 ```
 
-Do not claim Freyd's theorem proves a software architecture unless the categories, functors, limits, and solution-set condition are explicit. In normal codebase work, mark this as an architecture diagnostic and back it with projection tests.
+## Freyd/AFT Boundary Diagnostic
 
-## Invocation Boundaries
+Run this only after a lift-shaped boundary appears.
 
-Use this skill for:
+Question:
 
-- implementing `Lan`, `Ran`, pointwise Kan extensions, ends/coends, density, codensity, Yoneda/Coyoneda, free/cofree constructions, or adjunction-derived APIs;
-- implementing or using left/right Kan lifts, postcomposition residuals, realization problems, reverse architectural derivations, view-update-like problems, implementation synthesis, requirements derivation, or boundary-constrained planning;
-- designing codebase architecture around extension boundaries, adapter boundaries, projection boundaries, defunctionalized boundary IRs, Yoneda-style observation boundaries, Coyoneda-style deferred generation boundaries, plugins, schemas, migrations, DSLs, interpreters, generated clients, read models, compatibility facades, tests-as-specs, policy obligations, or codensity/CPS optimization;
-- running Freyd/AFT boundary diagnostics for lift-shaped refactors: checking whether a projection `P : B -> C` preserves constraints, has bounded implementation templates, and suggests a free builder `Free : C -> B`;
-- running Yoneda/Coyoneda representation passes: centralizing sanctioned observations, deferring generated transformations, preserving provenance, fusing map pipelines, or preparing observation/path functions for defunctionalization;
-- defunctionalizing Kan-shaped or continuation-shaped architecture: replacing callbacks, continuations, paths, observers, handler clauses, resumptions, requirements, or implementation realizers with first-order cases plus an interpreter/apply/project function;
-- auditing a repository or proposed abstraction to determine whether a claimed Kan-extension or Kan-lift design is meaningful;
-- writing witness programs, law tests, finite-category/finite-poset computations, or source-backed explanations for Kan implementation.
+```text
+Is P : B -> C0 disciplined enough to support a canonical free builder Free : C0 -> B?
+```
 
-Do not use this skill for ordinary dependency injection, generic clean architecture, generic monads, ordinary async/await, plain generators, or broad PL/category-theory questions unless the prompt explicitly asks for Kan-extension, Kan-lift, or universal-property structure.
+Check:
+
+1. `P` is concrete, not metaphorical.
+2. `B` can combine constraints: products, pullbacks, equalizers, policy meets, workflow composition, validations.
+3. `P` preserves those constraints enough to test.
+4. There is a bounded solution-set-like family of implementation templates.
+5. Candidate `Free` has a projection law:
+
+```text
+P(Free(required(case))) satisfies required(case)
+```
+
+If not, produce an obstruction report: lost evidence, vague projection, missing internal structure, unbounded templates, impossible observation, or required external dependency.
 
 ## Response Modes
 
 ### Compact
 
-Use for small conceptual or implementation questions.
-
 1. Direct answer.
-2. Kan data:
-   - extension: `C`, `D`, `K`, `F`, direction; or
-   - lift: `A`, `B`, `C`, `P`, `F`, direction.
-3. One witness object.
-4. One law/test.
-5. Caveat distinguishing theorem from engineering interpretation.
+2. Worlds and boundary kind.
+3. Extension or lift axis.
+4. Representation pass: Yoneda, Coyoneda, defunctionalization, or none.
+5. One witness.
+6. One law/falsifier.
 
 ### Design memo
 
-Use for architecture, DSL, adapter, migration, plugin, lift, or codebase design.
-
 1. Problem frame.
-2. Composition axis: extension or lift.
-3. Kan data.
-4. `Lan`/`Ran`/`Δ` or `Lft`/`Rft`/`P_*` choice.
-5. Proposed architecture.
-6. Freyd/AFT boundary diagnostic if the work is lift-shaped and projection quality determines success.
-7. Compatibility, realization, or residual map.
-7. Witness slice.
-8. Tests and invariants.
-10. Failure modes.
-11. Source boundaries.
+2. World/boundary inventory.
+3. Boundary kind to Kan mapping.
+4. Extension/lift data.
+5. Representation pass.
+6. Proposed artifact and module shape.
+7. Law tests and falsifier.
+8. Failure modes.
+9. Source/claim status.
 
 ### Implementation plan
 
-Use when writing or modifying code.
-
-1. Representation choice.
-2. Yoneda/Coyoneda pass, if observations or generated payloads cross the boundary.
-3. Data structures.
-4. Defunctionalized boundary IR, if higher-order values cross the boundary.
-5. Construction algorithm.
-6. Unit/counit or lift comparison functions.
-7. Naturality/factorization tests.
-8. Complexity and ergonomics.
-9. Minimal witness code.
-
-### Repo audit
-
-Use when inspecting a repository.
-
-1. Current architecture sketch.
-2. Candidate extension boundaries and lift boundaries.
-3. Candidate categories and functors.
-4. Where the Kan analogy holds.
-5. Where it breaks.
-6. Refactor plan.
-7. Law/regression tests.
-8. De-risking steps.
-
-### Architecture transformation
-
-Use when the user wants to change a software architecture.
-
-1. Name the boundary that causes architectural pressure.
-2. Decide whether the unknown is after the boundary (`Lan`/`Ran`) or before it (`Lft`/`Rft`).
-3. State the universal-property candidate and its engineering analogue.
-4. Design the new module layout.
-5. Identify code that becomes observed Yoneda-style, deferred Coyoneda-style, generated, interpreted, projected, synthesized, constrained, or defunctionalized into boundary IR.
-6. Add witness slices and law tests before broad refactoring.
-7. Name migration steps and rollback points.
-
-### Claim ledger
-
-Use for theory-heavy or source-heavy work.
-
-1. Mathematical claim.
-2. Programming claim.
-3. Architecture inference.
-4. Unsafe or unproven claim.
-5. Source IDs from `references/claim-map.md`, `references/lift-claim-map.md`, `references/freyd-aft-claim-map.md`, `references/defunctionalization-claim-map.md`, and `references/yoneda-coyoneda-claim-map.md`.
-
-## Fast Reference Routing
-
-Read only the files needed for the task:
-
-- Foundations, formulas, universal properties for extensions: `references/foundations.md`.
-- Kan lift definitions, postcomposition, lift laws, residual readings: `references/kan-lifts.md`.
-- Contract-first lift refactors, obligation ledgers, no-exact-lift reports: `references/lift-architecture-playbook.md`, `references/lift-obligation-discovery.md`.
-- Freyd/AFT projection diagnostics and free-builder checks for lift-shaped refactors: `references/freyd-aft.md`, `references/freyd-aft-claim-map.md`.
-- Architecture transformation with extensions and lifts: `references/architecture-transformation.md`.
-- Defunctionalization relationships and first-order boundary IR: `references/defunctionalization.md`.
-- Defunctionalization claim safety: `references/defunctionalization-claim-map.md`, and `references/yoneda-coyoneda-claim-map.md`.
-- Implementation recipes and algorithms: `references/implementability.md`, `references/implementation-patterns.md`.
-- Lift law tests: `references/lift-law-tests.md`.
-- Haskell encodings: `references/haskell-encodings.md`.
-- TypeScript, Rust, Python patterns: `references/language-recipes.md`.
-- Architecture patterns: `references/architecture-patterns.md`, then `references/architecture-transformation.md` for lift-aware refactors.
-- Data migration and databases: `references/data-migration.md`.
-- Law tests for extensions: `references/law-tests.md`.
-- Failure modes and anti-patterns: `references/failure-modes.md`, `references/anti-patterns.md`.
-- Concrete witness prompts and examples: `references/witness-programs.md`, `examples/`.
-- Source safety: `references/claim-map.md`, `references/lift-claim-map.md`, `references/defunctionalization-claim-map.md`, `references/yoneda-coyoneda-claim-map.md`, `references/sources.md`, `references/sources.yml`.
-
-## Extension Selection Rules
-
-Prefer `Lan_K F` when:
-
-- extending a small/core/legacy surface into a larger surface;
-- generating defaults, code, interpreters, migrations, or plugin behavior;
-- preserving old behavior while adding constructors/targets;
-- the desired object should be initial/free among compatible extensions;
-- the pointwise construction is naturally a colimit, coproduct, quotient, union, fold, or generated artifact.
-
-Prefer `Ran_K F` when:
-
-- new behavior is determined by all old observations/projections;
-- implementing compatibility facades, read models, conservative adapters, coinductive views, or policy aggregation;
-- optimizing a bind-heavy structure via codensity/CPS;
-- the desired object should be terminal/cofree among compatible observations;
-- the pointwise construction is naturally a limit, product, equalizer, record of coherent observations, intersection, or meet.
-
-Use `K*` / `Δ_K` / precomposition when:
-
-- restricting a new model back to an old schema/API;
-- checking backward compatibility;
-- adapting a target instance to an old interface without generating new target data.
-
-If both `Lan` and `Ran` are plausible, present both designs and choose by failure mode:
-
-- `Lan` failure: generates too much, admits invalid behavior, or hides conflicts in quotienting.
-- `Ran` failure: too conservative, opaque, over-constrained, or impossible to construct from available observations.
-
-## Lift Selection Rules
-
-Prefer `Lft_P F` when:
-
-- the fixed boundary `P : B -> C` is known, but the implementation/design inside `B` is missing;
-- a desired public contract, test oracle, workflow, migration target, or external behavior `F : A -> C` must be realized through `P`;
-- the useful comparison has shape `η : F -> P · implementation`;
-- the engineering question is “what implementation covers, generates, or realizes this desired behavior through the boundary?”;
-- the pointwise approximation is naturally “least implementation whose projection is at least the desired behavior,” after the local order/2-cell direction is made explicit.
-
-Prefer `Rft_P F` when:
-
-- the fixed boundary `P : B -> C` is known, and you need residual requirements, weakest obligations, constraints, or sound internal approximations;
-- the useful comparison has shape `ε : P · implementation -> F`;
-- the engineering question is “what internal obligation is sufficient/sound under this external specification?”;
-- the pointwise approximation is naturally “greatest implementation whose projection stays within the desired behavior,” after the local order/2-cell direction is made explicit.
-
-Use direct postcomposition `P_*` when:
-
-- the implementation `G : A -> B` is already known;
-- you only need to check, observe, publish, compile, serialize, project, or test `P · G`.
-
-If both `Lft` and `Rft` are plausible, do not choose by name. Choose by comparison cell:
-
-- Need `desired -> projected(implementation)`: left lift.
-- Need `projected(implementation) -> desired`: right lift.
-
-## Freyd/AFT Lift-Boundary Protocol
-
-Run this protocol after identifying a lift-shaped refactor when the projection `P : B -> C` may determine whether a canonical implementation exists.
-
-1. Projection centrality: name `P` as a concrete module/function/test harness/view, not a metaphor.
-2. Forgotten structure: list what `P` hides and what observations it preserves.
-3. Constraint inventory in `B`: name products, pullbacks, equalizers, joins/meets, validators, workflow composition, state-transition constraints, or other structures used to combine requirements.
-4. Constraint preservation tests: write at least one test showing that `P` does not lie about a compatibility/equality/composition constraint relevant to the refactor.
-5. Solution-set-like templates: list the bounded family of implementation strategies that cover the public requirements.
-6. Free-builder proposal: define a candidate `Free : C -> B` such as a workflow skeleton generator, implementation-plan builder, free DSL/effect builder, or policy builder.
-7. Lift candidate: set `L = Free · F` when plausible.
-8. Unit/comparison classification: exact, embedding, covering, sound, approximate, or no-exact-lift.
-9. Projection law test: assert `P(Free(F(a)))` satisfies `F(a)` according to the classification.
-10. Obstruction report: if no free builder is plausible, identify whether the problem is vague `P`, missing constraints in `B`, constraint loss through `P`, missing templates, or impossible observations.
-
-Use the phrase **Freyd boundary diagnostic** for this pass. Use **free builder** only when the projection law is explicit.
-
-## Kan Lift Architecture Protocol
-
-Use this protocol whenever the user wants to refactor internals while preserving public commitments.
-
-1. Commitment inventory: list APIs, clients, reports, traces, policies, fixtures, golden tests, and operational promises that must remain true.
-2. Projection centrality: identify `P : B -> C` as a concrete public projection, serializer, interpreter, view, trace extractor, renderer, handler, or test observer. If no central `P` exists, create one before moving modules.
-3. Required behavior: encode `F : A -> C` as contract cases, public scenarios, report fixtures, trace expectations, or policy outcomes.
-4. Witness selection: pick one `a ∈ A`, usually one endpoint, workflow, test, report row, policy case, or migration slice.
-5. Exactness classification: decide whether the goal is exact equality, covering `F(a) <= P(L(a))`, soundness `P(R(a)) <= F(a)`, or another named preorder/refinement.
-6. Obligation ledger: derive missing data, transitions, capabilities, temporal guarantees, projection paths, and coherence constraints before broad edits.
-7. No-exact-lift check: if current `B` and `P` cannot produce an observation required by `F`, emit a no-exact-lift report with repair options instead of inventing behavior.
-8. Boundary IR: use Yoneda-style `PublicObservation`, Coyoneda-style `CandidateRealizer`, defunctionalized `ProjectionPath`, and `ImplementationObligation` when observations or realizers cross module boundaries.
-9. Projection law tests: write `observe(P(realizer(a)), obs) == observe(F(a), obs)` or the stated preorder test before rolling out module changes.
-10. Rollout: generalize only after the witness passes, the obligation ledger is stable, and bypasses around `P` are removed.
-
-Use the phrase **outside-in refactor** for lift-shaped work where external commitments determine internal architecture.
-
-Use the phrase **architecture preimage** for the selected internal design `L(a)` that projects to the required behavior `F(a)`.
-
-Use the phrase **no exact lift** when the desired behavior cannot be realized without enriching `B`, changing `P`, weakening `F`, adding an external dependency, or accepting approximation.
-
-
-## Defunctionalization Selection Rules
-
-Prefer a defunctionalization pass when:
-
-- a `Ran`, codensity, continuation, handler, or facade design represents behavior by callbacks, consumers, or observations;
-- a `Lan` design packages hidden sources together with maps, paths, generators, plugin callbacks, or migrations;
-- a `Lft` design synthesizes implementation builders or realizers behind `P`;
-- a `Rft` design derives predicates, residuals, obligations, or weakest requirements behind `P`;
-- the boundary needs auditability, serialization, deterministic codegen, stable tests, or centralized dispatch;
-- the agent would otherwise scatter anonymous functions across modules.
-
-Do not defunctionalize when:
-
-- the function is local, simple, and not part of the architecture boundary;
-- the set of cases is unknowable and the language's function abstraction is the correct open extension point;
-- defunctionalization would destroy parametricity or introduce invalid inspection of clients;
-- a plain interface plus two law tests gives the same guarantee with less machinery.
-
-Mapping table:
-
-| Kan-shaped boundary | Higher-order shape | Defunctionalized artifact | Interpreter/law |
-|---|---|---|---|
-| `Lan` | hidden source plus `Kc -> d` map | `Path`/`GeneratedCase` plus payload | `interpretPath`, unit naturality |
-| `Ran` | all observations `d -> Kc` | `Observation` cases plus coherent record | `runObservation`, counit naturality |
-| Codensity/Ran | continuation callback | `Frame` stack plus payloads | `applyFrame`, semantic equality |
-| `Δ` | restriction by precomposition | explicit compatibility adapter cases | restriction/golden tests |
-| `Lft` | implementation builder behind `P` | `ImplementationPlan` / `Realizer` cases | `projectImplementation`, realization test |
-| `Rft` | predicates/residuals behind `P` | `Requirement` / `Obligation` cases | `satisfyObligation`, soundness test |
-| Effect handler | operation plus resumption | `Operation` plus `Resume`/handler case | handler law, resumption discipline |
-
-## Yoneda/Coyoneda Selection Rules
-
-Prefer a Yoneda pass when:
-
-- the proposed design is dominated by observations, projections, queries, public views, old-client compatibility, policy checks, audit traces, test oracles, or continuations;
-- the main risk is leaking internal representation or duplicating observers across modules;
-- a `Ran`, `Rft`, codensity, read-model, or compatibility-facade design needs a single sanctioned observation interface;
-- observations can be tested for uniformity, representation independence, or coherence.
-
-Prefer a Coyoneda pass when:
-
-- the proposed design is dominated by generated artifacts, plugin cases, event envelopes, AST nodes, schema migrations, deferred maps, workflow steps, or candidate implementation realizers;
-- the main risk is interpreting too early, losing provenance, scattering transformation logic, or making map pipelines unfusable;
-- a `Lan` or `Lft` design needs raw payloads plus deferred target paths;
-- transformations can be tested for identity lowering, map/path fusion, provenance preservation, or unit compatibility.
-
-For lift-shaped refactors, usually split the boundary:
-
-- Yoneda for `C`: public observations defining `F : A -> C`;
-- Coyoneda for `B`: candidate implementation payloads plus deferred projection paths through `P : B -> C`;
-- defunctionalization for both sides if observations/paths must be audited, serialized, generated, or exhaustively tested.
-
-Do not use Yoneda/Coyoneda when:
-
-- the representation does not alter code placement, tests, or failure modes;
-- a plain DTO, interface, or adapter is clearer and equally testable;
-- the wrapper leaks raw internals anyway;
-- the deferred map is never composed, inspected, lowered centrally, or tested.
-
-Mapping table:
-
-| Boundary pressure | Use | Artifact | Law/test |
-|---|---|---|---|
-| old clients observe new model | Yoneda + `Ran` | `Observation` + coherent facade | counit/projection coherence |
-| public contract observes candidate implementation | Yoneda + `Lft`/`Rft` | `PublicObservation` | realization/soundness per observation |
-| core payload generates target artifact | Coyoneda + `Lan` | `Generated`/`Path` + payload | identity lowering, unit preservation |
-| candidate internal realizer projects to behavior | Coyoneda + `Lft` | `CandidateRealizer` + `ProjectionPath` | `P(realizer(a))` satisfies `F(a)` |
-| callbacks or maps need auditability | Defunctionalized Yoneda/Coyoneda | constructors + interpreter | semantic preservation + selected Kan law |
-
-## Architecture Change Protocol
-
-For architectural refactors, force the work through this sequence:
-
-1. Boundary inventory: list embeddings, projections, interpreters, handlers, public APIs, schemas, compilers, persistence maps, and test oracles.
-2. Unknown placement: decide whether the unknown artifact is after a boundary (`Lan`/`Ran`) or before a boundary (`Lft`/`Rft`). For lift-shaped work, treat the refactor as outside-in: public commitments determine internal architecture.
-3. Witness-first design: pick one endpoint, table, AST node, handler case, policy, workflow, or plugin.
-4. Law before rollout: write one naturality/factorization/realization test before moving modules. For lifts, write the projection test `P(candidate) ~= F(witness)` first.
-5. Run a Yoneda/Coyoneda pass: centralize observations or defer generated paths when this changes code shape or tests.
-6. Defunctionalize boundary values when useful: turn callbacks, paths, observations, resumptions, or obligations into first-order cases plus one interpreter/projector.
-7. Module layout: centralize `K`, `P`, units/counits, smart constructors, projections, residual checks, and boundary IR interpreters.
-8. Migration: keep old behavior behind `Δ_K` or `P_*` checks until the witness suite is stable. For lifts, maintain an obligation ledger and no-exact-lift report until every public commitment is accounted for.
-9. Generalize only after the witness works.
-
-## Implementation Checklist
-
-For each concrete implementation, answer:
-
-1. Are the categories small/finite, syntactic, schema-shaped, type-level, relational, poset-shaped, or merely analogical?
-2. Is the composition axis precomposition or postcomposition?
-3. For extensions: does `K` map objects and morphisms, or is it only a naming convention?
-4. For lifts: does `P` map implementations to observations, or is it only a metaphor?
-5. Does `F` preserve the morphisms you claim it preserves?
-6. Can you construct `Lan`/`Ran` pointwise, or `Lft`/`Rft` as a residual/optimization problem?
-7. Are colimits/limits/residuals/adjoints available in the target setting?
-8. What is `η` or `ε` in code?
-9. What test approximates naturality?
-10. What test approximates universal factorization?
-11. Are higher-order boundary values being hidden in callbacks, continuations, handlers, observers, or predicates?
-12. Is the boundary observation-heavy enough to benefit from a Yoneda representation?
-13. Is the boundary generation-heavy enough to benefit from a Coyoneda representation?
-14. If yes, what observations, payloads, deferred maps, and lowering/interpreter functions make the representation explicit?
-15. If higher-order values remain, what defunctionalized constructors and `apply`/`interpret`/`project` function make them explicit?
-16. For lifts, what external commitments are in scope, and what obligations do they induce in `B`?
-17. For lifts, can `P` currently produce every observation required by `F`, or is there a no-exact-lift obstruction?
-18. If using Freyd/AFT practice, what constraints does `B` solve, which does `P` preserve, and what solution-set-like implementation templates bound the search?
-19. If proposing `Free : C -> B`, what projection law tests `P(Free(c))` against `c`?
-20. What behavior would refute the Kan framing, Freyd/AFT diagnostic, Yoneda/Coyoneda representation, or defunctionalized IR?
-
-## Source Discipline
-
-Mark claims as:
-
-- `mathematical`: directly supported by category theory sources;
-- `programming`: supported by programming/codensity/CPS/Yoneda/Coyoneda/defunctionalization/Kan-extension/Kan-lift sources;
-- `architecture inference`: engineering interpretation inspired by the math;
-- `repo observation`: fact observed in the current codebase.
-
-Do not cite a math theorem as proof that a software architecture is correct unless the categories, functors, and universal property have been modeled precisely. Prefer testable compatibility witnesses over broad philosophical claims.
-
-## Scripts
-
-- `scripts/emit_kan_stub.sh <kind> [language]`: architecture or implementation memo scaffold.
-- `scripts/emit_witness_pack.sh <topic> [language]`: minimal witness pattern.
-- `scripts/emit_law_test_plan.sh <direction> [language]`: law-test scaffold.
-- `scripts/emit_source_pack.sh <track> [focus]`: source ledger excerpt.
-- `scripts/emit_defun_pass.sh <topic> [language]`: defunctionalization pass scaffold.
-- `scripts/emit_yoneda_pass.sh <topic> [language]`: Yoneda/Coyoneda representation pass scaffold.
-- `scripts/emit_lift_playbook.sh <topic> [language]`: outside-in lift refactor, obligation-discovery, and no-exact-lift scaffold.
-- `scripts/emit_freyd_pass.sh <topic> [language]`: Freyd/AFT boundary diagnostic and free-builder scaffold.
-- `scripts/check_skill.sh`: validate bundle structure, source IDs, script executability, examples, lift-aware script outputs, defunctionalization support, Yoneda/Coyoneda support, and Freyd/AFT support.
-
-Supported `kind`: `finite-lan`, `finite-ran`, `schema-migration`, `plugin-api`, `dsl-interpreter`, `adapter-boundary`, `compatibility-facade`, `codensity-optimization`, `kan-lift`, `lift-realization`, `lift-obligation`, `architecture-transformation`, `outside-in-refactor`, `obligation-discovery`, `no-exact-lift`, `freyd-boundary-diagnostic`, `free-builder`, `solution-set-templates`, `defunctionalization-pass`, `defunctionalized-boundary`, `yoneda-pass`, `coyoneda-pass`, `boundary-representation`, `repo-audit`, `law-test-plan`.
-
-Supported `topic`: `pointwise-lan`, `pointwise-ran`, `coend-lan`, `end-ran`, `left-kan-lift`, `right-kan-lift`, `architecture-transformation`, `codensity`, `density`, `yoneda`, `coyoneda`, `data-migration`, `lan-vs-ran`, `extension-vs-lift`, `lift-contract-refactor`, `lift-obligation-discovery`, `no-exact-lift`, `freyd-aft`, `freyd-lift-boundary`, `free-builder`, `solution-set`, `defunctionalization`, `defun-ran`, `defun-lan`, `defun-lift`, `defun-effects`, `yoneda-observation`, `coyoneda-generation`, `yoneda-coyoneda-lift`.
-
-Supported `direction`: `lan`, `ran`, `delta`, `left-lift`, `right-lift`, `postcomposition`, `contract-lift`, `obligation-lift`, `no-exact-lift`, `freyd-aft`, `freyd-lift-boundary`, `free-builder`, `solution-set`, `defunctionalization`, `yoneda`, `coyoneda`, `yoneda-coyoneda`.
-
-Supported `language`: `agnostic`, `haskell`, `typescript`, `rust`, `python`, `scala`, `ocaml`.
+1. Data structures.
+2. Constructors / IR.
+3. Interpreters/projections/lowerers.
+4. Unit/counit/comparison functions.
+5. Law tests.
+6. Migration/rollback.
 
 ## Guardrails
 
-- No category-theory cosplay: a diagram must guide code placement, tests, or migration risk.
-- No unmarked analogies: label engineering interpretations explicitly.
-- No lawless abstractions: every proposed abstraction needs at least one law test or witness.
-- No extension claims without `C`, `D`, `K`, `F`, direction, and unit/counit.
-- No lift claims without `A`, `B`, `C`, `P`, `F`, direction, and comparison cell.
-- No “minimal” or “maximal” lift language without stating the order or 2-cell direction.
-- No lift-shaped refactor without an explicit projection `P`, commitment inventory, witness case, and exact/covering/sound/no-exact-lift classification.
-- No Freyd/AFT or free-builder claim without naming constraints in `B`, preservation tests for `P`, solution-set-like templates, and the projection law for `P(Free(c))`.
-- No pretending an exact lift exists when required observations are not stored, derivable, projected, or externally obtainable.
-- No Yoneda/Coyoneda claims without naming observations or payload+path, a runner/lowering function, and at least one round-trip/fusion/compatibility test.
-- No defunctionalization claims without naming constructors, payloads, interpreter/apply/project function, and at least one law test.
-- No performance claims for codensity without semantic tests and measurement.
-- No repo refactor without naming the failure mode the Kan framing prevents.
+- No Kan mechanics without worlds, boundary kind, known side, unknown location, witness, and law.
+- No theorem claims for ordinary code unless categories/functors/natural transformations/comparison cells are explicit.
+- No Yoneda/Coyoneda unless it changes representation, centralizes observations, defers generation, preserves provenance, or improves tests.
+- No defunctionalization unless the higher-order value crosses a meaningful boundary.
+- No Freyd/AFT unless `P : B -> C0` is concrete and there is a builder or obstruction report.
+- Prefer plain engineering language when it conveys the same plan.
+
+## Scripts
+
+- `scripts/emit_world_boundary_preamble.sh <focus> [language]`
+- `scripts/emit_boundary_kind_map.sh [kind]`
+- `scripts/emit_kan_stub.sh <kind> [language]`
+- `scripts/emit_law_test_plan.sh <direction> [language]`
+- `scripts/emit_yoneda_pass.sh <focus> [language]`
+- `scripts/emit_defun_pass.sh <focus> [language]`
+- `scripts/emit_freyd_pass.sh <focus> [language]`
+- `scripts/emit_source_pack.sh <track> [focus]`
+- `scripts/check_skill.sh`
+
+## References
+
+- `references/world-boundary-preamble.md`
+- `references/boundary-kind-to-kan.md`
+- `references/foundations.md`
+- `references/kan-lifts.md`
+- `references/yoneda-coyoneda.md`
+- `references/defunctionalization.md`
+- `references/freyd-aft.md`
+- `references/architecture-transformation.md`
+- `references/law-tests.md`
+- `references/claim-map.md`
+- `references/sources.md`
+- `references/sources.yml`

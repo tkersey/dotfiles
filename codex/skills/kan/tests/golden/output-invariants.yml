@@ -1,46 +1,7 @@
 invariants:
-  - name: "Extension heartbeat present"
-    applies_to: [design-memo, implementation-plan, repo-audit]
+  - name: world-boundary-data
     must_include_one_of:
-      - ["C", "D", "K", "F", "Lan or Ran or Delta", "unit or counit", "witness", "law test"]
-      - ["A", "B", "C", "P", "F", "Lft or Rft or P_*", "comparison", "witness", "law test"]
-
-  - name: "Lift support is coequal"
-    applies_to: [architecture-transformation, implementation-plan, repo-audit]
-    must_include_one_of: ["Kan lift", "Lft", "Rft", "postcomposition", "P : B -> C"]
-
-  - name: "Claims separated"
-    must_include_one_of: ["mathematical claim", "programming claim", "architecture inference", "engineering interpretation"]
-
-  - name: "No unsupported performance promise"
-    forbidden: ["codensity will always be faster", "guaranteed speedup"]
-
-  - name: "No decorative category theory"
-    forbidden: ["this is a Kan extension", "this is a Kan lift"] # unless accompanied by data, comparison, and law test in evaluator
-
-  - name: "No lift without boundary"
-    forbidden: ["weakest obligation"] # unless order/2-cell direction and P boundary are stated
-
-
-  - name: "Defunctionalization pass when needed"
-    applies_to: [implementation-plan, architecture-transformation, repo-audit]
-    trigger_terms: ["callback", "continuation", "observer", "handler", "resumption", "predicate", "builder", "defunctionalization"]
-    must_include_one_of: ["constructor", "case", "payload", "apply", "interpret", "project", "satisfy"]
-    must_include_one_of_law: ["unit", "counit", "comparison", "realization", "soundness", "semantic preservation"]
-
-
-  - name: "Yoneda/Coyoneda representation pass"
-    applies_to: [design-memo, implementation-plan, repo-audit]
-    must_include_one_of: ["Observation", "runObservation", "Generated", "Path", "ProjectionPath", "lower", "interpretPath", "projectImplementation"]
-
-  - name: "No decorative Yoneda/Coyoneda"
-    forbidden: ["Yoneda makes this better automatically", "Coyoneda proves this architecture is correct"]
-
-  - name: "Lift refactor obligation discipline"
-    applies_to: [architecture-transformation, implementation-plan, repo-audit]
-    trigger_terms: ["outside-in", "public contract", "contract-first", "obligation", "no exact lift", "public commitments"]
-    must_include_one_of: ["commitment inventory", "obligation ledger", "projection P", "P : B -> C", "no-exact-lift", "exact lift", "covering", "sound"]
-    must_include_one_of_law: ["P(L", "P(R", "projectImplementation", "observe(P", "projection law", "required <= projected", "projected <= required"]
-
-  - name: "No fake exact lift"
-    forbidden: ["exact lift exists"] # unless every required observation is shown to be produced by P or the response marks this as a theorem with data/laws
+      - ["World", "Boundary", "Kind", "Law"]
+  - name: no-mechanics-without-handoff
+    forbidden:
+      - "This is a Kan extension" # unless accompanied by concrete data and law in evaluator

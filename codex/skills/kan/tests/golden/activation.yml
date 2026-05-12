@@ -1,111 +1,12 @@
 cases:
-  - prompt: "Use Kan extensions to design a plugin API for adding exporters to my existing AST."
+  - prompt: "Use kan to elaborate the universalist-selected projection boundary for this API contract."
     should_use_skill: true
-    response_mode: design-memo
     expected:
-      - "names C, D, K, F, and E"
-      - "chooses Lan or Ran with justification"
-      - "includes one exporter witness slice"
-      - "defines unit/counit compatibility as a test"
-      - "marks architecture mapping as an inference"
-
-  - prompt: "Use a Kan lift to derive the internal service design that realizes this public API contract."
-    should_use_skill: true
-    response_mode: architecture-transformation
-    expected:
-      - "names A, B, C, P, and F"
-      - "chooses Lft or Rft by comparison cell"
-      - "includes one endpoint witness slice"
-      - "defines realization or soundness as a test"
-      - "marks architecture mapping as an inference"
-
-  - prompt: "Can codensity help optimize my free monad interpreter pipeline?"
-    should_use_skill: true
-    response_mode: implementation-plan
-    expected:
-      - "identifies right Kan/codensity overlap"
-      - "separates semantic equivalence from performance claim"
-      - "proposes before/after workload"
-      - "mentions source [KAN-HINZE-2012]"
-
-  - prompt: "Plan a schema v1 to v2 migration using a left Kan extension."
-    should_use_skill: true
-    response_mode: design-memo
-    expected:
-      - "treats v1 as S or C and v2 as T or D"
-      - "interprets Lan as Sigma/pushforward"
-      - "includes compatibility tests for old fields"
-      - "mentions quotient/merge risks"
-
-  - prompt: "Use a right Kan lift to derive residual requirements from this test suite."
-    should_use_skill: true
-    response_mode: implementation-plan
-    expected:
-      - "treats tests/specs as A"
-      - "names the fixed projection P"
-      - "uses counit/comparison P.R -> F"
-      - "includes a soundness law test"
-
-  - prompt: "Give me clean architecture advice for a Node service."
+      - worlds
+      - boundary kind
+      - lift axis
+      - projection law
+  - prompt: "Explain Kan extensions abstractly without a software boundary."
     should_use_skill: false
     expected:
-      - "no Kan framing unless the user asks for it"
-
-  - prompt: "Compare shift/reset and control/prompt."
-    should_use_skill: false
-    expected:
-      - "belongs to a delimited-continuation skill unless Kan/codensity is explicitly central"
-
-
-  - prompt: "Use Kan plus defunctionalization to refactor this callback-heavy plugin API into an explicit boundary IR."
-    should_use_skill: true
-    response_mode: implementation-plan
-    expected:
-      - "classifies the construction as Lan/Ran/Delta/Lft/Rft before defunctionalizing"
-      - "identifies callbacks or continuations crossing the boundary"
-      - "proposes first-order constructors and payloads"
-      - "names an apply/interpret/project function"
-      - "adds a law test tying the IR to the selected Kan witness"
-
-  - prompt: "Defunctionalize this local helper callback inside one function."
-    should_use_skill: false
-    expected:
-      - "do not invoke kan unless a universal-property boundary or architecture refactor is present"
-
-
-  - prompt: "Use Yoneda/Coyoneda to refactor this public contract boundary into observations and deferred implementation realizers."
-    should_use_skill: true
-    response_mode: implementation-plan
-    expected:
-      - "classifies the top-level boundary as extension, lift, or projection before invoking Yoneda/Coyoneda"
-      - "uses Yoneda for sanctioned public observations"
-      - "uses Coyoneda for raw payloads plus deferred projection paths"
-      - "includes defunctionalized Observation or ProjectionPath cases when useful"
-      - "adds round-trip, fusion, or realization tests"
-
-  - prompt: "Wrap this object in Yoneda because category theory is cool."
-    should_use_skill: true
-    response_mode: compact
-    expected:
-      - "rejects decorative Yoneda if it does not change code shape or tests"
-      - "asks for sanctioned observations and a law test"
-
-  - prompt: "Use $kan to refactor this service outside-in from its public contract; derive obligations before moving modules."
-    should_use_skill: true
-    response_mode: architecture-transformation
-    expected:
-      - "names A, B, C, P, and F"
-      - "inventories external commitments"
-      - "keeps P as a concrete projection"
-      - "produces an obligation ledger"
-      - "classifies exact, covering, sound, approximate, or no-exact-lift"
-      - "adds projection law tests before broad refactoring"
-
-  - prompt: "This public report requires a field that the new domain model no longer stores; use Kan lifts to analyze it."
-    should_use_skill: true
-    response_mode: implementation-plan
-    expected:
-      - "emits a no-exact-lift report if P cannot produce the observation"
-      - "names missing data, transition, capability, or projection path"
-      - "offers repairs by enriching B, changing P, weakening F, or adding a dependency"
-      - "adds a failing witness test and repair acceptance test"
+      - generic category theory not enough unless user asks explicitly

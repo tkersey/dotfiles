@@ -1,70 +1,58 @@
-# Kan foundations
+# Foundations
 
-## Extensions
+## Kan extensions
 
-A left Kan extension of `F : C -> E` along `K : C -> D` is `Lan_K F : D -> E` with unit
+A left Kan extension of `F : C -> E` along `K : C -> D` is `Lan_K F : D -> E` with unit:
 
 ```text
 η : F -> Lan_K F · K
 ```
 
-and universal bijection:
+It is initial among extensions compatible with `F`.
 
-```text
-Nat(Lan_K F, G) ≅ Nat(F, G · K)
-```
-
-A right Kan extension is `Ran_K F : D -> E` with counit
+A right Kan extension is `Ran_K F : D -> E` with counit:
 
 ```text
 ε : Ran_K F · K -> F
 ```
 
-and universal bijection:
+It is terminal among coherent observation-like extensions.
 
-```text
-Nat(G, Ran_K F) ≅ Nat(G · K, F)
-```
-
-When both exist for fixed `K`:
+When both exist:
 
 ```text
 Lan_K ⊣ K* ⊣ Ran_K
 ```
 
-where `K*` is precomposition/restriction. Sources: `[KAN-RIEHL-CTIC]`, `[KAN-MACLANE-CWM]`.
+where `K*` is precomposition.
 
-## Pointwise formulas
-
-```text
-(Lan_K F)(d) ≅ colim(K ↓ d -> C -> E)
-(Ran_K F)(d) ≅ lim(d ↓ K -> C -> E)
-```
-
-Set-valued formulas:
+## Pointwise intuition
 
 ```text
-(Lan_K F)(d) ≅ ∫^c D(Kc,d) × F(c)
-(Ran_K F)(d) ≅ ∫_c F(c)^(D(d,Kc))
+Lan_K F(d) = generated pieces from arrows Kc -> d, quotiented by source equations
+Ran_K F(d) = coherent families over observations d -> Kc
 ```
 
-Engineering reading:
+## Kan lifts
 
-- `Lan`: generated pieces `(path Kc -> d, payload F c)` modulo source equations.
-- `Ran`: coherent families of observations indexed by `(path d -> Kc)`.
-
-## Lifts
-
-For a fixed projection `P : B -> C`, postcomposition sends `G : A -> B` to `P · G : A -> C`.
-
-When adjoints exist:
+Given `P : B -> C0` and `F : A -> C0`, a lift solves for an `A -> B` behind `P`.
 
 ```text
-Lft_P ⊣ P_* ⊣ Rft_P
+A --?--> B
+|        |
+F        P
+v        v
+C0
 ```
 
-This skill uses local notation `Lft_P` and `Rft_P`. Sources: `[KAN-NLAB-LIFT]`.
+Use `Lft_P F` for realization and `Rft_P F` for residual/sound obligation, with the comparison direction named explicitly.
 
-## Freyd/AFT in this skill
+## Yoneda/Coyoneda
 
-Freyd/AFT is used as a boundary diagnostic: a well-behaved projection `P : B -> C` may admit a free builder `Free : C -> B`. In codebase work, treat this as an engineering inference unless the theorem hypotheses are modeled. Sources: `[KAN-RIEHL-CTIC]`, `[KAN-NLAB-AFT]`.
+Yoneda: represent a subject by sanctioned observations.
+
+Coyoneda: represent generated artifacts by raw payload plus deferred path.
+
+## Defunctionalization
+
+Replace function-like boundary artifacts with first-order constructors plus an interpreter/apply/project function.

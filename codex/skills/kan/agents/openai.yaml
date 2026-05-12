@@ -1,7 +1,7 @@
 interface:
   display_name: "Kan"
-  short_description: "Use Kan extensions, Kan lifts, Freyd/AFT diagnostics, Yoneda/Coyoneda, and defunctionalization for categorical code architecture."
+  short_description: "Detailed Kan extension/lift, Yoneda/Coyoneda, Freyd/AFT, and defunctionalization mechanics for named architecture boundaries."
   brand_color: "#6D5EF6"
-  default_prompt: "Use $kan to model this implementation or architecture problem with extension/lift data, C/D/K/F or A/B/C/P/F, comparison cells, Freyd/AFT projection diagnostics, boundary representation, defunctionalized IR, and law tests."
+  default_prompt: "Use $kan only after identifying worlds, boundary kind, known side, unknown location, witness, and law; then elaborate the categorical mechanics."
 policy:
   allow_implicit_invocation: true
