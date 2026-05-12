@@ -1,20 +1,70 @@
 # Auto Gauntlet driver prompt
 
-Use this prompt with a thread automation, MCP `codex-reply`, CLI `codex exec resume`, or any host process that can continue the same conversation.
+Use the bundled Python driver, not a manual sequence of prompts:
 
-```text
-Continue prove-it from the checkpoint. Execute exactly the next uncompleted numbered round only. Stop only if the Terminality Check is terminal.
+```sh
+codex/skills/prove-it/scripts/prove-it-autogauntlet.py "<claim>"
 ```
 
-Driver loop policy:
+The driver creates one initial Codex turn and nine continuation turns in the same conversation/thread. A valid run completes exactly 10 separate assistant turns.
 
-1. Submit the prompt to the same conversation/thread.
-2. Stop if the latest reply contains any of:
+## Canonical resume prompt
+
+```text
+Driver: PROVE_IT_AUTOTURN_V1
+
+Continue prove-it from the checkpoint.
+Execute exactly the next uncompleted numbered round only.
+Do not execute more than one round in this reply.
+Do not ask whether to continue.
+Do not pause for user input.
+Do not return a final verdict unless executing round 10.
+Do not stop for proof, disproof, counterexample, contradiction, confidence, likely failure, or user-requested cadence changes.
+If the checkpoint is already complete at 10 of 10, report completion and do not run another round.
+```
+
+## Driver loop policy
+
+1. Start a prove-it run only through the host driver.
+2. Capture each assistant reply as one turn.
+3. Validate that each reply advances `Completed engine turns` by exactly one.
+4. For turns 1-9, require:
+   - `Status: IN PROGRESS`
+   - `Verdict embargo: ACTIVE`
+   - `Action: AUTO_CONTINUE_TO_ROUND_<N+1>` or `Action: CONTINUE_TO_ROUND_<N+1>`
+   - no final verdict
+   - no Oracle synthesis
+5. For turn 10, require:
    - `Status: COMPLETE`
-   - `Action: STOP`
-   - `Terminal verdict: PROVEN`
-   - `Terminal verdict: DISPROVEN`
-   - `Terminal verdict: ROUND_10_COMPLETE`
-   - `Terminal verdict: USER_STOPPED`
-3. Otherwise, submit the same prompt again.
-4. Never ask the model to run more than one numbered round per reply.
+   - `Completed engine turns: 10 of 10`
+   - `Stop reason: ROUND_10_COMPLETE`
+   - Oracle synthesis
+   - final verdict
+6. Treat any early terminal output before turn 10 as a driver failure.
+
+## Invalid before round 10
+
+- `Status: COMPLETE`
+- `Final verdict:`
+- `Oracle synthesis:`
+- `Terminality Check:`
+- `Terminal verdict:`
+- `Action: STOP`
+- `Action: STOP_CONCLUSIVE_PROOF`
+
+## Output artifacts
+
+The Python driver writes each run to:
+
+```text
+.prove-it-runs/run-<timestamp>/
+```
+
+The run directory contains:
+
+```text
+claim.txt
+prompt-01.txt ... prompt-10.txt
+turn-01.txt ... turn-10.txt
+manifest.json
+```
