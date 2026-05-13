@@ -6,7 +6,8 @@ intended for LLM consumption.
 
 Features:
 - GitHub auth (avoids rate limits): set `GH_TOKEN` or `GITHUB_TOKEN`
-- Conditional requests: uses ETag/Last-Modified from `references/refresh-metadata.json`
+- Conditional requests: uses ETag/Last-Modified from ignored local
+  `references/refresh-metadata.json`
 - Optional TTL: `--max-age-sec N` skips network refresh when the last refresh is recent
 - Avoids leaving `__pycache__` artifacts in skill directories
 """

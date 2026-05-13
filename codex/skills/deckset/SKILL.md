@@ -1,6 +1,6 @@
 ---
 name: deckset
-description: Generate Deckset markdown presentations from conversation context with high semantic fidelity. Use when requests mention decks, slides, presentations, speaker notes, or Deckset markdown output, especially when converting an existing conversation into a narrative slide flow. This skill checks upstream Deckset docs/examples before drafting, without mutating tracked reference caches unless substantive upstream content changes.
+description: Generate Deckset markdown presentations from conversation context with high semantic fidelity. Use when requests mention decks, slides, presentations, speaker notes, or Deckset markdown output, especially when converting an existing conversation into a narrative slide flow. This skill checks upstream Deckset docs/examples before drafting, without tracking volatile refresh metadata.
 ---
 
 # Deckset
@@ -10,10 +10,12 @@ description: Generate Deckset markdown presentations from conversation context w
 1. Refresh/check upstream references first, on every invocation (run from this skill directory):
    - `uv run scripts/refresh_sources.py`
    - Optional: set `GH_TOKEN`/`GITHUB_TOKEN` to avoid GitHub API rate limits
-   - Optional: `--max-age-sec 3600` to reduce network refreshes
+   - Do not pass `--max-age-sec` during normal skill use; the default should check upstream every time.
+   - `references/refresh-metadata.json` is an ignored local cache for conditional requests and diagnostics. Do not stage, commit, or require it to be clean.
    - The refresh script must not rewrite tracked reference files for timestamp/provenance-only changes. Treat clean `cache_not_modified` output as a valid refresh.
-2. Read refresh metadata when it changed, otherwise use the script output plus the existing reference cache:
-   - `references/refresh-metadata.json` -> capture `refreshed_at`, `docs_source`, `gist_source`, `used_cache_fallback`
+2. Use the script's JSON output as the refresh status source:
+   - capture `docs_source`, `gist_source`, `cheatsheet_source`, and `used_cache_fallback`
+   - read `references/refresh-metadata.json` only for local diagnostics if the output indicates fallback or unavailable references
 3. Read the conversation and extract:
    - audience
    - objective
@@ -67,7 +69,7 @@ description: Generate Deckset markdown presentations from conversation context w
   - `references/deckset-markdownDocumentation.html`
 - Gist example cache:
   - `references/examples/*.md`
-- Refresh metadata:
+- Local refresh metadata (ignored, operational cache only):
   - `references/refresh-metadata.json`
 
 If `used_cache_fallback` is true, disclose that in the response summary.

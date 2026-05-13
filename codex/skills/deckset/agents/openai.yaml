@@ -1,4 +1,4 @@
 interface:
   display_name: "Deckset"
   short_description: "Convert conversations into Deckset markdown decks."
-  default_prompt: "Use $deckset to turn this conversation into a Deckset markdown deck. Check/refresh references before drafting without timestamp-only cache mutations, outline before drafting, and keep styling minimal unless requested."
+  default_prompt: "Use $deckset to turn this conversation into a Deckset markdown deck. Check/refresh references before drafting, treat refresh metadata as an ignored local cache, outline before drafting, and keep styling minimal unless requested."

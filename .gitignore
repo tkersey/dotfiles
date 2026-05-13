@@ -8,6 +8,7 @@ lazy-lock.json
 **/.claude/settings.local.json
 
 codex/skills/.system/
+codex/skills/deckset/references/refresh-metadata.json
 
 **/node_modules
 
