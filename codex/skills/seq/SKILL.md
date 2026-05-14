@@ -427,6 +427,8 @@ seq token-usage --root ~/.codex/sessions \
 ```
 Use `--audit` when the answer needs to explain or defend the number. It reports the monotonic `total_token_usage` delta total, the naive `last_token_usage` total, duplicate-total rows excluded, reset events, null/missing-total rows, requested/observed span days, and bucket counts. State the scope explicitly: this is local `~/.codex/sessions` corpus accounting, not OpenAI billing, organization-wide usage, or server-side metering.
 
+When estimating what local Codex token usage would have cost at API prices, pull current official OpenAI API pricing before calculating. If the session trace does not record an exact model id or model slug, do not infer a Pro-tier model from context window or Codex wording alone; presume the best currently available non-Pro OpenAI API model for the estimate and state that assumption. Calculate cached tokens as their own billed input bucket: uncached input = total input tokens - cached input tokens; cached input uses cached-input pricing; output includes reasoning output and should not double-count reasoning tokens.
+
 ### 9) Reproducible perf harness
 Run stable workloads with fixed warmup/sample counts and optional baseline comparison.
 
