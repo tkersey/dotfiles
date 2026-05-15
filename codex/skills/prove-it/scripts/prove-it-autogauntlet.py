@@ -123,6 +123,7 @@ class TurnRecord:
     turn: int
     prompt_file: str
     output_file: str
+    last_message_file: str
     command: list[str]
     returncode: int
     validation: dict
@@ -406,10 +407,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             for turn in range(1, EXPECTED_TURNS + 1):
                 if turn == 1:
                     prompt = INITIAL_PROMPT_TEMPLATE.format(driver_id=DRIVER_ID, claim=claim)
-                    command = [args.codex_bin, "exec", prompt]
+                    last_message_file = out_dir / f"last-message-{turn:02d}.txt"
+                    command = [args.codex_bin, "exec", "-o", str(last_message_file), prompt]
                 else:
                     prompt = RESUME_PROMPT
-                    command = [args.codex_bin, "exec", "resume", "--last", prompt]
+                    last_message_file = out_dir / f"last-message-{turn:02d}.txt"
+                    command = [
+                        args.codex_bin,
+                        "exec",
+                        "-o",
+                        str(last_message_file),
+                        "resume",
+                        "--last",
+                        prompt,
+                    ]
 
                 prompt_file = out_dir / f"prompt-{turn:02d}.txt"
                 output_file = out_dir / f"turn-{turn:02d}.txt"
@@ -425,12 +436,21 @@ def main(argv: Sequence[str] | None = None) -> int:
                 write_text(output_file, output)
                 print(output, end="" if output.endswith("\n") else "\n", flush=True)
 
-                validation = validate_turn(output, turn)
+                if returncode == 0 and last_message_file.exists():
+                    validation_text = last_message_file.read_text(encoding="utf-8")
+                else:
+                    validation_text = output
+
+                validation = validate_turn(validation_text, turn)
                 record = TurnRecord(
                     turn=turn,
                     prompt_file=str(prompt_file),
                     output_file=str(output_file),
-                    command=command[:2] + (["resume", "--last"] if turn > 1 else []) + ["<prompt>"],
+                    last_message_file=str(last_message_file),
+                    command=command[:2]
+                    + ["-o", str(last_message_file)]
+                    + (["resume", "--last"] if turn > 1 else [])
+                    + ["<prompt>"],
                     returncode=returncode,
                     validation=asdict(validation),
                 )
