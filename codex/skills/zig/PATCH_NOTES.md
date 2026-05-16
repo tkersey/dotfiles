@@ -2,6 +2,20 @@
 
 This bundle supersedes the previous `zig_skill_upgrade`, `zig_skill_comptime_expert`, and `zig_skill_ultimate_systems_bundle` bundles.
 
+## 2026-05-16 Zig hazardous-code / Illegal Behavior audit addition
+
+1. Upgraded the existing Zig skill rather than creating a new skill: hazardous-code review now plugs into the current systems, proof-lane, and reporting model.
+2. Added a Zig-native safety model that explicitly says Zig has no Rust-style `unsafe` keyword; audits must enumerate hazard operations and invariants instead.
+3. Added `zig-hazard/illegal-behavior` as a first-class hazard class with A/B/C buckets: `A/IRREDUCIBLE_BOUNDARY`, `B/PERF_OR_FOOTPRINT_ONLY`, and `C/REFACTORABLE_TO_WITNESS`.
+4. Added a full top-level `Zig hazardous-code and Illegal Behavior audit` section covering mental model, trigger conditions, phase loop, inventory scan, proof obligations, verification matrix, safety-proof comment shape, and remediation rules.
+5. Added `references/hazardous_code_audit_playbook.md`, a detailed playbook for auditing `@setRuntimeSafety`, `unreachable`, `undefined`, raw pointer casts, pointer/integer conversions, FFI, inline asm, `extern`/`packed`, MMIO, atomics, allocators, and vector/SIMD fast paths.
+6. Added `references/hazardous_site_template.md` for per-site audit write-ups.
+7. Added `references/hazard_patterns.zig` with small witness patterns such as `CheckedOffset` and `AlignedBytes`.
+8. Added `scripts/zig_hazard_audit_rg.sh` for a project-level hazard inventory scan.
+9. Updated `SOURCES.md` with Zig 0.16.0 source anchors for Illegal Behavior, runtime safety checks, build modes, pointers, `undefined`, volatile/MMIO, layout, atomics, allocators, FFI, and C translation.
+10. Updated `agents/openai.yaml` and trigger-audit notes so terms such as `Illegal Behavior`, `@setRuntimeSafety(false)`, `undefined`, raw pointer casts, `extern`/`packed`, MMIO, atomics, and ReleaseFast/ReleaseSmall-sensitive code route to the Zig skill.
+11. Preserved the existing Zig skill's comptime, systems, cache hygiene, linting, formatting, fuzzing, performance, and 0.16.0 migration guidance.
+
 ## 2026-05-10 `zig fmt` steering addition
 
 1. Updated the skill trigger description to include formatting and `zig fmt` steering.

@@ -141,6 +141,20 @@ Do not invoke an extreme or high-cost workflow merely because it is adjacent. Ro
 - Human-facing wording, naming, terminology, headings, PR/commit text, docs, explanations, error/help text, doctrine words -> `logophile`.
 - Absolute claims, proof gauntlets, adversarial stress tests, or explicit "prove it" requests -> `prove-it`; do not trigger its heavy loop merely because ordinary verification is useful.
 
+### Zig implicit triggers
+
+Use `zig` whenever the request, changed files, error output, or repo surface includes Zig-specific evidence, even when the user does not say `$zig`.
+
+Trigger on:
+
+- `.zig`, `build.zig`, `build.zig.zon`, `zig build`, `zig test`, `zig fmt`, `zig ast-check`, `zlinter`, `zls`, `zig fetch`, `zig-pkg`, `.zig-cache`, `zig-cache`, `zig-out`, or `ZIG_GLOBAL_CACHE_DIR`.
+- Zig 0.16 migration cues such as `std.Io`, `std.process.Init`, `@cImport`, `addTranslateC`, removed `@Type`, `std.meta.Int`, `std.meta.Tuple`, `std.Thread.Pool`, `std.testing.Smith`, or `--test-timeout`.
+- Comptime, reflection, or codegen cues such as `comptime`, `anytype`, `@typeInfo`, `@FieldType`, `@hasDecl`, `@hasField`, `inline for`, generated types, format/schema derivation, or specialization.
+- Low-level hazard cues such as allocator ownership, `errdefer`, raw pointers, slices, sentinels, alignment, `@ptrCast`, `@alignCast`, `@ptrFromInt`, `undefined`, `unreachable`, `@setRuntimeSafety`, `extern`, `packed`, FFI/C ABI, MMIO, atomics, concurrency, `ReleaseFast`, or `ReleaseSmall`.
+- Zig-project performance and cache cues such as benchmarks, profiling, `zprof`, allocator/live-byte metrics, disk pressure, cache drains, dependency fetches, or CI cache bloat.
+
+Do not wait for a `.zig` filename when the project is known to be Zig and the issue is build, test, package, cache, performance, migration, or safety behavior. Combine `zig` with `context-bounded-verification` or `invariant-ace` when behavior or hazard risk is material; `zig` owns the Zig-specific proof lanes, version checks, and trigger classification.
+
 ### Discovery, strategy, and planning
 
 - Fuzzy product/project opportunity, "what should we build/improve?", or evidence-backed ideation -> `ideate`.

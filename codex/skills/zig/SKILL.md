@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Use when implementing, reviewing, migrating, formatting/zig fmt steering, linting, testing, fuzzing, profiling, optimizing, or hardening Zig 0.16.0 code: .zig files, build.zig/build.zig.zon, std.Io/process.Init migration, C interop, expert comptime/metaprogramming/reflection/codegen, allocator ownership, FFI boundaries, concurrency, dependencies, cache hygiene/disk-pressure operations, and measured performance work."
+description: "Use when implementing, reviewing, migrating, formatting/zig fmt steering, linting, testing, fuzzing, profiling, optimizing, or hardening Zig 0.16.0 code, including hazardous-code/Illegal Behavior audits: .zig files, build.zig/build.zig.zon, std.Io/process.Init migration, C interop, expert comptime/metaprogramming/reflection/codegen, allocator ownership, FFI boundaries, concurrency, safety-disabled scopes, raw pointer/layout/ABI hazards, dependencies, cache hygiene/disk-pressure operations, and measured performance work."
 ---
 
 # Zig
@@ -11,33 +11,35 @@ Start from the Zen of Zig: communicate intent precisely; make edge cases explici
 
 Assume Zig 0.16.0 unless the user names another version, but verify before executing version-sensitive work. If `zig version` is not `0.16.0`, label the result `VERSION_MISMATCH` and do not claim the commands validate 0.16.0 behavior.
 
-Prefer witness-driven design. If a fact affects safety, ownership, zero-copy legality, FFI soundness, concurrency, or fast-path legality, represent it with a type, constructor, or checked value, not a loose bool, comment, or caller convention.
+Prefer witness-driven design. If a fact affects safety, ownership, zero-copy legality, FFI soundness, concurrency, fast-path legality, or Illegal Behavior avoidance, represent it with a type, constructor, or checked value, not a loose bool, comment, or caller convention.
 
 Keep proof lanes separate:
 
 - Comptime contracts prove what must be known at compile time, what gets generated or specialized, which invalid shapes fail at compile time, and which runtime path remains.
 - Formatting/linting proves canonical layout, formatter steering intent, and static policy.
+- Hazardous-code/Illegal Behavior auditing proves that raw operations, disabled safety checks, ABI promises, initialization, ownership, and concurrency invariants are explicit and verified.
 - Builds/tests/fuzzing prove correctness.
 - Benchmarks prove user-visible performance deltas.
 - Profilers explain where time, allocations, locks, or bytes went.
 - Cache hygiene proves which Zig cache/output/dependency paths are safe to drain, how much space is reclaimed, and whether the build refetches/rebuilds afterward.
 
-When a lane cannot be run, say so with a stable label: `LINT_UNAVAILABLE`, `TEST_UNAVAILABLE`, `FUZZ_UNAVAILABLE`, `PROFILE_UNAVAILABLE`, `COMPTIME_PROOF_UNAVAILABLE`, `CACHE_PATH_UNDISCOVERED`, `CACHE_REBUILD_UNVERIFIED`, or `UNMEASURED`.
+When a lane cannot be run, say so with a stable label: `LINT_UNAVAILABLE`, `TEST_UNAVAILABLE`, `FUZZ_UNAVAILABLE`, `PROFILE_UNAVAILABLE`, `COMPTIME_PROOF_UNAVAILABLE`, `CACHE_PATH_UNDISCOVERED`, `CACHE_REBUILD_UNVERIFIED`, `HAZARD_AUDIT_UNAVAILABLE`, `SAFETY_PROOF_UNAVAILABLE`, or `UNMEASURED`.
 
 ## First-pass workflow
 
-1. Classify the request: migration, API design, correctness bug, dependency/build work, cache/disk-pressure work, formatting/lint/tooling, FFI, concurrency, comptime/codegen, or performance.
+1. Classify the request: migration, API design, correctness bug, dependency/build work, cache/disk-pressure work, formatting/lint/tooling, hazardous-code/Illegal Behavior audit, FFI, concurrency, comptime/codegen, or performance.
 2. If the request involves `comptime`, `anytype`, reflection, generated types, format/schema derivation, or specialization, produce a comptime contract before producing code.
 3. Confirm repo shape: find `build.zig`, `build.zig.zon`, existing `zig build` steps, tests, benchmarks, lint steps, and formatting conventions.
 4. Confirm toolchain version with `zig version` before executing 0.16.0-sensitive commands.
 5. Run the 0.16.0 migration scan when touching code written for 0.15.x or older.
 6. Run the comptime audit scan when touching generic, reflective, or generated-type code.
 7. Run the systems audit scan when touching allocators, ownership, pointers, casts, C/ABI, packed/extern layout, I/O effects, atomics, concurrency, or low-level performance.
-8. Run the cache hygiene protocol when the request involves `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, global cache, custom `--cache-dir`/`--global-cache-dir`, disk pressure, or CI cache bloat.
-9. For formatting requests, identify the intended layout before running `zig fmt`; use trailing commas, first-row array shaping, comments, or clearer intermediate declarations rather than hand-aligned whitespace.
-10. Identify hazard classes and proof requirements before editing.
-11. Make the smallest change that satisfies the contract.
-12. Re-run the appropriate proof lanes and report exact commands plus outcomes.
+8. Run the hazardous-code audit lane when touching `@setRuntimeSafety`, `unreachable`, raw pointer casts, integer-pointer conversions, `undefined`, `extern`/`packed`, FFI, inline assembly, MMIO, atomics, vector/SIMD intrinsics, or ReleaseFast/ReleaseSmall-sensitive code.
+9. Run the cache hygiene protocol when the request involves `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, global cache, custom `--cache-dir`/`--global-cache-dir`, disk pressure, or CI cache bloat.
+10. For formatting requests, identify the intended layout before running `zig fmt`; use trailing commas, first-row array shaping, comments, or clearer intermediate declarations rather than hand-aligned whitespace.
+11. Identify hazard classes and proof requirements before editing.
+12. Make the smallest change that satisfies the contract.
+13. Re-run the appropriate proof lanes and report exact commands plus outcomes.
 
 ## Zig 0.16.0 migration scan
 
@@ -81,8 +83,153 @@ Interpretation:
 | `cache/disk-pressure` | Cache/output taxonomy, dry-run inventory, dependency-edit protection, exact reclaimed-size report, and post-drain fetch/build validation. |
 | `comptime/metaprogramming` | Comptime contract, shape validation before reflection, intentional diagnostics, positive and negative fixtures, and compile-time cost/binary-size review when specialization cardinality is nontrivial. |
 | `formatting/zig-fmt-steering` | Formatter intent described in source-level cues, `zig fmt`/`zig fmt --check` run, and diff reviewed for token-level steering changes such as trailing-comma add/remove. |
+| `zig-hazard/illegal-behavior` | Inventory of hazard sites, A/B/C classification, invariant owner, safety-proof comment or witness type, negative fixtures, and Debug/ReleaseSafe/ReleaseFast validation. |
 
-Satisfy every active hazard class. Do not use a green smoke test as proof for unsafe, FFI, lock-free, layout-sensitive, optimizer-sensitive, or allocation-sensitive code.
+Satisfy every active hazard class. Do not use a green smoke test as proof for hazardous pointer work, FFI, lock-free, layout-sensitive, optimizer-sensitive, or allocation-sensitive code.
+
+## Zig hazardous-code and Illegal Behavior audit
+
+Do not model Zig safety work as Rust `unsafe` removal. Zig has no `unsafe` keyword. Model it as a hazardous-code audit: find every operation whose correctness depends on invariants that the type checker, runtime safety checks, build mode, or ABI cannot fully enforce, then make those invariants explicit.
+
+Trigger this lane for requests about unsafe-equivalent Zig code, Illegal Behavior, `@setRuntimeSafety`, raw pointers, pointer/integer casts, `undefined`, packed or extern layout, FFI, inline assembly, atomics, MMIO, allocator/lifetime bugs, zero-copy parsing, manual vector/SIMD paths, `ReleaseFast`/`ReleaseSmall` safety differences, or “prove this cannot crash/corrupt memory”.
+
+### Mental model
+
+A Zig hazard site is any source location where a wrong invariant can turn into:
+
+- Unchecked Illegal Behavior;
+- safety-checked Illegal Behavior that becomes unchecked because the build mode or `@setRuntimeSafety(false)` disables checks;
+- ABI/layout mismatch with C, hardware, file, or wire format;
+- lifetime, ownership, initialization, or allocator misuse;
+- data race, invalid atomic ordering, or cancellation/lifetime bug;
+- silent logic corruption from `undefined`, wrong endian assumptions, wrong sentinel assumptions, or invalid pointer provenance.
+
+For each hazard site, separate the layers:
+
+```text
+caller obligations -> validation/witness -> hazardous operation -> projected safe API -> verification lane
+```
+
+The preferred end state is not always “remove the hazard.” It is “small hazardous core, explicit proof, safe wrapper, reproducible verification.”
+
+### Classification buckets
+
+Every hazard site must be classified exactly once, with a falsifiable justification:
+
+| Bucket | Meaning | Required result |
+| --- | --- | --- |
+| `A/IRREDUCIBLE_BOUNDARY` | Zig cannot express the operation safely because it crosses an ABI, hardware, OS, allocator, inline-asm, MMIO, atomic primitive, or representation boundary. | Thin boundary module, caller/callee contract table, hardened safety-proof comment, wrapper tests, layout/target proof, and a reason safe alternatives fail. |
+| `B/PERF_OR_FOOTPRINT_ONLY` | A safer Zig formulation exists, but the hazard is kept for measured speed, code size, allocation shape, or target-specific behavior. | Safe/reference implementation, feature or build option to exercise it when practical, benchmark/profile evidence, differential tests, and Debug/ReleaseSafe/ReleaseFast proof. |
+| `C/REFACTORABLE_TO_WITNESS` | The hazard can be removed or moved behind a checked value/witness without violating the API or performance budget. | Concrete rewrite plan, witness constructor, equivalence tests, negative fixtures, and migration notes. |
+
+Misclassification is a serious error. “Fast” is not `A`; it is `B` until measurement shows otherwise. “Existing SAFETY comment says so” is not proof; trace the invariant through callers and build modes. If a site mixes categories, split the inner hazard from the outer boundary and classify each part.
+
+### Full hazardous-code audit workflow
+
+For a full audit request, after confirming the target path and write policy, create an audit directory such as `<project>/.zig-hazard-audit/` unless the user asks for a report-only chat response. Keep project source files read-only until remediation is explicitly authorized.
+
+Required phases:
+
+1. **Scope** — record Zig version, target triples, build modes, packages, public APIs in scope, and hazards explicitly out of scope.
+2. **Enumerate** — run `scripts/zig_hazard_audit_rg.sh` or the equivalent scan, then inspect `build.zig`, `build.zig.zon`, generated imports, translated C, and target-specific source directories.
+3. **Normalize** — group hits into stable site IDs by file, line, operation, public reachability, target condition, and owning invariant.
+4. **Per-site write-up** — name the invariant, who establishes it, what happens if it is false, and which proof lanes cover it.
+5. **Synthesize** — cluster sites by shared invariant: pointer/provenance, layout/ABI, initialization, allocator/lifetime, FFI, concurrency, IO/effects, vector/perf, or build-mode safety.
+6. **Classify** — assign `A`, `B`, or `C`; repeat until no `A` can be defeated by a safer witness design and no `B` lacks measurements.
+7. **Plan** — for `A`, shrink and document the boundary; for `B`, provide safe/reference path plus measurements; for `C`, produce a witness-based rewrite.
+8. **Verify** — run formatting/static, build/test, optimization-mode, allocation-failure, fuzz/differential, target/layout, and profile lanes as applicable.
+9. **Report** — include counts by bucket, highest-risk public surfaces, exact commands, unavailable lanes, residual risk, and next recommended remediation.
+10. **Remediate only after authorization** — edit the active checkout or ordinary branch only; preserve user changes; do not widen scope silently.
+
+### Hazard inventory scan
+
+Use the script when present:
+
+```bash
+scripts/zig_hazard_audit_rg.sh .
+```
+
+Equivalent manual scan:
+
+```bash
+rg -n --hidden \
+  "@setRuntimeSafety\((false|true)\)|unreachable|catch unreachable|\.\?|undefined|@ptrCast|@alignCast|@addrSpaceCast|@constCast|@volatileCast|@ptrFromInt|@intFromPtr|@fieldParentPtr|@bitCast|@memcpy|@memmove|@memset|\[\*c\]|\[\*\]|allowzero|sentinel|extern (\"[^\"]+\" )?fn|pub extern|export fn|@extern|@export|@cImport|@cVa(Start|Arg|Copy|End)|asm( volatile)?|volatile|packed (struct|union)|extern (struct|union|enum)|@offsetOf|@bitOffsetOf|@bitSizeOf|@sizeOf|@alignOf|@atomicLoad|@atomicStore|@atomicRmw|@cmpxchg(Weak|Strong)|std\.atomic|Atomic|std\.Thread|Thread\.Mutex|Thread\.Condition|Thread\.ResetEvent|@Vector|@shuffle|@select|@reduce|@prefetch|Allocator|std\.heap|arena|deinit\(|errdefer|@panic|@trap" \
+  -g"*.zig" -g"build.zig" \
+  -g"!zig-pkg/**" -g"!.zig-cache/**" -g"!zig-out/**"
+```
+
+Interpretation:
+
+- `@setRuntimeSafety(false)` is a proof amplifier. Require a local invariant comment and tests showing invalid states are rejected before entering the disabled-safety scope. Prefer narrowing the scope to the smallest block.
+- `unreachable`, `catch unreachable`, `.?`, invalid enum/error casts, exact arithmetic, and unchecked shifts require a closed-world proof or an error-returning alternative.
+- `undefined` is valid only when every byte or field is overwritten before observation. Prefer helper constructors that make initialization order obvious; test early-return and error paths.
+- Raw pointer operations require proof of non-nullness, address validity, alignment, length, initialized bytes, aliasing/mutability, lifetime, provenance, sentinel existence, and target address space.
+- `[*]T` and `[*c]T` should usually be converted to slices, optional pointers, or opaque handles at the boundary. Keep many-item and C pointers out of core APIs.
+- `@ptrCast`, `@alignCast`, and `@ptrFromInt` should be behind a constructor such as `AlignedBytes`, `MappedRegister`, `CheckedOffset`, or `BorrowedFrame`.
+- `extern` and `packed` layout require target-specific size, alignment, offset/bit-offset, endian, and call-convention proof.
+- `volatile` is for MMIO or side-effecting memory, not thread synchronization. Concurrency requires atomics, locks, ownership transfer, or `std.Io` primitives.
+- Atomics require a shared-state invariant, memory-order table, sequential model, and target/build-mode test lane.
+- `@prefetch`, vectors, `@shuffle`, `@select`, `@reduce`, and unchecked hot loops are usually `B/PERF_OR_FOOTPRINT_ONLY` until differential tests and measurements justify them.
+- Allocator and deinit hits require ownership, cleanup, leak, allocation-failure, and error-path rollback proof.
+
+### Proof obligations by hazard surface
+
+| Surface | Required proof |
+| --- | --- |
+| Safety-disabled scope | Smallest possible scope, precondition witness, invalid-input rejection before entry, Debug/ReleaseSafe/ReleaseFast tests, and performance evidence if kept for speed. |
+| Pointer/provenance | Source allocation or MMIO mapping, address range, alignment, initialized bytes, lifetime, aliasing/mutability, sentinel if any, and no slice `.ptr` corruption. |
+| `undefined`/initialization | Write-before-read table, error/early-return cleanup, no observation through formatting/logging/comparison, and tests that exercise partial-initialization failure paths. |
+| Layout/ABI/wire/MMIO | `@sizeOf`, `@alignOf`, `@offsetOf`/`@bitOffsetOf`, backing integer, endian rule, target matrix, and C/header or hardware register source. |
+| FFI/C/asm | Boundary contract, translated-header provenance, nullability, ownership transfer, allocator domain, callback/threading model, errno/status mapping, and panic/unwind policy. |
+| Atomics/concurrency | Shared-state invariant, memory order per operation, happens-before story, cancellation/deinit ordering, stress/replay test, and sequential reference model where possible. |
+| Allocator/lifetime | Allocator identity, owner/freeing side, borrowed-vs-owned states, `errdefer` rollback, leak check, and `checkAllAllocationFailures` coverage. |
+| Vector/SIMD/perf | Scalar reference path, differential tests across odd lengths/alignment/tails, target feature gate, benchmarks, and ReleaseSafe/ReleaseFast comparison. |
+
+### Verification matrix for hazard work
+
+Always prefer the repo’s build steps, but a hazard review should consider this matrix:
+
+```bash
+zig version
+zig fmt --check .
+find . -name '*.zig' -not -path './zig-pkg/*' -not -path './.zig-cache/*' -not -path './zig-out/*' -print0 | xargs -0 zig ast-check
+zig build test -Doptimize=Debug
+zig build test -Doptimize=ReleaseSafe
+zig build test -Doptimize=ReleaseFast
+zig build test -Doptimize=ReleaseSmall
+zig build test --test-timeout 500ms
+```
+
+Add target lanes for any claim that depends on ABI, endian, pointer width, vector feature, OS API, or C calling convention. Add allocation-failure, fuzzing, and benchmark lanes only where they prove an active obligation; do not use them as decorative checkboxes.
+
+### Safety-proof comment shape
+
+Use comments as reviewable proof, not as a substitute for validation:
+
+```zig
+// SAFETY/ZIG-HAZARD:
+// Boundary: @ptrCast from validated byte storage to Header.
+// Established by: HeaderBytes.validate() checks len >= @sizeOf(Header),
+// alignment >= @alignOf(Header), backing storage lifetime >= returned view,
+// and endian fields are read with explicit little-endian helpers.
+// Caller obligation: keep the original buffer alive and immutable while HeaderView exists.
+// Verification: layout_asserts test, fuzz corpus testdata/fuzz/header/, and
+// Debug/ReleaseSafe/ReleaseFast differential test against parseHeaderScalar().
+const header: *const Header = @ptrCast(aligned.ptr);
+```
+
+If the proof cannot be stated locally, introduce a witness type or move the hazardous operation closer to the validator.
+
+### Remediation rules
+
+- Prefer “validate then project” over “cast then check.”
+- Prefer slices over many-item pointers in Zig-facing code.
+- Prefer explicit optional pointers over `allowzero` unless address zero is a real hardware/ABI value.
+- Prefer endian-aware loads/stores over pointer reinterpretation for wire/disk formats.
+- Prefer ordinary `struct` plus serialization code over `extern`/`packed` when no ABI promise is required.
+- Prefer `std.Io` capabilities, owned tasks, and cancellation-aware groups over hidden global effects or migrated thread-pool assumptions.
+- Keep FFI and MMIO hazard cores small and wrap them in safe Zig APIs with checked constructors.
+- Treat `ReleaseFast` and `ReleaseSmall` as proof lanes, not just performance modes, because many safety checks are disabled there.
 
 ## Low-level systems engineering contract
 
@@ -106,17 +253,19 @@ Run this scan before changing low-level code that touches allocation, raw memory
 
 ```bash
 scripts/systems_audit_rg.sh
+scripts/zig_hazard_audit_rg.sh .
 ```
 
 Interpretation:
 
 - Allocator hits require ownership, cleanup, and allocation-failure review.
-- Pointer/cast hits require length, alignment, sentinel, lifetime, and aliasing proof.
+- Pointer/cast hits require length, alignment, sentinel, lifetime, provenance, and aliasing proof.
 - `extern`/`packed`/offset hits require layout, endian, ABI, and target validation.
 - `std.Io`/process/env/current-path hits require explicit effect capability review.
 - Atomic/thread/synchronization hits require shared-state invariant and memory-order review.
 - `anyerror`, `catch unreachable`, `panic`, and `unreachable` require failure-contract review.
 - `@cImport` should usually migrate toward build-system C translation in new Zig 0.16 code.
+- `@setRuntimeSafety(false)`, `undefined`, `unreachable`, `catch unreachable`, and unchecked hot paths require a hazardous-code classification, not just a local explanation.
 
 ## Allocator, ownership, and lifetime engineering
 
@@ -134,7 +283,7 @@ Rules:
 
 ## Unsafe boundary, pointer, slice, sentinel, and alignment engineering
 
-Use `references/unsafe_boundary_playbook.md` for `@ptrCast`, `@ptrFromInt`, `@alignCast`, `[*]T`, `[*c]T`, sentinel pointers/slices, `volatile`, zero-copy projection, or C-pointer wrapping.
+Use `references/unsafe_boundary_playbook.md` and `references/hazardous_code_audit_playbook.md` for `@ptrCast`, `@ptrFromInt`, `@alignCast`, `[*]T`, `[*c]T`, sentinel pointers/slices, `volatile`, zero-copy projection, safety-disabled scopes, `undefined`, or C-pointer wrapping.
 
 Rules:
 
@@ -406,12 +555,13 @@ zig test src/main.zig
 
 Use filters carefully. Check `zig build -h` or the relevant step before assuming where `--test-filter`, `--seed`, `--test-timeout`, or runner args belong. If a filtered test is being used to prove a boundary, add one fail-closed probe so you know the filter is active.
 
-For optimizer-sensitive logic, run all relevant modes:
+For optimizer-sensitive or hazardous-code logic, run all relevant modes. Treat ReleaseFast and ReleaseSmall as safety proof lanes because runtime safety checks may be disabled there:
 
 ```bash
 zig build test -Doptimize=Debug
 zig build test -Doptimize=ReleaseSafe
 zig build test -Doptimize=ReleaseFast
+zig build test -Doptimize=ReleaseSmall
 ```
 
 For allocator-using functions:
@@ -475,7 +625,7 @@ On macOS, do not assume integrated fuzzing is fully supported just because the t
 
 Separate `scan -> validate -> project`.
 
-Validation should return a small witness type such as `ValidatedFrame`, `BorrowedView`, `NonEmptySlice`, `AlignedBytes`, or `CheckedOffset`. Do not expose typed views, zero-copy projections, `@ptrCast`-based decoding, or SIMD loads until validation succeeds.
+Validation should return a small witness type such as `ValidatedFrame`, `BorrowedView`, `NonEmptySlice`, `AlignedBytes`, or `CheckedOffset`. Do not expose typed views, zero-copy projections, `@ptrCast`-based decoding, `@setRuntimeSafety(false)` fast paths, or SIMD loads until validation succeeds.
 
 Rules:
 
@@ -650,11 +800,12 @@ Specialization is a design cost:
 
 When answering Zig work, report:
 
-- active hazard classes;
+- active hazard classes and hazardous-code bucket counts when relevant;
 - version observed or `VERSION_MISMATCH`;
 - exact commands run and outcomes;
 - proof lanes unavailable with stable labels;
 - format-steering tokens changed when formatting is relevant;
-- remaining risk and the next proof lane needed.
+- remaining risk and the next proof lane needed;
+- any `@setRuntimeSafety(false)`, raw pointer, `undefined`, FFI, layout, atomic, or ReleaseFast/ReleaseSmall-sensitive hazard that remains.
 
 Never imply that formatting, linting, `ast-check`, a smoke test, or a benchmark alone proves unsafe memory, ABI layout, allocation failure handling, concurrency correctness, or FFI soundness.

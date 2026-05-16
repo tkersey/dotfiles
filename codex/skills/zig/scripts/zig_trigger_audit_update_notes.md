@@ -1,10 +1,47 @@
 # zig_trigger_audit.py update notes
 
-Add these cues to `INTENT_TERMS` and `STRONG_IMPLICIT_CUES` so the skill routes current Zig 0.16.0, comptime-heavy, low-level systems-engineering, formatting, cache hygiene, and disk-pressure work reliably:
+Add these cues to `INTENT_TERMS` and `STRONG_IMPLICIT_CUES` so the skill routes current Zig 0.16.0, comptime-heavy, low-level systems-engineering, hazardous-code / Illegal Behavior auditing, formatting, cache hygiene, and disk-pressure work reliably:
 
 ```python
 ADDITIONAL_INTENT_TERMS = [
     "zig ast-check",
+    "Illegal Behavior",
+    "Unchecked Illegal Behavior",
+    "safety-checked Illegal Behavior",
+    "hazardous Zig",
+    "Zig hazard",
+    "hazard audit",
+    "@setRuntimeSafety(false)",
+    "@setRuntimeSafety(true)",
+    "ReleaseFast safety",
+    "ReleaseSmall safety",
+    "raw pointer",
+    "many-item pointer",
+    "[*]",
+    "@fieldParentPtr",
+    "@addrSpaceCast",
+    "@constCast",
+    "@volatileCast",
+    "undefined",
+    "@memcpy",
+    "@memmove",
+    "@memset",
+    "extern fn",
+    "pub extern",
+    "export fn",
+    "@extern",
+    "@export",
+    "@cVaArg",
+    "inline asm",
+    "asm volatile",
+    "callconv",
+    "anyopaque",
+    "@bitCast",
+    "@setRuntimeSafety",
+    "SAFETY/ZIG-HAZARD",
+    "IRREDUCIBLE_BOUNDARY",
+    "PERF_OR_FOOTPRINT_ONLY",
+    "REFACTORABLE_TO_WITNESS",
     "zig fmt",
     "zig fmt --check",
     "zig fmt steering",
@@ -120,7 +157,15 @@ ADDITIONAL_INTENT_TERMS = [
 ]
 ```
 
-Also treat bare `allocator`, `pointer`, `packed`, `extern`, `atomic`, and `trailing comma` as low-signal unless accompanied by a Zig cue such as `.zig`, `std.mem.Allocator`, `std.atomic`, `@ptrCast`, `build.zig`, `zprof`, `std.testing.allocator`, `checkAllAllocationFailures`, `zig fmt`, or `zig fmt --check`.
+Also treat bare `allocator`, `pointer`, `packed`, `extern`, `atomic`, `undefined`, `unreachable`, and `trailing comma` as low-signal unless accompanied by a Zig cue such as `.zig`, `std.mem.Allocator`, `std.atomic`, `@ptrCast`, `build.zig`, `zprof`, `std.testing.allocator`, `checkAllAllocationFailures`, `zig fmt`, or `zig fmt --check`.
+
+
+Hazardous-code routing notes:
+
+- Treat `Illegal Behavior`, `@setRuntimeSafety(false)`, `@ptrCast`, `@ptrFromInt`, `@alignCast`, `undefined`, `extern fn`, `packed struct`, `volatile`, `MMIO`, atomics, `ReleaseFast` safety questions, and "unsafe Zig" as strong Zig-routing terms when paired with Zig, `.zig`, `build.zig`, or Zig syntax.
+- Do not require the word `unsafe`; Zig has no Rust-style unsafe marker. Route by operation and invariant surface.
+- Route C ABI, translated C, `[*c]`, `anyopaque`, callback, and exported function questions to the FFI/hazard lane when they appear in Zig code.
+- Route performance-only `@setRuntimeSafety(false)`, `@prefetch`, vector/SIMD, and unchecked hot-loop questions to the hazard lane plus performance proof lane.
 
 Formatting routing notes:
 

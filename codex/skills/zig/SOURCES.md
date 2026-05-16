@@ -29,6 +29,21 @@ Official Zig 0.16.0 anchors reviewed:
 - `std.Io`, `std.process.Init`/"Juicy Main", non-global args/env, preopens, current path, cancellation, and `std.testing.io`.
 - Build modes: Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
 
+
+Additional hazardous-code / Illegal Behavior anchors reviewed for this update:
+
+- Zig has no Rust-style `unsafe` keyword; hazardous Zig code must be found by operations and invariants rather than by a single marker.
+- Illegal Behavior is either safety-checked or unchecked. Safety-checked Illegal Behavior panics when checks are enabled, but safety checks are disabled by default in `ReleaseFast` and `ReleaseSmall`, and can be controlled per scope with `@setRuntimeSafety`.
+- `@setRuntimeSafety(false)` is a build-mode-sensitive proof obligation; invalid states must be rejected before entering the disabled-safety scope.
+- `undefined` means "not a meaningful value" and must be overwritten before use; once coerced to a type, Zig cannot detect that it was undefined.
+- Pointers, many-item pointers, C pointers, sentinels, `allowzero`, pointer arithmetic, `@ptrFromInt`, `@intFromPtr`, `@ptrCast`, `@alignCast`, `@constCast`, `@volatileCast`, and `@addrSpaceCast` require explicit non-null, address, alignment, lifetime, sentinel, mutability, and provenance reasoning.
+- Slices have bounds checking and are generally preferred over pointers in Zig-facing APIs; mutating a slice pointer without updating length can create a bad slice state.
+- `volatile` is for MMIO/side-effecting memory and is unrelated to atomics or concurrency.
+- `extern struct` promises target C ABI layout; `packed struct` promises bit-level/backing-integer layout and has special pointer behavior for non-byte-aligned fields.
+- Atomic builtins require documented memory orders and shared-state invariants.
+- Allocator use requires caller-selected allocator contracts, leak detection, `error.OutOfMemory` propagation, and allocation-failure testing.
+- FFI and C translation require nullability, length, ownership, callback/threading, allocator-domain, status/error, and panic/unwind contracts.
+
 Additional formatting anchors reviewed for this update:
 
 - `zig fmt` is intentionally steerable through syntactic cues already present in the file.
