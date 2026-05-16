@@ -102,8 +102,8 @@ The driver must:
 7. Use a local-only `main` or `master` ref only when no better remote ref is available.
 8. Resolve the selected base to a merge-base SHA with `HEAD`.
 9. Pin the base ref and merge-base SHA for the current clean-review streak.
-10. Invoke native Codex review with the pinned base.
-11. Capture the exact command, base ref, base SHA, `HEAD` SHA, raw output, exit status, and parsed findings/comments.
+10. Invoke native Codex review with the pinned base through `codex --yolo review`.
+11. Capture the exact command, sandbox mode, base ref, base SHA, `HEAD` SHA, raw output, exit status, and parsed findings/comments.
 12. Return `clean = true` only when the review completed successfully and produced zero findings/comments.
 
 ### Base discovery order
@@ -167,14 +167,16 @@ base_sha="$(git merge-base HEAD "$base_ref")"
 Prefer invoking native Codex review with the merge-base SHA:
 
 ```bash
-codex review --base "$base_sha"
+codex --yolo review --base "$base_sha"
 ```
 
 If the installed Codex CLI rejects a SHA as `--base`, invoke it with the selected ref instead:
 
 ```bash
-codex review --base "$base_ref"
+codex --yolo review --base "$base_ref"
 ```
+
+`--yolo` is required for this skill's native review driver because trusted local `$resolve` runs frequently need reviewer subprocesses to execute repository validation probes without sandbox-level cache write failures. Record the sandbox mode as `danger-full-access/yolo` in the invocation ledger for every review run.
 
 When the fallback ref form is used, still record the merge-base SHA and treat that SHA as the pinned comparison base for streak accounting. Do not silently switch from one base to another during a clean-review streak.
 
@@ -191,6 +193,7 @@ review_result = {
   base_sha: string,
   head_sha: string,
   invocation: string,
+  sandbox_mode: string,
   raw_output: string,
   findings: [
     {
@@ -386,7 +389,7 @@ Only after the final three-review clean streak and full validation pass:
    - The final commit SHA.
    - The branch pushed.
    - The selected review base ref and merge-base SHA.
-   - The exact last three native Codex review invocations.
+   - The exact last three native Codex review invocations and their recorded sandbox mode.
    - The validation commands that passed.
    - Confirmation that the last three native Codex review runs had zero findings/comments.
    - Any native Codex review comments adjudicated as `do-not-address`, with brief rationale, if relevant.
