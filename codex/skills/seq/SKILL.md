@@ -57,6 +57,7 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 
 ## Memory Artifact Model
 - Treat `~/.codex/memories` as a file-backed memory workspace, not an opaque store.
+- When Memories MCP tools are available, use them for direct memory file list/read/search operations; the Zig `seq` CLI remains the structured inventory, provenance, history, session-correlation, and reporting surface.
 - Use root artifacts deliberately:
   - `memory_summary.md`: compact routing/index layer. Use it first when the question is broad or you need to decide where to dig.
   - `MEMORY.md`: durable handbook/registry. Use it first when the question is about reusable guidance, prior decisions, or task-family history.
@@ -68,6 +69,7 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
 
 ## Memory Mining Workflow
 - Use `seq` first for inventory, routing, and timestamp/category analysis; do not pretend it replaces reading the target markdown files.
+- If Memories MCP tools are available, prefer them over shell reads for opening specific memory files after `seq` has identified the relevant artifact; if they are unavailable, fall back to targeted file reads from `~/.codex/memories`.
 - Start broad, then go deeper:
   1. Run `seq memory-inventory --mode categories` to see what categories and files exist.
   2. If the question is navigational or "what do we know?", route through `memory_summary.md`.
