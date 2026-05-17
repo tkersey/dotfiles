@@ -24,3 +24,7 @@ kan elaborates the categorical mechanics.
 ```
 
 Do not begin detailed mechanics until worlds, boundary kind, known side, unknown location, witness slice, and proof signal are named.
+
+## Composition Certificate alignment
+
+`kan` elaborates Composition Certificates selected by `universalist`. It maps certificate fields to categorical mechanics: worlds become categories/posets/schemas; boundaries become `K` or `P`; artifacts become `Lan`, `Ran`, `Delta`, `Lft`, `Rft`, Yoneda, Coyoneda, defunctionalized IR, Freyd builders, or obstruction reports.

@@ -1,7 +1,7 @@
 ---
 name: universalist
 description: >
-  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, protocols or state machines with unclear observations, effect/workflow operations needing multiple handlers, public contracts determining internals, forgetful or observational projections that may need a canonical free builder, or any need for canonical boundary artifacts. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, and one proof signal.
+  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, protocols or state machines with unclear observations, effect/workflow operations needing multiple handlers, public contracts determining internals, forgetful or observational projections that may need a canonical free builder, or any need for canonical boundary artifacts, Composition Certificates, or Boundary Normal Form. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, one proof signal, and—when the seam crosses worlds—one Composition Certificate.
 ---
 
 # Universalist
@@ -19,6 +19,51 @@ Core discipline:
 > Allow arbitrary domain primitives, but do not allow arbitrary composition across architecture boundaries.
 
 Ordinary code may live inside a boundary: I/O, math, parsing, vendor APIs, database drivers, model calls, clocks, randomness, local algorithms, and low-level loops. Composition boundaries should be explicit artifacts: syntax, observations, projections, transports, lifts, handlers, state transitions, IRs, or law tests.
+
+
+## Universal Composition Doctrine
+
+Maxim:
+
+```text
+Allow arbitrary primitives. Forbid arbitrary composition.
+```
+
+A software system is universally architected when every meaningful composition boundary between worlds factors through a canonical boundary artifact, and every such artifact has an interpreter, projection, lowering, handler, or law-test witness.
+
+Use this doctrine to separate two questions:
+
+```text
+Can the primitive compute?      Ordinary implementation question.
+Can the boundary compose?      Universal architecture question.
+```
+
+A **Composition Certificate** is the unit of universal architecture. It records:
+
+```text
+worlds
+boundary
+unknown location
+canonical artifact
+interpreter / projection / lowering / handler
+law witness
+falsifier
+bypass policy
+```
+
+A codebase is in **Boundary Normal Form** when all meaningful cross-world composition boundaries have Composition Certificates, and all bypasses are removed or explicitly justified as primitive effects.
+
+Engineering law:
+
+```text
+No boundary without an artifact.
+No artifact without an interpreter.
+No interpreter without a law.
+No law without a falsifier.
+```
+
+Use Track E when the user wants to move a codebase toward Boundary Normal Form, or when the main output should be a Composition Certificate rather than an immediate implementation.
+
 
 ## Do not trigger for
 
@@ -259,6 +304,30 @@ Choose by where the unknown lives:
 | In duplicated selectors/projections | Observation vocabulary / Yoneda-style | representation change preserves observations |
 | In callbacks/functions crossing boundaries | Explicit first-order IR / defunctionalization | `apply(encodedCase, x) == oldCallback(x)` |
 
+### Track E — Composition certification
+
+Use when the user wants to certify a boundary, audit uncertified composition, or move a codebase toward Boundary Normal Form one seam at a time.
+
+Deliver:
+
+- world inventory;
+- boundary inventory;
+- uncertified composition points;
+- one Composition Certificate;
+- canonical artifact and interpreter/projection/lowering;
+- positive law witness;
+- falsifier / negative witness;
+- bypass removal plan;
+- whether the seam is verified, obstructed, or still a primitive exception.
+
+Use Track E for:
+
+- architecture review where the question is “what boundary owns this composition?”;
+- agent-written code that introduced new glue paths;
+- APIs, handlers, migrations, plugins, tools, or policies that need certification;
+- bringing an existing codebase incrementally into Boundary Normal Form;
+- deciding whether a seam is genuinely universal-architecture territory or a justified primitive.
+
 ## Freyd/AFT boundary diagnostic for Track D
 
 Use this sub-practice only after a lift-shaped boundary appears:
@@ -339,6 +408,8 @@ Minimum fields:
 ## Boundary kind:
 ## Boundary law:
 ## Freyd/AFT boundary diagnostic:
+## Composition Certificate:
+## Boundary Normal Form status:
 ## Why this construction:
 ## Seam / files:
 ## Public boundaries touched:
@@ -431,6 +502,21 @@ If context compacts, read this file first and resume from its status line.
    - state transition plus observer;
    - effect operation plus handler;
    - Freyd/AFT-style free-builder diagnostic for that projection.
+
+6a. **Create the Composition Certificate**
+
+   For Track D or Track E, write the certificate before broad edits:
+
+   - worlds and boundary kind;
+   - unknown location;
+   - canonical artifact;
+   - interpreter/projection/lowering/handler;
+   - positive law witness;
+   - falsifier;
+   - bypass policy;
+   - status: planned / implemented / verified / obstructed / primitive exception.
+
+   The certificate is the reviewable unit. Do not let a categorical name substitute for the certificate.
 
 7. **Run the Freyd/AFT diagnostic when appropriate**
 
@@ -539,7 +625,14 @@ For Track D, also include:
 - **Law / proof signal**
 - **Falsifier**
 
-For lift-shaped Track D, also include:
+For Track E, also include:
+
+- **Composition Certificate**
+- **Boundary Normal Form status**
+- **Bypass policy**
+- **Certification result**: verified / obstructed / primitive exception
+
+For lift-shaped Track D or Track E, also include:
 
 - **Projection `P : B -> C`**
 - **Freyd/AFT boundary diagnostic** when `P` is vague, lossy, or intended to support a free builder
@@ -607,6 +700,9 @@ Universal architecture references:
 - `references/effects-and-coalgebras.md`
 - `references/yoneda-coyoneda-defunctionalization.md`
 - `references/universal-architecture-law-tests.md`
+- `references/universal-composition-doctrine.md`
+- `references/composition-certificates.md`
+- `references/boundary-normal-form.md`
 
 ## Scripts
 
@@ -620,6 +716,8 @@ Universal architecture references:
 - `scripts/emit_canonical_artifact_plan.sh`
 - `scripts/emit_universal_architecture_prompt.sh`
 - `scripts/emit_freyd_boundary_diagnostic.sh`
+- `scripts/emit_composition_certificate.sh`
+- `scripts/emit_boundary_normal_form_plan.sh`
 - `scripts/check_universalist.sh`
 
 ## Templates
@@ -628,3 +726,5 @@ Universal architecture references:
 - `templates/universalist-report.md`
 - `templates/universal-architecture-report.md`
 - `templates/freyd-boundary-diagnostic.md`
+- `templates/composition-certificate.md`
+- `templates/boundary-normal-form-report.md`

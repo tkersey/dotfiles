@@ -1,6 +1,6 @@
 # universalist
 
-Drop-in replacement skill for structural, universal-construction-driven codebase architecture.
+Drop-in replacement skill for structural, universal-construction-driven codebase architecture, now centered on Universal Composition Doctrine, Composition Certificates, and Boundary Normal Form.
 
 It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It adds Track D for universal architecture boundaries: free syntax, coherent observations, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, explicit IR, and law tests.
 

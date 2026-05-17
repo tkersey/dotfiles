@@ -1,7 +1,7 @@
 ---
 name: kan
 description: >
-  Use when universalist or the user has identified a concrete world/boundary seam that needs detailed Kan mechanics: Kan extensions, Kan lifts, precomposition/postcomposition, Freyd/AFT free-builder diagnostics, Yoneda/Coyoneda boundary representations, defunctionalized boundary IRs, codensity/density, pointwise formulas, free/cofree completions, functorial data migration, compatibility facades, lifted implementations, residual obligations, or categorical law tests. Do not use for generic architecture unless worlds, boundary kind, known side, unknown location, witness slice, and proof signal are named or must be recovered.
+  Use when universalist or the user has identified a concrete world/boundary seam that needs detailed Kan mechanics: Kan extensions, Kan lifts, precomposition/postcomposition, Freyd/AFT free-builder diagnostics, Yoneda/Coyoneda boundary representations, defunctionalized boundary IRs, codensity/density, pointwise formulas, free/cofree completions, functorial data migration, compatibility facades, lifted implementations, residual obligations, Composition Certificates, Boundary Normal Form audits, or categorical law tests. Do not use for generic architecture unless worlds, boundary kind, known side, unknown location, witness slice, proof signal, and—when applicable—a Composition Certificate are named or must be recovered.
 ---
 
 # Kan
@@ -32,9 +32,31 @@ Do not begin detailed Kan mechanics unless the prompt or prior analysis provides
 - candidate artifact;
 - witness slice;
 - proof signal;
-- falsifier.
+- falsifier;
+- Composition Certificate fields if the seam is already certified or being certified.
 
 If these are absent, first produce a short world/boundary inventory and ask whether to proceed, unless the user requested a best-effort implementation.
+
+## Composition Certificate Elaboration
+
+Use this skill in two modes:
+
+1. **Recover mode**: no certificate exists yet, so produce a compact world/boundary inventory and identify the missing certificate fields.
+2. **Elaboration mode**: a certificate exists, so refine its categorical mechanics without changing the selected boundary artifact unless the mechanics expose an obstruction.
+
+For any Kan output, preserve this mapping:
+
+| Certificate field | Kan elaboration |
+| --- | --- |
+| Worlds | candidate categories / indexed structures / posets / syntactic worlds |
+| Boundary kind | `K`, `P`, interpreter, handler, serializer, view, migration, observer |
+| Unknown location | extension axis, lift axis, representation axis, control-flow axis |
+| Canonical artifact | `Lan`, `Ran`, `Delta`, `Lft`, `Rft`, Yoneda, Coyoneda, explicit IR, free builder, obstruction |
+| Interpreter/projection/lowering | unit, counit, comparison cell, handler, `runObservation`, `lowerGenerated`, `apply` |
+| Law witness | naturality, factorization, projection law, lowering law, handler law, defunctionalization equivalence |
+| Falsifier | no colimit/limit/residual, lossy projection, incoherent observations, invalid path, missing constructor, no exact lift |
+
+If the prompt asks for code, emit the certificate-aware implementation plan: artifact, interpreter/projection, law test, falsifier, and bypass policy.
 
 ## Step -1 — World Model Preamble
 
@@ -206,6 +228,16 @@ If not, produce an obstruction report: lost evidence, vague projection, missing 
 
 ## Response Modes
 
+### Certificate mechanics
+
+Use when the user already has or wants a Composition Certificate.
+
+1. Restate certificate fields.
+2. Map the artifact to Kan/Yoneda/Coyoneda/defunctionalization mechanics.
+3. Name the interpreter/projection/lowering/cell.
+4. Name the law and falsifier.
+5. State whether the certificate is verified, obstructed, approximate, or still only planned.
+
 ### Compact
 
 1. Direct answer.
@@ -247,7 +279,7 @@ If not, produce an obstruction report: lost evidence, vague projection, missing 
 
 ## Scripts
 
-- `scripts/emit_world_boundary_preamble.sh <focus> [language]`
+- `scripts/emit_world_boundary_preamble.sh scripts/emit_composition_certificate_kan.sh scripts/emit_boundary_normal_form_kan.sh <focus> [language]`
 - `scripts/emit_boundary_kind_map.sh [kind]`
 - `scripts/emit_kan_stub.sh <kind> [language]`
 - `scripts/emit_law_test_plan.sh <direction> [language]`
@@ -259,7 +291,7 @@ If not, produce an obstruction report: lost evidence, vague projection, missing 
 
 ## References
 
-- `references/world-boundary-preamble.md`
+- `references/world-boundary-preamble.md references/composition-certificate-elaboration.md`
 - `references/boundary-kind-to-kan.md`
 - `references/foundations.md`
 - `references/kan-lifts.md`
