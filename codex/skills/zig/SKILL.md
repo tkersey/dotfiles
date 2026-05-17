@@ -31,15 +31,16 @@ When a lane cannot be run, say so with a stable label: `LINT_UNAVAILABLE`, `TEST
 2. If the request involves `comptime`, `anytype`, reflection, generated types, format/schema derivation, or specialization, produce a comptime contract before producing code.
 3. Confirm repo shape: find `build.zig`, `build.zig.zon`, existing `zig build` steps, tests, benchmarks, lint steps, and formatting conventions.
 4. Confirm toolchain version with `zig version` before executing 0.16.0-sensitive commands.
-5. Run the 0.16.0 migration scan when touching code written for 0.15.x or older.
-6. Run the comptime audit scan when touching generic, reflective, or generated-type code.
-7. Run the systems audit scan when touching allocators, ownership, pointers, casts, C/ABI, packed/extern layout, I/O effects, atomics, concurrency, or low-level performance.
-8. Run the hazardous-code audit lane when touching `@setRuntimeSafety`, `unreachable`, raw pointer casts, integer-pointer conversions, `undefined`, `extern`/`packed`, FFI, inline assembly, MMIO, atomics, vector/SIMD intrinsics, or ReleaseFast/ReleaseSmall-sensitive code.
-9. Run the cache hygiene protocol when the request involves `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, global cache, custom `--cache-dir`/`--global-cache-dir`, disk pressure, or CI cache bloat.
-10. For formatting requests, identify the intended layout before running `zig fmt`; use trailing commas, first-row array shaping, comments, or clearer intermediate declarations rather than hand-aligned whitespace.
-11. Identify hazard classes and proof requirements before editing.
-12. Make the smallest change that satisfies the contract.
-13. Re-run the appropriate proof lanes and report exact commands plus outcomes.
+5. If running inside a Codex review/subagent sandbox, or if Zig reports global-cache `PermissionDenied`, apply the Codex review sandbox cache protocol before treating the result as a code verdict.
+6. Run the 0.16.0 migration scan when touching code written for 0.15.x or older.
+7. Run the comptime audit scan when touching generic, reflective, or generated-type code.
+8. Run the systems audit scan when touching allocators, ownership, pointers, casts, C/ABI, packed/extern layout, I/O effects, atomics, concurrency, or low-level performance.
+9. Run the hazardous-code audit lane when touching `@setRuntimeSafety`, `unreachable`, raw pointer casts, integer-pointer conversions, `undefined`, `extern`/`packed`, FFI, inline assembly, MMIO, atomics, vector/SIMD intrinsics, or ReleaseFast/ReleaseSmall-sensitive code.
+10. Run the cache hygiene protocol when the request involves `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, global cache, custom `--cache-dir`/`--global-cache-dir`, disk pressure, or CI cache bloat.
+11. For formatting requests, identify the intended layout before running `zig fmt`; use trailing commas, first-row array shaping, comments, or clearer intermediate declarations rather than hand-aligned whitespace.
+12. Identify hazard classes and proof requirements before editing.
+13. Make the smallest change that satisfies the contract.
+14. Re-run the appropriate proof lanes and report exact commands plus outcomes.
 
 ## Zig 0.16.0 migration scan
 
@@ -392,11 +393,44 @@ Cache result labels:
 - `CACHE_ZIG_PKG_SKIPPED`
 - `CACHE_MODIFIED_DEPENDENCY_UNTOUCHED`
 - `CACHE_ACTIVE_BUILD_REFUSED`
+- `CACHE_REVIEW_SANDBOX_PERMISSION_DENIED`
 - `CACHE_REBUILD_VERIFIED`
 - `CACHE_REBUILD_UNVERIFIED`
 - `CACHE_PATH_UNDISCOVERED`
 
 Use `references/cache_ci_policy.md` for CI cache keys, TTLs, and drain order.
+
+### Codex review sandbox cache protocol
+
+Use this protocol when Zig proof commands run inside native Codex review, a Codex subagent, or any sandbox where writable roots may exclude the default Zig global cache. Typical failure evidence includes:
+
+- `unable to load 'test_runner.zig': PermissionDenied`;
+- `unable to load 'std.zig': PermissionDenied`;
+- `unable to load 'ubsan_rt.zig': PermissionDenied`;
+- `failed to check cache: manifest_create PermissionDenied`;
+- a Zig command showing `--global-cache-dir /Users/.../.cache/zig` inside a restricted review/subprocess sandbox.
+
+Before the first Zig proof command in that environment, prefer an explicit writable global cache:
+
+```bash
+ZIG_GLOBAL_CACHE_DIR=/private/tmp/zig-cache-review zig build test --summary all
+ZIG_GLOBAL_CACHE_DIR=/private/tmp/zig-cache-review zig build lint -- --max-warnings 0
+```
+
+If `/private/tmp` is unavailable but the repository root is writable, use a repo-local global cache:
+
+```bash
+mkdir -p .zig-cache/global
+ZIG_GLOBAL_CACHE_DIR="$PWD/.zig-cache/global" zig build test --summary all
+```
+
+The same rule applies to focused proof lanes:
+
+```bash
+ZIG_GLOBAL_CACHE_DIR=/private/tmp/zig-cache-review zig build test --summary all -- --test-filter "<filter>"
+```
+
+Do not treat default-global-cache `PermissionDenied` as a code verdict. Classify it as `CACHE_REVIEW_SANDBOX_PERMISSION_DENIED`, rerun the exact affected proof with a writable global cache, and keep the local code verdict separate from the review transport/environment verdict. If the rerun passes, report both the original cache failure and the successful writable-cache proof. If the rerun fails for a non-cache reason, adjudicate the new failure normally.
 
 ## Atomics, concurrency, and cancellation
 

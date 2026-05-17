@@ -12,6 +12,10 @@ interface:
     build-system translate-c, @Type removal, Smith fuzzing, project-local
     zig-pkg, --fork, cache/output paths, --cache-dir, --global-cache-dir,
     --test-timeout, and Thread.Pool removal as 0.16.0 migration hotspots. For
+    native Codex review or subagent sandboxes, treat Zig global-cache
+    PermissionDenied as a proof-environment failure: rerun the same proof with a
+    writable ZIG_GLOBAL_CACHE_DIR or --global-cache-dir under /private/tmp or
+    the repo before making a code verdict. For
     hazardous-code work, do not look for a Rust-style unsafe keyword: inventory
     hazard operations and invariants such as @setRuntimeSafety(false),
     unreachable/catch unreachable, undefined, @ptrCast, @alignCast,

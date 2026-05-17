@@ -73,6 +73,7 @@ last_review_invocations = []
 adjudication_ledger = {}
 pr_comment_ledger = {}
 validation_commands = []
+language_skill_packet = {}
 ```
 
 Reset `clean_review_streak` to zero whenever:
@@ -86,6 +87,33 @@ Reset `clean_review_streak` to zero whenever:
 - a rebase, merge, amend, cherry-pick, or branch synchronization changes the comparison.
 
 Do not reset the streak merely because another clean review was run. Increment the streak only for completed clean native Codex review runs against the pinned base and current `HEAD`.
+
+## Language-specific skill routing
+
+`$resolve` owns language-skill discovery and routing, not language-specific proof mechanics.
+
+Before the first native review run, and again whenever the changed file set materially changes, inspect the repository and diff for language/tooling signals:
+
+- changed file extensions and manifests such as `build.zig`, `Cargo.toml`, `package.json`, `pyproject.toml`, `go.mod`, `mix.exs`, `lakefile.lean`, or equivalent project roots;
+- validation commands already discovered from CI, task runners, package scripts, or project docs;
+- explicit user-mentioned skills;
+- review failures that identify a language tool, cache, compiler, package manager, formatter, linter, or test runner.
+
+For every applicable language or tool skill available in the session, load the target skill instructions before selecting proof commands or invoking native review. Keep a concise `language_skill_packet` with:
+
+```text
+language_skill_packet = {
+  skill_name: string,
+  trigger_evidence: string,
+  loaded: boolean,
+  review_guidance_summary: string,
+  validation_guidance_summary: string
+}
+```
+
+Pass the relevant guidance into native review context and local validation planning. For Zig projects, `$resolve` should route to `$zig`; `$zig` owns details such as writable Zig cache paths, Zig 0.16 proof lanes, lint/test command shape, and cache-environment failure classification. `$resolve` must not hardcode Zig-specific environment variables or cache paths except as a direct quote from loaded `$zig` guidance.
+
+If a clearly applicable language skill cannot be loaded, record that as a review-driver limitation and either proceed with repository-native commands already proven locally or stop as blocked when the missing guidance is required to distinguish tool transport failure from code failure.
 
 ## Native review driver
 
@@ -102,9 +130,10 @@ The driver must:
 7. Use a local-only `main` or `master` ref only when no better remote ref is available.
 8. Resolve the selected base to a merge-base SHA with `HEAD`.
 9. Pin the base ref and merge-base SHA for the current clean-review streak.
-10. Invoke native Codex review with the pinned base through `codex --yolo review`.
-11. Capture the exact command, sandbox mode, base ref, base SHA, `HEAD` SHA, raw output, exit status, and parsed findings/comments.
-12. Return `clean = true` only when the review completed successfully and produced zero findings/comments.
+10. Attach any applicable `language_skill_packet` guidance to the local review plan before invoking native review.
+11. Invoke native Codex review with the pinned base through `codex --yolo review`.
+12. Capture the exact command, sandbox mode, base ref, base SHA, `HEAD` SHA, language skill packet, raw output, exit status, and parsed findings/comments.
+13. Return `clean = true` only when the review completed successfully and produced zero findings/comments.
 
 ### Base discovery order
 
@@ -295,6 +324,7 @@ Before making changes:
 
 - Inspect the current branch and working tree.
 - Identify the project-native build, lint, test, and type-check commands from repository files, lockfiles, package scripts, Makefiles, task runners, CI configuration, or project documentation.
+- Discover and load applicable language/tool skills, then record their `language_skill_packet` guidance.
 - Preserve unrelated user changes. Do not overwrite, discard, or stage unrelated work.
 - Determine whether a PR already exists for the current branch, because that PR's base branch should drive the review base.
 
@@ -390,6 +420,7 @@ Only after the final three-review clean streak and full validation pass:
    - The branch pushed.
    - The selected review base ref and merge-base SHA.
    - The exact last three native Codex review invocations and their recorded sandbox mode.
+   - The language/tool skills loaded for the run, with trigger evidence and any proof-environment guidance used.
    - The validation commands that passed.
    - Confirmation that the last three native Codex review runs had zero findings/comments.
    - Any native Codex review comments adjudicated as `do-not-address`, with brief rationale, if relevant.
