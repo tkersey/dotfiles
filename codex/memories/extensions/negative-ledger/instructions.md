@@ -52,6 +52,22 @@ A useful negative-ledger digest should separate `Promote`, `Watchlist`, and `Do 
 
 Do not treat non-timestamped helper files, templates, or example packets as evidence.
 
+## MCP-readability and search-shape requirements
+
+Codex memories may be exposed through the read-only built-in memory retrieval surface when memories and the relevant MCP/read tooling are enabled. Future agents may use list/read/search over `~/.codex/memories`, and memory search is mostly substring/window matching rather than semantic retrieval.
+
+Shape negative-ledger memories so they are easy to find with exact search terms:
+
+- use stable lowercase field labels such as `negative_evidence`, `failed_hypothesis`, `failure_class`, `applicability_conditions`, `exclusion_rule`, `reopening_criteria`, `next_search_hint`, and `learning_source_ids`;
+- keep related fields close together, preferably within a small line window, so multi-query window search can find the complete route constraint;
+- preserve exact repo names, path families, benchmark names, test names, error strings, command fragments, learning ids, and tags;
+- include a compact `mcp_search_terms` line when it materially improves discovery;
+- avoid clever prose headings that erase the likely search terms.
+
+Assume files under the memory root, including extension resource digests while they exist, may be discoverable by read-only memory tooling. Do not store secrets, credentials, private keys, sensitive local-only details, or unnecessary raw chronology in resource digests or durable memories.
+
+Because resource files are short-lived consolidation inputs, durable negative-ledger knowledge must be promoted into `MEMORY.md`, `memory_summary.md`, or an appropriate memory-root `skills/*` file. Do not rely on `extensions/negative-ledger/resources/*.md` for long-term runtime retrieval.
+
 ## What counts as negative-ledger signal
 
 Treat the following as high-signal only when evidence is concrete:
@@ -182,16 +198,28 @@ Use the required `# Task Group` structure from the base consolidation prompt. Ke
 
 ### `skills/*`
 
-Do not recreate the existing `negative-ledger` skill in memory.
+Codex memory consolidation may create or update memory-root `skills/*`. Use that capability sparingly.
 
-Create or update a memory-root skill only if repeated evidence shows a new reusable sub-procedure beyond the current source skill, such as:
+Do not recreate the existing source `negative-ledger` skill in memory and do not create a generic `skills/negative-ledger/` clone. Prefer the installed source skill for the full runtime protocol.
+
+Create or update a memory-root skill only when repeated evidence shows a reusable memory-retrieval procedure beyond a single route constraint, such as:
 
 - a repo-specific benchmark-regression preflight workflow,
 - a recurring migration dead-end triage workflow,
 - a repeated flaky-test negative-evidence mapping workflow,
-- a stable fixed-point-driver plus negative-ledger integration pattern not already covered by the source skills.
+- a stable fixed-point-driver plus negative-ledger integration pattern not already covered by the source skills,
+- a read-only memory-search preflight that teaches future agents exactly how to query `MEMORY.md` and rollout summaries for negative evidence before picking another route.
 
-If the lesson is a route constraint or failure shield rather than a full procedure, keep it in `MEMORY.md`.
+When a memory-root skill is justified, prefer a specific name such as `skills/negative-ledger-memory-preflight/` or `<repo>-negative-evidence-preflight/` rather than colliding with the source `negative-ledger` skill. The skill should be short and retrieval-oriented:
+
+- trigger cues,
+- exact memory/MCP search terms,
+- first-pass search/read sequence,
+- validity checks for witness, applicability, exclusion, and reopening,
+- output shape for active/stale/reopened/unknown evidence,
+- stop rule that old failures never become blanket bans without current-state applicability.
+
+If the lesson is a route constraint, active exclusion, or failure shield rather than a reusable procedure, keep it in `MEMORY.md`. If it is only a global trigger cue, keep it in `memory_summary.md`.
 
 ## Cross-extension handling
 
@@ -226,6 +254,33 @@ Reject passive screen context, raw chronology, incidental browsing, transient UI
 - Do not preserve scolding, frustration, or conversational filler; preserve the operational constraint underneath.
 - Because `memory_summary.md` is always loaded, keep global negative-ledger notes especially terse and high-signal.
 - If a candidate cannot be stated as a narrow route constraint, reopening rule, or preflight trigger, skip it.
+
+## Recommended durable memory shapes
+
+When writing `MEMORY.md`, prefer compact line-window records that future memory search can recover:
+
+```text
+negative_evidence: <short title>
+scope: repo=<repo>; paths=<path-family>; surface=<benchmark/test/error/task-family>
+failed_hypothesis: <narrow hypothesis>
+attempted_change: <named route or prototype>
+failure_class: <no-effect|local-regression|global-regression|unsound|too-complex|stale|unknown>
+evidence_anchor: <benchmark/test/revert/review/trace/diff/learning id>
+applicability_conditions: <when this still binds>
+exclusion_rule: <narrow route to avoid>
+reopening_criteria: <what changed proof is needed before retrying>
+next_search_hint: <adjacent safe route or proof obligation>
+learning_source_ids: <lrn-...>
+mcp_search_terms: negative-evidence, failed-hypothesis, <repo>, <benchmark>, <route>, <error>
+```
+
+When writing `memory_summary.md`, keep only the always-loaded trigger layer:
+
+```text
+- For optimization/debugging/migration tasks with prior failures, search memory for `negative_evidence`, `failed_hypothesis`, `avoid_for_now`, `benchmark-regression`, `revert`, and `reopening_criteria` before selecting another route; then route to the source `negative-ledger` skill for applicability mapping.
+```
+
+When creating a memory-root skill, make it a read-only search/runbook skill, not a historical ledger.
 
 ## Non-goals
 

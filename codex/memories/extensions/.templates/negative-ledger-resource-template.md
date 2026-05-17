@@ -32,7 +32,12 @@ Do not use this template filename inside `resources/`; real resource files shoul
 - reopening_criteria:
   - <condition/proof required before retrying or suppressing the route differently>
 - next_search_hint: <adjacent promising route or proof obligation>
+- mcp_search_terms:
+  - negative-evidence
+  - failed-hypothesis
+  - <repo/component/benchmark/route/error>
 - memory_target: <memory_summary | MEMORY | skill | none>
+- memory_skill_candidate: <none | negative-ledger-memory-preflight | repo-specific-preflight>
 - confidence: <high | medium | low>
 
 ## Watchlist
@@ -45,7 +50,27 @@ Do not use this template filename inside `resources/`; real resource files shoul
 - why_not_promoted: <why this should not affect durable memory yet>
 - confirmation_needed: <specific evidence that would make it promotable>
 - possible_reopening_test: <optional test/check if stale or potentially reopened>
+- mcp_search_terms:
+  - <terms that should find this candidate later>
 
 ## Do not promote
 
 - <learning id / signal>: <why it remains evidence-only, stale, too broad, already codified, or noise>
+
+## Optional memory-root skill candidate
+
+Use this section only if repeated evidence supports a reusable read-only preflight skill.
+
+- proposed_skill_name: <negative-ledger-memory-preflight | repo-specific-negative-evidence-preflight | none>
+- trigger_cues:
+  - <cue>
+- memory_search_sequence:
+  - search: <exact query terms>
+  - read: <MEMORY.md block or rollout summary path if known>
+- applicability_checks:
+  - witness present
+  - current-state applicability stated
+  - exclusion rule narrow
+  - reopening criteria concrete
+- output_contract: <active/stale/reopened/unknown evidence plus safest next frontier>
+- reason_skill_needed: <why MEMORY.md note is insufficient>
