@@ -12,6 +12,7 @@ max_depth = 3
 unified_exec = true
 personality = true
 memories = true
+builtin_mcp = true
 prevent_idle_sleep = true
 realtime_conversation = true
 default_mode_request_user_input = true
@@ -35,6 +36,7 @@ max_rollouts_per_startup = 128
 min_rollout_idle_hours = 6
 max_raw_memories_for_consolidation = 1024
 max_unused_days = 180
+disable_on_external_context = false
 extract_model = "gpt-5.4-mini"
 consolidation_model = "gpt-5.3-codex"
 
