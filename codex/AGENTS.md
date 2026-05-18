@@ -89,13 +89,13 @@ Treat skills as stage owners, lenses, validators, or side-effecting workflows ra
 - Publication / lifecycle: `ship`, `fin`, `auto`, `learnings`.
 - Language surface: `logophile`.
 
-Use `codex/skills/.system/routing-regression/skill-stack-map.md` as the fuller stage map.
+The map above is the authoritative stage map unless a loaded skill provides a more specific handoff.
 
 ### Activation cost discipline
 
-Prefer the lowest-cost skill that fully satisfies the task. Escalate only when the current answer is materially underpowered, the prompt explicitly asks for the heavier workflow, or the task's risk/complexity requires it.
+Prefer the lowest-cost skill that fully satisfies the task. For ordinary workflow routing, avoid high-cost workflows unless the prompt, risk, complexity, or output of a prior stage justifies them. Challenge Escalation remains uncapped and may re-run when new friction, evidence, frames, or leverage appears.
 
-Use `codex/skills/.system/routing-regression/activation-costs.json` as the cost manifest.
+The cost posture below is the authoritative activation-cost policy unless a loaded skill has a stricter side-effect boundary.
 
 Default cost posture:
 
