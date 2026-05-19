@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/latency_report.schema.json",
+  "title": "Agentic Latency Treaty Report",
+  "type": "object",
+  "required": ["verdict", "metrics", "findings", "validation_plan"],
+  "additionalProperties": true,
+  "properties": {
+    "verdict": {"type": "string"},
+    "metrics": {"type": "object", "additionalProperties": true},
+    "critical_path": {"type": "object", "additionalProperties": true},
+    "latency_treaty": {"$ref": "latency_treaty.schema.json"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "category", "title", "severity", "confidence", "rewrite"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {"type": "string"},
+          "category": {"type": "string"},
+          "title": {"type": "string"},
+          "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
+          "critical_path_impact": {"type": "string"},
+          "expected_savings": {"type": "string"},
+          "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
+          "implementation_effort": {"type": "string", "enum": ["XS", "S", "M", "L", "XL"]},
+          "quality_risk": {"type": "string", "enum": ["low", "medium", "high"]},
+          "safety_risk": {"type": "string", "enum": ["low", "medium", "high"]},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "rewrite": {"type": "string"},
+          "proof_needed": {"type": "array", "items": {"type": "string"}},
+          "rollback": {"type": "string"},
+          "validation": {"type": "string"}
+        }
+      }
+    },
+    "validation_plan": {"type": "array", "items": {"type": "string"}},
+    "patch_plan": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/normalized_trace.schema.json",
+  "title": "Normalized Agentic Trace",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["span_id", "kind"],
+    "additionalProperties": true,
+    "properties": {
+      "trace_id": {"type": "string"},
+      "span_id": {"type": "string"},
+      "parent_id": {"type": ["string", "null"]},
+      "turn_id": {"type": ["string", "integer", "null"]},
+      "agent": {"type": ["string", "null"]},
+      "phase": {"type": ["string", "null"]},
+      "name": {"type": ["string", "null"]},
+      "kind": {
+        "type": "string",
+        "enum": ["model", "tool", "retrieval", "guardrail", "handoff", "router", "planner", "cache", "state", "ui", "sleep", "retry", "human", "other"]
+      },
+      "start_ms": {"type": ["number", "null"]},
+      "end_ms": {"type": ["number", "null"]},
+      "duration_ms": {"type": ["number", "null"]},
+      "status": {"type": ["string", "null"]},
+      "depends_on": {"type": "array", "items": {"type": "string"}},
+      "dependency_reasons": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string",
+          "enum": ["data", "authority", "safety", "freshness", "branch", "ui", "resource", "accidental", "unknown"]
+        }
+      },
+      "consumed_by": {"type": "array", "items": {"type": "string"}},
+      "result_consumed": {"type": ["boolean", "null"]},
+      "user_visible": {
+        "type": ["string", "null"],
+        "enum": ["none", "progress", "partial", "final", "irreversible_action", null]
+      },
+      "model": {"type": ["string", "null"]},
+      "reasoning_effort": {"type": ["string", "null"]},
+      "service_tier": {"type": ["string", "null"]},
+      "transport": {"type": ["string", "null"]},
+      "parallel_tool_calls": {"type": ["boolean", "null"]},
+      "structured_output": {"type": ["boolean", "null"]},
+      "streaming_used": {"type": ["boolean", "null"]},
+      "time_to_first_token_ms": {"type": ["number", "null"]},
+      "time_to_first_user_visible_update_ms": {"type": ["number", "null"]},
+      "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+      "cached_tokens": {"type": ["integer", "null"], "minimum": 0},
+      "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+      "reasoning_tokens": {"type": ["integer", "null"], "minimum": 0},
+      "tool_schema_tokens": {"type": ["integer", "null"], "minimum": 0},
+      "retrieval_tokens": {"type": ["integer", "null"], "minimum": 0},
+      "prompt_hash": {"type": ["string", "null"]},
+      "static_prefix_hash": {"type": ["string", "null"]},
+      "dynamic_suffix_hash": {"type": ["string", "null"]},
+      "prompt_cache_key": {"type": ["string", "null"]},
+      "prompt_cache_retention": {"type": ["string", "null"]},
+      "tool_name": {"type": ["string", "null"]},
+      "tool_args_hash": {"type": ["string", "null"]},
+      "tool_result_bytes": {"type": ["integer", "null"], "minimum": 0},
+      "tool_result_tokens": {"type": ["integer", "null"], "minimum": 0},
+      "mutability": {
+        "type": ["string", "null"],
+        "enum": ["read_only", "idempotent_write", "external_write", "payment_or_irreversible", "unknown", null]
+      },
+      "usage_policy": {
+        "type": ["string", "null"],
+        "enum": ["copyable", "replayable", "affine", "linear", "ephemeral", "unknown", null]
+      },
+      "freshness_policy": {
+        "type": ["string", "null"],
+        "enum": ["fresh_required", "stale_ok", "cache_ok", "replay_only", "unknown", null]
+      },
+      "authority_policy": {"type": ["string", "null"]},
+      "branch_policy": {
+        "type": ["string", "null"],
+        "enum": ["unrestricted", "replay_only", "single_live_branch", "split_required", "no_branch", "host_owned", "unknown", null]
+      }
+    }
+  }
+}

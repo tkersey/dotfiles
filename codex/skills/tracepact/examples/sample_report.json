@@ -1,0 +1,521 @@
+{
+  "counterfactual_schedules": [
+    {
+      "estimated_savings_ms": null,
+      "legality": "Legal only for read-only/idempotent effects with no data dependency between them and acceptable freshness/cache policy.",
+      "name": "parallel_read_only_effects",
+      "rewrite": "Group independent read-only tool/retrieval calls after the planning boundary and execute them concurrently; return compact answer slices to the final model call.",
+      "risk": "May increase provider load or rate-limit pressure; cap concurrency and preserve cancellation.",
+      "validation": "Trace dependency reasons, compare final quality, monitor rate limits and tool failure fanout."
+    },
+    {
+      "estimated_savings_ms": null,
+      "legality": "Legal if intermediate natural language is not a required user-visible artifact and downstream calls consume only structured decisions.",
+      "name": "collapse_serial_model_round_trips",
+      "rewrite": "Replace serial planner/executor/formatter model calls with one structured response or a planner once plus deterministic/fast executor steps.",
+      "risk": "Prompt complexity may rise; validate accuracy and parse stability.",
+      "validation": "Golden eval tasks, parse-failure rate, model-request count per task, p95 final latency."
+    },
+    {
+      "estimated_savings_ms": null,
+      "legality": "Semantics unchanged if only prompt ordering changes and the final prompt content remains equivalent.",
+      "name": "stable_prefix_cache_treaty",
+      "rewrite": "Freeze instructions, examples, tool schemas, and structured output schema at the prompt prefix; move dynamic content later; set prompt_cache_key by route/prefix family.",
+      "risk": "Accidental prompt behavior change from ordering; eval before rollout.",
+      "validation": "cached_tokens/input_tokens by route, answer quality eval, p95 prefill latency."
+    },
+    {
+      "estimated_savings_ms": null,
+      "legality": "Legal if the downstream model only requires the slice; raw payload can remain available outside the model path for audit/drilldown.",
+      "name": "provider_answer_slice",
+      "rewrite": "Change tools/retrievers to return bounded answer slices with ids/citations/confidence instead of raw documents or full payloads in the model path.",
+      "risk": "Could omit relevant context; use retrieval eval and fallback expansion.",
+      "validation": "Answer quality, omitted-context error rate, tool result token budget, fallback expansion rate."
+    }
+  ],
+  "critical_path": {
+    "duration_ms": 5880.0,
+    "path": [
+      "m1",
+      "t1",
+      "m2",
+      "m3",
+      "g1"
+    ],
+    "path_labels": [
+      "planner (o4-mini)",
+      "retrieval:web_search",
+      "synthesize_tool_results (gpt-5.5)",
+      "format_final_answer (gpt-5.5)",
+      "guardrail:posthoc_policy_check"
+    ]
+  },
+  "findings": [
+    {
+      "category": "ROUND_TRIP_AMPLIFICATION",
+      "confidence": "medium",
+      "critical_path_impact": "final",
+      "evidence": [
+        "m2: synthesize_tool_results (gpt-5.5), duration=2580.0ms",
+        "m3: format_final_answer (gpt-5.5), duration=850.0ms"
+      ],
+      "expected_savings": "one or more model round trips if semantic dependencies are accidental",
+      "id": "F01",
+      "implementation_effort": "M",
+      "proof_needed": [
+        "verify second call consumes unique output from first",
+        "quality eval for collapsed prompt"
+      ],
+      "quality_risk": "low",
+      "rewrite": "Combine steps into one structured call, or split once into planner plus deterministic/fast executor only when the first call produces a consumed plan.",
+      "rollback": "Feature flag or route fallback",
+      "safety_risk": "low",
+      "severity": "high",
+      "title": "Consecutive model calls may be collapsible or routable",
+      "validation": "Replay traces and compare quality/latency"
+    },
+    {
+      "category": "DUPLICATE_TOOL_CALL",
+      "confidence": "high",
+      "critical_path_impact": "final",
+      "evidence": [
+        "t1: args_hash=search-retention-v1, duration=800.0ms",
+        "t3: args_hash=search-retention-v1, duration=720.0ms"
+      ],
+      "expected_savings": "up to 720ms observed duplicate tool time",
+      "id": "F02",
+      "implementation_effort": "S",
+      "proof_needed": [
+        "freshness_policy",
+        "result equivalence",
+        "result was consumed identically"
+      ],
+      "quality_risk": "low",
+      "rewrite": "Memoize/journal the first result inside the run; for durable routes, add freshness and replay policy before reusing across runs.",
+      "rollback": "Feature flag or route fallback",
+      "safety_risk": "low",
+      "severity": "high",
+      "title": "Repeated equivalent tool call: web_search",
+      "validation": "Replay traces and compare quality/latency"
+    },
+    {
+      "category": "SERIAL_READ_ONLY_TOOLS",
+      "confidence": "medium",
+      "critical_path_impact": "final",
+      "evidence": [
+        "t1: retrieval:web_search, duration=800.0ms, usage=replayable",
+        "t2: tool:customer_db_lookup, duration=770.0ms, usage=replayable",
+        "t3: retrieval:web_search, duration=720.0ms, usage=replayable"
+      ],
+      "expected_savings": "up to 1490ms if independent",
+      "id": "F03",
+      "implementation_effort": "S",
+      "proof_needed": [
+        "no data dependency between tools",
+        "read-only/idempotent proof",
+        "rate-limit budget"
+      ],
+      "quality_risk": "low",
+      "rewrite": "Execute independent read-only tool calls concurrently, or issue them as a batch provider offer; preserve ordering only for data/authority/freshness edges.",
+      "rollback": "Feature flag or route fallback",
+      "safety_risk": "low",
+      "severity": "high",
+      "title": "Read-only tools appear serialized",
+      "validation": "Replay traces and compare quality/latency"
+    },
+    {
+      "category": "TOOL_RESULT_BLOAT",
+      "confidence": "high",
+      "critical_path_impact": "final",
+      "evidence": [
+        "t1: result_bytes=46000, result_tokens=None"
+      ],
+      "expected_savings": "input-token/prefill reduction and often fewer downstream summarization calls",
+      "id": "F04",
+      "implementation_effort": "M",
+      "proof_needed": [
+        "consumer only needs answer slice",
+        "answer-slice eval"
+      ],
+      "quality_risk": "low",
+      "rewrite": "Change the provider contract to return a bounded answer slice: facts, citations/ids, confidence, and omitted-result count. Keep raw payload outside the model path.",
+      "rollback": "Feature flag or route fallback",
+      "safety_risk": "low",
+      "severity": "high",
+      "title": "Large tool result sent through agent loop: retrieval:web_search",
+      "validation": "Replay traces and compare quality/latency"
+    },
+    {
+      "category": "TOOL_RESULT_BLOAT",
+      "confidence": "high",
+      "critical_path_impact": "final",
+      "evidence": [
+        "t3: result_bytes=45500, result_tokens=None"
+      ],
+      "expected_savings": "input-token/prefill reduction and often fewer downstream summarization calls",
+      "id": "F05",
+      "implementation_effort": "M",
+      "proof_needed": [
+        "consumer only needs answer slice",
+        "answer-slice eval"
+      ],
+      "quality_risk": "low",
+      "rewrite": "Change the provider contract to return a bounded answer slice: facts, citations/ids, confidence, and omitted-result count. Keep raw payload outside the model path.",
+      "rollback": "Feature flag or route fallback",
+      "safety_risk": "low",
+      "severity": "high",
+      "title": "Large tool result sent through agent loop: retrieval:web_search",
+      "validation": "Replay traces and compare quality/latency"
+    },
+    {
+      "category": "LOW_CACHED_TOKEN_RATIO",
+      "confidence": "high",
+      "critical_path_impact": "throughput",
+      "evidence": [
+        "m1: input_tokens=5200, cached_tokens=0, ratio=0.00, prompt_cache_key=None"
+      ],
+      "expected_savings": "lower prefill latency/cost for repeated long-prefix routes",
+      "id": "F06",
+      "implementation_effort": "S",
+      "proof_needed": [
+        "stable prefix hash",
+        "cache hit ratio dashboard"
+      ],
+      "quality_risk": "low",
+      "rewrite": "Move static instructions/examples/tools/schemas to the exact prefix, move dynamic history/RAG/user data later, stabilize JSON/tool ordering, and set a route-appropriate prompt_cache_key.",
+      "rollback": "Feature flag or route fallback",
+      "safety_risk": "low",
+      "severity": "medium",
+      "title": "Long model prompt has poor cache reuse: planner (o4-mini)",
+      "validation": "Replay traces and compare quality/latency"
+    },
+    {
+      "category": "LOW_CACHED_TOKEN_RATIO",
+      "confidence": "high",
+      "critical_path_impact": "throughput",
+      "evidence": [
+        "m2: input_tokens=17200, cached_tokens=1200, ratio=0.07, prompt_cache_key=None"
+      ],
+      "expected_savings": "lower prefill latency/cost for repeated long-prefix routes",
+      "id": "F07",
+      "implementation_effort": "S",
+      "proof_needed": [
+        "stable prefix hash",
+        "cache hit ratio dashboard"
+      ],
+      "quality_risk": "low",
+      "rewrite": "Move static instructions/examples/tools/schemas to the exact prefix, move dynamic history/RAG/user data later, stabilize JSON/tool ordering, and set a route-appropriate prompt_cache_key.",
+      "rollback": "Feature flag or route fallback",
+      "safety_risk": "low",
+      "severity": "medium",
+      "title": "Long model prompt has poor cache reuse: synthesize_tool_results (gpt-5.5)",
+      "validation": "Replay traces and compare quality/latency"
+    },
+    {
+      "category": "LOW_CACHED_TOKEN_RATIO",
+      "confidence": "high",
+      "critical_path_impact": "throughput",
+      "evidence": [
+        "m3: input_tokens=6100, cached_tokens=0, ratio=0.00, prompt_cache_key=None"
+      ],
+      "expected_savings": "lower prefill latency/cost for repeated long-prefix routes",
+      "id": "F08",
+      "implementation_effort": "S",
+      "proof_needed": [
+        "stable prefix hash",
+        "cache hit ratio dashboard"
+      ],
+      "quality_risk": "low",
+      "rewrite": "Move static instructions/examples/tools/schemas to the exact prefix, move dynamic history/RAG/user data later, stabilize JSON/tool ordering, and set a route-appropriate prompt_cache_key.",
+      "rollback": "Feature flag or route fallback",
+      "safety_risk": "low",
+      "severity": "medium",
+      "title": "Long model prompt has poor cache reuse: format_final_answer (gpt-5.5)",
+      "validation": "Replay traces and compare quality/latency"
+    },
+    {
+      "category": "EXCESSIVE_OUTPUT_TOKENS",
+      "confidence": "high",
+      "critical_path_impact": "ttfu",
+      "evidence": [
+        "m2: output_tokens=640, streaming_used=False"
+      ],
+      "expected_savings": "decode latency roughly scales with generated tokens; TTFU improves with streaming",
+      "id": "F09",
+      "implementation_effort": "S",
+      "proof_needed": [
+        "quality eval for shorter output",
+        "streaming safety gate"
+      ],
+      "quality_risk": "low",
+      "rewrite": "Use a shorter answer contract, structured fields, max output budget, or progressive rendering. If the long output is necessary, stream safe partial content.",
+      "rollback": "Feature flag or route fallback",
+      "safety_risk": "low",
+      "severity": "medium",
+      "title": "Large model output likely dominates decode latency: synthesize_tool_results (gpt-5.5)",
+      "validation": "Replay traces and compare quality/latency"
+    }
+  ],
+  "latency_treaty": {
+    "counterfactual_schedules": [
+      {
+        "estimated_savings_ms": null,
+        "legality": "Legal only for read-only/idempotent effects with no data dependency between them and acceptable freshness/cache policy.",
+        "name": "parallel_read_only_effects",
+        "rewrite": "Group independent read-only tool/retrieval calls after the planning boundary and execute them concurrently; return compact answer slices to the final model call.",
+        "risk": "May increase provider load or rate-limit pressure; cap concurrency and preserve cancellation.",
+        "validation": "Trace dependency reasons, compare final quality, monitor rate limits and tool failure fanout."
+      },
+      {
+        "estimated_savings_ms": null,
+        "legality": "Legal if intermediate natural language is not a required user-visible artifact and downstream calls consume only structured decisions.",
+        "name": "collapse_serial_model_round_trips",
+        "rewrite": "Replace serial planner/executor/formatter model calls with one structured response or a planner once plus deterministic/fast executor steps.",
+        "risk": "Prompt complexity may rise; validate accuracy and parse stability.",
+        "validation": "Golden eval tasks, parse-failure rate, model-request count per task, p95 final latency."
+      },
+      {
+        "estimated_savings_ms": null,
+        "legality": "Semantics unchanged if only prompt ordering changes and the final prompt content remains equivalent.",
+        "name": "stable_prefix_cache_treaty",
+        "rewrite": "Freeze instructions, examples, tool schemas, and structured output schema at the prompt prefix; move dynamic content later; set prompt_cache_key by route/prefix family.",
+        "risk": "Accidental prompt behavior change from ordering; eval before rollout.",
+        "validation": "cached_tokens/input_tokens by route, answer quality eval, p95 prefill latency."
+      },
+      {
+        "estimated_savings_ms": null,
+        "legality": "Legal if the downstream model only requires the slice; raw payload can remain available outside the model path for audit/drilldown.",
+        "name": "provider_answer_slice",
+        "rewrite": "Change tools/retrievers to return bounded answer slices with ids/citations/confidence instead of raw documents or full payloads in the model path.",
+        "risk": "Could omit relevant context; use retrieval eval and fallback expansion.",
+        "validation": "Answer quality, omitted-context error rate, tool result token budget, fallback expansion rate."
+      }
+    ],
+    "operations": [
+      {
+        "authority_policy": "unknown",
+        "branch_policy": "unrestricted",
+        "cache_replay_policy": "fresh_or_unknown",
+        "critical_role": "causal_witness",
+        "dependencies": [],
+        "dependency_reasons": {},
+        "freshness_policy": "unknown",
+        "id": "m1",
+        "kind": "model",
+        "morphism_offers": [
+          "Move static prompt/tools/schema to stable prefix and add prompt_cache_key strategy",
+          "Route bounded execution to faster GPT workhorse; reserve reasoning model for planner",
+          "Stream safe partial output to improve TTFU"
+        ],
+        "observed_route": "o4-mini",
+        "operation": "planner (o4-mini)",
+        "proof_needed": [
+          "freshness_policy"
+        ],
+        "provider_offer": "OpenAI model provider: o4-mini, reasoning=medium",
+        "rewrite_legality": "On observed critical path; rewrite requires preserving data, safety, authority, freshness, and quality semantics.",
+        "usage_policy": "replayable"
+      },
+      {
+        "authority_policy": "unknown",
+        "branch_policy": "unrestricted",
+        "cache_replay_policy": "cache_or_replay_ok",
+        "critical_role": "causal_witness",
+        "dependencies": [
+          "m1"
+        ],
+        "dependency_reasons": {
+          "m1": "query_plan"
+        },
+        "freshness_policy": "cache_ok",
+        "id": "t1",
+        "kind": "retrieval",
+        "morphism_offers": [
+          "Parallelize with independent read-only effects",
+          "Cache/replay/journal equivalent request results",
+          "Return bounded answer slice instead of raw result blob"
+        ],
+        "observed_route": "web_search",
+        "operation": "retrieval:web_search",
+        "proof_needed": [],
+        "provider_offer": "Tool provider: web_search (read_only, replayable)",
+        "rewrite_legality": "On observed critical path; rewrite requires preserving data, safety, authority, freshness, and quality semantics.",
+        "usage_policy": "replayable"
+      },
+      {
+        "authority_policy": "unknown",
+        "branch_policy": "unrestricted",
+        "cache_replay_policy": "cache_or_replay_ok",
+        "critical_role": "movable_witness",
+        "dependencies": [
+          "m1"
+        ],
+        "dependency_reasons": {
+          "m1": "query_plan"
+        },
+        "freshness_policy": "cache_ok",
+        "id": "t2",
+        "kind": "tool",
+        "morphism_offers": [
+          "Parallelize with independent read-only effects",
+          "Cache/replay/journal equivalent request results"
+        ],
+        "observed_route": "customer_db_lookup",
+        "operation": "tool:customer_db_lookup",
+        "proof_needed": [],
+        "provider_offer": "Tool provider: customer_db_lookup (read_only, replayable)",
+        "rewrite_legality": "Read-only/replayable by inference; can move only if downstream consumption and freshness are confirmed.",
+        "usage_policy": "replayable"
+      },
+      {
+        "authority_policy": "unknown",
+        "branch_policy": "unrestricted",
+        "cache_replay_policy": "cache_or_replay_ok",
+        "critical_role": "movable_witness",
+        "dependencies": [
+          "m1"
+        ],
+        "dependency_reasons": {
+          "m1": "query_plan"
+        },
+        "freshness_policy": "cache_ok",
+        "id": "t3",
+        "kind": "retrieval",
+        "morphism_offers": [
+          "Parallelize with independent read-only effects",
+          "Cache/replay/journal equivalent request results",
+          "Return bounded answer slice instead of raw result blob"
+        ],
+        "observed_route": "web_search",
+        "operation": "retrieval:web_search",
+        "proof_needed": [],
+        "provider_offer": "Tool provider: web_search (read_only, replayable)",
+        "rewrite_legality": "Read-only/replayable by inference; can move only if downstream consumption and freshness are confirmed.",
+        "usage_policy": "replayable"
+      },
+      {
+        "authority_policy": "unknown",
+        "branch_policy": "unrestricted",
+        "cache_replay_policy": "fresh_or_unknown",
+        "critical_role": "causal_witness",
+        "dependencies": [
+          "t1",
+          "t2",
+          "t3"
+        ],
+        "dependency_reasons": {
+          "t1": "data",
+          "t2": "data",
+          "t3": "data"
+        },
+        "freshness_policy": "unknown",
+        "id": "m2",
+        "kind": "model",
+        "morphism_offers": [
+          "Use concise/structured output or max-output budget",
+          "Stream safe partial output to improve TTFU"
+        ],
+        "observed_route": "gpt-5.5",
+        "operation": "synthesize_tool_results (gpt-5.5)",
+        "proof_needed": [
+          "freshness_policy"
+        ],
+        "provider_offer": "OpenAI model provider: gpt-5.5",
+        "rewrite_legality": "On observed critical path; rewrite requires preserving data, safety, authority, freshness, and quality semantics.",
+        "usage_policy": "replayable"
+      },
+      {
+        "authority_policy": "unknown",
+        "branch_policy": "unrestricted",
+        "cache_replay_policy": "fresh_or_unknown",
+        "critical_role": "causal_witness",
+        "dependencies": [
+          "m2"
+        ],
+        "dependency_reasons": {
+          "m2": "data"
+        },
+        "freshness_policy": "unknown",
+        "id": "m3",
+        "kind": "model",
+        "morphism_offers": [
+          "Use concise/structured output or max-output budget",
+          "Move static prompt/tools/schema to stable prefix and add prompt_cache_key strategy",
+          "Stream safe partial output to improve TTFU"
+        ],
+        "observed_route": "gpt-5.5",
+        "operation": "format_final_answer (gpt-5.5)",
+        "proof_needed": [
+          "freshness_policy"
+        ],
+        "provider_offer": "OpenAI model provider: gpt-5.5",
+        "rewrite_legality": "On observed critical path; rewrite requires preserving data, safety, authority, freshness, and quality semantics.",
+        "usage_policy": "replayable"
+      },
+      {
+        "authority_policy": "unknown",
+        "branch_policy": "unrestricted",
+        "cache_replay_policy": "fresh_or_unknown",
+        "critical_role": "treaty_blocker",
+        "dependencies": [
+          "m3"
+        ],
+        "dependency_reasons": {
+          "m3": "safety"
+        },
+        "freshness_policy": "unknown",
+        "id": "g1",
+        "kind": "guardrail",
+        "morphism_offers": [
+          "Run policy check incrementally or in parallel where safe; preserve final gating"
+        ],
+        "observed_route": "posthoc_policy_check",
+        "operation": "guardrail:posthoc_policy_check",
+        "proof_needed": [
+          "freshness_policy"
+        ],
+        "provider_offer": "Policy/guardrail provider",
+        "rewrite_legality": "Policy/authority/freshness blocker; optimize representation or placement, not semantics.",
+        "usage_policy": "replayable"
+      }
+    ],
+    "trace_id": null,
+    "version": "2.0.0"
+  },
+  "metrics": {
+    "cache_hit_ratio": 0.042105263157894736,
+    "cached_tokens": 1200,
+    "critical_path_duration_ms": 5880.0,
+    "end_to_end_ms": 7650.0,
+    "guardrail_count": 1,
+    "handoff_count": 0,
+    "input_tokens": 28500,
+    "model_request_count": 3,
+    "output_tokens": 1270,
+    "reasoning_tokens": 180,
+    "retry_count": 0,
+    "span_count": 7,
+    "time_to_first_useful_output_ms": 7350.0,
+    "tool_call_count": 3,
+    "tool_result_bytes": 97700
+  },
+  "patch_plan": [
+    "Add per-run tool-result memoization keyed by tool name, normalized args hash, freshness policy, and authority scope.",
+    "Introduce an async tool batch executor for read-only/idempotent effects; require dependency reasons for serial edges.",
+    "Refactor planner/executor sequence into one structured model response or a planner-once plus deterministic executor path.",
+    "Refactor prompt builder into static_prefix + dynamic_suffix; sort JSON/tool schemas deterministically; set prompt_cache_key by prefix family.",
+    "Modify providers to return compact answer slices and keep raw payloads in external storage by id.",
+    "Enable streaming on long-generation routes and add a safe progress/partial-output UI path.",
+    "Ship behind a feature flag; compare old/new routes on golden traces and production canary."
+  ],
+  "validation_plan": [
+    "Replay golden traces and compare final outputs, tool outputs, and safety decisions.",
+    "Track p50/p95/p99 end-to-end latency, TTFU, model request count, tool call count, serial depth, and idle gaps.",
+    "Track input, cached, output, reasoning, retrieval, and tool-result tokens by route.",
+    "Add a CI gate: no new serial model round trip on the dominant route without an explicit treaty blocker.",
+    "Add cache-hit dashboard: cached_tokens / input_tokens by prompt prefix and prompt_cache_key.",
+    "Add answer-slice retrieval eval: compact tool output must preserve answer quality and citations/ids.",
+    "A/B concurrency limits and monitor rate limits, provider errors, and tail latency."
+  ],
+  "verdict": "Highest-leverage observed issue: Consecutive model calls may be collapsible or routable (ROUND_TRIP_AMPLIFICATION). Rewrite: Combine steps into one structured call, or split once into planner plus deterministic/fast executor only when the first call produces a consumed plan."
+}

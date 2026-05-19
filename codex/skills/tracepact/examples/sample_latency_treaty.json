@@ -1,0 +1,226 @@
+{
+  "counterfactual_schedules": [
+    {
+      "estimated_savings_ms": null,
+      "legality": "Legal only for read-only/idempotent effects with no data dependency between them and acceptable freshness/cache policy.",
+      "name": "parallel_read_only_effects",
+      "rewrite": "Group independent read-only tool/retrieval calls after the planning boundary and execute them concurrently; return compact answer slices to the final model call.",
+      "risk": "May increase provider load or rate-limit pressure; cap concurrency and preserve cancellation.",
+      "validation": "Trace dependency reasons, compare final quality, monitor rate limits and tool failure fanout."
+    },
+    {
+      "estimated_savings_ms": null,
+      "legality": "Legal if intermediate natural language is not a required user-visible artifact and downstream calls consume only structured decisions.",
+      "name": "collapse_serial_model_round_trips",
+      "rewrite": "Replace serial planner/executor/formatter model calls with one structured response or a planner once plus deterministic/fast executor steps.",
+      "risk": "Prompt complexity may rise; validate accuracy and parse stability.",
+      "validation": "Golden eval tasks, parse-failure rate, model-request count per task, p95 final latency."
+    },
+    {
+      "estimated_savings_ms": null,
+      "legality": "Semantics unchanged if only prompt ordering changes and the final prompt content remains equivalent.",
+      "name": "stable_prefix_cache_treaty",
+      "rewrite": "Freeze instructions, examples, tool schemas, and structured output schema at the prompt prefix; move dynamic content later; set prompt_cache_key by route/prefix family.",
+      "risk": "Accidental prompt behavior change from ordering; eval before rollout.",
+      "validation": "cached_tokens/input_tokens by route, answer quality eval, p95 prefill latency."
+    },
+    {
+      "estimated_savings_ms": null,
+      "legality": "Legal if the downstream model only requires the slice; raw payload can remain available outside the model path for audit/drilldown.",
+      "name": "provider_answer_slice",
+      "rewrite": "Change tools/retrievers to return bounded answer slices with ids/citations/confidence instead of raw documents or full payloads in the model path.",
+      "risk": "Could omit relevant context; use retrieval eval and fallback expansion.",
+      "validation": "Answer quality, omitted-context error rate, tool result token budget, fallback expansion rate."
+    }
+  ],
+  "operations": [
+    {
+      "authority_policy": "unknown",
+      "branch_policy": "unrestricted",
+      "cache_replay_policy": "fresh_or_unknown",
+      "critical_role": "causal_witness",
+      "dependencies": [],
+      "dependency_reasons": {},
+      "freshness_policy": "unknown",
+      "id": "m1",
+      "kind": "model",
+      "morphism_offers": [
+        "Move static prompt/tools/schema to stable prefix and add prompt_cache_key strategy",
+        "Route bounded execution to faster GPT workhorse; reserve reasoning model for planner",
+        "Stream safe partial output to improve TTFU"
+      ],
+      "observed_route": "o4-mini",
+      "operation": "planner (o4-mini)",
+      "proof_needed": [
+        "freshness_policy"
+      ],
+      "provider_offer": "OpenAI model provider: o4-mini, reasoning=medium",
+      "rewrite_legality": "On observed critical path; rewrite requires preserving data, safety, authority, freshness, and quality semantics.",
+      "usage_policy": "replayable"
+    },
+    {
+      "authority_policy": "unknown",
+      "branch_policy": "unrestricted",
+      "cache_replay_policy": "cache_or_replay_ok",
+      "critical_role": "causal_witness",
+      "dependencies": [
+        "m1"
+      ],
+      "dependency_reasons": {
+        "m1": "query_plan"
+      },
+      "freshness_policy": "cache_ok",
+      "id": "t1",
+      "kind": "retrieval",
+      "morphism_offers": [
+        "Parallelize with independent read-only effects",
+        "Cache/replay/journal equivalent request results",
+        "Return bounded answer slice instead of raw result blob"
+      ],
+      "observed_route": "web_search",
+      "operation": "retrieval:web_search",
+      "proof_needed": [],
+      "provider_offer": "Tool provider: web_search (read_only, replayable)",
+      "rewrite_legality": "On observed critical path; rewrite requires preserving data, safety, authority, freshness, and quality semantics.",
+      "usage_policy": "replayable"
+    },
+    {
+      "authority_policy": "unknown",
+      "branch_policy": "unrestricted",
+      "cache_replay_policy": "cache_or_replay_ok",
+      "critical_role": "movable_witness",
+      "dependencies": [
+        "m1"
+      ],
+      "dependency_reasons": {
+        "m1": "query_plan"
+      },
+      "freshness_policy": "cache_ok",
+      "id": "t2",
+      "kind": "tool",
+      "morphism_offers": [
+        "Parallelize with independent read-only effects",
+        "Cache/replay/journal equivalent request results"
+      ],
+      "observed_route": "customer_db_lookup",
+      "operation": "tool:customer_db_lookup",
+      "proof_needed": [],
+      "provider_offer": "Tool provider: customer_db_lookup (read_only, replayable)",
+      "rewrite_legality": "Read-only/replayable by inference; can move only if downstream consumption and freshness are confirmed.",
+      "usage_policy": "replayable"
+    },
+    {
+      "authority_policy": "unknown",
+      "branch_policy": "unrestricted",
+      "cache_replay_policy": "cache_or_replay_ok",
+      "critical_role": "movable_witness",
+      "dependencies": [
+        "m1"
+      ],
+      "dependency_reasons": {
+        "m1": "query_plan"
+      },
+      "freshness_policy": "cache_ok",
+      "id": "t3",
+      "kind": "retrieval",
+      "morphism_offers": [
+        "Parallelize with independent read-only effects",
+        "Cache/replay/journal equivalent request results",
+        "Return bounded answer slice instead of raw result blob"
+      ],
+      "observed_route": "web_search",
+      "operation": "retrieval:web_search",
+      "proof_needed": [],
+      "provider_offer": "Tool provider: web_search (read_only, replayable)",
+      "rewrite_legality": "Read-only/replayable by inference; can move only if downstream consumption and freshness are confirmed.",
+      "usage_policy": "replayable"
+    },
+    {
+      "authority_policy": "unknown",
+      "branch_policy": "unrestricted",
+      "cache_replay_policy": "fresh_or_unknown",
+      "critical_role": "causal_witness",
+      "dependencies": [
+        "t1",
+        "t2",
+        "t3"
+      ],
+      "dependency_reasons": {
+        "t1": "data",
+        "t2": "data",
+        "t3": "data"
+      },
+      "freshness_policy": "unknown",
+      "id": "m2",
+      "kind": "model",
+      "morphism_offers": [
+        "Use concise/structured output or max-output budget",
+        "Stream safe partial output to improve TTFU"
+      ],
+      "observed_route": "gpt-5.5",
+      "operation": "synthesize_tool_results (gpt-5.5)",
+      "proof_needed": [
+        "freshness_policy"
+      ],
+      "provider_offer": "OpenAI model provider: gpt-5.5",
+      "rewrite_legality": "On observed critical path; rewrite requires preserving data, safety, authority, freshness, and quality semantics.",
+      "usage_policy": "replayable"
+    },
+    {
+      "authority_policy": "unknown",
+      "branch_policy": "unrestricted",
+      "cache_replay_policy": "fresh_or_unknown",
+      "critical_role": "causal_witness",
+      "dependencies": [
+        "m2"
+      ],
+      "dependency_reasons": {
+        "m2": "data"
+      },
+      "freshness_policy": "unknown",
+      "id": "m3",
+      "kind": "model",
+      "morphism_offers": [
+        "Use concise/structured output or max-output budget",
+        "Move static prompt/tools/schema to stable prefix and add prompt_cache_key strategy",
+        "Stream safe partial output to improve TTFU"
+      ],
+      "observed_route": "gpt-5.5",
+      "operation": "format_final_answer (gpt-5.5)",
+      "proof_needed": [
+        "freshness_policy"
+      ],
+      "provider_offer": "OpenAI model provider: gpt-5.5",
+      "rewrite_legality": "On observed critical path; rewrite requires preserving data, safety, authority, freshness, and quality semantics.",
+      "usage_policy": "replayable"
+    },
+    {
+      "authority_policy": "unknown",
+      "branch_policy": "unrestricted",
+      "cache_replay_policy": "fresh_or_unknown",
+      "critical_role": "treaty_blocker",
+      "dependencies": [
+        "m3"
+      ],
+      "dependency_reasons": {
+        "m3": "safety"
+      },
+      "freshness_policy": "unknown",
+      "id": "g1",
+      "kind": "guardrail",
+      "morphism_offers": [
+        "Run policy check incrementally or in parallel where safe; preserve final gating"
+      ],
+      "observed_route": "posthoc_policy_check",
+      "operation": "guardrail:posthoc_policy_check",
+      "proof_needed": [
+        "freshness_policy"
+      ],
+      "provider_offer": "Policy/guardrail provider",
+      "rewrite_legality": "Policy/authority/freshness blocker; optimize representation or placement, not semantics.",
+      "usage_policy": "replayable"
+    }
+  ],
+  "trace_id": null,
+  "version": "2.0.0"
+}
