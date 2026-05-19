@@ -20,6 +20,8 @@ fast_mode = true
 chronicle = true
 external_migration = true
 goals = true
+terminal_resize_reflow = true
+mentions_v2 = true
 
 [features.multi_agent_v2]
 enabled = true
@@ -27,6 +29,12 @@ max_concurrent_threads_per_session = 24
 
 [hooks.state."/Users/tk/.codex/hooks.json:session_start:0:0"]
 trusted_hash = "sha256:d7cc0fcbd9d10f3735f973c0d3b69bcc5845f0112daa09b1e678c58fd9c858f4"
+
+[realtime]
+version = "v2"
+type = "conversational"
+transport = "webrtc"
+voice = "marin"
 
 [memories]
 generate_memories = true
