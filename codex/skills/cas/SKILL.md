@@ -17,7 +17,7 @@ Use the native `cas` dispatcher and subcommands:
 - `cas review_session` for detached `review/start` lifecycle control with persisted `reviewThreadId` handles.
 - `run_cas_tool request` (helper alias) for single-request flows via `instance_runner --instances 1`.
 
-Current `cas smoke_check` verifies the native client can complete the v2 handshake and reach `experimentalFeature/list`, `thread/start`, `thread/resume`, and `turn/steer`.
+Current `cas smoke_check` verifies the native client can complete the v2 handshake and reach `experimentalFeature/list`, `thread/start`, `thread/resume`, `turn/start`, `turn/interrupt`, and `turn/steer`.
 
 Hook policy:
 
@@ -32,6 +32,7 @@ Current `cas conformance` covers these swarm-hardening scenarios:
 
 - `claim_safe_wave`: verify two disjoint `$st` claims can run in parallel without overlapping lock roots
 - `stale_claim_reclaim`: verify expired held claims become stale and return to pending
+- `mesh_row_accountability`: verify mesh result accountability rows remain complete
 - `overload_backoff`: verify the bounded retry/backoff policy with a deterministic synthetic overload script
 
 `cas conformance` is the harness; it is not the owner of durable claims. `$st` remains the source of truth for claims/runtime/proof metadata.
@@ -132,28 +133,22 @@ run_cas_tool() {
   shift || true
 
   local cas_subcommand=""
-  local marker=""
   local -a pre_args=()
   case "$subcommand" in
     conformance|conformance-suite|conformance_suite)
       cas_subcommand="conformance"
-      marker="cas_conformance_suite.zig"
       ;;
     smoke-check|smoke_check)
       cas_subcommand="smoke_check"
-      marker="cas_smoke_check.zig"
       ;;
     instance-runner|instance_runner)
       cas_subcommand="instance_runner"
-      marker="cas_instance_runner.zig"
       ;;
     review-session|review_session)
       cas_subcommand="review_session"
-      marker="cas_review_session.zig"
       ;;
     request)
       cas_subcommand="instance_runner"
-      marker="cas_instance_runner.zig"
       pre_args=(--instances 1 --sample 1)
       ;;
     *)
@@ -190,12 +185,12 @@ run_cas_tool() {
   }
 
   local os="$(uname -s)"
-  if command -v cas >/dev/null 2>&1 && cas --help 2>&1 | grep -q "cas.zig"; then
-    if cas "$cas_subcommand" --help 2>&1 | grep -q "$marker"; then
+  if command -v cas >/dev/null 2>&1 && cas --version >/dev/null 2>&1; then
+    if cas "$cas_subcommand" --help >/dev/null 2>&1; then
       cas "$cas_subcommand" "${pre_args[@]}" "$@"
       return
     fi
-    echo "cas binary found, but marker check failed for subcommand: $cas_subcommand" >&2
+    echo "cas binary found, but subcommand help check failed for: $cas_subcommand" >&2
     return 1
   fi
 
@@ -208,18 +203,18 @@ run_cas_tool() {
       echo "brew install tkersey/tap/cas failed." >&2
       return 1
     fi
-  elif ! (command -v cas >/dev/null 2>&1 && cas --help 2>&1 | grep -q "cas.zig"); then
+  elif ! (command -v cas >/dev/null 2>&1 && cas --version >/dev/null 2>&1); then
     if ! install_cas_direct; then
       return 1
     fi
   fi
 
-  if command -v cas >/dev/null 2>&1 && cas --help 2>&1 | grep -q "cas.zig"; then
-    if cas "$cas_subcommand" --help 2>&1 | grep -q "$marker"; then
+  if command -v cas >/dev/null 2>&1 && cas --version >/dev/null 2>&1; then
+    if cas "$cas_subcommand" --help >/dev/null 2>&1; then
       cas "$cas_subcommand" "${pre_args[@]}" "$@"
       return
     fi
-    echo "cas binary found, but marker check failed for subcommand: $cas_subcommand" >&2
+    echo "cas binary found, but subcommand help check failed for: $cas_subcommand" >&2
     return 1
   fi
 
