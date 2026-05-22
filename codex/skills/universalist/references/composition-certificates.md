@@ -26,6 +26,16 @@ Canonical artifact
   Why this artifact:
   Nearby alternative rejected:
 
+Presentation
+  Mode: algebraic / codensity / mixed / primitive
+  Generators / operations / equations:
+  Dense probes / finite approximants:
+  Dualizing observation object:
+  Reconstruction / codensity operation:
+  Domain-specific theorem or assumption:
+  Presentation law:
+  Presentation falsifier:
+
 Primitive effects
   Allowed primitives:
   Where they enter:
@@ -58,3 +68,11 @@ Status
 3. What law proves the boundary?
 4. What falsifier prevents wishful thinking?
 5. Is this a canonical artifact or just a renamed adapter?
+
+
+## Presentation review questions
+
+1. Is the artifact presented algebraically, codensely, by a mixed strategy, or as a contained primitive?
+2. If algebraic, are generators/equations/handlers explicit?
+3. If codensity/dense-dual, what are the probes, dualizing object, reconstruction, and domain-specific assumption?
+4. Does the presentation simplify the boundary or merely rename it?

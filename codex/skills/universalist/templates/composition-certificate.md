@@ -38,6 +38,17 @@ Artifact:
 Why this artifact:
 Nearby alternative rejected:
 
+## Presentation
+
+Mode: algebraic / codensity / mixed / primitive
+Generators / operations / equations:
+Dense probes / finite approximants:
+Dualizing observation object:
+Reconstruction / codensity operation:
+Domain-specific theorem or assumption:
+Presentation law:
+Presentation falsifier:
+
 ## Primitive effects
 
 Allowed primitives:

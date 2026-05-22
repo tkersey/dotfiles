@@ -41,3 +41,27 @@ Every Track D artifact should have at least one negative witness:
 - two states claimed equivalent produce different observations;
 - handler omits an operation case;
 - operation handled differently in test and production without an explicit observation law.
+
+
+| Dense probe presentation | coherent probe family reconstructs target behavior; missing probe or incoherent probes fail |
+| Codensity presentation | right-Kan/codensity reconstruction agrees with target behavior on probe laws |
+
+## Presentation laws
+
+Algebraic presentation law:
+
+```text
+handler(constructors/equations) agrees with intended semantics on fixtures
+```
+
+Dense-dual presentation law:
+
+```text
+reconstruct(coherentProbes(subject)) agrees with required observations
+```
+
+Domain-specific assumption falsifier:
+
+```text
+required behavior uses evidence not captured by the probe family
+```

@@ -212,6 +212,44 @@ Callbacks, closures, handlers, continuations, predicates, or mappers cross an ar
 apply(encodedCase, x) == oldCallback(x)
 OUT
     ;;
+  dense-probe|semantic-compression|codensity-presentation)
+    cat <<OUT
+# Dense Probe Presentation Plan (${language})
+
+## Boundary
+
+Worlds:
+Boundary:
+Target semantic artifact:
+
+## Why not algebraic/free syntax
+
+Generators/equations attempted:
+Why insufficient or too large:
+
+## Probe world
+
+Probes:
+Probe morphisms/refinements:
+Coverage/density claim:
+Dualizing observation object:
+Reconstruction operation:
+Domain-specific theorem/assumption:
+
+## Implementation
+
+Probe IR:
+runProbe:
+reconstruct:
+validateProbeCoherence:
+
+## Laws
+
+Probe coherence:
+Reconstruction law:
+Missing-probe falsifier:
+OUT
+    ;;
   *)
     cat <<OUT
 # Canonical artifact plan: ${kind} (${language})

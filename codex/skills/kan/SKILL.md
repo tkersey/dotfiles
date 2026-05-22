@@ -1,7 +1,7 @@
 ---
 name: kan
 description: >
-  Use when universalist or the user has identified a concrete world/boundary seam that needs detailed Kan mechanics: Kan extensions, Kan lifts, precomposition/postcomposition, Freyd/AFT free-builder diagnostics, Yoneda/Coyoneda boundary representations, defunctionalized boundary IRs, codensity/density, pointwise formulas, free/cofree completions, functorial data migration, compatibility facades, lifted implementations, residual obligations, Composition Certificates, Boundary Normal Form audits, or categorical law tests. Do not use for generic architecture unless worlds, boundary kind, known side, unknown location, witness slice, proof signal, and—when applicable—a Composition Certificate are named or must be recovered.
+  Use when universalist or the user has identified a concrete world/boundary seam that needs detailed Kan mechanics: Kan extensions, Kan lifts, precomposition/postcomposition, Freyd/AFT free-builder diagnostics, Yoneda/Coyoneda boundary representations, defunctionalized boundary IRs, codensity/density, codensity presentations via dense probes and duality, pointwise formulas, free/cofree completions, functorial data migration, compatibility facades, lifted implementations, residual obligations, Composition Certificates, Boundary Normal Form audits, or categorical law tests. Do not use for generic architecture unless worlds, boundary kind, known side, unknown location, witness slice, proof signal, and—when applicable—a Composition Certificate are named or must be recovered.
 ---
 
 # Kan
@@ -15,6 +15,9 @@ Use this skill for the detailed categorical mechanics behind universal architect
 Core rule:
 
 ```text
+Primitives compute. Boundaries compose. Presentations compress. Witnesses certify.
+```
+
 Do not start with category labels.
 Start with worlds, boundary kind, known side, unknown location, witness, and law.
 ```
@@ -57,6 +60,30 @@ For any Kan output, preserve this mapping:
 | Falsifier | no colimit/limit/residual, lossy projection, incoherent observations, invalid path, missing constructor, no exact lift |
 
 If the prompt asks for code, emit the certificate-aware implementation plan: artifact, interpreter/projection, law test, falsifier, and bypass policy.
+
+## Codensity Presentation Mode
+
+Use this mode when a target monad/effect/behavior is too semantic, infinitary, observational, probabilistic, topological, or completion-like for a useful algebraic presentation by generators/equations.
+
+Recover:
+
+- Target behavior / monad / effect.
+- Direct algebraic presentation attempt and why it is awkward.
+- Small probe world: finite cases, approximants, observations, traces, expectations, policy probes, legacy views, or finitely presentable fragments.
+- Density / coverage claim: how large objects are built or determined by probes.
+- Duality / observation bridge: dualizing object, observation world, adjunction/equivalence, or semantic bridge.
+- Reconstruction: right Kan/codensity formula or architecture-level reconstruction operation.
+- Generic categorical part vs domain-specific theorem/assumption.
+- Laws: probe coherence, reconstruction, monad/composition coherence, and falsifier.
+
+Use this slogan:
+
+```text
+Algebraic presentations build by constructors.
+Codensity presentations reconstruct from dense probes and dual observations.
+```
+
+Do not treat codensity only as optimization. It is also a presentation technology.
 
 ## Step -1 — World Model Preamble
 
@@ -279,7 +306,7 @@ Use when the user already has or wants a Composition Certificate.
 
 ## Scripts
 
-- `scripts/emit_world_boundary_preamble.sh scripts/emit_composition_certificate_kan.sh scripts/emit_boundary_normal_form_kan.sh <focus> [language]`
+- `scripts/emit_world_boundary_preamble.sh scripts/emit_composition_certificate_kan.sh scripts/emit_boundary_normal_form_kan.sh scripts/emit_codensity_presentation.sh <focus> [language]`
 - `scripts/emit_boundary_kind_map.sh [kind]`
 - `scripts/emit_kan_stub.sh <kind> [language]`
 - `scripts/emit_law_test_plan.sh <direction> [language]`

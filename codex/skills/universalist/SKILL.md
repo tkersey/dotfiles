@@ -1,7 +1,7 @@
 ---
 name: universalist
 description: >
-  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, protocols or state machines with unclear observations, effect/workflow operations needing multiple handlers, public contracts determining internals, forgetful or observational projections that may need a canonical free builder, or any need for canonical boundary artifacts, Composition Certificates, or Boundary Normal Form. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, one proof signal, and—when the seam crosses worlds—one Composition Certificate.
+  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, protocols or state machines with unclear observations, effect/workflow operations needing multiple handlers, public contracts determining internals, forgetful or observational projections that may need a canonical free builder, or any need for canonical boundary artifacts, Composition Certificates, Boundary Normal Form, presentation strategies, semantic compression, dense probe presentations, or codensity-style presentation diagnostics. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, one proof signal, and—when the seam crosses worlds—one Composition Certificate.
 ---
 
 # Universalist
@@ -63,6 +63,39 @@ No law without a falsifier.
 ```
 
 Use Track E when the user wants to move a codebase toward Boundary Normal Form, or when the main output should be a Composition Certificate rather than an immediate implementation.
+
+## Presentation Strategy Doctrine
+
+The codensity transcript adds one more architectural question: not only **what canonical artifact owns the boundary**, but **how that artifact is presented**. Complex artifacts need presentation strategies.
+
+Use this extension of the engineering law stack:
+
+```text
+No boundary without an artifact.
+No artifact without a presentation.
+No presentation without an interpreter / projection / reconstruction.
+No reconstruction without a law.
+No law without a falsifier.
+```
+
+Presentation modes:
+
+- **Algebraic presentation** — use generators, operations, equations, syntax, free objects, effect signatures, and handlers. Prefer when the artifact is operational, finitary, command-like, or naturally syntax-first.
+- **Codensity / dense-dual presentation** — use a small dense world of probes plus a dual/observational bridge and reconstruction. Prefer when the artifact is semantic, infinitary, completion-like, probabilistic, topological, observational, or too large for a clean generators/equations presentation.
+- **Mixed presentation** — use algebraic syntax for operations and dense probes for semantic competence, safety, policy, probability, traces, or compatibility. Agentic systems often need this.
+- **Primitive presentation** — explicitly contain the boundary as a primitive effect when no useful artifact/presentation is available yet.
+
+New doctrine sentence:
+
+```text
+Primitives compute. Boundaries compose. Presentations compress. Witnesses certify.
+```
+
+Dense-Dual Presentation principle:
+
+> When a semantic artifact is too large, infinitary, observational, or completion-like to present by generators and equations, try to present it by a small dense world of probes plus a duality or observation bridge into the semantic world.
+
+Reject canonical-but-useless presentations. Prefer small, testable, dense presentations that separate generic boundary machinery from domain-specific representation assumptions.
 
 
 ## Do not trigger for
@@ -247,6 +280,9 @@ Deliver:
 - boundary map, projection, embedding, interpreter, forgetful API, or observation map;
 - known side and unknown artifact;
 - canonical boundary artifact;
+- presentation strategy: algebraic / codensity / mixed / primitive;
+- dense probe family and dual/observation bridge when applicable;
+- domain-specific theorem or assumption when reconstruction depends on it;
 - one executable law test;
 - one falsifier showing when the framing is overkill.
 
@@ -702,7 +738,7 @@ Universal architecture references:
 - `references/universal-architecture-law-tests.md`
 - `references/universal-composition-doctrine.md`
 - `references/composition-certificates.md`
-- `references/boundary-normal-form.md`
+- `references/boundary-normal-form.md references/presentation-strategies.md references/dense-dual-presentation.md references/semantic-compression.md`
 
 ## Scripts
 
@@ -717,7 +753,7 @@ Universal architecture references:
 - `scripts/emit_universal_architecture_prompt.sh`
 - `scripts/emit_freyd_boundary_diagnostic.sh`
 - `scripts/emit_composition_certificate.sh`
-- `scripts/emit_boundary_normal_form_plan.sh`
+- `scripts/emit_boundary_normal_form_plan.sh scripts/emit_presentation_diagnostic.sh`
 - `scripts/check_universalist.sh`
 
 ## Templates

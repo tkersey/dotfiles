@@ -16,7 +16,7 @@ A system is universally architected when every meaningful composition boundary b
 Program = primitives + certified composition boundaries + witnesses
 ```
 
-Primitives compute. Boundaries compose. Witnesses certify.
+Primitives compute. Boundaries compose. Presentations compress. Witnesses certify.
 
 ## Axioms
 
@@ -44,3 +44,24 @@ This is an architecture thesis, not a theorem about every line of source code. O
 ## Agentic corollary
 
 Agentic systems should be built as certified networks of planning, tool, memory, policy, execution, and observation boundaries. Plans are free syntax, tools are effects, traces are coalgebras, policies are residual obligations, callbacks become defunctionalized IR, and public guarantees are certified by observations/lifts/law tests.
+
+
+## Presentation Strategy Addendum
+
+Every complex canonical artifact needs a presentation strategy. The main modes are algebraic presentation, codensity/dense-dual presentation, mixed presentation, and primitive containment.
+
+```text
+No boundary without an artifact.
+No artifact without a presentation.
+No presentation without reconstruction.
+No reconstruction without a law.
+No law without a falsifier.
+```
+
+## Dense-Dual Presentation Principle
+
+When a semantic artifact is too large, infinitary, observational, probabilistic, or completion-like for a clean generators/equations presentation, present it by a small dense world of probes plus a dual or observational bridge.
+
+## Semantic compression
+
+Semantic compression presents a large behavioral world by a smaller dense world of probes, observations, traces, expectations, or finite approximants.

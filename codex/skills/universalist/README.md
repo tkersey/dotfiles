@@ -51,3 +51,13 @@ The rule is:
 Allow arbitrary primitives.
 Do not allow arbitrary composition across architecture boundaries.
 ```
+
+## Presentation strategy update
+
+This version adds semantic compression and dense-dual presentation diagnostics. Track D now asks not only which canonical artifact belongs at a boundary, but how the artifact is presented: algebraically, codensity/dense-dual, mixed, or primitive. Track E Composition Certificates now include a Presentation section with probes, dual/observation bridge, reconstruction law, domain-specific assumptions, and falsifier.
+
+Useful command:
+
+```bash
+./scripts/emit_presentation_diagnostic.sh compare typescript
+```

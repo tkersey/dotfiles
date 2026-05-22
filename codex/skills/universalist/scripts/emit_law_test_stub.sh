@@ -83,5 +83,23 @@ OUT
     echo "# Coyoneda generation law test (${language})"; echo "lowerGenerated({payload,path}) == directInterpret(path,payload)" ;;
   defunctionalization|explicit-ir)
     echo "# Defunctionalized IR law test (${language})"; echo "apply(encodedCase, x) == oldFunction(x)" ;;
+  dense-probe|semantic-compression|codensity-presentation)
+    cat <<OUT
+# Dense Probe / Codensity Presentation Law Test (${language})
+
+## Probe coherence
+
+For each compatible probe pair p,q:
+  runProbe(p, subject) and runProbe(q, subject) agree on overlap.
+
+## Reconstruction
+
+reconstruct(coherentProbes(subject)) satisfies required observations.
+
+## Falsifier
+
+A required behavior uses evidence not captured by the probe family, or probes are incoherent.
+OUT
+    ;;
   *) echo "unknown law-test kind: $kind" >&2; exit 2 ;;
 esac

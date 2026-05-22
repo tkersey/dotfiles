@@ -28,3 +28,13 @@ Do not begin detailed mechanics until worlds, boundary kind, known side, unknown
 ## Composition Certificate alignment
 
 `kan` elaborates Composition Certificates selected by `universalist`. It maps certificate fields to categorical mechanics: worlds become categories/posets/schemas; boundaries become `K` or `P`; artifacts become `Lan`, `Ran`, `Delta`, `Lft`, `Rft`, Yoneda, Coyoneda, defunctionalized IR, Freyd builders, or obstruction reports.
+
+## Codensity presentation update
+
+This version adds codensity presentation mode: when a semantic artifact is too large or infinitary for a useful algebraic presentation, use a small dense world of probes plus a dual/observation bridge and reconstruction law.
+
+Useful command:
+
+```bash
+./scripts/emit_codensity_presentation.sh report agnostic
+```

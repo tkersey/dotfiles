@@ -13,3 +13,30 @@
 | Defunctionalization | `apply(encodedCase,x) == oldFunction(x)` |
 | Handler | production/test handlers satisfy same declared observations |
 | Coalgebra | traces/unfolds satisfy observations |
+
+
+## Codensity presentation laws
+
+Probe coherence:
+
+```text
+compatible probes agree on overlaps
+```
+
+Density / coverage law:
+
+```text
+required observations factor through the probe family
+```
+
+Reconstruction law:
+
+```text
+reconstruct(coherentProbes(subject)) agrees with target behavior on observations
+```
+
+Falsifier:
+
+```text
+there exists required behavior not captured by probes, or a domain-specific representation assumption fails
+```

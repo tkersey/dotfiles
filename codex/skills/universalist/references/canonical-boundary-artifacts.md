@@ -185,3 +185,31 @@ Proof signal:
 ```text
 applyBoundaryCase(encode(oldCallback), input) == oldCallback(input)
 ```
+
+
+## Dense probe presentation / semantic compression
+
+Use when a large semantic behavior is hard to present directly, and an algebraic/free syntax presentation would be awkward, infinitary, or misleading.
+
+Code shape:
+
+```text
+data Probe = ...
+data ObservationResult = ...
+runProbe : Probe -> Subject -> ObservationResult
+reconstruct : CoherentProbeFamily -> SemanticArtifact
+validateDensity : ProbeFamily -> CoverageEvidence
+```
+
+Proof signals:
+
+- every required semantic observation factors through probes;
+- probe observations are coherent;
+- reconstruction agrees with direct semantics on witness cases;
+- missing probe yields falsifier.
+
+Architecture reading:
+
+```text
+small dense probe world + dual/observation bridge -> semantic reconstruction
+```
