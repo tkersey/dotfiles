@@ -394,6 +394,13 @@ seq report-bundle --root ~/.codex/sessions --top 20
 ```bash
 seq token-usage --root ~/.codex/sessions --top 10
 ```
+Rolling-window summary:
+```bash
+seq token-usage --root ~/.codex/sessions \
+  --last 24h \
+  --summary \
+  --format json
+```
 Local-day summary with averages:
 ```bash
 seq token-usage --root ~/.codex/sessions \
@@ -429,7 +436,19 @@ seq token-usage --root ~/.codex/sessions \
 ```
 Use `--audit` when the answer needs to explain or defend the number. It reports the monotonic `total_token_usage` delta total, the naive `last_token_usage` total, duplicate-total rows excluded, reset events, null/missing-total rows, requested/observed span days, and bucket counts. State the scope explicitly: this is local `~/.codex/sessions` corpus accounting, not OpenAI billing, organization-wide usage, or server-side metering.
 
-When estimating what local Codex token usage would have cost at API prices, pull current official OpenAI API pricing before calculating. If the session trace does not record an exact model id or model slug, do not infer a Pro-tier model from context window or Codex wording alone; presume the best currently available non-Pro OpenAI API model for the estimate and state that assumption. Calculate cached tokens as their own billed input bucket: uncached input = total input tokens - cached input tokens; cached input uses cached-input pricing; output includes reasoning output and should not double-count reasoning tokens.
+When estimating what local Codex token usage would have cost at API prices, prefer native `seq token-cost --pricing api` with an exact model. If the trace does not record a known exact API model and the user has not supplied one, ask which API model/pricing to use instead of inferring from context window, Codex wording, or a Pro-tier label. Non-interactive/scripted runs should fail closed and tell the caller to pass `--model <name>`.
+
+```bash
+seq token-cost --root ~/.codex/sessions \
+  --last 24h \
+  --pricing api \
+  --model gpt-5.5 \
+  --reasoning-effort high \
+  --summary \
+  --format json
+```
+
+API pricing keeps cached tokens as their own billed input bucket: uncached input = total input tokens - cached input tokens; cached input uses cached-input pricing; output tokens are already the billable output bucket, while `reasoning_output_tokens` is reported separately and must not be double-counted. GPT-5.5 long-context pricing is reported separately when the input-token threshold is crossed.
 
 ### 9) Reproducible perf harness
 Run stable workloads with fixed warmup/sample counts and optional baseline comparison.
@@ -643,7 +662,8 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `query.params` is now parsed and routed into dataset collectors for dataset-specific source overrides.
 - `query.joins` can enrich one dataset with another by `left`/`right` keys, optional `type=inner|left`, optional `prefix`, and join-local `where`/`params`.
 - `workflow_signals` normalizes `$workflow` mentions, cleaned skill mentions, deterministic outcome signals, tool calls, and session-graph agent roles into one session-derived dataset.
-- `token-usage` now supports `--tz utc|local|+HH:MM|-HH:MM`, `--summary`, `--audit`, `--group-by day|path`, and `--path` / `--session-id` targeting for exact scope reporting.
+- `token-usage` now supports `--last <Nm|Nh|Nd>`, `--tz utc|local|+HH:MM|-HH:MM`, `--summary`, `--audit`, `--group-by day|path`, and `--path` / `--session-id` targeting for exact scope reporting.
+- `token-cost --pricing api` uses exact known API model pricing; ask for `--model <name>` when the model is absent or unknown instead of assuming.
 - Prefer `token-usage` over generic `query` for "since yesterday/last Thursday", daily averages, or local-calendar token questions; reserve `token_deltas` queries for lower-level accounting checks.
 - For disputed daily averages, run `token-usage --summary --audit` and report both the authoritative monotonic total and the naive last-token overcount fields, with the local-corpus-not-billing boundary.
 - Session-tooling datasets now include `tool_invocations` and `tool_call_args` in addition to `tool_calls`.
