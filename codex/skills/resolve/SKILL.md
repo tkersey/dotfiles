@@ -1,6 +1,6 @@
 ---
 name: resolve
-description: Resolve the current branch by repeatedly running native Codex review through a deterministic review driver, adjudicating every finding and PR comment, fixing actionable issues, requiring three consecutive clean reviews, validating, committing, pushing, and sweeping PR comments.
+description: Resolve the current branch by repeatedly running the selected Codex review backend through a deterministic review driver, adjudicating every finding and PR comment, fixing actionable issues, requiring three consecutive clean reviews, validating, committing, pushing, and sweeping PR comments.
 ---
 
 # resolve
@@ -9,33 +9,34 @@ description: Resolve the current branch by repeatedly running native Codex revie
 
 Resolve the current branch to a review-clean, PR-comment-reviewed, validated, committed, and pushed state.
 
-Use this skill when the user wants Codex to keep reviewing and fixing a branch until native Codex review produces three consecutive review runs with zero findings/comments, then validate, commit, push, and process pull request comments with the same adjudication and fixed-point flow.
+Use this skill when the user wants Codex to keep reviewing and fixing a branch until the selected Codex review backend produces three consecutive review runs with zero findings/comments, then validate, commit, push, and process pull request comments with the same adjudication and fixed-point flow.
 
-This skill must not call `codex review --base main` directly as its normal review primitive. Always run native Codex review through the review driver defined below so the review base is discovered, pinned, recorded, and reset correctly when branch state changes.
+This skill must not call `codex review --base main` directly as its normal review primitive. Always run Codex review through the review driver defined below so the review backend, review base, `HEAD`, and result receipts are discovered, pinned, recorded, and reset correctly when branch state changes.
 
 ## Completion criteria
 
 Do not consider the branch resolved until all of the following are true, in this order:
 
-1. Native Codex review has produced three consecutive clean review runs against the current branch through the review driver.
+1. The selected Codex review backend has produced three consecutive clean review runs against the current branch through the review driver.
 2. A clean review run means the review returns no findings, no comments, no requested changes, and no unresolved review output.
-3. Any native Codex review run with one or more findings/comments resets the clean-review streak to zero, even when every comment is later adjudicated as `do-not-address`.
+3. Any review run with one or more findings/comments resets the clean-review streak to zero, even when every comment is later adjudicated as `do-not-address`.
 4. The review base used for the clean-review streak has been discovered by the review driver, pinned for the streak, and recorded.
 5. After the third consecutive clean review, all required builds, lints, tests, and type checks pass.
-6. If validation requires any code, config, dependency, lockfile, generated-artifact, or test change, reset the clean-review streak to zero and restart the native Codex review loop.
+6. If validation requires any code, config, dependency, lockfile, generated-artifact, or test change, reset the clean-review streak to zero and restart the Codex review loop.
 7. Only after the final clean-review streak and final validation pass may the branch be committed and pushed.
 8. After each push, find the PR associated with the current branch and review all currently available PR comments, inline review comments, unresolved review threads, and requested-change summaries.
 9. Every in-scope PR comment must be adjudicated with `$review-adjudication` unless it is clearly irrelevant system noise, already resolved, authored by this agent as a status/reply, or previously adjudicated with the same content and context in the current run.
-10. Every actionable native review finding and every actionable PR comment must be fixed with `$fixed-point-driver`.
-11. If PR comment resolution causes any change, repeat the native Codex review loop until three consecutive clean reviews, rerun full validation, commit, push, and check the PR again.
-12. The skill is complete only after the latest pushed commit has passed the final validation gate, has three consecutive clean native Codex reviews, and the post-push PR sweep has no unprocessed in-scope comments and no actionable PR comments remaining.
+10. Every actionable Codex review finding and every actionable PR comment must be fixed with `$fixed-point-driver`.
+11. If PR comment resolution causes any change, repeat the Codex review loop until three consecutive clean reviews, rerun full validation, commit, push, and check the PR again.
+12. The skill is complete only after the latest pushed commit has passed the final validation gate, has three consecutive clean Codex review results from the pinned backend class, and the post-push PR sweep has no unprocessed in-scope comments and no actionable PR comments remaining.
 
 ## Definitions
 
 - `native Codex review`: The Codex CLI or repository-native Codex review command, normally `codex review`, not a separate LLM review invented by this skill.
-- `review driver`: The deterministic wrapper in this skill that discovers the correct base, invokes native Codex review, captures output, parses findings, and reports whether the review was clean.
-- `clean review`: A completed native Codex review run with zero findings/comments/requested changes. Tool failures, malformed output, partial output, or ambiguous output are not clean reviews.
-- `finding/comment`: Any substantive native review item, inline comment, requested change, issue, warning, or review note that asks for or implies a code, test, behavior, safety, reliability, performance, accessibility, maintainability, API, release, or documentation change.
+- `review backend`: The review execution class used for streak accounting: direct native CLI review by default, or an explicitly selected CAS-backed review class that satisfies the optional CAS backend policy.
+- `review driver`: The deterministic wrapper in this skill that discovers the correct base, invokes the selected Codex review backend, captures output, parses findings, and reports whether the review was clean.
+- `clean review`: A completed Codex review run from the selected backend with zero findings/comments/requested changes. Tool failures, malformed output, partial output, or ambiguous output are not clean reviews.
+- `finding/comment`: Any substantive review item, inline comment, requested change, issue, warning, or review note that asks for or implies a code, test, behavior, safety, reliability, performance, accessibility, maintainability, API, release, or documentation change.
 - `HEAD changed`: The current commit SHA changed because of a fix, generated file update, validation fix, rebase, merge, amend, or any other branch mutation.
 - `base changed`: The resolved base ref or merge-base SHA changed since the current clean-review streak began.
 
@@ -66,6 +67,8 @@ Maintain this state during the skill run:
 
 ```text
 clean_review_streak = 0
+streak_review_backend = null
+streak_target_fingerprint = null
 streak_base_ref = null
 streak_base_sha = null
 streak_head_sha = null
@@ -78,28 +81,29 @@ language_skill_packet = {}
 
 Reset `clean_review_streak` to zero whenever:
 
-- native Codex review returns any finding/comment;
+- Codex review returns any finding/comment;
 - `$fixed-point-driver` changes code, config, dependencies, lockfiles, generated artifacts, docs required by behavior, or tests;
 - validation requires any fix or generated file update;
 - `HEAD` changes;
+- the review backend class changes;
 - the review driver resolves a different base ref or merge-base SHA;
 - PR comment handling changes the branch;
 - a rebase, merge, amend, cherry-pick, or branch synchronization changes the comparison.
 
-Do not reset the streak merely because another clean review was run. Increment the streak only for completed clean native Codex review runs against the pinned base and current `HEAD`.
+Do not reset the streak merely because another clean review was run. Increment the streak only for completed clean review runs from the pinned backend class against the pinned base and current `HEAD`.
 
 ## Language-specific skill routing
 
 `$resolve` owns language-skill discovery and routing, not language-specific proof mechanics.
 
-Before the first native review run, and again whenever the changed file set materially changes, inspect the repository and diff for language/tooling signals:
+Before the first review run, and again whenever the changed file set materially changes, inspect the repository and diff for language/tooling signals:
 
 - changed file extensions and manifests such as `build.zig`, `Cargo.toml`, `package.json`, `pyproject.toml`, `go.mod`, `mix.exs`, `lakefile.lean`, or equivalent project roots;
 - validation commands already discovered from CI, task runners, package scripts, or project docs;
 - explicit user-mentioned skills;
 - review failures that identify a language tool, cache, compiler, package manager, formatter, linter, or test runner.
 
-For every applicable language or tool skill available in the session, load the target skill instructions before selecting proof commands or invoking native review. Keep a concise `language_skill_packet` with:
+For every applicable language or tool skill available in the session, load the target skill instructions before selecting proof commands or invoking review. Keep a concise `language_skill_packet` with:
 
 ```text
 language_skill_packet = {
@@ -111,7 +115,7 @@ language_skill_packet = {
 }
 ```
 
-Pass the relevant guidance into native review context and local validation planning. For Zig projects, `$resolve` should route to `$zig`; `$zig` owns details such as writable Zig cache paths, Zig 0.16 proof lanes, lint/test command shape, and cache-environment failure classification. `$resolve` must not hardcode Zig-specific environment variables or cache paths except as a direct quote from loaded `$zig` guidance.
+Pass the relevant guidance into review context and local validation planning. For Zig projects, `$resolve` should route to `$zig`; `$zig` owns details such as writable Zig cache paths, Zig 0.16 proof lanes, lint/test command shape, and cache-environment failure classification. `$resolve` must not hardcode Zig-specific environment variables or cache paths except as a direct quote from loaded `$zig` guidance.
 
 If a clearly applicable language skill cannot be loaded, record that as a review-driver limitation and either proceed with repository-native commands already proven locally or stop as blocked when the missing guidance is required to distinguish tool transport failure from code failure.
 
@@ -211,11 +215,13 @@ When the fallback ref form is used, still record the merge-base SHA and treat th
 
 ### Review output normalization
 
-For each review run, normalize the native Codex review result into this structure:
+For each review run, normalize the Codex review result into this structure:
 
 ```text
 review_result = {
   clean: boolean,
+  backend_class: string,
+  target_fingerprint: string|null,
   tool_completed: boolean,
   exit_status: integer,
   base_ref: string,
@@ -242,6 +248,8 @@ A review run is clean only when all are true:
 - the tool completed successfully;
 - the output explicitly indicates no findings/comments, or the parsed finding list is empty under the CLI's documented output format;
 - there are no inline comments, requested changes, warnings, or substantive review notes;
+- the backend class matches the currently pinned streak state, or this is the first review in a new streak;
+- the target fingerprint matches the currently pinned streak state when the backend supplies one, or this is the first review in a new streak;
 - the base ref, base SHA, and `HEAD` SHA match the currently pinned streak state, or this is the first review in a new streak.
 
 Treat the following as not clean and investigate or block:
@@ -262,10 +270,14 @@ When `clean_review_streak == 0`, the next successful review driver call may esta
 streak_base_ref = review_result.base_ref
 streak_base_sha = review_result.base_sha
 streak_head_sha = review_result.head_sha
+streak_review_backend = review_result.backend_class
+streak_target_fingerprint = review_result.target_fingerprint
 ```
 
 For every subsequent review in the same streak:
 
+- `review_result.backend_class` must match `streak_review_backend`;
+- if `streak_target_fingerprint` is non-null, `review_result.target_fingerprint` must match it;
 - `review_result.base_ref` must match `streak_base_ref` unless the ref name changed while resolving to the same intended PR/default branch and same `streak_base_sha`;
 - `review_result.base_sha` must match `streak_base_sha`;
 - `review_result.head_sha` must match `streak_head_sha`;
@@ -295,30 +307,57 @@ Subagents must not:
 
 ## Optional CAS backend policy
 
-Native Codex review through the local CLI is the default review backend for this skill.
+Prefer a persistent CAS lane when `$cas` is explicitly requested, when the environment has been configured for it, or when repeated native `codex review` subprocesses are unavailable or quota-limited. Native Codex review through the local CLI remains the fallback backend.
 
-Use `$cas` only when the user explicitly requests it, when the environment has been configured for it, or when native review is unavailable and CAS passes a strict transport preflight. Do not make `$cas` mandatory for ordinary resolution.
+Use `$cas` only when it passes a strict transport preflight. Do not make `$cas` mandatory for ordinary resolution.
 
 Before using `$cas` as a review backend, run a preflight that confirms:
 
-1. The app-server endpoint is configured and reachable.
-2. Websocket transport can open successfully.
-3. A trivial or detached review probe can start.
-4. The review probe lifecycle can be observed through completion.
-5. The session can be closed or cleaned up.
-6. The CAS result can be normalized into the same `review_result` shape used by the native review driver.
+1. `cas --version` and `cas review_session --version` report `0.2.30` or newer.
+2. `cas review_session --help` exposes `lane start`, `lane review`, `lane status`, `lane stop`, `--lane-id`, `--json`, and `--fallback none|native-review`.
+3. `cas review_session lane start --cwd <repo> --json --hooks off` starts a managed websocket app-server and returns a `laneId`.
+4. `cas review_session lane status --lane-id <laneId> --json` proves the persisted lane process is alive.
+5. The lane can be closed with `cas review_session lane stop --lane-id <laneId> --json`.
+6. A `lane review` receipt can be normalized into the same `review_result` shape used by the native review driver.
 
 If any CAS preflight step fails, fall back to native `codex review` when available. If neither native review nor CAS can produce a reliable review result, stop as blocked and do not commit or push.
+
+CAS backend classification:
+
+- `native-cli`: direct `codex --yolo review ...` through this skill's native review driver.
+- `cas-lane`: `cas review_session lane review ... --json --fallback none` whose JSON proves `selectedTransport="websocket"`, `fallbackUsed=false`, `reviewResultAvailable=true`, `reviewResultSource="rollout_exited_review_mode"`, `dualParseVerdict="match"`, no blocking `failureCode`, and zero structured findings.
+- `cas-native-fallback`: `cas review_session lane review ... --fallback native-review` when `fallbackUsed=true`; this is a degraded native review verdict, not persistent lane proof.
+
+Pin the backend class and target fingerprint for each clean-review streak. A clean result from one backend class must not extend a streak started by another backend class, even when the base SHA and `HEAD` SHA match. Switching between `native-cli`, `cas-lane`, and `cas-native-fallback` resets `clean_review_streak` to zero and starts a new pinned streak only after the next completed clean review. Count `cas-native-fallback` only when its raw native-review output is normalized into the same zero-finding `review_result` shape; otherwise treat it as not clean and fall back or block.
+
+CAS lane lifecycle for `$resolve`:
+
+1. After base discovery and before the first CAS-backed review, start one lane with `cas review_session lane start --cwd <repo> --json --hooks off`.
+2. Record `laneId`, `managedServerPid`, `managedServerListenUrl`, resolved `cas` path, and `cas` version in the review ledger.
+3. For each review attempt, run `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --json --fallback none`.
+4. Treat each `lane review` as one review run with a fresh parent/review thread. Reusing the lane app-server must not reuse review context.
+5. If explicit native fallback is allowed for this run, use `--fallback native-review` and classify any `fallbackUsed=true` receipt as `cas-native-fallback`.
+6. Stop the lane with `cas review_session lane stop --lane-id <laneId> --json` on normal completion, branch mutation that abandons the lane, or abort. If stop fails, report it and continue cleanup checks; do not count stop success as review proof.
 
 Even when `$cas` is used, the skill must preserve the same invariants:
 
 - three consecutive clean review results are required;
+- the backend class must be pinned for the streak;
+- the `targetFingerprint`, base SHA, and `HEAD` SHA must be pinned for the streak;
 - the base must be discovered and pinned;
 - comments reset the streak;
 - actionable comments go through `$review-adjudication` and `$fixed-point-driver`;
 - validation, commit, push, and PR sweep gates still apply.
 
-## Local native Codex review loop
+CAS receipts required for each CAS-backed review invocation:
+
+- `cas` version and resolved CAS binary path.
+- Exact `cas review_session` command and JSON output path or captured JSON.
+- `laneId`, `managedServerPid`, `reviewThreadId`, `recordPath`, and `eventLogPath`.
+- `selectedTransport`, `fallbackUsed`, `fallbackTransport`, `failureCode`, `failureHint`, `reviewResultAvailable`, `reviewResultSource`, `dualParseVerdict`, and `archiveStatus`.
+- Selected review base ref, base SHA, current `HEAD` SHA, normalized finding count, and backend class used for streak accounting.
+
+## Local Codex review loop
 
 Before making changes:
 
@@ -330,13 +369,13 @@ Before making changes:
 
 Repeat until `clean_review_streak == 3`:
 
-1. Invoke the native review driver.
-2. If the driver cannot determine a valid base, cannot run native review, or cannot parse output reliably, stop as blocked and do not commit or push.
+1. Invoke the selected review driver.
+2. If the driver cannot determine a valid base, cannot run the selected review backend, or cannot parse output reliably, stop as blocked and do not commit or push.
 3. If the review ran against a new `HEAD`, new base ref, or new base SHA, reset `clean_review_streak = 0` and pin the new streak state only after a successful review.
 4. If the review returns zero findings/comments:
    - If this is the first clean review in a new streak, record `streak_base_ref`, `streak_base_sha`, and `streak_head_sha`.
    - Increment `clean_review_streak` by one.
-   - If `clean_review_streak < 3`, run another native Codex review immediately through the driver.
+   - If `clean_review_streak < 3`, run another Codex review immediately through the selected driver.
    - Do not treat one or two clean reviews as sufficient.
 5. If the review returns any findings/comments:
    - Set `clean_review_streak = 0`.
@@ -349,7 +388,7 @@ Repeat until `clean_review_streak == 3`:
    - Continue the review loop after fixes are applied.
 6. If every comment is adjudicated as `do-not-address`, continue the review loop anyway. The commented review run is not clean and does not count toward the streak.
 
-Do not use an arbitrary maximum iteration count. The normal stopping condition is exactly three consecutive native Codex review runs with no comments. Stop early only for an unrecoverable blocker such as the review tool being unavailable, base discovery being impossible, required validation being impossible because of missing external credentials/services, or a persistent false-positive review loop that cannot be resolved without making the branch worse. If stopping early before commit/push, do not commit or push; report the blocker precisely.
+Do not use an arbitrary maximum iteration count. The normal stopping condition is exactly three consecutive Codex review runs from the pinned backend class with no comments. Stop early only for an unrecoverable blocker such as the review tool being unavailable, base discovery being impossible, required validation being impossible because of missing external credentials/services, or a persistent false-positive review loop that cannot be resolved without making the branch worse. If stopping early before commit/push, do not commit or push; report the blocker precisely.
 
 ## Review adjudication requirements
 
@@ -363,7 +402,7 @@ When invoking `$review-adjudication`, provide enough context for a deterministic
 - Any project conventions, requirements, prior comments, or tests that bear on the decision.
 - The proposed consequence of addressing or declining the comment.
 
-Keep a concise adjudication ledger so repeated comments can be recognized, but do not count repeated declined native Codex review comments as clean reviews.
+Keep a concise adjudication ledger so repeated comments can be recognized, but do not count repeated declined Codex review comments as clean reviews.
 
 ## Fixed-point driver requirements
 
@@ -384,7 +423,7 @@ After `$fixed-point-driver` changes the branch:
 - Run targeted validation for the changed area.
 - Preserve unrelated work.
 - Do not commit yet unless the full local review and validation gates have been satisfied.
-- Reset `clean_review_streak = 0` and resume native Codex review through the review driver.
+- Reset `clean_review_streak = 0` and resume Codex review through the selected review driver.
 
 ## Final validation
 
@@ -403,7 +442,7 @@ If a validation command fails:
 2. Invoke `$fixed-point-driver` to fix it.
 3. Run targeted validation for the fix.
 4. Reset `clean_review_streak = 0`.
-5. Restart the native Codex review loop through the review driver.
+5. Restart the selected Codex review loop through the review driver.
 
 Do not skip builds, lints, tests, or type checks merely because the branch has three clean reviews.
 
@@ -419,11 +458,11 @@ Only after the final three-review clean streak and full validation pass:
    - The final commit SHA.
    - The branch pushed.
    - The selected review base ref and merge-base SHA.
-   - The exact last three native Codex review invocations and their recorded sandbox mode.
+   - The exact last three Codex review invocations, their backend class, and their recorded sandbox mode or CAS receipts.
    - The language/tool skills loaded for the run, with trigger evidence and any proof-environment guidance used.
    - The validation commands that passed.
-   - Confirmation that the last three native Codex review runs had zero findings/comments.
-   - Any native Codex review comments adjudicated as `do-not-address`, with brief rationale, if relevant.
+   - Confirmation that the last three Codex review runs came from the pinned backend class and had zero findings/comments.
+   - Any Codex review comments adjudicated as `do-not-address`, with brief rationale, if relevant.
 6. Run the post-push PR comment sweep before reporting completion.
 
 If there are no intended changes after validation, do not create an empty commit. Push only if the branch needs to be updated on the remote, then run the post-push PR comment sweep.
@@ -434,7 +473,7 @@ Do not commit or push when:
 - validation failed;
 - fewer than three consecutive clean reviews have completed;
 - the review base is unknown or ambiguous;
-- native review output could not be parsed reliably;
+- review output could not be parsed reliably;
 - an actionable review or PR comment remains unresolved.
 
 ## Post-push PR comment sweep
@@ -478,7 +517,7 @@ Maintain a concise PR comment ledger keyed by provider comment/thread/review ID 
 For every in-scope PR comment that has not already been adjudicated with the same content and context:
 
 1. Invoke `$review-adjudication`.
-2. Provide the same quality of context required for native Codex review comments:
+2. Provide the same quality of context required for Codex review comments:
    - Exact PR comment text.
    - Author, timestamp, URL, and provider ID when available.
    - File path and line range for inline comments when available.
@@ -498,7 +537,7 @@ If PR comment handling changes code, config, dependencies, lockfiles, generated 
 
 - Inspect the diff and preserve unrelated work.
 - Reset `clean_review_streak = 0`.
-- Restart the local native Codex review loop and require three consecutive clean reviews again.
+- Restart the local Codex review loop and require three consecutive clean reviews again.
 - Run full validation again after the new clean streak.
 - Commit only the intended PR-comment fixes.
 - Push the branch again.
@@ -519,7 +558,7 @@ If the same actionable PR comment persists after a fix and push, re-check the la
 
 A persistent loop is not success. Treat the following as blockers unless a minimal correct fix can break the loop:
 
-- native Codex review repeatedly emits the same false-positive finding and addressing it would make the branch worse;
+- Codex review repeatedly emits the same false-positive finding and addressing it would make the branch worse;
 - review output is unstable or contradictory in a way that prevents three consecutive clean reviews;
 - base discovery changes every run due to branch or remote churn;
 - validation requires credentials, services, or infrastructure that are unavailable;
@@ -540,7 +579,7 @@ When the skill completes, report:
 - The PR URL or a statement that no associated PR was found.
 - The selected review base ref and merge-base SHA.
 - The validation commands that passed.
-- Confirmation that the last three native Codex review runs had zero findings/comments.
+- Confirmation that the last three Codex review runs came from the pinned backend class and had zero findings/comments.
 - Confirmation that the post-push PR sweep was performed.
 - PR comments addressed with fixes, if any.
 - PR comments adjudicated as `do-not-address`, with brief rationale, if relevant.
@@ -548,13 +587,13 @@ When the skill completes, report:
 
 ## Non-negotiables
 
-- Three consecutive clean native Codex reviews are required; one or two clean runs are not enough.
+- Three consecutive clean Codex reviews from the pinned backend class are required; one or two clean runs are not enough.
 - Native Codex review must run through the review driver; do not nakedly call `codex review --base main`.
 - Prefer the associated PR base branch; otherwise use the remote default branch; local `main` is a last-resort fallback only.
 - The merge-base SHA must be recorded and pinned for the current clean-review streak.
-- Comments adjudicated as `do-not-address` still reset the native Codex review streak.
-- Any code, config, dependency, lockfile, generated-artifact, or test change after the third clean review invalidates the streak and requires restarting native Codex review.
-- Post-push PR comments use the same `$review-adjudication` and `$fixed-point-driver` flow as local native Codex review comments.
+- Comments adjudicated as `do-not-address` still reset the Codex review streak.
+- Any code, config, dependency, lockfile, generated-artifact, or test change after the third clean review invalidates the streak and requires restarting Codex review.
+- Post-push PR comments use the same `$review-adjudication` and `$fixed-point-driver` flow as local Codex review comments.
 - Any PR-comment-driven change requires another local three-clean-review streak, full validation pass, commit, push, and PR sweep.
 - The resolve skill owns the state machine; subagents may assist but must not own the loop.
 - `$cas` is optional and must pass websocket/app-server preflight before use; failed CAS preflight falls back to native review when available.

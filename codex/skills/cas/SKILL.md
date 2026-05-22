@@ -45,17 +45,30 @@ Current `cas review_session` is the review-control lane:
 - `wait` is the primary completion path for persisted detached review handles and reconnects through the stored websocket session metadata when present
 - `status` reads the detached review thread from a fresh CAS process through the persisted transport metadata when that runtime path is supported
 - `interrupt` sends `turn/interrupt` for the persisted detached review turn
+- `lane start` launches one managed websocket app-server for a review lane and persists a lane record
+- `lane review` reuses that app-server, starts a fresh parent/review session for exactly one review, emits a receipt, and best-effort archives the parent and review threads
+- `lane status` verifies the persisted lane process and record state
+- `lane stop` terminates the managed app-server and marks the lane stopped
 
-`reviewThreadId` is the recoverable handle. Session records live under `~/.codex/cas/review_sessions/`, and CAS appends raw request/response artifacts to a per-review NDJSON log beside that record.
+`reviewThreadId` is the recoverable per-review handle. `laneId` is the recoverable long-lived app-server handle. Session and lane records live under `~/.codex/cas/review_sessions/`, and CAS appends raw request/response artifacts to a per-review NDJSON log beside each review record.
 
 Review boundary:
 
 - Use `cas review_session` when you need detached lifecycle control: persisted `reviewThreadId`, explicit interrupt, compatibility diagnostics, or approval/runtime overrides on the detached lane. The websocket-backed lane is local-only and CAS-managed in this repo.
+- Use `cas review_session lane` when a caller such as `$resolve` needs repeated Codex reviews without relaunching a fresh `codex review` subprocess every time. The lane owns transport reuse only; the caller still owns review adjudication, clean-streak accounting, validation, commits, and PR comment handling.
 - If you only need a one-shot git-backed review verdict and do not need detached control, prefer native `codex review --base ...` or `codex review --commit ...` instead of introducing CAS transport risk. First-party remediation flows should treat native review as the default path.
 - `cas smoke_check` is never review proof; it only proves handshake/method reachability.
 - `cas instance_runner` is never the production review lane; it is for method probing and schema sanity checks.
 
-When `start`, `start --wait`, `status`, or `wait` emit JSON, the output includes the detached review handle/result fields plus launch compatibility metadata:
+Review backend gate:
+
+- Treat `cas review_session lane` as a persistent review backend only when `cas --version` and `cas review_session --version` report `0.2.30` or newer and `cas review_session --help` exposes `lane start`, `lane review`, `lane status`, `lane stop`, `--lane-id`, `--json`, and `--fallback none|native-review`.
+- The persistent CAS lane command shape is `cas review_session lane start --cwd <repo> --json --hooks off`, then repeated `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --json --fallback none`, then `cas review_session lane stop --lane-id <laneId> --json` at normal exit or abort.
+- Each `lane review` starts a fresh parent and detached review thread. "Reset after each review" means fresh review thread state on the same managed app-server, not relaunching the app-server.
+- `--fallback native-review` is an explicit degraded verdict path. It preserves a possible review result, but it is not persistent-lane proof and must be reported as native fallback.
+- Do not infer review success from session persistence. `reviewThreadId`, record paths, managed websocket metadata, or terminal turn state are receipts for lifecycle control only; structured review result fields decide whether a review verdict exists.
+
+When `start`, `start --wait`, `status`, `wait`, or `lane review` emit JSON, the output includes the detached review handle/result fields plus launch compatibility metadata:
 
 - `resolvedCodexPath`
 - `resolvedCodexVersion`
@@ -63,14 +76,21 @@ When `start`, `start --wait`, `status`, or `wait` emit JSON, the output includes
 - `selectedTransport`
 - `selectionReason`
 - `degradedFallback`
+- `laneId`
 - `managedServerPid`
 - `managedServerListenUrl`
 - `managedServerStderrLogPath`
 - `orphanTtlSeconds`
+- `targetFingerprint`
+- `baseSha`
+- `headSha`
 - `failureCode`
 - `failureHint`
 - `reviewResultAvailable`
 - `reviewResultSource`
+- `rawReviewText`
+- `dualParseVerdict`
+- `archiveStatus`
 - `reviewResult`
   - `findings`
   - `overallCorrectness`
@@ -104,9 +124,10 @@ Use the fields this way:
 
 Review result classification:
 
-- Detached review success requires all of: `compatibilityVerdict="compatible"`, `selectedTransport="websocket"`, `fallbackUsed=false`, `reviewResultAvailable=true`, and no blocking `failureCode`.
+- Detached review success requires all of: `selectedTransport="websocket"`, `fallbackUsed=false`, `reviewResultAvailable=true`, `reviewResultSource="rollout_exited_review_mode"`, `dualParseVerdict="match"`, no blocking `failureCode`, and zero structured findings.
 - Native-fallback success is a different class of result: `fallbackUsed=true` means the review text came from native `codex review`, not detached CAS review. Report it as native fallback, not detached-review proof.
 - Transport progress is not review success: `reviewThreadId` creation, `start --wait` returning, or `status` showing a terminal turn is insufficient unless the result fields above classify it as success.
+- Archive failure is an operational warning, not review correctness proof. Report `archiveStatus`, but do not infer review cleanliness from archive success or failure.
 
 Compatibility note: on Codex `0.118.x` stdio, detached review still requires fresh-parent materialization before detached `review/start`, so CAS `--parent-mode auto` keeps that pre-materialization path. The websocket-backed review lane exists specifically to restore truthful fresh-process detached control across commands instead of depending on stdio connection lifetime.
 
