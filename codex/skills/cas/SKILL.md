@@ -62,8 +62,8 @@ Review boundary:
 
 Review backend gate:
 
-- Treat `cas review_session lane` as a persistent review backend only when `cas --version` and `cas review_session --version` report `0.2.30` or newer and `cas review_session --help` exposes `lane start`, `lane review`, `lane status`, `lane stop`, `--lane-id`, `--json`, and `--fallback none|native-review`.
-- The persistent CAS lane command shape is `cas review_session lane start --cwd <repo> --json --hooks off`, then repeated `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --json --fallback none`, then `cas review_session lane stop --lane-id <laneId> --json` at normal exit or abort.
+- Treat `cas review_session lane` as a persistent review backend only when `cas --version` and `cas review_session --version` report `0.2.31` or newer and `cas review_session --help` exposes `lane start`, `lane review`, `lane status`, `lane stop`, `--lane-id`, `--json`, `--timeout-ms`, and `--fallback none|native-review`.
+- The persistent CAS lane command shape is `cas review_session lane start --cwd <repo> --json --hooks off`, then repeated `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --timeout-ms 900000 --json --fallback none`, then `cas review_session lane stop --lane-id <laneId> --json` at normal exit or abort.
 - Each `lane review` starts a fresh parent and detached review thread. "Reset after each review" means fresh review thread state on the same managed app-server, not relaunching the app-server.
 - `--fallback native-review` is an explicit degraded verdict path. It preserves a possible review result, but it is not persistent-lane proof and must be reported as native fallback.
 - Do not infer review success from session persistence. `reviewThreadId`, record paths, managed websocket metadata, or terminal turn state are receipts for lifecycle control only; structured review result fields decide whether a review verdict exists.
@@ -109,7 +109,7 @@ Use the fields this way:
 - `compatibilityVerdict="not_checked"` means no compatibility verdict was persisted for that record yet (older session record or pre-launch failure)
 - `selectedTransport="websocket"` means CAS used the managed loopback websocket lane for the detached review session
 - `selectedTransport="native-review"` with `degradedFallback=true` means CAS preserved the review verdict by degrading to native `codex review`; it is not detached-control proof
-- `failureCode="wait_timed_out"` means retry `cas review_session wait` on the same `reviewThreadId` or increase `--timeout-ms`; it is not a successful review
+- `failureCode="wait_timed_out"` means retry `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 900000 --json` on the same `reviewThreadId`; it is not a successful review and must not trigger a duplicate `lane review` for the same target
 - `failureCode="review_interrupted"` means the detached review was interrupted before it emitted a structured review result
 - `failureCode="approval_denied"` means the detached review stopped on an approval or permissions denial before it emitted a structured review result
 - `failureCode="review_failed"` means the detached review failed or errored before it emitted a structured review result
@@ -127,6 +127,7 @@ Review result classification:
 - Detached review success requires all of: `selectedTransport="websocket"`, `fallbackUsed=false`, `reviewResultAvailable=true`, `reviewResultSource="rollout_exited_review_mode"`, `dualParseVerdict="match"`, no blocking `failureCode`, and zero structured findings.
 - Native-fallback success is a different class of result: `fallbackUsed=true` means the review text came from native `codex review`, not detached CAS review. Report it as native fallback, not detached-review proof.
 - Transport progress is not review success: `reviewThreadId` creation, `start --wait` returning, or `status` showing a terminal turn is insufficient unless the result fields above classify it as success.
+- A lane timeout receipt is recoverable only when it includes `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, `target`, `targetFingerprint`, `baseSha`, and `headSha`. Recover by waiting on that same `reviewThreadId`; do not start a second review against the same target while the original detached review may still complete.
 - Archive failure is an operational warning, not review correctness proof. Report `archiveStatus`, but do not infer review cleanliness from archive success or failure.
 
 Compatibility note: on Codex `0.118.x` stdio, detached review still requires fresh-parent materialization before detached `review/start`, so CAS `--parent-mode auto` keeps that pre-materialization path. The websocket-backed review lane exists specifically to restore truthful fresh-process detached control across commands instead of depending on stdio connection lifetime.
@@ -290,7 +291,7 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
    - Read current status from a fresh process when the runtime supports detached polling:
      - `cas review_session status --review-thread-id <reviewThreadId> --json`
    - Wait for the detached review turn to settle when the runtime supports detached polling:
-     - `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 300000 --json`
+     - `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 900000 --json`
    - Supported same-process lane on Codex `0.118.x` stdio:
      - `cas review_session start --wait --cwd /path/to/workspace --base main --json`
    - Interrupt the detached review turn:

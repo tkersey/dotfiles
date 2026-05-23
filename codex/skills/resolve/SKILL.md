@@ -326,8 +326,8 @@ Use `$cas` when it passes a strict transport preflight. If CAS preflight fails, 
 
 Before using `$cas` as a review backend, run a preflight that confirms:
 
-1. `cas --version` and `cas review_session --version` report `0.2.30` or newer.
-2. `cas review_session --help` exposes `lane start`, `lane review`, `lane status`, `lane stop`, `--lane-id`, `--json`, and `--fallback none|native-review`.
+1. `cas --version` and `cas review_session --version` report `0.2.31` or newer.
+2. `cas review_session --help` exposes `lane start`, `lane review`, `lane status`, `lane stop`, `--lane-id`, `--json`, `--timeout-ms`, and `--fallback none|native-review`.
 3. `cas review_session lane start --cwd <repo> --json --hooks off` starts a managed websocket app-server and returns a `laneId`.
 4. `cas review_session lane status --lane-id <laneId> --json` proves the persisted lane process is alive.
 5. The lane can be closed with `cas review_session lane stop --lane-id <laneId> --json`.
@@ -347,10 +347,18 @@ CAS lane lifecycle for `$resolve`:
 
 1. After base discovery and before the first review, start one lane with `cas review_session lane start --cwd <repo> --json --hooks off`.
 2. Record `laneId`, `managedServerPid`, `managedServerListenUrl`, resolved `cas` path, and `cas` version in the review ledger.
-3. For each review attempt, run `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --json --fallback none`.
+3. For each review attempt, run `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --timeout-ms 900000 --json --fallback none`.
 4. Treat each `lane review` as one review run with a fresh parent/review thread. Reusing the lane app-server must not reuse review context.
 5. Keep CAS review attempts on `--fallback none` by default. Use `--fallback native-review` only after a CAS lane failure has been recorded and native fallback is intentionally allowed for that review attempt; classify any `fallbackUsed=true` receipt as `cas-native-fallback`.
 6. Stop the lane with `cas review_session lane stop --lane-id <laneId> --json` on normal completion, branch mutation that abandons the lane, or abort. If stop fails, report it and continue cleanup checks; do not count stop success as review proof.
+
+CAS same-handle timeout recovery:
+
+1. If `lane review` exits nonzero with `failureCode="wait_timed_out"`, inspect the JSON receipt before falling back.
+2. A recoverable timeout receipt must include `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, `target`, `targetFingerprint`, `baseSha`, and `headSha`.
+3. Recover with `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 900000 --json` and normalize that wait receipt as the same review attempt.
+4. Do not start a duplicate `lane review` for the same target while a recoverable timed-out `reviewThreadId` exists.
+5. If the timeout receipt lacks the recoverable handle fields, classify it as CAS runtime failure, record the failed CAS step, reset any CAS-backed clean streak, and only then use the native fallback driver if available.
 
 Even when `$cas` is used, the skill must preserve the same invariants:
 
@@ -366,7 +374,7 @@ CAS receipts required for each CAS-backed review invocation:
 
 - `cas` version and resolved CAS binary path.
 - Exact `cas review_session` command and JSON output path or captured JSON.
-- `laneId`, `managedServerPid`, `reviewThreadId`, `recordPath`, and `eventLogPath`.
+- `laneId`, `managedServerPid`, `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, `targetFingerprint`, `baseSha`, and `headSha`.
 - `selectedTransport`, `fallbackUsed`, `fallbackTransport`, `failureCode`, `failureHint`, `reviewResultAvailable`, `reviewResultSource`, `dualParseVerdict`, and `archiveStatus`.
 - Selected review base ref, base SHA, current `HEAD` SHA, normalized finding count, and backend class used for streak accounting.
 
