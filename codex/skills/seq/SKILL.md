@@ -99,29 +99,6 @@ When iterating on the Zig-backed `seq` helper CLI path, use these two repos:
 ## Quick Start
 ```bash
 run_seq() {
-  install_seq_direct() {
-    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
-    if ! command -v zig >/dev/null 2>&1; then
-      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
-      return 1
-    fi
-    if [ ! -d "$repo" ]; then
-      echo "skills-zig repo not found at $repo." >&2
-      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
-      return 1
-    fi
-    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
-      echo "direct Zig build failed in $repo." >&2
-      return 1
-    fi
-    if [ ! -x "$repo/zig-out/bin/seq" ]; then
-      echo "direct Zig build did not produce $repo/zig-out/bin/seq." >&2
-      return 1
-    fi
-    mkdir -p "$HOME/.local/bin"
-    install -m 0755 "$repo/zig-out/bin/seq" "$HOME/.local/bin/seq"
-  }
-
   local os="$(uname -s)"
   if command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"; then
     seq "$@"
@@ -137,10 +114,9 @@ run_seq() {
       echo "brew install tkersey/tap/seq failed." >&2
       return 1
     fi
-  elif ! (command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"); then
-    if ! install_seq_direct; then
-      return 1
-    fi
+  else
+    echo "seq runtime bootstrap is Homebrew/tap-backed; install seq from a released package before using this skill." >&2
+    return 1
   fi
 
   if command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"; then
@@ -150,8 +126,6 @@ run_seq() {
   echo "no compatible seq binary found after install attempt." >&2
   if [ "$os" = "Darwin" ]; then
     echo "expected install path: brew install tkersey/tap/seq" >&2
-  else
-    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
   fi
   return 1
 }
@@ -216,6 +190,7 @@ Audit skill cohorts and tool searches without ad hoc post-processing:
 seq skill-cohort --root ~/.codex/sessions --skill seq --since 2026-04-01T00:00:00Z --exclude-current --format table
 seq skill-cohort --root ~/.codex/sessions --skill fixed-point-driver --mode mentions --format jsonl
 seq tool-search --root ~/.codex/sessions --contains "seq query" --mode rows --exclude-current --format table
+seq tool-search --root ~/.codex/sessions --session-id <session_id> --contains-any "jq,shasum,brew test" --mode rows --format table
 seq tool-search --root ~/.codex/sessions --contains "jq " --mode args --format jsonl
 ```
 
@@ -665,7 +640,7 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - Opencode datasets (`opencode_prompts`, `opencode_events`) default to `source=auto`, which resolves DB-first (`$HOME/.local/share/opencode/opencode.db`) with JSONL fallback (`$HOME/.local/state/opencode/prompt-history.jsonl`).
 - Opencode params: `params.source`, `params.opencode_db_path`, `params.opencode_path`, `params.include_raw`; `opencode_prompts` also supports `params.include_summary_fallback`.
 - Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, and from `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
-- Runtime bootstrap policy: require the Zig `seq` binary, default to Homebrew install on macOS, and fallback to direct Zig install from `skills-zig` on non-macOS.
+- Runtime bootstrap policy: require a released `seq` binary. On macOS, install through `brew install tkersey/tap/seq`; do not shadow it with `~/.local/bin/seq` or a local `zig-out` copy for normal skill execution.
 - Add `--output <path>` to write results to a file.
 - `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
 - `query.params` is now parsed and routed into dataset collectors for dataset-specific source overrides.
@@ -694,6 +669,7 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `skill-success-rank` counts user-called skills, reports `successful_sessions`, `used_sessions`, `blocked_sessions`, and raw mention/session diagnostics, and supports `--mode sessions` for per-session proof rows.
 - `workflow-audit` selects sessions by exact workflow or skill mention after stripping injected skill blocks, then reports source breakdown, outcomes, sessions, or a markdown report without Python post-processing.
 - `session-tooling` summarizes per-invocation shell/tool behavior and can aggregate via `--summary --group-by executable|command|tool`.
+- `tool-search` accepts `--session-id`/`--path` and `--contains-any` for session-scoped tool forensics without broad scans or caller-side `jq`.
 - `query-diagnose` emits per-query diagnostics from rollout JSONL and can suggest deterministic follow-up commands with `--next-actions`.
 - `orchestration-concurrency` reports configured and effective fanout, plus how many times each maximum occurred.
 - It also emits `effective_peak`, `spawn_substrate`, direct-lane counters (`spawn_agent_calls`, `wait_agent_calls`, `close_agent_calls`), `serialized_wait_agent_ratio`, and floor-gate fields (`floor_threshold`, `floor_applicable`, `floor_result`).
