@@ -56,7 +56,7 @@ Review boundary:
 
 - Use `cas review_session` when you need detached lifecycle control: persisted `reviewThreadId`, explicit interrupt, compatibility diagnostics, or approval/runtime overrides on the detached lane. The websocket-backed lane is local-only and CAS-managed in this repo.
 - Use `cas review_session lane` when a caller such as `$resolve` needs repeated Codex reviews without relaunching a fresh `codex review` subprocess every time. The lane owns transport reuse only; the caller still owns review adjudication, clean-streak accounting, validation, commits, and PR comment handling.
-- If you only need a one-shot git-backed review verdict and do not need detached control, prefer native `codex review --base ...` or `codex review --commit ...` instead of introducing CAS transport risk. First-party remediation flows should treat native review as the default path.
+- If you only need a one-shot git-backed review verdict and do not need detached control, native `codex review --base ...` or `codex review --commit ...` remains acceptable. First-party multi-cycle remediation flows such as `$resolve` should treat `cas review_session lane` as the default review backend and use native review only as an explicit fallback.
 - `cas smoke_check` is never review proof; it only proves handshake/method reachability.
 - `cas instance_runner` is never the production review lane; it is for method probing and schema sanity checks.
 
@@ -278,7 +278,8 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
    - Default decision rule:
      - Need detached control on Codex `0.118.x` stdio: use `cas review_session start --wait`.
      - Need detached control on a runtime that keeps detached review alive across connections: use `cas review_session` split `start` plus `wait`.
-     - Need only a one-shot git-backed verdict: use native `codex review` unless the caller explicitly needs detached control. Multi-cycle remediation loops should not CAS-first by default.
+     - Need only a one-shot git-backed verdict outside a first-party remediation loop: native `codex review` is acceptable unless the caller explicitly needs detached control.
+     - Running a first-party multi-cycle remediation loop such as `$resolve`: use `cas review_session lane` first, with native review only as an explicit fallback after CAS cannot produce a reliable verdict.
    - Start detached review:
      - `cas review_session start --cwd /path/to/workspace --uncommitted --json`
      - `cas review_session start --cwd /path/to/workspace --base main --json`

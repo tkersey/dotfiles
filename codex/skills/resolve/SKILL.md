@@ -33,7 +33,7 @@ Do not consider the branch resolved until all of the following are true, in this
 ## Definitions
 
 - `native Codex review`: The Codex CLI or repository-native Codex review command, normally `codex review`, not a separate LLM review invented by this skill.
-- `review backend`: The review execution class used for streak accounting: direct native CLI review by default, or an explicitly selected CAS-backed review class that satisfies the optional CAS backend policy.
+- `review backend`: The review execution class used for streak accounting: CAS lane review by default after strict preflight, or native CLI review only as an explicit fallback when CAS cannot produce a reliable review result.
 - `review driver`: The deterministic wrapper in this skill that discovers the correct base, invokes the selected Codex review backend, captures output, parses findings, and reports whether the review was clean.
 - `clean review`: A completed Codex review run from the selected backend with zero findings/comments/requested changes. Tool failures, malformed output, partial output, or ambiguous output are not clean reviews.
 - `finding/comment`: Any substantive review item, inline comment, requested change, issue, warning, or review note that asks for or implies a code, test, behavior, safety, reliability, performance, accessibility, maintainability, API, release, or documentation change.
@@ -119,9 +119,22 @@ Pass the relevant guidance into review context and local validation planning. Fo
 
 If a clearly applicable language skill cannot be loaded, record that as a review-driver limitation and either proceed with repository-native commands already proven locally or stop as blocked when the missing guidance is required to distinguish tool transport failure from code failure.
 
-## Native review driver
+## Backend selection
 
-All native Codex review invocations must go through this driver. Do not call `codex review --base main` directly except as a documented last-resort fallback when no remote default branch, PR base, or usable remote ref can be discovered.
+`$resolve` is CAS-first. After base discovery and language-skill routing, attempt the persistent CAS lane preflight before any native `codex review` invocation. Use native Codex review only when one of these fallback conditions is true:
+
+- CAS preflight fails or proves the installed `cas` / `cas review_session` surface is too old or incompatible.
+- CAS lane startup, status, review, or receipt normalization fails in a way that prevents a reliable review verdict.
+- CAS reports a blocking transport/runtime failure and explicit native fallback is the only available review path.
+- The user explicitly requests native review for the current run.
+
+Do not choose native review merely because it is simpler, faster to type, historically common, or because the run only needs a one-shot verdict. `$resolve` is a multi-cycle remediation workflow, and its normal review primitive is `cas review_session lane review ... --json --fallback none`.
+
+When native fallback is used, record the fallback condition in `last_review_invocations`, reset any CAS-backed clean-review streak, classify the backend as `native-cli` or `cas-native-fallback` as applicable, and keep the same base/HEAD pinning rules.
+
+## Native fallback review driver
+
+All native Codex review invocations must go through this fallback driver. Do not call `codex review --base main` directly except as a documented last-resort fallback when no remote default branch, PR base, or usable remote ref can be discovered.
 
 The driver must:
 
@@ -135,7 +148,7 @@ The driver must:
 8. Resolve the selected base to a merge-base SHA with `HEAD`.
 9. Pin the base ref and merge-base SHA for the current clean-review streak.
 10. Attach any applicable `language_skill_packet` guidance to the local review plan before invoking native review.
-11. Invoke native Codex review with the pinned base through `codex --yolo review`.
+11. Invoke native Codex review with the pinned base through `codex --yolo review` only after the CAS-first fallback condition has been recorded.
 12. Capture the exact command, sandbox mode, base ref, base SHA, `HEAD` SHA, language skill packet, raw output, exit status, and parsed findings/comments.
 13. Return `clean = true` only when the review completed successfully and produced zero findings/comments.
 
@@ -305,11 +318,11 @@ Subagents must not:
 - commit, push, resolve PR threads, or dismiss review comments;
 - declare the skill complete.
 
-## Optional CAS backend policy
+## CAS-first backend policy
 
-Prefer a persistent CAS lane when `$cas` is explicitly requested, when the environment has been configured for it, or when repeated native `codex review` subprocesses are unavailable or quota-limited. Native Codex review through the local CLI remains the fallback backend.
+Prefer a persistent CAS lane for every ordinary `$resolve` run. Native Codex review through the local CLI is the fallback backend, not the default.
 
-Use `$cas` only when it passes a strict transport preflight. Do not make `$cas` mandatory for ordinary resolution.
+Use `$cas` when it passes a strict transport preflight. If CAS preflight fails, fall back to native `codex --yolo review` when available. If neither CAS nor native review can produce a reliable review result, stop as blocked and do not commit or push.
 
 Before using `$cas` as a review backend, run a preflight that confirms:
 
@@ -320,7 +333,7 @@ Before using `$cas` as a review backend, run a preflight that confirms:
 5. The lane can be closed with `cas review_session lane stop --lane-id <laneId> --json`.
 6. A `lane review` receipt can be normalized into the same `review_result` shape used by the native review driver.
 
-If any CAS preflight step fails, fall back to native `codex review` when available. If neither native review nor CAS can produce a reliable review result, stop as blocked and do not commit or push.
+If any CAS preflight step fails, record the failing step and fall back to native `codex review` when available. Do not skip CAS preflight merely because native review is expected to work.
 
 CAS backend classification:
 
@@ -332,11 +345,11 @@ Pin the backend class and target fingerprint for each clean-review streak. A cle
 
 CAS lane lifecycle for `$resolve`:
 
-1. After base discovery and before the first CAS-backed review, start one lane with `cas review_session lane start --cwd <repo> --json --hooks off`.
+1. After base discovery and before the first review, start one lane with `cas review_session lane start --cwd <repo> --json --hooks off`.
 2. Record `laneId`, `managedServerPid`, `managedServerListenUrl`, resolved `cas` path, and `cas` version in the review ledger.
 3. For each review attempt, run `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --json --fallback none`.
 4. Treat each `lane review` as one review run with a fresh parent/review thread. Reusing the lane app-server must not reuse review context.
-5. If explicit native fallback is allowed for this run, use `--fallback native-review` and classify any `fallbackUsed=true` receipt as `cas-native-fallback`.
+5. Keep CAS review attempts on `--fallback none` by default. Use `--fallback native-review` only after a CAS lane failure has been recorded and native fallback is intentionally allowed for that review attempt; classify any `fallbackUsed=true` receipt as `cas-native-fallback`.
 6. Stop the lane with `cas review_session lane stop --lane-id <laneId> --json` on normal completion, branch mutation that abandons the lane, or abort. If stop fails, report it and continue cleanup checks; do not count stop success as review proof.
 
 Even when `$cas` is used, the skill must preserve the same invariants:
@@ -370,7 +383,7 @@ Before making changes:
 Repeat until `clean_review_streak == 3`:
 
 1. Invoke the selected review driver.
-2. If the driver cannot determine a valid base, cannot run the selected review backend, or cannot parse output reliably, stop as blocked and do not commit or push.
+2. If the driver cannot determine a valid base, cannot run CAS review, or cannot parse CAS output reliably, try the native fallback driver when available and record the fallback condition. If neither backend can produce a reliable review result, stop as blocked and do not commit or push.
 3. If the review ran against a new `HEAD`, new base ref, or new base SHA, reset `clean_review_streak = 0` and pin the new streak state only after a successful review.
 4. If the review returns zero findings/comments:
    - If this is the first clean review in a new streak, record `streak_base_ref`, `streak_base_sha`, and `streak_head_sha`.
@@ -588,7 +601,8 @@ When the skill completes, report:
 ## Non-negotiables
 
 - Three consecutive clean Codex reviews from the pinned backend class are required; one or two clean runs are not enough.
-- Native Codex review must run through the review driver; do not nakedly call `codex review --base main`.
+- `$resolve` must attempt CAS lane review first; native Codex review is fallback-only.
+- Native Codex review must run through the fallback review driver; do not nakedly call `codex review --base main`.
 - Prefer the associated PR base branch; otherwise use the remote default branch; local `main` is a last-resort fallback only.
 - The merge-base SHA must be recorded and pinned for the current clean-review streak.
 - Comments adjudicated as `do-not-address` still reset the Codex review streak.
@@ -596,7 +610,7 @@ When the skill completes, report:
 - Post-push PR comments use the same `$review-adjudication` and `$fixed-point-driver` flow as local Codex review comments.
 - Any PR-comment-driven change requires another local three-clean-review streak, full validation pass, commit, push, and PR sweep.
 - The resolve skill owns the state machine; subagents may assist but must not own the loop.
-- `$cas` is optional and must pass websocket/app-server preflight before use; failed CAS preflight falls back to native review when available.
+- `$cas` is the default review backend and must pass websocket/app-server preflight before use; failed CAS preflight falls back to native review when available.
 - Do not commit or push unless full validation passes.
 - Do not stage unrelated work.
 - Do not fabricate validation success, review outcomes, PR state, commit SHAs, or push status.
