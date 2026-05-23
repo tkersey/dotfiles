@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups such as `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, and `orchestration-concurrency`, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
+description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups such as `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, and `orchestration-concurrency`, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
 ---
 
 # seq
@@ -30,7 +30,8 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
      - `plan-search` for strict repo/session/time/text retrieval of complete `<proposed_plan>` blocks.
      - `find-session` for prompt-to-session lookup.
      - `session-prompts` for "what did that session actually say" and transcript proof.
-     - `skill-audit` for skill usage summaries, one-skill mention rows, and one-skill daily trends.
+     - `skill-success-rank` for ranked successful skill activation reports over recent windows without raw mention inflation.
+     - `skill-audit` for raw skill mention summaries, one-skill mention rows, and one-skill daily trends.
      - `workflow-audit` for workflow-cohort utilization reports across text, skill mentions, tool traces, session graph roles, and outcome signals.
      - `tool-audit` for shell/tool command summaries by executable/tool/session/workdir/command plus row, args, and unresolved modes.
      - `memory-inventory` for memory category/file/block/stage1/extension inventory without hand-writing `memory_*` query specs.
@@ -182,6 +183,8 @@ seq query --root ~/.codex/sessions --spec \
 ```
 Prefer the lifted shortcut:
 ```bash
+seq skill-success-rank --root ~/.codex/sessions --last 14d --format table
+seq skill-success-rank --root ~/.codex/sessions --skill seq --mode sessions --last 14d --format jsonl
 seq skill-audit --root ~/.codex/sessions --limit 20 --format table
 seq skill-audit --root ~/.codex/sessions --skill seq --mode trend --format table
 seq workflow-audit --root ~/.codex/sessions --workflow fixed-point-driver --mode summary --since 2026-04-01T00:00:00Z --format table
@@ -353,6 +356,12 @@ Common options:
 - `--max 20`
 - `--since 2026-01-01T00:00:00Z`
 - `--until 2026-03-01T00:00:00Z`
+
+Prefer `skill-success-rank` when the question asks which skills were used successfully rather than which skill names were mentioned most:
+```bash
+seq skill-success-rank --root ~/.codex/sessions --last 14d --format table
+seq skill-success-rank --root ~/.codex/sessions --skill prove-it --mode sessions --last 14d --format jsonl
+```
 
 ### 2) Trend a skill over time
 ```bash
@@ -681,7 +690,8 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `skill-blocks` is the exact-body recovery surface for session-injected skills; it returns full `<skill>...</skill>` envelopes, not loose `$skill` mentions or narrative references.
 - `skill-blocks` defaults to `--history distinct` and `--format jsonl`; use `--history all` to keep repeated identical injections and `--history latest` to select the newest distinct version.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
-- `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching skill, workflow, tool, memory, message, and cwd questions.
+- `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching successful skill usage, raw skill mentions, workflow, tool, memory, message, and cwd questions.
+- `skill-success-rank` counts user-called skills, reports `successful_sessions`, `used_sessions`, `blocked_sessions`, and raw mention/session diagnostics, and supports `--mode sessions` for per-session proof rows.
 - `workflow-audit` selects sessions by exact workflow or skill mention after stripping injected skill blocks, then reports source breakdown, outcomes, sessions, or a markdown report without Python post-processing.
 - `session-tooling` summarizes per-invocation shell/tool behavior and can aggregate via `--summary --group-by executable|command|tool`.
 - `query-diagnose` emits per-query diagnostics from rollout JSONL and can suggest deterministic follow-up commands with `--next-actions`.
