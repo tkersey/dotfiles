@@ -30,6 +30,17 @@ Every phase inherits **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, *
 
 Additional orchestration pressure: **EXHAUSTIVE**, **DE NOVO**, **ADVERSARIAL**, **SATURATING**, **MATERIAL**, **FIXED-POINT**, **PARSIMONIOUS**, **INVARIANT-GRADED**, **HAZARD-SEEKING**, **CANONICAL**, **LEDGERIZED**, **HISTORY-AWARE**, **NEGATIVE-EVIDENCE-AWARE**, and **REOPENABLE**.
 
+## Code-change doctrine
+
+When writing code or making a change, do it **in the most optimal way possible** for the current material objective.
+
+Rules:
+- Prefer the smallest complete design that preserves invariants, removes or narrows foot-guns, and leaves a clear proof path.
+- Choose durable, idiomatic, maintainable code over clever shortcuts, speculative abstraction, or broad rewrites.
+- Optimize for correctness and evidence first, then simplicity, performance, ergonomics, and future change cost when they materially affect the task.
+- Do not use “optimal” to justify unbounded scope, aesthetic churn, bypassing negative evidence, exceeding lane budgets, weakening review, or skipping closure gates.
+- When materially valid implementations compete, record the chosen tradeoff in the Findings, Invariant, Complexity, Verification, or Negative Evidence Ledger.
+
 ## Optional review-adjudication intake
 
 If the user provides review comments or a prior adjudication result, you may start with **review-adjudication** before any implementation.
