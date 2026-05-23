@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: tune-scaffold --skill <skill> [--root <sessions-root>] [--since <iso8601>] [--last <duration>]
+
+Prints a $tune evidence command set and refinement-brief skeleton.
+
+Defaults:
+  --root  ~/.codex/sessions
+  --last  90d
+  --since computed as UTC now minus 90 days when python3 is available, otherwise <iso8601>
+USAGE
+}
+
+skill=""
+root="$HOME/.codex/sessions"
+last="90d"
+since=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --skill)
+      skill="${2:-}"
+      shift 2
+      ;;
+    --root)
+      root="${2:-}"
+      shift 2
+      ;;
+    --since)
+      since="${2:-}"
+      shift 2
+      ;;
+    --last)
+      last="${2:-}"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [[ -z "$skill" ]]; then
+  echo "--skill is required" >&2
+  usage >&2
+  exit 2
+fi
+
+if [[ -z "$since" ]]; then
+  if command -v python3 >/dev/null 2>&1; then
+    since="$(python3 - <<'PY'
+from datetime import datetime, timedelta, timezone
+print((datetime.now(timezone.utc) - timedelta(days=90)).isoformat(timespec="seconds").replace("+00:00", "Z"))
+PY
+)"
+  else
+    since="<iso8601>"
+  fi
+fi
+
+cat <<TUNE_OUT
+# \$tune scaffold for skill: $skill
+
+## Evidence commands
+
+seq skill-success-rank --root "$root" --skill "$skill" --mode sessions --last "$last" --format jsonl
+seq skill-audit --root "$root" --skill "$skill" --mode trend --since "$since" --format table
+seq skill-cohort --root "$root" --skill "$skill" --since "$since" --format table
+seq skill-blocks --root "$root" --skill "$skill" --history latest --format json
+seq skill-blocks --root "$root" --skill "$skill" --history all --format jsonl
+
+# Optional targeted searches:
+seq message-search --root "$root" --contains "<trigger-or-failure-phrase>" --roles user,assistant --limit 50 --format jsonl
+seq tool-search --root "$root" --contains "<repeated-command-or-tool-pattern>" --mode rows --format table
+seq workflow-audit --root "$root" --workflow "<workflow-name>" --mode report --since "$since" --format markdown
+
+## Refinement brief skeleton
+
+Target skill: $skill
+
+Mode:
+- audit-only | proposal-only | apply-with-refine
+
+Tuning goal:
+- <one-line goal>
+
+Intended-use contract:
+- Purpose: <summary>
+- Trigger boundary: <summary>
+- Anti-triggers / non-goals: <summary>
+- Workflow expectation: <summary>
+- Tool/resource expectation: <summary>
+- Validation expectation: <summary>
+- Companion-skill handoffs: <summary>
+
+Observed usage:
+- Evidence class: <class>
+- Source: <seq command, validation output, or user feedback>
+- Finding: <sanitized finding>
+- Recurrence: <frequency or recurrence summary, if known>
+- Counterevidence: <anything that weakens the finding>
+
+Gap:
+- Type: <activation | interpretation | workflow | tooling | resource | validation | metadata | boundary>
+- Diagnosis: <specific mismatch>
+
+Recommended \$refine action:
+- <smallest sufficient edit or upgrade>
+
+Success criteria:
+- <criterion 1>
+- <criterion 2>
+- <criterion 3>
+
+Validation:
+- uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/$skill
+TUNE_OUT
