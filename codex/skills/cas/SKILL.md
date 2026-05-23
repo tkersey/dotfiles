@@ -101,6 +101,23 @@ When `start`, `start --wait`, `status`, `wait`, or `lane review` emit JSON, the 
 - `fallbackExitCode`
 - `fallbackOutputText`
 - `fallbackErrorText`
+- `reviewVerdict`
+  - `status` (`clean`, `findings`, `timeout`, `parse_mismatch`, `transport_failure`, or `incomplete`)
+  - `backendClass` (`cas-lane` or `cas-native-fallback`)
+  - `clean`
+  - `findingCount`
+  - `failureCode`
+  - `failureHint`
+  - `baseSha`
+  - `headSha`
+  - `targetFingerprint`
+  - `reviewThreadId`
+  - `reviewTurnId`
+  - `recordPath`
+  - `eventLogPath`
+  - compact `findings` with `title`, `file`, `line`, and `priority`
+
+`reviewVerdict` is the consumption surface for callers. The full CAS receipt remains the audit artifact. `cas review_session lane review --verdict-only ...` emits only the compact verdict object while preserving the same exit semantics.
 
 Use the fields this way:
 
@@ -124,6 +141,10 @@ Use the fields this way:
 
 Review result classification:
 
+- Prefer `reviewVerdict` for caller control flow. `reviewVerdict.status="clean"` with `backendClass="cas-lane"`, `clean=true`, `findingCount=0`, matching base/head/fingerprint, and no `failureCode` is the compact success signal.
+- `reviewVerdict.status="findings"` is a completed review verdict, not a CAS transport failure. The caller should reset its clean streak and adjudicate/fix the compact findings, using the full receipt only when more context is needed.
+- `reviewVerdict.status="timeout"` with a `reviewThreadId` is recoverable by waiting on the same handle.
+- An empty caller-side receipt file while `cas review_session lane review` is still running is `in_progress`, not malformed CAS output.
 - Detached review success requires all of: `selectedTransport="websocket"`, `fallbackUsed=false`, `reviewResultAvailable=true`, `reviewResultSource="rollout_exited_review_mode"`, `dualParseVerdict="match"`, no blocking `failureCode`, and zero structured findings.
 - Native-fallback success is a different class of result: `fallbackUsed=true` means the review text came from native `codex review`, not detached CAS review. Report it as native fallback, not detached-review proof.
 - Transport progress is not review success: `reviewThreadId` creation, `start --wait` returning, or `status` showing a terminal turn is insufficient unless the result fields above classify it as success.

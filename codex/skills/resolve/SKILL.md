@@ -348,13 +348,49 @@ CAS lane lifecycle for `$resolve`:
 1. After base discovery and before the first review, start one lane with `cas review_session lane start --cwd <repo> --json --hooks off`.
 2. Record `laneId`, `managedServerPid`, `managedServerListenUrl`, resolved `cas` path, and `cas` version in the review ledger.
 3. For each review attempt, run `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --timeout-ms 1800000 --json --fallback none`.
-4. Treat each `lane review` as one review run with a fresh parent/review thread. Reusing the lane app-server must not reuse review context.
-5. Keep CAS review attempts on `--fallback none` by default. Use `--fallback native-review` only after a CAS lane failure has been recorded and native fallback is intentionally allowed for that review attempt; classify any `fallbackUsed=true` receipt as `cas-native-fallback`.
-6. Stop the lane with `cas review_session lane stop --lane-id <laneId> --json` on normal completion, branch mutation that abandons the lane, or abort. If stop fails, report it and continue cleanup checks; do not count stop success as review proof.
+4. Consume `.reviewVerdict` first. The full CAS JSON receipt is the audit artifact; `.reviewVerdict` is the control-flow artifact.
+5. Treat each `lane review` as one review run with a fresh parent/review thread. Reusing the lane app-server must not reuse review context.
+6. Keep CAS review attempts on `--fallback none` by default. Use `--fallback native-review` only after a CAS lane failure has been recorded and native fallback is intentionally allowed for that review attempt; classify any `fallbackUsed=true` receipt as `cas-native-fallback`.
+7. Stop the lane with `cas review_session lane stop --lane-id <laneId> --json` on normal completion, branch mutation that abandons the lane, or abort. If stop fails, report it and continue cleanup checks; do not count stop success as review proof.
+
+The review driver must not let `set -e` hide the verdict. Use an explicit status capture and `trap` cleanup shape:
+
+```bash
+lane_id="$(jq -r '.laneId' "$start_json")"
+cleanup_lane() {
+  cas review_session lane stop --lane-id "$lane_id" --json >"$run_dir/lane-stop.json" 2>/dev/null || true
+}
+trap cleanup_lane EXIT
+
+receipt="$run_dir/review-$i.json"
+set +e
+cas review_session lane review \
+  --lane-id "$lane_id" \
+  --base "$base_sha" \
+  --timeout-ms 1800000 \
+  --json \
+  --fallback none >"$receipt"
+review_exit=$?
+set -e
+
+verdict="$(jq '.reviewVerdict' "$receipt")"
+printf '%s\n' "$verdict"
+status="$(printf '%s\n' "$verdict" | jq -r '.status')"
+```
+
+If a smaller stdout surface is desired, use `--verdict-only` and store that output as the review artifact for control flow while preserving the full receipt path when available.
+
+`reviewVerdict.status` handling:
+
+- `clean`: may increment the clean streak only after backend, target fingerprint, base SHA, and `HEAD` SHA match the pinned streak.
+- `findings`: completed review with findings; reset the streak and adjudicate/fix. This is not CAS transport failure.
+- `timeout`: recover on the same `reviewThreadId` when the verdict includes the handle fields.
+- `parse_mismatch`, `transport_failure`, or `incomplete`: not clean; inspect the full receipt and fall back only under the CAS fallback rules.
+- missing or empty receipt while the `lane review` process is still alive: classify as `in_progress`, wait on the same process/handle, and do not start a duplicate review for the same target.
 
 CAS same-handle timeout recovery:
 
-1. If `lane review` exits nonzero with `failureCode="wait_timed_out"`, inspect the JSON receipt before falling back.
+1. If `lane review` exits nonzero with `reviewVerdict.status="timeout"` or `failureCode="wait_timed_out"`, inspect the JSON receipt before falling back.
 2. A recoverable timeout receipt must include `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, `target`, `targetFingerprint`, `baseSha`, and `headSha`.
 3. Recover with `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 1800000 --json` and normalize that wait receipt as the same review attempt.
 4. Do not start a duplicate `lane review` for the same target while a recoverable timed-out `reviewThreadId` exists.
@@ -374,6 +410,7 @@ CAS receipts required for each CAS-backed review invocation:
 
 - `cas` version and resolved CAS binary path.
 - Exact `cas review_session` command and JSON output path or captured JSON.
+- `reviewVerdict` and, when `--verdict-only` was used, the path where the compact verdict was captured.
 - `laneId`, `managedServerPid`, `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, `targetFingerprint`, `baseSha`, and `headSha`.
 - `selectedTransport`, `fallbackUsed`, `fallbackTransport`, `failureCode`, `failureHint`, `reviewResultAvailable`, `reviewResultSource`, `dualParseVerdict`, and `archiveStatus`.
 - Selected review base ref, base SHA, current `HEAD` SHA, normalized finding count, and backend class used for streak accounting.
