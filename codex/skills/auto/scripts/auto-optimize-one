@@ -193,7 +193,7 @@ sanitized_evidence_summary: $SUMMARY
 auto_md_existed: $([ -f "$SKILL_DIR/AUTO.md" ] && printf yes || printf no)
 branch: $BRANCH
 
-Use \$ship to create or update a PR with sanitized proof. Then use \$fin only if all guardrails pass.
+Use \$ship to create or update a PR with sanitized proof. Then use \$land only if all guardrails pass.
 EOF_FINALIZE
     ;;
   *)

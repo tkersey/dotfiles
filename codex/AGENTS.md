@@ -86,7 +86,7 @@ Treat skills as stage owners, lenses, validators, or side-effecting workflows ra
 - Specification: `spec-pipeline`, `spec-lint`, `plan`.
 - Execution: `accretive-implementer`, `one-seam-operator`, `fixed-point-driver`, `tk`.
 - Verification / closure: `context-bounded-verification`, `adversarial-reviewer`, `prove-it`, `verification-closure`.
-- Publication / lifecycle: `ship`, `fin`, `auto`, `learnings`.
+- Publication / lifecycle: `ship`, `land`, `auto`, `learnings`.
 - Language surface: `logophile`.
 
 The map above is the authoritative stage map unless a loaded skill provides a more specific handoff.
@@ -176,7 +176,7 @@ Do not wait for a `.zig` filename when the project is known to be Zig and the is
 - Durable task state/dependencies/claims/proof/checkpoints -> `$st`.
 - Session/transcript/artifact/memory/orchestration/provenance/tool-trace forensics -> `$seq`.
 - Open/update a PR without merging -> `ship`.
-- Merge/land/finish a PR -> `fin`, after required checks, approvals, and explicit merge/land intent.
+- Merge/land/finish a PR -> `land`, after required checks, approvals, and explicit merge/land intent.
 - Evidence-backed autonomous skill improvement -> `auto`, with protected-skill, sanitized-summary, validation, branch, PR, and merge guardrails.
 
 ### Tightly gated skills
@@ -189,7 +189,7 @@ Do not wait for a `.zig` filename when the project is known to be Zig and the is
 
 ### Side-effect boundary
 
-Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `$seq`, `cas`, `cron`, `ship`, `fin`, `ghost`, `deckset`, `ms`, `refine`, and `prove-it` gated. `logophile` may trigger implicitly for human-facing language but must preserve semantics and machine-consumed syntax.
+Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `$seq`, `cas`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `refine`, and `prove-it` gated. `logophile` may trigger implicitly for human-facing language but must preserve semantics and machine-consumed syntax.
 
 ## Plan Sync (`$st` <-> Codex `update_plan`)
 

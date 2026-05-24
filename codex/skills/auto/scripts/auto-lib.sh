@@ -27,7 +27,7 @@ auto_quick_validate() {
 
 auto_is_protected_name() {
   case "$1" in
-    seq|refine|cron|auto|ship|fin|.system) return 0 ;;
+    seq|refine|cron|auto|ship|land|.system) return 0 ;;
     *) return 1 ;;
   esac
 }

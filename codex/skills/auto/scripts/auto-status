@@ -54,7 +54,7 @@ else
 fi
 
 printf '\n## dependent skills\n'
-for skill in seq refine ship fin cron; do
+for skill in seq refine ship land cron; do
   if [ -d "codex/skills/$skill" ]; then
     printf '%s: present\n' "$skill"
   else
@@ -63,7 +63,7 @@ for skill in seq refine ship fin cron; do
 done
 
 printf '\n## protected skills\n'
-for skill in seq refine cron auto ship fin; do
+for skill in seq refine cron auto ship land; do
   if [ -d "codex/skills/$skill" ]; then
     printf '%s: protected\n' "$skill"
   else

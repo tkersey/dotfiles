@@ -12,14 +12,14 @@ Use `auto` to run closed-loop, evidence-backed skill ecosystem maintenance witho
 - `$seq` mines sessions, memories, reports, routing gaps, and usage patterns.
 - `$refine` performs the actual skill edit.
 - `$ship` creates or updates PRs with validation proof.
-- `$fin` handles merge checks, review/CI guardrails, merge, and cleanup.
+- `$land` handles merge checks, review/CI guardrails, merge, and cleanup.
 
-The helper scripts are deterministic guardrails and status scanners. The agent owns judgment-heavy steps: evidence interpretation, candidate selection, semantic self-checks, `$refine`, `$ship`, and `$fin`.
+The helper scripts are deterministic guardrails and status scanners. The agent owns judgment-heavy steps: evidence interpretation, candidate selection, semantic self-checks, `$refine`, `$ship`, and `$land`.
 
 ## Guardrails
 
 - Never create cron automation entries, GitHub issues, `.autoupdate`, durable local state, or durable local report directories.
-- Never autonomously modify protected skills: `seq`, `refine`, `cron`, `auto`, `ship`, `fin`, or `.system/*`.
+- Never autonomously modify protected skills: `seq`, `refine`, `cron`, `auto`, `ship`, `land`, or `.system/*`.
 - Use sanitized summaries only. Do not include raw transcript text, raw memory text, secrets, credentials, private personal details, sensitive local paths, or private user-identifying path fragments in PR bodies, commit messages, or generated files.
 - Keep post-bootstrap optimization to one ordinary skill, one evidence-backed change set, one PR, and one autonomous optimization PR maximum per scheduled scan.
 
@@ -88,9 +88,9 @@ Use `scripts/auto-optimize-one` for at most one autonomous optimization.
 8. Run `auto-optimize-one finalize`.
 9. If validation fails, attempt one repair pass. If it still fails, stop and leave changes in place unless an owned baseline proves exactly which edits this run may revert.
 10. If validation passes, use `$ship` to create or update a PR.
-11. Use `$fin` to finish the PR only when its guardrails pass.
+11. Use `$land` to finish the PR only when its guardrails pass.
 
-Do not merge if there are unresolved review threads, unresolved requested changes, failing or pending required checks, missing required approvals, merge conflicts, GitHub branch protection blocks, or repository policy blocks. If `$fin` is blocked, leave the PR open and stop.
+Do not merge if there are unresolved review threads, unresolved requested changes, failing or pending required checks, missing required approvals, merge conflicts, GitHub branch protection blocks, or repository policy blocks. If `$land` is blocked, leave the PR open and stop.
 
 If GitHub PR creation is unavailable, keep a local branch and passing commit only, do not locally merge, and print the branch name and blocker.
 

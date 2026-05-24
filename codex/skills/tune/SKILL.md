@@ -14,7 +14,7 @@ Use `tune` to improve an existing Codex skill by comparing what the skill is sup
 - `$seq` mines sessions, memories, skill mentions, historical skill blocks, routing gaps, workflow evidence, and tool traces.
 - `$tune` interprets that evidence, reconstructs the target skill's intended-use contract, classifies the gap, and writes a precise refinement brief.
 - `$refine` performs the actual in-place skill edit or upgrade and validates the result.
-- `$ship` and `$fin` remain responsible for PR and merge workflows when needed.
+- `$ship` and `$land` remain responsible for PR and merge workflows when needed.
 - `$auto` remains responsible for broad autonomous skill-ecosystem scans and guarded autonomous maintenance.
 
 Core question:
@@ -57,7 +57,7 @@ Do not use `$tune` to:
 - Mine arbitrary sessions without a target skill. Use `$seq`.
 - Run autonomous broad ecosystem scans. Use `$auto`.
 - Create or update PRs. Use `$ship`.
-- Merge PRs or clean up branches. Use `$fin`.
+- Merge PRs or clean up branches. Use `$land`.
 - Replace `$refine` as the direct editing/upgrading skill.
 - Replace `$seq` as the session-mining tool.
 - Treat raw skill mentions as proof of successful skill use.
@@ -132,7 +132,7 @@ Protected skills require extra care:
 - `cron`
 - `auto`
 - `ship`
-- `fin`
+- `land`
 - `.system/*`
 
 For protected skills:

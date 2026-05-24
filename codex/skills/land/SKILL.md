@@ -1,12 +1,12 @@
 ---
-name: fin
-description: "Finalize GitHub PRs end-to-end: update branch/PR, confirm review conversations are resolved, monitor CI until green, squash-merge, and clean up local/remote state. Use when asked to $fin or to finish/land/merge/close a PR, watch checks or runs, squash-merge, delete the branch, and sync local state."
+name: land
+description: "Land GitHub PRs end-to-end: update branch/PR, confirm review conversations are resolved, monitor CI until green, squash-merge, and clean up local/remote state. Use when asked to $land or to finish/land/merge/close a PR, watch checks or runs, squash-merge, delete the branch, and sync local state."
 ---
 
-# Fin
+# Land
 
 ## Overview
-Finish a PR end-to-end: push updates, watch checks, squash-merge, and clean up state.
+Land a PR end-to-end: push updates, watch checks, squash-merge, and clean up state.
 
 ## Workflow
 1) Identify the PR and target branch.
