@@ -428,7 +428,7 @@ Separate review discovery from closeout proof:
 
 - During stabilization, CAS review findings are discovery input. Fixing anything material resets closeout accounting because the target `HEAD` changed.
 - During closeout, count only clean CAS-backed receipts for the pinned base SHA, pinned `HEAD` SHA, pinned `targetFingerprint`, and pinned backend class.
-- `cas review_session receipt --path <receipt> --format table|json|jsonl --summary` may summarize saved artifacts for ledgers and audits, but it is not the active review control-flow authority and cannot decide that `$resolve` is complete.
+- If `cas --version` and `cas review_session --version` report `0.2.33` or newer, `cas review_session receipt --path <receipt> --format table|json|jsonl --summary` may summarize saved artifacts for ledgers and audits, but it is not the active review control-flow authority and cannot decide that `$resolve` is complete.
 
 The review driver must not let `set -e` hide the verdict. Use an explicit status capture and `trap` cleanup shape:
 

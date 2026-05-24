@@ -119,7 +119,7 @@ When `start`, `start --wait`, `status`, `wait`, or `lane review` emit JSON, the 
 
 `reviewVerdict` is the consumption surface for callers. The full CAS receipt remains the audit artifact. `cas review_session lane review --verdict-only ...` emits only the compact verdict object while preserving the same exit semantics.
 
-When `cas review_session --help` exposes `receipt`, use it for offline receipt inspection:
+When `cas --version` and `cas review_session --version` report `0.2.33` or newer and `cas review_session --help` exposes `receipt`, use it for offline receipt inspection:
 
 ```bash
 cas review_session receipt --path "$run_dir/review-1.json" --format table --summary
