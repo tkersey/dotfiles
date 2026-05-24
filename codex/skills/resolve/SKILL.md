@@ -77,6 +77,7 @@ adjudication_ledger = {}
 pr_comment_ledger = {}
 validation_commands = []
 language_skill_packet = {}
+parallel_task_ledger = []
 ```
 
 Reset `clean_review_streak` to zero whenever:
@@ -318,6 +319,76 @@ Subagents must not:
 - commit, push, resolve PR threads, or dismiss review comments;
 - declare the skill complete.
 
+## Parallelism policy
+
+The root `$resolve` process owns all mutable state: clean-review streak, backend/base/head/fingerprint pins, CAS lane lifecycle, branch mutations, commits, pushes, PR-thread decisions, and completion claims.
+
+Parallel work is allowed only for side-effect-light tasks that operate on a pinned artifact snapshot and return structured results to the root controller. Parallel workers may gather evidence, normalize output, classify context, or prepare candidate ledgers, but the root must make all state-transition decisions.
+
+Maintain `parallel_task_ledger` entries when parallel sidecars or subagents are used:
+
+```text
+parallel_task_ledger_entry = {
+  task_id: string,
+  artifact_snapshot: {
+    base_ref: string|null,
+    base_sha: string|null,
+    head_sha: string|null,
+    target_fingerprint: string|null
+  },
+  task_kind: string,
+  side_effect_profile: "read-only" | "validation-read-mostly",
+  allowed_outputs: [string],
+  started_at: string|null,
+  completed_at: string|null,
+  result_summary: string,
+  used_for_state_transition: boolean
+}
+```
+
+Allowed parallel work includes:
+
+- repository, manifest, changed-file, CI, task-runner, and validation-command discovery;
+- applicable language/tool skill discovery and loading;
+- CAS version/help checks that do not depend on an existing lane ID;
+- PR metadata, comment, review-thread, requested-change, and bot-comment fetching;
+- review receipt archiving, event-log summarization, and detailed finding normalization after `.reviewVerdict` has been captured;
+- duplicate detection, invariant clustering, stale-comment checks, and PR-thread context summarization;
+- read-only evidence gathering for `$review-adjudication`;
+- independent non-mutating validation commands when the applicable language/tool guidance says their caches, outputs, services, and generated artifacts are safe to run concurrently.
+
+Forbidden parallel work includes:
+
+- mutating the working tree, index, dependency state, lockfiles, generated artifacts, or repository configuration;
+- staging, committing, pushing, rebasing, merging, cherry-picking, amending, resolving PR threads, or dismissing comments;
+- choosing or changing the review base outside the review driver;
+- owning or incrementing `clean_review_streak` outside the root controller;
+- starting duplicate review attempts for the same backend/base/head/target-fingerprint tuple while a process or recoverable review handle is still alive;
+- running the three required clean reviews in parallel and counting them as a consecutive streak;
+- allowing a subagent or sidecar to declare `$resolve` complete.
+
+Parallel review-output handling must respect `.reviewVerdict` boundaries:
+
+- The root consumes `.reviewVerdict` first for control flow.
+- Full CAS receipt inspection may run in parallel after the verdict is captured, but it must not override root state transitions unless it reports a structured contradiction that the root adjudicates.
+- `reviewVerdict.status="findings"` is a completed review result, not a transport failure; parallel receipt processing may enrich findings, but the root must reset the streak immediately.
+- `reviewVerdict.status="clean"` is only a candidate clean result until the root verifies backend class, target fingerprint, base SHA, and `HEAD` SHA against the pinned streak state.
+
+Parallel timeout handling is intentionally narrow:
+
+- A timed-out or in-progress CAS review with recoverable handle fields must be recovered by waiting on the same `reviewThreadId` or process.
+- Do not start a duplicate `lane review` for the same target while a recoverable timed-out `reviewThreadId` exists.
+- During same-handle recovery, parallel tasks may monitor lane status, tail event logs, archive partial receipts, or prepare fallback diagnostics, but they must not mutate the branch or start another review for the same target.
+
+Parallel validation is allowed only when it is safe for the project and toolchain:
+
+- Prefer language/tool skill guidance over generic assumptions.
+- Do not parallelize commands that share unsafe writable caches, mutate generated artifacts, update lockfiles, compete for the same port/service, or rely on exclusive external credentials.
+- If any validation command changes code, config, dependencies, lockfiles, generated artifacts, behavior docs, or tests, reset `clean_review_streak = 0` and restart the selected review loop.
+- If a parallel validation command fails, capture the failure, stop claiming validation completeness, and route the failure through the normal `$fixed-point-driver` path.
+
+Parallel task results are advisory until joined by the root. A sidecar result may inform adjudication, validation planning, fallback diagnostics, or final reporting, but it must not be treated as a completed gate until the root confirms that the result applies to the current pinned artifact state.
+
 ## CAS-first backend policy
 
 Prefer a persistent CAS lane for every ordinary `$resolve` run. Native Codex review through the local CLI is the fallback backend, not the default.
@@ -424,6 +495,7 @@ Before making changes:
 - Discover and load applicable language/tool skills, then record their `language_skill_packet` guidance.
 - Preserve unrelated user changes. Do not overwrite, discard, or stage unrelated work.
 - Determine whether a PR already exists for the current branch, because that PR's base branch should drive the review base.
+- Run allowed parallel discovery tasks only through the parallelism policy and join their results before using them for review, adjudication, validation, or fallback decisions.
 
 Repeat until `clean_review_streak == 3`:
 
@@ -504,6 +576,8 @@ If a validation command fails:
 
 Do not skip builds, lints, tests, or type checks merely because the branch has three clean reviews.
 
+Parallel validation tasks may be used only under the parallelism policy. Join all validation task results before declaring full validation complete. Any failed, ambiguous, mutated, or wrong-snapshot parallel validation result blocks validation completion until the root resolves it through the normal validation and fixed-point flow.
+
 ## Commit and push
 
 Only after the final three-review clean streak and full validation pass:
@@ -519,6 +593,7 @@ Only after the final three-review clean streak and full validation pass:
    - The exact last three Codex review invocations, their backend class, and their recorded sandbox mode or CAS receipts.
    - The language/tool skills loaded for the run, with trigger evidence and any proof-environment guidance used.
    - The validation commands that passed.
+   - The parallel task ledger when sidecars or subagents were used, with confirmation that no parallel task owned mutable state or changed the branch.
    - Confirmation that the last three Codex review runs came from the pinned backend class and had zero findings/comments.
    - Any Codex review comments adjudicated as `do-not-address`, with brief rationale, if relevant.
 6. Run the post-push PR comment sweep before reporting completion.
@@ -532,7 +607,8 @@ Do not commit or push when:
 - fewer than three consecutive clean reviews have completed;
 - the review base is unknown or ambiguous;
 - review output could not be parsed reliably;
-- an actionable review or PR comment remains unresolved.
+- an actionable review or PR comment remains unresolved;
+- any parallel task result used for a gate was produced against a stale or mismatched artifact snapshot.
 
 ## Post-push PR comment sweep
 
@@ -550,6 +626,8 @@ For GitHub repositories, this command shape is acceptable for discovery:
 ```bash
 gh pr view --json number,url,state,headRefName,baseRefName,headRefOid,baseRefOid,reviewDecision
 ```
+
+PR metadata, comment lists, thread lists, review summaries, and bot-comment sources may be fetched in parallel under the parallelism policy, but the root must join them into a single PR comment ledger before adjudication or completion.
 
 ### PR comments in scope
 
@@ -589,6 +667,8 @@ For every in-scope PR comment that has not already been adjudicated with the sam
 6. For every `address` decision, invoke `$fixed-point-driver` to implement the smallest correct fix.
 7. After each PR-driven fix or batch of related fixes, run targeted validation for the touched area.
 
+Read-only context gathering for PR comments may run in parallel under the parallelism policy. Do not let parallel PR context workers resolve comments, mutate branch state, own the PR comment ledger, or decide completion.
+
 ### When PR comments cause changes
 
 If PR comment handling changes code, config, dependencies, lockfiles, generated artifacts, docs required by behavior, or tests:
@@ -620,13 +700,15 @@ A persistent loop is not success. Treat the following as blockers unless a minim
 - review output is unstable or contradictory in a way that prevents three consecutive clean reviews;
 - base discovery changes every run due to branch or remote churn;
 - validation requires credentials, services, or infrastructure that are unavailable;
-- PR comments require product decisions, approvals, or external context that the agent does not have.
+- PR comments require product decisions, approvals, or external context that the agent does not have;
+- parallel worker results are repeatedly stale, contradictory, or snapshot-mismatched in a way that prevents reliable adjudication or validation.
 
 When blocked:
 
 - stop before committing or pushing unless the branch was already safely committed and pushed before the blocker appeared;
 - report the exact blocker;
 - include the review base, `HEAD` SHA, relevant command output, and the unresolved comments/findings;
+- include the relevant parallel task ledger entries when parallel work contributed to the blocker;
 - do not fabricate completion.
 
 ## Final report
@@ -639,6 +721,7 @@ When the skill completes, report:
 - The validation commands that passed.
 - Confirmation that the last three Codex review runs came from the pinned backend class and had zero findings/comments.
 - Confirmation that the post-push PR sweep was performed.
+- Parallel sidecars or subagents used, if any, with confirmation that they were joined by the root and did not own mutable state.
 - PR comments addressed with fixes, if any.
 - PR comments adjudicated as `do-not-address`, with brief rationale, if relevant.
 - Any blockers or comments that could not be processed, if relevant.
@@ -656,6 +739,9 @@ When the skill completes, report:
 - Any PR-comment-driven change requires another local three-clean-review streak, full validation pass, commit, push, and PR sweep.
 - The resolve skill owns the state machine; subagents may assist but must not own the loop.
 - `$cas` is the default review backend and must pass websocket/app-server preflight before use; failed CAS preflight falls back to native review when available.
+- Parallel work may assist only as side-effect-light evidence gathering, normalization, context preparation, or safe validation; it must not own mutable state, mutate the branch, or declare completion.
+- Do not start duplicate review attempts for the same backend/base/head/target-fingerprint tuple while a process or recoverable review handle is still alive.
+- Do not count parallel review runs as the required three consecutive clean review streak.
 - Do not commit or push unless full validation passes.
 - Do not stage unrelated work.
-- Do not fabricate validation success, review outcomes, PR state, commit SHAs, or push status.
+- Do not fabricate validation success, review outcomes, PR state, commit SHAs, push status, or parallel-task safety.
