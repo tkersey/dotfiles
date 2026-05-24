@@ -5,6 +5,8 @@ suppress_unstable_features_warning = true
 web_search = "live"
 personality = "pragmatic"
 
+notify = ["/Users/tk/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+
 [agents]
 max_depth = 3
 
@@ -22,6 +24,7 @@ external_migration = true
 goals = true
 terminal_resize_reflow = true
 mentions_v2 = true
+js_repl = false
 
 [features.multi_agent_v2]
 enabled = true
@@ -138,3 +141,55 @@ enabled = true
 
 [plugins."browser@openai-bundled"]
 enabled = true
+
+[desktop]
+appearanceLightCodeThemeId = "rose-pine"
+appearanceDarkCodeThemeId = "rose-pine"
+preventSleepWhileRunning = true
+keepRemoteControlAwakeWhilePluggedIn = true
+
+[desktop.appearanceLightChromeTheme]
+accent = "#d7827e"
+contrast = 45
+ink = "#575279"
+opaqueWindows = false
+surface = "#faf4ed"
+
+[desktop.appearanceLightChromeTheme.fonts]
+
+[desktop.appearanceLightChromeTheme.semanticColors]
+diffAdded = "#56949f"
+diffRemoved = "#797593"
+skill = "#907aa9"
+
+[desktop.appearanceDarkChromeTheme]
+accent = "#ea9a97"
+contrast = 60
+ink = "#e0def4"
+opaqueWindows = false
+surface = "#232136"
+
+[desktop.appearanceDarkChromeTheme.fonts]
+
+[desktop.appearanceDarkChromeTheme.semanticColors]
+diffAdded = "#9ccfd8"
+diffRemoved = "#908caa"
+skill = "#c4a7e7"
+
+[mcp_servers.node_repl]
+args = []
+command = "/Applications/Codex.app/Contents/Resources/node_repl"
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+BROWSER_USE_MARKETPLACE_NAME = "openai-bundled"
+CODEX_CLI_PATH = "/Applications/Codex.app/Contents/Resources/codex"
+CODEX_HOME = "/Users/tk/.codex"
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = ""
+NODE_REPL_NODE_PATH = "/Applications/Codex.app/Contents/Resources/node"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "167fdf579477181fba1773c1efb067b00c5a64fe85dafb50a2001bde198dc739"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/tk/.codex"
+NODE_REPL_UNTRUSTED_ENV_ALLOWLIST = "BROWSER_USE_MARKETPLACE_NAME"
+SKY_CUA_SERVICE_PATH = "/Users/tk/.codex/.tmp/bundled-marketplaces/openai-bundled/plugins/computer-use/Codex Computer Use.app"
