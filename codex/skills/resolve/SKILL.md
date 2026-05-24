@@ -424,6 +424,12 @@ CAS lane lifecycle for `$resolve`:
 6. Keep CAS review attempts on `--fallback none` by default. Use `--fallback native-review` only after a CAS lane failure has been recorded and native fallback is intentionally allowed for that review attempt; classify any `fallbackUsed=true` receipt as `cas-native-fallback`.
 7. Stop the lane with `cas review_session lane stop --lane-id <laneId> --json` on normal completion, branch mutation that abandons the lane, or abort. If stop fails, report it and continue cleanup checks; do not count stop success as review proof.
 
+Separate review discovery from closeout proof:
+
+- During stabilization, CAS review findings are discovery input. Fixing anything material resets closeout accounting because the target `HEAD` changed.
+- During closeout, count only clean CAS-backed receipts for the pinned base SHA, pinned `HEAD` SHA, pinned `targetFingerprint`, and pinned backend class.
+- `cas review_session receipt --path <receipt> --format table|json|jsonl --summary` may summarize saved artifacts for ledgers and audits, but it is not the active review control-flow authority and cannot decide that `$resolve` is complete.
+
 The review driver must not let `set -e` hide the verdict. Use an explicit status capture and `trap` cleanup shape:
 
 ```bash
@@ -446,10 +452,10 @@ set -e
 
 verdict="$(jq '.reviewVerdict' "$receipt")"
 printf '%s\n' "$verdict"
-status="$(printf '%s\n' "$verdict" | jq -r '.status')"
+review_status="$(printf '%s\n' "$verdict" | jq -r '.status')"
 ```
 
-If a smaller stdout surface is desired, use `--verdict-only` and store that output as the review artifact for control flow while preserving the full receipt path when available.
+If a smaller stdout surface is desired, use `--verdict-only` and store that output as the review artifact for control flow while preserving the full receipt path when available. Use `cas review_session receipt` only after the attempt artifact exists and only for ledger/audit summarization.
 
 `reviewVerdict.status` handling:
 

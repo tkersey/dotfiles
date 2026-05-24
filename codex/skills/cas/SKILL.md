@@ -119,6 +119,15 @@ When `start`, `start --wait`, `status`, `wait`, or `lane review` emit JSON, the 
 
 `reviewVerdict` is the consumption surface for callers. The full CAS receipt remains the audit artifact. `cas review_session lane review --verdict-only ...` emits only the compact verdict object while preserving the same exit semantics.
 
+When `cas review_session --help` exposes `receipt`, use it for offline receipt inspection:
+
+```bash
+cas review_session receipt --path "$run_dir/review-1.json" --format table --summary
+cas review_session receipt --glob "$run_dir/review-*.json" --format json --summary
+```
+
+`receipt` is a generic artifact summarizer. It reads saved full CAS receipts or compact `--verdict-only` JSON, normalizes `reviewVerdict` fields, sorts multi-file output by source path, and emits `table`, `json`, or `jsonl` with optional aggregate counts. It never starts, waits on, interrupts, or mutates a review session; it must not compute `$resolve` clean streaks, compare against current `HEAD`, adjudicate findings, resolve PR comments, or decide branch readiness. Missing or partial verdict fields fail closed instead of being treated as clean proof.
+
 Use the fields this way:
 
 - `compatibilityVerdict="compatible"` means the detached review launch path succeeded under the resolved `codex` binary
