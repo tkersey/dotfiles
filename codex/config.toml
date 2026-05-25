@@ -129,9 +129,14 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [marketplaces.openai-bundled]
-last_updated = "2026-05-22T00:52:08Z"
+last_updated = "2026-05-24T21:17:39Z"
 source_type = "local"
 source = "/Users/tk/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-05-24T21:55:14Z"
+source_type = "local"
+source = "/Users/tk/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
 [plugins."computer-use@openai-bundled"]
 enabled = true
@@ -140,6 +145,15 @@ enabled = true
 enabled = true
 
 [plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
 enabled = true
 
 [desktop]
