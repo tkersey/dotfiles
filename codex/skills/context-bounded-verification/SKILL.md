@@ -162,6 +162,26 @@ While editing:
 - preserve generated-file workflows
 - record any assumption that materially shaped the change
 - check `git diff` before finalizing
+- Treat verification evidence as bound to the exact tree it inspected. If the
+  checkout changes after a check starts or before you report it, rerun the
+  required proof on the new tree; old-tree output may explain confidence, but it
+  is not proof for the delivered change.
+- For generator/verifier or certificate/proof changes, trace the exact evidence
+  surface carried by the delivered artifact. Do not validate route-specific
+  target semantics by reusing stale source fields when the artifact lacks the
+  data needed to replay the generator; require an explicit witness field or
+  choose a fail-closed predicate that the artifact can honestly prove. A
+  presence-only optional witness is not proof when the invariant needs a
+  specific target ref, fingerprint, protocol operation, route position, or site
+  coordinate. For mapping or provider-support witnesses, bind the full selected
+  relation: selected plan, selected provider/offer/program refs, route or offer
+  occurrence, mapping fingerprint, effect-shape proof, declared request/result
+  mapping, and policy support as applicable.
+- When a certificate, proof, or generated artifact binds a compiled plan hash,
+  residual id, normalized artifact hash, or dependency fingerprint, recompute it
+  from the artifact that owns that value. Do not accept caller-provided override
+  hashes as proof of compiled output identity unless a separate verified path
+  ties the override to the actual compiled artifact.
 
 ### 7. Verify with evidence
 
@@ -171,10 +191,95 @@ Use the strongest practical evidence available:
 - tests for invariants that must not change
 - type checks, lint, build, and formatting checks
 - integration or end-to-end tests for cross-boundary changes
+- runnable examples, demos, or generated commands that construct the same
+  artifact or proof surface
 - migration dry-runs or schema validation where applicable
 - manual diff review for public contracts and risky side effects
 
 When fixing a bug, prefer to demonstrate the bug with a failing test first, then show that the test passes after the fix.
+
+When a proof, witness, schema, or certificate contract changes, update every
+checked example or runtime fixture that constructs the same artifact, not only
+unit tests. If those examples are part of the repository's proof surface, run
+their commands and verify their observable output.
+
+When a review finding is about verifier strength, a green suite is not enough
+by itself. Re-read the changed predicate and add or identify a negative fixture
+that would fail the too-weak version, especially for "exists" checks that should
+prove equality, ownership, or route-specific support.
+
+If the new regression trips an upstream precondition, do not weaken the
+invariant being reviewed. Adjust only the orthogonal fixture coordinate needed
+to satisfy that precondition, then keep the target proof strict and rerun the
+same proof path.
+
+For policy limits, quotas, counters, and thresholds, verify the measured
+dimension, not just the numeric comparison. A depth limit, count limit,
+fanout limit, retry limit, byte limit, or occurrence limit should have fixtures
+that distinguish the dimensions it can be confused with, such as wide-shallow
+versus deep-narrow structures. If the metric is recursive or derived, compute
+and test the same traversal, coordinate space, and ownership rule that defines
+the policy; a boolean "has children" proxy is not a depth proof. When a
+certificate, source map, proof, or generated artifact must enforce that metric,
+the artifact must carry a metric witness or recomputable evidence surface;
+do not validate one metric from an unrelated summary count.
+
+For policy allowlists or capability gates, verify the authority-bearing identity,
+not only an allow flag, enum tag, or object kind. Host-intrinsic, provider,
+world-port, ACL, entitlement, and feature-policy checks should require the
+domain-owned ref or capability the policy is meant to authorize, with a negative
+fixture proving a same-kind but wrong-domain/wrong-ref object is rejected.
+
+For fail-closed policy switches, verify that partial, blocker, audit-only, or
+best-effort paths cannot bypass the switch unless the same policy object owns an
+explicit exception. A flag such as "fail on unsupported" must be checked before
+accepting a partial certificate/blocker artifact, with a negative fixture that
+proves the partial path still rejects when the fail-closed switch is enabled.
+
+For generated artifacts with summaries, counters, source maps, or certificates,
+verify the projections too. Counts should come from the emitted disposition in
+the delivered artifact, not from an earlier selected route category that may be
+lowered, blocked, residualized, or redirected before emission.
+For partial or blocked artifacts, unsupported/blocked counts must match the
+actual emitted blocked source-map entries they claim to summarize. Do not use a
+total report blocker count, overcount tolerance, or unrelated summary field as
+proof for source-map blocker evidence; add an overcount regression when tightening
+this check. Keep source-shape map entries, blocked entries, unsupported blocked
+source shapes, and direct/root blockers as separate dimensions unless one is
+explicitly derived from another by the artifact contract. Do not infer "not a
+source effect" solely from a missing shape ref when the emitted disposition, such
+as a lowered world-port entry, still represents a source effect; reserve
+domain/ref discrimination for the entry classes that actually require it. When
+the primary shape/effect ref is absent and the entry has no static-plan owner,
+bind the entry to the owning fallback evidence ref used by generation, such as
+the world-port ref, and verify the certificate checker uses the same fallback.
+For static-plan-owned morphism entries, verify the target shape and plan binding
+instead of forcing the direct world-port fallback.
+
+When a generated projection merges multiple source collections, verify
+completeness across all of them. A nonempty primary collection such as static
+plans, selected routes, or generated entries must not suppress independent
+report-level, nested, provider, residual, or blocker entries. De-duplicate only
+items that are actually represented by another emitted entry, and add or
+identify a mixed-source regression fixture.
+
+When a generated-artifact test expectation changes while the generator,
+reporter, or certificate checker is still being repaired, treat the new
+expectation as diagnostic until the root cause is fixed. Before delivery,
+re-check that the final assertion proves the intended semantic projection:
+cardinality-only checks are insufficient for identity-bearing refs unless an
+adjacent checker proves exact membership, ownership, or target coordinate.
+
+When a verifier fix changes route semantics, audit sibling branches in the same
+predicate family. A target-shape rule fixed for shape-only lowering can still be
+missing from host-intrinsic, pipeline, provider-program, or blocker paths that
+reuse the older source-shape assumption.
+
+When adding or validating a shortcut, early return, lowering bypass, or
+shape-only/world-port path, verify it still executes the proof obligations owned
+by the selected route semantics before it skips the normal path. A route lowered
+to a simpler emitted form may still need morphism, adapter, provider, mapping,
+or dependency evidence to prove that lowering is authorized.
 
 If tests cannot be run, state exactly why and what command should be run by a human.
 
