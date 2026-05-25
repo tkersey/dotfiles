@@ -160,6 +160,12 @@ Review result classification:
 - A lane timeout receipt is recoverable only when it includes `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, `target`, `targetFingerprint`, `baseSha`, and `headSha`. Recover by waiting on that same `reviewThreadId`; do not start a second review against the same target while the original detached review may still complete.
 - Archive failure is an operational warning, not review correctness proof. Report `archiveStatus`, but do not infer review cleanliness from archive success or failure.
 
+Long-running lane reviews are normal. If `lane review` is still attached and
+within its configured timeout, keep waiting on that attempt and use `lane status`
+or event-log inspection only as observation. Do not start another `lane review`,
+switch backends, mutate the checkout, or classify silence as failure until the
+attempt returns a structured verdict or a recoverable timeout receipt.
+
 Compatibility note: on Codex `0.118.x` stdio, detached review still requires fresh-parent materialization before detached `review/start`, so CAS `--parent-mode auto` keeps that pre-materialization path. The websocket-backed review lane exists specifically to restore truthful fresh-process detached control across commands instead of depending on stdio connection lifetime.
 
 Node runtime paths (`cas_proxy.mjs`, `cas_client.mjs`, and related wrappers) are removed from this skill and must not be used.
