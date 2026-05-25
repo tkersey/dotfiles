@@ -15,7 +15,6 @@ Use `tune` to improve an existing Codex skill by comparing what the skill is sup
 - `$tune` interprets that evidence, reconstructs the target skill's intended-use contract, classifies the gap, and writes a precise refinement brief.
 - `$refine` performs the actual in-place skill edit or upgrade and validates the result.
 - `$ship` and `$land` remain responsible for PR and merge workflows when needed.
-- `$auto` remains responsible for broad autonomous skill-ecosystem scans and guarded autonomous maintenance.
 
 Core question:
 
@@ -55,7 +54,7 @@ Do not use `$tune` to:
 
 - Edit a skill directly without usage or performance evidence. Use `$refine`.
 - Mine arbitrary sessions without a target skill. Use `$seq`.
-- Run autonomous broad ecosystem scans. Use `$auto`.
+- Run autonomous broad ecosystem scans.
 - Create or update PRs. Use `$ship`.
 - Merge PRs or clean up branches. Use `$land`.
 - Replace `$refine` as the direct editing/upgrading skill.
@@ -130,7 +129,6 @@ Protected skills require extra care:
 - `seq`
 - `refine`
 - `cron`
-- `auto`
 - `ship`
 - `land`
 - `.system/*`
@@ -168,7 +166,6 @@ Read the target skill first:
 ```text
 codex/skills/<skill>/SKILL.md
 codex/skills/<skill>/agents/openai.yaml
-codex/skills/<skill>/AUTO.md
 codex/skills/<skill>/scripts/
 codex/skills/<skill>/references/
 codex/skills/<skill>/assets/
@@ -331,7 +328,7 @@ Likely `$refine` actions:
 
 - add `quick_validate`,
 - add script sample commands,
-- add corpus validation when shared assumptions change,
+- run `scripts/validate-changed-skills` when shared assumptions or multiple skills change,
 - add concrete success criteria.
 
 #### Metadata Gap
@@ -418,7 +415,7 @@ Success criteria:
 Validation:
 - quick_validate target skill
 - script sample run, if scripts changed
-- corpus validation, if shared assumptions or multiple skills changed
+- `codex/skills/tune/scripts/validate-changed-skills`, if shared assumptions or multiple skills changed
 ```
 
 ### 9. Invoke `$refine`
@@ -439,10 +436,10 @@ Require `$refine` validation:
 uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/<skill>
 ```
 
-If shared assumptions or multiple skills changed, also run:
+If shared assumptions or multiple skills changed, run:
 
 ```bash
-codex/skills/auto/scripts/auto-validate-corpus codex/skills
+codex/skills/tune/scripts/validate-changed-skills
 ```
 
 If scripts changed, run at least one representative sample command.

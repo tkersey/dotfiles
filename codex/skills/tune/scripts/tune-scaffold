@@ -123,4 +123,5 @@ Success criteria:
 
 Validation:
 - uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/$skill
+- codex/skills/tune/scripts/validate-changed-skills, if shared assumptions or multiple skills changed
 TUNE_OUT

@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: validate-changed-skills [--base <ref>] [--] [path ...]
+
+Validate changed non-system Codex skills with quick_validate.py.
+
+With explicit paths, each path may be a skill directory or a file under
+codex/skills/<skill>. Without paths, changed paths are discovered from:
+  - git diff --name-only
+  - git diff --cached --name-only
+  - git ls-files --others --exclude-standard
+
+--base <ref> also includes paths changed from <ref>...HEAD.
+Deleted skill directories are skipped; this helper validates remaining skills,
+not intentional removals.
+USAGE
+}
+
+base_ref=""
+paths=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --base)
+      base_ref="${2:-}"
+      if [[ -z "$base_ref" ]]; then
+        echo "--base requires a value" >&2
+        exit 2
+      fi
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      while [[ $# -gt 0 ]]; do
+        paths+=("$1")
+        shift
+      done
+      ;;
+    -*)
+      echo "unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      paths+=("$1")
+      shift
+      ;;
+  esac
+done
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+validator="codex/skills/.system/skill-creator/scripts/quick_validate.py"
+if [[ ! -f "$validator" ]]; then
+  echo "quick_validate.py not found: $validator" >&2
+  exit 1
+fi
+
+add_skill_dir_for_path() {
+  local path="$1"
+  local rel="$path"
+  local skill
+
+  case "$rel" in
+    "$repo_root"/*) rel="${rel#"$repo_root"/}" ;;
+  esac
+
+  case "$rel" in
+    codex/skills/.system|codex/skills/.system/*)
+      return
+      ;;
+    codex/skills/*)
+      skill="${rel#codex/skills/}"
+      skill="${skill%%/*}"
+      if [[ -n "$skill" && "$skill" != "$rel" ]]; then
+        skill_dirs["codex/skills/$skill"]=1
+      elif [[ -n "$skill" && -d "codex/skills/$skill" ]]; then
+        skill_dirs["codex/skills/$skill"]=1
+      fi
+      ;;
+  esac
+}
+
+declare -A skill_dirs=()
+
+if [[ ${#paths[@]} -gt 0 ]]; then
+  for path in "${paths[@]}"; do
+    add_skill_dir_for_path "$path"
+  done
+else
+  while IFS= read -r path; do
+    [[ -n "$path" ]] && add_skill_dir_for_path "$path"
+  done < <(git diff --name-only)
+
+  while IFS= read -r path; do
+    [[ -n "$path" ]] && add_skill_dir_for_path "$path"
+  done < <(git diff --cached --name-only)
+
+  while IFS= read -r path; do
+    [[ -n "$path" ]] && add_skill_dir_for_path "$path"
+  done < <(git ls-files --others --exclude-standard)
+
+  if [[ -n "$base_ref" ]]; then
+    while IFS= read -r path; do
+      [[ -n "$path" ]] && add_skill_dir_for_path "$path"
+    done < <(git diff --name-only "$base_ref"...HEAD)
+  fi
+fi
+
+sorted_dirs=()
+if [[ ${#skill_dirs[@]} -gt 0 ]]; then
+  mapfile -t sorted_dirs < <(printf '%s\n' "${!skill_dirs[@]}" | sort)
+fi
+
+failures=0
+validated=0
+skipped=0
+
+for skill_dir in "${sorted_dirs[@]}"; do
+  if [[ ! -f "$skill_dir/SKILL.md" ]]; then
+    echo "skip deleted or non-skill directory: $skill_dir"
+    skipped=$((skipped + 1))
+    continue
+  fi
+
+  echo "==> validating $skill_dir"
+  if uv run --with pyyaml -- python3 "$validator" "$skill_dir"; then
+    validated=$((validated + 1))
+  else
+    failures=$((failures + 1))
+  fi
+done
+
+echo "validated_skills=$validated skipped=$skipped failures=$failures"
+
+if [[ ${#sorted_dirs[@]} -eq 0 ]]; then
+  echo "no changed skill directories found"
+fi
+
+[[ "$failures" -eq 0 ]]

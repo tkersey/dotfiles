@@ -39,7 +39,6 @@ Files likely affected:
 - codex/skills/<skill>/agents/openai.yaml, if metadata changed
 - codex/skills/<skill>/scripts/<name>, if deterministic tooling is justified
 - codex/skills/<skill>/references/<name>.md, if reusable guidance is too long for SKILL.md
-- codex/skills/<skill>/AUTO.md, if autonomous maintenance policy is affected
 
 Success criteria:
 - <criterion 1>
@@ -49,7 +48,7 @@ Success criteria:
 Validation:
 - uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/<skill>
 - <script sample command>, if scripts changed
-- codex/skills/auto/scripts/auto-validate-corpus codex/skills, if shared assumptions or multiple skills changed
+- codex/skills/tune/scripts/validate-changed-skills, if shared assumptions or multiple skills changed
 
 Privacy / sanitization:
 - No raw transcript text unless explicitly requested and safe.

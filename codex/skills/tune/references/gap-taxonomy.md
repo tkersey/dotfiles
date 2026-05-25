@@ -65,7 +65,7 @@ Common fixes:
 
 - add `quick_validate`,
 - add script sample commands,
-- add corpus validation when shared assumptions change,
+- run `scripts/validate-changed-skills` when shared assumptions or multiple skills change,
 - add concrete success criteria.
 
 ## Metadata Gap

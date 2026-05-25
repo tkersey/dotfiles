@@ -86,7 +86,7 @@ Treat skills as stage owners, lenses, validators, or side-effecting workflows ra
 - Specification: `spec-pipeline`, `spec-lint`, `plan`.
 - Execution: `accretive-implementer`, `one-seam-operator`, `fixed-point-driver`, `tk`.
 - Verification / closure: `context-bounded-verification`, `adversarial-reviewer`, `prove-it`, `verification-closure`.
-- Publication / lifecycle: `ship`, `land`, `auto`, `learnings`.
+- Publication / lifecycle: `ship`, `land`, `learnings`.
 - Language surface: `logophile`.
 
 The map above is the authoritative stage map unless a loaded skill provides a more specific handoff.
@@ -101,7 +101,7 @@ Default cost posture:
 
 - `low`: safe implicit rails such as `logophile` for human-facing wording only.
 - `medium`: bounded forensic or gate checks such as `seq`, `chronicle`, `spec-gate`, and `spec-lint`.
-- `high`: substantial workflows such as `ideate`, `algebra-driven-design`, `kan`, `reduce`, `universalist`, `spec-pipeline`, and `auto`.
+- `high`: substantial workflows such as `ideate`, `algebra-driven-design`, `kan`, `reduce`, `universalist`, and `spec-pipeline`.
 - `extreme`: multi-turn proof engines such as `prove-it`.
 
 Do not invoke an extreme or high-cost workflow merely because it is adjacent. Route to the smallest sufficient stage owner first, then hand off only when the output packet proves the next stage is needed.
@@ -177,7 +177,6 @@ Do not wait for a `.zig` filename when the project is known to be Zig and the is
 - Session/transcript/artifact/memory/orchestration/provenance/tool-trace forensics -> `$seq`.
 - Open/update a PR without merging -> `ship`.
 - Merge/land/finish a PR -> `land`, after required checks, approvals, and explicit merge/land intent.
-- Evidence-backed autonomous skill improvement -> `auto`, with protected-skill, sanitized-summary, validation, branch, PR, and merge guardrails.
 
 ### Tightly gated skills
 
