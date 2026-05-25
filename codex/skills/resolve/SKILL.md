@@ -465,6 +465,12 @@ If a smaller stdout surface is desired, use `--verdict-only` and store that outp
 - `parse_mismatch`, `transport_failure`, or `incomplete`: not clean; inspect the full receipt and fall back only under the CAS fallback rules.
 - missing or empty receipt while the `lane review` process is still alive: classify as `in_progress`, wait on the same process/handle, and do not start a duplicate review for the same target.
 
+While a selected review attempt is `in_progress`, keep the review target stable:
+do not mutate the checkout, amend/rebase, start another review, or switch
+backends. Observation-only commands such as lane status, event-log tails, or
+receipt inspection are allowed; branch-changing work must wait for a completed
+verdict or a recoverable timeout receipt.
+
 CAS same-handle timeout recovery:
 
 1. If `lane review` exits nonzero with `reviewVerdict.status="timeout"` or `failureCode="wait_timed_out"`, inspect the JSON receipt before falling back.
@@ -519,6 +525,7 @@ Repeat until `clean_review_streak == 3`:
    - Classify each comment as either `address` or `do-not-address`.
    - Use `address` when the comment identifies a real correctness, reliability, security, maintainability, performance, accessibility, API-contract, data-loss, regression, release, or test-coverage issue.
    - Use `do-not-address` only when the comment is demonstrably incorrect, already fixed, a duplicate, unsupported by project conventions, out of scope for this branch, contradicted by requirements, or would make the code worse.
+   - If two or more addressed findings in the run cluster around the same state, protocol, validation, lifecycle, idempotency, retry, cache/index, or impossible-state boundary, load `$invariant-ace` and name the owned invariant before applying another point fix.
    - For every `address` decision, invoke `$fixed-point-driver` to implement the smallest correct fix.
    - After each fix or batch of related fixes, run targeted validation for the touched area.
    - Continue the review loop after fixes are applied.
