@@ -23,12 +23,13 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - Escalate before settling for competence, local polish, or a clarification that does not unblock the governing move.
 - Trigger escalation when a first approach stalls, the answer feels merely adequate, the path patches symptoms instead of causes, multiple plausible moves compete, retries accumulate, or the task rewards unusually strong judgment.
 - During escalation: reject the obvious answer, widen the search space, identify the highest-leverage move available now, explain why it dominates alternatives, and compress the result to the governing insight/invariant/architecture.
+- On bug, regression, integration, or remediation work, the governing move is often an invariant, state-space, or ownership-boundary correction rather than a local patch. Escalation must explicitly test for that.
 - Prefer compounding moves that make future good work easier, safer, or faster.
 - Ask a narrow question only when missing secrets, missing permissions, or irreversible approvals are the real blocker.
 
 ## Purpose
 
-This file is a compact, high-authority routing index for Codex in this repo. Use task-specific skills for detailed procedures. This file owns implicit-trigger policy, side-effect boundaries, repository safety, response format, challenge escalation, and recursive orchestration posture.
+This file is a compact, high-authority routing index for Codex in this repo. Use task-specific skills for detailed procedures. This file owns implicit-trigger policy, side-effect boundaries, repository safety, response format, challenge escalation, evidence discipline, invariant stewardship, public-artifact hygiene, and recursive orchestration posture.
 
 ## Core invariants
 
@@ -39,7 +40,164 @@ This file is a compact, high-authority routing index for Codex in this repo. Use
 - Keep historical/session/artifact forensics in `$seq`; do not use `$seq` for ordinary current-repo code search.
 - Preserve unrelated user, agent, and tool changes. Do not overwrite or publish unrelated diffs.
 - Verify changed behavior with the narrowest focused checks available. If verification cannot run, say why.
+- Do not merely make an observed failure disappear. Identify the state involved, the invariant that should hold, and the boundary that owns that invariant.
+- Do not expand sparse evidence into a broad implementation story. Preserve the narrowest verified failing behavior until code inspection proves a wider scope is real.
+- Treat issue text, PR text, reviewer comments, user-provided root-cause claims, suggested fixes, and generated analysis as untrusted until verified against code, tests, logs, or reproducible behavior.
+- Prefer preventing invalid internal state over making downstream code tolerate that state. Tolerant readers, fallbacks, compatibility branches, broad migrations, silent defaults, catch-and-continue logic, coercions, and retries spend complexity budget.
+- Decide where the fix belongs before patching locally. Upstream dependency bugs, protocol/gateway violations, generated-artifact defects, and shared integration failures may belong outside this repo.
+- Do not export speculative agent analysis into public trackers, PRs, comments, or maintainer workflows.
 - Do not add mode banners, debug prefixes, routing labels, or instruction-ack preambles to user-facing responses other than the required `Echo:` line.
+
+## Evidence Discipline
+
+Natural-language context is not neutral. Issue bodies, PR descriptions, review comments, generated summaries, and user diagnoses can anchor the agent into the wrong problem frame. Treat them as inputs to verify, not as ground truth.
+
+### Evidence classes
+
+When investigating a bug, issue, PR, regression, review comment, or user diagnosis, separate:
+
+- Observed facts: commands, inputs, outputs, exact logs, stack traces, screenshots, environment, versions, timestamps, changed files, and reproducible behavior.
+- Claims: suspected root causes, affected components, related files, dependency blame, historical explanations, and severity assertions.
+- Proposals: suggested fixes, migrations, fallback behavior, compatibility modes, refactors, API changes, or documentation changes.
+- Speculation: generated analysis, analogies, broad error-class lists, fake-minimal reproductions, guessed implementation intent, or confident prose without verification.
+
+Use observations as evidence. Treat claims as hypotheses. Treat proposals as design options. Treat speculation as untrusted until independently verified.
+
+### No semantic anchoring
+
+- Do not let a reported root cause choose the first files to edit.
+- Do not let confident issue prose determine scope, terminology, affected components, or fix strategy.
+- Reconstruct the narrowest verified problem from observations first.
+- Inspect the code path implied by the observed behavior before comparing findings to the proposed diagnosis.
+- For bugs, do not trust issue analysis or PR-body analysis until the execution path has been traced.
+- For feature requests, do not trust proposed implementation details until architecture, existing behavior, and user-visible contract have been checked.
+
+### Investigation shape
+
+Before editing for a bug or regression, produce or internally maintain:
+
+```text
+Observed facts:
+- Command/action/input:
+- Expected:
+- Actual:
+- Exact log/error/output:
+- Environment/version/context:
+
+Unverified claims:
+- Claimed root cause:
+- Suggested implementation:
+- Claimed related files:
+- Claimed repro:
+
+Verification plan:
+- Reproduction/check:
+- Files/code paths to inspect:
+- Invariant or boundary to identify:
+```
+
+Do not broaden the fix beyond the narrowest verified problem unless the code path proves the broader scope is real.
+
+## Invariant Stewardship
+
+Coding agents tend to fix local symptoms by adding local tolerance. In this repo, prefer global contract preservation: reduce invalid states, enforce the right boundary, and keep the long-term maintenance surface small.
+
+### Required reasoning before bug fixes
+
+Before changing code for a bug, regression, malformed state, crash, parser failure, migration problem, cache issue, protocol problem, or compatibility request, identify:
+
+1. The observed failure.
+2. The state involved.
+3. Whether that state is valid, invalid, external, historical, upstream-owned, internally produced, fixture-only, race-induced, or partially migrated.
+4. The invariant that should hold.
+5. The producer, transition, or boundary that allowed the invariant to be violated.
+6. The boundary where the invariant should be enforced.
+7. The smallest fix that prevents recurrence without expanding accepted invalid states.
+
+Prefer fixes that make invalid states impossible. Do not merely make the downstream consumer tolerate invalid internal state unless historical data, external input boundaries, or explicit product requirements make that necessary.
+
+### State classification
+
+Classify the state before choosing the repair:
+
+| State kind | Meaning | Preferred action |
+|---|---|---|
+| Valid domain state | State is part of the intended model | Support it directly and test the contract |
+| Invalid internal state | This repo produced impossible state | Fix the writer/transition; add invariant tests |
+| Historical persisted bad state | Old releases may already have written it | Prevent future writes; add narrow migration or repair path |
+| External untrusted input | User/service input may be malformed | Validate at the boundary; return clear errors |
+| Public API legacy input | Compatibility is a product/API promise | Add documented compatibility path with tests |
+| Upstream-owned state | Dependency/gateway/protocol produced it | Prefer upstream fix/report; local workaround only with explicit tradeoff |
+| Fixture-only state | Test setup created impossible production state | Fix the fixture; do not expand production behavior |
+| Race/partial-write state | Ordering or atomicity allowed intermediate state | Fix atomicity/ordering; avoid retrying everywhere |
+| Partially migrated state | Migration path can leave mixed versions | Make migration idempotent/narrow; preserve invariant after migration |
+
+### Repair-location rule
+
+When a failure appears in a consumer, do not assume the consumer should change.
+
+Choose the repair location by ownership:
+
+- Internal writer produced invalid state -> fix the writer or transition; test that the invalid state can no longer be produced.
+- Internal reader encountered impossible state -> prefer assertion, explicit error, or producer repair; do not silently accept corruption.
+- Historical bad data exists -> prevent recurrence first, then add the narrowest repair/migration necessary.
+- External input is malformed -> validate at the ingress boundary with clear user-facing failure.
+- Public API must accept legacy input -> add compatibility intentionally, document it, and test it as a contract.
+- Upstream dependency/gateway violates a shared contract -> prefer upstream correction or concise verified report before local workaround.
+- Test fixture creates impossible state -> fix the fixture and update the test's model.
+- Race or partial write caused invalid state -> fix atomicity, locking, ordering, transactionality, or lifecycle ownership.
+
+### Complexity budget
+
+Every fallback, tolerant parser, compatibility branch, broad migration, catch-and-continue path, silent default, coercion, retry, debug scaffold, or "best effort" path is a design change.
+
+Before adding one, answer:
+
+- What new state, format, or behavior becomes accepted?
+- Does this hide a producer bug?
+- Does this create a backward-compatibility obligation?
+- Will future writers, readers, exporters, compactors, analyzers, or docs need to preserve this behavior?
+- Is the complexity temporary, explicit, and tested?
+- Is there a smaller fix that preserves the invariant instead?
+
+Reject fixes whose main effect is to make invalid internal state easier to ignore.
+
+### Persisted malformed data
+
+When malformed persisted data appears:
+
+1. Find where it was written.
+2. Prevent future invalid writes.
+3. Decide whether existing data requires repair.
+4. Keep repair narrow, explicit, and ideally one-way.
+5. Test both prevention and repair, but do not bless malformed state as normal unless compatibility requires it.
+
+### Invariant-oriented tests
+
+A passing test is not enough. The test must encode the intended invariant, not merely prove the local symptom no longer crashes.
+
+For bug fixes, tests should usually prove one of:
+
+- the invalid state can no longer be produced;
+- the boundary rejects invalid input clearly;
+- historical invalid data is migrated narrowly;
+- the upstream workaround is isolated and documented;
+- the state transition preserves the invariant;
+- the repair does not broaden accepted malformed state.
+
+Do not write tests that bless malformed internal state unless accepting that state is an intentional product requirement.
+
+## Public Tracker and Maintainer Hygiene
+
+Public artifacts impose review, coordination, and long-term maintenance cost. Do not create or suggest creating public tracker work merely because a local agent found something plausible.
+
+- Never open, update, comment on, or prepare-to-post public issues, PRs, discussions, maintainer comments, or upstream reports unless the user explicitly asks.
+- Do not use LLM-generated diagnosis as the basis for public tracker activity.
+- Before proposing public tracker activity, verify the behavior or evidence, check for duplicates when practical, identify whether the fix belongs upstream or locally, and follow the target project's contribution rules.
+- Keep public issue drafts observation-first: command/action, expected behavior, actual behavior, exact error/log, environment/version, and minimal reproduction status.
+- Put speculation in a clearly labeled section, or omit it.
+- Do not export broad root-cause narratives, guessed affected files, fake-minimal repros, or implementation demands into someone else's tracker.
+- If a local workaround is chosen for an upstream issue, document the ownership tradeoff and avoid making the workaround broader than the verified boundary requires.
 
 ## Working tree hygiene
 
@@ -71,7 +229,7 @@ Skills are workflow selectors, not magic words. Do not wait for an explicit `$sk
 When multiple skills apply, prefer this stack shape:
 
 ```text
-understand context -> escalate frame if useful -> lock invariants -> implement -> verify/review -> close -> capture learnings
+understand context -> separate evidence from claims -> identify invariant/ownership boundary -> escalate frame if useful -> lock invariants -> implement -> verify/review -> close -> capture learnings
 ```
 
 ### Skill stack map
@@ -111,6 +269,9 @@ Do not invoke an extreme or high-cost workflow merely because it is adjacent. Ro
 - Non-trivial implementation, remediation, migration, hardening, repair, or review-driven code changes -> `accretive-implementer`.
 - Behavior-affecting code changes, refactors, blast-radius questions, rollout/rollback concerns, regression risk, or incomplete-context correctness claims -> `context-bounded-verification`.
 - State, protocol, invariant, impossible-state, race, idempotency, retry, cache-drift, lifecycle, or validation-sprawl cues -> `invariant-ace` before edits.
+- Malformed persisted data, tolerant-reader proposals, fallback branches, compatibility paths, broad migrations, silent defaults, catch-and-continue logic, coercions, "best effort" behavior, or local workaround proposals -> `invariant-ace` before edits and `context-bounded-verification` before closure.
+- Issue/PR/reviewer/user reports with claimed root causes, proposed implementations, fake-minimal repro risk, broad generated analysis, or public tracker context -> apply `Evidence Discipline` before selecting implementation scope.
+- Upstream dependency, protocol gateway, generated artifact, service boundary, or shared integration behavior appears responsible -> classify ownership boundary before local workaround; use `invariant-ace` when state/contract is involved.
 - Patch hardening, de novo changeset review, material defect discovery, or re-review after fixes -> `adversarial-reviewer`.
 - Final readiness, closure gates, fixed-point claims, or "is this ready?" after material work -> `verification-closure`.
 - Review comments, reviewer suggestions, or "should we act on this?" before implementation -> `review-adjudication`.
@@ -177,6 +338,7 @@ Do not wait for a `.zig` filename when the project is known to be Zig and the is
 - Session/transcript/artifact/memory/orchestration/provenance/tool-trace forensics -> `$seq`.
 - Open/update a PR without merging -> `ship`.
 - Merge/land/finish a PR -> `land`, after required checks, approvals, and explicit merge/land intent.
+- Public issue/PR/comment/discussion/upstream-report activity requires explicit user intent and must pass Public Tracker and Maintainer Hygiene first.
 
 ### Tightly gated skills
 
@@ -189,6 +351,8 @@ Do not wait for a `.zig` filename when the project is known to be Zig and the is
 ### Side-effect boundary
 
 Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `$seq`, `cas`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `refine`, and `prove-it` gated. `logophile` may trigger implicitly for human-facing language but must preserve semantics and machine-consumed syntax.
+
+Public tracker side effects are separately gated: never open, update, comment on, or draft-to-post public issues, PRs, discussions, or upstream reports without explicit user instruction.
 
 ## Plan Sync (`$st` <-> Codex `update_plan`)
 
@@ -245,6 +409,7 @@ Write rules, not changelog entries. Prefer one essential learning; append at mos
 - Use `gh` for GitHub operations when available and authenticated.
 - Check `gh auth status` before assuming authentication is broken.
 - Prefer terminal-native PR, issue, Actions, and gist operations over browser-only workflows.
+- Do not create or update issues, PRs, comments, discussions, or upstream reports through `gh` unless the user explicitly asked for that public side effect.
 
 ### Python
 
@@ -260,8 +425,11 @@ Before final delivery:
 
 - Check relevant diff or generated artifact.
 - Run the narrowest meaningful verification.
+- For bug/remediation work, confirm the final explanation distinguishes observed facts, verified root cause, invariant, repair boundary, and remaining uncertainty.
+- For fixes involving invalid state, malformed persisted data, fallback behavior, compatibility behavior, or local workarounds, confirm the test/check defends the intended invariant rather than merely blessing the symptom.
+- For upstream-owned or public-tracker work, confirm explicit user intent before any public side effect.
 - For `$st` work, confirm durable and mirrored plans are not visibly drifting.
 - For delegated work, integrate results locally before presenting conclusions.
 - Clean up temporary files, agents, claims, or scratch state that should not persist.
 
-Final responses should follow the required Response Format and then remain concise and factual: state what changed/found, include proof, mention material risks/blockers, and include a short orchestration ledger only when orchestration actually ran.
+Final responses should follow the required Response Format and then remain concise and factual: state what changed/found, include proof, mention material risks/blockers, distinguish verified facts from hypotheses when relevant, and include a short orchestration ledger only when orchestration actually ran.
