@@ -1,6 +1,6 @@
 ---
 name: shadow
-description: "Follow one Codex session until it stops, repeatedly reading new session evidence and applying a named skill as the lens for interpretation, reporting, proposal, or explicit action. Trigger when asked to shadow, tail, watch, follow, monitor, supervise, or companion a single session id/path with a target skill such as $tune, $seq, $ship, $pdf, or another skill."
+description: "Follow one Codex session until it stops by reading watched-session evidence only through $seq, then apply a named skill as the lens for interpretation, reporting, proposal, or explicit action. Trigger when asked to shadow, tail, watch, follow, monitor, supervise, or companion a single session id/path with a target skill such as $tune, $seq, $ship, $pdf, or another skill."
 ---
 
 # Shadow
@@ -9,7 +9,7 @@ description: "Follow one Codex session until it stops, repeatedly reading new se
 
 Use `$shadow` to attach a goal-driven companion to exactly one Codex session.
 
-`$shadow` tails one watched session, interprets new evidence from that session through a named target skill, and continues until the watched session stops. It is designed to be used with `/goal` so the monitoring loop can continue across turns without broadening into an ecosystem scan.
+`$shadow` monitors one watched session through `$seq` session surfaces, interprets new evidence from that session through a named target skill, and continues until the watched session stops. It is designed to be used with `/goal` so the monitoring loop can continue across turns without broadening into an ecosystem scan.
 
 The target skill is parameterized. `$tune` is the defining example, not a hard-coded dependency.
 
@@ -56,6 +56,8 @@ Do not use `$shadow` to:
 - Continue after the watched session stops.
 - Assume `$shadow` can inject messages into or steer the watched session.
 - Treat raw skill mentions as proof that the watched session used a skill correctly.
+- Tail, read, grep, parse, or otherwise inspect watched-session JSONL directly.
+- Fall back to non-`seq` session monitoring when `$seq` cannot answer a monitoring question.
 - Dump raw transcript text by default.
 
 ## Required Inputs
@@ -160,7 +162,16 @@ For protected target skills:
 
 ## Evidence Rules
 
-Use `$seq` first for watched-session evidence.
+Use `$seq` only for watched-session evidence.
+
+This is a hard boundary: `$shadow` may read skill files, helper scripts, and local resources needed to reconstruct the target skill contract, but it must monitor the watched session only through `seq` commands. Do not use `tail`, `cat`, `jq`, `rg`, Python scripts, editor inspection, raw JSONL reads, or filesystem globbing as watched-session evidence collection.
+
+If a needed watched-session fact is not available through a `seq` surface, or the available `seq` path is too slow or awkward for repeated monitoring:
+
+- classify the cycle as `tooling_gap`, `seq_tuning_gap`, or `state_unknown`,
+- report the missing `seq` surface or command shape,
+- produce a `$tune`-on-`$seq` brief when the gap is concrete enough to improve `$seq`,
+- do not substitute direct transcript or JSONL inspection.
 
 Prefer specialized `seq` commands over generic `seq query`:
 
@@ -169,16 +180,48 @@ seq session-detail --root ~/.codex/sessions --session-id <session_id> --format m
 seq turns --root ~/.codex/sessions --session-id <session_id> --format table
 seq tool-lifecycle --root ~/.codex/sessions --session-id <session_id> --format table
 seq session-tooling --root ~/.codex/sessions --session-id <session_id> --format table
+seq session-prompts --root ~/.codex/sessions --session-id <session_id> --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
 seq tool-search --root ~/.codex/sessions --session-id <session_id> --contains "<pattern>" --mode rows --format table
 ```
 
-When the target skill itself needs broader historical evidence, allow that skill's own evidence workflow, but keep the watched session as the anchor.
+When the target skill itself needs broader historical evidence, allow that skill's own evidence workflow only if the session evidence path remains `$seq`-backed and the watched session remains the anchor.
 
 For example, `$shadow` with `$tune` may inspect the watched session first and then use `$tune`'s `$seq` commands only if the watched session raises a skill-usage question that requires historical comparison.
 
 Always exclude the shadowing session itself from broader evidence searches when supported by the command, unless the user explicitly asks to include it.
 
 Do not include raw transcript excerpts, raw memory text, secrets, credentials, private personal details, sensitive local paths, or long command outputs in user-facing reports unless explicitly allowed and safe.
+
+## `$seq` Tuning Handoff
+
+`$shadow` depends on `$seq` for session monitoring. When that dependency is missing a needed surface, requires repeated caller-side filtering, requires direct JSONL access to answer a normal monitoring question, or is inefficient enough to make a monitoring loop impractical, treat that as `$tune` evidence for `$seq`.
+
+Default handoff mode is proposal-only because `$seq` is a protected skill. Apply a `$seq` refinement only when the user explicitly asks to tune, fix, update, or patch `$seq`.
+
+Use this brief shape:
+
+```text
+Target skill: seq
+
+Tuning goal:
+- Make <watched-session monitoring need> available as an efficient seq surface for $shadow.
+
+Observed usage:
+- Evidence class: repeated_manual_workaround | clear_validation_failure | explicit_user_feedback | tooling_gap
+- Source: $shadow cycle for session <session_id>
+- Finding: <sanitized missing/slow/awkward seq command shape>
+
+Gap:
+- Type: tooling
+- Diagnosis: $shadow cannot monitor this session requirement through an efficient seq surface.
+
+Recommended $refine action:
+- <smallest seq skill or CLI-surface update needed>
+
+Validation:
+- quick_validate seq
+- representative seq command sample, if the command surface changed
+```
 
 ## Worker and Subagent Sessions
 
@@ -256,7 +299,7 @@ Summarize:
 
 ### 3. Inspect the Watched Session
 
-Use `$seq` session surfaces first.
+Use only `$seq` session surfaces.
 
 Start with:
 
@@ -270,8 +313,8 @@ Use targeted searches only when the target skill or new evidence calls for them:
 
 ```bash
 seq tool-search --root ~/.codex/sessions --session-id <session_id> --contains "<command-or-tool-pattern>" --mode rows --format table
-seq message-search --root ~/.codex/sessions --contains "<trigger-or-failure-phrase>" --roles user,assistant --limit 50 --format jsonl
-seq skill-blocks --root ~/.codex/sessions --skill <skill> --history latest --format json
+seq session-prompts --root ~/.codex/sessions --session-id <session_id> --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
+seq skill-blocks --root ~/.codex/sessions --session-id <session_id> --skill <skill> --history latest --format json
 ```
 
 Never paste raw `session-detail` output into the user-facing report by default. Convert it into sanitized findings.
@@ -288,6 +331,7 @@ Classify the cycle finding:
 - `workflow_gap`
 - `validation_gap`
 - `tooling_gap`
+- `seq_tuning_gap`
 - `boundary_gap`
 - `ready_for_target_action`
 - `needs_user_approval`
@@ -334,7 +378,7 @@ Finding:
 - <classification and explanation>
 
 Action:
-- <none | proposed brief | applied change | needs approval>
+- <none | proposed brief | proposed $tune-on-$seq brief | applied change | needs approval>
 
 Next:
 - <continue shadowing | stop because watched session stopped | continue with uncertainty | wait for approval>
@@ -375,7 +419,8 @@ A good `$shadow` run:
 - Follows exactly one watched session.
 - Stops when that watched session stops.
 - Reads the target skill before interpreting evidence.
-- Uses `$seq` for watched-session evidence.
+- Uses only `$seq` for watched-session evidence.
+- Produces a `$tune`-on-`$seq` brief when `$seq` lacks an efficient monitoring surface.
 - Applies the named target skill as a lens without hard-coding `$tune`.
 - Excludes the shadowing session from broader evidence searches when possible.
 - Produces concise, sanitized cycle reports.
@@ -391,5 +436,7 @@ A bad `$shadow` run:
 - Dumps raw transcript text.
 - Edits files in propose or observe mode.
 - Treats raw mentions as correct skill usage.
-- Uses generic shell searching before `$seq` session surfaces.
+- Uses direct transcript reads, generic shell searching, or raw JSONL parsing for watched-session monitoring.
+- Treats a missing or inefficient `$seq` monitoring surface as a reason to bypass `$seq` instead of tuning it.
+- Uses generic `seq query` before specialized `$seq` session surfaces.
 - Confuses the shadowing session with the watched session.

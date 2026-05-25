@@ -5,7 +5,7 @@ usage() {
   cat <<'USAGE'
 Usage: shadow-scaffold --session <session-id-or-path> --skill <skill> [--mode observe|propose|apply] [--root <sessions-root>] [--include-workers] [--raw-excerpts]
 
-Prints a $shadow evidence command set and monitor-cycle report skeleton.
+Prints a seq-only $shadow evidence command set and monitor-cycle report skeleton.
 
 Defaults:
   --root  ~/.codex/sessions
@@ -112,15 +112,17 @@ Summarize:
 
 ## Watched-session evidence commands
 
+Use only seq for watched-session monitoring. If seq cannot expose a needed watched-session fact, or the available seq path is too slow or awkward for repeated monitoring, report a tooling_gap/seq_tuning_gap/state_unknown finding and produce a \$tune-on-\$seq brief instead of reading raw session files.
+
 seq session-detail --root "$root" --session-id "$session" --format markdown
 seq turns --root "$root" --session-id "$session" --format table
 seq tool-lifecycle --root "$root" --session-id "$session" --format table
 seq session-tooling --root "$root" --session-id "$session" --format table
+seq session-prompts --root "$root" --session-id "$session" --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
 
 # Optional targeted follow-ups when the lens calls for them:
 seq tool-search --root "$root" --session-id "$session" --contains "<command-or-tool-pattern>" --mode rows --format table
-seq message-search --root "$root" --contains "<trigger-or-failure-phrase>" --roles user,assistant --limit 50 --format jsonl
-seq skill-blocks --root "$root" --skill "$skill" --history latest --format json
+seq skill-blocks --root "$root" --session-id "$session" --skill "$skill" --history latest --format json
 
 SHADOW_OUT
 
@@ -154,10 +156,10 @@ Lens interpretation:
 - <what $skill's contract implies about the new evidence>
 
 Finding:
-- <no_new_evidence|aligned|missed_activation|false_activation|partial_activation|workflow_gap|validation_gap|tooling_gap|boundary_gap|ready_for_target_action|needs_user_approval|watched_session_stopped|state_unknown>
+- <no_new_evidence|aligned|missed_activation|false_activation|partial_activation|workflow_gap|validation_gap|tooling_gap|seq_tuning_gap|boundary_gap|ready_for_target_action|needs_user_approval|watched_session_stopped|state_unknown>
 
 Action:
-- <none|proposed brief|applied change|needs approval>
+- <none|proposed brief|proposed \$tune-on-\$seq brief|applied change|needs approval>
 
 Next:
 - <continue shadowing|stop because watched session stopped|continue with uncertainty|wait for approval>
@@ -171,4 +173,29 @@ Shadow complete:
 - Key findings:
 - Actions proposed/taken:
 - Remaining uncertainty:
+
+## \$tune-on-\$seq brief skeleton
+
+Use when seq lacks an efficient monitoring surface needed by this shadow run.
+
+Target skill: seq
+
+Tuning goal:
+- Make <watched-session monitoring need> available as an efficient seq surface for \$shadow.
+
+Observed usage:
+- Evidence class: repeated_manual_workaround | clear_validation_failure | explicit_user_feedback | tooling_gap
+- Source: \$shadow cycle for session $session
+- Finding: <sanitized missing/slow/awkward seq command shape>
+
+Gap:
+- Type: tooling
+- Diagnosis: \$shadow cannot monitor this session requirement through an efficient seq surface.
+
+Recommended \$refine action:
+- <smallest seq skill or CLI-surface update needed>
+
+Validation:
+- quick_validate seq
+- representative seq command sample, if the command surface changed
 SHADOW_REPORT
