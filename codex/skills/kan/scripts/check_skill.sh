@@ -6,18 +6,18 @@ required=(
   SKILL.md README.md package.json agents/openai.yaml
   references/world-boundary-preamble.md references/composition-certificate-elaboration.md references/boundary-kind-to-kan.md references/foundations.md references/kan-lifts.md
   references/yoneda-coyoneda.md references/defunctionalization.md references/freyd-aft.md references/architecture-transformation.md
-  references/law-tests.md references/codensity-presentations.md references/context-compilation.md references/categorical-data-for-context.md references/context-certificates.md
+  references/law-tests.md references/codensity-presentations.md references/context-compilation.md references/categorical-data-for-context.md references/context-certificates.md references/cql-context-management.md references/verified-context-publication.md references/pushout-reconciliation.md
   references/claim-map.md references/sources.md references/sources.yml
   scripts/emit_world_boundary_preamble.sh scripts/emit_composition_certificate_kan.sh scripts/emit_boundary_normal_form_kan.sh scripts/emit_boundary_kind_map.sh scripts/emit_kan_stub.sh scripts/emit_law_test_plan.sh
-  scripts/emit_yoneda_pass.sh scripts/emit_defun_pass.sh scripts/emit_freyd_pass.sh scripts/emit_source_pack.sh scripts/emit_codensity_presentation.sh scripts/emit_context_compilation_report.sh scripts/check_skill.sh
-  templates/world-boundary-kan-report.md templates/composition-certificate-kan-report.md templates/codensity-presentation-report.md templates/context-compilation-report.md tests/golden/activation.yml tests/golden/output-invariants.yml
+  scripts/emit_yoneda_pass.sh scripts/emit_defun_pass.sh scripts/emit_freyd_pass.sh scripts/emit_source_pack.sh scripts/emit_codensity_presentation.sh scripts/emit_context_compilation_report.sh scripts/emit_cql_context_report.sh scripts/emit_pushout_reconciliation_plan.sh scripts/emit_verified_context_publication_plan.sh scripts/check_skill.sh
+  templates/world-boundary-kan-report.md templates/composition-certificate-kan-report.md templates/codensity-presentation-report.md templates/context-compilation-report.md templates/cql-context-compilation-report.md tests/golden/activation.yml tests/golden/output-invariants.yml
   examples/python/world_boundary_witness.py examples/agnostic/world-boundary-handoff.trace.md
 )
 for f in "${required[@]}"; do test -f "$f" || { echo "missing $f" >&2; exit 1; }; done
 python3 - <<'PY'
 from pathlib import Path
 text=Path('SKILL.md').read_text()
-for s in ['name: kan','World Model Preamble','Boundary Kind to Kan Mapping','Required Handoff Contract','Kan lifts','Yoneda','Coyoneda','Defunctionalization','Freyd/AFT','Composition Certificate','Codensity Presentation Mode','Presentations compress','Exact Context','Context Compilation','semantic consumer','Context Certificate','Contexts prepare']:
+for s in ['name: kan','World Model Preamble','Boundary Kind to Kan Mapping','Required Handoff Contract','Kan lifts','Yoneda','Coyoneda','Defunctionalization','Freyd/AFT','Composition Certificate','Codensity Presentation Mode','Presentations compress','Exact Context','Context Compilation','semantic consumer','Context Certificate','Contexts prepare','Verified Context Plane','Operational stores own mutation','semantic publication']:
     if s not in text:
         raise SystemExit(f'SKILL.md missing {s}')
 print('metadata ok')
@@ -37,5 +37,8 @@ PY
 ./scripts/emit_source_pack.sh codensity-presentation probes >/dev/null
 ./scripts/emit_codensity_presentation.sh report agnostic >/dev/null
 ./scripts/emit_context_compilation_report.sh report agnostic >/dev/null
+./scripts/emit_cql_context_report.sh context-publication agnostic >/dev/null
+./scripts/emit_pushout_reconciliation_plan.sh context-merge agnostic >/dev/null
+./scripts/emit_verified_context_publication_plan.sh publication-boundary agnostic >/dev/null
 python3 examples/python/world_boundary_witness.py >/dev/null
 echo 'check_skill: ok'

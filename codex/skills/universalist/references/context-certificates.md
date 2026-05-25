@@ -23,19 +23,24 @@ Observables
   May discard:
   Uncertainty to expose:
 
-Source instance
+Source and publication
   Source worlds:
-  Candidate retrieval methods:
+  Operational source plane:
+  Candidate retrieval/extraction methods:
+  Source snapshot IDs:
+  Publication boundary:
+  Published context snapshot:
   Source versions:
   Freshness requirements:
   Provenance roots:
 
-Mapping
+Mapping and canonicalization
   Source-to-context mapping:
   Entity resolution rules:
   Evidence extraction rules:
-  Join rules:
+  Join/reconciliation rules:
   Unit/date normalization rules:
+  CQL / SQL / Datalog / custom mode:
 
 Constraint closure
   Constraints enforced:
@@ -50,6 +55,13 @@ Observational core
   Why retained:
   Minimality criterion:
 
+Provenance manifest
+  Context instance ID:
+  Source snapshot IDs:
+  Mapping/query names:
+  Derivation steps:
+  Rendered packet hash:
+
 Rendering
   Renderer:
   Token/bandwidth/layout budget:
@@ -59,17 +71,22 @@ Rendering
 
 Law witnesses
   Schema law:
+  Mapping law:
+  Constraint law:
   Observable preservation law:
   Provenance path law:
   Freshness law:
-  Missingness/contradiction law:
+  Publication law:
   Rendering law:
+  Operational boundary law:
 
 Falsifier
   Missing required context:
   Irrelevant distracting context:
   Stale context:
   Unsupported claim:
+  Contradiction collapsed:
+  Raw source bypass:
 ```
 
 ## Status values
@@ -79,4 +96,5 @@ Falsifier
 - **missing**: required observables cannot be answered, contradicted, or marked unsupported.
 - **contradictory**: known incompatible evidence is preserved and surfaced.
 - **overfull**: retained data does not affect observables.
-- **undercertified**: context exists but lacks provenance, schema, or rendering laws.
+- **undercertified**: context exists but lacks provenance, schema, publication, or rendering laws.
+- **primitive exception**: a semantic consumer intentionally reads raw source data, and the exception is contained and justified.

@@ -1,7 +1,16 @@
 ---
 name: universalist
 description: >
-  Use when a structural refactor should ship: flag/state matrices, repeated boundary validation, shared-key checks, branchy policy logic, syntax mixed with execution, duplicated projections, provenance-losing generated artifacts, callbacks crossing architecture boundaries, unclear protocol/state-machine observations, multi-handler effects/workflows, public contracts determining internals, forgetful or observational projections needing a canonical free builder, or any need for canonical boundary artifacts, Composition Certificates, Boundary Normal Form, presentation strategies, semantic compression, dense probe or codensity-style diagnostics, Exact Context Doctrine, Context Certificates, Context Normal Form, context compilation, semantic consumption boundaries, or task-indexed model/human/tool exchange. Default to one signal, one seam, the smallest honest construction, adapter-first staging, one boundary artifact, one proof signal, and one Composition Certificate when a seam crosses worlds.
+  Use when repeated validation, policy branching, protocol or state-machine drift,
+  generated provenance loss, callback/effect boundaries, or semantic-consumer
+  context needs point to a structural refactor instead of local polish. Select
+  one signal, one world boundary, and the smallest honest construction: typed
+  state, free syntax, observations/projections, lifted interpreter or handler,
+  explicit IR, law tests, canonical boundary artifact, Composition Certificate,
+  Boundary Normal Form step, or Exact Context/Context Certificate. Prefer
+  adapter-first staging and name one falsifiable proof signal; escalate to
+  Kan/codensity/free-builder mechanics only after a real cross-world boundary is
+  identified.
 ---
 
 # Universalist
@@ -82,7 +91,7 @@ Presentation modes:
 
 - **Algebraic presentation** — use generators, operations, equations, syntax, free objects, effect signatures, and handlers. Prefer when the artifact is operational, finitary, command-like, or naturally syntax-first.
 - **Codensity / dense-dual presentation** — use a small dense world of probes plus a dual/observational bridge and reconstruction. Prefer when the artifact is semantic, infinitary, completion-like, probabilistic, topological, observational, or too large for a clean generators/equations presentation.
-- **Mixed presentation** — use algebraic syntax for operations and dense probes for semantic competence, safety, policy, probability, traces, or compatibility. Agentic systems often need this.
+- **Mixed presentation** — use algebraic syntax for operations and dense probes for semantic competence, safety, policy, probability, traces, or compatibility. Agentic systems are a stress test, not the center of the doctrine.
 - **Primitive presentation** — explicitly contain the boundary as a primitive effect when no useful artifact/presentation is available yet.
 
 New doctrine sentence:
@@ -144,6 +153,47 @@ No observables without provenance and freshness.
 ```
 
 Use Track F when the main issue is having just the right data at just the right time.
+
+## Verified Context Plane Principle
+
+Exact Context is universal, not agent-specific. The general boundary is:
+
+```text
+Prepared Context -> Semantic Consumer
+```
+
+A semantic consumer may be a model, human reviewer, policy engine, compiler pass, workflow scheduler, deployment controller, planner, ranker, classifier, BI dashboard, auditor, test harness, action selector, or agent runtime.
+
+Use this plane split:
+
+```text
+Operational Source Plane
+  mutable systems of record, logs, documents, APIs, event streams, tools, live stores
+
+Candidate Plane
+  retrieved / observed / sampled / extracted candidate source instances
+
+Verified Context Plane
+  schemas, mappings, constraints, provenance, normalization, reconciliation
+
+Publication Plane
+  stable task-indexed context snapshots and Context Certificates
+
+Rendering Plane
+  prompt, JSON packet, dashboard, report, tool args, policy input, review packet
+
+Semantic Consumption Plane
+  consumer decision, action, approval, execution, ranking, inference, or audit
+```
+
+Rule:
+
+```text
+Operational stores own mutation.
+Verified context planes own semantic publication.
+```
+
+CQL and categorical databases are reference technologies for the verified context plane when schemas, mappings, constraints, integration, and provenance matter. Do not treat CQL as a default live-memory substrate. Pair it with operational stores when low-latency mutation, distributed writes, access control, or streaming are central.
 
 ## Do not trigger for
 
@@ -397,7 +447,9 @@ Choose by where the unknown lives:
 | In generated payloads and deferred maps | Generation path vocabulary / Coyoneda-style | lowering equals direct interpretation |
 | In duplicated selectors/projections | Observation vocabulary / Yoneda-style | representation change preserves observations |
 | In callbacks/functions crossing boundaries | Explicit first-order IR / defunctionalization | `apply(encodedCase, x) == oldCallback(x)` |
-| In data needed before a decision/action/inference | Task-indexed context instance / Context Certificate | schema constraints, observables, provenance, freshness, and rendering laws hold |
+| In data needed before semantic consumption | Task-indexed context instance / Context Certificate | schema constraints, observables, provenance, freshness, and rendering laws hold |
+| In heterogeneous mutable sources needing semantic publication | Verified Context Snapshot / Publication Boundary | source snapshot, mapping, constraints, provenance, and publication law hold |
+| In overlapping contexts from several systems | Pushout Reconciliation / explicit overlap | overlap identities are explicit, conflicts preserved, provenance survives |
 
 ### Track E — Composition certification
 
@@ -425,11 +477,14 @@ Use Track E for:
 
 ### Track F — Exact Context / semantic consumption boundary
 
-Use when the main problem is whether a model, human, policy engine, planner, scheduler, tool selector, approval gate, compiler pass, or other semantic consumer has exactly the right prepared data at exactly the right time.
+Use when the main problem is whether a semantic consumer has exactly the right prepared data at exactly the right time. Semantic consumers include models, humans, policy engines, compilers, workflow schedulers, deployment controllers, planners, rankers, BI dashboards, auditors, test harnesses, approval gates, and agent runtimes.
 
 Deliver:
 
 - task `q` and consumer type;
+- operational source plane and candidate source instance;
+- verified context plane / context compilation mode;
+- publication boundary and published snapshot shape;
 - task-specific context schema `T_q`;
 - required observables `Obs_q`;
 - candidate source worlds and source instance `I_candidate`;
@@ -441,18 +496,19 @@ Deliver:
 - observational-core/minimization plan;
 - rendering/serialization plan;
 - Context Certificate;
+- CQL/categorical-database fit assessment when schemas, mappings, constraints, integration, or provenance dominate;
+- Context Provenance Manifest when evidence lineage matters;
 - law witnesses and falsifiers.
 
 Use Track F for:
 
 - RAG prompt stuffing or raw tool-output dumping;
-- agent memory selection;
 - stale or temporally invalid context;
 - missing evidence or unsupported claims;
 - contradictions that are smoothed over;
 - over-summarization that erases required distinctions;
 - entity-resolution ambiguity;
-- human review packets, policy-evaluation inputs, deployment decisions, debugging packets, planning packets, or model prompts that need exact context.
+- human review packets, policy-evaluation inputs, deployment decisions, debugging packets, planning packets, model prompts, compiler-pass inputs, scheduler contexts, audit packets, dashboards, or agent-runtime contexts that need exact context.
 
 Do not frame this as only an inference problem. The general boundary is:
 

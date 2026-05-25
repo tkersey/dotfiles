@@ -38,6 +38,7 @@ Do not begin detailed Kan mechanics unless the prompt or prior analysis provides
 - falsifier;
 - Composition Certificate fields if the seam is already certified or being certified;
 - Context Certificate fields if the seam is a semantic-consumption/context-compilation boundary.
+- Verified Context Plane fields if schemas, mappings, constraints, provenance, publication, or CQL-like tooling are relevant.
 
 If these are absent, first produce a short world/boundary inventory and ask whether to proceed, unless the user requested a best-effort implementation.
 
@@ -64,7 +65,7 @@ If the prompt asks for code, emit the certificate-aware implementation plan: art
 
 ## Exact Context / Context Compilation Mode
 
-Use this mode when the selected boundary is a semantic-consumption boundary: a model, human, policy engine, workflow, scheduler, planner, ranker, classifier, tool selector, or agent step is about to consume prepared information.
+Use this mode when the selected boundary is a semantic-consumption boundary: a model, human, policy engine, workflow, scheduler, planner, ranker, classifier, compiler pass, deployment controller, BI dashboard, auditor, tool selector, or agent runtime is about to consume prepared information.
 
 Recover:
 
@@ -90,6 +91,28 @@ DecisionPacket(q) = render(Context(q))
 ```
 
 Do not treat retrieval as context. Retrieval is candidate source-instance generation.
+
+## Verified Context Plane / CQL Context Mode
+
+Use this mode when context compilation requires verified canonicalization, integration, constraints, provenance, schema evolution, or source reconciliation.
+
+Recover:
+
+- Operational source plane: live stores, logs, tools, documents, APIs, event streams.
+- Candidate source instance: stable snapshot or extracted/retrieved data.
+- Verified context plane: schemas, mappings, constraints, reconciliation, provenance.
+- Publication boundary: published context snapshot and Context Certificate.
+- Rendering boundary: prompt, JSON, report, policy input, dashboard, tool arguments.
+- Semantic consumer: model, human, policy engine, compiler pass, workflow scheduler, deployment controller, auditor, action selector, or agent runtime.
+
+CQL/categorical databases are reference technologies when the hard problem is typed integration, schema mappings, constraints, colimits/pushouts, and provenance. Do not recommend CQL as the default primary live memory or low-latency mutable store. Pair verified context tooling with operational stores when mutation, concurrency, authorization, or streaming dominate.
+
+Use this placement rule:
+
+```text
+Operational stores own mutation.
+Verified context planes own semantic publication.
+```
 
 ## Codensity Presentation Mode
 

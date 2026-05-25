@@ -64,6 +64,27 @@ Useful command:
 
 ## Exact Context Doctrine
 
-This version treats context preparation as a first-class universal-architecture concern. Use Track F when a model, human, policy engine, planner, workflow, or tool selector needs exactly the right data at exactly the right time. The core rule is: **Allow arbitrary sources. Forbid uncertified semantic consumption.**
+This version treats context preparation as a first-class universal-architecture concern. Use Track F when any semantic consumer needs exactly the right data at exactly the right time: model, human reviewer, policy engine, compiler pass, workflow scheduler, deployment controller, BI dashboard, auditor, action selector, or agent runtime.
 
-A context is prepared by compiling candidate source data into a task-indexed, schema-shaped, constraint-closed, provenance-preserving, freshness-valid, observationally minimal context instance before rendering it to a prompt, dashboard, JSON payload, decision packet, or tool argument.
+The core rule is: **Allow arbitrary sources. Forbid uncertified semantic consumption.**
+
+A context is prepared by compiling candidate source data into a task-indexed, schema-shaped, constraint-closed, provenance-preserving, freshness-valid, observationally minimal context instance before rendering it to a prompt, dashboard, JSON payload, review packet, policy input, decision packet, or tool argument.
+
+## Verified Context Plane
+
+This version adds the neutral, universal framing from the CQL/context work:
+
+```text
+Operational stores own mutation.
+Verified context planes own semantic publication.
+```
+
+CQL/categorical databases are treated as a reference technology for verified canonicalization, integration, constraints, and provenance around live operational stores—not as a default live memory substrate.
+
+Useful commands:
+
+```bash
+./scripts/emit_verified_context_plane.sh semantic-consumer typescript
+./scripts/emit_cql_fit_assessment.sh context-boundary agnostic
+./scripts/emit_context_publication_boundary.sh published-context agnostic
+```

@@ -41,4 +41,23 @@ Useful command:
 
 ## Exact Context / context compilation
 
-This version adds context-compilation mechanics for semantic-consumption boundaries. Use `./scripts/emit_context_compilation_report.sh` when a model, human, policy engine, planner, tool selector, or agent step must receive a task-indexed, schema-shaped, provenance-preserving context object rather than raw retrieval results.
+This version adds context-compilation mechanics for semantic-consumption boundaries. Use `./scripts/emit_context_compilation_report.sh` when a model, human, policy engine, compiler pass, workflow scheduler, deployment controller, BI dashboard, auditor, tool selector, or agent runtime must receive a task-indexed, schema-shaped, provenance-preserving context object rather than raw retrieval results.
+
+## Verified Context Plane / CQL mode
+
+This version adds neutral, non-agent-specific context-publication mechanics:
+
+```text
+Operational stores own mutation.
+Verified context planes own semantic publication.
+```
+
+Use CQL/categorical database mechanics when the problem is verified canonicalization, integration, constraints, provenance, schema evolution, or pushout reconciliation around operational stores.
+
+Useful commands:
+
+```bash
+./scripts/emit_cql_context_report.sh context-publication agnostic
+./scripts/emit_pushout_reconciliation_plan.sh context-merge agnostic
+./scripts/emit_verified_context_publication_plan.sh publication-boundary agnostic
+```

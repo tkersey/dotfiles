@@ -6,9 +6,11 @@
 Allow arbitrary sources. Forbid uncertified semantic consumption.
 ```
 
-Exact Context Doctrine is the data-readiness layer of Universal Composition. It applies whenever a model, human, policy engine, workflow, scheduler, agent planner, approval gate, compiler pass, or other semantic consumer is about to decide, act, rank, classify, answer, approve, execute, or infer.
+Exact Context Doctrine is the data-readiness layer of Universal Composition. It applies whenever a semantic consumer is about to decide, act, rank, classify, approve, execute, audit, or infer.
 
-The central artifact is not a prompt. It is a task-indexed context instance.
+A semantic consumer may be a model, human reviewer, policy engine, compiler pass, workflow scheduler, deployment controller, planner, ranker, classifier, BI dashboard, auditor, test harness, action selector, or agent runtime. Agentic systems are a stress test, not the center of the doctrine.
+
+The central artifact is not a prompt or dashboard. It is a task-indexed context instance.
 
 ```text
 Context(q) = core_Obs(chase(migrate_{M_q}(I_candidate)))
@@ -23,11 +25,40 @@ Where:
 - `migrate` moves source data into the task context schema.
 - `chase` enforces constraints and deterministic closure.
 - `core_Obs` minimizes relative to task observables.
-- `render` serializes the semantic context for a consumer.
+- `render` serializes semantic context for a consumer.
 
 ## Doctrine
 
-A semantic consumer should not receive raw source data. It should receive the smallest task-indexed, constraint-satisfying, provenance-preserving, freshness-valid context instance that preserves the observables required for the next decision, action, or inference.
+A semantic consumer should not receive raw source data. It should receive the smallest task-indexed, constraint-satisfying, provenance-preserving, freshness-valid context instance that preserves the observables required for the next decision, action, approval, execution, audit, or inference.
+
+## Plane split
+
+```text
+Operational Source Plane
+  mutable systems of record, event logs, documents, tools, APIs, live stores
+
+Candidate Plane
+  retrieved / observed / extracted candidate source instances
+
+Verified Context Plane
+  schemas, mappings, constraints, normalization, reconciliation, provenance
+
+Publication Plane
+  stable task-indexed context snapshots and Context Certificates
+
+Rendering Plane
+  prompt, report, JSON, dashboard, tool args, policy input, review packet
+
+Semantic Consumption Plane
+  consumer decision/action/execution/inference/audit
+```
+
+Rule:
+
+```text
+Operational stores own mutation.
+Verified context planes own semantic publication.
+```
 
 ## Engineering laws
 
@@ -55,14 +86,8 @@ A chunk is not evidence until it is typed, mapped, provenance-linked, freshness-
 semantic context != prompt text
 ```
 
-The prompt, report, dashboard, JSON payload, tool argument, or review packet is downstream rendering. Optimize semantic exactness first, then optimize rendering.
+The prompt, report, dashboard, JSON payload, tool argument, policy input, deployment packet, or review packet is downstream rendering. Optimize semantic exactness first, then optimize rendering.
 
-## Generalized consumer
+## Verified context technology stance
 
-Do not over-specialize this doctrine to LLM inference. The general boundary is:
-
-```text
-Prepared Context -> Semantic Consumer
-```
-
-Semantic consumers include models, humans, policy engines, workflow schedulers, rankers, classifiers, action selectors, deployment controllers, and agent runtimes.
+Exact Context Doctrine is implementation-agnostic. CQL/categorical database tooling is a reference architecture for verified context publication when schemas, mappings, constraints, integration, provenance, and canonicalization dominate. It is not automatically the right live operational store.
