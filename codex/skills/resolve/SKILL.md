@@ -325,6 +325,16 @@ The root `$resolve` process owns all mutable state: clean-review streak, backend
 
 Parallel work is allowed only for side-effect-light tasks that operate on a pinned artifact snapshot and return structured results to the root controller. Parallel workers may gather evidence, normalize output, classify context, or prepare candidate ledgers, but the root must make all state-transition decisions.
 
+Default to using allowed parallelism whenever there is independent read-only or validation-read-mostly work available. Before starting the review loop, before a long CAS wait, and before final validation, run a parallel opportunity pass:
+
+1. Identify the current pinned artifact snapshot: base ref, base SHA, `HEAD` SHA, and target fingerprint when available.
+2. Split ready work into independent read-only or validation-read-mostly tasks.
+3. Launch the independent ready set together, preferring `multi_tool_use.parallel` for shell/tool discovery and bounded subagents only for semantic classification.
+4. Record each launched task in `parallel_task_ledger`.
+5. Join the results before using them for review base selection, adjudication, validation completeness, PR completion, or final reporting.
+
+If a `$resolve` run spends substantial wall time waiting on CAS, validation, or PR/provider responses and no parallel sidecars are active, that should be because every available task would violate the pinned snapshot, mutate state, duplicate an in-flight review, or depend on the pending result. Treat unexplained serial waiting as a workflow gap to correct in the current run.
+
 Maintain `parallel_task_ledger` entries when parallel sidecars or subagents are used:
 
 ```text
@@ -471,6 +481,8 @@ backends. Observation-only commands such as lane status, event-log tails, or
 receipt inspection are allowed; branch-changing work must wait for a completed
 verdict or a recoverable timeout receipt.
 
+During an in-progress CAS review, prefer parallel observation-only sidecars when they do not compete with the review attempt: lane status polling, event-log tailing, partial receipt archiving, PR metadata refresh, and already-known validation/CI evidence gathering. These sidecars must not start another review, change files, stage, commit, push, or decide the streak. Their only allowed outputs are diagnostics, candidate ledgers, and stale/contradictory evidence for root adjudication after the review verdict returns.
+
 CAS same-handle timeout recovery:
 
 1. If `lane review` exits nonzero with `reviewVerdict.status="timeout"` or `failureCode="wait_timed_out"`, inspect the JSON receipt before falling back.
@@ -507,7 +519,7 @@ Before making changes:
 - Discover and load applicable language/tool skills, then record their `language_skill_packet` guidance.
 - Preserve unrelated user changes. Do not overwrite, discard, or stage unrelated work.
 - Determine whether a PR already exists for the current branch, because that PR's base branch should drive the review base.
-- Run allowed parallel discovery tasks only through the parallelism policy and join their results before using them for review, adjudication, validation, or fallback decisions.
+- Run the parallel opportunity pass. At minimum, consider repository/manifest discovery, validation command discovery, applicable skill loading, CAS version/help checks, PR metadata/thread fetching, and CI/check discovery. Launch the independent ready set through the parallelism policy and join results before using them for review, adjudication, validation, or fallback decisions.
 
 Repeat until `clean_review_streak == 3`:
 
