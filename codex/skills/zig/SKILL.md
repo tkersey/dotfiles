@@ -279,6 +279,16 @@ Rules:
 - Use `errdefer` immediately after successful acquisition in multi-step initialization.
 - Distinguish borrowed, owned, transferred, arena-owned, and caller-allocated data.
 - Treat returned slices as invalidation-sensitive when the backing container can reallocate.
+- When returning a value that embeds slices from an object about to be `deinit`ed,
+  either transfer that object's ownership with the returned value or copy every
+  escaped slice into storage owned by the returned value. Static-looking plans,
+  descriptors, and metadata tables are still lifetime-sensitive when their slice
+  fields came from runtime allocation.
+- Do not feed borrowed optional labels or descriptor names from copied refs into
+  long-lived fingerprints, certificates, or witness refs unless those slices are
+  owned or otherwise lifetime-stable. Prefer stable subject fields such as
+  domain, fingerprint, format version, branch, site, or kind for deterministic
+  proof identities.
 - Avoid arenas as a substitute for ownership reasoning; document reset/deinit boundaries.
 - Require leak and allocation-failure coverage for allocator-heavy code.
 
@@ -589,6 +599,21 @@ zig test src/main.zig
 
 Use filters carefully. Check `zig build -h` or the relevant step before assuming where `--test-filter`, `--seed`, `--test-timeout`, or runner args belong. If a filtered test is being used to prove a boundary, add one fail-closed probe so you know the filter is active.
 
+For full repo proof commands that are expected to run longer than one tool
+yield, such as `zig build test --summary all`, keep the same process alive and
+poll it until exit. Treat the first timeout/yield from the shell tool as
+`IN_PROGRESS`, not as a failing or missing code verdict. Do not replace a full
+suite with a weaker focused filter unless the full suite is unavailable; use the
+focused filter only to narrow a failure before returning to the required full
+proof lane. If another code change is made while the full proof is still
+running, abort that stale process and restart the same full proof command; a
+result from the previous tree is not proof for the amended tree.
+If a Zig compile/test command exits after a compile error but leaves a
+`zig --listen` child or other stale build child alive, kill only that stale
+child before rerunning the proof. Do not treat the cleanup itself as validation;
+rerun the same proof command and report the original compile failure separately
+from the process cleanup.
+
 For optimizer-sensitive or hazardous-code logic, run all relevant modes. Treat ReleaseFast and ReleaseSmall as safety proof lanes because runtime safety checks may be disabled there:
 
 ```bash
@@ -706,6 +731,10 @@ Rules:
 - Treat `@compileError` as the public UX of a reflective API.
 - Treat `@compileLog` as temporary debugging only; committed compile logs are failures.
 - Treat `@setEvalBranchQuota` as a compile-time cost smell unless the workload is deliberate, bounded, and documented.
+- If a stronger generated certificate, proof, or fingerprint path exceeds the
+  existing branch quota, raise the narrow generator/proof quota with a clear
+  bounded reason rather than weakening the verifier, dropping fields, or
+  bypassing the test that exposed the compile-time cost.
 
 ### Comptime audit scan
 

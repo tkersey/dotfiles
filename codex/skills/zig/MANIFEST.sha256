@@ -1,6 +1,6 @@
 75ecb5d83337d2c68b60575e6c658723ff3150acaad5ca945eaf967eb8b13dec  ./MANIFEST.files
 9f6fa774f0985489d7a86443a4c2a562b090cdd8808ef8de68c732594eedc8a5  ./PATCH_NOTES.md
-16cccc512e34c06b2a15cfec31b7d5fdce6e5e2e627b549b981b2ea6076aa173  ./SKILL.md
+a380f6b64c035edacc04cc5ee74c6b459e7d2ac6f47ac54a16b4cc05197bde8e  ./SKILL.md
 be504621dc283ff4bd1d2586eba0ffa9a95ebe8eab48644fdd8f07f3669fc9a2  ./SOURCES.md
 07699a5c1015097c56d93858f4ad59de186c7f437e93782a57bf6dd35f4329ea  ./agents/openai.yaml
 c54b3e99cb4ed3e9680762c333ff57b2828a98736f20d005ebf459ebca2d3879  ./references/atomics_concurrency_playbook.md
