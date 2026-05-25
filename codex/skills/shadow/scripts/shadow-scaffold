@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: shadow-scaffold --session <session-id-or-path> --skill <skill> [--mode observe|propose|apply] [--root <sessions-root>] [--include-workers] [--raw-excerpts]
+
+Prints a $shadow evidence command set and monitor-cycle report skeleton.
+
+Defaults:
+  --root  ~/.codex/sessions
+  --mode  propose
+USAGE
+}
+
+session=""
+skill=""
+mode="propose"
+root="$HOME/.codex/sessions"
+include_workers="false"
+raw_excerpts="false"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --session|--session-id|--path)
+      session="${2:-}"
+      shift 2
+      ;;
+    --skill)
+      skill="${2:-}"
+      shift 2
+      ;;
+    --mode)
+      mode="${2:-}"
+      shift 2
+      ;;
+    --root)
+      root="${2:-}"
+      shift 2
+      ;;
+    --include-workers)
+      include_workers="true"
+      shift
+      ;;
+    --raw-excerpts)
+      raw_excerpts="true"
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [[ -z "$session" ]]; then
+  echo "--session is required" >&2
+  usage >&2
+  exit 2
+fi
+
+if [[ -z "$skill" ]]; then
+  echo "--skill is required" >&2
+  usage >&2
+  exit 2
+fi
+
+case "$mode" in
+  observe|propose|apply) ;;
+  *)
+    echo "--mode must be observe, propose, or apply" >&2
+    exit 2
+    ;;
+esac
+
+cat <<SHADOW_OUT
+# \$shadow scaffold
+
+Shadow: session $session through $skill in $mode mode until the watched session stops.
+
+## Settings
+
+- Session: $session
+- Lens: $skill
+- Mode: $mode
+- Root: $root
+- Include workers: $include_workers
+- Raw excerpts allowed: $raw_excerpts
+
+## Target skill contract
+
+Read the target skill first:
+
+cat codex/skills/$skill/SKILL.md
+# If present and relevant:
+# cat codex/skills/$skill/agents/openai.yaml
+# find codex/skills/$skill/scripts codex/skills/$skill/references codex/skills/$skill/assets -maxdepth 2 -type f 2>/dev/null
+
+Summarize:
+- Purpose:
+- Trigger boundary:
+- Anti-triggers / non-goals:
+- Workflow expectation:
+- Tool/resource expectation:
+- Validation expectation:
+- Companion-skill handoffs:
+
+## Watched-session evidence commands
+
+seq session-detail --root "$root" --session-id "$session" --format markdown
+seq turns --root "$root" --session-id "$session" --format table
+seq tool-lifecycle --root "$root" --session-id "$session" --format table
+seq session-tooling --root "$root" --session-id "$session" --format table
+
+# Optional targeted follow-ups when the lens calls for them:
+seq tool-search --root "$root" --session-id "$session" --contains "<command-or-tool-pattern>" --mode rows --format table
+seq message-search --root "$root" --contains "<trigger-or-failure-phrase>" --roles user,assistant --limit 50 --format jsonl
+seq skill-blocks --root "$root" --skill "$skill" --history latest --format json
+
+SHADOW_OUT
+
+if [[ "$include_workers" == "true" ]]; then
+  cat <<SHADOW_WORKERS
+## Worker/subagent follow-up
+
+Use only if linked workers are necessary to interpret the watched root session:
+
+seq session-graph --root "$root" --session-id "$session" --format table
+seq session-detail --root "$root" --session-id "<linked-worker-session-id>" --format markdown
+
+Keep $session as the lifecycle anchor unless the user explicitly says to wait for workers too.
+
+SHADOW_WORKERS
+fi
+
+cat <<SHADOW_REPORT
+## Cycle report skeleton
+
+Shadowing:
+- Session: $session
+- Lens: $skill
+- Mode: $mode
+- Watched session state: <running|stopped|unknown>
+
+New evidence:
+- <sanitized summary of new watched-session evidence>
+
+Lens interpretation:
+- <what $skill's contract implies about the new evidence>
+
+Finding:
+- <no_new_evidence|aligned|missed_activation|false_activation|partial_activation|workflow_gap|validation_gap|tooling_gap|boundary_gap|ready_for_target_action|needs_user_approval|watched_session_stopped|state_unknown>
+
+Action:
+- <none|proposed brief|applied change|needs approval>
+
+Next:
+- <continue shadowing|stop because watched session stopped|continue with uncertainty|wait for approval>
+
+## Final report skeleton
+
+Shadow complete:
+- Session: $session
+- Lens: $skill
+- Final state: stopped
+- Key findings:
+- Actions proposed/taken:
+- Remaining uncertainty:
+SHADOW_REPORT
