@@ -61,3 +61,9 @@ Useful command:
 ```bash
 ./scripts/emit_presentation_diagnostic.sh compare typescript
 ```
+
+## Exact Context Doctrine
+
+This version treats context preparation as a first-class universal-architecture concern. Use Track F when a model, human, policy engine, planner, workflow, or tool selector needs exactly the right data at exactly the right time. The core rule is: **Allow arbitrary sources. Forbid uncertified semantic consumption.**
+
+A context is prepared by compiling candidate source data into a task-indexed, schema-shaped, constraint-closed, provenance-preserving, freshness-valid, observationally minimal context instance before rendering it to a prompt, dashboard, JSON payload, decision packet, or tool argument.

@@ -1,7 +1,7 @@
 ---
 name: kan
 description: >
-  Use when universalist or the user has identified a concrete world/boundary seam that needs detailed Kan mechanics: Kan extensions, Kan lifts, precomposition/postcomposition, Freyd/AFT free-builder diagnostics, Yoneda/Coyoneda boundary representations, defunctionalized boundary IRs, codensity/density, codensity presentations via dense probes and duality, pointwise formulas, free/cofree completions, functorial data migration, compatibility facades, lifted implementations, residual obligations, Composition Certificates, Boundary Normal Form audits, or categorical law tests. Do not use for generic architecture unless worlds, boundary kind, known side, unknown location, witness slice, proof signal, and—when applicable—a Composition Certificate are named or must be recovered.
+  Use when universalist or the user has identified a concrete world/boundary seam that needs detailed Kan mechanics: Kan extensions, Kan lifts, precomposition/postcomposition, Freyd/AFT free-builder diagnostics, Yoneda/Coyoneda boundary representations, defunctionalized boundary IRs, codensity/density, codensity presentations via dense probes and duality, Exact Context Doctrine, context compilation, task-indexed data exchange, Context Certificates, pointwise formulas, free/cofree completions, functorial data migration, compatibility facades, lifted implementations, residual obligations, Composition Certificates, Boundary Normal Form audits, or categorical law tests. Do not use for generic architecture unless worlds, boundary kind, known side, unknown location, witness slice, proof signal, and—when applicable—a Composition Certificate are named or must be recovered.
 ---
 
 # Kan
@@ -10,12 +10,12 @@ description: >
 
 Use this skill for the detailed categorical mechanics behind universal architecture boundaries.
 
-`universalist` chooses whether a seam deserves a canonical artifact. `kan` elaborates the selected artifact: Kan extension, Kan lift, Freyd/AFT diagnostic, Yoneda/Coyoneda representation, defunctionalized IR, codensity, data migration, or law tests.
+`universalist` chooses whether a seam deserves a canonical artifact. `kan` elaborates the selected artifact: Kan extension, Kan lift, Freyd/AFT diagnostic, Yoneda/Coyoneda representation, defunctionalized IR, codensity, data migration, context compilation, or law tests.
 
 Core rule:
 
 ```text
-Primitives compute. Boundaries compose. Presentations compress. Witnesses certify.
+Primitives compute. Boundaries compose. Presentations compress. Contexts prepare. Witnesses certify.
 ```
 
 Do not start with category labels.
@@ -36,7 +36,8 @@ Do not begin detailed Kan mechanics unless the prompt or prior analysis provides
 - witness slice;
 - proof signal;
 - falsifier;
-- Composition Certificate fields if the seam is already certified or being certified.
+- Composition Certificate fields if the seam is already certified or being certified;
+- Context Certificate fields if the seam is a semantic-consumption/context-compilation boundary.
 
 If these are absent, first produce a short world/boundary inventory and ask whether to proceed, unless the user requested a best-effort implementation.
 
@@ -61,6 +62,35 @@ For any Kan output, preserve this mapping:
 
 If the prompt asks for code, emit the certificate-aware implementation plan: artifact, interpreter/projection, law test, falsifier, and bypass policy.
 
+## Exact Context / Context Compilation Mode
+
+Use this mode when the selected boundary is a semantic-consumption boundary: a model, human, policy engine, workflow, scheduler, planner, ranker, classifier, tool selector, or agent step is about to consume prepared information.
+
+Recover:
+
+- Task `q` and semantic consumer.
+- Source worlds and source schema `S`.
+- Candidate source instance `I_candidate`.
+- Task-specific context schema `T_q`.
+- Required observables `Obs_q`.
+- Source-to-context mapping `M_q : S -> T_q` or source-to-target dependencies.
+- Migration mode: restriction/projection, left pushforward/merge, right pushforward/join, or practical analogue.
+- Chase/closure steps: deterministic constraint enforcement, equality propagation, entity resolution, unit/date normalization.
+- Provenance graph: `Claim -> Evidence -> Source`, `DerivedFact -> Derivation -> Inputs`.
+- Missingness, contradiction, ambiguity, and unsupported-claim representation.
+- Observational core/minimization relative to `Obs_q`.
+- Rendering law for prompt/report/dashboard/tool-argument/decision-packet output.
+- Freshness law and invalidation triggers.
+
+Use this formula:
+
+```text
+Context(q) = core_Obs(chase(migrate_{M_q}(I_candidate)))
+DecisionPacket(q) = render(Context(q))
+```
+
+Do not treat retrieval as context. Retrieval is candidate source-instance generation.
+
 ## Codensity Presentation Mode
 
 Use this mode when a target monad/effect/behavior is too semantic, infinitary, observational, probabilistic, topological, or completion-like for a useful algebraic presentation by generators/equations.
@@ -84,6 +114,24 @@ Codensity presentations reconstruct from dense probes and dual observations.
 ```
 
 Do not treat codensity only as optimization. It is also a presentation technology.
+
+## Context Compilation Report Mode
+
+Use when the requested Kan mechanics concern exact context, semantic consumption, or categorical data exchange for a task.
+
+Deliver:
+
+1. task `q` and semantic consumer;
+2. source worlds/schema `S` and candidate source instance `I_candidate`;
+3. task context schema `T_q`;
+4. required observables `Obs_q`;
+5. mapping `M_q`;
+6. migration/closure/chase plan;
+7. provenance, missingness, contradiction, and freshness structure;
+8. observational core/minimization;
+9. rendering/serialization law;
+10. Context Certificate;
+11. falsifiers.
 
 ## Step -1 — World Model Preamble
 
@@ -118,6 +166,8 @@ A world is too weak for Kan mechanics if it has only nouns, no transformations, 
 | Handler | effect syntax -> runtime behavior | free effects, handler, defunctionalized operations | handler satisfies operation observations |
 | Observer | subject -> observation result | Yoneda / `Ran` / `Rft` | representation change preserves observation |
 | Migration | old schema -> new schema | `Delta`, `Lan`/Sigma, `Ran`/Pi | old reports pass through migration |
+| Context compiler | source worlds -> task context schema | data exchange, migration/chase/core, context compilation | context satisfies schema, observables, provenance, freshness |
+| Semantic consumer | context -> decision/action/inference | Exact Context, Context Certificate, rendering law | rendered packet preserves required observables |
 
 ## Core Heartbeat
 
@@ -306,7 +356,7 @@ Use when the user already has or wants a Composition Certificate.
 
 ## Scripts
 
-- `scripts/emit_world_boundary_preamble.sh scripts/emit_composition_certificate_kan.sh scripts/emit_boundary_normal_form_kan.sh scripts/emit_codensity_presentation.sh <focus> [language]`
+- `scripts/emit_world_boundary_preamble.sh scripts/emit_composition_certificate_kan.sh scripts/emit_boundary_normal_form_kan.sh scripts/emit_codensity_presentation.sh scripts/emit_context_compilation_report.sh <focus> [language]`
 - `scripts/emit_boundary_kind_map.sh [kind]`
 - `scripts/emit_kan_stub.sh <kind> [language]`
 - `scripts/emit_law_test_plan.sh <direction> [language]`

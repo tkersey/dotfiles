@@ -1,7 +1,7 @@
 ---
 name: universalist
 description: >
-  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, protocols or state machines with unclear observations, effect/workflow operations needing multiple handlers, public contracts determining internals, forgetful or observational projections that may need a canonical free builder, or any need for canonical boundary artifacts, Composition Certificates, Boundary Normal Form, presentation strategies, semantic compression, dense probe presentations, or codensity-style presentation diagnostics. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, one proof signal, and—when the seam crosses worlds—one Composition Certificate.
+  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, protocols or state machines with unclear observations, effect/workflow operations needing multiple handlers, public contracts determining internals, forgetful or observational projections that may need a canonical free builder, or any need for canonical boundary artifacts, Composition Certificates, Boundary Normal Form, presentation strategies, semantic compression, dense probe presentations, codensity-style presentation diagnostics, Exact Context Doctrine, Context Certificates, Context Normal Form, context compilation, semantic consumption boundaries, or task-indexed data exchange for model/human/tool decisions. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, one proof signal, and—when the seam crosses worlds—one Composition Certificate.
 ---
 
 # Universalist
@@ -88,7 +88,7 @@ Presentation modes:
 New doctrine sentence:
 
 ```text
-Primitives compute. Boundaries compose. Presentations compress. Witnesses certify.
+Primitives compute. Boundaries compose. Presentations compress. Contexts prepare. Witnesses certify.
 ```
 
 Dense-Dual Presentation principle:
@@ -97,6 +97,53 @@ Dense-Dual Presentation principle:
 
 Reject canonical-but-useless presentations. Prefer small, testable, dense presentations that separate generic boundary machinery from domain-specific representation assumptions.
 
+## Exact Context Doctrine
+
+Maxim:
+
+```text
+Allow arbitrary sources. Forbid uncertified semantic consumption.
+```
+
+Exact Context Doctrine is the context-preparation layer of Universal Composition. It applies whenever a model, human, policy engine, planner, scheduler, workflow, tool selector, compiler pass, or other semantic consumer is about to decide, act, rank, classify, answer, approve, execute, or infer.
+
+A semantic consumer should not receive raw retrieved material, raw tool output, stale memory, untyped chunks, or unconstrained summaries. It should receive a **task-indexed, schema-shaped, constraint-closed, provenance-preserving, freshness-valid, observationally minimal context instance**.
+
+Use this pipeline:
+
+```text
+Task q
+  -> task-specific context schema T_q
+  -> task observables Obs_q
+  -> candidate source instance I_candidate
+  -> source-to-context mapping M_q
+  -> migrated context instance
+  -> chase / deterministic constraint closure
+  -> provenance + missingness + contradiction structure
+  -> observational core relative to Obs_q
+  -> rendered decision packet
+  -> semantic consumer
+```
+
+Compact formula:
+
+```text
+Context(q) = core_Obs(chase(migrate_{M_q}(I_candidate)))
+DecisionPacket(q) = render(Context(q))
+```
+
+The prompt is not the context. A prompt, dashboard, JSON payload, tool argument, review packet, or decision brief is only a rendering of the semantic context.
+
+Engineering law:
+
+```text
+No semantic consumption without certified context.
+No context without a schema.
+No schema without observables.
+No observables without provenance and freshness.
+```
+
+Use Track F when the main issue is having just the right data at just the right time.
 
 ## Do not trigger for
 
@@ -108,7 +155,7 @@ Reject canonical-but-useless presentations. Prefer small, testable, dense presen
 
 ## Step -1 — World and Boundary Inventory
 
-Before choosing Track A/B/C/D for any non-trivial structural request, inventory the worlds and boundaries. This prevents fake category labels and keeps the response anchored in repo reality.
+Before choosing Track A/B/C/D/E/F for any non-trivial structural request, inventory the worlds and boundaries. This prevents fake category labels and keeps the response anchored in repo reality.
 
 A **world** is a structured domain where some objects, transformations, invariants, observations, primitives, and composition rules make sense.
 
@@ -144,7 +191,7 @@ Law test:
 Falsifier:
 ```
 
-If this inventory cannot be filled for the seam, do not escalate to Track D.
+If this inventory cannot be filled for the seam, do not escalate to Track D or Track F.
 
 ## Boundary Kind Taxonomy
 
@@ -162,6 +209,8 @@ Classify boundary maps before choosing canonical artifacts.
 | Handler | effect syntax -> runtime behavior | effect signature, handler laws, defunctionalized operations |
 | Observer | subject -> observation result | Yoneda vocabulary, law-test oracle |
 | Migration | old schema/world -> new schema/world | `Delta`, `Lan`/Sigma, `Ran`/Pi, provenance path |
+| Context compiler | source worlds -> task context schema | Exact Context, data exchange, chase/closure, observational core |
+| Semantic consumer | prepared context -> decision/action/inference | Context Certificate, rendering law, freshness law |
 
 Do not skip this taxonomy. It decides whether the seam is an extension, a lift, a free-builder question, a coalgebra, an effect handler, or just an adapter.
 
@@ -193,7 +242,8 @@ Common drift signals:
 - generation drift: generated artifacts lose source/provenance/path information;
 - control-flow drift: callbacks, closures, handlers, or continuations carry architecture semantics invisibly;
 - behavioral drift: protocols, state machines, or distributed traces are tested by snapshots but not boundary laws;
-- effect drift: operations are interpreted differently by test, production, audit, retry, or simulation handlers.
+- effect drift: operations are interpreted differently by test, production, audit, retry, or simulation handlers;
+- context drift: raw retrieved chunks, stale memories, tool outputs, or summaries flow directly into a model/human/tool without schema, provenance, freshness, observables, or minimization.
 
 Map drift to artifacts:
 
@@ -206,6 +256,7 @@ generation drift      -> Coyoneda-style generation path vocabulary
 control-flow drift    -> defunctionalized explicit IR
 behavioral drift      -> behavioral coalgebra / protocol observation law
 effect drift          -> effect signature + handler laws
+context drift         -> task-indexed context instance + Context Certificate
 ```
 
 ## Boundary Law Catalogue
@@ -225,6 +276,11 @@ Use these named law shapes when designing proof signals:
 | Generation law | `lowerGenerated(payload,path) == directInterpret(path,payload)` |
 | Observation law | `runObservation(obs,repack(subject)) == runObservation(obs,subject)` |
 | Defunctionalization law | `apply(encodedCase,x) == oldFunction(x)` |
+| Context schema law | `Context(q)` satisfies task schema `T_q` |
+| Observable preservation law | every required observable is answered, missing, contradicted, or unsupported explicitly |
+| Provenance law | every evidence-bearing claim has a path to source or assumption marker |
+| Freshness law | sources satisfy task freshness requirements at semantic consumption time |
+| Rendering law | `render(Context(q))` preserves required observables under loss/token limits |
 
 Every Track D artifact should have one positive law test and one falsifier/negative witness.
 
@@ -314,7 +370,9 @@ Use this kernel for Track D decisions:
 9. **Behavioral coalgebras** — state/process behavior specified by transitions and observations over time.
 10. **Effect signatures and handlers** — operation syntax separated from runtime interpretation.
 11. **Explicit IR** — callbacks, handlers, continuations, predicates, mappers, and rules become data plus interpreter.
-12. **Law tests** — executable witnesses that the boundary artifact does what it claims.
+12. **Exact context** — task-indexed context instances prepared before semantic consumption.
+13. **Context certificates** — schema, observables, provenance, freshness, missingness, contradiction, rendering, and falsifier for a context.
+14. **Law tests** — executable witnesses that the boundary artifact does what it claims.
 
 ## Unknown-location artifact selector
 
@@ -339,6 +397,7 @@ Choose by where the unknown lives:
 | In generated payloads and deferred maps | Generation path vocabulary / Coyoneda-style | lowering equals direct interpretation |
 | In duplicated selectors/projections | Observation vocabulary / Yoneda-style | representation change preserves observations |
 | In callbacks/functions crossing boundaries | Explicit first-order IR / defunctionalization | `apply(encodedCase, x) == oldCallback(x)` |
+| In data needed before a decision/action/inference | Task-indexed context instance / Context Certificate | schema constraints, observables, provenance, freshness, and rendering laws hold |
 
 ### Track E — Composition certification
 
@@ -363,6 +422,45 @@ Use Track E for:
 - APIs, handlers, migrations, plugins, tools, or policies that need certification;
 - bringing an existing codebase incrementally into Boundary Normal Form;
 - deciding whether a seam is genuinely universal-architecture territory or a justified primitive.
+
+### Track F — Exact Context / semantic consumption boundary
+
+Use when the main problem is whether a model, human, policy engine, planner, scheduler, tool selector, approval gate, compiler pass, or other semantic consumer has exactly the right prepared data at exactly the right time.
+
+Deliver:
+
+- task `q` and consumer type;
+- task-specific context schema `T_q`;
+- required observables `Obs_q`;
+- candidate source worlds and source instance `I_candidate`;
+- source-to-context mapping `M_q`;
+- deterministic closure/chase steps;
+- provenance graph requirements;
+- missingness, contradiction, ambiguity, and unsupported-claim representation;
+- freshness requirements and invalidation triggers;
+- observational-core/minimization plan;
+- rendering/serialization plan;
+- Context Certificate;
+- law witnesses and falsifiers.
+
+Use Track F for:
+
+- RAG prompt stuffing or raw tool-output dumping;
+- agent memory selection;
+- stale or temporally invalid context;
+- missing evidence or unsupported claims;
+- contradictions that are smoothed over;
+- over-summarization that erases required distinctions;
+- entity-resolution ambiguity;
+- human review packets, policy-evaluation inputs, deployment decisions, debugging packets, planning packets, or model prompts that need exact context.
+
+Do not frame this as only an inference problem. The general boundary is:
+
+```text
+Prepared Context -> Semantic Consumer
+```
+
+Inference is one semantic-consumption mode.
 
 ## Freyd/AFT boundary diagnostic for Track D
 
@@ -416,6 +514,8 @@ Do **not** teach Freyd’s theorem in full inside ordinary responses. Translate 
 - Prefer products, coproducts, refined types, pullbacks, exponentials, and free constructions before advanced machinery.
 - Escalate to universal architecture only when the boundary artifact changes code shape or tests.
 - Allow arbitrary domain primitives; require explicit universal artifacts at architecture boundaries.
+- Allow arbitrary sources; forbid uncertified semantic consumption.
+- Do not feed raw retrieved chunks, memories, or tool outputs directly to semantic consumers when the decision/action/inference depends on evidence quality.
 - Keep wire and storage shapes stable behind adapters unless the user explicitly wants a breaking change.
 - Use the repo's current language, framework, and test stack before proposing new libraries.
 - Say what remains runtime-only in dynamic or weakly typed environments.
@@ -686,7 +786,16 @@ For effect-handler Track D, also include:
 - **Handler(s)**
 - **Handler observation law**
 
-For Track B, Track C, or Track D, also update `.universalist-plan.md`.
+For Track F, also include:
+
+- **Semantic consumer**
+- **Task schema `T_q`**
+- **Observables `Obs_q`**
+- **Context Certificate**
+- **Freshness / provenance / missingness / contradiction plan**
+- **Rendering law**
+
+For Track B, Track C, Track D, or Track F, also update `.universalist-plan.md`.
 
 ## Guardrails
 
@@ -754,6 +863,9 @@ Universal architecture references:
 - `scripts/emit_freyd_boundary_diagnostic.sh`
 - `scripts/emit_composition_certificate.sh`
 - `scripts/emit_boundary_normal_form_plan.sh scripts/emit_presentation_diagnostic.sh`
+- `scripts/emit_context_certificate.sh`
+- `scripts/emit_context_compiler_plan.sh`
+- `scripts/emit_exact_context_prompt.sh`
 - `scripts/check_universalist.sh`
 
 ## Templates

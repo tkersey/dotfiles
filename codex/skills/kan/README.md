@@ -38,3 +38,7 @@ Useful command:
 ```bash
 ./scripts/emit_codensity_presentation.sh report agnostic
 ```
+
+## Exact Context / context compilation
+
+This version adds context-compilation mechanics for semantic-consumption boundaries. Use `./scripts/emit_context_compilation_report.sh` when a model, human, policy engine, planner, tool selector, or agent step must receive a task-indexed, schema-shaped, provenance-preserving context object rather than raw retrieval results.
