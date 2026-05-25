@@ -184,6 +184,8 @@ seq session-prompts --root ~/.codex/sessions --session-id <session_id> --roles u
 seq tool-search --root ~/.codex/sessions --session-id <session_id> --contains "<pattern>" --mode rows --format table
 ```
 
+Use `session-prompts --session-id` for full watched-session message recovery after a `session-detail` or `turns` preview changes. Do not use corpus-wide `message-search` for that job unless the target skill explicitly needs cross-session comparison; broad message searches can mix the shadowing session with the watched session and create false evidence.
+
 When the target skill itself needs broader historical evidence, allow that skill's own evidence workflow only if the session evidence path remains `$seq`-backed and the watched session remains the anchor.
 
 For example, `$shadow` with `$tune` may inspect the watched session first and then use `$tune`'s `$seq` commands only if the watched session raises a skill-usage question that requires historical comparison.
@@ -316,6 +318,8 @@ seq tool-search --root ~/.codex/sessions --session-id <session_id> --contains "<
 seq session-prompts --root ~/.codex/sessions --session-id <session_id> --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
 seq skill-blocks --root ~/.codex/sessions --session-id <session_id> --skill <skill> --history latest --format json
 ```
+
+If you need the complete assistant message behind a `session-detail` preview, prefer `session-prompts --session-id <session_id> --roles assistant --limit <N> --format jsonl` and inspect the newest matching watched-session rows. Treat `message-search` as a cross-session mining tool, not the default way to expand one watched session's preview.
 
 Never paste raw `session-detail` output into the user-facing report by default. Convert it into sanitized findings.
 

@@ -662,6 +662,7 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `session-prompts` defaults to `--roles user`; set `--roles user,assistant` to include both sides of a conversation.
 - `session-prompts --current` resolves the current session from `CODEX_THREAD_ID` and fails closed if that env var is unavailable.
 - `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
+- Use `session-prompts --session-id <id>` when the question is "what did this one session say?" or when expanding a `session-detail` / `turns` preview for a known session. `message-search` is corpus-wide text mining and does not session-scope a known watched session.
 - `skill-blocks` is the exact-body recovery surface for session-injected skills; it returns full `<skill>...</skill>` envelopes, not loose `$skill` mentions or narrative references.
 - `skill-blocks` defaults to `--history distinct` and `--format jsonl`; use `--history all` to keep repeated identical injections and `--history latest` to select the newest distinct version.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
