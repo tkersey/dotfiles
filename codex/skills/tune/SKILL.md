@@ -1,20 +1,21 @@
 ---
 name: tune
-description: "Use `$seq` and `$refine` together to tune existing Codex skills from real usage evidence. Trigger when asked to analyze whether a skill is working as intended, compare intended vs observed use, find missed/false/partial activations, diagnose usage gaps, produce a refinement brief, or apply a targeted skill improvement with `$refine`."
+description: "Diagnose and optimize existing Codex skills from real usage evidence. Trigger when asked to use `$tune`, analyze a skill's usage, compare intended vs observed behavior, inspect missed/false/partial activations, mine `$seq` evidence, classify skill gaps, or produce a `$refine` brief. For analysis/recommendation asks, stop at audit/proposal; only apply edits when the user explicitly asks to change files now."
 ---
 
 # Tune
 
 ## Overview
 
-Use `tune` to improve an existing Codex skill by comparing what the skill is supposed to do with how it is actually being used.
+Use `tune` to improve an existing Codex skill by comparing the skill's intended contract with observed usage evidence.
 
-`tune` is an orchestration skill. It does not replace the core skills it coordinates:
+`tune` is an orchestration skill:
 
-- `$seq` mines sessions, memories, skill mentions, historical skill blocks, routing gaps, workflow evidence, and tool traces.
-- `$tune` interprets that evidence, reconstructs the target skill's intended-use contract, classifies the gap, and writes a precise refinement brief.
-- `$refine` performs the actual in-place skill edit or upgrade and validates the result.
-- `$ship` and `$land` remain responsible for PR and merge workflows when needed.
+- `$seq` mines session, memory, tool, workflow, routing, and historical skill-block evidence.
+- `$tune` reconstructs the target skill's intended-use contract, interprets evidence, classifies gaps, and writes a precise `$refine` brief.
+- `$refine` performs the in-place skill edit or upgrade and validates it.
+- `$ship` and `$land` remain responsible for PR and merge workflows.
+- `$ms` remains responsible for creating new skills and direct skill-surgery primitives when no usage-backed diagnosis is needed.
 
 Core question:
 
@@ -27,22 +28,22 @@ is it working as intended, and what should change?
 
 Use `$tune` when the user asks to:
 
-- Analyze a skill's current usage.
+- Analyze a skill's current usage or performance.
 - Determine whether a skill is being used as intended.
-- Improve a skill based on session evidence.
+- Optimize, improve, fix, or upgrade a skill based on usage evidence.
 - Use `$seq` and `$refine` together.
 - Compare a skill's stated purpose with actual behavior.
 - Find missed activations, false activations, partial activations, or weak activations.
-- Diagnose trigger, workflow, metadata, tooling, validation, or boundary gaps.
-- Decide whether a skill should be upgraded.
-- Produce a refinement brief for `$refine`.
-- Apply a usage-backed refinement or upgrade to a target skill.
+- Diagnose trigger, workflow, metadata, tooling, validation, resource, or boundary gaps.
+- Produce a usage-backed refinement brief for `$refine`.
+- Apply a usage-backed refinement when the user explicitly asks to change files now.
 
 Example prompts:
 
 - "Use `$tune` on the pdf skill."
 - "Analyze whether `$seq` is being used as intended."
-- "Tune the docx skill based on recent sessions."
+- "Do a deep analysis of the tune skill so we can make it optimal."
+- "Tune the docx skill based on recent sessions, but don't edit yet."
 - "Use `$seq` to inspect current usage of the gh skill, then refine it."
 - "Find out why the slides skill keeps missing validation and improve it."
 - "Compare the algebra skill's intended contract to how agents actually use it."
@@ -52,8 +53,10 @@ Example prompts:
 
 Do not use `$tune` to:
 
-- Edit a skill directly without usage or performance evidence. Use `$refine`.
+- Edit a skill directly without usage, validation, routing, or explicit current-turn evidence. Use `$refine` or `$ms` as appropriate.
 - Mine arbitrary sessions without a target skill. Use `$seq`.
+- Create a new skill. Use `$ms`.
+- Apply an already-complete refinement brief without further diagnosis. Use `$refine`.
 - Run autonomous broad ecosystem scans.
 - Create or update PRs. Use `$ship`.
 - Merge PRs or clean up branches. Use `$land`.
@@ -64,11 +67,11 @@ Do not use `$tune` to:
 
 ## Operating Modes
 
-Choose the mode from the user's request.
+Choose exactly one mode before mining evidence.
 
 ### Audit Only
 
-Use when the user asks whether a skill is working, how it is being used, or what the current evidence shows.
+Use when the user asks whether a skill is working, how it is being used, or what the evidence shows.
 
 Output:
 
@@ -82,20 +85,21 @@ Do not edit the skill.
 
 ### Proposal Only
 
-Use when the user asks what should change or wants a refinement plan.
+Use when the user asks what should change, asks for deep analysis, asks for optimization guidance, or wants a refinement plan.
 
 Output:
 
 - usage-backed diagnosis,
 - `$refine` brief,
 - success criteria,
-- validation plan.
+- validation plan,
+- remaining uncertainty.
 
-Do not edit the skill unless the user asks to apply the proposal.
+Do not edit the skill unless the user explicitly asks to apply the proposal.
 
 ### Apply with `$refine`
 
-Use when the user asks to tune, improve, fix, upgrade, or apply the usage-backed change.
+Use only when the user explicitly asks to apply, edit, patch, update, or change skill files now.
 
 Output:
 
@@ -105,7 +109,31 @@ Output:
 - validation proof,
 - remaining uncertainty.
 
-Prefer this mode when the request includes verbs such as `improve`, `fix`, `refine`, `upgrade`, `patch`, `update`, or `apply`.
+## Mode Precedence
+
+Resolve mode in this order:
+
+1. Explicit `apply`, `edit the files`, `patch now`, `make the change`, `update the skill`, or equivalent file-change instruction: `apply-with-refine` if the apply gate is satisfied.
+2. Explicit `audit`, `analyze`, `deep analysis`, `is it working`, `what should change`, `recommend`, `proposal`, or `make it optimal`: `audit-only` or `proposal-only`, even when the prompt also says `improve`, `fix`, `optimize`, or `upgrade`.
+3. Ambiguous optimization requests: `proposal-only`.
+4. Complete evidence-backed brief supplied and user asks only for file edits: hand off to `$refine` or run only the `$refine` phase.
+5. Protected or self-targeted skills: default to `proposal-only` unless the user explicitly asks to apply file changes.
+
+Choose `audit-only` for status/evidence questions. Choose `proposal-only` when the user asks what to change, asks for deep analysis, or asks how to optimize. Choose `apply-with-refine` only after the apply gate below passes.
+
+## Apply Gate
+
+All conditions must hold before editing:
+
+- The user explicitly asked to change skill files now.
+- The target skill is identified.
+- The intended-use contract has been reconstructed first.
+- Evidence is strong enough for the proposed change, or the user has supplied explicit current-turn feedback that supports a narrow local change.
+- The change is the smallest sufficient edit or justified upgrade.
+- Protected-skill restrictions are satisfied.
+- Validation is available or, if blocked, the final report states exactly what blocked it and does not claim a pass.
+
+If any condition fails, stop at audit-only or proposal-only.
 
 ## Inputs
 
@@ -114,19 +142,19 @@ Identify these before mining evidence:
 - Target skill name or path.
 - User's tuning goal.
 - Time window, if provided.
-- Specific failure mode, if provided.
-- Specific sessions, repos, workdirs, or commands, if provided.
-- Desired mode: audit-only, proposal-only, or apply-with-refine.
+- Specific failure mode, trigger phrase, workflow, repo, workdir, command pattern, or session, if provided.
+- Desired or inferred mode.
 - Protected-skill status.
 - Whether raw transcript excerpts are allowed. Default: do not include them.
 
-If no time window is provided, use a recent window appropriate to the request. For general usage tuning, default to the last 90 days.
+If no time window is provided, default to the last 90 days for general usage tuning.
 
 ## Protected Skill Gate
 
 Protected skills require extra care:
 
 - `seq`
+- `tune`
 - `refine`
 - `cron`
 - `ship`
@@ -141,27 +169,33 @@ For protected skills:
 - Preserve the skill's core role and companion-skill boundaries.
 - Require validation proof for every edit.
 
+When the target skill is `tune`, default to proposal-only unless the user explicitly asks to apply file changes. Preserve mode-selection, evidence-strength, and companion-skill boundaries unless direct evidence justifies changing them.
+
+## Companion-Skill Boundaries
+
+- `$seq` owns evidence mining and artifact/session forensics.
+- `$tune` owns intended-vs-observed diagnosis, evidence interpretation, gap classification, and `$refine` brief writing.
+- `$refine` owns in-place edits once the gap and success criteria are known.
+- `$ms` owns new skill creation and direct skill surgery when no usage-backed tuning diagnosis is needed.
+- `$ship` and `$land` own PR and merge workflows.
+
+If the user asks to discover whether a change is needed, `$tune` owns the turn. If the user provides a complete evidence-backed brief and asks only for edits, hand off to `$refine`. If the user asks for both diagnosis and edits, diagnose first, write the brief, then invoke `$refine` only if the apply gate passes.
+
 ## Workflow
 
 ### 1. Scope the Tuning Run
 
-Write a one-line goal:
+Write:
 
 ```text
 Goal: Tune <skill> so that <intended behavior> better matches <observed or suspected usage pattern>.
-```
-
-Choose the mode:
-
-```text
 Mode: audit-only | proposal-only | apply-with-refine
+Apply gate: pass | blocked: <reason>
 ```
-
-If the user asks a diagnostic question, stop at audit-only unless they ask for edits. If the user asks to improve, fix, update, or upgrade, continue to apply-with-refine when the evidence supports it.
 
 ### 2. Reconstruct the Intended-Use Contract
 
-Read the target skill first:
+Read the target skill before judging usage:
 
 ```text
 codex/skills/<skill>/SKILL.md
@@ -171,73 +205,61 @@ codex/skills/<skill>/references/
 codex/skills/<skill>/assets/
 ```
 
-Only read resources that are relevant to the target skill or the suspected gap.
+Only read resources relevant to the target skill or suspected gap.
 
-Summarize the intended-use contract:
+Summarize:
 
 - Primary purpose.
 - Trigger cues.
 - Anti-triggers and boundaries.
-- Expected inputs.
-- Expected outputs.
+- Expected inputs and outputs.
 - Required workflow.
 - Required tools, scripts, references, or assets.
 - Validation expectations.
 - Companion-skill handoffs.
 - Upgrade boundaries.
 
-Do not judge usage before reconstructing the intended contract.
-
 ### 3. Mine Observed Usage with `$seq`
 
-Use `$seq` for session-backed evidence. Prefer lifted commands before raw `seq query`.
+Use `$seq` for session-backed evidence. Prefer lifted commands before raw `seq query`. Use `references/seq-evidence-playbook.md` for command selection.
 
-Start with skill-level usage:
+Baseline commands:
 
 ```bash
 seq skill-success-rank --root ~/.codex/sessions --skill <skill> --mode sessions --last 90d --format jsonl
 seq skill-audit --root ~/.codex/sessions --skill <skill> --mode trend --since <iso8601> --format table
 seq skill-cohort --root ~/.codex/sessions --skill <skill> --since <iso8601> --format table
-```
-
-Inspect historical skill versions when behavior may have changed:
-
-```bash
 seq skill-blocks --root ~/.codex/sessions --skill <skill> --history latest --format json
 seq skill-blocks --root ~/.codex/sessions --skill <skill> --history all --format jsonl
 ```
 
-Use targeted searches when the question names a trigger phrase, failure phrase, command pattern, or workflow:
-
-```bash
-seq message-search --root ~/.codex/sessions --contains "<trigger-or-failure-phrase>" --roles user,assistant --limit 50 --format jsonl
-seq tool-search --root ~/.codex/sessions --contains "<repeated-command-or-tool-pattern>" --mode rows --format table
-seq workflow-audit --root ~/.codex/sessions --workflow <workflow-name> --mode report --since <iso8601> --format markdown
-seq session-detail --root ~/.codex/sessions --session-id <session_id> --format markdown
-```
-
-Use raw `seq query` only when no specialized command covers the evidence need.
+Add targeted searches for named triggers, failure phrases, workflows, workdirs, or command patterns. Use raw `seq query` only when no specialized command covers the evidence need.
 
 ### 4. Sanitize Evidence
 
 Use sanitized summaries in user-facing reports and refinement briefs.
 
-Do not include:
+Do not include raw transcript text, raw memory text, secrets, credentials, private personal details, sensitive local paths, private user-identifying path fragments, or unnecessarily long command output. Raw excerpts are allowed only when the user explicitly asks for them and the content is safe to show.
 
-- raw transcript text,
-- raw memory text,
-- secrets,
-- credentials,
-- private personal details,
-- sensitive local paths,
-- private user-identifying path fragments,
-- unnecessarily long command outputs.
+### 5. Build an Evidence Ledger
 
-Raw excerpts are allowed only when the user explicitly asks for them and the content is safe to show.
+For each important source, record:
 
-### 5. Classify Evidence Strength
+```text
+- Command or source:
+- Why this source was chosen:
+- What it proves:
+- What it does not prove:
+- Evidence class:
+- Confidence: high | medium | low
+- Recurrence:
+- Counterevidence:
+- Sanitization note:
+```
 
-Use named evidence classes.
+Do not treat running a command as proof. Explain what the result actually establishes.
+
+### 6. Classify Evidence Strength
 
 Strong evidence:
 
@@ -258,179 +280,49 @@ Weak evidence:
 - `style_preference_only`
 - `missing_examples_without_failure`
 
-One strong evidence class can justify an applied `$refine` change. Weak-only evidence usually supports audit-only or proposal-only. A tiny clarification may be applied on weak evidence only when it is local, low-risk, and clearly improves the skill's contract.
+Default thresholds:
 
-### 6. Diagnose the Gap
+- `repeated_session_evidence`: same gap appears in at least 3 relevant sessions, or at least 2 independent sessions plus explicit user feedback.
+- `repeated_manual_workaround`: substantially similar workaround appears in at least 3 sessions or across at least 2 target skills.
+- `low_activation_count`: fewer than 3 relevant activations in the chosen window.
+- `single_ambiguous_session`: one session with unclear intent, incomplete trace, or no explicit outcome signal.
+- `clear_routing_failure`: user asked for the skill's owned work and a different skill or no skill handled the core workflow.
+- `historical_skill_regression`: behavior changed after a material skill-block, trigger, metadata, or workflow update.
 
-Classify the mismatch between intended and observed use.
+Explicit current-turn user feedback can be strong evidence for a narrow local change. It should not justify a broad redesign without corroborating session evidence.
 
-#### Activation Gap
+### 7. Diagnose the Gap
 
-The skill fails to trigger when it should, or triggers when it should not.
+Classify the mismatch using `references/gap-taxonomy.md`:
 
-Likely `$refine` actions:
+- activation,
+- interpretation,
+- workflow,
+- tooling,
+- resource,
+- validation,
+- metadata,
+- boundary.
 
-- frontmatter description update,
-- trigger cue update,
-- anti-trigger addition,
-- example addition,
-- `agents/openai.yaml` update.
-
-#### Interpretation Gap
-
-The skill triggers, but the agent misunderstands what to do.
-
-Likely `$refine` actions:
-
-- clarify purpose,
-- add decision rules,
-- add input classification,
-- add positive and negative examples.
-
-#### Workflow Gap
-
-The skill triggers, but agents skip, weaken, or misorder required steps.
-
-Likely `$refine` actions:
-
-- revise workflow order,
-- add checkpoints,
-- add fallback rules,
-- add validation requirements.
-
-#### Tooling Gap
-
-The skill repeatedly uses fragile ad hoc commands or lacks deterministic helpers.
-
-Likely `$refine` actions:
-
-- add or revise scripts,
-- document command usage,
-- add representative sample runs,
-- avoid scripts for judgment-heavy work.
-
-#### Resource Gap
-
-The skill needs reusable reference material or assets.
-
-Likely `$refine` actions:
-
-- add `references/`,
-- add `assets/`,
-- move long reusable guidance out of `SKILL.md`,
-- keep `SKILL.md` concise.
-
-#### Validation Gap
-
-The skill lacks a clear proof path.
-
-Likely `$refine` actions:
-
-- add `quick_validate`,
-- add script sample commands,
-- run `scripts/validate-changed-skills` when shared assumptions or multiple skills change,
-- add concrete success criteria.
-
-#### Metadata Gap
-
-Skill metadata no longer matches the skill's behavior or actual use.
-
-Likely `$refine` actions:
-
-- update frontmatter description,
-- update `agents/openai.yaml`,
-- align display name, short description, and default prompt.
-
-#### Boundary Gap
-
-The skill overlaps with another skill or has weak handoff rules.
-
-Likely `$refine` actions:
-
-- add non-goals,
-- add anti-triggers,
-- clarify companion-skill routing,
-- tighten handoff rules.
-
-### 7. Decide Whether to Apply
-
-Stop at audit-only when:
-
-- the user only asks whether the skill is working,
-- evidence is thin or ambiguous,
-- the target is protected and no explicit edit was requested,
-- the likely change is broad or risky,
-- `$seq` evidence does not support the suspected gap.
-
-Produce proposal-only when:
-
-- there is a plausible gap but not enough proof to edit,
-- the user asks for recommendations,
-- the edit would affect trigger boundaries across multiple skills,
-- the target skill's current contract is ambiguous.
-
-Apply with `$refine` when:
-
-- the user asks to improve, fix, tune, update, or upgrade,
-- direct user feedback identifies the problem,
-- `$seq` shows repeated session evidence,
-- validation failure is clear,
-- routing failure is clear,
-- the change is small enough to be local and validated.
+Identify the smallest sufficient fix. Prefer no edit when evidence is thin or the likely change crosses skill boundaries.
 
 ### 8. Produce the `$refine` Brief
 
-Before invoking `$refine`, write a concise brief:
+Use `references/refinement-brief-template.md`. Include the evidence ledger, counterevidence, risk, success criteria, must-not-change constraints, and validation plan.
 
-```text
-Target skill: <skill>
+### 9. Apply with `$refine`, If Allowed
 
-Tuning goal:
-- <one-line goal>
-
-Intended-use contract:
-- Purpose: <summary>
-- Trigger boundary: <summary>
-- Workflow expectation: <summary>
-- Validation expectation: <summary>
-
-Observed usage:
-- Evidence class: <class>
-- Source: <seq command or user feedback>
-- Finding: <sanitized finding>
-- Recurrence: <frequency or recurrence summary, if known>
-
-Gap:
-- Type: <activation | interpretation | workflow | tooling | resource | validation | metadata | boundary>
-- Diagnosis: <specific mismatch>
-
-Recommended `$refine` action:
-- <smallest sufficient edit or upgrade>
-
-Success criteria:
-- <criterion 1>
-- <criterion 2>
-- <criterion 3>
-
-Validation:
-- quick_validate target skill
-- script sample run, if scripts changed
-- `codex/skills/tune/scripts/validate-changed-skills`, if shared assumptions or multiple skills changed
-```
-
-### 9. Invoke `$refine`
-
-Use `$refine` to apply the brief. The handoff should be explicit:
+Use `$refine` only after the apply gate passes:
 
 ```text
 Use `$refine` on <skill> with this tuning brief. Make the smallest sufficient edit that closes the diagnosed <gap_type> gap. Preserve unrelated behavior. Validate with quick_validate. Update agents/openai.yaml only if metadata changed. Add scripts/references/assets only if the brief explicitly justifies them.
 ```
 
-If the runtime cannot literally invoke another skill, perform the edit by following `$refine` rules and clearly report that the `$refine` phase was executed manually.
+If the runtime cannot literally invoke another skill, perform the edit by following `$refine` rules and report that the `$refine` phase was executed manually.
 
 ### 10. Validate
 
-Require `$refine` validation:
+For any applied edit, run:
 
 ```bash
 uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/<skill>
@@ -444,6 +336,8 @@ codex/skills/tune/scripts/validate-changed-skills
 
 If scripts changed, run at least one representative sample command.
 
+If `codex/skills/.system/skill-creator/scripts/quick_validate.py` is unavailable, report validation as blocked and do not claim validation passed. Do not replace it with an unrelated validator.
+
 ### 11. Report
 
 Use this result shape:
@@ -454,6 +348,9 @@ Tuned: <skill>
 Mode:
 - <audit-only | proposal-only | apply-with-refine>
 
+Apply gate:
+- <pass | blocked: reason>
+
 Evidence:
 - <evidence_class>: <sanitized evidence summary>
 
@@ -463,11 +360,11 @@ Diagnosis:
 - Gap: <gap type and explanation>
 
 Refinement:
-- <files changed, or proposed files>
+- <files changed, proposed files, or no edit>
 - <why the changes close the gap>
 
 Validation:
-- <command>: <pass/fail/not run and why>
+- <command>: <pass/fail/blocked/not run and why>
 
 Remaining uncertainty:
 - <anything not proven by the evidence>
@@ -475,7 +372,7 @@ Remaining uncertainty:
 
 ## Upgrade Policy
 
-`tune` may recommend or drive upgrades, not just wording fixes.
+`tune` may recommend or drive upgrades when the current skill cannot reliably satisfy its intended contract under observed usage.
 
 Allowed upgrade types:
 
@@ -488,96 +385,27 @@ Allowed upgrade types:
 - Validation upgrade.
 - Handoff or boundary upgrade.
 
-An upgrade is justified when the current skill cannot reliably satisfy its intended contract under observed usage.
-
 Do not recommend a capability upgrade that changes the skill's core purpose. That should be a new skill or an explicit user-directed redesign.
-
-## Decision Rules for Common Cases
-
-### Missed Activation
-
-Evidence pattern:
-
-- User asks for the skill's work, but the skill is absent or appears late.
-
-Action:
-
-- Strengthen frontmatter description and trigger cues.
-- Add user-language examples.
-- Add anti-overlap notes if another skill intercepted the request.
-
-### False Activation
-
-Evidence pattern:
-
-- Skill activates in sessions it should not own.
-
-Action:
-
-- Add anti-triggers and non-goals.
-- Tighten frontmatter description.
-- Clarify handoff to the correct skill.
-
-### Partial Activation
-
-Evidence pattern:
-
-- Skill appears, but key workflow steps are skipped.
-
-Action:
-
-- Add workflow checkpoints.
-- Add validation requirements.
-- Add an output checklist.
-
-### Repeated Manual Workaround
-
-Evidence pattern:
-
-- Similar command sequence appears repeatedly across sessions.
-
-Action:
-
-- Add a small deterministic helper script only if it reduces fragility.
-- Add sample-run validation.
-
-### Stale Metadata
-
-Evidence pattern:
-
-- `agents/openai.yaml` or frontmatter no longer matches current behavior.
-
-Action:
-
-- Update metadata and validate.
-
-### Thin Evidence
-
-Evidence pattern:
-
-- One ambiguous session or low activation count.
-
-Action:
-
-- Produce audit or proposal only.
-- Avoid broad changes.
 
 ## Quality Bar
 
 A good `$tune` run:
 
+- Chooses the mode before mining evidence.
 - Reads the target skill before judging usage.
 - Uses `$seq` evidence for observed behavior.
 - Separates intended purpose from observed behavior.
+- Maintains an evidence ledger with counterevidence.
 - Classifies the gap before proposing a fix.
 - Hands `$refine` a precise brief.
 - Keeps edits small unless evidence justifies an upgrade.
-- Validates the result.
+- Validates applied changes.
 - Reports uncertainty when evidence is thin.
 
 A bad `$tune` run:
 
-- Rewrites a skill without usage evidence.
+- Treats "optimize" or "improve" as permission to edit when the user asked for analysis.
+- Rewrites a skill without usage or performance evidence.
 - Treats raw mentions as successful activations.
 - Confuses `$seq` mining with `$refine` editing.
 - Makes broad changes from one ambiguous session.

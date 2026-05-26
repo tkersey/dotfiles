@@ -60,7 +60,12 @@ cd "$repo_root"
 
 validator="codex/skills/.system/skill-creator/scripts/quick_validate.py"
 if [[ ! -f "$validator" ]]; then
-  echo "quick_validate.py not found: $validator" >&2
+  cat >&2 <<VALIDATOR_MISSING
+quick_validate.py not found: $validator
+
+This repository commonly keeps codex/skills/.system/ as local/generated assets.
+Install or generate the skill-creator .system assets before claiming skill validation passed.
+VALIDATOR_MISSING
   exit 1
 fi
 

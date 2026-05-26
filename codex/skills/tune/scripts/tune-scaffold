@@ -3,26 +3,54 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Usage: tune-scaffold --skill <skill> [--root <sessions-root>] [--since <iso8601>] [--last <duration>]
+Usage: tune-scaffold --skill <skill> [options]
 
-Prints a $tune evidence command set and refinement-brief skeleton.
+Prints a $tune evidence command set, evidence ledger skeleton, and refinement-brief skeleton.
 
-Defaults:
-  --root  ~/.codex/sessions
-  --last  90d
-  --since computed as UTC now minus 90 days when python3 is available, otherwise <iso8601>
+Required:
+  --skill <skill>                  Target skill name.
+
+Options:
+  --mode <mode>                    audit-only | proposal-only | apply-with-refine. Default: proposal-only.
+  --goal <text>                    One-line tuning goal.
+  --root <sessions-root>           Sessions root. Default: ~/.codex/sessions.
+  --since <iso8601>                Start timestamp. Default: computed from --last when possible.
+  --last <duration>                Recent window for skill-success-rank. Default: 90d.
+  --failure-phrase <phrase>        Add targeted message-search evidence. Repeatable.
+  --trigger-phrase <phrase>        Alias for --failure-phrase. Repeatable.
+  --command-pattern <fragment>     Add targeted tool-search evidence. Repeatable.
+  --workflow <name>                Add workflow-audit evidence. Repeatable.
+  --workdir <path-fragment>        Add workdir-report evidence.
+  -h, --help                       Show this help.
+
+This helper scaffolds deterministic evidence collection only. $tune still owns diagnosis,
+gap classification, mode decisions, and whether $refine may apply an edit.
 USAGE
 }
 
 skill=""
+mode="proposal-only"
+goal="<one-line goal>"
 root="$HOME/.codex/sessions"
 last="90d"
 since=""
+workdir=""
+failure_phrases=()
+command_patterns=()
+workflows=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --skill)
       skill="${2:-}"
+      shift 2
+      ;;
+    --mode)
+      mode="${2:-}"
+      shift 2
+      ;;
+    --goal)
+      goal="${2:-}"
       shift 2
       ;;
     --root)
@@ -35,6 +63,22 @@ while [[ $# -gt 0 ]]; do
       ;;
     --last)
       last="${2:-}"
+      shift 2
+      ;;
+    --failure-phrase|--trigger-phrase)
+      failure_phrases+=("${2:-}")
+      shift 2
+      ;;
+    --command-pattern)
+      command_patterns+=("${2:-}")
+      shift 2
+      ;;
+    --workflow)
+      workflows+=("${2:-}")
+      shift 2
+      ;;
+    --workdir)
+      workdir="${2:-}"
       shift 2
       ;;
     -h|--help)
@@ -55,11 +99,25 @@ if [[ -z "$skill" ]]; then
   exit 2
 fi
 
+case "$mode" in
+  audit-only|proposal-only|apply-with-refine) ;;
+  *)
+    echo "invalid --mode: $mode" >&2
+    echo "expected: audit-only | proposal-only | apply-with-refine" >&2
+    exit 2
+    ;;
+esac
+
 if [[ -z "$since" ]]; then
   if command -v python3 >/dev/null 2>&1; then
-    since="$(python3 - <<'PY'
+    since="$(TUNE_LAST="$last" python3 - <<'PY'
+import os
+import re
 from datetime import datetime, timedelta, timezone
-print((datetime.now(timezone.utc) - timedelta(days=90)).isoformat(timespec="seconds").replace("+00:00", "Z"))
+last = os.environ.get("TUNE_LAST", "90d")
+match = re.fullmatch(r"(\d+)d", last)
+days = int(match.group(1)) if match else 90
+print((datetime.now(timezone.utc) - timedelta(days=days)).isoformat(timespec="seconds").replace("+00:00", "Z"))
 PY
 )"
   else
@@ -67,31 +125,106 @@ PY
   fi
 fi
 
+shq() {
+  printf '%q' "$1"
+}
+
+is_protected="no"
+case "$skill" in
+  seq|tune|refine|cron|ship|land|.system|.system/*)
+    is_protected="yes"
+    ;;
+esac
+
+apply_gate="blocked: mode is not apply-with-refine"
+if [[ "$mode" == "apply-with-refine" ]]; then
+  apply_gate="needs evidence check before editing"
+fi
+
+q_root="$(shq "$root")"
+q_skill="$(shq "$skill")"
+q_last="$(shq "$last")"
+q_since="$(shq "$since")"
+q_goal="$(shq "$goal")"
+
 cat <<TUNE_OUT
 # \$tune scaffold for skill: $skill
 
-## Evidence commands
+## Scope
 
-seq skill-success-rank --root "$root" --skill "$skill" --mode sessions --last "$last" --format jsonl
-seq skill-audit --root "$root" --skill "$skill" --mode trend --since "$since" --format table
-seq skill-cohort --root "$root" --skill "$skill" --since "$since" --format table
-seq skill-blocks --root "$root" --skill "$skill" --history latest --format json
-seq skill-blocks --root "$root" --skill "$skill" --history all --format jsonl
+Goal: Tune $skill so that <intended behavior> better matches <observed or suspected usage pattern>.
+Mode: $mode
+Apply gate: $apply_gate
+Protected/self-target gate: $is_protected
+User goal: $goal
 
-# Optional targeted searches:
-seq message-search --root "$root" --contains "<trigger-or-failure-phrase>" --roles user,assistant --limit 50 --format jsonl
-seq tool-search --root "$root" --contains "<repeated-command-or-tool-pattern>" --mode rows --format table
-seq workflow-audit --root "$root" --workflow "<workflow-name>" --mode report --since "$since" --format markdown
+## Baseline evidence commands
+
+seq skill-success-rank --root $q_root --skill $q_skill --mode sessions --last $q_last --format jsonl
+seq skill-audit --root $q_root --skill $q_skill --mode trend --since $q_since --format table
+seq skill-cohort --root $q_root --skill $q_skill --since $q_since --format table
+seq skill-blocks --root $q_root --skill $q_skill --history latest --format json
+seq skill-blocks --root $q_root --skill $q_skill --history all --format jsonl
+TUNE_OUT
+
+if [[ ${#failure_phrases[@]} -gt 0 ]]; then
+  printf '\n## Targeted trigger/failure phrase searches\n\n'
+  for phrase in "${failure_phrases[@]}"; do
+    [[ -z "$phrase" ]] && continue
+    printf 'seq message-search --root %s --contains %s --roles user,assistant --limit 50 --format jsonl\n' "$q_root" "$(shq "$phrase")"
+    printf 'seq message-audit --root %s --contains %s --roles user,assistant --show-query --format json\n' "$q_root" "$(shq "$phrase")"
+  done
+fi
+
+if [[ ${#command_patterns[@]} -gt 0 ]]; then
+  printf '\n## Targeted tooling searches\n\n'
+  for pattern in "${command_patterns[@]}"; do
+    [[ -z "$pattern" ]] && continue
+    printf 'seq tool-search --root %s --contains %s --mode rows --format table\n' "$q_root" "$(shq "$pattern")"
+    printf 'seq tool-search --root %s --contains %s --mode args --format jsonl\n' "$q_root" "$(shq "$pattern")"
+  done
+fi
+
+if [[ ${#workflows[@]} -gt 0 ]]; then
+  printf '\n## Targeted workflow audits\n\n'
+  for workflow in "${workflows[@]}"; do
+    [[ -z "$workflow" ]] && continue
+    printf 'seq workflow-audit --root %s --workflow %s --mode report --since %s --format markdown\n' "$q_root" "$(shq "$workflow")" "$q_since"
+  done
+fi
+
+if [[ -n "$workdir" ]]; then
+  printf '\n## Targeted workdir evidence\n\n'
+  printf 'seq workdir-report --root %s --contains %s --mode sessions --limit 20 --format table\n' "$q_root" "$(shq "$workdir")"
+fi
+
+cat <<TUNE_OUT
+
+## Evidence ledger skeleton
+
+- Source 1:
+  - Command or source: <command/source>
+  - Why this source was chosen: <reason>
+  - What it proves: <supported claim>
+  - What it does not prove: <limits>
+  - Evidence class: <class>
+  - Confidence: high | medium | low
+  - Recurrence: <count/window or unknown>
+  - Counterevidence: <counter-signal or none found>
+  - Sanitization note: <what was omitted or generalized>
 
 ## Refinement brief skeleton
 
 Target skill: $skill
 
 Mode:
-- audit-only | proposal-only | apply-with-refine
+- $mode
+
+Apply gate:
+- <pass | blocked: reason>
 
 Tuning goal:
-- <one-line goal>
+- $goal
 
 Intended-use contract:
 - Purpose: <summary>
@@ -101,20 +234,25 @@ Intended-use contract:
 - Tool/resource expectation: <summary>
 - Validation expectation: <summary>
 - Companion-skill handoffs: <summary>
+- Upgrade boundaries: <summary>
 
 Observed usage:
-- Evidence class: <class>
-- Source: <seq command, validation output, or user feedback>
-- Finding: <sanitized finding>
+- Summary: <sanitized finding>
 - Recurrence: <frequency or recurrence summary, if known>
 - Counterevidence: <anything that weakens the finding>
 
 Gap:
 - Type: <activation | interpretation | workflow | tooling | resource | validation | metadata | boundary>
 - Diagnosis: <specific mismatch>
+- Severity: high | medium | low
+- Risk if unchanged: <consequence>
+- Risk of proposed change: <consequence>
 
 Recommended \$refine action:
 - <smallest sufficient edit or upgrade>
+
+Must not change:
+- <core behavior, companion boundary, trigger scope, or validation expectation to preserve>
 
 Success criteria:
 - <criterion 1>
@@ -123,5 +261,5 @@ Success criteria:
 
 Validation:
 - uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/$skill
-- codex/skills/tune/scripts/validate-changed-skills, if shared assumptions or multiple skills changed
+- codex/skills/tune/scripts/validate-changed-skills -- codex/skills/$skill, if shared assumptions or multiple skills changed
 TUNE_OUT

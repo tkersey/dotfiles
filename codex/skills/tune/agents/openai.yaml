@@ -1,4 +1,4 @@
 interface:
   display_name: "tune"
-  short_description: "Tune skills by comparing intended use with observed usage"
-  default_prompt: "Use $tune to analyze a target skill's intended contract, mine current usage with $seq, diagnose gaps, produce a $refine brief, and apply a validated refinement when appropriate."
+  short_description: "Tune skills from observed usage evidence"
+  default_prompt: "Use $tune to compare a target skill's intended contract with $seq-backed usage evidence, classify gaps, produce a $refine brief, and apply edits only when explicitly requested."
