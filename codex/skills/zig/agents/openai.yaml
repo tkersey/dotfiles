@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: true
 interface:
   display_name: "Zig"
   short_description: "Build, format, lint, test, fuzz, migrate, harden, audit hazardous code, profile, and design expert Zig 0.16.0 systems code"

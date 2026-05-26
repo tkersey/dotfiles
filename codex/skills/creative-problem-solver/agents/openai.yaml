@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Creative Problem Solver"
+  short_description: "Help with Creative Problem Solver tasks"
+  default_prompt: "Use $creative-problem-solver for this task."

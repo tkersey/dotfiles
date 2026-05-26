@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Simplify and Refactor Code Isomorphically"
+  short_description: "Help with Simplify and Refactor Code Isomorphically tasks"
+  default_prompt: "Use $simplify-and-refactor-code-isomorphically for this task."

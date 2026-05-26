@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: true
 interface:
   display_name: "dominance"
   short_description: "Adversarially score candidate moves"

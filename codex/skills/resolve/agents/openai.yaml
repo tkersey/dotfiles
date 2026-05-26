@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Resolve"
+  short_description: "Help with Resolve tasks and workflows"
+  default_prompt: "Use $resolve for this task."

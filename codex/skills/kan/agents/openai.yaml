@@ -4,4 +4,4 @@ interface:
   brand_color: "#6D5EF6"
   default_prompt: "Use $kan only after identifying worlds, boundary kind, known side, unknown location, witness, and law; then elaborate the categorical mechanics."
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

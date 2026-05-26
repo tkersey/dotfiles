@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: false
 interface:
   display_name: "Deckset"
   short_description: "Convert conversations into Deckset markdown decks."

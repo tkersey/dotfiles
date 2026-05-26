@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: false
 interface:
   display_name: "lift"
   short_description: "Uber measured optimization with profile evidence and behavior proof"

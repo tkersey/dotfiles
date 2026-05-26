@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Latent Diver"
+  short_description: "Help with Latent Diver tasks"
+  default_prompt: "Use $latent-diver for this task."

@@ -1,8 +1,9 @@
 ---
 name: tracepact
-version: 2.1.0
-summary: Turn slow agent traces into typed effect contracts, critical-path rewrites, and enforceable latency regression gates.
 description: Analyze OpenAI Responses API logs, Agents SDK traces, OpenTelemetry/LangSmith/Langfuse/custom spans, transcripts, and agent loop code as effectful execution graphs. Use this when reducing agentic latency, eliminating serial round trips, stabilizing prompt caching, routing models, optimizing tool loops, validating speculative execution, or designing proof-carrying rewrites. Produces a Latency Treaty IR, critical-path map, counterfactual schedules, prioritized fixes, instrumentation gaps, and CI-ready regression checks.
+metadata:
+  version: 2.1.0
+  summary: Turn slow agent traces into typed effect contracts, critical-path rewrites, and enforceable latency regression gates.
 ---
 
 # TracePact

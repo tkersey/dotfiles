@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: false
 interface:
   display_name: "glaze"
   short_description: "Force a deeper, bolder creative pass"

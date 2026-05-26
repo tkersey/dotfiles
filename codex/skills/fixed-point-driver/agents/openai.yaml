@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "Fixed-Point Driver"
   short_description: "Drive implementation, review, and closure to a material fixed point"

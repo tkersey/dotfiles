@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Land"
+  short_description: "Help with Land tasks and workflows"
+  default_prompt: "Use $land for this task."

@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Complexity Mitigator"
+  short_description: "Help with Complexity Mitigator tasks"
+  default_prompt: "Use $complexity-mitigator for this task."

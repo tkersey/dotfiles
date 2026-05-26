@@ -4,4 +4,4 @@ interface:
   brand_color: "#6D5EF6"
   default_prompt: "Use $universalist to diagnose the structural smell, choose one seam, select the smallest honest construction or canonical boundary artifact, and name the proof signal."
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

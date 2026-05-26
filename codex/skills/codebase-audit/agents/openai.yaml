@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Codebase Audit"
+  short_description: "Help with Codebase Audit tasks"
+  default_prompt: "Use $codebase-audit for this task."

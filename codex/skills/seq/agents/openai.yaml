@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: true
 interface:
   display_name: "seq"
   short_description: "Mine Codex sessions and memories with the Zig seq CLI"

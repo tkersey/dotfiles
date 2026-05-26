@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Shadow"
+  short_description: "Help with Shadow tasks and workflows"
+  default_prompt: "Use $shadow for this task."

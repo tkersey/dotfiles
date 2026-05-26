@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Synesthesia"
+  short_description: "Help with Synesthesia tasks"
+  default_prompt: "Use $synesthesia for this task."

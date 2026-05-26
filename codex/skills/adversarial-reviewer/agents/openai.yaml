@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "Adversarial Reviewer"
   short_description: "Full-scope de novo review with explicit change agenda and soundness ledger"

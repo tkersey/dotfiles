@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: true
 interface:
   display_name: "tune"
   short_description: "Tune skills from orthogonal evidence"

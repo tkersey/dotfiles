@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: false
 interface:
   display_name: "spec-retro"
   short_description: "Mine past practice into future spec automation"

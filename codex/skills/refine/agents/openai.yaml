@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: true
 interface:
   display_name: "refine"
   short_description: "Refine existing Codex skills in place from evidence"

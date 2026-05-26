@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Ship"
+  short_description: "Help with Ship tasks and workflows"
+  default_prompt: "Use $ship for this task."

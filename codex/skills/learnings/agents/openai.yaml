@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: false
 interface:
   display_name: "learnings"
   short_description: "Capture, browse, and search execution learnings"

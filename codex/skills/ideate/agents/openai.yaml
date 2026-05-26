@@ -4,4 +4,4 @@ interface:
   default_prompt: >-
     Use $ideate to inspect this codebase, harvest opportunity signals, generate evidence-backed ideas for changes/additions/refactors, winnow them hard, then run the mandatory Glaze and ASI escalation gates before choosing a direction. Deliver a ranked opportunity portfolio, escalation ledger, and one plan seed. Do not implement or create tickets.
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

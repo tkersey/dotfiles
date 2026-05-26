@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Context Bounded Verification"
+  short_description: "Help with Context Bounded Verification tasks"
+  default_prompt: "Use $context-bounded-verification for this task."

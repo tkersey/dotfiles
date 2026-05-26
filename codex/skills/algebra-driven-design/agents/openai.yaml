@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Algebra Driven Design"
+  short_description: "Help with Algebra Driven Design tasks"
+  default_prompt: "Use $algebra-driven-design for this task."

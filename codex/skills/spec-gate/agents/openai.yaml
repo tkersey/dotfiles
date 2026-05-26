@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: false
 interface:
   display_name: "spec-gate"
   short_description: "Block planning until the decision packet is complete"

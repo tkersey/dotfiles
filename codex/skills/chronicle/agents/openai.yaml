@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Chronicle"
+  short_description: "Help with Chronicle tasks"
+  default_prompt: "Use $chronicle for this task."

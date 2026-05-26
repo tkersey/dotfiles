@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Plan"
+  short_description: "Help with Plan tasks and workflows"
+  default_prompt: "Use $plan for this task."
