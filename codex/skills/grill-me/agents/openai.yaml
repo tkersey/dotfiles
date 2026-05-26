@@ -1,4 +1,6 @@
+policy:
+  allow_implicit_invocation: true
 interface:
   display_name: "grill-me"
-  short_description: "Exhaustive clarification via research-backed interrogation"
-  default_prompt: "Use $grill-me to research first, maintain a lane-status matrix, interrogate only material unknowns with request_user_input, prefer bounded-choice questions with consequence-bearing options, avoid prompt drafts or prose restatements, preserve stable question IDs across rounds, produce a grill_decision_packet aligned with spec-gate fields, and stop at clarification."
+  short_description: "Exhaustive clarification via research-backed, context-bearing interrogation"
+  default_prompt: "Use $grill-me to research first, maintain a lane-status matrix, emit compact Question context before every question round, interrogate only material unknowns with request_user_input, prefer bounded-choice questions with consequence-bearing options, avoid prompt drafts or prose restatements, preserve stable question IDs across rounds, produce a grill_decision_packet aligned with spec-gate fields, and stop at clarification."
