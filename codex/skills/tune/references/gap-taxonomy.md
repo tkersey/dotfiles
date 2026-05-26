@@ -159,3 +159,22 @@ Default thresholds:
 - `historical_skill_regression`: behavior changed after a material skill-block, trigger, metadata, or workflow update.
 
 Explicit current-turn user feedback can be strong evidence for narrow local changes. It should not justify broad redesign without corroborating evidence.
+
+
+## Source-Scope Gap
+
+The skill chooses the wrong evidence source or treats one source as proving more than it can.
+
+Evidence patterns:
+
+- A current-conversation issue triggers unnecessary historical mining.
+- A request for arbitrary history silently falls back to a 90-day default.
+- Current-turn feedback is used to claim historical recurrence.
+- Historical evidence is used to ignore direct current user feedback.
+
+Common fixes:
+
+- Add evidence-source selection rules.
+- Add source descriptors to the brief and report.
+- Separate in-flight, historical, provided, and worktree evidence in the ledger.
+- Add counterevidence and source-limit fields.

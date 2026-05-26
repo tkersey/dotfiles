@@ -8,8 +8,21 @@ Target skill: <skill>
 Mode:
 - audit-only | proposal-only | apply-with-refine
 
+Evidence sources:
+- Source 1:
+  - Kind: in-flight | history | provided | worktree | mixed
+  - Locator: <current conversation | sessions root | session id | workdir | repo | file/artifact | validation output>
+  - Scope: <current turn | current conversation | recent window | arbitrary history | explicit sessions | supplied evidence>
+  - Window: <duration/date range/all/none>
+  - Access method: <current context | $seq command | file read | tool output | user-provided text>
+  - Privacy constraint: <summarize only | raw excerpts allowed if safe | no raw transcript>
+  - Limitation: <what this source cannot prove>
+
 Apply gate:
 - pass | blocked: <reason>
+
+Commit/push policy:
+- For apply-with-refine, commit and push each validated atomic change unless the user explicitly disables publishing.
 
 Tuning goal:
 - <one-line goal>
@@ -30,21 +43,23 @@ Observed usage:
 - Counterevidence: <anything that weakens the finding>
 
 Evidence ledger:
-- Source 1:
-  - Command or source: <seq command, validation output, user feedback, or file review>
+- Entry 1:
+  - Source kind: <in-flight | history | provided | worktree>
+  - Command, locator, or source: <seq command, session id, validation output, user feedback, file review>
   - Why this source was chosen: <reason>
   - What it proves: <claim supported by the source>
   - What it does not prove: <limits>
   - Evidence class: <class>
   - Confidence: high | medium | low
+  - Scope/window: <scope>
   - Recurrence: <count/window or unknown>
   - Counterevidence: <counter-signal or none found>
   - Sanitization note: <what was omitted or generalized>
-- Source 2:
+- Entry 2:
   - <repeat as needed>
 
 Gap:
-- Type: <activation | interpretation | workflow | tooling | resource | validation | metadata | boundary>
+- Type: <activation | interpretation | workflow | tooling | resource | validation | metadata | boundary | source-scope>
 - Diagnosis: <specific mismatch between intended and observed use>
 - Severity: high | medium | low
 - Risk if unchanged: <consequence>
@@ -54,7 +69,7 @@ Recommended `$refine` action:
 - <smallest sufficient edit or upgrade>
 
 Must not change:
-- <core behavior, companion boundary, trigger scope, or validation expectation to preserve>
+- <core behavior, companion boundary, trigger scope, data-source assumptions, or validation expectation to preserve>
 
 Files likely affected:
 - codex/skills/<skill>/SKILL.md
@@ -73,6 +88,15 @@ Validation:
 - <script sample command>, if scripts changed
 - codex/skills/tune/scripts/validate-changed-skills, if shared assumptions or multiple skills changed
 - If quick_validate.py is unavailable, report validation as blocked and do not claim a pass.
+
+Publishing, apply-with-refine only:
+- Atomic change boundary: <what this commit contains and why it is one coherent change>
+- Scoped files to stage: <files justified by the brief>
+- Unrelated worktree changes: <none | present and left unstaged | blocked because inseparable>
+- Commit command: git commit -m "Tune <skill>: <short gap/fix summary>"
+- Commit SHA: <sha | blocked/not run and why>
+- Push command/result: <git push result | blocked/not run and why>
+- Do not create PRs, merge branches, or clean up branches unless the user separately invokes that workflow.
 
 Privacy / sanitization:
 - No raw transcript text unless explicitly requested and safe.

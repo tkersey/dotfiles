@@ -1,4 +1,4 @@
 interface:
   display_name: "tune"
-  short_description: "Tune skills from observed usage evidence"
-  default_prompt: "Use $tune to compare a target skill's intended contract with $seq-backed usage evidence, classify gaps, produce a $refine brief, and apply edits only when explicitly requested."
+  short_description: "Tune skills from orthogonal evidence"
+  default_prompt: "Use $tune to compare a target skill's contract with declared in-flight, historical, provided, or worktree evidence, then brief $refine and apply only when explicitly requested."

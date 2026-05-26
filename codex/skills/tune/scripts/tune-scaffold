@@ -5,7 +5,8 @@ usage() {
   cat <<'USAGE'
 Usage: tune-scaffold --skill <skill> [options]
 
-Prints a $tune evidence command set, evidence ledger skeleton, and refinement-brief skeleton.
+Prints a $tune source declaration, evidence command set, evidence ledger skeleton,
+and refinement-brief skeleton.
 
 Required:
   --skill <skill>                  Target skill name.
@@ -13,9 +14,12 @@ Required:
 Options:
   --mode <mode>                    audit-only | proposal-only | apply-with-refine. Default: proposal-only.
   --goal <text>                    One-line tuning goal.
-  --root <sessions-root>           Sessions root. Default: ~/.codex/sessions.
-  --since <iso8601>                Start timestamp. Default: computed from --last when possible.
-  --last <duration>                Recent window for skill-success-rank. Default: 90d.
+  --evidence-source <source>       in-flight | history | provided | worktree | mixed. Default: history.
+  --history-scope <scope>          recent | arbitrary | explicit-sessions. Default: recent.
+  --root <sessions-root>           Sessions root for history source. Default: ~/.codex/sessions.
+  --since <iso8601>                Start timestamp for history source.
+  --last <duration>                Recent duration for skill-success-rank. Default: 90d for recent history.
+  --session-id <id>                Add explicit session-detail evidence. Repeatable.
   --failure-phrase <phrase>        Add targeted message-search evidence. Repeatable.
   --trigger-phrase <phrase>        Alias for --failure-phrase. Repeatable.
   --command-pattern <fragment>     Add targeted tool-search evidence. Repeatable.
@@ -23,73 +27,43 @@ Options:
   --workdir <path-fragment>        Add workdir-report evidence.
   -h, --help                       Show this help.
 
-This helper scaffolds deterministic evidence collection only. $tune still owns diagnosis,
-gap classification, mode decisions, and whether $refine may apply an edit.
+This helper scaffolds deterministic evidence collection only. $tune still owns source
+selection, diagnosis, gap classification, mode decisions, and whether $refine may apply an edit.
 USAGE
 }
 
 skill=""
 mode="proposal-only"
 goal="<one-line goal>"
+evidence_source="history"
+history_scope="recent"
 root="$HOME/.codex/sessions"
 last="90d"
 since=""
+last_provided="no"
 workdir=""
 failure_phrases=()
 command_patterns=()
 workflows=()
+session_ids=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --skill)
-      skill="${2:-}"
-      shift 2
-      ;;
-    --mode)
-      mode="${2:-}"
-      shift 2
-      ;;
-    --goal)
-      goal="${2:-}"
-      shift 2
-      ;;
-    --root)
-      root="${2:-}"
-      shift 2
-      ;;
-    --since)
-      since="${2:-}"
-      shift 2
-      ;;
-    --last)
-      last="${2:-}"
-      shift 2
-      ;;
-    --failure-phrase|--trigger-phrase)
-      failure_phrases+=("${2:-}")
-      shift 2
-      ;;
-    --command-pattern)
-      command_patterns+=("${2:-}")
-      shift 2
-      ;;
-    --workflow)
-      workflows+=("${2:-}")
-      shift 2
-      ;;
-    --workdir)
-      workdir="${2:-}"
-      shift 2
-      ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      echo "unknown argument: $1" >&2
-      usage >&2
-      exit 2
-      ;;
+    --skill) skill="${2:-}"; shift 2 ;;
+    --mode) mode="${2:-}"; shift 2 ;;
+    --goal) goal="${2:-}"; shift 2 ;;
+    --evidence-source|--source) evidence_source="${2:-}"; shift 2 ;;
+    --history-scope) history_scope="${2:-}"; shift 2 ;;
+    --root) root="${2:-}"; shift 2 ;;
+    --since) since="${2:-}"; shift 2 ;;
+    --last) last="${2:-}"; last_provided="yes"; shift 2 ;;
+    --session-id) session_ids+=("${2:-}"); history_scope="explicit-sessions"; shift 2 ;;
+    --failure-phrase|--trigger-phrase) failure_phrases+=("${2:-}"); shift 2 ;;
+    --command-pattern) command_patterns+=("${2:-}"); shift 2 ;;
+    --workflow) workflows+=("${2:-}"); shift 2 ;;
+    --workdir) workdir="${2:-}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
 done
 
@@ -101,14 +75,28 @@ fi
 
 case "$mode" in
   audit-only|proposal-only|apply-with-refine) ;;
-  *)
-    echo "invalid --mode: $mode" >&2
-    echo "expected: audit-only | proposal-only | apply-with-refine" >&2
-    exit 2
-    ;;
+  *) echo "invalid --mode: $mode" >&2; echo "expected: audit-only | proposal-only | apply-with-refine" >&2; exit 2 ;;
 esac
 
-if [[ -z "$since" ]]; then
+case "$evidence_source" in
+  in-flight|history|provided|worktree|mixed) ;;
+  *) echo "invalid --evidence-source: $evidence_source" >&2; echo "expected: in-flight | history | provided | worktree | mixed" >&2; exit 2 ;;
+esac
+
+case "$history_scope" in
+  recent|arbitrary|explicit-sessions) ;;
+  *) echo "invalid --history-scope: $history_scope" >&2; echo "expected: recent | arbitrary | explicit-sessions" >&2; exit 2 ;;
+esac
+
+needs_history="no"
+case "$evidence_source" in
+  history|mixed) needs_history="yes" ;;
+esac
+if [[ ${#session_ids[@]} -gt 0 || ${#failure_phrases[@]} -gt 0 || ${#command_patterns[@]} -gt 0 || ${#workflows[@]} -gt 0 || -n "$workdir" ]]; then
+  needs_history="yes"
+fi
+
+if [[ -z "$since" && "$needs_history" == "yes" && "$history_scope" == "recent" ]]; then
   if command -v python3 >/dev/null 2>&1; then
     since="$(TUNE_LAST="$last" python3 - <<'PY'
 import os
@@ -123,29 +111,26 @@ PY
   else
     since="<iso8601>"
   fi
+elif [[ -z "$since" && "$needs_history" == "yes" ]]; then
+  since="<iso8601-or-omit-if-command-supports-full-history>"
 fi
 
-shq() {
-  printf '%q' "$1"
-}
+shq() { printf '%q' "$1"; }
 
 is_protected="no"
 case "$skill" in
-  seq|tune|refine|cron|ship|land|.system|.system/*)
-    is_protected="yes"
-    ;;
+  seq|tune|refine|cron|ship|land|.system|.system/*) is_protected="yes" ;;
 esac
 
 apply_gate="blocked: mode is not apply-with-refine"
 if [[ "$mode" == "apply-with-refine" ]]; then
-  apply_gate="needs evidence check before editing"
+  apply_gate="needs evidence, validation, and worktree checks before editing"
 fi
 
 q_root="$(shq "$root")"
 q_skill="$(shq "$skill")"
 q_last="$(shq "$last")"
 q_since="$(shq "$since")"
-q_goal="$(shq "$goal")"
 
 cat <<TUNE_OUT
 # \$tune scaffold for skill: $skill
@@ -154,18 +139,63 @@ cat <<TUNE_OUT
 
 Goal: Tune $skill so that <intended behavior> better matches <observed or suspected usage pattern>.
 Mode: $mode
+Evidence source: $evidence_source
+History scope: $history_scope
 Apply gate: $apply_gate
+Publish gate: validate before commit/push; stage only scoped files
 Protected/self-target gate: $is_protected
 User goal: $goal
 
-## Baseline evidence commands
+## Evidence source descriptor
 
-seq skill-success-rank --root $q_root --skill $q_skill --mode sessions --last $q_last --format jsonl
-seq skill-audit --root $q_root --skill $q_skill --mode trend --since $q_since --format table
-seq skill-cohort --root $q_root --skill $q_skill --since $q_since --format table
-seq skill-blocks --root $q_root --skill $q_skill --history latest --format json
-seq skill-blocks --root $q_root --skill $q_skill --history all --format jsonl
+- Kind: $evidence_source
+- Locator: <current conversation | $root | session id | workdir | repo | file/artifact | validation output>
+- Scope: <current turn | current conversation | recent window | arbitrary history | explicit sessions | supplied evidence>
+- Window: <${last:-duration}/$since/all/none>
+- Access method: <current context | \$seq command | file read | tool output | user-provided text>
+- Privacy constraint: summarize only unless raw excerpts are explicitly requested and safe
+- Limitation: <what this source cannot prove>
 TUNE_OUT
+
+if [[ "$evidence_source" == "in-flight" || "$evidence_source" == "mixed" ]]; then
+  cat <<'TUNE_OUT'
+
+## In-flight evidence checklist
+
+- Current user feedback: <summarized, not raw transcript unless explicitly allowed>
+- Current assistant behavior or routing: <what happened in this conversation>
+- Current tool/validation output: <result and limits>
+- What in-flight evidence proves: <local/current claim>
+- What it does not prove: historical recurrence or activation rates
+TUNE_OUT
+fi
+
+if [[ "$needs_history" == "yes" ]]; then
+  cat <<TUNE_OUT
+
+## Historical evidence commands
+TUNE_OUT
+
+  if [[ "$history_scope" == "recent" || "$last_provided" == "yes" ]]; then
+    printf '\nseq skill-success-rank --root %s --skill %s --mode sessions --last %s --format jsonl\n' "$q_root" "$q_skill" "$q_last"
+  else
+    printf '\n# skill-success-rank usually needs a duration; supply --last <duration> if this report needs ranked activation history.\n'
+  fi
+
+  printf 'seq skill-audit --root %s --skill %s --mode trend --since %s --format table\n' "$q_root" "$q_skill" "$q_since"
+  printf 'seq skill-cohort --root %s --skill %s --since %s --format table\n' "$q_root" "$q_skill" "$q_since"
+  printf 'seq skill-blocks --root %s --skill %s --history latest --format json\n' "$q_root" "$q_skill"
+  printf 'seq skill-blocks --root %s --skill %s --history all --format jsonl\n' "$q_root" "$q_skill"
+fi
+
+if [[ ${#session_ids[@]} -gt 0 ]]; then
+  printf '\n## Explicit session evidence\n\n'
+  for sid in "${session_ids[@]}"; do
+    [[ -z "$sid" ]] && continue
+    printf 'seq session-detail --root %s --session-id %s --format markdown\n' "$q_root" "$(shq "$sid")"
+    printf 'seq session-tooling --root %s --session-id %s --summary --group-by executable --format table\n' "$q_root" "$(shq "$sid")"
+  done
+fi
 
 if [[ ${#failure_phrases[@]} -gt 0 ]]; then
   printf '\n## Targeted trigger/failure phrase searches\n\n'
@@ -202,13 +232,15 @@ cat <<TUNE_OUT
 
 ## Evidence ledger skeleton
 
-- Source 1:
-  - Command or source: <command/source>
+- Entry 1:
+  - Source kind: <in-flight | history | provided | worktree>
+  - Command, locator, or source: <command/source>
   - Why this source was chosen: <reason>
   - What it proves: <supported claim>
   - What it does not prove: <limits>
   - Evidence class: <class>
   - Confidence: high | medium | low
+  - Scope/window: <scope>
   - Recurrence: <count/window or unknown>
   - Counterevidence: <counter-signal or none found>
   - Sanitization note: <what was omitted or generalized>
@@ -219,6 +251,12 @@ Target skill: $skill
 
 Mode:
 - $mode
+
+Evidence sources:
+- Kind: $evidence_source
+- Scope: $history_scope
+- Locator: <current conversation | $root | session id | workdir | repo | file/artifact | validation output>
+- Limitation: <what this source cannot prove>
 
 Apply gate:
 - <pass | blocked: reason>
@@ -242,7 +280,7 @@ Observed usage:
 - Counterevidence: <anything that weakens the finding>
 
 Gap:
-- Type: <activation | interpretation | workflow | tooling | resource | validation | metadata | boundary>
+- Type: <activation | interpretation | workflow | tooling | resource | validation | metadata | boundary | source-scope>
 - Diagnosis: <specific mismatch>
 - Severity: high | medium | low
 - Risk if unchanged: <consequence>
@@ -252,7 +290,7 @@ Recommended \$refine action:
 - <smallest sufficient edit or upgrade>
 
 Must not change:
-- <core behavior, companion boundary, trigger scope, or validation expectation to preserve>
+- <core behavior, companion boundary, trigger scope, data-source assumptions, or validation expectation to preserve>
 
 Success criteria:
 - <criterion 1>
@@ -262,4 +300,12 @@ Success criteria:
 Validation:
 - uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/$skill
 - codex/skills/tune/scripts/validate-changed-skills -- codex/skills/$skill, if shared assumptions or multiple skills changed
+
+Publishing, apply-with-refine only:
+- Atomic change boundary: <what this commit contains and why it is one coherent change>
+- Scoped files to stage: <files justified by the brief>
+- Unrelated worktree changes: <none | present and left unstaged | blocked because inseparable>
+- Commit command: git commit -m "Tune $skill: <short gap/fix summary>"
+- Commit SHA: <sha | blocked/not run and why>
+- Push result: <git push result | blocked/not run and why>
 TUNE_OUT

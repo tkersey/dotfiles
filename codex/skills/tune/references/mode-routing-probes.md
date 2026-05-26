@@ -1,6 +1,6 @@
 # `$tune` Mode Routing Probes
 
-Use these probes when refining or validating `$tune` mode selection.
+Use these probes when refining or validating `$tune` mode and evidence-source selection.
 
 ## Audit Only
 
@@ -12,17 +12,21 @@ Is the docx skill being used as intended?
 
 Expected mode: `audit-only`
 
+Expected source: `history`, recent default unless the user supplies another scope.
+
 Reason: The user asks for a diagnostic answer, not a change plan or file edit.
 
 Prompt:
 
 ```text
-Show me how the pdf skill has been used recently.
+Did the slides skill just miss an activation in this conversation?
 ```
 
 Expected mode: `audit-only`
 
-Reason: The user asks for observed usage evidence.
+Expected source: `in-flight`
+
+Reason: The user asks about current behavior, not historical recurrence or edits.
 
 ## Proposal Only
 
@@ -34,6 +38,8 @@ Do a deep analysis of my tune skill so we can make it perform in the optimal way
 
 Expected mode: `proposal-only`
 
+Expected source: `mixed` if historical usage is needed; otherwise `worktree` + `provided/current feedback`.
+
 Reason: The dominant request is analysis and optimization guidance. There is no explicit instruction to edit files now.
 
 Prompt:
@@ -44,17 +50,33 @@ What should change in the pdf skill based on recent usage?
 
 Expected mode: `proposal-only`
 
+Expected source: `history`, recent window.
+
 Reason: The user asks what should change, not for the change to be applied.
 
 Prompt:
 
 ```text
-Tune the docx skill based on recent sessions, but don't edit yet.
+Tune the docx skill based on all relevant session history, but don't edit yet.
 ```
 
 Expected mode: `proposal-only`
 
-Reason: The user explicitly blocks edits.
+Expected source: `history`, arbitrary scope.
+
+Reason: The user explicitly asks for arbitrary history and blocks edits.
+
+Prompt:
+
+```text
+Use this current conversation as the evidence and tell me whether tune should change.
+```
+
+Expected mode: `proposal-only`
+
+Expected source: `in-flight`
+
+Reason: Current-turn evidence is sufficient for a proposal, but edits were not requested.
 
 ## Apply with `$refine`
 
@@ -66,7 +88,9 @@ Use $tune on the slides skill and apply the smallest validated fix.
 
 Expected mode: `apply-with-refine`
 
-Reason: The user explicitly asks to apply a fix and requires validation.
+Expected source: `mixed`: usage evidence plus `worktree` for validation/publishing.
+
+Reason: The user explicitly asks to apply a fix and requires validation. After validation passes, `$tune` should commit and push the atomic change.
 
 Prompt:
 
@@ -76,7 +100,21 @@ Patch the gh skill based on recent usage evidence and validate it.
 
 Expected mode: `apply-with-refine`
 
-Reason: The user explicitly asks to patch files and validate.
+Expected source: `history` + `worktree`
+
+Reason: The user explicitly asks to patch files and validate. After validation passes, `$tune` should commit and push the atomic change.
+
+Prompt:
+
+```text
+Apply the smallest validated update to the tune skill, commit it, and push it.
+```
+
+Expected mode: `apply-with-refine`
+
+Expected source: `mixed`
+
+Reason: The user explicitly requests file changes plus commit/push publishing. Because `$tune` is self-targeted, the edit must remain narrow and validation must pass before commit or push.
 
 Prompt:
 
@@ -85,6 +123,8 @@ Here is a complete evidence-backed refinement brief. Apply it to the target skil
 ```
 
 Expected mode: `$refine` handoff or `$refine` phase only
+
+Expected source: `provided` + `worktree`
 
 Reason: Diagnosis is already supplied; direct editing is owned by `$refine`.
 
@@ -109,16 +149,6 @@ Deeply analyze $tune itself and give me the optimal changes.
 Expected mode: `proposal-only`
 
 Reason: Self-targeted `$tune` changes require explicit file-edit permission.
-
-Prompt:
-
-```text
-Apply the smallest validated self-tune update to $tune now.
-```
-
-Expected mode: `apply-with-refine`
-
-Reason: The user explicitly names the protected self-target and asks to apply a narrow validated update.
 
 ## Non-Triggers and Handoffs
 
@@ -150,4 +180,4 @@ Open a PR for these skill changes.
 
 Expected owner: `$ship`
 
-Reason: PR creation is not `$tune`'s responsibility.
+Reason: PR creation is not `$tune`'s responsibility. `$tune` may commit and push validated apply-mode changes, but `$ship` owns PR creation.
