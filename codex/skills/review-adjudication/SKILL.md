@@ -5,11 +5,13 @@ description: >-
   comment as a claim to test, preserve raw comment identity, build the strongest
   no-change countercase, separate valid concerns from valid proposed fixes,
   recover PR rationale with explicit `$seq` when needed, and emit a gated ledger
-  that decides what to act on, rebut, defer, or investigate. Trigger for
+  and resolve-selection map that decides what to address, validate only,
+  resolve with proof only, rebut, defer, or investigate. Trigger for
   `$review-adjudication`, review the review, adjudicate PR comments, are these
   comments relevant, which comments matter, should we act on these comments, or
-  gate review comments before implementation. Not for implementing fixes,
-  writing rebuttals only, or final merge closure.
+  gate review comments before implementation, refine this list to just those
+  worth resolving, or select review comments to resolve. Not for implementing
+  fixes, writing rebuttals only, or final merge closure.
 ---
 
 # Review Adjudication
@@ -19,6 +21,9 @@ description: >-
 Decide which PR review comments should change code, which should be rebutted,
 which are stale or out of scope, which require validation only, and which should
 be reframed as a governing invariant instead of handled as isolated local fixes.
+When the next workflow is `$fixed-point-driver`, `$resolve`, `$ship`, or
+thread-resolution, also decide which comments are implementation work versus
+validation-only, proof-only thread resolution, or no-change items.
 
 This skill is **discriminative**, not deferential. A reviewer comment is an input
 claim, not an obligation. `act` is a conclusion that must be earned from current
@@ -70,6 +75,8 @@ Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **INVARIANT-SEEKING**,
 - Tail-weight outputs for CLI use.
 - Do not implement fixes here.
 - Do not create an implementation handoff unless the Adjudication Gate passes.
+- Do not collapse adjudication into "all comments are worth resolving"; emit the
+  resolve-selection map before any implementation or thread-resolution handoff.
 
 ## Dependency
 
@@ -259,6 +266,46 @@ Validation-only handoff may create tests, probes, logs, or inspections. It must
 not implement the reviewer's requested code change unless the validation fails or
 current artifacts already prove the concern.
 
+## Resolve-selection overlay
+
+Use this overlay whenever the prompt asks which comments are worth resolving,
+which reviews/comments to address, whether to resolve PR review threads, or when
+the likely next step is `$fixed-point-driver`, `$resolve`, `$ship`, or final PR
+comment cleanup.
+
+Emit a `Resolve Selection` section after the adjudication buckets and before
+`Handoff Agenda`. This section is the downstream selection contract.
+
+Allowed `resolve_decision` values:
+
+- `address`: the comment is `act`, the Act validity rule passed, and the
+  implementation handoff is allowed.
+- `validate-only`: the comment is `need-evidence`; the next step may add a
+  probe, test, or inspection, but must not implement the requested code change
+  until evidence defeats the no-change case.
+- `resolve-thread-only`: the concern is stale, superseded, already fixed on the
+  current artifact state, or otherwise needs only a proof-bearing reply/thread
+  resolution. No code change is selected.
+- `do-not-address`: the comment should be rebutted, deferred, treated as out of
+  scope, unsupported, preference-only, or left unresolved pending product/user
+  direction.
+- `blocked`: identity, freshness, PR rationale, evidence, or gate coverage is
+  insufficient to choose a downstream action.
+
+Selection rules:
+
+- `address` is legal only for rows whose disposition is `act` and whose
+  no-change countercase is `defeated`.
+- `validate-only` is legal only for rows whose disposition is `need-evidence`.
+- `resolve-thread-only` must name the proof that makes a code change
+  unnecessary, such as latest-HEAD code evidence, a passing regression, or an
+  already-pushed commit.
+- `do-not-address` must name the preserved no-change case.
+- `blocked` must name the missing evidence and set `handoff_allowed: no`.
+- The `Handoff Agenda` may include only `address` and `validate-only` items.
+  If all rows are `resolve-thread-only`, `do-not-address`, or `blocked`, do not
+  route to `$fixed-point-driver` for implementation.
+
 ## Governing invariant pass
 
 After individual adjudication, cluster comments that appear to point at the same
@@ -411,6 +458,9 @@ Use this mode for real PR comment sets:
 ## Rebut
 ## Defer / Out of Scope
 ## Need Evidence
+## Resolve Selection
+| id/thread | resolve decision | reason | next |
+|---|---|---|---|
 ## Invariant-Level Handoff
 ## Acceptance Skew Audit
 ## All-Action Justification
@@ -441,6 +491,8 @@ block handoff.
 - Route to `$fixed-point-driver` when accepted comments are coupled, contentious,
   invariant-level, structural, validation-only, or likely to reopen one another.
 - Route to `$logophile` only for drafting replies, naming, or wording.
+- For `$resolve` or PR-thread cleanup, route proof-only stale/already-fixed
+  comments as `resolve-thread-only`, not as implementation work.
 - If the correct response is no code change, do not create an implementation
   handoff.
 - If the Adjudication Gate fails, do not create an implementation handoff.
@@ -466,6 +518,8 @@ with the missing fields instead of implementing.
 - Do not mark a comment `act` merely because it is easy to fix.
 - Do not mark a comment `act` merely because the reviewer is probably right.
 - Do not accept a local fix when the real issue is a governing invariant.
+- Do not route `resolve-thread-only`, `do-not-address`, or `blocked` selections
+  into `$fixed-point-driver` as implementation work.
 - Do not hide uncertainty; say exactly what evidence is missing.
 - Do not allow `handoff_allowed: yes` if any gate field fails.
 

@@ -20,6 +20,28 @@ implementation. It must be emitted for every real PR review adjudication.
 | handoff_allowed | yes | all gate fields pass |
 ```
 
+## Resolve Selection block
+
+Every real PR review adjudication must include a downstream selection map:
+
+```md
+## Resolve Selection
+
+| id/thread | resolve decision | reason | next |
+|---|---|---|---|
+| c1 | address | act row with defeated no-change case | route-to-fixed-point-driver |
+| c2 | resolve-thread-only | already fixed on latest HEAD | reply with proof and resolve thread |
+```
+
+Allowed `resolve decision` values are `address`, `validate-only`,
+`resolve-thread-only`, `do-not-address`, and `blocked`.
+
+`address` means implementation is selected. `validate-only` means the next
+workflow may create proof but must not implement the requested fix yet.
+`resolve-thread-only` means the review thread can be answered or resolved with
+current proof without changing code. `do-not-address` means no implementation
+handoff. `blocked` means selection evidence is incomplete.
+
 ## Pass conditions
 
 - `identity_coverage`: every real review comment has stable raw identity.

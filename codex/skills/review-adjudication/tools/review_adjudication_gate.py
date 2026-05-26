@@ -37,6 +37,13 @@ ALLOWED_PROPOSED = {
     "not-applicable",
     "validation-only",
 }
+ALLOWED_RESOLVE_DECISION = {
+    "address",
+    "validate-only",
+    "resolve-thread-only",
+    "do-not-address",
+    "blocked",
+}
 IMPLEMENTATION_HANDOFFS = {
     "route-to-accretive-implementer",
     "route-to-fixed-point-driver",
@@ -68,6 +75,7 @@ REQUIRED_GATE_FIELDS = [
 REQUIRED_SECTIONS = [
     "Comment Ledger",
     "Acceptance Skew Audit",
+    "Resolve Selection",
     "Adjudication Gate",
     "Handoff Agenda",
     "Adjudication Bottom Line",
@@ -142,6 +150,22 @@ GATE_ALIASES = {
     "invariantpass": "invariantpass",
     "acceptanceskewaudit": "acceptanceskewaudit",
     "handoffallowed": "handoffallowed",
+}
+
+RESOLVE_SELECTION_ALIASES = {
+    "idthread": "id",
+    "id": "id",
+    "commentid": "id",
+    "threadid": "id",
+    "resolvedecision": "decision",
+    "decision": "decision",
+    "selection": "decision",
+    "resolve": "decision",
+    "reason": "reason",
+    "basis": "reason",
+    "next": "next",
+    "nextaction": "next",
+    "handoff": "next",
 }
 
 
@@ -270,6 +294,23 @@ def normalize_gate(headers: Sequence[str], rows: Sequence[Dict[str, str]]) -> Di
     return gate
 
 
+def normalize_resolve_selection(
+    headers: Sequence[str], rows: Sequence[Dict[str, str]]
+) -> Tuple[Dict[str, str], List[Dict[str, str]]]:
+    header_map: Dict[str, str] = {}
+    for header in headers:
+        canonical = RESOLVE_SELECTION_ALIASES.get(norm_key(header))
+        if canonical:
+            header_map[canonical] = header
+    normalized: List[Dict[str, str]] = []
+    for row in rows:
+        item: Dict[str, str] = {}
+        for canonical, original in header_map.items():
+            item[canonical] = row.get(original, "").strip()
+        normalized.append(item)
+    return header_map, normalized
+
+
 def is_empty(value: str) -> bool:
     return norm_value(value) in EMPTY_MARKERS
 
@@ -293,6 +334,8 @@ def check_adjudication(text: str) -> CheckResult:
 
     act_count = 0
     non_action_count = 0
+    dispositions_by_id: Dict[str, str] = {}
+    nochange_by_id: Dict[str, str] = {}
     for idx, row in enumerate(rows, start=1):
         label = row.get("id", f"row {idx}") or f"row {idx}"
         for field_name in ["id", "reviewer", "location", "claim"]:
@@ -305,6 +348,9 @@ def check_adjudication(text: str) -> CheckResult:
         proposed = norm_value(row.get("proposed", ""))
         evidence = row.get("evidence", "")
         handoff = norm_value(row.get("handoff", ""))
+        if not is_empty(label):
+            dispositions_by_id[label] = disposition
+            nochange_by_id[label] = nochange
 
         if relevance not in ALLOWED_RELEVANCE:
             errors.append(f"{label}: invalid relevance `{row.get('relevance', '')}`")
@@ -336,6 +382,45 @@ def check_adjudication(text: str) -> CheckResult:
                     errors.append(f"{label}: invalid proposed fix requires an explicit replacement or validation handoff")
         elif disposition in ALLOWED_DISPOSITION:
             non_action_count += 1
+
+    resolve_headers, resolve_rows_raw = extract_first_table(section_text(text, "Resolve Selection"))
+    resolve_header_map, resolve_rows = normalize_resolve_selection(resolve_headers, resolve_rows_raw)
+    for field in ["id", "decision", "reason", "next"]:
+        if field not in resolve_header_map:
+            errors.append(f"Resolve Selection missing required column: {field}")
+    if not resolve_rows:
+        errors.append("Resolve Selection has no data rows")
+    ledger_ids = set(dispositions_by_id)
+    selection_ids = {row.get("id", "") for row in resolve_rows if row.get("id", "")}
+    missing_selection = sorted(ledger_ids - selection_ids)
+    if missing_selection:
+        errors.append("Resolve Selection missing comment ids: " + ", ".join(missing_selection))
+    extra_selection = sorted(selection_ids - ledger_ids)
+    if extra_selection:
+        errors.append("Resolve Selection contains unknown comment ids: " + ", ".join(extra_selection))
+    for idx, row in enumerate(resolve_rows, start=1):
+        label = row.get("id", f"selection row {idx}") or f"selection row {idx}"
+        decision = norm_value(row.get("decision", ""))
+        reason = row.get("reason", "")
+        next_action = row.get("next", "")
+        if decision not in ALLOWED_RESOLVE_DECISION:
+            errors.append(f"{label}: invalid resolve decision `{row.get('decision', '')}`")
+        if is_empty(reason):
+            errors.append(f"{label}: resolve selection requires non-empty reason")
+        empty_next_allowed = decision == "do-not-address" and norm_value(next_action) == "none"
+        if is_empty(next_action) and not empty_next_allowed:
+            errors.append(f"{label}: resolve selection requires non-empty next action")
+        disposition = dispositions_by_id.get(label)
+        nochange = nochange_by_id.get(label)
+        if decision == "address":
+            if disposition != "act":
+                errors.append(f"{label}: resolve decision `address` requires disposition `act`")
+            if nochange != "defeated":
+                errors.append(f"{label}: resolve decision `address` requires defeated no-change case")
+        if decision == "validate-only" and disposition != "need-evidence":
+            errors.append(f"{label}: resolve decision `validate-only` requires disposition `need-evidence`")
+        if decision in {"resolve-thread-only", "do-not-address"} and disposition == "act":
+            errors.append(f"{label}: resolve decision `{decision}` conflicts with disposition `act`")
 
     gate_headers, gate_rows_raw = extract_first_table(section_text(text, "Adjudication Gate"))
     gate = normalize_gate(gate_headers, gate_rows_raw)
@@ -415,6 +500,12 @@ def run_self_test() -> int:
 ## Acceptance Skew Audit
 Mixed dispositions; no all-action pressure.
 
+## Resolve Selection
+| id/thread | resolve decision | reason | next |
+|---|---|---|---|
+| c1 | address | act row has defeated no-change case | route-to-accretive-implementer |
+| c2 | do-not-address | preference-only no-change case preserved | none |
+
 ## Adjudication Gate
 | field | value | basis |
 |---|---|---|
@@ -440,6 +531,11 @@ Proceed: one action, one rebuttal.
 | c1 | alice | src/a.py:10 | retry is not idempotent | unknown | valid | material-relevant | act | unresolved | none |  | route-to-accretive-implementer |
 
 ## Acceptance Skew Audit
+
+## Resolve Selection
+| id/thread | resolve decision | reason | next |
+|---|---|---|---|
+| c1 | address |  | route-to-accretive-implementer |
 
 ## Adjudication Gate
 | field | value | basis |

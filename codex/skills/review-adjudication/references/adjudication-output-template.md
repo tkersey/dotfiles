@@ -56,6 +56,12 @@ Use this template for real PR review comment sets.
 
 - `<id/thread>`: missing evidence and validation-only handoff, if any.
 
+## Resolve Selection
+
+| id/thread | resolve decision | reason | next |
+|---|---|---|---|
+|  | address/validate-only/resolve-thread-only/do-not-address/blocked |  | route-to-fixed-point-driver / validation probe / proof reply or thread resolution / none / blocked |
+
 ## Invariant-Level Handoff
 
 - invariant:
@@ -104,7 +110,10 @@ Include this section only when every substantive comment is `act`.
 ## Handoff Agenda
 
 - route:
-- items:
+- items selected for implementation:
+- validation-only items:
+- proof-only thread-resolution items:
+- items not selected:
 - proof:
 - blocked items:
 
