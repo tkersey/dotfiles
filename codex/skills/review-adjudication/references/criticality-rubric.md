@@ -9,11 +9,18 @@ A comment may be marked `act` only when all are true:
 
 1. The concern is grounded in current artifact evidence.
 2. The concern is material, or the user explicitly wants the nonmaterial change.
-3. The strongest no-change countercase is defeated.
-4. The proposed remedy is valid, or the chosen handoff replaces it with a valid
+3. The comment is fresh for the current artifact state.
+4. The strongest no-change countercase is defeated.
+5. The proposed remedy is valid, or the chosen handoff replaces it with a valid
    fix shape.
-5. The action does not violate stated PR constraints, non-goals, compatibility
+6. The action does not violate stated PR constraints, non-goals, compatibility
    posture, or ownership boundaries.
+7. The row has a current evidence grade:
+   - `current-artifact`
+   - `current-test`
+   - `current-ci`
+   - `current-session-artifact`
+8. The row has a concrete evidence ref.
 
 If any item fails, choose `rebut`, `defer`, or `need-evidence`.
 
@@ -63,12 +70,19 @@ Record:
 disposition: need-evidence
 reframe_type: validation-only
 remediation_posture: validating-check-only
+proposed_fix_validity: validation-only
 handoff_action: route-to-fixed-point-driver
 ```
 
 Validation-only may produce tests, repros, probes, or inspections. It must not
 apply the reviewer's requested mutation until the validation proves the concern
 or current artifacts already prove it.
+
+Checker-level expectations:
+
+- `validation-only` requires `need-evidence`.
+- `need-evidence` cannot route directly to `$accretive-implementer`.
+- validation handoff is not implementation permission.
 
 ## Concern-vs-fix separation
 
@@ -117,6 +131,27 @@ If every substantive comment is accepted, run an acceptance-skew audit:
 - Are we accepting reviewer authority instead of artifact evidence?
 - Is at least one accepted action validation-only rather than code change?
 - Did we separate concern validity from proposed-fix validity for every comment?
+- Does every accepted action have current evidence grade and evidence ref?
 
 If the justification is weak, downgrade appropriate comments to `need-evidence`,
-`defer`, or `rebut`. If the justification is missing, block handoff.
+`defer`, or `rebut`. If the justification is missing, block implementation
+handoff.
+
+
+## Resolve-selection rubric
+
+After disposition, select one downstream resolve decision per comment:
+
+- `address`: only for artifact-backed `act` rows whose no-change case is
+  defeated.
+- `validate-only`: for `need-evidence` rows where proof is the next move, not
+  mutation.
+- `resolve-thread-only`: for stale, superseded, or already-fixed comments that
+  need only a proof-bearing reply or thread resolution.
+- `do-not-address`: for preserved no-change cases, rebuttals, deferrals,
+  unsupported claims, preference-only items, or out-of-scope asks.
+- `blocked`: for missing identity, stale artifact state, absent rationale, or
+  insufficient evidence that prevents safe downstream selection.
+
+Never route `resolve-thread-only`, `do-not-address`, or `blocked` items into
+implementation.

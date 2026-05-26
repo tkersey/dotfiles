@@ -2,13 +2,14 @@
 name: review-adjudication
 description: >-
   Discriminately adjudicate PR review comments before implementation. Treat each
-  comment as a claim to test, preserve raw comment identity, build the strongest
-  no-change countercase, separate valid concerns from valid proposed fixes,
-  recover PR rationale with explicit `$seq` when needed, and emit a gated ledger
-  and resolve-selection map that decides what to address, validate only,
-  resolve with proof only, rebut, defer, or investigate. Trigger for
+  comment as a claim to test, preserve raw comment identity and input inventory,
+  bind decisions to artifact state, build the strongest no-change countercase,
+  separate valid concerns from valid proposed fixes, recover PR rationale with
+  explicit `$seq` when needed, and emit a stale-proof gated ledger plus
+  resolve-selection map that decides what to address, validate only, resolve
+  with proof only, rebut, defer, investigate, or route. Trigger for
   `$review-adjudication`, review the review, adjudicate PR comments, are these
-  comments relevant, which comments matter, should we act on these comments, or
+  comments relevant, which comments matter, should we act on these comments,
   gate review comments before implementation, refine this list to just those
   worth resolving, or select review comments to resolve. Not for implementing
   fixes, writing rebuttals only, or final merge closure.
@@ -27,17 +28,25 @@ validation-only, proof-only thread resolution, or no-change items.
 
 This skill is **discriminative**, not deferential. A reviewer comment is an input
 claim, not an obligation. `act` is a conclusion that must be earned from current
-artifact evidence.
+artifact evidence and a defeated no-change countercase.
 
 ## Default mode
 
-Use **Compact-Gated** mode whenever the input contains real review comments.
-Compact-Gated mode is mandatory because automation needs stable identity,
-complete disposition coverage, and an explicit handoff gate.
+Use **Compact-Gated v2** mode whenever the input contains real review comments.
+Compact-Gated v2 is mandatory because automation needs:
+
+- stable raw comment identity
+- complete input-comment inventory coverage
+- artifact-state identity for stale-handoff detection
+- explicit decision tests for every comment
+- evidence-grade and evidence-reference separation
+- resolve-selection mapping for implementation, validation, proof-only thread
+  resolution, no-change, and blocked outcomes
+- separate implementation, validation, and reply handoff permissions
 
 Other modes are allowed only when they still satisfy the completion gate:
 
-- **Standard**: expanded reasoning plus the full Compact-Gated tail.
+- **Standard**: expanded reasoning plus the full Compact-Gated v2 tail.
 - **Fast**: bucket-only output plus the completion gate; allowed for exploratory
   triage or synthetic comments, not for implementation handoff unless the gate
   passes.
@@ -45,7 +54,8 @@ Other modes are allowed only when they still satisfy the completion gate:
 ## Doctrine
 
 Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **INVARIANT-SEEKING**,
-**ANTI-RUBBER-STAMP**, **EVIDENCE-WEIGHTED**, and **FAIL-CLOSED** mode.
+**ANTI-RUBBER-STAMP**, **EVIDENCE-WEIGHTED**, **STALE-PROOF**, and
+**FAIL-CLOSED** mode.
 
 - **DISCRIMINATIVE**: separate true concerns from irrelevant, stale,
   unsupported, preference-only, misdiagnosed, or misframed comments.
@@ -57,6 +67,8 @@ Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **INVARIANT-SEEKING**,
   or ease of implementation become acceptance evidence.
 - **EVIDENCE-WEIGHTED**: rank current artifacts above memories, memories above
   intuition, and direct proof above consensus.
+- **STALE-PROOF**: bind adjudication to branch/head/diff/comment-set state so
+  downstream handoffs can detect stale or contradictory agendas.
 - **FAIL-CLOSED**: if the adjudication contract is incomplete, block
   implementation handoff rather than guessing.
 
@@ -71,12 +83,17 @@ Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **INVARIANT-SEEKING**,
 - Distinguish concern validity from proposed-fix validity.
 - Separate relevance from actionability.
 - Preserve raw comment identity; do not let summaries replace comment IDs,
-  reviewers, excerpts, or locations.
+  reviewers, excerpts, locations, or input inventory.
+- Preserve artifact-state identity; do not let a handoff become stale invisibly.
 - Tail-weight outputs for CLI use.
 - Do not implement fixes here.
-- Do not create an implementation handoff unless the Adjudication Gate passes.
+- Do not create an implementation handoff unless the Adjudication Gate passes
+  and `implementation_handoff_allowed: yes`.
 - Do not collapse adjudication into "all comments are worth resolving"; emit the
-  resolve-selection map before any implementation or thread-resolution handoff.
+  resolve-selection map before implementation or thread-resolution handoff.
+- Validation-only handoff is not implementation permission.
+- Proof-only thread resolution is not implementation permission.
+- Reply handoff is not implementation permission.
 
 ## Dependency
 
@@ -93,15 +110,19 @@ before final adjudication:
 - `soundness_auditor`
 - `hazard_hunter`
 
-Use them only to sharpen grounding, soundness, or hazard questions. They do not
-replace the adjudication judgment.
+Use them only to sharpen grounding, soundness, hazard, or invariant questions.
+They do not replace the adjudication judgment.
 
 When specialists are used, assign the current artifact state and exact comment
 or file scope, then require the shared packet contract at
-`../references/specialist-packet-contract.md`. Consume only
-packet-native, scoped, evidence-bearing, current packets. Reject stale,
-wrong-scope, wrapper-leaking, acknowledgement-only, or no-evidence packets and
-keep them out of `act`/`rebut`/`defer` decisions.
+`../references/specialist-packet-contract.md`. Consume only packet-native,
+scoped, evidence-bearing, current packets. Reject stale, wrong-scope,
+wrapper-leaking, acknowledgement-only, or no-evidence packets and keep them out
+of `act`/`rebut`/`defer`/`need-evidence` decisions.
+
+When specialists are used, emit `## Specialist Packet Receipts` and set
+`specialist_packet_coverage` to `pass` only when every accepted or rejected
+packet has a value receipt and no rejected packet is used as evidence.
 
 ## Required input context
 
@@ -109,28 +130,37 @@ When possible, build a compact context pack before adjudication:
 
 ```md
 Review comments:
-- raw id/thread
-- reviewer
-- file/location
-- exact excerpt
-- reviewer-suggested fix, if any
+- raw id/thread:
+- reviewer:
+- file/location:
+- exact excerpt:
+- reviewer-suggested fix, if any:
 
 Current artifacts:
-- branch/diff summary
-- touched files
-- relevant tests
-- CI/local proof status
-- PR description or stated goal
+- artifact_state_id:
+  - branch:
+  - base:
+  - head:
+  - diff_digest:
+  - comment_set_digest:
+  - ci_state:
+- branch/diff summary:
+- touched files:
+- relevant tests:
+- CI/local proof status:
+- PR description or stated goal:
 
 Constraints:
-- intended change
-- non-goals
-- compatibility posture
-- proof bar
+- intended change:
+- explicit non-goals:
+- compatibility posture:
+- ownership boundaries:
+- proof bar:
 ```
 
 Do not feed the whole repository by default. Add more context only when current
-artifacts cannot decide grounding, scope, freshness, or intent.
+artifacts cannot decide grounding, scope, freshness, intent, evidence grade, or
+handoff shape.
 
 ## `$seq` rationale recovery
 
@@ -148,7 +178,7 @@ Preferred ladder:
 
 Use `$seq` to recover rationale, not to manufacture obligations. A recovered
 plan can explain why a comment matters, but current artifacts still decide
-whether the comment is grounded, stale, or in scope.
+whether the comment is grounded, stale, in scope, or actionable.
 
 ## Evidence ranking
 
@@ -157,6 +187,42 @@ whether the comment is grounded, stale, or in scope.
 3. Prior-session artifact evidence
 4. Memory-derived evidence
 5. Reviewer intuition without artifact support
+
+## Artifact State Ledger
+
+Bind the adjudication to the exact current artifact state whenever possible:
+
+```yaml
+artifact_state_id:
+  branch: "<branch or unknown>"
+  base: "<base sha/ref or unknown>"
+  head: "<head sha/ref or unknown>"
+  diff_digest: "<hash, changed path set, or unknown>"
+  comment_set_digest: "<hash/list of raw comment ids or unknown>"
+  ci_state: "<pass/fail/pending/not-run plus timestamp if known>"
+```
+
+If these fields are unavailable, say exactly which are unavailable and why. Do
+not silently treat an unknown state as current proof.
+
+## Comment Inventory
+
+For real PR comments, emit `## Comment Inventory` before the ledger:
+
+```md
+- input_comment_count:
+- ledger_row_count:
+- input_comment_ids:
+- ledger_comment_ids:
+- missing_comment_ids:
+- duplicate_comment_ids:
+- synthesized_ids_for_real_comments: yes/no
+```
+
+If source input lacks stable IDs, record the identity gap and set
+`identity_coverage: fail`. Do not silently synthesize stable IDs for real PR
+comments. Temporary labels may be used only for synthetic comments or exploratory
+Fast mode, and they must block implementation handoff.
 
 ## PR Why Ledger
 
@@ -180,7 +246,7 @@ Preserve raw review-comment identity. For every comment, carry:
 
 - `comment_id` or `id/thread`
 - `reviewer`
-- `short_excerpt`
+- `short_excerpt` / `excerpt`
 - `file_or_thread` / `location`
 - `claim`
 - `concern_validity`
@@ -189,13 +255,10 @@ Preserve raw review-comment identity. For every comment, carry:
 - `disposition`
 - `no_change_countercase_status`
 - `governing_invariant`
-- `evidence_basis`
+- `evidence_grade`
+- `evidence_ref`
 - `reply_stance`
 - `handoff_action`
-
-If the source input lacks comment identity, record the identity gap and set
-`identity_coverage: fail` in the Adjudication Gate. Do not silently synthesize
-stable IDs for real PR comments.
 
 ## Required checks per comment
 
@@ -213,8 +276,12 @@ For every comment, assess:
 10. no-change countercase status
 11. governing invariant, if any
 12. minimum evidence to change mind
-13. evidence basis
-14. handoff action
+13. evidence grade
+14. evidence reference
+15. handoff action
+
+In Compact-Gated v2, surface these checks in both `## Comment Ledger` and
+`## Decision Tests`.
 
 ## Act validity rule
 
@@ -222,10 +289,15 @@ A comment may be marked `act` only if all are true:
 
 1. Current artifacts ground the concern.
 2. The concern is material, or the user explicitly wants the nonmaterial change.
-3. The strongest no-change countercase is defeated.
-4. The proposed fix is valid, or the chosen handoff replaces it with a valid fix
+3. The comment is fresh for the current artifact state.
+4. The strongest no-change countercase is defeated.
+5. The proposed fix is valid, or the chosen handoff replaces it with a valid fix
    shape.
-5. The action fits this PR's scope, constraints, and intended change.
+6. The action fits this PR's scope, constraints, and intended change.
+7. The row has `evidence_grade` of `current-artifact`, `current-test`,
+   `current-ci`, or `current-session-artifact`.
+8. The row has a concrete `evidence_ref` such as `file:line`, test name,
+   command/log reference, CI status, PR thread, or current artifact citation.
 
 If any item fails, do not use `act`; use `rebut`, `defer`, or `need-evidence`.
 `act` requires proof, not plausibility.
@@ -259,12 +331,19 @@ material and a validating check is the correct next step, use:
 disposition: need-evidence
 reframe_type: validation-only
 remediation_posture: validating-check-only
+proposed_fix_validity: validation-only
 handoff_action: route-to-fixed-point-driver
 ```
 
 Validation-only handoff may create tests, probes, logs, or inspections. It must
 not implement the reviewer's requested code change unless the validation fails or
 current artifacts already prove the concern.
+
+Hard constraints:
+
+- `proposed_fix_validity: validation-only` requires `disposition: need-evidence`.
+- `need-evidence` must not route directly to `$accretive-implementer`.
+- `validation_handoff_allowed: yes` is not implementation permission.
 
 ## Resolve-selection overlay
 
@@ -278,9 +357,9 @@ Emit a `Resolve Selection` section after the adjudication buckets and before
 
 Allowed `resolve_decision` values:
 
-- `address`: the comment is `act`, the Act validity rule passed, and the
+- `address`: the comment is `act`, the Act validity rule passed, and
   implementation handoff is allowed.
-- `validate-only`: the comment is `need-evidence`; the next step may add a
+- `validate-only`: the comment is `need-evidence`; the next workflow may add a
   probe, test, or inspection, but must not implement the requested code change
   until evidence defeats the no-change case.
 - `resolve-thread-only`: the concern is stale, superseded, already fixed on the
@@ -289,21 +368,25 @@ Allowed `resolve_decision` values:
 - `do-not-address`: the comment should be rebutted, deferred, treated as out of
   scope, unsupported, preference-only, or left unresolved pending product/user
   direction.
-- `blocked`: identity, freshness, PR rationale, evidence, or gate coverage is
-  insufficient to choose a downstream action.
+- `blocked`: identity, freshness, PR rationale, evidence, resolve-selection, or
+  gate coverage is insufficient to choose a downstream action.
 
 Selection rules:
 
-- `address` is legal only for rows whose disposition is `act` and whose
-  no-change countercase is `defeated`.
+- `address` is legal only for rows whose disposition is `act`, whose no-change
+  countercase is `defeated`, and whose Decision Tests satisfy the Act validity
+  rule.
 - `validate-only` is legal only for rows whose disposition is `need-evidence`.
 - `resolve-thread-only` must name the proof that makes a code change
   unnecessary, such as latest-HEAD code evidence, a passing regression, or an
   already-pushed commit.
 - `do-not-address` must name the preserved no-change case.
-- `blocked` must name the missing evidence and set `handoff_allowed: no`.
-- The `Handoff Agenda` may include only `address` and `validate-only` items.
-  If all rows are `resolve-thread-only`, `do-not-address`, or `blocked`, do not
+- `blocked` must name the missing evidence and set `adjudication_complete: fail`
+  and all handoff permissions to `no`.
+- The `Handoff Agenda` may include implementation work only for `address` items
+  and validation/proof work only for `validate-only` items. Proof-only stale or
+  already-fixed comments may be routed for replies/thread cleanup, not mutation.
+- If all rows are `resolve-thread-only`, `do-not-address`, or `blocked`, do not
   route to `$fixed-point-driver` for implementation.
 
 ## Governing invariant pass
@@ -318,12 +401,29 @@ When multiple comments share an invariant:
 - name the governing invariant
 - decide whether the correct handoff is an invariant-level change
 - route to `$fixed-point-driver` when the comments are coupled, contentious,
-  structural, or likely to reopen one another
+  structural, validation-only, or likely to reopen one another
 - route to `$accretive-implementer` only when the invariant-level agenda is
   narrow, accretive, and locally reviewable
 
 If no invariant cluster exists, say so explicitly and set `invariant_pass: pass`
 only after checking.
+
+## Evidence grades
+
+Use exactly one per comment:
+
+- `current-artifact`
+- `current-test`
+- `current-ci`
+- `current-session-artifact`
+- `prior-session-artifact`
+- `memory-only`
+- `reviewer-only`
+- `none`
+
+`act` requires `current-artifact`, `current-test`, `current-ci`, or
+`current-session-artifact`. Memory-only and reviewer-only evidence may support a
+rationale or reply stance, but they are not sufficient for implementation.
 
 ## Relevance classes
 
@@ -367,6 +467,27 @@ Use exactly one per comment:
 - `defer`
 - `need-evidence`
 
+## Decision Test values
+
+Use exactly one value per field:
+
+- `grounded`: `yes` / `no` / `unknown`
+- `material`: `yes` / `no` / `user-requested` / `unknown`
+- `fresh`: `current` / `stale` / `superseded` / `unclear`
+- `diagnosis`: `correct` / `partially-correct` / `misdiagnosed` / `unknown`
+- `scope-fit`: `yes` / `no` / `partial` / `unknown`
+- `no-change defeated`: `yes` / `no` / `unresolved`
+
+## Resolve decision values
+
+Use exactly one per comment in `## Resolve Selection`:
+
+- `address`
+- `validate-only`
+- `resolve-thread-only`
+- `do-not-address`
+- `blocked`
+
 ## No-change countercase status
 
 Use exactly one per comment:
@@ -386,26 +507,44 @@ For each comment, optionally record a `Reply Stance` to help later handoff to
 - `defer-with-scope`
 - `ask-for-evidence`
 
+## Handoff permissions
+
+Use separate route permissions:
+
+- `implementation_handoff_allowed`: `yes` only for artifact-backed `act` rows
+  after the gate passes.
+- `validation_handoff_allowed`: `yes` only for validation-only or other
+  `need-evidence` rows that should route to `$fixed-point-driver` for proof.
+- `reply_handoff_allowed`: `yes` only for rebuttal, defer, or reply-drafting
+  work that should route to `$logophile` or a reply draft.
+
+The old single-field `handoff_allowed` is too coarse. Do not use it in v2 output
+except when quoting older adjudications.
+
 ## Acceptance skew audit
 
 Before finalizing, audit the distribution of dispositions.
 
 If every substantive comment is marked `act`, treat that as a warning sign, not
-a victory. Emit an **All-Action Justification** with specific checks:
+a victory. Emit an **All-Action Justification** table with these checks:
 
-- `stale/superseded check`
-- `unsupported check`
-- `preference-only check`
-- `out-of-scope check`
-- `misdiagnosis check`
-- `proposed-fix validity check`
+- `stale/superseded`
+- `unsupported`
+- `preference-only`
+- `out-of-scope`
+- `misdiagnosis`
+- `proposed-fix validity`
 - `validation-only alternative`
-- `shared-invariant check`
+- `shared-invariant`
+
+Each row must include `result`, `evidence ref`, and `why action still warranted`.
+Generic language like "all comments are valid" is insufficient.
 
 If this block is missing, generic, or unsupported by artifact evidence, set:
 
 ```md
-handoff_allowed: no
+adjudication_complete: fail
+implementation_handoff_allowed: no
 Adjudication Bottom Line: Blocked: all-action adjudication lacks justification.
 ```
 
@@ -414,21 +553,31 @@ proof.
 
 ## Adjudication completion gate
 
-Before any implementation handoff, emit an `Adjudication Gate` block.
+Before any implementation, validation, or reply handoff, emit an
+`Adjudication Gate` block.
 
 Required fields:
 
+- `artifact_state_coverage`: `pass` / `fail`
+- `comment_inventory_coverage`: `pass` / `fail`
 - `identity_coverage`: `pass` / `fail`
+- `decision_test_coverage`: `pass` / `fail`
 - `no_change_coverage`: `pass` / `fail`
 - `disposition_coverage`: `pass` / `fail`
 - `proposed_fix_separation`: `pass` / `fail`
-- `evidence_coverage`: `pass` / `fail`
+- `evidence_ref_coverage`: `pass` / `fail`
+- `resolve_selection_coverage`: `pass` / `fail`
 - `invariant_pass`: `pass` / `fail`
+- `specialist_packet_coverage`: `pass` / `fail` / `not-used`
 - `acceptance_skew_audit`: `pass` / `fail`
-- `handoff_allowed`: `yes` / `no`
+- `adjudication_complete`: `pass` / `fail`
+- `implementation_handoff_allowed`: `yes` / `no`
+- `validation_handoff_allowed`: `yes` / `no`
+- `reply_handoff_allowed`: `yes` / `no`
 
-`handoff_allowed` may be `yes` only when all required fields pass and any
-all-action adjudication includes a specific All-Action Justification.
+`adjudication_complete` may be `pass` only when every preceding required field is
+`pass`, except `specialist_packet_coverage`, which may be `not-used` when no
+specialists were used.
 
 If any required field fails, the bottom line must be:
 
@@ -437,23 +586,55 @@ Blocked: incomplete adjudication. Do not implement yet.
 ```
 
 Do not route to `$accretive-implementer` or `$fixed-point-driver` from an
-incomplete adjudication.
+incomplete adjudication, except that a complete validation-only adjudication may
+route validation tasks to `$fixed-point-driver` when
+`validation_handoff_allowed: yes` and `implementation_handoff_allowed: no`.
 
 ## Output contract
 
-### Compact-Gated
+### Compact-Gated v2
 
 Use this mode for real PR comment sets:
 
 ```md
 ## Review Basis
+
+artifact_state_id:
+  branch:
+  base:
+  head:
+  diff_digest:
+  comment_set_digest:
+  ci_state:
+
+- branch / PR:
+- current artifact evidence:
+- tests / CI:
+- comments adjudicated:
+- limits / unavailable evidence:
+
+## Comment Inventory
+
+- input_comment_count:
+- ledger_row_count:
+- input_comment_ids:
+- ledger_comment_ids:
+- missing_comment_ids:
+- duplicate_comment_ids:
+- synthesized_ids_for_real_comments: yes/no
+
 ## PR Why Ledger
 ## Comment Ledger
-| id/thread | reviewer | location | claim | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence | handoff |
-|---|---|---|---|---|---|---|---|---|---|---|---|
+| id/thread | reviewer | location | excerpt | claim | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence grade | evidence ref | handoff |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+
+## Decision Tests
+| id/thread | grounded | material | fresh | diagnosis | scope-fit | no-change defeated | min evidence to change mind |
+|---|---|---|---|---|---|---|---|
 
 ## No-Change Countercases
 ## Governing Invariant Ledger
+## Specialist Packet Receipts
 ## Act On
 ## Rebut
 ## Defer / Out of Scope
@@ -469,38 +650,41 @@ Use this mode for real PR comment sets:
 ## Adjudication Bottom Line
 ```
 
-Omit `All-Action Justification` only when at least one substantive comment is not
+Omit `Specialist Packet Receipts` only when no specialists were used. Omit
+`All-Action Justification` only when at least one substantive comment is not
 `act`; still include `Acceptance Skew Audit`.
 
 ### Standard
 
 Standard output may include expanded per-comment analysis, but it must end with
-the full Compact-Gated tail and Adjudication Gate.
+the full Compact-Gated v2 tail and Adjudication Gate.
 
 ### Fast
 
 Fast output may compress reasoning into decision buckets, but it must still
 preserve comment identity, include an Acceptance Skew Audit, and emit an
-Adjudication Gate. If identity or no-change coverage is missing, Fast mode must
-block handoff.
+Adjudication Gate. If identity, inventory, artifact-state, or no-change coverage
+is missing, Fast mode must block implementation handoff.
 
 ## Handoff rules
 
 - Route to `$accretive-implementer` when the accepted agenda is narrow,
-  accretive, and locally reviewable.
-- Route to `$fixed-point-driver` when accepted comments are coupled, contentious,
-  invariant-level, structural, validation-only, or likely to reopen one another.
+  accretive, locally reviewable, artifact-backed, and not validation-only.
+- Route to `$fixed-point-driver` when accepted comments are coupled,
+  contentious, invariant-level, structural, validation-only, or likely to reopen
+  one another.
 - Route to `$logophile` only for drafting replies, naming, or wording.
 - For `$resolve` or PR-thread cleanup, route proof-only stale/already-fixed
   comments as `resolve-thread-only`, not as implementation work.
 - If the correct response is no code change, do not create an implementation
   handoff.
 - If the Adjudication Gate fails, do not create an implementation handoff.
+- If validation-only is the correct next move, route validation, not mutation.
 
 ## Machine-check hook
 
-When automation is available, run the optional checker against the adjudication
-output before routing implementation:
+When automation is available, run the checker against the adjudication output
+before routing implementation:
 
 ```bash
 python codex/skills/review-adjudication/tools/review_adjudication_gate.py adjudication.md
@@ -517,11 +701,15 @@ with the missing fields instead of implementing.
   comments.
 - Do not mark a comment `act` merely because it is easy to fix.
 - Do not mark a comment `act` merely because the reviewer is probably right.
+- Do not mark a comment `act` without a current evidence grade and evidence ref.
 - Do not accept a local fix when the real issue is a governing invariant.
+- Do not route validation-only work as implementation.
 - Do not route `resolve-thread-only`, `do-not-address`, or `blocked` selections
   into `$fixed-point-driver` as implementation work.
 - Do not hide uncertainty; say exactly what evidence is missing.
-- Do not allow `handoff_allowed: yes` if any gate field fails.
+- Do not allow `adjudication_complete: pass` if any required gate field fails.
+- Do not allow `implementation_handoff_allowed: yes` if the mechanical checker
+  fails or if any `act` row lacks current evidence.
 
 ## Resources
 

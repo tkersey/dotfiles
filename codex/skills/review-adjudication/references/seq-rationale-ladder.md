@@ -51,11 +51,12 @@ When the missing rationale affects actionability, use:
 ```md
 disposition: need-evidence
 no_change_countercase_status: unresolved
-handoff_allowed: no
+adjudication_complete: fail
+implementation_handoff_allowed: no
 ```
 
 ## Adjudication caveat
 
 Use `$seq` to recover rationale, not to manufacture obligations. A recovered plan
 can explain why a comment matters, but current artifacts still decide whether the
-comment is grounded, stale, or in scope.
+comment is grounded, stale, in scope, or actionable.

@@ -2,6 +2,19 @@
 
 Use routing terms consistently across adjudication, orchestration, and closure.
 
+## Evidence grades
+
+Use exactly one per comment:
+
+- `current-artifact`
+- `current-test`
+- `current-ci`
+- `current-session-artifact`
+- `prior-session-artifact`
+- `memory-only`
+- `reviewer-only`
+- `none`
+
 ## Relevance classes
 
 Use exactly one per comment:
@@ -40,6 +53,16 @@ Use exactly one per comment:
 - `not-defeated`
 - `unresolved`
 
+## Resolve decisions
+
+Use exactly one per comment in `Resolve Selection`:
+
+- `address`
+- `validate-only`
+- `resolve-thread-only`
+- `do-not-address`
+- `blocked`
+
 ## Proposed-fix validity
 
 Use exactly one per comment:
@@ -51,6 +74,15 @@ Use exactly one per comment:
 - `under-specified`
 - `not-applicable`
 - `validation-only`
+
+## Decision tests
+
+- `grounded`: `yes` / `no` / `unknown`
+- `material`: `yes` / `no` / `user-requested` / `unknown`
+- `fresh`: `current` / `stale` / `superseded` / `unclear`
+- `diagnosis`: `correct` / `partially-correct` / `misdiagnosed` / `unknown`
+- `scope-fit`: `yes` / `no` / `partial` / `unknown`
+- `no-change defeated`: `yes` / `no` / `unresolved`
 
 ## Diagnosis quality
 
@@ -102,6 +134,16 @@ Use exactly one when a reply stance is useful:
 - `defer-with-scope`
 - `ask-for-evidence`
 
+## Resolve decision
+
+Use exactly one per comment in the Resolve Selection map:
+
+- `address`
+- `validate-only`
+- `resolve-thread-only`
+- `do-not-address`
+- `blocked`
+
 ## Handoff action
 
 Use exactly one per comment:
@@ -120,10 +162,33 @@ Gate fields use:
 - `pass`
 - `fail`
 
-`handoff_allowed` uses:
+`specialist_packet_coverage` may also use:
+
+- `not-used`
+
+Handoff permission fields use:
 
 - `yes`
 - `no`
+
+## Compact-Gated v2 gate fields
+
+- `artifact_state_coverage`
+- `comment_inventory_coverage`
+- `identity_coverage`
+- `decision_test_coverage`
+- `no_change_coverage`
+- `disposition_coverage`
+- `proposed_fix_separation`
+- `evidence_ref_coverage`
+- `resolve_selection_coverage`
+- `invariant_pass`
+- `specialist_packet_coverage`
+- `acceptance_skew_audit`
+- `adjudication_complete`
+- `implementation_handoff_allowed`
+- `validation_handoff_allowed`
+- `reply_handoff_allowed`
 
 ## Workflow states
 

@@ -17,6 +17,35 @@ Review comments:
 If comments are copied from GitHub, preserve thread IDs, comment IDs, file paths,
 line numbers, reviewer names, and exact excerpts.
 
+## Required artifact-state context
+
+```yaml
+artifact_state_id:
+  branch: "<branch or unknown>"
+  base: "<base sha/ref or unknown>"
+  head: "<head sha/ref or unknown>"
+  diff_digest: "<hash, changed path set, or unknown>"
+  comment_set_digest: "<hash/list of raw comment ids or unknown>"
+  ci_state: "<pass/fail/pending/not-run plus timestamp if known>"
+```
+
+This state identity is the stale-handoff boundary. If a material edit, fixture
+refresh, dependency update, proof-surface change, or review-thread update occurs,
+refresh adjudication or explicitly mark the older result stale.
+
+## Required comment inventory context
+
+```md
+Comment inventory:
+- input_comment_count:
+- input_comment_ids:
+- source:
+- synthesized_ids_for_real_comments: yes/no
+```
+
+A complete adjudication must prove that every raw input comment appears exactly
+once in the Comment Ledger.
+
 ## Required artifact context
 
 ```md
@@ -39,6 +68,7 @@ Constraints:
 - compatibility posture:
 - ownership boundaries:
 - proof bar:
+- likely next workflow: implementation / validation / `$resolve` / `$ship` / thread cleanup / unknown
 ```
 
 ## Optional context
@@ -51,9 +81,12 @@ Add only when needed:
 - project conventions or style guide
 - release compatibility constraints
 - migration plan
+- exact CI status or log excerpts
+- specialist packet receipts
 
 ## Anti-bloat rule
 
 Do not include the whole repo, long prior-session summaries, or unrelated review
 threads by default. Expand context only when it can change grounding, scope,
-freshness, concern validity, proposed-fix validity, or handoff shape.
+freshness, concern validity, proposed-fix validity, evidence grade, evidence ref, resolve-selection decision,
+or handoff shape.

@@ -5,11 +5,29 @@ Use this template for real PR review comment sets.
 ```md
 ## Review Basis
 
+artifact_state_id:
+  branch:
+  base:
+  head:
+  diff_digest:
+  comment_set_digest:
+  ci_state:
+
 - branch / PR:
 - current artifact evidence:
 - tests / CI:
 - comments adjudicated:
 - limits / unavailable evidence:
+
+## Comment Inventory
+
+- input_comment_count:
+- ledger_row_count:
+- input_comment_ids:
+- ledger_comment_ids:
+- missing_comment_ids:
+- duplicate_comment_ids:
+- synthesized_ids_for_real_comments: yes/no
 
 ## PR Why Ledger
 
@@ -24,9 +42,15 @@ Use this template for real PR review comment sets.
 
 ## Comment Ledger
 
-| id/thread | reviewer | location | claim | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence | handoff |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  | valid/partial/unsupported/unknown | valid/partially-valid/wrong-fix/overbroad/under-specified/not-applicable/validation-only | material-relevant/relevant-nonmaterial/partially-relevant/stale-or-superseded/unsupported/out-of-scope/preference-only | act/rebut/defer/need-evidence | defeated/not-defeated/unresolved |  |  | none/route-to-accretive-implementer/route-to-fixed-point-driver/route-to-logophile/ask-user/draft-reply |
+| id/thread | reviewer | location | excerpt | claim | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence grade | evidence ref | handoff |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|  |  |  |  |  | valid/partial/unsupported/unknown | valid/partially-valid/wrong-fix/overbroad/under-specified/not-applicable/validation-only | material-relevant/relevant-nonmaterial/partially-relevant/stale-or-superseded/unsupported/out-of-scope/preference-only | act/rebut/defer/need-evidence | defeated/not-defeated/unresolved |  | current-artifact/current-test/current-ci/current-session-artifact/prior-session-artifact/memory-only/reviewer-only/none |  | none/route-to-accretive-implementer/route-to-fixed-point-driver/route-to-logophile/ask-user/draft-reply |
+
+## Decision Tests
+
+| id/thread | grounded | material | fresh | diagnosis | scope-fit | no-change defeated | min evidence to change mind |
+|---|---|---|---|---|---|---|---|
+|  | yes/no/unknown | yes/no/user-requested/unknown | current/stale/superseded/unclear | correct/partially-correct/misdiagnosed/unknown | yes/no/partial/unknown | yes/no/unresolved |  |
 
 ## No-Change Countercases
 
@@ -40,9 +64,16 @@ Use this template for real PR review comment sets.
 | invariant id | invariant | comments | evidence | violated/threatened | minimum fix shape | handoff | why not local fixes |
 |---|---|---|---|---|---|---|---|
 
+## Specialist Packet Receipts
+
+Omit this section only when no specialists were used.
+
+| role | packet status | artifact state match | scope match | finding added | route changed | used for | reason |
+|---|---|---|---|---|---|---|---|
+
 ## Act On
 
-- `<id/thread>`: action, evidence, and handoff shape.
+- `<id/thread>`: action, evidence grade/ref, replacement fix shape if reviewer fix is not valid, and handoff shape.
 
 ## Rebut
 
@@ -85,31 +116,44 @@ Use this template for real PR review comment sets.
 
 Include this section only when every substantive comment is `act`.
 
-- stale/superseded check:
-- unsupported check:
-- preference-only check:
-- out-of-scope check:
-- misdiagnosis check:
-- proposed-fix validity check:
-- validation-only alternative:
-- shared-invariant check:
+| check | result | evidence ref | why action still warranted |
+|---|---|---|---|
+| stale/superseded | pass/fail |  |  |
+| unsupported | pass/fail |  |  |
+| preference-only | pass/fail |  |  |
+| out-of-scope | pass/fail |  |  |
+| misdiagnosis | pass/fail |  |  |
+| proposed-fix validity | pass/fail |  |  |
+| validation-only alternative | pass/fail |  |  |
+| shared-invariant | pass/fail |  |  |
 
 ## Adjudication Gate
 
 | field | value | basis |
 |---|---|---|
+| artifact_state_coverage | pass/fail |  |
+| comment_inventory_coverage | pass/fail |  |
 | identity_coverage | pass/fail |  |
+| decision_test_coverage | pass/fail |  |
 | no_change_coverage | pass/fail |  |
 | disposition_coverage | pass/fail |  |
 | proposed_fix_separation | pass/fail |  |
-| evidence_coverage | pass/fail |  |
+| evidence_ref_coverage | pass/fail |  |
+| resolve_selection_coverage | pass/fail |  |
 | invariant_pass | pass/fail |  |
+| specialist_packet_coverage | pass/fail/not-used |  |
 | acceptance_skew_audit | pass/fail |  |
-| handoff_allowed | yes/no |  |
+| adjudication_complete | pass/fail |  |
+| implementation_handoff_allowed | yes/no |  |
+| validation_handoff_allowed | yes/no |  |
+| reply_handoff_allowed | yes/no |  |
 
 ## Handoff Agenda
 
-- route:
+- implementation route:
+- validation route:
+- proof-only thread-resolution route:
+- reply route:
 - items selected for implementation:
 - validation-only items:
 - proof-only thread-resolution items:

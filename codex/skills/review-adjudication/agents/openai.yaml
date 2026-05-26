@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Review Adjudication"
-  short_description: "Gated PR review adjudication with explicit resolve-selection mapping"
-  default_prompt: "Use $review-adjudication in Compact-Gated mode for this task."
+  short_description: "Stale-proof PR review adjudication with explicit resolve-selection mapping"
+  default_prompt: "Use $review-adjudication in Compact-Gated v2 mode for this task."

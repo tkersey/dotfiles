@@ -1,9 +1,9 @@
 # Example invocations
 
-## Compact-Gated review adjudication
+## Compact-Gated v2 review adjudication
 
 ```md
-Use $review-adjudication in Compact-Gated mode.
+Use $review-adjudication in Compact-Gated v2 mode.
 
 Goal: determine which current PR review comments should change code before any
 implementation.
@@ -11,23 +11,28 @@ implementation.
 Inputs:
 - raw PR review comments with id/thread/reviewer/location/excerpt
 - current branch vs main
+- branch/head/diff/comment-set identity if available
 - PR description / intended change
 - current tests and CI status
 - relevant files
 
 Rules:
-- preserve raw comment identity
+- preserve raw comment identity and input inventory
+- bind the adjudication to artifact_state_id
 - treat each comment as a claim, not an obligation
 - construct the strongest no-change countercase for every comment
 - separate concern validity from proposed-fix validity
+- use evidence grade + evidence ref for every action
 - use $seq only if PR rationale is missing, disputed, stale, or likely to affect disposition
 - do not implement fixes
-- do not hand off implementation unless the Adjudication Gate passes
+- do not hand off implementation unless the Adjudication Gate passes and implementation_handoff_allowed is yes
 
 Required output:
 - Review Basis
+- Comment Inventory
 - PR Why Ledger
 - Comment Ledger
+- Decision Tests
 - No-Change Countercases
 - Governing Invariant Ledger
 - Act On
@@ -36,13 +41,16 @@ Required output:
 - Need Evidence
 - Invariant-Level Handoff
 - Acceptance Skew Audit
+- Resolve Selection
 - Adjudication Gate
 - Handoff Agenda
 - Adjudication Bottom Line
 
 Failure condition:
-If identity coverage, no-change coverage, proposed-fix separation, evidence
-coverage, invariant pass, or skew audit is incomplete, set `handoff_allowed: no`.
+If artifact state, identity coverage, inventory coverage, decision tests,
+no-change coverage, proposed-fix separation, evidence refs, invariant pass, or
+skew audit is incomplete, set `adjudication_complete: fail` and
+`implementation_handoff_allowed: no`.
 ```
 
 ## Review the review
@@ -64,14 +72,15 @@ Constraints:
 - construct the strongest no-change countercase for each comment
 - use $seq if the original why of this PR is unclear
 - do not implement changes yet
-- emit the Adjudication Gate
+- emit the Compact-Gated v2 Adjudication Gate
 
 Done when:
+- each raw comment is represented exactly once
 - each comment is classified
 - the bottom line says what to act on, rebut, defer, or investigate
 - any governing invariant behind repeated comments is named
-- the handoff agenda says whether this should go to $accretive-implementer or $fixed-point-driver
-- `handoff_allowed` is explicit
+- the handoff agenda separates implementation, validation, and reply routes
+- `adjudication_complete`, `implementation_handoff_allowed`, `validation_handoff_allowed`, and `reply_handoff_allowed` are explicit
 ```
 
 ## Fast adjudication without implementation handoff
@@ -86,18 +95,22 @@ Comments:
 4. Add a property-based test.
 
 Return only:
+- Comment Inventory
 - Comment Ledger
+- Decision Tests
 - Act On
 - Rebut
 - Defer / Out of Scope
 - Need Evidence
 - Invariant-Level Handoff
 - Acceptance Skew Audit
+- Resolve Selection
 - Adjudication Gate
 - Handoff Agenda
 - Adjudication Bottom Line
 
-Do not allow implementation handoff unless the gate passes.
+Do not allow implementation handoff unless the gate passes. If real comment IDs
+are missing, set identity_coverage to fail.
 ```
 
 ## Intent recovery first
@@ -112,7 +125,7 @@ Constraints:
 - explicitly use $seq to recover the PR why from sessions and memories
 - prefer session-backed evidence over memory-only recall
 - do not change code
-- if every comment is accepted, justify why this is not rubber-stamping
+- if every comment is accepted, justify why this is not rubber-stamping using the structured All-Action Justification table
 - if $seq cannot recover material intent, mark affected comments need-evidence
 ```
 
@@ -129,13 +142,13 @@ Constraints:
 - act only when current artifacts defeat that countercase
 - separate valid concern from valid proposed fix
 - cluster repeated comments by governing invariant
-- if all comments are `act`, emit All-Action Justification or block handoff
+- if all comments are `act`, emit structured All-Action Justification or block implementation handoff
 ```
 
 ## Validation-only uncertain review
 
 ```md
-Use $review-adjudication in Compact-Gated mode.
+Use $review-adjudication in Compact-Gated v2 mode.
 
 Goal: decide whether a reviewer-reported failure mode is proven or should be
 validated before code changes.
@@ -143,8 +156,33 @@ validated before code changes.
 Rules:
 - if the concern might be real but current artifacts do not prove it, use
   `need-evidence`
+- use `proposed_fix_validity: validation-only`
 - use `reframe_type: validation-only` and `remediation_posture: validating-check-only`
 - route validation-only work to $fixed-point-driver
+- set `implementation_handoff_allowed: no` unless some separate `act` item is artifact-backed
 - do not implement the proposed fix unless validation fails or current artifacts
   already prove the failure
+```
+
+
+## Resolve-selection invocation
+
+```md
+Use $review-adjudication in Compact-Gated v2 mode.
+
+Goal: select which PR review comments should be addressed, validated only,
+resolved with proof only, rebutted/deferred, or blocked before any `$resolve`,
+`$fixed-point-driver`, `$ship`, or thread cleanup workflow.
+
+Rules:
+- preserve raw comment identity and input inventory
+- bind the adjudication to the current artifact_state_id
+- separate adjudication disposition from downstream resolve decision
+- use `address` only for artifact-backed `act` rows
+- use `validate-only` for proof-first uncertainty
+- use `resolve-thread-only` for stale/already-fixed comments that need a
+  proof-bearing reply but no code change
+- do not route `resolve-thread-only`, `do-not-address`, or `blocked` items as
+  implementation work
+- emit the full Adjudication Gate with `resolve_selection_coverage`
 ```
