@@ -155,3 +155,21 @@ After disposition, select one downstream resolve decision per comment:
 
 Never route `resolve-thread-only`, `do-not-address`, or `blocked` items into
 implementation.
+
+## Resolve-selection anti-laundering rubric
+
+A comment being valid is not enough to make it worth resolving now. After the
+ordinary adjudication disposition, select a downstream resolve decision:
+
+- `address` only when the row is `act`, the no-change case is defeated, current
+  evidence exists, and implementation is the correct next move.
+- `validate-only` when uncertainty is material and proof should precede mutation.
+- `resolve-thread-only` when latest HEAD already satisfies or supersedes the
+  comment and a proof-bearing reply/thread resolution is enough.
+- `do-not-address` when the preserved no-change case, scope boundary, or low
+  value makes downstream work inappropriate.
+- `blocked` when identity, artifact state, evidence, or rationale is incomplete.
+
+Run a resolve countercase for every row. If every substantive comment is selected
+as `address` or `validate-only`, emit a structured All-Selected Justification.
+Do not let `$fixed-point-driver` become the default route for narrow-local work.

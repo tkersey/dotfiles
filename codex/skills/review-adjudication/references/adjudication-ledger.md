@@ -1,6 +1,6 @@
 # Adjudication Ledger
 
-Use one row per review comment. For real PR comments, the Compact-Gated v2 ledger
+Use one row per review comment. For real PR comments, the Compact-Gated v3 ledger
 is mandatory and must preserve raw identity, input inventory, artifact-state
 identity, decision tests, and evidence references.
 
@@ -336,3 +336,27 @@ into:
 - Adjudication Gate
 - Handoff Agenda
 - Adjudication Bottom Line
+
+## Compact-Gated v3 route-selection fields
+
+Resolve Selection is a downstream routing contract, not a restatement of the
+Comment Ledger. Use one row per ledger row:
+
+```md
+| id/thread | resolve decision | reason | proof ref | next | route rationale |
+|---|---|---|---|---|---|
+```
+
+`proof ref` must be concrete for `address`, `validate-only`, and
+`resolve-thread-only`. For `blocked`, it may explicitly say `missing`.
+
+The Handoff Agenda must be a subset-preserving projection of this table:
+
+- `address` -> `items selected for implementation`
+- `validate-only` -> `validation-only items`
+- `resolve-thread-only` -> `proof-only thread-resolution items`
+- `do-not-address` -> `items not selected`
+- `blocked` -> `blocked items`
+
+Every row also needs a Resolve Countercases entry that challenges the selected
+resolve decision with the strongest alternative downstream decision.

@@ -1,9 +1,9 @@
 # Example invocations
 
-## Compact-Gated v2 review adjudication
+## Compact-Gated v3 review adjudication
 
 ```md
-Use $review-adjudication in Compact-Gated v2 mode.
+Use $review-adjudication in Compact-Gated v3 mode.
 
 Goal: determine which current PR review comments should change code before any
 implementation.
@@ -72,7 +72,7 @@ Constraints:
 - construct the strongest no-change countercase for each comment
 - use $seq if the original why of this PR is unclear
 - do not implement changes yet
-- emit the Compact-Gated v2 Adjudication Gate
+- emit the Compact-Gated v3 Adjudication Gate
 
 Done when:
 - each raw comment is represented exactly once
@@ -148,7 +148,7 @@ Constraints:
 ## Validation-only uncertain review
 
 ```md
-Use $review-adjudication in Compact-Gated v2 mode.
+Use $review-adjudication in Compact-Gated v3 mode.
 
 Goal: decide whether a reviewer-reported failure mode is proven or should be
 validated before code changes.
@@ -168,7 +168,7 @@ Rules:
 ## Resolve-selection invocation
 
 ```md
-Use $review-adjudication in Compact-Gated v2 mode.
+Use $review-adjudication in Compact-Gated v3 mode.
 
 Goal: select which PR review comments should be addressed, validated only,
 resolved with proof only, rebutted/deferred, or blocked before any `$resolve`,
@@ -185,4 +185,43 @@ Rules:
 - do not route `resolve-thread-only`, `do-not-address`, or `blocked` items as
   implementation work
 - emit the full Adjudication Gate with `resolve_selection_coverage`
+```
+
+## Anti-laundering resolve selection
+
+```md
+Use $review-adjudication in Compact-Gated v3 mode.
+
+Goal: refine these PR review comments to the subset that is actually worth
+resolving before implementation, validation, or thread cleanup.
+
+Rules:
+- preserve raw comment identity and input inventory
+- emit exactly one Resolve Selection row per ledger row
+- include `proof ref` and `route rationale` for every Resolve Selection row
+- run a Resolve Countercases pass that challenges the selected downstream route
+- use `address` only for artifact-backed `act` rows
+- use `validate-only` only for proof-first uncertainty
+- use `resolve-thread-only` only for stale/already-fixed comments with concrete proof
+- use `do-not-address` for preserved no-change, preference-only, out-of-scope, or low-value rows
+- make Handoff Agenda buckets exactly match Resolve Selection decisions
+- if every row is `address` or `validate-only`, emit structured All-Selected Justification
+- do not route narrow-local work to $fixed-point-driver without coupled/invariant/structural/contentious/likely-to-reopen rationale
+```
+
+## Handoff-agenda consistency check
+
+```md
+Use $review-adjudication in Compact-Gated v3 mode.
+
+After the Comment Ledger and Resolve Selection, produce a Handoff Agenda whose
+buckets are exact projections:
+
+- items selected for implementation = all and only `address` rows
+- validation-only items = all and only `validate-only` rows
+- proof-only thread-resolution items = all and only `resolve-thread-only` rows
+- items not selected = all and only `do-not-address` rows
+- blocked items = all and only `blocked` rows
+
+Do not use "all". Use explicit comment IDs.
 ```

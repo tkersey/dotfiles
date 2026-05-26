@@ -1,8 +1,10 @@
-version: 2
+version: 3
 skill: review-adjudication
 metrics:
   - act_precision
   - false_act_rate
+  - address_precision
+  - false_address_rate
   - stale_rejection_rate
   - wrong_fix_separation_rate
   - identity_coverage_rate
@@ -10,20 +12,31 @@ metrics:
   - artifact_state_coverage_rate
   - evidence_ref_coverage_rate
   - decision_test_coverage_rate
+  - resolve_countercase_coverage_rate
   - all_action_justification_rate
+  - all_selected_justification_rate
   - invariant_clustering_rate
   - validation_only_routing_rate
   - resolve_selection_coverage_rate
+  - handoff_agenda_consistency_rate
+  - handoff_agenda_leak_rate
+  - duplicate_section_rejection_rate
+  - resolve_proof_ref_coverage_rate
+  - fixed_point_overrouting_rate
+  - selection_countercase_coverage_rate
   - gate_failure_when_incomplete_rate
 cases:
   - id: valid_concern_valid_fix
     description: Reviewer correctly identifies a real regression and proposes the minimum safe change.
     expected:
       disposition: act
+      resolve_decision: address
+      route_rationale: narrow-local
       no_change_status: defeated
       proposed_fix_validity: valid
       evidence_grade_any_of: [current-artifact, current-test, current-ci, current-session-artifact]
       evidence_ref_required: true
+      proof_ref_required: true
       implementation_handoff_allowed: yes
   - id: valid_concern_wrong_fix
     description: Reviewer identifies a real bug but proposes a special case that violates the source-of-truth rule.
@@ -32,22 +45,26 @@ cases:
       proposed_fix_validity_any_of: [wrong-fix, overbroad]
       requires_replacement_fix_shape: true
       requires_invariant_handoff: true
+      resolve_countercase_required: true
   - id: stale_comment_after_patch
     description: Reviewer comment was true on an earlier diff but is superseded by current artifacts.
     expected:
       relevance: stale-or-superseded
       disposition_any_of: [rebut, defer]
+      resolve_decision_any_of: [resolve-thread-only, do-not-address]
       implementation_handoff_for_comment: false
   - id: preference_only_without_convention
     description: Reviewer requests style or naming unsupported by repo convention or user goal.
     expected:
       relevance: preference-only
       disposition_any_of: [rebut, defer]
+      resolve_decision: do-not-address
   - id: out_of_scope_broadening
     description: Reviewer asks the PR to solve an adjacent migration or unrelated design problem.
     expected:
       relevance: out-of-scope
       disposition: defer
+      resolve_decision: do-not-address
       implementation_handoff_for_comment: false
   - id: unsupported_reviewer_intuition
     description: Reviewer says a path seems unsafe without artifact support.
@@ -60,12 +77,14 @@ cases:
     expected:
       invariant_cluster_required: true
       avoid_piecemeal_local_fixes: true
+      route_rationale_any_of: [coupled-comments, invariant-level, structural]
   - id: validation_only_uncertainty
     description: Failure mode might be real but cannot be established from current artifacts.
     expected:
       disposition: need-evidence
       proposed_fix_validity: validation-only
-      reframe_type: validation-only
+      resolve_decision: validate-only
+      route_rationale: validation-only
       remediation_posture: validating-check-only
       handoff_action: route-to-fixed-point-driver
       implementation_handoff_allowed: no
@@ -75,12 +94,15 @@ cases:
     expected:
       all_action_allowed: true
       structured_all_action_justification_required: true
+      all_selected_justification_required: true
       implementation_handoff_allowed: yes
   - id: plausible_but_mixed_quality
     description: Plausible review set where only some comments are grounded.
     expected:
       disposition_diversity_expected: true
+      resolve_selection_diversity_expected: true
       all_action_without_specific_justification_allowed: false
+      all_selected_without_specific_justification_allowed: false
   - id: dropped_hard_comment
     description: Ledger omits one input review comment.
     expected:
@@ -92,13 +114,14 @@ cases:
     expected:
       checker_failure: true
       implementation_handoff_allowed: no
-
   - id: proof_only_thread_resolution
     description: Reviewer comment is stale or already fixed on current HEAD and needs only a proof-bearing reply/thread resolution.
     expected:
       relevance: stale-or-superseded
       disposition_any_of: [rebut, defer]
       resolve_decision: resolve-thread-only
+      route_rationale: proof-only-thread
+      proof_ref_required: true
       implementation_handoff_for_comment: false
   - id: resolve_selection_inconsistent
     description: Resolve Selection maps address to a non-act row or omits a ledger row.
@@ -106,10 +129,34 @@ cases:
       checker_failure: true
       resolve_selection_coverage: fail
       adjudication_complete: fail
-
   - id: already_fixed_review_thread
     description: Reviewer comment is stale or already satisfied by latest HEAD and only needs proof-bearing thread resolution.
     expected:
       disposition_any_of: [rebut, defer]
       resolve_decision: resolve-thread-only
       implementation_handoff_for_comment: false
+  - id: all_worth_resolving_laundering
+    description: Mixed review batch where model is tempted to say all comments are worth resolving.
+    expected:
+      all_selected_without_structured_justification_allowed: false
+      at_least_one_non_address_expected: true
+  - id: handoff_agenda_smuggles_non_address
+    description: Resolve Selection is correct, but Handoff Agenda routes all ids to implementation.
+    expected:
+      checker_failure: true
+      handoff_agenda_consistency: fail
+  - id: duplicate_resolve_selection_sections
+    description: Output contains two Resolve Selection sections with conflicting decisions.
+    expected:
+      checker_failure: true
+      duplicate_section_rejection: true
+  - id: single_narrow_action_overrouted_to_fixed_point
+    description: One narrow artifact-backed fix is routed to fixed-point-driver without coupling or invariant rationale.
+    expected:
+      fixed_point_overrouting_failure: true
+  - id: valid_but_not_this_pr
+    description: Reviewer concern is real but belongs to adjacent migration/non-goal.
+    expected:
+      disposition: defer
+      resolve_decision: do-not-address
+      implementation_handoff_allowed: no

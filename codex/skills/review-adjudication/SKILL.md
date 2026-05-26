@@ -32,8 +32,8 @@ artifact evidence and a defeated no-change countercase.
 
 ## Default mode
 
-Use **Compact-Gated v2** mode whenever the input contains real review comments.
-Compact-Gated v2 is mandatory because automation needs:
+Use **Compact-Gated v3** mode whenever the input contains real review comments.
+Compact-Gated v3 is mandatory because automation needs:
 
 - stable raw comment identity
 - complete input-comment inventory coverage
@@ -42,11 +42,16 @@ Compact-Gated v2 is mandatory because automation needs:
 - evidence-grade and evidence-reference separation
 - resolve-selection mapping for implementation, validation, proof-only thread
   resolution, no-change, and blocked outcomes
+- proof refs and route rationale for every downstream selection
+- resolve countercases so "worth resolving" is challenged separately from
+  concern validity
+- selection-skew auditing so "all are worth resolving" cannot pass silently
+- handoff-agenda consistency checks so selected work is not broadened later
 - separate implementation, validation, and reply handoff permissions
 
 Other modes are allowed only when they still satisfy the completion gate:
 
-- **Standard**: expanded reasoning plus the full Compact-Gated v2 tail.
+- **Standard**: expanded reasoning plus the full Compact-Gated v3 tail.
 - **Fast**: bucket-only output plus the completion gate; allowed for exploratory
   triage or synthetic comments, not for implementation handoff unless the gate
   passes.
@@ -278,9 +283,10 @@ For every comment, assess:
 12. minimum evidence to change mind
 13. evidence grade
 14. evidence reference
-15. handoff action
+15. resolution value
+16. handoff action
 
-In Compact-Gated v2, surface these checks in both `## Comment Ledger` and
+In Compact-Gated v3, surface these checks in both `## Comment Ledger` and
 `## Decision Tests`.
 
 ## Act validity rule
@@ -388,6 +394,38 @@ Selection rules:
   already-fixed comments may be routed for replies/thread cleanup, not mutation.
 - If all rows are `resolve-thread-only`, `do-not-address`, or `blocked`, do not
   route to `$fixed-point-driver` for implementation.
+- Every row must include a concrete `proof ref` and `route rationale`.
+- `route-to-fixed-point-driver` requires a route rationale of
+  `coupled-comments`, `invariant-level`, `structural`, `validation-only`,
+  `contentious`, or `likely-to-reopen`.
+- `route-to-accretive-implementer` requires `route rationale: narrow-local`.
+- `resolve-thread-only` requires `route rationale: proof-only-thread`.
+- `do-not-address` requires `route rationale: no-change`.
+- `blocked` requires `route rationale: blocked`.
+
+## Resolve countercase pass
+
+After the adjudication disposition and before downstream handoff, challenge the
+selected resolve decision itself. Concern validity is not the same as "worth
+resolving now".
+
+Emit `## Resolve Countercases` with one entry per comment:
+
+```md
+- `<id/thread>`:
+  - proposed resolve decision:
+  - strongest alternative resolve decision:
+  - why alternative is rejected / preserved / unresolved:
+```
+
+Examples:
+
+- An `address` row must defeat the strongest `validate-only`,
+  `resolve-thread-only`, or `do-not-address` alternative.
+- A `validate-only` row must explain why immediate mutation is not yet justified.
+- A `resolve-thread-only` row must explain why no code change is selected.
+- A `do-not-address` row must preserve the no-change case.
+- A `blocked` row must name the missing evidence that prevents selection.
 
 ## Governing invariant pass
 
@@ -476,6 +514,9 @@ Use exactly one value per field:
 - `fresh`: `current` / `stale` / `superseded` / `unclear`
 - `diagnosis`: `correct` / `partially-correct` / `misdiagnosed` / `unknown`
 - `scope-fit`: `yes` / `no` / `partial` / `unknown`
+- `resolution value`: `merge-blocking` / `correctness-critical` /
+  `review-closure` / `proof-only` / `validation-needed` / `low-value` /
+  `out-of-lane` / `blocked`
 - `no-change defeated`: `yes` / `no` / `unresolved`
 
 ## Resolve decision values
@@ -486,6 +527,21 @@ Use exactly one per comment in `## Resolve Selection`:
 - `validate-only`
 - `resolve-thread-only`
 - `do-not-address`
+- `blocked`
+
+## Route rationale values
+
+Use exactly one per comment in `## Resolve Selection`:
+
+- `narrow-local`
+- `coupled-comments`
+- `invariant-level`
+- `structural`
+- `validation-only`
+- `contentious`
+- `likely-to-reopen`
+- `proof-only-thread`
+- `no-change`
 - `blocked`
 
 ## No-change countercase status
@@ -518,7 +574,7 @@ Use separate route permissions:
 - `reply_handoff_allowed`: `yes` only for rebuttal, defer, or reply-drafting
   work that should route to `$logophile` or a reply draft.
 
-The old single-field `handoff_allowed` is too coarse. Do not use it in v2 output
+The old single-field `handoff_allowed` is too coarse. Do not use it in v3 output
 except when quoting older adjudications.
 
 ## Acceptance skew audit
@@ -551,6 +607,28 @@ Adjudication Bottom Line: Blocked: all-action adjudication lacks justification.
 Do not require artificial disposition diversity. Require an all-action safety
 proof.
 
+## Selection skew audit
+
+Before handoff, audit the distribution of `Resolve Selection` decisions.
+
+If every substantive comment is selected as `address` or `validate-only`, treat
+that as a warning sign. Emit an **All-Selected Justification** table with these
+checks:
+
+- `stale/already-fixed alternative`
+- `proof-only thread-resolution alternative`
+- `do-not-address alternative`
+- `validate-before-mutation alternative`
+- `out-of-scope/defer alternative`
+- `fixed-point over-routing check`
+
+Each row must include `result`, `evidence ref`, and `why selected resolution is
+still warranted`. Generic language like "all are worth resolving" is
+insufficient.
+
+Selection skew is separate from acceptance skew: a report can avoid all-`act`
+while still over-selecting downstream work.
+
 ## Adjudication completion gate
 
 Before any implementation, validation, or reply handoff, emit an
@@ -567,6 +645,9 @@ Required fields:
 - `proposed_fix_separation`: `pass` / `fail`
 - `evidence_ref_coverage`: `pass` / `fail`
 - `resolve_selection_coverage`: `pass` / `fail`
+- `resolve_countercase_coverage`: `pass` / `fail`
+- `handoff_agenda_consistency`: `pass` / `fail`
+- `selection_skew_audit`: `pass` / `fail`
 - `invariant_pass`: `pass` / `fail`
 - `specialist_packet_coverage`: `pass` / `fail` / `not-used`
 - `acceptance_skew_audit`: `pass` / `fail`
@@ -592,7 +673,7 @@ route validation tasks to `$fixed-point-driver` when
 
 ## Output contract
 
-### Compact-Gated v2
+### Compact-Gated v3
 
 Use this mode for real PR comment sets:
 
@@ -629,8 +710,8 @@ artifact_state_id:
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 
 ## Decision Tests
-| id/thread | grounded | material | fresh | diagnosis | scope-fit | no-change defeated | min evidence to change mind |
-|---|---|---|---|---|---|---|---|
+| id/thread | grounded | material | fresh | diagnosis | scope-fit | resolution value | no-change defeated | min evidence to change mind |
+|---|---|---|---|---|---|---|---|---|
 
 ## No-Change Countercases
 ## Governing Invariant Ledger
@@ -640,11 +721,14 @@ artifact_state_id:
 ## Defer / Out of Scope
 ## Need Evidence
 ## Resolve Selection
-| id/thread | resolve decision | reason | next |
-|---|---|---|---|
+| id/thread | resolve decision | reason | proof ref | next | route rationale |
+|---|---|---|---|---|---|
+## Resolve Countercases
 ## Invariant-Level Handoff
 ## Acceptance Skew Audit
 ## All-Action Justification
+## Selection Skew Audit
+## All-Selected Justification
 ## Adjudication Gate
 ## Handoff Agenda
 ## Adjudication Bottom Line
@@ -657,7 +741,7 @@ Omit `Specialist Packet Receipts` only when no specialists were used. Omit
 ### Standard
 
 Standard output may include expanded per-comment analysis, but it must end with
-the full Compact-Gated v2 tail and Adjudication Gate.
+the full Compact-Gated v3 tail and Adjudication Gate.
 
 ### Fast
 
@@ -680,6 +764,11 @@ is missing, Fast mode must block implementation handoff.
   handoff.
 - If the Adjudication Gate fails, do not create an implementation handoff.
 - If validation-only is the correct next move, route validation, not mutation.
+- The Handoff Agenda must be a subset-preserving projection of Resolve
+  Selection. It must not add implementation items that are not `address`.
+- Do not route a single narrow local action to `$fixed-point-driver` unless the
+  route rationale is coupled, invariant-level, structural, validation-only,
+  contentious, or likely-to-reopen.
 
 ## Machine-check hook
 
@@ -706,6 +795,9 @@ with the missing fields instead of implementing.
 - Do not route validation-only work as implementation.
 - Do not route `resolve-thread-only`, `do-not-address`, or `blocked` selections
   into `$fixed-point-driver` as implementation work.
+- Do not emit duplicate singleton sections; duplicate ledgers or gates are
+  treated as contradictory and fail the checker.
+- Do not let `Handoff Agenda` broaden or contradict `Resolve Selection`.
 - Do not hide uncertainty; say exactly what evidence is missing.
 - Do not allow `adjudication_complete: pass` if any required gate field fails.
 - Do not allow `implementation_handoff_allowed: yes` if the mechanical checker

@@ -171,7 +171,7 @@ Handoff permission fields use:
 - `yes`
 - `no`
 
-## Compact-Gated v2 gate fields
+## Compact-Gated v3 gate fields
 
 - `artifact_state_coverage`
 - `comment_inventory_coverage`
@@ -204,3 +204,65 @@ Handoff permission fields use:
 - `mixed`
 - `conflicting`
 - `unknown`
+
+## Compact-Gated v3 additions
+
+### `resolution_value`
+
+Use exactly one per comment in Decision Tests:
+
+- `merge-blocking`
+- `correctness-critical`
+- `review-closure`
+- `proof-only`
+- `validation-needed`
+- `low-value`
+- `out-of-lane`
+- `blocked`
+
+### `resolve_decision`
+
+Use exactly one per comment in Resolve Selection:
+
+- `address`
+- `validate-only`
+- `resolve-thread-only`
+- `do-not-address`
+- `blocked`
+
+### `route_rationale`
+
+Use exactly one per comment in Resolve Selection:
+
+- `narrow-local`
+- `coupled-comments`
+- `invariant-level`
+- `structural`
+- `validation-only`
+- `contentious`
+- `likely-to-reopen`
+- `proof-only-thread`
+- `no-change`
+- `blocked`
+
+### Compact-Gated v3 gate fields
+
+- `artifact_state_coverage`
+- `comment_inventory_coverage`
+- `identity_coverage`
+- `decision_test_coverage`
+- `no_change_coverage`
+- `disposition_coverage`
+- `proposed_fix_separation`
+- `evidence_ref_coverage`
+- `resolve_selection_coverage`
+- `resolve_countercase_coverage`
+- `handoff_agenda_consistency`
+- `selection_skew_audit`
+- `invariant_pass`
+- `specialist_packet_coverage`
+- `acceptance_skew_audit`
+- `adjudication_complete`
+- `implementation_handoff_allowed`
+- `validation_handoff_allowed`
+- `reply_handoff_allowed`

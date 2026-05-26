@@ -1,6 +1,9 @@
 # Adjudication output template
 
-Use this template for real PR review comment sets.
+Use this template for real PR review comment sets. This is the Compact-Gated v3
+shape. It is designed to prevent downstream selection laundering, especially the
+failure mode where a mixed review set becomes "all are worth resolving" and then
+enters implementation.
 
 ```md
 ## Review Basis
@@ -48,9 +51,9 @@ artifact_state_id:
 
 ## Decision Tests
 
-| id/thread | grounded | material | fresh | diagnosis | scope-fit | no-change defeated | min evidence to change mind |
-|---|---|---|---|---|---|---|---|
-|  | yes/no/unknown | yes/no/user-requested/unknown | current/stale/superseded/unclear | correct/partially-correct/misdiagnosed/unknown | yes/no/partial/unknown | yes/no/unresolved |  |
+| id/thread | grounded | material | fresh | diagnosis | scope-fit | resolution value | no-change defeated | min evidence to change mind |
+|---|---|---|---|---|---|---|---|---|
+|  | yes/no/unknown | yes/no/user-requested/unknown | current/stale/superseded/unclear | correct/partially-correct/misdiagnosed/unknown | yes/no/partial/unknown | merge-blocking/correctness-critical/review-closure/proof-only/validation-needed/low-value/out-of-lane/blocked | yes/no/unresolved |  |
 
 ## No-Change Countercases
 
@@ -89,9 +92,16 @@ Omit this section only when no specialists were used.
 
 ## Resolve Selection
 
-| id/thread | resolve decision | reason | next |
-|---|---|---|---|
-|  | address/validate-only/resolve-thread-only/do-not-address/blocked |  | route-to-fixed-point-driver / validation probe / proof reply or thread resolution / none / blocked |
+| id/thread | resolve decision | reason | proof ref | next | route rationale |
+|---|---|---|---|---|---|
+|  | address/validate-only/resolve-thread-only/do-not-address/blocked |  |  | route-to-fixed-point-driver / validation probe / proof reply or thread resolution / none / blocked | narrow-local/coupled-comments/invariant-level/structural/validation-only/contentious/likely-to-reopen/proof-only-thread/no-change/blocked |
+
+## Resolve Countercases
+
+- `<id/thread>`:
+  - proposed resolve decision:
+  - strongest alternative resolve decision:
+  - why alternative is rejected / preserved / unresolved:
 
 ## Invariant-Level Handoff
 
@@ -127,6 +137,31 @@ Include this section only when every substantive comment is `act`.
 | validation-only alternative | pass/fail |  |  |
 | shared-invariant | pass/fail |  |  |
 
+## Selection Skew Audit
+
+- resolve decision distribution:
+- all-selected pressure checked:
+- address over-selection possibilities:
+- validate-only over-routing possibilities:
+- proof-only thread-resolution alternatives:
+- do-not-address alternatives:
+- blocked/ask-user alternatives:
+- fixed-point over-routing pressure:
+
+## All-Selected Justification
+
+Include this section only when every substantive comment is selected as
+`address` or `validate-only`.
+
+| check | result | evidence ref | why selected resolution is still warranted |
+|---|---|---|---|
+| stale/already-fixed alternative | pass/fail |  |  |
+| proof-only thread-resolution alternative | pass/fail |  |  |
+| do-not-address alternative | pass/fail |  |  |
+| validate-before-mutation alternative | pass/fail |  |  |
+| out-of-scope/defer alternative | pass/fail |  |  |
+| fixed-point over-routing check | pass/fail |  |  |
+
 ## Adjudication Gate
 
 | field | value | basis |
@@ -140,6 +175,9 @@ Include this section only when every substantive comment is `act`.
 | proposed_fix_separation | pass/fail |  |
 | evidence_ref_coverage | pass/fail |  |
 | resolve_selection_coverage | pass/fail |  |
+| resolve_countercase_coverage | pass/fail |  |
+| handoff_agenda_consistency | pass/fail |  |
+| selection_skew_audit | pass/fail |  |
 | invariant_pass | pass/fail |  |
 | specialist_packet_coverage | pass/fail/not-used |  |
 | acceptance_skew_audit | pass/fail |  |
