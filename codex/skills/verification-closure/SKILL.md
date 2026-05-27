@@ -1,6 +1,6 @@
 ---
 name: verification-closure
-description: Use this skill to decide whether the current artifact set is actually ready by consuming a canonical Closure Handoff Packet, running the narrowest decisive checks, validating specialist value receipts, checking active negative evidence and reopening criteria, and assigning a grounded readiness state. Trigger for requests like verify this patch is ready, run closure gates, decide if the branch reached a material fixed point, or close the loop on the current artifact state. Do not trigger for broad redesign or de novo code review without a closure question.
+description: "Decide whether the current artifact set is ready by consuming a Closure Handoff Packet, running the narrowest decisive checks, validating specialist receipts, checking active negative evidence/reopening criteria, and assigning grounded readiness. Trigger for verify this patch is ready, run closure gates, decide whether branch reached a material fixed point, or close the loop. Do not use for broad redesign or de novo review without a closure question."
 ---
 
 # Verification Closure

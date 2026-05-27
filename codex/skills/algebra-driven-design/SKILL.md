@@ -1,6 +1,6 @@
 ---
 name: algebra-driven-design
-description: Apply Algebra-Driven Design from the canonical bundle at `codex/algebra-driven-design`. Use for ADD, denotational design, combinator models, law-driven architecture, domain algebra, property-based testing, codebase modeling, event sourcing, workflow design, or agentic skill design.
+description: "Apply Algebra-Driven Design from `codex/algebra-driven-design`. Use for ADD, denotational design, combinator models, law-driven architecture, domain algebra, property tests, codebase modeling, event sourcing, workflow design, or agentic skill design."
 ---
 
 # Algebra-Driven Design Loader

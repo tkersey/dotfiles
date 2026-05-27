@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Create a language-agnostic ghost package (spec + portable tests) from an existing repo by extracting SPEC.md, exhaustive tests.yaml (operations and/or scenarios), INSTALL.md, README.md, VERIFY.md, and upstream LICENSE files with provenance and regeneration instructions. Use when prompts say "$ghost", "ghostify this repo", "spec-ify/spec-package this library", "ghost library", or ask to extract portable spec/tests for libraries or tool-using agent loops (scenario testing). When prompts ask for Lean-aided, formal, proved, or machine-checked ghost extraction, keep this skill as the Ghost artifact authority and route Lean-specific modeling/proof work through `$lean`; do not use for implementation work or editing skills.
+description: "Create a language-agnostic ghost package (spec + portable tests) from a repo: SPEC.md, exhaustive tests.yaml, INSTALL.md, README.md, VERIFY.md, and upstream LICENSE provenance/regeneration. Use for `$ghost`, ghostify, spec-ify/spec-package this library, ghost library, or portable spec/tests for libraries or tool-using agent loops. For Lean-aided/formal/proved/machine-checked ghost extraction, keep Ghost as artifact authority and route Lean modeling/proof through `$lean`; do not use for implementation or skill edits."
 ---
 
 # ghost

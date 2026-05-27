@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Produce decision-complete, self-contained plans in proposed_plan block format, including a lean greenfield bootstrap pass for sparse new-project inputs, while front-loading the execution spine for implementation campaigns and architecture work, especially when concrete APIs/protocols must be preserved.
+description: "Produce decision-complete, self-contained proposed_plan blocks, including lean greenfield bootstrap for sparse new projects and an execution spine for implementation campaigns/architecture work, especially when concrete APIs/protocols must be preserved."
 ---
 
 # Plan

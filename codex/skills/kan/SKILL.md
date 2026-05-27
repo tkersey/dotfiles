@@ -1,7 +1,6 @@
 ---
 name: kan
-description: >
-  Use when universalist or the user has identified a concrete world/boundary seam that needs detailed Kan mechanics: Kan extensions, Kan lifts, precomposition/postcomposition, Freyd/AFT free-builder diagnostics, Yoneda/Coyoneda boundary representations, defunctionalized boundary IRs, codensity/density, codensity presentations via dense probes and duality, Exact Context Doctrine, context compilation, task-indexed data exchange, Context Certificates, pointwise formulas, free/cofree completions, functorial data migration, compatibility facades, lifted implementations, residual obligations, Composition Certificates, Boundary Normal Form audits, or categorical law tests. Do not use for generic architecture unless worlds, boundary kind, known side, unknown location, witness slice, proof signal, and—when applicable—a Composition Certificate are named or must be recovered.
+description: "Use when universalist or the user names a concrete world/boundary requiring Kan mechanics: Kan extensions/lifts, pre/postcomposition, Freyd/AFT free-builder diagnostics, Yoneda/Coyoneda boundary representations, defunctionalized boundary IRs, codensity/density and dense probes/duality, Exact Context Doctrine, context compilation, task-indexed exchange, Context Certificates, pointwise formulas, free/cofree completions, functorial data migration, compatibility facades, lifted implementations, residual obligations, Composition Certificates, Boundary Normal Form audits, or categorical law tests. Do not use for generic architecture unless worlds, boundary kind, known side, unknown location, witness slice, proof signal, and when applicable Composition Certificate are named or must be recovered."
 ---
 
 # Kan

@@ -1,9 +1,6 @@
 ---
 name: chronicle
-description: |
-  Allows you to view the user's screen as well as several hours of history. Use when the user makes a reference to their recent work, for which it'd be helpful to see the screen. This skill MUST be used whenever you need to resolve ambiguity in a user request, where the user hasn't specified enough context to do the task. Examples include disambiguating the specific user/app/document/error the user is referring to.
-  
-  You must also use this skill if the user asks about any question regarding Chronicle or asks what you can see from the screen.
+description: "View the user's screen plus hours of history. MUST use when resolving ambiguous requests lacking enough context, including recent work, specific app/document/error references, Chronicle questions, or asks about what you can see onscreen."
 ---
 
 # Chronicle

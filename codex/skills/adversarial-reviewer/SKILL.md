@@ -1,6 +1,6 @@
 ---
 name: adversarial-reviewer
-description: Use this skill for non-trivial code review where the job is to challenge the current artifact set, surface material defects, and produce an explicit change agenda. Trigger for exhaustive review, fresh-eyes second-pass review, re-review after fixes, patch hardening, review the current changeset, review the accepted agenda before implementation, or full-scope de novo challenge. Use full-scope review rather than diff-only review when exhaustive confidence matters. Do not trigger for trivial wording feedback or final readiness decisions without a review question.
+description: "Challenge non-trivial code artifacts, surface material defects, and produce a change agenda. Trigger for exhaustive review, fresh-eyes second pass, re-review after fixes, patch hardening, current changesets, accepted-agenda review, or full-scope de novo challenge. Prefer full-scope over diff-only when confidence matters. Do not use for trivial wording or final readiness without a review question."
 ---
 
 # Adversarial Reviewer

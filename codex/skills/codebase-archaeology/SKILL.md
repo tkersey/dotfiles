@@ -1,6 +1,6 @@
 ---
 name: codebase-archaeology
-description: Codex-native workflow for systematically exploring unfamiliar codebases and building reusable technical architecture summaries. Use when onboarding to a repo, understanding legacy code, mapping data flow, finding entry points, or running explicit parallel Codex subagent exploration.
+description: "Systematically explore unfamiliar codebases and build reusable architecture summaries. Use for repo onboarding, legacy-code understanding, data-flow maps, entry-point discovery, or explicit parallel Codex subagent exploration."
 ---
 
 # Codebase Archaeology — Codex Native

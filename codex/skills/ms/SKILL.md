@@ -1,6 +1,6 @@
 ---
 name: ms
-description: Create, update, or refactor Codex skills in this repo, including SKILL.md, frontmatter trigger text, agents/openai.yaml, and scripts/references/assets. Use when asked to create a skill or make direct in-place edits to a skill now; do not use for read-only analysis or "should we update this?" turns, and treat $refine as the higher-level entrypoint for evidence-driven refinement of an existing skill.
+description: "Create, update, or refactor Codex skills in this repo: SKILL.md, frontmatter triggers, agents/openai.yaml, scripts, references, and assets. Use for creating a skill or direct in-place skill edits now; not for read-only analysis or \"should we update this?\" turns. Treat `$refine` as higher-level evidence-driven existing-skill refinement."
 ---
 
 # ms

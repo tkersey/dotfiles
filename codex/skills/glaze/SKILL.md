@@ -1,6 +1,6 @@
 ---
 name: glaze
-description: "Run one explicit escalation pass using the original glaze prompt words verbatim, requiring a material new frame, invariant, mechanism, or artifact. Use when prompts say `$glaze`, when the first answer feels merely adequate, or when you want the exact original rhetoric preserved while pushing for a materially stronger direction."
+description: "Run one explicit glaze escalation pass verbatim, requiring a material new frame, invariant, mechanism, or artifact. Use for `$glaze`, merely adequate first answers, or preserving original rhetoric while pushing to a materially stronger direction."
 ---
 
 # Glaze

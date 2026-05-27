@@ -1,6 +1,6 @@
 ---
 name: codebase-audit
-description: Codex-native domain codebase auditing for security, UX/accessibility, performance, API design, copy, and CLI quality. Use when auditing code, assessing quality, finding issues, pre-launch review, or running an explicit parallel Codex subagent audit.
+description: "Run Codex-native domain audits for security, UX/accessibility, performance, API design, copy, and CLI quality. Use for code audits, quality assessment, issue finding, pre-launch review, or explicit parallel Codex subagent audits."
 ---
 
 # Codebase Audit — Codex Native

@@ -1,6 +1,6 @@
 ---
 name: dominance
-description: "Adversarially evaluate candidate moves and either name a dominant winner or reject the set. Use after `$accretive` or any ideation pass when you need a strict dominance test, anti-theater filtering, and concrete proof requirements."
+description: "Adversarially judge candidate moves: name a dominant winner or reject the set. Use after `$accretive` or ideation when strict dominance, anti-theater filtering, and concrete proof requirements are needed."
 ---
 
 # Dominance

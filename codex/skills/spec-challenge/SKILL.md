@@ -1,7 +1,6 @@
 ---
 name: spec-challenge
-description: >
-  Run exactly one strongest project-specific invariant/adversarial challenge against a generated spec or plan, then decide whether the spec must be regenerated. Use when prompts say "$spec-challenge", "A+ this plan", "pressure-test the invariant", "does this preserve X", "single strongest critique", or after $plan before implementation.
+description: "Run exactly one strongest project-specific invariant/adversarial challenge against a generated spec or plan, then decide whether to regenerate it. Use for `$spec-challenge`, A+ this plan, pressure-test the invariant, does this preserve X, single strongest critique, or after `$plan` before implementation."
 ---
 
 # Spec Challenge

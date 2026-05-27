@@ -1,6 +1,6 @@
 ---
 name: land
-description: "Land GitHub PRs end-to-end: update branch/PR, confirm review conversations are resolved, monitor CI until green, squash-merge, and clean up local/remote state. Use when asked to $land or to finish/land/merge/close a PR, watch checks or runs, squash-merge, delete the branch, and sync local state."
+description: "Land GitHub PRs end-to-end: update branch/PR, confirm reviews resolved, monitor CI until green, squash-merge, and clean local/remote state. Use for `$land`, finish/land/merge/close a PR, watch checks/runs, squash-merge, delete branch, or sync local state."
 ---
 
 # Land

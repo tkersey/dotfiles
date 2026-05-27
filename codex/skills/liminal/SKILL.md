@@ -1,14 +1,6 @@
 ---
 name: liminal
-description: >
-  Use for expert work where delimited continuations or defunctionalization are central:
-  comparing shift/reset, prompt/control, prompts, subcontinuations, effect handlers as
-  control operators, CPS translations, answer-type modification, abstract-machine
-  derivations, first-orderization of higher-order interpreters, continuation runtime
-  strategies, or source-backed study and research roadmaps. Do not use for ordinary
-  async/await, generators, monads, compiler optimization, PL theory, or functional-
-  programming questions unless the user explicitly asks about delimited control,
-  continuations, CPS/control translation, or defunctionalization.
+description: "Use when delimited continuations or defunctionalization are central: shift/reset, prompt/control, prompts, subcontinuations, effect handlers as control operators, CPS translations, answer-type modification, abstract machines, first-orderizing higher-order interpreters, continuation runtimes, or source-backed study/research roadmaps. Do not use for ordinary async/await, generators, monads, compiler optimization, PL theory, or functional-programming questions unless delimited control, continuations, CPS/control translation, or defunctionalization is explicit."
 ---
 
 # Liminal

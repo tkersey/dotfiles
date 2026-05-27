@@ -1,6 +1,6 @@
 ---
 name: deckset
-description: Generate Deckset markdown presentations from conversation context with high semantic fidelity. Use when requests mention decks, slides, presentations, speaker notes, or Deckset markdown output, especially when converting an existing conversation into a narrative slide flow. This skill checks upstream Deckset docs/examples before drafting, without tracking volatile refresh metadata.
+description: "Generate high-fidelity Deckset markdown presentations from conversation context. Use for decks, slides, presentations, speaker notes, Deckset markdown, or converting a conversation into a narrative slide flow. Checks upstream Deckset docs/examples without volatile refresh metadata."
 ---
 
 # Deckset

@@ -1,16 +1,6 @@
 ---
 name: lift
-description: >-
-  Uber performance optimization skill: measurement-driven latency, throughput,
-  memory/GC, tail-behavior, algorithmic, systems, and micro-architectural
-  optimization with profile evidence, score-gated experiments, behavior proofs,
-  golden-output oracles, and regression guards. Use when the user asks to
-  optimize, speed up, reduce p95/p99 latency, increase throughput/QPS, lower CPU,
-  memory, allocations, GC pauses, syscalls, round trips, or asks for profiling,
-  bottleneck analysis, algorithmic improvement, or a benchmarked perf pass. If a
-  runnable workload is unavailable, operate in explicitly labelled UNMEASURED
-  mode with exact benchmark/profiling/proof commands. Zig-only CLI iteration for
-  bench_stats/perf_report must be proven before shipping.
+description: "Performance optimization with measurement-driven latency, throughput, memory/GC, tail, algorithmic, systems, and micro-architectural work; profile evidence, score-gated experiments, behavior proofs, golden oracles, and regression guards. Use for optimize, speed up, reduce p95/p99, increase throughput/QPS, lower CPU/memory/allocations/GC/syscalls/round trips, profiling, bottlenecks, algorithmic improvement, or benchmarked perf passes. Without a runnable workload, operate in labelled UNMEASURED mode with exact benchmark/profiling/proof commands. Prove Zig-only bench_stats/perf_report CLI iteration before shipping."
 ---
 
 # Lift

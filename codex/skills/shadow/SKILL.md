@@ -1,6 +1,6 @@
 ---
 name: shadow
-description: "Follow one Codex session until it stops by reading watched-session evidence only through $seq, then apply a named skill as the lens for interpretation, reporting, proposal, or explicit action. Trigger when asked to shadow, tail, watch, follow, monitor, supervise, or companion a single session id/path with a target skill such as $tune, $seq, $ship, $pdf, or another skill."
+description: "Follow one Codex session until it stops by reading watched-session evidence only through `$seq`, then apply a named skill as interpretation/reporting/proposal/action lens. Trigger for shadow, tail, watch, follow, monitor, supervise, or companion a single session id/path with target skill such as `$tune`, `$seq`, `$ship`, `$pdf`, or another skill."
 ---
 
 # Shadow

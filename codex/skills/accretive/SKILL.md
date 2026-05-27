@@ -1,6 +1,6 @@
 ---
 name: accretive
-description: "Activate maximal ambition, include a non-obvious candidate frame, then choose one dominant accretive move grounded in the current project state. Preserve the original accretive prompt wording exactly except for an injectable target parameter."
+description: "Activate maximal ambition, add a non-obvious frame, then choose one dominant accretive move grounded in current project state. Preserve original accretive prompt wording verbatim except for one injectable target parameter."
 ---
 
 # Accretive

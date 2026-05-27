@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Finalize work after validation: confirm a signal, capture proof in the PR description, and open a PR (no merge). Use when asked to run `$ship`, ship/finalize a branch, prepare or open a PR without merging, or publish validation proof before handoff."
+description: "Finalize work after validation: confirm a signal, capture proof in the PR description, and open a PR without merging. Use for `$ship`, ship/finalize a branch, prepare/open a PR, or publish validation proof before handoff."
 ---
 
 # Ship

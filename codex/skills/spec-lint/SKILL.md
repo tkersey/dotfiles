@@ -1,7 +1,6 @@
 ---
 name: spec-lint
-description: >
-  Lint generated implementation specs and proposed plans for missing non-goals, weak proof, unmapped requirements, absent rollback/abort criteria, unresolved material questions, missing primary invariant, oversized audit prose, or plan-churn signals. Use when prompts say "$spec-lint", "lint this spec", "is this plan implementation-ready", "check proof/rollback/traceability", or "is this more plan or better plan".
+description: "Lint generated implementation specs/proposed plans for missing non-goals, weak proof, unmapped requirements, absent rollback/abort criteria, unresolved material questions, missing primary invariant, oversized audit prose, or plan churn. Use for `$spec-lint`, lint this spec, implementation-ready plan checks, proof/rollback/traceability checks, or is this more plan or better plan."
 ---
 
 # Spec Lint

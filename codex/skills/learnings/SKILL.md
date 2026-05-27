@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: "Capture, browse, and query evidence-backed execution learnings in `.learnings.jsonl`. Trigger cues/keywords: `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, before commit/PR, after tests pass, fail-to-pass, strategy pivot, footgun, retry loop."
+description: "Capture, browse, and query evidence-backed execution learnings in `.learnings.jsonl`. Trigger cues: `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, before commit/PR, after tests pass, fail-to-pass, strategy pivot, footgun, retry loop."
 ---
 
 # Learnings

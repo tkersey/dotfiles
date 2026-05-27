@@ -1,6 +1,6 @@
 ---
 name: lean
-description: "Use this skill for Lean 4 work: writing programs, fixing proofs, formalizing specifications, proving correctness of implementations, modeling external software behavior, handling termination proofs, auditing trust boundaries, using mathlib effectively, and diagnosing Lake/toolchain issues. Do not use it for Coq, Isabelle, Agda, or generic pseudocode unless the user explicitly asks for a comparison."
+description: "Use for Lean 4 work: programs, proof fixes, formal specs, implementation correctness proofs, external behavior models, termination proofs, trust-boundary audits, mathlib, and Lake/toolchain diagnosis. Do not use for Coq, Isabelle, Agda, or generic pseudocode unless comparison is requested."
 ---
 
 # Lean

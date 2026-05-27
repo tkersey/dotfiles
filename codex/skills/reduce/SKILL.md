@@ -1,12 +1,6 @@
 ---
 name: reduce
-description: >
-  De-abstraction audit for over-engineered codebases. Use when change latency or agent difficulty
-  comes from frameworks, plugins, DI, codegen, task runners, config indirection, ORMs, GraphQL,
-  monorepo/infra tooling, bundled web stacks, or the user asks to remove layers while preserving
-  behavior. Produces evidence-backed cut list, lower-level replacements, phased migration, proof
-  signals, rollback, and an essential-abstraction check so simplification does not flatten real
-  invariants or protocols.
+description: "Audit over-engineered codebases. Use when change latency or agent difficulty comes from frameworks, plugins, DI, codegen, task runners, config indirection, ORMs, GraphQL, monorepo/infra tooling, bundled web stacks, or requests to remove layers while preserving behavior. Produces evidence-backed cuts, lower-level replacements, phased migration, proof signals, rollback, and an essential-abstraction check."
 ---
 
 # Reduce

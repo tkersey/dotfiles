@@ -1,6 +1,6 @@
 ---
 name: negative-ledger
-description: Use this skill to capture, query, map, compact, reopen, and hand off evidence-backed failed hypotheses, reverted approaches, benchmark regressions, no-effect attempts, and strategy pivots so future work avoids repeating dead ends while still allowing stale evidence to be reopened when conditions change. Trigger cues include negative ledger, failed attempts, what have we already tried, avoid retrying dead ends, benchmark regressions, reverted approaches, strategy pivot, why did the last approach fail, before trying another optimization, and search-space pruning.
+description: "Capture, query, map, compact, reopen, and hand off evidence-backed failed hypotheses, reverted approaches, benchmark regressions, no-effect attempts, and strategy pivots so future work avoids repeated dead ends while stale evidence remains reopenable. Trigger cues: negative ledger, failed attempts, what have we already tried, avoid retrying dead ends, benchmark regressions, reverted approaches, strategy pivot, why did the last approach fail, before another optimization, search-space pruning."
 ---
 
 # Negative Ledger

@@ -1,7 +1,6 @@
 ---
 name: spec-gate
-description: >
-  Decide whether a grill/handoff packet is complete enough for $plan or spec generation. Use when prompts say "$spec-gate", "is this ready to plan", "block planning", "handoff packet", "decision packet", or when a spec may be premature because open questions, proof bar, scope, non-goals, or rollout/rollback are underspecified.
+description: "Decide whether a grill/handoff packet is complete enough for `$plan` or spec generation. Use for `$spec-gate`, is this ready to plan, block planning, handoff packet, decision packet, or premature specs with underspecified questions, proof bar, scope, non-goals, or rollout/rollback."
 ---
 
 # Spec Gate

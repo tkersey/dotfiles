@@ -1,6 +1,6 @@
 ---
 name: parse
-description: Analyze a local codebase and infer the architecture it is actually using, including repo kind, best-fit dominant architecture, directly evidenced coexisting patterns, major subsystem exceptions, confidence, docs-vs-code drift, and repo-fit hints for downstream agents. Use when prompts ask what architecture a repo uses, whether it is really hexagonal or just layered, what subtle patterns shape a repo or slice, how a target slice fits a hybrid monorepo, whether documented architecture matches implementation, or when `$tk` needs a repo-dialect preflight before making a minimal change.
+description: "Infer a local codebase's actual architecture: repo kind, dominant architecture, evidenced coexisting patterns, major subsystem exceptions, confidence, docs-vs-code drift, and repo-fit hints. Use for prompts asking what architecture a repo uses, whether it is hexagonal or layered, what subtle patterns shape a repo/slice, how a slice fits a hybrid monorepo, whether docs match implementation, or when `$tk` needs repo-dialect preflight before a minimal change."
 ---
 
 # Parse

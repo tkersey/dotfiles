@@ -1,18 +1,6 @@
 ---
 name: review-adjudication
-description: >-
-  Discriminately adjudicate PR review comments before implementation. Treat each
-  comment as a claim to test, preserve raw comment identity and input inventory,
-  bind decisions to artifact state, build the strongest no-change countercase,
-  separate valid concerns from valid proposed fixes, recover PR rationale with
-  explicit `$seq` when needed, and emit a stale-proof gated ledger plus
-  resolve-selection map that decides what to address, validate only, resolve
-  with proof only, rebut, defer, investigate, or route. Trigger for
-  `$review-adjudication`, review the review, adjudicate PR comments, are these
-  comments relevant, which comments matter, should we act on these comments,
-  gate review comments before implementation, refine this list to just those
-  worth resolving, or select review comments to resolve. Not for implementing
-  fixes, writing rebuttals only, or final merge closure.
+description: "Adjudicate PR review comments before implementation. Treat comments as claims, preserve raw identity/input inventory, bind decisions to artifacts, build strongest no-change countercase, separate valid concerns from proposed fixes, recover PR rationale with `$seq` when needed, and emit a stale-proof ledger plus resolve-selection map: address, validate only, resolve with proof only, rebut, defer, investigate, or route. Trigger for `$review-adjudication`, review the review, adjudicate PR comments, relevance/materiality questions, gate review comments before implementation, refine to comments worth resolving, or select comments to resolve. Not for implementing fixes, writing rebuttals only, or final merge closure."
 ---
 
 # Review Adjudication

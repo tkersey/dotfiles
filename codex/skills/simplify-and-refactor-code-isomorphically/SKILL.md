@@ -1,7 +1,7 @@
 ---
 name: simplify-and-refactor-code-isomorphically
 description: >-
-  Shrink and unify code without changing behavior. Use when: simplify, refactor, reduce
+  Shrink/unify code without behavior change. Use when: simplify, refactor, reduce
   duplication, remove lines, extract helper, reuse component, DRY, collapse, better abstraction.
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: resolve
-description: Resolve the current branch by repeatedly running the selected Codex review backend through a deterministic review driver, adjudicating every finding and PR comment, fixing actionable issues, requiring three consecutive clean reviews, validating, committing, pushing, and sweeping PR comments.
+description: "Resolve the current branch by repeatedly running the selected Codex review backend through a deterministic driver, adjudicating findings and PR comments, fixing actionable issues, requiring three clean reviews, validating, committing, pushing, and sweeping PR comments."
 ---
 
 # resolve

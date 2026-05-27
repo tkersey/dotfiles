@@ -1,6 +1,6 @@
 ---
 name: prove-it
-description: Host-driven ten-turn proof/disproof gauntlet for absolute claims. A valid use always runs exactly 10 separate assistant turns, one numbered round per turn, through the bundled autoturn driver. No step, pause, incremental, single-reply, partial-run, or early-terminal mode is valid.
+description: "Host-driven ten-turn proof/disproof gauntlet for absolute claims. Valid use runs exactly 10 separate assistant turns, one numbered round each, through the bundled autoturn driver. No step, pause, incremental, single-reply, partial-run, or early-terminal mode."
 ---
 
 # Prove It

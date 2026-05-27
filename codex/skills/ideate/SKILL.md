@@ -1,6 +1,6 @@
 ---
 name: ideate
-description: Mine a codebase for breakthrough, evidence-backed ideas for changes, additions, refactors, simplifications, DX, UX, reliability, performance, or architecture cleanup. Always run mandatory Glaze and ASI escalation gates before choosing a direction. Output a ranked opportunity portfolio, escalation ledger, and plan seed; do not implement or create tickets.
+description: "Mine a codebase for breakthrough, evidence-backed changes, additions, refactors, simplifications, DX, UX, reliability, performance, or architecture cleanup. Always run Glaze and ASI escalation gates before choosing. Output ranked opportunities, escalation ledger, and plan seed; do not implement or create tickets."
 ---
 
 # Ideate

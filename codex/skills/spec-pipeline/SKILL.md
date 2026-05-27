@@ -1,7 +1,6 @@
 ---
 name: spec-pipeline
-description: >
-  Turn ambiguous project, architecture, implementation, or product requests into decision-complete implementation specs by researching first, asking only material judgment questions, gating readiness before planning, compiling a spec, running one invariant challenge, and linting the final artifact. Use when prompts say "$spec-pipeline", "write a spec", "turn this plan into a spec", "grill me then spec", "spec automation", or when $grill-me and $plan need a strict handoff boundary. Never emit a proposed_plan block.
+description: "Turn ambiguous project, architecture, implementation, or product requests into decision-complete implementation specs by researching first, asking only material judgment questions, gating readiness before planning, compiling a spec, running one invariant challenge, and linting final output. Use for `$spec-pipeline`, write a spec, turn this plan into a spec, grill me then spec, spec automation, or strict `$grill-me` to `$plan` handoff. Never emit a proposed_plan block."
 metadata:
   version: "1.1.0"
   hardened_from: "2026-05-08 spec-pipeline forensics report"

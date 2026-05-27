@@ -1,6 +1,6 @@
 ---
 name: cas
-description: Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server smoke checks, direct thread/turn request execution, detached review-session control, multi-instance fanout, and swarm conformance checks around `$st` claim sets and retry policy.
+description: "Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server smoke checks, direct thread/turn execution, detached review control, multi-instance fanout, and `$st` swarm conformance/retry-policy checks."
 ---
 
 # cas (Zig App-Server Control)

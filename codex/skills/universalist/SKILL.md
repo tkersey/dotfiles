@@ -1,16 +1,6 @@
 ---
 name: universalist
-description: >
-  Use when repeated validation, policy branching, protocol or state-machine drift,
-  generated provenance loss, callback/effect boundaries, or semantic-consumer
-  context needs point to a structural refactor instead of local polish. Select
-  one signal, one world boundary, and the smallest honest construction: typed
-  state, free syntax, observations/projections, lifted interpreter or handler,
-  explicit IR, law tests, canonical boundary artifact, Composition Certificate,
-  Boundary Normal Form step, or Exact Context/Context Certificate. Prefer
-  adapter-first staging and name one falsifiable proof signal; escalate to
-  Kan/codensity/free-builder mechanics only after a real cross-world boundary is
-  identified.
+description: "Use when repeated validation, policy branching, protocol/state-machine drift, generated provenance loss, callback/effect boundaries, or semantic-consumer context point to structural refactor over local polish. Select one signal, one world boundary, and the smallest honest construction: typed state, free syntax, observations/projections, lifted interpreter/handler, explicit IR, law tests, canonical boundary artifact, Composition Certificate, Boundary Normal Form step, or Exact Context/Context Certificate. Prefer adapter-first staging and one falsifiable proof signal; escalate to Kan/codensity/free-builder mechanics only after a real cross-world boundary is identified."
 ---
 
 # Universalist

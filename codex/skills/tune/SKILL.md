@@ -1,6 +1,6 @@
 ---
 name: tune
-description: "Diagnose and optimize existing Codex skills from orthogonal evidence sources. Trigger when asked to use `$tune`, analyze in-flight or historical skill usage, compare intended vs observed behavior, inspect missed/false/partial activations, mine `$seq` session evidence, classify skill gaps, produce a `$refine` brief, or apply a validated edit. Stop at audit/proposal for analysis asks; only apply, commit, and push when explicitly asked to change files now."
+description: "Diagnose and optimize Codex skills from orthogonal evidence. Trigger for `$tune`, in-flight or historical skill usage analysis, intended-vs-observed behavior, missed/false/partial activations, `$seq` session evidence, skill-gap classification, `$refine` briefs, or applying a validated edit. Stop at audit/proposal for analysis asks; apply, commit, and push only when explicitly asked."
 ---
 
 # Tune

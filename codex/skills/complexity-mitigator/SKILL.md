@@ -1,6 +1,6 @@
 ---
 name: complexity-mitigator
-description: Mitigate incidental complexity in existing code when control flow is tangled, nesting is deep, names are hard to parse, or reasoning requires cross-file hops. Use when a review stalls on readability, you need an analysis-first refactor plan before edits, or you want essential-vs-incidental verdicts, dominant-risk triage, ranked simplification steps, one visibility artifact, and a TRACE assessment. Do not use for greenfield requirements discovery, architecture selection, or delivery planning.
+description: "Mitigate incidental complexity when control flow is tangled, names are opaque, or reasoning crosses files. Use when reviews stall on readability, analysis-first refactor planning is needed, or you want essential-vs-incidental verdicts, dominant-risk triage, ranked simplification steps, one visibility artifact, and TRACE assessment. Do not use for greenfield requirements, architecture selection, or delivery planning."
 ---
 
 # Complexity Mitigator

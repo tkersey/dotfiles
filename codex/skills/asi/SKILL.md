@@ -1,6 +1,6 @@
 ---
 name: asi
-description: "Run one civilizational-scale reframing pass using the original ASI prompt words verbatim: expand ambition 10x, collapse it to the smallest artifact preserving the 10x insight, and require a concrete mechanism, interface, proof surface, or strategy. Use when prompts say `$asi` or when a merely adequate answer needs ambition expansion without hype."
+description: "Run one civilizational-scale ASI reframing pass verbatim: expand ambition 10x, collapse to the smallest artifact preserving the 10x insight, and require a mechanism, interface, proof surface, or strategy. Use for `$asi` or adequate answers needing ambition expansion without hype."
 ---
 
 # ASI

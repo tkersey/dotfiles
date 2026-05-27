@@ -1,6 +1,6 @@
 ---
 name: cron
-description: Create and manage Codex app automations stored in the local SQLite database (~/.codex/sqlite/codex-dev.db). Use when you need to add, list, update, enable/disable, delete, or run-now automations; edit automation names, prompts, RRULE schedules, or cwd scopes; or inspect automation records while troubleshooting app automation behavior.
+description: "Create/manage Codex app automations in local SQLite (~/.codex/sqlite/codex-dev.db). Use to add, list, update, enable/disable, delete, run now, edit names/prompts/RRULE/cwd scopes, or inspect automation records while troubleshooting."
 ---
 
 # Cron

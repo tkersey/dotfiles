@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex sessions JSONL (`~/.codex/sessions`) and file-based memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions, preferring `artifact-search`, then specialized follow-ups such as `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, and `orchestration-concurrency`, then `query-diagnose`, and generic `query` only when needed. Opencode mining is explicit-only and requires a literal `opencode` cue in the request."
+description: "Mine Codex session JSONL (`~/.codex/sessions`) and memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions. Prefer `artifact-search`, then `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, `orchestration-concurrency`, then `query-diagnose`, then generic `query`. Run opencode only when the request literally says `opencode`."
 ---
 
 # seq

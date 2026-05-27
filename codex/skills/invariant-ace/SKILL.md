@@ -1,6 +1,6 @@
 ---
 name: invariant-ace
-description: "Turn 'should never happen' into 'cannot happen' by defining owned inductive invariants and enforcing them at parse/construct/API/DB/lock/txn boundaries with a verification signal. Use when prompts mention invariants, impossible states, validation sprawl, cache/index drift, idempotency/versioning, retries/duplicates/out-of-order events, race/linearization bugs, loop correctness, or hardening another implementation workflow with invariant checks first."
+description: "Turn 'should never happen' into 'cannot happen' by defining owned inductive invariants and enforcing them at parse/construct/API/DB/lock/txn boundaries with proof. Use for invariants, impossible states, validation sprawl, cache/index drift, idempotency/versioning, retries/duplicates/out-of-order events, races, loop correctness, or invariant-first hardening."
 ---
 
 # Invariant Ace
