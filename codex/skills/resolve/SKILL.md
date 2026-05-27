@@ -1,6 +1,6 @@
 ---
 name: resolve
-description: "Resolve the current branch by repeatedly running the selected Codex review backend through a deterministic driver, adjudicating findings and PR comments, fixing actionable issues, requiring three clean reviews, validating, committing, pushing, and sweeping PR comments."
+description: "Resolve the current branch with a CAS-first review loop, native review as fallback-only, deterministic base/HEAD pinning, PR comment adjudication, validation, commit, push, and final PR sweep."
 ---
 
 # resolve
@@ -12,6 +12,25 @@ Resolve the current branch to a review-clean, PR-comment-reviewed, validated, co
 Use this skill when the user wants Codex to keep reviewing and fixing a branch until the selected Codex review backend produces three consecutive review runs with zero findings/comments, then validate, commit, push, and process pull request comments with the same adjudication and fixed-point flow.
 
 This skill must not call `codex review --base main` directly as its normal review primitive. Always run Codex review through the review driver defined below so the review backend, review base, `HEAD`, and result receipts are discovered, pinned, recorded, and reset correctly when branch state changes.
+
+## Entry guard
+
+Before any review command runs, prove this run has loaded enough of this skill to include `## Backend selection` and `## Non-negotiables`. A partial read of only the top of this file is not enough to operate `$resolve`.
+
+Record one of these facts before the first review attempt:
+
+- CAS preflight/review was attempted through the review driver and produced a receipt or a concrete failure;
+- the user explicitly requested native review for the current run.
+
+The following facts are not native fallback conditions:
+
+- the hosted PR has no actionable review threads;
+- the hosted PR has no checks or an empty `statusCheckRollup`;
+- the hosted PR only has a Codex usage-limit notice;
+- a local de novo review signal would be useful;
+- `gh pr view` reports a clean merge state or no requested changes.
+
+If a native review has already run before a CAS preflight/fallback fact was recorded, treat that review as invalid for `$resolve` streak accounting. Do not count it as a clean review, do not use it to justify backend choice, and restart the review loop from the CAS-first entry guard. If the invalidly ordered native run found a real issue, adjudicate and fix the issue on its merits, then restart the CAS-first loop.
 
 ## Completion criteria
 
@@ -130,6 +149,8 @@ If a clearly applicable language skill cannot be loaded, record that as a review
 - The user explicitly requests native review for the current run.
 
 Do not choose native review merely because it is simpler, faster to type, historically common, or because the run only needs a one-shot verdict. `$resolve` is a multi-cycle remediation workflow, and its normal review primitive is `cas review_session lane review ... --json --fallback none`.
+
+Hosted PR state does not select the review backend. Missing PR checks, no unresolved PR comments, clean PR review state, unavailable hosted review, or Codex usage-limit comments may affect PR-sweep adjudication, but they do not authorize native review. Native fallback requires CAS-specific failure evidence or an explicit user request.
 
 When native fallback is used, record the fallback condition in `last_review_invocations`, reset any CAS-backed clean-review streak, classify the backend as `native-cli` or `cas-native-fallback` as applicable, and keep the same base/HEAD pinning rules.
 
