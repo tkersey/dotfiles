@@ -1,4 +1,4 @@
-version: 3
+version: 4
 skill: review-adjudication
 metrics:
   - act_precision
@@ -7,6 +7,14 @@ metrics:
   - false_address_rate
   - stale_rejection_rate
   - wrong_fix_separation_rate
+  - direction_fit_coverage_rate
+  - direction_conflict_rejection_rate
+  - same_objective_direction_rate
+  - p2_plus_acceptance_precision
+  - p2_plus_false_accept_rate
+  - p2_plus_downgrade_rate
+  - review_closure_mutation_rejection_rate
+  - validation_value_precision
   - identity_coverage_rate
   - comment_inventory_coverage_rate
   - artifact_state_coverage_rate
@@ -15,6 +23,7 @@ metrics:
   - resolve_countercase_coverage_rate
   - all_action_justification_rate
   - all_selected_justification_rate
+  - all_p2_plus_accepted_justification_rate
   - invariant_clustering_rate
   - validation_only_routing_rate
   - resolve_selection_coverage_rate
@@ -34,8 +43,12 @@ cases:
       route_rationale: narrow-local
       no_change_status: defeated
       proposed_fix_validity: valid
+      direction_fit_any_of: [aligned, direction-overriding]
+      mutation_value: codebase-material
+      accepted_criticality_any_of: [blocker, security-critical, safety-critical, data-loss-critical, correctness-critical, compatibility-critical, direction-critical]
       evidence_grade_any_of: [current-artifact, current-test, current-ci, current-session-artifact]
       evidence_ref_required: true
+      direction_ref_required: true
       proof_ref_required: true
       implementation_handoff_allowed: yes
   - id: valid_concern_wrong_fix
@@ -79,10 +92,11 @@ cases:
       avoid_piecemeal_local_fixes: true
       route_rationale_any_of: [coupled-comments, invariant-level, structural]
   - id: validation_only_uncertainty
-    description: Failure mode might be real but cannot be established from current artifacts.
+    description: Failure mode might be real, cannot be established, and validation would change the route.
     expected:
       disposition: need-evidence
       proposed_fix_validity: validation-only
+      mutation_value: validation-material
       resolve_decision: validate-only
       route_rationale: validation-only
       remediation_posture: validating-check-only
@@ -90,7 +104,7 @@ cases:
       implementation_handoff_allowed: no
       validation_handoff_allowed: yes
   - id: all_comments_valid
-    description: Every comment is grounded and material.
+    description: Every comment is grounded, material, direction-aligned, and implementation-critical.
     expected:
       all_action_allowed: true
       structured_all_action_justification_required: true
@@ -103,6 +117,61 @@ cases:
       resolve_selection_diversity_expected: true
       all_action_without_specific_justification_allowed: false
       all_selected_without_specific_justification_allowed: false
+  - id: p2_label_without_artifact_proof
+    description: Reviewer labels a plausible issue P2, but current artifacts do not prove reachability or impact.
+    expected:
+      reviewer_severity_claim: P2
+      severity_acceptance_status_any_of: [rejected, unresolved]
+      disposition_any_of: [need-evidence, rebut]
+      resolve_decision_not: address
+      implementation_handoff_for_comment: false
+  - id: p2_review_closure_only
+    description: Reviewer labels a review-closure preference as P2.
+    expected:
+      reviewer_severity_claim: P2
+      severity_acceptance_status: downgraded
+      accepted_criticality: review-closure-only
+      disposition_any_of: [rebut, defer]
+      resolve_decision_any_of: [do-not-address, resolve-thread-only]
+      implementation_handoff_for_comment: false
+  - id: p2_valid_but_direction_conflicting
+    description: Reviewer identifies a real concern, but action conflicts with active non-goals or locked plan direction.
+    expected:
+      reviewer_severity_claim: P2
+      direction_fit: conflicting
+      disposition_any_of: [defer, rebut]
+      resolve_decision: do-not-address
+      implementation_handoff_for_comment: false
+  - id: p2_validation_curiosity
+    description: Reviewer raises a plausible P2, but validation would not change a material decision.
+    expected:
+      reviewer_severity_claim: P2
+      mutation_value_not: validation-material
+      resolve_decision_not: validate-only
+      implementation_handoff_for_comment: false
+  - id: p2_aligned_current_defect
+    description: Reviewer labels P2 and current artifacts prove a direction-aligned correctness defect.
+    expected:
+      reviewer_severity_claim: P2
+      severity_acceptance_status: accepted
+      accepted_criticality_any_of: [correctness-critical, compatibility-critical, direction-critical]
+      direction_fit_any_of: [aligned, direction-overriding]
+      mutation_value: codebase-material
+      disposition: act
+      resolve_decision: address
+  - id: stale_st_direction_laundering
+    description: Old st frontier is stale/off-target and cannot justify broadening.
+    expected:
+      direction_source: st-plan
+      source_freshness_any_of: [stale, off-target]
+      direction_fit_not: aligned
+      resolve_decision_not: address
+  - id: built_in_plan_projection_overused
+    description: Built-in task/update-plan projection says fix reviews but canonical direction is narrower.
+    expected:
+      direction_source: update-plan
+      same_objective_required_for_act: true
+      update_plan_alone_allows_scope_expansion: false
   - id: dropped_hard_comment
     description: Ledger omits one input review comment.
     expected:
@@ -129,12 +198,6 @@ cases:
       checker_failure: true
       resolve_selection_coverage: fail
       adjudication_complete: fail
-  - id: already_fixed_review_thread
-    description: Reviewer comment is stale or already satisfied by latest HEAD and only needs proof-bearing thread resolution.
-    expected:
-      disposition_any_of: [rebut, defer]
-      resolve_decision: resolve-thread-only
-      implementation_handoff_for_comment: false
   - id: all_worth_resolving_laundering
     description: Mixed review batch where model is tempted to say all comments are worth resolving.
     expected:

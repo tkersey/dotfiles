@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Mechanical contract checker for Compact-Gated v3 review-adjudication outputs.
+"""Mechanical contract checker for Compact-Gated v4 review-adjudication outputs.
 
-The checker validates output shape, stale-proofing fields, evidence-reference
-obligations, resolve-selection anti-laundering, and downstream handoff safety. It
-cannot prove semantic correctness, but it blocks incomplete or over-selected
-adjudications before implementation routing.
+The checker validates output shape, stale-proofing fields, direction-state
+obligations, P2+ severity anti-laundering, evidence-reference obligations,
+resolve-selection anti-laundering, validation-value gating, and downstream
+handoff safety. It cannot prove semantic correctness, but it blocks incomplete,
+direction-conflicting, severity-laundered, or over-selected adjudications before
+implementation routing.
 """
 
 from __future__ import annotations
@@ -25,8 +27,10 @@ ALLOWED_RELEVANCE = {
     "unsupported",
     "out-of-scope",
     "preference-only",
+    "direction-conflicting",
+    "review-closure-only",
 }
-ALLOWED_DISPOSITION = {"act", "rebut", "defer", "need-evidence"}
+ALLOWED_DISPOSITION = {"act", "rebut", "defer", "need-evidence", "blocked"}
 ALLOWED_NO_CHANGE = {"defeated", "not-defeated", "unresolved"}
 ALLOWED_CONCERN = {"valid", "partial", "unsupported", "unknown"}
 ALLOWED_PROPOSED = {
@@ -74,12 +78,18 @@ ALLOWED_SCOPE_FIT = {"yes", "no", "partial", "unknown"}
 ALLOWED_RESOLUTION_VALUE = {
     "merge-blocking",
     "correctness-critical",
+    "direction-critical",
     "review-closure",
     "proof-only",
     "validation-needed",
     "low-value",
     "out-of-lane",
     "blocked",
+}
+IMPLEMENTATION_RESOLUTION_VALUES = {
+    "merge-blocking",
+    "correctness-critical",
+    "direction-critical",
 }
 ALLOWED_NO_CHANGE_DEFEATED = {"yes", "no", "unresolved"}
 ALLOWED_RESOLVE_DECISION = {
@@ -109,6 +119,58 @@ FIXED_POINT_RATIONALES = {
     "contentious",
     "likely-to-reopen",
 }
+ALLOWED_SEVERITY = {"p0", "p1", "p2", "p3", "p4", "unlabeled", "unknown"}
+P2_PLUS = {"p0", "p1", "p2"}
+ALLOWED_CRITICALITY = {
+    "blocker",
+    "security-critical",
+    "safety-critical",
+    "data-loss-critical",
+    "correctness-critical",
+    "compatibility-critical",
+    "direction-critical",
+    "review-closure-only",
+    "low-value",
+    "out-of-lane",
+    "unknown",
+}
+IMPLEMENTATION_CRITICALITY = {
+    "blocker",
+    "security-critical",
+    "safety-critical",
+    "data-loss-critical",
+    "correctness-critical",
+    "compatibility-critical",
+    "direction-critical",
+}
+ALLOWED_SEVERITY_STATUS = {"accepted", "downgraded", "rejected", "unresolved"}
+ALLOWED_DIRECTION_SOURCE = {
+    "user-current-instruction",
+    "proposed-plan",
+    "st-plan",
+    "update-plan",
+    "pr-body",
+    "issue",
+    "design-doc",
+    "repo-convention",
+    "seq-recovered",
+    "current-artifact",
+    "unknown",
+}
+ALLOWED_SOURCE_FRESHNESS = {"current", "stale", "off-target", "unknown"}
+ALLOWED_SAME_OBJECTIVE = {"yes", "no", "unknown"}
+ALLOWED_DIRECTION_FIT = {"aligned", "direction-overriding", "neutral", "conflicting", "unknown"}
+ACT_DIRECTION_FIT = {"aligned", "direction-overriding"}
+ALLOWED_DIRECTION_OVERRIDE = {"yes", "no", "not-needed", "unknown"}
+ALLOWED_MUTATION_VALUE = {
+    "codebase-material",
+    "validation-material",
+    "proof-only",
+    "reply-only",
+    "no-change",
+    "blocked",
+}
+ALLOWED_P2_ACCEPTED = {"yes", "no", "not-p2plus"}
 
 REQUIRED_LEDGER_FIELDS = [
     "id",
@@ -116,6 +178,12 @@ REQUIRED_LEDGER_FIELDS = [
     "location",
     "excerpt",
     "claim",
+    "severity",
+    "criticality",
+    "severitystatus",
+    "directionfit",
+    "directionref",
+    "mutationvalue",
     "concern",
     "proposed",
     "relevance",
@@ -124,6 +192,7 @@ REQUIRED_LEDGER_FIELDS = [
     "invariant",
     "evidencegrade",
     "evidenceref",
+    "severityproofref",
     "handoff",
 ]
 REQUIRED_DECISION_FIELDS = [
@@ -137,6 +206,28 @@ REQUIRED_DECISION_FIELDS = [
     "nochangedefeated",
     "minevidence",
 ]
+REQUIRED_DIRECTION_FIELDS = [
+    "id",
+    "directionsource",
+    "sourcefreshness",
+    "sameobjective",
+    "directionfit",
+    "directionref",
+    "activefrontier",
+    "nongoalconflict",
+    "directionoverride",
+    "minevidencedirection",
+]
+REQUIRED_SEVERITY_FIELDS = [
+    "id",
+    "severity",
+    "criticality",
+    "severitystatus",
+    "severityproofref",
+    "downgradereason",
+    "p2accepted",
+    "minevidenceseverity",
+]
 REQUIRED_RESOLVE_FIELDS = [
     "id",
     "decision",
@@ -147,17 +238,24 @@ REQUIRED_RESOLVE_FIELDS = [
 ]
 REQUIRED_GATE_FIELDS = [
     "artifactstatecoverage",
+    "directioncontextcoverage",
     "commentinventorycoverage",
     "identitycoverage",
     "decisiontestcoverage",
+    "directionfitcoverage",
+    "severityclaimcoverage",
+    "p2plusacceptancecoverage",
     "nochangecoverage",
     "dispositioncoverage",
     "proposedfixseparation",
     "evidencerefcoverage",
+    "validationvaluecoverage",
     "resolveselectioncoverage",
     "resolvecountercasecoverage",
     "handoffagendaconsistency",
     "selectionskewaudit",
+    "p2plusseverityaudit",
+    "directionfitaudit",
     "invariantpass",
     "specialistpacketcoverage",
     "acceptanceskewaudit",
@@ -168,10 +266,13 @@ REQUIRED_GATE_FIELDS = [
 ]
 REQUIRED_SECTIONS = [
     "Review Basis",
+    "Direction Context Ledger",
     "Comment Inventory",
     "PR Why Ledger",
     "Comment Ledger",
     "Decision Tests",
+    "Direction Tests",
+    "Severity Tests",
     "No-Change Countercases",
     "Governing Invariant Ledger",
     "Act On",
@@ -182,6 +283,8 @@ REQUIRED_SECTIONS = [
     "Resolve Countercases",
     "Invariant-Level Handoff",
     "Acceptance Skew Audit",
+    "P2+ Severity Audit",
+    "Direction Fit Audit",
     "Selection Skew Audit",
     "Adjudication Gate",
     "Handoff Agenda",
@@ -190,6 +293,7 @@ REQUIRED_SECTIONS = [
 OPTIONAL_SINGLETON_SECTIONS = {
     "All-Action Justification",
     "All-Selected Justification",
+    "All-P2+ Accepted Justification",
     "Specialist Packet Receipts",
 }
 ALL_ACTION_CHECKS = {
@@ -197,6 +301,8 @@ ALL_ACTION_CHECKS = {
     "unsupported": "unsupported",
     "preferenceonly": "preference-only",
     "outofscope": "out-of-scope",
+    "directionconflicting": "direction-conflicting",
+    "reviewclosureonly": "review-closure-only",
     "misdiagnosis": "misdiagnosis",
     "proposedfixvalidity": "proposed-fix validity",
     "validationonlyalternative": "validation-only alternative",
@@ -208,7 +314,17 @@ ALL_SELECTED_CHECKS = {
     "donotaddressalternative": "do-not-address alternative",
     "validatebeforemutationalternative": "validate-before-mutation alternative",
     "outofscopedeferalternative": "out-of-scope/defer alternative",
+    "directionconflictalternative": "direction-conflict alternative",
+    "reviewclosureonlyalternative": "review-closure-only alternative",
     "fixedpointoverroutingcheck": "fixed-point over-routing check",
+}
+ALL_P2_ACCEPTED_CHECKS = {
+    "independentartifactproof": "independent artifact proof",
+    "implementationgradecriticality": "implementation-grade criticality",
+    "directionalignment": "direction alignment",
+    "reviewclosureonlyrejection": "review-closure-only rejection",
+    "downgradealternative": "downgrade alternative",
+    "validationalternative": "validation alternative",
 }
 EMPTY_MARKERS = {"", "-", "—", "n/a", "na", "unknown", "missing", "none", "[]"}
 GENERIC_EVIDENCE = {
@@ -253,6 +369,18 @@ COLUMN_ALIASES = {
     "claim": "claim",
     "summary": "claim",
     "reviewclaim": "claim",
+    "reviewerseverityclaim": "severity",
+    "severityclaim": "severity",
+    "severity": "severity",
+    "acceptedcriticality": "criticality",
+    "criticality": "criticality",
+    "severityacceptancestatus": "severitystatus",
+    "severitystatus": "severitystatus",
+    "directionfit": "directionfit",
+    "direction": "directionfit",
+    "directionref": "directionref",
+    "planref": "directionref",
+    "mutationvalue": "mutationvalue",
     "concernvalidity": "concern",
     "concern": "concern",
     "proposedfixvalidity": "proposed",
@@ -272,6 +400,9 @@ COLUMN_ALIASES = {
     "evidenceref": "evidenceref",
     "evidencebasis": "evidenceref",
     "evidence": "evidenceref",
+    "severityproofref": "severityproofref",
+    "severityproof": "severityproofref",
+    "criticalityproofref": "severityproofref",
     "handoff": "handoff",
     "handoffaction": "handoff",
 }
@@ -304,6 +435,58 @@ DECISION_ALIASES = {
     "minevidencetochangemind": "minevidence",
 }
 
+DIRECTION_ALIASES = {
+    "idthread": "id",
+    "id": "id",
+    "commentid": "id",
+    "threadid": "id",
+    "directionsource": "directionsource",
+    "source": "directionsource",
+    "sourcefreshness": "sourcefreshness",
+    "directionsourcefreshness": "sourcefreshness",
+    "sameobjective": "sameobjective",
+    "directionfit": "directionfit",
+    "direction": "directionfit",
+    "directionref": "directionref",
+    "source_ref": "directionref",
+    "planref": "directionref",
+    "activefrontier": "activefrontier",
+    "frontier": "activefrontier",
+    "nongoalconflict": "nongoalconflict",
+    "nongoalsconflict": "nongoalconflict",
+    "directionoverride": "directionoverride",
+    "override": "directionoverride",
+    "minevidencetochangedirection": "minevidencedirection",
+    "minimumevidencetochangedirection": "minevidencedirection",
+    "minevidencedirection": "minevidencedirection",
+}
+
+SEVERITY_ALIASES = {
+    "idthread": "id",
+    "id": "id",
+    "commentid": "id",
+    "threadid": "id",
+    "reviewerseverityclaim": "severity",
+    "severityclaim": "severity",
+    "severity": "severity",
+    "acceptedcriticality": "criticality",
+    "criticality": "criticality",
+    "severityacceptancestatus": "severitystatus",
+    "severitystatus": "severitystatus",
+    "severityproofref": "severityproofref",
+    "severityproof": "severityproofref",
+    "criticalityproofref": "severityproofref",
+    "downgraderejectreason": "downgradereason",
+    "downgradereason": "downgradereason",
+    "rejectreason": "downgradereason",
+    "p2accepted": "p2accepted",
+    "p2plusaccepted": "p2accepted",
+    "p2acceptedstatus": "p2accepted",
+    "minevidencetoacceptseverity": "minevidenceseverity",
+    "minimumevidencetoacceptseverity": "minevidenceseverity",
+    "minevidenceseverity": "minevidenceseverity",
+}
+
 RESOLVE_ALIASES = {
     "idthread": "id",
     "id": "id",
@@ -329,17 +512,27 @@ RESOLVE_ALIASES = {
 GATE_ALIASES = {
     "artifactstatecoverage": "artifactstatecoverage",
     "artifactcoverage": "artifactstatecoverage",
+    "directioncontextcoverage": "directioncontextcoverage",
+    "directioncoverage": "directioncontextcoverage",
     "commentinventorycoverage": "commentinventorycoverage",
     "inventorycoverage": "commentinventorycoverage",
     "identitycoverage": "identitycoverage",
     "decisiontestcoverage": "decisiontestcoverage",
     "decisiontestscoverage": "decisiontestcoverage",
+    "directionfitcoverage": "directionfitcoverage",
+    "directiontestcoverage": "directionfitcoverage",
+    "severityclaimcoverage": "severityclaimcoverage",
+    "severitycoverage": "severityclaimcoverage",
+    "p2plusacceptancecoverage": "p2plusacceptancecoverage",
+    "p2acceptancecoverage": "p2plusacceptancecoverage",
     "nochangecoverage": "nochangecoverage",
     "dispositioncoverage": "dispositioncoverage",
     "proposedfixseparation": "proposedfixseparation",
     "fixseparation": "proposedfixseparation",
     "evidencerefcoverage": "evidencerefcoverage",
     "evidencecoverage": "evidencerefcoverage",
+    "validationvaluecoverage": "validationvaluecoverage",
+    "validationcoverage": "validationvaluecoverage",
     "resolveselectioncoverage": "resolveselectioncoverage",
     "resolvecoverage": "resolveselectioncoverage",
     "selectioncoverage": "resolveselectioncoverage",
@@ -349,6 +542,10 @@ GATE_ALIASES = {
     "agendaconsistency": "handoffagendaconsistency",
     "selectionskewaudit": "selectionskewaudit",
     "selectionaudit": "selectionskewaudit",
+    "p2plusseverityaudit": "p2plusseverityaudit",
+    "p2severityaudit": "p2plusseverityaudit",
+    "directionfitaudit": "directionfitaudit",
+    "directionaudit": "directionfitaudit",
     "invariantpass": "invariantpass",
     "specialistpacketcoverage": "specialistpacketcoverage",
     "acceptanceskewaudit": "acceptanceskewaudit",
@@ -531,6 +728,17 @@ def parse_id_list(value: str) -> List[str]:
     return [part.strip().strip('"\'`') for part in parts if part.strip().strip('"\'`')]
 
 
+def parse_kv_block(block: str) -> Dict[str, str]:
+    out: Dict[str, str] = {}
+    for line in block.splitlines():
+        stripped = re.sub(r"^[-*]\s+", "", line.strip())
+        if ":" not in stripped:
+            continue
+        key, value = stripped.split(":", 1)
+        out[norm_key(key)] = value.strip()
+    return out
+
+
 def parse_inventory(block: str) -> Dict[str, str]:
     inventory: Dict[str, str] = {}
     for line in block.splitlines():
@@ -554,7 +762,7 @@ def evidence_ref_is_concrete(value: str, *, allow_missing: bool = False) -> bool
         return False
     if re.search(r"[\w./-]+:\d+", value):
         return True
-    if any(token in normalized for token in ["test", "ci", "cmd", "command", "log", "thread", "pr#", "gh-", "github", "diff", "src/", "tests/", "commit"]):
+    if any(token in normalized for token in ["test", "ci", "cmd", "command", "log", "thread", "pr#", "gh-", "github", "diff", "src/", "tests/", "commit", "plan", "st-", "issue", "design", "proposed-plan"]):
         return True
     if "/" in value or "." in value or "#" in value:
         return True
@@ -581,7 +789,6 @@ def parse_handoff_agenda(block: str, known_ids: Sequence[str], errors: List[str]
         if canonical:
             fields[canonical] = value.strip()
     buckets = {"implementation": [], "validation": [], "proofonly": [], "notselected": [], "blocked": []}
-    known = set(known_ids)
     for bucket in buckets:
         if bucket not in fields:
             errors.append(f"Handoff Agenda missing `{bucket}` item bucket")
@@ -657,7 +864,7 @@ def validate_specialist_receipts(text: str, gate: Dict[str, str], errors: List[s
             return
         headers, rows = extract_first_table(section_text(text, "Specialist Packet Receipts"))
         header_keys = {norm_key(h) for h in headers}
-        required = {"role", "packetstatus", "artifactstatematch", "scopematch", "findingadded", "routechanged", "usedfor", "reason"}
+        required = {"role", "packetstatus", "artifactstatematch", "directionstatematch", "scopematch", "findingadded", "routechanged", "usedfor", "reason"}
         missing = sorted(required - header_keys)
         if missing:
             errors.append("Specialist Packet Receipts missing required columns: " + ", ".join(missing))
@@ -685,6 +892,14 @@ def check_adjudication(text: str) -> CheckResult:
         for key in ["branch", "head", "diff_digest", "comment_set_digest", "ci_state"]:
             if not re.search(rf"(?im)^\s*{re.escape(key)}\s*:", review_basis):
                 errors.append(f"artifact_state_id missing `{key}`")
+
+    direction_context = section_text(text, "Direction Context Ledger")
+    if "direction_state_id" not in direction_context:
+        errors.append("Direction Context Ledger missing direction_state_id block")
+    else:
+        for key in ["source", "source_ref", "source_freshness", "same_objective", "active_frontier", "locked_decisions", "non_goals", "compatibility_posture", "ownership_boundaries", "direction_confidence"]:
+            if not re.search(rf"(?im)^\s*{re.escape(key)}\s*:", direction_context):
+                errors.append(f"direction_state_id missing `{key}`")
 
     inventory = parse_inventory(section_text(text, "Comment Inventory"))
     for key in ["inputcount", "ledgercount", "inputids", "ledgerids", "missingids", "duplicateids", "synthesized"]:
@@ -743,7 +958,25 @@ def check_adjudication(text: str) -> CheckResult:
         errors.append("Decision Tests has no data rows")
     decisions = rows_by_id(decision_rows)
 
-    act_count = validation_count = reply_count = non_action_count = 0
+    direction_headers, direction_raw_rows = extract_first_table(section_text(text, "Direction Tests"))
+    direction_header_map, direction_rows = normalize_rows(direction_headers, direction_raw_rows, DIRECTION_ALIASES)
+    missing_direction_columns = [field for field in REQUIRED_DIRECTION_FIELDS if field not in direction_header_map]
+    if missing_direction_columns:
+        errors.append("Direction Tests missing required columns: " + ", ".join(missing_direction_columns))
+    if not direction_rows:
+        errors.append("Direction Tests has no data rows")
+    directions = rows_by_id(direction_rows)
+
+    severity_headers, severity_raw_rows = extract_first_table(section_text(text, "Severity Tests"))
+    severity_header_map, severity_rows = normalize_rows(severity_headers, severity_raw_rows, SEVERITY_ALIASES)
+    missing_severity_columns = [field for field in REQUIRED_SEVERITY_FIELDS if field not in severity_header_map]
+    if missing_severity_columns:
+        errors.append("Severity Tests missing required columns: " + ", ".join(missing_severity_columns))
+    if not severity_rows:
+        errors.append("Severity Tests has no data rows")
+    severities = rows_by_id(severity_rows)
+
+    act_count = validation_count = reply_count = blocked_count = p2_count = p2_accepted_count = 0
     ledger_by_id = rows_by_id(rows)
     nochange_section = section_text(text, "No-Change Countercases")
     resolve_countercase_section = section_text(text, "Resolve Countercases")
@@ -766,6 +999,13 @@ def check_adjudication(text: str) -> CheckResult:
         evidence_grade = norm_value(row.get("evidencegrade", ""))
         evidence_ref = row.get("evidenceref", "")
         handoff = norm_value(row.get("handoff", ""))
+        severity = norm_value(row.get("severity", ""))
+        criticality = norm_value(row.get("criticality", ""))
+        severity_status = norm_value(row.get("severitystatus", ""))
+        severity_proof_ref = row.get("severityproofref", "")
+        direction_fit = norm_value(row.get("directionfit", ""))
+        direction_ref = row.get("directionref", "")
+        mutation_value = norm_value(row.get("mutationvalue", ""))
 
         if relevance not in ALLOWED_RELEVANCE:
             errors.append(f"{label}: invalid relevance `{row.get('relevance', '')}`")
@@ -781,10 +1021,21 @@ def check_adjudication(text: str) -> CheckResult:
             errors.append(f"{label}: invalid evidence grade `{row.get('evidencegrade', '')}`")
         if handoff not in ALLOWED_HANDOFF:
             errors.append(f"{label}: invalid handoff `{row.get('handoff', '')}`")
+        if severity not in ALLOWED_SEVERITY:
+            errors.append(f"{label}: invalid reviewer severity claim `{row.get('severity', '')}`")
+        if criticality not in ALLOWED_CRITICALITY:
+            errors.append(f"{label}: invalid accepted criticality `{row.get('criticality', '')}`")
+        if severity_status not in ALLOWED_SEVERITY_STATUS:
+            errors.append(f"{label}: invalid severity acceptance status `{row.get('severitystatus', '')}`")
+        if direction_fit not in ALLOWED_DIRECTION_FIT:
+            errors.append(f"{label}: invalid direction fit `{row.get('directionfit', '')}`")
+        if mutation_value not in ALLOWED_MUTATION_VALUE:
+            errors.append(f"{label}: invalid mutation value `{row.get('mutationvalue', '')}`")
 
         decision = decisions.get(label)
         if not decision:
             errors.append(f"{label}: missing Decision Tests row")
+            resolutionvalue = ""
         else:
             grounded = norm_value(decision.get("grounded", ""))
             material = norm_value(decision.get("material", ""))
@@ -810,13 +1061,91 @@ def check_adjudication(text: str) -> CheckResult:
             if is_empty(decision.get("minevidence", "")):
                 errors.append(f"{label}: missing minimum evidence to change mind")
 
+        direction = directions.get(label)
+        if not direction:
+            errors.append(f"{label}: missing Direction Tests row")
+        else:
+            direction_source = norm_value(direction.get("directionsource", ""))
+            source_freshness = norm_value(direction.get("sourcefreshness", ""))
+            same_objective = norm_value(direction.get("sameobjective", ""))
+            direction_row_fit = norm_value(direction.get("directionfit", ""))
+            direction_row_ref = direction.get("directionref", "")
+            non_goal_conflict = norm_value(direction.get("nongoalconflict", ""))
+            direction_override = norm_value(direction.get("directionoverride", ""))
+            if direction_source not in ALLOWED_DIRECTION_SOURCE:
+                errors.append(f"{label}: invalid Direction Tests source `{direction_source}`")
+            if source_freshness not in ALLOWED_SOURCE_FRESHNESS:
+                errors.append(f"{label}: invalid Direction Tests source freshness `{source_freshness}`")
+            if same_objective not in ALLOWED_SAME_OBJECTIVE:
+                errors.append(f"{label}: invalid Direction Tests same objective `{same_objective}`")
+            if direction_row_fit not in ALLOWED_DIRECTION_FIT:
+                errors.append(f"{label}: invalid Direction Tests direction fit `{direction_row_fit}`")
+            if direction_row_fit != direction_fit:
+                errors.append(f"{label}: ledger direction fit `{direction_fit}` does not match Direction Tests `{direction_row_fit}`")
+            if direction_row_ref != direction_ref:
+                warnings.append(f"{label}: ledger direction ref differs from Direction Tests direction ref")
+            if non_goal_conflict not in {"yes", "no", "unknown"}:
+                errors.append(f"{label}: invalid Direction Tests non-goal conflict `{non_goal_conflict}`")
+            if direction_override not in ALLOWED_DIRECTION_OVERRIDE:
+                errors.append(f"{label}: invalid Direction Tests direction override `{direction_override}`")
+            if is_empty(direction.get("minevidencedirection", "")):
+                errors.append(f"{label}: missing minimum evidence to change direction")
+            if direction_fit == "aligned" and (source_freshness != "current" or same_objective != "yes"):
+                errors.append(f"{label}: aligned direction requires source_freshness=current and same_objective=yes")
+            if direction_fit == "direction-overriding" and direction_override != "yes":
+                errors.append(f"{label}: direction-overriding requires direction override=yes")
+            if direction_fit == "conflicting" and non_goal_conflict == "no":
+                warnings.append(f"{label}: direction-conflicting row has non-goal conflict=no; verify direction conflict basis")
+
+        severity_row = severities.get(label)
+        if not severity_row:
+            errors.append(f"{label}: missing Severity Tests row")
+        else:
+            severity_row_claim = norm_value(severity_row.get("severity", ""))
+            severity_row_criticality = norm_value(severity_row.get("criticality", ""))
+            severity_row_status = norm_value(severity_row.get("severitystatus", ""))
+            p2accepted = norm_value(severity_row.get("p2accepted", ""))
+            if severity_row_claim not in ALLOWED_SEVERITY:
+                errors.append(f"{label}: invalid Severity Tests severity `{severity_row_claim}`")
+            if severity_row_criticality not in ALLOWED_CRITICALITY:
+                errors.append(f"{label}: invalid Severity Tests criticality `{severity_row_criticality}`")
+            if severity_row_status not in ALLOWED_SEVERITY_STATUS:
+                errors.append(f"{label}: invalid Severity Tests status `{severity_row_status}`")
+            if p2accepted not in ALLOWED_P2_ACCEPTED:
+                errors.append(f"{label}: invalid Severity Tests p2+ accepted `{p2accepted}`")
+            if severity_row_claim != severity:
+                errors.append(f"{label}: ledger severity `{severity}` does not match Severity Tests `{severity_row_claim}`")
+            if severity_row_criticality != criticality:
+                errors.append(f"{label}: ledger criticality `{criticality}` does not match Severity Tests `{severity_row_criticality}`")
+            if severity_row_status != severity_status:
+                errors.append(f"{label}: ledger severity status `{severity_status}` does not match Severity Tests `{severity_row_status}`")
+            if is_empty(severity_row.get("minevidenceseverity", "")):
+                errors.append(f"{label}: missing minimum evidence to accept severity")
+            if severity in P2_PLUS and p2accepted == "not-p2plus":
+                errors.append(f"{label}: P2+ row cannot use p2+ accepted=not-p2plus")
+            if severity not in P2_PLUS and p2accepted != "not-p2plus":
+                warnings.append(f"{label}: non-P2+ row usually uses p2+ accepted=not-p2plus")
+            if severity in P2_PLUS and severity_status in {"downgraded", "rejected", "unresolved"} and is_empty(severity_row.get("downgradereason", "")):
+                errors.append(f"{label}: non-accepted P2+ row requires downgrade/reject reason")
+
+        if severity in P2_PLUS:
+            p2_count += 1
+            if severity_status == "accepted":
+                p2_accepted_count += 1
+                if criticality not in IMPLEMENTATION_CRITICALITY:
+                    errors.append(f"{label}: accepted P2+ severity requires implementation-grade criticality, got `{criticality}`")
+                if not evidence_ref_is_concrete(severity_proof_ref):
+                    errors.append(f"{label}: accepted P2+ severity requires concrete severity proof ref")
+            if severity_status in {"downgraded", "rejected", "unresolved"} and disposition == "act":
+                errors.append(f"{label}: P2+ cannot be `act` unless severity is accepted")
+
         if disposition == "act":
             act_count += 1
             if nochange != "defeated":
                 errors.append(f"{label}: `act` requires no-change status `defeated`")
             if concern not in {"valid", "partial"}:
                 errors.append(f"{label}: `act` requires concern validity `valid` or `partial`")
-            if relevance in {"stale-or-superseded", "unsupported", "out-of-scope", "preference-only"}:
+            if relevance in {"stale-or-superseded", "unsupported", "out-of-scope", "preference-only", "direction-conflicting", "review-closure-only"}:
                 errors.append(f"{label}: `act` conflicts with relevance `{relevance}`")
             if evidence_grade not in ACTION_EVIDENCE_GRADES:
                 errors.append(f"{label}: `act` requires current evidence grade, got `{evidence_grade}`")
@@ -824,6 +1153,18 @@ def check_adjudication(text: str) -> CheckResult:
                 errors.append(f"{label}: `act` requires concrete evidence ref")
             if proposed == "validation-only":
                 errors.append(f"{label}: `act` cannot use proposed-fix validity `validation-only`")
+            if direction_fit not in ACT_DIRECTION_FIT:
+                errors.append(f"{label}: `act` requires direction_fit aligned or direction-overriding")
+            if not evidence_ref_is_concrete(direction_ref):
+                errors.append(f"{label}: `act` requires concrete direction ref")
+            if mutation_value != "codebase-material":
+                errors.append(f"{label}: `act` requires mutation_value codebase-material")
+            if criticality not in IMPLEMENTATION_CRITICALITY:
+                errors.append(f"{label}: `act` requires implementation-grade accepted criticality, got `{criticality}`")
+            if criticality == "review-closure-only":
+                errors.append(f"{label}: review-closure-only cannot justify `act`")
+            if severity in P2_PLUS and severity_status != "accepted":
+                errors.append(f"{label}: P2+ `act` requires severity_acceptance_status accepted")
             if decision:
                 if norm_value(decision.get("grounded", "")) != "yes":
                     errors.append(f"{label}: `act` requires Decision Tests grounded=yes")
@@ -835,16 +1176,19 @@ def check_adjudication(text: str) -> CheckResult:
                     errors.append(f"{label}: `act` requires diagnosis correct or partially-correct")
                 if norm_value(decision.get("scopefit", "")) != "yes":
                     errors.append(f"{label}: `act` requires scope-fit=yes")
-                if norm_value(decision.get("resolutionvalue", "")) not in {"merge-blocking", "correctness-critical", "review-closure"}:
-                    errors.append(f"{label}: `act` requires resolution value merge-blocking, correctness-critical, or review-closure")
+                if resolutionvalue not in IMPLEMENTATION_RESOLUTION_VALUES:
+                    errors.append(f"{label}: `act` requires implementation-grade resolution value, got `{resolutionvalue}`")
                 if norm_value(decision.get("nochangedefeated", "")) != "yes":
                     errors.append(f"{label}: `act` requires no-change defeated=yes")
             if proposed in {"wrong-fix", "overbroad", "under-specified", "not-applicable"}:
                 if handoff not in IMPLEMENTATION_HANDOFFS:
                     errors.append(f"{label}: invalid proposed fix requires explicit replacement/invariant handoff")
                 warnings.append(f"{label}: proposed fix is `{proposed}`; verify replacement fix shape")
-        elif disposition in ALLOWED_DISPOSITION:
-            non_action_count += 1
+        elif disposition == "blocked":
+            blocked_count += 1
+        else:
+            if disposition in {"rebut", "defer"}:
+                reply_count += 1
 
         if proposed == "validation-only":
             validation_count += 1
@@ -852,6 +1196,8 @@ def check_adjudication(text: str) -> CheckResult:
                 errors.append(f"{label}: proposed-fix validity `validation-only` requires disposition `need-evidence`")
             if handoff != "route-to-fixed-point-driver":
                 errors.append(f"{label}: validation-only requires handoff `route-to-fixed-point-driver`")
+            if mutation_value != "validation-material":
+                errors.append(f"{label}: validation-only requires mutation_value validation-material")
         if disposition == "need-evidence":
             validation_count += 1
             if handoff == "route-to-accretive-implementer":
@@ -859,11 +1205,9 @@ def check_adjudication(text: str) -> CheckResult:
             if nochange == "defeated":
                 warnings.append(f"{label}: `need-evidence` usually should not have no-change status `defeated`")
         if disposition == "rebut":
-            reply_count += 1
             if handoff in IMPLEMENTATION_HANDOFFS:
                 errors.append(f"{label}: `rebut` cannot route to implementation handoff `{handoff}`")
         if disposition == "defer":
-            reply_count += 1
             if handoff == "route-to-accretive-implementer":
                 errors.append(f"{label}: `defer` cannot route directly to accretive-implementer")
 
@@ -911,11 +1255,24 @@ def check_adjudication(text: str) -> CheckResult:
         disposition = norm_value(ledger_row.get("disposition", ""))
         nochange = norm_value(ledger_row.get("nochange", ""))
         handoff = norm_value(ledger_row.get("handoff", ""))
+        severity = norm_value(ledger_row.get("severity", ""))
+        severity_status = norm_value(ledger_row.get("severitystatus", ""))
+        criticality = norm_value(ledger_row.get("criticality", ""))
+        direction_fit = norm_value(ledger_row.get("directionfit", ""))
+        mutation_value = norm_value(ledger_row.get("mutationvalue", ""))
         if decision_value == "address":
             if disposition != "act":
                 errors.append(f"{label}: resolve decision `address` requires disposition `act`")
             if nochange != "defeated":
                 errors.append(f"{label}: resolve decision `address` requires defeated no-change case")
+            if direction_fit not in ACT_DIRECTION_FIT:
+                errors.append(f"{label}: address requires direction_fit aligned or direction-overriding")
+            if mutation_value != "codebase-material":
+                errors.append(f"{label}: address requires mutation_value codebase-material")
+            if criticality not in IMPLEMENTATION_CRITICALITY:
+                errors.append(f"{label}: address requires implementation-grade accepted criticality")
+            if severity in P2_PLUS and severity_status != "accepted":
+                errors.append(f"{label}: P2+ address requires accepted severity")
             if route_rationale == "narrow-local":
                 if handoff == "route-to-fixed-point-driver" or "fixed-point-driver" in norm_value(next_action):
                     errors.append(f"{label}: narrow-local address must not route to fixed-point-driver")
@@ -928,6 +1285,10 @@ def check_adjudication(text: str) -> CheckResult:
                 errors.append(f"{label}: validate-only requires route rationale `validation-only`")
             if handoff != "route-to-fixed-point-driver":
                 errors.append(f"{label}: validate-only requires route-to-fixed-point-driver handoff")
+            if mutation_value != "validation-material":
+                errors.append(f"{label}: validate-only requires mutation_value validation-material")
+            if severity in P2_PLUS and direction_fit in {"conflicting", "neutral"}:
+                errors.append(f"{label}: P2+ validate-only requires aligned, direction-overriding, or unknown direction fit")
         elif decision_value == "resolve-thread-only":
             if disposition == "act":
                 errors.append(f"{label}: resolve-thread-only conflicts with disposition `act`")
@@ -935,16 +1296,22 @@ def check_adjudication(text: str) -> CheckResult:
                 errors.append(f"{label}: resolve-thread-only requires route rationale `proof-only-thread`")
             if handoff in IMPLEMENTATION_HANDOFFS:
                 errors.append(f"{label}: resolve-thread-only cannot use implementation handoff `{handoff}`")
+            if mutation_value not in {"proof-only", "reply-only", "no-change"}:
+                errors.append(f"{label}: resolve-thread-only requires proof-only, reply-only, or no-change mutation value")
         elif decision_value == "do-not-address":
             if disposition == "act":
                 errors.append(f"{label}: do-not-address conflicts with disposition `act`")
             if route_rationale != "no-change":
                 errors.append(f"{label}: do-not-address requires route rationale `no-change`")
+            if mutation_value not in {"no-change", "reply-only", "proof-only"}:
+                warnings.append(f"{label}: do-not-address usually uses mutation_value no-change, reply-only, or proof-only")
             if norm_value(next_action) not in {"none", "", "no", "n/a", "na"} and "reply" not in norm_value(next_action):
                 warnings.append(f"{label}: do-not-address usually uses next=none or proof/reply-only")
         elif decision_value == "blocked":
             if route_rationale != "blocked":
                 errors.append(f"{label}: blocked requires route rationale `blocked`")
+            if disposition != "blocked":
+                errors.append(f"{label}: blocked resolve decision requires disposition `blocked`")
 
     handoff_buckets = parse_handoff_agenda(section_text(text, "Handoff Agenda"), ledger_ids, errors)
     expected = {
@@ -1000,13 +1367,14 @@ def check_adjudication(text: str) -> CheckResult:
         validate_structured_table(text, "All-Action Justification", ALL_ACTION_CHECKS, errors, "why action still warranted")
     if rows and len(decision_buckets["address"]) + len(decision_buckets["validate-only"]) == len(rows):
         validate_structured_table(text, "All-Selected Justification", ALL_SELECTED_CHECKS, errors, "why selected resolution is still warranted")
+    if p2_count > 0 and p2_accepted_count == p2_count:
+        validate_structured_table(text, "All-P2+ Accepted Justification", ALL_P2_ACCEPTED_CHECKS, errors, "why accepted severity still warranted")
 
     validate_specialist_receipts(text, gate, errors)
 
-    if not section_text(text, "Acceptance Skew Audit").strip():
-        errors.append("Acceptance Skew Audit is empty")
-    if not section_text(text, "Selection Skew Audit").strip():
-        errors.append("Selection Skew Audit is empty")
+    for section in ["Acceptance Skew Audit", "P2+ Severity Audit", "Direction Fit Audit", "Selection Skew Audit"]:
+        if not section_text(text, section).strip():
+            errors.append(f"{section} is empty")
 
     bottom_line = section_text(text, "Adjudication Bottom Line")
     if (gate_failures or errors) and "blocked" not in bottom_line.lower():
@@ -1015,7 +1383,10 @@ def check_adjudication(text: str) -> CheckResult:
     stats = {
         "comments": len(rows),
         "act": act_count,
-        "non_action": non_action_count,
+        "non_action": max(0, len(rows) - act_count),
+        "blocked": blocked_count,
+        "p2_plus": p2_count,
+        "p2_plus_accepted": p2_accepted_count,
         "validation_or_need_evidence": validation_count,
         "reply_rows": reply_count,
         "resolve_address": len(decision_buckets["address"]),
@@ -1032,9 +1403,9 @@ def check_adjudication(text: str) -> CheckResult:
 
 def print_human(result: CheckResult) -> None:
     if result.passed:
-        print("PASS: Compact-Gated v3 adjudication gate contract satisfied")
+        print("PASS: Compact-Gated v4 adjudication gate contract satisfied")
     else:
-        print("FAIL: Compact-Gated v3 adjudication gate contract incomplete")
+        print("FAIL: Compact-Gated v4 adjudication gate contract incomplete")
     print("stats:", ", ".join(f"{key}={value}" for key, value in result.stats.items()))
     if result.gate:
         print("gate:", ", ".join(f"{key}={value}" for key, value in result.gate.items()))
@@ -1057,21 +1428,35 @@ artifact_state_id:
   base: main@abc123
   head: feature@def456
   diff_digest: paths=src/a.py,tests/test_a.py
-  comment_set_digest: c1,c2,c3
+  comment_set_digest: c1,c2,c3,c4
   ci_state: local tests pass 2026-05-26
 
 - branch / PR: feature/retry
 - current artifact evidence: src/a.py and tests/test_a.py
 - tests / CI: local pytest pass
-- comments adjudicated: 3
+- comments adjudicated: 4
 - limits / unavailable evidence: none
+
+## Direction Context Ledger
+
+direction_state_id:
+  source: proposed-plan
+  source_ref: .step/proposed-plan.md:7
+  source_freshness: current
+  same_objective: yes
+  active_frontier: st-101 retry idempotence
+  locked_decisions: narrow retry fix, no public API rename
+  non_goals: helper rename, broader migration
+  compatibility_posture: preserve API
+  ownership_boundaries: retry module only
+  direction_confidence: high
 
 ## Comment Inventory
 
-- input_comment_count: 3
-- ledger_row_count: 3
-- input_comment_ids: c1,c2,c3
-- ledger_comment_ids: c1,c2,c3
+- input_comment_count: 4
+- ledger_row_count: 4
+- input_comment_ids: c1,c2,c3,c4
+- ledger_comment_ids: c1,c2,c3,c4
 - missing_comment_ids: []
 - duplicate_comment_ids: []
 - synthesized_ids_for_real_comments: no
@@ -1080,20 +1465,21 @@ artifact_state_id:
 
 - intended_change: make retry idempotent
 - explicit_constraints: narrow change
-- non_goals: public API rename
+- non_goals: public API rename and broad migration
 - governing_invariants: retry idempotence
-- evidence_source: PR body
+- evidence_source: .step/proposed-plan.md:7
 - rationale_freshness: current
 - staleness_source: none
 - confidence: high
 
 ## Comment Ledger
 
-| id/thread | reviewer | location | excerpt | claim | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence grade | evidence ref | handoff |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| c1 | alice | src/a.py:10 | retry writes twice | retry path is not idempotent | valid | valid | material-relevant | act | defeated | retry idempotence | current-artifact | src/a.py:10 | route-to-accretive-implementer |
-| c2 | bob | src/a.py:12 | maybe flakes | flake risk needs proof | unknown | validation-only | material-relevant | need-evidence | unresolved | retry idempotence | reviewer-only | thread:c2 | route-to-fixed-point-driver |
-| c3 | cara | src/a.py:1 | rename helper | helper name should change | unsupported | not-applicable | preference-only | rebut | not-defeated | none | current-artifact | src/a.py:1 | none |
+| id/thread | reviewer | location | excerpt | claim | reviewer severity claim | accepted criticality | severity acceptance status | direction fit | direction ref | mutation value | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence grade | evidence ref | severity proof ref | handoff |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| c1 | alice | src/a.py:10 | retry writes twice | retry path is not idempotent | P2 | correctness-critical | accepted | aligned | .step/proposed-plan.md:7 | codebase-material | valid | valid | material-relevant | act | defeated | retry idempotence | current-artifact | src/a.py:10 | tests/test_a.py::test_retry_idempotent | route-to-accretive-implementer |
+| c2 | bob | src/a.py:12 | maybe flakes | flake risk needs proof | P2 | unknown | unresolved | aligned | .step/proposed-plan.md:7 | validation-material | unknown | validation-only | material-relevant | need-evidence | unresolved | retry idempotence | reviewer-only | thread:c2 | missing | route-to-fixed-point-driver |
+| c3 | cara | src/a.py:1 | rename helper | helper name should change | P2 | review-closure-only | downgraded | neutral | .step/proposed-plan.md:non-goals | no-change | unsupported | not-applicable | review-closure-only | rebut | not-defeated | none | current-artifact | src/a.py:1 | src/a.py:1 | none |
+| c4 | dan | src/a.py:99 | migrate all retries | migrate adjacent retry stack | P3 | out-of-lane | rejected | conflicting | .step/proposed-plan.md:non-goals | no-change | partial | overbroad | out-of-scope | defer | not-defeated | migration boundary | current-artifact | src/a.py:99 | src/a.py:99 | none |
 
 ## Decision Tests
 
@@ -1101,7 +1487,26 @@ artifact_state_id:
 |---|---|---|---|---|---|---|---|---|
 | c1 | yes | yes | current | correct | yes | correctness-critical | yes | counterexample test showing no duplicate write |
 | c2 | unknown | yes | current | unknown | yes | validation-needed | unresolved | repro or failing test for flake |
-| c3 | no | no | current | unknown | no | low-value | no | repo naming convention or user goal |
+| c3 | no | no | current | unknown | no | review-closure | no | repo naming convention or user goal |
+| c4 | yes | no | current | partially-correct | no | out-of-lane | no | separate migration plan and user approval |
+
+## Direction Tests
+
+| id/thread | direction source | source freshness | same objective | direction fit | direction ref | active frontier | non-goal conflict | direction override | min evidence to change direction |
+|---|---|---|---|---|---|---|---|---|---|
+| c1 | proposed-plan | current | yes | aligned | .step/proposed-plan.md:7 | st-101 retry idempotence | no | not-needed | newer plan superseding retry idempotence |
+| c2 | proposed-plan | current | yes | aligned | .step/proposed-plan.md:7 | st-101 retry idempotence | no | not-needed | proof that flake is outside retry path |
+| c3 | proposed-plan | current | yes | neutral | .step/proposed-plan.md:non-goals | st-101 retry idempotence | no | not-needed | explicit user request for rename |
+| c4 | proposed-plan | current | yes | conflicting | .step/proposed-plan.md:non-goals | st-101 retry idempotence | yes | no | new migration plan approved by user |
+
+## Severity Tests
+
+| id/thread | reviewer severity claim | accepted criticality | severity acceptance status | severity proof ref | downgrade/reject reason | p2+ accepted | min evidence to accept severity |
+|---|---|---|---|---|---|---|---|
+| c1 | P2 | correctness-critical | accepted | tests/test_a.py::test_retry_idempotent | n/a | yes | test proving no duplicate write risk is impossible |
+| c2 | P2 | unknown | unresolved | missing | flake severity unproven until repro | no | failing repro or CI log showing flake |
+| c3 | P2 | review-closure-only | downgraded | src/a.py:1 | no repo convention or user goal makes rename critical | no | repo naming convention or explicit user goal |
+| c4 | P3 | out-of-lane | rejected | src/a.py:99 | broad migration is a non-goal | not-p2plus | separate migration plan |
 
 ## No-Change Countercases
 
@@ -1112,41 +1517,46 @@ artifact_state_id:
 - c2:
   - strongest no-change case: flake is unproven.
   - status: unresolved
-  - why defeated / preserved / unresolved: validation needed.
+  - why defeated / preserved / unresolved: validation would decide route.
 - c3:
-  - strongest no-change case: rename is preference-only.
+  - strongest no-change case: rename is review-closure-only and not a codebase material change.
   - status: not-defeated
   - why defeated / preserved / unresolved: no convention supplied.
+- c4:
+  - strongest no-change case: migration is outside non-goals.
+  - status: not-defeated
+  - why defeated / preserved / unresolved: proposed plan locks narrow retry fix.
 
 ## Governing Invariant Ledger
 
 | invariant id | invariant | comments | evidence | violated/threatened | minimum fix shape | handoff | why not local fixes |
 |---|---|---|---|---|---|---|---|
-| inv1 | retry idempotence | c1,c2 | src/a.py:10 | violated | add guard and validation | route-to-fixed-point-driver | coupled proof and implementation |
+| inv1 | retry idempotence | c1,c2 | src/a.py:10 | violated/threatened | guard duplicate write and validate flake claim | route-to-fixed-point-driver only for c2 validation | c1 is narrow; c2 is proof-first |
 
 ## Act On
 
-- c1: add the narrow idempotence guard; evidence src/a.py:10.
+- c1: add the narrow idempotence guard; evidence src/a.py:10; direction .step/proposed-plan.md:7; accepted criticality correctness-critical.
 
 ## Rebut
 
-- c3: rebut as preference-only; no repo convention supplied.
+- c3: rebut as review-closure-only and severity-downgraded; no repo convention supplied.
 
 ## Defer / Out of Scope
 
-- none.
+- c4: defer broad migration as direction-conflicting non-goal.
 
 ## Need Evidence
 
-- c2: route validation-only repro/probe to fixed-point-driver.
+- c2: route validation-only repro/probe to fixed-point-driver; validation would decide whether the flake is real.
 
 ## Resolve Selection
 
 | id/thread | resolve decision | reason | proof ref | next | route rationale |
 |---|---|---|---|---|---|
-| c1 | address | act row has defeated no-change case and current artifact evidence | src/a.py:10 | route-to-accretive-implementer | narrow-local |
-| c2 | validate-only | reviewer flake claim is unproven and needs validation proof | thread:c2 | route-to-fixed-point-driver | validation-only |
-| c3 | do-not-address | preference-only no-change case preserved | src/a.py:1 | none | no-change |
+| c1 | address | act row has defeated no-change case, direction fit, and accepted P2 severity | src/a.py:10 | route-to-accretive-implementer | narrow-local |
+| c2 | validate-only | reviewer flake claim is unproven and validation would change severity/route | thread:c2 | route-to-fixed-point-driver | validation-only |
+| c3 | do-not-address | review-closure-only no-change case preserved | src/a.py:1 | none | no-change |
+| c4 | do-not-address | direction-conflicting migration non-goal preserved | .step/proposed-plan.md:non-goals | none | no-change |
 
 ## Resolve Countercases
 
@@ -1162,6 +1572,10 @@ artifact_state_id:
   - proposed resolve decision: do-not-address
   - strongest alternative resolve decision: address
   - why alternative is rejected / preserved / unresolved: src/a.py:1 shows no convention-backed need.
+- c4:
+  - proposed resolve decision: do-not-address
+  - strongest alternative resolve decision: address
+  - why alternative is rejected / preserved / unresolved: .step/proposed-plan.md non-goals reject migration.
 
 ## Invariant-Level Handoff
 
@@ -1173,24 +1587,51 @@ artifact_state_id:
 
 ## Acceptance Skew Audit
 
-- disposition distribution: act=1, need-evidence=1, rebut=1
+- disposition distribution: act=1, need-evidence=1, rebut=1, defer=1
 - acceptance pressure checked: mixed dispositions avoid all-action pressure
 - stale/superseded possibilities: none current
 - unsupported possibilities: c3 unsupported
-- preference-only possibilities: c3 preference-only
-- out-of-scope possibilities: none
+- preference-only possibilities: c3 review-closure-only
+- out-of-scope possibilities: c4 out-of-scope
+- direction-conflicting possibilities: c4 direction-conflicting
+- review-closure-only possibilities: c3 review-closure-only
 - validation-only alternatives: c2
 - shared-invariant pressure: c1/c2 share retry idempotence
 
+## P2+ Severity Audit
+
+- p2_plus_count: 3
+- accepted_count: 1
+- downgraded_count: 1
+- rejected_count: 0
+- unresolved_count: 1
+- accepted criticality distribution: correctness-critical=1
+- unsupported severity labels: c2 unresolved
+- review-closure-only downgrades: c3
+- validation-only P2+ rows: c2
+- direction-conflicting P2+ rows: none
+
+## Direction Fit Audit
+
+- direction source distribution: proposed-plan=4
+- same-objective proof: .step/proposed-plan.md:7 current same objective
+- stale/off-target plan pressure: none
+- conflicting-direction rows: c4
+- direction-overriding rows: none
+- rows where `$st`/plan/update-plan changed disposition: c3,c4
+- rows where direction was insufficient and blocked/need-evidence was chosen: none
+
 ## Selection Skew Audit
 
-- resolve decision distribution: address=1, validate-only=1, do-not-address=1
+- resolve decision distribution: address=1, validate-only=1, do-not-address=2
 - all-selected pressure checked: not all selected
-- address over-selection possibilities: c2 and c3 rejected as address
+- address over-selection possibilities: c2,c3,c4 rejected as address
 - validate-only over-routing possibilities: only c2 validation-only
 - proof-only thread-resolution alternatives: none already fixed
-- do-not-address alternatives: c3
+- do-not-address alternatives: c3,c4
 - blocked/ask-user alternatives: none
+- direction-conflict alternatives: c4
+- review-closure-only alternatives: c3
 - fixed-point over-routing pressure: c1 stays narrow-local; c2 validation only
 
 ## Adjudication Gate
@@ -1198,24 +1639,31 @@ artifact_state_id:
 | field | value | basis |
 |---|---|---|
 | artifact_state_coverage | pass | artifact_state_id recorded |
-| comment_inventory_coverage | pass | all three ids match ledger |
+| direction_context_coverage | pass | direction_state_id recorded |
+| comment_inventory_coverage | pass | all four ids match ledger |
 | identity_coverage | pass | all rows have raw identity |
 | decision_test_coverage | pass | all rows have decision tests |
+| direction_fit_coverage | pass | all rows have direction tests and refs |
+| severity_claim_coverage | pass | all rows split severity claim and criticality |
+| p2_plus_acceptance_coverage | pass | P2 rows accepted/unresolved/downgraded with proof or reason |
 | no_change_coverage | pass | all rows have countercases |
 | disposition_coverage | pass | all rows have one disposition |
 | proposed_fix_separation | pass | concern and fix split |
 | evidence_ref_coverage | pass | act has current artifact evidence ref |
+| validation_value_coverage | pass | c2 validate-only has validation-material |
 | resolve_selection_coverage | pass | every ledger row has valid downstream selection |
 | resolve_countercase_coverage | pass | every ledger row has resolve countercase |
 | handoff_agenda_consistency | pass | agenda buckets match selection map |
 | selection_skew_audit | pass | skew audited |
+| p2_plus_severity_audit | pass | P2+ severity audited |
+| direction_fit_audit | pass | direction fit audited |
 | invariant_pass | pass | invariant checked and named |
 | specialist_packet_coverage | not-used | no specialists used |
 | acceptance_skew_audit | pass | skew audited |
 | adjudication_complete | pass | all required fields pass |
 | implementation_handoff_allowed | yes | c1 is artifact-backed address |
 | validation_handoff_allowed | yes | c2 is validation-only |
-| reply_handoff_allowed | yes | c3 rebut reply allowed |
+| reply_handoff_allowed | yes | c3/c4 reply allowed |
 
 ## Handoff Agenda
 
@@ -1226,13 +1674,13 @@ artifact_state_id:
 - items selected for implementation: c1
 - validation-only items: c2
 - proof-only thread-resolution items: none
-- items not selected: c3
+- items not selected: c3,c4
 - proof: pytest tests/test_a.py::test_retry_idempotent
 - blocked items: none
 
 ## Adjudication Bottom Line
 
-Proceed: one artifact-backed action, one validation-only item, and one rebuttal.
+Proceed: one artifact-backed action, one validation-only item, one rebuttal, and one deferred no-change item.
 """
 
 
@@ -1241,6 +1689,10 @@ def invalid_fixture() -> str:
 ## Review Basis
 
 - branch / PR: feature/retry
+
+## Direction Context Ledger
+
+- source: unknown
 
 ## Comment Inventory
 
@@ -1258,15 +1710,27 @@ def invalid_fixture() -> str:
 
 ## Comment Ledger
 
-| id/thread | reviewer | location | excerpt | claim | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence grade | evidence ref | handoff |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| c1 | alice | src/a.py:10 | retry writes twice | retry path is not idempotent | unknown | validation-only | material-relevant | act | unresolved | none | reviewer-only | code | route-to-accretive-implementer |
+| id/thread | reviewer | location | excerpt | claim | reviewer severity claim | accepted criticality | severity acceptance status | direction fit | direction ref | mutation value | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence grade | evidence ref | severity proof ref | handoff |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| c1 | alice | src/a.py:10 | retry writes twice | retry path is not idempotent | P2 | review-closure-only | accepted | unknown | unknown | no-change | unknown | validation-only | material-relevant | act | unresolved | none | reviewer-only | code | review | route-to-accretive-implementer |
 
 ## Decision Tests
 
 | id/thread | grounded | material | fresh | diagnosis | scope-fit | resolution value | no-change defeated | min evidence to change mind |
 |---|---|---|---|---|---|---|---|---|
-| c1 | unknown | yes | unclear | unknown | unknown | validation-needed | unresolved | repro |
+| c1 | unknown | yes | unclear | unknown | unknown | review-closure | unresolved | repro |
+
+## Direction Tests
+
+| id/thread | direction source | source freshness | same objective | direction fit | direction ref | active frontier | non-goal conflict | direction override | min evidence to change direction |
+|---|---|---|---|---|---|---|---|---|---|
+| c1 | unknown | unknown | unknown | unknown | unknown | unknown | unknown | unknown | plan proof |
+
+## Severity Tests
+
+| id/thread | reviewer severity claim | accepted criticality | severity acceptance status | severity proof ref | downgrade/reject reason | p2+ accepted | min evidence to accept severity |
+|---|---|---|---|---|---|---|---|
+| c1 | P2 | review-closure-only | accepted | review | n/a | yes | proof |
 
 ## No-Change Countercases
 
@@ -1310,6 +1774,14 @@ none.
 
 all action.
 
+## P2+ Severity Audit
+
+all P2 accepted.
+
+## Direction Fit Audit
+
+unknown.
+
 ## Selection Skew Audit
 
 all selected.
@@ -1319,17 +1791,24 @@ all selected.
 | field | value | basis |
 |---|---|---|
 | artifact_state_coverage | fail | missing |
+| direction_context_coverage | fail | missing |
 | comment_inventory_coverage | fail | dropped c2 |
 | identity_coverage | pass | c1 only |
 | decision_test_coverage | fail | incomplete |
+| direction_fit_coverage | fail | incomplete |
+| severity_claim_coverage | fail | no severity proof |
+| p2_plus_acceptance_coverage | fail | P2 accepted wrongly |
 | no_change_coverage | fail | unresolved |
 | disposition_coverage | pass | one row |
 | proposed_fix_separation | pass | split |
 | evidence_ref_coverage | fail | no current evidence |
+| validation_value_coverage | fail | validation-only act |
 | resolve_selection_coverage | fail | invalid address |
 | resolve_countercase_coverage | fail | generic |
 | handoff_agenda_consistency | fail | missing agenda |
 | selection_skew_audit | fail | generic |
+| p2_plus_severity_audit | fail | generic |
+| direction_fit_audit | fail | generic |
 | invariant_pass | fail | not checked |
 | specialist_packet_coverage | not-used | no specialists |
 | acceptance_skew_audit | fail | generic |
