@@ -276,6 +276,8 @@ Do not invoke an extreme or high-cost workflow merely because it is adjacent. Ro
 - Final readiness, closure gates, fixed-point claims, or "is this ready?" after material work -> `verification-closure`.
 - Review comments, reviewer suggestions, or "should we act on this?" before implementation -> `review-adjudication`.
 - Exhaustive hardening, repeated review/fix loops, "drive this to closure," or "find all impactful issues" -> `fixed-point-driver`.
+- App-server transport, detached review-session control, direct thread/turn execution, CAS fanout, or `$st` conformance/retry-policy checks -> `cas`.
+- Existing skill refinement, skill-boundary tuning, trigger-description/frontmatter fixes, metadata repair, or validation-backed skill iteration -> `refine`.
 
 ### Challenge escalation skills
 
@@ -342,15 +344,14 @@ Do not wait for a `.zig` filename when the project is known to be Zig and the is
 
 ### Tightly gated skills
 
-- `cas`: only clear app-server transport/detached review-session/review-session control cues.
 - `cron`: only clear local automation or schedule-management intent.
 - `ghost`: only explicit/very clear ghost/spec package, portable reproduction bundle, or generated proof/test harness package intent.
 - `deckset`: only decks/slides/presentations/Deckset output.
-- `ms`: skill creation/editing; `refine`: existing-skill refinement.
+- `ms`: new skill creation or direct skill surgery.
 
 ### Side-effect boundary
 
-Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `$seq`, `cas`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `refine`, and `prove-it` gated. `logophile` may trigger implicitly for human-facing language but must preserve semantics and machine-consumed syntax.
+Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, and `prove-it` gated. `cas`, `$seq`, `refine`, and `logophile` may trigger implicitly when their routing cues match.
 
 Public tracker side effects are separately gated: never open, update, comment on, or draft-to-post public issues, PRs, discussions, or upstream reports without explicit user instruction.
 
@@ -366,7 +367,7 @@ Use only when `.step/st-plan.jsonl` participates because the user asked for `$st
 
 ## Seq Local-First Routing
 
-Use `$seq` for explicit `$seq` requests and for historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Do not use `$seq` for ordinary current-repo code search.
+Use `$seq` for explicit `$seq` requests and implicitly for historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Do not use `$seq` for ordinary current-repo code search.
 
 - For finalized `<proposed_plan>` artifacts, start with `plan-search`.
 - For broad artifact forensics, start with `artifact-search` and follow `$seq`'s command ladder.
@@ -387,6 +388,13 @@ Use the native `learnings` CLI. Treat learnings as a closed loop: recall before 
 
 Run `$learnings` before final response, commit, PR, or handoff only when a decision-shaping checkpoint occurred: validation transition, strategy pivot, footgun discovery, acceleration pattern, useful/failed recalled learning, meaningful pause, or delivery after real implementation work.
 
+### Commit coupling
+
+- Before any Codex-made commit, check `.learnings.jsonl` alongside the intended commit scope.
+- If `.learnings.jsonl` has pending changes and `git check-ignore -v --no-index .learnings.jsonl` does not report `.git/info/exclude`, include those learnings in the next commit by default. Treat pending learnings as part of the delivery record, not as unrelated noise.
+- If `.learnings.jsonl` is local-only by `.git/info/exclude`, or the user explicitly asks for a commit that excludes learnings, leave it unstaged and state that boundary in the proof.
+- If the file contains both session-owned and unrelated fresh rows, stage only the session-owned rows with an index patch and prove the cached slice before committing.
+
 Quality gate:
 
 1. Decision delta: would this change what the next agent does?
@@ -402,6 +410,7 @@ Write rules, not changelog entries. Prefer one essential learning; append at mos
 - Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
 - Do not stage unrelated diffs.
 - Do not force-add paths matching `.git/info/exclude` unless explicitly asked.
+- Before `git commit`, run a final narrow status check for `.learnings.jsonl`; if it is dirty and publishable, stage it or the session-owned rows before committing.
 - Review the diff before final response or commit.
 
 ### GitHub CLI (`gh`)

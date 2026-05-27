@@ -45,7 +45,7 @@ When iterating on the Zig-backed `learnings`/`append_learning` helper CLI path, 
 - Helper-first write path: use `learnings append`/`run_learnings_tool append` for normal writes; keep `append_learning` available as a compatibility binary, and treat manual `.learnings.jsonl` edits as emergency-only with explicit rationale.
 - Repo-root fail-closed rule: only append from a verified git repo root. If `git rev-parse --show-toplevel` fails or the active task lives in a non-repo workspace such as `~/.codex/memories`, skip capture and emit `0 records appended: non-repo cwd`.
 - Path-drift rule: append from the verified repo root with `--path .learnings.jsonl`; if the CLI reports a different target path, treat that append as failed, repair the stray write if needed, and reappend correctly before closing.
-- Commit coupling: if this workflow updates `.learnings.jsonl` and a git commit follows in the same turn, include the current-turn `.learnings.jsonl` rows in that next commit by default. Exception: if `git check-ignore -v --no-index .learnings.jsonl` reports `.git/info/exclude`, treat the file as local-only: do not `git add -f`, stage, or commit it unless the user explicitly asks to publish it. If the shared file also holds unrelated fresh rows, stage only the session-owned rows with an index patch rather than leaving all learnings for a follow-up commit.
+- Commit coupling: before any Codex-made commit after learning capture, check `.learnings.jsonl` even if the append happened in an earlier turn. If it has pending changes and `git check-ignore -v --no-index .learnings.jsonl` does not report `.git/info/exclude`, include those learnings in the next commit by default. If the file is local-only by `.git/info/exclude`, or the user explicitly asks for a commit that excludes learnings, leave it unstaged and state that boundary in the proof. If the shared file also holds unrelated fresh rows, stage only the session-owned rows with an index patch rather than leaving all learnings for a follow-up commit.
 
 ## Quick Start
 
@@ -243,8 +243,10 @@ If any answer is no, skip capture (or use `review_later` only when uncertainty i
    - Append each accepted learning to `.learnings.jsonl` in that repo root (0 records is valid when nothing qualifies).
    - Use `learnings append` via `run_learnings_tool append`, which changes into the verified repo root and passes `--path .learnings.jsonl`.
    - If the append output reports `path=...`, require an exact match with `$repo_root/.learnings.jsonl`; treat any mismatch as a failed append and repair/reappend before finishing.
-   - If a commit will happen after the append, stage the current-turn `.learnings.jsonl` rows into that next commit by default.
+   - Before any Codex-made commit after learning capture, check `.learnings.jsonl` explicitly even if the append happened in an earlier turn.
+   - If `.learnings.jsonl` has pending changes, stage the publishable learning rows into that next commit by default.
    - If `git check-ignore -v --no-index .learnings.jsonl` reports `.git/info/exclude`, treat the file as local-only, leave it unstaged, and never use `git add -f` to satisfy commit coupling, even if `.learnings.jsonl` is already tracked.
+   - If the user explicitly asks for a commit that excludes learnings, leave `.learnings.jsonl` unstaged and state that boundary in the proof.
    - If unrelated rows are present in a shared `.learnings.jsonl`, use a targeted index patch instead of postponing the learnings write.
 7. Report concise highlights in chat.
    - Summarize the 1-3 highest leverage learnings (or say none).
