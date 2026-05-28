@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Adjudication"
-  short_description: "Gated PR review adjudication with anti-laundering resolve selection"
-  default_prompt: "Use $review-adjudication in Compact-Gated v4 mode for this task."
+  short_description: "Authority-panel PR review adjudication with gated custom subagents"
+  default_prompt: "Use $review-adjudication in Compact-Gated v6 authority-panel mode for this task."

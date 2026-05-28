@@ -114,6 +114,20 @@ Authority lanes:
 | `validation-value-authority` | proof-first routing | Should validation precede mutation, and would validation change a material decision? | validate-first, no-validation-value, curiosity validation |
 | `fix-shape-authority` | minimum safe fix | Is the proposed/replacement fix the minimum safe cut? | wrong-fix, overbroad-fix, hidden invariant |
 
+
+Custom Codex agents:
+
+| authority lane | custom agent | installed file |
+|---|---|---|
+| `evidence-authority` | `review_evidence_authority` | `codex/agents/review-evidence-authority.toml` |
+| `direction-ownership-authority` | `review_direction_ownership_authority` | `codex/agents/review-direction-ownership-authority.toml` |
+| `criticality-authority` | `review_criticality_authority` | `codex/agents/review-criticality-authority.toml` |
+| `no-change-advocate` | `review_no_change_advocate` | `codex/agents/review-no-change-advocate.toml` |
+| `validation-value-authority` | `review_validation_value_authority` | `codex/agents/review-validation-value-authority.toml` |
+| `fix-shape-authority` | `review_fix_shape_authority` | `codex/agents/review-fix-shape-authority.toml` |
+
+When the custom agents are installed, prefer them over generic explorer subagents for authority fanout. If they are unavailable, fallback to root-equivalent Authority Packets is allowed only when the same packet schema and evidence floor are satisfied.
+
 Authority packets use this shape:
 
 ```yaml
@@ -938,4 +952,5 @@ A failed checker result means the adjudication is incomplete. Re-run adjudicatio
 - [common-routing-vocabulary.md](references/common-routing-vocabulary.md)
 - [adversarial-eval-seeds.md](references/adversarial-eval-seeds.md)
 - [authority-fanout.md](references/authority-fanout.md)
+- [CODEX_SUBAGENTS.md](references/CODEX_SUBAGENTS.md)
 - [example-invocations.md](references/example-invocations.md)

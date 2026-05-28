@@ -76,3 +76,17 @@ Authority Veto Ledger. Clear the veto with a fresh authority packet or block.
 
 `address` requires `authority status: cleared-for-address`, all required authority
 clearances, and no veto row for that id.
+
+
+## Codex custom agents
+
+The drop-in includes runnable custom agents under `codex/agents/`:
+
+- `review_evidence_authority`
+- `review_direction_ownership_authority`
+- `review_criticality_authority`
+- `review_no_change_advocate`
+- `review_validation_value_authority`
+- `review_fix_shape_authority`
+
+Use these agents for actual parallel authority fanout. Generic subagents or root-equivalent packets are fallback paths, not the preferred path for current CAS/Codex findings, P2+ findings, all-current-selected runs, or weak no-change cases.
