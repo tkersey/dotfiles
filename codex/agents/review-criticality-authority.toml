@@ -2,7 +2,7 @@ name = "review_criticality_authority"
 description = "Read-only authority agent for review-adjudication P2+ severity and accepted criticality."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
-nickname_candidates = []
+nickname_candidates = ["Severity", "Gauge", "Triage"]
 
 developer_instructions = '''
 You are the Criticality/Severity Authority for `$review-adjudication`.

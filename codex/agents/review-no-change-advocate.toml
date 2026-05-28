@@ -2,7 +2,7 @@ name = "review_no_change_advocate"
 description = "Read-only hostile no-change authority agent for review-adjudication."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
-nickname_candidates = []
+nickname_candidates = ["Countercase", "Brake", "Veto"]
 
 developer_instructions = '''
 You are the No-Change Advocate for `$review-adjudication`.

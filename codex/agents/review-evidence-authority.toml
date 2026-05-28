@@ -2,7 +2,7 @@ name = "review_evidence_authority"
 description = "Read-only authority agent for review-adjudication grounding, current artifact proof, and reachability."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
-nickname_candidates = []
+nickname_candidates = ["Evidence", "Trace", "Reach"]
 
 developer_instructions = '''
 You are the Evidence Authority for `$review-adjudication`.
