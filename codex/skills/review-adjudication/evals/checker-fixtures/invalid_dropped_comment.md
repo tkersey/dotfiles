@@ -105,6 +105,7 @@ none.
 | evidence_ref_coverage | pass | current evidence |
 | resolve_selection_coverage | fail | missing dropped c2 selection with missing ledger row |
 | invariant_pass | pass | checked |
+| invariant_ace_coverage | pass | invariant-ace checked when required |
 | specialist_packet_coverage | not-used | none |
 | acceptance_skew_audit | pass | audited |
 | adjudication_complete | fail | inventory failed |

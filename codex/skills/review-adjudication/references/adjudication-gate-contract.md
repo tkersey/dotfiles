@@ -31,6 +31,7 @@ must be emitted for every real PR review adjudication.
 | p2_plus_severity_audit | pass | P2+ severity distribution audited; all-accepted outputs justified |
 | direction_fit_audit | pass | direction-fit distribution audited |
 | invariant_pass | pass | invariant clustering checked or named |
+| invariant_ace_coverage | pass/not-required | `$invariant-ace` checked accepted current invariant-framed findings, or no such findings exist |
 | specialist_packet_coverage | not-used | specialists were not used, or pass if receipts exist |
 | acceptance_skew_audit | pass | disposition distribution audited |
 | adjudication_complete | pass | all required gate fields pass |
@@ -211,6 +212,9 @@ explanation for why accepted severity is still warranted.
 - `direction_fit_audit`: direction fit distribution is audited.
 - `invariant_pass`: invariant clustering was performed; shared invariants are
   named, or absence is justified.
+- `invariant_ace_coverage`: `pass` when any accepted current invariant-framed
+  finding selected for `address` has `$invariant-ace` coverage; `not-required`
+  only when no accepted current invariant-framed finding is selected.
 - `specialist_packet_coverage`: `not-used` if no specialists were used; otherwise
   every accepted or rejected specialist packet has a receipt and rejected packets
   are not used as evidence.

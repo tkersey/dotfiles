@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex session JSONL (`~/.codex/sessions`) and memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions. Prefer `artifact-search`, then `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, `orchestration-concurrency`, then `query-diagnose`, then generic `query`. Run opencode only when the request literally says `opencode`."
+description: "Mine Codex session JSONL (`~/.codex/sessions`) and memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions. Prefer `artifact-search`, then `adjudication-audit` for selected/rejected review-adjudication audits, then `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, `orchestration-concurrency`, then `query-diagnose`, then generic `query`. Run opencode only when the request literally says `opencode`."
 ---
 
 # seq
@@ -30,6 +30,7 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
      - `plan-search` for strict repo/session/time/text retrieval of complete `<proposed_plan>` blocks.
      - `find-session` for prompt-to-session lookup.
      - `session-prompts` for "what did that session actually say" and transcript proof.
+     - `adjudication-audit` for selected/rejected `$review-adjudication` audits, including root-equivalent workflows such as `$resolve` when explicitly included.
      - `skill-success-rank` for ranked successful skill activation reports over recent windows without raw mention inflation.
      - `skill-audit` for raw skill mention summaries, one-skill mention rows, and one-skill daily trends.
      - `workflow-audit` for workflow-cohort utilization reports across text, skill mentions, tool traces, session graph roles, and outcome signals.
@@ -667,6 +668,8 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `skill-blocks` defaults to `--history distinct` and `--format jsonl`; use `--history all` to keep repeated identical injections and `--history latest` to select the newest distinct version.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
 - `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching successful skill usage, raw skill mentions, workflow, tool, memory, message, and cwd questions.
+- Use `adjudication-audit` before raw `query`/`message-search` when the question asks whether `$review-adjudication` selected, rejected, over-selected, or routed comments correctly.
+- For `$resolve` or other root-equivalent adjudication runs, pass `--include-root-equivalent resolve` so the audit distinguishes direct `$review-adjudication` from root-equivalent decision-bearing sessions.
 - `skill-success-rank` counts user-called skills, reports `successful_sessions`, `used_sessions`, `blocked_sessions`, and raw mention/session diagnostics, and supports `--mode sessions` for per-session proof rows.
 - `workflow-audit` selects sessions by exact workflow or skill mention after stripping injected skill blocks, then reports source breakdown, outcomes, sessions, or a markdown report without Python post-processing.
 - `session-tooling` summarizes per-invocation shell/tool behavior and can aggregate via `--summary --group-by executable|command|tool`.

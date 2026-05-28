@@ -257,6 +257,7 @@ REQUIRED_GATE_FIELDS = [
     "p2plusseverityaudit",
     "directionfitaudit",
     "invariantpass",
+    "invariantacecoverage",
     "specialistpacketcoverage",
     "acceptanceskewaudit",
     "adjudicationcomplete",
@@ -547,6 +548,7 @@ GATE_ALIASES = {
     "directionfitaudit": "directionfitaudit",
     "directionaudit": "directionfitaudit",
     "invariantpass": "invariantpass",
+    "invariantacecoverage": "invariantacecoverage",
     "specialistpacketcoverage": "specialistpacketcoverage",
     "acceptanceskewaudit": "acceptanceskewaudit",
     "adjudicationcomplete": "adjudicationcomplete",
@@ -870,6 +872,14 @@ def validate_specialist_receipts(text: str, gate: Dict[str, str], errors: List[s
             errors.append("Specialist Packet Receipts missing required columns: " + ", ".join(missing))
         if not rows:
             errors.append("Specialist Packet Receipts has no data rows")
+
+
+def invariant_ace_required(row: Dict[str, str]) -> bool:
+    invariant = norm_value(row.get("invariant", ""))
+    if invariant in EMPTY_MARKERS:
+        return False
+    evidence_grade = norm_value(row.get("evidencegrade", ""))
+    return evidence_grade in ACTION_EVIDENCE_GRADES
 
 
 def check_adjudication(text: str) -> CheckResult:
@@ -1342,8 +1352,27 @@ def check_adjudication(text: str) -> CheckResult:
         elif field_name == "specialistpacketcoverage":
             if value not in {"pass", "fail", "not-used"}:
                 errors.append(f"specialist_packet_coverage must be pass/fail/not-used, got `{value}`")
+        elif field_name == "invariantacecoverage":
+            if value not in {"pass", "fail", "not-required", "notrequired"}:
+                errors.append(f"invariant_ace_coverage must be pass/fail/not-required, got `{value}`")
         elif value not in {"pass", "fail"}:
             errors.append(f"{field_name} must be pass/fail, got `{value}`")
+
+    invariant_ace_required_ids = [
+        label for label in decision_buckets["address"]
+        if invariant_ace_required(ledger_by_id.get(label, {}))
+    ]
+    invariant_ace_value = gate.get("invariantacecoverage")
+    if invariant_ace_required_ids:
+        if invariant_ace_value != "pass":
+            errors.append(
+                "invariant_ace_coverage must be pass for accepted current invariant-framed address rows: "
+                + ", ".join(sorted(invariant_ace_required_ids))
+            )
+        if "invariant-ace" not in text.lower():
+            errors.append("invariant_ace_coverage pass requires an invariant-ace receipt or evidence mention")
+    elif invariant_ace_value == "fail":
+        errors.append("invariant_ace_coverage is fail but no accepted current invariant-framed address row requires it")
 
     gate_failures = [
         field for field in REQUIRED_GATE_FIELDS
@@ -1658,6 +1687,7 @@ direction_state_id:
 | p2_plus_severity_audit | pass | P2+ severity audited |
 | direction_fit_audit | pass | direction fit audited |
 | invariant_pass | pass | invariant checked and named |
+| invariant_ace_coverage | pass | invariant-ace checked accepted current invariant-framed address row c1 |
 | specialist_packet_coverage | not-used | no specialists used |
 | acceptance_skew_audit | pass | skew audited |
 | adjudication_complete | pass | all required fields pass |
@@ -1810,6 +1840,7 @@ all selected.
 | p2_plus_severity_audit | fail | generic |
 | direction_fit_audit | fail | generic |
 | invariant_pass | fail | not checked |
+| invariant_ace_coverage | fail | invariant-ace not checked |
 | specialist_packet_coverage | not-used | no specialists |
 | acceptance_skew_audit | fail | generic |
 | adjudication_complete | fail | incomplete |
@@ -1834,12 +1865,28 @@ Blocked: incomplete adjudication. Do not implement yet.
 def run_self_test() -> int:
     good = check_adjudication(valid_fixture())
     bad = check_adjudication(invalid_fixture())
-    if good.passed and not bad.passed:
+    missing_invariant_ace = check_adjudication(
+        valid_fixture().replace(
+            "| invariant_ace_coverage | pass | invariant-ace checked accepted current invariant-framed address row c1 |",
+            "| invariant_ace_coverage | not_required | no invariant-ace receipt |",
+        )
+    )
+    not_required_fixture = valid_fixture().replace(
+        "| c1 | alice | src/a.py:10 | retry writes twice | retry path is not idempotent | P2 | correctness-critical | accepted | aligned | .step/proposed-plan.md:7 | codebase-material | valid | valid | material-relevant | act | defeated | retry idempotence | current-artifact | src/a.py:10 | tests/test_a.py::test_retry_idempotent | route-to-accretive-implementer |",
+        "| c1 | alice | src/a.py:10 | retry writes twice | retry path is not idempotent | P2 | correctness-critical | accepted | aligned | .step/proposed-plan.md:7 | codebase-material | valid | valid | material-relevant | act | defeated | none | current-artifact | src/a.py:10 | tests/test_a.py::test_retry_idempotent | route-to-accretive-implementer |",
+    ).replace(
+        "| invariant_ace_coverage | pass | invariant-ace checked accepted current invariant-framed address row c1 |",
+        "| invariant_ace_coverage | not_required | no accepted current invariant-framed address rows |",
+    )
+    not_required = check_adjudication(not_required_fixture)
+    if good.passed and not bad.passed and not missing_invariant_ace.passed and not_required.passed:
         print("self-test passed")
         return 0
     print("self-test failed")
     print("valid result:", good.to_json())
     print("invalid result:", bad.to_json())
+    print("missing invariant-ace result:", missing_invariant_ace.to_json())
+    print("not-required result:", not_required.to_json())
     return 1
 
 

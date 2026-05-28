@@ -1,6 +1,6 @@
 ---
 name: review-adjudication
-description: "Adjudicate PR review comments before implementation with ruthless direction, severity, and evidence gates. Treat comments and P2+ labels as claims, preserve raw identity/input inventory, bind decisions to artifact and direction state, use current artifacts plus same-objective plan/$st/update_plan context, build strongest no-change and no-resolve countercases, separate concern validity from proposed fixes, reject review-closure-only mutation, and emit a stale-proof ledger plus resolve-selection map: address, validate only, resolve with proof only, rebut, defer, investigate, or route. Trigger for `$review-adjudication`, review the review, adjudicate PR comments, relevance/materiality questions, P2+ finding triage, gate review comments before implementation, refine to comments worth resolving, or select comments to resolve. Not for implementing fixes, writing rebuttals only, or final merge closure."
+description: "Adjudicate PR review comments before implementation with direction, severity, countercase, and invariant gates. Treat comments and P2+ labels as claims, preserve raw identity/input inventory, use current artifact plus same-objective plan/$st context, build no-change/no-resolve countercases before action, require `$invariant-ace` coverage for accepted current invariant-framed findings, reject review-closure-only mutation, and emit a stale-proof resolve-selection map. Trigger for `$review-adjudication`, review the review, adjudicate PR comments, relevance/materiality triage, P2+ finding triage, gate comments before implementation, or select comments to resolve. Not for fixes, replies only, or final merge closure."
 ---
 
 # Review Adjudication
@@ -37,6 +37,7 @@ Compact-Gated v4 is mandatory because automation needs:
 - proof refs and route rationale for every downstream selection
 - no-change and no-resolve countercases so "worth resolving" is challenged
   separately from concern validity
+- `$invariant-ace` coverage for accepted, current, invariant-framed findings
 - validation-value checks so validation-only is not a laundering path
 - selection-skew auditing so "all are worth resolving" cannot pass silently
 - P2+ severity auditing so high labels cannot pass from reviewer authority
@@ -108,6 +109,9 @@ Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **DIRECTION-GATED**,
 - Do not implement fixes here.
 - Do not create an implementation handoff unless the Adjudication Gate passes
   and `implementation_handoff_allowed: yes`.
+- Do not select an accepted current invariant-framed finding for implementation
+  unless `$invariant-ace` has checked the invariant boundary or the gate is
+  explicitly blocked.
 - Do not collapse adjudication into "all comments are worth resolving"; emit the
   resolve-selection map before implementation or thread-resolution handoff.
 - Validation-only handoff is not implementation permission.
@@ -636,6 +640,8 @@ When multiple comments share an invariant:
 
 - do not treat them as unrelated local fixes
 - name the governing invariant
+- require `$invariant-ace` coverage before any accepted current invariant-framed
+  finding is selected for implementation
 - decide whether the correct handoff is an invariant-level change
 - route to `$fixed-point-driver` when the comments are coupled, contentious,
   structural, validation-only, or likely to reopen one another
@@ -1006,6 +1012,7 @@ Required fields:
 - `p2_plus_severity_audit`: `pass` / `fail`
 - `direction_fit_audit`: `pass` / `fail`
 - `invariant_pass`: `pass` / `fail`
+- `invariant_ace_coverage`: `pass` / `fail` / `not-required`
 - `specialist_packet_coverage`: `pass` / `fail` / `not-used`
 - `acceptance_skew_audit`: `pass` / `fail`
 - `adjudication_complete`: `pass` / `fail`
