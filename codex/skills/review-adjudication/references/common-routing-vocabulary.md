@@ -216,6 +216,7 @@ Handoff permission fields use:
 - `p2_plus_severity_audit`
 - `direction_fit_audit`
 - `invariant_pass`
+- `invariant_ace_coverage`
 - `specialist_packet_coverage`
 - `acceptance_skew_audit`
 - `adjudication_complete`

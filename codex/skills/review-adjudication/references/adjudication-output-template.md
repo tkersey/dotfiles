@@ -259,6 +259,7 @@ Include this section only when every substantive comment is selected as
 | p2_plus_severity_audit | pass/fail |  |
 | direction_fit_audit | pass/fail |  |
 | invariant_pass | pass/fail |  |
+| invariant_ace_coverage | pass/fail/not-required |  |
 | specialist_packet_coverage | pass/fail/not-used |  |
 | acceptance_skew_audit | pass/fail |  |
 | adjudication_complete | pass/fail |  |

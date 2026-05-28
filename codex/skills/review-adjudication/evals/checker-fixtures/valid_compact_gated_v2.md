@@ -118,6 +118,7 @@ artifact_state_id:
 | evidence_ref_coverage | pass | act has current artifact evidence ref |
 | resolve_selection_coverage | pass | every ledger row has a valid downstream selection |
 | invariant_pass | pass | invariant checked |
+| invariant_ace_coverage | pass | invariant-ace checked when required |
 | specialist_packet_coverage | not-used | no specialists used |
 | acceptance_skew_audit | pass | skew audited |
 | adjudication_complete | pass | all required fields pass |

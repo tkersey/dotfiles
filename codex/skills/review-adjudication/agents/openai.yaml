@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Review Adjudication"
   short_description: "Gated PR review adjudication with anti-laundering resolve selection"
-  default_prompt: "Use $review-adjudication in Compact-Gated v3 mode for this task."
+  default_prompt: "Use $review-adjudication in Compact-Gated v4 mode for this task."
