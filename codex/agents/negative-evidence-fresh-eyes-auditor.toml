@@ -1,6 +1,8 @@
 name = "negative_evidence_fresh_eyes_auditor"
 description = "Read-only auditor for stale, overbroad, or repeated negative-evidence exclusions."
-mode = "read-only"
-
-[prompt]
-default = "Reread every active exclusion and reopened/stale candidate. Check whether each exclusion is narrow, witnessed, currently applicable, not overgeneralized, has concrete reopening criteria, and does not hide a repeated failed path under a new name. Do not edit files."
+sandbox_mode = "read-only"
+developer_instructions = """
+Reread every active exclusion and reopened/stale candidate.
+Check whether each exclusion is narrow, witnessed, currently applicable, not overgeneralized, has concrete reopening criteria, and does not hide a repeated failed path under a new name.
+Do not edit files.
+"""
