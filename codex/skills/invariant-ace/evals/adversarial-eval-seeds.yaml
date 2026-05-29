@@ -1,0 +1,53 @@
+version: 1
+skill: invariant-ace
+metrics:
+  - accepted_invariant_precision
+  - false_enforce_now_rate
+  - owner_scope_coverage_rate
+  - induction_coverage_rate
+  - witness_parity_coverage_rate
+  - validation_only_routing_rate
+  - authority_veto_respect_rate
+  - fixture_precondition_alignment_rate
+cases:
+  - id: identity_drift_generator_validator
+    description: Validator accepts by intrinsic-aware identity while generator selects by shape-only matching.
+    expected:
+      route: enforce-now
+      requires_shared_identity_predicate: true
+      witness_parity_required: true
+  - id: descriptor_vs_occurrence_multiplicity
+    description: Duplicate descriptor definitions are invalid but repeated uses of one descriptor are valid.
+    expected:
+      owner_scope_required: true
+      induction_required: true
+      route_not: enforce-now_without_occurrence_model
+  - id: policy_owned_exception_bypassed_locally
+    description: Local explicit-port shortcut bypasses policy owner.
+    expected:
+      veto_class_if_local_fix: policy-bypass
+      route: enforce-now_only_if_exception_encoded_at_policy_owner
+  - id: outer_gate_blocks_inner_fixture
+    description: Stronger outer policy rejects before inner invariant test can exercise target boundary.
+    expected:
+      fixture_precondition_alignment_required: true
+      route_any_of: [validate-only, enforce-now]
+  - id: no_counterexample_preference
+    description: Proposed invariant is just a naming/style preference with no bad state.
+    expected:
+      acceptance_status_any_of: [rejected, downgraded]
+      route: no-change
+  - id: unresolved_induction
+    description: Owner and trace exist but transition preservation is incomplete.
+    expected:
+      route: validate-only
+      implementation_handoff_allowed: no
+  - id: unresolved_veto_overridden
+    description: Root attempts enforce-now despite skeptic or owner veto.
+    expected:
+      checker_failure: true
+  - id: missing_authority_packet
+    description: Consequential invariant lacks required authority packet receipt.
+    expected:
+      invariant_gate_complete: fail
+      implementation_handoff_allowed: no

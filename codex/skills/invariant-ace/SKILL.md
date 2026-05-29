@@ -1,237 +1,277 @@
 ---
 name: invariant-ace
-description: "Turn 'should never happen' into 'cannot happen' by defining owned inductive invariants and enforcing them at parse/construct/API/DB/lock/txn boundaries with proof. Use for invariants, impossible states, validation sprawl, cache/index drift, idempotency/versioning, retries/duplicates/out-of-order events, races, loop correctness, or invariant-first hardening."
+description: "Turn should-never-happen into cannot-happen with authority-gated invariant design. Define owned inductive invariants, separate predicates from pre/postconditions and derived facts, require counterexample traces, owner/scope/source-of-truth proof, transition preservation, policy/exception authority, witness parity, enforcement-boundary choice, and verification. Use for invariants, impossible states, validation sprawl, cache/index drift, idempotency/versioning, retries/duplicates/out-of-order events, races, loop correctness, policy-owned exceptions, generator/validator parity, descriptor-vs-occurrence identity, certificate/proof witness drift, fixture precondition alignment, or invariant-first hardening. Not for generic refactors, broad architecture essays, or implementation without an invariant gate."
 ---
 
 # Invariant Ace
 
 ## Mission
 
-Turn "should never happen" into "cannot happen" with minimal, high-leverage changes: pick owned, inductive invariants; enforce them at the strongest cheap boundary; prove via a concrete counterexample trace and a verification signal.
+Turn "should never happen" into "cannot happen" with minimal, high-leverage changes: name the real state owner, define owned inductive predicates, prove a counterexample trace, choose the strongest cheap enforcement boundary, and attach verification that can falsify the invariant and the proposed enforcement.
+
+This skill is **discriminative**, not decorative. An invariant proposal is a claim to adjudicate, not a mandate to add checks. A property may be true, useful, or reviewer-sounding and still be the wrong invariant, wrong owner, wrong scope, wrong phase, wrong witness, or wrong boundary.
+
+## Default mode
+
+Use **Authority-Gated v1** when invariant analysis can affect implementation, review adjudication, proof closure, validation, or downstream handoff.
+
+Authority-Gated v1 requires:
+
+- stable candidate invariant IDs;
+- artifact and direction state identity;
+- counterexample trace or explicit no-current-counterexample classification;
+- owner/scope/source-of-truth proof;
+- transition/induction coverage;
+- enforcement-boundary selection with why-not-weaker/why-not-stronger reasoning;
+- exception and policy ownership checks;
+- generator/validator/witness parity checks;
+- fixture precondition alignment;
+- verification plan tied to predicates;
+- authority packet receipts and veto handling when the task is non-trivial or consequential;
+- an Invariant Gate before implementation, review-adjudication handoff, proof closure, or fixed-point routing.
+
+Compact mode is allowed only for exploratory invariant sketches, and it must block implementation handoff unless the Invariant Gate passes.
+
+## Core doctrine
+
+Operate in **OWNER-FIRST**, **COUNTEREXAMPLE-DRIVEN**, **INDUCTIVE**, **AUTHORITY-GATED**, **SOURCE-OF-TRUTH-SEEKING**, **POLICY-OWNED**, **WITNESS-PARITY**, **FIXTURE-AWARE**, **FAIL-CLOSED**, **ACCRETIVE**, and **PROOF-BEARING** mode.
+
+- **OWNER-FIRST**: if you cannot name the state owner and mutation boundary, you do not yet have an enforceable invariant.
+- **COUNTEREXAMPLE-DRIVEN**: every accepted invariant needs a concrete bad trace, or an explicit proof-only reason why no current trace exists.
+- **INDUCTIVE**: accepted invariants must hold initially and be preserved by every allowed transition in scope.
+- **AUTHORITY-GATED**: consequential invariants require independent clearances; unresolved vetoes block `enforce-now`.
+- **SOURCE-OF-TRUTH-SEEKING**: enforce at the owner/source of truth, not at downstream local shortcuts.
+- **POLICY-OWNED**: exceptions must be encoded in the policy owner, allowlist, capability, ACL, flag, or protocol that owns the invariant.
+- **WITNESS-PARITY**: validation, generation, projection, certificate, source-map, replay, and proof paths must use the same identity/witness semantics or a named stricter refinement.
+- **FIXTURE-AWARE**: tests must satisfy upstream preconditions when targeting downstream invariants; otherwise they prove the wrong boundary.
+- **FAIL-CLOSED**: unsupported, unmodeled, or unknown cases must block or validate before certificate/proof/artifact construction.
+- **ACCRETIVE**: prefer the smallest truthful boundary repair that removes the illegal state without broadening the system.
+
+## Contract
+
+- Do not implement fixes here unless another skill explicitly owns implementation after this gate.
+- Do not accept a candidate invariant without owner, scope, holds-when, source-of-truth, counterexample/trace status, transition coverage, enforcement boundary, and verification.
+- Do not confuse invariants with preconditions, postconditions, liveness goals, local assertions, style rules, or reviewer preferences.
+- Do not fix identity drift locally when the shared identity predicate belongs to another phase or owner.
+- Do not add local explicit-input shortcuts around policy predicates.
+- Do not trust generated, caller-provided, or fixture-typed witness fields when they should be recomputed or bound to an owning certificate/proof.
+- Do not let stronger outer gates silently invalidate inner-invariant tests; choose whether to configure the outer gate to reach the inner failure or update the expected boundary deliberately.
+- Do not route `validate-only`, `proof-only`, `defer`, `no-change`, or `blocked` invariant rows into implementation.
+- Do not allow root to upgrade a vetoed or unresolved invariant to `enforce-now`; clear the veto or stay non-permissive.
 
 ## Use When (Signals)
 
-- Null/shape surprises, runtime validation sprawl, or input decoding scattered across the codebase.
-- Redundant stored facts drift (cache/index/denormalized columns) or "fix-up" code runs often.
-- Flags/states explode; impossible combinations appear; "unreachable" is reachable.
-- Races, duplicate/out-of-order events, retries, partial failures, or "exactly once" assumptions.
-- Idempotency keys, monotonic version/epoch checks, stale writes, or linearization questions are central.
-- Loop/algorithm correctness depends on comments or intuition; tricky indexing/arithmetic/termination.
-- "Should never happen" branches show up in logs or error trackers.
+- Null/shape surprises, runtime validation sprawl, scattered input decoding, or "unreachable" branches reached in logs.
+- Redundant stored facts drift: cache/index/denormalized columns/certificates/source maps/summaries.
+- Descriptor identity differs from occurrence/site/route multiplicity.
+- Validation accepts by one identity rule while generation/projection/certificate paths select by another.
+- Policy-owned exceptions are bypassed by local explicit-input, explicit-port, shortcut, or allow flag paths.
+- Tests drift because an outer policy gate rejects before the inner invariant under test.
+- Generator/validator parity, certificate witness, proof-object, replay-frame, source-map, or blocked-state accounting issues.
+- Races, duplicate/out-of-order events, retries, stale writes, idempotency, linearization, or loop invariants.
 
-## Routing Priority
+## Authority fanout mode
 
-- If a task has invariant/protocol cues and also asks for broad implementation (`$tk`, `$work`), run this skill first to lock invariants, then execute edits.
-- If you cannot name state owner + transitions, switch to clarification/discovery before implementation.
+For consequential invariant work, use custom Codex authority agents. They solve both bandwidth and authority: independent lanes gather evidence in parallel, and each lane owns a decision dimension.
 
-## Core Model (Fast Definitions)
+Required lanes when an invariant can become implementation work or block closure:
 
-- Invariant: predicate P(state) intended to hold for all reachable states in a scope.
-- Inductive: true initially AND preserved by every allowed transition in that scope.
-- Owner: the single module/type/transaction/lock/actor that controls all mutations needed to preserve P.
-- Precondition/postcondition: caller obligation vs operation guarantee; do not mislabel these as invariants.
-- Derived property: recomputable fact; avoid storing it as "must match" unless you centralize updates.
-- Safety vs liveness: invariants are safety ("nothing bad"); keep progress ("eventually") separate.
+| Role | Owns |
+|---|---|
+| `inv-counterexample-authority` | concrete bad trace, reachability, falsifier |
+| `inv-owner-scope-authority` | state owner, scope, source of truth, same-objective fit |
+| `inv-induction-authority` | transition set and preservation/induction closure |
+| `inv-boundary-authority` | enforcement boundary and why local/stronger/weaker cuts are wrong |
+| `inv-witness-parity-authority` | generator/validator/projection/certificate/fixture/witness parity |
+| `inv-verification-authority` | proof signal tied to each predicate |
+| `inv-skeptic-authority` | strongest no-invariant/no-enforce countercase |
 
-## Immediate Scan
+Authority rules:
 
-- State owner: where does the truth live (type/module/service/table)?
-- State boundary: where does raw data enter (API/DB/file/queue)?
-- Allowed transitions: list operations/events that mutate the state (including retries and concurrency).
-- Failure today: one concrete trace (inputs + transitions + schedule) that reaches a bad state.
+- Each required lane returns a packet; packets are not votes.
+- Root remains the final synthesizer but may only downgrade without re-clearance.
+- `enforce-now` requires all required authority lanes clear and the skeptic lane defeated.
+- Any unresolved or veto packet blocks `enforce-now`.
+- Missing authority packets require `blocked` unless a same-schema root-equivalent packet is emitted.
+- Rejected packets are logged and cannot support accepted invariants.
+
+See `references/authority-fanout.md` and `references/CODEX_SUBAGENTS.md`.
+
+## Immediate scan
+
+Before declaring an invariant, record:
+
+```yaml
+artifact_state_id:
+  branch:
+  base:
+  head:
+  diff_digest:
+  proof_state:
+
+direction_state_id:
+  source:
+  source_ref:
+  same_objective:
+  non_goals:
+  compatibility_posture:
+```
+
+Then ask:
+
+- State owner: where does truth live?
+- Raw boundary: where does untrusted or derived state enter?
+- Allowed transitions: which operations/events mutate the state?
+- Failure today: what minimal trace reaches the bad state?
+- Identity semantics: unique descriptor, occurrence, site, route, target, or witness?
+- Exception owner: what policy/capability/allowlist authorizes exceptions?
+- Witness owner: who proves downstream usability, not mere existence?
+- Fixture preconditions: which upstream gates must be satisfied to test this boundary?
 - Protection level: hope -> runtime -> construction-time -> type/compile-time -> persistence/protocol/atomicity.
-- Pain tag(s): data | concurrency/protocol | algorithm/loop (often multiple).
 
-## Protection Ladder
+## Candidate classification
 
-Choose the cheapest strong layer that makes the violation hard or impossible.
+Classify each candidate:
 
-- Hope-based: comments, assumptions, "unreachable".
-- Runtime: scattered guards/validators near use sites.
-- Construction-time: parse/validate once at boundaries; core code only handles refined values.
-- Type/compile-time: illegal states are unrepresentable (ADTs, typestates, opaque wrappers).
-- Persistence: schema/constraints/transactions enforce invariants at rest.
-- Concurrency boundary: locks/actors/CAS/txns define where invariants must hold (under lock, at commit, at linearization).
+- `accepted`: owned, inductive, enforceable, currently material, and cleared by authority lanes.
+- `candidate`: plausible but missing route-changing evidence.
+- `downgraded`: useful property, but it is a pre/postcondition, liveness goal, derived check, test-only guard, or non-material convention.
+- `rejected`: wrong owner, wrong scope, wrong identity rule, ungrounded, duplicate boundary, or direction-conflicting.
+- `unresolved`: material uncertainty; validation or artifact search required.
+- `blocked`: missing artifact state, direction state, authority packet, identity proof, or verification path prevents safe routing.
 
-## Protocol (Counterexample-Driven)
+Allowed routes:
 
-1. Declare scope + owner.
-   - Write "P holds when/where": always | after construction | under lock | at txn commit | after message apply.
-   - If you cannot name an owner, the invariant will drift; pick a choke point first.
+- `enforce-now`: implement/handoff allowed only after gate passes.
+- `validate-only`: add proof/probe/test before mutation.
+- `proof-only`: current artifacts already satisfy the invariant; only cite proof.
+- `defer`: real invariant but wrong owner/timing/scope.
+- `no-change`: reject/downgrade; no implementation work.
+- `blocked`: fail closed.
 
-2. List transitions and try to break P.
-   - For each transition (and retry/out-of-order variants), attempt a counterexample trace.
-   - If P fails, decide: bug vs wrong scope vs missing state vs wrong owner.
+## Output contract: Authority-Gated v1
 
-3. Make P inductive (or downgrade it).
-   - Weaken P, move it to pre/postconditions, or add auxiliary state (version/epoch/status/idempotency key) until it closes under transitions.
+Emit these sections, in order, for consequential runs:
 
-4. Run a coordination check (concurrency/distributed).
-   - Ask: can two individually-valid concurrent transitions merge into a P-violating state?
-   - If yes, you need coordination (lock/txn/consensus) OR you must redesign the invariant/operation (partition, escrow, monotone merges, idempotency).
+1. `Review Basis`
+2. `Candidate Invariant Inventory`
+3. `Counterexample Ledger`
+4. `Invariant Ledger`
+5. `Owner and Scope Ledger`
+6. `Transition / Induction Matrix`
+7. `Enforcement Boundary Decision`
+8. `Policy / Exception Ledger`
+9. `Witness and Fixture Parity Ledger`
+10. `Verification Plan`
+11. `Authority Packet Receipts`
+12. `Authority Clearance Matrix`
+13. `Authority Veto Ledger`
+14. `Accepted Invariants`
+15. `Validate Only`
+16. `Proof Only`
+17. `Defer / No Change`
+18. `Change Agenda`
+19. `Acceptance Skew Audit`
+20. `All-Invariant Accepted Justification` when every substantive candidate is `accepted` or `enforce-now`
+21. `Invariant Gate`
+22. `Ace Bottom Line`
 
-5. Encode enforcement at the strongest cheap boundary.
-   - Prefer: parser/decoder + smart constructors + narrow/opaque types + centralized mutation.
-   - Avoid: N scattered validators, duplicated truths without a single writer, and "fix-up" routines on every read.
+### Candidate Invariant Inventory
 
-6. Add observability if full enforcement must be staged.
-   - Add cheap tripwires (assert/log/metric) and quarantine paths (reject/dead-letter/compensate).
-   - Record replayable context (transition name, IDs, versions), not raw secrets.
-
-7. Verify with the right harness.
-   - Data: fuzz/property tests on parsers/constructors.
-   - State machines: stateful/model-based tests (sequences).
-   - Concurrency: stress + schedule perturbation; assert at quiescent points.
-   - Protocols: small model checking/simulation for drops/dupes/reorder.
-   - Algorithms: invariant assertions in loops + differential tests vs reference.
-
-## Compact Mode (Fast Path)
-
-Use this when the task is small or time-boxed.
-
-1. Counterexample: one concrete failing trace (<=5 transitions).
-2. Invariants: 1-2 predicates with explicit owner + scope.
-3. Enforcement Boundary: one chosen choke point (parse/construct/API/DB/lock/txn).
-4. Verification: one signal tied to one predicate.
-
-Escalate to full protocol if any of the above is ambiguous or non-inductive.
-
-## Invariant Record (Use This Format)
-
-- Predicate: P(state) (precise, checkable)
-- Owner: module/type/service/table/lock/txn
-- Holds: always | after construction | under lock | at commit | after apply
-- Maintained by: transitions that must preserve P
-- Enforced at: parse/construct/API/DB/lock/txn/protocol
-- Counterexample to avoid: minimal trace that breaks it today
-- Verification: property/stateful/stress/model/differential
-
-## Patterns by Pain
-
-### Data Modeling & Input Validity
-
-- Boundary refinement: raw -> parsed -> validated; only validated enters core.
-- Canonicalization: normalize early (case/whitespace/timezone/ID format) so equality and caching are stable.
-- Explicit absence: model optionality explicitly; avoid "sometimes null" in the core. In proof or matcher code, an absent optional field is not a wildcard unless wildcard semantics are explicitly owned; required witness fields must be present and exact.
-- Cross-field coupling: combine coupled fields into one value to prevent illegal combinations.
-- Denormalization discipline: if you store derived facts, centralize writes or make them recomputed.
-- Canonical-versus-alias fields: when a field is an alias, cache, summary, normalized spelling, or derived boolean for canonical data, validators must recompute it from the canonical source and reject mismatches. Tests should include forged alias fixtures that keep canonical fields valid while corrupting the alias.
-- Descriptor versus occurrence multiplicity: decide whether a reference names a unique descriptor, a use site, or a counted occurrence before using set, multiset, or cardinality equality. Repeated uses of one descriptor may be valid even when duplicate descriptor definitions are invalid; encode and test those as different invariants.
-- Policy-owned exceptions: if an invariant depends on an allowlist, capability, ACL, feature flag, or policy predicate, add legitimate exceptions through that policy owner. Do not add local "explicit input" shortcuts that bypass the policy predicate; tests should configure the policy, not weaken the checker. Partial, blocker, audit-only, and best-effort modes are not implicit exceptions to fail-closed switches; the same policy object must authorize the exception before those paths can accept an otherwise unsupported artifact.
-- Layered negative fixtures: when a stronger outer boundary now rejects before an older inner invariant, decide deliberately. Configure the outer policy to reach the inner failure when that is the test's purpose; otherwise update the expected error to the stricter boundary and document why the earlier rejection is now correct.
-- Validation/projection identity drift: if one phase accepts by an identity rule, every analysis, elaboration, selection, lowering, generation, certificate, or projection path must use the same rule or a named stricter refinement. Prefer one shared predicate/helper over parallel "close enough" lookups such as validate by intrinsic-aware identity but generate by shape-only matching, or apply different route-specific source-vs-target shape rules across phases.
-- Site-aware matching: if identity includes a site index, yield site, operation occurrence, route position, or source-map entry, every matcher/resolver/certificate path must compare that occurrence field and name its coordinate space, such as source selector versus residual selector. Shape, type, protocol, or provider equality alone is not enough when two valid occurrences share the same descriptor.
-- Identity versus witness: a matching hash, fingerprint, ref, descriptor, label, or global dependency proves sameness/availability only, not capability, support, or local route ownership. If validation depends on a mapping being usable, require an explicit witness/proof field that the downstream phase can consume, such as a selected plan edge or certificate-bound link artifact. Reused provider programs need witnesses bound to the selected provider offer or route occurrence, not only to the shared provider program ref. Require the witness the route semantics owns, not an unrelated stronger witness; an explicit shape-owned world-port witness should not be rejected merely because no host-intrinsic/static-plan witness exists, and host-intrinsic routes must prefer intrinsic-bound witnesses over generic shape witnesses.
-- Route target evidence: if generation can select a route-specific target that differs from the original source, the validator must either replay that target from fields carried in the certificate/proof or require an explicit target-owned witness. Do not infer a morphism target, selected offer body, lowered shape, or residual route from the source shape when the artifact does not carry the mapping evidence. A non-null target-shaped witness is not enough unless it is compared against the target ref/fingerprint/protocol/site coordinate the route semantics actually selected.
-- Generator/validator parity: every invariant required to generate a certificate, source map, proof, or artifact must also be enforced when validating an externally supplied one. When a stronger validator breaks generated/comptime self-checks, update the generator to emit the required witness fields or proof links instead of weakening validation. A generator self-check is not enough if imported/manual certificates can bypass the same predicate.
-- Derived fixture parity: tests for generated certificates, plans, or shapes should use the same construction path as production for derived fields. Re-typed fixtures drift when fingerprints include usage summaries, normalized labels, target response refs, policy-derived fields, or computed shape metadata; use the generator/helper or assert every derived field intentionally.
-- Policy authority checks: proving a referenced object exists is not proving the policy authorizes using it. Certificate validation must check both the reference relationship and the relevant policy predicate/capability. An allow flag, enum kind, or generic object tag is not a substitute for the policy-owned ref or capability; for example, host-intrinsic allowlisting must bind a host-intrinsic ref, not just any world-port-shaped object marked as intrinsic-capable.
-- Phase-owned references: do not require an earlier phase to provide a reference, hash, dependency, or residual id that only a later phase can correctly construct. Bind it at the owning phase, include it in that phase's certificate/proof/dependency vector, and when relaxing the earlier requirement add a replacement proof condition that ties the late value to its legitimate source rather than accepting arbitrary later values. Certificate-bound compiled hashes and residual ids must be recomputed from the actual compiled/generated artifact, not trusted from caller overrides. Keep negative tests that prove explicitly wrong early references and forged late bindings are still rejected.
-- Unsupported mapping fail-closed: unimplemented, unmodeled, or unsupported provider/mapping/lowering cases must fail before certificate, proof, source-map, or generated artifact construction. Preserve route-specific supported mappings; negative fixtures should use a genuinely unsupported mapping, not a valid mapping from another route such as an after-site resume mapping.
-- Shortcut preservation: early returns, lowering shortcuts, shape-only world-port paths, and other bypasses must preserve the proof obligations of the selected route semantics before they skip the normal path. A simpler emitted disposition is not permission to skip morphism, adapter, provider, mapping, or dependency evidence that made the selected route valid.
-- Blocked-state certificates: fail-closed partial artifacts may carry blockers, but their certificates must still self-verify by attesting the blocked state and reason. Count equality is not enough; each blocker ref must be tied to a legitimate blocked entry, blocker object, or owning proof source, and blocked source-map entries must not exceed blocker/unsupported counts. If an unsupported/blocked summary count claims to summarize source-map evidence, it must equal the actual emitted blocked entries rather than a looser total blocker count. Track source-shape map entries, blocked entries, unsupported blocked source shapes, and direct/root blockers as separate dimensions unless the artifact contract explicitly derives one from another. Missing `effect_shape_ref` is not by itself proof that an emitted source-map entry is not a source effect; classify by disposition first, then bind to the generator's owning fallback ref, such as the world-port ref, when the primary shape/effect ref is absent and no static-plan owner exists. Static-plan-owned morphism entries may instead bind through the target shape plus plan evidence. When a certificate has a nonempty source-effect surface and actual blocked source-map entries, blocker refs need blocked source-map evidence; root/report-only blockers or no-source-effect partials may bind through closure blocker refs and counts without inventing blocked entries. Preserve the blocked source subject in the entry's source ref and add a separate blocker-ref witness instead of overwriting source identity. Require stronger descriptor/ref equality only for fields the blocked entry actually owns, such as a static-plan ref when present. A blocker is proof state, not permission for certificate mismatch.
-- Emitted-disposition accounting: summary counts, effect rows, source maps, and certificates must count the route disposition actually emitted after lowering or redirection, not the earlier selected-route class. A morphism or pipeline candidate lowered to a world port must not also inflate residualized, pipeline, or adapter totals unless the emitted artifact contains that disposition too.
-- Fixture precondition alignment: when testing a downstream invariant, make the synthetic fixture satisfy all upstream shape, policy, provenance, residual-coverage, and ownership preconditions. If the fixture trips an earlier gate, it is proving the wrong boundary. Relax only the orthogonal coordinate needed to satisfy that earlier model rule, such as using an existing wildcard allowlist meaning for residual-site coverage, while keeping the target witness or ownership invariant strict.
-- Competing-descriptor fixtures: when a test needs a decoy descriptor to prove selection logic, make the decoy legitimate under the verifier too. If supplied descriptors must be referenced, owned, or consumed, create a real source-map/report use for every descriptor instead of relying on unused extras.
-
-### Concurrency & Protocol Correctness
-
-- Lock/txn invariants: P holds under lock or at commit; define where the linearization point is.
-- Monotonic metadata: versions/epochs/counters only increase; reject stale writes.
-- Idempotency: retries and duplicates are safe (idempotency keys, dedupe tables, "apply once").
-- Explicit state machines: enumerate states + allowed transitions; persist enough metadata to reject out-of-order events.
-- Coordination decisions: if P depends on global uniqueness or non-negativity under concurrent debits, choose coordination or redesign (partition/escrow).
-
-### Algorithms & Loop-Heavy Code
-
-- Loop invariants: assert what is preserved each iteration (partitioned regions, sorted prefix, conservation laws).
-- Variant/termination: name a decreasing measure; if you cannot, expect non-termination edges.
-- Representation invariants: hide internal structure behind an API; add a rep-check for tests/debug.
-- Differential testing: compare to a simple, slow reference implementation to catch corner cases.
-
-## Before/After Sketches (Language-Agnostic)
-
-### Boundary Refinement (Data)
-
-```text
-Before: functions accept RawInput and validate ad hoc
-After:  parseRaw(...) -> ValidatedValue | Error
-        core functions accept ValidatedValue only
+```md
+- candidate_count:
+- accepted_count:
+- validate_only_count:
+- proof_only_count:
+- defer_or_no_change_count:
+- blocked_count:
+- candidate_ids:
+- accepted_ids:
+- validate_only_ids:
+- proof_only_ids:
+- defer_or_no_change_ids:
+- blocked_ids:
+- missing_candidate_ids:
+- duplicate_candidate_ids:
 ```
 
-### Idempotency + Versioning (Concurrency/Protocol)
+### Invariant Ledger
 
-```text
-Before: handle(event) mutates state directly (retries duplicate side effects)
-After:  if seen(event.id) return
-        if event.version <= state.version return (or reject)
-        apply(event) at a single atomic boundary (lock/txn/CAS)
-```
+| id | predicate | owner | scope | holds when | source of truth | acceptance status | enforcement boundary | verification signal | evidence ref | route |
+|---|---|---|---|---|---|---|---|---|---|---|
 
-### Loop Invariant (Algorithm)
+### Authority Clearance Matrix
 
-```text
-Before: comment says "array left side is partitioned"
-After:  assert(invariant(state)) inside loop
-        test: random arrays, shrink failing cases, compare to reference
-```
+| id | counterexample | owner/scope | induction | boundary | witness/parity | verification | skeptic | authority status | packet refs |
+|---|---|---|---|---|---|---|---|---|---|
 
-## Verification
+Allowed clearance values: `clear`, `veto`, `unresolved`, `not-needed`, `not-in-scope`. Skeptic values: `defeated`, `veto`, `unresolved`, `not-needed`. Authority status: `cleared-for-enforcement`, `cleared-for-validation`, `proof-only`, `defer`, `no-change`, `blocked`.
 
-Pick at least one signal and tie it to a specific invariant predicate.
+### Authority Veto Ledger
 
-- Property/fuzz: parsers, constructors, normalization.
-- Stateful/model-based: sequences over operations; check invariants after each step.
-- Concurrency stress: N threads + jitter; assert invariants at quiescent points.
-- Protocol simulation: reorder/duplicate/drop + crash/restart; assert safety invariants.
-- Model checking (optional): small state + exhaustive exploration for protocols.
-- Differential/reference: algorithm output equals reference for randomized inputs.
-- Runtime tripwires: assertions/logging/metrics for staged rollout.
+| id | veto source | veto class | veto claim | evidence ref | required to clear | final route |
+|---|---|---|---|---|---|---|
 
-## Research Anchors (Mental Models, Not Requirements)
+Veto classes include: `no-counterexample`, `wrong-owner`, `wrong-scope`, `not-inductive`, `wrong-boundary`, `policy-bypass`, `identity-drift`, `witness-missing`, `fixture-precondition-mismatch`, `duplicate-boundary`, `validation-needed`, `proof-only`, `direction-conflicting`, `missing-packet`.
 
-- Hoare/Floyd/Dijkstra: invariants as proof objects; weakest preconditions.
-- ADT/rep invariants (Liskov-style): abstraction function + local reasoning.
-- Abstract interpretation: over-approx reachable states; inferred invariants.
-- Dynamic invariant mining (Daikon-style): candidate generation; falsify with counterexamples.
-- Separation logic / framing: invariants tied to ownership; interference-aware reasoning.
-- Rely-guarantee & linearizability: concurrency invariants under schedules.
-- TLA+/Alloy mindset: protocols as transitions + invariants; counterexample traces.
-- Coordination avoidance / CRDT laws: when invariants require coordination vs merge-safe design.
+### Change Agenda
 
-## Output Contract (Required Headings)
+| id | route | change | proof or validation required | next | owner |
+|---|---|---|---|---|---|
 
-Use these exact headings in the final response for this skill:
+The Change Agenda must be an exact projection of `route` in the Invariant Ledger. It must not use broad words like `all` when explicit IDs are required.
 
-1. Counterexample
-2. Invariants
-3. Owner and Scope
-4. Enforcement Boundary
-5. Seam (Before -> After)
-6. Verification
-7. Observability (optional)
+## Invariant Gate
 
-## Deliverable Checklist
+Required fields:
 
-1. Counterexample: minimal breaking trace (include schedule/retry if relevant).
-2. Invariants: 1-5 predicates with owner + scope ("holds when").
-3. Enforcement Boundary: boundary/type/API/DB/lock/txn/protocol choice + why.
-4. Seam (Before -> After): minimal structural change that makes violations hard.
-5. Verification: property/stateful/stress/model/differential tied to at least one predicate.
-6. Observability (optional): tripwires/quarantine/metrics if rollout must be staged.
+- `artifact_state_coverage`: `pass` / `fail`
+- `candidate_inventory_coverage`: `pass` / `fail`
+- `counterexample_coverage`: `pass` / `fail`
+- `owner_scope_coverage`: `pass` / `fail`
+- `induction_coverage`: `pass` / `fail`
+- `boundary_decision_coverage`: `pass` / `fail`
+- `policy_exception_coverage`: `pass` / `fail`
+- `witness_fixture_parity_coverage`: `pass` / `fail`
+- `verification_coverage`: `pass` / `fail`
+- `authority_packet_coverage`: `pass` / `fail`
+- `authority_clearance_coverage`: `pass` / `fail`
+- `authority_veto_coverage`: `pass` / `fail`
+- `change_agenda_consistency`: `pass` / `fail`
+- `acceptance_skew_audit`: `pass` / `fail`
+- `invariant_gate_complete`: `pass` / `fail`
+- `implementation_handoff_allowed`: `yes` / `no`
+- `validation_handoff_allowed`: `yes` / `no`
+- `proof_only_handoff_allowed`: `yes` / `no`
 
-## Cross-Coordination
+`invariant_gate_complete` may be `pass` only when all preceding required gate fields pass. `implementation_handoff_allowed: yes` requires at least one `enforce-now` row whose authority status is `cleared-for-enforcement` and no unresolved veto exists for that ID.
 
-- If broader failures emerge, lean on the Unsoundness checklist.
-- If stronger invariants dent ergonomics, reference the Footgun guardrails.
+## Machine check
 
-## Measurement (seq)
-
-Track adoption and compliance with `seq`:
+When automation is available, run:
 
 ```bash
-seq skill-trend --root ~/.codex/sessions --skill invariant-ace --bucket week
-seq skill-report --root ~/.codex/sessions --skill invariant-ace \
-  --sections "Counterexample,Invariants,Owner and Scope,Enforcement Boundary,Seam (Before -> After),Verification,Observability (optional)" \
-  --sample-missing 5
+python codex/skills/invariant-ace/tools/invariant_ace_gate.py invariant-output.md
 ```
+
+A failed checker means no implementation handoff.
+
+## Hard rules
+
+- Do not enforce a candidate invariant without a concrete owner and scope.
+- Do not enforce a candidate invariant without transition/induction coverage.
+- Do not accept identity equality as witness/capability/proof of downstream usability.
+- Do not add policy exceptions outside the policy owner.
+- Do not let generated self-checks substitute for validation of externally supplied artifacts.
+- Do not let fixtures bypass or trip the wrong preconditions without an explicit fixture alignment decision.
+- Do not trust a caller override for a field that must be recomputed from generated/compiled/selected artifacts.
+- Do not route unresolved authority or vetoed invariants to implementation.
+- Do not claim completion when validation/proof is still pending.
+
+## Resources
+
+- [authority-fanout.md](references/authority-fanout.md)
+- [invariant-gate-contract.md](references/invariant-gate-contract.md)
+- [invariant-output-template.md](references/invariant-output-template.md)
+- [CODEX_SUBAGENTS.md](references/CODEX_SUBAGENTS.md)
+- [adversarial-eval-seeds.yaml](evals/adversarial-eval-seeds.yaml)

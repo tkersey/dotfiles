@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Invariant Ace"
-  short_description: "Help with Invariant Ace tasks"
-  default_prompt: "Use $invariant-ace for this task."
+  short_description: "Authority-gated invariant design with counterexamples, owner/scope, induction, boundary, witness parity, and verification gates"
+  default_prompt: "Use $invariant-ace in Authority-Gated v1 mode for this task."
