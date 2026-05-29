@@ -2,5 +2,24 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Context Bounded Verification"
-  short_description: "Help with Context Bounded Verification tasks"
+  short_description: "Bound software correctness, readiness, proof, and handoff claims to current evidence."
   default_prompt: "Use $context-bounded-verification for this task."
+aliases:
+  - context-bound-verification
+  - context-bounded-verification
+gates:
+  closure_or_handoff:
+    required_for:
+      - tier2
+      - tier3
+      - readiness_claim
+      - implementation_handoff
+      - contested_evidence
+      - review_finding_to_mutation
+    tool: "codex/skills/context-bounded-verification/tools/context_verification_gate.py"
+authority:
+  subagents:
+    - context_evidence_authority
+    - context_scope_direction_authority
+    - context_blast_radius_authority
+    - context_closure_authority
