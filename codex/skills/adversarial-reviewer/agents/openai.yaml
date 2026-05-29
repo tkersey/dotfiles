@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Adversarial Reviewer"
-  short_description: "Full-scope de novo review with explicit change agenda and soundness ledger"
-  default_prompt: "Use $adversarial-reviewer for this task."
+  short_description: "Authority-gated de novo review with custom read-only review subagents"
+  default_prompt: "Use $adversarial-reviewer in Authority-Gated v1 mode for this task."

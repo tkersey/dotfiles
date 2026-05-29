@@ -1,0 +1,29 @@
+version: 1
+skill: adversarial-reviewer
+metrics:
+  - material_finding_precision
+  - false_positive_rate
+  - non_finding_rejection_rate
+  - validate_first_routing_rate
+  - authority_packet_coverage_rate
+  - veto_respected_rate
+  - all_candidate_accepted_justification_rate
+cases:
+  - id: grounded_owned_defect
+    expected:
+      authority_status: cleared-for-finding
+      agenda_decision: change-now
+  - id: plausible_unproven
+    expected:
+      agenda_decision: validate-first
+      not_material_change_now: true
+  - id: wrong_owner
+    expected:
+      authority_status: no-finding
+      veto_class: wrong-owner
+  - id: all_candidates_accepted
+    expected:
+      all_candidate_accepted_justification_required: true
+  - id: structural_overreach
+    expected:
+      complexity_remediation_veto: overbroad-fix
