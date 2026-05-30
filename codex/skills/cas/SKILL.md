@@ -1,6 +1,6 @@
 ---
 name: cas
-description: "Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server smoke checks, direct thread/turn execution, detached review control, multi-instance fanout, and `$st` swarm conformance/retry-policy checks."
+description: "Run Zig CAS helpers (`cas`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server smoke checks, thread goal lifecycle control, direct thread/turn execution, detached review control, multi-instance fanout, and `$st` swarm conformance/retry-policy checks."
 ---
 
 # cas (Zig App-Server Control)
@@ -12,12 +12,15 @@ description: "Run Zig CAS helpers (`cas`, `cas_smoke_check`, `cas_instance_runne
 Use the native `cas` dispatcher and subcommands:
 
 - `cas conformance` for swarm conformance checks around `$st` claims and retry policy.
+- `cas goal` for thread goal lifecycle control through app-server v2 `thread/goal/*` APIs.
 - `cas smoke_check` for protocol/API smoke checks.
 - `cas instance_runner` for method execution across one or many isolated instances.
 - `cas review_session` for detached `review/start` lifecycle control with persisted `reviewThreadId` handles.
 - `run_cas_tool request` (helper alias) for single-request flows via `instance_runner --instances 1`.
 
 Current `cas smoke_check` verifies the native client can complete the v2 handshake and reach `experimentalFeature/list`, `thread/start`, `thread/resume`, `turn/start`, `turn/interrupt`, and `turn/steer`.
+
+Current `cas goal` supports `resolve`, `get`, `set`, `clear`, `status`, and `wait`. Use `resolve` or `--dry-run` before mutating a `--latest` target; `set` can create a materialized goal-capable thread by default, while `get`, `clear`, `status`, and `wait` require `--thread-id` or explicit `--latest`.
 
 Hook policy:
 
@@ -185,7 +188,7 @@ When iterating on the Zig-backed `cas` helper CLI path, use these two repos:
 run_cas_tool() {
   local subcommand="${1:-}"
   if [ -z "$subcommand" ]; then
-    echo "usage: run_cas_tool <conformance|conformance-suite|smoke-check|smoke_check|instance-runner|instance_runner|review-session|review_session|request> [args...]" >&2
+    echo "usage: run_cas_tool <conformance|conformance-suite|goal|smoke-check|smoke_check|instance-runner|instance_runner|review-session|review_session|request> [args...]" >&2
     return 2
   fi
   shift || true
@@ -195,6 +198,9 @@ run_cas_tool() {
   case "$subcommand" in
     conformance|conformance-suite|conformance_suite)
       cas_subcommand="conformance"
+      ;;
+    goal)
+      cas_subcommand="goal"
       ;;
     smoke-check|smoke_check)
       cas_subcommand="smoke_check"
@@ -230,12 +236,13 @@ run_cas_tool() {
       echo "direct Zig build failed in $repo." >&2
       return 1
     fi
-    if [ ! -x "$repo/zig-out/bin/cas" ] || [ ! -x "$repo/zig-out/bin/cas_review_session" ] || [ ! -x "$repo/zig-out/bin/cas_smoke_check" ] || [ ! -x "$repo/zig-out/bin/cas_instance_runner" ] || [ ! -x "$repo/zig-out/bin/cas_conformance_suite" ]; then
+    if [ ! -x "$repo/zig-out/bin/cas" ] || [ ! -x "$repo/zig-out/bin/cas_goal" ] || [ ! -x "$repo/zig-out/bin/cas_review_session" ] || [ ! -x "$repo/zig-out/bin/cas_smoke_check" ] || [ ! -x "$repo/zig-out/bin/cas_instance_runner" ] || [ ! -x "$repo/zig-out/bin/cas_conformance_suite" ]; then
       echo "direct Zig build did not produce the full CAS binary set in $repo/zig-out/bin." >&2
       return 1
     fi
     mkdir -p "$HOME/.local/bin"
     install -m 0755 "$repo/zig-out/bin/cas" "$HOME/.local/bin/cas"
+    install -m 0755 "$repo/zig-out/bin/cas_goal" "$HOME/.local/bin/cas_goal"
     install -m 0755 "$repo/zig-out/bin/cas_review_session" "$HOME/.local/bin/cas_review_session"
     install -m 0755 "$repo/zig-out/bin/cas_smoke_check" "$HOME/.local/bin/cas_smoke_check"
     install -m 0755 "$repo/zig-out/bin/cas_instance_runner" "$HOME/.local/bin/cas_instance_runner"
