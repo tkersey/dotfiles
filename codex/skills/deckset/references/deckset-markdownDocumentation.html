@@ -651,17 +651,18 @@ When combined with `bn` or `vivid`, explicit `saturation(...)` wins for saturati
 ## Composable Filters
 ```markdown
 ![left sepia(0.7) vignette(0.5)](image1.jpg)
-![right blur(0.35) contrast(1.2) brightness(0.05)](image2.jpg)
+![right vignette(-0.5) blur(0.35) contrast(1.2)](image2.jpg)
 ```
 
 Mix and match filters freely. Deckset applies them in a consistent order, so you always get the same result.
+Positive `vignette(...)` values darken the edges. Negative values lighten them.
 
 Additional supported controls include:
 - `blur(0...1)`
 - `contrast(0...2)`
 - `brightness(-1...1)`
 - `exposure(-2...2)`
-- `vignette(0...1)`
+- `vignette(-1...1)`
 - `sepia(0...1)`
 - `sharpen(0...1)`
 
@@ -756,8 +757,10 @@ You can also compose multiple filters inline:
 
 ```markdown
 ![inline sepia(0.7) vignette(0.5)](image1.jpg)
-![inline blur(0.3) contrast(1.1) sharpen(0.4)](image2.jpg)
+![inline vignette(-0.5) blur(0.3) contrast(1.1)](image2.jpg)
 ```
+
+Positive `vignette(...)` values darken the edges. Negative values lighten them.
 
 
 # Videos
@@ -1094,6 +1097,25 @@ background-image: image2.jpg
 
 (rest of your content)
 ```
+
+## Presentation pause screen
+
+In Presentation Mode, press `w` to show a white pause screen. You can leave it blank, or add an image, text, or both by adding these commands at the top of your Markdown file:
+
+```markdown
+pause-screen-image: break.png
+pause-screen-text: Back in 10 minutes
+```
+
+For multi-line text, use a literal block:
+
+```markdown
+pause-screen-text: |
+  Back in 10 minutes
+  Wi-Fi: GuestNet
+```
+
+Image paths are resolved like `background-image` paths. The `w` shortcut toggles the pause screen on and off, and `b` still toggles the black screen.
 
 ## Default image corner radius
 
