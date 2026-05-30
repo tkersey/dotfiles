@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""Minimal sanity checks for the $opt skill wrapper and skill-optimizer agent.
+
+Usage from repo root after copying this implementation:
+
+  codex/skills/opt/scripts/opt-sanity --root codex --skill opt --agent codex/agents/skill-optimizer.toml
+
+The checker intentionally avoids third-party dependencies. It validates file presence,
+YAML frontmatter shape by simple parsing, TOML agent parseability, and a few routing
+invariants that matter for $opt.
+"""
+
+from __future__ import annotations
+
+import argparse
+import pathlib
+import re
+import sys
+import tomllib
+from dataclasses import dataclass
+
+
+@dataclass
+class CheckResult:
+    ok: bool
+    message: str
+
+
+def parse_frontmatter(path: pathlib.Path) -> dict[str, str]:
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        raise ValueError(f"{path} does not start with YAML frontmatter")
+    try:
+        _, raw, _body = text.split("---\n", 2)
+    except ValueError as exc:
+        raise ValueError(f"{path} frontmatter is not closed") from exc
+
+    values: dict[str, str] = {}
+    for line in raw.splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if ":" not in line:
+            raise ValueError(f"{path} frontmatter line is not key: value: {line!r}")
+        key, value = line.split(":", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        values[key] = value
+    return values
+
+
+def simple_yaml_scalar_map(path: pathlib.Path) -> dict[str, str]:
+    """Parse only the nested scalar subset used by agents/openai.yaml."""
+    out: dict[str, str] = {}
+    section: str | None = None
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        if not raw_line.strip() or raw_line.lstrip().startswith("#"):
+            continue
+        indent = len(raw_line) - len(raw_line.lstrip(" "))
+        line = raw_line.strip()
+        if indent == 0 and line.endswith(":"):
+            section = line[:-1]
+            continue
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        full_key = f"{section}.{key.strip()}" if section else key.strip()
+        out[full_key] = value.strip().strip('"').strip("'")
+    return out
+
+
+def check_skill(root: pathlib.Path, skill_name: str) -> list[CheckResult]:
+    skill_dir = root / "skills" / skill_name
+    skill_md = skill_dir / "SKILL.md"
+    openai_yaml = skill_dir / "agents" / "openai.yaml"
+    refs_dir = skill_dir / "references"
+    script = skill_dir / "scripts" / "opt-sanity"
+
+    results: list[CheckResult] = []
+
+    for path in [skill_dir, skill_md, openai_yaml, refs_dir, script]:
+        results.append(CheckResult(path.exists(), f"exists: {path}"))
+
+    if not skill_md.exists():
+        return results
+
+    try:
+        fm = parse_frontmatter(skill_md)
+        results.append(CheckResult(fm.get("name") == skill_name, f"frontmatter name is {skill_name!r}"))
+        desc = fm.get("description", "")
+        for needle in ["$opt", "$cas", "$shadow", "$tune", "skill-optimizer"]:
+            results.append(CheckResult(needle in desc, f"description mentions {needle}"))
+        results.append(CheckResult("general code optimization" in desc.lower(), "description excludes general code optimization"))
+    except Exception as exc:  # noqa: BLE001 - CLI checker should print human errors.
+        results.append(CheckResult(False, f"frontmatter parse failed: {exc}"))
+
+    text = skill_md.read_text(encoding="utf-8")
+    required_phrases = [
+        "Parent Completion Check",
+        "Do not use `$opt` to:",
+        "Spawn the custom agent `skill-optimizer`",
+        "Do not manage the parent goal lifecycle",
+    ]
+    for phrase in required_phrases:
+        results.append(CheckResult(phrase in text, f"SKILL.md contains {phrase!r}"))
+
+    if openai_yaml.exists():
+        values = simple_yaml_scalar_map(openai_yaml)
+        implicit = values.get("policy.allow_implicit_invocation")
+        results.append(CheckResult(implicit == "false", "openai.yaml disables implicit invocation"))
+        results.append(CheckResult(values.get("interface.display_name") == "opt", "display name is opt"))
+
+    if refs_dir.exists():
+        expected_refs = {
+            "skill-optimization-contract.md",
+            "delegation-prompts.md",
+            "routing-matrix.md",
+            "session-output-template.md",
+        }
+        present = {p.name for p in refs_dir.glob("*.md")}
+        for ref in sorted(expected_refs):
+            results.append(CheckResult(ref in present, f"reference exists: {ref}"))
+
+    return results
+
+
+def check_agent(agent_path: pathlib.Path) -> list[CheckResult]:
+    results: list[CheckResult] = [CheckResult(agent_path.exists(), f"exists: {agent_path}")]
+    if not agent_path.exists():
+        return results
+    try:
+        data = tomllib.loads(agent_path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        results.append(CheckResult(False, f"agent TOML parse failed: {exc}"))
+        return results
+
+    results.append(CheckResult(data.get("name") == "skill-optimizer", "agent name is skill-optimizer"))
+    results.append(CheckResult(bool(data.get("description")), "agent has description"))
+    results.append(CheckResult(data.get("model_reasoning_effort") == "high", "agent reasoning effort is high"))
+    results.append(CheckResult(data.get("sandbox_mode") in {"read-only", "workspace-write"}, "agent sandbox mode is valid"))
+    instructions = data.get("developer_instructions", "")
+    for phrase in [
+        "The parent session owns CAS goal lifecycle",
+        "Do not broaden scope",
+        "Final response format",
+    ]:
+        results.append(CheckResult(phrase in instructions, f"agent instructions contain {phrase!r}"))
+    return results
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", default="codex", help="Codex config root containing skills/")
+    parser.add_argument("--skill", default="opt", help="Skill directory name")
+    parser.add_argument("--agent", default="codex/agents/skill-optimizer.toml", help="Agent TOML path")
+    args = parser.parse_args(argv)
+
+    root = pathlib.Path(args.root)
+    agent = pathlib.Path(args.agent)
+    results = check_skill(root, args.skill) + check_agent(agent)
+
+    failed = [r for r in results if not r.ok]
+    for result in results:
+        marker = "ok" if result.ok else "FAIL"
+        print(f"[{marker}] {result.message}")
+
+    if failed:
+        print(f"\n{len(failed)} check(s) failed.", file=sys.stderr)
+        return 1
+
+    print("\nAll $opt sanity checks passed.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))
