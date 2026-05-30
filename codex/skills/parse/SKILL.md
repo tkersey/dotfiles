@@ -1,156 +1,304 @@
 ---
 name: parse
-description: "Infer a local codebase's actual architecture: repo kind, dominant architecture, evidenced coexisting patterns, major subsystem exceptions, confidence, docs-vs-code drift, and repo-fit hints. Use for prompts asking what architecture a repo uses, whether it is hexagonal or layered, what subtle patterns shape a repo/slice, how a slice fits a hybrid monorepo, whether docs match implementation, or when `$tk` needs repo-dialect preflight before a minimal change."
+description: >-
+  Classify a local codebase's current architecture from collector-backed,
+  code-first evidence. Use for prompts asking what architecture a repo or slice
+  actually uses, whether it is layered/hexagonal/MVC/plugin/pipeline/etc., what
+  the strongest runner-up is, which coexisting patterns are directly evidenced,
+  whether docs match implementation, or when an implementation agent needs a
+  narrow repo-dialect preflight. Do not use for broad repo onboarding, layer
+  removal, structural redesign, domain algebra, invariant design, implementation
+  specs, or execution planning.
 ---
 
-# Parse
+# Parse — Architecture Fingerprint
 
-## Overview
+## Mission
 
-Identify the architecture a repository is using right now from code-first evidence. Produce one best-fit dominant architecture label, note meaningful subsystem variants, capture up to two directly evidenced coexisting patterns when they materially shape seams or contracts, call out architecture drift when docs and implementation disagree, and give narrow repo-fit hints that help downstream agents fit a change to the repo that already exists.
+`parse` is a narrow architecture classifier.
 
-Keep the advice narrow. Describe how to work within the current repo's seams, ownership boundaries, and dialect; do not prescribe target architectures, migrations, or adjacent-skill routing.
+It identifies the architecture a repository is using **right now** from
+code-first evidence. It produces a compact architecture fingerprint: repo kind,
+one dominant architecture label, confidence, runner-up/near-miss, material
+subsystem variants, up to two directly evidenced coexisting patterns,
+docs-vs-code drift, narrow repo-fit hints, and an agent handoff packet.
+
+`parse` is not an architecture designer, codebase onboarding guide,
+simplification reviewer, invariant gate, spec generator, or execution planner.
+It should leave the user or downstream agent knowing what architecture is
+present, not what architecture should replace it.
 
 ## Purpose Boundary
 
-Use `parse` to classify the repo's current-state architecture and produce narrow repo-fit hints. Do not expand it into broad onboarding notes, full architecture reports, or domain-specific audits. Keep the memo architecture-focused and current-state-only.
+Use `parse` when the main question is classification:
 
-## Execution Spine
+- What architecture does this repo use?
+- Is this layered, hexagonal, MVC, plugin-based, pipeline-oriented, event-driven,
+  modular-monolith, library/SDK, CLI-tooling, or something hybrid?
+- What is the strongest runner-up label, and why did it lose?
+- Are the architecture docs consistent with the implementation?
+- Does this target slice follow the repo-wide architecture or a local variant?
+- What repo dialect should a small downstream change respect?
 
-`parse` is a CLI-backed collector-first classification workflow, not a generic license to "read the repo and think about architecture." The required order for a normal run is:
+Do not use `parse` when the main question is exploration, redesign, removal,
+invariant enforcement, spec writing, or planning. Use the routing boundary below
+to decide before starting.
 
-1. run `parse-arch collect`,
-2. do the required focused rerun when the CLI reports `thin_repo_wide` or mixed signals,
-3. only then do the smallest manual trace needed to close the remaining gap,
-4. emit the parse memo.
+## Routing Boundary
 
-If `parse` is paired with another skill, `parse` still owns this architecture pass. Do not let the companion skill swallow the collector step or replace the parse memo with freeform repo research.
+These boundaries are for deciding whether `parse` is the right skill. Do not
+turn them into follow-up recommendations in the final parse memo unless the user
+explicitly asks what to do next.
 
-## Zig CLI Iteration Repos
+| User intent | Use instead |
+|---|---|
+| "Explain how this repo works", onboarding, entrypoints, domain model, data flow, integrations, tests | `codebase-archaeology` |
+| "This is over-engineered", "what can we delete", remove framework/DI/codegen/ORM/GraphQL/infra layers | `reduce` |
+| Boundary redesign, repeated validation/policy branching, protocol/state-machine drift, generated provenance loss, callback/effect boundary, explicit IR/law tests | `universalist` |
+| Domain algebra, operations/laws, denotational/combinator model, event/workflow algebra, interpreters/law tests | `algebra-driven-design` |
+| Source-of-truth, owned invariant, impossible state, validation sprawl, idempotency/retry/order drift, witness parity, enforcement boundary | `invariant-ace` |
+| Decision-complete implementation spec, readiness gate, spec lint, invariant challenge before planning | `spec-pipeline` |
+| Dependency-ordered execution campaign, rollout/rollback sequencing, task waves | `plan` / `st` / `mesh` |
 
-When iterating on the Zig-backed `parse-arch` CLI, use these two repos:
+When `parse` is paired with another skill, `parse` still owns the architecture
+fingerprint. Run the collector-first classification pass, emit the parse memo,
+and let the companion skill consume the handoff packet. Do not let companion
+source exploration swallow the explicit classification step.
 
-- `skills-zig` (`$HOME/workspace/tk/skills-zig`): source for the `parse-arch` binary, build/test wiring, release tags, and eval fixtures.
-- `homebrew-tap` (`$HOME/workspace/tk/homebrew-tap`): Homebrew formula updates and checksum bumps for released `parse-arch` binaries.
+## Inputs
 
-## Quick Start
+Resolve these from the prompt and repository context:
+
+| Input | Default | Notes |
+|---|---:|---|
+| `repo_path` | current repository | Required root path for inspection. |
+| `focus_paths` | none | Repo-relative files/directories when the user names a slice or downstream change target. |
+| `mode` | `standard` | `quick`, `standard`, or `deep`. |
+| `drift_check` | false | True when the user asks whether docs match implementation. |
+
+## Run Modes
+
+- `quick`: repo kind, dominant architecture, confidence, runner-up line,
+  decisive evidence, repo-fit hints, and caveats. Use for repo-dialect preflight
+  or fast orientation.
+- `standard`: full output contract. Default.
+- `deep`: full output contract plus mandatory focused rerun on thin/mixed
+  repo-wide signals, and 3-5 direct `file:line` citations when source inspection
+  is available.
+
+## CLI Contract
+
+`parse` is a CLI-backed collector-first workflow. A normal run starts with
+`parse-arch collect`.
 
 ```bash
-parse-arch collect /path/to/repo --focus-path src --focus-path test
+parse-arch collect /path/to/repo --json
+parse-arch collect /path/to/repo --focus-path src --focus-path tests --json
 parse-arch collect --repo-path /path/to/repo --json
+parse-arch collect --repo /path/to/repo --format json
 ```
 
-Use the CLI directly during normal `$parse` runs. It accepts the paved repo selectors agents actually try (`<repo_path>`, `--repo-path`, `--repo`, `--json`, `--format json`) and always emits JSON.
-On repo-wide runs without explicit `--focus-path`, the CLI reports `read_depth_verdict`, `thin_signal_classes`, `suggested_focus_paths`, and `followup_hint`. Treat `read_depth_verdict: thin_repo_wide` as a required second-pass trigger, not a suggestion.
+The collector always emits JSON. It should expose these read-depth fields on
+repo-wide runs:
 
 ```bash
 parse-arch collect "$PWD" --json |
   jq -e 'has("read_depth_verdict") and has("thin_signal_classes") and has("suggested_focus_paths") and has("followup_hint")'
 ```
 
-If that contract check fails, stop and install or build a compatible CLI before finalizing a parse memo. On macOS use `brew install tkersey/tap/parse-arch` or `brew upgrade tkersey/tap/parse-arch`. For local CLI iteration, run `zig build build-parse-arch -Doptimize=ReleaseFast` in `$HOME/workspace/tk/skills-zig` and prepend `$HOME/workspace/tk/skills-zig/zig-out/bin` to `PATH`.
+Treat `read_depth_verdict: thin_repo_wide` as a required second-pass trigger, not
+as a warning you can ignore.
 
-## Inputs
+If the collector contract check fails, stop the normal parse path and install or
+build a compatible collector before finalizing if possible:
 
-- `repo_path`: required root path for the repository under inspection.
-- `focus_paths`: optional repo-relative files or directories for the slice the caller cares about. Use these when a downstream agent already knows the target files or subsystem.
-
-## Run Modes
-
-- `quick`: repo kind, dominant architecture, confidence, runner-up line, decisive evidence, and caveats. Use for repo-dialect preflight or fast orientation.
-- `standard`: full output contract. Default.
-- `deep`: full output contract plus a required focused rerun when repo-wide signals are thin or mixed, and 3-5 decisive `file:line` citations from direct inspection when available.
-
-## Prompt Shortcuts
-
-### Repo-Wide Parse
-
-```
-Analyze this repo with `parse`.
-
-Return the full parse memo with repo kind, one dominant architecture label, directly evidenced coexisting patterns, architecture drift, repo-fit advice, and evidence.
-Use `parse-arch collect` first. If repo-wide signals are thin or mixed, do the required focused rerun before finalizing the label.
+```bash
+brew install tkersey/tap/parse-arch
+brew upgrade tkersey/tap/parse-arch
+# or, for local iteration:
+(cd "$HOME/workspace/tk/skills-zig" && zig build build-parse-arch -Doptimize=ReleaseFast)
 ```
 
-### Focused Slice Parse
+If the collector is unavailable and no install/build path is allowed, continue
+only after naming the exact failed command and the missing signal classes. The
+manual fallback must be conservative and must not pretend to have collector
+coverage.
 
-```
-Analyze this repo with `parse`, but optimize for these focus paths:
-- <path>
-- <path>
+## Execution Spine
 
-Keep one repo-wide dominant label if warranted, but say explicitly when these focus paths are materially different from the repo-wide story.
-```
+Follow this order. Do not reorder it unless the collector is unavailable and you
+explicitly record that fallback.
 
-### Drift Check Parse
+### 1. Establish repo kind before architecture label
 
-```
-Run `parse` and focus on whether the documented architecture matches the implementation.
-Call out docs-vs-code drift explicitly and keep repo-fit advice narrow and current-state-only.
-```
+Classify the repository shape first:
 
-## Workflow
+- `application-service`
+- `web-frontend`
+- `full-stack-app`
+- `library-sdk`
+- `cli-tooling`
+- `monorepo-platform`
+- `infra-ops`
+- `data-pipeline`
+- `plugin-extension`
+- `mixed/other`
 
-1. Establish the repo kind before naming the architecture.
-   - Distinguish between application/service, library/SDK, CLI/tooling, monorepo/platform, infra/ops, data/pipeline, or plugin/extension repo shapes.
-   - Use repo kind to avoid forcing app-centric labels onto thin libraries or infrastructure repos.
+Repo kind prevents app-centric architecture labels from being forced onto thin
+libraries, tooling repos, generated packages, infrastructure repos, and data
+pipelines.
 
-2. Collect static signals first.
-   - Run the collector first: `parse-arch collect <repo_path>`.
-   - Pass `--focus-path` for each target slice when `focus_paths` are available.
-   - Treat the collector command as a required proof artifact for normal parse runs. The final `Evidence` section should name the repo-wide command shape you used and, when applicable, the focused rerun command shape too.
-   - Use the JSON output to inspect manifests, entrypoints, dependency-direction hints, runtime-boundary hints, architecture-doc claims, scan coverage, subsystem candidates, focus-path observations, `read_depth_verdict`, `thin_signal_classes`, and `suggested_focus_paths`.
-   - Treat `parse-arch collect` as evidence collection only. Do not let it choose the final architecture label for you.
-   - Do not narrate the parse pass as "now I'm reading source paths" before the collector result is in hand. Manual source inspection is the escalation step after the collector pass, not the substitute for it.
-   - The collector supports three repo selectors openly: positional `repo_path`, `--repo-path`, and `--repo`. It also accepts `--json` and `--format json` as no-op compatibility flags because output is always JSON.
-   - If the repo-wide collector pass reports `read_depth_verdict: thin_repo_wide`, rerun `parse-arch collect` immediately with its `suggested_focus_paths` before broader manual inspection. Do not stop at the repo-wide JSON just because one architecture signal has a non-zero score.
-   - If the collector does not emit usable `suggested_focus_paths`, do one targeted second pass yourself: choose 2-4 likely architecture-defining paths, including at least one path that should confirm the current read and, when plausible, one that could falsify it or surface a coexisting pattern (for example entrypoints, build manifests, the main runtime/core module, public package roots, provider registries, workflow definitions, generated boundaries, or a contract-heavy docs/test slice) and rerun `parse-arch collect` with `--focus-path` for each.
-   - When the collector still leaves the repo under-determined, use one named trace instead of ad hoc browsing:
-     - `entrypoint -> flow -> boundaries` for application/service, monorepo/platform, and plugin/extension repos: start at `main`, route tables, command registries, workflow definitions, or host/plugin registries; follow one representative request/job/command into orchestration/core modules; end at storage, network, queue, file, or generated boundaries.
-     - `public contract -> examples/tests -> core` for `library-sdk` and `cli-tooling` repos: start at exported package roots, public command registries, manifests, or provider/plugin interfaces; follow examples, golden tests, or integration tests that define the contract; end at the implementation modules that actually enforce the seam.
-     - `job spec -> stage graph -> sinks` for `data/pipeline` and `infra/ops` repos: start at DAGs, workflow manifests, build/deploy entrypoints, or task registries; trace stage ordering and handoff seams; end at sinks, state stores, providers, or execution adapters.
-   - Compare what the repo-wide pass saw with what the focus-path pass surfaced. Use that delta in `Major Subsystems / Coexisting Patterns`, `Repo-Fit Advice`, and `Caveats`.
+### 2. Collect static signals first
 
-3. Map the evidence to the curated taxonomy and coexisting-pattern sweep.
-   - Read [references/taxonomy.md](references/taxonomy.md).
-   - Pick one dominant architecture label from the curated set.
-   - Do not lock the dominant label from one cue such as folder names, one framework, or a single collector score. Confirm it across at least 3 distinct evidence surfaces chosen from: entrypoints/runtime wiring, dependency direction, public contract roots, repeated module seams, integration or storage boundaries, configuration/runtime topology, tests/examples-as-contract, or deploy/workflow shape.
-   - Name the strongest plausible runner-up label or coexisting pattern and the decisive evidence that kept it secondary.
-   - Capture up to 2 directly evidenced coexisting patterns when they materially shape seams, contracts, or control flow. Mark each as `repo-wide modifier`, `slice-local variant`, or `near-miss`, and state why it stays secondary. Promote a pattern to `repo-wide modifier` only when it recurs across at least 3 slices or across 2 independent seam types (for example package layout plus runtime registry, or examples/tests plus generated boundaries). Otherwise keep it `slice-local variant` or `near-miss`.
-   - If major slices differ materially, keep the dominant label and add subsystem variants instead of flattening the whole repo into one story.
-   - For `library-sdk` and `cli-tooling` repos, positively inspect exported API roots, examples/tests as contract, command registries, provider/plugin seams, and staged passes before defaulting to app-centric labels.
-   - Prefer common labels plus explicit hybrid wording over inventing niche names.
+Run the collector before manual source inspection.
 
-4. Derive repo-fit advice.
-   - Translate the dominant architecture, coexisting patterns, major subsystems, and any `focus_paths` into narrow advice about seams, ownership, and where a change probably belongs.
-   - Keep the advice implementation-fitting: tell downstream agents what to align with, what boundaries to respect, and what not to assume.
-   - If confidence is `low`, downshift from positive directives to conservative `do_not_assume` warnings.
+- Use `parse-arch collect <repo_path> --json` for repo-wide classification.
+- Add one `--focus-path` per target path when `focus_paths` are available.
+- Record the exact collector command shape for the `Evidence` section.
+- Inspect manifests, entrypoints, dependency-direction hints, runtime-boundary
+  hints, public contract roots, architecture-doc claims, scan coverage,
+  subsystem candidates, focus-path observations, `read_depth_verdict`,
+  `thin_signal_classes`, `suggested_focus_paths`, and `followup_hint`.
+- Treat collector output as evidence, not as an oracle. The final architecture
+  label is a judgment over evidence surfaces.
 
-5. Escalate only when static evidence is weak or contradictory.
-   - Read [references/evidence-playbook.md](references/evidence-playbook.md) before running investigative commands.
-   - If the collector feels weak, name the missing signal classes precisely first. Prefer the collector's `thin_signal_classes` when present; otherwise derive them directly from the JSON evidence summary.
-   - Use the focused rerun to test both the current dominant read and the strongest plausible competing label or coexisting pattern before broader manual inspection.
-   - If another skill is also active, finish the parse-specific escalation first and hand the resulting architecture memo or packet to the companion skill. Do not collapse the parse phase into mixed narration that hides whether the collector and focused rerun actually happened.
-   - For `library-sdk` and `cli-tooling` repos, do not accept a repo-wide collector pass as "good enough" when `read_depth_verdict` is thin. Contract surfaces, public roots, staged passes, examples, tests, and docs often carry the architecture-defining seams.
-   - Do not jump straight from one weak repo-wide collector pass to "manual inspection." First prove that a focused collector rerun still leaves the architecture under-determined.
-   - If the collector command fails, continue with source-first manual inspection only after you state the exact failed command path and the specific signal classes the collector did not supply. Do not fall back to vague “couldn’t use the CLI” language.
-   - Use safe, non-mutating probes only when they add meaningful evidence: builds, tests, dependency inspection, or local command help.
-   - Stop if the only available probe mutates tracked files, requires secrets, or depends on network-only truth.
+Do not narrate a manual source-reading pass before the collector result exists.
+Manual inspection is the escalation step after collector evidence, not a
+replacement for it.
 
-6. Produce the memo.
-   - Choose one best-fit dominant architecture label even when confidence is low.
-   - State confidence and what evidence is missing.
-   - Start `Why This Best Fits` with a `Runner-Up:` line naming the strongest competing label or pattern and the decisive reason it lost.
-   - Support the load-bearing claims with 3-5 decisive `file:line` citations when direct source inspection was possible. When a claim stays collector-derived, cite the concrete path or signal summary and say so.
-   - Include coexisting patterns only when they are directly evidenced, and say why they remain secondary.
-   - Include architecture drift when documentation and implementation diverge.
-   - Keep critique lightweight: mention mismatches or ambiguity, but do not prescribe a new target architecture.
-   - When `focus_paths` materially differ from the repo-wide story, say so explicitly and carry that distinction into the advice.
-   - When evidence is mixed, explain why the nearest competing label or coexisting pattern did not win.
+### 3. Rerun when repo-wide evidence is thin or mixed
+
+Immediately run a focused collector pass when any of these is true:
+
+- `read_depth_verdict == "thin_repo_wide"`;
+- the top architecture signal is non-zero but based on only one evidence class;
+- two plausible labels are close and unresolved;
+- the repo-wide result is dominated by docs or folder names rather than code;
+- the user provided `focus_paths` and they may differ from the repo-wide story.
+
+Use the collector's `suggested_focus_paths` when available.
+
+If suggestions are missing, choose 2-4 architecture-defining paths yourself:
+
+- at least one path that should confirm the current read;
+- when plausible, one path that could falsify it or expose a coexisting pattern;
+- likely candidates: entrypoints, build manifests, runtime/core modules, public
+  package roots, command registries, provider/plugin registries, workflow/DAG
+  definitions, generated boundaries, docs that claim architecture, and
+  tests/examples that define public contracts.
+
+### 4. Escalate to one named manual trace only when needed
+
+If focused collection still leaves the architecture under-determined, perform one
+named trace. Keep it narrow.
+
+- `entrypoint -> flow -> boundaries`: for application/service, full-stack,
+  monorepo/platform, and plugin/extension repos. Start at `main`, route tables,
+  command registries, job/workflow definitions, or host/plugin registries. Follow
+  one representative request/job/command into orchestration/core modules. End at
+  storage, network, queue, file, generated, or adapter boundaries.
+- `public contract -> examples/tests -> core`: for library/SDK and CLI/tooling
+  repos. Start at exported API roots, command registries, manifests, or
+  provider/plugin interfaces. Follow examples, golden tests, or integration tests
+  that define the contract. End at implementation modules that enforce the seam.
+- `job spec -> stage graph -> sinks`: for data/pipeline and infra/ops repos.
+  Start at DAGs, workflow manifests, build/deploy entrypoints, or task
+  registries. Trace stage ordering and handoff seams. End at sinks, state stores,
+  providers, deploy targets, or execution adapters.
+
+Use safe, non-mutating probes only when they add meaningful evidence: local help,
+build/test discovery, dependency inspection, or read-only scripts. Stop if the
+only useful probe mutates tracked files, requires secrets, or depends on
+network-only truth.
+
+### 5. Map evidence to the taxonomy
+
+Read `references/taxonomy.md` before final classification when available.
+
+Pick one dominant architecture label from the curated taxonomy. Prefer common
+labels plus explicit hybrid wording over invented niche names.
+
+Do not lock the label from one cue. Confirm the dominant label across at least
+three distinct evidence surfaces when possible:
+
+- entrypoints/runtime wiring;
+- dependency direction;
+- public contract roots;
+- repeated module seams;
+- integration/storage boundaries;
+- configuration/runtime topology;
+- tests/examples-as-contract;
+- deploy/workflow shape;
+- architecture docs, when consistent with code.
+
+Name the strongest runner-up label or coexisting pattern and the decisive evidence
+that kept it secondary.
+
+### 6. Classify coexisting patterns conservatively
+
+Capture at most two coexisting patterns, and only when they materially shape
+seams, contracts, or control flow.
+
+For each pattern, use one scope:
+
+- `repo-wide modifier`: recurs across at least three slices or across two
+  independent seam types, such as package layout plus runtime registry or
+  examples/tests plus generated boundary.
+- `slice-local variant`: real in the named slice but not architecture-defining
+  for the whole repo.
+- `near-miss`: plausible but missing decisive evidence or subordinate to the
+  dominant label.
+
+Do not claim specialized patterns such as CQRS, event sourcing, DDD,
+anti-corruption layers, workflow engines, or hexagonal architecture without
+direct repo evidence at the appropriate seams.
+
+### 7. Derive repo-fit hints, not redesign advice
+
+Translate the dominant architecture, coexisting patterns, subsystem variants, and
+focus-path deltas into narrow implementation-fit hints:
+
+- where similar changes probably belong;
+- which seams and ownership boundaries to respect;
+- what dependency direction to preserve;
+- what not to assume when confidence is low;
+- how a focus slice differs from the repo-wide story.
+
+Do not recommend migrations, modernization, layer removal, new abstractions,
+invariant enforcement, or follow-up skills unless the user explicitly asks for
+next steps.
+
+## Confidence Rubric
+
+Use `high`, `medium`, or `low`.
+
+`high` requires:
+
+- collector coverage is repo-wide OK or focused evidence compensates for thin
+  repo-wide coverage;
+- at least three distinct evidence surfaces support the dominant label;
+- the strongest runner-up has a clear losing reason;
+- docs, if present, do not materially contradict implementation.
+
+`medium` applies when:
+
+- the dominant label is well supported but one major signal class is thin;
+- the focus slice differs from the repo-wide pattern but the boundary is clear;
+- the runner-up is plausible but secondary evidence is insufficient to promote it.
+
+`low` applies when:
+
+- collector coverage is thin and focused rerun/manual trace cannot close the gap;
+- only one or two evidence surfaces are available;
+- docs and code conflict and code evidence is sparse;
+- multiple labels remain plausible after focused inspection.
+
+Low confidence still requires choosing one best-fit label, but all repo-fit hints
+must be advisory and include `do_not_assume` warnings.
 
 ## Output Contract
 
-Return these sections in order:
+Return these sections in order for `standard` and `deep` modes.
 
 1. `Repo Kind`
 2. `Dominant Architecture`
@@ -163,63 +311,268 @@ Return these sections in order:
 9. `Architecture Drift`
 10. `Caveats`
 
-For each section:
-- `Repo Kind`: Name the repo shape and why it matters for interpretation.
-- `Dominant Architecture`: Give one best-fit label from the curated taxonomy.
-- `Confidence`: Use `high`, `medium`, or `low` and explain what would change the score.
-- `Why This Best Fits`: Start with `Runner-Up: <label or pattern> — <decisive reason it lost>`. Then cite the strongest evidence paths, framework clues, or runtime topology clues. Support the load-bearing claims with 3-5 decisive `file:line` citations when direct source inspection was possible; otherwise cite the concrete collector-derived paths and signal summaries you relied on. When evidence is mixed, say why the nearest competing label or coexisting pattern stayed secondary.
-- `Major Subsystems / Coexisting Patterns`: List major slices only when they materially differ from the dominant architecture. Also list 0-2 directly evidenced coexisting patterns when they shape seams, contracts, or control flow. For each coexisting pattern, state its scope (`repo-wide modifier`, `slice-local variant`, or `near-miss`) and why it does not replace the dominant label. Only use `repo-wide modifier` when the pattern recurs across at least 3 slices or across 2 independent seam types; otherwise keep it `slice-local variant` or `near-miss`.
-- `Repo-Fit Advice`: Give 3-5 bullets that help a downstream agent fit work to the repo as it exists now. Include likely seams, ownership boundaries, and `do_not_assume` warnings when confidence is weak.
-- `Agent Handoff`: Emit one fenced `yaml` block with stable keys: `repo_kind`, `dominant_architecture`, `confidence`, `focus_scope`, `major_subsystems`, `coexisting_patterns`, `architecture_drift`, `repo_fit_hints`, `do_not_assume`, and `evidence_paths`.
-- `Evidence`: Separate decisive evidence from supporting evidence. Show at least 3 distinct evidence surfaces for the dominant label. Prefer concrete paths, `file:line` citations when available, module names, entrypoints, signal summaries, the collector's `thin_signal_classes` when present, and the exact collector command shapes you used over general impressions. Say when a focus-path rerun materially changed the read or surfaced a coexisting pattern.
-- `Architecture Drift`: Compare docs and implementation when both exist; write `none observed` when there is no meaningful drift.
-- `Caveats`: State uncertainty, missing evidence, or overclaim boundaries. Tie caveats to specific missing signals and the compensating paths you inspected, and name plausible but unproven competing labels or patterns explicitly. Avoid generic version-centric caveats unless the binary behavior itself is the issue.
+### 1. Repo Kind
+
+Name the repo shape and why it matters for interpretation. Do not force service
+labels onto libraries, tooling, infra, data, plugin, or generated-artifact repos.
+
+### 2. Dominant Architecture
+
+Give one best-fit label from the curated taxonomy. Use hybrid wording only when
+both halves are evidenced and one remains dominant.
+
+### 3. Confidence
+
+Use `high`, `medium`, or `low`. Explain what evidence would raise or lower the
+score.
+
+### 4. Why This Best Fits
+
+Start with exactly this line:
+
+```text
+Runner-Up: <label or pattern> — <decisive reason it lost>
+```
+
+Then explain the dominant label using the strongest code-first evidence. Support
+load-bearing claims with 3-5 decisive `file:line` citations when direct source
+inspection was possible. When a claim is collector-derived, cite concrete paths,
+module names, signal summaries, or collector fields and say that it is
+collector-derived.
+
+When evidence is mixed, say why the nearest competing label or pattern stayed
+secondary.
+
+### 5. Major Subsystems / Coexisting Patterns
+
+List major subsystem variants only when they materially differ from the dominant
+architecture.
+
+List 0-2 directly evidenced coexisting patterns. For each:
+
+- `pattern`;
+- `scope`: `repo-wide modifier`, `slice-local variant`, or `near-miss`;
+- `evidence`;
+- `why_secondary`.
+
+If there are no material coexisting patterns, write `none material`.
+
+### 6. Repo-Fit Advice
+
+Give 3-5 bullets that help a downstream agent fit work to the repo as it exists
+now. Keep them descriptive and current-state-only.
+
+Include `do_not_assume` warnings when confidence is weak or a focus slice differs
+from the repo-wide story.
+
+### 7. Agent Handoff
+
+Emit one fenced YAML block with exactly these stable top-level keys:
+
+```yaml
+repo_kind:
+dominant_architecture:
+confidence:
+focus_scope:
+runner_up:
+major_subsystems:
+coexisting_patterns:
+architecture_drift:
+repo_fit_hints:
+do_not_assume:
+evidence_paths:
+collector_commands:
+missing_signal_classes:
+classification_only: true
+```
+
+Keep values concise and parseable. Do not include implementation tasks or
+migration recommendations.
+
+### 8. Evidence
+
+Separate decisive evidence from supporting evidence.
+
+Required fields:
+
+- `collector_commands`: exact command shapes used;
+- `read_depth`: repo-wide/focused verdicts and any thin signal classes;
+- `decisive_evidence`: at least three distinct evidence surfaces when available;
+- `supporting_evidence`: docs, tests, config, package layout, generated artifacts,
+  or framework clues that support but do not decide the label;
+- `focus_delta`: how focused rerun changed or did not change the repo-wide read.
+
+Prefer concrete paths, file:line citations, module names, entrypoints, signal
+summaries, and exact collector fields over general impressions.
+
+### 9. Architecture Drift
+
+Compare docs and implementation when both exist.
+
+Use one of:
+
+- `none observed`;
+- `docs overstate architecture`;
+- `docs understate architecture`;
+- `docs stale or contradictory`;
+- `not assessed` with reason.
+
+Keep drift critique lightweight. Do not prescribe a new target architecture.
+
+### 10. Caveats
+
+State uncertainty, missing evidence, and overclaim boundaries. Tie each caveat to
+specific missing signals and the compensating paths inspected. Name plausible but
+unproven competing labels or patterns explicitly.
+
+Avoid generic version-centric caveats unless the collector binary behavior itself
+is the issue.
+
+## Quick Output Mode
+
+For `quick`, return only:
+
+```markdown
+## Repo Kind
+
+## Dominant Architecture
+
+## Confidence
+
+## Runner-Up
+
+## Decisive Evidence
+
+## Repo-Fit Hints
+
+## Caveats
+```
+
+Still run the collector first unless unavailable.
 
 ## Guardrails
 
-- Keep code and runtime evidence above docs when they conflict.
-- Keep repo-fit advice descriptive and current-state-only; do not turn it into redesign advice.
-- If confidence is `low`, keep the advice advisory and make the uncertainty explicit.
-- Do not report more than 2 coexisting patterns.
-- Do not treat folder names, framework brand names, or one collector score as sufficient proof of the dominant label.
-- Do not call a dominant architecture `high` confidence unless it is backed by at least 3 distinct evidence surfaces.
-- Do not promote a secondary pattern to dominant unless it changes repo-wide runtime topology, ownership seams, or control flow.
-- Do not promote a pattern to `repo-wide modifier` from one interesting file or one slice.
-- Do not claim specialized patterns such as CQRS, event sourcing, DDD, anti-corruption layers, or workflow engines without direct repo evidence.
-- Do not confuse framework choice with architecture by default; explain whether the framework is shaping or merely hosting the design.
-- Do not collapse a mixed monorepo into one label without naming important exceptions or `focus_paths` caveats.
-- Do not let a repo-wide label override a slice-local signal when `focus_paths` clearly point at a materially different subsystem.
-- Do not use `parse-arch` version strings as stock caveats. If the collector under-read the repo, say which evidence classes were thin and which concrete paths you inspected to compensate.
-- Do not suggest migrations, modernizations, or follow-up skills unless the user explicitly asks for that next step.
-- Do not present `parse` as a freeform source-reading exercise. If the collector ran, say that it ran; if the collector under-read, say that and show the focused rerun before broader manual inspection.
-- Do not let a companion skill such as `liminal`, `codebase-report`, or `codebase-archaeology` absorb the parse workflow. `parse` must still produce an explicit architecture classification pass with collector-backed evidence.
+- Code and runtime evidence outrank docs when they conflict.
+- `parse-arch collect` is the normal first move, not optional decoration.
+- Do not present `parse` as freeform source-reading.
+- Do not report more than two coexisting patterns.
+- Do not call confidence `high` without at least three distinct evidence surfaces.
+- Do not treat folder names, framework brands, or a single collector score as
+  sufficient proof.
+- Do not confuse framework choice with architecture; explain whether the
+  framework shapes or merely hosts the design.
+- Do not promote a secondary pattern to dominant unless it changes repo-wide
+  runtime topology, ownership seams, or control flow.
+- Do not promote a `repo-wide modifier` from one interesting file or one slice.
+- Do not collapse mixed monorepos into one flat label without naming material
+  exceptions or focus-path caveats.
+- Do not let a repo-wide label override a focus slice that clearly follows a
+  materially different architecture.
+- Do not claim CQRS, event sourcing, DDD, anti-corruption layers, workflow
+  engines, hexagonal architecture, clean architecture, or ports-and-adapters
+  without direct seam evidence.
+- Do not use parse-arch version strings as stock caveats. If the collector
+  under-read the repo, say which signal classes were thin and which paths you
+  inspected to compensate.
+- Do not recommend migrations, modernization, layer removal, new abstractions, or
+  follow-up skills unless the user explicitly asks for next steps.
+- Do not let `codebase-archaeology`, `reduce`, `universalist`,
+  `algebra-driven-design`, `invariant-ace`, `spec-pipeline`, or `plan` absorb the
+  parse memo when `parse` is active.
 
-## Quick Heuristics
+## Label Heuristics
 
-- `layered` / `n-tier`: controllers, services, repositories, models, or handlers arranged in dependency order.
-- `mvc` / `mvvm` / component-driven UI: clear presentation-model/controller boundaries in UI-heavy repos.
-- `clean` / `hexagonal` / `onion` / `ports-and-adapters`: domain or application core separated from adapters, infrastructure, or delivery layers.
-- `modular monolith`: one deployable codebase with clear internal module boundaries.
-- `microservice` / service-oriented: multiple independently shaped services with network or message boundaries.
-- `event-driven`: explicit publishers, consumers, brokers, or async event flows dominate control flow.
-- `pipeline` / job-oriented: DAGs, jobs, workflows, ETL stages, or scheduled data processing dominate the system.
-- `plugin` / extension-based: hosts, hooks, plugins, extensions, or adapter registries are first-class architecture surfaces.
-- `library-sdk` / `cli-tooling` repo kinds: exported API roots, examples/tests-as-contract, command registries, provider/plugin seams, or staged passes can matter more than app-style entrypoints.
-- `coexisting patterns`: package-by-feature, vertical slices, command/query separation, functional-core/imperative-shell, generated-code boundaries, and plugin seams often refine the read without replacing the dominant label.
-- Treat collector-reported `thin_repo_wide` results as an under-read warning even when the top architecture score is non-zero. The second pass is about deepening the evidence, not rewording the same thin read.
+Use these as hints, not proof.
+
+- `layered` / `n-tier`: controllers, handlers, services, repositories, models,
+  or adapters arranged in dependency order.
+- `mvc` / `mvvm` / component-driven UI: explicit presentation-model/controller
+  boundaries in UI-heavy repos.
+- `clean` / `hexagonal` / `onion` / `ports-and-adapters`: application/domain core
+  protected from delivery/infrastructure adapters by explicit ports, interfaces,
+  dependency inversion, or adapter registries.
+- `modular monolith`: one deployable codebase with meaningful internal module
+  boundaries and local calls rather than network/service decomposition.
+- `microservice` / service-oriented: multiple independently shaped services with
+  network, message, deploy, or ownership boundaries.
+- `event-driven`: explicit publishers, consumers, brokers, async event flows, or
+  event contracts dominate control flow.
+- `pipeline` / job-oriented: DAGs, staged jobs, workflows, ETL phases, scheduled
+  tasks, or artifact handoffs dominate the system.
+- `plugin` / extension-based: hosts, hooks, plugins, extensions, providers,
+  capability registries, or adapter registries are first-class architecture
+  surfaces.
+- `library-sdk`: exported API roots, public contracts, examples/tests, generated
+  clients, and provider seams matter more than app entrypoints.
+- `cli-tooling`: command registries, staged passes, file/artifact boundaries,
+  stdout/stderr contracts, and golden tests matter more than web/service labels.
+- `infra-ops`: desired-state config, deploy graphs, provider modules, CI/CD,
+  policy gates, and environment overlays dominate the architecture.
+- `data-pipeline`: job specs, stage graphs, schemas, sinks, lineage, and scheduled
+  execution dominate the architecture.
+- Coexisting patterns such as package-by-feature, vertical slices,
+  command/query separation, functional-core/imperative-shell, generated-code
+  boundaries, and plugin seams may refine the read without replacing the
+  dominant label.
+
+Treat `thin_repo_wide` as an under-read warning even when a top score is non-zero.
+The second pass is about deepening evidence, not rewording the same thin read.
+
+## Prompt Shortcuts
+
+### Repo-Wide Architecture Fingerprint
+
+```text
+Use $parse to classify this repo's current architecture.
+Return the full parse memo. Run parse-arch collect first, rerun focused collection
+if repo-wide signals are thin or mixed, choose one dominant label, name the
+runner-up, call out coexisting patterns only when directly evidenced, and keep
+repo-fit advice current-state-only.
+```
+
+### Focused Slice Fingerprint
+
+```text
+Use $parse for this repo, focused on:
+- <path>
+- <path>
+
+Keep one repo-wide dominant label if warranted, but say explicitly whether these
+paths follow the repo-wide architecture or a material slice-local variant.
+```
+
+### Docs-vs-Code Drift Check
+
+```text
+Use $parse to classify the implementation architecture and compare it with the
+docs' architecture claims. Keep the result current-state-only; do not prescribe a
+migration.
+```
+
+### Repo-Dialect Preflight
+
+```text
+Use $parse quick mode as a repo-dialect preflight for a small downstream change.
+Return the dominant architecture, confidence, runner-up, decisive evidence, and
+3-5 repo-fit hints. Do not expand into onboarding or redesign advice.
+```
 
 ## Validation
 
-- `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/parse`
-- `parse-arch collect "$PWD" --focus-path codex/skills/parse/SKILL.md --json | jq -e '.read_depth_verdict == "focused"'`
-- `parse-arch collect "$HOME/workspace/tk/shift" --json | jq -e 'has("read_depth_verdict") and has("suggested_focus_paths") and has("thin_signal_classes") and has("followup_hint")'`
-- `parse-arch collect "$HOME/.dotfiles" --json | jq -e '.read_depth_verdict == "thin_repo_wide" and (.suggested_focus_paths | length > 0)'`
-- `parse-arch eval --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml"`
-- `parse-arch doctor --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml" --repo-path "$PWD"`
+Run these when editing this skill or the collector contract:
+
+```bash
+uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/parse
+parse-arch collect "$PWD" --focus-path codex/skills/parse/SKILL.md --json | jq -e '.read_depth_verdict == "focused"'
+parse-arch collect "$HOME/workspace/tk/shift" --json | jq -e 'has("read_depth_verdict") and has("suggested_focus_paths") and has("thin_signal_classes") and has("followup_hint")'
+parse-arch collect "$HOME/.dotfiles" --json | jq -e '.read_depth_verdict == "thin_repo_wide" and (.suggested_focus_paths | length > 0)'
+parse-arch eval --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml"
+parse-arch doctor --suite "$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/suite.yaml" --repo-path "$PWD"
+```
 
 ## Resources
 
-- Taxonomy rules: [references/taxonomy.md](references/taxonomy.md)
-- Evidence escalation and memo guidance: [references/evidence-playbook.md](references/evidence-playbook.md)
-- Eval suite: `"$HOME/workspace/tk/skills-zig/apps/parse-arch/references/eval/README.md"`
+- Taxonomy rules: `references/taxonomy.md`
+- Evidence escalation and memo guidance: `references/evidence-playbook.md`
+- Collector source and eval suite: `$HOME/workspace/tk/skills-zig/apps/parse-arch`
 - Static signal collection: `parse-arch collect`
