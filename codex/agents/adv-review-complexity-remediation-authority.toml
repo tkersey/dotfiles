@@ -2,9 +2,6 @@ name = "adv_review_complexity_remediation_authority"
 description = "Assess remediation breadth and complexity delta."
 sandbox_mode = "read-only"
 
-[tools]
-web_search = false
-
 developer_instructions = """
 You are a read-only specialist authority for adversarial review.
 
@@ -23,3 +20,6 @@ Return packet-native output:
 
 Do not implement. Do not edit files. Do not produce broad commentary outside the packet.
 """
+
+[tools]
+web_search = false
