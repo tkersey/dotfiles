@@ -1,6 +1,6 @@
 ---
 name: shadow
-description: "Follow one Codex session until it stops by reading watched-session evidence only through `$seq`, then apply a named skill as interpretation/reporting/proposal/action lens. Trigger for shadow, tail, watch, follow, monitor, supervise, or companion a single session id/path with target skill such as `$tune`, `$seq`, `$ship`, `$pdf`, or another skill."
+description: "Explicitly shadow, tail, watch, follow, monitor, supervise, or companion exactly one Codex session id/path through `$seq`, then apply a named target skill as an interpretation/reporting/proposal/action lens until the watched session stops."
 ---
 
 # Shadow
@@ -9,7 +9,7 @@ description: "Follow one Codex session until it stops by reading watched-session
 
 Use `$shadow` to attach a goal-driven companion to exactly one Codex session.
 
-`$shadow` monitors one watched session through `$seq` session surfaces, interprets new evidence from that session through a named target skill, and continues until the watched session stops. It is designed to be used with `/goal` so the monitoring loop can continue across turns without broadening into an ecosystem scan.
+`$shadow` monitors one watched session through `$seq` session surfaces, interprets new evidence from that session through a named target skill, and continues only until the watched session stops. It is designed for `/goal`-driven monitoring loops without broadening into an ecosystem scan.
 
 The target skill is parameterized. `$tune` is the defining example, not a hard-coded dependency.
 
@@ -23,10 +23,11 @@ propose, or explicitly do before continuing to watch?
 
 ## Trigger Cues
 
-Use `$shadow` when the user asks to:
+Use `$shadow` when the user explicitly asks to:
 
+- Use `$shadow`.
 - Shadow a session.
-- Tail or follow a session until it stops.
+- Tail or follow one session until it stops.
 - Monitor a specific session id or session path.
 - Watch one running session through a named skill.
 - Use `/goal` to keep checking another session.
@@ -46,7 +47,7 @@ Example prompts:
 
 Do not use `$shadow` to:
 
-- Monitor multiple unrelated sessions.
+- Monitor multiple unrelated root sessions.
 - Run broad autonomous skill-ecosystem scans; use `$auto`.
 - Mine arbitrary sessions without a single watched session target; use `$seq`.
 - Replace the target skill's workflow.
@@ -54,6 +55,7 @@ Do not use `$shadow` to:
 - Edit skills or files unless apply mode is explicit and the target skill supports the action.
 - Create or update PRs unless the target skill and user mode explicitly require that workflow.
 - Continue after the watched session stops.
+- Promise asynchronous or background monitoring outside an active `/goal` loop or explicit reinvocation.
 - Assume `$shadow` can inject messages into or steer the watched session.
 - Treat raw skill mentions as proof that the watched session used a skill correctly.
 - Tail, read, grep, parse, or otherwise inspect watched-session JSONL directly.
@@ -74,6 +76,28 @@ Identify these before starting:
 If the user omits mode, default to `propose`.
 
 If the user omits a target skill, ask for the target skill unless the prompt itself clearly implies one. Do not default to `$tune` merely because `$tune` is the defining example.
+
+## Input Normalization
+
+Normalize user inputs before the first cycle:
+
+- Treat `$tune` and `tune` as the same target skill name for lookup and for `seq skill-blocks`.
+- If the target skill input is a path to a skill directory, use that directory and derive the display name from the directory basename.
+- If the target skill input is a path to `SKILL.md`, use its parent directory and derive the display name from that directory basename.
+- If the watched session input is an absolute path, relative path, slash-containing path, or `.jsonl` file, use `$seq` `--path` surfaces where supported.
+- If the watched session input is not path-like, use `--session-id <id> --root <root>`.
+- If the target skill cannot be resolved, fail closed and ask for the skill path/name; do not silently substitute `$tune` or any other skill.
+- If the watched session cannot be resolved through `$seq`, report `state_unknown` or `tooling_gap`; do not inspect raw JSONL.
+
+When a watched session path is provided, prefer path-capable `$seq` commands for the first cycle:
+
+```bash
+seq session-detail --path <rollout.jsonl> --format markdown
+seq turns --path <rollout.jsonl> --format table
+seq tool-lifecycle --path <rollout.jsonl> --format table
+```
+
+After `session-detail` exposes a canonical session id, use that id for commands that are id-only or id-preferred, such as `session-prompts` and `skill-blocks`.
 
 ## Operating Modes
 
@@ -144,6 +168,7 @@ Do not use `$tune` rules unless `$tune` is the target skill.
 Protected skills require extra care as target lenses:
 
 - `seq`
+- `shadow`
 - `tune`
 - `refine`
 - `cron`
@@ -159,6 +184,8 @@ For protected target skills:
 - Keep any applied action narrow.
 - Preserve companion-skill boundaries.
 - Require validation proof for every edit or external workflow action.
+
+If the target skill is `$shadow`, do not recursively start another shadow loop. Treat `$shadow` as a contract-review lens only unless the user explicitly asks for nested monitoring and names the nested watched session.
 
 ## Evidence Rules
 
@@ -194,6 +221,56 @@ Always exclude the shadowing session itself from broader evidence searches when 
 
 Do not include raw transcript excerpts, raw memory text, secrets, credentials, private personal details, sensitive local paths, or long command outputs in user-facing reports unless explicitly allowed and safe.
 
+## Cycle Cursor
+
+Track a compact cursor across monitoring cycles. New evidence means the current cursor differs from the previous cursor.
+
+Record these fields when available:
+
+- `last_seen_turn_index`
+- `last_seen_assistant_message_index`
+- `last_seen_assistant_timestamp`
+- `last_seen_tool_call_id`
+- `last_seen_tool_end_timestamp`
+- `last_seen_session_state`
+- `last_reported_finding`
+
+Classify the cycle delta as one of:
+
+- `none`
+- `turn_added`
+- `assistant_message_added`
+- `tool_started`
+- `tool_completed`
+- `tool_failed`
+- `session_state_changed`
+- `worker_added`
+- `unknown`
+
+Use `no_new_evidence` only when the cursor is unchanged and the watched session state is not newly stopped.
+
+## Stop Condition
+
+`$shadow` stops when the watched session stops.
+
+A watched session is stopped when session evidence indicates no active turn/process remains and the session has reached a terminal or inactive state. Use `seq session-detail`, `seq turns`, `seq tool-lifecycle`, or another structured session-status surface when available.
+
+Watched session state decision:
+
+1. If `session-detail` reports a terminal/inactive state and `tool-lifecycle` has no unresolved active tool calls, classify the state as `stopped`.
+2. If `turns` shows an active/incomplete latest turn, or `tool-lifecycle` has unresolved/running calls, classify the state as `running`.
+3. If the session lookup fails, parsed status is absent, or lifecycle evidence is unavailable, classify the state as `unknown`.
+4. If state is `unknown`, report uncertainty, avoid irreversible action, and continue one more cycle only when `/goal` is active and the user did not specify a stricter stop rule.
+5. If state remains `unknown` after one follow-up cycle, stop with `state_unknown` unless the user explicitly asks to keep polling.
+
+Do not invent additional stop conditions unless the user provides them.
+
+## No Background Monitoring Promise
+
+`$shadow` continues only inside the current active `/goal` loop or when the user explicitly reinvokes it. If `/goal` is unavailable, perform one cycle and report that continued monitoring requires reinvocation or a real goal loop.
+
+Do not say you will keep watching in the background, notify later, or continue asynchronously unless the environment provides an explicit automation mechanism and the user requested it.
+
 ## `$seq` Tuning Handoff
 
 `$shadow` depends on `$seq` for session monitoring. When that dependency is missing a needed surface, requires repeated caller-side filtering, requires direct JSONL access to answer a normal monitoring question, or is inefficient enough to make a monitoring loop impractical, treat that as `$tune` evidence for `$seq`.
@@ -210,7 +287,7 @@ Tuning goal:
 
 Observed usage:
 - Evidence class: repeated_manual_workaround | clear_validation_failure | explicit_user_feedback | tooling_gap
-- Source: $shadow cycle for session <session_id>
+- Source: $shadow cycle for session <session_id-or-path>
 - Finding: <sanitized missing/slow/awkward seq command shape>
 
 Gap:
@@ -227,7 +304,7 @@ Validation:
 
 ## Worker and Subagent Sessions
 
-Default scope is the single watched session only.
+Default scope is the single watched root session only.
 
 Include linked worker/subagent sessions only when:
 
@@ -236,21 +313,15 @@ Include linked worker/subagent sessions only when:
 - the target skill's contract requires worker evidence, or
 - a finding would be misleading without inspecting the linked worker.
 
-When workers are included, keep the root watched session as the lifecycle anchor. Stop when the root watched session stops unless the user explicitly says to continue until workers stop too.
+Worker inclusion algorithm:
 
-## Stop Condition
+1. Run `seq session-graph` for the watched root session when worker evidence is needed and a session id is available.
+2. Include only directly linked workers whose edge/timing overlaps the new root-session evidence window.
+3. Inspect a worker only if the root session delegated target-skill-relevant work to it.
+4. Report worker evidence under a separate `Linked worker evidence` heading.
+5. Keep the root watched session as the lifecycle anchor unless the user explicitly says to continue until workers stop too.
 
-`$shadow` stops when the watched session stops.
-
-A watched session is stopped when session evidence indicates no active turn/process remains and the session has reached a terminal or inactive state. Use `seq session-detail`, `seq turns`, `seq tool-lifecycle`, or another structured session-status surface when available.
-
-If the watched session state is unknown:
-
-- report uncertainty,
-- avoid irreversible action,
-- continue one more monitoring cycle if `/goal` is active and the user did not specify a stricter stop rule.
-
-Do not invent additional stop conditions unless the user provides them.
+When workers are included, stop when the root watched session stops unless the user explicitly says to continue until workers stop too.
 
 ## Workflow
 
@@ -259,17 +330,19 @@ Do not invent additional stop conditions unless the user provides them.
 Write a compact setup line:
 
 ```text
-Shadow: session <session_id> through <target_skill> in <observe|propose|apply> mode until the watched session stops.
+Shadow: session <session_id-or-path> through <target_skill> in <observe|propose|apply> mode until the watched session stops.
 ```
 
 Record:
 
 - watched session id/path,
 - target skill,
+- normalized target skill display name,
 - mode,
 - include-workers setting,
 - raw-excerpt policy,
-- specific watch objective, if any.
+- specific watch objective, if any,
+- initial cycle cursor, if any.
 
 ### 2. Reconstruct the Target Skill Contract
 
@@ -311,6 +384,14 @@ seq turns --root ~/.codex/sessions --session-id <session_id> --format table
 seq tool-lifecycle --root ~/.codex/sessions --session-id <session_id> --format table
 ```
 
+For path-based inputs, start with:
+
+```bash
+seq session-detail --path <rollout.jsonl> --format markdown
+seq turns --path <rollout.jsonl> --format table
+seq tool-lifecycle --path <rollout.jsonl> --format table
+```
+
 Use targeted searches only when the target skill or new evidence calls for them:
 
 ```bash
@@ -319,9 +400,7 @@ seq session-prompts --root ~/.codex/sessions --session-id <session_id> --roles u
 seq skill-blocks --root ~/.codex/sessions --session-id <session_id> --skill <skill> --history latest --format json
 ```
 
-If you need the complete assistant message behind a `session-detail` preview, prefer `session-prompts --session-id <session_id> --roles assistant --limit <N> --format jsonl` and inspect the newest matching watched-session rows. Treat `message-search` as a cross-session mining tool, not the default way to expand one watched session's preview.
-
-Never paste raw `session-detail` output into the user-facing report by default. Convert it into sanitized findings.
+If you need the complete assistant message behind a `session-detail` preview, prefer `session-prompts --session-id <session_id> --roles assistant --limit <N> --format jsonl` and inspect the newest matching watched-session rows through `$seq` output. Never paste raw `session-detail` output into the user-facing report by default. Convert it into sanitized findings.
 
 ### 4. Interpret Through the Skill Lens
 
@@ -367,10 +446,15 @@ Use this shape:
 
 ```text
 Shadowing:
-- Session: <session_id>
+- Session: <session_id-or-path>
 - Lens: <target_skill>
 - Mode: <observe|propose|apply>
 - Watched session state: <running|stopped|unknown>
+
+Cycle cursor:
+- Previous: turn=<n|unknown>, tool_end=<timestamp|unknown>, state=<running|stopped|unknown>
+- Current: turn=<n|unknown>, tool_end=<timestamp|unknown>, state=<running|stopped|unknown>
+- Delta: <none|turn_added|assistant_message_added|tool_started|tool_completed|tool_failed|session_state_changed|worker_added|unknown>
 
 New evidence:
 - <sanitized summary>
@@ -385,12 +469,14 @@ Action:
 - <none | proposed brief | proposed $tune-on-$seq brief | applied change | needs approval>
 
 Next:
-- <continue shadowing | stop because watched session stopped | continue with uncertainty | wait for approval>
+- <continue shadowing | stop because watched session stopped | continue once with uncertainty | wait for approval | reinvoke/enable /goal for continued monitoring>
 ```
 
 ### 7. Continue or Stop
 
-If the watched session is still running, continue shadowing under `/goal`.
+If the watched session is still running and `/goal` is active, continue shadowing under `/goal`.
+
+If the watched session is still running but `/goal` is not active, stop after the current cycle and say continued monitoring requires reinvocation or a real goal loop.
 
 If the watched session has stopped, report a final summary and do not continue.
 
@@ -398,7 +484,7 @@ Final summary:
 
 ```text
 Shadow complete:
-- Session: <session_id>
+- Session: <session_id-or-path>
 - Lens: <target_skill>
 - Final state: stopped
 - Key findings: <summary>
@@ -411,7 +497,18 @@ Shadow complete:
 Use `scripts/shadow-scaffold` to print a repeatable command set and report skeleton:
 
 ```bash
-codex/skills/shadow/scripts/shadow-scaffold --session <session_id> --skill <skill> --mode propose
+codex/skills/shadow/scripts/shadow-scaffold --session <session_id_or_path> --skill <skill> --mode propose
+```
+
+Useful options:
+
+```bash
+codex/skills/shadow/scripts/shadow-scaffold \
+  --session /absolute/path/to/rollout.jsonl \
+  --skill '$tune' \
+  --mode propose \
+  --skills-root codex/skills \
+  --include-workers
 ```
 
 The helper scaffolds evidence collection. It does not replace the target skill's judgment.
@@ -420,15 +517,18 @@ The helper scaffolds evidence collection. It does not replace the target skill's
 
 A good `$shadow` run:
 
-- Follows exactly one watched session.
+- Follows exactly one watched root session.
 - Stops when that watched session stops.
 - Reads the target skill before interpreting evidence.
+- Normalizes `$skill` names and session id/path inputs before generating commands.
+- Tracks a cycle cursor so `new evidence` means a real observed delta.
 - Uses only `$seq` for watched-session evidence.
 - Produces a `$tune`-on-`$seq` brief when `$seq` lacks an efficient monitoring surface.
 - Applies the named target skill as a lens without hard-coding `$tune`.
 - Excludes the shadowing session from broader evidence searches when possible.
 - Produces concise, sanitized cycle reports.
 - Does not claim it can steer the watched session unless a real mechanism exists.
+- Does not promise background monitoring outside an actual `/goal` or automation mechanism.
 - Takes action only in explicit apply mode.
 - Preserves protected-skill boundaries.
 
@@ -444,3 +544,4 @@ A bad `$shadow` run:
 - Treats a missing or inefficient `$seq` monitoring surface as a reason to bypass `$seq` instead of tuning it.
 - Uses generic `seq query` before specialized `$seq` session surfaces.
 - Confuses the shadowing session with the watched session.
+- Re-reports old evidence because no cursor was tracked.

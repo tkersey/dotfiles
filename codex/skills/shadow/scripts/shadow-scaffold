@@ -3,39 +3,105 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Usage: shadow-scaffold --session <session-id-or-path> --skill <skill> [--mode observe|propose|apply] [--root <sessions-root>] [--include-workers] [--raw-excerpts]
+Usage: shadow-scaffold --session <session-id-or-path> --skill <skill-or-path> [options]
 
 Prints a seq-only $shadow evidence command set and monitor-cycle report skeleton.
 
-Defaults:
-  --root  ~/.codex/sessions
-  --mode  propose
+Required:
+  --session, --session-id, --path <value>
+      Watched session id or rollout JSONL path. --path forces path mode.
+  --skill <skill-or-path>
+      Target skill name, $skill name, skill directory, or path to SKILL.md.
+
+Options:
+  --mode observe|propose|apply
+      Defaults to propose.
+  --root <sessions-root>
+      Defaults to ~/.codex/sessions.
+  --skills-root <skills-root>
+      Defaults to codex/skills.
+  --include-workers
+      Print linked-worker follow-up commands and selection rules.
+  --raw-excerpts
+      Mark raw transcript excerpts as allowed in the scaffold settings.
+  --no-validate-skill
+      Do not require the resolved target skill SKILL.md to exist.
+  -h, --help
+      Show help.
 USAGE
 }
 
+fail_usage() {
+  echo "$1" >&2
+  usage >&2
+  exit 2
+}
+
+need_value() {
+  local flag="$1"
+  local value="${2:-}"
+  if [[ -z "$value" ]]; then
+    fail_usage "$flag requires a value"
+  fi
+}
+
+q() {
+  printf '%q' "$1"
+}
+
+is_path_like() {
+  local value="$1"
+  [[ "$value" == /* || "$value" == ./* || "$value" == ../* || "$value" == *"/"* || "$value" == *.jsonl ]]
+}
+
 session=""
-skill=""
+session_kind="auto"
+skill_raw=""
 mode="propose"
 root="$HOME/.codex/sessions"
+skills_root="codex/skills"
 include_workers="false"
 raw_excerpts="false"
+validate_skill="true"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --session|--session-id|--path)
-      session="${2:-}"
+    --session)
+      need_value "$1" "${2:-}"
+      session="$2"
+      session_kind="auto"
+      shift 2
+      ;;
+    --session-id)
+      need_value "$1" "${2:-}"
+      session="$2"
+      session_kind="id"
+      shift 2
+      ;;
+    --path)
+      need_value "$1" "${2:-}"
+      session="$2"
+      session_kind="path"
       shift 2
       ;;
     --skill)
-      skill="${2:-}"
+      need_value "$1" "${2:-}"
+      skill_raw="$2"
       shift 2
       ;;
     --mode)
-      mode="${2:-}"
+      need_value "$1" "${2:-}"
+      mode="$2"
       shift 2
       ;;
     --root)
-      root="${2:-}"
+      need_value "$1" "${2:-}"
+      root="$2"
+      shift 2
+      ;;
+    --skills-root)
+      need_value "$1" "${2:-}"
+      skills_root="$2"
       shift 2
       ;;
     --include-workers)
@@ -46,47 +112,91 @@ while [[ $# -gt 0 ]]; do
       raw_excerpts="true"
       shift
       ;;
+    --no-validate-skill)
+      validate_skill="false"
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
       ;;
     *)
-      echo "unknown argument: $1" >&2
-      usage >&2
-      exit 2
+      fail_usage "unknown argument: $1"
       ;;
   esac
 done
 
-if [[ -z "$session" ]]; then
-  echo "--session is required" >&2
-  usage >&2
-  exit 2
-fi
-
-if [[ -z "$skill" ]]; then
-  echo "--skill is required" >&2
-  usage >&2
-  exit 2
-fi
+[[ -n "$session" ]] || fail_usage "--session, --session-id, or --path is required"
+[[ -n "$skill_raw" ]] || fail_usage "--skill is required"
 
 case "$mode" in
   observe|propose|apply) ;;
-  *)
-    echo "--mode must be observe, propose, or apply" >&2
-    exit 2
-    ;;
+  *) fail_usage "--mode must be observe, propose, or apply" ;;
 esac
+
+if [[ "$session_kind" == "auto" ]]; then
+  if is_path_like "$session"; then
+    session_kind="path"
+  else
+    session_kind="id"
+  fi
+fi
+
+skill_input="${skill_raw#\$}"
+skill_dir=""
+skill_name=""
+
+if [[ "$skill_input" == */SKILL.md ]]; then
+  skill_dir="$(dirname "$skill_input")"
+  skill_name="$(basename "$skill_dir")"
+elif is_path_like "$skill_input"; then
+  skill_dir="${skill_input%/}"
+  skill_name="$(basename "$skill_dir")"
+else
+  skill_name="$skill_input"
+  skill_dir="${skills_root%/}/$skill_name"
+fi
+
+[[ -n "$skill_name" ]] || fail_usage "could not derive target skill name from --skill"
+[[ -n "$skill_dir" ]] || fail_usage "could not derive target skill directory from --skill"
+
+if [[ "$validate_skill" == "true" && ! -f "$skill_dir/SKILL.md" ]]; then
+  cat >&2 <<ERR
+resolved target skill file does not exist: $skill_dir/SKILL.md
+pass --skills-root <dir>, pass --skill <skill-dir-or-SKILL.md>, or use --no-validate-skill for scaffold-only output
+ERR
+  exit 2
+fi
+
+if [[ "$session_kind" == "path" ]]; then
+  session_args="--path $(q "$session")"
+  session_ref_label="path"
+else
+  session_args="--root $(q "$root") --session-id $(q "$session")"
+  session_ref_label="session-id"
+fi
+
+skill_md_q="$(q "$skill_dir/SKILL.md")"
+skill_agent_q="$(q "$skill_dir/agents/openai.yaml")"
+skill_auto_q="$(q "$skill_dir/AUTO.md")"
+skill_scripts_q="$(q "$skill_dir/scripts")"
+skill_refs_q="$(q "$skill_dir/references")"
+skill_assets_q="$(q "$skill_dir/assets")"
+root_q="$(q "$root")"
+skill_name_q="$(q "$skill_name")"
 
 cat <<SHADOW_OUT
 # \$shadow scaffold
 
-Shadow: session $session through $skill in $mode mode until the watched session stops.
+Shadow: session $session through $skill_name in $mode mode until the watched session stops.
 
 ## Settings
 
 - Session: $session
-- Lens: $skill
+- Session ref kind: $session_ref_label
+- Lens: $skill_name
+- Raw lens input: $skill_raw
+- Skill directory: $skill_dir
 - Mode: $mode
 - Root: $root
 - Include workers: $include_workers
@@ -96,10 +206,11 @@ Shadow: session $session through $skill in $mode mode until the watched session 
 
 Read the target skill first:
 
-cat codex/skills/$skill/SKILL.md
-# If present and relevant:
-# cat codex/skills/$skill/agents/openai.yaml
-# find codex/skills/$skill/scripts codex/skills/$skill/references codex/skills/$skill/assets -maxdepth 2 -type f 2>/dev/null
+cat $skill_md_q
+# Optional if present and relevant:
+# cat $skill_agent_q
+# cat $skill_auto_q
+# find $skill_scripts_q $skill_refs_q $skill_assets_q -maxdepth 2 -type f 2>/dev/null
 
 Summarize:
 - Purpose:
@@ -109,51 +220,136 @@ Summarize:
 - Tool/resource expectation:
 - Validation expectation:
 - Companion-skill handoffs:
+- Protected-skill constraints:
 
 ## Watched-session evidence commands
 
 Use only seq for watched-session monitoring. If seq cannot expose a needed watched-session fact, or the available seq path is too slow or awkward for repeated monitoring, report a tooling_gap/seq_tuning_gap/state_unknown finding and produce a \$tune-on-\$seq brief instead of reading raw session files.
 
-seq session-detail --root "$root" --session-id "$session" --format markdown
-seq turns --root "$root" --session-id "$session" --format table
-seq tool-lifecycle --root "$root" --session-id "$session" --format table
-seq session-tooling --root "$root" --session-id "$session" --format table
-seq session-prompts --root "$root" --session-id "$session" --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
-
-# Optional targeted follow-ups when the lens calls for them:
-seq tool-search --root "$root" --session-id "$session" --contains "<command-or-tool-pattern>" --mode rows --format table
-seq skill-blocks --root "$root" --session-id "$session" --skill "$skill" --history latest --format json
-
+seq session-detail $session_args --format markdown
+seq turns $session_args --format table
+seq tool-lifecycle $session_args --format table
 SHADOW_OUT
 
+if [[ "$session_kind" == "id" ]]; then
+  cat <<SHADOW_ID_CMDS
+seq session-tooling --root $root_q --session-id $(q "$session") --format table
+seq session-prompts --root $root_q --session-id $(q "$session") --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
+
+# Optional targeted follow-ups when the lens calls for them:
+seq tool-search --root $root_q --session-id $(q "$session") --contains "<command-or-tool-pattern>" --mode rows --format table
+seq skill-blocks --root $root_q --session-id $(q "$session") --skill $skill_name_q --history latest --format json
+SHADOW_ID_CMDS
+else
+  cat <<'SHADOW_PATH_CMDS'
+
+# Path mode note:
+# session-detail should expose the canonical watched session id. After resolving it, set:
+watched_session_id="<resolved-session-id>"
+
+# Id-preferred follow-ups after resolution:
+SHADOW_PATH_CMDS
+  cat <<SHADOW_PATH_CMDS
+seq session-tooling --root $root_q --session-id "\$watched_session_id" --format table
+seq session-prompts --root $root_q --session-id "\$watched_session_id" --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
+
+# Optional targeted follow-ups when the lens calls for them:
+seq tool-search --path $(q "$session") --contains "<command-or-tool-pattern>" --mode rows --format table
+seq skill-blocks --root $root_q --session-id "\$watched_session_id" --skill $skill_name_q --history latest --format json
+SHADOW_PATH_CMDS
+fi
+
+cat <<'SHADOW_CURSOR'
+
+## Cycle cursor
+
+Track this between cycles. Treat evidence as new only when the cursor changes.
+
+Previous cursor:
+- last_seen_turn_index: <unknown>
+- last_seen_assistant_message_index: <unknown>
+- last_seen_assistant_timestamp: <unknown>
+- last_seen_tool_call_id: <unknown>
+- last_seen_tool_end_timestamp: <unknown>
+- last_seen_session_state: <unknown>
+- last_reported_finding: <unknown>
+
+Current cursor:
+- last_seen_turn_index: <unknown>
+- last_seen_assistant_message_index: <unknown>
+- last_seen_assistant_timestamp: <unknown>
+- last_seen_tool_call_id: <unknown>
+- last_seen_tool_end_timestamp: <unknown>
+- last_seen_session_state: <running|stopped|unknown>
+- last_reported_finding: <classification>
+
+Delta:
+- <none|turn_added|assistant_message_added|tool_started|tool_completed|tool_failed|session_state_changed|worker_added|unknown>
+
+## Stop-state decision
+
+- stopped: session-detail says terminal/inactive and tool-lifecycle has no unresolved active calls.
+- running: turns shows an active/incomplete latest turn or tool-lifecycle has unresolved/running calls.
+- unknown: lookup/status/lifecycle evidence is unavailable.
+- unknown after one extra /goal cycle: stop with state_unknown unless the user explicitly asks to keep polling.
+SHADOW_CURSOR
+
 if [[ "$include_workers" == "true" ]]; then
-  cat <<SHADOW_WORKERS
+  if [[ "$session_kind" == "id" ]]; then
+    cat <<SHADOW_WORKERS
+
 ## Worker/subagent follow-up
 
 Use only if linked workers are necessary to interpret the watched root session:
 
-seq session-graph --root "$root" --session-id "$session" --format table
-seq session-detail --root "$root" --session-id "<linked-worker-session-id>" --format markdown
+seq session-graph --root $root_q --session-id $(q "$session") --format table
+seq session-detail --root $root_q --session-id "<linked-worker-session-id>" --format markdown
 
-Keep $session as the lifecycle anchor unless the user explicitly says to wait for workers too.
-
+Worker selection rule:
+- include only directly linked workers whose timing overlaps the new root-session evidence window,
+- inspect a worker only if the root session delegated target-skill-relevant work to it,
+- report worker evidence under "Linked worker evidence",
+- keep $session as the lifecycle anchor unless the user explicitly says to wait for workers too.
 SHADOW_WORKERS
+  else
+    cat <<SHADOW_WORKERS
+
+## Worker/subagent follow-up
+
+Path mode requires resolving the canonical session id first:
+
+seq session-graph --root $root_q --session-id "\$watched_session_id" --format table
+seq session-detail --root $root_q --session-id "<linked-worker-session-id>" --format markdown
+
+Worker selection rule:
+- include only directly linked workers whose timing overlaps the new root-session evidence window,
+- inspect a worker only if the root session delegated target-skill-relevant work to it,
+- report worker evidence under "Linked worker evidence",
+- keep $session as the lifecycle anchor unless the user explicitly says to wait for workers too.
+SHADOW_WORKERS
+  fi
 fi
 
 cat <<SHADOW_REPORT
+
 ## Cycle report skeleton
 
 Shadowing:
 - Session: $session
-- Lens: $skill
+- Lens: $skill_name
 - Mode: $mode
 - Watched session state: <running|stopped|unknown>
+
+Cycle cursor:
+- Previous: turn=<n|unknown>, tool_end=<timestamp|unknown>, state=<running|stopped|unknown>
+- Current: turn=<n|unknown>, tool_end=<timestamp|unknown>, state=<running|stopped|unknown>
+- Delta: <none|turn_added|assistant_message_added|tool_started|tool_completed|tool_failed|session_state_changed|worker_added|unknown>
 
 New evidence:
 - <sanitized summary of new watched-session evidence>
 
 Lens interpretation:
-- <what $skill's contract implies about the new evidence>
+- <what $skill_name's contract implies about the new evidence>
 
 Finding:
 - <no_new_evidence|aligned|missed_activation|false_activation|partial_activation|workflow_gap|validation_gap|tooling_gap|seq_tuning_gap|boundary_gap|ready_for_target_action|needs_user_approval|watched_session_stopped|state_unknown>
@@ -162,13 +358,13 @@ Action:
 - <none|proposed brief|proposed \$tune-on-\$seq brief|applied change|needs approval>
 
 Next:
-- <continue shadowing|stop because watched session stopped|continue with uncertainty|wait for approval>
+- <continue shadowing under active /goal|stop because watched session stopped|continue once with uncertainty|wait for approval|reinvoke/enable /goal for continued monitoring>
 
 ## Final report skeleton
 
 Shadow complete:
 - Session: $session
-- Lens: $skill
+- Lens: $skill_name
 - Final state: stopped
 - Key findings:
 - Actions proposed/taken:
