@@ -14,3 +14,4 @@ codex/skills/deckset/references/refresh-metadata.json
 
 .step/st-plan.jsonl.lock
 codex/memories/extensions/learnings/resources/latest_learnings_digest.md
+codex/memories/extensions/chronicle/resources/*
