@@ -1,4 +1,9 @@
-# Adjudication output template v6
+# Adjudication output template
+
+Use this Resolution-Warranted v4 template for real PR review comment sets. This is the Resolution-Warranted v4
+shape. It is designed to prevent downstream selection laundering, especially the
+failure mode where a mixed review set becomes "all are worth resolving" and then
+enters implementation.
 
 ```md
 ## Review Basis
@@ -11,19 +16,11 @@ artifact_state_id:
   comment_set_digest:
   ci_state:
 
-## Direction Context Ledger
-
-direction_state_id:
-  source:
-  source_ref:
-  source_freshness:
-  same_objective:
-  active_frontier:
-  locked_decisions:
-  non_goals:
-  compatibility_posture:
-  ownership_boundaries:
-  direction_confidence:
+- branch / PR:
+- current artifact evidence:
+- tests / CI:
+- comments adjudicated:
+- limits / unavailable evidence:
 
 ## Comment Inventory
 
@@ -37,62 +34,181 @@ direction_state_id:
 
 ## PR Why Ledger
 
+- intended_change:
+- explicit_constraints:
+- non_goals:
+- governing_invariants:
+- evidence_source:
+- rationale_freshness:
+- staleness_source:
+- confidence:
+
 ## Comment Ledger
 
-| id/thread | reviewer | review source | location | excerpt | claim | reviewer severity claim | accepted criticality | severity acceptance status | direction fit | direction ref | approval class | mutation value | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence grade | evidence ref | severity proof ref | handoff |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| id/thread | reviewer | location | excerpt | claim | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence grade | evidence ref | handoff |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|  |  |  |  |  | valid/partial/unsupported/unknown | valid/partially-valid/wrong-fix/overbroad/under-specified/not-applicable/validation-only | material-relevant/relevant-nonmaterial/partially-relevant/stale-or-superseded/unsupported/out-of-scope/preference-only | act/rebut/defer/need-evidence | defeated/not-defeated/unresolved |  | current-artifact/current-test/current-ci/current-session-artifact/prior-session-artifact/memory-only/reviewer-only/none |  | none/route-to-accretive-implementer/route-to-fixed-point-driver/route-to-logophile/ask-user/draft-reply |
 
 ## Decision Tests
+
 | id/thread | grounded | material | fresh | diagnosis | scope-fit | resolution value | no-change defeated | min evidence to change mind |
 |---|---|---|---|---|---|---|---|---|
-
-## Direction Tests
-| id/thread | direction source | source freshness | same objective | direction fit | direction ref | active frontier | non-goal conflict | direction override | min evidence to change direction |
-|---|---|---|---|---|---|---|---|---|---|
-
-## Severity Tests
-| id/thread | reviewer severity claim | accepted criticality | severity acceptance status | severity proof ref | downgrade/reject reason | p2+ accepted | min evidence to accept severity |
-|---|---|---|---|---|---|---|---|
-
-## Mutation Approval Tests
-| id/thread | concern approved | fix approved | mutation approved | approval class | why now | why not alternative | proof after fix |
-|---|---|---|---|---|---|---|---|
+|  | yes/no/unknown | yes/no/user-requested/unknown | current/stale/superseded/unclear | correct/partially-correct/misdiagnosed/unknown | yes/no/partial/unknown | merge-blocking/correctness-critical/review-closure/proof-only/validation-needed/low-value/out-of-lane/blocked | yes/no/unresolved |  |
 
 ## No-Change Countercases
+
+- `<id/thread>`:
+  - strongest no-change case:
+  - status:
+  - why defeated / preserved / unresolved:
+
 ## Governing Invariant Ledger
+
+| invariant id | invariant | comments | evidence | violated/threatened | minimum fix shape | handoff | why not local fixes |
+|---|---|---|---|---|---|---|---|
+
+## Specialist Packet Receipts
+
+Omit this section only when no specialists were used.
+
+| role | packet status | artifact state match | scope match | finding added | route changed | used for | reason |
+|---|---|---|---|---|---|---|---|
+
 ## Act On
+
+- `<id/thread>`: action, evidence grade/ref, replacement fix shape if reviewer fix is not valid, and handoff shape.
+
 ## Rebut
+
+- `<id/thread>`: rebuttal basis, evidence, and reply stance.
+
 ## Defer / Out of Scope
+
+- `<id/thread>`: scope boundary and future owner.
+
 ## Need Evidence
 
-## Authority Packet Receipts
-| role | packet status | artifact state match | direction state match | scope match | scoped comment ids | clearance added | veto added | used for | reason |
-|---|---|---|---|---|---|---|---|---|---|
-
-## Authority Clearance Matrix
-| id/thread | evidence | direction/ownership | criticality | no-change | validation-value | fix-shape | authority status | packet refs |
-|---|---|---|---|---|---|---|---|---|
-
-## Authority Veto Ledger
-| id/thread | veto source | veto class | veto claim | evidence ref | required to clear | final route |
-|---|---|---|---|---|---|---|
+- `<id/thread>`: missing evidence and validation-only handoff, if any.
 
 ## Resolve Selection
+
 | id/thread | resolve decision | reason | proof ref | next | route rationale |
 |---|---|---|---|---|---|
+|  | address/validate-only/resolve-thread-only/do-not-address/blocked |  |  | route-to-fixed-point-driver / validation probe / proof reply or thread resolution / none / blocked | narrow-local/coupled-comments/invariant-level/structural/validation-only/contentious/likely-to-reopen/proof-only-thread/no-change/blocked |
 
 ## Resolve Countercases
+
+- `<id/thread>`:
+  - proposed resolve decision:
+  - strongest alternative resolve decision:
+  - why alternative is rejected / preserved / unresolved:
+
+## Resolution Warrants
+
+| warrant id | claim id | source | claim excerpt | decision | concern validity | proposed fix validity | no-change status | resolution value | route rationale | permitted action | permitted scope | forbidden actions | evidence refs | countercase ref | proof required | expiry |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|  |  | github-review/cas/human-review/specialist/root-equivalent |  | address/validate-only/resolve-thread-only/do-not-address/blocked | valid/partial/unsupported/unknown | valid/partially-valid/wrong-fix/overbroad/under-specified/not-applicable/validation-only | defeated/not-defeated/unresolved | merge-blocking/correctness-critical/review-closure/proof-only/validation-needed/low-value/out-of-lane/blocked | narrow-local/coupled-comments/invariant-level/structural/validation-only/contentious/likely-to-reopen/proof-only-thread/no-change/blocked | mutate-code/add-validation-only/resolve-thread/draft-reply/defer/none | files/symbols/threads allowed | actions forbidden outside scope | concrete refs | no-change / resolve countercase ref | commands/proofs required | invalid when HEAD/base/diff/comment/thread state changes |
+
 ## Invariant-Level Handoff
+
+- invariant:
+- affected comments:
+- route:
+- minimum fix shape:
+- proof required:
+
 ## Acceptance Skew Audit
+
+- disposition distribution:
+- acceptance pressure checked:
+- stale/superseded possibilities:
+- unsupported possibilities:
+- preference-only possibilities:
+- out-of-scope possibilities:
+- validation-only alternatives:
+- shared-invariant pressure:
+
 ## All-Action Justification
-## P2+ Severity Audit
-## All-P2+ Accepted Justification
-## Direction Fit Audit
-## Source Pressure Audit
-## All-Current-Finding Selected Justification
+
+Include this section only when every substantive comment is `act`.
+
+| check | result | evidence ref | why action still warranted |
+|---|---|---|---|
+| stale/superseded | pass/fail |  |  |
+| unsupported | pass/fail |  |  |
+| preference-only | pass/fail |  |  |
+| out-of-scope | pass/fail |  |  |
+| misdiagnosis | pass/fail |  |  |
+| proposed-fix validity | pass/fail |  |  |
+| validation-only alternative | pass/fail |  |  |
+| shared-invariant | pass/fail |  |  |
+
 ## Selection Skew Audit
+
+- resolve decision distribution:
+- all-selected pressure checked:
+- address over-selection possibilities:
+- validate-only over-routing possibilities:
+- proof-only thread-resolution alternatives:
+- do-not-address alternatives:
+- blocked/ask-user alternatives:
+- fixed-point over-routing pressure:
+
 ## All-Selected Justification
+
+Include this section only when every substantive comment is selected as
+`address` or `validate-only`.
+
+| check | result | evidence ref | why selected resolution is still warranted |
+|---|---|---|---|
+| stale/already-fixed alternative | pass/fail |  |  |
+| proof-only thread-resolution alternative | pass/fail |  |  |
+| do-not-address alternative | pass/fail |  |  |
+| validate-before-mutation alternative | pass/fail |  |  |
+| out-of-scope/defer alternative | pass/fail |  |  |
+| fixed-point over-routing check | pass/fail |  |  |
+
 ## Adjudication Gate
+
+| field | value | basis |
+|---|---|---|
+| artifact_state_coverage | pass/fail |  |
+| comment_inventory_coverage | pass/fail |  |
+| identity_coverage | pass/fail |  |
+| decision_test_coverage | pass/fail |  |
+| no_change_coverage | pass/fail |  |
+| disposition_coverage | pass/fail |  |
+| proposed_fix_separation | pass/fail |  |
+| evidence_ref_coverage | pass/fail |  |
+| resolve_selection_coverage | pass/fail |  |
+| resolve_countercase_coverage | pass/fail |  |
+| resolution_warrant_coverage | pass/fail |  |
+| warrant_consumption_safety | pass/fail |  |
+| handoff_agenda_consistency | pass/fail |  |
+| selection_skew_audit | pass/fail |  |
+| invariant_pass | pass/fail |  |
+| specialist_packet_coverage | pass/fail/not-used |  |
+| acceptance_skew_audit | pass/fail |  |
+| adjudication_complete | pass/fail |  |
+| implementation_handoff_allowed | yes/no |  |
+| validation_handoff_allowed | yes/no |  |
+| reply_handoff_allowed | yes/no |  |
+
 ## Handoff Agenda
+
+- implementation route:
+- validation route:
+- proof-only thread-resolution route:
+- reply route:
+- items selected for implementation: # must match mutate-code warrants
+- validation-only items: # must match add-validation-only warrants
+- proof-only thread-resolution items: # must match resolve-thread warrants
+- items not selected:
+- proof:
+- blocked items:
+
 ## Adjudication Bottom Line
+
+- `Proceed: ...`
+- or `Blocked: incomplete adjudication. Do not implement yet.`
 ```

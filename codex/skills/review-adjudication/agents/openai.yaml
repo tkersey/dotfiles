@@ -1,6 +1,6 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Review Adjudication"
-  short_description: "Discriminate review comments before acting"
-  default_prompt: "Use $review-adjudication for this task."
+  short_description: "Gated PR review adjudication with anti-laundering resolve selection"
+  default_prompt: "Use $review-adjudication in Resolution-Warranted v4 mode for this task."

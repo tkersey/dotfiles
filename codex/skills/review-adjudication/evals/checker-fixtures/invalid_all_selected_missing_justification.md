@@ -158,7 +158,6 @@ artifact_state_id:
 | handoff_agenda_consistency | pass | agenda buckets match selection map |
 | selection_skew_audit | pass | skew audited |
 | invariant_pass | pass | invariant checked and named |
-| invariant_ace_coverage | pass | invariant-ace checked when required |
 | specialist_packet_coverage | not-used | no specialists used |
 | acceptance_skew_audit | pass | skew audited |
 | adjudication_complete | pass | all required fields pass |

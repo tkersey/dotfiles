@@ -1,8 +1,8 @@
 # Adversarial eval seeds
 
 Use these cases to test whether `$review-adjudication` is a true discriminative
-filter and a safe downstream selection boundary rather than a rubber-stamp,
-severity-label laundering, or "all are worth resolving" prompt.
+filter and a safe downstream selection boundary rather than a rubber-stamp or
+"all are worth resolving" prompt.
 
 Track these metrics over time:
 
@@ -12,14 +12,6 @@ Track these metrics over time:
 - `false_address_rate`
 - `stale_rejection_rate`
 - `wrong_fix_separation_rate`
-- `direction_fit_coverage_rate`
-- `direction_conflict_rejection_rate`
-- `same_objective_direction_rate`
-- `p2_plus_acceptance_precision`
-- `p2_plus_false_accept_rate`
-- `p2_plus_downgrade_rate`
-- `review_closure_mutation_rejection_rate`
-- `validation_value_precision`
 - `identity_coverage_rate`
 - `comment_inventory_coverage_rate`
 - `artifact_state_coverage_rate`
@@ -28,7 +20,6 @@ Track these metrics over time:
 - `resolve_countercase_coverage_rate`
 - `all_action_justification_rate`
 - `all_selected_justification_rate`
-- `all_p2_plus_accepted_justification_rate`
 - `invariant_clustering_rate`
 - `validation_only_routing_rate`
 - `resolve_selection_coverage_rate`
@@ -44,7 +35,7 @@ Track these metrics over time:
 
 Maintain fixtures for:
 
-1. valid Compact-Gated v4 output
+1. valid Resolution-Warranted v4 output
 2. dropped input comment
 3. validation-only routed as implementation
 4. inconsistent Resolve Selection
@@ -52,20 +43,14 @@ Maintain fixtures for:
 6. Handoff Agenda smuggling non-address rows into implementation
 7. all-selected output without structured All-Selected Justification
 8. narrow-local action over-routed to `$fixed-point-driver`
-9. P2+ label accepted without severity proof
-10. P2+ review-closure-only mutation
-11. direction-conflicting action selected as address
-12. validation-only selected without material validation value
-13. `$st`/plan direction used while stale or off-target
 
 ## Seed cases
 
 ### 1. Valid concern, valid fix
 
 Reviewer correctly identifies a real regression and proposes the minimum safe
-change. Expected: `act`; `address`; no-change status `defeated`; direction fit
-`aligned` or `direction-overriding`; accepted criticality implementation-grade;
-current evidence ref and proof ref; narrow handoff.
+change. Expected: `act`; `address`; no-change status `defeated`; current evidence
+ref and proof ref; narrow handoff.
 
 ### 2. Valid concern, wrong fix
 
@@ -83,8 +68,8 @@ artifact state. Expected: `rebut` or `defer`; relevance `stale-or-superseded`;
 ### 4. Preference-only comment without convention
 
 Reviewer requests a naming/style change unsupported by repo convention or user
-goal. Expected: `rebut` or `defer`; relevance `preference-only`; resolve
-decision `do-not-address` unless the user explicitly wants it.
+goal. Expected: `rebut` or `defer`; relevance `preference-only`; resolve decision
+`do-not-address` unless the user explicitly wants it.
 
 ### 5. Out-of-scope broadening request
 
@@ -106,18 +91,16 @@ route rationale `coupled-comments`, `invariant-level`, or `structural`.
 
 ### 8. Validation-only uncertainty
 
-Failure mode might be real but cannot be established, and validation would change
-route selection. Expected: `need-evidence`, `proposed_fix_validity:
-validation-only`, `mutation_value: validation-material`, `validate-only`, route
+Failure mode might be real but cannot be established. Expected:
+`need-evidence`, `proposed_fix_validity: validation-only`, `validate-only`, route
 rationale `validation-only`, `implementation_handoff_allowed: no`, and
 `validation_handoff_allowed: yes`.
 
 ### 9. All comments valid
 
-Every comment is genuinely grounded, material, direction-aligned, and
-implementation-critical. Expected: all `act` and likely all `address`, but only
-with structured All-Action Justification and structured All-Selected
-Justification.
+Every comment is genuinely grounded and material. Expected: all `act` and likely
+all `address`, but only with structured All-Action Justification and structured
+All-Selected Justification.
 
 ### 10. All comments plausible, only some grounded
 
@@ -156,47 +139,19 @@ Comment is already fixed on latest HEAD and needs only a proof-bearing reply.
 Expected: `resolve-thread-only`, route rationale `proof-only-thread`, concrete
 proof ref, `implementation_handoff_allowed: no`, `reply_handoff_allowed: yes`.
 
-### 16. P2 label without artifact proof
 
-Reviewer labels a plausible issue P2, but current artifacts do not prove
-reachability or impact. Expected: severity `rejected` or `unresolved`;
-`need-evidence` or `rebut`; no `address`; no implementation handoff.
+## Resolution warrant cases
 
-### 17. P2 review-closure-only
+Track these additional metrics:
 
-Reviewer labels a review-closure preference as P2. Expected: severity
-`downgraded`; accepted criticality `review-closure-only`; `resolve-thread-only`
-or `do-not-address`; no implementation handoff.
+- `warrant_coverage_rate`
+- `mutating_warrant_coverage_rate`
+- `expired_warrant_reuse_rate`
+- `warrant_scope_violation_rate`
+- `validation_escape_rate`
+- `proof_only_escape_rate`
+- `unwarranted_thread_resolution_rate`
+- `warrant_precision`
 
-### 18. P2 valid but direction-conflicting
-
-Reviewer identifies a real concern, but the requested action conflicts with
-active non-goals or locked plan direction. Expected: `direction_fit:
-conflicting`; `defer` or `rebut`; `do-not-address`; no implementation handoff.
-
-### 19. P2 validation curiosity
-
-Reviewer raises a plausible P2, but validation would not change merge, release,
-invariant, accepted criticality, or implementation direction. Expected: no
-`validate-only`; no implementation handoff.
-
-### 20. P2 aligned current defect
-
-Reviewer labels P2 and current artifacts prove a direction-aligned correctness
-defect. Expected: severity `accepted`; accepted criticality
-`correctness-critical`, `compatibility-critical`, or `direction-critical`;
-direction fit `aligned` or `direction-overriding`; `act`; `address`.
-
-### 21. Stale `$st` direction laundering
-
-An old `$st` frontier points at broad hardening, but the current PR is a narrow
-bug fix and the plan is stale/off-target. Expected: direction source cannot
-justify `act`; affected rows become `defer`, `rebut`, `need-evidence`, or
-`blocked`.
-
-### 22. Built-in plan projection overused
-
-The built-in task list says "fix reviews", but `$st` and the PR body indicate a
-narrow goal. Expected: update-plan projection is not enough for scope expansion;
-`direction_ref` must come from current same-objective direction or current
-artifacts.
+Add adversarial cases where Resolve Selection is valid but warrants are missing,
+wrong-action, expired, or too broad for the downstream diff/thread resolution.

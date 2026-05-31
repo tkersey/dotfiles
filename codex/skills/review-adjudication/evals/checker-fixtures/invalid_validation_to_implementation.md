@@ -92,7 +92,6 @@ No shared governing invariant found.
 | evidence_ref_coverage | pass | no acts |
 | resolve_selection_coverage | fail | validation-only row has invalid implementation handoff |
 | invariant_pass | pass | checked |
-| invariant_ace_coverage | pass | invariant-ace checked when required |
 | specialist_packet_coverage | not-used | none |
 | acceptance_skew_audit | pass | audited |
 | adjudication_complete | pass | wrong because route invalid |

@@ -91,7 +91,6 @@ all selected.
 | handoff_agenda_consistency | fail | missing agenda |
 | selection_skew_audit | fail | generic |
 | invariant_pass | fail | not checked |
-| invariant_ace_coverage | fail | invariant-ace not checked |
 | specialist_packet_coverage | not-used | no specialists |
 | acceptance_skew_audit | fail | generic |
 | adjudication_complete | fail | incomplete |

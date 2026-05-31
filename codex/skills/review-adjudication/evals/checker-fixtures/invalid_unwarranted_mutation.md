@@ -96,13 +96,6 @@ artifact_state_id:
 | c2 | validate-only | reviewer flake claim is unproven and needs validation proof | thread:c2 | route-to-fixed-point-driver | validation-only |
 | c3 | do-not-address | preference-only no-change case preserved | src/a.py:1 | none | no-change |
 
-
-## Resolve Selection
-
-| id/thread | resolve decision | reason | proof ref | next | route rationale |
-|---|---|---|---|---|---|
-| c1 | do-not-address | conflicting duplicate section | src/a.py:10 | none | no-change |
-
 ## Resolve Countercases
 
 - c1:
@@ -117,6 +110,14 @@ artifact_state_id:
   - proposed resolve decision: do-not-address
   - strongest alternative resolve decision: address
   - why alternative is rejected / preserved / unresolved: src/a.py:1 shows no convention-backed need.
+
+## Resolution Warrants
+
+| warrant id | claim id | source | claim excerpt | decision | concern validity | proposed fix validity | no-change status | resolution value | route rationale | permitted action | permitted scope | forbidden actions | evidence refs | countercase ref | proof required | expiry |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| rw-c1 | c1 | github-review | retry writes twice | address | valid | valid | defeated | correctness-critical | narrow-local | add-validation-only | tests/probes only | production mutation; requested code change | src/a.py:10 | no-change c1 defeated by src/a.py:10 | pytest tests/test_a.py::test_retry_idempotent | invalid when HEAD/base/diff/comment-set changes |
+| rw-c2 | c2 | github-review | maybe flakes | validate-only | unknown | validation-only | unresolved | validation-needed | validation-only | add-validation-only | tests/probes for thread:c2 only | production mutation; requested code change | thread:c2 | no-change c2 unresolved pending repro | validation probe for thread:c2 | invalid when HEAD/base/diff/comment-set changes |
+| rw-c3 | c3 | github-review | rename helper | do-not-address | unsupported | not-applicable | not-defeated | low-value | no-change | none | none | mutate code; resolve unrelated threads | src/a.py:1 | no-change c3 preserved by missing convention | none | invalid when HEAD/base/diff/comment-set changes |
 
 ## Invariant-Level Handoff
 
@@ -162,6 +163,8 @@ artifact_state_id:
 | evidence_ref_coverage | pass | act has current artifact evidence ref |
 | resolve_selection_coverage | pass | every ledger row has valid downstream selection |
 | resolve_countercase_coverage | pass | every ledger row has resolve countercase |
+| resolution_warrant_coverage | pass | every resolve decision has a matching warrant |
+| warrant_consumption_safety | pass | warrant actions match handoff agenda buckets |
 | handoff_agenda_consistency | pass | agenda buckets match selection map |
 | selection_skew_audit | pass | skew audited |
 | invariant_pass | pass | invariant checked and named |

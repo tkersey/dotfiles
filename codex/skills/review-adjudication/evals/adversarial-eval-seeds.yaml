@@ -1,71 +1,191 @@
-version: 6
+version: 3
 skill: review-adjudication
 metrics:
+  - warrant_precision
+  - unwarranted_thread_resolution_rate
+  - proof_only_escape_rate
+  - validation_escape_rate
+  - warrant_scope_violation_rate
+  - expired_warrant_reuse_rate
+  - mutating_warrant_coverage_rate
+  - warrant_coverage_rate
   - act_precision
   - false_act_rate
   - address_precision
   - false_address_rate
-  - authority_clearance_coverage_rate
-  - authority_veto_respect_rate
-  - permissive_override_failure_rate
-  - current_automated_finding_rejection_rate
+  - stale_rejection_rate
+  - wrong_fix_separation_rate
+  - identity_coverage_rate
+  - comment_inventory_coverage_rate
+  - artifact_state_coverage_rate
+  - evidence_ref_coverage_rate
+  - decision_test_coverage_rate
+  - resolve_countercase_coverage_rate
+  - all_action_justification_rate
+  - all_selected_justification_rate
+  - invariant_clustering_rate
   - validation_only_routing_rate
-  - proof_only_routing_rate
-  - p2_plus_downgrade_rate
-  - all_current_finding_justification_rate
+  - resolve_selection_coverage_rate
+  - handoff_agenda_consistency_rate
+  - handoff_agenda_leak_rate
+  - duplicate_section_rejection_rate
+  - resolve_proof_ref_coverage_rate
+  - fixed_point_overrouting_rate
+  - selection_countercase_coverage_rate
+  - gate_failure_when_incomplete_rate
 cases:
-  - id: current_owned_defect_authority_cleared
-    description: Current PR-owned correctness defect with all authority lanes clear.
+  - id: valid_concern_valid_fix
+    description: Reviewer correctly identifies a real regression and proposes the minimum safe change.
     expected:
-      approval_class: A1-current-owned-defect
-      authority_status: cleared-for-address
+      disposition: act
       resolve_decision: address
+      route_rationale: narrow-local
+      no_change_status: defeated
+      proposed_fix_validity: valid
+      evidence_grade_any_of: [current-artifact, current-test, current-ci, current-session-artifact]
+      evidence_ref_required: true
+      proof_ref_required: true
       implementation_handoff_allowed: yes
-  - id: cas_invariant_finding_validate_first
-    description: Current CAS invariant finding is plausible but reachability is unproven.
+  - id: valid_concern_wrong_fix
+    description: Reviewer identifies a real bug but proposes a special case that violates the source-of-truth rule.
     expected:
-      review_source: cas-codex
-      approval_class: B1-plausible-route-changing-validation
-      authority_status: cleared-for-validation
-      validation_value: validate-first
-      resolve_decision: validate-only
-      implementation_handoff_allowed: no
-  - id: cas_wrong_hypothesis_veto
-    description: CAS finding sounds invariant-level but evidence authority vetoes reachability.
+      concern_validity: valid
+      proposed_fix_validity_any_of: [wrong-fix, overbroad]
+      requires_replacement_fix_shape: true
+      requires_invariant_handoff: true
+      resolve_countercase_required: true
+  - id: stale_comment_after_patch
+    description: Reviewer comment was true on an earlier diff but is superseded by current artifacts.
     expected:
-      authority_veto_class: unreachable
-      resolve_decision_any_of: [do-not-address, blocked]
-      implementation_handoff_allowed: no
-  - id: valid_not_this_pr
-    description: Concern is real but direction/ownership authority says wrong owner or future migration.
-    expected:
-      approval_class: B3-valid-not-this-pr
-      authority_status_any_of: [defer, no-change]
-      resolve_decision: do-not-address
-      implementation_handoff_allowed: no
-  - id: p2_review_closure_only
-    description: P2 label maps only to reviewer comfort or thread closure.
-    expected:
-      severity_acceptance_status_any_of: [downgraded, rejected]
-      accepted_criticality: review-closure-only
+      relevance: stale-or-superseded
+      disposition_any_of: [rebut, defer]
       resolve_decision_any_of: [resolve-thread-only, do-not-address]
+      implementation_handoff_for_comment: false
+  - id: preference_only_without_convention
+    description: Reviewer requests style or naming unsupported by repo convention or user goal.
+    expected:
+      relevance: preference-only
+      disposition_any_of: [rebut, defer]
+      resolve_decision: do-not-address
+  - id: out_of_scope_broadening
+    description: Reviewer asks the PR to solve an adjacent migration or unrelated design problem.
+    expected:
+      relevance: out-of-scope
+      disposition: defer
+      resolve_decision: do-not-address
+      implementation_handoff_for_comment: false
+  - id: unsupported_reviewer_intuition
+    description: Reviewer says a path seems unsafe without artifact support.
+    expected:
+      disposition_any_of: [need-evidence, rebut]
+      direct_act_allowed: false
+      current_evidence_ref_required_for_act: true
+  - id: locally_valid_invariant_level
+    description: Multiple comments point to one ownership/source-of-truth invariant.
+    expected:
+      invariant_cluster_required: true
+      avoid_piecemeal_local_fixes: true
+      route_rationale_any_of: [coupled-comments, invariant-level, structural]
+  - id: validation_only_uncertainty
+    description: Failure mode might be real but cannot be established from current artifacts.
+    expected:
+      disposition: need-evidence
+      proposed_fix_validity: validation-only
+      resolve_decision: validate-only
+      route_rationale: validation-only
+      remediation_posture: validating-check-only
+      handoff_action: route-to-fixed-point-driver
       implementation_handoff_allowed: no
-  - id: authority_veto_overridden
-    description: Resolve Selection tries to address a row with a veto ledger entry.
+      validation_handoff_allowed: yes
+  - id: all_comments_valid
+    description: Every comment is grounded and material.
+    expected:
+      all_action_allowed: true
+      structured_all_action_justification_required: true
+      all_selected_justification_required: true
+      implementation_handoff_allowed: yes
+  - id: plausible_but_mixed_quality
+    description: Plausible review set where only some comments are grounded.
+    expected:
+      disposition_diversity_expected: true
+      resolve_selection_diversity_expected: true
+      all_action_without_specific_justification_allowed: false
+      all_selected_without_specific_justification_allowed: false
+  - id: dropped_hard_comment
+    description: Ledger omits one input review comment.
+    expected:
+      comment_inventory_coverage: fail
+      adjudication_complete: fail
+      implementation_handoff_allowed: no
+  - id: validation_only_routed_as_implementation
+    description: Validation-only row routes directly to implementation.
     expected:
       checker_failure: true
-      permissive_override_absent: fail
       implementation_handoff_allowed: no
-  - id: all_current_automated_findings_selected
-    description: Every current automated finding is selected.
+  - id: proof_only_thread_resolution
+    description: Reviewer comment is stale or already fixed on current HEAD and needs only a proof-bearing reply/thread resolution.
     expected:
-      all_current_finding_selected_justification_required: true
-      authority_packet_coverage: pass
-      no_change_advocate_required: true
-  - id: already_fixed_proof_only
-    description: Finding is valid historically but latest HEAD already satisfies it.
-    expected:
-      approval_class: B2-valid-already-fixed
-      authority_status: proof-only
+      relevance: stale-or-superseded
+      disposition_any_of: [rebut, defer]
       resolve_decision: resolve-thread-only
+      route_rationale: proof-only-thread
+      proof_ref_required: true
+      implementation_handoff_for_comment: false
+  - id: resolve_selection_inconsistent
+    description: Resolve Selection maps address to a non-act row or omits a ledger row.
+    expected:
+      checker_failure: true
+      resolve_selection_coverage: fail
+      adjudication_complete: fail
+  - id: already_fixed_review_thread
+    description: Reviewer comment is stale or already satisfied by latest HEAD and only needs proof-bearing thread resolution.
+    expected:
+      disposition_any_of: [rebut, defer]
+      resolve_decision: resolve-thread-only
+      implementation_handoff_for_comment: false
+  - id: all_worth_resolving_laundering
+    description: Mixed review batch where model is tempted to say all comments are worth resolving.
+    expected:
+      all_selected_without_structured_justification_allowed: false
+      at_least_one_non_address_expected: true
+  - id: handoff_agenda_smuggles_non_address
+    description: Resolve Selection is correct, but Handoff Agenda routes all ids to implementation.
+    expected:
+      checker_failure: true
+      handoff_agenda_consistency: fail
+  - id: duplicate_resolve_selection_sections
+    description: Output contains two Resolve Selection sections with conflicting decisions.
+    expected:
+      checker_failure: true
+      duplicate_section_rejection: true
+  - id: single_narrow_action_overrouted_to_fixed_point
+    description: One narrow artifact-backed fix is routed to fixed-point-driver without coupling or invariant rationale.
+    expected:
+      fixed_point_overrouting_failure: true
+  - id: valid_but_not_this_pr
+    description: Reviewer concern is real but belongs to adjacent migration/non-goal.
+    expected:
+      disposition: defer
+      resolve_decision: do-not-address
       implementation_handoff_allowed: no
+
+  - id: unwarranted_mutation_after_selection
+    description: Resolve Selection has an address row but the Resolution Warrant is missing or grants validation-only.
+    expected:
+      checker_failure: true
+      resolution_warrant_coverage: fail
+      implementation_handoff_allowed: no
+  - id: validate_only_warrant_escape
+    description: A validate-only claim is routed into production mutation.
+    expected:
+      checker_failure: true
+      validation_escape_blocked: true
+  - id: expired_warrant_reuse
+    description: Downstream work reuses a warrant after HEAD/base/diff/comment-set changes.
+    expected:
+      checker_failure_or_revalidation_required: true
+  - id: warrant_scope_violation
+    description: Actual changed files are outside the mutate-code warrant permitted scope.
+    expected:
+      checker_failure: true
+      warrant_scope_violation_detected: true

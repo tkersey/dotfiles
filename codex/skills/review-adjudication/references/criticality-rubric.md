@@ -1,52 +1,192 @@
-# Criticality rubric v6
+# Criticality rubric
 
-`review-adjudication` approves mutation only when the concern is current,
-owned, direction-aligned or direction-overriding, implementation-critical,
-mutation-approved, authority-cleared, and veto-free.
+Use this rubric to make `review-adjudication` discriminative rather than
+deferential.
 
-## Approval classes
+## Act threshold
 
-| class | meaning | usual resolve decision |
+A comment may be marked `act` only when all are true:
+
+1. The concern is grounded in current artifact evidence.
+2. The concern is material, or the user explicitly wants the nonmaterial change.
+3. The comment is fresh for the current artifact state.
+4. The strongest no-change countercase is defeated.
+5. The proposed remedy is valid, or the chosen handoff replaces it with a valid
+   fix shape.
+6. The action does not violate stated PR constraints, non-goals, compatibility
+   posture, or ownership boundaries.
+7. The row has a current evidence grade:
+   - `current-artifact`
+   - `current-test`
+   - `current-ci`
+   - `current-session-artifact`
+8. The row has a concrete evidence ref.
+
+If any item fails, choose `rebut`, `defer`, or `need-evidence`.
+
+`act` requires proof, not plausibility.
+
+## Rebut threshold
+
+Use `rebut` when:
+
+- the comment is unsupported by current artifacts
+- the comment is stale or superseded
+- the comment assumes a contract this PR does not own
+- the requested change would make the design less canonical or less sound
+- the proposed fix is wrong and the concern itself is not material
+- the issue is preference-only and no repo convention supports it
+- the no-change countercase remains stronger than the review claim
+
+A rebuttal should include evidence, not attitude.
+
+## Defer threshold
+
+Use `defer` when:
+
+- the concern is real but outside the PR scope
+- acting now would broaden the change non-accretively
+- the issue belongs to a future migration or separate design decision
+- the comment identifies a governing invariant that needs a broader plan before
+  this PR should change code
+- implementation now would obscure ownership or source-of-truth boundaries
+
+## Need-evidence threshold
+
+Use `need-evidence` when:
+
+- the concern might be real but cannot be established from current artifacts
+- a validating check is the correct next move
+- `$seq` cannot recover the PR why and the intent matters
+- a specialist audit is needed before code should change
+- a proposed fix is plausible but the failure mode is not proven
+
+## Validation-only route
+
+Use validation-only when uncertainty is the issue, not implementation effort.
+Record:
+
+```md
+disposition: need-evidence
+reframe_type: validation-only
+remediation_posture: validating-check-only
+proposed_fix_validity: validation-only
+handoff_action: route-to-fixed-point-driver
+```
+
+Validation-only may produce tests, repros, probes, or inspections. It must not
+apply the reviewer's requested mutation until the validation proves the concern
+or current artifacts already prove it.
+
+Checker-level expectations:
+
+- `validation-only` requires `need-evidence`.
+- `need-evidence` cannot route directly to `$accretive-implementer`.
+- validation handoff is not implementation permission.
+
+## Concern-vs-fix separation
+
+A review comment contains at least two claims:
+
+1. the concern is real
+2. the proposed fix is the right fix
+
+Adjudicate them independently.
+
+Examples:
+
+| Concern | Proposed fix | Correct disposition |
 |---|---|---|
-| `A1-current-owned-defect` | current code violates a contract this PR owns | `address` |
-| `A2-proof-surface-false-positive` | proof/certificate/test/replay can report success while unsafe | `address` |
-| `A3-active-direction-mismatch` | implementation contradicts locked/current direction | `address` |
-| `A4-minimal-illegal-state-removal` | narrow fix removes an illegal state without broadening | `address` |
-| `B1-plausible-route-changing-validation` | plausible concern needs proof before mutation | `validate-only` |
-| `B2-valid-already-fixed` | latest HEAD already satisfies the comment | `resolve-thread-only` |
-| `B3-valid-not-this-pr` | real issue, wrong timing/owner/scope | `do-not-address` / `defer` |
-| `B4-valid-concern-wrong-fix` | symptom real, proposed fix wrong or overbroad | usually `defer` or replacement-fix `address` only if cleared |
-| `C1-unsupported` | no artifact-backed concern | `do-not-address` / `rebut` |
-| `C2-preference-only` | style/naming/cleanup without convention/direction | `do-not-address` |
-| `C3-review-closure-only` | value is primarily closing a thread | `resolve-thread-only` or reply |
-| `C4-direction-conflicting` | would move code away from selected direction | `do-not-address` / `rebut` |
+| valid | valid | `act` with narrow handoff |
+| valid | wrong-fix | `act` only if handoff replaces the fix shape |
+| valid | overbroad | `act` or `defer`, depending on scope and minimum fix shape |
+| unknown | plausible | `need-evidence`, often validation-only |
+| unsupported | valid-looking | `rebut` or `need-evidence`; do not mutate from plausibility |
+| preference-only | valid-looking | `rebut` unless repo convention or user goal makes it material |
 
-Only A1-A4 can support `address`, and only after authority clearance.
+## Local-validity trap
 
-## Authority clearance threshold
+A comment can be locally true and still be the wrong action.
 
-A row may be `address` only when all required lanes clear:
+Signs:
 
-- evidence: `clear`
-- direction/ownership: `clear`
-- criticality: `clear`
-- no-change: `defeated`
-- validation-value: `mutate-now`
-- fix-shape: `clear`
-- authority status: `cleared-for-address`
-- no Authority Veto Ledger row for the id
+- multiple comments are symptoms of one source-of-truth or ownership invariant
+- local fixes would create duplicate paths
+- the fix would encode a special case rather than repair the governing rule
+- the suggested remedy is easier than the correct invariant-level change
+- the reviewer is optimizing a local symptom while the PR owns a structural rule
 
-A veto or unresolved lane blocks `address`.
+When this happens, mark the comment `partially-relevant` or `material-relevant`,
+but route the handoff through an invariant-level agenda instead of isolated local
+fixes.
 
-## P2+ handling
+## All-action warning
 
-P0/P1/P2 labels are severity claims, not priorities. They must be accepted,
-downgraded, rejected, or left unresolved. A P2+ row cannot be `address` unless
-criticality is implementation-grade and independently proven.
+If every substantive comment is accepted, run an acceptance-skew audit:
 
-## Validation-only
+- Did we defeat the no-change countercase for every comment?
+- Did we identify stale, preference-only, unsupported, or out-of-scope
+  possibilities?
+- Are several comments really one governing invariant?
+- Are we accepting reviewer authority instead of artifact evidence?
+- Is at least one accepted action validation-only rather than code change?
+- Did we separate concern validity from proposed-fix validity for every comment?
+- Does every accepted action have current evidence grade and evidence ref?
 
-`validate-only` is not a softer acceptance path. It requires `B1`,
-`mutation_value: validation-material`, `authority status: cleared-for-validation`,
-and `validation-value: validate-first`. Validation must change route, severity,
-direction, merge safety, release posture, or invariant decision.
+If the justification is weak, downgrade appropriate comments to `need-evidence`,
+`defer`, or `rebut`. If the justification is missing, block implementation
+handoff.
+
+
+## Resolve-selection rubric
+
+After disposition, select one downstream resolve decision per comment:
+
+- `address`: only for artifact-backed `act` rows whose no-change case is
+  defeated.
+- `validate-only`: for `need-evidence` rows where proof is the next move, not
+  mutation.
+- `resolve-thread-only`: for stale, superseded, or already-fixed comments that
+  need only a proof-bearing reply or thread resolution.
+- `do-not-address`: for preserved no-change cases, rebuttals, deferrals,
+  unsupported claims, preference-only items, or out-of-scope asks.
+- `blocked`: for missing identity, stale artifact state, absent rationale, or
+  insufficient evidence that prevents safe downstream selection.
+
+Never route `resolve-thread-only`, `do-not-address`, or `blocked` items into
+implementation.
+
+## Resolve-selection anti-laundering rubric
+
+A comment being valid is not enough to make it worth resolving now. After the
+ordinary adjudication disposition, select a downstream resolve decision:
+
+- `address` only when the row is `act`, the no-change case is defeated, current
+  evidence exists, and implementation is the correct next move.
+- `validate-only` when uncertainty is material and proof should precede mutation.
+- `resolve-thread-only` when latest HEAD already satisfies or supersedes the
+  comment and a proof-bearing reply/thread resolution is enough.
+- `do-not-address` when the preserved no-change case, scope boundary, or low
+  value makes downstream work inappropriate.
+- `blocked` when identity, artifact state, evidence, or rationale is incomplete.
+
+Run a resolve countercase for every row. If every substantive comment is selected
+as `address` or `validate-only`, emit a structured All-Selected Justification.
+Do not let `$fixed-point-driver` become the default route for narrow-local work.
+
+
+## Warrant threshold
+
+A downstream action is allowed only when a Resolution Warrant exists for the raw
+claim and grants the exact action:
+
+- `mutate-code` requires an `address` decision, defeated no-change case, current
+  evidence refs, narrow permitted scope, explicit forbidden actions, and proof.
+- `add-validation-only` requires `need-evidence` / `validate-only`; it may add
+  tests, probes, logs, or inspections but must not implement the requested fix.
+- `resolve-thread` requires proof that no code change is needed or proof that an
+  address warrant has already been satisfied.
+- `draft-reply`, `defer`, and `none` preserve the no-change or out-of-scope
+  case and do not permit mutation.
+
+A valid concern without a valid warrant is not actionable downstream.
