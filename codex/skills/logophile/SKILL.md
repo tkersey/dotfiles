@@ -1,6 +1,6 @@
 ---
 name: logophile
-description: "Sharpen wording, names, labels, headings, PR replies, commit/PR text, docs, user explanations, and doctrine stacks without semantic drift. Trigger for wording, naming, terminology, phrasing, polish, final copy, doctrine words, mode names, or human-facing text. Do not use for ordinary implementation, verification, review, or machine-consumed artifacts unless wording/naming output is requested."
+description: "Precision language surface: sharpen wording, names, labels, headings, PR replies, commit/PR text, docs, user-facing explanations, and doctrine stacks without semantic drift. Trigger implicitly when the task asks for wording, naming, terminology, phrasing, language polish, final copy, doctrine words, mode names, or human-facing text. Do not trigger for ordinary implementation, verification, code review, or machine-consumed artifacts unless wording/naming output is part of the requested result."
 ---
 
 # Logophile
@@ -21,12 +21,6 @@ Replace generic, bloated, or under-specified language with shorter, sharper phra
 - Reshape only when scan-clarity improves without changing meaning or copy-paste safety.
 - Do not force one canonical repo term for every concept; prefer the most exact phrase for the local text.
 - Do not alter code semantics, identifiers, paths, flags, schemas, machine-consumed artifacts, or operational decisions unless the user explicitly asks for wording/naming help on that surface.
-
-## Usage discipline
-- Use for explicit skill-metadata compression, especially frontmatter descriptions that must keep trigger coverage while fitting validator limits.
-- Use doctrine mode for vague workflow verbs such as `ideate`, `improve`, `review`, or `plan` when the user wants replacement wording or mode words.
-- For machine-consumed text, preserve parse safety: avoid unquoted YAML colon footguns, keep required fields valid, and validate the edited skill afterward.
-- For usage audits, report raw mentions separately from normalized use clusters, and call out noise such as injected `<skill>` blocks, current-analysis turns, or repeated final summaries.
 
 ## Use when
 - The user asks to rewrite, reword, rephrase, tighten, sharpen, compress, polish, or choose final wording.
@@ -149,6 +143,26 @@ Recommended Stack
 Use This:
 [copy-pasteable doctrine block]
 ```
+
+
+## Doctrine alpha vocabulary policy
+
+Doctrine mode should optimize for words that create executable artifacts.
+
+Prefer words and phrases that naturally imply ledgers, gates, witnesses, or selection maps:
+
+- `fixed-point` -> reopenable stop condition
+- `governing invariant` -> owner boundary and invariant-defending proof
+- `canonical witness` -> one trusted proof path tied to the canonical owner
+- `resolve-selection` -> act / validate-only / proof-only / no-change / blocked map
+- `unwitnessed guarantee` -> missing proof object or claim to downgrade
+- `illegal inhabitant` -> impossible state admitted by a representation or producer
+- `partial handler` -> eliminator that is not total over the intended domain
+- `tail proof` -> CLI-visible proof and next action at the bottom of output
+
+Demote standalone `rigor`, ornamental `adversarial`, isolated `mechanistic`, and any dense word that cannot name its artifact.
+
+In doctrine output, add a final `Operationalization:` line that names the exact artifact the doctrine should produce: ledger, gate, validator, proof receipt, truth-owner graph, resolve-selection map, or closure criterion.
 
 ## Precision policy
 - Prefer phrase upgrades over cosmetic synonym swaps.

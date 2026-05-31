@@ -1,10 +1,12 @@
-# Integration notes
+# Integration Notes
 
-`logophile` is explicit-only and should not be used as a hidden style policy.
+## Implicit invocation posture
+`logophile` is allowed to trigger implicitly for human-facing language surfaces. It is not allowed to rewrite operational decisions or machine-consumed artifacts.
 
-Use it when you need:
-- sharper wording
-- better names
-- doctrine stacks for a task
+## AGENTS.md interaction
+`AGENTS.md` owns repo-level response wrappers such as `Echo:`. `logophile` owns the generated artifact text. Keep wrappers outside artifacts.
 
-Do not route coding, review, or orchestration work through `logophile` unless the user explicitly wants wording, naming, or doctrine synthesis output.
+## Trigger boundary
+Good implicit trigger: the requested output is wording, naming, doctrine, PR copy, commit/PR text, docs, user-facing explanation, or final human-readable language.
+
+Bad implicit trigger: ordinary coding, code review, verification, planning, or tool execution where no wording/naming/doctrine output is requested.

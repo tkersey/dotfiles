@@ -41,6 +41,22 @@ Default stack candidates:
 - `hazard-seeking`
 - `traceable`
 
+## Soundness / invariant review
+Dominant pressures:
+- unwitnessed guarantees
+- illegal inhabitants
+- partial eliminators
+- broken preservation/progress
+- incoherent abstractions
+
+Default stack candidates:
+- `unsound`
+- `unwitnessed`
+- `ill-typed`
+- `total`
+- `preservation-aware`
+- `progress-aware`
+
 ## Security review
 Dominant pressures:
 - permissive failure
@@ -94,5 +110,6 @@ Default stack candidates:
 - `distinctive`
 
 Notes:
-- `precise`, `scoped`, and `obligation-preserving` are task-local descriptive labels. Use them only if they produce an actual gain in the doctrine block.
+- `precise`, `scoped`, and `obligation-preserving` are task-local descriptive labels.
+- Use them only if they produce an actual gain in the doctrine block.
 - Replace generic defaults with sharper domain terms whenever the task supports them.

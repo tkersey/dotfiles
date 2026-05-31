@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Fixed-Point Driver"
-  short_description: "Drive implementation, review, and closure to a material fixed point"
+  short_description: "Drive changesets to material fixed point"
   default_prompt: "Use $fixed-point-driver for this task."

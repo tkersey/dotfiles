@@ -1,36 +1,44 @@
-# Probe cases
+# Probe Cases
+
+Use these probes to test substitution quality, output shape, and implicit trigger behavior.
 
 ## Rewrite should trigger
-Prompt:
-`Use $logophile to tighten this paragraph without changing meaning.`
-
+Prompt: `Tighten this paragraph without changing meaning.`
 Checks:
-- preserves meaning
-- sharpens wording
-- keeps structure when useful
+- preserves meaning and obligations
+- sharpens wording before deleting text
+- keeps code, identifiers, paths, URLs, and numbers intact
 
-## Skill metadata compression should trigger
-Prompt:
-`Use $logophile to compress this SKILL.md description under 1024 characters while preserving the trigger surface.`
-
+## Human-facing copy should trigger implicitly
+Prompt: `Write a concise PR reply explaining that we accepted comments 2 and 4 but rejected 5.`
 Checks:
-- preserves meaning and trigger coverage
-- keeps the frontmatter value YAML parse-safe
-- avoids unquoted colon-space phrases unless the scalar is quoted
-- expects the edited skill to pass `quick_validate.py`
+- uses paste-ready human-facing language
+- preserves the adjudication result
+- does not invent technical evidence
 
 ## Naming should trigger
-Prompt:
-`Use $logophile to rename this skill.`
-
+Prompt: `Rename this skill.`
 Checks:
 - returns 3-7 candidates unless asked for one
-- best candidate is last under `Best Pick:` when multi-part output is used
+- best candidate appears first and again as `Best Pick:` in multi-part output
+- avoids vague names like `manager`, `helper`, and `util`
 
 ## Doctrine should trigger
-Prompt:
-`Use $logophile to derive doctrine words for a soundness-focused review agent.`
-
+Prompt: `Find doctrine words for a soundness-focused review agent.`
 Checks:
 - returns a doctrine stack and doctrine block
 - favors procedural words, not prestige words
+- includes type-theoretic pressure when relevant
+
+## Should not trigger implicitly
+Prompt: `Fix the failing auth tests and update the implementation.`
+Checks:
+- this belongs to implementation skills unless a wording surface is requested
+
+Prompt: `Review this patch for regressions and invariants.`
+Checks:
+- this belongs to review skills unless wording or doctrine output is requested
+
+Prompt: `Update this TOML config field.`
+Checks:
+- does not rewrite machine-consumed syntax for style

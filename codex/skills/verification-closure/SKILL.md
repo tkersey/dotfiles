@@ -1,149 +1,100 @@
 ---
 name: verification-closure
-description: "Decide whether the current artifact set is ready by consuming a Closure Handoff Packet, running the narrowest decisive checks, validating specialist receipts, checking active negative evidence/reopening criteria, and assigning grounded readiness. Trigger for verify this patch is ready, run closure gates, decide whether branch reached a material fixed point, or close the loop. Do not use for broad redesign or de novo review without a closure question."
+description: "Decide final readiness after material coding work by checking closure gates, current-head proof, soundness rows, invariant witnesses, stale handoffs, and residual risk. Trigger for final readiness, closure gates, fixed-point claims, proof receipts, or 'is this ready?' after material work. Do not use as the initial reviewer or implementer."
 ---
 
 # Verification Closure
 
-Use this for **proof and gating**, not for broad redesign or first-pass review.
+This skill is the final proof gate. It does not redesign, adjudicate, or implement. It decides whether the current artifact state is ready, conditionally ready, not ready, or indeterminate.
 
-## Output modes
-- **Standard**: full gate ledger.
-- **Fast**: highest-value gates, negative-evidence closure state, readiness, and reopen trigger only.
+## Doctrine closure check
 
-## CLI-tail-weighted reporting
-- Keep evidence inputs and ledgers terse.
-- Put the highest open gate in **Reopen Trigger**.
-- End with **Closure Bottom Line**.
+Closure must verify the artifact created by doctrine, not the doctrine prose.
 
-## Global doctrine
-Operate in **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-AWARE**, **REFINEMENT-AWARE**, **MECHANISTIC**, **TRACEABLE**, **MATERIAL**, **FIXED-POINT**, **CANONICAL**, **LEDGER-AWARE**, **NEGATIVE-EVIDENCE-AWARE**, and **REOPENABLE** mode.
+For any doctrine cue used upstream, require the corresponding closure evidence:
 
-## Gate discipline
+| Doctrine cue | Closure evidence |
+|---|---|
+| `fixed-point` | current-head fixed-point test and no open material gate |
+| `invariant` | test/check/proof defending the named invariant |
+| `canonical` | single owner/representation remains, or shadow owner is explicitly justified |
+| `witness` / `traceable` | proof receipt tied to current artifact state |
+| `unwitnessed guarantee` | witness now exists, or claim is downgraded/removed |
+| `illegal inhabitant` | constructor/producer no longer admits it, or boundary rejects it deliberately |
+| `partial handler` | eliminator/consumer is total over the intended domain or partiality is explicit and safe |
 
-- Treat reviewer and specialist outputs as signals, not proof.
-- Validate specialist packets against `../references/specialist-packet-contract.md` before using them as routing or closure evidence.
-- Treat unresolved **material soundness** as a hard closure gate.
-- Treat unresolved critical invariants, material foot-guns, and material complexity hazards as closure gates.
-- Treat active, applicable negative evidence as a closure gate when the current route repeats a disconfirmed path without satisfying reopening criteria.
-- Treat `learnings` hits as candidate evidence until witness and current-state applicability are checked.
-- If evidence conflicts, run the narrowest resolving check.
-- If negative-ledger or learnings tooling is unavailable, decide whether the missing source is material to closure; report `blocked` or `unavailable` rather than silently ignoring it.
+Distinguish `absence_of_evidence` from `evidence_of_absence`. A search that found nothing is not proof unless the checked surface is exhaustive or targeted enough to exclude the bad state/path.
 
 ## Handoff intake
+Accept handoff from `fixed-point-driver`, `adversarial-reviewer`, or direct user request. Treat all upstream packets as inputs, not proof.
 
-Start by validating the Closure Handoff Packet.
+If a handoff packet is stale, incomplete, or contradicted by current artifacts, set `Handoff Contract Status: stale | incomplete | contradicted` and reopen rather than closing.
 
-Assign `Handoff Contract Status` as:
-- `complete`
-- `incomplete`
-- `stale`
+Expected specialist inputs may include:
+- `evidence_mapper`
+- `soundness_auditor` or `adv_review_soundness_authority`
+- `invariant_auditor` or `adv_review_invariant_scope_authority`
+- `hazard_hunter` or `adv_review_hazard_footgun_authority`
+- `complexity_auditor` or `adv_review_complexity_remediation_authority`
+- `verification_auditor` or `adv_review_verification_authority`
 
-A complete packet includes:
-- Artifact State ID
-- Companion Skill Ledger
-- Routing and Budget Ledger
-- Verification Ledger
-- Negative Ledger Pass
-- Negative Evidence Ledger
-- Negative Ledger Handoff
-- Specialist Briefing Ledger
-- Specialist Value Receipts
-- Closure Gate Preview
-- Requested Closure Questions
+## Closure Gate Ledger
+Use exact gate names when relevant:
+- `current_artifact_state`
+- `material_findings_closed`
+- `soundness_rows_closed`
+- `critical_invariants_witnessed`
+- `canonical_owner_preserved`
+- `illegal_inhabitants_rejected`
+- `partial_handlers_total_or_safe`
+- `verification_receipts_current`
+- `public_surface_intentional`
+- `residual_risk_bounded`
 
-If the packet is stale or incomplete, say so before evaluating readiness. If the missing part is not material, closure may proceed with a stated limitation; otherwise mark readiness not-ready or conditionally ready.
+Each gate status must be exactly one of:
+- `closed`
+- `open`
+- `blocked`
+- `not-applicable`
+- `indeterminate`
 
-## Specialist value intake
+Use exactly one readiness value:
+- `ready`
+- `conditionally-ready`
+- `not-ready`
+- `indeterminate`
 
-Validate every specialist packet and value receipt:
-- packet status is recorded
-- artifact state ID matches or packet is marked stale/superseded/timeout
-- scope matches or packet is marked wrong-scope
-- transport wrappers, queued prompts, instruction acknowledgements, and root-only `Echo:` text are absent or the packet is marked transport-invalid
-- accepted packets include at least one scoped material signal with an artifact reference
-- value receipt exists for accepted and rejected packets
-- `value: positive` is justified by route change, finding addition, proof change, or risk retirement
+## Evidence standard
+Prefer proof in this order:
+1. targeted reproducer or invariant test
+2. direct command/check output
+3. current diff + static inspection
+4. accepted authority packet with concrete refs
+5. reasoned claim with explicit uncertainty
 
-Do not let specialist value receipts become proof. Use them to decide which signals shaped the route and which gates still require root-owned evidence.
-
-## Negative evidence closure gate
-
-Always evaluate:
-
-```yaml
-negative_evidence_closure_gate:
-  status: satisfied | open | blocked | unavailable
-  active_exclusions_count: 0
-  repeated_failed_route_used: yes | no
-  reopening_criteria_satisfied: yes | no | n/a
-  learnings_hits_applicability_checked: yes | no | n/a
-  reason: "..."
-```
-
-Status rules:
-- `satisfied`: no active applicable negative evidence blocks the route, or reopening criteria are satisfied with proof.
-- `open`: active applicable negative evidence conflicts with the current route and reopening criteria are not satisfied.
-- `blocked`: relevant evidence exists but cannot be checked due to missing logs, inaccessible learnings, unavailable repo history, or incomplete handoff.
-- `unavailable`: negative-ledger/learnings tooling is unavailable and no in-session evidence can check the relevant source; report the limitation.
-
-Never call the artifact set `ready` while this gate is `open` or `blocked`.
+A closure claim cannot rest on authority packet prose alone.
 
 ## Output contract
+Use tail-weighted sections:
 
-### Standard
+1. Verification Target
+2. Handoff Contract Status
+3. Evidence Inputs
+4. Closure Gate Ledger
+5. Evidence Run
+6. Results
+7. Fixed-Point Test
+8. Readiness
+9. Residual Risks
+10. Reopen Trigger
+11. Closure Bottom Line
 
-Use concise sections in this order:
-- Handoff Contract Status
-- Verification Target
-- Evidence Inputs
-- Companion and Budget Intake
-- Specialist Value Intake
-- Negative Evidence Closure Gate
-- Closure Gate Ledger
-- Evidence Run
-- Results
-- Residual Risks
-- Fixed-Point Test
-- Readiness
-- Reopen Trigger
-- Closure Bottom Line
-
-### Fast
-
-Use concise sections in this order:
-- Handoff Contract Status
-- Negative Evidence Closure Gate
-- Closure Gate Ledger
-- Readiness
-- Reopen Trigger
-- Closure Bottom Line
-
-## Reopen Trigger
-
-- Name the **single highest open gate**.
-- Say whether it wants `validating-check-only`, `accretive-remediation`, `structural-remediation`, `negative-ledger-reopen`, or `negative-ledger-capture`.
-- If there is no open gate, say `reopen: none`.
-
-## Hard rules
-
-- Never upgrade claims beyond the evidence.
-- Never let passing checks stand in for unresolved material soundness.
-- Never let passing checks stand in for an open active negative-evidence gate.
-- Never call the artifact set `ready` while a hard closure gate remains open.
-- Never use a `learnings` hit as an exclusion rule without checking evidence and current-state applicability.
-- Never ignore an active negative evidence entry; mark it active, stale, superseded, reopened, accepted-risk, or not applicable.
-- Never reopen the loop without naming the exact gate and narrowest next move.
-- Never treat specialist value receipts as proof commands or pass/fail verdicts.
-- Never accept acknowledgement-only, no-evidence, wrong-scope, stale, timeout, or wrapper-leaking specialist output as closure evidence.
+`Closure Bottom Line` must be final and include:
+- readiness
+- strongest proof
+- highest open gate
+- exact next action
 
 ## Resources
+- [tail-proof.md](references/tail-proof.md)
 - [closure-gates.md](references/closure-gates.md)
-- [handoff-intake-checklist.md](references/handoff-intake-checklist.md)
-- [specialist-briefing-intake.md](references/specialist-briefing-intake.md)
-- [closure-handoff-contract.md](references/closure-handoff-contract.md)
-- [specialist-packet-contract.md](../references/specialist-packet-contract.md)
-- [example-invocations.md](references/example-invocations.md)
-- [common-soundness.md](references/common-soundness.md)
-- [common-ledgers.md](references/common-ledgers.md)
-- [common-cli-reporting.md](references/common-cli-reporting.md)

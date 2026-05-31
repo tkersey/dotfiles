@@ -1,6 +1,6 @@
 ---
 name: accretive-implementer
-description: "Implement, adapt, harden, or repair non-trivial code in a narrow, reviewable, contract-first, witness-backed way. Trigger for planned features, new code, design/plan implementation, migrations, correctness-sensitive refactors, review fixes, bugs, regressions, failing tests, or single-change hardening. Accept review-adjudication/fixed-point-driver handoffs unless stale or contradictory. In implementation mode, use canonical architecture with minimal blast radius; in remediation mode, diagnose the failure mechanism before editing. Do not use for trivial formatting, rote renames, or informational questions."
+description: "Implement, adapt, harden, or repair non-trivial code in a narrow, reviewable, contract-first, witness-backed way. Trigger for planned features, new code, design/plan implementation, migrations, correctness-sensitive refactors, review fixes, bugs, regressions, failing tests, or single-change hardening. Accept review-adjudication/fixed-point-driver handoffs unless stale or contradictory. Do not use for trivial formatting, rote renames, or informational questions."
 ---
 
 # Accretive Implementer
@@ -8,8 +8,8 @@ description: "Implement, adapt, harden, or repair non-trivial code in a narrow, 
 Use this as the general coding skill for both **implementation** and **remediation**.
 
 ## Output modes
-- **Standard**: use for normal non-trivial work.
-- **Fast**: use when the user wants the actionable result with minimal scroll.
+- **Standard**: normal non-trivial work.
+- **Fast**: actionable result with minimal scroll.
 
 ## CLI-tail-weighted reporting
 Assume the user may only see the last screenful of terminal output.
@@ -18,7 +18,7 @@ Assume the user may only see the last screenful of terminal output.
 - **Execution Bottom Line** must be the final section.
 
 ## Shared doctrine
-Operate in **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-AWARE**, **TOTAL**, **REFINEMENT-FIRST**, **CONTRACT-FIRST**, **INVARIANT-FIRST**, **MECHANISTIC**, **ACCRETIVE**, **TRACEABLE**, and **SEAM-DISCIPLINED** mode.
+Operate in **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-AWARE**, **TOTAL**, **REFINEMENT-FIRST**, **CONTRACT-FIRST**, **INVARIANT-FIRST**, **MECHANISTIC**, **ACCRETIVE**, **TRACEABLE**, **CANONICAL**, and **SEAM-DISCIPLINED** mode.
 
 ### CONTRACT-FIRST
 - State what “working” means before editing.
@@ -46,6 +46,26 @@ Operate in **UNSOUND**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-
 - State why the change should not be smaller and should not be larger.
 - Prefer the narrowest truthful change that realizes the contract or repairs the defect.
 
+## Doctrine alpha upgrade
+
+This skill should extract frontier-model value by turning doctrine into implementation artifacts, not by adding impressive labels.
+
+- `accretive` must cash out as **Chosen Cut**: stable boundary, why not smaller, why not larger, and proof signal.
+- `invariant` must cash out as a named invariant plus the owner that enforces or generates it.
+- `witness` must cash out as a test, command, diff, type/refinement boundary, constructor discipline, or direct artifact check.
+- `canonical` must cash out as one chosen representation/path and the rejected shadow path when relevant.
+- `unwitnessed guarantee` and `illegal inhabitant` must be checked before finalizing non-trivial changes.
+- If a simple bounded task has an obvious validation path, do not escalate into a doctrine-heavy loop.
+
+Before the final **Execution Bottom Line**, ensure the implementation can answer:
+
+```text
+Governing invariant / truth unit:
+Canonical owner or chosen cut:
+Witness / proof signal:
+What invalid state or overbroad behavior remains impossible:
+```
+
 ## Entry branches
 - **Implementation mode**: feature work, plans, migrations, refactors, or net-new behavior.
 - **Remediation mode**: bugs, regressions, failing tests, review findings, soundness defects, or broken invariants.
@@ -54,13 +74,13 @@ If both are present, start in remediation mode for the broken path, then continu
 
 ## Agenda intake
 Accept handoff from:
-- **review-adjudication**: `Act On`, `Need Evidence`, `Handoff Agenda`, `PR Why Ledger`
-- **fixed-point-driver**: routed findings, one-change challenge result, or validation tasks
+- **review-adjudication**: `Act On`, `Need Evidence`, `Handoff Agenda`, `PR Why Ledger`, `Governing Invariant Candidate`.
+- **fixed-point-driver**: routed findings, one-change challenge result, validation task, or Truth-Owner Normal Form rewrite.
 
 Rules:
 - Treat accepted agenda items as in-scope.
 - Treat rebutted, deferred, stale, or out-of-scope items as out-of-scope unless new evidence changes them.
-- Do not redo broad adjudication here. Only reopen it if the agenda is stale, contradictory, or mechanically impossible.
+- Do not redo broad adjudication here. Reopen adjudication only if the agenda is stale, contradictory, mechanically impossible, or locally valid but globally incoherent.
 
 ## Non-trivial task gate
 Before editing code on a non-trivial task, determine internally:
@@ -71,6 +91,7 @@ Before editing code on a non-trivial task, determine internally:
   - not smaller
   - not larger
   - proof signal
+- **Truth surface**: claim, enforcement, proof, and generated artifacts that must agree.
 
 Surface these sections when the task is non-trivial, the seam is non-obvious, or upstream evidence is contested.
 
@@ -80,6 +101,7 @@ Surface these sections when the task is non-trivial, the seam is non-obvious, or
 - prefer characterization or a tight repro when behavior is unclear
 - prefer seams and adapters at boundaries over scattered repairs
 - if uncertainty is high, cut temporary observability first, then behavior
+- delete or canonicalize duplicate truth surfaces before adding another path
 
 ### Greenfield defaults
 - start with the boundary and choose a normal form early
@@ -88,8 +110,8 @@ Surface these sections when the task is non-trivial, the seam is non-obvious, or
 - bake in the smallest fast proof signal that makes the contract executable
 
 ## Operating procedure
-1. Restate the task as objective, scope, constraints, and done condition.
-2. Choose the branch and terrain.
+1. Restate objective, scope, constraints, and done condition.
+2. Choose branch and terrain.
 3. Establish **Contract + Invariants + Chosen Cut**.
 4. Run a quick **truth-surface audit** when claims, enforcement, tests, and artifacts may drift.
 5. Implement or remediate accretively.
@@ -130,10 +152,7 @@ Use concise sections in this order:
 - Never bury the exact next move below the fold.
 
 ## Resources
+- [doctrine-alpha.md](references/doctrine-alpha.md)
 - [contract-and-cut-playbook.md](references/contract-and-cut-playbook.md)
-- [terrain-defaults.md](references/terrain-defaults.md)
 - [structural-proof-patterns.md](references/structural-proof-patterns.md)
-- [one-change-mode.md](references/one-change-mode.md)
-- [common-soundness.md](references/common-soundness.md)
-- [common-ledgers.md](references/common-ledgers.md)
-- [common-cli-reporting.md](references/common-cli-reporting.md)
+- [tail-proof.md](references/tail-proof.md)

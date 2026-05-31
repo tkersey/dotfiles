@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Adversarial Reviewer"
-  short_description: "Authority-gated de novo review with custom read-only review subagents"
-  default_prompt: "Use $adversarial-reviewer in Authority-Gated v1 mode for this task."
+  short_description: "Authority-gated adversarial review and change agenda"
+  default_prompt: "Use $adversarial-reviewer for this task."

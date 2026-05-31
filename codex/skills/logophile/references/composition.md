@@ -1,13 +1,20 @@
 # Composition
 
-Use `$logophile` explicitly when another skill needs wording, naming, or doctrine synthesis.
+Use `logophile` as a language-surface rail, not as a replacement for operational skills.
 
-## Good compositions
-- after `review-adjudication`, draft a concise rebuttal or acknowledgement
-- after `adversarial-reviewer`, sharpen the final Change Agenda wording
-- before naming a new skill or subagent, generate 3-7 candidates
-- when the user asks for doctrine words, use doctrine mode directly
+## Good implicit compositions
+- After `review-adjudication`, sharpen reviewer replies, rebuttals, acknowledgements, and comment disposition summaries.
+- After `adversarial-reviewer`, sharpen a Change Agenda that will be read by a human or pasted into a PR.
+- After `fixed-point-driver`, sharpen PR-facing final summaries, closure notes, and handoffs.
+- After `verification-closure`, sharpen readiness language for PRs, issues, release notes, or handoffs.
+- Before naming a skill, subagent, mode, doctrine stack, heading, label, or command surface.
+- When the user asks for doctrine words, mode words, rigor words, or compressed rubrics.
 
 ## Bad compositions
-- silently rewriting every output in the workspace
-- replacing implementation, review, or closure work with wording work
+- Silently rewriting every output in the workspace.
+- Replacing implementation, review, adjudication, or closure work with wording work.
+- Styling code, identifiers, flags, paths, schemas, JSON, YAML, TOML, or protocol terms.
+- Polishing away uncertainty, evidence limitations, or disagreement.
+
+## Handoff pattern
+Operational skill result -> `logophile` language pass only when the result will be read, pasted, named, or published.

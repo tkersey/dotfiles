@@ -1,14 +1,11 @@
-# Structural proof patterns
+# Structural Proof Patterns
 
-Use the lightest fitting proof when the change alters representation, normalization, or combination behavior.
+When a change alters representation, normalization, construction, elimination, or combination, prefer a matching structural check:
 
-## Good fits
-- exhaustive handling for variant boundaries
-- round-trip for parse/serialize or constructor/eliminator pairs
-- idempotence for canonicalization or normalization
-- identity or associativity for combine operations
-- regression checks for likely caller misuse after an API change
-
-## Selection rule
-Pick the cheapest proof that would fail if the new structure were wrong.
-Do not add a heavier harness when a lighter one already closes the risk.
+- constructor/eliminator coverage
+- round-trip or canonicalization test
+- idempotence for migrations/setup/retries
+- preservation test for state transitions
+- progress test for valid continuations
+- identity/associativity checks when combining values
+- fixture repair when tests admitted impossible states
