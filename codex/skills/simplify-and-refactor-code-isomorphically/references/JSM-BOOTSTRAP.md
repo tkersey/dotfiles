@@ -44,19 +44,18 @@ Siblings this skill invokes or cites. Grouped by phase.
 | Collapse | [cc-hooks](../../cc-hooks/SKILL.md) | install PreToolUse hooks to block `sed`/codemod | AGENTS.md rule is the manual check |
 | Collapse | [agent-mail](../../agent-mail/SKILL.md) | file reservations when running swarm | single-agent mode if absent |
 | Collapse | [ntm](../../ntm/SKILL.md) | orchestrate the parallel refactor swarm | run sequentially if absent |
-| Collapse | [br](../../br/SKILL.md) / [beads-workflow](../../beads-workflow/SKILL.md) | track candidates as beads | append to ledger markdown instead |
+| Collapse | [br](../../beads-br/SKILL.md) / [beads-workflow](../../beads-workflow/SKILL.md) | track candidates as beads | append to ledger markdown instead |
 | Verify | [ubs](../../ubs/SKILL.md) | post-edit scan for real bugs introduced | clippy / eslint / mypy / vet |
 | Verify | [multi-pass-bug-hunting](../../multi-pass-bug-hunting/SKILL.md) | depth bug hunt after major pass | skip; re-run tests |
 | Verify | [deadlock-finder-and-fixer](../../deadlock-finder-and-fixer/SKILL.md) | concurrency-semantics check | tsan/rts can substitute |
-| Verify | [testing-perfect-e2e-integration-tests-with-logging-and-no-mocks](../../testing-perfect-e2e-integration-tests-with-logging-and-no-mocks/SKILL.md) | exercise real services post-refactor | playwright / pytest integration tests |
+| Verify | [`/testing-real-service-e2e-no-mocks`](../../testing-real-service-e2e-no-mocks/SKILL.md) | exercise real services post-refactor | playwright / pytest integration tests |
 | Verify | [e2e-testing-for-webapps](../../e2e-testing-for-webapps/SKILL.md) | playwright golden screenshot suite | inline playwright pattern |
 | Ledger | [readme-writing](../../readme-writing/SKILL.md) | polish the PR body | standard commit template |
 | Ledger | [de-slopify](../../de-slopify/SKILL.md) | de-slop the PR description | manual prose |
 | Profiling-adjacent | [profiling-software-performance](../../profiling-software-performance/SKILL.md) | confirm no perf regression | `hyperfine` smoke test |
 | Profiling-adjacent | [extreme-software-optimization](../../extreme-software-optimization/SKILL.md) | if the refactor reveals hot paths | see sibling's loop |
-| Meta | [sc](../../sc/SKILL.md) / [sw](../../sw/SKILL.md) / [operationalizing-expertise](../../operationalizing-expertise/SKILL.md) | for evolving THIS skill — not runtime | — |
+| Meta | [operationalizing-expertise](../../operationalizing-expertise/SKILL.md) | for evolving THIS skill — not runtime | — |
 | Cross-cutting | [frankensearch-integration-for-rust-projects](../../frankensearch-integration-for-rust-projects/SKILL.md) | if the project embeds search | doc-only reference |
-| Cross-cutting | [porting-to-rust](../../porting-to-rust/SKILL.md) | if post-refactor the user wants to port | doc-only reference |
 | Cross-cutting | [supabase](../../supabase/SKILL.md) / [vercel](../../vercel/SKILL.md) / [tanstack](../../tanstack/SKILL.md) | stack-specific idiom awareness | fallback to general TS/React patterns in [LANGUAGE-GUIDES.md](LANGUAGE-GUIDES.md) |
 
 **Usage rule:** read this matrix at Phase 0; run `./scripts/check_skills.sh` to get a JSON inventory; offer `jsm install` for any missing siblings; if declined, proceed with inline fallbacks.

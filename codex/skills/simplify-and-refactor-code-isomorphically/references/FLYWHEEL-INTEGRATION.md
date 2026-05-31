@@ -1,6 +1,6 @@
 # Flywheel Integration — mining your own patterns to extend this skill
 
-> The [flywheel](../../flywheel/SKILL.md) skill extracts methodology from your own agent sessions and turns it into executable prompts / rules. This skill is itself a candidate for flywheel maintenance: as you run more refactor passes, new pathologies, collapses, and user phrases surface. This file is the contract for feeding those discoveries back into the skill.
+> The `/flywheel` skill extracts methodology from your own agent sessions and turns it into executable prompts / rules. This skill is itself a candidate for flywheel maintenance: as you run more refactor passes, new pathologies, collapses, and user phrases surface. This file is the contract for feeding those discoveries back into the skill.
 
 ## Contents
 
@@ -145,7 +145,7 @@ If anything new shows up: file a bead `[flywheel-pass] add <finding> to skill`. 
 
 ## The monthly pattern-extraction pass
 
-An hour, once per month. Uses [flywheel](../../flywheel/SKILL.md) proper.
+An hour, once per month. Uses `/flywheel` proper.
 
 ### Step 1: feed the week's runs to flywheel
 

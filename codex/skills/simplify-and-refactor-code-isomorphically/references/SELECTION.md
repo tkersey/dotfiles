@@ -13,7 +13,7 @@
 4. [Use `codebase-archaeology` when…](#use-codebase-archaeology-when)
 5. [Use `multi-pass-bug-hunting` when…](#use-multi-pass-bug-hunting-when)
 6. [Use `operationalizing-expertise` when…](#use-operationalizing-expertise-when)
-7. [Use `porting-to-rust` when…](#use-porting-to-rust-when)
+7. [When the goal is a cross-language rewrite](#when-the-goal-is-a-cross-language-rewrite)
 8. [Use `library-updater` when…](#use-library-updater-when)
 9. [Use `ubs` during every commit](#use-ubs-during-every-commit)
 10. [Decision table](#decision-table)
@@ -63,11 +63,12 @@ latent bug will smuggle the bug into the new shape. Fix first.
 You want to CAPTURE a methodology as a skill (what this very repo does). Not
 applicable during a refactor pass.
 
-## Use `porting-to-rust` when…
+## When the goal is a cross-language rewrite
 
 The goal is a rewrite in a different language. That's not a refactor — the
 observable contract is explicitly allowed to change (different runtime, etc.).
-Our isomorphism rules don't apply.
+Our isomorphism rules don't apply. Use a dedicated cross-language port
+workflow instead.
 
 ## Use `library-updater` when…
 
@@ -89,7 +90,7 @@ loop. Always. It's a guardrail, not a separate activity.
 | "I inherited this codebase, orient me"             | codebase-archaeology |
 | "This feature is broken sometimes"                 | multi-pass-bug-hunting |
 | "I want to write a skill for X"                    | operationalizing-expertise |
-| "Rewrite this shell pipeline in Rust"              | porting-to-rust |
+| "Rewrite this shell pipeline in Rust"              | (use a dedicated cross-language port workflow) |
 | "Bump all deps to latest stable"                   | library-updater |
 | "Scan this diff for bugs before committing"        | ubs (invoked from this skill) |
 | "Clean up after a 3-month Claude Code spree"       | simplify-and-refactor-code-isomorphically (this skill, starting in RESCUE mode) |

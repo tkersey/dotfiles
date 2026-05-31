@@ -285,10 +285,10 @@ If the commit is good, close the bead as done. If partial, revert (with user app
 |-------|------|
 | [ntm](../../ntm/SKILL.md) | spawn, send marching orders, monitor panes |
 | [agent-mail](../../agent-mail/SKILL.md) | file reservations, inbox, threads |
-| [br](../../br/SKILL.md) / [beads-workflow](../../beads-workflow/SKILL.md) | bead CRUD + dependency graph |
-| [bv](../../bv/SKILL.md) | graph-aware triage to pick the right candidate order |
+| [br](../../beads-br/SKILL.md) / [beads-workflow](../../beads-workflow/SKILL.md) | bead CRUD + dependency graph |
+| [bv](../../beads-bv/SKILL.md) | graph-aware triage to pick the right candidate order |
 | [vibing-with-ntm](../../vibing-with-ntm/SKILL.md) | orchestrator-loop tending and stuck-pane recovery |
-| [multi-agent-swarm-workflow](../../multi-agent-swarm-workflow/SKILL.md) | the canonical swarm setup tutorial |
+| `/multi-agent-swarm-workflow` | the canonical swarm setup tutorial |
 | [caam](../../caam/SKILL.md) | switch Claude/Codex accounts when one rate-limits |
 
 If none of these are installed, **fall back to solo sequential mode** — this skill's whole loop runs perfectly well for one agent at a time. Parallelism is an accelerant, not a prerequisite.

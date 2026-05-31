@@ -1,6 +1,6 @@
 # Validation — runnable checks for the skill itself
 
-> This page is for maintainers evolving this skill. It turns `/sw` and
+> This page is for maintainers evolving this skill. It turns
 > `operationalizing-expertise` guidance into a read-only release gate:
 > frontmatter is triggerable, references are discoverable, operator cards are
 > complete, the quote bank is auditable, and the marker-delimited kernel can
@@ -24,14 +24,14 @@ triggerable and the deep material stays mechanically auditable. The validators
 are read-only; they do not rewrite files and do not create artifacts outside
 normal Python bytecode caches.
 
-The contracts come from three sources:
+The contracts:
 
-- `/sw`: frontmatter starts at byte 0, description is short, first 50 lines
-  carry the workflow, depth lives under `references/`.
-- `/sc`: research-backed insights must be reflected in the skill, and
+- Frontmatter starts at byte 0, description is short, first 50 lines carry the
+  workflow, depth lives under `references/`.
+- Research-backed insights must be reflected in the skill, and
   progressive-disclosure links must remain intact.
-- `/operationalizing-expertise`: corpus entries, triangulated kernel, operator
-  cards, and validators are the methodology contract.
+- Corpus entries, triangulated kernel, operator cards, and validators are the
+  methodology contract (from `/operationalizing-expertise`).
 
 ---
 
@@ -74,12 +74,6 @@ Syntax-only checks:
 ```bash
 for s in scripts/*.sh; do bash -n "$s"; done
 for p in scripts/*.py; do python3 -m py_compile "$p"; done
-```
-
-Skill-package validator, when available:
-
-```bash
-~/.claude/skills/sw/scripts/validate-skill.py /data/projects/je_private_skills_repo/.claude/skills/simplify-and-refactor-code-isomorphically/
 ```
 
 ---

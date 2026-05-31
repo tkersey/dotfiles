@@ -39,7 +39,6 @@ REFERENCED_SKILLS=(
   deadlock-finder-and-fixer
   readme-writing
   de-slopify
-  porting-to-rust
   supabase
   vercel
   tanstack

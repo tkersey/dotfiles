@@ -25,8 +25,7 @@ The description's "Use when" clause should match all of these:
 
 - "this is slow / optimize this" → profiling-software-performance + extreme-software-optimization
 - "find bugs in this code" → multi-pass-bug-hunting / ubs
-- "review this PR" → managing-gh-issues-and-prs-with-ru / review
-- "rewrite this in Rust" → porting-to-rust
+- "review this PR" → gh-triage-ru / review
 - "find unused code / mocks" → mock-code-finder (then this skill if dedup follows)
 - "explain this codebase" → codebase-archaeology
 
@@ -50,18 +49,10 @@ Verify the skill:
 9. Refuses to re-baseline goldens silently.
 10. Appends to LEDGER.md per accepted candidate.
 
-## Validation script
-
-```bash
-~/.claude/skills/sw/scripts/validate-skill.py /data/projects/je_private_skills_repo/.claude/skills/simplify-and-refactor-code-isomorphically/
-```
-
-Expected: zero errors, possible warnings about line count (intentional — this skill teaches a methodology).
-
 ## Skill contract validation
 
 ```bash
-cd /data/projects/je_private_skills_repo/.claude/skills/simplify-and-refactor-code-isomorphically
+cd <repo>/.claude/skills/simplify-and-refactor-code-isomorphically
 ./scripts/extract_kernel.sh >/tmp/refactor-kernel.md
 ./scripts/validate_operators.py
 ./scripts/validate_corpus.py

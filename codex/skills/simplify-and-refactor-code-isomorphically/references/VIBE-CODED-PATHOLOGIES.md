@@ -418,7 +418,7 @@ Imported in 12 tests. Real API has shipped; these tests now pass even if the rea
 rg -l '__mocks__|jest\.mock|vi\.mock|sinon\.stub' -t ts
 ```
 
-**Collapse:** replace mocks with real-service integration tests per [testing-perfect-e2e-integration-tests-with-logging-and-no-mocks](../../testing-perfect-e2e-integration-tests-with-logging-and-no-mocks/SKILL.md). Or: convert to [testing-metamorphic](../../testing-metamorphic/SKILL.md) where the oracle comes from relations, not pinned values.
+**Collapse:** replace mocks with real-service integration tests per [`/testing-real-service-e2e-no-mocks`](../../testing-real-service-e2e-no-mocks/SKILL.md). Or: convert to [testing-metamorphic](../../testing-metamorphic/SKILL.md) where the oracle comes from relations, not pinned values.
 
 **Isomorphism pitfall:** **mock removal changes what the tests prove**. It's a test-suite change, not a code change. Ship separately.
 

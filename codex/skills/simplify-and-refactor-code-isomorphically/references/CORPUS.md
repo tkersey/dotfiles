@@ -104,7 +104,7 @@
 ---
 
 ### A-5 — Treat other-agent changes as your own
-**Source:** `AGENTS.md` §"Note for Codex/GPT-5.2"
+**Source:** `AGENTS.md` §"Note for Codex/GPT-5.5"
 **Tag(s):** `process`
 **Verbatim:**
 > You NEVER, under ANY CIRCUMSTANCE, stash, revert, overwrite, or otherwise disturb in ANY way the work of other agents. Just treat those changes identically to changes that you yourself made. Just fool yourself into thinking YOU made the changes and simply don't recall it for some reason.
@@ -287,7 +287,7 @@ Representative phrases:
 ## Sibling-skill anchors (K-*)
 
 ### K-1 — Rule of 3 (extract on the third case)
-**Source:** [sw/references/ARCHETYPES.md](../../sw/references/ARCHETYPES.md) and common XP lore
+**Source:** common XP lore
 **Tag(s):** `collapse`
 **Verbatim:**
 > Two is a coincidence; three is a pattern.
@@ -323,8 +323,8 @@ Representative phrases:
 
 ---
 
-### K-4 — Skills are for Claude, not humans (from sw)
-**Source:** [sw/references/MINDSET.md](../../sw/references/MINDSET.md)
+### K-4 — Skills are for Claude, not humans
+**Source:** skill-authoring lore
 **Tag(s):** `sibling, process`
 **Verbatim:**
 > Skills are instructions for *you* (the agent). Write what would make YOU understand faster and work better.
@@ -346,7 +346,7 @@ Representative phrases:
 ---
 
 ### K-6 — bv --robot-* flags only
-**Source:** [bv/SKILL.md](../../bv/SKILL.md) §"CRITICAL"
+**Source:** [bv/SKILL.md](../../beads-bv/SKILL.md) §"CRITICAL"
 **Tag(s):** `sibling`
 **Verbatim:**
 > **CRITICAL: Use ONLY `--robot-*` flags. Bare `bv` launches an interactive TUI that blocks your session.**
@@ -368,7 +368,7 @@ Representative phrases:
 ---
 
 ### K-8 — Beads session protocol
-**Source:** `AGENTS.md` §"Beads Workflow Integration" + [br/SKILL.md](../../br/SKILL.md)
+**Source:** `AGENTS.md` §"Beads Workflow Integration" + [br/SKILL.md](../../beads-br/SKILL.md)
 **Tag(s):** `process, sibling`
 **Verbatim:**
 > Before ending any session, run this checklist:

@@ -381,4 +381,4 @@ From aggregated cass hit counts across all searches:
 
 - **When you encounter a "tests pass → done" moment** in your own session, check this file. Then dig deeper.
 
-Full raw mining output: `/data/projects/je_private_skills_repo/CASS_SIMPLIFY_REFACTOR_DEEP_MINING.md`.
+Full raw mining output: `CASS_SIMPLIFY_REFACTOR_DEEP_MINING.md` (from the source corpus, not shipped with this skill).

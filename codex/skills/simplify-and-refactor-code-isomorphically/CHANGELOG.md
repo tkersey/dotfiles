@@ -64,8 +64,8 @@ Pin a version by recording it in your project's `AGENTS.md` or in a
   `ledger_row.sh` command-substitution syntax, made ledger appends quote-safe,
   quoted dynamic scanner commands, removed unsafe simian filename splitting,
   and made rescue/dead-code file discovery handle missing paths and spaces.
-- Moved long-reference contents lists directly under their titles so `/sw`
-  and weak-model first-screen scans see navigation immediately.
+- Moved long-reference contents lists directly under their titles so
+  weak-model first-screen scans see navigation immediately.
 
 ## [1.0.0] — 2026-04-23
 

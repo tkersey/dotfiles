@@ -1,7 +1,7 @@
 ---
 name: simplify-and-refactor-code-isomorphically
 description: >-
-  Shrink/unify code without behavior change. Use when: simplify, refactor, reduce
+  Shrink and unify code without changing behavior. Use when: simplify, refactor, reduce
   duplication, remove lines, extract helper, reuse component, DRY, collapse, better abstraction.
 ---
 
@@ -409,8 +409,7 @@ Further passes happen after real feature work shifts the surface. New duplicates
 | Identify performance hotspots to target | [profiling-software-performance](../profiling-software-performance/SKILL.md) |
 | Apply an optimization after measuring | [extreme-software-optimization](../extreme-software-optimization/SKILL.md) |
 | Deep audit for latent bugs before/after refactor | [multi-pass-bug-hunting](../multi-pass-bug-hunting/SKILL.md), [ubs](../ubs/SKILL.md) |
-| Mine your own prior solutions for a particular shape | [cass](../cass/SKILL.md) + [flywheel](../flywheel/SKILL.md) |
-| Port CLI to Rust (spec-first, preserves invariants) | [porting-to-rust](../porting-to-rust/SKILL.md) |
+| Mine your own prior solutions for a particular shape | [cass](../cass/SKILL.md) + `/flywheel` |
 | Review the resulting PR with multiple models | [multi-model-triangulation](../multi-model-triangulation/SKILL.md) |
 
 Full cross-skill map: [CROSS-SKILL.md](references/CROSS-SKILL.md).

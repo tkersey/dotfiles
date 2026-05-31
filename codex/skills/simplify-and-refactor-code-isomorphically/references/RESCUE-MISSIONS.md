@@ -111,7 +111,7 @@ If no tests exist, the skill's goldens gate is meaningless. Bootstrap coverage:
 
 **Don't aim for 80% line coverage.** Aim for:
 
-1. **Golden-path integration tests** — the 3–5 user workflows that make the product work. Tests at the system boundary exercising real code, real DB, real API. See [testing-perfect-e2e-integration-tests-with-logging-and-no-mocks](../../testing-perfect-e2e-integration-tests-with-logging-and-no-mocks/SKILL.md).
+1. **Golden-path integration tests** — the 3–5 user workflows that make the product work. Tests at the system boundary exercising real code, real DB, real API. See [`/testing-real-service-e2e-no-mocks`](../../testing-real-service-e2e-no-mocks/SKILL.md).
 2. **Invariant-pinning property tests** — one per critical data transformation. See [PROPERTY-TESTS.md](PROPERTY-TESTS.md).
 3. **Characterization tests** — for the top 5 functions by lines-of-code-or-complexity. Write tests that capture *current behavior* (not intended behavior) so future changes have an oracle.
 
@@ -223,7 +223,7 @@ br create --title "[rescue] Replace .unwrap() in src/payment/mod.rs (14 sites)" 
 br create --title "[rescue] Un-quarantine conformance_stale_issue_detection test" --type task --priority 3 --label rescue
 ```
 
-Then use [bv](../../bv/SKILL.md) to triage: prioritize by (blast-radius × unblocking-potential) / effort. Work the top few per week.
+Then use [bv](../../beads-bv/SKILL.md) to triage: prioritize by (blast-radius × unblocking-potential) / effort. Work the top few per week.
 
 This keeps the rescue from becoming overwhelming, and it leaves a durable audit trail.
 

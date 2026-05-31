@@ -50,11 +50,6 @@
                                  multi-model-triangulation
                                        OR
                                  ubs (per-file static analysis)
-
-  "port to Rust"            ──→  porting-to-rust (spec-first; preserves invariants)
-                                       │
-                                       ▼
-                                 THIS SKILL on the Rust target after port stabilizes
 ```
 
 ---
@@ -112,12 +107,6 @@ Conversely, when a bug-hunt pass surfaces patterns of duplicated buggy code (the
 **Direction:** (this skill) → swarm review.
 
 **Why:** for Tier 2/3 changes, run multiple Gemini reviewers in parallel. Their per-file findings catch things a single reviewer misses (especially type-narrowing and React-reconciler subtleties).
-
-### porting-to-rust
-
-**Direction:** porting → (this skill).
-
-**Why:** a fresh port often introduces accidental duplication (because the porter writes each file independently). Don't simplify mid-port — that conflates two unfreezable cycles. Wait until the port is stable, then run a simplification pass.
 
 ### planning-workflow
 

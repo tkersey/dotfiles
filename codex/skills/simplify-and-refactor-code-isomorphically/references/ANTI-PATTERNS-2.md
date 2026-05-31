@@ -253,7 +253,7 @@ Agent cleans up "temporary" artifact dirs once the PR lands.
 
 "This code is too messy to refactor. Let me do a clean-room rewrite."
 
-**Fix:** the skill's whole thesis is that rewrites are Tier-3 and rarely the right answer. If you genuinely need to rewrite, see [porting-to-rust](../../porting-to-rust/SKILL.md) for spec-first methodology — but first, try one pass of the skill's loop. 90% of "rewrites" were actually "I didn't know how to collapse this."
+**Fix:** the skill's whole thesis is that rewrites are Tier-3 and rarely the right answer. If you genuinely need to rewrite, use a dedicated spec-first cross-language port workflow — but first, try one pass of the skill's loop. 90% of "rewrites" were actually "I didn't know how to collapse this."
 
 ---
 
