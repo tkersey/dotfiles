@@ -2,4 +2,4 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "spec-lint"
-  short_description: "Check specs for proof, rollback, traceability, and readiness"
+  short_description: "Check specs for proof, rollback, traceability, receipts, and readiness"

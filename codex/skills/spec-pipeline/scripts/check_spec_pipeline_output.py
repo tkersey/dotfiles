@@ -39,17 +39,40 @@ REQUIRED_SECTIONS = [
 ]
 
 REQUIRED_BLOCKS = [
+    "## Spec Pipeline Receipt",
     "## Evidence Brief",
     "## Gate Result",
     "spec_decision_packet:",
     "## Invariant Challenge",
+    "## Fresh-Eyes Pass",
     "## Spec Lint Result",
+    "## Execution Handoff",
+]
+
+RECEIPT_FIELDS = [
+    "profile:",
+    "lane:",
+    "evidence_brief_emitted:",
+    "grill_rounds:",
+    "no_grill_justification:",
+    "decision_packet_emitted:",
+    "gate_verdict:",
+    "plan_allowed:",
+    "mutation_allowed:",
+    "subagent_budget:",
+    "subagent_receipt:",
+    "invariant_challenge:",
+    "fresh_eyes:",
+    "lint_verdict:",
+    "execution_handoff:",
 ]
 
 GATE_FIELDS = [
     "plan_allowed:",
+    "mutation_allowed:",
     "script_gate:",
     "script_gate_reason:",
+    "clarification_receipt:",
     "material_open_questions:",
     "defaults:",
     "deferrals:",
@@ -67,9 +90,17 @@ LINT_FIELDS = [
     "unmapped_requirements:",
     "rollback_gaps:",
     "proof_gaps:",
+    "receipt_gaps:",
+    "subagent_gaps:",
     "churn_signals:",
     "recommended_next_action:",
 ]
+
+EMPTY = {"", "n/a", "na", "none", "null", "tbd", "todo", "?", "[]", "absent"}
+
+
+def normalize(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", s.strip().lower()).strip("_")
 
 
 def ordered_positions(text: str, needles: list[str]) -> tuple[bool, list[str]]:
@@ -97,16 +128,57 @@ def section_slice(text: str, heading: str) -> str:
     return text[start:end]
 
 
+def scalar_field(text: str, field: str) -> str | None:
+    m = re.search(rf"(?im)^\s*{re.escape(field)}\s*:\s*(.*)$", text)
+    return m.group(1).strip() if m else None
+
+
+def no_grill_has_justification(text: str) -> bool:
+    val = scalar_field(text, "grill_rounds")
+    if val is None:
+        return True
+    try:
+        rounds = int(re.match(r"\d+", val).group(0))  # type: ignore[union-attr]
+    except Exception:
+        return True
+    if rounds != 0:
+        return True
+    just = scalar_field(text, "no_grill_justification")
+    return just is not None and normalize(just) not in EMPTY
+
+
+def subagents_closed(text: str) -> bool:
+    receipt = scalar_field(text, "subagent_receipt")
+    if not receipt:
+        return True
+    m = re.search(r"open_at_end\s*=\s*(\d+)", receipt)
+    return not m or int(m.group(1)) == 0
+
+
+def check_failure_or_warning(text: str) -> list[str]:
+    errors: list[str] = []
+    if "<proposed_plan>" in text or "</proposed_plan>" in text:
+        errors.append("forbidden proposed_plan wrapper present")
+    if "## Spec Pipeline Receipt" not in text:
+        errors.append("failure/warning output missing Spec Pipeline Receipt")
+    receipt = section_slice(text, "## Spec Pipeline Receipt")
+    for field in RECEIPT_FIELDS:
+        if field not in receipt:
+            errors.append(f"receipt missing field: {field}")
+    if not no_grill_has_justification(receipt):
+        errors.append("grill_rounds is 0 but no_grill_justification is empty")
+    return errors
+
+
 def check(path: Path) -> list[str]:
     text = path.read_text(encoding="utf-8")
     errors: list[str] = []
 
+    if "SPEC_PIPELINE_GATE_FAILURE" in text or "SPEC_PIPELINE_DRIFT_WARNING" in text:
+        return check_failure_or_warning(text)
+
     if "<proposed_plan>" in text or "</proposed_plan>" in text:
         errors.append("forbidden proposed_plan wrapper present")
-
-    if "SPEC_PIPELINE_GATE_FAILURE" in text or "SPEC_PIPELINE_DRIFT_WARNING" in text:
-        # Failure/warning outputs intentionally do not include a full spec. Still forbid plan wrappers.
-        return errors
 
     for block in REQUIRED_BLOCKS:
         if block not in text:
@@ -120,6 +192,15 @@ def check(path: Path) -> list[str]:
     if not ok:
         errors.extend([f"required sections: {e}" for e in section_errors])
 
+    receipt = section_slice(text, "## Spec Pipeline Receipt")
+    for field in RECEIPT_FIELDS:
+        if field not in receipt:
+            errors.append(f"receipt missing field: {field}")
+    if not no_grill_has_justification(receipt):
+        errors.append("grill_rounds is 0 but no_grill_justification is empty")
+    if not subagents_closed(receipt):
+        errors.append("subagent_receipt has open_at_end > 0")
+
     gate = section_slice(text, "## Gate Result")
     for field in GATE_FIELDS:
         if field not in gate:
@@ -129,6 +210,11 @@ def check(path: Path) -> list[str]:
     for field in LINT_FIELDS:
         if field not in lint:
             errors.append(f"spec lint result missing field: {field}")
+
+    handoff = section_slice(text, "## Execution Handoff")
+    for field in ["ready_for_plan:", "mutation_allowed:", "next_owner:", "handoff_summary:", "do_not_execute_before:"]:
+        if field not in handoff:
+            errors.append(f"execution handoff missing field: {field}")
 
     return errors
 

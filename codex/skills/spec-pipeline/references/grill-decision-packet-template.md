@@ -26,10 +26,14 @@ spec_decision_packet:
       consequence:
   deferred_questions:
   default_assumptions:
+  clarification_receipt:
+    grill_rounds:
+    no_grill_justification:
 ```
 
 Completion bar:
 
 - Each material ambiguity is answered, researched, assumed, deferred, or immaterial.
 - Each open question has owner, default, and consequence.
+- If `grill_rounds: 0`, No-Grill Justification says why the brief is decision-complete.
 - Planning is blocked if any high-impact question lacks a default.

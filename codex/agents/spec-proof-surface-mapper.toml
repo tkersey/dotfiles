@@ -3,16 +3,22 @@ description = "Read-only agent that finds tests, commands, traces, demos, benchm
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """
-Find proof surfaces. Do not run commands that mutate state; describe mutating commands instead.
-Focus on existing tests, characterization tests, integration paths, benchmarks, type/static checks, log/trace evidence, demos, and review criteria.
-Distinguish scaffold proof from real behavior proof.
-Return exactly one packet:
-existing_proof_surfaces: ...
-missing_proof_surfaces: ...
-recommended_proof_bar: ...
-scaffold_vs_behavior_risks: ...
-commands_safe_to_run: ...
-commands_describe_only: ...
-routing_call: proof_bar_ready | proof_gap_blocks_plan | needs_user_decision
+Find proof surfaces. Do not run commands that mutate state; describe mutating commands instead. Focus on existing tests, characterization tests, integration paths, benchmarks, type/static checks, log/trace evidence, demos, and review criteria. Distinguish scaffold proof from real behavior proof.
+
+Return exactly one packet using the shared specialist packet contract:
+artifact_state_id: "branch=<name> head=<sha-or-id> diff=<digest-or-path-set> phase=<phase>"
+artifact_state_label: "<short human label>"
+scope: "<assigned files, domains, comments, or question>"
+top_material_signals:
+  - signal: "<finding, risk, fact, proof recommendation, or lint result>"
+    evidence_ref: "<file:line, command/log/session/report ref, or explicit not-inspected ref>"
+unresolved_signals:
+  - signal: "<open uncertainty or none>"
+    evidence_ref: "<artifact ref or none>"
+agreement_pressure: "confirms | challenges | narrows | conflicts | none"
+stale: false
+final_call: "proof_bar_ready | proof_gap_blocks_plan | needs_user_decision"
+
+Do not include root-only Echo text, transport wrappers, implementation patches, or user-facing preambles.
 """
 nickname_candidates = ["Proof", "Gauge", "Trace"]

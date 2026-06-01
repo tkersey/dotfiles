@@ -1,7 +1,7 @@
 {
   "skill_name": "spec-pipeline",
-  "version": "1.1.0",
-  "purpose": "Regression cases for preserving the spec-pipeline state machine and preventing plan/spec conflation.",
+  "version": "1.2.0",
+  "purpose": "Regression cases for preserving the spec-pipeline state machine, receipts, and preventing plan/spec conflation.",
   "cases": [
     {
       "id": "ability-conformance-matrix-decision-complete-brief",
@@ -9,12 +9,16 @@
       "must_do": [
         "Treat the brief as presumptively decision-complete",
         "Research discoverable repo surfaces before asking questions",
+        "Emit Spec Pipeline Receipt",
         "Emit exact Evidence Brief labels in order",
+        "Emit no_grill_justification if grill_rounds is 0",
         "Emit Gate Result before the spec",
         "Emit spec_decision_packet YAML",
         "Produce plain markdown implementation spec sections 1-14",
         "Run one invariant challenge",
+        "Run Fresh-Eyes Pass",
         "Emit Spec Lint Result with script_lint status or skipped reason",
+        "Account for subagents",
         "End with Execution Handoff to $plan"
       ],
       "must_not_do": [
@@ -22,7 +26,8 @@
         "Ask grill questions unless a material contradiction remains",
         "Use $plan iteration scaffolding",
         "Convert the spec into an execution plan",
-        "Hide script gate/lint skips"
+        "Hide script gate/lint skips",
+        "Allow mutation before gate/challenge/fresh-eyes/lint"
       ]
     },
     {
@@ -31,6 +36,7 @@
       "must_do": [
         "Research discoverable facts first when artifacts are available",
         "Emit SPEC_PIPELINE_GATE_FAILURE",
+        "Emit Spec Pipeline Receipt with plan_allowed=false and mutation_allowed=false",
         "Ask at most 1-3 material questions with stable snake_case ids"
       ],
       "must_not_do": [
@@ -40,11 +46,25 @@
       ]
     },
     {
+      "id": "no-grill-fast-path-receipt",
+      "prompt_summary": "User supplies a decision-complete brief, so no questions are asked.",
+      "must_do": [
+        "Emit grill_rounds: 0",
+        "Emit concrete no_grill_justification",
+        "Show material_unknowns_remaining false or accountable defaults"
+      ],
+      "must_not_do": [
+        "Leave no_grill_justification blank",
+        "Use generic 'already clear' without naming supplied or researched decisions"
+      ]
+    },
+    {
       "id": "drift-before-spec",
       "prompt_summary": "During spec preparation the candidate scope introduces a public API that the authoritative brief explicitly forbids.",
       "must_do": [
         "Emit SPEC_PIPELINE_DRIFT_WARNING",
         "Name the changed field and original/candidate values",
+        "Emit Spec Pipeline Receipt",
         "Stop before spec and plan handoff"
       ],
       "must_not_do": [

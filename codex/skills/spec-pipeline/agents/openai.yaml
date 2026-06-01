@@ -2,4 +2,4 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "spec-pipeline"
-  short_description: "Research → grill → gate → spec → challenge → lint"
+  short_description: "Research → receipt → grill/gate → spec → challenge → fresh-eyes → lint"

@@ -13,14 +13,18 @@ When a brief already provides goal, target surfaces, non-goals, invariant/author
 
 1. Research discoverable repo facts.
 2. Emit exact Evidence Brief labels.
-3. Run anti-drift checkpoint against the authoritative brief.
-4. Ask no questions unless a material contradiction remains.
-5. Emit `spec_decision_packet`.
-6. Emit Gate Result with `plan_allowed` and script status.
-7. Produce the implementation spec as plain markdown, not `<proposed_plan>`.
-8. Run exactly one invariant challenge.
-9. Emit Spec Lint Result with script status or explicit skip reason.
-10. End with a short Execution Handoff to `$plan`.
+3. Emit `## Spec Pipeline Receipt`.
+4. Run anti-drift checkpoint against the authoritative brief.
+5. Ask no questions unless a material contradiction remains.
+6. If no questions are asked, emit a concrete No-Grill Justification.
+7. Emit `spec_decision_packet`.
+8. Emit Gate Result with `plan_allowed`, `mutation_allowed`, and script status.
+9. Produce the implementation spec as plain markdown, not `<proposed_plan>`.
+10. Run exactly one invariant challenge.
+11. Run Fresh-Eyes Pass.
+12. Emit Spec Lint Result with script status or explicit skip reason.
+13. Account for all subagents.
+14. End with a short Execution Handoff to `$plan`.
 
 ## Forbidden regression
 
@@ -42,4 +46,4 @@ A saved output for this scenario should pass:
 uv run python codex/skills/spec-pipeline/scripts/check_spec_pipeline_output.py path/to/spec-output.md
 ```
 
-The checker is mechanical. The model must still judge semantic completeness, proof adequacy, and drift.
+The checker is mechanical. The model must still judge semantic completeness, proof adequacy, drift, receipts, and subagent accounting.

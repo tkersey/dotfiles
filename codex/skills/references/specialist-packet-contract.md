@@ -18,7 +18,7 @@ top_material_signals:
 unresolved_signals:
   - signal: "<open uncertainty or none>"
     evidence_ref: "<artifact ref or none>"
-agreement_pressure: "<confirms | challenges | narrows | conflicts | none>"
+agreement_pressure: "confirms | challenges | narrows | conflicts | none"
 stale: false
 final_call: "<one-line decision or recommendation>"
 ```
@@ -32,7 +32,7 @@ An accepted packet must have at least one scoped answer and at least one artifac
 - branch or checkout identifier when available
 - `HEAD`, commit, or comparable revision
 - diff hash, changed-file digest, or touched path set
-- phase label such as `prepatch`, `postpatch`, `post-fixture-refresh`, or `closure-candidate`
+- phase label such as `prepatch`, `postpatch`, `post-fixture-refresh`, `spec-pre-gate`, `post-spec`, or `closure-candidate`
 
 Any material edit, fixture regeneration, dependency update, proof-surface change, or reopened negative evidence invalidates older packets. Mark older packets `stale`, `superseded`, or `timeout` before closure; do not silently carry them forward.
 
@@ -93,5 +93,6 @@ Closure may proceed only after the root has:
 - treated specialist signals as planning input, not proof commands or pass/fail verdicts
 - run root-owned verification for the changed behavior
 - documented residual uncertainty and any rejected specialist value receipts
+- emitted `subagent_receipt` when a spec pipeline spawned specialists
 
 Passing specialist output never replaces local build, lint, test, review, or proof gates.

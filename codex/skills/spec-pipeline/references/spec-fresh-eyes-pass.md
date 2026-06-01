@@ -11,7 +11,10 @@ Look for:
 - rollback or abort gaps;
 - requirements without tests;
 - plan-shaped execution waves leaking into the spec;
-- stale defaults or assumptions that should be locked, deferred, or returned to `$grill-me`.
+- stale defaults or assumptions that should be locked, deferred, or returned to `$grill-me`;
+- missing No-Grill Justification when `grill_rounds: 0`;
+- unaccounted subagents;
+- mutation allowed before gate/challenge/lint.
 
 Rules:
 - If any material issue is found, revise only the affected sections and rerun Spec Lint before handoff.
