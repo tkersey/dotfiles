@@ -1,6 +1,6 @@
 # Adjudication Ledger
 
-Use one row per review comment. For real PR comments, the Resolution-Warranted v4 ledger
+Use one row per review comment. For real PR comments, the Surface-Budgeted v5 ledger
 is mandatory and must preserve raw identity, input inventory, artifact-state
 identity, decision tests, and evidence references.
 
@@ -364,7 +364,7 @@ into:
 - Handoff Agenda
 - Adjudication Bottom Line
 
-## Resolution-Warranted v4 route-selection fields
+## Surface-Budgeted v5 route-selection fields
 
 Resolve Selection is a downstream routing contract, not a restatement of the
 Comment Ledger. Use one row per ledger row:
@@ -387,3 +387,7 @@ The Handoff Agenda must be a subset-preserving projection of this table:
 
 Every row also needs a Resolve Countercases entry that challenges the selected
 resolve decision with the strongest alternative downstream decision.
+
+## Surface Budget Ledger schema
+
+Use one row per mutation-capable warrant. Fields are defined in `surface-budget-warrants.md`. The row constrains `$fixed-point-driver` to deletion/reuse/refactor before additive implementation and caps new semantic surface.

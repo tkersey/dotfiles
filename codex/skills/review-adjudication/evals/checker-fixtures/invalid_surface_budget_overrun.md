@@ -124,7 +124,7 @@ artifact_state_id:
 
 | warrant id | mode | target net loc | max positive loc | max new public symbols | max new files | max new helpers | max new flags/knobs | max new state variants | max new branches | duplicate path budget | subtractive probes required | expansion warrant required | expansion status | proof required | notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| rw-c1 | subtractive-first | small-positive | 8 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | yes | yes | not-needed | pytest tests/test_a.py::test_retry_idempotent | try deletion/reuse/refactor first; additive guard is capped |
+| rw-c1 | subtractive-first | negative | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | yes | yes | not-needed | pytest tests/test_a.py::test_retry_idempotent | try deletion/reuse/refactor first; additive guard is capped |
 | rw-c2 | neutral-first | zero | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | no | no | not-needed | validation probe for thread:c2 | validation-only may add tests/probes, not production mutation |
 | rw-c3 | neutral-first | zero | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | no | no | not-needed | no proof required | no code surface selected |
 

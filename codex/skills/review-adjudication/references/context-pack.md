@@ -91,7 +91,7 @@ threads by default. Expand context only when it can change grounding, scope,
 freshness, concern validity, proposed-fix validity, evidence grade, evidence ref, resolve-selection decision,
 or handoff shape.
 
-## Resolution-Warranted v4 optional-but-useful context
+## Surface-Budgeted v5 optional-but-useful context
 
 When the user asks which comments are worth resolving, include enough context to
 support route selection:
@@ -117,3 +117,7 @@ Warrant context:
 - proof required for each action:
 - expiry triggers:
 ```
+
+## Surface budget context
+
+When review resolution may require code, include known diffstat, candidate deleted/collapsed paths, reusable seams, public API constraints, and any user preference for negative or neutral net LOC.

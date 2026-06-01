@@ -217,3 +217,11 @@ comments are valid" is insufficient.
 The checker in `tools/review_adjudication_gate.py` validates the mechanical parts
 of this contract. It cannot prove semantic correctness, but it blocks incomplete,
 stale-prone, or over-selected ledgers before downstream routing.
+
+## Surface Budget fail-closed rule
+
+Every `mutate-code` Resolution Warrant must have a matching `Surface Budget
+Ledger` row. The row must require subtractive probes and an expansion warrant for
+additive escape. If a downstream diff exceeds `max positive loc` or adds public
+symbols/files/helpers/flags beyond the budget, the checker must fail unless an
+explicit expansion warrant is present and approved.

@@ -190,3 +190,7 @@ claim and grants the exact action:
   case and do not permit mutation.
 
 A valid concern without a valid warrant is not actionable downstream.
+
+## Least-surface action threshold
+
+A valid `act` decision does not automatically justify additive code. Before issuing mutation permission, decide the preferred least-surface solution shape and surface budget. Additive helpers, guards, new files, public API, flags, state variants, or duplicate paths require defeated deletion/reuse/refactor probes and an expansion warrant when they exceed the budget.

@@ -35,7 +35,7 @@ Track these metrics over time:
 
 Maintain fixtures for:
 
-1. valid Resolution-Warranted v4 output
+1. valid Surface-Budgeted v5 output
 2. dropped input comment
 3. validation-only routed as implementation
 4. inconsistent Resolve Selection
@@ -155,3 +155,10 @@ Track these additional metrics:
 
 Add adversarial cases where Resolve Selection is valid but warrants are missing,
 wrong-action, expired, or too broad for the downstream diff/thread resolution.
+
+## Surface budget adversarial seeds
+
+- `address_adds_helper_without_subtractive_probe`: expected checker failure.
+- `negative_budget_positive_diffstat`: expected checker failure under `--diffstat`.
+- `feature_preserving_deletion`: expected pass with `target net loc: negative`.
+- `new_public_symbol_without_budget`: expected checker failure under `--new-public-symbols`.

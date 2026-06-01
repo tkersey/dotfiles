@@ -1,9 +1,9 @@
 # Example invocations
 
-## Resolution-Warranted v4 review adjudication
+## Surface-Budgeted v5 review adjudication
 
 ```md
-Use $review-adjudication in Resolution-Warranted v4 mode.
+Use $review-adjudication in Surface-Budgeted v5 mode.
 
 Goal: determine which current PR review comments should change code before any
 implementation.
@@ -72,7 +72,7 @@ Constraints:
 - construct the strongest no-change countercase for each comment
 - use $seq if the original why of this PR is unclear
 - do not implement changes yet
-- emit the Resolution-Warranted v4 Adjudication Gate
+- emit the Surface-Budgeted v5 Adjudication Gate
 
 Done when:
 - each raw comment is represented exactly once
@@ -148,7 +148,7 @@ Constraints:
 ## Validation-only uncertain review
 
 ```md
-Use $review-adjudication in Resolution-Warranted v4 mode.
+Use $review-adjudication in Surface-Budgeted v5 mode.
 
 Goal: decide whether a reviewer-reported failure mode is proven or should be
 validated before code changes.
@@ -168,7 +168,7 @@ Rules:
 ## Resolve-selection invocation
 
 ```md
-Use $review-adjudication in Resolution-Warranted v4 mode.
+Use $review-adjudication in Surface-Budgeted v5 mode.
 
 Goal: select which PR review comments should be addressed, validated only,
 resolved with proof only, rebutted/deferred, or blocked before any `$resolve`,
@@ -190,7 +190,7 @@ Rules:
 ## Anti-laundering resolve selection
 
 ```md
-Use $review-adjudication in Resolution-Warranted v4 mode.
+Use $review-adjudication in Surface-Budgeted v5 mode.
 
 Goal: refine these PR review comments to the subset that is actually worth
 resolving before implementation, validation, or thread cleanup.
@@ -212,7 +212,7 @@ Rules:
 ## Handoff-agenda consistency check
 
 ```md
-Use $review-adjudication in Resolution-Warranted v4 mode.
+Use $review-adjudication in Surface-Budgeted v5 mode.
 
 After the Comment Ledger and Resolve Selection, produce a Handoff Agenda whose
 buckets are exact projections:
@@ -230,7 +230,7 @@ Do not use "all". Use explicit comment IDs.
 ## Resolution-warranted invocation
 
 ```md
-Use $review-adjudication in Resolution-Warranted v4 mode.
+Use $review-adjudication in Surface-Budgeted v5 mode.
 
 Goal: adjudicate these review/CAS claims and issue the minimum active warrants
 required for the next workflow.
@@ -242,4 +242,16 @@ Rules:
 - every warrant must bind artifact_state_id, claim id, permitted scope,
   forbidden actions, evidence refs, proof required, and expiry
 - Handoff Agenda must be a projection of Resolve Selection and Resolution Warrants
+```
+
+## Surface-budgeted review resolution
+
+```md
+Use $review-adjudication in Surface-Budgeted v5 mode.
+
+Goal: decide which review comments deserve code, and for each `address` item
+issue a Resolution Warrant plus Surface Budget Ledger row. Prefer deletion,
+reuse, duplicate-path collapse, and refactor before additive code. Route to
+$fixed-point-driver with Surface Budget Preflight and require Surface Delta
+Receipts after patch groups.
 ```

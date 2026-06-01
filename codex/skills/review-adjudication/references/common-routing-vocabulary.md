@@ -171,7 +171,7 @@ Handoff permission fields use:
 - `yes`
 - `no`
 
-## Resolution-Warranted v4 gate fields
+## Surface-Budgeted v5 gate fields
 
 - `artifact_state_coverage`
 - `comment_inventory_coverage`
@@ -205,7 +205,7 @@ Handoff permission fields use:
 - `conflicting`
 - `unknown`
 
-## Resolution-Warranted v4 additions
+## Surface-Budgeted v5 additions
 
 ### `resolution_value`
 
@@ -245,7 +245,7 @@ Use exactly one per comment in Resolve Selection:
 - `no-change`
 - `blocked`
 
-### Resolution-Warranted v4 gate fields
+### Surface-Budgeted v5 gate fields
 
 - `artifact_state_coverage`
 - `comment_inventory_coverage`
@@ -277,3 +277,9 @@ Use exactly one per Resolution Warrant:
 - `draft-reply`
 - `defer`
 - `none`
+
+## Surface budget values
+
+`surface_budget_mode`: `subtractive-first`, `neutral-first`, `additive-capped`, `exploratory`.
+`target_net_loc`: `negative`, `zero`, `small-positive`, `unknown`, `uncapped-blocked`.
+`expansion_status`: `not-needed`, `needed`, `granted`, `blocked`.

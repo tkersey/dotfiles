@@ -1,6 +1,6 @@
 # Adjudication output template
 
-Use this Resolution-Warranted v4 template for real PR review comment sets. This is the Resolution-Warranted v4
+Use this Surface-Budgeted v5 template for real PR review comment sets. This is the Surface-Budgeted v5
 shape. It is designed to prevent downstream selection laundering, especially the
 failure mode where a mixed review set becomes "all are worth resolving" and then
 enters implementation.
@@ -109,6 +109,11 @@ Omit this section only when no specialists were used.
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 |  |  | github-review/cas/human-review/specialist/root-equivalent |  | address/validate-only/resolve-thread-only/do-not-address/blocked | valid/partial/unsupported/unknown | valid/partially-valid/wrong-fix/overbroad/under-specified/not-applicable/validation-only | defeated/not-defeated/unresolved | merge-blocking/correctness-critical/review-closure/proof-only/validation-needed/low-value/out-of-lane/blocked | narrow-local/coupled-comments/invariant-level/structural/validation-only/contentious/likely-to-reopen/proof-only-thread/no-change/blocked | mutate-code/add-validation-only/resolve-thread/draft-reply/defer/none | files/symbols/threads allowed | actions forbidden outside scope | concrete refs | no-change / resolve countercase ref | commands/proofs required | invalid when HEAD/base/diff/comment/thread state changes |
 
+## Surface Budget Ledger
+
+| warrant id | mode | target net loc | max positive loc | max new public symbols | max new files | max new helpers | max new flags/knobs | max new state variants | max new branches | duplicate path budget | subtractive probes required | expansion warrant required | expansion status | proof required | notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+
 ## Invariant-Level Handoff
 
 - invariant:
@@ -183,6 +188,8 @@ Include this section only when every substantive comment is selected as
 | resolve_selection_coverage | pass/fail |  |
 | resolve_countercase_coverage | pass/fail |  |
 | resolution_warrant_coverage | pass/fail |  |
+| surface_budget_coverage | pass/fail |  |
+| surface_budget_consumption_safety | pass/fail |  |
 | warrant_consumption_safety | pass/fail |  |
 | handoff_agenda_consistency | pass/fail |  |
 | selection_skew_audit | pass/fail |  |
@@ -205,6 +212,9 @@ Include this section only when every substantive comment is selected as
 - proof-only thread-resolution items: # must match resolve-thread warrants
 - items not selected:
 - proof:
+- surface budget preflight required:
+- surface delta receipt required:
+- expansion-warrant triggers:
 - blocked items:
 
 ## Adjudication Bottom Line

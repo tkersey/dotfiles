@@ -32,8 +32,8 @@ artifact evidence and a defeated no-change countercase.
 
 ## Default mode
 
-Use **Resolution-Warranted v4** mode whenever the input contains real review comments.
-Resolution-Warranted v4 is mandatory because automation needs:
+Use **Surface-Budgeted v5** mode whenever the input contains real review comments.
+Surface-Budgeted v5 is mandatory because automation needs:
 
 - stable raw comment identity
 - complete input-comment inventory coverage
@@ -49,10 +49,12 @@ Resolution-Warranted v4 is mandatory because automation needs:
 - handoff-agenda consistency checks so selected work is not broadened later
 - separate implementation, validation, and reply handoff permissions
 - Resolution Warrants that act as scoped, expiring downstream permissions
+- Surface Budget Ledger entries that force subtractive-first solution search
+  and cap additive semantic surface
 
 Other modes are allowed only when they still satisfy the completion gate:
 
-- **Standard**: expanded reasoning plus the full Resolution-Warranted v4 tail.
+- **Standard**: expanded reasoning plus the full Surface-Budgeted v5 tail.
 - **Fast**: bucket-only output plus the completion gate; allowed for exploratory
   triage or synthetic comments, not for implementation handoff unless the gate
   passes.
@@ -97,6 +99,9 @@ Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **INVARIANT-SEEKING**,
   and `implementation_handoff_allowed: yes`.
 - Do not collapse adjudication into "all comments are worth resolving"; emit the
   resolve-selection map before implementation or thread-resolution handoff.
+- Do not let `address` mean "add code". Every mutation-capable warrant must
+  carry a surface budget, deletion/reuse/refactor probe obligation, and
+  expansion-warrant rule before downstream implementation.
 - Validation-only handoff is not implementation permission.
 - Proof-only thread resolution is not implementation permission.
 - Reply handoff is not implementation permission.
@@ -288,7 +293,7 @@ For every comment, assess:
 15. resolution value
 16. handoff action
 
-In Resolution-Warranted v4, surface these checks in both `## Comment Ledger` and
+In Surface-Budgeted v5, surface these checks in both `## Comment Ledger` and
 `## Decision Tests`.
 
 ## Act validity rule
@@ -487,6 +492,95 @@ Downstream consumption rule:
 - If a downstream task changes files or resolves threads outside the warrant
   scope, the handoff is invalid.
 
+## Surface Budget Warrants
+
+A mutation-capable `address` warrant must not merely permit code change. It must
+constrain the implementation search to the least new semantic surface area.
+Default posture: **delete, reuse, collapse, or refactor before adding**.
+
+Emit `## Surface Budget Ledger` after `## Resolution Warrants`. Every
+`mutate-code` warrant must have one surface-budget row. Non-mutating warrants may
+use zero budgets.
+
+```md
+## Surface Budget Ledger
+
+| warrant id | mode | target net loc | max positive loc | max new public symbols | max new files | max new helpers | max new flags/knobs | max new state variants | max new branches | duplicate path budget | subtractive probes required | expansion warrant required | expansion status | proof required | notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+```
+
+Allowed `mode` values:
+
+- `subtractive-first`: required default for `mutate-code` warrants. Try deletion,
+  reuse, duplicate-path collapse, and refactor before any additive patch.
+- `neutral-first`: allowed for validation, reply, or narrow proof-only routes
+  with zero production surface.
+- `additive-capped`: allowed only when the adjudication already knows a small
+  positive diff is necessary and caps it explicitly.
+- `exploratory`: never allowed for `mutate-code` handoff; use only for blocked
+  investigation with no implementation permission.
+
+Allowed `target net loc` values:
+
+- `negative`
+- `zero`
+- `small-positive`
+- `unknown`
+- `uncapped-blocked`
+
+Surface budget rules:
+
+- `mutate-code` requires `mode: subtractive-first` or, rarely,
+  `mode: additive-capped` with a named defeated subtractive route.
+- `mutate-code` requires `subtractive probes required: yes`.
+- `mutate-code` requires `expansion warrant required: yes`.
+- Any additive helper, public symbol, file, flag/knob, state variant, or duplicate
+  path must fit the row budget or stop for an Expansion Warrant Request.
+- `target net loc: negative` is preferred. `zero` is acceptable.
+  `small-positive` must explain why it still reduces total semantic surface.
+- Public API, new state, new flags/knobs, and duplicate paths default to budget
+  `0` unless the review concern is impossible to resolve otherwise.
+
+The implementation handoff to `$fixed-point-driver` must include a
+**Surface Budget Preflight** instruction for every `address` warrant:
+
+```md
+## Surface Budget Preflight
+- warrant_id:
+- claim:
+- feature to preserve:
+- current source of truth:
+- deletion probe:
+- reuse probe:
+- refactor probe:
+- expected target_net_loc:
+- forbidden new surface:
+- first proof command:
+- implementation may proceed: yes/no
+```
+
+After each material patch, `$fixed-point-driver` should emit a
+**Surface Delta Receipt**:
+
+```md
+## Surface Delta Receipt
+- warrant_id:
+- patch number:
+- production insertions:
+- production deletions:
+- net production LOC:
+- public symbols added:
+- helpers added:
+- flags/knobs added:
+- state variants added:
+- duplicate paths added:
+- deleted/collapsed paths:
+- budget status: within-budget / expansion-needed / violation
+```
+
+If budget status is `expansion-needed` or `violation`, normal implementation
+stops until an Expansion Warrant Request is granted or the patch is redesigned.
+
 ## Governing invariant pass
 
 After individual adjudication, cluster comments that appear to point at the same
@@ -634,7 +728,7 @@ Use separate route permissions:
 - `reply_handoff_allowed`: `yes` only for rebuttal, defer, or reply-drafting
   work that should route to `$logophile` or a reply draft.
 
-The old single-field `handoff_allowed` is too coarse. Do not use it in v4 output
+The old single-field `handoff_allowed` is too coarse. Do not use it in v5 output
 except when quoting older adjudications.
 
 ## Acceptance skew audit
@@ -707,6 +801,8 @@ Required fields:
 - `resolve_selection_coverage`: `pass` / `fail`
 - `resolve_countercase_coverage`: `pass` / `fail`
 - `resolution_warrant_coverage`: `pass` / `fail`
+- `surface_budget_coverage`: `pass` / `fail`
+- `surface_budget_consumption_safety`: `pass` / `fail`
 - `warrant_consumption_safety`: `pass` / `fail`
 - `handoff_agenda_consistency`: `pass` / `fail`
 - `selection_skew_audit`: `pass` / `fail`
@@ -736,7 +832,7 @@ route validation tasks to `$fixed-point-driver` when
 
 ## Output contract
 
-### Resolution-Warranted v4
+### Surface-Budgeted v5
 
 Use this mode for real PR comment sets:
 
@@ -790,6 +886,9 @@ artifact_state_id:
 ## Resolution Warrants
 | warrant id | claim id | source | claim excerpt | decision | concern validity | proposed fix validity | no-change status | resolution value | route rationale | permitted action | permitted scope | forbidden actions | evidence refs | countercase ref | proof required | expiry |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+## Surface Budget Ledger
+| warrant id | mode | target net loc | max positive loc | max new public symbols | max new files | max new helpers | max new flags/knobs | max new state variants | max new branches | duplicate path budget | subtractive probes required | expansion warrant required | expansion status | proof required | notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 ## Invariant-Level Handoff
 ## Acceptance Skew Audit
 ## All-Action Justification
@@ -807,7 +906,7 @@ Omit `Specialist Packet Receipts` only when no specialists were used. Omit
 ### Standard
 
 Standard output may include expanded per-comment analysis, but it must end with
-the full Resolution-Warranted v4 tail and Adjudication Gate.
+the full Surface-Budgeted v5 tail and Adjudication Gate.
 
 ### Fast
 
@@ -870,6 +969,9 @@ with the missing fields instead of implementing.
 - Do not emit duplicate singleton sections; duplicate ledgers or gates are
   treated as contradictory and fail the checker.
 - Do not let `Handoff Agenda` broaden or contradict `Resolve Selection` or Resolution Warrants.
+- Do not let additive implementation proceed from an `address` warrant unless
+  deletion/reuse/refactor probes are required and the additive diff stays inside
+  the Surface Budget Ledger.
 - Do not mutate code, resolve threads, validate, or draft replies from review/CAS-derived claims without a matching active Resolution Warrant.
 - Do not reuse warrants after HEAD/base/diff/comment-set changes without revalidation.
 - Do not hide uncertainty; say exactly what evidence is missing.
@@ -885,6 +987,7 @@ with the missing fields instead of implementing.
 - [adjudication-gate-contract.md](references/adjudication-gate-contract.md)
 - [adjudication-output-template.md](references/adjudication-output-template.md)
 - [resolution-warrants.md](references/resolution-warrants.md)
+- [surface-budget-warrants.md](references/surface-budget-warrants.md)
 - [context-pack.md](references/context-pack.md)
 - [example-invocations.md](references/example-invocations.md)
 - [common-routing-vocabulary.md](references/common-routing-vocabulary.md)

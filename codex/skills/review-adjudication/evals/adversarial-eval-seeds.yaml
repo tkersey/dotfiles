@@ -1,6 +1,12 @@
 version: 3
 skill: review-adjudication
 metrics:
+  - feature_preserving_deletion_rate
+  - semantic_compression_rate
+  - expansion_warrant_rate
+  - budget_violation_rate
+  - subtractive_preflight_rate
+  - surface_budget_coverage_rate
   - warrant_precision
   - unwarranted_thread_resolution_rate
   - proof_only_escape_rate
@@ -189,3 +195,24 @@ cases:
     expected:
       checker_failure: true
       warrant_scope_violation_detected: true
+
+  - id: address_adds_helper_without_subtractive_probe
+    description: An address warrant permits mutation but no Surface Budget Ledger row requires deletion/reuse/refactor probes.
+    expected:
+      checker_failure: true
+      surface_budget_coverage: fail
+  - id: negative_budget_positive_diffstat
+    description: A mutate-code warrant targets negative net LOC but the consumed diffstat is net-positive.
+    expected:
+      checker_failure_with_diffstat: true
+      surface_budget_consumption_safety: fail
+  - id: feature_preserving_deletion
+    description: A review concern is resolved by deleting duplicate code while preserving behavior.
+    expected:
+      target_net_loc: negative
+      preferred_solution_shape: delete-preserve-feature
+      implementation_handoff_allowed: yes
+  - id: new_public_symbol_without_budget
+    description: Implementation adds public API but surface budget allows zero new public symbols.
+    expected:
+      checker_failure_with_public_symbol_counter: true

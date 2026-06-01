@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Mechanical contract checker for Resolution-Warranted v4 review-adjudication outputs.
+"""Mechanical contract checker for Surface-Budgeted Resolution-Warranted v5 review-adjudication outputs.
 
 The checker validates output shape, stale-proofing fields, evidence-reference
-obligations, resolve-selection anti-laundering, resolution warrants, and
-downstream handoff safety. It cannot prove semantic correctness, but it blocks
+obligations, resolve-selection anti-laundering, resolution warrants, surface budgets, and
+downstream handoff/diff-surface safety. It cannot prove semantic correctness, but it blocks
 unlicensed implementation, validation, or thread resolution before routing.
 """
 
@@ -126,6 +126,27 @@ ACTION_BY_DECISION = {
     "blocked": {"none"},
 }
 
+ALLOWED_SURFACE_BUDGET_MODE = {
+    "subtractive-first",
+    "neutral-first",
+    "additive-capped",
+    "exploratory",
+}
+ALLOWED_TARGET_NET_LOC = {
+    "negative",
+    "zero",
+    "small-positive",
+    "unknown",
+    "uncapped-blocked",
+}
+ALLOWED_EXPANSION_STATUS = {
+    "not-needed",
+    "needed",
+    "granted",
+    "blocked",
+}
+ALLOWED_YES_NO = {"yes", "no"}
+
 REQUIRED_LEDGER_FIELDS = [
     "id",
     "reviewer",
@@ -181,6 +202,25 @@ REQUIRED_WARRANT_FIELDS = [
     "proofrequired",
     "expiry",
 ]
+
+REQUIRED_SURFACE_BUDGET_FIELDS = [
+    "warrantid",
+    "mode",
+    "targetnetloc",
+    "maxpositiveloc",
+    "maxnewpublicsymbols",
+    "maxnewfiles",
+    "maxnewhelpers",
+    "maxnewflagsorknobs",
+    "maxnewstatevariants",
+    "maxnewbranches",
+    "duplicatepathbudget",
+    "subtractiveprobesrequired",
+    "expansionwarrantrequired",
+    "expansionstatus",
+    "proofrequired",
+    "notes",
+]
 REQUIRED_GATE_FIELDS = [
     "artifactstatecoverage",
     "commentinventorycoverage",
@@ -193,6 +233,8 @@ REQUIRED_GATE_FIELDS = [
     "resolveselectioncoverage",
     "resolvecountercasecoverage",
     "resolutionwarrantcoverage",
+    "surfacebudgetcoverage",
+    "surfacebudgetconsumptionsafety",
     "warrantconsumptionsafety",
     "handoffagendaconsistency",
     "selectionskewaudit",
@@ -219,6 +261,7 @@ REQUIRED_SECTIONS = [
     "Resolve Selection",
     "Resolve Countercases",
     "Resolution Warrants",
+    "Surface Budget Ledger",
     "Invariant-Level Handoff",
     "Acceptance Skew Audit",
     "Selection Skew Audit",
@@ -404,6 +447,45 @@ WARRANT_ALIASES = {
     "expires": "expiry",
 }
 
+SURFACE_BUDGET_ALIASES = {
+    "warrantid": "warrantid",
+    "warrant": "warrantid",
+    "mode": "mode",
+    "budgetmode": "mode",
+    "surfacebudgetmode": "mode",
+    "targetnetloc": "targetnetloc",
+    "targetloc": "targetnetloc",
+    "targetnetlines": "targetnetloc",
+    "maxpositiveloc": "maxpositiveloc",
+    "maxpositive": "maxpositiveloc",
+    "maxinsertions": "maxpositiveloc",
+    "maxnewpublicsymbols": "maxnewpublicsymbols",
+    "publicsymbolbudget": "maxnewpublicsymbols",
+    "maxnewfiles": "maxnewfiles",
+    "newfilebudget": "maxnewfiles",
+    "maxnewhelpers": "maxnewhelpers",
+    "helperbudget": "maxnewhelpers",
+    "maxnewflagsorknobs": "maxnewflagsorknobs",
+    "maxnewflags": "maxnewflagsorknobs",
+    "maxnewflagsknobs": "maxnewflagsorknobs",
+    "flagsorknobs": "maxnewflagsorknobs",
+    "flagsknobs": "maxnewflagsorknobs",
+    "maxnewstatevariants": "maxnewstatevariants",
+    "statevariantbudget": "maxnewstatevariants",
+    "maxnewbranches": "maxnewbranches",
+    "branchbudget": "maxnewbranches",
+    "duplicatepathbudget": "duplicatepathbudget",
+    "duplicatepaths": "duplicatepathbudget",
+    "subtractiveprobesrequired": "subtractiveprobesrequired",
+    "subtractiveprobes": "subtractiveprobesrequired",
+    "expansionwarrantrequired": "expansionwarrantrequired",
+    "expansionrequired": "expansionwarrantrequired",
+    "expansionstatus": "expansionstatus",
+    "proofrequired": "proofrequired",
+    "proof": "proofrequired",
+    "notes": "notes",
+}
+
 GATE_ALIASES = {
     "artifactstatecoverage": "artifactstatecoverage",
     "artifactcoverage": "artifactstatecoverage",
@@ -426,6 +508,12 @@ GATE_ALIASES = {
     "resolutionwarrantcoverage": "resolutionwarrantcoverage",
     "resolutionwarrantscoverage": "resolutionwarrantcoverage",
     "warrantcoverage": "resolutionwarrantcoverage",
+    "surfacebudgetcoverage": "surfacebudgetcoverage",
+    "surfacebudgetscoverage": "surfacebudgetcoverage",
+    "budgetcoverage": "surfacebudgetcoverage",
+    "surfacebudgetconsumptionsafety": "surfacebudgetconsumptionsafety",
+    "surfacebudgetconsumption": "surfacebudgetconsumptionsafety",
+    "surfacebudgetsafety": "surfacebudgetconsumptionsafety",
     "warrantconsumptionsafety": "warrantconsumptionsafety",
     "warrantconsumption": "warrantconsumptionsafety",
     "consumptionsafety": "warrantconsumptionsafety",
@@ -601,6 +689,27 @@ def parse_int(value: str) -> Optional[int]:
         return int(match.group(0))
     except ValueError:
         return None
+
+
+def parse_nonnegative_int(value: str) -> Optional[int]:
+    parsed = parse_int(value)
+    if parsed is None or parsed < 0:
+        return None
+    return parsed
+
+
+def parse_diffstat(value: str) -> Tuple[int, int]:
+    if not value:
+        return 0, 0
+    insertions = 0
+    deletions = 0
+    ins_match = re.search(r"(\d+)\s+insertions?\(\+\)", value)
+    del_match = re.search(r"(\d+)\s+deletions?\(-\)", value)
+    if ins_match:
+        insertions = int(ins_match.group(1))
+    if del_match:
+        deletions = int(del_match.group(1))
+    return insertions, deletions
 
 
 def parse_id_list(value: str) -> List[str]:
@@ -916,7 +1025,145 @@ def validate_resolution_warrants(
 
     return {"rows": rows, "by_claim": by_claim, "action_buckets": action_buckets}
 
-def check_adjudication(text: str, changed_files: Optional[Sequence[str]] = None, resolved_threads: Optional[Sequence[str]] = None) -> CheckResult:
+
+def validate_surface_budget_ledger(
+    text: str,
+    warrant_rows: Sequence[Dict[str, str]],
+    errors: List[str],
+    warnings: List[str],
+    diffstat: str = "",
+    new_public_symbols: int = 0,
+    new_files: int = 0,
+    new_helpers: int = 0,
+    new_flags_or_knobs: int = 0,
+) -> Dict[str, object]:
+    headers, raw_rows = extract_first_table(section_text(text, "Surface Budget Ledger"))
+    header_map, rows = normalize_rows(headers, raw_rows, SURFACE_BUDGET_ALIASES)
+    missing_columns = [field for field in REQUIRED_SURFACE_BUDGET_FIELDS if field not in header_map]
+    if missing_columns:
+        errors.append("Surface Budget Ledger missing required columns: " + ", ".join(missing_columns))
+    if not rows:
+        errors.append("Surface Budget Ledger has no data rows")
+
+    budget_by_warrant: Dict[str, Dict[str, str]] = {}
+    for idx, row in enumerate(rows, start=1):
+        warrant_id = row.get("warrantid", "").strip() or f"surface budget row {idx}"
+        if warrant_id in budget_by_warrant:
+            errors.append(f"{warrant_id}: duplicate Surface Budget Ledger row")
+        budget_by_warrant[warrant_id] = row
+        mode = norm_value(row.get("mode", ""))
+        target = norm_value(row.get("targetnetloc", ""))
+        subtractive = norm_value(row.get("subtractiveprobesrequired", ""))
+        expansion_required = norm_value(row.get("expansionwarrantrequired", ""))
+        expansion_status = norm_value(row.get("expansionstatus", ""))
+        if mode not in ALLOWED_SURFACE_BUDGET_MODE:
+            errors.append(f"{warrant_id}: invalid surface budget mode `{row.get('mode', '')}`")
+        if target not in ALLOWED_TARGET_NET_LOC:
+            errors.append(f"{warrant_id}: invalid target net LOC `{row.get('targetnetloc', '')}`")
+        if subtractive not in ALLOWED_YES_NO:
+            errors.append(f"{warrant_id}: subtractive probes required must be yes/no")
+        if expansion_required not in ALLOWED_YES_NO:
+            errors.append(f"{warrant_id}: expansion warrant required must be yes/no")
+        if expansion_status not in ALLOWED_EXPANSION_STATUS:
+            errors.append(f"{warrant_id}: invalid expansion status `{row.get('expansionstatus', '')}`")
+        for field in [
+            "maxpositiveloc",
+            "maxnewpublicsymbols",
+            "maxnewfiles",
+            "maxnewhelpers",
+            "maxnewflagsorknobs",
+            "maxnewstatevariants",
+            "maxnewbranches",
+            "duplicatepathbudget",
+        ]:
+            if parse_nonnegative_int(row.get(field, "")) is None:
+                errors.append(f"{warrant_id}: `{field}` must be a non-negative integer")
+        if is_empty(row.get("proofrequired", "")):
+            errors.append(f"{warrant_id}: Surface Budget Ledger requires proof required")
+        if is_empty(row.get("notes", "")):
+            errors.append(f"{warrant_id}: Surface Budget Ledger requires notes")
+
+    mutate_warrants = [row for row in warrant_rows if norm_value(row.get("permittedaction", "")) == "mutate-code"]
+    mutate_ids = [row.get("warrantid", "").strip() for row in mutate_warrants if row.get("warrantid", "").strip()]
+    missing_budgets = sorted(set(mutate_ids) - set(budget_by_warrant))
+    if missing_budgets:
+        errors.append("Surface Budget Ledger missing mutate-code warrant ids: " + ", ".join(missing_budgets))
+    all_warrant_ids = {row.get("warrantid", "").strip() for row in warrant_rows if row.get("warrantid", "").strip()}
+    extra_budgets = sorted(set(budget_by_warrant) - all_warrant_ids)
+    if extra_budgets:
+        errors.append("Surface Budget Ledger contains unknown warrant ids: " + ", ".join(extra_budgets))
+
+    total_max_positive = 0
+    total_public_budget = 0
+    total_file_budget = 0
+    total_helper_budget = 0
+    total_flag_budget = 0
+    subtractive_first_count = 0
+    for warrant in mutate_warrants:
+        wid = warrant.get("warrantid", "").strip()
+        budget = budget_by_warrant.get(wid)
+        if not budget:
+            continue
+        mode = norm_value(budget.get("mode", ""))
+        target = norm_value(budget.get("targetnetloc", ""))
+        subtractive = norm_value(budget.get("subtractiveprobesrequired", ""))
+        expansion_required = norm_value(budget.get("expansionwarrantrequired", ""))
+        max_pos = parse_nonnegative_int(budget.get("maxpositiveloc", "")) or 0
+        total_max_positive += max_pos
+        total_public_budget += parse_nonnegative_int(budget.get("maxnewpublicsymbols", "")) or 0
+        total_file_budget += parse_nonnegative_int(budget.get("maxnewfiles", "")) or 0
+        total_helper_budget += parse_nonnegative_int(budget.get("maxnewhelpers", "")) or 0
+        total_flag_budget += parse_nonnegative_int(budget.get("maxnewflagsorknobs", "")) or 0
+        if mode == "subtractive-first":
+            subtractive_first_count += 1
+        if subtractive != "yes":
+            errors.append(f"{wid}: mutate-code surface budget requires subtractive probes before first production patch")
+        if expansion_required != "yes":
+            errors.append(f"{wid}: mutate-code surface budget requires expansion warrant for additive escape")
+        if mode == "exploratory":
+            errors.append(f"{wid}: mutate-code warrant cannot use exploratory surface budget mode")
+        if target == "uncapped-blocked":
+            errors.append(f"{wid}: mutate-code warrant cannot proceed with uncapped-blocked target net LOC")
+        if target in {"negative", "zero"} and max_pos > 0:
+            warnings.append(f"{wid}: target net LOC `{target}` has positive LOC allowance {max_pos}; verify expansion constraint")
+
+    insertions, deletions = parse_diffstat(diffstat)
+    net = insertions - deletions
+    if diffstat and mutate_warrants:
+        if net > total_max_positive:
+            errors.append(f"diffstat net LOC +{net} exceeds mutate-code surface budget max positive LOC {total_max_positive}")
+        if mutate_ids and all(norm_value(budget_by_warrant.get(wid, {}).get("targetnetloc", "")) == "negative" for wid in mutate_ids if wid in budget_by_warrant) and net >= 0:
+            errors.append("all mutate-code warrants target negative net LOC, but diffstat is not net-negative")
+    if new_public_symbols > total_public_budget:
+        errors.append(f"new public symbols {new_public_symbols} exceed surface budget {total_public_budget}")
+    if new_files > total_file_budget:
+        errors.append(f"new files {new_files} exceed surface budget {total_file_budget}")
+    if new_helpers > total_helper_budget:
+        errors.append(f"new helpers {new_helpers} exceed surface budget {total_helper_budget}")
+    if new_flags_or_knobs > total_flag_budget:
+        errors.append(f"new flags/knobs {new_flags_or_knobs} exceed surface budget {total_flag_budget}")
+
+    return {
+        "rows": rows,
+        "by_warrant": budget_by_warrant,
+        "mutate_budget_rows": len(mutate_ids),
+        "subtractive_first": subtractive_first_count,
+        "total_max_positive_loc": total_max_positive,
+        "diffstat_insertions": insertions,
+        "diffstat_deletions": deletions,
+        "diffstat_net": net,
+    }
+
+def check_adjudication(
+    text: str,
+    changed_files: Optional[Sequence[str]] = None,
+    resolved_threads: Optional[Sequence[str]] = None,
+    diffstat: str = "",
+    new_public_symbols: int = 0,
+    new_files: int = 0,
+    new_helpers: int = 0,
+    new_flags_or_knobs: int = 0,
+) -> CheckResult:
     errors: List[str] = []
     warnings: List[str] = []
 
@@ -1215,6 +1462,17 @@ def check_adjudication(text: str, changed_files: Optional[Sequence[str]] = None,
         changed_files=changed_files, resolved_threads=resolved_threads,
     )
     warrant_action_buckets = warrant_result.get("action_buckets", {}) if isinstance(warrant_result, dict) else {}
+    surface_budget_result = validate_surface_budget_ledger(
+        text,
+        warrant_result.get("rows", []) if isinstance(warrant_result, dict) else [],
+        errors,
+        warnings,
+        diffstat=diffstat,
+        new_public_symbols=new_public_symbols,
+        new_files=new_files,
+        new_helpers=new_helpers,
+        new_flags_or_knobs=new_flags_or_knobs,
+    )
 
     gate_headers, gate_rows_raw = extract_first_table(section_text(text, "Adjudication Gate"))
     gate = normalize_gate(gate_headers, gate_rows_raw)
@@ -1283,6 +1541,9 @@ def check_adjudication(text: str, changed_files: Optional[Sequence[str]] = None,
         "resolve_do_not_address": len(decision_buckets["do-not-address"]),
         "resolve_blocked": len(decision_buckets["blocked"]),
         "warrants": len(warrant_result.get("rows", [])) if isinstance(warrant_result, dict) else 0,
+        "surface_budget_rows": len(surface_budget_result.get("rows", [])) if isinstance(surface_budget_result, dict) else 0,
+        "surface_budget_max_positive_loc": int(surface_budget_result.get("total_max_positive_loc", 0)) if isinstance(surface_budget_result, dict) else 0,
+        "diffstat_net": int(surface_budget_result.get("diffstat_net", 0)) if isinstance(surface_budget_result, dict) else 0,
         "mutate_warrants": len(warrant_action_buckets.get("mutate-code", [])) if isinstance(warrant_action_buckets, dict) else 0,
         "validation_warrants": len(warrant_action_buckets.get("add-validation-only", [])) if isinstance(warrant_action_buckets, dict) else 0,
         "thread_resolution_warrants": len(warrant_action_buckets.get("resolve-thread", [])) if isinstance(warrant_action_buckets, dict) else 0,
@@ -1295,9 +1556,9 @@ def check_adjudication(text: str, changed_files: Optional[Sequence[str]] = None,
 
 def print_human(result: CheckResult) -> None:
     if result.passed:
-        print("PASS: Resolution-Warranted v4 adjudication gate contract satisfied")
+        print("PASS: Surface-Budgeted v5 adjudication gate contract satisfied")
     else:
-        print("FAIL: Resolution-Warranted v4 adjudication gate contract incomplete")
+        print("FAIL: Surface-Budgeted v5 adjudication gate contract incomplete")
     print("stats:", ", ".join(f"{key}={value}" for key, value in result.stats.items()))
     if result.gate:
         print("gate:", ", ".join(f"{key}={value}" for key, value in result.gate.items()))
@@ -1434,6 +1695,14 @@ artifact_state_id:
 | rw-c2 | c2 | github-review | maybe flakes | validate-only | unknown | validation-only | unresolved | validation-needed | validation-only | add-validation-only | tests/probes for thread:c2 only | production mutation; requested code change | thread:c2 | no-change c2 unresolved pending repro | validation probe for thread:c2 | invalid when HEAD/base/diff/comment-set changes |
 | rw-c3 | c3 | github-review | rename helper | do-not-address | unsupported | not-applicable | not-defeated | low-value | no-change | none | none | mutate code; resolve unrelated threads | src/a.py:1 | no-change c3 preserved by missing convention | none | invalid when HEAD/base/diff/comment-set changes |
 
+## Surface Budget Ledger
+
+| warrant id | mode | target net loc | max positive loc | max new public symbols | max new files | max new helpers | max new flags/knobs | max new state variants | max new branches | duplicate path budget | subtractive probes required | expansion warrant required | expansion status | proof required | notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| rw-c1 | subtractive-first | small-positive | 8 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | yes | yes | not-needed | pytest tests/test_a.py::test_retry_idempotent | try deletion/reuse/refactor first; additive guard is capped |
+| rw-c2 | neutral-first | zero | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | no | no | not-needed | validation probe for thread:c2 | validation-only may add tests/probes, not production mutation |
+| rw-c3 | neutral-first | zero | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | no | no | not-needed | no proof required | no code surface selected |
+
 ## Invariant-Level Handoff
 
 - invariant: retry idempotence
@@ -1479,6 +1748,8 @@ artifact_state_id:
 | resolve_selection_coverage | pass | every ledger row has valid downstream selection |
 | resolve_countercase_coverage | pass | every ledger row has resolve countercase |
 | resolution_warrant_coverage | pass | every resolve decision has a matching warrant |
+| surface_budget_coverage | pass | every mutate-code warrant has a subtractive-first surface budget |
+| surface_budget_consumption_safety | pass | surface budgets constrain downstream diff/symbol growth |
 | warrant_consumption_safety | pass | warrant actions match handoff agenda buckets |
 | handoff_agenda_consistency | pass | agenda buckets match selection map |
 | selection_skew_audit | pass | skew audited |
@@ -1646,6 +1917,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--self-test", action="store_true", help="run built-in self-test")
     parser.add_argument("--changed-files", help="optional comma-separated changed files to check against mutate-code warrant scope")
     parser.add_argument("--resolved-threads", help="optional comma-separated resolved thread ids to check against thread/action warrants")
+    parser.add_argument("--diffstat", default="", help="optional git diff --stat summary for surface budget checking")
+    parser.add_argument("--new-public-symbols", type=int, default=0, help="number of new public symbols for surface budget checking")
+    parser.add_argument("--new-files", type=int, default=0, help="number of new files for surface budget checking")
+    parser.add_argument("--new-helpers", type=int, default=0, help="number of new helpers/functions for surface budget checking")
+    parser.add_argument("--new-flags-or-knobs", type=int, default=0, help="number of new flags/config knobs for surface budget checking")
     args = parser.parse_args(argv)
 
     if args.self_test:
@@ -1660,7 +1936,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 2
     changed_files = parse_id_list(args.changed_files or "")
     resolved_threads = parse_id_list(args.resolved_threads or "")
-    result = check_adjudication(text, changed_files=changed_files, resolved_threads=resolved_threads)
+    result = check_adjudication(
+        text,
+        changed_files=changed_files,
+        resolved_threads=resolved_threads,
+        diffstat=args.diffstat,
+        new_public_symbols=args.new_public_symbols,
+        new_files=args.new_files,
+        new_helpers=args.new_helpers,
+        new_flags_or_knobs=args.new_flags_or_knobs,
+    )
     if args.json:
         print(result.to_json())
     else:
