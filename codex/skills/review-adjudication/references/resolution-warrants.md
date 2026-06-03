@@ -1,8 +1,8 @@
 # Resolution Warrants
 
 Resolution Warrants are scoped, expiring permission artifacts for review-, CAS-,
-or thread-derived claims. They convert adjudication from advice into a
-downstream capability boundary.
+or thread-derived claims. They convert adjudication from advice into a downstream
+capability boundary.
 
 ## Contract
 
@@ -29,14 +29,9 @@ Required columns:
 ## Expiry
 
 Every warrant expires when HEAD, base, diff, claim/thread set, or scoped artifact
-state changes unless it is explicitly revalidated against the new artifact state.
+state changes unless explicitly revalidated against the new artifact state.
 
 ## Consumption checks
 
-The checker can validate the adjudication itself and can optionally check
-changed files or resolved threads against warrant scope:
-
-```bash
-python codex/skills/review-adjudication/tools/review_adjudication_gate.py adjudication.md
-python codex/skills/review-adjudication/tools/review_adjudication_gate.py adjudication.md --changed-files src/a.py,tests/test_a.py
-```
+The checker can validate the adjudication itself and can optionally check changed
+files or resolved threads against warrant scope.

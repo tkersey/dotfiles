@@ -1,10 +1,15 @@
 # Codex custom agents for review-adjudication
 
-This package includes runnable Codex custom agents for the `$review-adjudication` authority panel. The authority panel is designed to solve both bandwidth and authority: lanes can run in parallel, but each lane owns only one clearance dimension.
+This package includes runnable Codex custom agents for the `$review-adjudication`
+authority panel. The authority panel is designed to solve both bandwidth and
+authority: lanes can run in parallel, but each lane owns only one clearance
+dimension.
 
 ## Install locations
 
-In this dotfiles repo, `codex/agents` is linked into `$HOME/.codex/agents`. Codex custom agents are discovered from project `.codex/agents/*.toml` or user `$HOME/.codex/agents/*.toml`.
+In this dotfiles repo, `codex/agents` is linked into `$HOME/.codex/agents`.
+Codex custom agents are discovered from project `.codex/agents/*.toml` or user
+`$HOME/.codex/agents/*.toml`.
 
 This drop-in includes:
 
@@ -28,10 +33,16 @@ This drop-in includes:
 
 ## Parent orchestration rule
 
-Launch all required authority agents before waiting. Keep them read-only. Assign the same `artifact_state_id`, `direction_state_id`, and exact scoped comment ids. Require the Authority Packet shape in `references/authority-fanout.md`.
+Launch all required authority agents before waiting. Keep them read-only. Assign
+the same `artifact_state_id`, `direction_state_id`, and exact scoped comment ids.
+Require the Authority Packet shape in `references/authority-fanout.md`.
 
-The parent/root adjudicator may always downgrade a row to a stricter route. It may not upgrade a row to `address` against a veto, unresolved clearance, missing authority packet, or stale packet.
+The parent/root adjudicator may always downgrade a row to a stricter route. It
+may not upgrade a row to `address` against a veto, unresolved clearance, missing
+authority packet, or stale packet.
 
 ## Fallback
 
-If the custom agents are unavailable, emit root-equivalent Authority Packets with the same role names and schema. Root-equivalent packets must be evidence-bearing and are not a license to skip the clearance matrix or veto ledger.
+If the custom agents are unavailable, emit root-equivalent Authority Packets with
+the same role names and schema. Root-equivalent packets must be evidence-bearing
+and are not a license to skip the clearance matrix or veto ledger.

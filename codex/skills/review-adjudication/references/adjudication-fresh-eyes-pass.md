@@ -1,17 +1,16 @@
-# Adjudication Fresh-Eyes Pass
+# Adjudication fresh-eyes pass
 
-Before emitting the Adjudication Gate, reread every `act`, `address`, `validate-only`, P2+ accepted, invariant-level, and authority-cleared row with fresh eyes.
+Run a fresh-eyes pass when adjudication pressure is high, the review set is mixed,
+or the output risks rubber-stamping.
 
-Challenge:
-- Is this comment or finding current for the exact artifact state?
-- Did reviewer authority, CAS/Codex source pressure, politeness, easy-fix bias, or closure pressure sneak into `act`?
-- Is this codebase-material, validation-material, proof-only, reply-only, or no-change?
-- Is concern approval being conflated with fix approval or mutation approval?
-- Is the proposed fix valid, or did adjudication accept the concern but inherit the wrong remedy?
-- Would `validate-only`, `resolve-thread-only`, `do-not-address`, `defer`, `rebut`, or `blocked` be more truthful?
-- Did the Handoff Agenda preserve Resolve Selection exactly, without adding implementation work?
-- Did root silently upgrade against an unresolved authority veto?
+Check:
 
-If the pass changes any row, update Comment Ledger, Decision Tests, Direction Tests, Severity Tests, Mutation Approval Tests, Authority Clearance Matrix, Authority Veto Ledger, Resolve Selection, Resolve Countercases, audits, Handoff Agenda, and bottom line before gating.
+- Which accepted comments would a skeptical maintainer reject?
+- Which no-change cases are still alive?
+- Which concerns are valid but proposed fixes are wrong?
+- Which comments are stale, already fixed, preference-only, or out of scope?
+- Which selected actions should be validation-only, proof-only, or blocked?
+- Which actions need authority fanout or fixed-point routing?
 
-If it finds no material delta, state `fresh_eyes_delta: none` in the nearest audit or Adjudication Bottom Line.
+A fresh-eyes pass can only downgrade, narrow, block, or request evidence unless it
+adds current artifact proof that clears a prior uncertainty.

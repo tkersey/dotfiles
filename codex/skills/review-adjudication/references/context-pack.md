@@ -88,20 +88,8 @@ Add only when needed:
 
 Do not include the whole repo, long prior-session summaries, or unrelated review
 threads by default. Expand context only when it can change grounding, scope,
-freshness, concern validity, proposed-fix validity, evidence grade, evidence ref, resolve-selection decision,
-or handoff shape.
-
-## Surface-Budgeted v5 optional-but-useful context
-
-When the user asks which comments are worth resolving, include enough context to
-support route selection:
-
-- whether latest HEAD already satisfies or supersedes each comment
-- proof refs for already-fixed or proof-only thread-resolution candidates
-- whether each accepted item is narrow-local or needs `$fixed-point-driver`
-- whether a comment is valuable for merge correctness, review closure,
-  validation only, proof-only cleanup, or out-of-lane
-
+freshness, concern validity, proposed-fix validity, evidence grade, evidence ref,
+resolve-selection decision, adversarial clearance, or handoff shape.
 
 ## Resolution warrant context
 
@@ -120,4 +108,6 @@ Warrant context:
 
 ## Surface budget context
 
-When review resolution may require code, include known diffstat, candidate deleted/collapsed paths, reusable seams, public API constraints, and any user preference for negative or neutral net LOC.
+When review resolution may require code, include known diffstat, candidate
+deleted/collapsed paths, reusable seams, public API constraints, and any user
+preference for negative or neutral net LOC.

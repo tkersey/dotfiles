@@ -1012,4 +1012,3 @@ with the missing fields instead of implementing.
 - [example-invocations.md](references/example-invocations.md)
 - [common-routing-vocabulary.md](references/common-routing-vocabulary.md)
 - [adversarial-eval-seeds.md](references/adversarial-eval-seeds.md)
-- [adversarial-parallelism.md](references/adversarial-parallelism.md)

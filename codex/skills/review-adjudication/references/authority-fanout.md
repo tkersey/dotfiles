@@ -1,9 +1,9 @@
 # Authority fanout
 
-Use authority fanout to solve both bandwidth and authority for `$review-adjudication`.
-Subagents are not voters. Each lane owns one bounded clearance dimension. The root
-adjudicator integrates packets, but cannot permissively override an unresolved veto
-into `address`.
+Use authority fanout to solve both bandwidth and authority for
+`$review-adjudication`. Subagents are not voters. Each lane owns one bounded
+clearance dimension. The root adjudicator integrates packets, but cannot
+permissively override an unresolved veto into `address`.
 
 ## Authority lanes
 
@@ -59,13 +59,13 @@ authority_packet:
   packet_status_reason:
 ```
 
-Reject stale, wrong-scope, wrong-objective, wrapper-leaking, acknowledgement-only,
-role-exceeding, or no-evidence packets.
+Reject stale, wrong-scope, wrong-objective, wrapper-leaking,
+acknowledgement-only, role-exceeding, or no-evidence packets.
 
 ## Root authority rule
 
-Root may always downgrade a row to a stricter route. Root may not upgrade a row to
-`address` against `veto`, `unresolved`, missing clearance, or a row in the
+Root may always downgrade a row to a stricter route. Root may not upgrade a row
+to `address` against `veto`, `unresolved`, missing clearance, or a row in the
 Authority Veto Ledger. Clear the veto with a fresh authority packet or block.
 
 ## Required output sections
@@ -76,7 +76,6 @@ Authority Veto Ledger. Clear the veto with a fresh authority packet or block.
 
 `address` requires `authority status: cleared-for-address`, all required authority
 clearances, and no veto row for that id.
-
 
 ## Codex custom agents
 
@@ -89,4 +88,7 @@ The drop-in includes runnable custom agents under `codex/agents/`:
 - `review_validation_value_authority`
 - `review_fix_shape_authority`
 
-Use these agents for actual parallel authority fanout. Generic subagents or root-equivalent packets are fallback paths, not the preferred path for current CAS/Codex findings, P2+ findings, all-current-selected runs, or weak no-change cases.
+Use these agents for actual parallel authority fanout. Generic subagents or
+root-equivalent packets are fallback paths, not the preferred path for current
+CAS/Codex findings, P2+ findings, all-current-selected runs, or weak no-change
+cases.
