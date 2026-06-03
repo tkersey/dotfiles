@@ -5,8 +5,8 @@ handoffs.
 
 ## Canonical identifiers
 
-- Keep stable IDs for findings, invariants, hazards, checks, passes, and
-  negative-evidence entries when the same issue survives multiple loops.
+- Keep stable IDs for findings, invariants, hazards, checks, passes, ablation rows,
+  and negative-evidence entries when the same issue survives multiple loops.
 - Stamp every meaningful pass with the current `artifact_state_label`.
 - Stamp every specialist packet and negative-ledger pass with the current
   `artifact_state_id`.
@@ -45,6 +45,20 @@ handoffs.
 - `confidence`
 - `blast_radius`
 - `supporting_evidence`
+
+### Ablation ledger
+
+- `ablation_id`
+- `surface`
+- `kind`
+- `current_obligation`
+- `obligation_status`
+- `canonical_owner`
+- `replacement_path`
+- `action`
+- `deletion_or_collapse_proof`
+- `keep_warrant`
+- `status`
 
 ### Routing and Budget Ledger
 

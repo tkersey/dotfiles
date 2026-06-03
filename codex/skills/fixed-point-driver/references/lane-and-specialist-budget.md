@@ -8,10 +8,10 @@ swarms.
 
 | Lane | Trigger | Specialist budget | Default subagent mode |
 |---|---|---:|---|
-| `direct-closure` | One narrow comment/change, obvious proof lane, no material route uncertainty | 0 | `off` |
+| `direct-closure` | One narrow comment/change, obvious proof lane, no material route or ablation uncertainty | 0 | `off` |
 | `targeted` | A read-heavy uncertainty could materially change the route | 1-2 | `targeted` |
-| `expanded-targeted` | Coupled invariants, multi-surface proof, or two independent uncertainty classes | 3-4 | `targeted` |
-| `swarm` | Broad/high-risk/exhaustive request, audit carryover, or explicit independent coverage | 5+ | `swarm` |
+| `expanded-targeted` | Coupled invariants, multi-surface proof, ablation risk, or two independent uncertainty classes | 3-4 | `targeted` |
+| `swarm` | Broad/high-risk/exhaustive request, audit carryover, deletion-sensitive change, or explicit independent coverage | 5+ | `swarm` |
 
 The root-owned Negative Ledger Pass is required for non-trivial runs and does not
 count against the specialist budget. `negative-ledger-mapper` is a specialist and
@@ -26,7 +26,22 @@ does count.
 - complexity
 - verification
 - negative-evidence
+- ablation
 - other
 
 Avoid launching two specialists for the same uncertainty class unless replacing a
 stale, wrong-scope, transport-invalid, or materially incomplete packet.
+
+## Ablation triggers
+
+Launch `ablation_auditor` or emit a root-equivalent ablation packet when:
+
+- implementation would add a helper, flag, branch, adapter, state variant, public
+  symbol, compatibility path, fallback, or duplicate truth surface;
+- several comments orbit one governing invariant;
+- additive scaffolding survived a review loop;
+- duplicate truth owners or shadow proof surfaces exist;
+- a local patch may be dominated by delete/reuse/collapse/canonicalize;
+- a path appears vestigial, subsumed, pass-through, uninhabited, or non-canonical;
+- closure would otherwise proceed with `unretired_additive_scaffolds` or
+  `duplicate_truth_owners` not equal to zero.

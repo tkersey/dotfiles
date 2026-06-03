@@ -15,6 +15,7 @@ permissively override an unresolved veto into `address`.
 | `no-change-advocate` | strongest no-change/no-resolve case | `defeated` / `veto` / `unresolved` / `not-required` |
 | `validation-value-authority` | mutate now versus validate first versus no validation value | `mutate-now` / `validate-first` / `no-validation-value` / `unresolved` / `not-required` |
 | `fix-shape-authority` | minimum safe fix shape and wrong/overbroad fix risk | `clear` / `veto` / `unresolved` / `not-required` |
+| `ablative-surface-authority` | deletion/collapse/reuse/privatization/canonicalization before additive mutation | `clear` / `veto` / `unresolved` / `not-required` |
 
 ## Trigger policy
 
@@ -22,7 +23,7 @@ Root-equivalent authority packets are allowed for empty live sets, already-fixed
 proof-only threads, synthetic triage, or narrow obvious cases with no contested
 implementation handoff.
 
-Use full six-lane fanout, or root-equivalent packets with the same schema, when:
+Use full seven-lane fanout, or root-equivalent packets with the same schema, when:
 
 - any P2+ row might be selected as `address`
 - every current automated finding would be selected as `address` or `validate-only`
@@ -31,12 +32,16 @@ Use full six-lane fanout, or root-equivalent packets with the same schema, when:
 - the no-change countercase is weak, generic, or reviewer-authority-shaped
 - validation-only is rejected for an unproven but plausible finding
 - implementation would route to `$fixed-point-driver`
+- the proposed fix adds a helper, flag, fallback, branch, adapter, state variant,
+  public symbol, compatibility path, or duplicate truth surface
+- several comments orbit one governing invariant and could be solved by one owner
+  correction rather than many local patches
 
 ## Packet contract
 
 ```yaml
 authority_packet:
-  role: evidence-authority | direction-ownership-authority | criticality-authority | no-change-advocate | validation-value-authority | fix-shape-authority
+  role: evidence-authority | direction-ownership-authority | criticality-authority | no-change-advocate | validation-value-authority | fix-shape-authority | ablative-surface-authority
   packet_status: accepted | rejected | root-equivalent
   artifact_state_id: "..."
   direction_state_id: "..."
@@ -56,39 +61,38 @@ authority_packet:
     - id:
       evidence_ref:
       claim:
+  ablative_candidates:
+    - id:
+      deletion_candidate:
+      collapse_candidate:
+      reuse_candidate:
+      canonical_owner:
+      privatization_candidate:
+      lower_surface_route: delete | collapse | reuse | canonicalize | privatize | decommission | validate-first | proof-only | none
+      additive_mutation_justified: yes | no | unknown
+      evidence_ref:
   packet_status_reason:
 ```
 
-Reject stale, wrong-scope, wrong-objective, wrapper-leaking,
-acknowledgement-only, role-exceeding, or no-evidence packets.
+`ablative_candidates` is required for `ablative-surface-authority` and optional
+for other roles.
+
+Reject stale, wrong-scope, wrong-objective, wrapper-leaking, acknowledgement-only,
+role-exceeding, or no-evidence packets.
 
 ## Root authority rule
 
 Root may always downgrade a row to a stricter route. Root may not upgrade a row
-to `address` against `veto`, `unresolved`, missing clearance, or a row in the
-Authority Veto Ledger. Clear the veto with a fresh authority packet or block.
+to `address` against `veto`, `unresolved`, missing clearance, missing ablative
+clearance, or a row in the Authority Veto Ledger. Clear the veto with a fresh
+authority packet or block.
 
 ## Required output sections
 
 - `Authority Packet Receipts`
 - `Authority Clearance Matrix`
 - `Authority Veto Ledger`
+- `Ablative Counterproposal Ledger`
 
 `address` requires `authority status: cleared-for-address`, all required authority
-clearances, and no veto row for that id.
-
-## Codex custom agents
-
-The drop-in includes runnable custom agents under `codex/agents/`:
-
-- `review_evidence_authority`
-- `review_direction_ownership_authority`
-- `review_criticality_authority`
-- `review_no_change_advocate`
-- `review_validation_value_authority`
-- `review_fix_shape_authority`
-
-Use these agents for actual parallel authority fanout. Generic subagents or
-root-equivalent packets are fallback paths, not the preferred path for current
-CAS/Codex findings, P2+ findings, all-current-selected runs, or weak no-change
-cases.
+clearances, an ablative-surface clearance, and no veto row for that id.

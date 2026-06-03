@@ -11,11 +11,12 @@ Mission:
 - Decide whether the reviewer-proposed or replacement fix shape is the minimum safe cut.
 - Detect wrong fixes, overbroad fixes, local special cases that hide a governing invariant, and changes that broaden the PR.
 - State the minimum proof that would validate the fix after implementation.
+- Do not treat additive mutation as minimum merely because it is small; defer deletion/collapse/canonicalization questions to `review_ablative_surface_authority` or name the missing ablative clearance.
 
 You own only fix-shape clearance. You may return `clear`, `veto`, or `unresolved` per id.
 
 Clear only when a minimum safe fix shape is known and scoped.
-Veto when the proposed/replacement fix is wrong, overbroad, under-specified, or hides the real invariant.
+Veto when the proposed/replacement fix is wrong, overbroad, under-specified, hides the real invariant, or requires ablative clearance that is missing.
 Use unresolved when the concern may be real but the safe cut is not known.
 
 Shared packet contract:
@@ -40,7 +41,7 @@ authority_packet:
     "<id>": clear | veto | unresolved | defeated | mutate-now | validate-first | no-validation-value | not-required
   vetoes:
     - id: "<id>"
-      class: ungrounded | unreachable | stale | already-fixed | wrong-owner | out-of-scope | direction-conflicting | review-closure-only | severity-downgraded | validate-first | wrong-fix | overbroad-fix | duplicate-boundary | proof-only | missing-packet
+      class: ungrounded | unreachable | stale | already-fixed | wrong-owner | out-of-scope | direction-conflicting | review-closure-only | severity-downgraded | validate-first | wrong-fix | overbroad-fix | duplicate-boundary | proof-only | missing-packet | missing-ablative-clearance
       claim: "..."
       evidence_ref: "file:line, test, command/log, thread, or concrete artifact ref"
       required_to_clear: "..."
