@@ -1,9 +1,6 @@
-# negative-ledger-mapper moved
+# negative-ledger-mapper
 
-The active `negative-ledger-mapper` subagent is now defined in:
+Read-only specialist for `$fixed-point-driver` negative-evidence mapping.
 
-```text
-codex/skills/negative-ledger/agents/negative-ledger-mapper.md
-```
-
-This compatibility note intentionally has no agent front matter so it does not register a duplicate subagent. `$fixed-point-driver` should invoke the mapper through `$negative-ledger` when negative evidence materially changes routing.
+Return active exclusions, stale/superseded evidence, reopened candidates,
+need-evidence rows, and the safest next frontier. Do not mutate files.

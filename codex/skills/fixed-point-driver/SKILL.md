@@ -381,4 +381,3 @@ Before closure handoff, emit a gate summary with these fields:
 - [common-ledgers.md](references/common-ledgers.md)
 - [companion-skill-ledger.md](references/companion-skill-ledger.md)
 - [closure-handoff-template.md](references/closure-handoff-template.md)
-- [adversarial-parallelism.md](references/adversarial-parallelism.md)

@@ -7,5 +7,6 @@ A changeset reaches Truth-Owner Normal Form when:
 - duplicate truth surfaces are retired, privatized, or justified;
 - local patches do not hide the owner boundary;
 - review findings become counterexamples or are discharged;
+- adversarial vetoes are cleared, accepted as risk, or routed;
 - additive scaffolding is promoted, collapsed, or deleted;
 - proof receipts are tied to current artifact state.

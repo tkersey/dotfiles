@@ -1,38 +1,46 @@
 # Common routing vocabulary
 
-Use routing terms consistently across adjudication, orchestration, and closure.
-
-## Relevance classes
-- `material-relevant`
-- `relevant-nonmaterial`
-- `partially-relevant`
-- `stale-or-superseded`
-- `unsupported`
-- `out-of-scope`
-- `preference-only`
+Use common route words across adjudication, warrants, fixed-point work, and thread cleanup.
 
 ## Dispositions
+
 - `act`
 - `rebut`
 - `defer`
 - `need-evidence`
 
-## Remediation posture
-- `no-change`
-- `rebut`
-- `validating-check-only`
-- `accretive-remediation`
-- `structural-remediation`
+## Resolve decisions
 
-## Workflow states
-- `ready`
-- `conditionally ready`
-- `needs remediation`
-- `needs-decision`
+- `address`
+- `validate-only`
+- `resolve-thread-only`
+- `do-not-address`
 - `blocked`
 
-## Agreement pressure
-- `aligned`
-- `mixed`
-- `conflicting`
-- `unknown`
+## Route rationales
+
+- `narrow-local`
+- `coupled-comments`
+- `invariant-level`
+- `structural`
+- `validation-only`
+- `contentious`
+- `likely-to-reopen`
+- `proof-only-thread`
+- `no-change`
+- `blocked`
+
+## Adversarial clearance
+
+- `cleared`
+- `vetoed`
+- `unresolved`
+- `not-required`
+
+## Parallelism modes
+
+- `root-equivalent`
+- `targeted-parallel`
+- `full-fanout`
+- `swarm`
+- `not-required`
