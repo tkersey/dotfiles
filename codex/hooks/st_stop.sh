@@ -45,7 +45,7 @@ has_non_plan_changes "$repo_root" || {
   exit 0
 }
 
-st_bin=$(resolve_st_bin "import-update-plan" || true)
+st_bin=$(resolve_st_bin "reconcile-codex" || true)
 [ -n "${st_bin:-}" ] || {
   json_continue
   exit 0
@@ -53,7 +53,7 @@ st_bin=$(resolve_st_bin "import-update-plan" || true)
 
 plan_file=$(st_plan_file "$repo_root")
 
-if output=$(cd "$repo_root" && "$st_bin" import-update-plan --file .step/st-plan.jsonl --transcript-path "$transcript_path" 2>&1); then
+if output=$(cd "$repo_root" && "$st_bin" reconcile-codex --file .step/st-plan.jsonl --transcript-path "$transcript_path" 2>&1); then
   json_continue
   exit 0
 fi

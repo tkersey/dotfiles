@@ -1,8 +1,8 @@
-# st JSONL Format (v3)
+# st JSONL Format (v3/v4)
 
 ## Record lanes
 
-`st` uses an in-place rewritten JSONL stream; each line is one v3 record.
+`st` uses an in-place rewritten JSONL stream; each line is one v3 or v4 record.
 
 - Shared fields: `v` (`3`), `ts` (UTC ISO-8601), `seq` (non-negative integer), `lane` (`event` or `checkpoint`)
 - `event` lane: requires `op`
@@ -12,6 +12,100 @@
 ```json
 {"v":3,"ts":"2026-02-09T20:02:00Z","seq":42,"lane":"event","op":"replace","items":[{"id":"st-001","step":"Reproduce issue","status":"completed","priority":"medium","in_plan":false,"deps":[],"notes":"","comments":[]}],"mutation":{"allow_multiple_in_progress":false,"actor":"tk","pid":12345}}
 {"v":3,"ts":"2026-02-09T20:02:00Z","seq":42,"lane":"checkpoint","items":[{"id":"st-001","step":"Reproduce issue","status":"completed","priority":"medium","in_plan":false,"deps":[],"notes":"","comments":[]}],"mutation":{"allow_multiple_in_progress":false,"actor":"tk","pid":12345}}
+```
+
+## v4 graph envelope
+
+v3 files remain readable. Graph mode activates on the first graph mutation and writes v4 records with a durable graph envelope:
+
+```json
+{
+  "v": 4,
+  "ts": "2026-06-03T00:00:00Z",
+  "seq": 42,
+  "lane": "checkpoint",
+  "graph": {
+    "version": 1,
+    "policy": {
+      "completion_requires_proof": true,
+      "implementation_ready_required": true,
+      "default_projection_strategy": "aperture-score",
+      "default_gate": "implementation-ready",
+      "max_aperture_items": 7
+    },
+    "intent": [],
+    "waivers": [],
+    "polish": {"session_id": "", "passes": []},
+    "fingerprints": {"structure": "", "contract": "", "coverage": "", "execution": ""}
+  },
+  "items": []
+}
+```
+
+The v4 envelope is durable-only. It never appears inside `plan_sync.codex.plan` or `plan_sync.opencode.todos`.
+
+## Graph policy
+
+- `completion_requires_proof`: graph-mode completion requires proof receipts unless explicitly waived.
+- `implementation_ready_required`: aperture eligibility requires implementation-ready item structure.
+- `default_projection_strategy`: default graph projection ranking, normally `aperture-score`.
+- `default_gate`: default graph compiler gate, normally `implementation-ready`.
+- `max_aperture_items`: default bounded native projection size.
+
+## Intent atoms
+
+Intent atom shape:
+
+```json
+{
+  "id": "intent-001",
+  "source": {"kind": "markdown", "locator": "docs/plan.md", "anchor": "Authentication"},
+  "text": "OAuth login must support Google and GitHub providers.",
+  "category": "requirement",
+  "disposition": "covered",
+  "reason": ""
+}
+```
+
+Allowed categories include `requirement`, `constraint`, `non-goal`, `risk`, `compatibility`, `migration`, `test-expectation`, `user-behavior`, `architecture`, `performance`, `security`, `accessibility`, `observability`, and `documentation`. Covered intent must be referenced by at least one item; non-covered dispositions require a reason or waiver.
+
+## Waivers
+
+Waivers are first-class graph objects:
+
+```json
+{
+  "id": "waiver-001",
+  "gate": "implementation-ready",
+  "code": "missing-e2e-validation",
+  "target": "st-014",
+  "reason": "Unit and CLI integration tests are the accepted proof surface.",
+  "expires": "on-next-touch",
+  "created_at": "2026-06-03T00:00:00Z",
+  "created_by": "codex"
+}
+```
+
+MVP expiry values are `never` and `on-next-touch`. A waiver suppresses only the exact `gate + code + target` finding.
+
+## Polish passes and fingerprints
+
+`graph.polish.passes[]` stores fixed-point snapshots:
+
+```json
+{
+  "pass": 1,
+  "seq": 14,
+  "created_at": "2026-06-03T00:00:00Z",
+  "structure_fingerprint": "sha256:...",
+  "contract_fingerprint": "sha256:...",
+  "coverage_fingerprint": "sha256:...",
+  "execution_fingerprint": "sha256:...",
+  "audit_gate": "implementation-ready",
+  "hard_failures": 0,
+  "warnings": 0,
+  "delta": {"items_added": 0, "items_removed": 0, "items_split": 0, "deps_changed": 0, "contracts_changed": 0, "intent_coverage_changed": 0}
+}
 ```
 
 ## Event ops
@@ -56,6 +150,44 @@
   - `claim: {state, owner?, executor?, wave_id?, lock_roots?, claimed_at?, lease_seconds, lease_expires_at?, heartbeat_at?, attempts}`
   - `runtime: {substrate, thread_id?, agent_id?, row_id?, output_ref?, last_event?}`
   - `proof: {state, command?, evidence_ref?, last_run_at?}`
+- Optional graph capsule fields:
+  - `item_type`: `epic`, `feature`, `task`, `bug`, `test`, `verification`, `docs`, `chore`, `research`, `spike`, or `decision`
+  - `parent_id`: hierarchy only
+  - `links`: nonblocking graph links such as `{id,type,reason?}`
+  - `intent_refs`: covered intent IDs
+  - `acceptance`: user-visible done criteria
+  - `contract`: structured objective/background/approach/success criteria/proof obligations/risks
+  - `labels`, `lock_roots`, `uncertainty`, `non_goals`
+
+## Graph patch output lines
+
+`st graph apply` and compile wrappers mutate graph state atomically. On success they emit:
+
+```text
+plan_sync: {...}
+graph_delta: {"version":1,"seq_before":41,"seq_after":42,"items_added":["st-014"],"items_removed":[],"items_changed":[],"intent_coverage_changed":["intent-001"]}
+audit_summary: {"gate":"implementation-ready","ok":true,"errors":0,"warnings":0,"top_findings":[]}
+```
+
+Patch ops include intent upserts, item upserts/removals, status/priority/contract/acceptance/validation/location/scope/labels/lock-root updates, dependency/link updates, reparenting, comments, and audit waivers.
+
+## Audit output shape
+
+`st graph audit --format json` emits:
+
+```json
+{
+  "version": 1,
+  "gate": "implementation-ready",
+  "ok": true,
+  "summary": {"items": 1, "open": 1, "ready": 1, "blocked": 0, "terminal": 0, "intent": 1, "covered_intent": 1, "waived_intent": 0, "unknown_intent": 0, "errors": 0, "warnings": 0},
+  "findings": [],
+  "waivers": [],
+  "fingerprints": {"structure": "sha256:...", "contract": "sha256:...", "coverage": "sha256:...", "execution": "sha256:..."}
+}
+```
+
+Finding shape is `{code,severity,target,message,waived,waiver_id}`.
 
 ## Read-view derived fields
 
@@ -93,11 +225,11 @@
 
 ## Translation contract to native runtime mirrors
 
-- `emit-plan-sync` emits:
+- `prime` and mutating commands emit `plan_sync`:
 
 ```json
 {
-  "version": 1,
+  "version": 3,
   "items": [
     {
       "id": "st-003",
@@ -114,7 +246,7 @@
   ],
   "codex": {
     "plan": [
-      {"step": "Document v3 protocol", "status": "pending"}
+      {"step": "[st-003] Document v3 protocol", "status": "pending"}
     ]
   },
   "opencode": {
@@ -127,14 +259,15 @@
 
 - `items` is the full durable inventory in `$st` order
 - `items` preserves optional execution metadata when present so reconciliation does not lose claim/runtime/proof state
-- `codex.plan`, `opencode.todos`, and legacy `emit-update-plan` emit only items with `in_plan=true`
+- `codex.plan` and `opencode.todos` include only projection-eligible items with `in_plan=true`
+- In graph mode, `st prime --mode aperture` selects a bounded executable aperture before emitting the same projection-only `plan_sync` shape
 - Hook-managed SessionStart hydration must short-circuit when `codex.plan` would be empty after terminal-state demotion or backlog-only filtering
 - Codex status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `pending`
 - OpenCode status mapping: `in_progress` -> `in_progress`, `completed` -> `completed`, `pending` -> `pending`, `blocked` -> `pending`, `deferred` -> `pending`, `canceled` -> `cancelled`
 - OpenCode todo mapping: `content = step`, `priority = priority`
 - Guardrail: if `dep_state == "waiting_on_deps"`, translated status must never be `in_progress` (force `pending`)
 - Guardrail: multiple mirrored `in_progress` items are valid only when the underlying durable items prove a safe parallel wave via held non-overlapping claims
-- Compatibility: mutation commands also print a legacy `update_plan:` line, and `emit-update-plan` still emits `{"plan":[...]}` for older Codex-only callers
+- Reverse sync is projection-only through `reconcile-codex --transcript-path`; it must preserve durable-only metadata.
 
 ## Selection semantics
 

@@ -7,13 +7,15 @@ description: "Manage durable task plans in `.step/st-plan.jsonl`, including firs
 
 ## Overview
 
-Maintain a durable task inventory in the repo worktree (default: `.step/st-plan.jsonl`) using in-place JSONL v3 persistence with dual lanes:
+Maintain a durable task inventory in the repo worktree (default: `.step/st-plan.jsonl`) using in-place JSONL v3/v4 persistence with dual lanes:
 
 - `event` lane for mutations
 - `checkpoint` lane for periodic full-state snapshots
 
 Items use typed dependency edges (`deps: [{id,type}]`) plus `notes`, `comments`, `in_plan`, and optional execution metadata (`related_to`, `scope`, `location`, `validation`, `source`, `claim`, `runtime`, `proof`).
 `in_plan=true` projects an item into the mirrored Codex/OpenCode plan; `in_plan=false` keeps it on disk as durable backlog only.
+
+Graph mode adds durable intent atoms, waivers, polish fingerprints, and contracted task capsules. The full graph remains in `$st`; native plan tools receive only a bounded execution aperture.
 
 ## Codex Plan Surface Contract
 
@@ -36,6 +38,153 @@ Rules:
 9. Project no durable-only fields into Codex.
 10. Default to exactly one Codex `in_progress` step.
 11. Do not emit empty `update_plan` payloads just to satisfy a hook.
+
+## Graph Planning Mode
+
+Use graph planning mode when the user provides a material implementation plan, asks for graph planning, requires durable dependencies/proof, or asks for iterative polish before implementation.
+
+Mental model:
+
+```text
+source plan / AGENTS.md / README.md / code observations
+  -> intent atoms
+  -> contracted task capsules
+  -> typed dependency + coverage graph
+  -> graph audit + polish fixed point
+  -> ranked execution aperture
+  -> plan_sync.codex.plan / opencode.todos projection
+  -> proof receipts
+```
+
+Rules:
+
+1. Do not hand-edit `.step/st-plan.jsonl`.
+2. Do not call Codex `update_plan` while Codex is in Plan Mode.
+3. After Plan Mode, compile/import the proposed plan into `$st` first.
+4. Mutate graph state only through `st graph apply`, `st compile intent`, `st compile graph`, `st aperture select`, `st compile aperture`, or proof commands.
+5. Mirror only `plan_sync.codex.plan` into Codex. Never mirror the graph envelope.
+6. Complete graph-mode executable items with `st complete`; do not mark them done without proof or an explicit waiver.
+
+## Plan-to-Graph Compilation
+
+For a source plan, first read the full plan plus relevant `AGENTS.md`, README, and code paths. Produce:
+
+- `.step/st-intent.json`: every material requirement, constraint, non-goal, risk, validation expectation, compatibility obligation, migration expectation, and user-visible behavior.
+- `.step/st-graph.patch.json`: contracted `$st` capsules with dependencies, hierarchy, links, intent coverage, acceptance criteria, validation/proof obligations, locations, and lock roots where known.
+
+Then run:
+
+```bash
+st compile intent --file .step/st-plan.jsonl --input .step/st-intent.json
+st compile graph --file .step/st-plan.jsonl --input .step/st-graph.patch.json --gate draft
+st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format markdown
+st graph insights --file .step/st-plan.jsonl --format markdown
+```
+
+Do not import external graph-runtime state or shell out to non-`st` graph CLIs as the `$st` graph runtime.
+
+## Intent Coverage
+
+Intent atoms are durable statements of what must not be lost from the source plan. Covered intent must be referenced by at least one item. Deferred, rejected, duplicate, and non-goal intent needs a reason or waiver. `unknown` intent is allowed only before implementation-ready.
+
+## Contracted Task Capsules
+
+Graph-mode executable items should carry:
+
+- `item_type`, `parent_id`, `deps`, and nonblocking `links`.
+- `intent_refs` for coverage.
+- `acceptance`, `validation`, `location`, `scope`, and `lock_roots`.
+- A structured `contract` with objective, background, implementation approach, success criteria, proof obligations, and risks.
+
+`epic` and `decision` are context/organization by default and should not be projected as executable aperture work unless explicitly selected by policy.
+
+## Graph Patch Protocol
+
+Use patches for planning mutations:
+
+```bash
+st graph schema --format json
+st graph apply --file .step/st-plan.jsonl --input .step/st-graph.patch.json --dry-run
+st graph apply --file .step/st-plan.jsonl --input .step/st-graph.patch.json --gate implementation-ready
+```
+
+Successful graph mutations emit `plan_sync:`, `graph_delta:`, and `audit_summary:`. If a gate fails, treat the findings as the next mechanical planning work unless a first-class waiver is appropriate.
+
+## Fixed-Point Polishing
+
+Polish before implementation when the graph is nontrivial:
+
+```bash
+st graph polish begin --file .step/st-plan.jsonl --name initial-plan
+st graph polish snapshot --file .step/st-plan.jsonl --pass 1
+st graph polish status --file .step/st-plan.jsonl --format markdown
+st graph polish gate --file .step/st-plan.jsonl --min-stable-passes 2 --gate implementation-ready
+```
+
+The fixed point is the CLI gate: implementation-ready audit passes and structure/coverage fingerprints are stable for the configured consecutive passes.
+
+## Aperture Projection
+
+Compile the native execution slice:
+
+```bash
+st compile aperture --file .step/st-plan.jsonl --limit 7
+st prime --file .step/st-plan.jsonl --mode aperture --limit 7
+```
+
+Mirror only `plan_sync.codex.plan` to Codex or `plan_sync.opencode.todos` to OpenCode. The full graph stays durable-only in `$st`.
+
+## Proof-Carrying Completion
+
+Complete graph work with proof:
+
+```bash
+st complete --file .step/st-plan.jsonl --id st-001 \
+  --command "zig build test-st" \
+  --evidence-ref .step/proof/st-001.log
+st proof audit --file .step/st-plan.jsonl --id st-001 --format json
+```
+
+Forced completion requires:
+
+```bash
+st complete --file .step/st-plan.jsonl --id st-001 --allow-unproven --reason "..."
+```
+
+That creates a waiver and should be rare.
+
+## Audit Gates
+
+Use these gates as the planning compiler:
+
+```bash
+st graph audit --file .step/st-plan.jsonl --gate draft --format json
+st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format markdown
+st graph audit --file .step/st-plan.jsonl --gate execution-ready --format json
+st graph audit --file .step/st-plan.jsonl --gate proof-complete --format json
+```
+
+Hard failures include unknown refs, dependency/parent cycles, uncovered intent, missing contracts/acceptance/proof, selected blocked work, terminal selected work, and completed work missing required proof.
+
+## Agent Prompts
+
+Plan-to-graph prompt:
+
+```text
+Read ALL of [PLAN].md, AGENTS.md, README.md, and relevant code paths. Do not edit .step/st-plan.jsonl directly. Produce .step/st-intent.json and .step/st-graph.patch.json for st. Enumerate every material intent atom, then create contracted capsules with dependencies, hierarchy, links, coverage, acceptance, validation/proof, locations, and lock roots. Apply only through st compile intent and st compile graph.
+```
+
+Polish prompt:
+
+```text
+Reread source context and current st graph through graph audit, graph insights, and graph polish status. Prepare a graph patch that improves structure, granularity, acceptance, validation/proof, lock roots, and risk handling. Continue until graph polish gate passes.
+```
+
+Execution prompt:
+
+```text
+Run st compile aperture --file .step/st-plan.jsonl --limit 7. Mirror only plan_sync.codex.plan. Execute the selected aperture. Record proof through st complete. Recompile aperture after each completed item.
+```
 
 ## Zig CLI Iteration Repos
 
@@ -128,7 +277,7 @@ run_st_tool --help
    - Use `--surface all` to inspect the full durable inventory.
    - Use `--surface backlog` to inspect durable tasks not currently mirrored into the plan.
 7. Run `doctor` when ingesting an existing plan file or when integrity is in doubt.
-8. Apply plan mutations through subcommands (`add`, `select`, `deselect`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`); do not hand-edit existing JSONL lines.
+8. Apply plan mutations through subcommands (`add`, `select`, `deselect`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `complete`, `proof audit`, `graph apply`, `compile`, `aperture select`, `release`, `reclaim-stale`); do not hand-edit existing JSONL lines.
    - Use `add --backlog-only` or `import-plan --backlog-only` to update the durable inventory without loading those items into the mirrored plan yet.
    - Use `select` to add backlog items into the mirrored plan.
    - Use `deselect` to remove items from the mirrored plan without deleting them from disk.
@@ -175,6 +324,8 @@ st claim --file .step/st-plan.jsonl --wave w1 --executor codex
 st heartbeat --file .step/st-plan.jsonl --id st-001
 st set-runtime --file .step/st-plan.jsonl --id st-001 --substrate spawn_agent --thread-id thread-123 --agent-id agent-1
 st set-proof --file .step/st-plan.jsonl --id st-001 --proof-state pass --command "zig build test-st" --evidence-ref .step/proof.log
+st complete --file .step/st-plan.jsonl --id st-001 --command "zig build test-st" --evidence-ref .step/proof.log
+st proof audit --file .step/st-plan.jsonl --id st-001 --format json
 st release --file .step/st-plan.jsonl --id st-001 --reason proof_complete
 st reclaim-stale --file .step/st-plan.jsonl --now 2026-03-12T00:00:00Z
 ```

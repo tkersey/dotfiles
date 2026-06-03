@@ -32,7 +32,7 @@ fi
 
 status=$(printf '%s' "$output" | jq -r '.status // "allow"' 2>/dev/null || printf 'allow')
 if [ "$status" = "block" ]; then
-  reason=$(printf '%s' "$output" | jq -r '.reason // "Run update_plan with the exact $st SessionStart payload before Bash commands."' 2>/dev/null || printf 'Run update_plan with the exact $st SessionStart payload before Bash commands.')
+  reason=$(printf '%s' "$output" | jq -r '.reason // "Outside Codex Plan Mode, mirror the exact $st SessionStart payload with update_plan before Bash commands."' 2>/dev/null || printf 'Outside Codex Plan Mode, mirror the exact $st SessionStart payload with update_plan before Bash commands.')
   jq -n --arg reason "$reason" '{continue: true, decision: "block", reason: $reason}'
   exit 0
 fi

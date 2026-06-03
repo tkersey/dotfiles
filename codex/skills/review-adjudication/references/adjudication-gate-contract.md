@@ -1,8 +1,13 @@
 # Adjudication Gate contract
 
 The Adjudication Gate is the automation boundary between review analysis and
-implementation, validation, proof-only thread resolution, or reply handoff. It
-must be emitted for every real PR review adjudication.
+implementation, validation, proof-only thread resolution, reply/defer handoff, or
+blocked closure. It must be emitted for every real PR review adjudication.
+
+Surface-Budgeted v6 adds adversarial action coverage and parallelism calibration
+to the v5 contract. A selected downstream action is not licensed merely because
+it appears in `Resolve Selection`; it must also have adversarial clearance and a
+matching Resolution Warrant.
 
 ## Required block
 
@@ -11,42 +16,32 @@ must be emitted for every real PR review adjudication.
 
 | field | value | basis |
 |---|---|---|
-| artifact_state_coverage | pass | branch/head/diff/comment-set identity recorded or explicitly unavailable |
-| comment_inventory_coverage | pass | input comments match ledger rows; no dropped or duplicate real comments |
-| identity_coverage | pass | every raw comment has id/thread, reviewer, location, excerpt, and claim |
-| decision_test_coverage | pass | every row has grounding/materiality/freshness/diagnosis/scope/resolution/no-change tests |
-| no_change_coverage | pass | every comment has a countercase and status |
-| disposition_coverage | pass | every comment has exactly one allowed disposition |
-| proposed_fix_separation | pass | concern validity and proposed-fix validity are separate |
-| evidence_ref_coverage | pass | every action has current evidence grade and concrete evidence ref |
-| resolve_selection_coverage | pass | every ledger row has one valid downstream resolve decision, proof ref, and route rationale |
-| resolve_countercase_coverage | pass | every ledger row has a resolve countercase challenging the selected downstream action |
-| handoff_agenda_consistency | pass | Handoff Agenda is a subset-preserving projection of Resolve Selection |
-| selection_skew_audit | pass | resolve-selection distribution audited; all-selected outputs justified |
-| invariant_pass | pass | invariant clustering checked or named |
-| specialist_packet_coverage | not-used | specialists were not used, or pass if receipts exist |
-| acceptance_skew_audit | pass | disposition distribution audited |
-| adjudication_complete | pass | all required gate fields pass |
-| implementation_handoff_allowed | yes/no | yes only for artifact-backed `act` rows selected as `address` |
+| artifact_state_coverage | pass/fail | branch/head/diff/comment-set identity recorded or explicitly unavailable |
+| comment_inventory_coverage | pass/fail | input comments match ledger rows; no dropped or duplicate real comments |
+| identity_coverage | pass/fail | every raw comment has id/thread, reviewer, location, excerpt, and claim |
+| decision_test_coverage | pass/fail | every row has grounding/materiality/freshness/diagnosis/scope/resolution/no-change tests |
+| no_change_coverage | pass/fail | every comment has a countercase and status |
+| disposition_coverage | pass/fail | every comment has exactly one allowed disposition |
+| proposed_fix_separation | pass/fail | concern validity and proposed-fix validity are separate |
+| evidence_ref_coverage | pass/fail | every action has current evidence grade and concrete evidence ref |
+| resolve_selection_coverage | pass/fail | every ledger row has one valid downstream resolve decision, proof ref, and route rationale |
+| resolve_countercase_coverage | pass/fail | every ledger row has a resolve countercase challenging the selected downstream action |
+| adversarial_action_coverage | pass/fail | every Resolve Selection row has an adversarial action row with clearance consistent with the selected decision |
+| parallelism_calibration | pass/fail | rows use root-equivalent, targeted-parallel, full-fanout, swarm, or not-required according to materiality/coupling |
+| resolution_warrant_coverage | pass/fail | every selected row has a matching warrant with the exact permitted action |
+| surface_budget_coverage | pass/fail | every mutate-code warrant has a matching surface-budget row |
+| surface_budget_consumption_safety | pass/fail | downstream diff/symbol growth is inside budget or blocked |
+| warrant_consumption_safety | pass/fail | downstream changed files/resolved threads are inside active warrant scope |
+| handoff_agenda_consistency | pass/fail | Handoff Agenda is a subset-preserving projection of Resolve Selection, Adversarial Action Matrix, and warrants |
+| selection_skew_audit | pass/fail | resolve-selection distribution audited; all-selected outputs justified |
+| invariant_pass | pass/fail | invariant clustering checked or named |
+| specialist_packet_coverage | pass/fail/not-used | specialists were not used, or pass if receipts exist |
+| acceptance_skew_audit | pass/fail | disposition distribution audited |
+| adjudication_complete | pass/fail | all required gate fields pass |
+| implementation_handoff_allowed | yes/no | yes only for artifact-backed `act` rows selected as `address` and adversarially cleared |
 | validation_handoff_allowed | yes/no | yes only for validation/proof tasks |
 | reply_handoff_allowed | yes/no | yes only for reply/drafting/thread-cleanup tasks |
 ```
-
-## Resolution Warrants block
-
-Every real PR review adjudication must issue downstream permission warrants:
-
-```md
-## Resolution Warrants
-
-| warrant id | claim id | source | claim excerpt | decision | concern validity | proposed fix validity | no-change status | resolution value | route rationale | permitted action | permitted scope | forbidden actions | evidence refs | countercase ref | proof required | expiry |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| rw-c1 | c1 | github-review | retry writes twice | address | valid | valid | defeated | correctness-critical | narrow-local | mutate-code | files=src/a.py,tests/test_a.py | mutate outside permitted_scope | src/a.py:10 | c1 no-change defeated | pytest tests/test_a.py::test_retry_idempotent | invalid when HEAD/base/diff/comment-set changes |
-```
-
-Allowed `permitted action` values are `mutate-code`,
-`add-validation-only`, `resolve-thread`, `draft-reply`, `defer`, and `none`.
-A downstream skill must consume a matching active warrant before acting.
 
 ## Resolve Selection block
 
@@ -74,9 +69,9 @@ Allowed `route rationale` values are `narrow-local`, `coupled-comments`,
 Rules:
 
 - `address` means implementation is selected and is legal only for `act` rows
-  with defeated no-change cases and current evidence refs.
-- `validate-only` means the next workflow may create proof but must not
-  implement the requested fix yet; it is legal only for `need-evidence` rows.
+  with defeated no-change cases, current evidence refs, and adversarial clearance.
+- `validate-only` means the next workflow may create proof but must not implement
+  the requested fix yet; it is legal only for `need-evidence` rows.
 - `resolve-thread-only` means the review thread can be answered or resolved with
   current proof without changing code.
 - `do-not-address` means no implementation handoff; the reason must preserve the
@@ -106,9 +101,62 @@ Every ledger row must be challenged with a resolve-level countercase:
 
 This prevents concern validity from being laundered into "worth resolving now".
 
+## Adversarial Action Matrix
+
+Every `Resolve Selection` row must also receive a permission-level adversarial
+challenge:
+
+```md
+## Adversarial Action Matrix
+
+| id/thread | primary resolve decision | adversarial lanes | parallelism mode | strongest adversarial response | veto status | clearance | proof ref | decision impact |
+|---|---|---|---|---|---|---|---|---|
+| c1 | address | no-change,fix-shape,surface-budget | targeted-parallel | validate-first is weaker because src/a.py:10 proves duplicate write | cleared | cleared | src/a.py:10 | address retained |
+```
+
+Allowed `parallelism mode` values are `root-equivalent`, `targeted-parallel`,
+`full-fanout`, `swarm`, and `not-required`.
+
+Allowed `veto status` values are `cleared`, `preserved-no-change`, `unresolved`,
+`vetoed`, `blocked`, and `not-required`.
+
+Allowed `clearance` values are `cleared`, `preserved`, `rerouted`, `downgraded`,
+and `blocked`.
+
+Rules:
+
+- `address` requires `veto status: cleared` and `clearance: cleared`.
+- `validate-only` requires `veto status: cleared` and `clearance: cleared` or
+  `downgraded`.
+- `resolve-thread-only` requires `veto status: cleared` or
+  `preserved-no-change`, and `clearance: preserved`.
+- `do-not-address` requires `veto status: cleared` or `preserved-no-change`, and
+  `clearance: preserved`.
+- `blocked` requires `veto status: blocked` or `unresolved`, and
+  `clearance: blocked`.
+- Any row with `vetoed` or `unresolved` blocks implementation unless rerouted to a
+  stricter non-mutating action with a matching warrant.
+
+## Resolution Warrants block
+
+Every real PR review adjudication must issue downstream permission warrants:
+
+```md
+## Resolution Warrants
+
+| warrant id | claim id | source | claim excerpt | decision | concern validity | proposed fix validity | no-change status | resolution value | route rationale | permitted action | permitted scope | forbidden actions | evidence refs | countercase ref | proof required | expiry |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| rw-c1 | c1 | github-review | retry writes twice | address | valid | valid | defeated | correctness-critical | narrow-local | mutate-code | files=src/a.py,tests/test_a.py | mutate outside permitted_scope | src/a.py:10 | c1 no-change defeated | pytest tests/test_a.py::test_retry_idempotent | invalid when HEAD/base/diff/comment-set changes |
+```
+
+Allowed `permitted action` values are `mutate-code`, `add-validation-only`,
+`resolve-thread`, `draft-reply`, `defer`, and `none`. A downstream skill must
+consume a matching active warrant before acting.
+
 ## Handoff Agenda consistency
 
-The Handoff Agenda must be a subset-preserving projection of Resolve Selection:
+The Handoff Agenda must be a subset-preserving projection of Resolve Selection,
+Adversarial Action Matrix, and Resolution Warrants:
 
 - `items selected for implementation` must equal the `address` rows.
 - `validation-only items` must equal the `validate-only` rows.
@@ -118,23 +166,6 @@ The Handoff Agenda must be a subset-preserving projection of Resolve Selection:
 
 The Handoff Agenda must not use broad terms such as `all` when explicit comment
 IDs are required.
-
-## Selection skew rule
-
-If every substantive comment is selected as `address` or `validate-only`, the
-gate may pass only when the output contains a structured All-Selected
-Justification table covering:
-
-- stale/already-fixed alternative
-- proof-only thread-resolution alternative
-- do-not-address alternative
-- validate-before-mutation alternative
-- out-of-scope/defer alternative
-- fixed-point over-routing check
-
-Each row must have `result=pass`, a concrete evidence ref, and a specific
-explanation for why selected resolution is still warranted. Generic language like
-"all are worth resolving" is insufficient.
 
 ## Pass conditions
 
@@ -155,13 +186,21 @@ explanation for why selected resolution is still warranted. Generic language lik
   concrete evidence reference.
 - `resolve_selection_coverage`: every ledger row has exactly one Resolve
   Selection row, no unknown selection IDs exist, and selection decisions are
-  consistent with disposition, no-change status, proof ref, next action, and
-  route rationale.
+  consistent with disposition, no-change status, proof ref, next action, and route
+  rationale.
 - `resolve_countercase_coverage`: every ledger row has a resolve countercase.
+- `adversarial_action_coverage`: every selected action has an adversarial row, the
+  primary decision matches Resolve Selection, and clearance is legal for that
+  decision.
+- `parallelism_calibration`: high-risk/coupled/material rows use appropriate
+  parallel fanout or explain why root-equivalent is sufficient.
+- `resolution_warrant_coverage`: every Resolve Selection row has a matching
+  warrant with the exact permitted action.
+- `surface_budget_coverage`: every mutate-code warrant has a surface budget.
 - `handoff_agenda_consistency`: downstream handoff buckets match Resolve
   Selection exactly.
-- `selection_skew_audit`: selection distribution is audited; all-selected
-  outputs have structured justification.
+- `selection_skew_audit`: selection distribution is audited; all-selected outputs
+  have structured justification.
 - `invariant_pass`: invariant clustering was performed; shared invariants are
   named, or absence is justified.
 - `specialist_packet_coverage`: `not-used` if no specialists were used; otherwise
@@ -171,7 +210,8 @@ explanation for why selected resolution is still warranted. Generic language lik
   a structured All-Action Justification table.
 - `adjudication_complete`: `pass` only when all required gate fields pass.
 - `implementation_handoff_allowed`: `yes` only when the gate passes and at least
-  one `address` item has artifact-backed `act` evidence.
+  one `address` item has artifact-backed `act` evidence plus adversarial
+  clearance.
 - `validation_handoff_allowed`: `yes` only when validation/proof tasks are
   complete enough to route without permitting mutation.
 - `reply_handoff_allowed`: `yes` only when reply or proof-only thread cleanup is
@@ -188,40 +228,15 @@ Adjudication Bottom Line: Blocked: incomplete adjudication. Do not implement yet
 ```
 
 Do not route to `$accretive-implementer` from an incomplete adjudication or
-without an active `mutate-code` Resolution Warrant. Do not route to
-`$fixed-point-driver` as implementation from an incomplete adjudication or from
-validation-only/proof-only warrants.
-A complete validation-only adjudication may route validation tasks to
-`$fixed-point-driver` while keeping `implementation_handoff_allowed: no`.
-
-## All-action fail-closed rule
-
-If every substantive comment is `act`, the gate may pass only when the output
-contains a structured All-Action Justification table covering:
-
-- stale/superseded
-- unsupported
-- preference-only
-- out-of-scope
-- misdiagnosis
-- proposed-fix validity
-- validation-only alternative
-- shared-invariant
-
-Each row must have `result=pass`, a non-empty evidence ref, and a specific
-explanation for why action is still warranted. Generic language like "all
-comments are valid" is insufficient.
+without an active `mutate-code` Resolution Warrant and adversarial clearance. Do
+not route to `$fixed-point-driver` as implementation from an incomplete
+adjudication or from validation-only/proof-only warrants. A complete
+validation-only adjudication may route validation tasks to `$fixed-point-driver`
+while keeping `implementation_handoff_allowed: no`.
 
 ## Checker integration
 
 The checker in `tools/review_adjudication_gate.py` validates the mechanical parts
 of this contract. It cannot prove semantic correctness, but it blocks incomplete,
-stale-prone, or over-selected ledgers before downstream routing.
-
-## Surface Budget fail-closed rule
-
-Every `mutate-code` Resolution Warrant must have a matching `Surface Budget
-Ledger` row. The row must require subtractive probes and an expansion warrant for
-additive escape. If a downstream diff exceeds `max positive loc` or adds public
-symbols/files/helpers/flags beyond the budget, the checker must fail unless an
-explicit expansion warrant is present and approved.
+stale-prone, over-selected, adversarially uncleared, or over-budget ledgers before
+downstream routing.

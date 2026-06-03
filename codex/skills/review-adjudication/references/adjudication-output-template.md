@@ -1,9 +1,8 @@
 # Adjudication output template
 
-Use this Surface-Budgeted v5 template for real PR review comment sets. This is the Surface-Budgeted v5
-shape. It is designed to prevent downstream selection laundering, especially the
-failure mode where a mixed review set becomes "all are worth resolving" and then
-enters implementation.
+Use this Surface-Budgeted v6 template for real PR review comment sets. It is
+designed to prevent downstream selection laundering and to require adversarial
+clearance for every selected action.
 
 ```md
 ## Review Basis
@@ -76,7 +75,7 @@ Omit this section only when no specialists were used.
 
 ## Act On
 
-- `<id/thread>`: action, evidence grade/ref, replacement fix shape if reviewer fix is not valid, and handoff shape.
+- `<id/thread>`: action, evidence grade/ref, replacement fix shape if reviewer fix is not valid, adversarial clearance, and handoff shape.
 
 ## Rebut
 
@@ -103,11 +102,17 @@ Omit this section only when no specialists were used.
   - strongest alternative resolve decision:
   - why alternative is rejected / preserved / unresolved:
 
+## Adversarial Action Matrix
+
+| id/thread | primary resolve decision | adversarial lanes | parallelism mode | strongest adversarial response | veto status | clearance | proof ref | decision impact |
+|---|---|---|---|---|---|---|---|---|
+|  | address/validate-only/resolve-thread-only/do-not-address/blocked | no-change,validation-value,fix-shape,scope,surface-budget | root-equivalent/targeted-parallel/full-fanout/swarm/not-required |  | cleared/preserved-no-change/unresolved/vetoed/blocked/not-required | cleared/preserved/rerouted/downgraded/blocked |  |  |
+
 ## Resolution Warrants
 
 | warrant id | claim id | source | claim excerpt | decision | concern validity | proposed fix validity | no-change status | resolution value | route rationale | permitted action | permitted scope | forbidden actions | evidence refs | countercase ref | proof required | expiry |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|  |  | github-review/cas/human-review/specialist/root-equivalent |  | address/validate-only/resolve-thread-only/do-not-address/blocked | valid/partial/unsupported/unknown | valid/partially-valid/wrong-fix/overbroad/under-specified/not-applicable/validation-only | defeated/not-defeated/unresolved | merge-blocking/correctness-critical/review-closure/proof-only/validation-needed/low-value/out-of-lane/blocked | narrow-local/coupled-comments/invariant-level/structural/validation-only/contentious/likely-to-reopen/proof-only-thread/no-change/blocked | mutate-code/add-validation-only/resolve-thread/draft-reply/defer/none | files/symbols/threads allowed | actions forbidden outside scope | concrete refs | no-change / resolve countercase ref | commands/proofs required | invalid when HEAD/base/diff/comment/thread state changes |
+|  |  | github-review/cas/human-review/specialist/root-equivalent |  | address/validate-only/resolve-thread-only/do-not-address/blocked | valid/partial/unsupported/unknown | valid/partially-valid/wrong-fix/overbroad/under-specified/not-applicable/validation-only | defeated/not-defeated/unresolved | merge-blocking/correctness-critical/review-closure/proof-only/validation-needed/low-value/out-of-lane/blocked | narrow-local/coupled-comments/invariant-level/structural/validation-only/contentious/likely-to-reopen/proof-only-thread/no-change/blocked | mutate-code/add-validation-only/resolve-thread/draft-reply/defer/none | files/symbols/threads allowed | actions forbidden outside scope | concrete refs | no-change / resolve / adversarial countercase ref | commands/proofs required | invalid when HEAD/base/diff/comment/thread state changes |
 
 ## Surface Budget Ledger
 
@@ -121,6 +126,7 @@ Omit this section only when no specialists were used.
 - route:
 - minimum fix shape:
 - proof required:
+- adversarial clearance:
 
 ## Acceptance Skew Audit
 
@@ -158,11 +164,11 @@ Include this section only when every substantive comment is `act`.
 - do-not-address alternatives:
 - blocked/ask-user alternatives:
 - fixed-point over-routing pressure:
+- adversarial parallelism pressure:
 
 ## All-Selected Justification
 
-Include this section only when every substantive comment is selected as
-`address` or `validate-only`.
+Include this section only when every substantive comment is selected as `address` or `validate-only`.
 
 | check | result | evidence ref | why selected resolution is still warranted |
 |---|---|---|---|
@@ -187,6 +193,8 @@ Include this section only when every substantive comment is selected as
 | evidence_ref_coverage | pass/fail |  |
 | resolve_selection_coverage | pass/fail |  |
 | resolve_countercase_coverage | pass/fail |  |
+| adversarial_action_coverage | pass/fail |  |
+| parallelism_calibration | pass/fail |  |
 | resolution_warrant_coverage | pass/fail |  |
 | surface_budget_coverage | pass/fail |  |
 | surface_budget_consumption_safety | pass/fail |  |
@@ -207,9 +215,9 @@ Include this section only when every substantive comment is selected as
 - validation route:
 - proof-only thread-resolution route:
 - reply route:
-- items selected for implementation: # must match mutate-code warrants
-- validation-only items: # must match add-validation-only warrants
-- proof-only thread-resolution items: # must match resolve-thread warrants
+- items selected for implementation: # must match address rows and mutate-code warrants
+- validation-only items: # must match validate-only rows and add-validation-only warrants
+- proof-only thread-resolution items: # must match resolve-thread-only rows and resolve-thread warrants
 - items not selected:
 - proof:
 - surface budget preflight required:
@@ -218,7 +226,4 @@ Include this section only when every substantive comment is selected as
 - blocked items:
 
 ## Adjudication Bottom Line
-
-- `Proceed: ...`
-- or `Blocked: incomplete adjudication. Do not implement yet.`
 ```

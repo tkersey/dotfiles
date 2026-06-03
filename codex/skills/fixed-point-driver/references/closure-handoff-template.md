@@ -35,16 +35,22 @@ loop-03-post-review
   - root cause is bounded
   - changed path is directly verified
   - no unresolved material finding remains
+  - no unresolved adversarial veto remains
   - negative evidence closure gate is satisfied
+
+#### Warrant Intake / Parallelism Plan
+| warrant id | claim id | permitted action | permitted scope | expiry check | surface budget | adversarial plan | parallelism mode | intake status |
+|---|---|---|---|---|---|---|---|---|
+| rw-F03 | F-03 | mutate-code | auth/session.ts,auth/session.test.ts | current head abc1234 | max +8 LOC, no public symbols | challenge stale-state route, proof, and surface | targeted-parallel | consumed |
 
 #### Companion Skill Ledger
 - companion: review-adjudication
   status: used
-  evidence: reviewer comment F-03 accepted as material validation work
+  evidence: reviewer comment F-03 accepted as material validation/mutation work with adversarial clearance
   limitations: none
 - companion: accretive-implementer
   status: root-equivalent
-  evidence: root applied narrow remediation and direct regression test
+  evidence: root applied narrow remediation and direct regression test inside warrant scope
   limitations: no distinct implementer packet
 - companion: adversarial-reviewer
   status: root-equivalent
@@ -72,6 +78,14 @@ loop-03-post-review
 - budget_exceptions: none
 - lane_change_history:
   - direct-closure -> targeted because prior cache-fast-path negative evidence could change route
+
+#### Parallelism Plan
+- mode: targeted-parallel
+- read_only_lanes:
+  - stale-state proof challenger
+  - surface-budget / duplicate-owner challenger
+- write_owner: root-equivalent implementation only
+- reason: two independent risk classes could be checked before final closure without serial delay
 
 #### Artifact Set
 - changed_files:
@@ -116,13 +130,19 @@ loop-03-post-review
     - auth/token-store.ts
   status: completed
 
+#### Adversarial Action Ledger
+| action id | phase | target | challenger lanes | parallelism mode | strongest adversarial finding | veto status | clearance | proof ref | decision impact |
+|---|---|---|---|---|---|---|---|---|---|
+| A-01 | route-selection | F-03 stale-secret remediation | no-change,validate-first,negative-evidence | targeted-parallel | cache-fast-path optimization remains excluded; direct persisted-secret read is warranted | cleared | cleared | auth/session.test.ts::rejects_stale_refresh_secret_after_rotation | route retained |
+| A-02 | closure | INV-02 proof | proof freshness,surface-budget | root-equivalent | production adapter not directly exercised but changed path proof is sufficient for scoped PR | cleared | preserved | local test receipt T-01 | closure packet asks verification to inspect adapter limitation |
+
 #### Findings Ledger
 - finding_id: F-03
   materiality: material
   severity: major
   category: stale-state regression
   status: remediated
-  remediation_posture: validating-check-only
+  remediation_posture: validating-check-only -> mutate-code after proof
   evidence:
     - direct rotated-secret retry test now passes
   why_it_matters: The fix could pass happy-path tests while still minting a token against stale state.
@@ -144,27 +164,10 @@ loop-03-post-review
     - direct rotated-secret retry test exercises post-rotation persisted secret
   open_question: none
 
-#### Foot-Gun Register
-- hazard_id: H-01
-  trigger: Retry refresh immediately after token rotation under cached store state.
-  impact: Incorrect token issuance on an operational edge path.
-  ease_of_misuse: medium
-  status: bounded
-  evidence:
-    - direct retry-after-rotation test fails under stale snapshot behavior and passes after remediation
-  narrowest_bounding_action: preserve direct regression test
-
-#### Complexity Ledger
-- overall_delta: neutral
-- materiality: non-material
-- drivers:
-  - one extra persisted-secret lookup
-  - one focused regression test
-- evidence:
-  - no new public surface
-  - no new branching outside refresh path
-- bounded_by:
-  - localized helper call and direct test
+#### Surface Delta Receipts
+| receipt id | warrant id | patch/pass | production insertions | production deletions | net production loc | public symbols added | helpers added | duplicate paths added | budget status | proof ref |
+|---|---|---|---|---|---|---|---|---|---|---|
+| SDR-01 | rw-F03 | build-01 | 6 | 2 | +4 | 0 | 0 | 0 | within-budget | auth/session.test.ts::rejects_stale_refresh_secret_after_rotation |
 
 #### Verification Ledger
 - direct_changed_path: satisfied
@@ -182,107 +185,22 @@ loop-03-post-review
     what_it_proves: Basic refresh behavior still succeeds.
     limitations: Does not prove all production adapter behavior.
 
-#### Negative Ledger Pass
-- phase: pre-closure
-- mode: handoff
-- artifact_state_id: branch=feature/session-refresh-fix head=abc1234 diff=auth-session-rotated-secret-v3 phase=closure-candidate
-- topical_query: auth refresh rotated-secret cache fast-path regression
-- sources_checked:
-    current_run: yes
-    fixed_point_ledgers: yes
-    learnings: yes
-    repo_history: no
-    review_comments: yes
-    user_context: no
-- result:
-    active_exclusions:
-      - NEG-01
-    stale_or_superseded: none
-    reopened_candidates: none
-    need_evidence: none
-    no_applicable_negative_evidence_reason: n/a
-    safest_next_frontier: keep persisted-secret read and direct rotated-secret proof; do not optimize through cache snapshot
-- durable_capture: duplicate-skip
-
-#### Negative Evidence Ledger
-- neg_id: NEG-01
-  hypothesis: Reuse cached store snapshots during token refresh to avoid the extra store read.
-  attempted_change: Prior fast-path prototype skipped the post-rotation store read.
-  source_refs:
-    - kind: learning
-      ref: lrn-auth-refresh-cache-fast-path
-      summary: Prior fast path regressed rotated-secret retry coverage.
-    - kind: failing-test
-      ref: auth/session.test.ts::rejects_stale_refresh_secret_after_rotation
-      summary: Fails when refresh depends on stale snapshot.
-  learning_source_ids:
-    - lrn-auth-refresh-cache-fast-path
-  evidence:
-    - Prior fast path passed happy-path refresh but failed rotated-secret retry coverage.
-  observed_outcome: Removed a read but reopened stale-secret token issuance.
-  failure_class: unsound
-  applicability_conditions:
-    - applies while refresh correctness depends on reading the current persisted secret after rotation
-  current_status: active
-  exclusion_rule: Do not select a cache-snapshot refresh optimization unless it proves post-rotation secret freshness directly.
-  reopening_criteria:
-    - store snapshot semantics are replaced with a current-secret witness
-    - direct rotated-secret retry test passes under the new design
-  confidence: medium
-  next_search_hint: Prefer validating the persisted-secret read rather than optimizing it away.
-
 #### Negative Ledger Handoff
 - active_exclusions:
-    - NEG-01: cache-snapshot fast path remains excluded
+  - NEG-01: cache-snapshot fast path remains excluded
 - stale_or_superseded: none
 - reopened: none
 - need_evidence: none
 - safest_next_frontier: proceed with closure; maintain persisted-secret read and regression test
 - learnings_source_ids:
-    - lrn-auth-refresh-cache-fast-path
+  - lrn-auth-refresh-cache-fast-path
 - durable_capture: duplicate-skip
 - closure_effect:
     blocks_closure: no
     changes_one_change_challenge: yes
     changes_verification_plan: yes
 
-#### Specialist Briefing Ledger
-- role: verification_auditor
-  artifact_state_id:
-    branch: feature/session-refresh-fix
-    revision: abc1234
-    diff_hash: auth-session-rotated-secret-v3
-    touched_paths:
-      - auth/session.ts
-      - auth/session.test.ts
-    phase: closure-candidate
-  artifact_state_label: loop-03-post-review
-  scope: direct path and regression coverage
-  top_material_signals:
-    - direct rotated-secret retry path now exercised
-  unresolved_signals:
-    - production adapter semantics not directly exercised
-  agreement_pressure: aligned
-  stale: no
-  packet_status: accepted
-  used_for: verification planning
-  rejection_reason: none
-
-#### Specialist Value Receipts
-- role: verification_auditor
-  packet_status: accepted
-  artifact_state_id_match: yes
-  scope_match: yes
-  uncertainty_class: verification
-  route_changed: no
-  finding_added: no
-  proof_changed: yes
-  risk_retired: yes
-  value: positive
-  used_for: verification-planning
-  reason: Identified the direct rotated-secret retry test as the decisive changed-path proof.
-
-#### Closure Gate Preview
+#### Fixed-Point Gate Preview
 - direct_changed_path: satisfied
 - claimed_failure_mechanism: satisfied
 - regression_surface: satisfied
@@ -290,12 +208,16 @@ loop-03-post-review
 - material_foot_guns: bounded
 - material_complexity_hazards: bounded
 - negative_evidence_closure_gate: satisfied
+- adversarial_action_coverage: satisfied
+- unresolved_adversarial_vetoes: none
+- surface_budget_status: within-budget
 - briefing_agreement: aligned
 - external_blockers: none
 
 #### Requested Closure Questions
 - Does the changed path now directly prove post-rotation secret correctness?
 - Is INV-02 bounded or still open?
+- Are all adversarial vetoes cleared, preserved, or explicitly accepted as risk?
 - Is NEG-01 still active, and if so, does it block the current route?
 - Are any `learnings` hits being used as exclusions without current-state applicability?
 

@@ -48,7 +48,8 @@ update_plan_payload=$(cd "$repo_root" && "$st_bin" guard-session-start --file .s
 context=$(cat <<EOF
 Repo contains a durable \$st plan at $plan_file.
 On SessionStart, the durable store is the source of truth.
-Before substantive work, call update_plan exactly once with this payload emitted by st:
+Do not call update_plan while Codex is in Plan Mode. After Plan Mode, import or compile the proposed plan into \$st first.
+Before substantive execution outside Plan Mode, mirror only plan_sync.codex.plan by calling update_plan exactly once with this payload emitted by st:
 $update_plan_payload
 Preserve the emitted [st-id] step prefixes so any later manual \$st plan import can map rows back into the durable ledger safely.
 EOF
