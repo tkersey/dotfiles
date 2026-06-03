@@ -5,14 +5,15 @@ description: >-
   comment as a claim to test, preserve raw comment identity and input inventory,
   bind decisions to artifact state, build the strongest no-change countercase,
   separate valid concerns from valid proposed fixes, recover PR rationale with
-  explicit `$seq` when needed, and emit a stale-proof gated ledger, resolve-selection map, and
-  resolution warrants that decides what to address, validate only, resolve
-  with proof only, rebut, defer, investigate, or route. Trigger for
-  `$review-adjudication`, review the review, adjudicate PR comments, are these
-  comments relevant, which comments matter, should we act on these comments,
-  gate review comments before implementation, refine this list to just those
-  worth resolving, or select review comments to resolve. Not for implementing
-  fixes, writing rebuttals only, or final merge closure.
+  explicit `$seq` when needed, and emit a stale-proof gated ledger,
+  resolve-selection map, adversarial action matrix, resolution warrants, and
+  surface budgets that decide what to address, validate only, resolve with proof
+  only, rebut, defer, investigate, or route. Trigger for `$review-adjudication`,
+  review the review, adjudicate PR comments, are these comments relevant, which
+  comments matter, should we act on these comments, gate review comments before
+  implementation, refine this list to just those worth resolving, or select
+  review comments to resolve. Not for implementing fixes, writing rebuttals only,
+  or final merge closure.
 ---
 
 # Review Adjudication
@@ -24,16 +25,18 @@ which are stale or out of scope, which require validation only, and which should
 be reframed as a governing invariant instead of handled as isolated local fixes.
 When the next workflow is `$fixed-point-driver`, `$resolve`, `$ship`, or
 thread-resolution, also decide which comments are implementation work versus
-validation-only, proof-only thread resolution, or no-change items.
+validation-only, proof-only thread resolution, reply/defer work, or no-change
+items.
 
 This skill is **discriminative**, not deferential. A reviewer comment is an input
 claim, not an obligation. `act` is a conclusion that must be earned from current
-artifact evidence and a defeated no-change countercase.
+artifact evidence, a defeated no-change countercase, and an explicit adversarial
+clearance for the downstream action.
 
 ## Default mode
 
-Use **Surface-Budgeted v5** mode whenever the input contains real review comments.
-Surface-Budgeted v5 is mandatory because automation needs:
+Use **Surface-Budgeted v6** mode whenever the input contains real review
+comments. Surface-Budgeted v6 is mandatory because automation needs:
 
 - stable raw comment identity
 - complete input-comment inventory coverage
@@ -42,43 +45,52 @@ Surface-Budgeted v5 is mandatory because automation needs:
 - evidence-grade and evidence-reference separation
 - resolve-selection mapping for implementation, validation, proof-only thread
   resolution, no-change, and blocked outcomes
+- adversarial action coverage for every selected downstream action
+- parallelism calibration so adversarial effort is spent where it can change the
+  route, proof, owner, or budget
 - proof refs and route rationale for every downstream selection
-- resolve countercases so "worth resolving" is challenged separately from
-  concern validity
+- resolve countercases so "worth resolving" is challenged separately from concern
+  validity
 - selection-skew auditing so "all are worth resolving" cannot pass silently
 - handoff-agenda consistency checks so selected work is not broadened later
 - separate implementation, validation, and reply handoff permissions
 - Resolution Warrants that act as scoped, expiring downstream permissions
-- Surface Budget Ledger entries that force subtractive-first solution search
-  and cap additive semantic surface
+- Surface Budget Ledger entries that force subtractive-first solution search and
+  cap additive semantic surface
 
 Other modes are allowed only when they still satisfy the completion gate:
 
-- **Standard**: expanded reasoning plus the full Surface-Budgeted v5 tail.
+- **Standard**: expanded reasoning plus the full Surface-Budgeted v6 tail.
 - **Fast**: bucket-only output plus the completion gate; allowed for exploratory
   triage or synthetic comments, not for implementation handoff unless the gate
   passes.
 
 ## Doctrine
 
-Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **INVARIANT-SEEKING**,
-**ANTI-RUBBER-STAMP**, **EVIDENCE-WEIGHTED**, **STALE-PROOF**, and
-**FAIL-CLOSED** mode.
+Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **ADVERSARIAL-BY-DEFAULT**,
+**PARALLEL-WHEN-MATERIAL**, **INVARIANT-SEEKING**, **ANTI-RUBBER-STAMP**,
+**EVIDENCE-WEIGHTED**, **STALE-PROOF**, and **FAIL-CLOSED** mode.
 
-- **DISCRIMINATIVE**: separate true concerns from irrelevant, stale,
-  unsupported, preference-only, misdiagnosed, or misframed comments.
+- **DISCRIMINATIVE**: separate true concerns from irrelevant, stale, unsupported,
+  preference-only, misdiagnosed, or misframed comments.
 - **REBUTTAL-FIRST**: for each comment, construct the strongest no-change
   countercase before deciding to act.
+- **ADVERSARIAL-BY-DEFAULT**: every selected downstream action must have an
+  adversarial response that tries to defeat that action, downgrade it, reroute it,
+  narrow it, or block it.
+- **PARALLEL-WHEN-MATERIAL**: run independent adversarial lanes in parallel when
+  parallel challenge can reduce elapsed time without compromising current-state
+  grounding or single-writer safety.
 - **INVARIANT-SEEKING**: look for the governing invariant behind repeated local
   comments; avoid fixing the same invariant piecemeal.
 - **ANTI-RUBBER-STAMP**: do not let plausibility, politeness, reviewer authority,
-  or ease of implementation become acceptance evidence.
+  parallel consensus, or ease of implementation become acceptance evidence.
 - **EVIDENCE-WEIGHTED**: rank current artifacts above memories, memories above
   intuition, and direct proof above consensus.
 - **STALE-PROOF**: bind adjudication to branch/head/diff/comment-set state so
   downstream handoffs can detect stale or contradictory agendas.
-- **FAIL-CLOSED**: if the adjudication contract is incomplete, block
-  implementation handoff rather than guessing.
+- **FAIL-CLOSED**: if the adjudication, adversarial clearance, or warrant contract
+  is incomplete, block implementation handoff rather than guessing.
 
 ## Contract
 
@@ -95,17 +107,23 @@ Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **INVARIANT-SEEKING**,
 - Preserve artifact-state identity; do not let a handoff become stale invisibly.
 - Tail-weight outputs for CLI use.
 - Do not implement fixes here.
-- Do not create an implementation handoff unless the Adjudication Gate passes
-  and `implementation_handoff_allowed: yes`.
+- Do not create an implementation handoff unless the Adjudication Gate passes,
+  `implementation_handoff_allowed: yes`, and every `address` row has adversarial
+  clearance.
 - Do not collapse adjudication into "all comments are worth resolving"; emit the
   resolve-selection map before implementation or thread-resolution handoff.
-- Do not let `address` mean "add code". Every mutation-capable warrant must
-  carry a surface budget, deletion/reuse/refactor probe obligation, and
-  expansion-warrant rule before downstream implementation.
+- Do not let `address` mean "add code". Every mutation-capable warrant must carry
+  a surface budget, deletion/reuse/refactor probe obligation, and expansion-warrant
+  rule before downstream implementation.
 - Validation-only handoff is not implementation permission.
 - Proof-only thread resolution is not implementation permission.
 - Reply handoff is not implementation permission.
-- No downstream mutation, validation-only probe, thread resolution, or rebuttal/defer handoff is licensed unless a matching active Resolution Warrant exists.
+- No downstream mutation, validation-only probe, thread resolution, or
+  rebuttal/defer handoff is licensed unless a matching active Resolution Warrant
+  exists.
+- No selected downstream action is licensed unless the Adversarial Action Matrix
+  has a row for the raw claim and that row clears, preserves, or blocks the action
+  consistently with the selected route.
 
 ## Dependency
 
@@ -113,28 +131,107 @@ This skill expects `$seq` to be installed when PR rationale recovery is needed.
 If `$seq` is unavailable, proceed only from current artifacts and mark PR
 rationale fields as `unknown` instead of inventing intent.
 
-## Specialist mode
+## Parallel adversarial action
 
-For large or disputed comment sets, optionally use these read-only specialists
-before final adjudication:
+Every row in `Resolve Selection` must receive one adversarial response. The
+response is not decorative; it is a clearance attempt against the selected action.
+It must either clear the action, preserve the no-change/defer decision, or block
+handoff.
 
-- `evidence_mapper`
-- `soundness_auditor`
-- `hazard_hunter`
+Adversarial responses should be parallelized when the dimensions are independent
+and read-only. Use parallel lanes to reduce elapsed time for material batches, but
+keep final adjudication and all downstream writes single-rooted.
 
-Use them only to sharpen grounding, soundness, hazard, or invariant questions.
-They do not replace the adjudication judgment.
+### Required adversarial dimensions by action
 
-When specialists are used, assign the current artifact state and exact comment
-or file scope, then require the shared packet contract at
-`../references/specialist-packet-contract.md`. Consume only packet-native,
-scoped, evidence-bearing, current packets. Reject stale, wrong-scope,
-wrapper-leaking, acknowledgement-only, or no-evidence packets and keep them out
-of `act`/`rebut`/`defer`/`need-evidence` decisions.
+| selected action | adversarial response must challenge |
+|---|---|
+| `address` | no-change, validate-first, wrong-fix, scope/ownership, surface-budget, fixed-point over-routing |
+| `validate-only` | mutate-now, no-validation-value, wrong probe, production-mutation escape |
+| `resolve-thread-only` | still-material, stale-proof insufficiency, proof-ref weakness, hidden implementation need |
+| `do-not-address` | materiality, review-closure value, proof-only alternative, user/non-goal mismatch |
+| `blocked` | whether a narrower safe validation, reply, proof-only route, or user question can unblock |
 
-When specialists are used, emit `## Specialist Packet Receipts` and set
-`specialist_packet_coverage` to `pass` only when every accepted or rejected
-packet has a value receipt and no rejected packet is used as evidence.
+### Parallelism modes
+
+Use exactly one `parallelism mode` per row in the Adversarial Action Matrix:
+
+- `root-equivalent`: root performed the adversarial challenge inline; allowed for
+  obvious narrow-local, proof-only, synthetic, or no-change rows.
+- `targeted-parallel`: one or two independent read-only lanes challenged the row
+  or invariant cluster.
+- `full-fanout`: evidence, scope/ownership, criticality, no-change, validation
+  value, and fix-shape lanes were assigned in parallel.
+- `swarm`: five or more specialists were needed because the batch is large,
+  contentious, P2+, invariant-coupled, or likely to reopen.
+- `not-required`: only for rows with `resolve decision: blocked` and no safe
+  downstream action to challenge; the missing evidence must be named.
+
+Use full fanout or swarm when any of these are true:
+
+- any P2+ row might be selected as `address`
+- every substantive row would otherwise be selected as `address` or
+  `validate-only`
+- any CAS/Codex finding is invariant-framed and would mutate code
+- the no-change countercase is weak, generic, or reviewer-authority-shaped
+- validation-only is rejected for an unproven but plausible finding
+- implementation would route to `$fixed-point-driver`
+- several comments share a likely governing invariant
+
+Do not parallelize lanes that need writes, mutate fixtures, alter review threads,
+or depend on each other's outputs. Parallel adversaries are read-only evidence
+producers; the root adjudicator integrates them.
+
+### Adversarial Action Matrix
+
+Emit `## Adversarial Action Matrix` after `## Resolve Countercases` and before
+`## Resolution Warrants`.
+
+```md
+## Adversarial Action Matrix
+
+| id/thread | primary resolve decision | adversarial lanes | parallelism mode | strongest adversarial response | veto status | clearance | proof ref | decision impact |
+|---|---|---|---|---|---|---|---|---|
+```
+
+Allowed `veto status` values:
+
+- `cleared`
+- `preserved-no-change`
+- `unresolved`
+- `vetoed`
+- `blocked`
+- `not-required`
+
+Allowed `clearance` values:
+
+- `cleared`
+- `preserved`
+- `rerouted`
+- `downgraded`
+- `blocked`
+
+Rules:
+
+- `address` requires `veto status: cleared`, `clearance: cleared`, and a concrete
+  proof ref that defeats the strongest no-change / validate-first / wrong-fix /
+  scope / budget alternative.
+- `validate-only` requires `veto status: cleared`, `clearance: cleared` or
+  `downgraded`, and proof that validation is the correct next action instead of
+  mutation or no action.
+- `resolve-thread-only` requires `veto status: cleared` or
+  `preserved-no-change`, `clearance: preserved`, and a proof ref that makes code
+  mutation unnecessary.
+- `do-not-address` requires `veto status: preserved-no-change` or `cleared`,
+  `clearance: preserved`, and a proof/ref explaining why no downstream action is
+  selected.
+- `blocked` requires `veto status: blocked` or `unresolved`, `clearance: blocked`,
+  and a missing-evidence proof ref.
+- A vetoed or unresolved adversarial response must block implementation handoff
+  unless the row is rerouted to a stricter non-mutating action with a matching
+  warrant.
+- A selected action with `parallelism mode: root-equivalent` must explain why
+  separate parallel lanes were not materially useful.
 
 ## Required input context
 
@@ -168,11 +265,12 @@ Constraints:
 - compatibility posture:
 - ownership boundaries:
 - proof bar:
+- likely next workflow:
 ```
 
 Do not feed the whole repository by default. Add more context only when current
-artifacts cannot decide grounding, scope, freshness, intent, evidence grade, or
-handoff shape.
+artifacts cannot decide grounding, scope, freshness, intent, evidence grade,
+evidence ref, adversarial clearance, route selection, or handoff shape.
 
 ## `$seq` rationale recovery
 
@@ -188,9 +286,9 @@ Preferred ladder:
 5. `memory-provenance`
 6. `memory-history`
 
-Use `$seq` to recover rationale, not to manufacture obligations. A recovered
-plan can explain why a comment matters, but current artifacts still decide
-whether the comment is grounded, stale, in scope, or actionable.
+Use `$seq` to recover rationale, not to manufacture obligations. A recovered plan
+can explain why a comment matters, but current artifacts still decide whether the
+comment is grounded, stale, in scope, actionable, or adversarially cleared.
 
 ## Evidence ranking
 
@@ -291,10 +389,12 @@ For every comment, assess:
 13. evidence grade
 14. evidence reference
 15. resolution value
-16. handoff action
+16. resolve selection
+17. adversarial response
+18. handoff action
 
-In Surface-Budgeted v5, surface these checks in both `## Comment Ledger` and
-`## Decision Tests`.
+In Surface-Budgeted v6, surface these checks in `## Comment Ledger`,
+`## Decision Tests`, `## Resolve Selection`, and `## Adversarial Action Matrix`.
 
 ## Act validity rule
 
@@ -304,16 +404,17 @@ A comment may be marked `act` only if all are true:
 2. The concern is material, or the user explicitly wants the nonmaterial change.
 3. The comment is fresh for the current artifact state.
 4. The strongest no-change countercase is defeated.
-5. The proposed fix is valid, or the chosen handoff replaces it with a valid fix
+5. The adversarial response clears the selected `address` action.
+6. The proposed fix is valid, or the chosen handoff replaces it with a valid fix
    shape.
-6. The action fits this PR's scope, constraints, and intended change.
-7. The row has `evidence_grade` of `current-artifact`, `current-test`,
+7. The action fits this PR's scope, constraints, and intended change.
+8. The row has `evidence_grade` of `current-artifact`, `current-test`,
    `current-ci`, or `current-session-artifact`.
-8. The row has a concrete `evidence_ref` such as `file:line`, test name,
+9. The row has a concrete `evidence_ref` such as `file:line`, test name,
    command/log reference, CI status, PR thread, or current artifact citation.
 
 If any item fails, do not use `act`; use `rebut`, `defer`, or `need-evidence`.
-`act` requires proof, not plausibility.
+`act` requires proof, not plausibility or adversarial consensus.
 
 ## Rebuttal-first pass
 
@@ -332,8 +433,9 @@ A no-change countercase may be:
 - the review assumes a contract this PR does not own
 - the evidence is insufficient and the correct next step is validation only
 
-Only mark `act` when artifact evidence defeats the no-change countercase. If the
-countercase is not defeated, use `rebut`, `defer`, or `need-evidence`.
+Only mark `act` when artifact evidence and adversarial clearance defeat the
+no-change countercase. If the countercase is not defeated, use `rebut`, `defer`,
+or `need-evidence`.
 
 ## Validation-only escape hatch
 
@@ -350,13 +452,16 @@ handoff_action: route-to-fixed-point-driver
 
 Validation-only handoff may create tests, probes, logs, or inspections. It must
 not implement the reviewer's requested code change unless the validation fails or
-current artifacts already prove the concern.
+current artifacts already prove the concern and a new `mutate-code` warrant is
+issued.
 
 Hard constraints:
 
 - `proposed_fix_validity: validation-only` requires `disposition: need-evidence`.
 - `need-evidence` must not route directly to `$accretive-implementer`.
 - `validation_handoff_allowed: yes` is not implementation permission.
+- A validation-only row must have an adversarial response that rejects production
+  mutation escape.
 
 ## Resolve-selection overlay
 
@@ -365,13 +470,13 @@ which reviews/comments to address, whether to resolve PR review threads, or when
 the likely next step is `$fixed-point-driver`, `$resolve`, `$ship`, or final PR
 comment cleanup.
 
-Emit a `Resolve Selection` section after the adjudication buckets and before
-`Handoff Agenda`. This section is the downstream selection contract.
+Emit `Resolve Selection` after the adjudication buckets and before `Resolve
+Countercases`. This section is the downstream selection contract.
 
 Allowed `resolve_decision` values:
 
-- `address`: the comment is `act`, the Act validity rule passed, and
-  implementation handoff is allowed.
+- `address`: the comment is `act`, the Act validity rule passed, adversarial
+  clearance passed, and implementation handoff is allowed.
 - `validate-only`: the comment is `need-evidence`; the next workflow may add a
   probe, test, or inspection, but must not implement the requested code change
   until evidence defeats the no-change case.
@@ -381,8 +486,9 @@ Allowed `resolve_decision` values:
 - `do-not-address`: the comment should be rebutted, deferred, treated as out of
   scope, unsupported, preference-only, or left unresolved pending product/user
   direction.
-- `blocked`: identity, freshness, PR rationale, evidence, resolve-selection, or
-  gate coverage is insufficient to choose a downstream action.
+- `blocked`: identity, freshness, PR rationale, evidence, adversarial clearance,
+  resolve-selection, or gate coverage is insufficient to choose a downstream
+  action.
 
 Selection rules:
 
@@ -390,9 +496,9 @@ Selection rules:
   countercase is `defeated`, and whose Decision Tests satisfy the Act validity
   rule.
 - `validate-only` is legal only for rows whose disposition is `need-evidence`.
-- `resolve-thread-only` must name the proof that makes a code change
-  unnecessary, such as latest-HEAD code evidence, a passing regression, or an
-  already-pushed commit.
+- `resolve-thread-only` must name the proof that makes a code change unnecessary,
+  such as latest-HEAD code evidence, a passing regression, or an already-pushed
+  commit.
 - `do-not-address` must name the preserved no-change case.
 - `blocked` must name the missing evidence and set `adjudication_complete: fail`
   and all handoff permissions to `no`.
@@ -402,9 +508,9 @@ Selection rules:
 - If all rows are `resolve-thread-only`, `do-not-address`, or `blocked`, do not
   route to `$fixed-point-driver` for implementation.
 - Every row must include a concrete `proof ref` and `route rationale`.
-- `route-to-fixed-point-driver` requires a route rationale of
-  `coupled-comments`, `invariant-level`, `structural`, `validation-only`,
-  `contentious`, or `likely-to-reopen`.
+- `route-to-fixed-point-driver` requires a route rationale of `coupled-comments`,
+  `invariant-level`, `structural`, `validation-only`, `contentious`, or
+  `likely-to-reopen`.
 - `route-to-accretive-implementer` requires `route rationale: narrow-local`.
 - `resolve-thread-only` requires `route rationale: proof-only-thread`.
 - `do-not-address` requires `route rationale: no-change`.
@@ -425,22 +531,33 @@ Emit `## Resolve Countercases` with one entry per comment:
   - why alternative is rejected / preserved / unresolved:
 ```
 
-Examples:
+## Adversarial action pass
 
-- An `address` row must defeat the strongest `validate-only`,
-  `resolve-thread-only`, or `do-not-address` alternative.
-- A `validate-only` row must explain why immediate mutation is not yet justified.
-- A `resolve-thread-only` row must explain why no code change is selected.
-- A `do-not-address` row must preserve the no-change case.
-- A `blocked` row must name the missing evidence that prevents selection.
+After the resolve countercase pass, run the adversarial action pass. This is the
+permission-level challenge, distinct from the concern-level no-change case and the
+resolve-level countercase.
+
+For each selected action:
+
+1. Name the strongest adversarial response.
+2. Decide whether to run root-equivalent, targeted-parallel, full-fanout, swarm,
+   or not-required mode.
+3. Bind any packet or root-equivalent result to the current artifact state.
+4. Record veto status, clearance, proof ref, and decision impact.
+5. Downgrade, reroute, or block if the adversarial response is not cleared.
+
+Parallel adversaries are not voters. They produce bounded clearance packets. The
+root adjudicator may downgrade to a stricter route, but may not upgrade to
+`address` against a veto, unresolved packet, stale packet, wrong-scope packet,
+missing clearance, or missing proof ref.
 
 ## Resolution Warrants
 
-After Resolve Selection, issue `## Resolution Warrants`. A Resolution Warrant is
-the portable permission artifact downstream skills must consume before mutating
-code, adding validation-only probes, resolving review threads, drafting replies,
-or deferring/rebutting a claim. `Resolve Selection` explains the decision; the
-warrant authorizes only the named action.
+After `Adversarial Action Matrix`, issue `## Resolution Warrants`. A Resolution
+Warrant is the portable permission artifact downstream skills must consume before
+mutating code, adding validation-only probes, resolving review threads, drafting
+replies, or deferring/rebutting a claim. `Resolve Selection` explains the
+decision; the warrant authorizes only the named action.
 
 No warrant means the claim remains inert. No downstream skill may broaden beyond
 the warrant's `permitted_scope`, reuse the warrant after expiry, or treat
@@ -471,13 +588,13 @@ Warrant rules:
 - `resolve-thread-only` may issue only `permitted action: resolve-thread`.
 - `do-not-address` may issue only `draft-reply`, `defer`, or `none`.
 - `blocked` may issue only `none`.
-- `mutate-code` warrants require a defeated no-change case, current evidence
-  refs, narrow `permitted_scope`, explicit forbidden actions, proof required,
-  and expiry on artifact/comment changes.
+- `mutate-code` warrants require a defeated no-change case, adversarial
+  clearance, current evidence refs, narrow `permitted_scope`, explicit forbidden
+  actions, proof required, and expiry on artifact/comment changes.
 - `add-validation-only` warrants permit tests, probes, logs, or inspections, but
   must forbid production mutation and the reviewer's requested code change.
-- `resolve-thread` warrants require proof refs that make code mutation
-  unnecessary or prove the address warrant has been satisfied.
+- `resolve-thread` warrants require proof refs that make code mutation unnecessary
+  or prove the address warrant has been satisfied.
 - Every warrant must expire when HEAD, base, diff, comment/thread set, or scoped
   artifact state changes unless explicitly revalidated.
 
@@ -485,7 +602,8 @@ Downstream consumption rule:
 
 - `$accretive-implementer` may consume only active `mutate-code` warrants.
 - `$fixed-point-driver` may consume active `mutate-code` or
-  `add-validation-only` warrants, but must preserve the permitted action.
+  `add-validation-only` warrants, but must preserve the permitted action and
+  consume the Adversarial Action Matrix row.
 - `$resolve` / thread cleanup may consume active `resolve-thread` warrants or
   satisfied `mutate-code` warrants with proof.
 - `$logophile` may consume `draft-reply` or `defer` warrants.
@@ -513,20 +631,12 @@ Allowed `mode` values:
 
 - `subtractive-first`: required default for `mutate-code` warrants. Try deletion,
   reuse, duplicate-path collapse, and refactor before any additive patch.
-- `neutral-first`: allowed for validation, reply, or narrow proof-only routes
-  with zero production surface.
+- `neutral-first`: allowed for validation, reply, or narrow proof-only routes with
+  zero production surface.
 - `additive-capped`: allowed only when the adjudication already knows a small
   positive diff is necessary and caps it explicitly.
 - `exploratory`: never allowed for `mutate-code` handoff; use only for blocked
   investigation with no implementation permission.
-
-Allowed `target net loc` values:
-
-- `negative`
-- `zero`
-- `small-positive`
-- `unknown`
-- `uncapped-blocked`
 
 Surface budget rules:
 
@@ -536,50 +646,12 @@ Surface budget rules:
 - `mutate-code` requires `expansion warrant required: yes`.
 - Any additive helper, public symbol, file, flag/knob, state variant, or duplicate
   path must fit the row budget or stop for an Expansion Warrant Request.
-- `target net loc: negative` is preferred. `zero` is acceptable.
-  `small-positive` must explain why it still reduces total semantic surface.
 - Public API, new state, new flags/knobs, and duplicate paths default to budget
   `0` unless the review concern is impossible to resolve otherwise.
 
-The implementation handoff to `$fixed-point-driver` must include a
-**Surface Budget Preflight** instruction for every `address` warrant:
-
-```md
-## Surface Budget Preflight
-- warrant_id:
-- claim:
-- feature to preserve:
-- current source of truth:
-- deletion probe:
-- reuse probe:
-- refactor probe:
-- expected target_net_loc:
-- forbidden new surface:
-- first proof command:
-- implementation may proceed: yes/no
-```
-
-After each material patch, `$fixed-point-driver` should emit a
-**Surface Delta Receipt**:
-
-```md
-## Surface Delta Receipt
-- warrant_id:
-- patch number:
-- production insertions:
-- production deletions:
-- net production LOC:
-- public symbols added:
-- helpers added:
-- flags/knobs added:
-- state variants added:
-- duplicate paths added:
-- deleted/collapsed paths:
-- budget status: within-budget / expansion-needed / violation
-```
-
-If budget status is `expansion-needed` or `violation`, normal implementation
-stops until an Expansion Warrant Request is granted or the patch is redesigned.
+The implementation handoff to `$fixed-point-driver` must include a **Surface
+Budget Preflight** instruction for every `address` warrant and `$fixed-point-driver`
+should emit a **Surface Delta Receipt** after each material patch.
 
 ## Governing invariant pass
 
@@ -595,12 +667,14 @@ When multiple comments share an invariant:
 - route to `$fixed-point-driver` when the comments are coupled, contentious,
   structural, validation-only, or likely to reopen one another
 - route to `$accretive-implementer` only when the invariant-level agenda is
-  narrow, accretive, and locally reviewable
+  narrow, accretive, locally reviewable, and adversarially cleared
 
 If no invariant cluster exists, say so explicitly and set `invariant_pass: pass`
 only after checking.
 
-## Evidence grades
+## Allowed values
+
+### Evidence grades
 
 Use exactly one per comment:
 
@@ -614,10 +688,9 @@ Use exactly one per comment:
 - `none`
 
 `act` requires `current-artifact`, `current-test`, `current-ci`, or
-`current-session-artifact`. Memory-only and reviewer-only evidence may support a
-rationale or reply stance, but they are not sufficient for implementation.
+`current-session-artifact`.
 
-## Relevance classes
+### Relevance classes
 
 Use exactly one per comment:
 
@@ -629,7 +702,7 @@ Use exactly one per comment:
 - `out-of-scope`
 - `preference-only`
 
-## Concern validity values
+### Concern validity values
 
 Use exactly one per comment:
 
@@ -638,7 +711,7 @@ Use exactly one per comment:
 - `unsupported`
 - `unknown`
 
-## Proposed-fix validity values
+### Proposed-fix validity values
 
 Use exactly one per comment:
 
@@ -650,7 +723,7 @@ Use exactly one per comment:
 - `not-applicable`
 - `validation-only`
 
-## Disposition values
+### Disposition values
 
 Use exactly one per comment:
 
@@ -659,7 +732,7 @@ Use exactly one per comment:
 - `defer`
 - `need-evidence`
 
-## Decision Test values
+### Decision Test values
 
 Use exactly one value per field:
 
@@ -673,7 +746,7 @@ Use exactly one value per field:
   `out-of-lane` / `blocked`
 - `no-change defeated`: `yes` / `no` / `unresolved`
 
-## Resolve decision values
+### Resolve decision values
 
 Use exactly one per comment in `## Resolve Selection`:
 
@@ -683,7 +756,7 @@ Use exactly one per comment in `## Resolve Selection`:
 - `do-not-address`
 - `blocked`
 
-## Route rationale values
+### Route rationale values
 
 Use exactly one per comment in `## Resolve Selection`:
 
@@ -698,7 +771,7 @@ Use exactly one per comment in `## Resolve Selection`:
 - `no-change`
 - `blocked`
 
-## No-change countercase status
+### No-change countercase status
 
 Use exactly one per comment:
 
@@ -706,37 +779,27 @@ Use exactly one per comment:
 - `not-defeated`
 - `unresolved`
 
-## Reply stance
-
-For each comment, optionally record a `Reply Stance` to help later handoff to
-`$logophile`:
-
-- `acknowledge-and-fix`
-- `acknowledge-and-bound`
-- `rebut-with-evidence`
-- `defer-with-scope`
-- `ask-for-evidence`
-
 ## Handoff permissions
 
 Use separate route permissions:
 
 - `implementation_handoff_allowed`: `yes` only for artifact-backed `act` rows
-  after the gate passes.
+  selected as `address` after the gate and adversarial action coverage pass.
 - `validation_handoff_allowed`: `yes` only for validation-only or other
   `need-evidence` rows that should route to `$fixed-point-driver` for proof.
-- `reply_handoff_allowed`: `yes` only for rebuttal, defer, or reply-drafting
-  work that should route to `$logophile` or a reply draft.
+- `reply_handoff_allowed`: `yes` only for rebuttal, defer, proof-only thread
+  cleanup, or reply-drafting work that should route to `$logophile`, `$resolve`,
+  or a reply draft.
 
-The old single-field `handoff_allowed` is too coarse. Do not use it in v5 output
-except when quoting older adjudications.
+Do not use the old single-field `handoff_allowed` in v6 output except when
+quoting older adjudications.
 
 ## Acceptance skew audit
 
 Before finalizing, audit the distribution of dispositions.
 
-If every substantive comment is marked `act`, treat that as a warning sign, not
-a victory. Emit an **All-Action Justification** table with these checks:
+If every substantive comment is marked `act`, treat that as a warning sign, not a
+victory. Emit an **All-Action Justification** table with these checks:
 
 - `stale/superseded`
 - `unsupported`
@@ -749,17 +812,6 @@ a victory. Emit an **All-Action Justification** table with these checks:
 
 Each row must include `result`, `evidence ref`, and `why action still warranted`.
 Generic language like "all comments are valid" is insufficient.
-
-If this block is missing, generic, or unsupported by artifact evidence, set:
-
-```md
-adjudication_complete: fail
-implementation_handoff_allowed: no
-Adjudication Bottom Line: Blocked: all-action adjudication lacks justification.
-```
-
-Do not require artificial disposition diversity. Require an all-action safety
-proof.
 
 ## Selection skew audit
 
@@ -777,16 +829,12 @@ checks:
 - `fixed-point over-routing check`
 
 Each row must include `result`, `evidence ref`, and `why selected resolution is
-still warranted`. Generic language like "all are worth resolving" is
-insufficient.
-
-Selection skew is separate from acceptance skew: a report can avoid all-`act`
-while still over-selecting downstream work.
+still warranted`. Generic language like "all are worth resolving" is insufficient.
 
 ## Adjudication completion gate
 
-Before any implementation, validation, or reply handoff, emit an
-`Adjudication Gate` block.
+Before any implementation, validation, thread-resolution, or reply handoff, emit
+an `Adjudication Gate` block.
 
 Required fields:
 
@@ -800,6 +848,8 @@ Required fields:
 - `evidence_ref_coverage`: `pass` / `fail`
 - `resolve_selection_coverage`: `pass` / `fail`
 - `resolve_countercase_coverage`: `pass` / `fail`
+- `adversarial_action_coverage`: `pass` / `fail`
+- `parallelism_calibration`: `pass` / `fail`
 - `resolution_warrant_coverage`: `pass` / `fail`
 - `surface_budget_coverage`: `pass` / `fail`
 - `surface_budget_consumption_safety`: `pass` / `fail`
@@ -815,9 +865,8 @@ Required fields:
 - `reply_handoff_allowed`: `yes` / `no`
 
 `adjudication_complete` may be `pass` only when every preceding required field is
-`pass`, including `resolution_warrant_coverage` and
-`warrant_consumption_safety`, except `specialist_packet_coverage`, which may be
-`not-used` when no specialists were used.
+`pass`, except `specialist_packet_coverage`, which may be `not-used` when no
+specialists were used.
 
 If any required field fails, the bottom line must be:
 
@@ -832,46 +881,16 @@ route validation tasks to `$fixed-point-driver` when
 
 ## Output contract
 
-### Surface-Budgeted v5
+### Surface-Budgeted v6
 
 Use this mode for real PR comment sets:
 
 ```md
 ## Review Basis
-
-artifact_state_id:
-  branch:
-  base:
-  head:
-  diff_digest:
-  comment_set_digest:
-  ci_state:
-
-- branch / PR:
-- current artifact evidence:
-- tests / CI:
-- comments adjudicated:
-- limits / unavailable evidence:
-
 ## Comment Inventory
-
-- input_comment_count:
-- ledger_row_count:
-- input_comment_ids:
-- ledger_comment_ids:
-- missing_comment_ids:
-- duplicate_comment_ids:
-- synthesized_ids_for_real_comments: yes/no
-
 ## PR Why Ledger
 ## Comment Ledger
-| id/thread | reviewer | location | excerpt | claim | concern validity | proposed fix validity | relevance | disposition | no-change status | invariant | evidence grade | evidence ref | handoff |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-
 ## Decision Tests
-| id/thread | grounded | material | fresh | diagnosis | scope-fit | resolution value | no-change defeated | min evidence to change mind |
-|---|---|---|---|---|---|---|---|---|
-
 ## No-Change Countercases
 ## Governing Invariant Ledger
 ## Specialist Packet Receipts
@@ -880,15 +899,10 @@ artifact_state_id:
 ## Defer / Out of Scope
 ## Need Evidence
 ## Resolve Selection
-| id/thread | resolve decision | reason | proof ref | next | route rationale |
-|---|---|---|---|---|---|
 ## Resolve Countercases
+## Adversarial Action Matrix
 ## Resolution Warrants
-| warrant id | claim id | source | claim excerpt | decision | concern validity | proposed fix validity | no-change status | resolution value | route rationale | permitted action | permitted scope | forbidden actions | evidence refs | countercase ref | proof required | expiry |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 ## Surface Budget Ledger
-| warrant id | mode | target net loc | max positive loc | max new public symbols | max new files | max new helpers | max new flags/knobs | max new state variants | max new branches | duplicate path budget | subtractive probes required | expansion warrant required | expansion status | proof required | notes |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 ## Invariant-Level Handoff
 ## Acceptance Skew Audit
 ## All-Action Justification
@@ -901,27 +915,30 @@ artifact_state_id:
 
 Omit `Specialist Packet Receipts` only when no specialists were used. Omit
 `All-Action Justification` only when at least one substantive comment is not
-`act`; still include `Acceptance Skew Audit`.
+`act`; still include `Acceptance Skew Audit`. Omit `All-Selected Justification`
+only when at least one substantive comment is not selected as `address` or
+`validate-only`; still include `Selection Skew Audit`.
 
 ### Standard
 
 Standard output may include expanded per-comment analysis, but it must end with
-the full Surface-Budgeted v5 tail and Adjudication Gate.
+the full Surface-Budgeted v6 tail and Adjudication Gate.
 
 ### Fast
 
 Fast output may compress reasoning into decision buckets, but it must still
-preserve comment identity, include an Acceptance Skew Audit, and emit an
-Adjudication Gate. If identity, inventory, artifact-state, or no-change coverage
-is missing, Fast mode must block implementation handoff.
+preserve comment identity, include an Acceptance Skew Audit, include an
+Adversarial Action Matrix, and emit an Adjudication Gate. If identity, inventory,
+artifact-state, no-change, adversarial, or warrant coverage is missing, Fast mode
+must block implementation handoff.
 
 ## Handoff rules
 
 - Route to `$accretive-implementer` when the accepted agenda is narrow,
-  accretive, locally reviewable, artifact-backed, and not validation-only.
-- Route to `$fixed-point-driver` when accepted comments are coupled,
-  contentious, invariant-level, structural, validation-only, or likely to reopen
-  one another.
+  accretive, locally reviewable, artifact-backed, adversarially cleared, and not
+  validation-only.
+- Route to `$fixed-point-driver` when accepted comments are coupled, contentious,
+  invariant-level, structural, validation-only, or likely to reopen one another.
 - Route to `$logophile` only for drafting replies, naming, or wording.
 - For `$resolve` or PR-thread cleanup, route proof-only stale/already-fixed
   comments as `resolve-thread-only`, not as implementation work.
@@ -929,12 +946,9 @@ is missing, Fast mode must block implementation handoff.
   handoff.
 - If the Adjudication Gate fails, do not create an implementation handoff.
 - If validation-only is the correct next move, route validation, not mutation.
-- The Handoff Agenda must be a subset-preserving projection of Resolve
-  Selection and Resolution Warrants. It must not add implementation items that
-  are not `address` and do not have active `mutate-code` warrants.
-- Downstream skills consume warrants, not prose. A selection row without a
-  matching active warrant must not route implementation, validation, reply, or
-  thread cleanup.
+- The Handoff Agenda must be a subset-preserving projection of Resolve Selection,
+  Adversarial Action Matrix, and Resolution Warrants.
+- Downstream skills consume warrants and adversarial clearance, not prose.
 - Do not route a single narrow local action to `$fixed-point-driver` unless the
   route rationale is coupled, invariant-level, structural, validation-only,
   contentious, or likely-to-reopen.
@@ -962,22 +976,28 @@ with the missing fields instead of implementing.
 - Do not mark a comment `act` merely because it is easy to fix.
 - Do not mark a comment `act` merely because the reviewer is probably right.
 - Do not mark a comment `act` without a current evidence grade and evidence ref.
+- Do not mark a comment `act` without adversarial clearance for the selected
+  `address` action.
 - Do not accept a local fix when the real issue is a governing invariant.
 - Do not route validation-only work as implementation.
 - Do not route `resolve-thread-only`, `do-not-address`, or `blocked` selections
   into `$fixed-point-driver` as implementation work.
 - Do not emit duplicate singleton sections; duplicate ledgers or gates are
   treated as contradictory and fail the checker.
-- Do not let `Handoff Agenda` broaden or contradict `Resolve Selection` or Resolution Warrants.
+- Do not let `Handoff Agenda` broaden or contradict `Resolve Selection`,
+  `Adversarial Action Matrix`, or Resolution Warrants.
 - Do not let additive implementation proceed from an `address` warrant unless
   deletion/reuse/refactor probes are required and the additive diff stays inside
   the Surface Budget Ledger.
-- Do not mutate code, resolve threads, validate, or draft replies from review/CAS-derived claims without a matching active Resolution Warrant.
-- Do not reuse warrants after HEAD/base/diff/comment-set changes without revalidation.
+- Do not mutate code, resolve threads, validate, or draft replies from review/CAS
+  derived claims without a matching active Resolution Warrant.
+- Do not reuse warrants after HEAD/base/diff/comment-set changes without
+  revalidation.
 - Do not hide uncertainty; say exactly what evidence is missing.
 - Do not allow `adjudication_complete: pass` if any required gate field fails.
 - Do not allow `implementation_handoff_allowed: yes` if the mechanical checker
-  fails or if any `act` row lacks current evidence.
+  fails, if any `act` row lacks current evidence, or if any `address` row lacks
+  adversarial clearance.
 
 ## Resources
 
@@ -992,3 +1012,4 @@ with the missing fields instead of implementing.
 - [example-invocations.md](references/example-invocations.md)
 - [common-routing-vocabulary.md](references/common-routing-vocabulary.md)
 - [adversarial-eval-seeds.md](references/adversarial-eval-seeds.md)
+- [adversarial-parallelism.md](references/adversarial-parallelism.md)
