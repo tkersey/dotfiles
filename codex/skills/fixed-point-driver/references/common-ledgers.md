@@ -83,3 +83,8 @@ handoffs.
 - `route_delta`
 - `evidence_ref`
 - `disposition`
+
+
+## Isomorphic ablation addendum
+
+Ablation Ledger rows that select deletion, collapse, reuse, canonicalization, privatization, or decommissioning must be paired with an Ablative Isomorphism Card unless routed to `validate-first`. The fixed-point gate fails while selected lower-surface routes have missing behavior-preservation proof.

@@ -47,3 +47,8 @@ authority packet, stale packet, or missing ablative clearance.
 If custom agents are unavailable, emit root-equivalent Authority Packets with the
 same role names and schema. Root-equivalent packets must be evidence-bearing and
 are not a license to skip the clearance matrix, veto ledger, or ablative ledger.
+
+
+## Isomorphic safety addendum
+
+Lower-surface routes are not automatically safe. Deletion, collapse, reuse, and canonicalization require an Ablative Isomorphism Card or a `validate-first` warrant. Apparent duplication must be clone-classified before merge: exact, parametric, gapped, semantic, or accidental-rhyme. Semantic clones and accidental rhymes do not collapse without equivalence proof.

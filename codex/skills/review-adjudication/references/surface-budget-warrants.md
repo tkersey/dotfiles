@@ -53,3 +53,8 @@ For every mutation-capable warrant, answer:
 Every `mutate-code` warrant should hand off to `$fixed-point-driver` with a
 Surface Budget Preflight and receive Surface Delta Receipts plus Ablation Ledger
 rows after patch groups.
+
+
+## Isomorphic safety addendum
+
+Lower-surface routes are not automatically safe. Deletion, collapse, reuse, and canonicalization require an Ablative Isomorphism Card or a `validate-first` warrant. Apparent duplication must be clone-classified before merge: exact, parametric, gapped, semantic, or accidental-rhyme. Semantic clones and accidental rhymes do not collapse without equivalence proof.

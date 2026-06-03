@@ -45,3 +45,8 @@ Launch `ablation_auditor` or emit a root-equivalent ablation packet when:
 - a path appears vestigial, subsumed, pass-through, uninhabited, or non-canonical;
 - closure would otherwise proceed with `unretired_additive_scaffolds` or
   `duplicate_truth_owners` not equal to zero.
+
+
+## Isomorphic ablation addendum
+
+Ablation Ledger rows that select deletion, collapse, reuse, canonicalization, privatization, or decommissioning must be paired with an Ablative Isomorphism Card unless routed to `validate-first`. The fixed-point gate fails while selected lower-surface routes have missing behavior-preservation proof.

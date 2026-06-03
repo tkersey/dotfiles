@@ -6,7 +6,7 @@ description: >-
   bind decisions to artifact state, build the strongest no-change countercase,
   separate valid concerns from valid proposed fixes, recover PR rationale with
   explicit `$seq` when needed, and emit a stale-proof gated ledger,
-  resolve-selection map, adversarial action matrix, ablative counterproposal,
+  resolve-selection map, adversarial action matrix, ablative/isomorphic counterproposal,
   resolution warrants, and surface budgets that decide what to address, validate
   only, resolve with proof only, rebut, defer, investigate, delete/collapse, or
   route. Trigger for `$review-adjudication`, review the review, adjudicate PR
@@ -32,7 +32,7 @@ and explicit adversarial clearance for the downstream action.
 
 ## Default mode
 
-Use **Surface-Budgeted Ablative v7** mode whenever the input contains real review
+Use **Surface-Budgeted Ablative-Isomorphic v8** mode whenever the input contains real review
 comments. This mode is mandatory because automation needs:
 
 - stable raw comment identity
@@ -56,10 +56,14 @@ comments. This mode is mandatory because automation needs:
   cap additive semantic surface
 - Ablative Counterproposals that prove deletion, collapse, reuse, privatization,
   or canonicalization was considered before additive mutation is licensed
+- Ablative Isomorphism Cards that prove behavior preservation before deletion,
+  collapse, reuse, or canonicalization is licensed
+- Clone-classification and abstraction-ladder checks before merging, extracting,
+  or introducing shared abstractions
 
 Other modes are allowed only when they still satisfy the completion gate:
 
-- **Standard**: expanded reasoning plus the full Surface-Budgeted Ablative v7 tail.
+- **Standard**: expanded reasoning plus the full Surface-Budgeted Ablative-Isomorphic v8 tail.
 - **Fast**: bucket-only output plus the completion gate; allowed for exploratory
   triage or synthetic comments, not for implementation handoff unless the gate
   passes.
@@ -68,6 +72,7 @@ Other modes are allowed only when they still satisfy the completion gate:
 
 Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **ADVERSARIAL-BY-DEFAULT**,
 **PARALLEL-WHEN-MATERIAL**, **INVARIANT-SEEKING**, **ABLATIVE**,
+**ISOMORPHIC**, **CLONE-CLASSIFIED**, **ABSTRACTION-LADDERED**,
 **CANONICALIZING**, **DOMINANCE-TESTED**, **ANTI-RUBBER-STAMP**,
 **EVIDENCE-WEIGHTED**, **STALE-PROOF**, and **FAIL-CLOSED** mode.
 
@@ -87,6 +92,13 @@ Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **ADVERSARIAL-BY-DEFAULT**,
   collapsing duplicate paths, privatizing exposed internals, canonicalizing
   ownership, or deleting/decommissioning vestigial scaffolding before licensing
   additive code.
+- **ISOMORPHIC**: deletion, collapse, merge, reuse, and canonicalization require
+  an explicit behavior-preservation proof, not a cleanliness intuition.
+- **CLONE-CLASSIFIED**: classify apparent duplication before merging it; exact,
+  parametric, and bounded gapped clones are candidates, while semantic clones and
+  accidental rhymes require proof or rejection.
+- **ABSTRACTION-LADDERED**: do not create or climb abstractions before the callsite
+  count, axes of variance, and proof burden justify the rung.
 - **CANONICALIZING**: collapse duplicate truth surfaces into one owner, one
   representation, one path, or one proof surface where the live contract permits.
 - **DOMINANCE-TESTED**: mark a proposed additive fix as dominated when a lower
@@ -124,6 +136,12 @@ Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **ADVERSARIAL-BY-DEFAULT**,
 - Do not let `address` mean "add code". Every mutation-capable warrant must carry
   a surface budget, deletion/reuse/refactor/canonicalization probe obligation,
   and expansion-warrant rule before downstream implementation.
+- Do not license deletion, collapse, merge, or canonicalization without an
+  Ablative Isomorphism Card or an explicit `validate-first` route.
+- Do not merge semantic clones or accidental rhymes merely because they look alike;
+  prove equivalence across invariants, error semantics, ordering, and side effects.
+- Do not introduce a new helper, adapter, interface, base class, generic, macro,
+  flag, or wrapper without an abstraction-ladder check.
 - Validation-only handoff is not implementation permission.
 - Proof-only thread resolution is not implementation permission.
 - Reply handoff is not implementation permission.
@@ -155,11 +173,11 @@ final adjudication and all downstream writes single-rooted.
 
 | selected action | adversarial response must challenge |
 |---|---|
-| `address` | no-change, validate-first, wrong-fix, scope/ownership, surface-budget, ablative route, fixed-point over-routing |
+| `address` | no-change, validate-first, wrong-fix, scope/ownership, surface-budget, ablative route, isomorphism proof, fixed-point over-routing |
 | `validate-only` | mutate-now, no-validation-value, wrong probe, production-mutation escape |
 | `resolve-thread-only` | still-material, stale-proof insufficiency, proof-ref weakness, hidden implementation need |
 | `do-not-address` | materiality, review-closure value, proof-only alternative, user/non-goal mismatch |
-| `delete-collapse-canonicalize` | live contract loss, compatibility risk, missing deletion proof, wrong canonical owner |
+| `delete-collapse-canonicalize` | live contract loss, compatibility risk, missing isomorphism proof, wrong canonical owner, semantic-clone/accidental-rhyme merge |
 | `blocked` | whether a narrower safe validation, reply, proof-only route, or user question can unblock |
 
 ### Parallelism modes
@@ -171,9 +189,9 @@ Use exactly one `parallelism mode` per row in the Adversarial Action Matrix:
 - `targeted-parallel`: one or two independent read-only lanes challenged the row
   or invariant cluster.
 - `full-fanout`: evidence, scope/ownership, criticality, no-change, validation
-  value, fix-shape, and ablative-surface lanes were assigned in parallel.
+  value, fix-shape, ablative-surface, and isomorphism/proof lanes were assigned in parallel.
 - `swarm`: six or more specialists were needed because the batch is large,
-  contentious, P2+, invariant-coupled, likely to reopen, or deletion-sensitive.
+  contentious, P2+, invariant-coupled, likely to reopen, deletion-sensitive, or behavior-preservation-sensitive.
 - `not-required`: only for rows with `resolve decision: blocked` and no safe
   downstream action to challenge; the missing evidence must be named.
 
@@ -277,8 +295,8 @@ For every `address` or `delete-collapse-canonicalize` row, emit an Ablative
 Counterproposal before issuing a mutation-capable warrant.
 
 ```md
-| id/thread | valid concern | additive proposal | delete candidate | collapse/reuse candidate | canonical owner candidate | privatization candidate | lower-surface route | why insufficient or selected | ablative clearance | proof ref |
-|---|---|---|---|---|---|---|---|---|---|
+| id/thread | valid concern | additive proposal | delete candidate | collapse/reuse candidate | canonical owner candidate | privatization candidate | clone classification | abstraction-ladder check | lower-surface route | why insufficient or selected | ablative clearance | isomorphism status | proof ref |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 ```
 
 Allowed `lower-surface route` values:
@@ -293,6 +311,34 @@ Allowed `lower-surface route` values:
 - `proof-only`
 - `none`
 
+Allowed `clone classification` values:
+
+- `exact-clone`
+- `parametric-clone`
+- `gapped-clone`
+- `semantic-clone`
+- `accidental-rhyme`
+- `not-applicable`
+- `unknown`
+
+Allowed `abstraction-ladder check` values:
+
+- `not-needed`
+- `rung-valid`
+- `rung-skipped`
+- `too-few-cases`
+- `too-many-variance-axes`
+- `proof-missing`
+- `unknown`
+
+Allowed `isomorphism status` values:
+
+- `pass`
+- `validate-first`
+- `missing`
+- `not-required`
+
+
 Allowed `ablative clearance` values:
 
 - `clear-additive`
@@ -306,6 +352,33 @@ Allowed `ablative clearance` values:
 `clear-additive` or `select-ablative-route` and the Resolution Warrant records the
 selected route.
 
+## Ablative Isomorphism Card
+
+For every selected deletion, collapse, merge, reuse, or canonicalization route,
+emit a compact behavior-preservation card before handoff. This is the lightweight
+import from `$simplify-and-refactor-code-isomorphically`: prove behavior identical
+before removing or merging surface.
+
+```md
+Ablative Isomorphism Card:
+- id/thread:
+- surface:
+- proposed action: delete | collapse | reuse | canonicalize | privatize | decommission
+- behavior preserved:
+- public contract preserved:
+- error semantics preserved:
+- ordering / side effects preserved:
+- clone classification:
+- abstraction-ladder check:
+- compatibility risk: none | low | medium | high
+- proof signal:
+- deletion/collapse witness:
+- card status: pass | validate-first | missing | not-required
+```
+
+If any relevant row cannot be filled, select `validate-first` or block handoff.
+
+
 ## Surface Budget Ledger
 
 Every mutation-capable warrant must include a surface budget. See
@@ -317,6 +390,7 @@ Every mutation-capable warrant must include a surface budget. See
 ```
 
 Default mode for `mutate-code` warrants is `ablative-first`.
+Deletion/collapse/canonicalization warrants must carry an Ablative Isomorphism Card unless the selected route is `validate-first`.
 
 ## Adversarial Action Matrix
 
@@ -402,6 +476,9 @@ resolution_warrant:
     mode: ablative-first | additive-authorized | proof-only | validation-only | not-applicable
     ablative_clearance: clear-additive | select-ablative-route | validate-first | veto-additive | unresolved | not-required
     lower_surface_routes_defeated: []
+    clone_classification: exact-clone | parametric-clone | gapped-clone | semantic-clone | accidental-rhyme | not-applicable | unknown
+    abstraction_ladder_check: not-needed | rung-valid | rung-skipped | too-few-cases | too-many-variance-axes | proof-missing | unknown
+    isomorphism_status: pass | validate-first | missing | not-required
     expansion_warrant_required: yes | no
   expires_when: "artifact_state changes, comment set changes, or proof ref becomes stale"
 ```
@@ -418,6 +495,9 @@ Adjudication Gate:
 - resolve_countercases_complete: pass/fail
 - adversarial_action_coverage: pass/fail
 - ablative_counterproposals_complete: pass/fail
+- ablation_isomorphism_cards_complete: pass/fail/not-applicable
+- clone_classification_complete: pass/fail/not-applicable
+- abstraction_ladder_checks_complete: pass/fail/not-applicable
 - authority_clearance_complete: pass/fail
 - surface_budgets_complete: pass/fail/not-applicable
 - resolution_warrants_current: pass/fail
@@ -442,6 +522,7 @@ End with these sections, in this order:
 
 - decisive route
 - highest-value ablative route, if any
+- highest-value isomorphic collapse/deletion route, if any
 - whether implementation handoff is allowed
 - the single next action
 
@@ -455,10 +536,14 @@ End with these sections, in this order:
 - Never let multiple local comments hide one governing invariant.
 - Never let an additive fix bypass deletion, reuse, collapse, canonicalization, or
   privatization probes.
+- Never delete, collapse, or merge behavior without an isomorphism card or
+  validate-first route.
+- Never climb the abstraction ladder merely to satisfy a review comment.
 
 ## Resources
 
 - [authority-fanout.md](references/authority-fanout.md)
 - [surface-budget-warrants.md](references/surface-budget-warrants.md)
 - [ablative-clearance.md](references/ablative-clearance.md)
+- [isomorphic-ablation.md](references/isomorphic-ablation.md)
 - [CODEX_SUBAGENTS.md](references/CODEX_SUBAGENTS.md)

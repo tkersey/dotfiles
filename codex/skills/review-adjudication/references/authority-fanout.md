@@ -96,3 +96,8 @@ authority packet or block.
 
 `address` requires `authority status: cleared-for-address`, all required authority
 clearances, an ablative-surface clearance, and no veto row for that id.
+
+
+## Isomorphic safety addendum
+
+Lower-surface routes are not automatically safe. Deletion, collapse, reuse, and canonicalization require an Ablative Isomorphism Card or a `validate-first` warrant. Apparent duplication must be clone-classified before merge: exact, parametric, gapped, semantic, or accidental-rhyme. Semantic clones and accidental rhymes do not collapse without equivalence proof.

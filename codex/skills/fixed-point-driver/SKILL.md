@@ -1,13 +1,13 @@
 ---
 name: fixed-point-driver
-description: "Drive exhaustive build-review-improve-verify loops to Truth-Owner Ablative Normal Form: one canonical owner per material invariant, no duplicate truth surfaces, no unresolved review counterexamples, no unresolved adversarial or ablation vetoes, no unretired additive scaffolding, no dominated/vestigial/subsumed surface without a keep warrant, and proof-gated closure. Trigger when coding needs de novo re-litigation, PR review closure, repeated review/fix loops, invariant repair, proof-surface hardening, negative-evidence pruning, CAS/Codex review resolution, parallel adversarial action, optional architecture fingerprint preflight, or when agents risk adding local patches instead of deleting/refactoring/canonicalizing. Do not use for trivial one-step tasks or when the user wants one narrow phase."
+description: "Drive exhaustive build-review-improve-verify loops to Truth-Owner Ablative-Isomorphic Normal Form: one canonical owner per material invariant, no duplicate truth surfaces, no unresolved review counterexamples, no unresolved adversarial or ablation vetoes, no unretired additive scaffolding, no dominated/vestigial/subsumed surface without a keep warrant, and behavior-preserving proof-gated closure. Trigger when coding needs de novo re-litigation, PR review closure, repeated review/fix loops, invariant repair, proof-surface hardening, negative-evidence pruning, CAS/Codex review resolution, parallel adversarial action, optional architecture fingerprint preflight, or when agents risk adding local patches instead of deleting/refactoring/canonicalizing. Do not use for trivial one-step tasks or when the user wants one narrow phase."
 ---
 
 # Fixed-Point Driver
 
 This skill coordinates implementation, review, adjudication, reduction,
 verification, parallel read-only adversarial challenge, ablation challenge, and
-closure until the artifact set reaches **Truth-Owner Ablative Normal Form**.
+closure until the artifact set reaches **Truth-Owner Ablative-Isomorphic Normal Form**.
 
 ## The single rule
 
@@ -18,7 +18,8 @@ Drive toward this state:
 > a counterexample, every adversarial or ablation veto is cleared, accepted as
 > risk, or routed, every additive scaffold has been promoted/collapsed/deleted,
 > every dominated/subsumed/vestigial/non-canonical surface has been deleted,
-> collapsed, privatized, decommissioned, or kept with an explicit warrant, and no
+> collapsed, privatized, decommissioned, or kept with an explicit warrant, and every deletion/collapse/canonicalization has a current behavior-preservation
+> witness, and no
 > duplicate truth surface remains merely because it helped satisfy an intermediate
 > review loop.
 
@@ -59,6 +60,12 @@ Use doctrine only when it changes the route:
 - `ablative` creates Ablation Ledger rows and prevents additive mutation until
   deletion, collapse, reuse, privatization, decommissioning, or canonicalization
   is defeated or selected.
+- `isomorphic` creates Ablative Isomorphism Cards so deletion, collapse, merge,
+  reuse, or canonicalization preserves observable behavior.
+- `clone-classified` prevents accidental-rhyme or semantic-clone merges from being
+  treated as safe simplification.
+- `abstraction-laddered` prevents new helpers/interfaces/generics/wrappers from
+  skipping the evidence rung.
 - `dominated` creates a delete/collapse candidate when an existing path covers
   the obligation with lower complexity or stronger proof.
 - `subsumed` creates an owner-canonicalization candidate when a local abstraction
@@ -73,7 +80,7 @@ Use doctrine only when it changes the route:
 Do not use this skill for simple bounded tasks where ordinary direct execution
 plus one focused check fully closes the state space. If the run stays active, the
 reason must be a material open truth unit, stale proof, unresolved counterexample,
-unresolved adversarial veto, unresolved ablation veto, shadow owner, addition
+unresolved adversarial veto, unresolved ablation veto, unresolved isomorphism gap, shadow owner, addition
 escrow, route-changing architecture uncertainty, or active warrant that requires
 fixed-point handling.
 
@@ -192,6 +199,10 @@ Do not use this skill for simple bounded tasks with an obvious check.
      could materially change implementation or closure
    - classify candidates as delete, collapse, canonicalize, privatize,
      decommission, validate-first, or keep-with-warrant
+   - compute Ablation Opportunity Scores for non-trivial candidates
+   - classify clone/collapse candidates before merging or reusing them
+   - run an abstraction-ladder check before introducing or expanding an abstraction
+   - require an Ablative Isomorphism Card for selected deletion/collapse routes
 
 6. **Adversarial preflight**
    - run read-only challengers in the calibrated parallelism mode
@@ -218,6 +229,8 @@ Do not use this skill for simple bounded tasks with an obvious check.
    - keep writes single-threaded
    - subagents may gather read-only evidence
    - emit Surface Delta Receipts and Ablation Ledger rows after material patch groups
+   - emit Ablative Isomorphism Cards for any deletion, collapse, merge, reuse,
+     canonicalization, privatization, or decommissioning performed
 
 9. **De novo adversarial review**
    - use `adversarial-reviewer` or root-equivalent challenge
@@ -233,7 +246,7 @@ Do not use this skill for simple bounded tasks with an obvious check.
     Then ask the ablative variant:
 
     > If you could delete, collapse, privatize, decommission, or canonicalize one
-    > thing in this changeset without weakening the live contract, what would it be?
+    > thing in this changeset without weakening the live contract, and with behavior-preservation proof, what would it be?
 
     If either answer is impactful and in-scope, route it to `accretive-implementer`
     or root-equivalent single-writer implementation, then rerun de novo review. If
@@ -250,6 +263,9 @@ Do not use this skill for simple bounded tasks with an obvious check.
     - no additive scaffold remains without explicit justification
     - no dominated, subsumed, vestigial, uninhabited, pass-through, or
       non-canonical surface remains without a keep warrant
+    - no selected deletion, collapse, reuse, or canonicalization lacks an Ablative
+      Isomorphism Card or explicit validate-first blocker
+    - no semantic clone or accidental rhyme was merged without equivalence proof
     - no review counterexample remains unresolved
     - surface budgets are satisfied or expansion is explicitly granted
     - proof receipts are tied to current artifact state
@@ -323,6 +339,32 @@ Allowed `action` values:
 - `validate-first`
 - `keep-with-warrant`
 
+### Ablation Opportunity Matrix
+
+```md
+| id | candidate | kind | surface removed | confidence | ownership clarity | risk | score | decision | proof needed |
+|---|---|---|---:|---:|---:|---:|---:|---|---|
+```
+
+Use:
+
+```text
+Ablation Score = (Surface Removed × Confidence × Ownership Clarity) / Risk
+```
+
+Do not let LOC savings dominate semantic-surface reduction. A small deletion can
+score high when it removes a duplicate truth surface, obsolete flag, public symbol,
+state variant, or proof obligation.
+
+### Ablative Isomorphism Cards
+
+```md
+| card id | surface | action | behavior preserved | public contract preserved | error semantics preserved | ordering/side effects preserved | clone classification | abstraction-ladder check | compatibility risk | proof signal | status |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+```
+
+Allowed `status` values: `pass`, `validate-first`, `missing`, `not-applicable`.
+
 ### Adversarial Action Ledger
 
 ```md
@@ -385,6 +427,19 @@ closure_handoff_packet:
     closed_candidates: []
     keep_warrants: []
     unresolved_ablation_vetoes: []
+  ablation_opportunity_matrix:
+    top_candidates: []
+    rejected_candidates: []
+  ablation_isomorphism_cards:
+    - card_id: "..."
+      surface: "..."
+      action: "delete | collapse | reuse | canonicalize | privatize | decommission"
+      behavior_preserved: "..."
+      public_contract_preserved: "yes | no | unknown"
+      error_semantics_preserved: "yes | no | unknown | not-applicable"
+      ordering_side_effects_preserved: "yes | no | unknown | not-applicable"
+      proof_signal: "..."
+      status: "pass | validate-first | missing | not-applicable"
   adversarial_action_ledger:
     open_vetoes: []
     cleared_vetoes: []
@@ -417,16 +472,17 @@ Use tail-weighted sections:
 2. Warrant Intake / Parallelism Plan
 3. Truth Units
 4. Ablation Ledger
-5. Route Selection
-6. Work Performed / Routed
-7. Adversarial Action Ledger
-8. Review, Soundness, and Ablation Results
-9. Surface Delta Receipts
-10. Proof Receipts
-11. Fixed-Point Test
-12. Closure Handoff
-13. Final State
-14. Do Next
+5. Ablative Isomorphism Cards
+6. Route Selection
+7. Work Performed / Routed
+8. Adversarial Action Ledger
+9. Review, Soundness, and Ablation Results
+10. Surface Delta Receipts
+11. Proof Receipts
+12. Fixed-Point Test
+13. Closure Handoff
+14. Final State
+15. Do Next
 
 `Do Next` must be the final section.
 
@@ -439,12 +495,14 @@ Before closure handoff, emit a gate summary with these fields:
 - `parallelism_calibration`: `pass` / `fail`
 - `adversarial_action_coverage`: `pass` / `fail`
 - `ablation_coverage`: `pass` / `fail` / `not-applicable`
+- `ablation_isomorphism`: `pass` / `fail` / `not-applicable`
 - `open_truth_units`: `0` or named blockers
 - `duplicate_truth_owners`: `0` or named blockers
 - `open_review_counterexamples`: `0` or named blockers
 - `unresolved_soundness_rows`: `0` or named blockers
 - `unresolved_adversarial_vetoes`: `0` or named blockers
 - `unresolved_ablation_rows`: `0` or named blockers
+- `unresolved_isomorphism_cards`: `0` or named blockers
 - `dominated_surfaces`: `0` or named blockers
 - `unwarranted_keep_surfaces`: `0` or named blockers
 - `unretired_additive_scaffolds`: `0` or named blockers
@@ -464,6 +522,8 @@ Before closure handoff, emit a gate summary with these fields:
 - Do not treat parallel agreement as proof; require current artifact evidence.
 - Do not claim fixed point with unresolved material adversarial vetoes.
 - Do not claim fixed point with unresolved material ablation vetoes.
+- Do not claim fixed point with unresolved or missing Ablative Isomorphism Cards
+  for selected deletion, collapse, reuse, or canonicalization routes.
 - Do not preserve duplicate truth owners unless they are explicitly justified.
 - Do not leave additive scaffolding unretired merely because it helped pass an
   intermediate review loop.
@@ -480,5 +540,6 @@ Before closure handoff, emit a gate summary with these fields:
 - [truth-owner-normal-form.md](references/truth-owner-normal-form.md)
 - [one-change-challenge.md](references/one-change-challenge.md)
 - [ablation-ledger.md](references/ablation-ledger.md)
+- [isomorphic-ablation.md](references/isomorphic-ablation.md)
 - [lane-and-specialist-budget.md](references/lane-and-specialist-budget.md)
 - [common-ledgers.md](references/common-ledgers.md)

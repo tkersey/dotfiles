@@ -39,3 +39,8 @@ For deletion/collapse/canonicalization, require at least one:
 - proof that the state/branch is uninhabited under current constructors/invariants
 - public-contract check showing no promised behavior is retired silently
 - migration/compatibility check when historical data or external callers exist
+
+
+## Isomorphic safety addendum
+
+Lower-surface routes are not automatically safe. Deletion, collapse, reuse, and canonicalization require an Ablative Isomorphism Card or a `validate-first` warrant. Apparent duplication must be clone-classified before merge: exact, parametric, gapped, semantic, or accidental-rhyme. Semantic clones and accidental rhymes do not collapse without equivalence proof.

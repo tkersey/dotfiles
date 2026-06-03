@@ -64,3 +64,8 @@ A `keep-with-warrant` row must name:
 
 A fixed point cannot be claimed while any material ablation row is `open`,
 `unresolved`, `vetoed`, or `keep-without-warrant`.
+
+
+## Isomorphic ablation addendum
+
+Ablation Ledger rows that select deletion, collapse, reuse, canonicalization, privatization, or decommissioning must be paired with an Ablative Isomorphism Card unless routed to `validate-first`. The fixed-point gate fails while selected lower-surface routes have missing behavior-preservation proof.
