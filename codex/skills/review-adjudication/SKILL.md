@@ -158,6 +158,33 @@ This skill expects `$seq` to be installed when PR rationale recovery is needed.
 If `$seq` is unavailable, proceed only from current artifacts and mark PR
 rationale fields as `unknown` instead of inventing intent.
 
+
+## Ablation activation receipt
+
+Because prior usage tended to be root-equivalent or mention-only, this skill must
+make ablation visible whenever it could affect the route.
+
+Emit an ablation activation receipt for every real comment batch:
+
+```md
+Ablation Activation Receipt:
+- trigger: additive-proposal | local-fix-pileup | duplicate-truth-surface | questionable-keep-surface | fixed-point-handoff | none
+- custom authority used: review_ablative_surface_authority | root-equivalent | not-required
+- scoped comment ids:
+- selected lower-surface routes:
+- additive routes cleared:
+- vetoed or unresolved additive routes:
+- isomorphism cards required:
+- implementation handoff impact:
+```
+
+Rules:
+- If `trigger` is not `none`, the receipt must be reflected in `Ablative Counterproposal Ledger`, `Resolution Warrants`, and `Adjudication Bottom Line`.
+- If `trigger: none`, give the evidence-backed reason; do not omit the receipt.
+- Root-equivalent adjudication is allowed only when it emits the same receipt and clearance fields as the custom authority lane.
+- `address` without an ablation activation receipt is not implementation permission.
+
+
 ## Parallel adversarial action
 
 Every row in `Resolve Selection` must receive one adversarial response. The
@@ -494,6 +521,7 @@ Adjudication Gate:
 - resolve_selection_complete: pass/fail
 - resolve_countercases_complete: pass/fail
 - adversarial_action_coverage: pass/fail
+- ablation_activation_receipt: pass/fail/not-required
 - ablative_counterproposals_complete: pass/fail
 - ablation_isomorphism_cards_complete: pass/fail/not-applicable
 - clone_classification_complete: pass/fail/not-applicable
@@ -521,6 +549,7 @@ End with these sections, in this order:
 `Adjudication Bottom Line` must be the final section and must include:
 
 - decisive route
+- ablation activation status: triggered / not-required, with the receipt id
 - highest-value ablative route, if any
 - highest-value isomorphic collapse/deletion route, if any
 - whether implementation handoff is allowed
@@ -529,7 +558,7 @@ End with these sections, in this order:
 ## Hard rules
 
 - Never use reviewer authority as evidence.
-- Never convert `valid concern` into `add code` without ablative clearance.
+- Never convert `valid concern` into `add code` without an ablation activation receipt and ablative clearance.
 - Never issue `mutate-code` permission from a stale artifact state.
 - Never hide comment identity behind summaries.
 - Never let every comment become `address` without an all-action skew audit.
@@ -547,3 +576,4 @@ End with these sections, in this order:
 - [ablative-clearance.md](references/ablative-clearance.md)
 - [isomorphic-ablation.md](references/isomorphic-ablation.md)
 - [CODEX_SUBAGENTS.md](references/CODEX_SUBAGENTS.md)
+- [ablation-activation.md](references/ablation-activation.md)

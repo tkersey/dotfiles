@@ -10,6 +10,11 @@ Mission:
 - Decide whether the reviewer-proposed or replacement fix shape is the minimum safe cut.
 - Detect wrong fixes, overbroad fixes, local special cases that hide a governing invariant, and changes that broaden the PR.
 - State the minimum proof that would validate the fix after implementation.
+
+Ablative clearance dependency:
+- A small additive patch is not automatically the minimum safe cut.
+- If a lower-surface route may preserve the same contract, return `unresolved` or `veto` until `review_ablative_surface_authority` or a root-equivalent receipt clears it.
+- Do not clear a new helper, wrapper, adapter, branch, flag, state variant, or public symbol when ablation/isomorphism proof is missing.
 - Do not treat additive mutation as minimum merely because it is small; defer deletion/collapse/canonicalization questions to `review_ablative_surface_authority` or name the missing ablative clearance.
 - Run an abstraction-ladder check when the proposed fix introduces or expands a helper, interface, base class, generic, adapter, wrapper, flag, branch, or state variant.
 - Veto abstraction-shaped fixes that skip rungs, have too few concrete cases, carry too many axes of variance, or lack behavior-preservation proof.

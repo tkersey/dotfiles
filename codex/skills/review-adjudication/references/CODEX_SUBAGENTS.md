@@ -1,8 +1,9 @@
 # Codex custom agents for review-adjudication
 
 This package includes runnable Codex custom agents for the `$review-adjudication`
-authority panel. The authority panel solves both bandwidth and authority: lanes
-can run in parallel, but each lane owns only one clearance dimension.
+authority panel. The authority panel is designed to solve both bandwidth and
+authority: lanes can run in parallel, but each lane owns only one clearance
+dimension.
 
 ## Install locations
 
@@ -10,7 +11,7 @@ In this dotfiles repo, `codex/agents` is linked into `$HOME/.codex/agents`.
 Codex custom agents are discovered from project `.codex/agents/*.toml` or user
 `$HOME/.codex/agents/*.toml`.
 
-This drop-in includes or expects:
+This drop-in includes / expects:
 
 - `codex/agents/review-evidence-authority.toml`
 - `codex/agents/review-direction-ownership-authority.toml`
@@ -29,8 +30,8 @@ This drop-in includes or expects:
 | criticality-authority | `review_criticality_authority` | severity downgraded/rejected/unresolved, review-closure-only, low-value, or out-of-lane |
 | no-change-advocate | `review_no_change_advocate` | no-change/proof-only/defer route remains stronger than mutation |
 | validation-value-authority | `review_validation_value_authority` | validation should precede mutation or validation has no material decision value |
-| fix-shape-authority | `review_fix_shape_authority` | wrong fix, overbroad fix, under-specified cut, or hidden invariant |
-| ablative-surface-authority | `review_ablative_surface_authority` | additive mutation is dominated by deletion, reuse, collapse, canonicalization, privatization, decommissioning, proof-only, or validate-first |
+| fix-shape-authority | `review_fix_shape_authority` | wrong fix, overbroad fix, under-specified cut, hidden invariant, or missing lower-surface clearance |
+| ablative-surface-authority | `review_ablative_surface_authority` | additive mutation is dominated by deletion, collapse, reuse, privatization, decommissioning, canonicalization, or validate-first |
 
 ## Parent orchestration rule
 
@@ -40,15 +41,11 @@ Require the Authority Packet shape in `references/authority-fanout.md`.
 
 The parent/root adjudicator may always downgrade a row to a stricter route. It
 may not upgrade a row to `address` against a veto, unresolved clearance, missing
-authority packet, stale packet, or missing ablative clearance.
+authority packet, stale packet, or missing ablation activation receipt.
 
 ## Fallback
 
-If custom agents are unavailable, emit root-equivalent Authority Packets with the
-same role names and schema. Root-equivalent packets must be evidence-bearing and
-are not a license to skip the clearance matrix, veto ledger, or ablative ledger.
-
-
-## Isomorphic safety addendum
-
-Lower-surface routes are not automatically safe. Deletion, collapse, reuse, and canonicalization require an Ablative Isomorphism Card or a `validate-first` warrant. Apparent duplication must be clone-classified before merge: exact, parametric, gapped, semantic, or accidental-rhyme. Semantic clones and accidental rhymes do not collapse without equivalence proof.
+If the custom agents are unavailable, emit root-equivalent Authority Packets with
+the same role names and schema. Root-equivalent packets must be evidence-bearing
+and are not a license to skip the clearance matrix, veto ledger, or ablation
+activation receipt.

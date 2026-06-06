@@ -103,6 +103,11 @@ authority_packet:
   packet_status_reason: "..."
 ```
 
+Activation receipt rule:
+- Always return a packet for scoped work, even when no ablation is required.
+- Use `not-required` only with concrete evidence that no mutation-capable or keep-surface decision exists.
+- Treat missing evidence as `unresolved`, not as permission to add code.
+
 Packet validity requirements:
 - Every `clear` must cite concrete positive evidence and say whether additive mutation or a lower-surface route is selected.
 - Every selected deletion/collapse/reuse/canonicalization route must have an isomorphism card or route to `validate-first`.

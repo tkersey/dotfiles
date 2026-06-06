@@ -84,6 +84,23 @@ unresolved adversarial veto, unresolved ablation veto, unresolved isomorphism ga
 escrow, route-changing architecture uncertainty, or active warrant that requires
 fixed-point handling.
 
+
+### Ablation activation rule
+
+Every fixed-point run must explicitly decide whether ablation is active.
+
+Set `ablation_activation` to one of:
+
+- `required`: additive mutation, duplicate truth surface, questionable kept surface, local-fix pileup, or PR/review closure could change by deleting/collapsing/canonicalizing instead;
+- `not-required`: the run is proof-only, validation-only, or has no mutation-capable / keep-surface decision;
+- `blocked`: the artifact state is too stale or incomplete to judge ablation safely.
+
+When `ablation_activation: required`, use `ablation_auditor` or a root-equivalent
+Ablation Packet before closure handoff. Root-equivalent is acceptable only when it
+emits Ablation Ledger rows or a concrete no-candidate receipt. Do not let a
+fixed-point run end with implicit ablation.
+
+
 ### Local-validity trap breaker
 
 When several findings are each locally valid, ask whether they are all
@@ -470,19 +487,20 @@ Use tail-weighted sections:
 
 1. Goal / Artifact State
 2. Warrant Intake / Parallelism Plan
-3. Truth Units
-4. Ablation Ledger
-5. Ablative Isomorphism Cards
-6. Route Selection
-7. Work Performed / Routed
-8. Adversarial Action Ledger
-9. Review, Soundness, and Ablation Results
-10. Surface Delta Receipts
-11. Proof Receipts
-12. Fixed-Point Test
-13. Closure Handoff
-14. Final State
-15. Do Next
+3. Ablation Activation Receipt
+4. Truth Units
+5. Ablation Ledger
+6. Ablative Isomorphism Cards
+7. Route Selection
+8. Work Performed / Routed
+9. Adversarial Action Ledger
+10. Review, Soundness, and Ablation Results
+11. Surface Delta Receipts
+12. Proof Receipts
+13. Fixed-Point Test
+14. Closure Handoff
+15. Final State
+16. Do Next
 
 `Do Next` must be the final section.
 
@@ -494,6 +512,7 @@ Before closure handoff, emit a gate summary with these fields:
 - `warrant_intake`: `pass` / `fail`
 - `parallelism_calibration`: `pass` / `fail`
 - `adversarial_action_coverage`: `pass` / `fail`
+- `ablation_activation_receipt`: `pass` / `fail` / `not-required`
 - `ablation_coverage`: `pass` / `fail` / `not-applicable`
 - `ablation_isomorphism`: `pass` / `fail` / `not-applicable`
 - `open_truth_units`: `0` or named blockers
@@ -521,6 +540,7 @@ Before closure handoff, emit a gate summary with these fields:
   fixtures, resolve threads, or draft final replies.
 - Do not treat parallel agreement as proof; require current artifact evidence.
 - Do not claim fixed point with unresolved material adversarial vetoes.
+- Do not claim fixed point with missing, implicit, or unresolved ablation activation when any ablation trigger is present.
 - Do not claim fixed point with unresolved material ablation vetoes.
 - Do not claim fixed point with unresolved or missing Ablative Isomorphism Cards
   for selected deletion, collapse, reuse, or canonicalization routes.
@@ -543,3 +563,4 @@ Before closure handoff, emit a gate summary with these fields:
 - [isomorphic-ablation.md](references/isomorphic-ablation.md)
 - [lane-and-specialist-budget.md](references/lane-and-specialist-budget.md)
 - [common-ledgers.md](references/common-ledgers.md)
+- [ablation-activation.md](references/ablation-activation.md)

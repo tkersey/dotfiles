@@ -1,22 +1,7 @@
-# Isomorphic ablation
+# Isomorphic Ablation
 
-Use this reference when `$fixed-point-driver` is deciding whether a changeset has
-reached Truth-Owner Ablative-Isomorphic Normal Form.
-
-## One rule
-
-Ablation is complete only when selected deletion/collapse/canonicalization routes
-are behavior-preserving or explicitly gated as `validate-first`.
-
-## Ablation Opportunity Score
-
-```text
-Ablation Score = (Surface Removed × Confidence × Ownership Clarity) / Risk
-```
-
-Surface Removed is semantic, not only LOC. Count retired public/private symbols,
-branches, flags, wrappers, adapters, duplicate truth surfaces, state variants,
-proof obligations, and compatibility scaffolds.
+Ablative deletion must be behavior-preserving unless the user explicitly asked to
+retire behavior.
 
 ## Ablative Isomorphism Card
 
@@ -25,10 +10,16 @@ proof obligations, and compatibility scaffolds.
 |---|---|---|---|---|---|---|---|---|---|---|---|
 ```
 
-`status` is `pass`, `validate-first`, `missing`, or `not-applicable`.
+Check the preservation axes that matter:
 
-## Closure rule
+- inputs/callers covered;
+- ordering and tie-breaking;
+- error semantics and failure mode;
+- laziness/materialization;
+- short-circuit behavior;
+- side effects: logs, metrics, spans, DB writes, IO, public messages;
+- type narrowing / exhaustiveness / variant coverage;
+- compatibility, migrations, and public API promises.
 
-Do not hand off to `verification-closure` with selected deletion, collapse, reuse,
-or canonicalization work unless every selected route has a card with `status:
-pass`, or the route is explicitly blocked as `validate-first` / `missing`.
+If a card cannot be filled, route `validate-first` or keep with warrant. Do not
+pretend cleanliness proves equivalence.

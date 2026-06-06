@@ -54,7 +54,7 @@ The May 2026 doctrine audit found that dense words only improved outcomes when t
 
 ### Operationalization rule
 
-When a task uses or implies doctrine language such as `fixed-point`, `invariant`, `canonical`, `witness`, `traceable`, `unsound`, `unwitnessed`, `illegal inhabitant`, `adversarial`, `de novo`, or `accretive`, bind the word to a concrete artifact:
+When a task uses or implies doctrine language such as `fixed-point`, `invariant`, `canonical`, `witness`, `traceable`, `unsound`, `unwitnessed`, `illegal inhabitant`, `adversarial`, `de novo`, `accretive`, `ablative`, `isomorphic`, `dominated`, `subsumed`, `vestigial`, `uninhabited`, `canonicalizing`, or `deforesting`, bind the word to a concrete artifact:
 
 | Doctrine cue | Required cash-out |
 |---|---|
@@ -66,8 +66,35 @@ When a task uses or implies doctrine language such as `fixed-point`, `invariant`
 | `illegal inhabitant` / `partial handler` | state-space row showing constructor/producer and eliminator/consumer coverage |
 | `adversarial` / `de novo` | candidate inventory, no-finding countercase, and change agenda gate |
 | `accretive` | chosen cut, blast-radius bound, and proof that the change does not broaden accepted invalid states |
+| `ablative` / `canonicalizing` | Ablation Ledger row or Ablative Counterproposal showing delete/collapse/reuse/privatize/decommission/canonicalize was considered before additive mutation |
+| `isomorphic` | Ablative Isomorphism Card or validate-first route proving behavior preservation for deletion, collapse, merge, reuse, or canonicalization |
+| `dominated` / `subsumed` / `vestigial` / `uninhabited` | keep-warrant, deletion/collapse candidate, or explicit no-op proof with current artifact evidence |
 
 If the artifact is missing, demote the doctrine word as ornamental and either create the artifact or drop the word.
+
+### Ablation activation rule
+
+Ablation is not a background vibe. It must fire when a task would otherwise add or preserve code surface that may be unnecessary.
+
+Trigger an ablative receipt when any of these appear:
+
+- a review comment or agent finding proposes adding a helper, wrapper, adapter, fallback, flag, knob, state variant, public symbol, branch, compatibility path, or abstraction;
+- multiple comments or fixes orbit the same state, representation, proof surface, or owner boundary;
+- a local patch pileup starts to satisfy review pressure one comment at a time;
+- a path looks dominated, subsumed, vestigial, uninhabited, pass-through, duplicate, non-canonical, or temporary-scaffold shaped;
+- `$fixed-point-driver` is used for PR closure, `$resolve`, exhaustive hardening, or repeated review/fix loops.
+
+Required receipts are one of:
+
+- `Ablative Counterproposal Ledger` row;
+- `Ablation Ledger` row;
+- `Ablative Isomorphism Card`;
+- `review_ablative_surface_authority` packet;
+- `ablation_auditor` packet;
+- explicit `ablation: not-required` receipt with evidence that no mutation-capable or keep-surface decision exists.
+
+Root-equivalent adjudication or fixed-point work may not silently skip ablation. If custom agents are not launched, the root must emit an equivalent receipt or state why ablation is `not-required`.
+
 
 ### Cost rule
 
@@ -228,8 +255,8 @@ Do not invoke an extreme or high-cost workflow merely because it is adjacent. Ro
 - Issue/PR/reviewer/user reports with claimed root causes, proposed implementations, fake-minimal repro risk, broad generated analysis, or public tracker context -> apply `Evidence Discipline` before selecting implementation scope.
 - Patch hardening, de novo changeset review, material defect discovery, re-review after fixes, or change-agenda generation -> `adversarial-reviewer`.
 - Final readiness, closure gates, fixed-point claims, or “is this ready?” after material work -> `verification-closure`.
-- Review comments, reviewer suggestions, or “should we act on this?” before implementation -> `review-adjudication`.
-- Exhaustive hardening, repeated review/fix loops, “drive this to closure,” truth-owner normalization, or “find all impactful issues” -> `fixed-point-driver`.
+- Review comments, reviewer suggestions, or “should we act on this?” before implementation -> `review-adjudication`; when a selected action can add code or preserve questionable surface, require an ablative receipt before implementation handoff.
+- Exhaustive hardening, repeated review/fix loops, “drive this to closure,” truth-owner normalization, additive-scaffold retirement, ablation/isomorphism gates, or “find all impactful issues” -> `fixed-point-driver`.
 - Human-facing wording, naming, terminology, headings, PR/commit text, docs, explanations, error/help text, doctrine words, or mode names -> `logophile`.
 - Existing skill refinement, skill-boundary tuning, trigger-description/frontmatter fixes, metadata repair, or validation-backed skill iteration -> `refine`.
 

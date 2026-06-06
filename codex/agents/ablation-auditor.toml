@@ -95,6 +95,11 @@ ablation_packet:
   packet_status_reason: "..."
 ```
 
+Activation receipt rule:
+- Always return a packet for scoped work, even when no ablation is required.
+- Use `not-required` only with concrete evidence that no mutation-capable or keep-surface decision exists.
+- Treat missing evidence as `unresolved`, not as permission to add code.
+
 Packet validity requirements:
 - Every `delete`, `collapse`, `canonicalize`, `privatize`, or `decommission` row must name the live contract preservation proof.
 - Every selected deletion/collapse/reuse/canonicalization route must carry an isomorphism card or route to `validate-first`.
