@@ -87,7 +87,7 @@ fixed-point handling.
 
 ### Ablation activation rule
 
-Every fixed-point run must explicitly decide whether ablation is active.
+Every fixed-point run must explicitly decide whether ablation is active. Use `ablation_activation_sentinel` when activation is ambiguous, root-equivalent, or any selected route could mutate, preserve, delete, collapse, canonicalize, privatize, or decommission code surface.
 
 Set `ablation_activation` to one of:
 
@@ -95,10 +95,10 @@ Set `ablation_activation` to one of:
 - `not-required`: the run is proof-only, validation-only, or has no mutation-capable / keep-surface decision;
 - `blocked`: the artifact state is too stale or incomplete to judge ablation safely.
 
-When `ablation_activation: required`, use `ablation_auditor` or a root-equivalent
+When `ablation_activation: required`, use `ablation_activation_sentinel` to stamp the activation decision when ambiguous, then use `ablation_auditor` or a root-equivalent
 Ablation Packet before closure handoff. Root-equivalent is acceptable only when it
 emits Ablation Ledger rows or a concrete no-candidate receipt. Do not let a
-fixed-point run end with implicit ablation.
+fixed-point run end with implicit ablation. If `ablation_activation: not-required`, include sentinel-shaped not-required evidence.
 
 
 ### Local-validity trap breaker
@@ -464,6 +464,12 @@ closure_handoff_packet:
   soundness_ledger:
     open_rows: []
     closed_rows: []
+  ablation_activation_packet:
+    activation: "required | not-required | blocked"
+    authority: "ablation_activation_sentinel | root-equivalent"
+    evidence: "..."
+    trigger_surfaces: []
+    required_next_packet: "ablation_auditor | root-equivalent-ablation-receipt | none | blocked"
   surface_delta_receipts:
     - warrant_id: "..."
       budget_status: "within-budget | expansion-needed | violation | not-applicable"

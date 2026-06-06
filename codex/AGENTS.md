@@ -89,11 +89,14 @@ Required receipts are one of:
 - `Ablative Counterproposal Ledger` row;
 - `Ablation Ledger` row;
 - `Ablative Isomorphism Card`;
+- `ablation_activation_sentinel` packet;
 - `review_ablative_surface_authority` packet;
 - `ablation_auditor` packet;
-- explicit `ablation: not-required` receipt with evidence that no mutation-capable or keep-surface decision exists.
+- explicit root-equivalent `ablation: not-required` receipt with evidence that no mutation-capable or keep-surface decision exists.
 
-Root-equivalent adjudication or fixed-point work may not silently skip ablation. If custom agents are not launched, the root must emit an equivalent receipt or state why ablation is `not-required`.
+Root-equivalent adjudication or fixed-point work may not silently skip ablation. If custom agents are not launched, the root must emit an equivalent activation receipt with the sentinel fields or state why ablation is `not-required` with concrete current-artifact evidence.
+
+For mutation-capable review/fixed-point/resolve work, use `ablation_activation_sentinel` when activation is ambiguous, when the run is root-equivalent, when the previous audit showed mention-only behavior, or when the agent is tempted to omit ablation because the task feels small.
 
 
 ### Cost rule
@@ -222,7 +225,7 @@ understand context -> separate evidence from claims -> identify invariant/owners
 
 ### Skill stack map
 
-- Evidence / recall: `forensic-elicitation`, `seq`, `chronicle`, `learnings`, `codebase-archaeology`.
+- Evidence / recall: `seq`, `chronicle`, `learnings`, `codebase-archaeology`.
 - Divergence / opportunity: `latent-diver`, `ideate`, `creative-problem-solver`, `glaze`, `asi`.
 - Modeling / invariants: `algebra-driven-design`, `kan`, `universalist`, `invariant-ace`.
 - Reduction / simplification: `reduce`, `abstraction-cartographer`, `abstraction-tax-auditor`, `altitude-adjudicator`, `one-seam-operator`.
@@ -253,7 +256,6 @@ Do not invoke an extreme or high-cost workflow merely because it is adjacent. Ro
 - State, protocol, invariant, impossible-state, race, idempotency, retry, cache-drift, lifecycle, or validation-sprawl cues -> `invariant-ace` before edits.
 - Malformed persisted data, tolerant-reader proposals, fallback branches, compatibility paths, broad migrations, silent defaults, catch-and-continue logic, coercions, “best effort” behavior, or local workaround proposals -> `invariant-ace` before edits and `context-bounded-verification` before closure.
 - Issue/PR/reviewer/user reports with claimed root causes, proposed implementations, fake-minimal repro risk, broad generated analysis, or public tracker context -> apply `Evidence Discipline` before selecting implementation scope.
-- Historical/session/memory/transcript/artifact/orchestration/provenance/tooling-trace forensics, prior-run truth reconstruction, improvement extraction from coding-agent work, postmortems, evidence maps, canonical maps, confidence ledgers, or contradictions across sessions/receipts/commits/logs -> `forensic-elicitation` with `$seq`; use `$cas` only for CAS receipt/review claims.
 - Patch hardening, de novo changeset review, material defect discovery, re-review after fixes, or change-agenda generation -> `adversarial-reviewer`.
 - Final readiness, closure gates, fixed-point claims, or “is this ready?” after material work -> `verification-closure`.
 - Review comments, reviewer suggestions, or “should we act on this?” before implementation -> `review-adjudication`; when a selected action can add code or preserve questionable surface, require an ablative receipt before implementation handoff.
@@ -263,7 +265,7 @@ Do not invoke an extreme or high-cost workflow merely because it is adjacent. Ro
 
 ### Side-effect boundary
 
-Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, and `prove-it` gated. `forensic-elicitation`, `cas`, `$seq`, `refine`, and `logophile` may trigger implicitly when their routing cues match. Public tracker side effects are separately gated.
+Rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, and `prove-it` gated. `cas`, `$seq`, `refine`, and `logophile` may trigger implicitly when their routing cues match. Public tracker side effects are separately gated.
 
 ## Seq Local-First Routing
 

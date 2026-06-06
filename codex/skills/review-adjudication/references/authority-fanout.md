@@ -16,6 +16,7 @@ unresolved veto into `address`.
 | `validation-value-authority` | mutate now versus validate first versus no validation value | `mutate-now` / `validate-first` / `no-validation-value` / `unresolved` / `not-required` |
 | `fix-shape-authority` | minimum safe fix shape and wrong/overbroad fix risk | `clear` / `veto` / `unresolved` / `not-required` |
 | `ablative-surface-authority` | deletion/collapse/reuse/privatization/decommissioning/canonicalization before additive mutation | `clear` / `veto` / `unresolved` / `not-required` |
+| `ablation-activation-sentinel` | whether ablation is required, not-required, or blocked for the pass | `required` / `not-required` / `blocked` |
 
 ## Trigger policy
 
@@ -23,7 +24,7 @@ Root-equivalent authority packets are allowed for empty live sets, already-fixed
 proof-only threads, synthetic triage, or narrow obvious cases with no contested
 implementation handoff.
 
-Use full seven-lane fanout, or root-equivalent packets with the same schema, when:
+Use full seven-lane fanout plus the activation sentinel, or root-equivalent packets with the same schema, when:
 
 - any P2+ row might be selected as `address`;
 - every current automated finding would be selected as `address` or `validate-only`;
@@ -39,7 +40,7 @@ Use full seven-lane fanout, or root-equivalent packets with the same schema, whe
 
 ```yaml
 authority_packet:
-  role: evidence-authority | direction-ownership-authority | criticality-authority | no-change-advocate | validation-value-authority | fix-shape-authority | ablative-surface-authority
+  role: evidence-authority | direction-ownership-authority | criticality-authority | no-change-advocate | validation-value-authority | fix-shape-authority | ablative-surface-authority | ablation-activation-sentinel
   packet_status: accepted | rejected | root-equivalent
   artifact_state_id: "..."
   direction_state_id: "..."
@@ -78,6 +79,7 @@ triggered. Clear the veto with a fresh authority packet or block.
 - `Authority Clearance Matrix`
 - `Authority Veto Ledger`
 - `Ablation Activation Receipt`
+- `Ablation Activation Sentinel Packet` when activation is ambiguous, root-equivalent, or mutation-capable
 
 `address` requires `authority status: cleared-for-address`, all required authority
 clearances, no veto row for that id, and ablative-surface clearance when any

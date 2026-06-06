@@ -21,3 +21,16 @@ A valid receipt is one of:
 - explicit `not-required` receipt proving no mutation-capable or keep-surface decision exists.
 
 `address` without this receipt is not implementation permission.
+
+## Sentinel use
+
+Use `ablation_activation_sentinel` when:
+
+- the adjudication is root-equivalent;
+- any selected action could mutate or preserve code surface;
+- `ablation: not-required` would otherwise be asserted without evidence;
+- the comment batch is small enough that the root is tempted to skip the full authority panel.
+
+The sentinel does not decide what to delete. It decides whether ablation must be activated, blocked, or explicitly marked not-required.
+
+`not-required` must name current evidence: proof-only, validation-only, no production mutation, no mutation-capable warrant, no keep/delete/collapse/canonicalize decision, and no additive surface added or preserved.

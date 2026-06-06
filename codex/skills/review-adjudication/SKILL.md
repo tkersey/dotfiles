@@ -28,7 +28,7 @@ instead of handled as isolated local fixes.
 This skill is **discriminative**, not deferential. A reviewer comment is an input
 claim, not an obligation. `act` is a conclusion that must be earned from current
 artifact evidence, a defeated no-change countercase, an ablative surface check,
-and explicit adversarial clearance for the downstream action.
+and explicit adversarial clearance for the downstream action. When activation is ambiguous, root-equivalent, or mutation-capable, obtain `ablation_activation_sentinel` or emit its packet fields root-equivalently before deciding `address`.
 
 ## Default mode
 
@@ -164,12 +164,13 @@ rationale fields as `unknown` instead of inventing intent.
 Because prior usage tended to be root-equivalent or mention-only, this skill must
 make ablation visible whenever it could affect the route.
 
-Emit an ablation activation receipt for every real comment batch:
+Emit an ablation activation receipt for every real comment batch. Use `ablation_activation_sentinel` when activation is ambiguous, root-equivalent, or any selected route could mutate or preserve code surface:
 
 ```md
 Ablation Activation Receipt:
 - trigger: additive-proposal | local-fix-pileup | duplicate-truth-surface | questionable-keep-surface | fixed-point-handoff | none
-- custom authority used: review_ablative_surface_authority | root-equivalent | not-required
+- activation authority used: ablation_activation_sentinel | root-equivalent | not-required
+- custom surface authority used: review_ablative_surface_authority | root-equivalent | not-required
 - scoped comment ids:
 - selected lower-surface routes:
 - additive routes cleared:
@@ -180,9 +181,9 @@ Ablation Activation Receipt:
 
 Rules:
 - If `trigger` is not `none`, the receipt must be reflected in `Ablative Counterproposal Ledger`, `Resolution Warrants`, and `Adjudication Bottom Line`.
-- If `trigger: none`, give the evidence-backed reason; do not omit the receipt.
-- Root-equivalent adjudication is allowed only when it emits the same receipt and clearance fields as the custom authority lane.
-- `address` without an ablation activation receipt is not implementation permission.
+- If `trigger: none`, give the evidence-backed reason in the sentinel `not_required_evidence` shape; do not omit the receipt.
+- Root-equivalent adjudication is allowed only when it emits the same activation receipt fields as `ablation_activation_sentinel` and the same clearance fields as the custom surface authority lane.
+- `address` without an ablation activation receipt is not implementation permission. If the receipt is missing, set `implementation_handoff_allowed: no`.
 
 
 ## Parallel adversarial action

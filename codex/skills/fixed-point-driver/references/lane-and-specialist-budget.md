@@ -27,6 +27,7 @@ are specialists and do count unless the run explicitly requires them.
 - verification
 - negative-evidence
 - ablation
+- ablation-activation
 - isomorphism
 - clone-classification
 - abstraction-ladder
@@ -37,7 +38,7 @@ stale, wrong-scope, transport-invalid, or materially incomplete packet.
 
 ## Ablation lane triggers
 
-Launch `ablation_auditor` or emit a root-equivalent Ablation Packet when:
+Launch `ablation_activation_sentinel` when ablation activation is ambiguous or root-equivalent. Launch `ablation_auditor` or emit a root-equivalent Ablation Packet when activation is `required`:
 
 - selected work can add helpers, wrappers, adapters, flags, knobs, state variants, public symbols, branches, or abstractions;
 - a patch preserves dominated, subsumed, vestigial, pass-through, duplicate, non-canonical, or temporary-scaffold surface;

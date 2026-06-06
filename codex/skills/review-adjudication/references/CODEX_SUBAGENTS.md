@@ -20,6 +20,7 @@ This drop-in includes / expects:
 - `codex/agents/review-validation-value-authority.toml`
 - `codex/agents/review-fix-shape-authority.toml`
 - `codex/agents/review-ablative-surface-authority.toml`
+- `codex/agents/ablation-activation-sentinel.toml`
 
 ## Authority agents
 
@@ -32,12 +33,13 @@ This drop-in includes / expects:
 | validation-value-authority | `review_validation_value_authority` | validation should precede mutation or validation has no material decision value |
 | fix-shape-authority | `review_fix_shape_authority` | wrong fix, overbroad fix, under-specified cut, hidden invariant, or missing lower-surface clearance |
 | ablative-surface-authority | `review_ablative_surface_authority` | additive mutation is dominated by deletion, collapse, reuse, privatization, decommissioning, canonicalization, or validate-first |
+| ablation-activation-sentinel | `ablation_activation_sentinel` | activation is missing, not-required is unsupported, or root-equivalent work would otherwise omit a receipt |
 
 ## Parent orchestration rule
 
 Launch all required authority agents before waiting. Keep them read-only. Assign
 the same `artifact_state_id`, `direction_state_id`, and exact scoped comment ids.
-Require the Authority Packet shape in `references/authority-fanout.md`.
+Require the Authority Packet shape in `references/authority-fanout.md` and use `ablation_activation_sentinel` when activation is ambiguous or root-equivalent.
 
 The parent/root adjudicator may always downgrade a row to a stricter route. It
 may not upgrade a row to `address` against a veto, unresolved clearance, missing

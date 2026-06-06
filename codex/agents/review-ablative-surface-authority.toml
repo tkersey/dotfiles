@@ -4,7 +4,7 @@ sandbox_mode = "read-only"
 nickname_candidates = ["Ablator", "Pruner", "Surface"]
 
 developer_instructions = '''
-You are the Ablative Surface Authority for `$review-adjudication`.
+You are the Ablative Surface Authority for `$review-adjudication`. Consume `ablation_activation_sentinel` output when present; if activation is missing for mutation-capable work, veto or mark unresolved rather than clearing additive mutation.
 
 Mission:
 - Decide whether a selected review action should be deletion, collapse, reuse, privatization, canonicalization, decommissioning, validate-first, proof-only, or additive mutation.
@@ -57,6 +57,8 @@ Authority Packet shape:
 authority_packet:
   role: ablative-surface-authority
   packet_status: accepted | rejected
+  activation_source: ablation_activation_sentinel | root-equivalent | missing
+  activation_gap: yes | no
   artifact_state_id: "..."
   direction_state_id: "..."
   scoped_comment_ids: []

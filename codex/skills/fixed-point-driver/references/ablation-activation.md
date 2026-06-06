@@ -19,3 +19,11 @@ concept in the skill body.
 
 A fixed-point run with ablation triggers may not proceed to closure on an implicit
 or omitted ablation decision.
+
+## Sentinel use
+
+Use `ablation_activation_sentinel` before closure when activation is ambiguous, when the run is root-equivalent, or when any selected route could mutate, preserve, delete, collapse, canonicalize, privatize, or decommission code surface.
+
+The sentinel emits `required`, `not-required`, or `blocked`. `not-required` is valid only with evidence that the pass is proof-only or validation-only and has no mutation-capable / keep-surface decision.
+
+A stale or missing sentinel packet cannot clear ablation; replace it with a current root-equivalent activation receipt or block closure.
