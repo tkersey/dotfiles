@@ -505,10 +505,30 @@ seq skill-blocks --root ~/.codex/sessions \
 For vocabulary or doctrine-term analysis inside exact injected skill bodies, keep
 the owner boundary on `skill-blocks`. Do not use `workflow-audit --mode
 term-summary` as a substitute for skill body analysis; `workflow-audit` counts
-workflow/session text after skill blocks are stripped. If the installed `seq`
-binary does not yet provide a native `skill-blocks` term-analysis mode, record a
-`seq` CLI-surface gap and a `$tune`/implementation follow-up before using ad hoc
-post-processing.
+workflow/session text after skill blocks are stripped.
+
+First confirm the active `seq skill-blocks --help` exposes term modes. If it
+does not, record a `seq` CLI-surface/release gap instead of falling back to
+ad hoc `jq` as the normal route.
+
+```bash
+seq skill-blocks --root ~/.codex/sessions \
+  --skill fixed-point-driver \
+  --mode term-counts \
+  --term-group ablation=ablative,ablation \
+  --term-group isomorphism=isomorphic,isomorphism \
+  --format table
+
+seq skill-blocks --root ~/.codex/sessions \
+  --skill fixed-point-driver \
+  --mode term-summary \
+  --term-group ablation=ablative,ablation \
+  --examples 5 \
+  --format table
+```
+Term modes count case-insensitive literal terms inside exact `block_text` for
+the selected `--history distinct|latest` aggregate population, include zero-count
+rows for selected blocks/groups, and reject `--history all` in v1.
 
 ### 10b) Find finalized plan artifacts
 Repo-scoped metadata rows:
