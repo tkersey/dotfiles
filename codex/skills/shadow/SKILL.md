@@ -206,10 +206,15 @@ Prefer specialized `seq` commands over generic `seq query`:
 seq session-detail --root ~/.codex/sessions --session-id <session_id> --format markdown
 seq turns --root ~/.codex/sessions --session-id <session_id> --format table
 seq tool-lifecycle --root ~/.codex/sessions --session-id <session_id> --format table
-seq session-tooling --root ~/.codex/sessions --session-id <session_id> --format table
+seq session-tooling --root ~/.codex/sessions --session-id <session_id> --summary --group-by executable --format table
 seq session-prompts --root ~/.codex/sessions --session-id <session_id> --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
-seq tool-search --root ~/.codex/sessions --session-id <session_id> --contains "<pattern>" --mode rows --format table
+seq tool-search --root ~/.codex/sessions --session-id <session_id> --contains "<pattern>" --mode summary --group-by command --limit 20 --format table
 ```
+
+For monitoring loops, prefer summarized `session-tooling` and `tool-search`
+surfaces before row-level tables. Use row mode only after a summary identifies a
+narrow target and add an explicit `--limit`; an unbounded command-text table is
+too noisy to serve as a stable cycle cursor.
 
 Use `session-prompts --session-id` for full watched-session message recovery after a `session-detail` or `turns` preview changes. Do not use corpus-wide `message-search` for that job unless the target skill explicitly needs cross-session comparison; broad message searches can mix the shadowing session with the watched session and create false evidence.
 
@@ -399,6 +404,10 @@ seq tool-search --root ~/.codex/sessions --session-id <session_id> --contains "<
 seq session-prompts --root ~/.codex/sessions --session-id <session_id> --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
 seq skill-blocks --root ~/.codex/sessions --session-id <session_id> --skill <skill> --history latest --format json
 ```
+
+Prefer `tool-search --mode summary --group-by command --limit <N>` before row
+mode when the goal is to discover whether a tool pattern matters. Switch to rows
+only for the narrow command/pattern that the summary makes relevant.
 
 If you need the complete assistant message behind a `session-detail` preview, prefer `session-prompts --session-id <session_id> --roles assistant --limit <N> --format jsonl` and inspect the newest matching watched-session rows through `$seq` output. Never paste raw `session-detail` output into the user-facing report by default. Convert it into sanitized findings.
 

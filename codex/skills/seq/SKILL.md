@@ -27,6 +27,10 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
      - `memory-history` for "what changed over time?" questions about one memory thread or a topic across the memory corpus.
      - `memory-map` for "what artifacts exist for this topic/thread and what's the fastest evidence path?" questions.
      - `skill-blocks` for exact historical `<skill>...</skill>` extraction by skill name, with full block bodies and distinct-version history.
+       If the task needs term counts inside recovered skill block bodies, treat
+       `skill-blocks` as the owning surface; when the installed binary lacks a
+       native analysis mode, report a CLI-surface gap instead of hand-rolling
+       `jq`/Python text counting as the normal route.
      - `plan-search` for strict repo/session/time/text retrieval of complete `<proposed_plan>` blocks.
      - `find-session` for prompt-to-session lookup.
      - `session-prompts` for "what did that session actually say" and transcript proof.
@@ -498,6 +502,13 @@ seq skill-blocks --root ~/.codex/sessions \
   --history latest \
   --format json
 ```
+For vocabulary or doctrine-term analysis inside exact injected skill bodies, keep
+the owner boundary on `skill-blocks`. Do not use `workflow-audit --mode
+term-summary` as a substitute for skill body analysis; `workflow-audit` counts
+workflow/session text after skill blocks are stripped. If the installed `seq`
+binary does not yet provide a native `skill-blocks` term-analysis mode, record a
+`seq` CLI-surface gap and a `$tune`/implementation follow-up before using ad hoc
+post-processing.
 
 ### 10b) Find finalized plan artifacts
 Repo-scoped metadata rows:
@@ -664,7 +675,12 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
 - `session-prompts --current` resolves the current session from `CODEX_THREAD_ID` and fails closed if that env var is unavailable.
 - `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
 - Use `session-prompts --session-id <id>` when the question is "what did this one session say?" or when expanding a `session-detail` / `turns` preview for a known session. `message-search` is corpus-wide text mining and does not session-scope a known watched session.
-- `skill-blocks` is the exact-body recovery surface for session-injected skills; it returns full `<skill>...</skill>` envelopes, not loose `$skill` mentions or narrative references.
+- `skill-blocks` is the exact-body recovery surface for session-injected skills;
+  it returns full `<skill>...</skill>` envelopes, not loose `$skill` mentions or
+  narrative references. It is also the correct owner for term or vocabulary
+  analysis over injected skill block bodies; if the current binary cannot do
+  that natively, treat the missing mode as a `seq` CLI-surface gap rather than
+  normalizing caller-side `jq`.
 - `skill-blocks` defaults to `--history distinct` and `--format jsonl`; use `--history all` to keep repeated identical injections and `--history latest` to select the newest distinct version.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
 - `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching successful skill usage, raw skill mentions, workflow, tool, memory, message, and cwd questions.
