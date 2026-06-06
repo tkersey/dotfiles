@@ -13,9 +13,7 @@ simpa
 simp_all
 ```
 
-Use `simp [definitionName]` to expose only the definitions needed.
-
-Use `simp only [...]` when proof stability matters.
+Use `simp [definitionName]` to expose only the definitions needed. Use `simp only [...]` when proof stability matters.
 
 ## Structure the proof
 
@@ -51,11 +49,12 @@ Use functional induction when the theorem follows the recursive call graph.
 
 Before induction, consider generalizing:
 
-- accumulators
-- suffixes or prefixes
-- environment parameters
-- state values
-- continuation values
+- accumulators;
+- suffixes or prefixes;
+- environment parameters;
+- state values;
+- continuation values;
+- arbitrary tail lists or pending work queues.
 
 A weak theorem often becomes provable after strengthening it.
 
@@ -83,13 +82,11 @@ apply?
 aesop?
 ```
 
-Inspect generated suggestions before finalizing.
+Inspect generated suggestions before finalizing. If the generated proof is long or fragile, turn it into a named helper lemma or a clearer proof skeleton.
 
 ## Solver-style automation
 
-`grind`, `aesop`, and similar tactics can be appropriate after the goal is normalized.
-
-Avoid using one large automation block as a substitute for a missing invariant, missing helper lemma, or wrong theorem statement.
+`grind`, `aesop`, and similar tactics can be appropriate after the goal is normalized. Avoid using one large automation block as a substitute for a missing invariant, missing helper lemma, or wrong theorem statement.
 
 For important correctness theorems, prefer small helper lemmas and a readable proof skeleton.
 
@@ -109,7 +106,8 @@ For important correctness theorems, prefer small helper lemmas and a readable pr
 
 If a theorem appears false:
 
-- build a concrete counterexample with `#eval` when executable
-- state why the theorem cannot hold
-- propose the minimally corrected theorem
-- do not weaken the theorem silently
+- build a concrete counterexample with `#eval` when executable;
+- reduce small cases with `#guard` or explicit examples when useful;
+- state why the theorem cannot hold;
+- propose the minimally corrected theorem;
+- do not weaken the theorem silently.

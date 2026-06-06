@@ -1,195 +1,91 @@
 ---
 name: lean
-description: "Use for Lean 4 work: programs, proof fixes, formal specs, implementation correctness proofs, external behavior models, termination proofs, trust-boundary audits, mathlib, and Lake/toolchain diagnosis. Do not use for Coq, Isabelle, Agda, or generic pseudocode unless comparison is requested."
+description: "Use for deliberate Lean 4 work: proof repair, theorem development, verified programs, model/specification design, external-code models, state-machine or trace invariants, termination proofs, Std/mathlib theorem discovery, Lake/toolchain diagnosis, and high-assurance trust audits. Do not use for Lean management/process-improvement, Coq/Isabelle/Agda/Rocq work, or informal pseudocode unless comparison or translation to Lean 4 is requested."
 ---
 
 # Lean
 
-You are working in Lean 4.
+You are working in Lean 4. The default deliverable is a checked Lean artifact: a compiling file, theorem, definition, model, or precise diagnostic. Prose is secondary and must not overclaim what Lean checked.
 
-Produce compilable Lean code first, then give a concise explanation of what changed, what was proved, and what remains outside the proof boundary.
+## Operating contract
 
-## Core objective
-
-Write Lean programs, specifications, models, and proofs that:
-
-- compile under the project's pinned toolchain
-- avoid unsound shortcuts
-- state the intended specification explicitly
-- prove the implementation, model, invariant, or theorem satisfies that specification
-- make the verification boundary clear
-- distinguish kernel-checked facts from assumptions, tests, wrappers, and external behavior
-
-The goal is not merely to make Lean accept a file. The goal is to leave behind an auditable proof artifact whose claim is precise.
-
-## Verification boundary first
-
-Before proving anything about software, state the verification boundary.
-
-Identify the artifact under proof:
-
-- Lean implementation
-- Lean specification
-- Lean model of an external implementation
-- generated code from Lean
-- non-Lean implementation checked only by an adapter, tests, or examples
-- state machine, protocol, workflow, or trace model
-- theorem-library development unrelated to executable code
-
-Identify the exact theorem claim:
-
-- implementation equals specification
-- implementation refines specification
-- implementation is sound with respect to a relational specification
-- implementation is complete with respect to a relational specification
-- all modeled cases satisfy the specification
-- invariant is preserved by every transition
-- parser/serializer round trip holds
-- normalization is idempotent
-- no forbidden trace event occurs
-- resource, authorization, or state-transition property is preserved
-
-Identify what is not proved:
-
-- behavior of an external source-language runtime
-- correctness of a compiler
-- correctness of an FFI boundary
-- filesystem, network, clock, randomness, locale, or environment behavior
-- conformance of a non-Lean implementation unless it is connected to the Lean theorem by a checked refinement proof
-- natural-language intent beyond the formalized specification
-- performance unless performance is itself formally specified and proved
-
-Identify trust assumptions:
-
-- Lean kernel
-- imported axioms
-- project-local axioms, if any
-- classical choice or other noncomputable principles, if used
-- compiler or native-code trust if `native_decide`, code generation, `@[implemented_by]`, or `@[csimp]` participates in the claim
-- external adapter or test harness correctness
-- manually asserted correspondence between a model and an external implementation
-
-Do not write “the software is proved correct” unless the production implementation itself is inside the checked Lean artifact, generated from the checked Lean artifact under stated assumptions, or connected to the checked Lean artifact by a checked refinement theorem.
-
-Prefer precise claims:
-
-- “Lean proved the pure Lean implementation equals the declarative specification.”
-- “Lean proved the executable Lean implementation refines the relational specification.”
-- “Lean proved the formal transition model preserves the invariant.”
-- “Lean proved these concrete case obligations.”
-- “The external implementation was not itself proved; only its Lean model/specification was proved.”
-- “The adapter tests check conformance examples but are not a full implementation proof.”
+1. **Pinned environment wins.** Use the repository's `lean-toolchain`, Lake configuration, lock/manifest state, imports, and nearby style as authoritative. Do not upgrade Lean, Std, mathlib, or dependencies unless the user explicitly asks or the task is otherwise impossible and the tradeoff is stated.
+2. **Boundary before claim.** For any correctness, verification, safety, state-machine, parser, serializer, protocol, or external-code task, identify the artifact under proof, the theorem claim, the trusted assumptions, and what remains outside Lean.
+3. **Compilability before explanation.** Produce Lean code/proofs that check under the project command. When that is not possible, state the exact failing command, first real error, and next proof obligation.
+4. **No fake certainty.** Do not invent theorem names, imports, syntax, or tactic availability. Confirm library facts by local search, `#check`, `#print`, dependency source, or documentation matching the pinned version.
+5. **No silent weakening.** If the requested theorem is false or mismatched with the implementation, give a counterexample or mismatch explanation, then propose the minimal corrected statement.
+6. **No hidden placeholders.** Do not leave `sorry`, `admit`, new `axiom`s, unsolved goals, intentionally broken declarations, or scratch `example`s unless the user explicitly requests a sketch. Report any remaining placeholders.
+7. **Trust-expanding features are visible.** `unsafe`, `partial`, `noncomputable`, `native_decide`, `decide +native`, `@[implemented_by]`, `@[csimp]`, external code, generated code, IO, FFI, clocks, filesystems, networks, randomness, concurrency, and adapters must be isolated or reported when relevant to the claim.
 
 ## First-pass triage
 
-Before editing, inspect:
+Classify the task before editing.
 
-- `lean-toolchain`
-- `lakefile.lean` or `lakefile.toml`
-- `lake-manifest.json`, if relevant
-- the root imports of the file you are changing
-- whether the project imports `Mathlib`
-- the failing declaration, theorem, file, executable, or build target
-- nearby declarations and naming conventions
-- existing local proof style
+- **Proof repair / theorem development:** fix a failing theorem, lemma, tactic script, import, or namespace issue.
+- **Verified Lean program:** implement a pure Lean function and prove `impl = spec`, soundness, completeness, refinement, round trip, idempotence, or invariant preservation.
+- **External-code model:** model non-Lean behavior in Lean and prove properties of the model; do not claim the external implementation is proved unless there is a checked refinement/semantics link.
+- **Stateful/protocol/trace verification:** model states, transitions, inputs, outputs, errors, traces, and prove preservation/safety/progress properties.
+- **Termination repair:** make recursive definitions total using structural recursion, measures, well-founded recursion, or explicit fuel.
+- **Build/toolchain diagnosis:** resolve Lake, import, cache, namespace, dependency, or version issues without unrequested upgrades.
+- **Trust audit:** inspect proof placeholders, axioms, native evaluation, unsafe/runtime trust, external boundaries, and theorem statements.
+- **Exploratory learning:** write small checked examples first; scale only after the local pattern works.
 
-Treat the pinned toolchain as authoritative. Do not assume code from newer docs, newer mathlib docs, examples, blog posts, or release notes will work unchanged in the current repo.
+## Mandatory project inspection
 
-Then classify the task.
+When inside a repository, inspect before proposing version-sensitive code:
 
-Lean-internal task types:
+```bash
+cat lean-toolchain 2>/dev/null || true
+ls lakefile.lean lakefile.toml lake-manifest.json 2>/dev/null || true
+find . -maxdepth 3 -name '*.lean' | head
+```
 
-- program synthesis
-- proof repair
-- termination repair
-- theorem search or refactor
-- correctness proof for an implementation
-- invariant proof
-- state-machine proof
-- build, dependency, namespace, or import problem
+Then inspect the target file's imports, namespace, nearby theorems, existing tactics, and CI/build commands. Prefer the smallest command that checks the changed artifact:
 
-Verification mode:
+```bash
+lake env lean path/to/File.lean
+lake build +Module.Name
+lake build
+```
 
-1. Lean-native verified implementation
+Use `lake env lean --run path/to/File.lean` only for executable scripts or examples with `main`. Use plain `lean` only for toy files outside a Lake project. For mathlib-heavy projects with missing compiled dependencies, consider `lake exe cache get` before treating dependency build time as a proof failure.
 
-   The executable function is written in Lean.
+## Verification boundary card
 
-   Prove one or more of:
+For verification tasks, keep this card current:
 
-   - `impl_eq_spec`
-   - `impl_sound`
-   - `impl_complete`
-   - `impl_refines_spec`
-   - `impl_preserves_invariant`
+```text
+Artifact under proof: Lean implementation | Lean spec/model | generated code | external adapter/tests | theorem library
+Claim type: equality | refinement | soundness | completeness | invariant preservation | round trip | idempotence | case obligation | trace safety
+Top-level theorem(s): ...
+Trusted assumptions: Lean kernel, imported axioms, classical choice, native evaluation, compiler/runtime, external correspondence, IO/FFI/environment, adapters/tests
+Not proved: ...
+```
 
-2. External-code model proof
+Allowed claim shapes:
 
-   The implementation is not Lean code.
+- "Lean proved the pure Lean implementation equals the declarative specification."
+- "Lean proved the executable Lean model is sound with respect to the relation."
+- "Lean proved the transition model preserves the invariant."
+- "Lean proved these concrete case obligations."
+- "The external implementation was not itself formalized; correspondence to the Lean model remains an external assumption except for checked adapters/tests that were run."
 
-   Formalize the relevant behavior in Lean. Prove properties of that model. Do not claim the external implementation is proved unless there is a checked refinement link from the implementation to the model.
+Never write "the software is proved correct" unless the production implementation is itself in Lean, generated from verified Lean under stated assumptions, or connected to the Lean artifact by a checked refinement/semantics theorem.
 
-3. Contract or test-case proof
+## Proof workflow
 
-   Formalize declared behavior, examples, fixtures, or test cases as Lean definitions and theorem obligations. Prove concrete cases and general laws when possible.
-
-4. Generated-code path
-
-   Prefer writing the verified pure core in Lean and generating or wrapping code from it. State compiler, runtime, and wrapper trust assumptions explicitly.
-
-5. Stateful, protocol, or trace proof
-
-   Model state, transitions, inputs, outputs, errors, and traces explicitly. Prove preservation, safety, idempotency, budget, authorization, ordering, or forbidden-action properties.
-
-6. Trust-boundary audit
-
-   Inspect for placeholders, axioms, unsafe features, nontermination, noncomputability, native-code trust, and unchecked replacement implementations.
-
-## Non-negotiables
-
-Do not leave any of the following unless the user explicitly asks for placeholders or a sketch:
-
-- `sorry`
-- `admit`
-- new `axiom`s
-- unsolved goals
-- intentionally broken declarations
-
-Do not invent theorem names.
-
-Confirm every library lemma with at least one of:
-
-- local search
-- repository inspection
-- `#check`
-- `#print`
-- documentation that matches the pinned project version
-
-Avoid `partial` unless the user explicitly wants runtime partiality or possible nontermination. Prefer total definitions and prove termination.
-
-Keep implementation and theorem statement aligned. If the specification is wrong, say so and change it deliberately.
-
-Match existing namespaces, notation, imports, and file style unless a small refactor clearly improves the result.
-
-Do not silently weaken the theorem to make the proof easier. If the original theorem is false, explain the counterexample or mismatch and propose the corrected theorem.
-
-Do not use a broad automation block as a substitute for understanding the proof architecture when an invariant or helper lemma is needed.
-
-## Standard Lean workflow
-
-1. Reproduce the issue on the smallest declaration, theorem, or `example` block that still fails.
-
+1. Reproduce the first real failure on the smallest declaration or `example` that still fails.
 2. Interrogate the environment:
 
    ```lean
    #check name
    #print name
-   #print axioms theoremName
+   #print axioms theorem_name
    #eval expression
    ```
 
-   Use `#eval` only for executable pure code or harmless exploration. It is not a proof.
-
-3. Normalize before searching for fancy tactics:
+   `#eval` is exploration, not proof. Use it only for executable pure code or harmless diagnostics.
+3. Normalize before searching for clever tactics:
 
    ```lean
    rfl
@@ -198,151 +94,53 @@ Do not use a broad automation block as a substitute for understanding the proof 
    simp_all
    ```
 
-4. Use targeted rewriting only when you want a specific transformation:
+4. Structure the proof explicitly:
+
+   ```lean
+   intro h
+   constructor
+   cases h
+   rcases h with ⟨a, b, c⟩
+   refine ⟨_, _⟩
+   have h1 : P := by ...
+   suffices h2 : Q by ...
+   change NewGoal
+   show NewGoal
+   ```
+
+5. Use deliberate rewrites when they are the proof idea:
 
    ```lean
    rw [h]
    rw [← h]
    nth_rewrite 1 [h]
-   conv => ...
    ```
 
-5. Structure the proof explicitly:
+6. Choose induction to match the theorem:
+   - data induction when the theorem follows constructors;
+   - functional induction when recursion drives the cases;
+   - generalized accumulators, suffixes, environments, states, or continuations before induction when the public theorem is too weak.
+7. Escalate to domain tactics only after simplifying the goal, and only when available under local imports:
 
    ```lean
-   intro
-   constructor
-   cases
-   rcases
-   refine
-   have
-   suffices
-   change
-   show
-   ```
-
-6. Match recursive code with the right induction principle:
-
-   - use data induction when the theorem follows the inductive structure
-   - use functional induction when the theorem follows the recursive call graph
-   - generalize accumulators and changing parameters before induction
-   - prove a stronger helper theorem when the public theorem is too weak
-
-7. Escalate to automation only after the goal is simplified:
-
-   ```lean
+   omega
+   linarith
+   nlinarith
+   ring
+   norm_num
+   decide
    exact?
    apply?
    aesop?
    grind
-   omega
-   linarith
-   ring
-   norm_num
    ```
 
-   Use only tactics available in the pinned toolchain and imported libraries.
+8. Replace fragile broad automation with helper lemmas when the theorem supports a correctness claim.
+9. Re-run the project-aware check command after each meaningful proof repair.
 
-8. Replace broad, opaque automation with clearer local lemmas when that makes the proof more stable.
+## Verified-program architecture
 
-9. Run the project-aware command that actually checks the changed file or target.
-
-## Writing verified programs
-
-Always separate these concerns.
-
-### 1. Specification
-
-Write the clearest pure definition, relation, predicate, invariant, or theorem statement that captures correctness.
-
-Prefer mathematical clarity over implementation efficiency in the specification.
-
-Examples:
-
-```lean
-def spec (input : Input) : Output := ...
-
-def SpecRel (input : Input) (output : Output) : Prop := ...
-
-def StateInvariant (s : State) : Prop := ...
-```
-
-### 2. Implementation
-
-Write the executable function.
-
-If performance matters, an optimized implementation is fine, but keep a simple specification nearby.
-
-Examples:
-
-```lean
-def impl (input : Input) : Output := ...
-
-def implFast (input : Input) : Output := ...
-```
-
-### 3. Refinement proof
-
-Prove the implementation agrees with, refines, or satisfies the specification.
-
-Examples:
-
-```lean
-theorem impl_eq_spec (input : Input) :
-    impl input = spec input := by
-  ...
-
-theorem impl_sound (input : Input) (output : Output) :
-    impl input = output -> SpecRel input output := by
-  ...
-
-theorem implFast_eq_impl (input : Input) :
-    implFast input = impl input := by
-  ...
-```
-
-Use this pattern aggressively:
-
-- simple declarative model
-- optimized helper, tail-recursive function, array-based function, or monadic-looking implementation
-- theorem proving equivalence to the model
-
-Keep `IO` at the boundary. Prove correctness for the pure core first, then wrap it in `IO`.
-
-For invariants, prefer:
-
-- structures carrying data plus proofs
-- `Subtype`
-- explicit propositions in theorem statements
-- preservation theorems
-
-Do not reach for highly indexed encodings unless they genuinely simplify the API and proof burden.
-
-For arrays, loops, mutable refs, or imperative-looking `do` code:
-
-- reason using a logical model of the data
-- define a representation invariant
-- discharge bounds proofs locally
-- prove the optimized version matches a simpler pure specification
-
-## Standard theorem inventory
-
-Use theorem names that make the claim auditable.
-
-Good suffixes:
-
-- `_eq_spec`
-- `_refines_spec`
-- `_sound`
-- `_complete`
-- `_preserves_invariant`
-- `_roundtrip`
-- `_idempotent`
-- `_normalized`
-- `_terminates`
-- `_case_...`
-
-### Deterministic total functions
+Use the spec/implementation/proof split aggressively:
 
 ```lean
 def spec (i : Input) : Output := ...
@@ -354,27 +152,7 @@ theorem impl_eq_spec (i : Input) :
   ...
 ```
 
-### Error-returning functions
-
-```lean
-inductive Error
-  | invalidInput
-  | outOfRange
-  | unsupported
-  deriving DecidableEq, Repr
-
-def spec (i : Input) : Except Error Output := ...
-
-def impl (i : Input) : Except Error Output := ...
-
-theorem impl_eq_spec (i : Input) :
-    impl i = spec i := by
-  ...
-```
-
-### Relational specifications
-
-Use this when the spec is nondeterministic, abstract, or easier to state as a predicate.
+For abstract or nondeterministic behavior, use a relation:
 
 ```lean
 def SpecRel (i : Input) (o : Output) : Prop := ...
@@ -384,543 +162,200 @@ def impl (i : Input) : Except Error Output := ...
 theorem impl_sound (i : Input) (o : Output) :
     impl i = .ok o -> SpecRel i o := by
   ...
-
-theorem impl_complete
-    (i : Input) (o : Output) :
-    Preconditions i ->
-    SpecRel i o ->
-    impl i = .ok o := by
-  ...
 ```
 
-Only prove completeness when the implementation really selects every output admitted by the relation, or when the relation is functional enough for the statement to be true.
+Only prove completeness if the relation is functional enough and the implementation truly returns every admitted output. For optimized code, first prove a simple model, then prove the optimized helper/array/loop/accumulator implementation refines that model. Keep `IO` at the boundary and prove the pure core.
 
-### Boolean decision procedures
+Use auditable theorem names:
 
-```lean
-def SpecPred (i : Input) : Prop := ...
+- `_eq_spec`
+- `_refines_spec`
+- `_sound`
+- `_complete`
+- `_correct`
+- `_preserves_inv` or `_preserves_invariant`
+- `_roundtrip`
+- `_idempotent`
+- `_normalized`
+- `_terminates`
+- `case_...`
 
-def decidePred (i : Input) : Bool := ...
+## External software and adapters
 
-theorem decidePred_sound (i : Input) :
-    decidePred i = true -> SpecPred i := by
-  ...
+When implementation code is not Lean:
 
-theorem decidePred_complete (i : Input) :
-    SpecPred i -> decidePred i = true := by
-  ...
+1. Identify the public behavior surface.
+2. Make hidden inputs explicit: time, randomness, locale, ordering, filesystem, network, environment, concurrency, scheduler, permissions.
+3. Formalize a pure model or relation in Lean.
+4. Prove model obligations: concrete cases, error priority, normalization, round trip, invariant preservation, determinism, forbidden-event exclusion, resource/authorization preservation.
+5. Optionally align generated fixtures or adapter tests to the model.
+6. Report the boundary: Lean proved the model; tests/adapters are conformance evidence; external implementation correctness remains outside Lean unless linked by a checked refinement proof.
 
-theorem decidePred_correct (i : Input) :
-    decidePred i = true ↔ SpecPred i := by
-  constructor
-  · exact decidePred_sound i
-  · exact decidePred_complete i
-```
+## Stateful, monadic, and trace verification
 
-### Normalization functions
-
-```lean
-def Normalized (x : α) : Prop := ...
-
-def normalize (x : α) : α := ...
-
-theorem normalize_normalized (x : α) :
-    Normalized (normalize x) := by
-  ...
-
-theorem normalize_idempotent (x : α) :
-    normalize (normalize x) = normalize x := by
-  ...
-```
-
-### Parser/serializer round trips
-
-Be precise about direction.
-
-```lean
-def parse : String -> Except Error α := ...
-def serialize : α -> String := ...
-
-theorem parse_serialize_roundtrip (x : α) :
-    parse (serialize x) = .ok x := by
-  ...
-```
-
-The reverse direction usually requires a normalization condition:
-
-```lean
-theorem serialize_parse_normalizes (s : String) (x : α) :
-    parse s = .ok x ->
-    serialize x = normalizeString s := by
-  ...
-```
-
-### Stateful systems
+Default to pure transition modeling:
 
 ```lean
 structure State where
-  -- state fields
+  -- fields
 
 structure StepResult where
   output : Output
   state' : State
+  trace : List Event
 
-def stepSpec (s : State) (i : Input) : Except Error StepResult := ...
+def step (s : State) (i : Input) : Except Error StepResult := ...
 
-def StateInvariant (s : State) : Prop := ...
-
-theorem initial_invariant :
-    StateInvariant initialState := by
-  ...
-
-theorem step_preserves_invariant
-    (s : State) (i : Input) (r : StepResult) :
-    StateInvariant s ->
-    stepSpec s i = .ok r ->
-    StateInvariant r.state' := by
-  ...
-```
-
-### Trace safety
-
-```lean
-inductive Event where
-  | allowed
-  | forbidden
-  deriving DecidableEq, Repr
-
-def traceSpec (input : Input) : List Event := ...
-
-def TraceSafe (events : List Event) : Prop :=
-  Event.forbidden ∉ events
-
-theorem traceSpec_safe (input : Input) :
-    TraceSafe (traceSpec input) := by
-  ...
-```
-
-### Concrete case obligations
-
-Use concrete theorem names that preserve the case identity.
-
-```lean
-/-- case_id: normalize_trims_ascii_space -/
-theorem case_normalize_trims_ascii_space :
-    normalize " abc " = "abc" := by
-  rfl
-```
-
-Ground cases are useful, but they are not a substitute for general correctness theorems unless the domain is finite and coverage is proved.
-
-## External software verification
-
-When the implementation is not Lean code, use Lean as a formal contract and model workbench.
-
-Workflow:
-
-1. Identify the public behavior surface.
-2. Extract or write a portable specification.
-3. Make hidden sources of nondeterminism explicit:
-   - time
-   - randomness
-   - locale
-   - input ordering
-   - filesystem state
-   - network state
-   - environment variables
-   - concurrency and scheduling
-4. Formalize the model in Lean.
-5. Generate theorem obligations:
-   - ground cases
-   - normalization laws
-   - parser/serializer laws
-   - state-transition laws
-   - invariant preservation
-   - error-priority laws
-   - forbidden-behavior exclusions
-6. Prove the obligations.
-7. Align adapter tests for the real implementation with the proved specification when useful.
-8. Report the boundary honestly.
-
-Do not conflate these claims:
-
-- Lean proved the model has property `P`.
-- Lean proved the Lean implementation has property `P`.
-- Adapter tests showed the external implementation matched selected cases.
-- The external implementation is proved correct for all inputs.
-
-The last claim requires the implementation to be in Lean, generated from verified Lean under stated assumptions, or connected to the Lean spec by a checked semantics/refinement proof.
-
-## Stateful and monadic verification
-
-Default path:
-
-- model state explicitly as a pure `State`
-- model actions as pure transition functions
-- model errors with `Except`
-- model outputs and next state explicitly
-- prove invariant preservation and workflow properties over that model
-- keep real `IO` at the boundary
-
-Typical shape:
-
-```lean
-def step : State -> Input -> Except Error (Output × State) := ...
-
-def Inv : State -> Prop := ...
+def Inv (s : State) : Prop := ...
 
 theorem step_preserves_inv
-    (s s' : State) (i : Input) (o : Output) :
+    (s : State) (i : Input) (r : StepResult) :
     Inv s ->
-    step s i = .ok (o, s') ->
-    Inv s' := by
+    step s i = .ok r ->
+    Inv r.state' := by
   ...
 ```
 
-If the pinned toolchain exposes Hoare-logic or monadic verification support, you may use it, but only after checking that the local project has the relevant modules, syntax, and tactics.
+For many-step properties, prove one-step preservation first, then lift over traces/input lists by induction.
 
-If such support is unavailable, do not upgrade the project just to use it. Fall back to explicit pure state-transition modeling.
+## Termination policy
 
-## Termination
+Prefer total definitions. Repair recursion in this order:
 
-Prefer total definitions.
+1. expose a structurally smaller argument;
+2. introduce a helper with a stronger accumulator invariant;
+3. split traversal/parsing into simpler phases;
+4. use `termination_by` and `decreasing_by` with a clear measure;
+5. use explicit fuel if the computation may fail to terminate externally.
 
-Use structural recursion when possible.
+Avoid `partial` for logic-facing definitions. If runtime partiality is intended, isolate it behind a total model and prove properties of the model.
 
-When structural recursion is not obvious, consider:
+## Theorem discovery and style
+
+Search by head symbols, constructors, namespaces, and nearby naming conventions. Prefer local source and `.lake/packages` over web examples because they match the pinned version. Before relying on any theorem:
 
 ```lean
-termination_by ...
-decreasing_by ...
+#check Theorem.name
+#print Theorem.name
 ```
 
-If proving termination is difficult, first ask whether the recursion should be refactored.
-
-Good repairs include:
-
-- expose the structurally smaller argument
-- introduce a helper with an explicit fuel or measure
-- strengthen an accumulator invariant
-- use a well-founded measure
-- split parsing or traversal into simpler phases
-
-Avoid `partial` for logic-facing definitions.
-
-A `partial` function is usually unsuitable as the subject of a correctness theorem. If runtime partiality is genuinely intended, isolate it at the boundary and prove properties about a total model.
-
-## Automation policy for production proofs
-
-Automation is allowed, but final proofs should remain auditable.
-
-Preferred order:
-
-1. Definitional equality and simplification
-
-   ```lean
-   rfl
-   simp
-   simpa
-   simp_all
-   ```
-
-2. Structural proof
-
-   ```lean
-   intro
-   constructor
-   cases
-   rcases
-   induction
-   fun_induction
-   refine
-   have
-   suffices
-   ```
-
-3. Domain tactics
-
-   ```lean
-   omega
-   linarith
-   ring
-   norm_num
-   decide
-   native_decide
-   ```
-
-   Use `native_decide` only when the extra trust in native compilation is acceptable for the claim.
-
-4. Search and solver tactics
-
-   ```lean
-   exact?
-   apply?
-   aesop?
-   grind
-   ```
-
-When automation solves a proof:
-
-- check that the tactic is available in the pinned toolchain
-- inspect the generated proof if suggestions are available
-- replace fragile opaque blocks with helper lemmas when the theorem is important
-- avoid making one broad tactic responsible for the entire proof architecture
-
-Prefer kernel-reduction, ordinary simplification, explicit induction, and small helper lemmas for foundational claims.
-
-## Theorem discovery
-
-Never fabricate library facts.
-
-Routine:
-
-1. Identify the key constants, constructors, and head symbols in the goal.
-2. Inspect candidates:
-
-   ```lean
-   #check candidate
-   #print candidate
-   ```
-
-3. Search the current file and nearby files.
-4. Search imported project files.
-5. Search dependency sources under `.lake/packages/...` when available.
-6. Search version-matched docs only after checking the local environment.
-
-Search by symbol names and constructors more often than English paraphrases.
-
-If a theorem name is uncertain, qualify the namespace or search again instead of guessing.
-
-## `simp` hygiene
-
-Use `simp` with intent.
-
-Good:
+Use `simp` with intent:
 
 ```lean
 simp [foo, bar]
 simpa using h
 simp at h
 simp_all
-```
-
-For stability:
-
-```lean
 simp only [lemma1, lemma2, theorem3]
 ```
 
-Add `[simp]` only when:
+Add `[simp]` only for canonical, directionally simplifying, terminating, broadly useful lemmas. Do not mark expansive, reversible, or one-off rewrites as `[simp]`.
 
-- the rewrite is clearly simplifying
-- the orientation is canonical
-- repeated application terminates cleanly
-- the lemma is useful beyond one local proof
+## Trust audit lane
 
-Do not mark expansive, reversible, or context-specific rewrites as `[simp]`.
+Run this lane for production verification, high assurance, proof certificates, external-code claims, generated-code claims, or any user request involving "audit", "prove correct", "sound", "no assumptions", or "trust".
 
-## `rw` hygiene
+Scan changed Lean files:
 
-Use `rw` when the selected rewrite is the proof idea.
+```bash
+rg -n --glob '*.lean' --glob '!.lake/**' --glob '!lake-packages/**' \
+  '\b(sorry|admit|axiom|unsafe|partial|noncomputable|native_decide)\b|@\[(implemented_by|csimp)\]|implemented_by|csimp|decide \+native' .
+```
 
-Good uses:
+If this replacement skill's script is available, prefer:
 
-- replacing a term using a hypothesis
-- reassociating arithmetic in a chosen location
-- rewriting one occurrence before a follow-up tactic
-- using a theorem in the non-default direction
+```bash
+scripts/lean_trust_audit.sh path/to/file-or-directory
+```
 
-If a proof becomes a long chain of `rw` steps merely to expose a normal form, switch to `simp`, `simp only`, or a helper lemma.
-
-## Trust audit
-
-When the user asks for high assurance, production verification, foundational trust, or proof audit, inspect the changed Lean files for:
-
-- `sorry`
-- `admit`
-- `axiom`
-- `unsafe`
-- `partial`
-- `noncomputable`
-- `native_decide`
-- `implemented_by`
-- `@[implemented_by]`
-- `csimp`
-- `@[csimp]`
-
-For each top-level theorem that supports the final claim, run or add temporarily:
+For each theorem supporting the final claim, temporarily inspect:
 
 ```lean
 #print axioms theorem_name
 ```
 
-Report the axiom footprint.
+Classify the footprint:
 
-Distinguish:
+- no axioms;
+- only standard accepted axioms such as propositional extensionality, quotients, or classical choice;
+- `sorryAx` / incomplete proof dependency;
+- project-local/custom axioms;
+- native-evaluation/compiler trust such as `Lean.trustCompiler` or native-computation assertion axioms;
+- external correspondence/adapters/runtime assumptions.
 
-- no axioms
-- only standard/project-accepted axioms
-- classical reasoning or choice
-- project-local axioms
-- unsafe or native-code trust
-- unchecked external assumptions
+For adversarial or high-risk proof artifacts, consider the stronger validation ladder: clean build, `#print axioms`, `lean4checker --fresh Module.Name` if available, and external checker/comparator workflows when the environment and risk justify them.
 
-Treat these carefully:
+## Build and cache diagnosis
 
-- project-local axioms can invalidate the intended guarantee
-- `native_decide` adds trust in native compilation
-- `@[implemented_by]` does not by itself prove equivalence between the logical definition and the implementation used for execution
-- `@[csimp]` can affect compiled behavior and should be audited when executable correctness matters
-- `unsafe` implementation details are not part of a kernel-checked correctness proof unless isolated behind a checked specification boundary
-- `noncomputable` may be fine for pure mathematics but is usually inappropriate for executable verified code
+Do not treat a dependency download/build failure as a theorem failure. Separate:
 
-For high-assurance executable claims, prefer proofs that do not depend on native-code execution or unchecked replacement implementations.
+- Lean elaboration/proof errors;
+- missing imports;
+- stale `.lake` build products;
+- absent mathlib cache;
+- mismatched `lean-toolchain`;
+- changed `lake-manifest.json`;
+- namespace/module naming mistakes;
+- CI command differences.
 
-## Build and environment workflow
+Use `lake update` only when dependency resolution changes are intended. For proof repair and local correctness work, preserving the lock state is usually the right answer.
 
-Prefer project-aware commands through Lake.
-
-Build the whole workspace:
-
-```bash
-lake build
-```
-
-Check one file inside the project environment:
-
-```bash
-lake env lean path/to/File.lean
-```
-
-Run a small Lean script or executable file inside the project environment:
-
-```bash
-lake env lean --run path/to/File.lean
-```
-
-Inspect the Lake environment:
-
-```bash
-lake env
-```
-
-For a single-file toy example outside a Lake project:
-
-```bash
-lean --run Hello.lean
-```
-
-For mathlib-heavy projects, after cloning or when compiled dependencies are missing:
-
-```bash
-lake exe cache get
-```
-
-Use `lake update` only when changing dependency resolution is appropriate for the task. Do not casually update a project when the user asked for a proof or local fix.
-
-## Version-sensitive behavior
-
-The pinned toolchain wins.
-
-Use these as local facts:
-
-- the repository’s `lean-toolchain`
-- the repository’s dependency lock state
-- syntax already used in nearby files
-- tactics already used in nearby files
-- imports already available in the target file
-
-When a modern feature is rejected by the local toolchain, do not fight the repo.
-
-Fallback ladder:
-
-1. explicit helper lemma
-2. `cases` / `induction`
-3. `simp` / `rw`
-4. domain-specific tactics already used in the repo
-5. proof architecture refactor
-
-Do not upgrade Lean, mathlib, or dependencies unless the user explicitly asks for an upgrade or the task is impossible without it and you clearly explain the tradeoff.
-
-## When a proof is stuck
+## If stuck
 
 Use this order:
 
-1. Restate the goal:
+1. Restate the goal with `show` or `change`.
+2. Expose definitions selectively with `simp [foo]` or `unfold foo`.
+3. Inspect constructors and hypotheses.
+4. Move the failing shape into a local `example`.
+5. Prove the exact helper lemma the goal needs.
+6. Strengthen the induction hypothesis.
+7. Switch between data induction and functional induction.
+8. Search local/imported theorem sources again.
+9. Test whether the theorem is false with a concrete counterexample.
+10. Use heavier automation only after normalization.
 
-   ```lean
-   show ...
-   change ...
-   ```
+## Final response format
 
-2. Expose definitions selectively:
+For ordinary Lean edits:
 
-   ```lean
-   simp [foo, bar]
-   unfold foo
-   ```
+```text
+Changed: ...
+Checked with: ...
+Result: ...
+Theorems/definitions: ...
+Placeholder status: ...
+Notes: ...
+```
 
-3. Inspect hypotheses and constructors.
+For verification tasks:
 
-4. Move the failing shape into a small local `example`.
+```text
+Verification boundary: ...
+Formal artifacts: ...
+Top theorem names: ...
+Build/check command: ...
+Result: ...
+Placeholder status: ...
+Axiom/trust status: ...
+What Lean proved: ...
+What Lean did not prove: ...
+```
 
-5. Prove a helper lemma on the exact recursive or algebraic shape needed.
-
-6. Strengthen the theorem:
-   - generalize accumulators
-   - quantify over arbitrary suffixes, states, or environments
-   - strengthen equality to a relational invariant
-   - prove preservation for one step before proving preservation for many steps
-
-7. Switch from data induction to functional induction if recursion drives the theorem.
-
-8. Search the imported library again.
-
-9. Try heavier automation only after the goal is normalized.
-
-If a tactic finds a proof script, simplify it before finalizing unless the generated script is already short and stable.
-
-## Completion checklist
-
-Before finishing:
-
-- run the correct project-aware build/check command
-- confirm there are no unsolved goals
-- confirm there are no placeholder proofs unless explicitly requested
-- confirm there are no accidental scratch declarations
-- confirm imports are minimal and justified
-- confirm theorem statements were not silently weakened
-- confirm names, namespaces, and notation match local style
-- for verification tasks, state the proof boundary
-- for high-assurance tasks, check for unexpected axioms and trust-expanding features
-
-## Final response format for verification tasks
-
-For program-correctness, model-checking, invariant, state-machine, or external-code verification tasks, finish with:
-
-- Verification boundary:
-- Formal artifacts:
-- Top theorem names:
-- Build/check command:
-- Result:
-- Placeholder status:
-- Axiom/trust status:
-- What Lean proved:
-- What Lean did not prove:
-
-Keep the explanation concise, but make the claim exact.
+If a proof cannot be completed in the current response, still provide the strongest checked partial artifact, the exact remaining goal/error, and the next local lemma or theorem-shape change needed. Do not promise background work.
 
 ## Reference map
 
-Read these files selectively when present:
+Read selectively:
 
-- verification boundaries and claim discipline: `references/verification-boundaries.md`
-- verifying external/non-Lean software: `references/external-code-verification.md`
-- trust audits and axiom-footprint reporting: `references/trust-audit.md`
-- setup, toolchains, Lake, mathlib caches: `references/setup-and-workflow.md`
+- boundary and claim levels: `references/verification-boundaries.md`
+- external/non-Lean software: `references/external-code-verification.md`
+- trust audits and axiom reporting: `references/trust-audit.md`
+- setup, Lake, caches, toolchains: `references/setup-and-workflow.md`
 - tactic selection and proof debugging: `references/proof-playbook.md`
-- program-correctness patterns and proof architecture: `references/program-correctness.md`
-- theorem discovery, naming, and simplification hygiene: `references/mathlib-search-and-style.md`
-- version-sensitive features and release-aware behavior: `references/version-sensitive-features.md`
+- program-correctness patterns: `references/program-correctness.md`
+- theorem discovery and style: `references/mathlib-search-and-style.md`
+- version-sensitive behavior: `references/version-sensitive-features.md`
+- prompt patterns for humans invoking `$lean`: `references/start-prompts.md`
 
-These references are advisory. The pinned project, local imports, and actual Lean errors are authoritative.
+The pinned project, local imports, and actual Lean errors are authoritative over all references.

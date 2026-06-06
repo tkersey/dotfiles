@@ -1,6 +1,6 @@
 interface:
   display_name: "Lean"
-  short_description: "Lean 4 proving, verified programming, and software-correctness workbench"
-  default_prompt: "Use $lean to classify the verification boundary, write Lean 4 specifications/models/implementations, prove refinement/invariants/case obligations, audit placeholders/axioms/trust assumptions, and state exactly what Lean did and did not prove."
+  short_description: "Lean 4 proof repair, theorem development, verified programming, formal models, Lake/toolchain diagnosis, and proof-trust audits"
+  default_prompt: "Use $lean as a Lean 4 proof engineer: inspect the pinned project context, classify the verification boundary, produce checked Lean code/proofs, audit placeholders/axioms/trust-expanding features, and report exact commands plus what Lean did and did not prove."
 policy:
   allow_implicit_invocation: false

@@ -18,7 +18,7 @@ theorem impl_eq_spec (i : Input) :
 
 ## Relational specifications
 
-Use a relation when the behavior is abstract, nondeterministic, or easier to state as a property.
+Use a relation when behavior is abstract, nondeterministic, partial, or easier to state as a property.
 
 ```lean
 def SpecRel (i : Input) (o : Output) : Prop := ...
@@ -30,7 +30,7 @@ theorem impl_sound (i : Input) (o : Output) :
   ...
 ```
 
-Completeness is stronger and should be proved only when true.
+Completeness is stronger and should be proved only when true:
 
 ```lean
 theorem impl_complete (i : Input) (o : Output) :
@@ -148,21 +148,19 @@ For optimized code:
 1. Define a simple list or mathematical spec.
 2. Implement the optimized version.
 3. Prove a representation relation.
-4. Prove each loop or helper preserves the relation.
+4. Prove each loop/helper preserves the relation.
 5. Conclude equivalence to the spec.
 
-Avoid proving the optimized code directly against a vague English requirement.
+Avoid proving optimized code directly against a vague English requirement.
 
 ## IO boundary
 
-Keep IO out of the core theorem when possible.
+Keep IO out of the core theorem when possible. Good architecture:
 
-Good architecture:
+- pure parser;
+- pure validator;
+- pure planner;
+- pure state transition;
+- small IO wrapper.
 
-- pure parser
-- pure validator
-- pure planner
-- pure state transition
-- small IO wrapper
-
-Prove correctness of the pure core. State that the IO wrapper, filesystem, network, clock, and process environment are outside the Lean proof unless modeled explicitly.
+Prove correctness of the pure core. State that the IO wrapper, filesystem, network, clock, process environment, and runtime scheduling are outside the Lean proof unless modeled explicitly.

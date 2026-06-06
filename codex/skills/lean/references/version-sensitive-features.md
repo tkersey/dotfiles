@@ -1,6 +1,6 @@
 # Version-sensitive features
 
-Lean and mathlib evolve. The repository's pinned toolchain is the source of truth.
+Lean, Std, Lake, and mathlib evolve. The repository's pinned toolchain is the source of truth.
 
 ## Always check the project
 
@@ -11,25 +11,26 @@ Inspect:
 - imports in the target file
 - syntax used in nearby files
 - tactics already accepted by the project
+- CI commands and build targets
 
 Do not assume current online examples apply to an older pinned project.
 
 ## Feature availability
 
-Before using version-sensitive features, test them locally or inspect local files.
+Before using version-sensitive features, test them locally or inspect local files. Potentially version-sensitive areas include:
 
-Potentially version-sensitive areas include:
-
-- tactic availability and syntax
-- `grind`
-- `omega`
-- `fun_induction`
-- equation compiler behavior
-- termination syntax
-- Lake file syntax
-- Std and Mathlib module names
-- Hoare-logic or monadic verification facilities
-- theorem names in Std and Mathlib
+- tactic availability and syntax;
+- `grind`;
+- `omega`;
+- `fun_induction`;
+- `mvcgen` or Hoare-logic facilities;
+- equation compiler behavior;
+- termination syntax;
+- Lake file syntax;
+- Std and mathlib module names;
+- theorem names in Std and mathlib;
+- native-evaluation axiom reporting;
+- generated code and compiler attributes.
 
 ## Fallback strategy
 
@@ -47,11 +48,11 @@ Do not upgrade the project unless the user explicitly asks for an upgrade or the
 
 If an upgrade is necessary, report:
 
-- current toolchain
-- desired toolchain
-- reason for upgrade
-- expected dependency impact
-- proof files likely to break
-- whether the change was requested or merely recommended
+- current toolchain;
+- desired toolchain;
+- reason for upgrade;
+- expected dependency impact;
+- proof files likely to break;
+- whether the change was requested or merely recommended.
 
 For proof repair and correctness work, preserving the pinned environment is usually the right choice.
