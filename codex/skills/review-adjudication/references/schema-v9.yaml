@@ -1,0 +1,68 @@
+version: 9
+skill: review-adjudication
+mode: Kernelized Surface-Budgeted v9
+enums:
+  route:
+    - address
+    - validate-only
+    - resolve-thread-only
+    - do-not-address
+    - delete-collapse-canonicalize
+    - blocked
+  status:
+    - licensed
+    - validation-needed
+    - proof-only
+    - no-change
+    - delete-collapse-canonicalize
+    - blocked
+  permitted_action:
+    - mutate-code
+    - add-validation-only
+    - resolve-thread
+    - draft-reply
+    - defer
+    - none
+  route_to_action:
+    address: [mutate-code]
+    delete-collapse-canonicalize: [mutate-code]
+    validate-only: [add-validation-only]
+    resolve-thread-only: [resolve-thread]
+    do-not-address: [draft-reply, defer, none]
+    blocked: [none]
+  surface_budget_mode:
+    - ablative-first
+    - additive-authorized
+    - proof-only
+    - validation-only
+    - not-applicable
+  target_net_loc:
+    - negative
+    - zero
+    - small-positive
+    - unknown
+    - not-applicable
+  gate_value:
+    - pass
+    - fail
+    - not-required
+    - not-applicable
+  handoff_allowed:
+    - yes
+    - no
+required_sections:
+  always:
+    - Review Basis
+    - Claim Decision Kernel
+    - Resolution Warrants
+    - Adjudication Gate
+    - Handoff Agenda
+    - Adjudication Bottom Line
+  mutation_or_delete:
+    - Resolve Countercases
+    - Adversarial Action Matrix
+    - Ablative Counterproposal Ledger
+    - Surface Budget Ledger
+    - Warrant / Budget Summary
+  delete_collapse_canonicalize:
+    - Ablative Isomorphism Cards

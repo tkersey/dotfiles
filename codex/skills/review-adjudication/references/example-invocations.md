@@ -1,49 +1,35 @@
-# Example invocations
+# Example Invocations
 
-## Surface-Budgeted v6 review adjudication
+## Compact root-equivalent adjudication
 
 ```md
-Use $review-adjudication in Surface-Budgeted v6 mode.
+Use $review-adjudication in Kernelized Surface-Budgeted v9 mode.
 
-Goal: determine which current PR review comments should change code before any
-implementation.
-
-Inputs:
-- raw PR review comments with id/thread/reviewer/location/excerpt
-- current branch vs main
-- branch/head/diff/comment-set identity if available
-- PR description / intended change
-- current tests and CI status
-- relevant files
+Goal: decide which current PR review findings may affect downstream work.
 
 Rules:
-- preserve raw comment identity and input inventory
-- bind the adjudication to artifact_state_id
-- treat each comment as a claim, not an obligation
-- construct the strongest no-change countercase for every comment
-- separate concern validity from proposed-fix validity
-- use evidence grade + evidence ref for every action
-- emit Resolve Selection, Resolve Countercases, Adversarial Action Matrix,
-  Resolution Warrants, and Surface Budget Ledger
-- do not implement fixes
-- do not hand off implementation unless the Adjudication Gate passes and the
-  selected action has adversarial clearance
+- emit Claim Decision Kernel and Resolution Warrants even if using root-equivalent reasoning
+- bind the output to artifact_state_id
+- do not allow implementation without a mutate-code warrant
+- if any route can mutate, include Surface Budget Ledger and fixed-point-driver surface handshake
 ```
 
-## Handoff-agenda consistency check
+## Least-surface implementation handoff
 
 ```md
-Use $review-adjudication in Surface-Budgeted v6 mode.
+Use $review-adjudication for this review batch, then hand off only licensed
+mutation warrants to $fixed-point-driver.
 
-After the Comment Ledger, Resolve Selection, Adversarial Action Matrix, and
-Resolution Warrants, produce a Handoff Agenda whose buckets are exact projections:
+Bias:
+- prefer delete/collapse/canonicalize/reuse before additive mutation
+- require surface budgets for every mutate-code warrant
+- request Surface Budget Preflight and Surface Delta Receipts in the Handoff Agenda
+```
 
-- items selected for implementation = all and only `address` rows with active
-  `mutate-code` warrants and adversarial clearance
-- validation-only items = all and only `validate-only` rows
-- proof-only thread-resolution items = all and only `resolve-thread-only` rows
-- items not selected = all and only `do-not-address` rows
-- blocked items = all and only `blocked` rows
+## Proof-only cleanup
 
-Do not use "all". Use explicit comment IDs.
+```md
+Use $review-adjudication to separate already-fixed review threads from code work.
+Use resolve-thread-only only when current proof makes mutation unnecessary.
+Do not route proof-only rows to implementation.
 ```

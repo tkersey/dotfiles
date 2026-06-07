@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Review Adjudication"
-  short_description: "Gated PR review adjudication with warrants, surface budgets, and adversarial clearance"
-  default_prompt: "Use $review-adjudication in Surface-Budgeted v6 mode for this task."
+  short_description: "Kernelized review/CAS adjudication with scoped warrants and surface budgets"
+  default_prompt: "Use $review-adjudication in Kernelized Surface-Budgeted v9 mode for this task."

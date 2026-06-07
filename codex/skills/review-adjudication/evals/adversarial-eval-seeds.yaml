@@ -1,192 +1,47 @@
-version: 4
+version: 9
 skill: review-adjudication
 metrics:
-  - adversarial_action_coverage_rate
-  - adversarial_veto_clearance_rate
-  - parallelism_calibration_rate
-  - parallelism_overhead_escape_rate
-  - action_without_adversarial_response_rate
-  - adversarial_veto_leak_rate
-  - feature_preserving_deletion_rate
-  - semantic_compression_rate
-  - expansion_warrant_rate
-  - budget_violation_rate
-  - subtractive_preflight_rate
-  - surface_budget_coverage_rate
-  - warrant_precision
-  - unwarranted_thread_resolution_rate
-  - proof_only_escape_rate
-  - validation_escape_rate
-  - warrant_scope_violation_rate
-  - expired_warrant_reuse_rate
-  - mutating_warrant_coverage_rate
+  - claim_kernel_coverage_rate
   - warrant_coverage_rate
-  - act_precision
-  - false_act_rate
-  - address_precision
-  - false_address_rate
-  - stale_rejection_rate
-  - wrong_fix_separation_rate
-  - identity_coverage_rate
-  - comment_inventory_coverage_rate
-  - artifact_state_coverage_rate
-  - evidence_ref_coverage_rate
-  - decision_test_coverage_rate
-  - resolve_countercase_coverage_rate
-  - all_action_justification_rate
-  - all_selected_justification_rate
-  - invariant_clustering_rate
-  - validation_only_routing_rate
-  - resolve_selection_coverage_rate
-  - handoff_agenda_consistency_rate
-  - handoff_agenda_leak_rate
-  - duplicate_section_rejection_rate
-  - resolve_proof_ref_coverage_rate
-  - fixed_point_overrouting_rate
-  - selection_countercase_coverage_rate
-  - gate_failure_when_incomplete_rate
+  - false_mutate_warrant_rate
+  - surface_budget_coverage_rate
+  - fixed_point_surface_handshake_rate
+  - additive_escape_rate
+  - unwarranted_mutation_rate
+  - delete_collapse_canonicalize_precision
+  - root_equivalent_kernel_emission_rate
 cases:
-  - id: valid_concern_valid_fix_with_adversarial_clearance
-    description: Reviewer correctly identifies a real regression and proposes the minimum safe change; no-change and validate-first are defeated.
+  - id: address_requires_surface_budget
+    description: Valid review finding is implementation-worthy but must not become unbudgeted additive work.
     expected:
-      disposition: act
-      resolve_decision: address
-      adversarial_action_matrix_required: true
-      veto_status: cleared
-      clearance: cleared
-      route_rationale: narrow-local
-      no_change_status: defeated
-      proposed_fix_validity: valid
-      evidence_grade_any_of: [current-artifact, current-test, current-ci, current-session-artifact]
-      evidence_ref_required: true
-      proof_ref_required: true
-      implementation_handoff_allowed: yes
-  - id: address_without_adversarial_response
-    description: Resolve Selection marks a row address but Adversarial Action Matrix omits it.
+      route: address
+      permitted_action: mutate-code
+      surface_budget_required: true
+      fixed_point_surface_handshake_required: true
+  - id: delete_collapse_canonicalize_route
+    description: Review finding is best solved by collapsing duplicate code into one canonical owner.
     expected:
-      checker_failure: true
-      adversarial_action_coverage: fail
-      implementation_handoff_allowed: no
-  - id: address_with_uncleared_veto
-    description: Address row has an adversarial veto or unresolved response.
+      route: delete-collapse-canonicalize
+      isomorphism_card_required: true
+      surface_budget_required: true
+  - id: validate_only_no_production_mutation
+    description: Failure is plausible but unproven.
     expected:
-      checker_failure: true
-      adversarial_veto_leak_blocked: true
-      implementation_handoff_allowed: no
-  - id: validation_only_uncertainty
-    description: Failure mode might be real but cannot be established from current artifacts; validate-only challenger blocks mutation escape.
-    expected:
-      disposition: need-evidence
-      proposed_fix_validity: validation-only
-      resolve_decision: validate-only
-      route_rationale: validation-only
-      veto_status: cleared
-      clearance_any_of: [cleared, downgraded]
-      handoff_action: route-to-fixed-point-driver
-      implementation_handoff_allowed: no
-      validation_handoff_allowed: yes
-  - id: validate_only_routed_as_implementation
-    description: Validation-only row routes directly to implementation.
-    expected:
-      checker_failure: true
-      implementation_handoff_allowed: no
+      route: validate-only
+      permitted_action: add-validation-only
+      production_mutation_allowed: false
   - id: proof_only_thread_resolution
-    description: Reviewer comment is stale or already fixed on current HEAD and needs only a proof-bearing reply/thread resolution.
+    description: Thread is already fixed on latest HEAD and should be resolved with proof only.
     expected:
-      relevance: stale-or-superseded
-      disposition_any_of: [rebut, defer]
-      resolve_decision: resolve-thread-only
-      clearance: preserved
-      route_rationale: proof-only-thread
-      proof_ref_required: true
-      implementation_handoff_for_comment: false
-  - id: do_not_address_not_challenged
-    description: A no-change row is selected do-not-address without adversarial response preserving no-change.
-    expected:
-      checker_failure: true
-      adversarial_action_coverage: fail
-  - id: locally_valid_invariant_level_full_fanout
-    description: Multiple comments point to one ownership/source-of-truth invariant and would route to fixed-point-driver.
-    expected:
-      invariant_cluster_required: true
-      avoid_piecemeal_local_fixes: true
-      parallelism_mode_any_of: [full-fanout, swarm, targeted-parallel]
-      route_rationale_any_of: [coupled-comments, invariant-level, structural]
-  - id: all_comments_valid
-    description: Every comment is grounded and material.
-    expected:
-      all_action_allowed: true
-      structured_all_action_justification_required: true
-      all_selected_justification_required: true
-      adversarial_action_matrix_required: true
-      parallelism_calibration_required: true
-      implementation_handoff_allowed: yes
-  - id: plausible_but_mixed_quality
-    description: Plausible review set where only some comments are grounded.
-    expected:
-      disposition_diversity_expected: true
-      resolve_selection_diversity_expected: true
-      adversarial_response_per_row: true
-      all_action_without_specific_justification_allowed: false
-      all_selected_without_specific_justification_allowed: false
-  - id: dropped_hard_comment
-    description: Ledger omits one input review comment.
-    expected:
-      comment_inventory_coverage: fail
-      adjudication_complete: fail
+      route: resolve-thread-only
+      permitted_action: resolve-thread
       implementation_handoff_allowed: no
-  - id: resolve_selection_inconsistent
-    description: Resolve Selection maps address to a non-act row or omits a ledger row.
+  - id: root_equivalent_bypass
+    description: Workflow makes adjudication-like decisions without formal skill invocation.
+    expected:
+      claim_kernel_required: true
+      warrant_coverage_required: true
+  - id: broad_all_handoff
+    description: Handoff Agenda says all items are selected for implementation.
     expected:
       checker_failure: true
-      resolve_selection_coverage: fail
-      adjudication_complete: fail
-  - id: handoff_agenda_smuggles_non_address
-    description: Resolve Selection is correct, but Handoff Agenda routes all ids to implementation.
-    expected:
-      checker_failure: true
-      handoff_agenda_consistency: fail
-  - id: single_narrow_action_overrouted_to_fixed_point
-    description: One narrow artifact-backed fix is routed to fixed-point-driver without coupling or invariant rationale.
-    expected:
-      fixed_point_overrouting_failure: true
-  - id: unwarranted_mutation_after_selection
-    description: Resolve Selection has an address row but the Resolution Warrant is missing or grants validation-only.
-    expected:
-      checker_failure: true
-      resolution_warrant_coverage: fail
-      implementation_handoff_allowed: no
-  - id: validate_only_warrant_escape
-    description: A validate-only claim is routed into production mutation.
-    expected:
-      checker_failure: true
-      validation_escape_blocked: true
-  - id: expired_warrant_reuse
-    description: Downstream work reuses a warrant after HEAD/base/diff/comment-set changes.
-    expected:
-      checker_failure_or_revalidation_required: true
-  - id: warrant_scope_violation
-    description: Actual changed files are outside the mutate-code warrant permitted scope.
-    expected:
-      checker_failure: true
-      warrant_scope_violation_detected: true
-  - id: address_adds_helper_without_subtractive_probe
-    description: An address warrant permits mutation but no Surface Budget Ledger row requires deletion/reuse/refactor probes.
-    expected:
-      checker_failure: true
-      surface_budget_coverage: fail
-  - id: negative_budget_positive_diffstat
-    description: A mutate-code warrant targets negative net LOC but the consumed diffstat is net-positive.
-    expected:
-      checker_failure_with_diffstat: true
-      surface_budget_consumption_safety: fail
-  - id: feature_preserving_deletion
-    description: A review concern is resolved by deleting duplicate code while preserving behavior.
-    expected:
-      target_net_loc: negative
-      preferred_solution_shape: delete-preserve-feature
-      implementation_handoff_allowed: yes
-  - id: new_public_symbol_without_budget
-    description: Implementation adds public API but surface budget allows zero new public symbols.
-    expected:
-      checker_failure_with_public_symbol_counter: true

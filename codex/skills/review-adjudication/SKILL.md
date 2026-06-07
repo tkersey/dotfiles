@@ -1,255 +1,117 @@
 ---
 name: review-adjudication
 description: >-
-  Discriminately adjudicate PR review comments before implementation. Treat each
-  comment as a claim to test, preserve raw comment identity and input inventory,
-  bind decisions to artifact state, build the strongest no-change countercase,
-  separate valid concerns from valid proposed fixes, recover PR rationale with
-  explicit `$seq` when needed, and emit a stale-proof gated ledger,
-  resolve-selection map, adversarial action matrix, ablative/isomorphic counterproposal,
-  resolution warrants, and surface budgets that decide what to address, validate
-  only, resolve with proof only, rebut, defer, investigate, delete/collapse, or
-  route. Trigger for `$review-adjudication`, review the review, adjudicate PR
-  comments, are these comments relevant, which comments matter, should we act on
-  these comments, gate review comments before implementation, refine this list to
-  just those worth resolving, or select review comments to resolve. Not for
-  implementing fixes, writing rebuttals only, or final merge closure.
+  Kernelized, warrant-issued adjudication for PR review comments, CAS findings,
+  and review-like claims before implementation or thread resolution. Treat each
+  comment as a claim to test, preserve raw identity and artifact state, emit a
+  tiny always-on Claim Decision Kernel, then issue scoped Resolution Warrants and
+  triggered annexes for address, validation, proof-only resolution,
+  do-not-address, delete/collapse/canonicalize, or blocked routes. Mutation is
+  permitted only by an active surface-budgeted warrant. Trigger for
+  `$review-adjudication`, review the review, adjudicate PR comments, refine this
+  list to just those worth resolving, select review comments to resolve, gate
+  review comments before implementation, or route review/CAS findings into
+  `$fixed-point-driver`. Not for implementing fixes, writing rebuttals only, or
+  final merge closure.
 ---
 
 # Review Adjudication
 
 ## Intent
 
-Decide which PR review comments should change code, which should be rebutted,
-which are stale or out of scope, which require validation only, which should be
-resolved with proof only, and which should be reframed as a governing invariant
-instead of handled as isolated local fixes.
+Decide what a review/CAS/comment claim may do downstream. A claim may be
+unsupported, stale, proof-only, validation-only, implementation-worthy,
+delete/collapse/canonicalize-worthy, or blocked. The output is not a narrative
+recommendation; it is a compact permission boundary.
 
-This skill is **discriminative**, not deferential. A reviewer comment is an input
-claim, not an obligation. `act` is a conclusion that must be earned from current
-artifact evidence, a defeated no-change countercase, an ablative surface check,
-and explicit adversarial clearance for the downstream action. When activation is ambiguous, root-equivalent, or mutation-capable, obtain `ablation_activation_sentinel` or emit its packet fields root-equivalently before deciding `address`.
+The invariant is simple:
+
+> No downstream mutation, validation-only probe, thread resolution, rebuttal,
+> defer handoff, or fixed-point implementation route is licensed unless a
+> matching active Resolution Warrant exists.
 
 ## Default mode
 
-Use **Surface-Budgeted Ablative-Isomorphic v8** mode whenever the input contains real review
-comments. This mode is mandatory because automation needs:
+Use **Kernelized Surface-Budgeted v9** for real review/CAS/comment sets.
 
-- stable raw comment identity
-- complete input-comment inventory coverage
-- artifact-state identity for stale-handoff detection
-- explicit decision tests for every comment
-- evidence-grade and evidence-reference separation
-- resolve-selection mapping for implementation, validation, proof-only thread
-  resolution, no-change, blocked outcomes, and deletion/collapse/canonicalization
-- adversarial action coverage for every selected downstream action
-- parallelism calibration so adversarial effort is spent where it can change the
-  route, proof, owner, or budget
-- proof refs and route rationale for every downstream selection
-- resolve countercases so "worth resolving" is challenged separately from concern
-  validity
-- selection-skew auditing so "all are worth resolving" cannot pass silently
-- handoff-agenda consistency checks so selected work is not broadened later
-- separate implementation, validation, and reply handoff permissions
-- Resolution Warrants that act as scoped, expiring downstream permissions
-- Surface Budget Ledger entries that force subtractive-first solution search and
-  cap additive semantic surface
-- Ablative Counterproposals that prove deletion, collapse, reuse, privatization,
-  or canonicalization was considered before additive mutation is licensed
-- Ablative Isomorphism Cards that prove behavior preservation before deletion,
-  collapse, reuse, or canonicalization is licensed
-- Clone-classification and abstraction-ladder checks before merging, extracting,
-  or introducing shared abstractions
+Always emit the small mandatory kernel. Emit heavier annexes only when triggered.
+This replaces the earlier monolithic full-report habit with a layered protocol:
 
-Other modes are allowed only when they still satisfy the completion gate:
+1. **Claim Decision Kernel**: one stable row per raw claim. Always required.
+2. **Resolution Warrants**: scoped, expiring permissions. Always required for
+   every non-synthetic route, including no-change and blocked routes.
+3. **Triggered annexes**: adversarial, ablative, isomorphic, clone, abstraction,
+   and surface-budget detail only when the selected route can mutate, delete,
+   collapse, canonicalize, or materially affect closure.
+4. **Tail license summary**: the final visible handoff must show what is actually
+   licensed and what is not.
 
-- **Standard**: expanded reasoning plus the full Surface-Budgeted Ablative-Isomorphic v8 tail.
-- **Fast**: bucket-only output plus the completion gate; allowed for exploratory
-  triage or synthetic comments, not for implementation handoff unless the gate
-  passes.
+Other modes may compress prose, but they must still emit the Claim Decision
+Kernel, matching Resolution Warrants, the Adjudication Gate, Handoff Agenda, and
+Adjudication Bottom Line.
 
 ## Doctrine
 
-Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **ADVERSARIAL-BY-DEFAULT**,
-**PARALLEL-WHEN-MATERIAL**, **INVARIANT-SEEKING**, **ABLATIVE**,
-**ISOMORPHIC**, **CLONE-CLASSIFIED**, **ABSTRACTION-LADDERED**,
-**CANONICALIZING**, **DOMINANCE-TESTED**, **ANTI-RUBBER-STAMP**,
+Operate in **DISCRIMINATIVE**, **REBUTTAL-FIRST**, **KERNEL-FIRST**,
+**WARRANT-ISSUING**, **SURFACE-BUDGETED**, **ABLATIVE**, **ISOMORPHIC**,
+**CLONE-CLASSIFIED**, **ABSTRACTION-LADDERED**, **CANONICALIZING**,
 **EVIDENCE-WEIGHTED**, **STALE-PROOF**, and **FAIL-CLOSED** mode.
 
-- **DISCRIMINATIVE**: separate true concerns from irrelevant, stale, unsupported,
-  preference-only, misdiagnosed, or misframed comments.
-- **REBUTTAL-FIRST**: for each comment, construct the strongest no-change
-  countercase before deciding to act.
-- **ADVERSARIAL-BY-DEFAULT**: every selected downstream action must have an
-  adversarial response that tries to defeat that action, downgrade it, reroute it,
-  narrow it, or block it.
-- **PARALLEL-WHEN-MATERIAL**: run independent adversarial lanes in parallel when
-  parallel challenge can reduce elapsed time without compromising current-state
-  grounding or single-writer safety.
-- **INVARIANT-SEEKING**: look for the governing invariant behind repeated local
-  comments; avoid fixing the same invariant piecemeal.
-- **ABLATIVE**: when a comment is valid, prefer removing accumulated surface,
-  collapsing duplicate paths, privatizing exposed internals, canonicalizing
-  ownership, or deleting/decommissioning vestigial scaffolding before licensing
-  additive code.
-- **ISOMORPHIC**: deletion, collapse, merge, reuse, and canonicalization require
-  an explicit behavior-preservation proof, not a cleanliness intuition.
-- **CLONE-CLASSIFIED**: classify apparent duplication before merging it; exact,
-  parametric, and bounded gapped clones are candidates, while semantic clones and
-  accidental rhymes require proof or rejection.
-- **ABSTRACTION-LADDERED**: do not create or climb abstractions before the callsite
-  count, axes of variance, and proof burden justify the rung.
-- **CANONICALIZING**: collapse duplicate truth surfaces into one owner, one
-  representation, one path, or one proof surface where the live contract permits.
-- **DOMINANCE-TESTED**: mark a proposed additive fix as dominated when a lower
-  surface route preserves the same contract with better ownership, proof, or
-  maintainability.
-- **ANTI-RUBBER-STAMP**: do not let plausibility, politeness, reviewer authority,
-  parallel consensus, or ease of implementation become acceptance evidence.
-- **EVIDENCE-WEIGHTED**: rank current artifacts above memories, memories above
-  intuition, and direct proof above consensus.
-- **STALE-PROOF**: bind adjudication to branch/head/diff/comment-set state so
-  downstream handoffs can detect stale or contradictory agendas.
-- **FAIL-CLOSED**: if adjudication, adversarial clearance, ablation clearance, or
-  warrant contract is incomplete, block implementation handoff rather than guessing.
+- **DISCRIMINATIVE**: a reviewer comment is a claim, not an obligation.
+- **REBUTTAL-FIRST**: construct the strongest no-change or alternative-route
+  countercase before selecting a downstream route.
+- **KERNEL-FIRST**: every adjudication produces a compact row-level decision
+  artifact even when the full annex set would be too heavy.
+- **WARRANT-ISSUING**: downstream action is authorized by scoped warrants, not by
+  prose, enthusiasm, or a broad “worth resolving” statement.
+- **SURFACE-BUDGETED**: code mutation is licensed only under a measurable surface
+  budget. Additive code is an exception, not the default.
+- **ABLATIVE**: prefer deletion, reuse, collapse, privatization,
+  decommissioning, canonicalization, or refactor before additive mutation.
+- **ISOMORPHIC**: deletion/collapse/canonicalization requires behavior
+  preservation proof or a validate-first route.
+- **CLONE-CLASSIFIED**: apparent duplication must be classified before merging or
+  abstracting it.
+- **ABSTRACTION-LADDERED**: new helpers/adapters/interfaces/generics/flags must
+  justify the abstraction rung and proof burden.
+- **EVIDENCE-WEIGHTED**: current artifacts outrank memory; direct proof outranks
+  reviewer intuition.
+- **STALE-PROOF**: bind decisions and warrants to branch/head/base/diff/comment
+  state so downstream skills can detect stale permissions.
+- **FAIL-CLOSED**: missing identity, stale state, incomplete warrants, unchecked
+  surface growth, or unresolved adversarial clearance blocks mutation.
 
 ## Contract
 
-- Review comments are claims to test, not truths to obey.
-- `act` is a conclusion, not the default.
-- Current artifact state outranks reviewer intuition.
-- Prefer current-session artifacts over memories.
-- Use memories as secondary rationale support and provenance, not as the sole
-  basis for acting.
-- Distinguish concern validity from proposed-fix validity.
-- Separate relevance from actionability.
-- Preserve raw comment identity; do not let summaries replace comment IDs,
-  reviewers, excerpts, locations, or input inventory.
-- Preserve artifact-state identity; do not let a handoff become stale invisibly.
-- Tail-weight outputs for CLI use.
-- Do not implement fixes here.
-- Do not create an implementation handoff unless the Adjudication Gate passes,
-  `implementation_handoff_allowed: yes`, every `address` row has adversarial
-  clearance, and every mutation-capable row has ablative-surface clearance.
-- Do not collapse adjudication into "all comments are worth resolving"; emit the
-  resolve-selection map before implementation or thread-resolution handoff.
-- Do not let `address` mean "add code". Every mutation-capable warrant must carry
-  a surface budget, deletion/reuse/refactor/canonicalization probe obligation,
-  and expansion-warrant rule before downstream implementation.
-- Do not license deletion, collapse, merge, or canonicalization without an
-  Ablative Isomorphism Card or an explicit `validate-first` route.
-- Do not merge semantic clones or accidental rhymes merely because they look alike;
-  prove equivalence across invariants, error semantics, ordering, and side effects.
-- Do not introduce a new helper, adapter, interface, base class, generic, macro,
-  flag, or wrapper without an abstraction-ladder check.
-- Validation-only handoff is not implementation permission.
-- Proof-only thread resolution is not implementation permission.
-- Reply handoff is not implementation permission.
-- No downstream mutation, validation-only probe, thread resolution, or
-  rebuttal/defer handoff is licensed unless a matching active Resolution Warrant
-  exists.
-- No selected downstream action is licensed unless the Adversarial Action Matrix
-  has a row for the raw claim and that row clears, preserves, or blocks the action
-  consistently with the selected route.
-
-## Dependency
-
-This skill expects `$seq` to be installed when PR rationale recovery is needed.
-If `$seq` is unavailable, proceed only from current artifacts and mark PR
-rationale fields as `unknown` instead of inventing intent.
-
-
-## Ablation activation receipt
-
-Because prior usage tended to be root-equivalent or mention-only, this skill must
-make ablation visible whenever it could affect the route.
-
-Emit an ablation activation receipt for every real comment batch. Use `ablation_activation_sentinel` when activation is ambiguous, root-equivalent, or any selected route could mutate or preserve code surface:
-
-```md
-Ablation Activation Receipt:
-- trigger: additive-proposal | local-fix-pileup | duplicate-truth-surface | questionable-keep-surface | fixed-point-handoff | none
-- activation authority used: ablation_activation_sentinel | root-equivalent | not-required
-- custom surface authority used: review_ablative_surface_authority | root-equivalent | not-required
-- scoped comment ids:
-- selected lower-surface routes:
-- additive routes cleared:
-- vetoed or unresolved additive routes:
-- isomorphism cards required:
-- implementation handoff impact:
-```
-
-Rules:
-- If `trigger` is not `none`, the receipt must be reflected in `Ablative Counterproposal Ledger`, `Resolution Warrants`, and `Adjudication Bottom Line`.
-- If `trigger: none`, give the evidence-backed reason in the sentinel `not_required_evidence` shape; do not omit the receipt.
-- Root-equivalent adjudication is allowed only when it emits the same activation receipt fields as `ablation_activation_sentinel` and the same clearance fields as the custom surface authority lane.
-- `address` without an ablation activation receipt is not implementation permission. If the receipt is missing, set `implementation_handoff_allowed: no`.
-
-
-## Parallel adversarial action
-
-Every row in `Resolve Selection` must receive one adversarial response. The
-response is not decorative; it is a clearance attempt against the selected action.
-It must either clear the action, preserve the no-change/defer decision, or block
-handoff.
-
-Adversarial responses should be parallelized when dimensions are independent and
-read-only. Use parallel lanes to reduce elapsed time for material batches, but keep
-final adjudication and all downstream writes single-rooted.
-
-### Required adversarial dimensions by action
-
-| selected action | adversarial response must challenge |
-|---|---|
-| `address` | no-change, validate-first, wrong-fix, scope/ownership, surface-budget, ablative route, isomorphism proof, fixed-point over-routing |
-| `validate-only` | mutate-now, no-validation-value, wrong probe, production-mutation escape |
-| `resolve-thread-only` | still-material, stale-proof insufficiency, proof-ref weakness, hidden implementation need |
-| `do-not-address` | materiality, review-closure value, proof-only alternative, user/non-goal mismatch |
-| `delete-collapse-canonicalize` | live contract loss, compatibility risk, missing isomorphism proof, wrong canonical owner, semantic-clone/accidental-rhyme merge |
-| `blocked` | whether a narrower safe validation, reply, proof-only route, or user question can unblock |
-
-### Parallelism modes
-
-Use exactly one `parallelism mode` per row in the Adversarial Action Matrix:
-
-- `root-equivalent`: root performed the adversarial challenge inline; allowed for
-  obvious narrow-local, proof-only, synthetic, or no-change rows.
-- `targeted-parallel`: one or two independent read-only lanes challenged the row
-  or invariant cluster.
-- `full-fanout`: evidence, scope/ownership, criticality, no-change, validation
-  value, fix-shape, ablative-surface, and isomorphism/proof lanes were assigned in parallel.
-- `swarm`: six or more specialists were needed because the batch is large,
-  contentious, P2+, invariant-coupled, likely to reopen, deletion-sensitive, or behavior-preservation-sensitive.
-- `not-required`: only for rows with `resolve decision: blocked` and no safe
-  downstream action to challenge; the missing evidence must be named.
-
-Use full fanout or swarm when any of these are true:
-
-- any P2+ row might be selected as `address`
-- every substantive row would otherwise be selected as `address` or `validate-only`
-- any CAS/Codex finding is invariant-framed and would mutate code
-- the no-change countercase is weak, generic, or reviewer-authority-shaped
-- validation-only is rejected for an unproven but plausible finding
-- implementation would route to `$fixed-point-driver`
-- several comments share a likely governing invariant
-- the selected action would add a helper, flag, branch, adapter, public symbol,
-  state variant, fallback, compatibility path, or duplicate truth surface
-
-Do not parallelize lanes that need writes, mutate fixtures, alter review threads,
-or depend on each other's outputs. Parallel adversaries are read-only evidence
-producers; the root adjudicator integrates them.
+- Preserve raw claim identity. Do not replace ids, reviewers, locations, or exact
+  excerpts with summaries.
+- Preserve artifact-state identity. A warrant expires when the artifact state,
+  claim set, or proof ref changes materially.
+- Separate concern validity from proposed-fix validity.
+- Separate adjudication route from permitted downstream action.
+- `address` does not mean “add code.” It means a claim is eligible for a
+  mutation-capable warrant under a surface budget.
+- `delete-collapse-canonicalize` is a first-class route, not an implementation
+  afterthought.
+- `validate-only` permits proof/probe work, not production mutation.
+- `resolve-thread-only` permits proof-bearing thread closure, not code changes.
+- `do-not-address` preserves a no-change/defer/rebut route.
+- `blocked` permits no downstream action except gathering missing evidence or
+  asking the user.
+- `$fixed-point-driver` may implement only from active `mutate-code` or
+  `delete-collapse-canonicalize` warrants and must consume the surface budget.
 
 ## Required input context
 
-When possible, build a compact context pack before adjudication:
+When possible, build this compact context pack before adjudication:
 
 ```md
-Review comments:
-- raw id/thread:
-- reviewer:
+Review/CAS/comment claims:
+- raw id/thread/finding id:
+- source/reviewer:
 - file/location:
 - exact excerpt:
-- reviewer-suggested fix, if any:
+- suggested fix, if any:
 
 Current artifacts:
 - artifact_state_id:
@@ -257,31 +119,38 @@ Current artifacts:
   - base:
   - head:
   - diff_digest:
-  - comment_set_digest:
+  - claim_set_digest:
   - ci_state:
 - branch/diff summary:
 - touched files:
-- relevant tests:
-- CI/local proof status:
+- relevant tests / CI / local proof:
 - PR description or stated goal:
 
-Rationale recovery:
-- current-session plan/artifacts:
-- `$seq` search used: yes/no
-- memory support used: yes/no
-- missing rationale:
+Constraints:
+- intended change:
+- explicit non-goals:
+- compatibility posture:
+- ownership boundaries:
+- proof bar:
 ```
 
-## Resolve Selection
+Use `$seq` for rationale recovery only when PR intent is missing, disputed,
+stale, or likely to change disposition. Do not use memory to manufacture
+obligations.
 
-Emit a stable row for every raw comment.
+## Claim Decision Kernel
+
+Always emit this section for real claim sets, even in Fast or root-equivalent
+mode.
 
 ```md
-| id/thread | reviewer | excerpt | concern validity | proposed-fix validity | freshness | materiality | governing invariant candidate | resolve decision | handoff action | proof ref |
-|---|---|---|---|---|---|---|---|---|---|
+## Claim Decision Kernel
+
+| id/thread | claim | current-state truth | route | warrant id | proof ref | status |
+|---|---|---|---|---|---|---|
 ```
 
-Allowed `resolve decision` values:
+Allowed `route` values:
 
 - `address`
 - `validate-only`
@@ -290,7 +159,39 @@ Allowed `resolve decision` values:
 - `delete-collapse-canonicalize`
 - `blocked`
 
-Allowed `handoff action` values:
+Allowed `status` values:
+
+- `licensed`
+- `validation-needed`
+- `proof-only`
+- `no-change`
+- `delete-collapse-canonicalize`
+- `blocked`
+
+Kernel rules:
+
+- Every raw claim appears exactly once.
+- Every row has a warrant id. Blocked and no-change decisions still require
+  warrants so downstream tools know what is not licensed.
+- `address` and `delete-collapse-canonicalize` require current artifact proof.
+- `validate-only` requires a proof target and must not authorize production
+  mutation.
+- `resolve-thread-only` requires proof that mutation is unnecessary.
+- `do-not-address` requires a preserved no-change/defer/rebut countercase.
+
+## Resolution Warrants
+
+Resolution Warrants are scoped, expiring permissions. They are the authority
+object that downstream skills consume.
+
+```md
+## Resolution Warrants
+
+| warrant id | claim id | source | selected route | permitted action | permitted scope | forbidden actions | evidence refs | countercase ref | proof required | expiry |
+|---|---|---|---|---|---|---|---|---|---|---|
+```
+
+Allowed `permitted action` values:
 
 - `mutate-code`
 - `add-validation-only`
@@ -299,12 +200,69 @@ Allowed `handoff action` values:
 - `defer`
 - `none`
 
+Route-to-action mapping:
+
+- `address` -> `mutate-code`
+- `delete-collapse-canonicalize` -> `mutate-code`
+- `validate-only` -> `add-validation-only`
+- `resolve-thread-only` -> `resolve-thread`
+- `do-not-address` -> `draft-reply`, `defer`, or `none`
+- `blocked` -> `none`
+
+Every warrant must include:
+
+- exact claim id
+- selected route
+- permitted action
+- narrow permitted scope
+- explicit forbidden actions
+- concrete evidence refs or explicit missing evidence for blocked rows
+- countercase ref
+- proof required, unless action is `none`
+- expiry condition mentioning artifact/head/base/diff/comment/claim/thread state
+
+## Triggered annex rules
+
+Do not make every adjudication emit every annex. Emit annexes when triggered.
+
+### Address / mutation-capable routes
+
+For `address` or `delete-collapse-canonicalize`, emit:
+
+- `## Resolve Countercases`
+- `## Adversarial Action Matrix`
+- `## Ablative Counterproposal Ledger`
+- `## Surface Budget Ledger`
+- `## Warrant / Budget Summary`
+
+### Delete / collapse / canonicalize routes
+
+For `delete-collapse-canonicalize`, also emit:
+
+- `## Ablative Isomorphism Cards`
+
+### New abstraction / clone / helper / flag routes
+
+When a selected route could introduce or merge helpers, adapters, interfaces,
+base classes, generics, macros, flags, state variants, public symbols, wrappers,
+or clone abstractions, the annex rows must include clone classification and
+abstraction-ladder status.
+
+### Root-equivalent shortcuts
+
+Root-equivalent adjudication is allowed only when it emits the Claim Decision
+Kernel and warrants. If a mutation-capable route is selected and the annexes are
+not emitted, set `implementation_handoff_allowed: no`.
+
 ## Resolve Countercases
 
-For every raw comment, construct the strongest countercase to the selected route.
+For every non-blocked route, challenge the selected route rather than merely the
+concern.
 
 ```md
-| id/thread | selected route | strongest countercase | countercase status | evidence ref | route impact |
+## Resolve Countercases
+
+| id/thread | selected route | strongest alternative route | countercase status | evidence ref | route impact |
 |---|---|---|---|---|---|
 ```
 
@@ -314,17 +272,48 @@ Allowed `countercase status` values:
 - `preserved-no-change`
 - `preserved-validate-first`
 - `preserved-proof-only`
+- `preserved-ablative`
 - `unresolved`
+- `blocked`
+
+## Adversarial Action Matrix
+
+Every selected downstream action must be challenged before it is licensed.
+
+```md
+## Adversarial Action Matrix
+
+| id/thread | selected route | adversarial challenge | veto status | clearance | proof ref | decision impact |
+|---|---|---|---|---|---|---|
+```
+
+Allowed `veto status` values:
+
+- `cleared`
+- `preserved-no-change`
+- `preserved-validate-first`
+- `vetoed`
+- `unresolved`
+- `blocked`
+
+Allowed `clearance` values:
+
+- `cleared`
+- `preserved`
+- `rerouted`
+- `downgraded`
 - `blocked`
 
 ## Ablative Counterproposal Ledger
 
-For every `address` or `delete-collapse-canonicalize` row, emit an Ablative
-Counterproposal before issuing a mutation-capable warrant.
+For every mutation-capable route, prove that lower-surface options were selected
+or defeated before licensing additive work.
 
 ```md
-| id/thread | valid concern | additive proposal | delete candidate | collapse/reuse candidate | canonical owner candidate | privatization candidate | clone classification | abstraction-ladder check | lower-surface route | why insufficient or selected | ablative clearance | isomorphism status | proof ref |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+## Ablative Counterproposal Ledger
+
+| id/thread | additive proposal | delete candidate | collapse/reuse candidate | canonical owner candidate | privatization/decommission candidate | clone classification | abstraction-ladder check | lower-surface route | why insufficient or selected | ablative clearance | proof ref |
+|---|---|---|---|---|---|---|---|---|---|---|---|
 ```
 
 Allowed `lower-surface route` values:
@@ -335,246 +324,219 @@ Allowed `lower-surface route` values:
 - `canonicalize`
 - `privatize`
 - `decommission`
+- `refactor-existing-seam`
 - `validate-first`
 - `proof-only`
 - `none`
 
-Allowed `clone classification` values:
+Allowed `ablative clearance` values:
 
-- `exact-clone`
-- `parametric-clone`
-- `gapped-clone`
-- `semantic-clone`
-- `accidental-rhyme`
-- `not-applicable`
-- `unknown`
+- `select-ablative-route`
+- `clear-additive`
+- `validate-first`
+- `veto-additive`
+- `unresolved`
+- `not-required`
 
-Allowed `abstraction-ladder check` values:
+## Ablative Isomorphism Cards
 
-- `not-needed`
-- `rung-valid`
-- `rung-skipped`
-- `too-few-cases`
-- `too-many-variance-axes`
-- `proof-missing`
-- `unknown`
+For deletion, collapse, merge, reuse, or canonicalization, prove behavior
+preservation or route to validation-first.
 
-Allowed `isomorphism status` values:
+```md
+## Ablative Isomorphism Cards
+
+| id/thread | surface | proposed action | behavior preserved | public contract preserved | error/order/side effects preserved | compatibility risk | proof signal | card status |
+|---|---|---|---|---|---|---|---|---|
+```
+
+Allowed `card status` values:
 
 - `pass`
 - `validate-first`
 - `missing`
 - `not-required`
 
-
-Allowed `ablative clearance` values:
-
-- `clear-additive`
-- `select-ablative-route`
-- `validate-first`
-- `veto-additive`
-- `unresolved`
-- `not-required`
-
-`address` with `mutate-code` is illegal unless `ablative clearance` is
-`clear-additive` or `select-ablative-route` and the Resolution Warrant records the
-selected route.
-
-## Ablative Isomorphism Card
-
-For every selected deletion, collapse, merge, reuse, or canonicalization route,
-emit a compact behavior-preservation card before handoff. This is the lightweight
-import from `$simplify-and-refactor-code-isomorphically`: prove behavior identical
-before removing or merging surface.
-
-```md
-Ablative Isomorphism Card:
-- id/thread:
-- surface:
-- proposed action: delete | collapse | reuse | canonicalize | privatize | decommission
-- behavior preserved:
-- public contract preserved:
-- error semantics preserved:
-- ordering / side effects preserved:
-- clone classification:
-- abstraction-ladder check:
-- compatibility risk: none | low | medium | high
-- proof signal:
-- deletion/collapse witness:
-- card status: pass | validate-first | missing | not-required
-```
-
-If any relevant row cannot be filled, select `validate-first` or block handoff.
-
-
 ## Surface Budget Ledger
 
-Every mutation-capable warrant must include a surface budget. See
-`references/surface-budget-warrants.md`.
+Every `mutate-code` warrant must carry a surface budget.
 
 ```md
-| warrant id | mode | target net loc | max positive loc | max new public symbols | max new files | max new helpers | max new flags/knobs | max new state variants | max new branches | duplicate path budget | ablative probes required | expansion warrant required | expansion status | proof required | notes |
+## Surface Budget Ledger
+
+| warrant id | mode | target net loc | max positive loc | max new public symbols | max new files | max new helpers | max new flags/knobs | max new state variants | max new branches | duplicate path budget | subtractive probes required | expansion warrant required | expansion status | proof required | notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 ```
 
-Default mode for `mutate-code` warrants is `ablative-first`.
-Deletion/collapse/canonicalization warrants must carry an Ablative Isomorphism Card unless the selected route is `validate-first`.
+Allowed `mode` values:
 
-## Adversarial Action Matrix
+- `ablative-first`
+- `additive-authorized`
+- `proof-only`
+- `validation-only`
+- `not-applicable`
 
-Emit after `Resolve Countercases` and before `Resolution Warrants`.
+Default for `mutate-code` is `ablative-first`. `additive-authorized` is legal
+only when deletion, reuse, collapse, canonicalization, privatization,
+decommissioning, and refactor probes are defeated with current evidence.
 
-```md
-| id/thread | primary resolve decision | adversarial lanes | parallelism mode | strongest adversarial response | veto status | clearance | proof ref | decision impact |
-|---|---|---|---|---|---|---|---|---|
-```
+Allowed `target net loc` values:
 
-Allowed `veto status` values:
+- `negative`
+- `zero`
+- `small-positive`
+- `unknown`
+- `not-applicable`
 
-- `cleared`
-- `preserved-no-change`
-- `unresolved`
-- `vetoed`
-- `blocked`
-- `not-required`
+## Fixed-point-driver surface handshake
 
-Allowed `clearance` values:
-
-- `cleared`
-- `preserved`
-- `rerouted`
-- `downgraded`
-- `blocked`
-
-Rules:
-
-- `address` requires `veto status: cleared`, `clearance: cleared`, and a concrete
-  proof ref that defeats the strongest no-change / validate-first / wrong-fix /
-  scope / budget / ablative alternative.
-- `validate-only` requires `veto status: cleared`, `clearance: cleared` or
-  `downgraded`, and proof that validation is the correct next action instead of
-  mutation or no action.
-- `resolve-thread-only` requires `veto status: cleared` or
-  `preserved-no-change`, `clearance: preserved`, and a proof ref that makes code
-  mutation unnecessary.
-- `do-not-address` requires `veto status: preserved-no-change` or `cleared`,
-  `clearance: preserved`, and a proof/ref explaining why no downstream action is
-  selected.
-- `delete-collapse-canonicalize` requires live-contract preservation evidence and
-  an ablative clearance packet.
-- `blocked` requires `veto status: blocked` or `unresolved`, `clearance: blocked`,
-  and a missing-evidence proof ref.
-- A vetoed or unresolved adversarial response must block implementation handoff
-  unless the row is rerouted to a stricter non-mutating action with a matching
-  warrant.
-
-## Authority fanout
-
-Use custom read-only Codex agents when available. The package includes the
-runnable authority panel under `codex/agents/`:
-
-- `review_evidence_authority`
-- `review_direction_ownership_authority`
-- `review_criticality_authority`
-- `review_no_change_advocate`
-- `review_validation_value_authority`
-- `review_fix_shape_authority`
-- `review_ablative_surface_authority`
-
-If custom agents are unavailable, emit root-equivalent packets with the same role
-names and schema. Root-equivalent packets must be evidence-bearing and are not a
-license to skip the clearance matrix or veto ledger.
-
-## Resolution Warrants
-
-Resolution Warrants are scoped, expiring permissions. They are not general task
-instructions.
-
-```yaml
-resolution_warrant:
-  warrant_id: "..."
-  raw_comment_ids: []
-  artifact_state_id: "..."
-  permitted_action: mutate-code | add-validation-only | resolve-thread | draft-reply | defer | none
-  selected_route: address | validate-only | resolve-thread-only | do-not-address | delete-collapse-canonicalize | blocked
-  permitted_scope: []
-  forbidden_actions: []
-  proof_required: "..."
-  surface_budget:
-    mode: ablative-first | additive-authorized | proof-only | validation-only | not-applicable
-    ablative_clearance: clear-additive | select-ablative-route | validate-first | veto-additive | unresolved | not-required
-    lower_surface_routes_defeated: []
-    clone_classification: exact-clone | parametric-clone | gapped-clone | semantic-clone | accidental-rhyme | not-applicable | unknown
-    abstraction_ladder_check: not-needed | rung-valid | rung-skipped | too-few-cases | too-many-variance-axes | proof-missing | unknown
-    isomorphism_status: pass | validate-first | missing | not-required
-    expansion_warrant_required: yes | no
-  expires_when: "artifact_state changes, comment set changes, or proof ref becomes stale"
-```
-
-## Completion gate
-
-Before final handoff, emit:
+`$review-adjudication` issues budgets; `$fixed-point-driver` consumes them.
+When any implementation route goes to `$fixed-point-driver`, the handoff must
+request these downstream receipts:
 
 ```md
-Adjudication Gate:
-- raw_comment_inventory_complete: pass/fail
-- artifact_state_bound: pass/fail
-- resolve_selection_complete: pass/fail
-- resolve_countercases_complete: pass/fail
-- adversarial_action_coverage: pass/fail
-- ablation_activation_receipt: pass/fail/not-required
-- ablative_counterproposals_complete: pass/fail
-- ablation_isomorphism_cards_complete: pass/fail/not-applicable
-- clone_classification_complete: pass/fail/not-applicable
-- abstraction_ladder_checks_complete: pass/fail/not-applicable
-- authority_clearance_complete: pass/fail
-- surface_budgets_complete: pass/fail/not-applicable
-- resolution_warrants_current: pass/fail
-- implementation_handoff_allowed: yes/no
-- validation_handoff_allowed: yes/no
-- reply_handoff_allowed: yes/no
+Surface Budget Preflight:
+- warrant id:
+- feature to preserve:
+- deletion / reuse / collapse / canonicalization / refactor probes:
+- selected first implementation shape:
+- budget status before patch:
+
+Surface Delta Receipt:
+- warrant id:
+- patch group:
+- files changed:
+- insertions/deletions/net:
+- public symbols/helpers/flags/state/branches added:
+- deleted/collapsed paths:
+- budget status:
+
+Expansion Warrant Request:
+- only if the patch must exceed budget
+- additive surface requested:
+- defeated lower-surface route refs:
+- proof that added surface reduces total semantic surface:
+
+Surface Budget Closure:
+- final diff within budget: yes/no
+- proof passed:
+- unresolved expansion debt:
+```
+
+## Warrant / Budget Summary
+
+Before the final handoff, emit a compact visible license summary:
+
+```md
+## Warrant / Budget Summary
+
+| warrant id | claim id | route | permitted action | surface budget status | ablation status | implementation allowed |
+|---|---|---|---|---|---|---|
+```
+
+This section is mandatory when any route is `address` or
+`delete-collapse-canonicalize`.
+
+## Adjudication Gate
+
+Before handoff, emit:
+
+```md
+## Adjudication Gate
+
+| field | value | basis |
+|---|---|---|
+| claim_kernel_complete | pass/fail |  |
+| artifact_state_bound | pass/fail |  |
+| warrant_coverage | pass/fail |  |
+| route_annexes_complete | pass/fail/not-required |  |
+| surface_budget_coverage | pass/fail/not-applicable |  |
+| fixed_point_handoff_complete | pass/fail/not-applicable |  |
+| handoff_agenda_consistency | pass/fail |  |
+| adjudication_complete | pass/fail |  |
+| implementation_handoff_allowed | yes/no |  |
+| validation_handoff_allowed | yes/no |  |
+| reply_handoff_allowed | yes/no |  |
+```
+
+`adjudication_complete` may be `pass` only when all required fields pass, except
+fields explicitly marked `not-required` or `not-applicable` by route.
+
+If any required field fails, the bottom line must say:
+
+```md
+Blocked: incomplete adjudication. Do not implement yet.
+```
+
+## Handoff Agenda
+
+Use explicit ids. Never use `all`.
+
+```md
+## Handoff Agenda
+
+- implementation items:
+- delete/collapse/canonicalize items:
+- validation-only items:
+- proof-only thread-resolution items:
+- reply/defer/no-change items:
+- blocked items:
+- fixed-point-driver surface handshake required: yes/no/not-applicable
+- proof:
 ```
 
 ## Tail output contract
 
-End with these sections, in this order:
+End with these sections, in order:
 
 1. `Act On`
 2. `Validate Only`
 3. `Delete / Collapse / Canonicalize`
 4. `Rebut / Do Not Address`
 5. `Need Evidence / Blocked`
-6. `Handoff Agenda`
-7. `Adjudication Bottom Line`
+6. `Warrant / Budget Summary`
+7. `Handoff Agenda`
+8. `Adjudication Bottom Line`
 
-`Adjudication Bottom Line` must be the final section and must include:
+`Adjudication Bottom Line` must be the final section and must name the single
+next action.
 
-- decisive route
-- ablation activation status: triggered / not-required, with the receipt id
-- highest-value ablative route, if any
-- highest-value isomorphic collapse/deletion route, if any
-- whether implementation handoff is allowed
-- the single next action
+## Machine-check hook
+
+When automation is available, run:
+
+```bash
+python codex/skills/review-adjudication/tools/review_adjudication_gate.py adjudication.md
+```
+
+For post-implementation budget checking:
+
+```bash
+python codex/skills/review-adjudication/tools/review_adjudication_gate.py adjudication.md \
+  --changed-files src/foo.zig,test/foo_test.zig \
+  --diffstat "2 files changed, 12 insertions(+), 30 deletions(-)"
+```
 
 ## Hard rules
 
+- Never issue implementation permission without an active warrant.
+- Never let `address` authorize unbounded additive implementation.
+- Never route `validate-only`, `resolve-thread-only`, `do-not-address`, or
+  `blocked` to production mutation.
+- Never emit `delete-collapse-canonicalize` without either an Ablative
+  Isomorphism Card or a validate-first route.
+- Never let `$fixed-point-driver` implement beyond the warrant scope or surface
+  budget without an Expansion Warrant Request.
 - Never use reviewer authority as evidence.
-- Never convert `valid concern` into `add code` without an ablation activation receipt and ablative clearance.
-- Never issue `mutate-code` permission from a stale artifact state.
-- Never hide comment identity behind summaries.
-- Never let every comment become `address` without an all-action skew audit.
-- Never let multiple local comments hide one governing invariant.
-- Never let an additive fix bypass deletion, reuse, collapse, canonicalization, or
-  privatization probes.
-- Never delete, collapse, or merge behavior without an isomorphism card or
-  validate-first route.
-- Never climb the abstraction ladder merely to satisfy a review comment.
+- Never hide identity, uncertainty, or stale artifact state.
 
 ## Resources
 
-- [authority-fanout.md](references/authority-fanout.md)
+- [schema-v9.yaml](references/schema-v9.yaml)
+- [claim-decision-kernel.md](references/claim-decision-kernel.md)
 - [surface-budget-warrants.md](references/surface-budget-warrants.md)
+- [fixed-point-driver-surface-handshake.md](references/fixed-point-driver-surface-handshake.md)
+- [adjudication-output-template.md](references/adjudication-output-template.md)
+- [adjudication-gate-contract.md](references/adjudication-gate-contract.md)
 - [ablative-clearance.md](references/ablative-clearance.md)
-- [isomorphic-ablation.md](references/isomorphic-ablation.md)
-- [CODEX_SUBAGENTS.md](references/CODEX_SUBAGENTS.md)
-- [ablation-activation.md](references/ablation-activation.md)
+- [example-invocations.md](references/example-invocations.md)

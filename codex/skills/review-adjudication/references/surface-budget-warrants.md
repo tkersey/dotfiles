@@ -2,7 +2,7 @@
 
 Surface Budget Warrants prevent `address` decisions from turning into additive
 implementation by default. They bind every mutation-capable Resolution Warrant to
-a least-surface implementation search and a measurable expansion budget.
+a least-surface implementation search and measurable expansion budget.
 
 ## Doctrine
 
@@ -28,16 +28,14 @@ Prefer solution shapes in this order:
 ## Surface Budget Ledger
 
 ```md
-| warrant id | mode | target net loc | max positive loc | max new public symbols | max new files | max new helpers | max new flags/knobs | max new state variants | max new branches | duplicate path budget | subtractive probes required | ablation activation receipt | expansion warrant required | expansion status | proof required | notes |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| warrant id | mode | target net loc | max positive loc | max new public symbols | max new files | max new helpers | max new flags/knobs | max new state variants | max new branches | duplicate path budget | subtractive probes required | expansion warrant required | expansion status | proof required | notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 ```
 
-`mutate-code` warrants should default to `ablative-first`. `exploratory` is not
-implementation permission. Public API, state, flags/knobs, duplicate paths, and
-new files default to `0` unless unavoidable and cleared.
+Allowed modes are `ablative-first`, `additive-authorized`, `proof-only`,
+`validation-only`, and `not-applicable`. This file is the source of truth for the
+mode vocabulary.
 
-## Fixed-point-driver handoff
-
-Every `mutate-code` or `delete-collapse-canonicalize` warrant should hand off to
-`$fixed-point-driver` with a Surface Budget Preflight and receive Surface Delta
-Receipts plus Ablation Ledger rows after patch groups.
+`mutate-code` warrants default to `ablative-first`. Public API, new files,
+helpers, flags/knobs, state variants, branches, and duplicate paths default to
+budget `0` unless unavoidable and cleared.
