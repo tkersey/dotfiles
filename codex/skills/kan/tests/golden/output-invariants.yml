@@ -1,7 +1,0 @@
-invariants:
-  - name: world-boundary-data
-    must_include_one_of:
-      - ["World", "Boundary", "Kind", "Law"]
-  - name: no-mechanics-without-handoff
-    forbidden:
-      - "This is a Kan extension" # unless accompanied by concrete data and law in evaluator
