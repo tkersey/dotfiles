@@ -1,6 +1,6 @@
 # universalist
 
-Drop-in replacement skill for structural, universal-construction-driven codebase architecture, now centered on Universal Composition Doctrine, Composition Certificates, and Boundary Normal Form.
+Single drop-in Universal Architecture skill for structural, universal-construction-driven codebase architecture. This version folds the former `kan` skill into `universalist` as an internal mechanics layer, so `$universalist` is the only top-level skill needed for this doctrine.
 
 It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It adds Track D for universal architecture boundaries: free syntax, coherent observations, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, explicit IR, and law tests.
 
@@ -10,7 +10,7 @@ From your repo root:
 
 ```bash
 rm -rf codex/skills/universalist
-unzip universalist-universal-architecture-dropin.zip -d .
+unzip universalist-unified-architecture-dropin-v9.zip -d .
 cd codex/skills/universalist
 chmod +x scripts/*.sh scripts/*.py
 ./scripts/check_universalist.sh
@@ -30,7 +30,7 @@ The skill decides whether the problem needs:
 - observation/generation vocabulary;
 - explicit first-order IR.
 
-Use `$kan` only after `$universalist` has selected a Track D boundary and the task becomes detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, or defunctionalization mechanics.
+Use `$universalist` for the full workflow. Detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, categorical-data, and defunctionalization mechanics now live inside `references/mechanics/` and `scripts/emit_mechanics_report.sh`.
 
 ## Central rule
 
@@ -88,3 +88,38 @@ Useful commands:
 ./scripts/emit_cql_fit_assessment.sh context-boundary agnostic
 ./scripts/emit_context_publication_boundary.sh published-context agnostic
 ```
+
+
+## Possibility Sheafification
+
+Track G treats the codebase as a usage site. Local uses are sections; shared fields, tests, traces, and observations are overlaps. A correct architecture-level abstraction behaves like a sheaf: compatible local meanings glue uniquely to one global meaning. Use this track to replace inexact abstractions with canonical artifacts and produce a Sheafification Certificate.
+
+
+## Unified mechanics layer
+
+The former standalone `kan` skill is now folded into this skill as an internal mechanics layer:
+
+```text
+references/mechanics/
+templates/mechanics/
+scripts/emit_mechanics_report.sh
+```
+
+Use the unified workflow:
+
+```text
+$universalist identifies the signal, seam, worlds, boundary, artifact, witness, law, falsifier, and certificate.
+Mechanics references elaborate Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/sheafification only when needed.
+```
+
+Useful mechanics commands:
+
+```bash
+./scripts/emit_mechanics_report.sh index
+./scripts/emit_mechanics_report.sh kan-lift typescript
+./scripts/emit_mechanics_report.sh codensity-presentation agnostic
+./scripts/emit_mechanics_report.sh cql-context agnostic
+./scripts/emit_mechanics_report.sh sheafification typescript
+```
+
+You can safely remove `codex/skills/kan`; this package is self-contained.

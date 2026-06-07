@@ -2,6 +2,6 @@ interface:
   display_name: "Universalist"
   short_description: "Choose smallest honest structural refactors and universal architecture boundary artifacts."
   brand_color: "#6D5EF6"
-  default_prompt: "Use $universalist to diagnose the structural smell, choose one seam, select the smallest honest construction or canonical boundary artifact, and name the proof signal."
+  default_prompt: "Use $universalist to diagnose the structural smell, choose one seam, select the smallest honest construction or canonical boundary artifact, and name the proof signal, and gluing/sheafification evidence when abstractions are inexact."
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

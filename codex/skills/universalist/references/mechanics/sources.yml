@@ -1,0 +1,21 @@
+sources:
+  KAN-RIEHL-CTIC:
+    title: "Category Theory in Context"
+    kind: textbook
+    safe_for: ["Kan extensions", "adjunctions", "universal properties"]
+  KAN-MACLANE-CWM:
+    title: "Categories for the Working Mathematician"
+    kind: textbook
+    safe_for: ["Kan extensions", "Yoneda", "ends/coends", "adjunctions"]
+  KAN-NLAB-LIFT:
+    title: "nLab Kan lift"
+    kind: reference
+    safe_for: ["Kan lift definitions", "postcomposition framing"]
+  KAN-HINZE-2012:
+    title: "Kan Extensions for Program Optimisation"
+    kind: paper
+    safe_for: ["codensity", "continuations", "program optimisation"]
+  KAN-DANVY-NIELSEN-2001:
+    title: "Defunctionalization at Work"
+    kind: paper
+    safe_for: ["defunctionalization"]

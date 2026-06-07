@@ -101,5 +101,23 @@ reconstruct(coherentProbes(subject)) satisfies required observations.
 A required behavior uses evidence not captured by the probe family, or probes are incoherent.
 OUT
     ;;
+  sheafification|possibility-sheafifier|exact-abstraction|abstraction)
+    cat <<OUT
+# Possibility Sheafification law test (${language})
+
+## Local compatibility
+For each overlap U_i ∩ U_j:
+  restrict(localMeaning_i) == restrict(localMeaning_j)
+
+## Global existence
+Every compatible family of local meanings for the witness has a global representation.
+
+## Global uniqueness / normalization
+Any two global representations with the same local observations normalize to the same canonical value.
+
+## Falsifier
+A local disagreement, missing global case, non-unique global representation, or impossible global state is rejected or reported.
+OUT
+    ;;
   *) echo "unknown law-test kind: $kind" >&2; exit 2 ;;
 esac

@@ -1,6 +1,7 @@
 ---
 name: universalist
-description: "Use when repeated validation, policy branching, protocol/state-machine drift, generated provenance loss, callback/effect boundaries, or semantic-consumer context point to structural refactor over local polish. Select one signal, one world boundary, and the smallest honest construction: typed state, free syntax, observations/projections, lifted interpreter/handler, explicit IR, law tests, canonical boundary artifact, Composition Certificate, Boundary Normal Form step, or Exact Context/Context Certificate. Prefer adapter-first staging and one falsifiable proof signal; escalate to Kan/codensity/free-builder mechanics only after a real cross-world boundary is identified."
+description: >
+  Use when code smells point to a structural refactor that should ship: flag or state matrices, repeated boundary validation, shared-key agreement checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, protocols or state machines with unclear observations, effect/workflow operations needing multiple handlers, public contracts determining internals, forgetful or observational projections that may need a canonical free builder, or any need for canonical boundary artifacts, Composition Certificates, Boundary Normal Form, presentation strategies, semantic compression, dense probe presentations, codensity-style presentation diagnostics, Exact Context Doctrine, Context Certificates, Context Normal Form, context compilation, semantic consumption boundaries, or task-indexed data exchange for semantic consumers such as models, humans, policy engines, compilers, workflow schedulers, deployment controllers, planners, auditors, or agent runtimes; and use when existing abstractions need Possibility Sheafification because they are too broad, too narrow, redundant, inconsistent, or arbitrary. Default to one signal, one seam, one smallest honest construction, adapter-first staging, one explicit boundary artifact, one proof signal, and—when the seam crosses worlds—one Composition Certificate. This unified version also contains the former Kan mechanics internally: Kan extensions/lifts, Freyd/AFT, Yoneda/Coyoneda, codensity presentations, categorical data/CQL, and defunctionalization.
 ---
 
 # Universalist
@@ -9,6 +10,8 @@ Use this skill when the highest leverage comes from changing the **shape of trut
 
 This is an **inner lens** for choosing the right structural move. It is not a generic implementation skill. Use it to decide and stage the structure, then let the repo's normal implementation flow carry the change.
 
+This is now the single top-level skill for the Universal Architecture doctrine. The former `kan` skill has been folded into this skill as an internal mechanics layer under `references/mechanics/`, `templates/mechanics/`, and `scripts/emit_mechanics_report.sh`.
+
 The enriched slogan is:
 
 > Universal architecture is the practice of designing software around canonical boundary artifacts: **free syntax, coherent observations, transported semantics, lifted implementations, free builders behind projections, obstruction reports, behavioral coalgebras, effect signatures with handlers, explicit IRs, and law tests.**
@@ -16,6 +19,8 @@ The enriched slogan is:
 Core discipline:
 
 > Allow arbitrary domain primitives, but do not allow arbitrary composition across architecture boundaries.
+
+> Do not merely abstract. Sheafify possibility.
 
 Ordinary code may live inside a boundary: I/O, math, parsing, vendor APIs, database drivers, model calls, clocks, randomness, local algorithms, and low-level loops. Composition boundaries should be explicit artifacts: syntax, observations, projections, transports, lifts, handlers, state transitions, IRs, or law tests.
 
@@ -184,6 +189,52 @@ Verified context planes own semantic publication.
 ```
 
 CQL and categorical databases are reference technologies for the verified context plane when schemas, mappings, constraints, integration, and provenance matter. Do not treat CQL as a default live-memory substrate. Pair it with operational stores when low-latency mutation, distributed writes, access control, or streaming are central.
+
+
+## Possibility Sheafification Doctrine
+
+Maxim:
+
+```text
+Do not merely abstract. Sheafify possibility.
+```
+
+A codebase already contains local evidence about what its abstractions mean: call sites, tests, controllers, serializers, database constraints, UI assumptions, policy checks, adapters, plugin hooks, event handlers, context schemas, and generated artifacts. Treat those local usages as a **site**. Treat each local meaning as a **section**. Treat shared identifiers, fields, traces, fixtures, and observations as **overlaps**.
+
+An architecture-level abstraction is correct when compatible local meanings glue to one global meaning, and do so uniquely up to intended equivalence.
+
+```text
+compatible local meanings glue uniquely to global meaning
+```
+
+Possibility Sheafification is the abstraction manipulator that turns a messy presheaf of local meanings into a sheaf-like exact abstraction:
+
+- local meanings agree on overlaps;
+- every compatible family has a global representation;
+- the global representation is unique up to intended quotient/canonicalization;
+- impossible global states are excluded;
+- missing valid global states become explicit obligations or extensions;
+- redundant global states are quotiented or normalized.
+
+Use Track G when the user wants the architecture to become inevitable: abstractions should admit exactly what is possible and no more. A codebase reaches **Abstraction Normal Form** when architecture-level abstractions behave like sheaves over their intended usage sites.
+
+### Four sheaf failures
+
+1. **Local inconsistency** — local meanings disagree on overlaps. Repair with split states, refined types, equalizers, pullbacks, observation coherence, or an obstruction report.
+2. **Missing global glue** — local meanings are compatible but no global artifact represents them. Repair with free syntax, lifted implementation, effect signature, realizer, obligation ledger, context schema, or generated IR.
+3. **Non-unique gluing** — multiple global representations produce the same local observations. Repair with quotient, normalization, canonical IR, coequalizer-like artifact, or single interpreter.
+4. **Hidden excess possibility** — the global abstraction admits states no local behavior can justify. Repair with refined types, sum types, state machines, behavioral coalgebras, or exact context constraints.
+
+New doctrine stack:
+
+```text
+Primitives compute.
+Boundaries compose.
+Presentations compress.
+Contexts prepare.
+Abstractions constrain possibility.
+Witnesses certify.
+```
 
 ## Do not trigger for
 
@@ -554,6 +605,57 @@ Do **not** teach Freyd’s theorem in full inside ordinary responses. Translate 
 
 > Does this observation boundary support a canonical implementation builder, or is it too lossy/ad hoc?
 
+
+### Track G — Possibility Sheafification / inevitable architecture
+
+Use when the codebase already has an abstraction, but the abstraction appears semantically inexact: too broad, too narrow, redundant, inconsistent, misplaced, callback-shaped, stringly typed, optional-field-heavy, or arbitrary.
+
+Deliver:
+
+- current abstraction and files;
+- usage site: local contexts that cover the abstraction;
+- local sections: what the abstraction means in each context;
+- overlaps: shared fields, IDs, tests, observations, traces, or invariants;
+- compatibility checks on overlaps;
+- gluing analysis: existence, uniqueness, failures, and obstructions;
+- possibility envelope: valid states, impossible states currently admitted, valid states currently omitted, redundant meanings;
+- canonical repair: refined type, coproduct, pullback, quotient, free syntax, coherent observations, Kan lift, effect signature, behavioral coalgebra, Exact Context artifact, defunctionalized IR, or obstruction report;
+- Sheafification Certificate;
+- one law test and one falsifier;
+- one witness-slice migration plan.
+
+Use Track G for:
+
+- `string`, `any`, `dict`, nullable/optional-field soup carrying domain state;
+- interfaces/classes that mean different things at different call sites;
+- callbacks that hide operation syntax;
+- duplicated status/state representations;
+- API DTOs whose observed meanings differ from domain meanings;
+- tests that imply a global abstraction missing from code;
+- context objects that are raw retrieved material rather than certified context;
+- generated artifacts with multiple encodings of the same meaning;
+- state/protocol objects that admit impossible traces.
+
+Do not use Track G for local helper abstractions whose possible states are intentionally broad and do not cross architecture boundaries.
+
+Track G question:
+
+```text
+Does this abstraction satisfy the sheaf condition over its real usage site?
+```
+
+Track G law shape:
+
+```text
+compatible local observations glue to a canonical global representation
+```
+
+Track G falsifiers:
+
+```text
+local disagreement, missing global representation, non-unique representation, or impossible global state.
+```
+
 ## Non-negotiables
 
 - One signal, one seam, one smallest honest construction.
@@ -841,7 +943,7 @@ For Track F, also include:
 - **Freshness / provenance / missingness / contradiction plan**
 - **Rendering law**
 
-For Track B, Track C, Track D, or Track F, also update `.universalist-plan.md`.
+For Track B, Track C, Track D, Track F, or Track G, also update `.universalist-plan.md`.
 
 ## Guardrails
 
@@ -856,11 +958,35 @@ For Track B, Track C, Track D, or Track F, also update `.universalist-plan.md`.
 - Defunctionalize only when higher-order behavior crosses a meaningful boundary.
 - Treat Freyd/AFT as a projection diagnostic, not as a theorem recital.
 - Treat opaque subsystems as primitives behind explicit observation/projection boundaries.
+- Do not sheafify merely to decorate an abstraction; sheafify only when local usage evidence shows inconsistency, missing glue, non-unique glue, or excess possibility.
+- Do not claim an abstraction is exact without a usage site, local sections, overlap checks, gluing law, and falsifier.
 
-## Hand-offs and companion skills
+## Internal mechanics and companion skills
 
-- Use **`kan`** only after `universalist` has identified the signal, seam, worlds, boundary kind, candidate artifact, witness slice, and proof signal; then use `kan` for detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, or defunctionalization mechanics.
-- Do not hand off to `kan` until `universalist` has identified the signal, seam, candidate artifact, witness slice, and proof signal.
+Use **this skill** as the only top-level Universal Architecture workflow. Do not hand off to a separate `kan` skill; the former Kan material is now an internal mechanics layer.
+
+Mechanics are used only after `universalist` has identified:
+
+```text
+signal
+seam/worlds
+boundary kind
+known side
+unknown location
+canonical artifact
+witness slice
+law/falsifier
+certificate type
+```
+
+Then read the relevant internal mechanics reference or run:
+
+```bash
+./scripts/emit_mechanics_report.sh <topic> <language>
+```
+
+Mechanics topics include Kan extensions/lifts, Freyd/AFT, Yoneda/Coyoneda, codensity presentations, categorical-data/context compilation, CQL fit, pushout reconciliation, defunctionalization, and possibility sheafification.
+
 - Use **`invariant-ace`** when the main job is discovering or pinning down invariants before choosing structure.
 - Use **`accretive-implementer`** after the construction is chosen and the task becomes ordinary implementation.
 - Use **`repeatedly-apply-skill`** when sweeping the repo for multiple seams or doing a multi-pass campaign.
@@ -895,6 +1021,27 @@ Universal architecture references:
 - `references/composition-certificates.md`
 - `references/boundary-normal-form.md references/presentation-strategies.md references/dense-dual-presentation.md references/semantic-compression.md`
 
+
+Sheafification / exact-abstraction references:
+
+- `references/possibility-sheafification.md`
+- `references/sheafification-certificates.md`
+- `references/abstraction-normal-form.md`
+- `references/abstraction-manipulator-playbook.md`
+
+Internal mechanics references from former `kan` skill:
+
+- `references/mechanics/README.md`
+- `references/mechanics/foundations.md`
+- `references/mechanics/kan-lifts.md`
+- `references/mechanics/freyd-aft.md`
+- `references/mechanics/yoneda-coyoneda.md`
+- `references/mechanics/codensity-presentations.md`
+- `references/mechanics/defunctionalization.md`
+- `references/mechanics/context-compilation.md`
+- `references/mechanics/cql-context-management.md`
+- `references/mechanics/possibility-sheafification-mechanics.md`
+
 ## Scripts
 
 - `scripts/init_universalist_plan.sh`
@@ -914,6 +1061,17 @@ Universal architecture references:
 - `scripts/emit_exact_context_prompt.sh`
 - `scripts/check_universalist.sh`
 
+
+- `scripts/emit_possibility_sheafifier.sh`
+- `scripts/emit_sheafification_certificate.sh`
+- `scripts/emit_abstraction_normal_form_plan.sh`
+- `scripts/emit_mechanics_report.sh`
+- `scripts/emit_kan_stub.sh`
+- `scripts/emit_codensity_presentation.sh`
+- `scripts/emit_context_compilation_report.sh`
+- `scripts/emit_cql_context_report.sh`
+- `scripts/emit_sheafification_kan.sh`
+
 ## Templates
 
 - `templates/universalist-plan.md`
@@ -922,3 +1080,7 @@ Universal architecture references:
 - `templates/freyd-boundary-diagnostic.md`
 - `templates/composition-certificate.md`
 - `templates/boundary-normal-form-report.md`
+
+
+- `templates/sheafification-certificate.md`
+- `templates/abstraction-normal-form-report.md`
