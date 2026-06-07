@@ -1,404 +1,658 @@
 ---
 name: st
-description: "Manage durable task plans in `.step/st-plan.jsonl`, including first-use choice between repo-committed storage and local-only `.git/info/exclude`, so state survives turns/sessions and can stay reviewable. Use for `use $st`, resume/export/import plan state, checkpoint milestones, track dependencies/blocked work, show ready next tasks, keep shared TODO state on disk, store backlog tasks off `update_plan`, select durable tasks for the mirror, map a `$select` plan into durable state, prove `$st` implementation tracking, mirror durable plan into Codex `update_plan` or OpenCode `TodoWrite`, or diagnose/repair `st-plan.jsonl` semantics, lock-file ignore policy, or seq/checkpoint integrity."
+description: >-
+  Durable graph-planning and execution-aperture manager for `.step/st-plan.jsonl`.
+  Use for `use $st`, resuming durable work, tracking dependencies, proof-carrying
+  completion, mirroring bounded work into Codex/OpenCode native plan tools, and
+  especially for turning a plan, proposal, issue, spec, markdown document, TODO
+  list, or design into executable tasks. For material plans, compile intent and
+  self-contained graph capsules before selecting an aperture; do not skip straight
+  to `prime`/`complete` unless the repo already has a healthy `$st` graph or the
+  work is explicitly simple.
 ---
 
 # st
 
-## Overview
+## Mental Model
 
-Maintain a durable task inventory in the repo worktree (default: `.step/st-plan.jsonl`) using in-place JSONL v3/v4 persistence with dual lanes:
+`$st` is the durable source of truth for agentic work in the current repository.
 
-- `event` lane for mutations
-- `checkpoint` lane for periodic full-state snapshots
+The native plan surface (`update_plan` in Codex or `TodoWrite` in OpenCode) is not the durable plan. It is a **bounded execution aperture**: the small executable slice selected from the durable graph right now.
 
-Items use typed dependency edges (`deps: [{id,type}]`) plus `notes`, `comments`, `in_plan`, and optional execution metadata (`related_to`, `scope`, `location`, `validation`, `source`, `claim`, `runtime`, `proof`).
-`in_plan=true` projects an item into the mirrored Codex/OpenCode plan; `in_plan=false` keeps it on disk as durable backlog only.
+Core invariant:
 
-Graph mode adds durable intent atoms, waivers, polish fingerprints, and contracted task capsules. The full graph remains in `$st`; native plan tools receive only a bounded execution aperture.
+```text
+source plan / issue / spec / user request
+        -> intent coverage
+        -> self-contained task graph
+        -> graph audit
+        -> execution aperture
+        -> native plan projection
+        -> proof-carrying completion
+```
 
-## Codex Plan Surface Contract
+Do not use prose, memory, or `update_plan` as durable task state. Keep the durable source in `.step/st-plan.jsonl` and mutate it only through `st` commands.
 
-- Durable steps: `.step/st-plan.jsonl`.
-- Proposed plan: Codex Plan Mode final plan text.
-- Codex TODO projection: Codex `update_plan`.
-- Backlog: durable steps with `in_plan=false`.
-- Frontier: selected executable slice with `in_plan=true`.
+## Mode Selection
+
+Choose a mode before doing work.
+
+### Execution Mode
+
+Use execution mode when the repo already has a durable `$st` plan/graph and the user asks to continue, resume, implement, finish, verify, or execute known work.
+
+Primary commands:
+
+```bash
+st prime --file .step/st-plan.jsonl --mode aperture --limit 7
+st compile aperture --file .step/st-plan.jsonl --limit 7
+st complete --file .step/st-plan.jsonl --id st-001 --command "<validation command>" --evidence-ref .step/proof/st-001.log
+st assert-projection --file .step/st-plan.jsonl
+```
+
+### Planning / Intake Mode
+
+Use planning/intake mode when the user asks to:
+
+- turn a plan into tasks;
+- break a proposal/spec/markdown/issue into steps;
+- create implementation tasks;
+- make a TODO graph;
+- convert a document into work;
+- plan material multi-step work before implementation;
+- preserve requirements that could be lost.
+
+For material plans, do **not** start with `st add`, `st import-proposed-plan`, `st prime`, or `st complete`.
+
+Start with intake:
+
+```bash
+st intake plan --file .step/st-plan.jsonl --source <plan.md> --out .step/st-intake.md
+st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate implementation-ready
+st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format markdown
+st compile aperture --file .step/st-plan.jsonl --limit 7
+```
+
+If `st intake` is not available in the installed binary, use the fallback in [Material Plan Intake Fallback](#material-plan-intake-fallback) and clearly record graph debt rather than pretending the graph was compiled.
+
+### Simple Task Mode
+
+Use simple task mode only when the user request is small, local, and obviously bounded.
+
+A simple task usually has all of these properties:
+
+- 1–2 steps;
+- no meaningful dependency graph;
+- no source plan/spec whose requirements could be lost;
+- no cross-session coordination need;
+- no need for multiple agents;
+- no separate proof obligation beyond the immediate validation command.
+
+Simple tasks may use ordinary `st add` / `st set-status` / `st complete` without full intake, but still preserve durable state when the task spans turns.
+
+## Capability Probe
+
+Before invoking advanced graph/intake commands in a repo or session where capability is uncertain, probe once:
+
+```bash
+st --help
+st prime --help
+st complete --help
+```
+
+If using graph/intake mode, also probe:
+
+```bash
+st intake --help || true
+st graph --help || true
+st compile --help || true
+```
+
+Do not repeatedly spam `--help`. After discovering a missing command, choose the documented fallback and proceed.
+
+## Plan Surface Contract
+
+- Durable source: `.step/st-plan.jsonl`.
+- Proposed plan: Codex Plan Mode output or markdown plan text.
+- Native projection: Codex `update_plan` or OpenCode `TodoWrite`.
+- Backlog: durable items with `in_plan=false`.
+- Aperture/frontier: selected executable items with `in_plan=true`.
 
 Rules:
 
 1. Never call `update_plan` while Codex is in Plan Mode.
-2. After leaving Plan Mode, import the final proposed plan into `st` before execution with `st import-proposed-plan --file .step/st-plan.jsonl --input .step/proposed-plan.md`.
-3. Before shell/file work on multi-step tasks, run `st prime --file .step/st-plan.jsonl` or use a fresh mutation-emitted `plan_sync`.
-4. If `plan_sync.codex.plan` is non-empty, immediately mirror it with Codex `update_plan`.
-5. After every durable `st` mutation, mirror the new `codex.plan`.
-6. Treat `.step/st-plan.jsonl` as source of truth.
-7. Treat Codex `update_plan` as a display/projection.
-8. Preserve `[st-id]` as the first token in every Codex-visible step.
-9. Project no durable-only fields into Codex.
-10. Default to exactly one Codex `in_progress` step.
-11. Do not emit empty `update_plan` payloads just to satisfy a hook.
+2. After leaving Plan Mode, import or intake the final proposed plan into `$st` before execution.
+3. Treat `.step/st-plan.jsonl` as the source of truth.
+4. Treat native plan tools as display/projection only.
+5. Project only `plan_sync.codex.plan` or `plan_sync.opencode.todos`, never the full `plan_sync` object.
+6. Preserve `[st-id]` as the first token in every Codex-visible step.
+7. Project no durable-only fields into the native plan.
+8. Do not emit empty native plan payloads just to satisfy a hook.
+9. Keep exactly one Codex `in_progress` row unless `$st` proves a safe parallel wave.
+10. Waiting-on-deps items must never be mirrored as `in_progress`.
 
-## Graph Planning Mode
+## First-Use Storage Policy
 
-Use graph planning mode when the user provides a material implementation plan, asks for graph planning, requires durable dependencies/proof, or asks for iterative polish before implementation.
+Before the first `st init` or mutation in a repo, determine the plan-file storage policy.
 
-Mental model:
+- If `.step/st-plan.jsonl` is already tracked, respect shared mode.
+- If `.step/st-plan.jsonl` is already ignored, respect local mode.
+- If the choice is not obvious, ask one targeted question: should `.step/st-plan.jsonl` be committed for shared review, or kept local via `.git/info/exclude`?
+- Shared mode: keep `.step/st-plan.jsonl` tracked; ignore only `.step/st-plan.jsonl.lock`.
+- Local mode: add both `.step/st-plan.jsonl` and `.step/st-plan.jsonl.lock` to `.git/info/exclude`.
+
+Mutating commands require the lock sidecar to be ignored inside git repos.
+
+## Material Plan Funnel
+
+Healthy trace for material plans:
 
 ```text
-source plan / AGENTS.md / README.md / code observations
-  -> intent atoms
-  -> contracted task capsules
-  -> typed dependency + coverage graph
-  -> graph audit + polish fixed point
-  -> ranked execution aperture
-  -> plan_sync.codex.plan / opencode.todos projection
-  -> proof receipts
+intake -> audit -> aperture -> complete
+```
+
+Preferred command trace:
+
+```bash
+st intake plan --file .step/st-plan.jsonl --source <plan.md> --out .step/st-intake.md
+st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate implementation-ready
+st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format markdown
+st compile aperture --file .step/st-plan.jsonl --limit 7
+st complete --file .step/st-plan.jsonl --id <st-id> --command "<validation>" --evidence-ref <proof-log>
+```
+
+Bad trace for material plans:
+
+```text
+import-proposed-plan -> prime --mode aperture -> complete
+```
+
+That skips intent coverage and graph audit. Use it only for simple plans or when graph/intake commands are unavailable and graph debt is explicitly recorded.
+
+## Material Plan Intake
+
+Material plan intake converts a user plan/spec/issue/markdown document into a self-contained `$st` graph.
+
+The intake artifact is `.step/st-intake.md`. Prefer this over separate JSON intent and graph patch files because agents reliably produce and review Markdown.
+
+### Intake Plan Command
+
+When available:
+
+```bash
+st intake plan --file .step/st-plan.jsonl --source <plan.md> --out .step/st-intake.md
+```
+
+The command should scaffold or normalize a Markdown intake file.
+
+### Intake Apply Command
+
+When available:
+
+```bash
+st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate implementation-ready
+```
+
+Expected behavior:
+
+- parse `.step/st-intake.md`;
+- create intent atoms;
+- create self-contained graph capsules;
+- validate dependency references;
+- validate acceptance/proof/test coverage;
+- emit `plan_sync:`;
+- emit an intake receipt;
+- fail with actionable findings if the implementation-ready gate is not met.
+
+### Intake Template
+
+Use this shape when creating `.step/st-intake.md`:
+
+```markdown
+# st graph intake
+
+Source: docs/plan.md
+
+## Intent
+
+- intent-001 | requirement | covered
+  Text: OAuth login must support Google and GitHub.
+  Source: docs/plan.md#authentication
+
+- intent-002 | test-expectation | covered
+  Text: The OAuth flow must have e2e coverage.
+  Source: docs/plan.md#testing
+
+## Items
+
+### st-001 | feature | high
+
+Step: Implement OAuth login for Google and GitHub
+
+Covers:
+- intent-001
+
+Depends:
+- none
+
+Locations:
+- src/auth
+- tests/e2e/auth
+
+Acceptance:
+- User can authenticate through Google.
+- User can authenticate through GitHub.
+- Session is created and cleared correctly.
+
+Validation:
+- npm run test:e2e -- auth-oauth
+
+Proof:
+- proof-001 | e2e | npm run test:e2e -- auth-oauth
+
+Contract:
+Background:
+The source plan requires low-friction external-provider authentication.
+
+Objective:
+Add OAuth provider login.
+
+Implementation Approach:
+Use the existing auth boundary and add provider configuration, callback handling, and session validation.
+
+Risks:
+- Provider callback misconfiguration.
+- Session persistence regression.
+```
+
+Every material intake item should include:
+
+- stable ID;
+- type;
+- priority;
+- step;
+- intent coverage;
+- dependencies;
+- locations/lock roots when known;
+- acceptance criteria;
+- validation command(s);
+- proof obligation(s);
+- background;
+- objective;
+- implementation approach;
+- risks/considerations.
+
+## Material Plan Intake Fallback
+
+Use this only when `st intake` is not available in the installed binary.
+
+1. Create `.step/st-intake.md` manually using the intake template.
+2. If `st graph apply` exists, convert the intake into `.step/st-graph.patch.json` and apply it:
+
+```bash
+st graph apply --file .step/st-plan.jsonl --input .step/st-graph.patch.json --gate implementation-ready
+```
+
+3. If graph apply is also unavailable, create durable items with existing commands:
+
+```bash
+st init --file .step/st-plan.jsonl
+st add --file .step/st-plan.jsonl --id st-001 --step "Implement OAuth login for Google and GitHub" --priority high --backlog-only
+st set-notes --file .step/st-plan.jsonl --id st-001 --notes "$(cat .step/st-001-notes.md)"
+st set-deps --file .step/st-plan.jsonl --id st-001 --deps ""
+```
+
+4. Record graph debt in notes or comments:
+
+```bash
+st add-comment --file .step/st-plan.jsonl --id st-001 --author codex --text "graph_debt: material plan intake used fallback because st intake/graph apply was unavailable; intent coverage and implementation-ready audit were not machine-checked."
+```
+
+5. Do not claim that graph audit passed if it did not run.
+
+6. Before final response, say graph intake was approximated and name the missing CLI capability.
+
+## Graph Debt
+
+Graph debt means `$st` is being used for execution without the material plan having been compiled/audited as a graph.
+
+Graph debt examples:
+
+```text
+graph_debt:intent_coverage_missing
+graph_debt:implementation_ready_audit_missing
+graph_debt:material_plan_not_compiled
+graph_debt:proof_obligations_missing
+```
+
+If `st prime --mode aperture` or `st compile aperture` emits graph-debt warnings, do not ignore them.
+
+Remediation:
+
+```bash
+st intake plan --file .step/st-plan.jsonl --source <plan.md> --out .step/st-intake.md
+st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate implementation-ready
+st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format markdown
+```
+
+If the CLI lacks intake/audit support, record the debt with comments and disclose it in final output.
+
+## Importing Proposed Plans
+
+`st import-proposed-plan` is acceptable for simple plans and Plan Mode markdown, but it is not a substitute for material graph intake.
+
+Preferred for material plans:
+
+```bash
+st intake plan --file .step/st-plan.jsonl --source .step/proposed-plan.md --out .step/st-intake.md
+st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate implementation-ready
+```
+
+If using `import-proposed-plan` on a material plan because intake is unavailable, immediately record graph debt and run the strongest available audit/checks.
+
+```bash
+st import-proposed-plan --file .step/st-plan.jsonl --input .step/proposed-plan.md --select-ready
+st add-comment --file .step/st-plan.jsonl --id st-001 --author codex --text "graph_debt: imported proposed plan directly; material intent coverage was not compiled."
+```
+
+## Aperture Workflow
+
+Use aperture for execution selection, not plan creation.
+
+```bash
+st prime --file .step/st-plan.jsonl --mode aperture --limit 7
+```
+
+or:
+
+```bash
+st compile aperture --file .step/st-plan.jsonl --limit 7
+```
+
+Then mirror only the emitted `plan_sync.codex.plan` into Codex `update_plan`.
+
+If the aperture payload includes graph-debt warnings, repair the graph before implementation unless the work is simple or the user explicitly directs execution despite debt.
+
+Aperture eligibility:
+
+- item is pending;
+- blocking dependencies are complete;
+- item is not terminal;
+- item is not stale-claimed;
+- item is executable, not an epic/decision placeholder;
+- item has adequate proof/validation metadata for graph-mode work.
+
+## Proof-Carrying Completion
+
+Prefer `st complete` over direct `set-status completed` when available.
+
+```bash
+mkdir -p .step/proof
+<validation command> 2>&1 | tee .step/proof/st-001.log
+st complete --file .step/st-plan.jsonl --id st-001 --command "<validation command>" --evidence-ref .step/proof/st-001.log
 ```
 
 Rules:
 
-1. Do not hand-edit `.step/st-plan.jsonl`.
-2. Do not call Codex `update_plan` while Codex is in Plan Mode.
-3. After Plan Mode, compile/import the proposed plan into `$st` first.
-4. Mutate graph state only through `st graph apply`, `st compile intent`, `st compile graph`, `st aperture select`, `st compile aperture`, or proof commands.
-5. Mirror only `plan_sync.codex.plan` into Codex. Never mirror the graph envelope.
-6. Complete graph-mode executable items with `st complete`; do not mark them done without proof or an explicit waiver.
+- Do not mark graph-mode items complete without proof or explicit waiver.
+- If validation cannot run, do not fake proof. Record a waiver or leave the item pending/blocked.
+- After completion, recompile/prime the aperture and mirror the new projection.
 
-## Plan-to-Graph Compilation
-
-For a source plan, first read the full plan plus relevant `AGENTS.md`, README, and code paths. Produce:
-
-- `.step/st-intent.json`: every material requirement, constraint, non-goal, risk, validation expectation, compatibility obligation, migration expectation, and user-visible behavior.
-- `.step/st-graph.patch.json`: contracted `$st` capsules with dependencies, hierarchy, links, intent coverage, acceptance criteria, validation/proof obligations, locations, and lock roots where known.
-
-Then run:
+Fallback if `st complete` is unavailable:
 
 ```bash
-st compile intent --file .step/st-plan.jsonl --input .step/st-intent.json
-st compile graph --file .step/st-plan.jsonl --input .step/st-graph.patch.json --gate draft
+<validation command> 2>&1 | tee .step/proof/st-001.log
+st set-proof --file .step/st-plan.jsonl --id st-001 --proof-state pass --command "<validation command>" --evidence-ref .step/proof/st-001.log
+st set-status --file .step/st-plan.jsonl --id st-001 --status completed
+```
+
+## Command Shape Rules
+
+Prefer explicit long-option form. It is the least ambiguous and most stable.
+
+Good:
+
+```bash
+st set-status --file .step/st-plan.jsonl --id st-001 --status in_progress
+st set-proof --file .step/st-plan.jsonl --id st-001 --proof-state pass --command "zig build test-st" --evidence-ref .step/proof/st-001.log
+```
+
+Avoid old positional forms unless the installed binary explicitly supports them:
+
+```bash
+st set-status st-001 in_progress
+st set-proof st-001 pass "zig build test-st" .step/proof/st-001.log
+```
+
+If a command fails due to shape, retry once with long options. Do not repeatedly call `--help`.
+
+## Projection Sync Checklist
+
+After every mutating `st` command:
+
+1. Capture the emitted `plan_sync: {...}`.
+2. If `plan_sync.codex.plan` is nonempty, mirror it with Codex `update_plan`.
+3. Preserve `[st-id]` prefixes exactly.
+4. Do not project durable-only fields.
+5. Do not emit empty update payloads.
+6. If no payload is available, run:
+
+```bash
+st prime --file .step/st-plan.jsonl
+```
+
+Before final response after `$st` mutations:
+
+```bash
+st assert-projection --file .step/st-plan.jsonl
+```
+
+## Receipts and Telemetry
+
+When the CLI emits receipts, preserve and surface important ones.
+
+Expected receipt kinds:
+
+```text
+st_receipt: {"kind":"graph_intake",...}
+st_receipt: {"kind":"graph_debt",...}
+st_receipt: {"kind":"aperture_compiled",...}
+st_receipt: {"kind":"proof_complete",...}
+```
+
+Use receipts to make final responses concrete:
+
+- graph intake applied or approximated;
+- graph debt remaining;
+- aperture selected;
+- proof completed;
+- projection asserted.
+
+## Graph Audit
+
+When available, run graph audit before aperture selection for material plans:
+
+```bash
+st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format markdown
+```
+
+If audit fails:
+
+- fix by editing intake/graph patch and applying through `st`;
+- do not skip to aperture unless user explicitly asks;
+- use waivers only with explicit reasons.
+
+If audit is unavailable:
+
+- record graph debt;
+- use the best available `st show`, `st ready`, `st blocked`, and `st doctor` checks;
+- disclose that graph audit could not run.
+
+## Graph Polishing
+
+Graph polishing is valuable but secondary to first-pass intake adoption.
+
+Use a polishing loop when the plan is material, broad, risky, or swarm-bound:
+
+```bash
+st graph polish begin --file .step/st-plan.jsonl --name <name>
 st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format markdown
 st graph insights --file .step/st-plan.jsonl --format markdown
-```
-
-Do not import external graph-runtime state or shell out to non-`st` graph CLIs as the `$st` graph runtime.
-
-## Intent Coverage
-
-Intent atoms are durable statements of what must not be lost from the source plan. Covered intent must be referenced by at least one item. Deferred, rejected, duplicate, and non-goal intent needs a reason or waiver. `unknown` intent is allowed only before implementation-ready.
-
-## Contracted Task Capsules
-
-Graph-mode executable items should carry:
-
-- `item_type`, `parent_id`, `deps`, and nonblocking `links`.
-- `intent_refs` for coverage.
-- `acceptance`, `validation`, `location`, `scope`, and `lock_roots`.
-- A structured `contract` with objective, background, implementation approach, success criteria, proof obligations, and risks.
-
-`epic` and `decision` are context/organization by default and should not be projected as executable aperture work unless explicitly selected by policy.
-
-## Graph Patch Protocol
-
-Use patches for planning mutations:
-
-```bash
-st graph schema --format json
-st graph apply --file .step/st-plan.jsonl --input .step/st-graph.patch.json --dry-run
-st graph apply --file .step/st-plan.jsonl --input .step/st-graph.patch.json --gate implementation-ready
-```
-
-Successful graph mutations emit `plan_sync:`, `graph_delta:`, and `audit_summary:`. If a gate fails, treat the findings as the next mechanical planning work unless a first-class waiver is appropriate.
-
-## Fixed-Point Polishing
-
-Polish before implementation when the graph is nontrivial:
-
-```bash
-st graph polish begin --file .step/st-plan.jsonl --name initial-plan
+# apply improvements through st intake/apply or graph apply
 st graph polish snapshot --file .step/st-plan.jsonl --pass 1
-st graph polish status --file .step/st-plan.jsonl --format markdown
 st graph polish gate --file .step/st-plan.jsonl --min-stable-passes 2 --gate implementation-ready
 ```
 
-The fixed point is the CLI gate: implementation-ready audit passes and structure/coverage fingerprints are stable for the configured consecutive passes.
+Do not block simple execution on multi-pass polishing.
 
-## Aperture Projection
+## Ready/Blocked Inspection
 
-Compile the native execution slice:
+Use these when deciding next work:
+
+```bash
+st show --file .step/st-plan.jsonl --surface all --format markdown
+st ready --file .step/st-plan.jsonl --format markdown
+st blocked --file .step/st-plan.jsonl --surface all --format markdown
+```
+
+Prefer aperture compilation for execution selection:
 
 ```bash
 st compile aperture --file .step/st-plan.jsonl --limit 7
-st prime --file .step/st-plan.jsonl --mode aperture --limit 7
 ```
 
-Mirror only `plan_sync.codex.plan` to Codex or `plan_sync.opencode.todos` to OpenCode. The full graph stays durable-only in `$st`.
+## Existing Commands
 
-## Proof-Carrying Completion
-
-Complete graph work with proof:
-
-```bash
-st complete --file .step/st-plan.jsonl --id st-001 \
-  --command "zig build test-st" \
-  --evidence-ref .step/proof/st-001.log
-st proof audit --file .step/st-plan.jsonl --id st-001 --format json
-```
-
-Forced completion requires:
-
-```bash
-st complete --file .step/st-plan.jsonl --id st-001 --allow-unproven --reason "..."
-```
-
-That creates a waiver and should be rare.
-
-## Audit Gates
-
-Use these gates as the planning compiler:
-
-```bash
-st graph audit --file .step/st-plan.jsonl --gate draft --format json
-st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format markdown
-st graph audit --file .step/st-plan.jsonl --gate execution-ready --format json
-st graph audit --file .step/st-plan.jsonl --gate proof-complete --format json
-```
-
-Hard failures include unknown refs, dependency/parent cycles, uncovered intent, missing contracts/acceptance/proof, selected blocked work, terminal selected work, and completed work missing required proof.
-
-## Agent Prompts
-
-Plan-to-graph prompt:
-
-```text
-Read ALL of [PLAN].md, AGENTS.md, README.md, and relevant code paths. Do not edit .step/st-plan.jsonl directly. Produce .step/st-intent.json and .step/st-graph.patch.json for st. Enumerate every material intent atom, then create contracted capsules with dependencies, hierarchy, links, coverage, acceptance, validation/proof, locations, and lock roots. Apply only through st compile intent and st compile graph.
-```
-
-Polish prompt:
-
-```text
-Reread source context and current st graph through graph audit, graph insights, and graph polish status. Prepare a graph patch that improves structure, granularity, acceptance, validation/proof, lock roots, and risk handling. Continue until graph polish gate passes.
-```
-
-Execution prompt:
-
-```text
-Run st compile aperture --file .step/st-plan.jsonl --limit 7. Mirror only plan_sync.codex.plan. Execute the selected aperture. Record proof through st complete. Recompile aperture after each completed item.
-```
-
-## Zig CLI Iteration Repos
-
-When iterating on the Zig-backed `st` helper CLI path, use these two repos:
-
-- `skills-zig` (`$HOME/workspace/tk/skills-zig`): source for the `st` Zig binary, build/test wiring, and release tags.
-- `homebrew-tap` (`$HOME/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `st` binaries.
-
-## Quick Start (Zig CLI Bootstrap)
-
-```bash
-run_st_tool() {
-  install_st_direct() {
-    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
-    if ! command -v zig >/dev/null 2>&1; then
-      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
-      return 1
-    fi
-    if [ ! -d "$repo" ]; then
-      echo "skills-zig repo not found at $repo." >&2
-      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
-      return 1
-    fi
-    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
-      echo "direct Zig build failed in $repo." >&2
-      return 1
-    fi
-    if [ ! -x "$repo/zig-out/bin/st" ]; then
-      echo "direct Zig build did not produce $repo/zig-out/bin/st." >&2
-      return 1
-    fi
-    mkdir -p "$HOME/.local/bin"
-    install -m 0755 "$repo/zig-out/bin/st" "$HOME/.local/bin/st"
-  }
-
-  local os="$(uname -s)"
-  if command -v st >/dev/null 2>&1 && st --help 2>&1 | grep -q "st.zig"; then
-    st "$@"
-    return
-  fi
-
-  if [ "$os" = "Darwin" ]; then
-    if ! command -v brew >/dev/null 2>&1; then
-      echo "homebrew is required on macOS: https://brew.sh/" >&2
-      return 1
-    fi
-    if ! brew install tkersey/tap/st; then
-      echo "brew install tkersey/tap/st failed." >&2
-      return 1
-    fi
-  elif ! (command -v st >/dev/null 2>&1 && st --help 2>&1 | grep -q "st.zig"); then
-    if ! install_st_direct; then
-      return 1
-    fi
-  fi
-
-  if command -v st >/dev/null 2>&1 && st --help 2>&1 | grep -q "st.zig"; then
-    st "$@"
-    return
-  fi
-
-  echo "st binary missing or incompatible after install attempt." >&2
-  if [ "$os" = "Darwin" ]; then
-    echo "expected install path: brew install tkersey/tap/st" >&2
-  else
-    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
-  fi
-  return 1
-}
-
-run_st_tool --help
-```
-
-## Workflow
-
-1. Define `run_st_tool` once per shell session to bootstrap/install `st`.
-2. If the run has 3+ dependent steps, likely spans turns, or already uses a native task surface (`update_plan` in Codex or `TodoWrite` in OpenCode), adopt `$st` as the durable source of truth before editing.
-3. Before the first `st init` or mutation in a repo, determine the plan-file storage policy.
-   - If `.step/st-plan.jsonl` is already tracked, or already ignored by repo policy, respect that existing choice and do not re-ask.
-   - If the repo has not yet made the choice obvious, ask one targeted question: should `.step/st-plan.jsonl` be committed to the repo, or kept local by adding it to `.git/info/exclude`?
-   - Shared mode: keep `.step/st-plan.jsonl` tracked and make sure only the lock sidecar is ignored.
-   - Local mode: add both `.step/st-plan.jsonl` and `.step/st-plan.jsonl.lock` to `.git/info/exclude` before first mutation.
-4. If the plan came from `$select`, import the OrchPlan into `$st` and claim the first safe wave before execution starts.
-   - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
-   - `st claim --file .step/st-plan.jsonl --wave w1 --executor codex`
-   - For OrchPlan-backed claims, `--wave` is the canonical selector and there is no public same-turn non-`$st` handoff.
-5. Initialize plan storage with `st init` if missing.
-6. Rehydrate current state with `st show` (or focused views via `ready` / `blocked`).
-   - Default surface is `plan`.
-   - Use `--surface all` to inspect the full durable inventory.
-   - Use `--surface backlog` to inspect durable tasks not currently mirrored into the plan.
-7. Run `doctor` when ingesting an existing plan file or when integrity is in doubt.
-8. Apply plan mutations through subcommands (`add`, `select`, `deselect`, `set-status`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `complete`, `proof audit`, `graph apply`, `compile`, `aperture select`, `release`, `reclaim-stale`); do not hand-edit existing JSONL lines.
-   - Use `add --backlog-only` or `import-plan --backlog-only` to update the durable inventory without loading those items into the mirrored plan yet.
-   - Use `select` to add backlog items into the mirrored plan.
-   - Use `deselect` to remove items from the mirrored plan without deleting them from disk.
-9. After each mutation command, consume the emitted `plan_sync: {...}` payload and mirror it into the native runtime tool in the same turn.
-   - In Codex, mirrored plan step strings are hook-safe round-trip identifiers in the form `[st-id] step text`; preserve that prefix when updating `update_plan`.
-10. Use `st prime --file .step/st-plan.jsonl` to regenerate the payload from durable state when needed.
-11. When Codex hooks are enabled in a repo that already uses `.step/st-plan.jsonl`, let SessionStart hydrate `update_plan` from the durable ledger only when the mirrored Codex plan is non-empty, and if the repo opts into the Bash `PreToolUse` guard, require shell work to wait until the transcript semantically matches the SessionStart-emitted `update_plan` payload.
-   - Short-circuit SessionStart sync when the durable inventory is empty or all durable items are terminal/backlog-only; do not emit `update_plan {"plan":[]}` just to satisfy the hook.
-12. Before final delivery, run `st assert-projection --file .step/st-plan.jsonl`.
-13. Export/import snapshots when cross-session handoff is needed.
-
-## Commands
-
-Run commands from the target repository root. Commands below use `st` directly; use `run_st_tool` first when bootstrapping.
+Common commands:
 
 ```bash
 st init --file .step/st-plan.jsonl
-st add --file .step/st-plan.jsonl --id st-001 --step "Reproduce failing test" --priority high --deps ""
-st add --file .step/st-plan.jsonl --id st-002 --step "Investigate optional follow-up" --deps "" --backlog-only
+st add --file .step/st-plan.jsonl --id st-001 --step "Reproduce issue" --priority high
+st add --file .step/st-plan.jsonl --id st-002 --step "Patch core logic" --deps "st-001" --backlog-only
 st select --file .step/st-plan.jsonl --ids "st-002"
-st add --file .step/st-plan.jsonl --id st-003 --step "Patch core logic" --deps "st-001"
+st deselect --file .step/st-plan.jsonl --ids "st-002"
 st set-status --file .step/st-plan.jsonl --id st-001 --status in_progress
-st set-priority --file .step/st-plan.jsonl --id st-003 --priority medium
-st set-deps --file .step/st-plan.jsonl --id st-003 --deps "st-001:blocks"
-st set-notes --file .step/st-plan.jsonl --id st-003 --notes "Need benchmark evidence"
-st add-comment --file .step/st-plan.jsonl --id st-003 --text "Pausing until CI clears" --author tk
-st ready --file .step/st-plan.jsonl --format markdown
-st show --file .step/st-plan.jsonl --surface all --format json
-st blocked --file .step/st-plan.jsonl --surface backlog --format json
-st show --file .step/st-plan.jsonl --format markdown
+st set-priority --file .step/st-plan.jsonl --id st-002 --priority medium
+st set-deps --file .step/st-plan.jsonl --id st-002 --deps "st-001:blocks"
+st set-notes --file .step/st-plan.jsonl --id st-002 --notes "Need regression proof"
+st add-comment --file .step/st-plan.jsonl --id st-002 --text "Pausing until CI clears" --author codex
+st remove --file .step/st-plan.jsonl --id st-002
 st doctor --file .step/st-plan.jsonl
-st doctor --file .step/st-plan.jsonl --repair-seq
 st prime --file .step/st-plan.jsonl
+st prime --file .step/st-plan.jsonl --mode aperture --limit 7
+st compile aperture --file .step/st-plan.jsonl --limit 7
 st assert-projection --file .step/st-plan.jsonl
 st reconcile-codex --file .step/st-plan.jsonl --input .step/update-plan.json
-st reconcile-codex --file .step/st-plan.jsonl --transcript-path /path/to/codex-rollout.jsonl
+st reconcile-codex --file .step/st-plan.jsonl --transcript-path /path/to/session.jsonl
 st import-proposed-plan --file .step/st-plan.jsonl --input .step/proposed-plan.md --select-ready
-st guard-session-start --file .step/st-plan.jsonl --session-id thread-123
-st guard-pre-tool-use --file .step/st-plan.jsonl --session-id thread-123 --transcript-path /path/to/codex-rollout.jsonl
 st export --file .step/st-plan.jsonl --output .step/st-plan.snapshot.json
 st import-plan --file .step/st-plan.jsonl --input .step/st-plan.snapshot.json --replace
-st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml --replace
 st claim --file .step/st-plan.jsonl --wave w1 --executor codex
 st heartbeat --file .step/st-plan.jsonl --id st-001
-st set-runtime --file .step/st-plan.jsonl --id st-001 --substrate spawn_agent --thread-id thread-123 --agent-id agent-1
-st set-proof --file .step/st-plan.jsonl --id st-001 --proof-state pass --command "zig build test-st" --evidence-ref .step/proof.log
-st complete --file .step/st-plan.jsonl --id st-001 --command "zig build test-st" --evidence-ref .step/proof.log
-st proof audit --file .step/st-plan.jsonl --id st-001 --format json
+st set-runtime --file .step/st-plan.jsonl --id st-001 --substrate spawn_agent --thread-id thread-123
+st set-proof --file .step/st-plan.jsonl --id st-001 --proof-state pass --command "zig build test-st" --evidence-ref .step/proof/st-001.log
+st complete --file .step/st-plan.jsonl --id st-001 --command "zig build test-st" --evidence-ref .step/proof/st-001.log
 st release --file .step/st-plan.jsonl --id st-001 --reason proof_complete
-st reclaim-stale --file .step/st-plan.jsonl --now 2026-03-12T00:00:00Z
+st reclaim-stale --file .step/st-plan.jsonl
 ```
 
-## Operating Rules
+Do not use removed legacy commands such as:
 
-- Keep exactly one `in_progress` item unless `$st` can prove a safe parallel wave.
-- Safe parallel `in_progress` is allowed automatically when every active item has `claim.state=held`, a non-empty `claim.wave_id`, a non-empty `claim.executor`, and pairwise non-overlapping `claim.lock_roots`.
-- First-use plan-file policy: if `.step/st-plan.jsonl` is not yet tracked and not already ignored, ask whether the repo wants shared tracked state or local-only state via `.git/info/exclude` before the first mutation.
-- For OrchPlan-backed durable execution, `claim.wave_id` is authoritative and should be derived from the imported wave, not reconstructed from ad hoc `--ids`.
-- `in_plan=true` is the mirrored-plan membership flag. Missing legacy values normalize to `true`.
-- Codex mirrored-plan identity is the emitted `[st-id] step text` prefix; reverse sync must fail closed rather than guessing when an `update_plan` row cannot be mapped back to a durable item id.
-- Terminal statuses (`completed`, `deferred`, `canceled`) auto-demote items out of the mirrored plan while keeping them on disk.
-- Track prerequisites in each item's typed `deps` array; dependencies are part of the canonical JSONL schema.
-- Priorities are canonical in `$st`: allowed values are `high`, `medium`, and `low`; missing legacy values normalize to `medium`.
-- Parse CLI deps as comma-separated `id` or `id:type` tokens; missing type normalizes to `blocks`, and type must be kebab-case.
-- Require dependency integrity:
-  - dependency IDs must exist in the current plan,
-  - no self-dependencies,
-  - no dependency cycles.
-- Projected-plan integrity:
-  - `select` accepts exact IDs (`--ids`) plus simple field filters (`--status`, `--priority`),
-  - selecting an item auto-includes unresolved dependency closure,
-  - completed dependencies do not get pulled back into the mirrored plan,
-  - `deselect` rejects if it would strand a still-selected dependent on a backlog-only unresolved task.
-- Allow `in_progress` and `completed` only when all dependencies are `completed`.
-- Normalize user status terms before writing:
-  - `open`, `queued` -> `pending`
-  - `active`, `doing` -> `in_progress`
-  - `done`, `closed` -> `completed`
-- Mutation commands (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`) automatically print a canonical `plan_sync:` payload line after durable write.
-- Hook-managed reverse sync from Codex into `$st` is projection-only: it may update mirrored-plan membership, mirrored order, `step`, and `status`, but must preserve durable-only metadata such as `deps`, `notes`, `comments`, `claim`, `runtime`, and `proof`.
-- Lock sidecar policy: mutating commands require the lock file (`<plan-file>.lock`, for example `.step/st-plan.jsonl.lock`) to be ignored when inside a git repo. In shared mode, add the lock sidecar to `.gitignore`; in local-only mode, add both the plan file and the lock sidecar to `.git/info/exclude`.
-- Storage model: not append-only growth. Mutations rewrite the JSONL file atomically (`temp` + `fsync` + replace) and compact to a canonical `replace` event plus checkpoint snapshot at the current seq watermark.
-- `doctor` is the first-line integrity check for seq/checkpoint contract issues; use `doctor --repair-seq` only when repair is explicitly needed.
-- `import-plan --replace` atomically resets the full durable inventory in the same in-place write model.
-- Prefer concise, stable item IDs (`st-001`, `st-002`, ...).
-- Prefer `show --format markdown` for execution: it groups tasks into `Ready`, `Waiting on Dependencies`, `In Progress`, and terminal/manual buckets for the selected surface.
+```text
+emit-plan-sync
+emit-update-plan
+import-update-plan
+```
 
-## Sync Checklist (`$st` -> native runtime tools)
+Use `prime` and `reconcile-codex` instead.
 
-- After each `$st` mutation (`add`, `select`, `deselect`, `set-status`, `set-priority`, `set-deps`, `set-notes`, `add-comment`, `remove`, `import-plan`, `import-orchplan`, `claim`, `heartbeat`, `set-runtime`, `set-proof`, `release`, `reclaim-stale`), consume the emitted `plan_sync: {...}` line.
-- If no emitted payload is available (for example after `init` or shell piping), run:
-  - `st prime --file .step/st-plan.jsonl`
-- Preserve full inventory order from `$st` in `plan_sync.items`.
-- Codex:
-  - publish `plan_sync.codex.plan` via `update_plan`.
-  - preserve the emitted `[st-id]` prefixes in each step string; they are the stable reverse-sync key back into the durable ledger.
-- OpenCode:
-  - publish `plan_sync.opencode.todos` via `TodoWrite`.
-  - if only an older binary is available, fail closed until a binary with `prime` is installed.
-- `plan_sync.items` is the full durable inventory. `plan_sync.codex.plan` and `plan_sync.opencode.todos` emit only the selected mirrored-plan subset.
-- Keep dependency edges only in `$st` (`deps`); do not encode dependencies in `update_plan` or `TodoWrite`.
-- If hooks re-import a Codex plan at Stop, that reverse sync uses the latest mirrored Codex subset as the source of truth only for projected fields, not for the full durable inventory.
-- SessionStart hook hydration must no-op when the mirrored Codex plan is empty after terminal-state demotion or backlog-only filtering.
-- SessionStart hook text must warn that `update_plan` is invalid while Codex is in Plan Mode.
-- If repo-local hooks use the Bash `PreToolUse` guard, keep the guard state local to `$st`; do not write transient hook/session guard state into `.step/st-plan.jsonl`.
-- If an item has `dep_state=waiting_on_deps`, never mirror that item as `in_progress`.
-- Before final response on turns that mutate `$st`, re-check no drift by comparing:
-  - `st show --file .step/st-plan.jsonl --format json`
-  - the latest emitted `plan_sync` payload.
+## Final Response Requirements
+
+When `$st` was used, final response should include:
+
+- what durable state changed;
+- current aperture/projection status;
+- proof command(s) run and result;
+- whether graph debt remains;
+- exact next move if any.
+
+For material planning tasks, explicitly state whether the plan went through:
+
+```text
+intake -> audit -> aperture
+```
+
+If it did not, say why.
 
 ## Validation
 
-- Run lightweight CLI sanity checks:
-  - `run_st_tool --help`
-  - `st doctor --file .step/st-plan.jsonl`
-  - `st prime --file .step/st-plan.jsonl`
-  - `st assert-projection --file .step/st-plan.jsonl`
-  - `st reconcile-codex --file .step/st-plan.jsonl --input <captured-update-plan.json>`
-  - `st show --file .step/st-plan.jsonl --surface all --format json`
-  - `st show --file .step/st-plan.jsonl --format json`
+Lightweight validation:
+
+```bash
+st --help
+st doctor --file .step/st-plan.jsonl
+st show --file .step/st-plan.jsonl --surface all --format json
+st prime --file .step/st-plan.jsonl
+st assert-projection --file .step/st-plan.jsonl
+```
+
+Material graph validation when supported:
+
+```bash
+st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate implementation-ready
+st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format json
+st graph insights --file .step/st-plan.jsonl --format json
+st compile aperture --file .step/st-plan.jsonl --limit 7
+```
+
+## Troubleshooting
+
+### `st intake` is missing
+
+Use [Material Plan Intake Fallback](#material-plan-intake-fallback). Record `graph_debt:material_plan_not_compiled`.
+
+### `st graph audit` is missing
+
+Use:
+
+```bash
+st doctor --file .step/st-plan.jsonl
+st show --file .step/st-plan.jsonl --surface all --format json
+st ready --file .step/st-plan.jsonl --format markdown
+st blocked --file .step/st-plan.jsonl --surface all --format markdown
+```
+
+Record `graph_debt:implementation_ready_audit_missing`.
+
+### `st complete` is missing
+
+Use:
+
+```bash
+st set-proof --file .step/st-plan.jsonl --id <id> --proof-state pass --command "<cmd>" --evidence-ref <log>
+st set-status --file .step/st-plan.jsonl --id <id> --status completed
+```
+
+### Command shape fails
+
+Retry once with explicit long options.
+
+### Aperture warns about graph debt
+
+Do not ignore it for material plans. Run intake/audit or explicitly disclose the debt.
+
+### Projection drift
+
+Run:
+
+```bash
+st reconcile-codex --file .step/st-plan.jsonl --transcript-path /path/to/session.jsonl
+st prime --file .step/st-plan.jsonl
+st assert-projection --file .step/st-plan.jsonl
+```
 
 ## References
 
-- Read `references/jsonl-format.md` for event schema, status/dependency state vocabulary, and snapshot import/export shapes.
+- `references/material-plan-intake-template.md`
+- `references/next-cli-patch-spec.md`
+- `references/jsonl-format.md`
