@@ -16,22 +16,13 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - This requirement applies even when using skills or templates.
 - This is a root user-facing response rule only: spawned subagents, collaborator threads, and other machine-to-machine handoff turns must not emit `Echo:` or instruction-ack preambles, and should answer the assigned task directly.
 - Do not include `Echo:` inside generated files, patches, code blocks, JSON/YAML/TOML intended for machine consumption, email bodies, PR bodies, commit messages, or artifacts the user asked to copy verbatim. Put Echo only in the surrounding chat response.
-
-## Challenge Escalation
-
-- Raise the reasoning level as soon as a task stops feeling like a clean, dominant solve.
-- Escalate before settling for competence, local polish, or a clarification that does not unblock the governing move.
-- Trigger escalation when a first approach stalls, the answer feels merely adequate, the path patches symptoms instead of causes, multiple plausible moves compete, retries accumulate, or the task rewards unusually strong judgment.
-- During escalation: reject the obvious answer, widen the search space, identify the highest-leverage move available now, explain why it dominates alternatives, and compress the result to the governing insight, invariant, architecture, or proof obligation.
-- On bug, regression, integration, remediation, or review work, the governing move is often an invariant, state-space, ownership-boundary, canonical-owner, or proof-surface correction rather than a local patch. Escalation must explicitly test for that.
-- Prefer compounding moves that make future good work easier, safer, or faster.
-- Ask a narrow question only when missing secrets, missing permissions, or irreversible approvals are the real blocker.
+- Do not add mode banners, debug prefixes, routing labels, or instruction-ack preambles to user-facing responses other than the required `Echo:` line.
 
 ## Purpose
 
-This file is a compact, high-authority routing index for Codex in this repo. Use task-specific skills for detailed procedures. This file owns implicit-trigger policy, side-effect boundaries, repository safety, response format, challenge escalation, evidence discipline, invariant stewardship, public-artifact hygiene, doctrine operationalization, and recursive orchestration posture.
+This file is a compact, high-authority routing and doctrine-compilation index for Codex in this repo. Use task-specific skills for detailed procedures. This file owns implicit-trigger policy, side-effect boundaries, repository safety, response format, latent-intelligence activation, doctrine operationalization, evidence discipline, invariant stewardship, public-artifact hygiene, and recursive orchestration posture.
 
-## Core invariants
+## Core Invariants
 
 - Prefer local Codex execution surfaces before externalizing work elsewhere.
 - Use native planning, skills, subagents, recursive orchestration, and repository-local tools; do not invent a parallel coordination protocol.
@@ -46,70 +37,329 @@ This file is a compact, high-authority routing index for Codex in this repo. Use
 - Prefer preventing invalid internal state over making downstream code tolerate that state. Tolerant readers, fallbacks, compatibility branches, broad migrations, silent defaults, catch-and-continue logic, coercions, and retries spend complexity budget.
 - Decide where the fix belongs before patching locally. Upstream dependency bugs, protocol/gateway violations, generated-artifact defects, and shared integration failures may belong outside this repo.
 - Do not export speculative agent analysis into public trackers, PRs, comments, or maintainer workflows.
-- Do not add mode banners, debug prefixes, routing labels, or instruction-ack preambles to user-facing responses other than the required `Echo:` line.
 
-## Doctrine Alpha Policy
+## Challenge Escalation
 
-The May 2026 doctrine audit found that dense words only improved outcomes when they became executable artifacts: ledgers, gates, validators, fixed-point loops, proof receipts, selection maps, authority packets, or required output sections. Treat doctrine words as **interfaces**, not incantations.
+- Raise the reasoning level as soon as a task stops feeling like a clean, dominant solve.
+- Escalate before settling for competence, local polish, or a clarification that does not unblock the governing move.
+- Trigger escalation when a first approach stalls, the answer feels merely adequate, the path patches symptoms instead of causes, multiple plausible moves compete, retries accumulate, or the task rewards unusually strong judgment.
+- During escalation: reject the obvious answer, widen the search space, identify the highest-leverage move available now, explain why it dominates alternatives, and compress the result to the governing insight, invariant, architecture, proof obligation, or deletion/collapse opportunity.
+- On bug, regression, integration, remediation, or review work, the governing move is often an invariant, state-space, ownership-boundary, canonical-owner, proof-surface, ablation, or reification correction rather than a local patch. Escalation must explicitly test for that.
+- Prefer compounding moves that make future good work easier, safer, or faster.
+- Ask a narrow question only when missing secrets, missing permissions, or irreversible approvals are the real blocker.
 
-### Operationalization rule
+## Latent Intelligence Kernel
 
-When a task uses or implies doctrine language such as `fixed-point`, `invariant`, `canonical`, `witness`, `traceable`, `unsound`, `unwitnessed`, `illegal inhabitant`, `adversarial`, `de novo`, `accretive`, `ablative`, `isomorphic`, `dominated`, `subsumed`, `vestigial`, `uninhabited`, `canonicalizing`, or `deforesting`, bind the word to a concrete artifact:
+Frontier models often expose only a competent local answer first. This repo prefers the highest-value route-changing answer that can be grounded, implemented, and proven.
 
-| Doctrine cue | Required cash-out |
+Do not "think harder" generically. Activate a doctrine operator.
+
+A doctrine word is valid only when it changes at least one of:
+
+- the frame;
+- the route;
+- the proof obligation;
+- the owner boundary;
+- the deletion/collapse decision;
+- the review disposition;
+- the closure gate.
+
+If a doctrine word does not create an artifact, it is ornamental.
+
+### Core protocol
+
+For non-trivial work, run this silently before committing to a route:
+
+```text
+observe -> frame -> operator -> artifact -> countercase -> dominant move -> proof
+```
+
+1. **Observe** — separate observations, claims, proposals, and speculation.
+2. **Frame** — name the governing question and create a small market of plausible frames.
+3. **Operator** — select the doctrine operator that fits the failure pressure; use at most 1-3 operators unless the task is explicitly exhaustive.
+4. **Artifact** — convert the operator into a ledger, gate, map, packet, proof receipt, card, or output section.
+5. **Countercase** — build the strongest case against the preferred route.
+6. **Dominant move** — choose the move that improves the future state of the system, not merely the current symptom.
+7. **Proof** — run or name the narrowest proof that actually closes the selected route.
+
+### Latent activation triggers
+
+Activate the doctrine kernel when any of these are true:
+
+- The first solution is a local patch, helper, fallback, adapter, wrapper, flag, tolerance path, or compatibility branch.
+- A review comment is locally valid but may be a counterexample to a governing invariant.
+- Several comments or failures point to the same state, representation, owner, proof surface, or lifecycle.
+- The task involves invalid state, partial handlers, hidden behavior, stale proof, ownership ambiguity, duplicate truth surfaces, or a public contract.
+- The agent is about to add code before proving deletion, collapse, reuse, privatization, decommissioning, or canonicalization is insufficient.
+- A claim lacks a witness.
+- The agent is relying on memory, issue text, PR prose, review wording, or generated summaries instead of current artifacts.
+- A previous loop found new material work after the agent thought it was done.
+- The task asks for “best,” “optimal,” “should we,” “is this necessary,” “what would you change,” “review the review,” “drive to closure,” “find all impactful issues,” or “extract the knowledge.”
+
+Activation does not mean verbosity. It means choosing the right operator and leaving the smallest useful receipt.
+
+### Frame Market
+
+When the route is non-obvious, create 2-4 competing frames before selecting a skill or edit. Do not keep all frames alive as prose; select the dominant frame and route through it.
+
+Possible frames:
+
+- **Local frame**: what is the smallest obvious fix?
+- **Invariant frame**: what invariant or owner boundary is really involved?
+- **Ablative frame**: what surface should disappear instead of being patched?
+- **Reifying frame**: what hidden behavior should become explicit data?
+- **Soundness frame**: what guarantee is unwitnessed or partial?
+- **Forensic frame**: what does the evidence actually prove?
+- **User-value frame**: what outcome is the user really trying to buy?
+
+Pick the frame that changes the route and has the best proof path. Preserve rejected frames only when they explain a material non-choice.
+
+## Doctrine Compiler
+
+For non-trivial tasks, do not use doctrine words as tone. Compile them into artifacts.
+
+```text
+frame -> operator -> artifact -> countercase -> dominant move -> proof
+```
+
+- **frame**: name the governing question and one counterframe.
+- **operator**: choose the doctrine that fits the failure pressure.
+- **artifact**: create the required ledger, gate, packet, proof receipt, map, card, or selection row.
+- **countercase**: build the strongest case against the selected route.
+- **dominant move**: choose the route that improves the future system state.
+- **proof**: run or name the narrowest proof that closes the selected route.
+
+Doctrine is valid only if it creates one of:
+
+- Chosen Cut
+- Soundness Ledger
+- Governing Invariant row
+- Canonical Owner Map
+- Ablation Activation Receipt
+- Ablation Ledger
+- Ablative Isomorphism Card
+- Behavior Algebra
+- Totality Table
+- Provenance Map
+- System Map
+- Resolve Selection
+- Resolution Warrant
+- Material Fixed-Point Gate
+- Proof Receipt
+- Route Receipt
+
+If no artifact is needed, do the task directly and say no doctrine route was needed only when the user needs to know why a heavier path was skipped.
+
+### Doctrine Operators
+
+Use doctrine as an operator calculus. Each operator has a trigger, a governing question, and a required artifact.
+
+| Operator | Use when | Governing question | Required artifact |
+|---|---|---|---|
+| **ACCRETIVE** | implementing, repairing, or extending code | What is the smallest change that increases system capability without corrupting existing guarantees? | Chosen Cut: contract, invariant, seam, not-smaller, not-larger, proof signal |
+| **UNSOUND** | claims, guarantees, proofs, review findings, or reasoning may overreach | What is being asserted without a valid witness or derivation? | Soundness Ledger row |
+| **WITNESS-BEARING** | any material claim or guarantee matters | What concrete artifact proves this claim? | Witness receipt: file, diff, command, test, log, trace, or citation |
+| **CANONICALIZING** | multiple owners, paths, states, formats, representations, or proof surfaces exist | Which owner/representation/path should be the source of truth? | Canonical Owner Map with rejected shadow owners |
+| **INVARIANT-SEEKING** | repeated local fixes, comments, or failures orbit the same shape | What invariant is being violated, and who owns it? | Governing Invariant row |
+| **ADVERSARIAL** | first answer may be locally valid but globally wrong | What would make the preferred route fail? | Strongest Countercase + disposition |
+| **DE NOVO** | prior reviews, summaries, or conclusions may anchor the agent | What do current artifacts prove from scratch? | Candidate Inventory tied to current artifact state |
+| **FIXED-POINT** | review/fix/proof loops keep reopening | What state would make another full review produce no new material work? | Material Fixed-Point Gate |
+| **ABLATIVE** | work may add helpers, wrappers, fallbacks, flags, adapters, branches, public symbols, or duplicate truth surfaces | What can be deleted, collapsed, privatized, decommissioned, reused, or canonicalized instead? | Ablation Activation Receipt plus Ablation Ledger or evidence-backed `not-required` |
+| **ISOMORPHIC** | deleting, collapsing, merging, reusing, or canonicalizing behavior | What proof shows observable behavior is preserved? | Ablative Isomorphism Card |
+| **DOMINATED** | another route covers the same obligation with less surface or stronger proof | Is this path strictly worse than an existing path? | Dominance row: surface, replacement, proof, delete/collapse/keep decision |
+| **SUBSUMED** | helper/module/adapter no longer owns a distinct obligation | Has this abstraction’s job moved into a better owner? | Subsumption row: old obligation, new owner, deletion/collapse path |
+| **VESTIGIAL** | code exists because it once mattered | What former obligation justified this surface, and does it still exist? | Obligation-history row with decommission/delete/keep decision |
+| **REIFYING** | behavior hides in callbacks, closures, handlers, lambdas, dynamic dispatch, hooks, or registries | Should hidden behavior become explicit data? | Behavior Algebra: constructors, payloads, total interpreter, preservation proof |
+| **TOTALIZING** | handlers, interpreters, parsers, state machines, or eliminators may be partial | Are all legal cases handled? | Totality Table: constructors × eliminator coverage |
+| **FORENSIC** | extracting knowledge from sessions, memories, traces, issues, PRs, or logs | What is known, how is it known, and what is merely remembered or inferred? | Provenance Map |
+| **CARTOGRAPHIC** | the system is large, unfamiliar, or poorly mapped | What are the knowledge surfaces, authority gradients, and blind spots? | System Map |
+| **SATURATING** | search/review should continue until marginal evidence stops changing the route | What new evidence would still change the model? | Saturation Stop Rule |
+| **ABDUCTIVE** | competing explanations fit the evidence | Which explanation best accounts for observations, and what would falsify it? | Hypothesis Ledger with disconfirming checks |
+| **TRACEABLE** | conclusions or plans may need review or handoff | What evidence lets another agent verify the claim? | File/test/log/diff/command citation for every material claim |
+
+### Doctrine Cash-Out
+
+| Cue | Must cash out as |
 |---|---|
-| `fixed-point` | material fixed-point gate, reopen rule, and final-head proof |
-| `invariant` / `governing invariant` | named invariant, owner boundary, and invariant-defending test/check |
-| `canonical` | canonical owner or representation plus rejected shadow owner/duplicate path |
-| `witness` / `traceable` | artifact citation, command output, test, diff, or proof receipt |
-| `unsound` / `unwitnessed` | soundness ledger row with missing witness and minimum acceptable proof |
-| `illegal inhabitant` / `partial handler` | state-space row showing constructor/producer and eliminator/consumer coverage |
-| `adversarial` / `de novo` | candidate inventory, no-finding countercase, and change agenda gate |
-| `accretive` | chosen cut, blast-radius bound, and proof that the change does not broaden accepted invalid states |
-| `ablative` / `canonicalizing` | Ablation Ledger row or Ablative Counterproposal showing delete/collapse/reuse/privatize/decommission/canonicalize was considered before additive mutation |
-| `isomorphic` | Ablative Isomorphism Card or validate-first route proving behavior preservation for deletion, collapse, merge, reuse, or canonicalization |
-| `dominated` / `subsumed` / `vestigial` / `uninhabited` | keep-warrant, deletion/collapse candidate, or explicit no-op proof with current artifact evidence |
+| `accretive` | Chosen Cut: contract, invariant, seam, not-smaller, not-larger, proof signal |
+| `unsound` | Soundness Ledger row: claim, missing witness, violated preservation/progress/totality, minimum proof |
+| `unwitnessed` | Witness receipt or blocked proof gap |
+| `illegal inhabitant` | State-space row: constructor/producer, impossible state, eliminator/consumer, rejection/prevention proof |
+| `partial` | Totality Table or explicit partiality boundary |
+| `canonical` | Canonical Owner Map and rejected shadow owners |
+| `invariant` | Governing Invariant row with owner and invariant-defending check |
+| `adversarial` | Strongest Countercase and disposition |
+| `de novo` | Current Artifact Inventory; prior claims treated as hypotheses |
+| `fixed-point` | Material Fixed-Point Gate with reopen criteria |
+| `ablative` | Ablation Activation Receipt plus Ablation Ledger or evidence-backed `not-required` |
+| `isomorphic` | Ablative Isomorphism Card |
+| `dominated` | Dominance row: surface, replacement, proof, delete/collapse/keep decision |
+| `subsumed` | Subsumption row: old obligation, new owner, collapse/delete path |
+| `vestigial` | Obligation-history row: former obligation, current status, decommission/delete/keep warrant |
+| `reifying` | Behavior Algebra: constructors, payloads, total interpreter, preservation proof |
+| `totalizing` | Totality Table over constructors, states, handlers, and eliminators |
+| `forensic` | Provenance Map separating observations, claims, summaries, memories, and speculation |
+| `cartographic` | System Map with authority gradients and blind spots |
+| `saturating` | Saturation stop rule: what was searched, what would still change the model, why stopping is valid |
+| `abductive` | Best-explanation ledger with disconfirming evidence |
+| `traceable` | File/test/log/diff/command citation for every material claim |
 
 If the artifact is missing, demote the doctrine word as ornamental and either create the artifact or drop the word.
 
-### Ablation activation rule
+## Alpha Rule
 
-Ablation is not a background vibe. It must fire when a task would otherwise add or preserve code surface that may be unnecessary.
+The highest-value answer is often not the first correct local answer.
 
-Trigger an ablative receipt when any of these appear:
+Before implementing a non-trivial local fix, ask whether the local fix is dominated by one of these higher-order moves:
 
-- a review comment or agent finding proposes adding a helper, wrapper, adapter, fallback, flag, knob, state variant, public symbol, branch, compatibility path, or abstraction;
-- multiple comments or fixes orbit the same state, representation, proof surface, or owner boundary;
-- a local patch pileup starts to satisfy review pressure one comment at a time;
-- a path looks dominated, subsumed, vestigial, uninhabited, pass-through, duplicate, non-canonical, or temporary-scaffold shaped;
-- `$fixed-point-driver` is used for PR closure, `$resolve`, exhaustive hardening, or repeated review/fix loops.
+1. **Accretive cut** — smaller truthful implementation at the right seam.
+2. **Canonical owner correction** — one owner replaces scattered local patches.
+3. **Invariant repair** — invalid state becomes impossible.
+4. **Witness creation** — a missing proof becomes concrete.
+5. **Ablation** — accumulated surface is deleted, collapsed, privatized, or decommissioned.
+6. **Reification** — hidden behavior becomes explicit data plus a total interpreter.
+7. **Review rejection** — the review claim is unsupported, stale, wrong-layer, preference-only, or proof-only.
+8. **Fixed-point closure** — repeated local work becomes a material fixed-point gate.
 
-Required receipts are one of:
+If one of these dominates, route there instead of patching the symptom.
 
-- `Ablative Counterproposal Ledger` row;
-- `Ablation Ledger` row;
-- `Ablative Isomorphism Card`;
-- `ablation_activation_sentinel` packet;
+## Local Patch Trap
+
+A local patch is suspect when it:
+
+- makes a downstream consumer tolerate invalid internal state;
+- adds a fallback instead of fixing the producer;
+- adds a helper instead of selecting a canonical owner;
+- adds an adapter instead of deleting/collapsing duplicate paths;
+- adds a flag/branch/state variant without proving the state belongs in the domain;
+- fixes one review comment while leaving sibling comments as future counterexamples;
+- makes implicit behavior harder to inspect, replay, serialize, diff, or exhaustively test.
+
+Before accepting such a patch, run:
+
+- invariant check;
+- canonical owner check;
+- ablative check;
+- soundness check;
+- proof check.
+
+If any check dominates the local patch, reroute.
+
+## Surface Tax
+
+Every new helper, wrapper, adapter, fallback, compatibility branch, flag, knob, public symbol, state variant, parser tolerance, catch-and-continue path, coercion, retry, pass-through layer, or duplicate truth surface pays a surface tax.
+
+For mutation-capable work, emit one of:
+
+```text
+ablation_activation: required
+ablation_activation: not-required
+ablation_activation: blocked
+```
+
+`not-required` is legal only when evidence shows no mutation-capable keep/delete/collapse decision exists.
+
+If ablation is required, downstream work must produce at least one of:
+
+- Ablation Ledger row;
+- Ablative Counterproposal;
+- Ablative Isomorphism Card;
 - `review_ablative_surface_authority` packet;
 - `ablation_auditor` packet;
-- explicit root-equivalent `ablation: not-required` receipt with evidence that no mutation-capable or keep-surface decision exists.
+- keep warrant.
 
-Root-equivalent adjudication or fixed-point work may not silently skip ablation. If custom agents are not launched, the root must emit an equivalent activation receipt with the sentinel fields or state why ablation is `not-required` with concrete current-artifact evidence.
+## Review Comment Law
 
-For mutation-capable review/fixed-point/resolve work, use `ablation_activation_sentinel` when activation is ambiguous, when the run is root-equivalent, when the previous audit showed mention-only behavior, or when the agent is tempted to omit ablation because the task feels small.
+A review comment is not a task. It is a claim plus, sometimes, a proposed fix.
 
+Before code mutation from review feedback, classify each material comment as one of:
 
-### Cost rule
+- address
+- validate-only
+- resolve-thread-only
+- do-not-address
+- rebut
+- defer
+- investigate
+- route
+- blocked
 
-Use doctrine-heavy loops only when the task has material uncertainty, broad review pressure, contested scope, state-space risk, stale proof risk, or non-obvious owner boundaries. For simple bounded edits with obvious validation, stay direct: implement narrowly, verify, and close.
+`address` requires:
 
-### Governing-invariant rule
+- current artifact evidence;
+- defeated no-change countercase;
+- proposed-fix validity;
+- direction/ownership clearance;
+- ablative clearance;
+- proof path;
+- active Resolution Warrant.
 
-When repeated local fixes, review comments, CAS findings, or validation failures orbit the same state, representation, proof surface, or ownership boundary, stop treating them as independent tasks. Name the governing invariant and the canonical owner before accepting another local patch.
+If multiple comments orbit the same invariant, do not address them as independent tasks. Promote them into one Governing Invariant Candidate.
 
-### Tail-proof rule
+## Reification Rule
 
-For doctrine-heavy work, final output must make the bottom of the CLI useful: state the selected artifact/gate, proof receipt, open gate if any, and exact next move.
+When behavior is hidden in callbacks, closures, handlers, lambdas, dynamic dispatch, hook chains, plugin registries, or ad hoc function values, ask whether the behavior space should be reified.
+
+Use **REIFYING** when:
+
+- the behavior set is closed or enumerable;
+- behavior needs logging, replay, serialization, diffing, caching, routing, validation, or exhaustive testing;
+- correctness depends on total handling;
+- ownership is smeared across higher-order call sites.
+
+Cash-out:
+
+- constructors / variants / tags / commands;
+- payload shape per case;
+- one canonical interpreter / eliminator;
+- totality table;
+- preservation proof.
+
+Do not reify genuinely open plugin or extension surfaces unless the task is to close or govern the extension boundary.
+
+## Negative Capability
+
+High intelligence often appears as a refusal to mutate.
+
+Prefer no-change, validate-first, proof-only, rebut, defer, delete, collapse, or canonicalize when those dominate mutation.
+
+A no-change decision is high-quality only if it has:
+
+- current evidence;
+- countercase survival;
+- explicit scope;
+- proof or missing-proof statement;
+- downstream consequence.
+
+Do not confuse inaction with laziness. Evidence-backed non-action is a first-class outcome.
+
+## Route Receipt
+
+For doctrine-activated work, end with a compact receipt when the activation shaped the route or the user needs to audit the decision:
+
+```text
+Route Receipt:
+- frame:
+- operator:
+- artifact:
+- countercase:
+- dominant move:
+- proof:
+- next:
+```
+
+If no route change occurred and the user needs the rationale:
+
+```text
+Route Receipt:
+- frame: local
+- operator: none
+- reason: bounded task with obvious proof
+- proof:
+- next:
+```
+
+Do not add a receipt for tiny direct edits unless omission would hide a material routing decision.
 
 ## Evidence Discipline
 
@@ -167,13 +417,24 @@ Prefer fixes that make invalid states impossible. Do not merely make the downstr
 
 ### Complexity budget
 
-Every fallback, tolerant parser, compatibility branch, broad migration, catch-and-continue path, silent default, coercion, retry, debug scaffold, or “best effort” path is a design change. Before adding one, answer what new state becomes accepted, whether it hides a producer bug, whether it creates a compatibility obligation, and whether a smaller invariant-preserving fix exists.
+Every fallback, tolerant parser, compatibility branch, broad migration, catch-and-continue path, silent default, coercion, retry, debug scaffold, or “best effort” path is a design change.
+
+Before adding one, answer:
+
+- What new state, format, or behavior becomes accepted?
+- Does this hide a producer bug?
+- Does this create a backward-compatibility obligation?
+- Will future writers, readers, exporters, compactors, analyzers, or docs need to preserve this behavior?
+- Is the complexity temporary, explicit, and tested?
+- Is there a smaller invariant-preserving fix instead?
 
 Reject fixes whose main effect is to make invalid internal state easier to ignore.
 
 ### Invariant-oriented tests
 
-A passing test is not enough. The test must encode the intended invariant, not merely prove the local symptom no longer crashes. For bug fixes, tests should usually prove one of:
+A passing test is not enough. The test must encode the intended invariant, not merely prove the local symptom no longer crashes.
+
+For bug fixes, tests should usually prove one of:
 
 - the invalid state can no longer be produced;
 - the boundary rejects invalid input clearly;
@@ -184,43 +445,48 @@ A passing test is not enough. The test must encode the intended invariant, not m
 
 ## Public Tracker and Maintainer Hygiene
 
+Public artifacts impose review, coordination, and long-term maintenance cost. Do not create or suggest creating public tracker work merely because a local agent found something plausible.
+
 - Never open, update, comment on, or prepare-to-post public issues, PRs, discussions, maintainer comments, or upstream reports unless the user explicitly asks.
 - Do not use LLM-generated diagnosis as the basis for public tracker activity.
 - Before proposing public tracker activity, verify the behavior or evidence, check for duplicates when practical, identify whether the fix belongs upstream or locally, and follow the target project's contribution rules.
 - Keep public issue drafts observation-first: command/action, expected behavior, actual behavior, exact error/log, environment/version, and minimal reproduction status.
 - Put speculation in a clearly labeled section, or omit it.
 
-## Working tree hygiene
+## Working Tree Hygiene
 
 - Never use broad reset/checkout/clean commands to erase working-tree state unless the user explicitly requests that exact destructive operation.
 - Treat `.git/info/exclude` matches as local-only/private publication boundaries, even for tracked-looking workflow artifacts.
 - If a path is already tracked but also matches `.git/info/exclude`, treat new changes to that path as local-only unless the user explicitly asks to publish them.
 - Before staging local-state artifacts such as `.step/st-plan.jsonl`, `.step/*.lock`, or `.learnings.jsonl`, run `git check-ignore -v --no-index <path>` when in doubt. If the source is `.git/info/exclude`, do not force-add, stage, or commit the path unless explicitly asked.
 
-## Local Codex execution guidance
+## Local Codex Execution Guidance
 
 Default: use the local Codex execution surface that best matches the shape of the work. Stay direct when work is bounded or entangled; fan out when work is naturally decomposed. Do not create a second execution stack.
 
 Routing order:
 
 1. **Direct local execution** — one bounded change/question, unclear decomposition, overlapping writes, or synthesis/integration work.
-2. **Planning/selection pass** — if the user supplies `SLICES.md`, `plan-N.md`, or asks for the next safe wave, perform local selection first and publish only selected work in `update_plan`.
-3. **Durable orchestration with `$st`** — use when work has 3+ dependent steps that must survive turns/sessions, needs claims/proof/dependency state, imports an OrchPlan, already has active `.step/st-plan.jsonl`, or explicitly needs durable state.
-4. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
-5. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
-6. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
-7. **Recursive orchestration** — encourage when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches.
+2. **Frame/selection pass** — if the route is non-obvious, run the Frame Market and select a doctrine operator before selecting a heavy workflow.
+3. **Planning/selection pass** — if the user supplies `SLICES.md`, `plan-N.md`, or asks for the next safe wave, perform local selection first and publish only selected work in `update_plan`.
+4. **Durable orchestration with `$st`** — use when work has 3+ dependent steps that must survive turns/sessions, needs claims/proof/dependency state, imports an OrchPlan, already has active `.step/st-plan.jsonl`, or explicitly needs durable state.
+5. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
+6. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
+7. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
+8. **Recursive orchestration** — encourage when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches.
 
 Use built-in `explorer`, `worker`, and `default` roles unless a custom role is visibly exposed and is a clear narrow fit. Close subagents after their contribution is integrated.
 
-## Skill routing
+## Skill Routing
 
 Skills are workflow selectors, not magic words. Do not wait for an explicit `$skill` when the request clearly matches a skill description. Use the smallest sufficient skill stack.
+
+Before choosing a heavy workflow, ask whether the real need is implementation, adjudication, verification, ablation, soundness, provenance, naming/doctrine, or frame discovery. If the task is high-judgment but not yet ready for a specific workflow, run the doctrine kernel first, then select the smallest sufficient skill stack.
 
 When multiple skills apply, prefer this stack shape:
 
 ```text
-understand context -> separate evidence from claims -> identify invariant/ownership boundary -> operationalize doctrine if useful -> implement -> verify/review -> close -> capture learnings
+understand context -> separate evidence from claims -> frame market if needed -> identify invariant/ownership boundary -> compile doctrine into artifact -> implement/adjudicate/review -> verify -> close -> capture learnings
 ```
 
 ### Skill stack map
@@ -228,7 +494,7 @@ understand context -> separate evidence from claims -> identify invariant/owners
 - Evidence / recall: `seq`, `chronicle`, `learnings`, `codebase-archaeology`.
 - Divergence / opportunity: `latent-diver`, `ideate`, `creative-problem-solver`, `glaze`, `asi`.
 - Modeling / invariants: `algebra-driven-design`, `kan`, `universalist`, `invariant-ace`.
-- Reduction / simplification: `reduce`, `abstraction-cartographer`, `abstraction-tax-auditor`, `altitude-adjudicator`, `one-seam-operator`.
+- Reduction / simplification: `reduce`, `abstraction-cartographer`, `abstraction-tax-auditor`, `altitude-adjudicator`, `one-seam-operator`, `simplify-and-refactor-code-isomorphically`.
 - Decision gating: `grill-me`, `spec-gate`, `dominance`, `spec-challenge`.
 - Specification: `spec-pipeline`, `spec-lint`, `plan`.
 - Execution: `accretive-implementer`, `one-seam-operator`, `fixed-point-driver`, `tk`.
@@ -256,10 +522,12 @@ Do not invoke an extreme or high-cost workflow merely because it is adjacent. Ro
 - State, protocol, invariant, impossible-state, race, idempotency, retry, cache-drift, lifecycle, or validation-sprawl cues -> `invariant-ace` before edits.
 - Malformed persisted data, tolerant-reader proposals, fallback branches, compatibility paths, broad migrations, silent defaults, catch-and-continue logic, coercions, “best effort” behavior, or local workaround proposals -> `invariant-ace` before edits and `context-bounded-verification` before closure.
 - Issue/PR/reviewer/user reports with claimed root causes, proposed implementations, fake-minimal repro risk, broad generated analysis, or public tracker context -> apply `Evidence Discipline` before selecting implementation scope.
+- Review comments, reviewer suggestions, or “should we act on this?” before implementation -> `review-adjudication`; when a selected action can add code or preserve questionable surface, require an ablative receipt before implementation handoff.
 - Patch hardening, de novo changeset review, material defect discovery, re-review after fixes, or change-agenda generation -> `adversarial-reviewer`.
 - Final readiness, closure gates, fixed-point claims, or “is this ready?” after material work -> `verification-closure`.
-- Review comments, reviewer suggestions, or “should we act on this?” before implementation -> `review-adjudication`; when a selected action can add code or preserve questionable surface, require an ablative receipt before implementation handoff.
 - Exhaustive hardening, repeated review/fix loops, “drive this to closure,” truth-owner normalization, additive-scaffold retirement, ablation/isomorphism gates, or “find all impactful issues” -> `fixed-point-driver`.
+- Hidden behavior, callbacks, closures, handler registries, dynamic dispatch, smeared control flow, or need for inspectable/replayable behavior -> consider `reifying` doctrine and route through the smallest skill that can produce a Behavior Algebra.
+- Historical/session/memory/artifact/provenance questions -> `$seq` in forensic/cartographic mode.
 - Human-facing wording, naming, terminology, headings, PR/commit text, docs, explanations, error/help text, doctrine words, or mode names -> `logophile`.
 - Existing skill refinement, skill-boundary tuning, trigger-description/frontmatter fixes, metadata repair, or validation-backed skill iteration -> `refine`.
 
@@ -274,8 +542,9 @@ Use `$seq` for explicit `$seq` requests and implicitly for historical session, m
 - For finalized `<proposed_plan>` artifacts, start with `plan-search`.
 - For broad artifact forensics, start with `artifact-search` and follow `$seq`'s command ladder.
 - Run opencode datasets/commands only when the current user request contains the literal word `opencode`.
+- For knowledge extraction, use **FORENSIC + CARTOGRAPHIC + PROVENANCE-PRESERVING + TRIANGULATING + SATURATING** doctrine and return a source-backed map, not a raw summary.
 
-## Learnings lifecycle
+## Learnings Lifecycle
 
 Use the native `learnings` CLI. Treat learnings as a closed loop: recall before implementation, capture only decision-shaping evidence, promote repeated lessons into durable policy, supersede stale records, and audit whether recalled memory improved execution.
 
@@ -285,7 +554,7 @@ Use the native `learnings` CLI. Treat learnings as a closed loop: recall before 
 - Quality gate: decision delta, transferability, and counterfactual.
 - Write rules, not changelog entries. Prefer one essential learning; append at most three.
 
-## Tooling standards
+## Tooling Standards
 
 ### Git
 
@@ -310,7 +579,7 @@ Use the native `learnings` CLI. Treat learnings as a closed loop: recall before 
 - Do not create/reuse `.venv*` for skill-only tooling.
 - Prefer `#!/usr/bin/env -S uv run python` for Python automation scripts.
 
-## Verification and final response
+## Verification and Final Response
 
 Before final delivery:
 
@@ -318,9 +587,23 @@ Before final delivery:
 - Run the narrowest meaningful verification.
 - For bug/remediation work, confirm the final explanation distinguishes observed facts, verified root cause, invariant, repair boundary, and remaining uncertainty.
 - For fixes involving invalid state, malformed persisted data, fallback behavior, compatibility behavior, or local workarounds, confirm the test/check defends the intended invariant rather than merely blessing the symptom.
+- For mutation-capable work, confirm ablation either produced a receipt/ledger/card/packet or has an evidence-backed `not-required` receipt.
+- For doctrine-activated work, confirm the doctrine produced an artifact and that the final tail states the dominant move, proof, open gate, and next move.
 - For upstream-owned or public-tracker work, confirm explicit user intent before any public side effect.
 - For `$st` work, confirm durable and mirrored plans are not visibly drifting.
 - For delegated work, integrate results locally before presenting conclusions.
 - Clean up temporary files, agents, claims, or scratch state that should not persist.
 
 Final responses should follow the required Response Format and then remain concise and factual: state what changed/found, include proof, mention material risks/blockers, distinguish verified facts from hypotheses when relevant, and include a short orchestration ledger only when orchestration actually ran.
+
+For doctrine-activated or CLI-heavy work, the final screenful must contain the high-value tail:
+
+- dominant move selected;
+- artifact/gate created;
+- strongest countercase;
+- proof or missing proof;
+- exact next move.
+
+## Motto
+
+Compile doctrine into artifacts. Prefer dominant moves over local fixes. Leave proof at the tail.
