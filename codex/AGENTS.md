@@ -43,8 +43,8 @@ This file is a compact, high-authority routing and doctrine-compilation index fo
 - Raise the reasoning level as soon as a task stops feeling like a clean, dominant solve.
 - Escalate before settling for competence, local polish, or a clarification that does not unblock the governing move.
 - Trigger escalation when a first approach stalls, the answer feels merely adequate, the path patches symptoms instead of causes, multiple plausible moves compete, retries accumulate, or the task rewards unusually strong judgment.
-- During escalation: reject the obvious answer, widen the search space, identify the highest-leverage move available now, explain why it dominates alternatives, and compress the result to the governing insight, invariant, architecture, proof obligation, or deletion/collapse opportunity.
-- On bug, regression, integration, remediation, or review work, the governing move is often an invariant, state-space, ownership-boundary, canonical-owner, proof-surface, ablation, or reification correction rather than a local patch. Escalation must explicitly test for that.
+- During escalation: reject the obvious answer, widen the search space, identify the highest-leverage move available now, explain why it dominates alternatives, and compress the result to the governing insight, invariant, architecture, proof obligation, deletion/collapse opportunity, or certification target.
+- On bug, regression, integration, remediation, or review work, the governing move is often an invariant, state-space, ownership-boundary, canonical-owner, proof-surface, ablation, reification, certificate, or normal-form correction rather than a local patch. Escalation must explicitly test for that.
 - Prefer compounding moves that make future good work easier, safer, or faster.
 - Ask a narrow question only when missing secrets, missing permissions, or irreversible approvals are the real blocker.
 
@@ -62,7 +62,9 @@ A doctrine word is valid only when it changes at least one of:
 - the owner boundary;
 - the deletion/collapse decision;
 - the review disposition;
-- the closure gate.
+- the closure gate;
+- the certificate;
+- the normal-form progress.
 
 If a doctrine word does not create an artifact, it is ornamental.
 
@@ -77,7 +79,7 @@ observe -> frame -> operator -> artifact -> countercase -> dominant move -> proo
 1. **Observe** — separate observations, claims, proposals, and speculation.
 2. **Frame** — name the governing question and create a small market of plausible frames.
 3. **Operator** — select the doctrine operator that fits the failure pressure; use at most 1-3 operators unless the task is explicitly exhaustive.
-4. **Artifact** — convert the operator into a ledger, gate, map, packet, proof receipt, card, or output section.
+4. **Artifact** — convert the operator into a ledger, gate, map, packet, proof receipt, certificate, card, or output section.
 5. **Countercase** — build the strongest case against the preferred route.
 6. **Dominant move** — choose the move that improves the future state of the system, not merely the current symptom.
 7. **Proof** — run or name the narrowest proof that actually closes the selected route.
@@ -88,13 +90,13 @@ Activate the doctrine kernel when any of these are true:
 
 - The first solution is a local patch, helper, fallback, adapter, wrapper, flag, tolerance path, or compatibility branch.
 - A review comment is locally valid but may be a counterexample to a governing invariant.
-- Several comments or failures point to the same state, representation, owner, proof surface, or lifecycle.
-- The task involves invalid state, partial handlers, hidden behavior, stale proof, ownership ambiguity, duplicate truth surfaces, or a public contract.
-- The agent is about to add code before proving deletion, collapse, reuse, privatization, decommissioning, or canonicalization is insufficient.
+- Several comments or failures point to the same state, representation, owner, proof surface, lifecycle, or boundary.
+- The task involves invalid state, partial handlers, hidden behavior, stale proof, ownership ambiguity, duplicate truth surfaces, semantic consumers, context preparation, public contracts, or inexact abstractions.
+- The agent is about to add code before proving deletion, collapse, reuse, privatization, decommissioning, canonicalization, or certification is insufficient.
 - A claim lacks a witness.
-- The agent is relying on memory, issue text, PR prose, review wording, or generated summaries instead of current artifacts.
+- The agent is relying on memory, issue text, PR prose, review wording, raw retrieved context, or generated summaries instead of current artifacts.
 - A previous loop found new material work after the agent thought it was done.
-- The task asks for “best,” “optimal,” “should we,” “is this necessary,” “what would you change,” “review the review,” “drive to closure,” “find all impactful issues,” or “extract the knowledge.”
+- The task asks for “best,” “optimal,” “should we,” “is this necessary,” “what would you change,” “review the review,” “drive to closure,” “find all impactful issues,” “extract the knowledge,” or “make this inevitable.”
 
 Activation does not mean verbosity. It means choosing the right operator and leaving the smallest useful receipt.
 
@@ -110,6 +112,9 @@ Possible frames:
 - **Reifying frame**: what hidden behavior should become explicit data?
 - **Soundness frame**: what guarantee is unwitnessed or partial?
 - **Forensic frame**: what does the evidence actually prove?
+- **Boundary frame**: what worlds are communicating, and what artifact should own the composition?
+- **Context frame**: what certified context should a semantic consumer receive?
+- **Sheafification frame**: what local meanings fail to glue into an exact abstraction?
 - **User-value frame**: what outcome is the user really trying to buy?
 
 Pick the frame that changes the route and has the best proof path. Preserve rejected frames only when they explain a material non-choice.
@@ -121,13 +126,6 @@ For non-trivial tasks, do not use doctrine words as tone. Compile them into arti
 ```text
 frame -> operator -> artifact -> countercase -> dominant move -> proof
 ```
-
-- **frame**: name the governing question and one counterframe.
-- **operator**: choose the doctrine that fits the failure pressure.
-- **artifact**: create the required ledger, gate, packet, proof receipt, map, card, or selection row.
-- **countercase**: build the strongest case against the selected route.
-- **dominant move**: choose the route that improves the future system state.
-- **proof**: run or name the narrowest proof that closes the selected route.
 
 Doctrine is valid only if it creates one of:
 
@@ -147,6 +145,13 @@ Doctrine is valid only if it creates one of:
 - Material Fixed-Point Gate
 - Proof Receipt
 - Route Receipt
+- Composition Certificate
+- Context Certificate
+- Sheafification Certificate
+- Presentation Diagnostic
+- Boundary Normal Form row
+- Context Normal Form row
+- Abstraction Normal Form row
 
 If no artifact is needed, do the task directly and say no doctrine route was needed only when the user needs to know why a heavier path was skipped.
 
@@ -158,7 +163,7 @@ Use doctrine as an operator calculus. Each operator has a trigger, a governing q
 |---|---|---|---|
 | **ACCRETIVE** | implementing, repairing, or extending code | What is the smallest change that increases system capability without corrupting existing guarantees? | Chosen Cut: contract, invariant, seam, not-smaller, not-larger, proof signal |
 | **UNSOUND** | claims, guarantees, proofs, review findings, or reasoning may overreach | What is being asserted without a valid witness or derivation? | Soundness Ledger row |
-| **WITNESS-BEARING** | any material claim or guarantee matters | What concrete artifact proves this claim? | Witness receipt: file, diff, command, test, log, trace, or citation |
+| **WITNESS-BEARING** | any material claim or guarantee matters | What concrete artifact proves this claim? | Witness receipt: file, diff, command, test, log, trace, citation, or certificate |
 | **CANONICALIZING** | multiple owners, paths, states, formats, representations, or proof surfaces exist | Which owner/representation/path should be the source of truth? | Canonical Owner Map with rejected shadow owners |
 | **INVARIANT-SEEKING** | repeated local fixes, comments, or failures orbit the same shape | What invariant is being violated, and who owns it? | Governing Invariant row |
 | **ADVERSARIAL** | first answer may be locally valid but globally wrong | What would make the preferred route fail? | Strongest Countercase + disposition |
@@ -176,6 +181,7 @@ Use doctrine as an operator calculus. Each operator has a trigger, a governing q
 | **SATURATING** | search/review should continue until marginal evidence stops changing the route | What new evidence would still change the model? | Saturation Stop Rule |
 | **ABDUCTIVE** | competing explanations fit the evidence | Which explanation best accounts for observations, and what would falsify it? | Hypothesis Ledger with disconfirming checks |
 | **TRACEABLE** | conclusions or plans may need review or handoff | What evidence lets another agent verify the claim? | File/test/log/diff/command citation for every material claim |
+| **UNIVERSALIST** | worlds meet, composition is arbitrary, context is uncertified, abstraction is inexact, or categorical mechanics are needed | What canonical artifact/certificate makes the boundary exact? | Composition, Context, Sheafification, or Presentation artifact |
 
 ### Doctrine Cash-Out
 
@@ -203,8 +209,40 @@ Use doctrine as an operator calculus. Each operator has a trigger, a governing q
 | `saturating` | Saturation stop rule: what was searched, what would still change the model, why stopping is valid |
 | `abductive` | Best-explanation ledger with disconfirming evidence |
 | `traceable` | File/test/log/diff/command citation for every material claim |
+| `universalist` | World/boundary/context/abstraction certificate or explicit reason the route is overkill |
 
 If the artifact is missing, demote the doctrine word as ornamental and either create the artifact or drop the word.
+
+## Universalist Routing
+
+`universalist` is the single top-level Universal Architecture skill in this repo. The former standalone Kan skill has been folded into `universalist` as an internal mechanics layer. Do not route to a separate Kan skill.
+
+Use `universalist` when the main question is any of:
+
+- the smallest honest construction that makes repeated obligations or impossible states explicit;
+- a canonical boundary artifact where worlds meet;
+- a Composition Certificate or Boundary Normal Form move;
+- Exact Context, Context Certificate, Context Normal Form, verified context plane, or semantic consumption boundary;
+- presentation strategy: algebraic, codensity/dense-dual, semantic compression, or domain-specific representation assumption;
+- Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, or inexact abstraction repair;
+- Kan extension/lift, Yoneda/Coyoneda, Freyd/AFT, codensity, CQL/context compilation, defunctionalization, algebraic effects, coalgebras, or sheafification mechanics.
+
+Use the internal mechanics references, not a peer skill, for categorical elaboration:
+
+```text
+codex/skills/universalist/references/mechanics/
+codex/skills/universalist/templates/mechanics/
+codex/skills/universalist/scripts/emit_mechanics_report.sh
+```
+
+The intended flow is:
+
+```text
+universalist identifies the signal, seam, worlds, boundary, artifact, witness, law, falsifier, and certificate.
+mechanics elaborate Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/sheafification only when needed.
+```
+
+Prefer `universalist` only when it changes code shape, proof obligations, owner boundaries, certificates, or normal-form progress. If a local implementation path is sufficient and no certified boundary/context/abstraction is at stake, do the local work.
 
 ## Alpha Rule
 
@@ -218,8 +256,11 @@ Before implementing a non-trivial local fix, ask whether the local fix is domina
 4. **Witness creation** — a missing proof becomes concrete.
 5. **Ablation** — accumulated surface is deleted, collapsed, privatized, or decommissioned.
 6. **Reification** — hidden behavior becomes explicit data plus a total interpreter.
-7. **Review rejection** — the review claim is unsupported, stale, wrong-layer, preference-only, or proof-only.
-8. **Fixed-point closure** — repeated local work becomes a material fixed-point gate.
+7. **Composition certification** — arbitrary cross-world glue becomes a certified boundary artifact.
+8. **Context certification** — raw sources become a certified context object before semantic consumption.
+9. **Possibility sheafification** — inexact abstractions become local-usage-coherent global meaning.
+10. **Review rejection** — the review claim is unsupported, stale, wrong-layer, preference-only, or proof-only.
+11. **Fixed-point closure** — repeated local work becomes a material fixed-point gate.
 
 If one of these dominates, route there instead of patching the symptom.
 
@@ -233,7 +274,9 @@ A local patch is suspect when it:
 - adds an adapter instead of deleting/collapsing duplicate paths;
 - adds a flag/branch/state variant without proving the state belongs in the domain;
 - fixes one review comment while leaving sibling comments as future counterexamples;
-- makes implicit behavior harder to inspect, replay, serialize, diff, or exhaustively test.
+- makes implicit behavior harder to inspect, replay, serialize, diff, or exhaustively test;
+- feeds raw source data to a semantic consumer when a certified context is required;
+- preserves a boundary without artifact, interpreter, law, and falsifier.
 
 Before accepting such a patch, run:
 
@@ -241,13 +284,14 @@ Before accepting such a patch, run:
 - canonical owner check;
 - ablative check;
 - soundness check;
-- proof check.
+- proof check;
+- universalist route check when worlds, contexts, or abstractions are implicated.
 
 If any check dominates the local patch, reroute.
 
 ## Surface Tax
 
-Every new helper, wrapper, adapter, fallback, compatibility branch, flag, knob, public symbol, state variant, parser tolerance, catch-and-continue path, coercion, retry, pass-through layer, or duplicate truth surface pays a surface tax.
+Every new helper, wrapper, adapter, fallback, compatibility branch, flag, knob, public symbol, state variant, parser tolerance, catch-and-continue path, coercion, retry, pass-through layer, duplicate truth surface, prompt-stuffing path, context shortcut, or uncertified boundary pays a surface tax.
 
 For mutation-capable work, emit one of:
 
@@ -321,7 +365,7 @@ Do not reify genuinely open plugin or extension surfaces unless the task is to c
 
 High intelligence often appears as a refusal to mutate.
 
-Prefer no-change, validate-first, proof-only, rebut, defer, delete, collapse, or canonicalize when those dominate mutation.
+Prefer no-change, validate-first, proof-only, rebut, defer, delete, collapse, canonicalize, certify, or report obstruction when those dominate mutation.
 
 A no-change decision is high-quality only if it has:
 
@@ -363,15 +407,15 @@ Do not add a receipt for tiny direct edits unless omission would hide a material
 
 ## Evidence Discipline
 
-Natural-language context is not neutral. Issue bodies, PR descriptions, review comments, generated summaries, memories, and user diagnoses can anchor the agent into the wrong problem frame. Treat them as inputs to verify, not as ground truth.
+Natural-language context is not neutral. Issue bodies, PR descriptions, review comments, generated summaries, memories, raw retrieval, and user diagnoses can anchor the agent into the wrong problem frame. Treat them as inputs to verify, not as ground truth.
 
 ### Evidence classes
 
-When investigating a bug, issue, PR, regression, review comment, or user diagnosis, separate:
+When investigating a bug, issue, PR, regression, review comment, user diagnosis, context packet, or generated report, separate:
 
-- Observed facts: commands, inputs, outputs, exact logs, stack traces, screenshots, environment, versions, timestamps, changed files, and reproducible behavior.
-- Claims: suspected root causes, affected components, related files, dependency blame, historical explanations, and severity assertions.
-- Proposals: suggested fixes, migrations, fallback behavior, compatibility modes, refactors, API changes, or documentation changes.
+- Observed facts: commands, inputs, outputs, exact logs, stack traces, screenshots, environment, versions, timestamps, changed files, source records, and reproducible behavior.
+- Claims: suspected root causes, affected components, related files, dependency blame, historical explanations, context summaries, and severity assertions.
+- Proposals: suggested fixes, migrations, fallback behavior, compatibility modes, refactors, API changes, documentation changes, context schemas, or certificate plans.
 - Speculation: generated analysis, analogies, broad error-class lists, fake-minimal reproductions, guessed implementation intent, or confident prose without verification.
 
 Use observations as evidence. Treat claims as hypotheses. Treat proposals as design options. Treat speculation as untrusted until independently verified.
@@ -380,6 +424,7 @@ Use observations as evidence. Treat claims as hypotheses. Treat proposals as des
 
 - Do not let a reported root cause choose the first files to edit.
 - Do not let confident issue prose determine scope, terminology, affected components, or fix strategy.
+- Do not let retrieved text become context without schema, provenance, and observables when semantic consumption matters.
 - Reconstruct the narrowest verified problem from observations first.
 - Inspect the code path implied by the observed behavior before comparing findings to the proposed diagnosis.
 - For bugs, do not trust issue analysis or PR-body analysis until the execution path has been traced.
@@ -481,19 +526,19 @@ Use built-in `explorer`, `worker`, and `default` roles unless a custom role is v
 
 Skills are workflow selectors, not magic words. Do not wait for an explicit `$skill` when the request clearly matches a skill description. Use the smallest sufficient skill stack.
 
-Before choosing a heavy workflow, ask whether the real need is implementation, adjudication, verification, ablation, soundness, provenance, naming/doctrine, or frame discovery. If the task is high-judgment but not yet ready for a specific workflow, run the doctrine kernel first, then select the smallest sufficient skill stack.
+Before choosing a heavy workflow, ask whether the real need is implementation, adjudication, verification, ablation, soundness, provenance, naming/doctrine, frame discovery, composition certification, exact context, or possibility sheafification. If the task is high-judgment but not yet ready for a specific workflow, run the doctrine kernel first, then select the smallest sufficient skill stack.
 
 When multiple skills apply, prefer this stack shape:
 
 ```text
-understand context -> separate evidence from claims -> frame market if needed -> identify invariant/ownership boundary -> compile doctrine into artifact -> implement/adjudicate/review -> verify -> close -> capture learnings
+understand context -> separate evidence from claims -> frame market if needed -> identify invariant/ownership/boundary -> compile doctrine into artifact -> implement/adjudicate/review -> verify -> close -> capture learnings
 ```
 
 ### Skill stack map
 
 - Evidence / recall: `seq`, `chronicle`, `learnings`, `codebase-archaeology`.
 - Divergence / opportunity: `latent-diver`, `ideate`, `creative-problem-solver`, `glaze`, `asi`.
-- Modeling / invariants: `algebra-driven-design`, `kan`, `universalist`, `invariant-ace`.
+- Modeling / invariants: `algebra-driven-design`, `universalist`, `invariant-ace`.
 - Reduction / simplification: `reduce`, `abstraction-cartographer`, `abstraction-tax-auditor`, `altitude-adjudicator`, `one-seam-operator`, `simplify-and-refactor-code-isomorphically`.
 - Decision gating: `grill-me`, `spec-gate`, `dominance`, `spec-challenge`.
 - Specification: `spec-pipeline`, `spec-lint`, `plan`.
@@ -510,7 +555,7 @@ Default cost posture:
 
 - `low`: safe implicit rails such as `logophile` for human-facing wording only.
 - `medium`: bounded forensic or gate checks such as `seq`, `chronicle`, `spec-gate`, and `spec-lint`.
-- `high`: substantial workflows such as `fixed-point-driver`, `ideate`, `algebra-driven-design`, `kan`, `reduce`, `universalist`, and `spec-pipeline`.
+- `high`: substantial workflows such as `fixed-point-driver`, `ideate`, `algebra-driven-design`, `reduce`, `universalist`, and `spec-pipeline`.
 - `extreme`: multi-turn proof engines such as `prove-it`.
 
 Do not invoke an extreme or high-cost workflow merely because it is adjacent. Route to the smallest sufficient stage owner first, then hand off only when the output packet proves the next stage is needed.
@@ -527,6 +572,7 @@ Do not invoke an extreme or high-cost workflow merely because it is adjacent. Ro
 - Final readiness, closure gates, fixed-point claims, or “is this ready?” after material work -> `verification-closure`.
 - Exhaustive hardening, repeated review/fix loops, “drive this to closure,” truth-owner normalization, additive-scaffold retirement, ablation/isomorphism gates, or “find all impactful issues” -> `fixed-point-driver`.
 - Hidden behavior, callbacks, closures, handler registries, dynamic dispatch, smeared control flow, or need for inspectable/replayable behavior -> consider `reifying` doctrine and route through the smallest skill that can produce a Behavior Algebra.
+- Worlds meeting, arbitrary cross-boundary composition, generated artifacts losing provenance, public contracts shaping internals, semantic consumers needing prepared data, or inexact architecture abstractions -> consider `universalist`; use it only when it will create a certificate, boundary artifact, presentation diagnostic, or normal-form move.
 - Historical/session/memory/artifact/provenance questions -> `$seq` in forensic/cartographic mode.
 - Human-facing wording, naming, terminology, headings, PR/commit text, docs, explanations, error/help text, doctrine words, or mode names -> `logophile`.
 - Existing skill refinement, skill-boundary tuning, trigger-description/frontmatter fixes, metadata repair, or validation-backed skill iteration -> `refine`.
@@ -586,9 +632,10 @@ Before final delivery:
 - Check relevant diff or generated artifact.
 - Run the narrowest meaningful verification.
 - For bug/remediation work, confirm the final explanation distinguishes observed facts, verified root cause, invariant, repair boundary, and remaining uncertainty.
-- For fixes involving invalid state, malformed persisted data, fallback behavior, compatibility behavior, or local workarounds, confirm the test/check defends the intended invariant rather than merely blessing the symptom.
+- For fixes involving invalid state, malformed persisted data, fallback behavior, compatibility behavior, local workarounds, certified context, or boundary artifacts, confirm the test/check defends the intended invariant rather than merely blessing the symptom.
 - For mutation-capable work, confirm ablation either produced a receipt/ledger/card/packet or has an evidence-backed `not-required` receipt.
 - For doctrine-activated work, confirm the doctrine produced an artifact and that the final tail states the dominant move, proof, open gate, and next move.
+- For universalist-activated work, confirm the work produced or explicitly rejected a Composition, Context, Sheafification, Presentation, or Normal Form artifact.
 - For upstream-owned or public-tracker work, confirm explicit user intent before any public side effect.
 - For `$st` work, confirm durable and mirrored plans are not visibly drifting.
 - For delegated work, integrate results locally before presenting conclusions.
