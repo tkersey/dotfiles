@@ -40,7 +40,18 @@ for f in "${required[@]}"; do
 done
 python3 - <<'PY'
 from pathlib import Path
+import re
 text = Path('SKILL.md').read_text()
+fm = text.split('---', 2)[1]
+m = re.search(r'^description:\s*[\"\']?(.*?)[\"\']?\s*$', fm, flags=re.M)
+if not m:
+    raise SystemExit('SKILL.md missing description')
+desc = m.group(1)
+if len(desc) >= 1024:
+    raise SystemExit(f'SKILL.md description too long: {len(desc)} chars')
+if 'allow_implicit_invocation: true' not in Path('agents/openai.yaml').read_text():
+    raise SystemExit('agents/openai.yaml must allow implicit invocation')
+print(f'description length ok: {len(desc)} chars')
 required = [
     'name: universalist', 'Track D', 'Track E', 'Track F', 'Universal architecture',
     'canonical boundary artifact', 'one signal, one seam', 'Freyd/AFT', 'free builder',

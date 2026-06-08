@@ -1,6 +1,6 @@
 ---
 name: universalist
-description: "Use when code smells call for a structural refactor, canonical boundary artifact, Composition Certificate, Boundary Normal Form, Exact Context/Context Certificate, presentation strategy, semantic consumption boundary, task-indexed data exchange, or Possibility Sheafification. Apply to flag/state matrices, repeated boundary validation, shared-key checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks crossing architecture boundaries, unclear protocols/state machines, effects needing handlers, or public contracts shaping internals. Default to one signal, one seam, the smallest honest construction, adapter-first staging, one proof signal, and a Composition Certificate when worlds meet."
+description: "Use when a code change calls for a structural refactor rather than an ordinary feature: flag/state matrices, repeated boundary validation, shared-key checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks or effects crossing architecture boundaries, unclear protocols/state machines, public contracts shaping internals, semantic consumers needing certified context, or abstractions that are too broad/narrow/redundant/inconsistent. Default to one signal, one seam, the smallest honest construction or canonical artifact; produce a proof signal/falsifier and, when worlds meet, a Composition, Context, or Sheafification Certificate. Includes internal mechanics for Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/defunctionalization when needed."
 ---
 
 # Universalist
@@ -10,6 +10,10 @@ Use this skill when the highest leverage comes from changing the **shape of trut
 This is an **inner lens** for choosing the right structural move. It is not a generic implementation skill. Use it to decide and stage the structure, then let the repo's normal implementation flow carry the change.
 
 This is now the single top-level skill for the Universal Architecture doctrine. The former `kan` skill has been folded into this skill as an internal mechanics layer under `references/mechanics/`, `templates/mechanics/`, and `scripts/emit_mechanics_report.sh`.
+
+## Doctrine index
+
+Universalist includes Track D, Track E, Track F, and Track G. It uses Universal architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, Freyd/AFT, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
 
 The enriched slogan is:
 

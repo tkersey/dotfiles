@@ -123,3 +123,7 @@ Useful mechanics commands:
 ```
 
 You can safely remove `codex/skills/kan`; this package is self-contained.
+
+## Invocation metadata
+
+The `SKILL.md` description is intentionally kept below 1024 characters and front-loads trigger words because Codex initially sees the skill name, description, and file path before loading full instructions.
