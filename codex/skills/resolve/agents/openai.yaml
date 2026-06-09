@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
   short_description: "Resolve branches with a CAS-first review loop and native fallback only after recorded CAS failure."

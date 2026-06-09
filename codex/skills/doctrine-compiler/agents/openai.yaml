@@ -1,0 +1,5 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Doctrine Compiler"
+  short_description: "Help with Doctrine Compiler tasks"

@@ -1,0 +1,5 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Evidence Discipline"
+  short_description: "Help with Evidence Discipline tasks"

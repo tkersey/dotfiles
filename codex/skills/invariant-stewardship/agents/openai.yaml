@@ -1,0 +1,5 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Invariant Stewardship"
+  short_description: "Help with Invariant Stewardship tasks"

@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "ms"
   short_description: "Directly create or edit Codex skills in this repo"
