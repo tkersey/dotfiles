@@ -7,9 +7,6 @@ personality = "pragmatic"
 
 notify = ["/Users/tk/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
 
-[agents]
-max_depth = 3
-
 [features]
 unified_exec = true
 personality = true
