@@ -39,6 +39,37 @@ Goal:
 Implement the accepted review agenda without reopening broad adjudication.
 ```
 
+## Fixed-point-driver handoff
+
+```md
+Use $accretive-implementer for this implementation handoff.
+
+implementation_handoff:
+  target_skill: accretive-implementer
+  artifact_state_id: branch=feature/session head=abc123 diff=auth-session phase=post-review
+  truth_unit_ids: [TU-001]
+  selected_rewrite: tighten-owner
+  permitted_route: mutate-existing-owner
+  permitted_scope:
+    - auth/session.ts
+    - auth/session.test.ts
+  forbidden_actions:
+    - new public symbols
+    - fallback flag
+    - compatibility alias
+  surface_budget:
+    production_surface: zero_or_negative
+    added_helpers_allowed: no
+    added_wrappers_adapters_allowed: no
+    added_flags_or_fallbacks_allowed: no
+    public_symbols_allowed: no
+    compatibility_paths_allowed: no
+  ablation_status: local-preflight
+  addition_escrow_policy: not-allowed
+  proof_required:
+    - targeted session refresh regression
+```
+
 ## Validate-only route
 
 ```md

@@ -6,11 +6,11 @@ A non-trivial implementation run should end with:
 
 ```text
 Execution Bottom Line:
-- outcome: implemented | validated-no-change | validation-only | delete-collapse-canonicalize | routed | blocked
-- right-sized route:
+- outcome:
+- right_sized_route:
+- surface_delta_call:
 - governing invariant / truth unit:
 - selected owner or cut:
-- surface delta:
 - proof receipt:
 - open gate:
 - exact next action:

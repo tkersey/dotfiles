@@ -41,7 +41,7 @@ For non-trivial production changes, report:
 | flags/branches/state variants added |  |  |
 | duplicate/shadow paths retired |  |  |
 | tests/proofs added |  |  |
-| net surface call | smaller/same/larger-with-warrant |  |
+| net surface call | smaller/same/larger-with-warrant/larger-without-warrant |  |
 
 ## Larger-with-warrant
 
@@ -54,3 +54,7 @@ A larger patch may still be right-sized when it:
 - adds a proof surface that prevents future overproduction.
 
 The warrant must name what future code or duplicate owner this addition prevents.
+
+## Larger-without-warrant
+
+`larger-without-warrant` is not a success state. Stop, route to fixed-point/ablation, or revise the patch.

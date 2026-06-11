@@ -41,6 +41,33 @@ Do not use it when the main task is:
 - selecting among possible moves: use `dominance`, `universalist`, `reduce`, or `spec-pipeline` as appropriate;
 - asking only for information, explanation, formatting, rote rename, or non-code text edits.
 
+## Declared-use auditability
+
+This skill may be used by native activation, explicit assistant declaration, or root-equivalent companion phase. Treat all three as behaviorally meaningful.
+
+When the assistant declares use of `accretive-implementer` in transcript text, the final **Execution Bottom Line** must include:
+
+```text
+right_sized_route:
+surface_delta_call:
+```
+
+These fields make transcript-declared use auditable even when native skill activation counters miss the workflow.
+
+Allowed `right_sized_route` values:
+
+```text
+no-change | validate-only | delete-collapse-canonicalize | mutate-existing-owner | add-new-surface | routed | blocked
+```
+
+Allowed `surface_delta_call` values:
+
+```text
+smaller | same | larger-with-warrant | larger-without-warrant | none | unknown
+```
+
+`larger-without-warrant` is never a successful implementation outcome. It means stop, route to `fixed-point-driver`, or revise the patch.
+
 ## Shared doctrine
 
 Operate in **UNTRUSTED-UNTIL-WITNESSED**, **WITNESS-BEARING**, **PRESERVATION-AWARE**, **PROGRESS-AWARE**, **TOTAL**, **REFINEMENT-FIRST**, **CONTRACT-FIRST**, **INVARIANT-FIRST**, **MECHANISTIC**, **SURFACE-ACCOUNTED ACCRETIVE**, **TRACEABLE**, **CANONICAL**, and **SEAM-DISCIPLINED** mode.
@@ -115,7 +142,7 @@ This skill may edit only when one of these is true:
 
 - the current user request explicitly asks to implement, fix, repair, migrate, harden, apply, or change code;
 - `review-adjudication` supplies an active, current-state Resolution Warrant with permitted action `mutate-code`;
-- `fixed-point-driver` supplies a current-state implementation route with cleared adversarial/ablation gates or explicit root-equivalent clearance.
+- `fixed-point-driver` supplies a current-state implementation handoff with permitted route, permitted scope, forbidden actions, surface budget, ablation status, and proof required.
 
 If the handoff is stale, lacks artifact-state identity, lacks permitted action, or only asks for validation/proof/no-change/defer, do not mutate. Produce the smallest validation, proof, no-change, defer, routed, or blocked report instead.
 
@@ -124,7 +151,7 @@ If the handoff is stale, lacks artifact-state identity, lacks permitted action, 
 Accept handoff from:
 
 - **review-adjudication**: active Resolution Warrants, Handoff Agenda, PR Why Ledger, Governing Invariant Candidate, and explicit forbidden actions.
-- **fixed-point-driver**: routed findings, one-change challenge result, validation task, Truth-Owner Normal Form rewrite, ablation status, and surface budget.
+- **fixed-point-driver**: routed findings, one-change challenge result, validation task, Truth-Owner Normal Form rewrite, ablation status, surface budget, and proof required.
 
 Rules:
 
@@ -133,6 +160,34 @@ Rules:
 - Do not redo broad adjudication here.
 - Reopen adjudication only if the agenda is stale, contradictory, mechanically impossible, locally valid but globally incoherent, or lacks a mutation warrant for the requested edit.
 - Preserve forbidden actions and surface budgets from the handoff.
+
+### Required fixed-point handoff shape
+
+When `fixed-point-driver` routes mutation here, require this shape or reconstruct it root-equivalently before editing:
+
+```yaml
+implementation_handoff:
+  target_skill: accretive-implementer
+  artifact_state_id: "..."
+  truth_unit_ids: []
+  selected_rewrite: delete | privatize | merge | tighten-owner | reuse-owner | add-escrow | validate-only | no-change | blocked
+  permitted_route: no-change | validate-only | delete-collapse-canonicalize | mutate-existing-owner | add-new-surface | routed | blocked
+  permitted_scope: []
+  forbidden_actions: []
+  surface_budget:
+    production_surface: zero_or_negative | bounded_positive | explicit_expansion
+    added_helpers_allowed: yes | no
+    added_wrappers_adapters_allowed: yes | no
+    added_flags_or_fallbacks_allowed: yes | no
+    public_symbols_allowed: yes | no
+    compatibility_paths_allowed: yes | no
+  ablation_status: not-required | local-preflight | external-clearance-required | blocked
+  addition_escrow_policy: not-allowed | allowed-with-rent-payment | required
+  proof_required: []
+  stale_if: []
+```
+
+If `ablation_status: external-clearance-required` or `blocked`, do not add production code until the fixed-point or ablation gate clears.
 
 ## Right-Sized Implementation Kernel
 
@@ -305,7 +360,7 @@ Use concise sections in this order:
 - Agenda Intake (only when upstream agenda materially shaped the work)
 - Contract (non-trivial or non-obvious cases)
 - Invariants (non-trivial or non-obvious cases)
-- Right-Sized Route (non-trivial, non-obvious, or code-changing cases)
+- Right-Sized Route (non-trivial, non-obvious, transcript-declared, root-equivalent, or code-changing cases)
 - Chosen Cut (non-trivial or non-obvious cases)
 - Surface Budget / Ablation Preflight (when production code changed or additive route was considered)
 - Changes
@@ -322,7 +377,7 @@ Use concise sections in this order:
 
 - Objective
 - Branch
-- Contract / Cut (one line when the task is non-trivial, agenda-driven, correctness-sensitive, or code-changing)
+- Contract / Cut (one line when the task is non-trivial, agenda-driven, correctness-sensitive, transcript-declared, root-equivalent, or code-changing)
 - Changes
 - Verification
 - Witnesses
@@ -342,9 +397,27 @@ When non-trivial production code changes, include:
 | flags/branches/state variants added |  |  |
 | duplicate/shadow paths retired |  |  |
 | tests/proofs added |  |  |
-| net surface call | smaller/same/larger-with-warrant |  |
+| net surface call | smaller/same/larger-with-warrant/larger-without-warrant |  |
 
 If counts are not available, use `unknown` and explain why. Do not invent counts.
+
+## Execution Bottom Line contract
+
+The final section must be self-contained and include:
+
+```text
+Execution Bottom Line:
+- outcome:
+- right_sized_route:
+- surface_delta_call:
+- governing invariant / truth unit:
+- selected owner or cut:
+- proof receipt:
+- open gate:
+- exact next action:
+```
+
+In Fast mode, compress values to one line each, but do not omit `right_sized_route` or `surface_delta_call`.
 
 ## Hard rules
 
@@ -356,12 +429,15 @@ If counts are not available, use `unknown` and explain why. Do not invent counts
 - Never leave a new illegal inhabitant or partial eliminator unremarked on.
 - Never preserve duplicate truth owners without a warrant.
 - Never treat `accretive` as permission to add code.
+- Never omit `right_sized_route` and `surface_delta_call` after transcript-declared use.
+- Never treat `larger-without-warrant` as a successful outcome.
 - Never bury the exact next move below the fold.
 
 ## Resources
 
 - [right-sized-kernel.md](references/right-sized-kernel.md)
 - [surface-budget.md](references/surface-budget.md)
+- [fixed-point-handoff.md](references/fixed-point-handoff.md)
 - [doctrine-alpha.md](references/doctrine-alpha.md)
 - [contract-and-cut-playbook.md](references/contract-and-cut-playbook.md)
 - [structural-proof-patterns.md](references/structural-proof-patterns.md)

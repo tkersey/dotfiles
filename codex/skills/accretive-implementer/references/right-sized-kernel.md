@@ -15,18 +15,23 @@ Prefer routes from top to bottom. Move right only when every route to the left i
 ## Route tests
 
 ### no-change
+
 Use when current artifacts already satisfy the contract, the request is unsupported, or mutation would be stale, out of scope, or harmful.
 
 ### validate-only
+
 Use when the next honest action is proof, characterization, reproduction, or diagnostic work, not production mutation.
 
 ### delete-collapse-canonicalize
+
 Use when an existing surface is dead, dominated, duplicate, vestigial, pass-through, non-canonical, or better represented at an existing owner.
 
 ### mutate-existing-owner
+
 Use when one canonical owner exists and can truthfully absorb the required behavior.
 
 ### add-new-surface
+
 Use only when no-code, validation, deletion/collapse/canonicalization, and existing-owner mutation cannot satisfy the contract.
 
 ## Add-new-surface warrant
@@ -43,3 +48,12 @@ proof that the new surface earns itself:
 ```
 
 If the warrant cannot be filled, do not add production code.
+
+## Audit fields
+
+Every transcript-declared or root-equivalent use should leave these fields in the final bottom line:
+
+```text
+right_sized_route:
+surface_delta_call:
+```
