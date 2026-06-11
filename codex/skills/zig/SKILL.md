@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Use for implementing, reviewing, migrating, zig fmt steering, linting, testing, fuzzing, profiling, optimizing, or hardening Zig 0.16.0 code, including hazardous-code/Illegal Behavior audits: .zig, build.zig/build.zig.zon, std.Io/process.Init migration, C interop, comptime/reflection/codegen, allocator ownership, FFI, concurrency, safety-disabled scopes, raw pointers/layout/ABI hazards, dependencies, cache hygiene/disk pressure, and measured performance."
+description: "Use for implementing, reviewing, migrating, zig fmt steering, linting, testing, fuzzing, profiling, optimizing, or hardening Zig 0.16.0 code, including hazardous-code/Illegal Behavior audits: .zig, build.zig/build.zig.zon, std.Io/process.Init migration, C interop, comptime/reflection/codegen, integer arithmetic/overflow/wrapping/saturating semantics, allocator ownership, FFI, concurrency, safety-disabled scopes, raw pointers/layout/ABI hazards, dependencies, cache hygiene/disk pressure, and measured performance."
 ---
 
 # Zig
@@ -11,13 +11,13 @@ Start from the Zen of Zig: communicate intent precisely; make edge cases explici
 
 Assume Zig 0.16.0 unless the user names another version, but verify before executing version-sensitive work. If `zig version` is not `0.16.0`, label the result `VERSION_MISMATCH` and do not claim the commands validate 0.16.0 behavior.
 
-Prefer witness-driven design. If a fact affects safety, ownership, zero-copy legality, FFI soundness, concurrency, fast-path legality, or Illegal Behavior avoidance, represent it with a type, constructor, or checked value, not a loose bool, comment, or caller convention.
+Prefer witness-driven design. If a fact affects safety, ownership, zero-copy legality, FFI soundness, concurrency, fast-path legality, arithmetic bounds, or Illegal Behavior avoidance, represent it with a type, constructor, checked value, or domain-specific operator, not a loose bool, comment, or caller convention.
 
 Keep proof lanes separate:
 
 - Comptime contracts prove what must be known at compile time, what gets generated or specialized, which invalid shapes fail at compile time, and which runtime path remains.
 - Formatting/linting proves canonical layout, formatter steering intent, and static policy.
-- Hazardous-code/Illegal Behavior auditing proves that raw operations, disabled safety checks, ABI promises, initialization, ownership, and concurrency invariants are explicit and verified.
+- Hazardous-code/Illegal Behavior auditing proves that raw operations, disabled safety checks, ABI promises, initialization, arithmetic bounds, ownership, and concurrency invariants are explicit and verified.
 - Builds/tests/fuzzing prove correctness.
 - Benchmarks prove user-visible performance deltas.
 - Profilers explain where time, allocations, locks, or bytes went.
@@ -27,15 +27,15 @@ When a lane cannot be run, say so with a stable label: `LINT_UNAVAILABLE`, `TEST
 
 ## First-pass workflow
 
-1. Classify the request: migration, API design, correctness bug, dependency/build work, cache/disk-pressure work, formatting/lint/tooling, hazardous-code/Illegal Behavior audit, FFI, concurrency, comptime/codegen, or performance.
+1. Classify the request: migration, API design, correctness bug, integer arithmetic/overflow semantics, dependency/build work, cache/disk-pressure work, formatting/lint/tooling, hazardous-code/Illegal Behavior audit, FFI, concurrency, comptime/codegen, or performance.
 2. If the request involves `comptime`, `anytype`, reflection, generated types, format/schema derivation, or specialization, produce a comptime contract before producing code.
 3. Confirm repo shape: find `build.zig`, `build.zig.zon`, existing `zig build` steps, tests, benchmarks, lint steps, and formatting conventions.
 4. Confirm toolchain version with `zig version` before executing 0.16.0-sensitive commands.
 5. If running inside a Codex review/subagent sandbox, or if Zig reports global-cache `PermissionDenied`, apply the Codex review sandbox cache protocol before treating the result as a code verdict.
 6. Run the 0.16.0 migration scan when touching code written for 0.15.x or older.
 7. Run the comptime audit scan when touching generic, reflective, or generated-type code.
-8. Run the systems audit scan when touching allocators, ownership, pointers, casts, C/ABI, packed/extern layout, I/O effects, atomics, concurrency, or low-level performance.
-9. Run the hazardous-code audit lane when touching `@setRuntimeSafety`, `unreachable`, raw pointer casts, integer-pointer conversions, `undefined`, `extern`/`packed`, FFI, inline assembly, MMIO, atomics, vector/SIMD intrinsics, or ReleaseFast/ReleaseSmall-sensitive code.
+8. Run the systems audit scan when touching allocators, ownership, pointers, casts, C/ABI, packed/extern layout, I/O effects, integer arithmetic with domain bounds, atomics, concurrency, or low-level performance.
+9. Run the hazardous-code audit lane when touching `@setRuntimeSafety`, `unreachable`, raw pointer casts, integer-pointer conversions, exact/default integer arithmetic whose overflow behavior matters, wrapping/saturating arithmetic, unchecked shifts, `undefined`, `extern`/`packed`, FFI, inline assembly, MMIO, atomics, vector/SIMD intrinsics, or ReleaseFast/ReleaseSmall-sensitive code.
 10. Run the cache hygiene protocol when the request involves `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, global cache, custom `--cache-dir`/`--global-cache-dir`, disk pressure, or CI cache bloat.
 11. For formatting requests, identify the intended layout before running `zig fmt`; use trailing commas, first-row array shaping, comments, or clearer intermediate declarations rather than hand-aligned whitespace.
 12. Identify hazard classes and proof requirements before editing.
@@ -78,6 +78,7 @@ Interpretation:
 | `ffi/abi` | Boundary contract table, wrapper tests, link proof, nullability/length/ownership/lifetime proof, centralized raw pointer conversions. |
 | `io/effects` | Explicit `std.Io`/allocator/config/env capabilities, fake/constrained test effects, and cancellation/blocking model. |
 | `error/failure-path` | Precise error set where feasible, `errdefer` rollback, cleanup-after-failure tests, and no swallowed `error.OutOfMemory`. |
+| `arithmetic/bounds` | Operator-semantics contract, min/max edge tests, default/wrapping/saturating/overflow-builtin distinction, peer-type/result-type proof, and domain rationale for clamp, wrap, trap, or error behavior. |
 | `optimizer-sensitive` | Scalar/reference path plus differential checks across `Debug`, `ReleaseSafe`, and `ReleaseFast`. |
 | `concurrency/shared-state` | Sequential spec or witness model, documented memory orders, deterministic seed/replay/yield harness, timeout/stress lane, and cancellation/lifetime proof. |
 | `dependency/provenance` | Visible URL/hash/fingerprint, origin repo, release tag or commit, and signer/attestation notes for security-sensitive or long-lived pins. |
@@ -86,13 +87,13 @@ Interpretation:
 | `formatting/zig-fmt-steering` | Formatter intent described in source-level cues, `zig fmt`/`zig fmt --check` run, and diff reviewed for token-level steering changes such as trailing-comma add/remove. |
 | `zig-hazard/illegal-behavior` | Inventory of hazard sites, A/B/C classification, invariant owner, safety-proof comment or witness type, negative fixtures, and Debug/ReleaseSafe/ReleaseFast validation. |
 
-Satisfy every active hazard class. Do not use a green smoke test as proof for hazardous pointer work, FFI, lock-free, layout-sensitive, optimizer-sensitive, or allocation-sensitive code.
+Satisfy every active hazard class. Do not use a green smoke test as proof for hazardous pointer work, FFI, lock-free, layout-sensitive, optimizer-sensitive, arithmetic-bound-sensitive, or allocation-sensitive code.
 
 ## Zig hazardous-code and Illegal Behavior audit
 
 Do not model Zig safety work as Rust `unsafe` removal. Zig has no `unsafe` keyword. Model it as a hazardous-code audit: find every operation whose correctness depends on invariants that the type checker, runtime safety checks, build mode, or ABI cannot fully enforce, then make those invariants explicit.
 
-Trigger this lane for requests about unsafe-equivalent Zig code, Illegal Behavior, `@setRuntimeSafety`, raw pointers, pointer/integer casts, `undefined`, packed or extern layout, FFI, inline assembly, atomics, MMIO, allocator/lifetime bugs, zero-copy parsing, manual vector/SIMD paths, `ReleaseFast`/`ReleaseSmall` safety differences, or “prove this cannot crash/corrupt memory”.
+Trigger this lane for requests about unsafe-equivalent Zig code, Illegal Behavior, `@setRuntimeSafety`, raw pointers, pointer/integer casts, exact/default integer arithmetic whose overflow behavior matters, wrapping/saturating arithmetic, unchecked shifts, `undefined`, packed or extern layout, FFI, inline assembly, atomics, MMIO, allocator/lifetime bugs, zero-copy parsing, manual vector/SIMD paths, `ReleaseFast`/`ReleaseSmall` safety differences, or “prove this cannot crash/corrupt memory”.
 
 ### Mental model
 
@@ -103,7 +104,7 @@ A Zig hazard site is any source location where a wrong invariant can turn into:
 - ABI/layout mismatch with C, hardware, file, or wire format;
 - lifetime, ownership, initialization, or allocator misuse;
 - data race, invalid atomic ordering, or cancellation/lifetime bug;
-- silent logic corruption from `undefined`, wrong endian assumptions, wrong sentinel assumptions, or invalid pointer provenance.
+- silent logic corruption from `undefined`, wrong endian assumptions, wrong sentinel assumptions, invalid pointer provenance, wrong integer overflow mode, unintended wraparound, or unintended saturation.
 
 For each hazard site, separate the layers:
 
@@ -135,7 +136,7 @@ Required phases:
 2. **Enumerate** — run `scripts/zig_hazard_audit_rg.sh` or the equivalent scan, then inspect `build.zig`, `build.zig.zon`, generated imports, translated C, and target-specific source directories.
 3. **Normalize** — group hits into stable site IDs by file, line, operation, public reachability, target condition, and owning invariant.
 4. **Per-site write-up** — name the invariant, who establishes it, what happens if it is false, and which proof lanes cover it.
-5. **Synthesize** — cluster sites by shared invariant: pointer/provenance, layout/ABI, initialization, allocator/lifetime, FFI, concurrency, IO/effects, vector/perf, or build-mode safety.
+5. **Synthesize** — cluster sites by shared invariant: pointer/provenance, layout/ABI, initialization, allocator/lifetime, FFI, concurrency, integer bounds/overflow semantics, IO/effects, vector/perf, or build-mode safety.
 6. **Classify** — assign `A`, `B`, or `C`; repeat until no `A` can be defeated by a safer witness design and no `B` lacks measurements.
 7. **Plan** — for `A`, shrink and document the boundary; for `B`, provide safe/reference path plus measurements; for `C`, produce a witness-based rewrite.
 8. **Verify** — run formatting/static, build/test, optimization-mode, allocation-failure, fuzz/differential, target/layout, and profile lanes as applicable.
@@ -162,7 +163,8 @@ rg -n --hidden \
 Interpretation:
 
 - `@setRuntimeSafety(false)` is a proof amplifier. Require a local invariant comment and tests showing invalid states are rejected before entering the disabled-safety scope. Prefer narrowing the scope to the smallest block.
-- `unreachable`, `catch unreachable`, `.?`, invalid enum/error casts, exact arithmetic, and unchecked shifts require a closed-world proof or an error-returning alternative.
+- `unreachable`, `catch unreachable`, `.?`, invalid enum/error casts, exact/default arithmetic, and unchecked shifts require a closed-world proof or an error-returning alternative.
+- Integer arithmetic needs an explicit semantic choice: default operators (`+`, `-`, `*`, `<<`) may be correct when overflow is impossible and proved; overflow-reporting builtins are correct when overflow is a branch; wrapping operators (`+%`, `-%`, `*%`) are correct only for modular domains; saturating operators (`+|`, `-|`, `*|`, `<<|`) are correct only when clamping to the destination type's min/max is the domain rule.
 - `undefined` is valid only when every byte or field is overwritten before observation. Prefer helper constructors that make initialization order obvious; test early-return and error paths.
 - Raw pointer operations require proof of non-nullness, address validity, alignment, length, initialized bytes, aliasing/mutability, lifetime, provenance, sentinel existence, and target address space.
 - `[*]T` and `[*c]T` should usually be converted to slices, optional pointers, or opaque handles at the boundary. Keep many-item and C pointers out of core APIs.
@@ -178,6 +180,7 @@ Interpretation:
 | Surface | Required proof |
 | --- | --- |
 | Safety-disabled scope | Smallest possible scope, precondition witness, invalid-input rejection before entry, Debug/ReleaseSafe/ReleaseFast tests, and performance evidence if kept for speed. |
+| Integer arithmetic | Operator-semantic contract, operand/result type proof, min/max and off-by-one tests, signed/unsigned boundary tests, and explicit choice among trap/error, overflow-builtin, wrapping, saturating, or widened arithmetic. |
 | Pointer/provenance | Source allocation or MMIO mapping, address range, alignment, initialized bytes, lifetime, aliasing/mutability, sentinel if any, and no slice `.ptr` corruption. |
 | `undefined`/initialization | Write-before-read table, error/early-return cleanup, no observation through formatting/logging/comparison, and tests that exercise partial-initialization failure paths. |
 | Layout/ABI/wire/MMIO | `@sizeOf`, `@alignOf`, `@offsetOf`/`@bitOffsetOf`, backing integer, endian rule, target matrix, and C/header or hardware register source. |
@@ -201,7 +204,7 @@ zig build test -Doptimize=ReleaseSmall
 zig build test --test-timeout 500ms
 ```
 
-Add target lanes for any claim that depends on ABI, endian, pointer width, vector feature, OS API, or C calling convention. Add allocation-failure, fuzzing, and benchmark lanes only where they prove an active obligation; do not use them as decorative checkboxes.
+Add target lanes for any claim that depends on ABI, endian, pointer width, integer bit width, vector feature, OS API, or C calling convention. Add allocation-failure, fuzzing, and benchmark lanes only where they prove an active obligation; do not use them as decorative checkboxes.
 
 ### Safety-proof comment shape
 
@@ -228,6 +231,7 @@ If the proof cannot be stated locally, introduce a witness type or move the haza
 - Prefer explicit optional pointers over `allowzero` unless address zero is a real hardware/ABI value.
 - Prefer endian-aware loads/stores over pointer reinterpretation for wire/disk formats.
 - Prefer ordinary `struct` plus serialization code over `extern`/`packed` when no ABI promise is required.
+- Prefer explicit arithmetic semantics over accidental overflow behavior: reject or widen when overflow is an error, wrap only for modular domains, and saturate only when clamping is the stated domain rule.
 - Prefer `std.Io` capabilities, owned tasks, and cancellation-aware groups over hidden global effects or migrated thread-pool assumptions.
 - Keep FFI and MMIO hazard cores small and wrap them in safe Zig APIs with checked constructors.
 - Treat `ReleaseFast` and `ReleaseSmall` as proof lanes, not just performance modes, because many safety checks are disabled there.
@@ -240,17 +244,18 @@ For low-level Zig work, do not merely provide code. Provide the systems contract
 2. lifetime and cleanup contract;
 3. pointer/slice/sentinel/alignment contract;
 4. error-set and failure-path contract;
-5. I/O/effect capability contract;
-6. layout/ABI/endian contract;
-7. concurrency/atomic-ordering contract when shared state exists;
-8. target/build-mode validation matrix;
-9. tests, fuzzing, allocation-failure checks, and profiling evidence.
+5. integer arithmetic/bounds contract;
+6. I/O/effect capability contract;
+7. layout/ABI/endian contract;
+8. concurrency/atomic-ordering contract when shared state exists;
+9. target/build-mode validation matrix;
+10. tests, fuzzing, allocation-failure checks, and profiling evidence.
 
 Use `references/systems_contract_template.md` for structured reviews.
 
 ## Systems audit scan
 
-Run this scan before changing low-level code that touches allocation, raw memory, FFI, layout, I/O, concurrency, or performance-sensitive paths:
+Run this scan before changing low-level code that touches allocation, raw memory, FFI, layout, I/O, integer arithmetic, concurrency, or performance-sensitive paths:
 
 ```bash
 scripts/systems_audit_rg.sh
@@ -262,6 +267,7 @@ Interpretation:
 - Allocator hits require ownership, cleanup, and allocation-failure review.
 - Pointer/cast hits require length, alignment, sentinel, lifetime, provenance, and aliasing proof.
 - `extern`/`packed`/offset hits require layout, endian, ABI, and target validation.
+- Arithmetic hits require a domain contract: prove no overflow for default arithmetic, use overflow builtins for branch-on-overflow, use wrapping only for modular domains, use saturating only for clamp domains, and test min/max edges.
 - `std.Io`/process/env/current-path hits require explicit effect capability review.
 - Atomic/thread/synchronization hits require shared-state invariant and memory-order review.
 - `anyerror`, `catch unreachable`, `panic`, and `unreachable` require failure-contract review.
@@ -330,6 +336,65 @@ Rules:
 - Centralize C/system status-to-error translation at boundaries.
 - Use `errdefer` for rollback and test cleanup-after-failure.
 - Treat `catch unreachable` as a proof obligation, not a convenience.
+
+## Integer arithmetic, overflow, wrapping, and saturating semantics
+
+Use this section when changing code that does integer arithmetic, counter math, size/offset computation, bit shifts, capacity growth, pixel/audio/sample transforms, protocol sequence numbers, checksums, hashes, parser offsets, or fixed-width serialization.
+
+Zig has distinct arithmetic semantics. Do not collapse them into a generic “safe arithmetic” bucket:
+
+| Intent | Zig surface | Required proof |
+| --- | --- | --- |
+| Overflow is impossible | default operators such as `+`, `-`, `*`, `<<` | Prove operand bounds before the operation; test min/max, zero, one-past, and signed/unsigned edge cases. |
+| Overflow is a recoverable branch | `@addWithOverflow`, `@subWithOverflow`, `@mulWithOverflow`, `@shlWithOverflow` | Check and handle the overflow flag; avoid ignoring the wrapped payload. |
+| Overflow should be rejected | explicit bound check plus error return, trap, or validation failure | Name the domain error and test rejection paths. |
+| Overflow should wrap | `+%`, `-%`, `*%`, `-%` unary | Prove a modular arithmetic domain such as hash mixing, PRNG state, checksum, sequence arithmetic, or ring-buffer index math. |
+| Overflow should clamp | `+|`, `-|`, `*|`, `<<|` | Prove saturation to the destination integer type's min/max is the domain rule; test both clamp and non-clamp paths. |
+| Extra range is needed internally | widened intermediate type, `@intCast` after validation, or checked narrowing | Prove the narrow cast cannot truncate or return an error before exposing the result. |
+
+Rules:
+
+- Treat saturating arithmetic as semantic clamping, not as a generic overflow fix. Replacing `+` with `+|` changes the API contract unless the caller expects clamp-to-min/max behavior.
+- For unsigned subtraction, choose between `-|`, an error-returning underflow check, or a signed/wider intermediate according to the domain. Do not use `-|` merely to hide a negative result if underflow is a bug.
+- For shifts, distinguish ordinary shift, exact shift builtins, overflow-reporting shift, and saturating left shift. `<<|` clamps to the destination type's maximum value; it is not the same as a widened shift followed by a separate domain clamp.
+- Account for Peer Type Resolution and result type. Mixed-width or comptime-known operands can change which type receives the clamp, wrap, or overflow check.
+- Test both signed and unsigned boundaries where the API is generic over integer type. Include `std.math.minInt(T)`, `std.math.maxInt(T)`, zero, one, and values immediately before the threshold.
+- When a clamp target is not the integer type's natural min/max, do not use saturating operators alone. Use explicit `@min`, `@max`, or a domain-specific clamp after proving intermediate arithmetic.
+- For capacity, length, and offset math, prefer validated witnesses such as `CheckedOffset`, `RemainingCapacity`, or `NonOverflowingLen` over comments that merely assert arithmetic cannot overflow.
+- For performance-motivated wrapping or unchecked arithmetic in hot loops, provide a scalar/reference path, differential tests, and benchmarks before classifying it as `B/PERF_OR_FOOTPRINT_ONLY`.
+
+Boundary test shape:
+
+```zig
+const std = @import("std");
+const expectEqual = std.testing.expectEqual;
+
+test "saturating integer arithmetic documents clamp semantics" {
+    try expectEqual(@as(u8, 255), @as(u8, 250) +| 10);
+    try expectEqual(@as(u8, 0), @as(u8, 5) -| 10);
+    try expectEqual(@as(u8, 255), @as(u8, 200) *| 2);
+    try expectEqual(@as(u8, 255), @as(u8, 1) <<| 8);
+
+    try expectEqual(@as(i8, 127), @as(i8, 120) +| 20);
+    try expectEqual(@as(i8, -128), @as(i8, -120) -| 20);
+}
+```
+
+Arithmetic audit scan:
+
+```bash
+rg -n --hidden \
+  "@(add|sub|mul|shl)WithOverflow|@(shlExact|shrExact|divExact)|\+[%|]=?|-[%|]=?|\*[%|]=?|<<\|=?|<<=?|>>=?" . \
+  -g"*.zig" -g"build.zig" \
+  -g"!zig-pkg/**" -g"!.zig-cache/**" -g"!zig-out/**"
+```
+
+Interpretation:
+
+- Explicit `+|`, `-|`, `*|`, and `<<|` are intentional saturating operators. Verify the domain really wants destination-type min/max clamping.
+- Explicit `+%`, `-%`, and `*%` are intentional wrapping operators. Verify a modular arithmetic domain and add differential or algebraic tests where possible.
+- Overflow builtins are correct only when the overflow flag is inspected and routed into domain behavior.
+- Exact arithmetic and exact shifts are proof obligations: if the exactness precondition can be false for runtime input, validate or return an error before the operation.
 
 ## Explicit I/O and effect injection
 
@@ -868,7 +933,8 @@ When answering Zig work, report:
 - exact commands run and outcomes;
 - proof lanes unavailable with stable labels;
 - format-steering tokens changed when formatting is relevant;
+- arithmetic semantic choices when integer overflow, wraparound, saturation, narrowing, or shifts are relevant;
 - remaining risk and the next proof lane needed;
-- any `@setRuntimeSafety(false)`, raw pointer, `undefined`, FFI, layout, atomic, or ReleaseFast/ReleaseSmall-sensitive hazard that remains.
+- any `@setRuntimeSafety(false)`, raw pointer, `undefined`, FFI, layout, atomic, integer arithmetic, saturating/wrapping operator, unchecked shift, or ReleaseFast/ReleaseSmall-sensitive hazard that remains.
 
-Never imply that formatting, linting, `ast-check`, a smoke test, or a benchmark alone proves unsafe memory, ABI layout, allocation failure handling, concurrency correctness, or FFI soundness.
+Never imply that formatting, linting, `ast-check`, a smoke test, or a benchmark alone proves unsafe memory, arithmetic bounds, ABI layout, allocation failure handling, concurrency correctness, or FFI soundness.
