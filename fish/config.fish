@@ -28,6 +28,7 @@ abbr -a -g nvim-plugins '~/.local/share/nvim/lazy'
 
 # Variables
 set -gx EDITOR nvim
+set -Ux HOMEBREW_NO_ASK 1
 
 # goenv initialization
 set -x GOENV_ROOT $HOME/.goenv
