@@ -9,3 +9,7 @@ When a change alters representation, normalization, construction, elimination, o
 - progress test for valid continuations
 - identity/associativity checks when combining values
 - fixture repair when tests admitted impossible states
+- no-code proof when the current owner already enforces the contract
+- surface-retirement proof when deletion/collapse/canonicalization is selected
+
+A green unrelated test is not a witness for a structural claim.

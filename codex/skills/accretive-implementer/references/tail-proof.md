@@ -2,12 +2,15 @@
 
 CLI users often see the end of output first. Put decisive value at the bottom.
 
-A doctrine-heavy run should end with:
+A non-trivial implementation run should end with:
 
 ```text
-Bottom Line:
+Execution Bottom Line:
+- outcome: implemented | validated-no-change | validation-only | delete-collapse-canonicalize | routed | blocked
+- right-sized route:
 - governing invariant / truth unit:
 - selected owner or cut:
+- surface delta:
 - proof receipt:
 - open gate:
 - exact next action:
