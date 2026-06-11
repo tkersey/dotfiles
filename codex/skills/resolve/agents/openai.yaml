@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "Resolve branches with a CAS-first review loop and native fallback only after recorded CAS failure."
-  default_prompt: "Use $resolve for this task. Follow CAS-first backend selection; do not run native Codex review unless the skill's fallback condition is recorded."
+  short_description: "CAS-first branch resolution to pushed readiness"
+  default_prompt: "Use $resolve for this task. Follow CAS-first review, full adjudication routes, surface-budgeted fixes, validation, push, and PR sweep."
