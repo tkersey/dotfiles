@@ -1,27 +1,12 @@
-# Codex Subagents for Codebase Audit
+# Specialist Workers for Codebase Audit
 
-This file describes the Codex-only subagent setup for `codebase-audit`.
+Use the version-neutral worker model in `../../references/codex-specialist-worker-model.md`. Do not depend on one runtime's subagent invocation syntax or install path.
 
-## Install Locations
+## Repository worker definitions
 
-Codex discovers skills from:
+This dotfiles repo stores reusable audit worker TOML files under `codex/agents/`:
 
-- project skills: `.agents/skills/<skill-name>/SKILL.md`
-- user skills: `$HOME/.agents/skills/<skill-name>/SKILL.md`
-
-Codex discovers custom agents from:
-
-- project agents: `.codex/agents/*.toml`
-- user agents: `$HOME/.codex/agents/*.toml`
-
-This package includes both:
-
-- `.agents/skills/codebase-audit/`
-- `.codex/agents/audit-*.toml`
-
-## Available Audit Agents
-
-| Domain | Codex custom agent |
+| Domain | Worker |
 |---|---|
 | security | `audit_security` |
 | ux | `audit_ux` |
@@ -30,32 +15,14 @@ This package includes both:
 | copy | `audit_copy` |
 | cli | `audit_cli` |
 
-## Prompts That Trigger Parallel Codex Work
+The active Codex runtime or local dotfiles setup decides how those TOML files become invokable.
 
-Use explicit language so Codex is allowed to spawn subagents:
-
-```text
-Use $codebase-audit with Codex subagents. Spawn one agent for security, one for performance, and one for API. Require the shared specialist packet contract, wait only while packets make progress, then synthesize a prioritized report from valid packets and file:line evidence.
-```
+## Parallel audit prompt shape
 
 ```text
-Run a parallel codebase audit with one Codex subagent per domain: security, UX, performance, API, copy, and CLI. Keep all subagents read-only and require packet-native, scoped, evidence-bearing outputs.
+Use $codebase-audit with specialist workers when supported. Run one read-only worker per requested domain, assign artifact_state_id and exact scope, require packet-native evidence-bearing outputs, then synthesize a prioritized report from valid packets and file:line evidence. If a named worker is unavailable, perform that domain lane in the root and state the fallback.
 ```
 
-## Parent-Agent Synthesis Rules
+## Parent synthesis rules
 
-The parent agent should:
-
-1. launch all independent domain workers before waiting;
-2. keep workers read-only;
-3. assign `artifact_state_id` and exact scope for every worker;
-4. validate packets against `../../references/specialist-packet-contract.md`;
-5. close stale or low-value workers when local evidence is enough to synthesize;
-6. de-duplicate overlapping findings;
-7. normalize severity across domains;
-8. preserve uncertainty under `Needs Verification` instead of promoting it to a finding;
-9. return a final report, not raw worker transcripts.
-
-## Fallback
-
-If the `audit_*` custom agents are not installed, Codex can still run the skill. Use either built-in `explorer` subagents with the worker prompt template in `SKILL.md`, or run the audit in the parent thread. State the fallback in the report summary.
+The parent/root should launch independent domain lanes before waiting, keep workers read-only, assign `artifact_state_id`, validate against `../../references/specialist-packet-contract.md`, close stale or low-value workers, de-duplicate findings, normalize severity, preserve uncertainty under `Needs Verification`, and return a final report rather than raw transcripts.

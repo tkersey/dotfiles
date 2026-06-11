@@ -1,37 +1,23 @@
-# Codex subagents for invariant-ace
+# Specialist Workers for Invariant Ace
 
-## Install locations
+Use the version-neutral worker model in `../../references/codex-specialist-worker-model.md`. Do not depend on one runtime's subagent invocation syntax or install path.
 
-Codex discovers custom agents from:
+## Repository workers
 
-- project agents: `codex/agents/*.toml` in this dotfiles layout, symlinked to `$HOME/.codex/agents`
-- user agents: `$HOME/.codex/agents/*.toml`
+| Role | Worker |
+|---|---|
+| concrete bad trace / reachability / falsifier | `inv-counterexample-authority` |
+| state owner / scope / source of truth | `inv-owner-scope-authority` |
+| transition set and preservation / induction closure | `inv-induction-authority` |
+| enforcement boundary and why local/stronger/weaker cuts are wrong | `inv-boundary-authority` |
+| generator / validator / projection / certificate / fixture / witness parity | `inv-witness-parity-authority` |
+| proof signal tied to each predicate | `inv-verification-authority` |
+| strongest no-invariant / no-enforce countercase | `inv-skeptic-authority` |
 
-This package includes:
-
-- `codex/agents/inv-counterexample-authority.toml`
-- `codex/agents/inv-owner-scope-authority.toml`
-- `codex/agents/inv-induction-authority.toml`
-- `codex/agents/inv-boundary-authority.toml`
-- `codex/agents/inv-witness-parity-authority.toml`
-- `codex/agents/inv-verification-authority.toml`
-- `codex/agents/inv-skeptic-authority.toml`
-
-## Spawn guidance
-
-Use all seven agents when an invariant can become implementation work, proof closure, or review-adjudication authority. For exploratory sketches, root-equivalent packets are acceptable only when implementation handoff remains `no`.
-
-Prompt shape:
+## Prompt shape
 
 ```text
-Run $invariant-ace authority fanout. Spawn inv-counterexample-authority, inv-owner-scope-authority, inv-induction-authority, inv-boundary-authority, inv-witness-parity-authority, inv-verification-authority, and inv-skeptic-authority. Assign artifact_state_id, candidate invariant IDs, relevant files, direction state, and exact scope. Require packet-native output with evidence refs. Root must synthesize an Authority Clearance Matrix and veto ledger; unresolved vetoes block enforce-now.
+Run $invariant-ace authority fanout using specialist workers when supported. Assign artifact_state_id, direction_state_id, candidate invariant IDs, relevant files, and exact scope. Require packet-native output with evidence refs. If a required worker is unavailable, emit same-schema root-equivalent packets or route to blocked. Root must synthesize an Authority Clearance Matrix and veto ledger; unresolved vetoes block enforce-now.
 ```
 
-## Parent synthesis rules
-
-1. Launch independent lanes before waiting.
-2. Keep workers read-only.
-3. Reject wrong-state/wrong-scope/generic packets.
-4. Preserve vetoes in `Authority Veto Ledger`.
-5. Root may downgrade freely but may not upgrade against unresolved veto.
-6. Final output must pass `tools/invariant_ace_gate.py` before implementation handoff.
+Workers are read-only. Root may downgrade freely but may not upgrade against unresolved veto.
