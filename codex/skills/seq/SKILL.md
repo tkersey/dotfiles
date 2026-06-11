@@ -343,6 +343,14 @@ seq skill-success-rank --root ~/.codex/sessions --last 14d --format table
 seq skill-success-rank --root ~/.codex/sessions --skill prove-it --mode sessions --last 14d --format jsonl
 ```
 
+Guardrail for "was this skill/workflow used?" audits:
+
+- State the denominator before giving a count. "Native/user-called successful activation rows" is not the same denominator as "assistant-declared workflow use" or "root-equivalent companion use."
+- Do not conclude "not used" from an empty `skill-success-rank` result alone. First cross-check `workflow-audit` / `workflow_signals`, `message-search` over assistant messages, `skill-blocks` for injected skill text, and `session-tooling` / `orchestration-concurrency` when worker or subagent masking is plausible.
+- For companion-skill or root-equivalent workflows such as `$fixed-point-driver` delegating to `$accretive-implementer`, search assistant messages for declared routing phrases (`using <skill>`, `then <skill>`, `delegate ... <skill>`) and report those separately from native activation rows.
+- If search strings include Markdown backticks, `$`, or shell-sensitive text, prefer a single-quoted JSON spec, a `--spec @file` query, or plain substrings without formatting characters. Inspect stderr and any `--show-query` output before trusting an empty result.
+- When using `seq query` with aggregate `metrics`, include an explicit `group_by` unless row-level output is intended. If a lifted command emits an unexpected filter such as `role in [null]`, treat it as a CLI-surface gap and rerun the check with `seq query` over the underlying dataset.
+
 ### 2) Trend a skill over time
 ```bash
 seq skill-trend --root ~/.codex/sessions --skill tk --bucket week
