@@ -21,10 +21,11 @@ If validation fails:
 
 1. capture command, output, and artifact state;
 2. route contested actionability through `$review-adjudication` when needed;
-3. otherwise route through `$fixed-point-driver`;
-4. run targeted validation for the fix;
-5. reset clean streak;
-6. restart review loop.
+3. run Review-Closure Abstraction Ladder when production mutation may result;
+4. route surviving mutation through `$fixed-point-driver`;
+5. run targeted validation for the fix;
+6. reset clean streak;
+7. restart review loop.
 
 ## No validation found
 

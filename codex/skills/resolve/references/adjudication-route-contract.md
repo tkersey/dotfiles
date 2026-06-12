@@ -38,8 +38,8 @@ Expected permitted actions:
 
 | route | permitted action | `$resolve` handling |
 |---|---|---|
-| `address` | `mutate-code` | invoke `$fixed-point-driver` with surface-budgeted handoff |
-| `delete-collapse-canonicalize` | `mutate-code` | invoke `$fixed-point-driver` with ablation required/local-preflight |
+| `address` | `mutate-code` | run Review-Closure Abstraction Ladder; route surviving mutation to `$fixed-point-driver` |
+| `delete-collapse-canonicalize` | `mutate-code` | run ladder with isomorphic/refactor/fixed-point ablation preferred |
 | `validate-only` | `add-validation-only` | run/add proof only; if files change, reset review streak |
 | `resolve-thread-only` | `resolve-thread` | resolve/reply only if provider policy permits and proof is current |
 | `do-not-address` | `draft-reply` / `defer` / `none` | record rationale; review run still not clean |

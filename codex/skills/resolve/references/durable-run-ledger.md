@@ -14,6 +14,7 @@ Recommended files:
 resolve-state.json
 review-*.json
 adjudication-ledger.jsonl
+abstraction-route-ledger.jsonl
 implementation-handoff-ledger.jsonl
 pr-comment-ledger.jsonl
 validation-ledger.jsonl
@@ -26,6 +27,7 @@ parallel-task-ledger.jsonl
 - Include enough state to resume or audit after context loss.
 - Record every review receipt path or normalized result.
 - Record every adjudication route and warrant consumed.
+- Record every abstraction ladder receipt.
 - Record every implementation handoff to `$fixed-point-driver`.
 - Record every validation command and result.
 - Record PR sweep inventory status.

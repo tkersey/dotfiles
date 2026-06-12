@@ -12,6 +12,7 @@ The root `$resolve` process owns:
 - branch mutations;
 - commits and pushes;
 - PR-thread decisions;
+- abstraction route selection;
 - completion claims.
 
 ## Allowed sidecars
@@ -27,6 +28,7 @@ Allowed when tied to a named decision:
 - duplicate detection;
 - stale-comment checks;
 - read-only evidence gathering for adjudication;
+- read-only evidence gathering for abstraction ladder rungs;
 - safe validation-read-mostly commands when language/tool guidance permits.
 
 ## Forbidden sidecars
@@ -35,6 +37,7 @@ Allowed when tied to a named decision:
 - staging, committing, pushing, rebasing, amending, resolving threads, dismissing comments;
 - choosing/changing review base;
 - owning or incrementing clean-review streak;
+- selecting final abstraction route without root acceptance;
 - starting duplicate review attempts for same backend/base/head/fingerprint;
 - running the three required clean reviews in parallel;
 - declaring `$resolve` complete.

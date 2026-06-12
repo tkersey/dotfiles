@@ -31,6 +31,13 @@ Adjudication:
 - review_items: address=N, delete-collapse-canonicalize=N, validate-only=N, resolve-thread-only=N, do-not-address=N, blocked=N
 - pr_items: address=N, delete-collapse-canonicalize=N, validate-only=N, resolve-thread-only=N, do-not-address=N, blocked=N
 
+Review-Closure Abstraction Ladder:
+- rungs_selected: complexity-mitigator=N, simplify-isomorphic=N, reduce=N, universalist=N, fixed-point-driver=N, accretive-implementer=N
+- no_direct_address_to_patch: yes|no
+- clusters_moratorium_triggered:
+- selected_routes:
+- blocked_by_route_selector:
+
 Implementation:
 - fixed_point_runs:
 - implementation_handoffs:
@@ -59,4 +66,4 @@ Resolve Bottom Line:
 - `blocked`: the skill stopped before completion due to explicit blocker.
 - `partial`: only when some safe work completed but final completion criteria did not pass.
 
-Do not use `resolved` when validation is blocked, review streak is under three, PR sweep is incomplete for a PR-backed branch, or actionable comments remain.
+Do not use `resolved` when validation is blocked, review streak is under three, PR sweep is incomplete for a PR-backed branch, actionable comments remain, or an abstraction ladder receipt blocks mutation.

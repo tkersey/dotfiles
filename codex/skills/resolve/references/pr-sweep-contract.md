@@ -47,6 +47,6 @@ Do not claim complete PR sweep on incomplete inventory unless the final status i
 
 For every in-scope unprocessed item, invoke `$review-adjudication` and consume full route/warrant output.
 
-Mutation-capable routes go through `$fixed-point-driver` with surface-budgeted handoff.
+Mutation-capable routes go through the Review-Closure Abstraction Ladder before `$fixed-point-driver`.
 
 If PR handling changes branch state, reset review streak and repeat local review, full validation, commit, push, and PR sweep.
