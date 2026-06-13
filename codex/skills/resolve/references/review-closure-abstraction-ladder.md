@@ -73,27 +73,6 @@ Output: `right_sized_route`, `surface_delta_call`, and proof receipt.
 
 Blocks: direct mutation before route selection.
 
-## Receipt
+## Receipt requirement
 
-```yaml
-review_closure_abstraction_receipt:
-  review_item_id: "..."
-  adjudication_route: "address | delete-collapse-canonicalize | validate-only | resolve-thread-only | do-not-address | blocked"
-  primary_smell:
-    hard_to_understand_or_spec_risk: yes|no
-    duplicate_or_pass_through_surface: yes|no
-    layer_or_tooling_tax: yes|no
-    missing_boundary_artifact: yes|no
-    coupled_or_repeated_findings: yes|no
-    implementation_only_after_route_selection: yes|no
-  earliest_applicable_rung: "complexity-mitigator | simplify-isomorphic | reduce | universalist | fixed-point-driver | accretive-implementer"
-  selected_skill: "..."
-  reason_selected: "..."
-  rejected_later_rungs:
-    - skill: "..."
-      reason: "earlier rung owned the pathology"
-  selected_route: "no-change | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked"
-  proof_required: []
-```
-
-If this receipt cannot be filled, do not mutate.
+Every mutation-capable review item needs a structured receipt. Prose is not a receipt. See `machine-auditable-route-evidence.md`.

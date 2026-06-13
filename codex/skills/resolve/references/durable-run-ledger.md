@@ -15,6 +15,7 @@ resolve-state.json
 review-*.json
 adjudication-ledger.jsonl
 abstraction-route-ledger.jsonl
+cluster-ledger.jsonl
 implementation-handoff-ledger.jsonl
 pr-comment-ledger.jsonl
 validation-ledger.jsonl
@@ -28,7 +29,9 @@ parallel-task-ledger.jsonl
 - Record every review receipt path or normalized result.
 - Record every adjudication route and warrant consumed.
 - Record every abstraction ladder receipt.
+- Record every cluster checkpoint.
 - Record every implementation handoff to `$fixed-point-driver`.
 - Record every validation command and result.
+- Record every surface delta summary.
 - Record PR sweep inventory status.
 - Final report should include the ledger path when created.

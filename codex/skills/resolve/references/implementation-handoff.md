@@ -1,6 +1,6 @@
 # Fixed-Point Implementation Handoff
 
-Every mutation-capable route from `$resolve` to `$fixed-point-driver` must include the abstraction ladder receipt, surface budget, ablation status, forbidden actions, and proof requirements.
+Every mutation-capable route from `$resolve` to `$fixed-point-driver` must include the abstraction ladder receipt, cluster checkpoint if triggered, surface budget, ablation status, forbidden actions, and proof requirements.
 
 ## Required shape
 
@@ -10,6 +10,7 @@ implementation_handoff:
   target_skill: fixed-point-driver
   artifact_state_id: "branch/head/base/diff/phase"
   review_item_id: "provider-or-review-id"
+  cluster_id: "..."
   abstraction_ladder_rung: "complexity-mitigator | simplify-isomorphic | reduce | universalist | fixed-point-driver | accretive-implementer"
   selected_adjudication_route: address | delete-collapse-canonicalize | validate-only | resolve-thread-only | do-not-address | blocked
   selected_route: no-change | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked
@@ -43,7 +44,7 @@ surface_budget:
 ablation_status: local-preflight
 ```
 
-Use `bounded_positive` only when adjudication or ladder evidence shows isomorphic collapse, owner refactor, validation-only, and existing-owner mutation cannot satisfy the contract.
+Use `bounded_positive` only when adjudication, ladder, or cluster evidence shows no-change, validation, isomorphic collapse, owner refactor, and existing-owner mutation cannot satisfy the contract.
 
 Use `explicit_expansion` only when user/upstream warrant explicitly accepts expansion.
 

@@ -12,6 +12,7 @@ For each review or PR item, provide:
 - relevant code/diff context;
 - selected base ref/SHA and current `HEAD` SHA;
 - project conventions and tests bearing on the item;
+- current cluster ledger entry if available;
 - proposed consequence of each route.
 
 ## Routes to consume

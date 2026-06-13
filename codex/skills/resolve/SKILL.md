@@ -1,6 +1,6 @@
 ---
 name: resolve
-description: "Resolve the current branch through a CAS-first, receipt-backed review loop with native review as recorded fallback only. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR comment sweep, three consecutive clean reviews, CAS review lanes, deterministic base/HEAD pinning, full review-adjudication route consumption, review-closure abstraction ladder, surface-budgeted fixed-point fixes, and final pushed readiness. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
+description: "Resolve the current branch through a CAS-first, receipt-backed review loop with native review as recorded fallback only. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR comment sweep, three consecutive clean reviews, CAS review lanes, deterministic base/HEAD pinning, full review-adjudication route consumption, mandatory Review-Closure Abstraction Ladder receipts, two-finding cluster normalization checkpoints, surface-budgeted fixed-point fixes, and final pushed readiness. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
 ---
 
 # resolve
@@ -9,7 +9,20 @@ description: "Resolve the current branch through a CAS-first, receipt-backed rev
 
 Resolve the current branch to a pinned-review-clean, validated, committed, pushed, and PR-comment-swept state.
 
-`$resolve` is a root-owned state machine. It does not merely review the branch. It keeps reviewing, adjudicating, selecting the right abstraction route, fixing only when warranted, validating, committing, pushing, and sweeping visible PR comments until the branch reaches the completion bar or a precise blocker stops the run.
+`$resolve` is a root-owned branch-resolution state machine. It does not merely review the branch. It keeps reviewing, adjudicating, selecting the right abstraction/refactor route, fixing only when warranted, validating, committing, pushing, and sweeping visible PR comments until the branch reaches the completion bar or a precise blocker stops the run.
+
+## What this version optimizes
+
+The goal is not to maximize patches or make every review item become code. The goal is:
+
+```text
+review pressure -> full adjudication -> abstraction/refactor route selection -> owner/normal-form repair -> proof -> pushed closure
+```
+
+This version makes two previously soft behaviors hard:
+
+1. **No prose-only route decisions.** Every mutation-capable review item needs a structured Review-Closure Abstraction Receipt.
+2. **No repeated same-cluster point fixing.** A second finding in the same cluster triggers a Cluster Normalization Checkpoint before further production mutation.
 
 ## Activation Kernel
 
@@ -38,6 +51,8 @@ Completion bar:
 + complete post-push PR sweep
 + no unprocessed in-scope PR comments
 + no actionable PR comments remaining
++ no missing mutation-capable abstraction receipts
++ no open cluster normalization checkpoint
 ```
 
 ## Entry guard
@@ -47,6 +62,8 @@ Before any review command runs, prove this run has loaded enough of this skill t
 - `## Backend selection`
 - `## Review adjudication route consumption`
 - `## Review-Closure Abstraction Ladder`
+- `## Cluster Normalization Checkpoint`
+- `## Machine-auditable route evidence`
 - `## Fixed-point and implementation handoff`
 - `## Non-negotiables`
 
@@ -82,9 +99,11 @@ Do not consider the branch resolved until all of the following are true, in this
 9. After each push, find the associated PR and perform the complete post-push PR sweep.
 10. Every in-scope Codex review item and PR item must be consumed through `$review-adjudication` unless it is clearly irrelevant system noise, already resolved, authored by this agent as a status/reply, or previously adjudicated with the same content and current artifact context.
 11. Every mutation-capable adjudication route must pass the Review-Closure Abstraction Ladder before any production mutation.
-12. Every mutation-capable route that survives the ladder must go through `$fixed-point-driver` with a surface-budgeted handoff unless the selected ladder rung blocks, validates only, or explicitly returns no-change.
-13. If PR-comment resolution causes any code/config/dependency/generated/test/doc change, repeat the Codex review loop until three consecutive clean reviews, rerun full validation, commit, push, and sweep again.
-14. The skill is complete only after the latest pushed commit has the final clean review streak, final validation pass, complete post-push sweep, and zero unresolved actionable PR comments.
+12. Every mutation-capable review item must have a structured `review_closure_abstraction_receipt`; prose-only reasoning is not enough for completion.
+13. A second finding in the same cluster triggers a `cluster_normalization_checkpoint`; no further production mutation in that cluster may happen until the checkpoint chooses a normal-form route or blocks.
+14. Every mutation-capable route that survives the ladder must go through `$fixed-point-driver` with a surface-budgeted handoff unless the selected ladder rung blocks, validates only, or explicitly returns no-change.
+15. If PR-comment resolution causes any code/config/dependency/generated/test/doc change, repeat the Codex review loop until three consecutive clean reviews, rerun full validation, commit, push, and sweep again.
+16. The skill is complete only after the latest pushed commit has the final clean review streak, final validation pass, complete post-push sweep, zero unresolved actionable PR comments, zero missing mutation-capable receipts, and no open cluster checkpoint.
 
 ## Definitions
 
@@ -94,6 +113,7 @@ Do not consider the branch resolved until all of the following are true, in this
 - `clean review`: a completed review result from the selected backend with zero findings/comments/requested changes, no unresolved review notes, and matching pinned state.
 - `review item`: any substantive review item, inline comment, requested change, warning, issue, or note that asks for or implies a code, test, behavior, safety, reliability, performance, accessibility, maintainability, API, release, or documentation change.
 - `mutation-capable route`: an adjudication route that could change production code, validation code, fixtures, generated artifacts, config, behavior docs, dependencies, or lockfiles.
+- `cluster`: a group of review/validation/PR items sharing a subsystem, file, protocol, state machine, parser/validator, lifecycle, retry/idempotency path, cache/index, impossible-state family, truth owner, or proof surface.
 - `HEAD changed`: the current commit SHA changed because of a fix, generated update, validation fix, rebase, merge, amend, cherry-pick, or branch synchronization.
 - `base changed`: the resolved base ref or merge-base SHA changed since the current clean streak began.
 
@@ -113,6 +133,7 @@ resolve_state:
   last_review_invocations: []
   adjudication_ledger: {}
   abstraction_route_ledger: []
+  cluster_ledger: {}
   implementation_handoff_ledger: []
   validation_commands: []
   pr_comment_ledger: {}
@@ -126,6 +147,7 @@ Reset `clean_review_streak = 0` whenever:
 
 - review returns any finding/comment;
 - the Review-Closure Abstraction Ladder selects a mutation route and the branch changes;
+- a Cluster Normalization Checkpoint selects a mutation route and the branch changes;
 - `$fixed-point-driver` or downstream implementation changes code, config, dependencies, lockfiles, generated artifacts, behavior docs, or tests;
 - validation requires any fix or generated update;
 - `HEAD` changes;
@@ -146,6 +168,7 @@ For long or mutating runs, create or maintain a local operational ledger outside
   review-*.json
   adjudication-ledger.jsonl
   abstraction-route-ledger.jsonl
+  cluster-ledger.jsonl
   implementation-handoff-ledger.jsonl
   pr-comment-ledger.jsonl
   validation-ledger.jsonl
@@ -266,6 +289,7 @@ Workers or sidecars may be used only for bounded, side-effect-light tasks that r
 - obsolete-comment checks against current code;
 - read-only evidence gathering for `$review-adjudication`;
 - read-only evidence gathering for Review-Closure Abstraction Ladder rungs;
+- read-only cluster owner maps or state tables;
 - PR inventory fetching;
 - receipt summarization after the root captures `.reviewVerdict`.
 
@@ -275,6 +299,8 @@ Workers and sidecars must not:
 - own `clean_review_streak`;
 - choose or change review base;
 - start duplicate review attempts for the same backend/base/head/fingerprint tuple;
+- select the final abstraction route without root acceptance;
+- close a cluster checkpoint;
 - commit, push, resolve PR threads, dismiss comments, or declare completion.
 
 Use parallelism when it reduces wall time without increasing state ambiguity. Do not launch sidecars merely because work is technically independent; each sidecar must have a named decision it can improve.
@@ -290,7 +316,7 @@ Before making changes:
 - discover and load applicable language/tool skills;
 - preserve unrelated user changes;
 - determine whether a PR exists for the current branch;
-- run a value-gated parallel opportunity pass for read-only discovery, CAS checks, PR metadata/thread fetching, CI/check discovery, and validation command discovery.
+- run a value-gated parallel opportunity pass for read-only discovery, CAS checks, PR metadata/thread fetching, CI/check discovery, validation command discovery, and active cluster summarization.
 
 Repeat until `clean_review_streak == 3`:
 
@@ -305,14 +331,16 @@ Repeat until `clean_review_streak == 3`:
 5. If review returns findings/comments:
    - reset `clean_review_streak = 0`;
    - process every review item through `$review-adjudication`;
+   - update the cluster ledger before mutation;
    - consume full adjudication routes and warrants;
    - run the Review-Closure Abstraction Ladder for every mutation-capable route before production mutation;
+   - if the item triggers a cluster checkpoint, complete or block the checkpoint before further production mutation in that cluster;
    - route surviving mutation-capable items through `$fixed-point-driver`;
    - run targeted validation for changed areas;
    - restart the review loop after fixes.
 6. If every item is adjudicated as no-change/do-not-address/resolve-thread-only, continue the review loop anyway. That review run is not clean and does not count toward the streak.
 
-Do not use an arbitrary maximum iteration count. Stop early only for an unrecoverable blocker such as unavailable review backend, impossible base discovery, required validation blocked by missing external credentials/services, persistent false-positive review loop that cannot be resolved without making the branch worse, or incomplete PR sweep inventory that prevents a completion claim.
+Do not use an arbitrary maximum iteration count. Stop early only for an unrecoverable blocker such as unavailable review backend, impossible base discovery, required validation blocked by missing external credentials/services, persistent false-positive review loop that cannot be resolved without making the branch worse, open cluster normalization checkpoint, or incomplete PR sweep inventory that prevents a completion claim.
 
 ## Review adjudication route consumption
 
@@ -325,6 +353,7 @@ When invoking `$review-adjudication`, provide:
 - relevant code/diff context;
 - selected review base, base SHA, and current `HEAD` SHA;
 - project conventions, requirements, prior related comments, tests, CI, and language skill guidance;
+- current cluster ledger entry if the item shares a cluster;
 - proposed consequence of each route.
 
 Consume the full Claim Decision Kernel and Resolution Warrants. Do not collapse routes to only `address` / `do-not-address`.
@@ -407,14 +436,17 @@ Expected output: `right_sized_route`, `surface_delta_call`, and proof receipt.
 
 This rung blocks direct mutation before route selection.
 
-## Review-Closure Abstraction Receipt
+## Machine-auditable route evidence
 
 Every mutation-capable review item must leave this compact receipt in the durable ledger or final report:
 
 ```yaml
 review_closure_abstraction_receipt:
+  receipt_version: RCA-LADDER-v2
   review_item_id: "..."
+  cluster_id: "..."
   adjudication_route: "address | delete-collapse-canonicalize | validate-only | resolve-thread-only | do-not-address | blocked"
+  receipt_status: structured | root-equivalent-structured | missing
   primary_smell:
     hard_to_understand_or_spec_risk: yes|no
     duplicate_or_pass_through_surface: yes|no
@@ -432,36 +464,61 @@ review_closure_abstraction_receipt:
   proof_required: []
 ```
 
-If the receipt cannot be filled for a mutation-capable review item, do not mutate. Route to validation-only, fixed-point blocked, or ask for missing owner/context.
+Prose may explain the receipt, but prose is not the receipt.
 
-See `references/review-closure-abstraction-ladder.md`.
+If `receipt_status: missing` for any mutation-capable item, do not mutate and do not claim resolved completion. Use `blocked`, `validate-only`, or fill a root-equivalent structured receipt.
 
-## Cluster and moratorium rules
+See `references/machine-auditable-route-evidence.md`.
 
-Track review items by subsystem, file, protocol, state machine, parser/validator, lifecycle, retry/idempotency path, cache/index, impossible-state family, and truth owner.
+## Cluster Normalization Checkpoint
 
-If three review findings in the same cluster appear in one `$resolve` run, stop point-fix mutation for that cluster.
+A second finding in the same cluster triggers a checkpoint before further production mutation in that cluster.
 
-Required next artifact:
+Trigger when any is true:
+
+- `same_cluster_findings >= 2` in the current `$resolve` run;
+- a CAS review finds an adjacent issue after a previous fix in the same cluster;
+- a validation or PR item targets the same owner after a review-driven fix;
+- the route selector repeatedly selects `mutate-existing-owner` in the same cluster without a cluster-level owner map.
+
+Before further production mutation in that cluster, emit:
 
 ```yaml
-cluster_refactor_moratorium:
+cluster_normalization_checkpoint:
+  checkpoint_version: CNC-v1
   cluster_id:
-  review_item_ids:
+  trigger_item_ids:
+  subsystem:
   suspected_owner:
+  owner_candidates: []
   invariant_or_protocol:
-  local_patches_already_attempted:
-  duplicate_or_shadow_surfaces:
-  selected_route:
+  current_patch_sites: []
+  state_transition_or_authority_boundary_table:
+    - state_or_boundary:
+      owner:
+      legal_transition_or_authority:
+      forbidden_state_or_action:
+      current_enforcement:
+      gap:
+  duplicate_or_shadow_surfaces: []
+  local_patches_already_attempted: []
+  selected_normal_form_route:
     no-change | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked
   required_skill:
     complexity-mitigator | simplify-and-refactor-code-isomorphically | reduce | universalist | fixed-point-driver
-  proof_required:
+  disallowed_until_checkpoint_closes:
+    - add-new-surface
+    - local caller-side tolerance
+    - wrapper/helper/fallback additions
+  proof_required: []
+  checkpoint_status: open | closed | blocked
 ```
 
-The moratorium may lift only after the selected skill produces a route and proof plan, or the root records a blocker.
+While `checkpoint_status: open`, production mutation in that cluster is blocked except for validation-only work needed to close the checkpoint.
 
-See `references/cluster-refactor-moratorium.md`.
+`add-new-surface` is disallowed until the checkpoint explicitly proves that no no-change, validation-only, delete/collapse, refactor-existing-owner, or mutate-existing-owner route can satisfy the cluster.
+
+See `references/cluster-normalization-checkpoint.md`.
 
 ## Fixed-point and implementation handoff
 
@@ -470,6 +527,7 @@ When invoking `$fixed-point-driver`, pass:
 - the review/PR item being addressed;
 - `$review-adjudication` decision, route, warrant, and rationale;
 - Review-Closure Abstraction Receipt;
+- Cluster Normalization Checkpoint when triggered;
 - relevant code locations and diff context;
 - selected review base, base SHA, and current `HEAD` SHA;
 - expected behavior after fix;
@@ -491,6 +549,7 @@ implementation_handoff:
   target_skill: fixed-point-driver
   artifact_state_id: "..."
   review_item_id: "..."
+  cluster_id: "..."
   abstraction_ladder_rung: "complexity-mitigator | simplify-isomorphic | reduce | universalist | fixed-point-driver | accretive-implementer"
   selected_adjudication_route: address | delete-collapse-canonicalize | validate-only | resolve-thread-only | do-not-address | blocked
   selected_route: no-change | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked
@@ -519,6 +578,34 @@ After `$fixed-point-driver` changes the branch:
 - resume review through the selected driver.
 
 See `references/implementation-handoff.md`.
+
+## Surface delta reporting
+
+For any run that changes files, record a surface delta summary:
+
+```yaml
+surface_delta_summary:
+  production_insertions:
+  production_deletions:
+  production_net:
+  test_insertions:
+  test_deletions:
+  test_net:
+  generated_insertions:
+  generated_deletions:
+  generated_net:
+  helpers_wrappers_adapters_added:
+  public_symbols_added:
+  flags_fallbacks_compat_paths_added:
+  duplicate_or_shadow_surfaces_retired:
+  surface_delta_call: smaller | same | larger-with-warrant | larger-without-warrant | unknown
+```
+
+If line counts are unavailable, set values to `unknown` and explain why. Do not infer smaller/same/larger from vibes.
+
+`larger-without-warrant` blocks resolved completion until revised, warranted, or explicitly accepted by the user as an expansion.
+
+See `references/surface-delta-reporting.md`.
 
 ## Final validation
 
@@ -549,7 +636,7 @@ Only after the final three-review clean streak and full validation pass:
 2. Stage only intended changes.
 3. If intended changes exist, commit with a concise message.
 4. Push current branch to upstream remote.
-5. Record final commit SHA, branch pushed, review base, merge-base SHA, last three review invocations/receipts, language skill packets, validation commands, abstraction route ledger, implementation handoff ledger, and parallel task ledger.
+5. Record final commit SHA, branch pushed, review base, merge-base SHA, last three review invocations/receipts, language skill packets, validation commands, abstraction route ledger, cluster ledger, implementation handoff ledger, surface delta summary, and parallel task ledger.
 6. Run the post-push PR sweep before reporting completion.
 
 If there are no intended changes after validation, do not create an empty commit. Push only if the branch needs remote update, then run the PR sweep.
@@ -562,6 +649,8 @@ Do not commit or push when:
 - review base is unknown/ambiguous;
 - review output could not be parsed reliably;
 - actionable review/PR comment remains unresolved;
+- any mutation-capable item has a missing abstraction receipt;
+- any cluster checkpoint is open;
 - any gate used stale or mismatched sidecar output;
 - PR sweep inventory is incomplete and the run is claiming PR-comment-reviewed completion.
 
@@ -633,13 +722,14 @@ A persistent loop is not success. Treat these as blockers unless a minimal corre
 - PR comments require product decisions, approvals, or external context;
 - parallel/worker results repeatedly stale, contradictory, or snapshot-mismatched;
 - PR thread inventory cannot be completed but the run is asked to claim PR-comment-reviewed completion;
-- abstraction ladder repeatedly selects mutation in the same cluster without reducing or clarifying the owner.
+- abstraction ladder repeatedly selects mutation in the same cluster without reducing or clarifying the owner;
+- a cluster checkpoint is open or blocked.
 
 When blocked:
 
 - stop before committing/pushing unless already safely committed/pushed before blocker appeared;
 - report exact blocker;
-- include review base, `HEAD` SHA, relevant output, unresolved comments/findings, abstraction route ledger, PR inventory status, and parallel ledger entries when relevant;
+- include review base, `HEAD` SHA, relevant output, unresolved comments/findings, abstraction route ledger, cluster ledger, PR inventory status, and parallel ledger entries when relevant;
 - do not fabricate completion.
 
 ## Final report
@@ -674,11 +764,31 @@ Adjudication:
 - pr_items: address=N, delete-collapse-canonicalize=N, validate-only=N, resolve-thread-only=N, do-not-address=N, blocked=N
 
 Review-Closure Abstraction Ladder:
+- receipts: structured=N, root_equivalent_structured=N, missing=N, prose_only=N
 - rungs_selected: complexity-mitigator=N, simplify-isomorphic=N, reduce=N, universalist=N, fixed-point-driver=N, accretive-implementer=N
 - no_direct_address_to_patch: yes|no
-- clusters_moratorium_triggered:
 - selected_routes:
 - blocked_by_route_selector:
+
+Cluster normalization:
+- checkpoints_triggered:
+- checkpoints_closed:
+- checkpoints_open:
+- clusters:
+  - cluster_id:
+    selected_normal_form_route:
+    required_skill:
+    status:
+
+Surface delta:
+- production_insertions:
+- production_deletions:
+- production_net:
+- test_insertions:
+- test_deletions:
+- test_net:
+- duplicate_or_shadow_surfaces_retired:
+- surface_delta_call:
 
 Implementation:
 - fixed_point_runs:
@@ -713,7 +823,7 @@ Resolve Bottom Line:
 - The merge-base SHA must be recorded and pinned.
 - Comments adjudicated as no-change/do-not-address/resolve-thread-only still reset the review streak.
 - Any code, config, dependency, lockfile, generated-artifact, behavior-doc, or test change after the third clean review invalidates the streak and requires restarting review.
-- Post-push PR comments use the same `$review-adjudication`, Review-Closure Abstraction Ladder, and `$fixed-point-driver` route/warrant flow as local review comments.
+- Post-push PR comments use the same `$review-adjudication`, Review-Closure Abstraction Ladder, Cluster Normalization Checkpoint, and `$fixed-point-driver` route/warrant flow as local review comments.
 - Any PR-comment-driven change requires another local three-clean-review streak, full validation, commit, push, and PR sweep.
 - `$resolve` owns the state machine; workers/sidecars may assist but must not own mutable state or completion.
 - `$cas` is the default review backend and must pass preflight before use; failed CAS preflight falls back to native review only when available and recorded.
@@ -725,9 +835,11 @@ Resolve Bottom Line:
 - Do not collapse `$review-adjudication` routes into `address`/`do-not-address`.
 - Do not route mutation directly from `address` to `apply_patch`.
 - Do not skip the Review-Closure Abstraction Ladder for mutation-capable routes.
-- Do not route mutation to `$fixed-point-driver` without the abstraction receipt, surface budget, ablation status, forbidden actions, and proof required.
+- Do not use prose-only route decisions for mutation-capable items.
+- Do not continue point-fix mutation after the second same-cluster finding without a Cluster Normalization Checkpoint.
+- Do not route mutation to `$fixed-point-driver` without the abstraction receipt, cluster checkpoint if triggered, surface budget, ablation status, forbidden actions, and proof required.
 - Do not claim PR-comment-reviewed completion with incomplete PR sweep inventory unless the limitation is reported as a blocker or downgrade.
-- Do not fabricate validation success, review outcomes, PR state, commit SHAs, push status, abstraction-route safety, or sidecar safety.
+- Do not fabricate validation success, review outcomes, PR state, commit SHAs, push status, abstraction-route safety, cluster status, surface delta, or sidecar safety.
 
 ## Resources
 
@@ -736,8 +848,10 @@ Resolve Bottom Line:
 - [review-result-contract.md](references/review-result-contract.md)
 - [adjudication-route-contract.md](references/adjudication-route-contract.md)
 - [review-closure-abstraction-ladder.md](references/review-closure-abstraction-ladder.md)
-- [cluster-refactor-moratorium.md](references/cluster-refactor-moratorium.md)
+- [machine-auditable-route-evidence.md](references/machine-auditable-route-evidence.md)
+- [cluster-normalization-checkpoint.md](references/cluster-normalization-checkpoint.md)
 - [implementation-handoff.md](references/implementation-handoff.md)
+- [surface-delta-reporting.md](references/surface-delta-reporting.md)
 - [pr-sweep-contract.md](references/pr-sweep-contract.md)
 - [parallelism-contract.md](references/parallelism-contract.md)
 - [validation-policy.md](references/validation-policy.md)
