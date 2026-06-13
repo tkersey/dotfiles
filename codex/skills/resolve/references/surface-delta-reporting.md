@@ -1,10 +1,6 @@
 # Surface Delta Reporting
 
-Surface movement must be measured, not inferred from confidence.
-
-## Required summary
-
-For any run that changes files, report:
+For any run that changes files, record measured surface movement.
 
 ```yaml
 surface_delta_summary:
@@ -23,13 +19,5 @@ surface_delta_summary:
   duplicate_or_shadow_surfaces_retired:
   surface_delta_call: smaller | same | larger-with-warrant | larger-without-warrant | unknown
 ```
-
-## Calls
-
-- `smaller`: production surface reduced or duplicate/shadow surface retired with proof.
-- `same`: production surface roughly stable and no new public/helper/wrapper/flag/fallback surface was introduced.
-- `larger-with-warrant`: production surface grew, but the growth is owned, proof-backed, and blocks future local patches or retires surface.
-- `larger-without-warrant`: production surface grew without enough owner/proof/retirement warrant.
-- `unknown`: counts are unavailable.
 
 `larger-without-warrant` blocks resolved completion unless revised, warranted, or explicitly accepted by the user.

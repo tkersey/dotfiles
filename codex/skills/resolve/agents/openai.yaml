@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "CAS-first branch resolution with abstraction receipts and cluster normalization"
-  default_prompt: "Use $resolve for this task. Follow CAS-first review, full adjudication routes, mandatory abstraction ladder receipts, cluster normalization checkpoints, surface-budgeted fixes, validation, push, and PR sweep."
+  short_description: "CAS-first branch resolution with review compression"
+  default_prompt: "Use $resolve for this task. Follow CAS-first review, full adjudication routes, review-compression-compiler integration, surface-budgeted fixes, validation, push, and PR sweep."

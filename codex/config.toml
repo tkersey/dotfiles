@@ -129,7 +129,7 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [marketplaces.openai-bundled]
-last_updated = "2026-06-09T20:39:06Z"
+last_updated = "2026-06-13T16:00:34Z"
 source_type = "local"
 source = "/Users/tk/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
