@@ -1,6 +1,6 @@
 policy:
   allow_implicit_invocation: true
 interface:
-  display_name: "tune"
-  short_description: "Tune skills from orthogonal evidence"
-  default_prompt: "Use $tune to compare a target skill's contract with declared in-flight, historical, provided, or worktree evidence, then brief $refine and apply only when explicitly requested."
+  display_name: "Tune"
+  short_description: "Tune skills with goal-native decision deltas"
+  default_prompt: "Use $tune to compare a target skill's contract with declared evidence, produce a skill_delta_candidate or terminal repeat state, and apply only when explicitly requested."
