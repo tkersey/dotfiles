@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Compression Compiler"
-  short_description: "Emit RCP/RDP/NREC packets with route memory"
-  default_prompt: "Use $review-compression-compiler to emit a compact RCP or RDP with negative_evidence, NREC route exclusions, universalist_check, route-wave ref, proof matrix, and fixed-point handoff before implementation."
+  short_description: "Compile hot clusters into RDR normal forms"
+  default_prompt: "Use $review-compression-compiler to compile the hot review cluster into the normal-form section of a resolve_decision_record."

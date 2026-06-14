@@ -1,11 +1,9 @@
 # Review Distillation Mode
 
-Use when the review loop itself should not be delivered.
-
-Core rule:
+Use only when same-cluster review churn or dirty-tree repair history should not be delivered.
 
 ```text
 The lab learns. The delivery branch forgets.
 ```
 
-Delivery code must be rederived from the frozen delivery base using the RDP selected normal form. Lab commits are evidence, not delivery design.
+Freeze delivery base, use lab as evidence, then rederive the delivery patch from the clean base.

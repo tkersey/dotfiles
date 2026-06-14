@@ -1,3 +1,17 @@
 # Implementation Handoff
 
-Mutation handoff must include packet id, route-wave ref, selected normal form, negative-evidence status, NREC status, universalist decision, falsification status, scope, forbidden actions, surface budget, abstraction rent status, proof, and stale conditions.
+Implementation handoff after stop rule must include:
+
+```yaml
+implementation_handoff:
+  target_skill:
+  selected_route:
+  owner:
+  permitted_scope: []
+  forbidden_actions: []
+  proof_required: []
+  negative_route_gate:
+  surface_delta_budget:
+```
+
+Do not hand off if the stop rule is open or the selected route violates active negative evidence.

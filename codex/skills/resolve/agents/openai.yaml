@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "CAS-first resolution with distillation and route memory"
-  default_prompt: "Use $resolve for this task. Follow CAS-first review, full adjudication, route-wave artifacts, RCP/RDP/NREC gates, negative-ledger route memory, universalist_check falsification, review distillation when required, slice commits, fixed-point handoff, validation, push, and PR sweep."
+  short_description: "CAS-first resolution with same-cluster stop rule"
+  default_prompt: "Use $resolve for this task. Follow CAS-first review, same-cluster stop rule, one resolve_decision_record, negative-ledger route ratchet, review distillation only when needed, validation, push, PR sweep, and material-improvement scoring."
