@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Actuating"
+  short_description: "Plan-to-PR workflow via $st, $fixed-point-driver, validation, and $ship"
+  default_prompt: "Use $actuating for this task. Convert the plan into durable $st tasks, execute each task through $fixed-point-driver and relevant language skills, continue until all in-scope tasks are complete or blocked, run build/lint/test proof, then use $ship to open or update the PR."
