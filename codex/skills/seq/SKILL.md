@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex session JSONL (`~/.codex/sessions`) and memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions. Prefer `artifact-search`, then `adjudication-audit` for selected/rejected review-adjudication audits, then `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, `orchestration-concurrency`, then `query-diagnose`, then generic `query`. Run opencode only when the request literally says `opencode`."
+description: "Mine Codex session JSONL (`~/.codex/sessions`) and memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions. Prefer `artifact-search`, then `skill-evidence` for one watched session, then `adjudication-audit` for selected/rejected review-adjudication audits, then `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, `orchestration-concurrency`, then `query-diagnose`, then generic `query`. Run opencode only when the request literally says `opencode`."
 ---
 
 # seq
@@ -35,6 +35,7 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
      - `find-session` for prompt-to-session lookup.
      - `session-prompts` for "what did that session actually say" and transcript proof.
      - `adjudication-audit` for selected/rejected `$review-adjudication` audits, including root-equivalent workflows such as `$resolve` when explicitly included.
+     - `skill-evidence` for one watched session when the question is "what skill-use evidence changed since cursor X?" It distinguishes injected skill blocks, assistant-declared use, manual `SKILL.md` reads, target-skill lens use, successful outcome evidence, and raw mentions without dumping raw transcript text by default.
      - `skill-success-rank` for ranked successful skill activation reports over recent windows without raw mention inflation.
      - `skill-audit` for raw skill mention summaries, one-skill mention rows, one-skill daily trends, and `--mode activation` evidence buckets.
      - `workflow-audit` for workflow-cohort utilization reports across text, skill mentions, tool traces, session graph roles, and outcome signals.
@@ -164,6 +165,8 @@ Prefer the lifted shortcut:
 ```bash
 seq skill-success-rank --root ~/.codex/sessions --last 14d --format table
 seq skill-success-rank --root ~/.codex/sessions --skill seq --mode sessions --last 14d --format jsonl
+seq skill-evidence --root ~/.codex/sessions --session-id <session_id> --skill seq --format json
+seq skill-evidence --root ~/.codex/sessions --session-id <session_id> --skill seq --since-cursor '<cursor-token>' --format json
 seq skill-audit --root ~/.codex/sessions --limit 20 --format table
 seq skill-audit --root ~/.codex/sessions --skill seq --mode trend --format table
 seq skill-audit --root ~/.codex/sessions --skill universalist --mode activation --last 36h --exclude-current --format table
@@ -347,6 +350,8 @@ seq skill-success-rank --root ~/.codex/sessions --skill prove-it --mode sessions
 Guardrail for "was this skill/workflow used?" audits:
 
 - State the denominator before giving a count. "Native/user-called successful activation rows" is not the same denominator as "assistant-declared workflow use" or "root-equivalent companion use."
+- For a known watched session, start with `seq skill-evidence --session-id <id> --skill <name> --format json`; pass the prior `cursor_end.token` or `cursor_end.json` to `--since-cursor` when the user asks what changed since cursor X.
+- Treat `skill-evidence` raw mentions as a separate evidence class, not proof of successful activation. Successful activation/outcome evidence is its own class and should be reported separately.
 - For direct activation questions such as "has `$universalist` been called implicitly in the last 36 hours?", start with `seq skill-audit --skill universalist --mode activation --last 36h --exclude-current --format table`. Report the `implicit_assistant_call` count separately from `explicit_user_call`, `injected_skill_block`, and `other_reference`.
 - Do not conclude "not used" from an empty `skill-success-rank` result alone. First cross-check `workflow-audit` / `workflow_signals`, `message-search` over assistant messages, `skill-blocks` for injected skill text, and `session-tooling` / `orchestration-concurrency` when worker or subagent masking is plausible.
 - For companion-skill or root-equivalent workflows such as `$fixed-point-driver` delegating to `$accretive-implementer`, search assistant messages for declared routing phrases (`using <skill>`, `then <skill>`, `delegate ... <skill>`) and report those separately from native activation rows.
@@ -713,6 +718,7 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
   that natively, treat the missing mode as a `seq` CLI-surface gap rather than
   normalizing caller-side `jq`.
 - `skill-blocks` defaults to `--history distinct` and `--format jsonl`; use `--history all` to keep repeated identical injections and `--history latest` to select the newest distinct version.
+- `skill-evidence` is the first-class watched-session delta surface for skill use. It accepts `--session-id` / `--path`, `--skill`, `--since-cursor`, `--last` / `--since` / `--until`, `--include-raw`, and JSON output only.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
 - `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching successful skill usage, raw skill mentions and activation buckets, workflow, tool, memory, message, and cwd questions.
 - Raw `seq query` is still correct when it is the clearer expression for a novel dataset shape, custom join, or denominator the lifted commands do not own.
