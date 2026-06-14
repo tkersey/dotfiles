@@ -1,40 +1,27 @@
-# Review Compression Packet Contract
+# Review Compression Packet Contract v2
 
-`review_compression_packet` is the authority-bearing artifact for cluster-level review compression.
+The compact packet is mandatory for meaningful compiler use.
 
-## Required status
+## Required literal key
 
 ```yaml
-packet_status: accepted | blocked | not-required
+review_compression_packet:
 ```
 
-- `accepted`: selected normal form and implementation handoff are ready for `$fixed-point-driver`.
-- `blocked`: missing evidence, stale artifact state, unpaid abstraction rent, unsafe proof gap, or unresolved owner.
-- `not-required`: isolated item; local existing-owner route can proceed without compiler.
+Future audits may search for this exact string. Do not replace it with prose.
 
-## Valid selected forms
+## Required statuses
 
 ```text
-no-change-proof
-validate-only
-delete-collapse-canonicalize
-refactor-existing-owner
-mutate-existing-owner
-add-new-surface
-blocked
+accepted | blocked | not-required
 ```
 
-## Invalidation
+`not-required` is valid only for isolated, direct, no-new-surface cases.
 
-A packet becomes stale when:
+## Invalid states
 
-- `HEAD` changes;
-- base/fingerprint changes for the reviewed artifact;
-- new same-cluster counterexample appears;
-- a proof surface changes;
-- selected owner changes;
-- implementation exceeds permitted scope or forbidden-action boundary.
-
-## Integration rule
-
-`$resolve` should not pass same-cluster production mutation to `$fixed-point-driver` unless it has an accepted packet or a structured not-required reason.
+- `add-new-surface` with unpaid rent.
+- `accepted` with missing proof matrix.
+- `accepted` without implementation handoff.
+- `same_cluster_findings >= 2` with `not-required`.
+- Prose-only "normal form" with no packet.

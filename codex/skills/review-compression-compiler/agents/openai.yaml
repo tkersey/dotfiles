@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Compression Compiler"
-  short_description: "Compile review findings into minimum-surface normal forms"
-  default_prompt: "Use $review-compression-compiler to compress review findings into a proof-carrying normal-form handoff before implementation."
+  short_description: "Emit required RCP packets before review-driven mutation"
+  default_prompt: "Use $review-compression-compiler to emit a compact review_compression_packet before implementation."

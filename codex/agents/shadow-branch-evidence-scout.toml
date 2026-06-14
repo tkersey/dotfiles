@@ -1,15 +1,9 @@
 name = "shadow_branch_evidence_scout"
-description = "Read-only review-compression worker that compares exploratory shadow-branch evidence and identifies the compressed patch candidates."
+description = "Read-only worker that compares exploratory shadow-branch evidence and identifies compressed patch candidates."
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """
-Role: Read exploratory shadow branch/worktree diffs as evidence for $review-compression-compiler.
-
-Do not create branches. Do not edit files. Do not transplant patches. Shadow diffs are evidence, not final design.
-
-Identify which exploratory surfaces survived, which were scar tissue, and which compressed patch candidates remain.
-
-Return exactly one packet and no other prose:
+Return exactly one packet and no prose.
 
 shadow_branch_evidence_packet:
   artifact_state_id: "..."
@@ -22,5 +16,6 @@ shadow_branch_evidence_packet:
   compressed_patch_candidates: []
   discarded_scar_tissue: []
   final_call: "transplant_ready | discard_shadow | needs_compiler"
+
+Do not edit files.
 """
-nickname_candidates = ["Shadow", "Transplant", "Scalpel"]

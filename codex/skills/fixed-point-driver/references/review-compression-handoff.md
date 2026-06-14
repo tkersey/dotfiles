@@ -1,23 +1,13 @@
 # Review Compression Handoff
 
-When `$resolve` supplies a `review_compression_packet`, `$fixed-point-driver` should treat it as the cluster-level input, not as a queue of separate review comments.
+When `$resolve` supplies an RCP packet, `$fixed-point-driver` must implement the selected normal form, not the individual review comment queue.
 
-## Consume
+Reject mutation when:
 
-```yaml
-review_compression_packet:
-  cluster_id:
-  counterexamples:
-  selected_normal_form:
-  proof_matrix:
-  implementation_handoff:
-  closure_rule:
-```
+- `review_compression_packet` is missing but required;
+- packet status is `blocked`;
+- abstraction rent is unpaid;
+- proof matrix is missing;
+- handoff omits forbidden actions or surface budget.
 
-## Rules
-
-- Do not re-expand one selected normal form into independent local patches.
-- Preserve selected owner and forbidden actions unless fresh evidence invalidates them.
-- If the same cluster reappears after implementation, treat the selected normal form as falsified and route back to `$review-compression-compiler`.
-- If selected normal form is `add-new-surface`, require abstraction rent to be paid.
-- If proof matrix is too broad or missing, route validation-only before mutation.
+If same cluster reappears after implementation, route back to `$review-compression-compiler`.

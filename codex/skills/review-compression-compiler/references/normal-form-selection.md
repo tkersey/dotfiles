@@ -1,8 +1,6 @@
 # Normal Form Selection
 
-A normal form is a model-level route that resolves a counterexample family.
-
-## Priority order
+Select among:
 
 ```text
 no-change-proof
@@ -14,30 +12,6 @@ add-new-surface
 blocked
 ```
 
-## Selection objective
+Prefer the earliest route that kills the counterexample family with executable proof.
 
-Minimize:
-
-```text
-production_surface
-+ duplicate_owner_penalty
-+ abstraction_variance
-+ future_review_risk
-+ proof_complexity
-+ public_surface_penalty
-+ fallback_tolerance_penalty
-```
-
-Subject to:
-
-- selected counterexamples killed or explicitly routed;
-- existing behavior preserved;
-- canonical owner named;
-- proof executable;
-- forbidden actions respected.
-
-## Add-new-surface
-
-`add-new-surface` is last among mutation routes. It must pay abstraction rent.
-
-If a new surface cannot pay rent, select `blocked`, `validate-only`, or a smaller normal form.
+Do not select `add-new-surface` unless rent is paid.

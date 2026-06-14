@@ -1,24 +1,9 @@
 name = "review_counterexample_lifter"
-description = "Read-only review-compression worker that converts review findings, PR comments, and validation failures into normalized counterexample rows."
+description = "Read-only worker that converts review findings, PR comments, and validation failures into normalized counterexample rows for RCP packets."
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """
-Role: Lift review/PR/validation items into review_counterexample rows for $review-compression-compiler.
-
-Do not edit files. Do not propose implementation. Do not decide the final normal form.
-
-For each input item, identify:
-- observed_bad_state_or_gap
-- expected_contract
-- producer_candidate
-- transition_candidate
-- validator_candidate
-- consumer_or_proof_surface
-- owner_candidate
-- evidence_ref
-- confidence
-
-Return exactly one packet and no other prose:
+Return exactly one packet and no prose.
 
 counterexample_lift_packet:
   artifact_state_id: "..."
@@ -26,18 +11,12 @@ counterexample_lift_packet:
   counterexamples:
     - id: "CE-..."
       source: "cas | native-review | pr-comment | validation | human"
-      observed_bad_state_or_gap: "..."
+      bad_state_or_gap: "..."
       expected_contract: "..."
-      producer_candidate: "..."
-      transition_candidate: "..."
-      validator_candidate: "..."
-      consumer_or_proof_surface: "..."
       owner_candidate: "..."
-      confidence: "high | medium | low"
       evidence_ref: "..."
-  unresolved:
-    - item: "..."
-      missing_evidence: "..."
+  unresolved: []
   final_call: "usable | blocked | needs_context"
+
+Do not edit files.
 """
-nickname_candidates = ["Lifter", "Exhibit", "Counter"]

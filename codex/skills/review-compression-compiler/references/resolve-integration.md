@@ -1,14 +1,15 @@
 # Resolve Integration
 
-`$resolve` should trigger `$review-compression-compiler` when:
+`$resolve` must invoke or root-equivalently emit `$review-compression-compiler` when:
 
 ```text
 same_cluster_findings >= 2
-OR same cluster reappears after selected normal form
-OR selected route would add production surface
-OR surface_delta_call would be larger-with-warrant or larger-without-warrant
-OR review findings are accumulating as address routes
-OR mutation-capable item lacks structured abstraction receipt
+same cluster reappears after selected normal form
+route would add production surface
+route would add helper/wrapper/adapter/fallback/flag/branch/state variant/public symbol/compatibility path
+repeated address routes are accumulating
+dirty tree is carrying multiple review repairs
+surface_delta_call would be larger-with-warrant or larger-without-warrant
 ```
 
 `$resolve` consumes:
@@ -17,9 +18,8 @@ OR mutation-capable item lacks structured abstraction receipt
 review_compression_packet.selected_normal_form
 review_compression_packet.implementation_handoff
 review_compression_packet.proof_matrix
+review_compression_packet.commit_boundary
 review_compression_packet.closure_rule
 ```
 
-`$resolve` then passes the implementation handoff to `$fixed-point-driver`.
-
-No review finding should go directly from `address` to `apply_patch`.
+No packet, no review-driven production patch.
