@@ -6,6 +6,4 @@ Validate packet files with:
 python codex/skills/review-compression-compiler/tools/rcp_gate.py path/to/packet.yml
 ```
 
-The gate checks for the compact packet fields and rejects unpaid-rent add-new-surface packets.
-
-Passing this script is not proof of correctness; failing it blocks implementation handoff.
+The gate checks for compact packet fields, universalist_check, and rejects unpaid-rent or skipped-universalist add-new-surface packets.

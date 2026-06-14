@@ -1,7 +1,5 @@
 # Slice Commit Cadence
 
-Do not carry a large green dirty tree through repeated reviews.
-
 After a coherent accepted RCP slice:
 
 1. implement selected normal form;

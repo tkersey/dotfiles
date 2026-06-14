@@ -1,6 +1,6 @@
 # RCP Gate
 
-A meaningful RCP must include literal `review_compression_packet:` and `packet_version: RCP-v1`.
+A meaningful RCP must include literal `review_compression_packet:` and `universalist_check:`.
 
 Validate file packets:
 

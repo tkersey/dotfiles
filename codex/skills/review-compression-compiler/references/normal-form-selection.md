@@ -14,4 +14,4 @@ blocked
 
 Prefer the earliest route that kills the counterexample family with executable proof.
 
-Do not select `add-new-surface` unless rent is paid.
+Before `add-new-surface`, run the universalist check and pay abstraction rent.

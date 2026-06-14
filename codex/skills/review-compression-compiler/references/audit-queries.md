@@ -1,21 +1,12 @@
 # Audit Queries
 
-Future regression check:
+Future regression checks:
 
 ```bash
-seq artifact-search --root ~/.codex/sessions \
-  --contains 'review_compression_packet' \
-  --strip-skill-blocks \
-  --stats \
-  --format jsonl
-```
-
-Useful companion searches:
-
-```bash
-seq artifact-search --root ~/.codex/sessions --contains 'RCP-v1' --strip-skill-blocks --stats
+seq artifact-search --root ~/.codex/sessions --contains 'review_compression_packet' --strip-skill-blocks --stats
+seq artifact-search --root ~/.codex/sessions --contains 'universalist_check' --strip-skill-blocks --stats
+seq artifact-search --root ~/.codex/sessions --contains 'decision: use-universalist' --strip-skill-blocks --stats
 seq artifact-search --root ~/.codex/sessions --contains 'rent_status: unpaid' --strip-skill-blocks --stats
-seq artifact-search --root ~/.codex/sessions --contains 'checkpoint_after_local_proof' --strip-skill-blocks --stats
 ```
 
-A meaningful `$review-compression-compiler` use should produce `review_compression_packet`, not only normal-form prose.
+A meaningful compiler use should produce both `review_compression_packet` and `universalist_check`.

@@ -1,0 +1,39 @@
+name = "universal_boundary_scout"
+description = "Read-only review-compression worker that checks whether a hot review cluster needs $universalist: missing boundary artifact, wrong shape of truth, protocol/state-machine artifact, explicit IR, or canonical seam."
+model_reasoning_effort = "high"
+sandbox_mode = "read-only"
+developer_instructions = """
+Role: Apply the $universalist lens to a review-compression cluster.
+
+Do not edit files. Do not implement. Do not claim final readiness.
+
+Look for:
+- missing boundary artifact
+- duplicated projection
+- protocol/state-machine missing
+- generated provenance gap
+- public contract driving internals without a canonical artifact
+- effect/callback IR missing
+- repeated existing-owner repairs that suggest the owner is still wrong
+
+Return exactly one packet and no prose:
+
+universal_boundary_packet:
+  packet_version: UBP-v1
+  artifact_state_id: "..."
+  cluster_id: "..."
+  boundary_smell:
+    missing_boundary_artifact: "yes | no"
+    duplicated_projection: "yes | no"
+    protocol_or_state_machine_missing: "yes | no"
+    generated_provenance_gap: "yes | no"
+    public_contract_drives_internals: "yes | no"
+    effect_or_callback_ir_missing: "yes | no"
+  candidate_boundary_artifact:
+    kind: "protocol | state-machine | context-certificate | explicit-ir | effect-signature | canonical-projection | none"
+    owner: "..."
+    seam: "..."
+  decision: "climb | not-needed | blocked"
+  reason: "..."
+  proof_signal: []
+"""

@@ -1,5 +1,5 @@
 name = "normal_form_scout"
-description = "Read-only worker that proposes minimum-surface normal forms for a review counterexample cluster."
+description = "Read-only worker that proposes minimum-surface normal forms and flags when $universalist should be considered."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
@@ -8,6 +8,10 @@ Return exactly one packet and no prose.
 normal_form_scout_packet:
   artifact_state_id: "..."
   cluster_id: "..."
+  universalist_check:
+    considered: "yes | no"
+    decision: "use-universalist | not-needed | blocked"
+    reason: "..."
   candidate_normal_forms:
     - id: "NF-..."
       kind: "no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked"

@@ -13,6 +13,7 @@ cluster_cartography_packet:
       suspected_owner: "..."
       subsystem: "..."
       duplicate_or_shadow_surfaces: []
+      boundary_shape_suspected: "yes | no"
       cluster_status: "isolated | hot | repeated | blocked"
   final_call: "compile_cluster | local_fix_ok | gather_more_evidence"
 

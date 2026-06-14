@@ -13,5 +13,3 @@ counterexamples:
 ```
 
 Good counterexamples name a forbidden state, missing proof, wrong owner, duplicate surface, or contract gap.
-
-A vague review preference is not enough for mutation.

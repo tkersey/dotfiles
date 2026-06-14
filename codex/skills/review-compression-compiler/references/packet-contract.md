@@ -1,4 +1,4 @@
-# Review Compression Packet Contract v2
+# Review Compression Packet Contract v3
 
 The compact packet is mandatory for meaningful compiler use.
 
@@ -8,20 +8,21 @@ The compact packet is mandatory for meaningful compiler use.
 review_compression_packet:
 ```
 
-Future audits may search for this exact string. Do not replace it with prose.
+## Required structural fields
 
-## Required statuses
-
-```text
-accepted | blocked | not-required
-```
-
-`not-required` is valid only for isolated, direct, no-new-surface cases.
+- `packet_version: RCP-v1`
+- `selected_normal_form`
+- `universalist_check`
+- `abstraction_rent`
+- `proof_matrix`
+- `implementation_handoff`
+- `commit_boundary`
+- `closure_rule`
 
 ## Invalid states
 
 - `add-new-surface` with unpaid rent.
-- `accepted` with missing proof matrix.
-- `accepted` without implementation handoff.
-- `same_cluster_findings >= 2` with `not-required`.
-- Prose-only "normal form" with no packet.
+- `add-new-surface` with `universalist_check.considered: no`.
+- `accepted` with `universalist_check.decision: blocked`.
+- same-cluster hot path with `not-required`.
+- prose-only normal form with no packet.

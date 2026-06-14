@@ -1,6 +1,6 @@
 ---
 name: resolve
-description: "Resolve the current branch through a CAS-first, receipt-backed review loop with native review as recorded fallback only. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR comment sweep, three consecutive clean reviews, review_compression_packet enforcement, RCP-v1 gates, dirty-tree slice commits, CAS review lanes, full review-adjudication route consumption, surface-budgeted fixed-point fixes, and final pushed readiness. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
+description: "Resolve the current branch through a CAS-first, receipt-backed review loop with native review as recorded fallback only. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR comment sweep, three consecutive clean reviews, review_compression_packet enforcement, universalist_check enforcement, RCP-v1 gates, dirty-tree slice commits, CAS review lanes, full review-adjudication route consumption, surface-budgeted fixed-point fixes, and final pushed readiness. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
 ---
 
 # resolve
@@ -14,6 +14,7 @@ Resolve the current branch to a pinned-review-clean, validated, committed, pushe
 ```text
 Review findings are counterexamples, not tasks.
 No packet, no review-driven production patch.
+No universalist_check, no hot-cluster production patch.
 Green slice, then checkpoint commit; do not drag a huge dirty tree through repeated reviews.
 ```
 
@@ -28,6 +29,7 @@ Green slice, then checkpoint commit; do not drag a huge dirty tree through repea
 + no unprocessed in-scope PR comments
 + no actionable PR comments remaining
 + no missing RCP packet where required
++ no missing universalist_check where required
 + no unpaid abstraction rent
 ```
 
@@ -38,6 +40,7 @@ Before any review command or patch runs, load enough of this skill to include:
 - Backend selection
 - Review adjudication route consumption
 - RCP gate
+- Universalist check enforcement
 - Slice commit cadence
 - Fixed-point and implementation handoff
 - Non-negotiables
@@ -60,6 +63,7 @@ Repeat until `clean_review_streak == 3`:
    - decide whether RCP is required;
    - if RCP required, emit or obtain `review_compression_packet`;
    - reject prose-only normal-form reasoning;
+   - reject hot-cluster packets without `universalist_check`;
    - route accepted packet to `$fixed-point-driver`;
    - run targeted proof;
    - if local proof is green and the slice is coherent, checkpoint commit before another long review cycle.
@@ -83,13 +87,14 @@ Every mutation-capable review item must create a route receipt:
 
 ```yaml
 resolve_route_receipt:
-  receipt_version: RR-v2
+  receipt_version: RR-v3
   review_item_id: "..."
   artifact_state_id: "..."
   adjudication_route: "..."
   mutation_capable: yes
   rcp_required: yes | no
   rcp_packet_id: "RCP-..." # required when rcp_required=yes
+  universalist_check_required: yes | no
   bypass_reason: "isolated existing-owner no-new-surface direct proof" # only when rcp_required=no
   selected_route: no-change | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked
   proof_required: []
@@ -99,61 +104,33 @@ resolve_route_receipt:
 
 - same cluster has two or more findings;
 - same cluster reappears after a fix;
+- an existing-owner repair was already attempted in the cluster;
 - route would add production surface;
 - route would add helper/wrapper/adapter/fallback/flag/branch/state variant/public symbol/compatibility path;
+- boundary/protocol/state-machine shape is suspicious;
 - review findings are repeatedly selecting `address`;
 - dirty tree contains multiple review-driven repairs;
 - surface delta would be `larger-with-warrant` or `larger-without-warrant`.
 
+`universalist_check_required: yes` when any are true:
+
+- same cluster has two or more findings;
+- existing-owner repair already attempted in cluster;
+- same cluster reappeared after a selected normal form;
+- route would add public surface, fallback, compatibility path, parser tolerance, state variant, or abstraction;
+- a missing boundary artifact, duplicated projection, protocol/state-machine gap, generated provenance gap, public-contract/internal mismatch, or effect/callback IR gap is plausible.
+
 If `rcp_required: yes`, no production patch may occur until an accepted `review_compression_packet` exists.
 
-If `rcp_required: no`, a compact `not-required` packet is still preferred and must be justified by the bypass reason.
+If `universalist_check_required: yes`, the packet must include `universalist_check.considered: yes`.
 
 ## Required review_compression_packet
 
-When required, the packet must contain the literal key:
+When required, the packet must contain the literal keys:
 
 ```yaml
 review_compression_packet:
-```
-
-Minimum valid packet fields:
-
-```yaml
-review_compression_packet:
-  packet_version: RCP-v1
-  packet_id: "RCP-..."
-  packet_status: accepted | blocked | not-required
-  artifact_state_id: "..."
-  cluster_id: "..."
-  trigger:
-    reason: "..."
-    review_item_ids: []
-  counterexamples: []
-  selected_normal_form:
-    kind: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked
-    owner: "..."
-    why_minimum: "..."
-    why_no_smaller_form_suffices: "..."
-    counterexamples_killed: []
-  abstraction_rent:
-    required: yes | no
-    rent_status: paid | unpaid | not-applicable
-    surfaces_added: []
-    surfaces_retired: []
-    future_patches_prevented: []
-  proof_matrix: []
-  implementation_handoff:
-    target_skill: fixed-point-driver
-    permitted_scope: []
-    forbidden_actions: []
-    surface_budget: {}
-    stale_if: []
-  commit_boundary:
-    policy: checkpoint_after_local_proof | final_only | none
-    reason: "..."
-  closure_rule:
-    if_same_cluster_finding_reappears: reopen_compiler | block | escalate
+universalist_check:
 ```
 
 For packet files, run when possible:
@@ -164,20 +141,33 @@ python codex/skills/review-compression-compiler/tools/rcp_gate.py <packet-file>
 
 A failed gate blocks mutation.
 
-## Slice commit cadence
+## Universalist check enforcement
 
-The previous failure mode was carrying a large green dirty tree through repeated review turns.
+If RCP says:
+
+```yaml
+universalist_check:
+  decision: use-universalist
+```
+
+then `$resolve` must obtain `$universalist` output or a root-equivalent `universal_boundary_packet` before mutation.
+
+If decision is `blocked`, stop before mutation.
+
+If decision is `not-needed`, record the reason in the final report.
+
+## Slice commit cadence
 
 After an accepted RCP or coherent review-addressed slice:
 
 1. apply the selected normal form through `$fixed-point-driver` / `$accretive-implementer`;
 2. run targeted proof;
-3. if proof is green, inspect diff and surface delta;
+3. inspect diff and surface delta;
 4. create a local checkpoint commit before another long CAS review cycle unless the slice is tiny and final clean review is immediate.
 
 Checkpoint commits are not final closure. They create stable tuples for CAS review and keep review-driven accumulation from becoming one giant dirty tree.
 
-Do not checkpoint when unrelated changes are present, proof failed, RCP is blocked, rent is unpaid, or surface delta is `larger-without-warrant`.
+Do not checkpoint when unrelated changes are present, proof failed, RCP is blocked, rent is unpaid, universalist_check is blocked, or surface delta is `larger-without-warrant`.
 
 ## Fixed-point and implementation handoff
 
@@ -193,6 +183,9 @@ implementation_handoff:
   selected_normal_form:
     kind: "..."
     owner: "..."
+  universalist_check:
+    decision: use-universalist | not-needed | blocked
+    boundary_packet_ref: "..."
   permitted_action: mutate-code | add-validation-only | resolve-thread | draft-reply | defer | none
   permitted_scope: []
   forbidden_actions: []
@@ -208,7 +201,7 @@ implementation_handoff:
   stale_if: []
 ```
 
-Do not hand off mutation with unpaid rent or missing proof matrix.
+Do not hand off mutation with unpaid rent, blocked universalist_check, or missing proof matrix.
 
 ## Surface delta reporting
 
@@ -235,7 +228,7 @@ surface_delta_summary:
 
 After three clean reviews, run full validation. If validation fails, route contested actionability through adjudication and run RCP gate when mutation or surface growth may result.
 
-After push, sweep PR comments/threads. PR items follow the same adjudication → RCP gate → fixed-point flow.
+After push, sweep PR comments/threads. PR items follow the same adjudication -> RCP gate -> universalist_check when required -> fixed-point flow.
 
 ## Final report
 
@@ -247,6 +240,7 @@ Resolve Bottom Line:
 - review_backend/base/head:
 - clean_review_streak:
 - rcp_packets: accepted=N, blocked=N, not_required=N, missing=N
+- universalist_checks: use=N, not_needed=N, blocked=N, missing=N
 - abstraction_rent: paid=N, unpaid=N, not_applicable=N
 - checkpoint_commits:
 - surface_delta_call:
@@ -262,14 +256,15 @@ Resolve Bottom Line:
 - Three clean pinned review runs required.
 - Review comments are not tasks.
 - No packet, no review-driven production patch when RCP is required.
-- `add-new-surface` requires paid abstraction rent.
-- No long dirty-tree review churn after green proof; checkpoint coherent slices.
-- Do not route mutation to `$fixed-point-driver` without selected normal form, surface budget, forbidden actions, rent status, and proof.
-- Do not claim resolved with failed validation, missing RCP, unpaid rent, incomplete PR sweep, or stale review tuple.
+- No hot-cluster production patch without `universalist_check`.
+- `add-new-surface` requires paid abstraction rent and universalist_check.
+- Do not route mutation to `$fixed-point-driver` without selected normal form, universalist decision, surface budget, forbidden actions, rent status, and proof.
+- Do not claim resolved with failed validation, missing RCP, missing required universalist_check, unpaid rent, incomplete PR sweep, or stale review tuple.
 
 ## Resources
 
 - [review-compression-compiler-integration.md](references/review-compression-compiler-integration.md)
+- [universalist-check.md](references/universalist-check.md)
 - [rcp-gate.md](references/rcp-gate.md)
 - [slice-commit-cadence.md](references/slice-commit-cadence.md)
 - [implementation-handoff.md](references/implementation-handoff.md)
