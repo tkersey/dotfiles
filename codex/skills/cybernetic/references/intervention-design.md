@@ -13,7 +13,8 @@
 
 ```yaml
 intervention:
-  route: no_action | observe_more | checklist | expert_analysis | experiment | stabilize | redesign_feedback | change_rules | change_goal | reframe | blocked
+  route: no_action | observe_more | checklist | expert_analysis | experiment | stabilize | redesign_feedback | change_rules | change_goal | reframe | handoff | blocked
+  downstream_skill:
   smallest_safe_move:
   reversibility:
   blast_radius:

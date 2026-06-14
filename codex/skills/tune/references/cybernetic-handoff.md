@@ -1,22 +1,30 @@
 # Cybernetic Handoff
 
-Use `$cybernetic` as a companion lens when a tuning problem is not just a trigger or wording issue, but a recurring system behavior.
+Use `$cybernetic` when a tuning problem is a recurring workflow system, not a single trigger/wording issue.
 
-Trigger when:
+## Trigger
 
-- the same skill problem recurs across sessions;
-- local skill edits fix one symptom but create another;
-- metrics or activation counts appear to be proxy-gamed;
-- `$shadow` / `/goal` cycles are producing loop theatre;
-- the tuning target is a workflow system, not a single skill sentence.
+- repeated proposal-only loops;
+- `$shadow` / `/goal` loop theatre;
+- activation metrics appear to be proxy-gamed;
+- local skill edits fix one symptom and create another;
+- repeated manual workaround indicates a feedback or tooling loop;
+- skill usage evidence is delayed, distorted, or missing.
 
-Expected output:
+## Expected context
 
 ```yaml
-cybernetic_packet:
+cybernetic_context:
   system_type:
-  repeating_patterns:
-  feedback_loops:
-  leverage_map:
-  intervention_design:
+  pattern:
+  feedback_loop:
+  leverage_level:
+  selected_intervention:
+    route:
+    downstream_skill: tune | seq | shadow | refine | blocked
+  monitoring_or_probe:
 ```
+
+## Rule
+
+Use `$cybernetic` to change the workflow rule or feedback surface, not to write another longer tune brief.

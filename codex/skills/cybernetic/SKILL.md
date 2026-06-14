@@ -1,8 +1,8 @@
 ---
 name: cybernetic
-description: "Ultimate systems-thinking and feedback-control skill. Use for `$cybernetic`, systems thinking, cybernetics, complex adaptive systems, root-cause vs structure, feedback loops, stocks and flows, leverage points, incentives, delayed effects, unintended consequences, DART diagnosis, clear/complicated/complex/chaotic system classification, intervention design, policy design, organizational dynamics, strategy, product/business/ecosystem diagnosis, and avoiding local optimizations that harm the whole. Produces a cybernetic decision packet; read-only unless explicitly routed to another implementation skill."
+description: "Ultimate systems-thinking and feedback-control skill. Use for `$cybernetic`, systems thinking, cybernetics, complex adaptive systems, root-cause vs structure, feedback loops, stocks and flows, leverage points, incentives, delayed effects, unintended consequences, DART diagnosis, clear/complicated/complex/chaotic system classification, intervention design, policy design, organizational dynamics, product/business/ecosystem diagnosis, workflow loops, same-cluster review recurrence, and avoiding local optimizations that harm the whole. Produces cybernetic_context or a cybernetic_packet; read-only unless explicitly routed to another implementation skill."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   activation_cost: medium
   default_depth: adaptive
 ---
@@ -11,7 +11,7 @@ metadata:
 
 ## Mission
 
-`$cybernetic` is the systems-thinking skill.
+`$cybernetic` is the systems-thinking and leverage-selection skill.
 
 It helps the agent understand and act within systems by moving from:
 
@@ -33,6 +33,8 @@ What intervention changes the system without making it worse?
 
 ```text
 A system is connected parts producing a pattern.
+Use $cybernetic when repeated events imply structure.
+Do not use $cybernetic for isolated local work.
 Do not optimize a part while damaging the whole.
 Do not mistake an event for the system.
 Do not use a clear-system checklist in a complex system.
@@ -40,21 +42,47 @@ Do not use analysis paralysis in chaos.
 Do not intervene before identifying feedback, delay, incentives, and leverage level.
 ```
 
+## Integration contract
+
+`$cybernetic` classifies the system and selects leverage. It does not implement.
+
+It should output a downstream owner:
+
+```text
+resolve
+fixed-point-driver
+review-adjudication
+review-compression-compiler
+negative-ledger
+universalist
+reduce
+tune
+verification-closure
+blocked
+none
+```
+
+Use it as a route-selection companion when repeated patterns, feedback loops, incentives, delayed effects, or whole-system tradeoffs matter.
+
+Do not invoke it as ceremony for one clear local bug.
+
 ## Activation boundary
 
 Use this skill when the task involves:
 
 - systems thinking or cybernetics;
 - repeated patterns with unclear causes;
+- same-cluster review recurrence;
+- skill or workflow loop theatre;
 - organizational, social, technical, economic, product, or ecological dynamics;
-- incentives and unintended consequences;
+- incentives, cobra effects, and unintended consequences;
 - delayed feedback or long-term consequences;
 - stocks, flows, queues, inventories, backlogs, trust, debt, reputation, risk, knowledge, morale, or capacity;
 - loops, flywheels, vicious cycles, self-reinforcing or self-correcting behavior;
 - choosing leverage points;
 - diagnosing whether a problem is clear, complicated, complex, or chaotic;
 - designing an intervention, policy, strategy, operating model, experiment, guardrail, or feedback process;
-- avoiding local optimization, cobra effects, metric gaming, or overcorrection;
+- avoiding local optimization, metric gaming, or overcorrection;
 - understanding why a previous fix made the system worse.
 
 Do not use as the primary skill when the task is only:
@@ -68,21 +96,26 @@ Do not use as the primary skill when the task is only:
 
 Use `$cybernetic` as a companion lens when those skills need system classification, leverage analysis, or feedback-aware intervention design.
 
-## Fast path
+## Fast path: cybernetic_context
 
-For small tasks, emit:
+For companion use inside another skill, prefer this compact context:
 
 ```yaml
-cybernetic_packet:
-  system_type:
-  pattern:
-  structure:
-  feedback:
-  leverage:
-  intervention:
-  proof_or_probe:
-  risks:
+cybernetic_context:
+  required: yes | no
+  trigger: "..."
+  system_type: clear | complicated | complex | chaotic | mixed | unknown
+  pattern: "..."
+  feedback_loop: "..."
+  leverage_level: parameter | buffer | stock_flow_structure | delay | balancing_loop | reinforcing_loop | information_flow | rules | self_organization | goal | paradigm | none
+  selected_intervention:
+    route: checklist | expert_analysis | safe_to_fail_probe | stabilize_first | redesign_feedback | change_rules | change_goal | handoff | blocked
+    downstream_skill: resolve | fixed-point-driver | review-adjudication | review-compression-compiler | universalist | reduce | negative-ledger | tune | verification-closure | none
+  local_patch_allowed: yes | no
+  monitoring_or_probe: "..."
 ```
+
+If used after a same-cluster stop rule, `local_patch_allowed` should usually be `no` unless the context proves the selected owner mutation is a system-level normal form rather than another local point fix.
 
 ## Full packet
 
@@ -138,7 +171,8 @@ cybernetic_packet:
       why_lower_leverage_is_insufficient: "..."
       why_higher_leverage_is_not_available_or_not_needed: "..."
   intervention_design:
-    route: no_action | observe_more | checklist | expert_analysis | experiment | stabilize | redesign_feedback | change_rules | change_goal | reframe | blocked
+    route: no_action | observe_more | checklist | expert_analysis | experiment | stabilize | redesign_feedback | change_rules | change_goal | reframe | handoff | blocked
+    downstream_skill: resolve | fixed-point-driver | review-adjudication | review-compression-compiler | universalist | reduce | negative-ledger | tune | verification-closure | none
     smallest_safe_move: "..."
     reversibility: reversible | partially_reversible | irreversible | unknown
     blast_radius: narrow | medium | broad | unknown
@@ -390,10 +424,10 @@ If all evidence comes from inside the current mental model, mark confidence lowe
 Match intervention to system type:
 
 | System type | Best first move | Bad first move |
-|---|---|---|
-| clear | checklist / standard work | clever reinvention |
-| complicated | analyze / expert diagnosis | generic intuition |
-| complex | safe-to-fail probes | rigid master plan |
+|---|---|
+| clear | checklist / standard process | clever reinvention |
+| complicated | analysis / expertise | generic intuition |
+| complex | safe-to-fail probes / adaptation | rigid master plan |
 | chaotic | stabilize / create safety | analysis paralysis |
 
 ## Output modes
@@ -437,6 +471,7 @@ Cybernetic Bottom Line:
 - pattern:
 - highest_leverage_available:
 - selected_move:
+- downstream_skill:
 - why_not_lower_leverage:
 - feedback_to_watch:
 - next_action:
@@ -455,22 +490,27 @@ Cybernetic Bottom Line:
 - Do not recommend broad transformation when a small feedback repair would work.
 - Do not recommend a local metric, reward, or rule without a gaming scan.
 - Do not claim certainty in complex systems; use probes and monitoring.
+- Do not hand off implementation without naming downstream owner, proof/probe, and stop conditions.
 
 ## Companion skills
 
 Use with:
 
+- `$resolve` when same-cluster review recurrence or review-process feedback appears.
+- `$review-adjudication` when a review item signals system-pattern risk.
+- `$review-compression-compiler` when counterexamples may represent system feedback.
 - `$negative-ledger` when prior interventions failed or recurring strategies need exclusion.
-- `$universalist` when repeated issues suggest the boundary artifact or paradigm is wrong.
-- `$reduce` when abstraction/layer tax is producing the pattern.
+- `$universalist` when the system diagnosis says the boundary artifact or shape of truth is wrong.
+- `$reduce` when abstraction/layer tax may be producing the pattern.
 - `$complexity-mitigator` when comprehension risk blocks action.
-- `$review-compression-compiler` or `$resolve` when repeated review findings indicate a systems issue.
-- `$tune` when the system is a skill/workflow usage system.
+- `$tune` when the system is a skill/workflow usage loop.
 - `$fixed-point-driver` when the selected intervention must be implemented and verified.
+- `$verification-closure` when closure must prove feedback/probe readiness.
 - `$accretive-implementer` only after the system intervention has become a scoped implementation route.
 
 ## Resources
 
+- [integration-contract.md](references/integration-contract.md)
 - [system-types-and-dart.md](references/system-types-and-dart.md)
 - [iceberg-model.md](references/iceberg-model.md)
 - [leverage-ladder.md](references/leverage-ladder.md)
