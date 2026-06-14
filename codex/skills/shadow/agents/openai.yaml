@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Shadow"
-  short_description: "Help with Shadow tasks and workflows"
-  default_prompt: "Use $shadow for this task."
+  short_description: "Goal-native one-session shadowing"
+  default_prompt: "Use $shadow for exactly one watched session. Emit a goal_skill_delta_record and stop on no decision-relevant evidence."
