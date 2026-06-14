@@ -16,5 +16,3 @@ scar_tissue_negative_ledger:
 ```
 
 If lab surface is `transplant-with-rent`, require abstraction rent and proof matrix coverage.
-
-If lab surface is `discard`, it must not appear in delivery patch unless reopened by current proof.

@@ -1,8 +1,8 @@
 ---
 name: review-compression-compiler
-description: "Required packet compiler for review-driven mutation and review distillation. Converts review findings, PR comments, validation failures, repeated CAS findings, lab repair history, and falsified remediation routes into compact `review_compression_packet` / `review_distillation_packet` artifacts with selected normal form, explicit `$universalist` boundary check, `$negative-ledger` exclusions/capture, abstraction rent, scar-tissue disposition, proof matrix, surface budget, route-wave publication, and fixed-point handoff. Use for `$review-compression-compiler`, review compression, review distillation, RCP-v1, RDP-v1, RRW-v1, same-cluster findings, wrong shape of truth, missing boundary artifact, repeated review decisions, adjacent CAS findings after a fix, add-surface pressure, dirty-tree review accumulation, lab/delivery split, or resolving reviews without code growth. Read-only: do not edit code."
+description: "Required packet compiler for review-driven mutation and review distillation. Converts review findings, PR comments, validation failures, repeated CAS findings, lab repair history, and falsified remediation routes into compact `review_compression_packet` / `review_distillation_packet` artifacts with selected normal form, explicit `$universalist` boundary check, `$negative-ledger` route exclusions, NREC-v1 negative route exclusion cards, abstraction rent, scar-tissue disposition, proof matrix, surface budget, route-wave publication, and fixed-point handoff. Use for `$review-compression-compiler`, review compression, review distillation, RCP-v1, RDP-v1, RRW-v1, NREC-v1, same-cluster findings, wrong shape of truth, missing boundary artifact, repeated review decisions, adjacent CAS findings after a fix, add-surface pressure, dirty-tree review accumulation, lab/delivery split, negative route memory, or resolving reviews without code growth. Read-only: do not edit code."
 metadata:
-  version: "5.0.0"
+  version: "6.0.0"
   activation_cost: medium
   default_depth: strict
 ---
@@ -13,23 +13,29 @@ metadata:
 
 Review findings are **counterexamples**, not tasks.
 
-This skill compiles review findings, PR comments, validation failures, repeated CAS findings, lab evidence, and falsified remediation decisions into the smallest proof-carrying normal form that kills the counterexample family without unbounded code accumulation.
+This skill compiles review findings, PR comments, validation failures, repeated CAS findings, review-lab evidence, and falsified remediation decisions into the smallest proof-carrying normal form that kills the counterexample family without unbounded code accumulation.
 
 It does **not** edit files.
 
-## v5 focus
+## v6 focus
 
-v4 added durable route-wave artifacts and universalist falsification. v5 preserves all of that and adds two control surfaces:
+v5 added Review Distillation Mode and negative-evidence fields. v6 makes `$negative-ledger` decisive:
 
-1. **Review Distillation Mode** — do not deliver the review loop. Use a review lab to learn, then rederive a clean delivery patch from the frozen delivery base.
-2. **Negative Evidence Memory** — a repeated review decision is a falsified hypothesis. `$negative-ledger` turns failed routes into active exclusions, reopening criteria, and safer next frontiers.
+```text
+A repeated review decision is a falsified hypothesis.
+```
+
+The compiler must now emit or consume **Negative Route Exclusion Cards** (`NREC-v1`) when a selected route is falsified, when same-cluster recurrence appears, or when an active negative route exclusion affects the next implementation handoff.
+
+Core enforcement:
 
 ```text
 No route-wave artifact -> no closure.
-No packet -> no review-driven production patch when required.
+No required RCP/RDP -> no review-driven production patch.
+No negative-route check after repeated-route pressure -> no handoff.
+No selected route may violate an active negative exclusion unless reopened, stale, superseded, or explicitly accepted.
 No universalist_check on a hot cluster -> no same-cluster production patch.
-Same-cluster recurrence falsifies prior universalist not-needed.
-Repeated route failure creates negative evidence.
+Same-cluster recurrence falsifies prior universalist not-needed and prior selected route.
 Do not deliver the review loop.
 No rent -> no new surface.
 No proof matrix -> no implementation handoff.
@@ -41,16 +47,14 @@ No proof matrix -> no implementation handoff.
 $resolve
   -> $review-adjudication
   -> $review-compression-compiler
-  -> $negative-ledger query/map
+  -> $negative-ledger query/map/negative-route-memory
   -> optional $universalist / root-equivalent universal_boundary_packet
   -> optional Review Distillation Mode
   -> $fixed-point-driver
   -> $accretive-implementer
-  -> negative-ledger capture
+  -> negative-ledger capture/writeback decision
   -> validation / review closure
 ```
-
-`$resolve` owns branch state. This skill owns counterexample compression and distillation packets. `$negative-ledger` owns falsified-route memory and active exclusions. `$universalist` owns missing-boundary / wrong-shape-of-truth analysis. `$fixed-point-driver` owns normal-form remediation routing. `$accretive-implementer` owns single-writer execution after route selection.
 
 ## Activation boundary
 
@@ -60,7 +64,8 @@ Use this skill when any are true:
 - CAS finds an adjacent issue after a previous fix;
 - same cluster reappears after a prior packet or normal form;
 - prior `universalist_check.decision: not-needed` was falsified;
-- prior selected normal form, route, proof matrix, or implementation shape was falsified;
+- prior selected normal form, route, proof matrix, commit-boundary policy, or implementation shape was falsified;
+- active negative evidence may exclude the route under consideration;
 - existing-owner repair has already been attempted in the same cluster;
 - dirty tree contains multiple review-driven repairs;
 - exploratory repair work exists and should not be delivered by default;
@@ -71,7 +76,7 @@ Use this skill when any are true:
 
 Do not use when:
 
-- one isolated bug has one obvious existing owner, no new surface, no boundary smell, no prior failed route, and one direct proof;
+- one isolated bug has one obvious existing owner, no new surface, no boundary smell, no prior failed route, no active exclusion, and one direct proof;
 - implementation is already selected and only needs execution;
 - the task is final closure proof only;
 - the user asks only for explanation.
@@ -91,16 +96,6 @@ Core rule:
 The lab learns. The delivery branch forgets.
 ```
 
-Trigger distillation when any are true:
-
-- `same_cluster_findings >= 2`;
-- same cluster reappears after fix;
-- dirty tree contains multiple review repairs;
-- route would add public/fallback/compatibility/tolerance surface;
-- prior universalist-not-needed was falsified;
-- prior selected normal form was falsified;
-- CAS keeps finding adjacent issues after green local proof.
-
 This skill does not create or mutate the lab. It emits the packet that governs the lab/delivery split.
 
 ## Packet-first rule
@@ -112,7 +107,11 @@ review_compression_packet:
 review_distillation_packet:
 ```
 
-The packet may be inline, written to a durable run ledger, or both. If a packet is written to a file, echo the path and include a compact inline summary with packet id/status, selected normal form, universalist decision, negative-evidence status, rent status, proof matrix, and route-wave ref.
+Every falsified or active-exclusion route should also emit or reference at least one:
+
+```yaml
+negative_route_exclusion_card:
+```
 
 Prose may explain the packet. Prose is not the packet.
 
@@ -141,15 +140,25 @@ review_compression_packet:
     query_status: not-run | no-applicable-negative-evidence | active | stale | reopened | blocked
     active_exclusions:
       - neg_id: "..."
-        excludes_route: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | universalist-not-needed | proof-matrix | commit-boundary
+        excludes_route: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | universalist-not-needed | proof-matrix | commit-boundary | distill-from-lab
         exclusion_rule: "..."
         reopening_criteria: []
+    negative_route_exclusion_cards:
+      - card_id: "NREC-..."
+        status: active | stale | superseded | reopened | unknown
+        excluded_route: "..."
+        active_against_selected_route: yes | no
     reopened_or_stale: []
     capture_required:
       - hypothesis: "..."
         attempted_change_or_decision: "..."
         observed_outcome: "..."
         failure_class: no-effect | local-regression | global-regression | unsound | too-complex | stale | unknown
+    route_ratchet:
+      prior_route_checked: yes | no
+      active_exclusion_match: yes | no
+      handoff_allowed: yes | no
+      reason: "..."
   universalist_check:
     considered: yes | no
     trigger:
@@ -172,6 +181,7 @@ review_compression_packet:
     same_cluster_reappeared_after_prior_decision: yes | no
     prior_decision_invalidated: yes | no
     negative_capture_candidate: yes | no
+    negative_route_card_required: yes | no
     next_required_action: negative-ledger-map | universal-boundary-packet | reopen-compiler | distill | block | none
   selected_normal_form:
     kind: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | distill-from-lab | blocked
@@ -243,6 +253,7 @@ review_distillation_packet:
   negative_evidence:
     query_status: not-run | no-applicable-negative-evidence | active | stale | reopened | blocked
     active_exclusions: []
+    negative_route_exclusion_cards: []
     captured_failures: []
     durable_writeback:
       status: appended | duplicate-skip | not-attempted | unavailable
@@ -252,7 +263,7 @@ review_distillation_packet:
       origin_counterexample: "..."
       fate: discard | distill | transplant-with-rent | blocked
       reason: "..."
-      negative_evidence_ref: "none | NEG-..."
+      negative_evidence_ref: "none | NEG-... | NREC-..."
   universalist_check:
     considered: yes | no
     decision: use-universalist | not-needed | blocked
@@ -297,6 +308,38 @@ review_distillation_packet:
     if_same_cluster_finding_reappears: reopen_distillation | negative-ledger-map | block | escalate
 ```
 
+## Negative Route Exclusion Card
+
+Use NREC when a route failure should constrain future remediation.
+
+```yaml
+negative_route_exclusion_card:
+  card_version: NREC-v1
+  neg_id: "NEG-..."
+  card_id: "NREC-..."
+  artifact_state_id: "..."
+  cluster_id: "..."
+  excluded_route: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | universalist-not-needed | proof-matrix | commit-boundary | distill-from-lab
+  hypothesis: "..."
+  attempted_change_or_decision: "..."
+  falsifying_evidence:
+    - kind: cas-review | validation | pr-comment | route-wave | rcp | rdp | commit | learning | lab | test | diff
+      ref: "..."
+      summary: "..."
+  applicability:
+    current_status: active | stale | superseded | reopened | unknown
+    conditions: []
+  exclusion_rule: "..."
+  reopening_test: "..."
+  next_allowed_routes:
+    - delete-collapse-canonicalize
+    - refactor-existing-owner
+    - use-universalist
+    - distill-from-lab
+    - blocked
+  confidence: high | medium | low | unknown
+```
+
 ## Negative evidence rules
 
 `negative_evidence.query_status` cannot be `not-run` when any are true:
@@ -306,15 +349,54 @@ review_distillation_packet:
 - prior universalist-not-needed is falsified;
 - add-surface route failed or became unsound;
 - public bypass, compatibility/tolerance path, or proof matrix choice caused a CAS counterexample;
+- one-change candidate resembles a prior failed route;
 - Review Distillation Mode is active.
 
-Every falsified route creates a negative-ledger capture candidate unless proven unrelated, stale, or superseded.
+Every falsified route creates a negative route exclusion card unless proven unrelated, stale, or superseded.
 
 The next packet must either:
 
 1. avoid the active excluded route;
 2. prove negative evidence stale/superseded/reopened;
 3. or block.
+
+## Negative evidence compaction
+
+If the same exclusion family appears three or more times, compact into a route-family exclusion:
+
+```yaml
+negative_compaction:
+  compacted_card_id: "NREC-FAMILY-..."
+  hypothesis_family: "..."
+  excluded_route_family: "..."
+  evidence_refs: []
+  current_applicability: active | stale | superseded | reopened | unknown
+  reopening_test: "..."
+  safest_next_frontier: "..."
+```
+
+## Durable writeback policy
+
+Do not write every local failure to `.learnings.jsonl`.
+
+```yaml
+negative_writeback_policy:
+  in_wave_only:
+    - one-off same-session route failure
+    - low confidence
+    - unclear applicability
+  route_wave_artifact:
+    - same-cluster recurrence
+    - proof matrix gap
+    - failed selected normal form
+  durable_learnings:
+    - repeated across sessions
+    - generalizable to future branches
+    - benchmark/regression/revert/public-bypass pattern
+    - current proof anchors exist
+```
+
+Root owns durable writeback.
 
 ## Universalist-not-needed falsification
 
@@ -332,8 +414,6 @@ Suggested path:
 .step/proof/resolve/<resolve-run-id>/review-wave-<n>.route.yml
 ```
 
-If `$resolve` has no route-wave path yet, recommend one. Do not rely on hidden narrative text.
-
 ## Validation
 
 When a packet is saved to a file, validate when possible:
@@ -341,6 +421,7 @@ When a packet is saved to a file, validate when possible:
 ```bash
 python codex/skills/review-compression-compiler/tools/rcp_gate.py path/to/packet.yml
 python codex/skills/review-compression-compiler/tools/rdp_gate.py path/to/distillation.yml
+python codex/skills/review-compression-compiler/tools/nrec_gate.py path/to/nrec.yml
 ```
 
 A failed gate means no mutation handoff.
@@ -356,6 +437,7 @@ Read-only workers may help:
 - `abstraction_rent_auditor`
 - `proof_matrix_minimizer`
 - `negative_evidence_route_auditor`
+- `negative_route_exclusion_card_auditor`
 - `lab_scar_tissue_auditor`
 - `review_compression_packet_auditor`
 - `route_wave_artifact_auditor`
@@ -368,9 +450,10 @@ Workers are advisory. The compiler/root owns synthesis and packet status.
 - Do not edit files.
 - Do not produce patch hunks.
 - Do not treat review comments as tasks.
-- Do not emit prose instead of RCP/RDP.
+- Do not emit prose instead of RCP/RDP/NREC when required.
 - Do not omit negative_evidence for falsified routes or distillation.
 - Do not ignore active negative exclusions.
+- Do not repeat an actively excluded route unless reopened/stale/superseded or explicitly accepted.
 - Do not omit `universalist_check`.
 - Do not ignore falsified `universalist_check.decision: not-needed`.
 - Do not select `not-required` for a same-cluster hot path.
@@ -385,6 +468,9 @@ Workers are advisory. The compiler/root owns synthesis and packet status.
 - [packet-contract.md](references/packet-contract.md)
 - [review-distillation-mode.md](references/review-distillation-mode.md)
 - [negative-evidence-integration.md](references/negative-evidence-integration.md)
+- [negative-route-exclusion-card.md](references/negative-route-exclusion-card.md)
+- [negative-evidence-compaction.md](references/negative-evidence-compaction.md)
+- [negative-writeback-policy.md](references/negative-writeback-policy.md)
 - [route-wave-artifact.md](references/route-wave-artifact.md)
 - [falsification-rules.md](references/falsification-rules.md)
 - [universalist-check.md](references/universalist-check.md)

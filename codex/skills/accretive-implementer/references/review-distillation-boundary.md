@@ -6,6 +6,7 @@ When given `review_distillation_packet`:
 - do not cherry-pick lab commits by default;
 - do not transplant lab helper/wrapper/fallback/test surface unless its scar-tissue fate is `transplant-with-rent`;
 - preserve proof matrix and delivery patch plan;
-- stop if delivery dominance fails.
+- stop if delivery dominance fails;
+- stop if active NREC excludes the implementation route.
 
 The delivery branch gets the distilled normal form, not the lab history.

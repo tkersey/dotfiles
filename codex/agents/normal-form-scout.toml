@@ -14,6 +14,7 @@ normal_form_scout_packet:
     reason: "..."
   negative_evidence_check:
     query_needed: "yes | no"
+    active_exclusion_match: "yes | no | unknown"
     reason: "..."
   distillation_check:
     recommended: "yes | no"

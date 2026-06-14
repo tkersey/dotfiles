@@ -1,6 +1,6 @@
 # Route-Wave Artifact
 
-Publish route/RCP/RDP/negative-ledger/universalist decisions into a first-class artifact.
+Publish route/RCP/RDP/NREC/negative-ledger/universalist decisions into a first-class artifact.
 
 Preferred path:
 

@@ -8,5 +8,6 @@ For `review_distillation_packet`:
 - Consume `scar_tissue_inventory`.
 - Do not transplant lab surface without rent and proof.
 - Require dominance check: delivery covers lab counterexamples and is smaller or warranted.
+- Consume NREC route exclusions before selecting implementation shape.
 
-If dominance fails, block or reopen distillation.
+If dominance or negative-route gate fails, block or reopen distillation.

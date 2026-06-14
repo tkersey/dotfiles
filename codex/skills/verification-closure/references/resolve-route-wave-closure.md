@@ -8,6 +8,7 @@ Require:
 - route-wave gate pass;
 - RCP/RDP packets present when required;
 - negative evidence pass complete when required;
+- NREC cards resolved: no active NREC against selected route unless reopened/stale/superseded/accepted;
 - no active negative exclusion against selected normal form unless reopened or defeated;
 - universalist checks complete;
 - no unresolved falsified `universalist_check.decision: not-needed`;

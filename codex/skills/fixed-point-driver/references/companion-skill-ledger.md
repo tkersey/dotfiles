@@ -4,8 +4,8 @@
 | Companion | Status | Evidence |
 |---|---|---|
 | `review-adjudication` | used / not-needed / root-equivalent / unavailable | route/warrant summary |
-| `review-compression-compiler` | used / not-required / root-equivalent-structured / blocked / unavailable | packet_id; packet_kind; route_wave_ref; cluster_id; selected_normal_form; negative_evidence; universalist_check; rent_status; proof_matrix |
-| `negative-ledger` | queried / mapped / captured / handoff / no-applicable-evidence / blocked / unavailable | active_exclusions; captured_failures; reopened_entries; durable_writeback |
+| `review-compression-compiler` | used / not-required / root-equivalent-structured / blocked / unavailable | packet_id; packet_kind; route_wave_ref; cluster_id; selected_normal_form; negative_evidence; NREC; universalist_check; rent_status; proof_matrix |
+| `negative-ledger` | queried / mapped / captured / handoff / no-applicable-evidence / blocked / unavailable | active_exclusions; NREC cards; captured_failures; reopened_entries; durable_writeback |
 | `universalist` | used / considered-not-needed / root-equivalent-boundary / blocked / unavailable | boundary decision; artifact/seam; falsification status; reason |
 | `accretive-implementer` | used / root-equivalent / not-needed / unavailable | right_sized_route; surface_delta_call; proof_required |
 | `adversarial-reviewer` | used / root-equivalent / not-needed / unavailable | one phrase |

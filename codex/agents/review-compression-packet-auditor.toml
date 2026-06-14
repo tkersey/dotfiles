@@ -10,6 +10,7 @@ compression_packet_audit:
   packet_kind: "RCP | RDP | missing"
   packet_present: "yes | no"
   negative_evidence_present: "yes | no"
+  negative_route_cards_present: "yes | no"
   universalist_check_present: "yes | no"
   falsification_present: "yes | no"
   route_wave_ref_present: "yes | no"

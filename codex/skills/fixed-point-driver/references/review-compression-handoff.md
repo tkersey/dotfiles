@@ -7,7 +7,7 @@ Reject mutation when:
 - required packet is missing;
 - route-wave artifact is missing or failing;
 - packet status is `blocked`;
-- active negative evidence excludes the selected route and has not been reopened;
+- active negative evidence or NREC excludes the selected route and has not been reopened;
 - `universalist_check.decision` is `blocked`;
 - `universalist_check.decision` is `use-universalist` but no universal boundary packet is supplied;
 - prior `universalist not-needed` was falsified and not resolved;

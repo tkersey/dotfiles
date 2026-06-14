@@ -21,11 +21,13 @@ resolve_review_wave_packet:
     active_exclusions: []
     captured_failures: []
     reopened_entries: []
+  negative_route_exclusion_cards: []
   universalist_checks: []
   falsification_rules: []
   gate:
     route_receipts_complete: pass | fail
     negative_evidence_complete: pass | fail | not-required
+    negative_route_gate: pass | fail | not-required
     rcp_required_packets_present: pass | fail | not-required
     distillation_required_packets_present: pass | fail | not-required
     universalist_checks_complete: pass | fail | not-required

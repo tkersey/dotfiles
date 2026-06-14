@@ -11,7 +11,7 @@ Examples:
 - proof matrix chosen, CAS finds untested same-family counterexample.
 - public bypass introduced, CAS flags it as invalid.
 
-Falsification creates a negative-ledger capture candidate.
+Falsification creates a negative route exclusion card.
 
 ## Universalist not-needed falsification
 

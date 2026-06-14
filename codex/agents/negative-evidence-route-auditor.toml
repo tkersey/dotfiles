@@ -13,7 +13,7 @@ negative_route_audit_packet:
       hypothesis: "..."
       attempted_change_or_decision: "..."
       source_refs:
-        - kind: "cas-review | validation | pr-comment | route-wave | rcp | rdp | commit | learning | lab"
+        - kind: "cas-review | validation | pr-comment | route-wave | rcp | rdp | commit | learning | lab | test | diff"
           ref: "..."
           summary: "..."
       observed_outcome: "..."
@@ -24,6 +24,10 @@ negative_route_audit_packet:
       reopening_criteria: []
       confidence: "high | medium | low | unknown"
       next_search_hint: "..."
+  negative_route_exclusion_cards:
+    - card_id: "NREC-..."
+      excluded_route: "..."
+      active_against_selected_route: "yes | no"
   final_call: "active_exclusions | no_applicable_negative_evidence | reopen_required | blocked"
 
 Do not edit files.

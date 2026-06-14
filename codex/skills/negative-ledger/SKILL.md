@@ -1,123 +1,169 @@
 ---
 name: negative-ledger
-description: "Capture, query, map, compact, reopen, and hand off evidence-backed failed hypotheses, reverted approaches, benchmark regressions, no-effect attempts, and strategy pivots so future work avoids repeated dead ends while stale evidence remains reopenable. Trigger cues: negative ledger, failed attempts, what have we already tried, avoid retrying dead ends, benchmark regressions, reverted approaches, strategy pivot, why did the last approach fail, before another optimization, search-space pruning."
+description: "Capture, query, map, compact, reopen, and hand off evidence-backed failed hypotheses, falsified review-resolution routes, reverted approaches, no-effect repairs, benchmark regressions, public-bypass failures, scar-tissue exclusions, and strategy pivots so future work avoids repeated dead ends while stale evidence remains reopenable. Trigger for `$negative-ledger`, negative evidence, negative route memory, NREC-v1, failed attempts, same-cluster recurrence, repeated review decisions, what have we already tried, avoid retrying dead ends, public bypass counterexample, scar tissue, before another optimization, route ratchet, search-space pruning."
 ---
 
 # Negative Ledger
 
-`negative-ledger` is a reusable protocol for handling **disconfirmed hypotheses**. Its job is to preserve decision-shaping negative evidence, prune repeated dead ends, and keep old failures reopenable when the artifact state changes.
+`negative-ledger` preserves disconfirmed hypotheses so future work does not repeat dead ends.
 
-It is not a generic reviewer and not a final gate. Negative evidence is advisory unless its witness and applicability conditions bind the current artifact state.
+## Core upgrade
 
-## Companion relationship
-- Use `learnings` as the preferred durable source and write path for reusable negative evidence.
-- Use `fixed-point-driver` when negative evidence participates in a full build-review-improve-verify loop.
-- Use `negative-ledger-mapper` as the read-only specialist when the work is search-heavy and prior failures materially change routing.
-- When `negative-ledger-mapper` or any read-only specialist is used, require the shared specialist packet contract at `../references/specialist-packet-contract.md`; reject stale, wrong-scope, wrapper-leaking, acknowledgement-only, or no-evidence packets before converting them into exclusions.
+For review workflows:
 
-## Trigger cues
-Use this skill when the user asks about or the task contains:
-- `negative ledger`
-- failed attempts, no-effect attempts, abandoned approaches, or reverted changes
-- benchmark regressions or optimization dead ends
-- repeated hypotheses across loops
-- strategy pivots that should change future routing
-- “what have we already tried?”
-- “avoid trying the same thing again”
-- “why did the last approach fail?”
-- preflight before another optimization, debugging, migration, or remediation campaign
+```text
+A repeated review decision is a falsified hypothesis.
+```
 
-Do not trigger for a trivial one-pass task unless the user explicitly asks for negative-evidence handling.
+Negative evidence should not merely be a note that something happened. It should become a narrow route exclusion with reopening criteria.
 
 ## Modes
+
 - `capture`: record a newly witnessed failed or disconfirmed attempt.
 - `query`: retrieve relevant negative evidence before new work.
 - `map`: convert prior evidence into current routing constraints and next-search hints.
-- `reopen`: decide whether stale negative evidence has become eligible again.
-- `compact`: dedupe and compress repeated failed attempts into narrower entries.
+- `route-memory`: map falsified review-resolution routes into negative route exclusion cards.
+- `reopen`: decide whether stale negative evidence is eligible again.
+- `compact`: dedupe repeated failed attempts into route-family exclusions.
 - `handoff`: summarize active exclusions, stale/reopened entries, and promising frontier.
 
-## Source hierarchy
-Prefer sources in this order:
-1. Current-run witnesses: commands, logs, benchmark output, failing/passing tests, diffs, traces, reverts.
-2. Current campaign ledgers: fixed-point-driver Negative Evidence Ledger, Findings Ledger, Verification Ledger, Specialist Briefing Ledger.
-3. Durable memory: `.learnings.jsonl` loaded through the `learnings` CLI.
-4. Repository history: commit messages, revert notes, PR comments, issue notes, benchmark history.
-5. User-provided context, marked as `user-context` until independently witnessed.
+## Review-resolution trigger cues
 
-A source can seed an entry, but it does not make the entry active. Active negative evidence needs a witness, current-state applicability, an exclusion rule, and reopening criteria.
+Use this skill when any are true:
 
-## Learnings CLI integration
-Use the `learnings` skill CLI as the preferred durable source when a real repo root and compatible CLI are available.
+- same cluster reappears after repair;
+- selected normal form was falsified;
+- `universalist_check.decision: not-needed` was falsified;
+- add-surface route failed or became unsound;
+- public bypass, fallback, compatibility path, parser tolerance, or proof matrix choice caused a CAS/review/validation counterexample;
+- review lab scar tissue must be discarded or distilled;
+- one-change candidate resembles a prior failed route;
+- Review Distillation Mode is active;
+- route-wave artifact has `negative_evidence.pass_status: fail`.
 
-### Preflight recall
-Before a meaningful `query`, `map`, or optimization route choice, build a compact topical query with 4-8 task-defining terms: component, failure surface, benchmark/test, and hypothesis family. Then run read-only recall:
+## Negative Route Exclusion Card
 
-```bash
-run_learnings_tool recall --query "<component failure-surface hypothesis-family>" --limit 8 --drop-superseded
+Use this compact card when negative evidence should shape routing:
+
+```yaml
+negative_route_exclusion_card:
+  card_version: NREC-v1
+  neg_id: "NEG-..."
+  card_id: "NREC-..."
+  artifact_state_id: "..."
+  cluster_id: "..."
+  excluded_route: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | universalist-not-needed | proof-matrix | commit-boundary | distill-from-lab
+  hypothesis: "..."
+  attempted_change_or_decision: "..."
+  falsifying_evidence:
+    - kind: cas-review | validation | pr-comment | route-wave | rcp | rdp | commit | learning | lab | test | diff
+      ref: "..."
+      summary: "..."
+  applicability:
+    current_status: active | stale | superseded | reopened | unknown
+    conditions: []
+  exclusion_rule: "..."
+  reopening_test: "..."
+  next_allowed_routes:
+    - delete-collapse-canonicalize
+    - refactor-existing-owner
+    - use-universalist
+    - distill-from-lab
+    - blocked
+  confidence: high | medium | low | unknown
 ```
 
-If the user asks to browse or explore history rather than implement, start with:
+## Route ratchet
 
-```bash
-run_learnings_tool recent --limit 15
-run_learnings_tool query --spec "@$LEARNINGS_SPECS_DIR/status-rank.json"
+Before implementation handoff on a repeated route:
+
+```yaml
+negative_route_gate:
+  prior_route_checked: yes | no
+  active_exclusion_match: yes | no
+  if_match:
+    neg_id: "..."
+    selected_route: "..."
+    exclusion_rule: "..."
+    status: reopened | superseded | stale | blocked
+  handoff_allowed: yes | no
 ```
 
-Treat recall/query hits as candidate evidence. Check the hit's evidence anchors and decide whether its applicability conditions match the current artifact state before creating an active exclusion.
-
-### Durable writeback
-After a witnessed failed attempt, regression, revert, no-effect attempt, or strategy pivot, append through `learnings append` only when the learning is decision-shaping, transferable, and counterfactually useful.
-
-Use action-oriented statuses:
-- `avoid_for_now`: active negative evidence with current applicability.
-- `investigate_more`: evidence is incomplete or applicability is uncertain.
-- `do_less`: repeated low-value pattern or no-effect attempt.
-- `codify_now`: repeated negative evidence should be promoted into a skill, guardrail, or test fixture.
-- `review_later`: weak but potentially important evidence that should not yet prune routes.
-
-Example writeback:
-
-```bash
-run_learnings_tool append \
-  --status avoid_for_now \
-  --learning "When optimizing MVCC small-write throughput, avoid same-leaf bookkeeping batching unless the small-N regression fixture has changed because the prior prototype regressed the representative write loop." \
-  --evidence "bench: write-small-n regressed 7% on run 2026-05-09 after same-leaf batching prototype" \
-  --application "Before proposing same-leaf batching again, verify the benchmark fixture and MVCC bookkeeping path changed, then rerun the representative small-N benchmark." \
-  --tag negative-evidence \
-  --tag benchmark-regression \
-  --tag perf
-```
-
-If `learnings` is unavailable or the workspace is not a verified repo root, keep the ledger in-session and report why durable capture was skipped.
+If `active_exclusion_match: yes` and status is not `reopened`, `superseded`, or `stale`, implementation is blocked.
 
 ## Capture requirements
+
 A negative ledger entry is usable only if it has:
-- a narrow hypothesis, not a broad strategy family
-- a concrete attempted change or decision
-- evidence anchors: command, log, benchmark, failing test, revert, review rationale, trace, diff, or learning ID with evidence
-- observed outcome
-- failure class
-- applicability conditions
-- current status
-- exclusion rule
-- reopening criteria
-- confidence
-- next-search hint
 
-If any required part is missing, mark the entry `unknown`, `stale`, or `need-evidence` rather than using it as an exclusion rule.
+- narrow hypothesis;
+- concrete attempted change or decision;
+- evidence anchor;
+- observed outcome;
+- failure class;
+- applicability conditions;
+- current status;
+- exclusion rule;
+- reopening criteria;
+- confidence;
+- next-search hint.
 
-## Mapping workflow
-1. Identify the current artifact state: branch/revision when available, diff or changed paths, phase, and target signal.
-2. Load candidate negative evidence from the source hierarchy, including `learnings recall/query` when available.
-3. Normalize each prior attempt into the ledger contract.
-4. Decide current applicability: active, stale, superseded, reopened, or unknown.
-5. Convert active entries into narrow exclusion rules.
-6. Convert stale/reopened entries into explicit reopening tests.
-7. Emit the safest next-search frontier: what to avoid, what can be retried only with new proof, and what adjacent approach remains promising.
+Do not turn one failed implementation into a blanket ban on a broad strategy family.
 
-## Output contracts
-For direct use, end with:
+## Query templates for review resolution
+
+Use compact topical queries:
+
+```text
+<repo> <cluster_id> <owner> <route_kind> <failure_surface>
+```
+
+Examples:
+
+```bash
+run_learnings_tool recall --query "world actuation public bypass validation repair compatibility tolerance" --limit 8 --drop-superseded
+run_learnings_tool recall --query "world continuity same-cluster mutate-existing-owner CAS recurrence proof matrix" --limit 8 --drop-superseded
+run_learnings_tool recall --query "review compression universalist not-needed boundary artifact recurrence" --limit 8 --drop-superseded
+```
+
+## Compaction
+
+When the same exclusion family appears three or more times, compact:
+
+```yaml
+negative_compaction:
+  compacted_card_id: "NREC-FAMILY-..."
+  hypothesis_family: "..."
+  excluded_route_family: "..."
+  evidence_refs: []
+  current_applicability: active | stale | superseded | reopened | unknown
+  reopening_test: "..."
+  safest_next_frontier: "..."
+```
+
+## Durable writeback policy
+
+Do not flood `.learnings.jsonl`.
+
+```yaml
+negative_writeback_policy:
+  in_wave_only:
+    - one-off same-session route failure
+    - low confidence
+    - unclear applicability
+  route_wave_artifact:
+    - same-cluster recurrence
+    - proof matrix gap
+    - failed selected normal form
+  durable_learnings:
+    - repeated across sessions
+    - generalizable to future branches
+    - benchmark/regression/revert/public-bypass pattern
+    - current proof anchors exist
+```
+
+Use `learnings append` only when transferable and decision-shaping.
+
+## Output contract
 
 ```yaml
 negative_evidence_ledger:
@@ -125,52 +171,54 @@ negative_evidence_ledger:
     hypothesis: "..."
     attempted_change: "..."
     source_refs:
-      - kind: benchmark | test | revert | review | trace | diff | learning | user-context | ledger
+      - kind: benchmark | test | revert | review | trace | diff | learning | user-context | ledger | rcp | rdp | route-wave | lab
         ref: "..."
         summary: "..."
-    learning_source_ids:
-      - "lrn-..."
-    evidence:
-      - "..."
+    learning_source_ids: []
+    evidence: []
     observed_outcome: "..."
     failure_class: no-effect | local-regression | global-regression | unsound | too-complex | stale | unknown
-    applicability_conditions:
-      - "..."
+    applicability_conditions: []
     current_status: active | stale | superseded | reopened | unknown
     exclusion_rule: "..."
-    reopening_criteria:
-      - "..."
+    reopening_criteria: []
     confidence: high | medium | low | unknown
     next_search_hint: "..."
+negative_route_exclusion_cards: []
+negative_evidence_closure_gate:
+  active_exclusions_checked: pass | fail
+  selected_route_violates_active_exclusion: yes | no
+  capture_required_entries_handled: pass | fail
+  durable_writeback_decision: appended | duplicate-skip | not-attempted | unavailable
+  closure_allowed: yes | no
 ```
 
-Then add a bottom-line handoff:
+Then add:
 
 ```md
 ### Negative Ledger Handoff
-- active_exclusions: ...
-- stale_or_superseded: ...
-- reopened: ...
-- need_evidence: ...
-- safest_next_frontier: ...
-- learnings_source_ids: ...
-- durable_capture: appended: id=... | duplicate-skip: ... | 0 records appended: ... | not-attempted: ...
+- active_exclusions:
+- stale_or_superseded:
+- reopened:
+- need_evidence:
+- safest_next_frontier:
+- route_exclusion_cards:
+- durable_capture:
 ```
 
 ## Guardrails
+
 - Do not record unevidenced hunches as negative evidence.
-- Do not convert one failed implementation into a blanket ban on a broad strategy family.
-- Do not let a `learnings` hit suppress current work without checking evidence and applicability.
-- Do not use stale benchmarks to suppress current work without explaining why they still apply.
+- Do not use a learning hit as an exclusion rule until evidence and applicability are checked.
 - Do not use absence of a negative entry as proof that a route is novel.
-- Do not append to `.learnings.jsonl` by hand; use the `learnings` CLI when durable writeback is appropriate.
-- Do not make a separate persistent negative-ledger file by default; use `.learnings.jsonl` until volume or schema pressure justifies a dedicated store.
+- Do not suppress adjacent approaches with an overbroad exclusion.
+- Do not append to `.learnings.jsonl` by hand; use the CLI when durable writeback is appropriate.
+- Do not make negative evidence final proof; it prunes routes and defines reopening tests.
 
 ## Resources
-- [negative-ledger-mapper](agents/negative-ledger-mapper.md)
-- [negative-ledger-contract.md](references/negative-ledger-contract.md)
-- [specialist-packet-contract.md](../references/specialist-packet-contract.md)
-- [learnings-source.md](references/learnings-source.md)
+
+- [review-resolution-integration.md](references/review-resolution-integration.md)
+- [negative-route-exclusion-card.md](references/negative-route-exclusion-card.md)
+- [negative-evidence-compaction.md](references/negative-evidence-compaction.md)
+- [review-distillation-scar-tissue.md](references/review-distillation-scar-tissue.md)
 - [fixed-point-integration.md](references/fixed-point-integration.md)
-- [negative-ledger-jsonl.md](references/negative-ledger-jsonl.md)
-- [example-invocations.md](references/example-invocations.md)

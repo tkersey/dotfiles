@@ -14,7 +14,7 @@ lab_scar_tissue_packet:
       origin_counterexample: "..."
       fate: "discard | distill | transplant-with-rent | blocked"
       reason: "..."
-      negative_evidence_ref: "none | NEG-..."
+      negative_evidence_ref: "none | NEG-... | NREC-..."
   suspected_scar_tissue:
     - surface: "..."
       reason: "..."
