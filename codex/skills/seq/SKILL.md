@@ -36,7 +36,7 @@ Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consi
      - `session-prompts` for "what did that session actually say" and transcript proof.
      - `adjudication-audit` for selected/rejected `$review-adjudication` audits, including root-equivalent workflows such as `$resolve` when explicitly included.
      - `skill-success-rank` for ranked successful skill activation reports over recent windows without raw mention inflation.
-     - `skill-audit` for raw skill mention summaries, one-skill mention rows, and one-skill daily trends.
+     - `skill-audit` for raw skill mention summaries, one-skill mention rows, one-skill daily trends, and `--mode activation` evidence buckets.
      - `workflow-audit` for workflow-cohort utilization reports across text, skill mentions, tool traces, session graph roles, and outcome signals.
      - `tool-audit` for shell/tool command summaries by executable/tool/session/workdir/command plus row, args, and unresolved modes.
      - `memory-inventory` for memory category/file/block/stage1/extension inventory without hand-writing `memory_*` query specs.
@@ -166,6 +166,7 @@ seq skill-success-rank --root ~/.codex/sessions --last 14d --format table
 seq skill-success-rank --root ~/.codex/sessions --skill seq --mode sessions --last 14d --format jsonl
 seq skill-audit --root ~/.codex/sessions --limit 20 --format table
 seq skill-audit --root ~/.codex/sessions --skill seq --mode trend --format table
+seq skill-audit --root ~/.codex/sessions --skill universalist --mode activation --last 36h --exclude-current --format table
 seq workflow-audit --root ~/.codex/sessions --workflow fixed-point-driver --mode summary --since 2026-04-01T00:00:00Z --format table
 seq workflow-audit --root ~/.codex/sessions --workflow fixed-point-driver --mode report --since 2026-04-01T00:00:00Z --format markdown
 ```
@@ -346,6 +347,7 @@ seq skill-success-rank --root ~/.codex/sessions --skill prove-it --mode sessions
 Guardrail for "was this skill/workflow used?" audits:
 
 - State the denominator before giving a count. "Native/user-called successful activation rows" is not the same denominator as "assistant-declared workflow use" or "root-equivalent companion use."
+- For direct activation questions such as "has `$universalist` been called implicitly in the last 36 hours?", start with `seq skill-audit --skill universalist --mode activation --last 36h --exclude-current --format table`. Report the `implicit_assistant_call` count separately from `explicit_user_call`, `injected_skill_block`, and `other_reference`.
 - Do not conclude "not used" from an empty `skill-success-rank` result alone. First cross-check `workflow-audit` / `workflow_signals`, `message-search` over assistant messages, `skill-blocks` for injected skill text, and `session-tooling` / `orchestration-concurrency` when worker or subagent masking is plausible.
 - For companion-skill or root-equivalent workflows such as `$fixed-point-driver` delegating to `$accretive-implementer`, search assistant messages for declared routing phrases (`using <skill>`, `then <skill>`, `delegate ... <skill>`) and report those separately from native activation rows.
 - If search strings include Markdown backticks, `$`, or shell-sensitive text, prefer a single-quoted JSON spec, a `--spec @file` query, or plain substrings without formatting characters. Inspect stderr and any `--show-query` output before trusting an empty result.
@@ -566,6 +568,7 @@ seq plan-search --root ~/.codex/sessions \
 Use these before raw `seq query` when the request matches the shape:
 ```bash
 seq skill-audit --root ~/.codex/sessions --skill seq --mode trend --since 2026-04-01T00:00:00Z --format table
+seq skill-audit --root ~/.codex/sessions --skill universalist --mode activation --last 36h --exclude-current --format table
 seq workflow-audit --root ~/.codex/sessions --workflow fixed-point-driver --mode report --since 2026-04-01T00:00:00Z --format markdown
 seq tool-audit --root ~/.codex/sessions --group-by executable --since 2026-04-01T00:00:00Z --limit 20 --format table
 seq memory-inventory --mode blocks --contains "release" --limit 20 --format table
@@ -711,7 +714,8 @@ Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` 
   normalizing caller-side `jq`.
 - `skill-blocks` defaults to `--history distinct` and `--format jsonl`; use `--history all` to keep repeated identical injections and `--history latest` to select the newest distinct version.
 - Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
-- `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching successful skill usage, raw skill mentions, workflow, tool, memory, message, and cwd questions.
+- `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching successful skill usage, raw skill mentions and activation buckets, workflow, tool, memory, message, and cwd questions.
+- Raw `seq query` is still correct when it is the clearer expression for a novel dataset shape, custom join, or denominator the lifted commands do not own.
 - Use `adjudication-audit` before raw `query`/`message-search` when the question asks whether `$review-adjudication` selected, rejected, over-selected, or routed comments correctly.
 - For `$resolve` or other root-equivalent adjudication runs, pass `--include-root-equivalent resolve` so the audit distinguishes direct `$review-adjudication` from root-equivalent decision-bearing sessions.
 - `skill-success-rank` counts user-called skills, reports `successful_sessions`, `used_sessions`, `blocked_sessions`, and raw mention/session diagnostics, and supports `--mode sessions` for per-session proof rows.
