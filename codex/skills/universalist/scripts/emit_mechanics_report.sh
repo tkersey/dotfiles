@@ -24,6 +24,8 @@ Available mechanics topics:
 - composition-certificate
 - sheafification
 - abstraction-replacement
+- category-pivot
+- syntax-semantics
 
 Examples:
   ./scripts/emit_mechanics_report.sh kan-lift typescript
@@ -57,6 +59,10 @@ OUT
     ./scripts/emit_sheafification_kan.sh abstraction "$language" ;;
   abstraction-replacement)
     ./scripts/emit_abstraction_replacement_kan.sh abstraction "$language" ;;
+  category-pivot|easy-world)
+    ./scripts/emit_category_pivot.sh syntax "$language" ;;
+  syntax-semantics|syntax|semantics)
+    ./scripts/emit_syntax_semantics_certificate.sh ToolOperation "$language" ;;
   *)
     echo "Unknown mechanics topic: $topic" >&2
     echo "Run ./scripts/emit_mechanics_report.sh index" >&2

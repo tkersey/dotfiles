@@ -94,6 +94,18 @@ Useful commands:
 
 Track G treats the codebase as a usage site. Local uses are sections; shared fields, tests, traces, and observations are overlaps. A correct architecture-level abstraction behaves like a sheaf: compatible local meanings glue uniquely to one global meaning. Use this track to replace inexact abstractions with canonical artifacts and produce a Sheafification Certificate.
 
+## Category Pivot / Syntax-Semantics
+
+Track H adds Easy-World Transfer. Use it when a problem is hard because it is being solved in the ordinary executable-program world even though syntax, semantics, posets, relations, coalgebras, schema instances, resource models, or presheaf sites would make the structure explicit. The most important agentic case is syntax/semantics: plans, tool calls, policies, memory queries, patches, and workflows should be explicit syntax when they need inspection before execution; handlers/interpreters give semantics; laws certify soundness and adequacy.
+
+Useful commands:
+
+```bash
+./scripts/emit_category_pivot.sh syntax typescript
+./scripts/emit_category_pivot.sh abstract-domain agnostic
+./scripts/emit_syntax_semantics_certificate.sh ToolOperation typescript
+```
+
 
 ## Unified mechanics layer
 
@@ -120,6 +132,8 @@ Useful mechanics commands:
 ./scripts/emit_mechanics_report.sh codensity-presentation agnostic
 ./scripts/emit_mechanics_report.sh cql-context agnostic
 ./scripts/emit_mechanics_report.sh sheafification typescript
+./scripts/emit_mechanics_report.sh category-pivot agnostic
+./scripts/emit_mechanics_report.sh syntax-semantics typescript
 ```
 
 You can safely remove `codex/skills/kan`; this package is self-contained.

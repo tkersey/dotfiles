@@ -1,6 +1,6 @@
 ---
 name: universalist
-description: "Use when a code change calls for a structural refactor rather than an ordinary feature: flag/state matrices, repeated boundary validation, shared-key checks, branchy policy logic, syntax mixed with execution, duplicated projections, generated artifacts losing provenance, callbacks or effects crossing architecture boundaries, unclear protocols/state machines, public contracts shaping internals, semantic consumers needing certified context, or abstractions that are too broad/narrow/redundant/inconsistent. Default to one signal, one seam, the smallest honest construction or canonical artifact; produce a proof signal/falsifier and, when worlds meet, a Composition, Context, or Sheafification Certificate. Includes internal mechanics for Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/defunctionalization when needed."
+description: "Use when a code change needs a structural refactor, exact abstraction, certified context, or canonical boundary artifact instead of ordinary feature work: flag/state matrices, repeated validation, branchy policy logic, syntax mixed with execution, opaque callbacks/effects/tool calls, duplicated projections, generated artifacts losing provenance, unclear protocols/state machines, public contracts shaping internals, semantic consumers needing certified context, or abstractions that are too broad/narrow/redundant/inconsistent. Default to one signal, one seam, smallest honest construction; produce proof/falsifier and Composition, Context, Sheafification, Syntax/Semantics, or Category Pivot certificate. Includes internal mechanics for Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/defunctionalization."
 ---
 
 # Universalist
@@ -13,7 +13,8 @@ This is now the single top-level skill for the Universal Architecture doctrine. 
 
 ## Doctrine index
 
-Universalist includes Track D, Track E, Track F, and Track G. It uses Universal architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, Freyd/AFT, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
+Universalist includes Track D, Track E, Track F, Track G, and Track H. It uses Universal architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, Syntax/Semantics Pivot, Easy-World Transfer, Category Pivot Certificate, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, Freyd/AFT, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
+Do not force a hard problem to stay in the ordinary executable-program world when syntax, semantics, posets, relations, coalgebras, schemas, resources, or presheaves make the required operation explicit.
 
 The enriched slogan is:
 
@@ -236,8 +237,41 @@ Boundaries compose.
 Presentations compress.
 Contexts prepare.
 Abstractions constrain possibility.
+Easy worlds solve.
 Witnesses certify.
 ```
+
+## Easy-World Transfer / Category Pivot Doctrine
+
+Maxim:
+
+```text
+Do not force a hard operation to stay in the ordinary executable-program world when another world makes it explicit.
+```
+
+Use Track H when a problem is hard because it is represented in the wrong category/world. In Universalist language, **Hask** means the ordinary executable-program world of computer science: functions, callbacks, services, branches, effects, IO, runtime behavior, and code-as-executed. That world is computationally expressive but often opaque to agents.
+
+A category pivot asks:
+
+```text
+Current world: where are we trying to solve this?
+Hard operation: inspect, compare, serialize, prove, minimize, merge, diff, totalize, authorize, explain, or replay?
+Easy world: syntax, semantics, poset/lattice, relation, coalgebra, schema instance, resource model, presheaf/site, trace, or context schema?
+Transfer: how do we encode into the easy world and interpret back?
+Law: what observation is preserved?
+Falsifier: when does the transfer fail?
+```
+
+The most important pivot for coding agents is **syntax/semantics**:
+
+```text
+Syntax gives handles: plans, operations, policies, memory queries, workflow steps, patches, certificates.
+Semantics gives meaning: effects, traces, public behavior, policy outcomes, memory consequences.
+Interpreters connect them: handle, run, compile, lower, render, project.
+Laws certify them: accepted syntax denotes valid semantics; required semantic distinctions remain observable.
+```
+
+Use syntax when behavior needs inspection, replay, policy checks, serialization, diffing, total handling, simulation, provenance, or multiple interpreters. Use semantics when deciding what observations define correctness. Do not let agentic systems execute opaque intent; interpret certified syntax into observed semantics.
 
 ## Do not trigger for
 
@@ -249,7 +283,7 @@ Witnesses certify.
 
 ## Step -1 — World and Boundary Inventory
 
-Before choosing Track A/B/C/D/E/F for any non-trivial structural request, inventory the worlds and boundaries. This prevents fake category labels and keeps the response anchored in repo reality.
+Before choosing Track A/B/C/D/E/F/G/H for any non-trivial structural request, inventory the worlds and boundaries. This prevents fake category labels and keeps the response anchored in repo reality.
 
 A **world** is a structured domain where some objects, transformations, invariants, observations, primitives, and composition rules make sense.
 
@@ -285,7 +319,7 @@ Law test:
 Falsifier:
 ```
 
-If this inventory cannot be filled for the seam, do not escalate to Track D or Track F.
+If this inventory cannot be filled for the seam, do not escalate to Track D, Track F, Track G, or Track H.
 
 ## Boundary Kind Taxonomy
 
@@ -303,6 +337,7 @@ Classify boundary maps before choosing canonical artifacts.
 | Handler | effect syntax -> runtime behavior | effect signature, handler laws, defunctionalized operations |
 | Observer | subject -> observation result | Yoneda vocabulary, law-test oracle |
 | Migration | old schema/world -> new schema/world | `Delta`, `Lan`/Sigma, `Ran`/Pi, provenance path |
+| Category pivot | hard operation in current world -> easier structured world | Syntax/Semantics Pivot, abstract domain, relation, coalgebra, schema, resource, presheaf |
 | Context compiler | source worlds -> task context schema | Exact Context, data exchange, chase/closure, observational core |
 | Semantic consumer | prepared context -> decision/action/inference | Context Certificate, rendering law, freshness law |
 
@@ -337,7 +372,8 @@ Common drift signals:
 - control-flow drift: callbacks, closures, handlers, or continuations carry architecture semantics invisibly;
 - behavioral drift: protocols, state machines, or distributed traces are tested by snapshots but not boundary laws;
 - effect drift: operations are interpreted differently by test, production, audit, retry, or simulation handlers;
-- context drift: raw retrieved chunks, stale memories, tool outputs, or summaries flow directly into a model/human/tool without schema, provenance, freshness, observables, or minimization.
+- context drift: raw retrieved chunks, stale memories, tool outputs, or summaries flow directly into a model/human/tool without schema, provenance, freshness, observables, or minimization;
+- category drift: a hard operation is being forced to remain in executable code when syntax, semantics, a poset, relation, coalgebra, schema, resource model, or presheaf would make the structure inspectable.
 
 Map drift to artifacts:
 
@@ -351,6 +387,7 @@ control-flow drift    -> defunctionalized explicit IR
 behavioral drift      -> behavioral coalgebra / protocol observation law
 effect drift          -> effect signature + handler laws
 context drift         -> task-indexed context instance + Context Certificate
+category drift        -> Category Pivot / Easy-World Transfer Certificate
 ```
 
 ## Boundary Law Catalogue
@@ -659,6 +696,47 @@ Track G falsifiers:
 local disagreement, missing global representation, non-unique representation, or impossible global state.
 ```
 
+### Track H — Category Pivot / Syntax-Semantics transfer
+
+Use when the problem is hard because the current representation hides the relevant structure. The dominant case is ordinary executable behavior that should be reified as syntax and certified by semantics.
+
+Deliver:
+
+- current world/category and why the operation is hard there;
+- candidate easy world/category and what becomes easy;
+- transfer/encoding from current world into easy world;
+- interpretation/transport back to executable behavior or required observations;
+- Syntax/Semantics Certificate when the pivot is from opaque execution/prose/prompt/callbacks into explicit syntax plus interpreter;
+- Category Pivot Certificate for other pivots;
+- preservation law and falsifier;
+- one witness extraction/refactor plan.
+
+Use Track H for:
+
+- agent/tool behavior represented as opaque `name + args`, callbacks, closures, or prose;
+- plans, policies, workflows, memory operations, context requests, or patches that need inspection before execution;
+- executable functions that need serialization, replay, diffing, validation, authorization, totality checks, simulation, or multiple interpreters;
+- hard equality, minimization, merge, provenance, freshness, reachability, resource, or policy analysis that becomes easier in a poset, relation, schema, coalgebra, resource category, or presheaf/site;
+- syntax present without certified semantics, or semantics claimed without observations.
+
+Track H question:
+
+```text
+What world makes the hard operation easy, and what law transports the result back?
+```
+
+Syntax/semantics law shape:
+
+```text
+accepted syntax denotes valid observed semantics, and required semantic distinctions remain representable or observable.
+```
+
+Track H falsifiers:
+
+```text
+syntax accepted but semantics invalid; semantic behavior needed but not representable; easy-world result loses required observation when transported back.
+```
+
 ## Non-negotiables
 
 - One signal, one seam, one smallest honest construction.
@@ -697,6 +775,7 @@ Minimum fields:
 ## Freyd/AFT boundary diagnostic:
 ## Composition Certificate:
 ## Boundary Normal Form status:
+## Category pivot / Syntax-Semantics certificate:
 ## Why this construction:
 ## Seam / files:
 ## Public boundaries touched:
@@ -733,7 +812,10 @@ If context compacts, read this file first and resume from its status line.
    - public behavior fixed while internals are underdetermined;
    - a projection/serializer/view loses evidence needed by required behavior;
    - protocols/state machines whose observations are duplicated or informal;
-   - effect/workflow operations with multiple implicit handlers.
+   - effect/workflow operations with multiple implicit handlers;
+   - opaque executable behavior that should be syntax before semantics;
+   - plans, policies, tool calls, context requests, patches, or memory operations whose semantics are implied but not certified;
+   - hard analysis forced into runtime code when an abstract domain, relation, trace, schema, resource model, or presheaf would make it explicit.
 
 3. **Pick one seam**
 
@@ -772,6 +854,20 @@ If context compacts, read this file first and resume from its status line.
    - an interpreter/projection/handler/lowering function;
    - a proof signal;
    - a concrete reduction in drift, duplication, hidden behavior, or lossy projection.
+
+5a. **Run a category pivot check when the current world hides the structure**
+
+   Ask whether the hard part would be easier in another world:
+
+   - executable function -> syntax/IR plus interpreter;
+   - runtime state -> coalgebra/trace semantics;
+   - scattered predicates -> policy/order lattice;
+   - raw context/prompt -> schema-shaped context instance;
+   - local call sites -> presheaf/site with gluing;
+   - resource behavior -> capability/resource category;
+   - nondeterministic/partial spec -> relation/profunctor world.
+
+   If yes, create a Category Pivot or Syntax/Semantics Certificate before broad mutation.
 
 6. **Plan the boundary**
 
@@ -946,7 +1042,18 @@ For Track F, also include:
 - **Freshness / provenance / missingness / contradiction plan**
 - **Rendering law**
 
-For Track B, Track C, Track D, Track F, or Track G, also update `.universalist-plan.md`.
+
+For Track H, also include:
+
+- **Current world and hard operation**
+- **Easy world / category pivot**
+- **Syntax world and semantic world**, when applicable
+- **Interpreter / handler / compiler / renderer**
+- **Soundness / adequacy / preservation law**
+- **Category Pivot or Syntax/Semantics Certificate**
+- **Falsifier**
+
+For Track B, Track C, Track D, Track F, Track G, or Track H, also update `.universalist-plan.md`.
 
 ## Guardrails
 
@@ -962,7 +1069,9 @@ For Track B, Track C, Track D, Track F, or Track G, also update `.universalist-p
 - Treat Freyd/AFT as a projection diagnostic, not as a theorem recital.
 - Treat opaque subsystems as primitives behind explicit observation/projection boundaries.
 - Do not sheafify merely to decorate an abstraction; sheafify only when local usage evidence shows inconsistency, missing glue, non-unique glue, or excess possibility.
+- Do not pivot categories merely to sound profound; pivot only when the easy world makes inspection, proof, synthesis, minimization, replay, or certification materially easier and the transfer law is stated.
 - Do not claim an abstraction is exact without a usage site, local sections, overlap checks, gluing law, and falsifier.
+- Do not claim syntax/semantics separation without constructors/formation rules, interpreter, observations, soundness/adequacy law, and falsifier.
 
 ## Internal mechanics and companion skills
 
@@ -988,7 +1097,7 @@ Then read the relevant internal mechanics reference or run:
 ./scripts/emit_mechanics_report.sh <topic> <language>
 ```
 
-Mechanics topics include Kan extensions/lifts, Freyd/AFT, Yoneda/Coyoneda, codensity presentations, categorical-data/context compilation, CQL fit, pushout reconciliation, defunctionalization, and possibility sheafification.
+Mechanics topics include Kan extensions/lifts, Freyd/AFT, Yoneda/Coyoneda, codensity presentations, categorical-data/context compilation, CQL fit, pushout reconciliation, defunctionalization, possibility sheafification, category pivots, and syntax/semantics.
 
 - Use **`invariant-ace`** when the main job is discovering or pinning down invariants before choosing structure.
 - Use **`accretive-implementer`** after the construction is chosen and the task becomes ordinary implementation.
@@ -1032,6 +1141,13 @@ Sheafification / exact-abstraction references:
 - `references/abstraction-normal-form.md`
 - `references/abstraction-manipulator-playbook.md`
 
+Category pivot / syntax-semantics references:
+
+- `references/category-pivot.md`
+- `references/syntax-semantics-pivot.md`
+- `references/category-pivot-certificate.md`
+- `references/syntax-semantics-certificate.md`
+
 Internal mechanics references from former `kan` skill:
 
 - `references/mechanics/README.md`
@@ -1044,6 +1160,8 @@ Internal mechanics references from former `kan` skill:
 - `references/mechanics/context-compilation.md`
 - `references/mechanics/cql-context-management.md`
 - `references/mechanics/possibility-sheafification-mechanics.md`
+- `references/mechanics/category-pivot-mechanics.md`
+- `references/mechanics/syntax-semantics-mechanics.md`
 
 ## Scripts
 
@@ -1068,6 +1186,8 @@ Internal mechanics references from former `kan` skill:
 - `scripts/emit_possibility_sheafifier.sh`
 - `scripts/emit_sheafification_certificate.sh`
 - `scripts/emit_abstraction_normal_form_plan.sh`
+- `scripts/emit_category_pivot.sh`
+- `scripts/emit_syntax_semantics_certificate.sh`
 - `scripts/emit_mechanics_report.sh`
 - `scripts/emit_kan_stub.sh`
 - `scripts/emit_codensity_presentation.sh`
@@ -1087,3 +1207,5 @@ Internal mechanics references from former `kan` skill:
 
 - `templates/sheafification-certificate.md`
 - `templates/abstraction-normal-form-report.md`
+- `templates/category-pivot-certificate.md`
+- `templates/syntax-semantics-certificate.md`

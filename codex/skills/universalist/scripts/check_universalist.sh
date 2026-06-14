@@ -17,20 +17,20 @@ required=(
   references/universal-architecture-law-tests.md references/universal-composition-doctrine.md
   references/composition-certificates.md references/boundary-normal-form.md
   references/presentation-strategies.md references/dense-dual-presentation.md references/semantic-compression.md
-  references/exact-context-doctrine.md references/context-certificates.md references/context-normal-form.md references/semantic-consumption-boundaries.md references/verified-context-plane.md references/context-publication-boundaries.md references/cql-fit-assessment.md references/pushout-reconciliation.md references/context-provenance-manifest.md references/possibility-sheafification.md references/sheafification-certificates.md references/abstraction-normal-form.md references/abstraction-manipulator-playbook.md
+  references/exact-context-doctrine.md references/context-certificates.md references/context-normal-form.md references/semantic-consumption-boundaries.md references/verified-context-plane.md references/context-publication-boundaries.md references/cql-fit-assessment.md references/pushout-reconciliation.md references/context-provenance-manifest.md references/possibility-sheafification.md references/sheafification-certificates.md references/abstraction-normal-form.md references/abstraction-manipulator-playbook.md references/category-pivot.md references/syntax-semantics-pivot.md references/category-pivot-certificate.md references/syntax-semantics-certificate.md
   templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md
   templates/freyd-boundary-diagnostic.md templates/world-boundary-inventory.md templates/composition-certificate.md
-  templates/boundary-normal-form-report.md templates/presentation-diagnostic.md templates/context-certificate.md templates/context-normal-form-report.md templates/verified-context-plane-report.md templates/cql-fit-assessment.md templates/context-provenance-manifest.md templates/sheafification-certificate.md templates/abstraction-normal-form-report.md
+  templates/boundary-normal-form-report.md templates/presentation-diagnostic.md templates/context-certificate.md templates/context-normal-form-report.md templates/verified-context-plane-report.md templates/cql-fit-assessment.md templates/context-provenance-manifest.md templates/sheafification-certificate.md templates/abstraction-normal-form-report.md templates/category-pivot-certificate.md templates/syntax-semantics-certificate.md
   scripts/init_universalist_plan.sh scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py
   scripts/emit_verification_plan.py scripts/emit_law_test_stub.sh scripts/emit_universal_artifact_matrix.sh
   scripts/emit_canonical_artifact_plan.sh scripts/emit_universal_architecture_prompt.sh scripts/emit_freyd_boundary_diagnostic.sh
   scripts/emit_world_boundary_inventory.sh scripts/emit_boundary_law_catalogue.sh scripts/emit_composition_certificate.sh
   scripts/emit_boundary_normal_form_plan.sh scripts/emit_presentation_diagnostic.sh scripts/emit_context_certificate.sh
-  scripts/emit_context_compiler_plan.sh scripts/emit_exact_context_prompt.sh scripts/emit_verified_context_plane.sh scripts/emit_cql_fit_assessment.sh scripts/emit_context_publication_boundary.sh scripts/emit_possibility_sheafifier.sh scripts/emit_sheafification_certificate.sh scripts/emit_abstraction_normal_form_plan.sh
+  scripts/emit_context_compiler_plan.sh scripts/emit_exact_context_prompt.sh scripts/emit_verified_context_plane.sh scripts/emit_cql_fit_assessment.sh scripts/emit_context_publication_boundary.sh scripts/emit_possibility_sheafifier.sh scripts/emit_sheafification_certificate.sh scripts/emit_abstraction_normal_form_plan.sh scripts/emit_category_pivot.sh scripts/emit_syntax_semantics_certificate.sh
   references/mechanics/README.md references/mechanics/foundations.md references/mechanics/kan-lifts.md references/mechanics/freyd-aft.md
   references/mechanics/yoneda-coyoneda.md references/mechanics/codensity-presentations.md references/mechanics/defunctionalization.md
-  references/mechanics/context-compilation.md references/mechanics/cql-context-management.md references/mechanics/possibility-sheafification-mechanics.md
-  templates/mechanics-report.md templates/mechanics/codensity-presentation-report.md templates/mechanics/context-compilation-report.md templates/mechanics/sheafification-kan-report.md
+  references/mechanics/context-compilation.md references/mechanics/cql-context-management.md references/mechanics/possibility-sheafification-mechanics.md references/mechanics/category-pivot-mechanics.md references/mechanics/syntax-semantics-mechanics.md
+  templates/mechanics-report.md templates/mechanics/codensity-presentation-report.md templates/mechanics/context-compilation-report.md templates/mechanics/sheafification-kan-report.md templates/mechanics/category-pivot-report.md templates/mechanics/syntax-semantics-report.md
   scripts/emit_mechanics_report.sh scripts/emit_kan_stub.sh scripts/emit_codensity_presentation.sh scripts/emit_context_compilation_report.sh
   scripts/emit_cql_context_report.sh scripts/emit_sheafification_kan.sh scripts/emit_abstraction_replacement_kan.sh
   tests/golden/activation.yml tests/golden/output-invariants.yml
@@ -64,7 +64,7 @@ required = [
     'Allow arbitrary sources', 'Forbid uncertified semantic consumption', 'Verified Context Plane',
     'Operational stores own mutation', 'Verified context planes own semantic publication',
     'Possibility Sheafification', 'Track G', 'Sheafification Certificate',
-    'Abstraction Normal Form', 'Do not merely abstract. Sheafify possibility', 'internal mechanics layer', 'emit_mechanics_report.sh'
+    'Abstraction Normal Form', 'Do not merely abstract. Sheafify possibility', 'internal mechanics layer', 'emit_mechanics_report.sh', 'Track H', 'Category Pivot', 'Syntax/Semantics', 'Easy-World Transfer', 'Easy worlds solve'
 ]
 for r in required:
     if r not in text:
@@ -104,11 +104,16 @@ PY
 ./scripts/emit_possibility_sheafifier.sh payment-status typescript >/dev/null
 ./scripts/emit_sheafification_certificate.sh payment-status typescript >/dev/null
 ./scripts/emit_abstraction_normal_form_plan.sh repo agnostic >/dev/null
+./scripts/emit_category_pivot.sh syntax typescript >/dev/null
+./scripts/emit_category_pivot.sh abstract-domain agnostic >/dev/null
+./scripts/emit_syntax_semantics_certificate.sh ToolOperation typescript >/dev/null
 ./scripts/emit_mechanics_report.sh index agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh kan-lift typescript >/dev/null
 ./scripts/emit_mechanics_report.sh codensity-presentation agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh cql-context agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh sheafification typescript >/dev/null
+./scripts/emit_mechanics_report.sh category-pivot agnostic >/dev/null
+./scripts/emit_mechanics_report.sh syntax-semantics typescript >/dev/null
 python3 scripts/emit_scaffold.py coproduct typescript >/dev/null
 python3 scripts/emit_boundary_adapter.py decoder typescript >/dev/null
 python3 scripts/emit_verification_plan.py coproduct >/dev/null
