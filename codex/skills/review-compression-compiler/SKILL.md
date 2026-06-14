@@ -1,8 +1,8 @@
 ---
 name: review-compression-compiler
-description: "Required packet compiler for review-driven mutation. Converts review findings, PR comments, validation failures, and repeated CAS findings into a compact `review_compression_packet` with selected normal form, explicit `$universalist` boundary check, abstraction rent, proof matrix, surface budget, and implementation handoff. Use for `$review-compression-compiler`, review compression, RCP-v1, same-cluster findings, wrong shape of truth, missing boundary artifact, adjacent CAS findings after a fix, add-surface pressure, dirty-tree review accumulation, or resolving reviews without code growth. Read-only: do not edit code."
+description: "Required packet compiler for review-driven mutation. Converts review findings, PR comments, validation failures, and repeated CAS findings into compact `review_compression_packet` artifacts with selected normal form, explicit `$universalist` boundary check, falsification rules, abstraction rent, proof matrix, surface budget, route-wave publication, and implementation handoff. Use for `$review-compression-compiler`, review compression, RCP-v1, RRW-v1, same-cluster findings, wrong shape of truth, missing boundary artifact, adjacent CAS findings after a fix, add-surface pressure, dirty-tree review accumulation, or resolving reviews without code growth. Read-only: do not edit code."
 metadata:
-  version: "3.0.0"
+  version: "4.0.0"
   activation_cost: medium
   default_depth: strict
 ---
@@ -17,28 +17,35 @@ This skill compiles review findings, PR comments, validation failures, and repea
 
 It does **not** edit files.
 
-## v3 focus
+## v4 focus
 
-v2 made `review_compression_packet` compact and enforceable. v3 adds a missing structural question:
+v3 added `universalist_check`. v4 adds two closure-critical requirements:
 
-```text
-Is this cluster still an existing-owner repair,
-or is it evidence that the boundary artifact / shape of truth is wrong?
-```
-
-That is the `$universalist` check.
-
-A hot review cluster may be an owner bug. It may also mean the current representation lacks the right seam, protocol artifact, context certificate, explicit IR, or canonical composition boundary. v3 makes that decision visible and auditable.
-
-## Core rule
+1. **Durable route-wave publication**: route/RCP/universalist decisions must be written or surfaced as a first-class artifact that `seq` and humans can recover without fragile message search.
+2. **Universalist-not-needed falsification**: if a same-cluster finding reappears after a packet decided `universalist_check.decision: not-needed`, the next packet cannot default to `not-needed`; it must produce a `$universalist` output, a root-equivalent `universal_boundary_packet`, or block.
 
 ```text
-Review resolution is a compression problem, not a fix queue.
+No route-wave artifact -> no closure.
 No packet -> no review-driven production patch.
 No universalist_check on a hot cluster -> no same-cluster production patch.
+Same-cluster recurrence falsifies prior universalist not-needed.
 No rent -> no new surface.
 No proof matrix -> no implementation handoff.
 ```
+
+## Workflow position
+
+```text
+$resolve
+  -> $review-adjudication
+  -> $review-compression-compiler
+  -> optional $universalist / root-equivalent universal_boundary_packet
+  -> $fixed-point-driver
+  -> $accretive-implementer
+  -> validation / review closure
+```
+
+`$resolve` owns branch state. This skill owns counterexample compression. `$universalist` owns missing-boundary / wrong-shape-of-truth analysis. `$fixed-point-driver` owns normal-form remediation routing. `$accretive-implementer` owns single-writer execution after route selection.
 
 ## Activation boundary
 
@@ -46,6 +53,8 @@ Use this skill when any are true:
 
 - two findings appear in the same subsystem, owner, protocol, state machine, proof surface, or invariant family;
 - CAS finds an adjacent issue after a previous fix;
+- a same-cluster finding reappears after a prior packet or normal form;
+- a prior packet used `universalist_check.decision: not-needed` and the same cluster reappeared;
 - an existing-owner repair has already been attempted in the same cluster;
 - the next route would add helper/wrapper/adapter/fallback/flag/branch/state variant/public symbol/compatibility path;
 - review findings suggest a missing boundary artifact, duplicated projection, protocol/state-machine gap, generated provenance gap, public-contract/internal mismatch, effect/callback IR gap, or wrong shape of truth;
@@ -61,20 +70,6 @@ Do not use when:
 - the task is final closure proof only;
 - the user asks only for explanation.
 
-## Workflow position
-
-```text
-$resolve
-  -> $review-adjudication
-  -> $review-compression-compiler
-  -> optional $universalist / root-equivalent universal boundary packet
-  -> $fixed-point-driver
-  -> $accretive-implementer
-  -> validation / review closure
-```
-
-`$resolve` owns branch state. This skill owns counterexample compression. `$universalist` owns missing-boundary / wrong-shape-of-truth analysis. `$fixed-point-driver` owns normal-form remediation routing. `$accretive-implementer` owns single-writer execution after route selection.
-
 ## Packet-first rule
 
 Every meaningful invocation must emit exactly one compact packet containing the literal key:
@@ -83,13 +78,11 @@ Every meaningful invocation must emit exactly one compact packet containing the 
 review_compression_packet:
 ```
 
-The packet may be inline, written to a durable run ledger, or both. If a packet is written to a file, echo the path and include a compact inline summary with `packet_id`, `packet_status`, `selected_normal_form.kind`, `universalist_check.decision`, `abstraction_rent.rent_status`, and `proof_matrix`.
+The packet may be inline, written to a durable run ledger, or both. If a packet is written to a file, echo the path and include a compact inline summary with `packet_id`, `packet_status`, `selected_normal_form.kind`, `universalist_check.decision`, `abstraction_rent.rent_status`, `proof_matrix`, and `route_wave_ref`.
 
 Prose may explain the packet. Prose is not the packet.
 
 ## Required compact packet
-
-Use this shape. Do not replace it with a long essay.
 
 ```yaml
 review_compression_packet:
@@ -113,6 +106,7 @@ review_compression_packet:
     trigger:
       same_cluster_findings: 0
       existing_owner_repair_attempted: yes | no
+      prior_universalist_not_needed_falsified: yes | no
       missing_boundary_artifact: yes | no
       duplicated_projection: yes | no
       protocol_or_state_machine_missing: yes | no
@@ -123,6 +117,12 @@ review_compression_packet:
     decision: use-universalist | not-needed | blocked
     reason: "..."
     boundary_packet_ref: "none | path-or-inline-id"
+  falsification:
+    prior_packet_id: "none | RCP-..."
+    prior_universalist_decision: not-needed | use-universalist | blocked | none
+    same_cluster_reappeared_after_prior_decision: yes | no
+    prior_decision_invalidated: yes | no
+    next_required_action: universal-boundary-packet | reopen-compiler | block | none
   selected_normal_form:
     kind: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked
     owner: "..."
@@ -155,9 +155,26 @@ review_compression_packet:
   commit_boundary:
     policy: checkpoint_after_local_proof | final_only | none
     reason: "..."
+  route_wave_ref:
+    required: yes | no
+    path_or_inline_id: "..."
   closure_rule:
     if_same_cluster_finding_reappears: reopen_compiler | block | escalate
 ```
+
+## Universalist-not-needed falsification
+
+A prior `universalist_check.decision: not-needed` is falsified when the same cluster produces a new review/CAS/validation/PR counterexample after the repair or normal form was applied.
+
+When falsified:
+
+```yaml
+falsification:
+  prior_decision_invalidated: yes
+  next_required_action: universal-boundary-packet | block
+```
+
+The next packet cannot use `universalist_check.decision: not-needed` unless a `universal_boundary_packet` or full `$universalist` output explicitly proves the boundary artifact is still not needed.
 
 ## Universalist check rules
 
@@ -168,6 +185,7 @@ review_compression_packet:
 - `same_cluster_findings >= 2`;
 - an existing-owner repair was already attempted in the cluster;
 - same cluster reappeared after a selected normal form;
+- prior `universalist_check.decision: not-needed` was falsified;
 - selected route would add public surface, fallback, compatibility path, parser tolerance, state variant, or new abstraction;
 - any trigger field under `universalist_check.trigger` is `yes`;
 - the candidate normal form is `add-new-surface`.
@@ -205,6 +223,18 @@ universal_boundary_packet:
 
 If `decision: climb`, selected normal form should be `refactor-existing-owner`, `delete-collapse-canonicalize`, or a warranted `add-new-surface` whose rent is paid.
 
+## Route-wave publication
+
+Every accepted or blocked RCP packet should be published into the current resolve route-wave artifact.
+
+If `$resolve` has no artifact path yet, the compiler should recommend one:
+
+```text
+.step/proof/resolve/<resolve-run-id>/review-wave-<n>.route.yml
+```
+
+The route-wave artifact is what future `seq`/audit tools should search. Do not rely on hidden narrative text.
+
 ## Status rules
 
 ### `accepted`
@@ -215,7 +245,9 @@ Allowed only when:
 - implementation handoff has surface budget and forbidden actions;
 - abstraction rent is `paid` or `not-applicable`;
 - universalist_check is complete and not blocked;
-- artifact state is current.
+- falsification is handled;
+- artifact state is current;
+- route-wave publication is planned or complete.
 
 ### `not-required`
 
@@ -232,7 +264,7 @@ Allowed only when all are true:
 
 ### `blocked`
 
-Use when owner, artifact state, rent, proof, universalist decision, or safe route is missing.
+Use when owner, artifact state, rent, proof, universalist decision, falsification, route-wave publication, or safe route is missing.
 
 Blocked packets must name the blocker and must not hand off mutation.
 
@@ -256,31 +288,6 @@ surface_budget.production_surface: explicit_expansion
 unless the surface is private, bounded, and explicitly retires more surface than it adds.
 
 Any repeated same-cluster finding after implementation must follow `closure_rule`; do not patch locally again.
-
-## Abstraction rent
-
-Rent is paid only when new surface:
-
-- retires existing surface;
-- prevents named future patches;
-- makes an illegal state uninhabitable at the owner;
-- localizes unavoidable external obligation;
-- replaces multiple local repairs with one canonical owner;
-- or carries explicit user/upstream expansion authority.
-
-Unpaid rent blocks `add-new-surface`.
-
-## Proof matrix
-
-Do not create one test per wound by default. Prefer a proof matrix that covers the family:
-
-- invariant test;
-- authority-boundary test;
-- state-transition table;
-- round-trip/canonicalization check;
-- rejection matrix;
-- one representative regression plus table;
-- existing test extension over duplicate new tests.
 
 ## Commit boundary policy
 
@@ -320,6 +327,7 @@ Read-only workers may help:
 - `abstraction_rent_auditor`
 - `proof_matrix_minimizer`
 - `review_compression_packet_auditor`
+- `route_wave_artifact_auditor`
 - `shadow_branch_evidence_scout`
 
 Workers are advisory. The compiler/root owns synthesis and packet status.
@@ -331,9 +339,11 @@ Workers are advisory. The compiler/root owns synthesis and packet status.
 - Do not treat review comments as tasks.
 - Do not emit prose instead of `review_compression_packet`.
 - Do not omit `universalist_check`.
+- Do not ignore falsified `universalist_check.decision: not-needed`.
 - Do not select `not-required` for a same-cluster hot path.
 - Do not select `add-new-surface` with unpaid rent or skipped universalist_check.
 - Do not hand off implementation without proof matrix.
+- Do not close or hand off with no route-wave publication path.
 - Do not allow same-cluster recurrence to become another local patch.
 - Do not override `$resolve` branch state or `$fixed-point-driver` implementation authority.
 
@@ -341,6 +351,8 @@ Workers are advisory. The compiler/root owns synthesis and packet status.
 
 - [packet-contract.md](references/packet-contract.md)
 - [universalist-check.md](references/universalist-check.md)
+- [route-wave-artifact.md](references/route-wave-artifact.md)
+- [falsification-rules.md](references/falsification-rules.md)
 - [counterexample-corpus.md](references/counterexample-corpus.md)
 - [normal-form-selection.md](references/normal-form-selection.md)
 - [abstraction-rent.md](references/abstraction-rent.md)

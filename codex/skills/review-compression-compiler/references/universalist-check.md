@@ -2,7 +2,7 @@
 
 The universalist check prevents repeated existing-owner repairs from hiding a missing boundary artifact.
 
-## Required field
+Required field:
 
 ```yaml
 universalist_check:
@@ -10,6 +10,7 @@ universalist_check:
   trigger:
     same_cluster_findings: 0
     existing_owner_repair_attempted: yes | no
+    prior_universalist_not_needed_falsified: yes | no
     missing_boundary_artifact: yes | no
     duplicated_projection: yes | no
     protocol_or_state_machine_missing: yes | no
@@ -22,16 +23,12 @@ universalist_check:
   boundary_packet_ref: "none | path-or-inline-id"
 ```
 
-## Must consider when
+Must consider when:
 
 - same-cluster findings >= 2;
 - existing-owner repair already attempted;
+- same cluster reappeared after selected normal form;
+- prior universalist not-needed was falsified;
 - add-new-surface candidate;
 - public/fallback/compatibility/parser-tolerance surface candidate;
 - repeated boundary/protocol/state-machine review findings.
-
-## Decision meanings
-
-- `use-universalist`: run `$universalist` or emit root-equivalent `universal_boundary_packet`.
-- `not-needed`: existing owner / lower abstraction route is sufficient.
-- `blocked`: boundary artifact question is unresolved; no mutation.

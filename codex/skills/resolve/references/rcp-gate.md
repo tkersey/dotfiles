@@ -1,11 +1,10 @@
-# RCP Gate
+# RCP and Route-Wave Gates
 
-A meaningful RCP must include literal `review_compression_packet:` and `universalist_check:`.
-
-Validate file packets:
+Validate packet files:
 
 ```bash
 python codex/skills/review-compression-compiler/tools/rcp_gate.py <packet-file>
+python codex/skills/review-compression-compiler/tools/route_wave_gate.py <route-wave-file>
 ```
 
-Gate failure blocks mutation.
+Gate failure blocks mutation or closure.

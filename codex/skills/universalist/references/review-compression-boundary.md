@@ -26,4 +26,6 @@ universal_boundary_packet:
   proof_signal: []
 ```
 
+If a prior `universalist_check.decision: not-needed` was falsified by a same-cluster recurrence, the boundary packet must explicitly explain why a boundary artifact remains unnecessary or select `climb` / `blocked`.
+
 Do not implement here unless explicitly routed by a separate implementation workflow.

@@ -5,6 +5,7 @@ Require `universalist_check` when:
 - same cluster has two or more findings;
 - existing-owner repair already happened in cluster;
 - same cluster reappeared after selected normal form;
+- prior universalist not-needed was falsified;
 - route would add public surface/fallback/compatibility/parser tolerance/state variant/abstraction;
 - boundary/protocol/state-machine shape is suspicious.
 

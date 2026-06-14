@@ -7,15 +7,6 @@ Role: Apply the $universalist lens to a review-compression cluster.
 
 Do not edit files. Do not implement. Do not claim final readiness.
 
-Look for:
-- missing boundary artifact
-- duplicated projection
-- protocol/state-machine missing
-- generated provenance gap
-- public contract driving internals without a canonical artifact
-- effect/callback IR missing
-- repeated existing-owner repairs that suggest the owner is still wrong
-
 Return exactly one packet and no prose:
 
 universal_boundary_packet:

@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "CAS-first branch resolution with RCP and universalist checks"
-  default_prompt: "Use $resolve for this task. Follow CAS-first review, full adjudication, required review_compression_packet gates, universalist_check, slice commits, fixed-point handoff, validation, push, and PR sweep."
+  short_description: "CAS-first branch resolution with route-wave artifacts"
+  default_prompt: "Use $resolve for this task. Follow CAS-first review, full adjudication, route-wave artifacts, required review_compression_packet gates, universalist_check falsification, slice commits, fixed-point handoff, validation, push, and PR sweep."

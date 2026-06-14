@@ -5,9 +5,11 @@ When `$resolve` supplies an RCP packet, `$fixed-point-driver` must implement the
 Reject mutation when:
 
 - `review_compression_packet` is missing but required;
+- route-wave artifact is missing or failing;
 - packet status is `blocked`;
 - `universalist_check.decision` is `blocked`;
 - `universalist_check.decision` is `use-universalist` but no universal boundary packet is supplied;
+- prior `universalist not-needed` was falsified and not resolved;
 - abstraction rent is unpaid;
 - proof matrix is missing;
 - handoff omits forbidden actions or surface budget.

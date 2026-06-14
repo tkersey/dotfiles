@@ -8,6 +8,6 @@ Require one of:
 - structured `not-required` packet proving isolated existing-owner direct proof;
 - explicit user-scoped implementation outside review compression.
 
-Preserve selected normal form, universalist decision, forbidden actions, surface budget, rent status, proof matrix, and stale conditions.
+Preserve selected normal form, route-wave ref, universalist decision, falsification status, forbidden actions, surface budget, rent status, proof matrix, and stale conditions.
 
 If implementation discovers the normal form is insufficient, stop and route back to `$review-compression-compiler` instead of adding local patches.

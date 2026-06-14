@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Compression Compiler"
-  short_description: "Emit required RCP packets with universalist checks"
-  default_prompt: "Use $review-compression-compiler to emit a compact review_compression_packet with universalist_check before implementation."
+  short_description: "Emit RCP packets and route-wave artifacts"
+  default_prompt: "Use $review-compression-compiler to emit a compact review_compression_packet, universalist_check, falsification rule, and route-wave artifact entry before implementation."

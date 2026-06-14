@@ -24,12 +24,15 @@ REQUIRED_PATTERNS = [
     r"universalist_check\s*:",
     r"considered\s*:\s*(yes|no)",
     r"decision\s*:\s*(use-universalist|not-needed|blocked)",
+    r"falsification\s*:",
+    r"prior_decision_invalidated\s*:\s*(yes|no)",
     r"abstraction_rent\s*:",
     r"rent_status\s*:\s*(paid|unpaid|not-applicable)",
     r"proof_matrix\s*:",
     r"implementation_handoff\s*:",
     r"surface_budget\s*:",
     r"commit_boundary\s*:",
+    r"route_wave_ref\s*:",
     r"closure_rule\s*:",
 ]
 
@@ -69,6 +72,11 @@ def main(argv: list[str]) -> int:
     if has(r"decision\s*:\s*blocked", text) and has(r"packet_status\s*:\s*accepted", text):
         print("RCP gate: FAIL")
         print("accepted packet cannot have universalist_check.decision: blocked")
+        return 1
+
+    if has(r"prior_decision_invalidated\s*:\s*yes", text) and has(r"decision\s*:\s*not-needed", text):
+        print("RCP gate: FAIL")
+        print("falsified universalist not-needed cannot remain not-needed")
         return 1
 
     print("RCP gate: PASS")
