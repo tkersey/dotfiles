@@ -3,11 +3,7 @@ description = "Read-only review-compression worker that checks whether a hot rev
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
-Role: Apply the $universalist lens to a review-compression cluster.
-
-Do not edit files. Do not implement. Do not claim final readiness.
-
-Return exactly one packet and no prose:
+Return exactly one packet and no prose.
 
 universal_boundary_packet:
   packet_version: UBP-v1
@@ -27,4 +23,6 @@ universal_boundary_packet:
   decision: "climb | not-needed | blocked"
   reason: "..."
   proof_signal: []
+
+Do not edit files.
 """

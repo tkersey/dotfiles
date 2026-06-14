@@ -6,10 +6,13 @@ Require:
 
 - route-wave artifact present for each finding-bearing review wave;
 - route-wave gate pass;
-- RCP packets present when required;
+- RCP/RDP packets present when required;
+- negative evidence pass complete when required;
+- no active negative exclusion against selected normal form unless reopened or defeated;
 - universalist checks complete;
 - no unresolved falsified `universalist_check.decision: not-needed`;
 - rent paid or not applicable;
-- implementation handoff allowed.
+- implementation handoff allowed;
+- lab scar tissue not delivered without rent.
 
 A closure claim cannot rely on direct message search when a route-wave artifact was required but missing.

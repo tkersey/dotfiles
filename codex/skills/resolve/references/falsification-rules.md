@@ -1,9 +1,7 @@
 # Falsification Rules in Resolve
 
-If a same-cluster finding appears after a prior RCP or implementation where `universalist_check.decision: not-needed`, mark:
+A repeated review decision is a falsified hypothesis.
 
-```yaml
-prior_universalist_not_needed_falsified: yes
-```
+If the same cluster reappears after a selected route, create a negative-ledger capture candidate.
 
-The next packet must route to `use-universalist` or `blocked` unless a universal boundary packet proves not-needed remains valid.
+If a same-cluster finding appears after `universalist_check.decision: not-needed`, the next packet must route to `use-universalist`, provide a universal boundary packet that proves not-needed remains valid, or block.

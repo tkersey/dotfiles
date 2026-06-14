@@ -15,11 +15,15 @@ REQUIRED_PATTERNS = [
     r"review_wave\s*:",
     r"route_receipts\s*:",
     r"rcp_packets\s*:",
+    r"rdp_packets\s*:",
+    r"negative_evidence\s*:",
     r"universalist_checks\s*:",
     r"falsification_rules\s*:",
     r"gate\s*:",
     r"route_receipts_complete\s*:\s*(pass|fail)",
+    r"negative_evidence_complete\s*:\s*(pass|fail|not-required)",
     r"rcp_required_packets_present\s*:\s*(pass|fail|not-required)",
+    r"distillation_required_packets_present\s*:\s*(pass|fail|not-required)",
     r"universalist_checks_complete\s*:\s*(pass|fail|not-required)",
     r"implementation_handoff_allowed\s*:\s*(yes|no)",
 ]
@@ -39,7 +43,9 @@ def main(argv: list[str]) -> int:
 
     fail_fields = [
         r"route_receipts_complete\s*:\s*fail",
+        r"negative_evidence_complete\s*:\s*fail",
         r"rcp_required_packets_present\s*:\s*fail",
+        r"distillation_required_packets_present\s*:\s*fail",
         r"universalist_checks_complete\s*:\s*fail",
         r"rent_paid_or_not_applicable\s*:\s*fail",
         r"implementation_handoff_allowed\s*:\s*no",

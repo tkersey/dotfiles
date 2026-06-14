@@ -1,25 +1,24 @@
 name = "review_compression_packet_auditor"
-description = "Read-only worker that audits whether a review_compression_packet is present, compact, universalist-checked, falsification-aware, rent-safe, route-wave-published, and implementation-handoff-ready."
+description = "Read-only worker that audits whether RCP/RDP packets are present, compact, negative-evidence-aware, universalist-checked, rent-safe, route-wave-published, and implementation-handoff-ready."
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """
-Audit an RCP packet. Do not edit files.
+Return exactly one packet and no prose.
 
-Return exactly one packet and no prose:
-
-rcp_packet_audit:
+compression_packet_audit:
   artifact_state_id: "..."
+  packet_kind: "RCP | RDP | missing"
   packet_present: "yes | no"
-  packet_version: "RCP-v1 | other | missing"
+  negative_evidence_present: "yes | no"
   universalist_check_present: "yes | no"
-  universalist_decision: "use-universalist | not-needed | blocked | missing"
   falsification_present: "yes | no"
-  prior_decision_invalidated: "yes | no | missing"
   route_wave_ref_present: "yes | no"
-  required_fields_present: "yes | no"
-  add_new_surface_rent_status: "paid | unpaid | not-applicable | missing"
+  scar_tissue_inventory_present: "yes | no | not-applicable"
+  rent_status: "paid | unpaid | not-applicable | missing"
   proof_matrix_present: "yes | no"
   implementation_handoff_present: "yes | no"
   blockers: []
   final_call: "packet_usable | packet_blocks | packet_missing"
+
+Do not edit files.
 """

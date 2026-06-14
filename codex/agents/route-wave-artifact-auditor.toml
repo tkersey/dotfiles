@@ -1,22 +1,24 @@
 name = "route_wave_artifact_auditor"
-description = "Read-only worker that audits resolve_review_wave_packet artifacts for recoverable route, RCP, universalist, falsification, rent, and handoff gates."
+description = "Read-only worker that audits resolve_review_wave_packet artifacts for route, RCP, RDP, negative-ledger, universalist, falsification, rent, and handoff gates."
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """
-Audit a route-wave artifact. Do not edit files.
-
-Return exactly one packet and no prose:
+Return exactly one packet and no prose.
 
 route_wave_artifact_audit:
   artifact_state_id: "..."
   route_wave_present: "yes | no"
   packet_version: "RRW-v1 | other | missing"
   route_receipts_complete: "pass | fail"
+  negative_evidence_complete: "pass | fail | not-required"
   rcp_required_packets_present: "pass | fail | not-required"
+  distillation_required_packets_present: "pass | fail | not-required"
   universalist_checks_complete: "pass | fail | not-required"
   falsification_rules_present: "pass | fail | not-required"
   rent_paid_or_not_applicable: "pass | fail | not-required"
   implementation_handoff_allowed: "yes | no"
   blockers: []
   final_call: "wave_usable | wave_blocks | wave_missing"
+
+Do not edit files.
 """

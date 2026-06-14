@@ -14,9 +14,11 @@ cluster_cartography_packet:
       subsystem: "..."
       duplicate_or_shadow_surfaces: []
       boundary_shape_suspected: "yes | no"
+      prior_route_falsified: "yes | no"
       prior_universalist_not_needed_falsified: "yes | no"
+      distillation_recommended: "yes | no"
       cluster_status: "isolated | hot | repeated | blocked"
-  final_call: "compile_cluster | local_fix_ok | gather_more_evidence"
+  final_call: "compile_cluster | distill_cluster | local_fix_ok | gather_more_evidence"
 
 Do not edit files.
 """

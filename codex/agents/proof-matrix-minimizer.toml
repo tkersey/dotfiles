@@ -13,7 +13,9 @@ proof_matrix_packet:
       counterexamples_covered: []
       command_or_test: "..."
       existing_or_new: "existing | new | modified | manual"
-  omitted_tests: []
+  omitted_tests:
+    - candidate: "..."
+      reason_omitted: "covered_by_matrix | impossible_fixture | duplicate_case | exploratory_only"
   final_call: "proof_minimal | proof_too_broad | proof_gap_blocks"
 
 Do not edit files.

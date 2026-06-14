@@ -1,22 +1,25 @@
 ---
 name: resolve
-description: "Resolve the current branch through a CAS-first, receipt-backed review loop with native review as recorded fallback only. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR comment sweep, three consecutive clean reviews, route-wave artifact publication, review_compression_packet enforcement, universalist_check enforcement/falsification, RCP-v1/RRW-v1 gates, dirty-tree slice commits, CAS review lanes, full review-adjudication route consumption, surface-budgeted fixed-point fixes, and final pushed readiness. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
+description: "Resolve the current branch through a CAS-first, receipt-backed review loop with native review as recorded fallback only. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR comment sweep, three consecutive clean reviews, route-wave artifact publication, review_compression_packet and review_distillation_packet enforcement, negative-ledger route memory, universalist_check enforcement/falsification, RCP/RDP/RRW gates, review-lab/delivery distillation, dirty-tree slice commits, CAS review lanes, full review-adjudication route consumption, surface-budgeted fixed-point fixes, and final pushed readiness. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
 ---
 
 # resolve
 
 ## Purpose
 
-Resolve the current branch to a pinned-review-clean, validated, committed, pushed, and PR-comment-swept state without letting review findings accumulate unbounded code.
+Resolve the current branch to a pinned-review-clean, validated, committed, pushed, and PR-comment-swept state without delivering the accumulated review loop.
 
 ## Core doctrine
 
 ```text
 Review findings are counterexamples, not tasks.
+Do not deliver the review loop.
+The lab learns. The delivery branch forgets.
 No route-wave artifact, no closure.
-No packet, no review-driven production patch when RCP is required.
+No packet, no review-driven production patch when packet is required.
+No negative-ledger pass after repeated route failure, no repeated route.
 No universalist_check, no hot-cluster production patch.
-If same cluster reappears, prior universalist not-needed is falsified.
+Same-cluster recurrence falsifies prior universalist not-needed and prior selected route.
 Green slice, then checkpoint commit; do not drag a huge dirty tree through repeated reviews.
 ```
 
@@ -31,10 +34,13 @@ Green slice, then checkpoint commit; do not drag a huge dirty tree through repea
 + no unprocessed in-scope PR comments
 + no actionable PR comments remaining
 + route-wave artifacts published for review waves
-+ no missing RCP packet where required
++ no missing RCP/RDP packet where required
++ no missing negative evidence pass where required
++ no active negative exclusion against selected route
 + no missing universalist_check where required
-+ no falsified universalist not-needed left unresolved
++ no unresolved falsification
 + no unpaid abstraction rent
++ no lab scar tissue delivered without rent
 ```
 
 ## Entry guard
@@ -44,8 +50,10 @@ Before any review command or patch runs, load enough of this skill to include:
 - Backend selection
 - Review adjudication route consumption
 - Route-wave artifact publication
-- RCP gate
+- RCP/RDP gates
+- Negative-ledger route memory
 - Universalist check enforcement and falsification
+- Review Distillation Mode
 - Slice commit cadence
 - Fixed-point and implementation handoff
 - Non-negotiables
@@ -58,7 +66,7 @@ Review results must pin backend class, base ref/SHA, `HEAD` SHA, and target fing
 
 ## Route-wave artifact publication
 
-For every review wave with findings or any route/RCP/universalist decision, publish a first-class artifact.
+For every review wave with findings or any route/RCP/RDP/negative-ledger/universalist decision, publish a first-class artifact.
 
 Preferred path:
 
@@ -81,35 +89,24 @@ resolve_review_wave_packet:
     backend:
     receipt_id:
     finding_ids: []
-  route_receipts:
-    - review_item_id:
-      adjudication_route:
-      rcp_required: yes | no
-      rcp_packet_id:
-      universalist_check_required: yes | no
-      universalist_decision: use-universalist | not-needed | blocked
-      selected_route:
-      proof_required: []
-  rcp_packets:
-    - packet_id:
-      packet_status:
-      selected_normal_form:
-      abstraction_rent_status:
-      proof_matrix_summary:
-      commit_boundary:
-  universalist_checks:
-    - packet_id:
-      decision:
-      boundary_packet_ref:
-      prior_not_needed_falsified: yes | no
-  falsification_rules:
-    - cluster_id:
-      if_same_cluster_reappears:
-      prior_decision_invalidated:
-      next_required_action:
+  route_receipts: []
+  rcp_packets: []
+  rdp_packets: []
+  negative_evidence:
+    pass_status: pass | fail | not-required
+    active_exclusions: []
+    captured_failures: []
+    reopened_entries: []
+    durable_writeback:
+      status: appended | duplicate-skip | not-attempted | unavailable
+      ids: []
+  universalist_checks: []
+  falsification_rules: []
   gate:
     route_receipts_complete: pass | fail
+    negative_evidence_complete: pass | fail | not-required
     rcp_required_packets_present: pass | fail | not-required
+    distillation_required_packets_present: pass | fail | not-required
     universalist_checks_complete: pass | fail | not-required
     rent_paid_or_not_applicable: pass | fail | not-required
     implementation_handoff_allowed: yes | no
@@ -118,16 +115,10 @@ resolve_review_wave_packet:
 After writing or updating the artifact, emit a visible line:
 
 ```text
-Resolve route artifact: <path>; gate=<pass|fail>; rcp=<accepted|blocked|not-required>; universalist=<use-universalist|not-needed|blocked>; route=<selected-route>; next=<action>
+Resolve route artifact: <path>; gate=<pass|fail>; packet=<RCP|RDP|not-required>; negative=<pass|fail|not-required>; universalist=<use-universalist|not-needed|blocked>; route=<selected-route>; next=<action>
 ```
 
-If a route/RCP/universalist decision is not in a route-wave artifact or final visible `Resolve route artifact:` line, it does not count for closure.
-
-When possible, validate:
-
-```bash
-python codex/skills/review-compression-compiler/tools/route_wave_gate.py <route-wave-file>
-```
+If a route/RCP/RDP/negative-ledger/universalist decision is not in a route-wave artifact or final visible `Resolve route artifact:` line, it does not count for closure.
 
 ## Review loop
 
@@ -138,11 +129,13 @@ Repeat until `clean_review_streak == 3`:
 3. If findings/comments appear:
    - reset streak;
    - adjudicate every in-scope item through `$review-adjudication`;
-   - decide whether RCP is required;
-   - if RCP required, emit or obtain `review_compression_packet`;
+   - update cluster and prior-decision state;
+   - decide whether RCP or RDP is required;
+   - run `$negative-ledger` query/map when route repetition or falsification is present;
+   - emit or obtain required packet;
    - reject prose-only normal-form reasoning;
    - reject hot-cluster packets without `universalist_check`;
-   - apply falsification rule for prior `universalist_check.decision: not-needed`;
+   - apply falsification rules for prior routes and prior `universalist not-needed`;
    - publish/update route-wave artifact;
    - route accepted packet to `$fixed-point-driver`;
    - run targeted proof;
@@ -154,30 +147,33 @@ Do not collapse everything to `address`.
 
 | adjudication route | `$resolve` handling |
 |---|---|
-| `address` / `mutate-code` | route receipt, RCP gate if triggered, route-wave artifact, then `$fixed-point-driver` |
-| `delete-collapse-canonicalize` | RCP/fixed-point with ablation preferred |
+| `address` / `mutate-code` | route receipt, RCP/RDP gate if triggered, negative-ledger when repeated/falsified, route-wave artifact, then `$fixed-point-driver` |
+| `delete-collapse-canonicalize` | RCP/RDP/fixed-point with ablation preferred |
 | `validate-only` | proof only; reset streak if files change |
 | `resolve-thread-only` | reply/resolve only if provider policy permits |
 | `do-not-address` | record rationale; review run still not clean |
 | `blocked` | stop before commit/push |
 
-## RCP gate
+## Packet gates
 
 Every mutation-capable review item must create a route receipt:
 
 ```yaml
 resolve_route_receipt:
-  receipt_version: RR-v4
+  receipt_version: RR-v5
   review_item_id: "..."
   artifact_state_id: "..."
   adjudication_route: "..."
   mutation_capable: yes
   rcp_required: yes | no
-  rcp_packet_id: "RCP-..." # required when rcp_required=yes
+  rdp_required: yes | no
+  packet_id: "RCP-... | RDP-..."
+  negative_ledger_required: yes | no
   universalist_check_required: yes | no
+  prior_route_falsified: yes | no
   prior_universalist_not_needed_falsified: yes | no
-  bypass_reason: "isolated existing-owner no-new-surface direct proof" # only when rcp_required=no
-  selected_route: no-change | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked
+  bypass_reason: "isolated existing-owner no-new-surface direct proof" # only when packet_required=no
+  selected_route: no-change | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | distill-from-lab | blocked
   proof_required: []
 ```
 
@@ -185,50 +181,60 @@ resolve_route_receipt:
 
 - same cluster has two or more findings;
 - same cluster reappears after a fix;
-- an existing-owner repair was already attempted in the cluster;
-- prior universalist not-needed was falsified;
+- existing-owner repair was already attempted in the cluster;
+- prior route or universalist not-needed was falsified;
 - route would add production surface;
 - route would add helper/wrapper/adapter/fallback/flag/branch/state variant/public symbol/compatibility path;
 - boundary/protocol/state-machine shape is suspicious;
 - review findings are repeatedly selecting `address`;
-- dirty tree contains multiple review-driven repairs;
 - surface delta would be `larger-with-warrant` or `larger-without-warrant`.
 
-`universalist_check_required: yes` when any are true:
+`rdp_required: yes` when any are true:
 
-- same cluster has two or more findings;
-- existing-owner repair already attempted in cluster;
-- same cluster reappeared after a selected normal form;
-- prior universalist not-needed was falsified;
-- route would add public surface, fallback, compatibility path, parser tolerance, state variant, or abstraction;
-- a missing boundary artifact, duplicated projection, protocol/state-machine gap, generated provenance gap, public-contract/internal mismatch, or effect/callback IR gap is plausible.
+- dirty tree contains multiple review-driven repairs;
+- CAS keeps finding adjacent issues after green local proof;
+- exploratory repair history exists and should not be delivered;
+- repeated same-cluster local repairs are becoming the branch history;
+- route would transplant lab/helper/fallback/compatibility surface into delivery branch;
+- user asks for review distillation or clean delivery patch.
 
-If `rcp_required: yes`, no production patch may occur until an accepted `review_compression_packet` exists.
+`negative_ledger_required: yes` when any are true:
 
-If `universalist_check_required: yes`, the packet must include `universalist_check.considered: yes`.
+- same cluster reappears after repair;
+- prior selected route is falsified;
+- prior universalist not-needed is falsified;
+- add-surface route failed or became unsound;
+- public bypass / compatibility / tolerance path was introduced then rejected;
+- one-change candidate resembles a prior failed route;
+- Review Distillation Mode is active.
 
-## Required review_compression_packet
+If a required packet or negative-ledger pass is missing, do not mutate.
 
-When required, the packet must contain the literal keys:
+## Negative-ledger route memory
+
+Before repeating any route in a hot cluster, run a root-owned negative-ledger query/map pass or use `negative_ledger_mapper` when evidence is spread across route waves, RCP/RDP packets, CAS receipts, commits, PR comments, and learnings.
+
+Every falsified route creates a capture candidate:
 
 ```yaml
-review_compression_packet:
-universalist_check:
-falsification:
-route_wave_ref:
+negative_capture_candidate:
+  hypothesis: "..."
+  attempted_change_or_decision: "..."
+  observed_outcome: "same-cluster counterexample reappeared"
+  failure_class: no-effect | local-regression | global-regression | unsound | too-complex | stale | unknown
+  exclusion_rule: "..."
+  reopening_criteria: []
 ```
 
-For packet files, run when possible:
+The next packet must either:
 
-```bash
-python codex/skills/review-compression-compiler/tools/rcp_gate.py <packet-file>
-```
-
-A failed gate blocks mutation.
+1. avoid the active excluded route;
+2. prove the negative evidence stale/superseded/reopened;
+3. or block.
 
 ## Universalist check enforcement and falsification
 
-If RCP says:
+If packet says:
 
 ```yaml
 universalist_check:
@@ -239,29 +245,40 @@ then `$resolve` must obtain `$universalist` output or a root-equivalent `univers
 
 If decision is `blocked`, stop before mutation.
 
-If decision is `not-needed`, record the reason and the falsification rule in the route-wave artifact.
+If decision is `not-needed`, record the reason and falsification rule in the route-wave artifact.
 
-If the same cluster reappears after a `not-needed` decision:
+If the same cluster reappears after a `not-needed` decision, the next packet cannot keep `not-needed` unless a universal boundary packet explicitly proves the boundary artifact is still unnecessary.
 
-```yaml
-prior_universalist_not_needed_falsified: yes
-```
+## Review Distillation Mode
 
-The next packet cannot keep `universalist_check.decision: not-needed` unless a universal boundary packet explicitly proves the boundary artifact is still unnecessary. Otherwise route to `use-universalist` or `blocked`.
+When `rdp_required: yes`, freeze the delivery branch and treat further exploratory repair as review-lab evidence.
+
+Policy:
+
+1. Freeze delivery base: branch, head SHA, base SHA, diff digest, proof state.
+2. Use or create a disposable review lab branch/worktree outside final delivery.
+3. Lift lab findings and repairs into counterexamples and scar-tissue entries.
+4. Emit `review_distillation_packet`.
+5. Rebuild selected normal form from delivery base.
+6. Do not cherry-pick lab commits by default.
+7. Prove delivery branch covers lab counterexamples.
+8. Discard or retain lab only as evidence.
+
+No RDP, no delivery patch when distillation is required.
 
 ## Slice commit cadence
 
-After an accepted RCP or coherent review-addressed slice:
+After an accepted RCP/RDP or coherent review-addressed slice:
 
-1. apply the selected normal form through `$fixed-point-driver` / `$accretive-implementer`;
+1. apply selected normal form through `$fixed-point-driver` / `$accretive-implementer`;
 2. run targeted proof;
 3. inspect diff and surface delta;
-4. update the route-wave artifact;
+4. update route-wave artifact;
 5. create a local checkpoint commit before another long CAS review cycle unless the slice is tiny and final clean review is immediate.
 
-Checkpoint commits are not final closure. They create stable tuples for CAS review and keep review-driven accumulation from becoming one giant dirty tree.
+Checkpoint commits are not final closure. They create stable tuples for CAS review.
 
-Do not checkpoint when unrelated changes are present, proof failed, RCP is blocked, rent is unpaid, universalist_check is blocked, route-wave gate fails, or surface delta is `larger-without-warrant`.
+Do not checkpoint when unrelated changes are present, proof failed, packet is blocked, negative evidence blocks the route, rent is unpaid, universalist_check is blocked, route-wave gate fails, or surface delta is `larger-without-warrant`.
 
 ## Fixed-point and implementation handoff
 
@@ -273,11 +290,15 @@ implementation_handoff:
   target_skill: fixed-point-driver
   artifact_state_id: "..."
   review_item_id: "..."
-  rcp_packet_id: "..."
+  packet_id: "RCP-... | RDP-..."
   route_wave_ref: "..."
   selected_normal_form:
     kind: "..."
     owner: "..."
+  negative_evidence:
+    active_exclusions: []
+    reopened_entries: []
+    capture_required: []
   universalist_check:
     decision: use-universalist | not-needed | blocked
     boundary_packet_ref: "..."
@@ -297,7 +318,7 @@ implementation_handoff:
   stale_if: []
 ```
 
-Do not hand off mutation with unpaid rent, blocked universalist_check, falsified unresolved not-needed, missing route-wave artifact, or missing proof matrix.
+Do not hand off mutation with active negative exclusion, unpaid rent, blocked universalist_check, unresolved falsification, missing route-wave artifact, or missing proof matrix.
 
 ## Surface delta reporting
 
@@ -322,9 +343,9 @@ surface_delta_summary:
 
 ## Validation and PR sweep
 
-After three clean reviews, run full validation. If validation fails, route contested actionability through adjudication and run RCP gate when mutation or surface growth may result.
+After three clean reviews, run full validation. If validation fails, route contested actionability through adjudication and run packet/negative-ledger gates when mutation or surface growth may result.
 
-After push, sweep PR comments/threads. PR items follow the same adjudication -> RCP gate -> universalist_check when required -> route-wave artifact -> fixed-point flow.
+After push, sweep PR comments/threads. PR items follow the same adjudication -> packet gate -> negative-ledger when repeated/falsified -> universalist_check when required -> route-wave artifact -> fixed-point flow.
 
 ## Final report
 
@@ -336,9 +357,11 @@ Resolve Bottom Line:
 - review_backend/base/head:
 - clean_review_streak:
 - route_wave_artifacts:
-- rcp_packets: accepted=N, blocked=N, not_required=N, missing=N
+- packets: rcp_accepted=N, rdp_accepted=N, blocked=N, missing=N
+- negative_evidence: active=N, captured=N, reopened=N, blocked=N
 - universalist_checks: use=N, not_needed=N, blocked=N, missing=N, falsified=N
 - abstraction_rent: paid=N, unpaid=N, not_applicable=N
+- distillation: used=yes/no, lab_discarded_or_retained:
 - checkpoint_commits:
 - surface_delta_call:
 - validation:
@@ -352,21 +375,26 @@ Resolve Bottom Line:
 - CAS-first; native review fallback-only.
 - Three clean pinned review runs required.
 - Review comments are not tasks.
+- Do not deliver the review loop.
 - No route-wave artifact, no closure.
-- No packet, no review-driven production patch when RCP is required.
+- No required RCP/RDP, no review-driven production patch.
+- No repeated route after falsification without negative-ledger map/reopen/block.
 - No hot-cluster production patch without `universalist_check`.
-- A same-cluster recurrence falsifies prior `universalist_check.decision: not-needed`.
-- `add-new-surface` requires paid abstraction rent and universalist_check.
-- Do not route mutation to `$fixed-point-driver` without selected normal form, route-wave ref, universalist decision, surface budget, forbidden actions, rent status, and proof.
-- Do not claim resolved with failed validation, missing route-wave artifact, missing RCP, missing required universalist_check, unresolved falsification, unpaid rent, incomplete PR sweep, or stale review tuple.
+- Same-cluster recurrence falsifies prior `universalist_check.decision: not-needed`.
+- Add-new-surface requires paid abstraction rent and universalist_check.
+- Review-lab commits are not delivery commits.
+- Do not route mutation to `$fixed-point-driver` without selected normal form, route-wave ref, negative-evidence status, universalist decision, surface budget, rent status, and proof.
+- Do not claim resolved with failed validation, missing route-wave artifact, missing packet, missing negative-ledger pass, active negative exclusion against the selected route, unpaid rent, incomplete PR sweep, or stale review tuple.
 
 ## Resources
 
 - [route-wave-artifact.md](references/route-wave-artifact.md)
 - [review-compression-compiler-integration.md](references/review-compression-compiler-integration.md)
+- [review-distillation-mode.md](references/review-distillation-mode.md)
+- [negative-ledger-integration.md](references/negative-ledger-integration.md)
 - [universalist-check.md](references/universalist-check.md)
 - [falsification-rules.md](references/falsification-rules.md)
-- [rcp-gate.md](references/rcp-gate.md)
+- [gates.md](references/gates.md)
 - [slice-commit-cadence.md](references/slice-commit-cadence.md)
 - [implementation-handoff.md](references/implementation-handoff.md)
 - [surface-delta-reporting.md](references/surface-delta-reporting.md)

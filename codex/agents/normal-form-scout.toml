@@ -1,5 +1,5 @@
 name = "normal_form_scout"
-description = "Read-only worker that proposes minimum-surface normal forms and flags when $universalist should be considered."
+description = "Read-only worker that proposes minimum-surface normal forms and flags when $universalist, negative-ledger, or review distillation should be used."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
@@ -12,9 +12,15 @@ normal_form_scout_packet:
     considered: "yes | no"
     decision: "use-universalist | not-needed | blocked"
     reason: "..."
+  negative_evidence_check:
+    query_needed: "yes | no"
+    reason: "..."
+  distillation_check:
+    recommended: "yes | no"
+    reason: "..."
   candidate_normal_forms:
     - id: "NF-..."
-      kind: "no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked"
+      kind: "no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | distill-from-lab | blocked"
       owner: "..."
       counterexamples_killed: []
       production_surface_delta: "negative | zero | bounded-positive | expansion | unknown"
@@ -23,7 +29,7 @@ normal_form_scout_packet:
   recommended_form:
     id: "..."
     reason: "..."
-  final_call: "select | blocked | needs_proof"
+  final_call: "select | distill | blocked | needs_proof"
 
 Do not edit files.
 """

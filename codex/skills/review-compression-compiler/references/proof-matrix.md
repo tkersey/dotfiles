@@ -10,3 +10,5 @@ Prefer proof that covers a family:
 - canonicalization/round-trip test;
 - existing test extension;
 - one representative regression plus table.
+
+In distillation mode, include which lab tests were discarded or merged.

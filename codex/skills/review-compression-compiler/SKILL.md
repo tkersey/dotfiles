@@ -1,8 +1,8 @@
 ---
 name: review-compression-compiler
-description: "Required packet compiler for review-driven mutation. Converts review findings, PR comments, validation failures, and repeated CAS findings into compact `review_compression_packet` artifacts with selected normal form, explicit `$universalist` boundary check, falsification rules, abstraction rent, proof matrix, surface budget, route-wave publication, and implementation handoff. Use for `$review-compression-compiler`, review compression, RCP-v1, RRW-v1, same-cluster findings, wrong shape of truth, missing boundary artifact, adjacent CAS findings after a fix, add-surface pressure, dirty-tree review accumulation, or resolving reviews without code growth. Read-only: do not edit code."
+description: "Required packet compiler for review-driven mutation and review distillation. Converts review findings, PR comments, validation failures, repeated CAS findings, lab repair history, and falsified remediation routes into compact `review_compression_packet` / `review_distillation_packet` artifacts with selected normal form, explicit `$universalist` boundary check, `$negative-ledger` exclusions/capture, abstraction rent, scar-tissue disposition, proof matrix, surface budget, route-wave publication, and fixed-point handoff. Use for `$review-compression-compiler`, review compression, review distillation, RCP-v1, RDP-v1, RRW-v1, same-cluster findings, wrong shape of truth, missing boundary artifact, repeated review decisions, adjacent CAS findings after a fix, add-surface pressure, dirty-tree review accumulation, lab/delivery split, or resolving reviews without code growth. Read-only: do not edit code."
 metadata:
-  version: "4.0.0"
+  version: "5.0.0"
   activation_cost: medium
   default_depth: strict
 ---
@@ -13,22 +13,24 @@ metadata:
 
 Review findings are **counterexamples**, not tasks.
 
-This skill compiles review findings, PR comments, validation failures, and repeated CAS findings into the smallest proof-carrying normal form that kills the counterexample family without unbounded code accumulation.
+This skill compiles review findings, PR comments, validation failures, repeated CAS findings, lab evidence, and falsified remediation decisions into the smallest proof-carrying normal form that kills the counterexample family without unbounded code accumulation.
 
 It does **not** edit files.
 
-## v4 focus
+## v5 focus
 
-v3 added `universalist_check`. v4 adds two closure-critical requirements:
+v4 added durable route-wave artifacts and universalist falsification. v5 preserves all of that and adds two control surfaces:
 
-1. **Durable route-wave publication**: route/RCP/universalist decisions must be written or surfaced as a first-class artifact that `seq` and humans can recover without fragile message search.
-2. **Universalist-not-needed falsification**: if a same-cluster finding reappears after a packet decided `universalist_check.decision: not-needed`, the next packet cannot default to `not-needed`; it must produce a `$universalist` output, a root-equivalent `universal_boundary_packet`, or block.
+1. **Review Distillation Mode** — do not deliver the review loop. Use a review lab to learn, then rederive a clean delivery patch from the frozen delivery base.
+2. **Negative Evidence Memory** — a repeated review decision is a falsified hypothesis. `$negative-ledger` turns failed routes into active exclusions, reopening criteria, and safer next frontiers.
 
 ```text
 No route-wave artifact -> no closure.
-No packet -> no review-driven production patch.
+No packet -> no review-driven production patch when required.
 No universalist_check on a hot cluster -> no same-cluster production patch.
 Same-cluster recurrence falsifies prior universalist not-needed.
+Repeated route failure creates negative evidence.
+Do not deliver the review loop.
 No rent -> no new surface.
 No proof matrix -> no implementation handoff.
 ```
@@ -39,13 +41,16 @@ No proof matrix -> no implementation handoff.
 $resolve
   -> $review-adjudication
   -> $review-compression-compiler
+  -> $negative-ledger query/map
   -> optional $universalist / root-equivalent universal_boundary_packet
+  -> optional Review Distillation Mode
   -> $fixed-point-driver
   -> $accretive-implementer
+  -> negative-ledger capture
   -> validation / review closure
 ```
 
-`$resolve` owns branch state. This skill owns counterexample compression. `$universalist` owns missing-boundary / wrong-shape-of-truth analysis. `$fixed-point-driver` owns normal-form remediation routing. `$accretive-implementer` owns single-writer execution after route selection.
+`$resolve` owns branch state. This skill owns counterexample compression and distillation packets. `$negative-ledger` owns falsified-route memory and active exclusions. `$universalist` owns missing-boundary / wrong-shape-of-truth analysis. `$fixed-point-driver` owns normal-form remediation routing. `$accretive-implementer` owns single-writer execution after route selection.
 
 ## Activation boundary
 
@@ -53,36 +58,67 @@ Use this skill when any are true:
 
 - two findings appear in the same subsystem, owner, protocol, state machine, proof surface, or invariant family;
 - CAS finds an adjacent issue after a previous fix;
-- a same-cluster finding reappears after a prior packet or normal form;
-- a prior packet used `universalist_check.decision: not-needed` and the same cluster reappeared;
-- an existing-owner repair has already been attempted in the same cluster;
+- same cluster reappears after a prior packet or normal form;
+- prior `universalist_check.decision: not-needed` was falsified;
+- prior selected normal form, route, proof matrix, or implementation shape was falsified;
+- existing-owner repair has already been attempted in the same cluster;
+- dirty tree contains multiple review-driven repairs;
+- exploratory repair work exists and should not be delivered by default;
 - the next route would add helper/wrapper/adapter/fallback/flag/branch/state variant/public symbol/compatibility path;
-- review findings suggest a missing boundary artifact, duplicated projection, protocol/state-machine gap, generated provenance gap, public-contract/internal mismatch, effect/callback IR gap, or wrong shape of truth;
-- the branch has a growing dirty tree from review-driven repairs;
-- all decision-bearing review items are selecting `address`;
+- review findings suggest missing boundary artifact, duplicated projection, protocol/state-machine gap, generated provenance gap, public-contract/internal mismatch, effect/callback IR gap, or wrong shape of truth;
 - production or test surface is growing without deletion/collapse evidence;
 - `$resolve` needs a machine-auditable route packet before mutation.
 
 Do not use when:
 
-- one isolated bug has one obvious existing owner, no new surface, no boundary smell, and one direct proof;
+- one isolated bug has one obvious existing owner, no new surface, no boundary smell, no prior failed route, and one direct proof;
 - implementation is already selected and only needs execution;
 - the task is final closure proof only;
 - the user asks only for explanation.
 
+## Review Distillation Mode
+
+When a hot cluster or dirty repair loop appears, switch from in-place repair to distillation.
+
+```text
+Review Lab       = messy exploratory evidence branch/worktree
+Delivery Branch  = clean rederived patch from frozen base
+```
+
+Core rule:
+
+```text
+The lab learns. The delivery branch forgets.
+```
+
+Trigger distillation when any are true:
+
+- `same_cluster_findings >= 2`;
+- same cluster reappears after fix;
+- dirty tree contains multiple review repairs;
+- route would add public/fallback/compatibility/tolerance surface;
+- prior universalist-not-needed was falsified;
+- prior selected normal form was falsified;
+- CAS keeps finding adjacent issues after green local proof.
+
+This skill does not create or mutate the lab. It emits the packet that governs the lab/delivery split.
+
 ## Packet-first rule
 
-Every meaningful invocation must emit exactly one compact packet containing the literal key:
+Every meaningful invocation must emit exactly one compact packet containing one of these literal keys:
 
 ```yaml
 review_compression_packet:
+review_distillation_packet:
 ```
 
-The packet may be inline, written to a durable run ledger, or both. If a packet is written to a file, echo the path and include a compact inline summary with `packet_id`, `packet_status`, `selected_normal_form.kind`, `universalist_check.decision`, `abstraction_rent.rent_status`, `proof_matrix`, and `route_wave_ref`.
+The packet may be inline, written to a durable run ledger, or both. If a packet is written to a file, echo the path and include a compact inline summary with packet id/status, selected normal form, universalist decision, negative-evidence status, rent status, proof matrix, and route-wave ref.
 
 Prose may explain the packet. Prose is not the packet.
 
-## Required compact packet
+## Required Review Compression Packet
+
+Use RCP for ordinary same-cluster review compression that still patches directly from the current delivery state.
 
 ```yaml
 review_compression_packet:
@@ -92,7 +128,7 @@ review_compression_packet:
   artifact_state_id: "branch/head/base/diff/phase"
   cluster_id: "..."
   trigger:
-    reason: second_same_cluster_finding | adjacent_review_after_fix | surface_growth | add_surface_request | repeated_address_route | same_cluster_reappeared | dirty_tree_review_accumulation | boundary_shape_suspected | not-required
+    reason: second_same_cluster_finding | adjacent_review_after_fix | surface_growth | add_surface_request | repeated_address_route | same_cluster_reappeared | dirty_tree_review_accumulation | boundary_shape_suspected | negative_evidence_active | not-required
     review_item_ids: []
   counterexamples:
     - id: "CE-..."
@@ -101,6 +137,19 @@ review_compression_packet:
       expected_contract: "..."
       owner_candidate: "..."
       evidence_ref: "..."
+  negative_evidence:
+    query_status: not-run | no-applicable-negative-evidence | active | stale | reopened | blocked
+    active_exclusions:
+      - neg_id: "..."
+        excludes_route: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | universalist-not-needed | proof-matrix | commit-boundary
+        exclusion_rule: "..."
+        reopening_criteria: []
+    reopened_or_stale: []
+    capture_required:
+      - hypothesis: "..."
+        attempted_change_or_decision: "..."
+        observed_outcome: "..."
+        failure_class: no-effect | local-regression | global-regression | unsound | too-complex | stale | unknown
   universalist_check:
     considered: yes | no
     trigger:
@@ -118,13 +167,14 @@ review_compression_packet:
     reason: "..."
     boundary_packet_ref: "none | path-or-inline-id"
   falsification:
-    prior_packet_id: "none | RCP-..."
-    prior_universalist_decision: not-needed | use-universalist | blocked | none
+    prior_packet_id: "none | RCP-... | RDP-..."
+    falsified_hypothesis: "none | ..."
     same_cluster_reappeared_after_prior_decision: yes | no
     prior_decision_invalidated: yes | no
-    next_required_action: universal-boundary-packet | reopen-compiler | block | none
+    negative_capture_candidate: yes | no
+    next_required_action: negative-ledger-map | universal-boundary-packet | reopen-compiler | distill | block | none
   selected_normal_form:
-    kind: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked
+    kind: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | distill-from-lab | blocked
     owner: "..."
     why_minimum: "..."
     why_no_smaller_form_suffices: "..."
@@ -159,159 +209,138 @@ review_compression_packet:
     required: yes | no
     path_or_inline_id: "..."
   closure_rule:
-    if_same_cluster_finding_reappears: reopen_compiler | block | escalate
+    if_same_cluster_finding_reappears: reopen_compiler | negative-ledger-map | distill | block | escalate
 ```
+
+## Required Review Distillation Packet
+
+Use RDP when the review loop itself must not be delivered.
+
+```yaml
+review_distillation_packet:
+  packet_version: RDP-v1
+  packet_id: "RDP-<cluster-id>"
+  packet_status: accepted | blocked
+  artifact_state_id: "branch/head/base/diff/phase"
+  cluster_id: "..."
+  delivery_base:
+    branch: "..."
+    head_sha: "..."
+    base_sha: "..."
+    diff_digest: "..."
+    proof_state: "..."
+  review_lab:
+    branch_or_worktree: "..."
+    head_sha: "..."
+    exploratory_commits: []
+    lab_status: active | complete | unavailable | not-created
+  counterexample_corpus:
+    - id: "CE-..."
+      bad_state_or_gap: "..."
+      expected_contract: "..."
+      owner_candidate: "..."
+      lab_evidence_ref: "..."
+  negative_evidence:
+    query_status: not-run | no-applicable-negative-evidence | active | stale | reopened | blocked
+    active_exclusions: []
+    captured_failures: []
+    durable_writeback:
+      status: appended | duplicate-skip | not-attempted | unavailable
+      ids: []
+  scar_tissue_inventory:
+    - lab_surface: "..."
+      origin_counterexample: "..."
+      fate: discard | distill | transplant-with-rent | blocked
+      reason: "..."
+      negative_evidence_ref: "none | NEG-..."
+  universalist_check:
+    considered: yes | no
+    decision: use-universalist | not-needed | blocked
+    boundary_packet_ref: "none | path-or-inline-id"
+    reason: "..."
+  selected_normal_form:
+    kind: no-change-proof | validate-only | delete-collapse-canonicalize | refactor-existing-owner | mutate-existing-owner | add-new-surface | blocked
+    owner: "..."
+    why_clean_model: "..."
+    why_lab_history_is_not_delivered: "..."
+    counterexamples_killed: []
+  abstraction_rent:
+    required: yes | no
+    rent_status: paid | unpaid | not-applicable
+    surfaces_added: []
+    surfaces_retired: []
+    future_patches_prevented: []
+  proof_matrix:
+    - proof_id: "P-..."
+      counterexamples_covered: []
+      delivered_test_or_command: "..."
+      lab_tests_discarded_or_merged: []
+  delivery_patch_plan:
+    allowed_files: []
+    forbidden_files: []
+    expected_surface_delta: negative | zero | bounded-positive | expansion | unknown
+    must_not_cherry_pick_lab_commits: true
+  dominance_check:
+    lab_counterexamples_covered_by_delivery: yes | no | unknown
+    delivery_surface_smaller_or_warranted: yes | no | unknown
+    no_unpaid_lab_surface_transplanted: yes | no | unknown
+  implementation_handoff:
+    target_skill: fixed-point-driver
+    permitted_scope: []
+    forbidden_actions: []
+    surface_budget: {}
+    stale_if: []
+  route_wave_ref:
+    required: yes
+    path_or_inline_id: "..."
+  closure_rule:
+    if_same_cluster_finding_reappears: reopen_distillation | negative-ledger-map | block | escalate
+```
+
+## Negative evidence rules
+
+`negative_evidence.query_status` cannot be `not-run` when any are true:
+
+- same cluster reappears after repair;
+- prior selected normal form is falsified;
+- prior universalist-not-needed is falsified;
+- add-surface route failed or became unsound;
+- public bypass, compatibility/tolerance path, or proof matrix choice caused a CAS counterexample;
+- Review Distillation Mode is active.
+
+Every falsified route creates a negative-ledger capture candidate unless proven unrelated, stale, or superseded.
+
+The next packet must either:
+
+1. avoid the active excluded route;
+2. prove negative evidence stale/superseded/reopened;
+3. or block.
 
 ## Universalist-not-needed falsification
 
 A prior `universalist_check.decision: not-needed` is falsified when the same cluster produces a new review/CAS/validation/PR counterexample after the repair or normal form was applied.
 
-When falsified:
-
-```yaml
-falsification:
-  prior_decision_invalidated: yes
-  next_required_action: universal-boundary-packet | block
-```
-
-The next packet cannot use `universalist_check.decision: not-needed` unless a `universal_boundary_packet` or full `$universalist` output explicitly proves the boundary artifact is still not needed.
-
-## Universalist check rules
-
-`universalist_check` is required in every packet.
-
-`considered: yes` is required when any are true:
-
-- `same_cluster_findings >= 2`;
-- an existing-owner repair was already attempted in the cluster;
-- same cluster reappeared after a selected normal form;
-- prior `universalist_check.decision: not-needed` was falsified;
-- selected route would add public surface, fallback, compatibility path, parser tolerance, state variant, or new abstraction;
-- any trigger field under `universalist_check.trigger` is `yes`;
-- the candidate normal form is `add-new-surface`.
-
-`considered: no` is allowed only for isolated, no-new-surface, direct existing-owner or proof-only routes with no boundary smell.
-
-`decision: use-universalist` means run `$universalist` or emit a root-equivalent universal boundary packet before `$fixed-point-driver` receives a mutation handoff.
-
-`decision: blocked` means no production mutation until the missing boundary/artifact question is resolved.
-
-## Universal boundary packet
-
-When `decision: use-universalist`, require either an actual `$universalist` output or this root-equivalent packet:
-
-```yaml
-universal_boundary_packet:
-  packet_version: UBP-v1
-  artifact_state_id: "..."
-  cluster_id: "..."
-  boundary_smell:
-    missing_boundary_artifact: yes | no
-    duplicated_projection: yes | no
-    protocol_or_state_machine_missing: yes | no
-    generated_provenance_gap: yes | no
-    public_contract_drives_internals: yes | no
-    effect_or_callback_ir_missing: yes | no
-  candidate_boundary_artifact:
-    kind: protocol | state-machine | context-certificate | explicit-ir | effect-signature | canonical-projection | none
-    owner: "..."
-    seam: "..."
-  decision: climb | not-needed | blocked
-  reason: "..."
-  proof_signal: []
-```
-
-If `decision: climb`, selected normal form should be `refactor-existing-owner`, `delete-collapse-canonicalize`, or a warranted `add-new-surface` whose rent is paid.
+When falsified, the next packet cannot use `universalist_check.decision: not-needed` unless a full `$universalist` output or root-equivalent `universal_boundary_packet` explains why the boundary artifact is still unnecessary despite the recurrence.
 
 ## Route-wave publication
 
-Every accepted or blocked RCP packet should be published into the current resolve route-wave artifact.
+Every accepted or blocked RCP/RDP packet should be published into the current resolve route-wave artifact.
 
-If `$resolve` has no artifact path yet, the compiler should recommend one:
+Suggested path:
 
 ```text
 .step/proof/resolve/<resolve-run-id>/review-wave-<n>.route.yml
 ```
 
-The route-wave artifact is what future `seq`/audit tools should search. Do not rely on hidden narrative text.
-
-## Status rules
-
-### `accepted`
-
-Allowed only when:
-
-- selected normal form has owner and proof matrix;
-- implementation handoff has surface budget and forbidden actions;
-- abstraction rent is `paid` or `not-applicable`;
-- universalist_check is complete and not blocked;
-- falsification is handled;
-- artifact state is current;
-- route-wave publication is planned or complete.
-
-### `not-required`
-
-Allowed only when all are true:
-
-- item is isolated;
-- same-cluster count is 1;
-- route is existing-owner or no-change/validate-only;
-- no helper/wrapper/adapter/fallback/flag/branch/public surface is added;
-- no boundary smell exists;
-- direct proof is available.
-
-`not-required` still emits the packet.
-
-### `blocked`
-
-Use when owner, artifact state, rent, proof, universalist decision, falsification, route-wave publication, or safe route is missing.
-
-Blocked packets must name the blocker and must not hand off mutation.
-
-## Trigger rules
-
-`same_cluster_findings >= 2` always requires `packet_status: accepted | blocked` and `universalist_check.considered: yes`.
-
-Any `add-new-surface` route requires both:
-
-```yaml
-universalist_check.considered: yes
-abstraction_rent.required: yes
-```
-
-Any route that adds public surface, fallback, compatibility path, parser tolerance, state variant, or new abstraction must set:
-
-```yaml
-surface_budget.production_surface: explicit_expansion
-```
-
-unless the surface is private, bounded, and explicitly retires more surface than it adds.
-
-Any repeated same-cluster finding after implementation must follow `closure_rule`; do not patch locally again.
-
-## Commit boundary policy
-
-When an accepted packet produces a green local repair slice, prefer:
-
-```text
-commit_boundary.policy: checkpoint_after_local_proof
-```
-
-Use it when:
-
-- CAS has produced same-cluster churn;
-- dirty tree is accumulating multiple review repairs;
-- local proof is green for the selected normal form;
-- no unrelated changes are staged.
-
-The checkpoint commit is not final closure. It creates a stable reviewed tuple for the next CAS pass and prevents one giant dirty-tree review loop.
+If `$resolve` has no route-wave path yet, recommend one. Do not rely on hidden narrative text.
 
 ## Validation
 
-When a packet is saved to a file, validate it when possible:
+When a packet is saved to a file, validate when possible:
 
 ```bash
 python codex/skills/review-compression-compiler/tools/rcp_gate.py path/to/packet.yml
+python codex/skills/review-compression-compiler/tools/rdp_gate.py path/to/distillation.yml
 ```
 
 A failed gate means no mutation handoff.
@@ -326,6 +355,8 @@ Read-only workers may help:
 - `universal_boundary_scout`
 - `abstraction_rent_auditor`
 - `proof_matrix_minimizer`
+- `negative_evidence_route_auditor`
+- `lab_scar_tissue_auditor`
 - `review_compression_packet_auditor`
 - `route_wave_artifact_auditor`
 - `shadow_branch_evidence_scout`
@@ -337,26 +368,31 @@ Workers are advisory. The compiler/root owns synthesis and packet status.
 - Do not edit files.
 - Do not produce patch hunks.
 - Do not treat review comments as tasks.
-- Do not emit prose instead of `review_compression_packet`.
+- Do not emit prose instead of RCP/RDP.
+- Do not omit negative_evidence for falsified routes or distillation.
+- Do not ignore active negative exclusions.
 - Do not omit `universalist_check`.
 - Do not ignore falsified `universalist_check.decision: not-needed`.
 - Do not select `not-required` for a same-cluster hot path.
 - Do not select `add-new-surface` with unpaid rent or skipped universalist_check.
 - Do not hand off implementation without proof matrix.
+- Do not deliver lab history; deliver only distilled normal form.
 - Do not close or hand off with no route-wave publication path.
-- Do not allow same-cluster recurrence to become another local patch.
 - Do not override `$resolve` branch state or `$fixed-point-driver` implementation authority.
 
 ## Resources
 
 - [packet-contract.md](references/packet-contract.md)
-- [universalist-check.md](references/universalist-check.md)
+- [review-distillation-mode.md](references/review-distillation-mode.md)
+- [negative-evidence-integration.md](references/negative-evidence-integration.md)
 - [route-wave-artifact.md](references/route-wave-artifact.md)
 - [falsification-rules.md](references/falsification-rules.md)
+- [universalist-check.md](references/universalist-check.md)
+- [scar-tissue-ledger.md](references/scar-tissue-ledger.md)
 - [counterexample-corpus.md](references/counterexample-corpus.md)
 - [normal-form-selection.md](references/normal-form-selection.md)
 - [abstraction-rent.md](references/abstraction-rent.md)
 - [proof-matrix.md](references/proof-matrix.md)
-- [rcp-gate.md](references/rcp-gate.md)
+- [gates.md](references/gates.md)
 - [resolve-integration.md](references/resolve-integration.md)
 - [audit-queries.md](references/audit-queries.md)

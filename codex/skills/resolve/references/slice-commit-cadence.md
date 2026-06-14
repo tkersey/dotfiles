@@ -1,6 +1,6 @@
 # Slice Commit Cadence
 
-After a coherent accepted RCP slice:
+After a coherent accepted RCP/RDP slice:
 
 1. implement selected normal form;
 2. run targeted proof;

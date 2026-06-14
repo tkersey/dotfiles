@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Lightweight gate for review_compression_packet artifacts.
-
-This avoids PyYAML and checks for required textual keys so it can run in minimal
-Codex environments.
-"""
+"""Lightweight gate for review_compression_packet artifacts."""
 
 from __future__ import annotations
 
@@ -18,14 +14,16 @@ REQUIRED_PATTERNS = [
     r"packet_status\s*:\s*(accepted|blocked|not-required)",
     r"artifact_state_id\s*:",
     r"cluster_id\s*:",
-    r"selected_normal_form\s*:",
-    r"kind\s*:\s*(no-change-proof|validate-only|delete-collapse-canonicalize|refactor-existing-owner|mutate-existing-owner|add-new-surface|blocked)",
-    r"owner\s*:",
+    r"negative_evidence\s*:",
+    r"query_status\s*:\s*(not-run|no-applicable-negative-evidence|active|stale|reopened|blocked)",
     r"universalist_check\s*:",
     r"considered\s*:\s*(yes|no)",
     r"decision\s*:\s*(use-universalist|not-needed|blocked)",
     r"falsification\s*:",
     r"prior_decision_invalidated\s*:\s*(yes|no)",
+    r"selected_normal_form\s*:",
+    r"kind\s*:\s*(no-change-proof|validate-only|delete-collapse-canonicalize|refactor-existing-owner|mutate-existing-owner|add-new-surface|distill-from-lab|blocked)",
+    r"owner\s*:",
     r"abstraction_rent\s*:",
     r"rent_status\s*:\s*(paid|unpaid|not-applicable)",
     r"proof_matrix\s*:",
@@ -77,6 +75,11 @@ def main(argv: list[str]) -> int:
     if has(r"prior_decision_invalidated\s*:\s*yes", text) and has(r"decision\s*:\s*not-needed", text):
         print("RCP gate: FAIL")
         print("falsified universalist not-needed cannot remain not-needed")
+        return 1
+
+    if has(r"negative_capture_candidate\s*:\s*yes", text) and has(r"query_status\s*:\s*not-run", text):
+        print("RCP gate: FAIL")
+        print("negative capture candidate requires negative-ledger query/map status")
         return 1
 
     print("RCP gate: PASS")

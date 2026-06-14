@@ -1,5 +1,5 @@
 name = "shadow_branch_evidence_scout"
-description = "Read-only worker that compares exploratory shadow-branch evidence and identifies compressed patch candidates."
+description = "Read-only worker that compares exploratory shadow/review-lab branch evidence and identifies compressed patch candidates."
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """
@@ -15,7 +15,7 @@ shadow_branch_evidence_packet:
       reason: "..."
   compressed_patch_candidates: []
   discarded_scar_tissue: []
-  final_call: "transplant_ready | discard_shadow | needs_compiler"
+  final_call: "transplant_ready | discard_shadow | needs_compiler | needs_scar_tissue_audit"
 
 Do not edit files.
 """

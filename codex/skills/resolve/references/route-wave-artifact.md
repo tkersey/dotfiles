@@ -1,6 +1,6 @@
 # Route-Wave Artifact
 
-Publish route/RCP/universalist decisions into a first-class artifact.
+Publish route/RCP/RDP/negative-ledger/universalist decisions into a first-class artifact.
 
 Preferred path:
 
@@ -14,4 +14,4 @@ Validate with:
 python codex/skills/review-compression-compiler/tools/route_wave_gate.py <route-wave-file>
 ```
 
-If a route/RCP/universalist decision is not in this artifact or a visible `Resolve route artifact:` line, it does not count for closure.
+If a decision is not in this artifact or a visible `Resolve route artifact:` line, it does not count for closure.

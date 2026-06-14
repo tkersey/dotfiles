@@ -1,29 +1,29 @@
-# Review Compression Packet Contract v4
+# Packet Contract
 
-A meaningful compiler use emits a compact packet with literal key:
+Use `RCP-v1` for direct review compression and `RDP-v1` for review distillation.
+
+A meaningful compiler use emits one of:
 
 ```yaml
 review_compression_packet:
+review_distillation_packet:
 ```
 
-Required structural fields:
+Required cross-cutting fields:
 
-- `packet_version: RCP-v1`
-- `selected_normal_form`
+- `negative_evidence`
 - `universalist_check`
-- `falsification`
+- `selected_normal_form`
 - `abstraction_rent`
 - `proof_matrix`
 - `implementation_handoff`
-- `commit_boundary`
 - `route_wave_ref`
 - `closure_rule`
 
 Invalid states:
 
-- `add-new-surface` with unpaid rent.
-- `add-new-surface` with `universalist_check.considered: no`.
-- `accepted` with `universalist_check.decision: blocked`.
-- prior `universalist not-needed` falsified but new decision remains `not-needed`.
-- accepted packet without route-wave publication.
-- prose-only normal form with no packet.
+- add-new-surface with unpaid rent.
+- hot cluster with missing universalist check.
+- repeated route failure with `negative_evidence.query_status: not-run`.
+- accepted packet with no route-wave ref.
+- distillation packet that permits cherry-picking lab commits as delivery.

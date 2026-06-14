@@ -1,5 +1,5 @@
 name = "review_counterexample_lifter"
-description = "Read-only worker that converts review findings, PR comments, and validation failures into normalized counterexample rows for RCP packets."
+description = "Read-only worker that converts review findings, PR comments, and validation failures into normalized counterexample rows for RCP/RDP packets."
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """
