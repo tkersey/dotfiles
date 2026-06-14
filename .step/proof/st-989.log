@@ -1,0 +1,48 @@
+st-989 release proof
+
+Task: Release seq 0.2.44 and update Homebrew tap
+
+skills-zig:
+- Commit: cdea807dd6f503714078ccf8edfef0b3129594f2
+- Tag: seq-v0.2.44
+- Pushed: origin main and origin seq-v0.2.44
+- Local proof before commit:
+  - zig build test-seq --summary all
+  - git diff --check -- apps/seq/src/commands/mod.zig apps/seq/README.md apps/seq/VERSION
+
+GitHub release:
+- Run: https://github.com/tkersey/skills-zig/actions/runs/27492371403
+- Conclusion: success
+- Release: https://github.com/tkersey/skills-zig/releases/tag/seq-v0.2.44
+- Assets:
+  - seq-v0.2.44-darwin-arm64.tar.gz sha256 5811f9385f2e60db928d852ea4609e794e227f089a2c764a8ed1252ffbcdf3ff
+  - seq-v0.2.44-linux-x86_64.tar.gz sha256 4eea9e45a75c98b1dbb5c665ed4d1456bb34b9a6a1bec04b0c8b6e18d9511dab
+
+homebrew-tap:
+- Commit: 492e2a88857eed7f0faa5a212373cba3be104c89
+- Formula: Formula/seq.rb version 0.2.44
+- Pushed: origin main
+- Formula proof:
+  - git diff --check -- Formula/seq.rb
+  - ruby -c Formula/seq.rb
+  - brew audit --strict tkersey/tap/seq
+
+Published tap proof:
+- brew update
+- HOMEBREW_NO_INSTALL_FROM_API=1 brew audit --strict tkersey/tap/seq
+- HOMEBREW_NO_INSTALL_FROM_API=1 brew upgrade tkersey/tap/seq
+- HOMEBREW_NO_INSTALL_FROM_API=1 brew test tkersey/tap/seq
+- /opt/homebrew/bin/seq --version => 0.2.44
+- /opt/homebrew/bin/seq skill-audit --help includes activation, --exclude-current, and --last
+- /opt/homebrew/bin/seq skill-audit --skill universalist --mode activation --last 36h --exclude-current --format table:
+  - explicit_user_call rows 0 sessions 0
+  - implicit_assistant_call rows 0 sessions 0
+  - injected_skill_block rows 0 sessions 0
+  - other_reference rows 0 sessions 0
+
+Local proof transcript:
+- /tmp/seq-0.2.44-brew-proof.log
+
+Side-effect boundaries:
+- skills-zig unrelated dirty file apps/st/scripts/st.zig was not staged or committed.
+- .dotfiles working tree retains local $st/proof and seq skill changes; no .dotfiles commit was made.

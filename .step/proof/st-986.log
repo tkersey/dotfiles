@@ -1,0 +1,9 @@
+fixed-point review receipt
+normal form: root-equivalent
+duplicate-owner gate: pass - activation classification lives under skill-audit, not a new command
+ablation gate: pass - no alternate one-change route covers classification, exclusion, rolling window, docs, and regressions
+adversarial gate: repaired - activation roles validation initially bypassed appendRolesWhere; validateRolesCsv added
+boundary gate: repaired - bare other_reference matching now uses skill-name boundaries and case-insensitive comparison
+scaffold gate: pass - no temporary implementation helpers outside seq command owner; test-only CODEX_THREAD_ID override is compile-time test gated
+
+proof after repair:

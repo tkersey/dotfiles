@@ -1,0 +1,41 @@
+# st-981 baseline
+## dotfiles
+ M .step/proposed-plan.md
+ M .step/st-plan.jsonl
+?? .step/proof/
+?? .step/st-graph.patch.json
+?? .step/st-intake.md
+main
+24a9d368
+## skills-zig
+main
+a448a91
+## zig
+0.16.0
+## seq version
+0.2.43
+## target help snippets
+usage: seq skill-audit [--skill <name>] [--mode summary|mentions|trend] [--roles <csv>] [--since <iso>] [--until <iso>] [--limit N] [--format table|json|csv|jsonl]
+shared options:
+  --format <table|json|csv|jsonl>
+  --root <path> (session datasets)
+  --output <path>
+  --limit|--max|--top <N>
+usage: seq message-search [--contains <text>|--regex <expr>|--contains-any <csv>|--contains-all <csv>] [--roles <csv>] [--since <iso>] [--until <iso>] [--limit N] [--format table|json|csv|jsonl]
+shared options:
+  --format <table|json|csv|jsonl>
+  --root <path> (session datasets)
+  --output <path>
+  --limit|--max|--top <N>
+usage: seq workflow-audit --workflow <name> [--mode summary|signals|outcomes|sessions|report|term-summary] [--term-group <name=csv>] [--examples N] [--unique-by snippet|path-snippet] [--since <iso>] [--until <iso>] [--workdir <path>] [--limit N] [--format table|json|csv|jsonl|markdown]
+shared options:
+  --format <table|json|csv|jsonl>
+  --root <path> (session datasets)
+  --output <path>
+  --limit|--max|--top <N>
+usage: seq skill-success-rank [--skill <name>] [--mode summary|sessions] [--last <Nm|Nh|Nd>|--since <iso>] [--until <iso>] [--limit N] [--format table|json|csv|jsonl]
+shared options:
+  --format <table|json|csv|jsonl>
+  --root <path> (session datasets)
+  --output <path>
+  --limit|--max|--top <N>

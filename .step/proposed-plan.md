@@ -1,33 +1,40 @@
-# Plan: Specialist Packet Reliability Contract
+# Plan: seq activation audit and current-session exclusion
 
 ## Summary
 
-Implement the specialist packet reliability plan that came from the recent `$seq`, `$grill-me`, and `$plan` sequence. The governing invariant is that specialist outputs are accepted only when they are scoped, evidence-bearing, current for the active artifact state, and packet-native; stale, malformed, wrapper-leaking, acknowledgement-only, or low-value outputs must be rejected or closed without blocking local proof.
+Implement the focused seq query-lift improvement for skill activation audits. The governing invariant is that a skill activation audit has one canonical command surface that classifies real activation evidence separately from pasted skill text and other references, while common forensic commands can exclude the current session without dropping to a raw `seq query`.
 
 ## Implementation
 
-- step=create shared specialist packet contract; owner=implementer; success_criteria=`codex/skills/references/specialist-packet-contract.md` defines required fields, evidence floor, stale handling, rejection classes, value receipts, wait/progress bounds, and root-owned proof authority.
-- step=patch fixed-point and closure skills; owner=implementer; success_criteria=`fixed-point-driver` and `verification-closure` reference the shared contract and preserve artifact-state, value-receipt, negative-evidence, and root-owned proof gates.
-- step=patch specialist-spawning skills; owner=implementer; success_criteria=`codebase-audit`, `codebase-archaeology`, `spec-pipeline`, `review-adjudication`, and `negative-ledger` require packet-native, scoped, evidence-bearing Codex-native specialist outputs where they spawn or consume specialists.
-- step=run fixed-point review and one-change challenge; owner=implementer; success_criteria=no material contract gaps remain across all touched skill surfaces and no stale or malformed packet path can be treated as closure evidence.
-- step=validate skill docs and corpus; owner=implementer; success_criteria=quick validation for every touched skill, relevant corpus validation if available, `$st` projection checks, and `git diff --check` pass.
-- step=run full local proof bundle; owner=implementer; success_criteria=all available builds, lints, and tests for this repo change set pass or any unavailable lane has an exact blocker.
-- step=ship validated change set; owner=implementer; success_criteria=`$ship` opens or updates a PR with concise validation proof and reports exact status without merging.
+- step=freeze current seq surfaces; owner=implementer; success_criteria=record current skills-zig and dotfiles state, Zig version, target files, and existing command support before mutation.
+- step=wire shared CLI option support; owner=skills-zig implementer; success_criteria=`skill-audit`, `skill-success-rank`, `workflow-audit`, and `message-search` accept/document `--exclude-current`; `skill-audit` accepts/documents `--last`; unsupported commands still reject unsupported flags.
+- step=implement activation mode; owner=skills-zig implementer; success_criteria=`seq skill-audit --skill <name> --mode activation --last 36h --exclude-current` emits evidence buckets for `explicit_user_call`, `implicit_assistant_call`, `injected_skill_block`, and `other_reference` with activation verdicts.
+- step=add regressions; owner=skills-zig implementer; success_criteria=tests cover explicit user call, implicit assistant call, pasted skill block non-activation, zero-result rows, `--last`, and current-session exclusion across target commands.
+- step=update docs and version; owner=implementer; success_criteria=seq README and dotfiles `$seq` skill prefer the activation audit command for this query family while preserving `seq query` as valid when it is the most efficient route; `apps/seq/VERSION` is bumped.
+- step=run fixed-point review; owner=implementer; success_criteria=root-equivalent fixed-point review clears duplicate-owner, additive-scaffold, ablation, and one-change gates.
+- step=run proof bundle; owner=implementer; success_criteria=`zig build test-seq --summary all`, `zig build build-seq -Doptimize=ReleaseFast --summary all`, help output, smoke activation command, doc validation, projection checks, and diff checks pass or have exact blockers.
+- step=close durable state; owner=implementer; success_criteria=`st complete` records proof for every task, `st assert-projection` passes, and final response reports graph debt, proof, fixed-point state, and residual risk.
 
 ## Locked Decisions
 
-- Scope all five failure modes: capacity saturation, late or missing packets, malformed transport/wrapper leakage, low-value acknowledgements, and timebox races where useful packets arrive too late.
-- Optimize for more useful packets over minimum latency, but make waits progress-bound rather than indefinite.
-- Use skill-contract hardening only; do not add new runtime tooling.
-- Require at least one artifact reference for an accepted specialist packet.
-- Keep the contract shared and reference it from Codex-native specialist skills instead of duplicating a divergent local schema in each skill.
-- Treat root-owned local verification as authoritative; specialist packets are routing and risk signals, not final proof.
+- Add `skill-audit --mode activation`; do not create a new top-level command.
+- Add `--exclude-current` to `skill-audit`, `skill-success-rank`, `workflow-audit`, and `message-search`.
+- Add `--last <Nm|Nh|Nd>` to `skill-audit`.
+- Preserve raw `seq query` as a valid efficient route; the command improvements are for recurring query shapes, not a prohibition.
+- Treat pasted `<skill>...</skill>` blocks as `injected_skill_block`, not activation.
+- Keep mutation single-writer; use root-equivalent fixed-point/adversarial review.
 
 ## Validation
 
-- `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py <touched-skill>`
-- `uv run --with pyyaml -- python3 codex/skills/.system/validators/validate_skill_corpus.py codex/skills`
+- `zig version`
+- `zig build test-seq --summary all`
+- `zig build build-seq -Doptimize=ReleaseFast --summary all`
+- `./zig-out/bin/seq skill-audit --help`
+- `./zig-out/bin/seq message-search --help`
+- `./zig-out/bin/seq workflow-audit --help`
+- `./zig-out/bin/seq skill-success-rank --help`
+- `./zig-out/bin/seq skill-audit --skill universalist --mode activation --last 36h --exclude-current --format table`
+- `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/seq`
 - `st doctor --file .step/st-plan.jsonl`
-- `st prime --file .step/st-plan.jsonl`
 - `st assert-projection --file .step/st-plan.jsonl`
 - `git diff --check`

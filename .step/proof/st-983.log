@@ -1,0 +1,8 @@
+skill         evidence_kind            rows  sessions  first_seen  last_seen  example  activation_verdict
+------------  -----------------------  ----  --------  ----------  ---------  -------  ------------------
+universalist  explicit_user_call       0     0                                         activation
+universalist  implicit_assistant_call  0     0                                         activation
+universalist  injected_skill_block     0     0                                         not_activation
+universalist  other_reference          0     0                                         reference
+bug native success 7s MaxRSS:922M
+      +- options cached
