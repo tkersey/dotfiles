@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "CAS-first resolution with same-cluster stop rule"
-  default_prompt: "Use $resolve for this task. Follow CAS-first review, same-cluster stop rule, one resolve_decision_record, negative-ledger route ratchet, review distillation only when needed, validation, push, PR sweep, and material-improvement scoring."
+  short_description: "CAS-first Review Governor"
+  default_prompt: "Use $resolve as a Review Governor: reviews sense, the governor decides, implementation obeys. Emit review_governor_record, govern same-cluster recurrence, measure decision impact and material improvement."

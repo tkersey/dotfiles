@@ -2,7 +2,7 @@
 
 Some review comments are not merely local defects. They are signals that the system is producing a repeated pattern.
 
-## Add this flag to adjudication
+Add this flag:
 
 ```yaml
 system_pattern_signal:
@@ -11,7 +11,7 @@ system_pattern_signal:
   recommended_companion: cybernetic | none
 ```
 
-## Signal present when review item implies
+Signal present when a review item implies:
 
 - same-cluster recurrence;
 - repeated invalid state;
@@ -22,6 +22,4 @@ system_pattern_signal:
 - delayed failure after local green proof;
 - repeated route failure.
 
-## Handling
-
-If `system_pattern_signal.present: yes`, `$resolve` or the root workflow should consider `$cybernetic` before mutating.
+If present, `$resolve` should consider `$cybernetic` before mutating.

@@ -1,29 +1,32 @@
 ---
 name: resolve
-description: "Resolve the current branch through a CAS-first, receipt-backed review loop with native review as recorded fallback only. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR sweep, three consecutive clean reviews, same-cluster stop rule, resolve_decision_record / RDR-v1, negative-ledger route ratchet, review-distillation mode, material-improvement score, and final pushed readiness. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
+description: "Resolve the current branch through a CAS-first Review Governor: reviews sense, the governor decides, implementation obeys. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR sweep, three consecutive clean reviews, review_governor_record / RGR-v1, review-entropy reduction, same-cluster recurrence, negative-ledger route memory, cybernetic context, finding-to-route matrices, decision-impact reports, and material-improvement scoring. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
 ---
 
 # resolve
 
 ## Purpose
 
-Resolve the current branch to a pinned-review-clean, validated, committed, pushed, and PR-comment-swept state **without unbounded review-driven code accumulation**.
+Resolve the current branch to a pinned-review-clean, validated, committed, pushed, and PR-comment-swept state without letting review feedback directly actuate code.
 
-This version is intentionally austere. It keeps the good ideas from the prior iterations, but changes the default from "more packets" to one hard operating rule:
+`$resolve` is now a **Review Governor**.
 
 ```text
-After the second same-cluster finding, stop point-fixing.
+Reviews sense. The governor decides. Implementation obeys.
 ```
+
+Review findings, CAS findings, PR comments, and validation failures are sensor signals. They are not tasks. `$resolve` converts them into counterexample families, estimates review entropy, chooses the lowest-surface entropy-reducing intervention, then permits implementation only through that selected route.
 
 ## Core doctrine
 
 ```text
+Do not satisfy the reviewer. Govern the feedback loop.
 Review findings are counterexamples, not tasks.
-Same-cluster recurrence means ordinary resolution mode is over.
-Do not deliver the review loop.
-Before repeating a route, check negative evidence.
-Implement only the selected route.
-Measure whether the workflow materially improved.
+After the second same-cluster finding, local patching is disabled.
+Negative-ledger is route memory, not a decorative preflight note.
+Cybernetic classifies repeated feedback patterns, not isolated bugs.
+No decision-impact record, no claim of learning.
+No material-improvement score, no claim of improvement.
 ```
 
 ## Activation Kernel
@@ -33,11 +36,11 @@ Use `$resolve` when the user wants the current branch driven through review/fix/
 Do not use `$resolve` when:
 
 - the user wants a one-shot review only;
-- the user wants PR creation/proof publication only; use `$ship`;
-- the user wants merge/checks-watch/cleanup; use `$land`;
+- the user wants PR creation or proof publication only; use `$ship`;
+- the user wants merge, checks-watch, or cleanup; use `$land`;
 - the user wants actionability only; use `$review-adjudication`;
 - the user wants final readiness only; use `$verification-closure`;
-- the user wants implementation of a known route only; use `$fixed-point-driver` or `$accretive-implementer`.
+- the user wants implementation of an already selected route only; use `$fixed-point-driver` or `$accretive-implementer`.
 
 Default mode: **CAS-first full branch resolution**.
 
@@ -52,8 +55,9 @@ Root owns branch mutation, review streak, base/head pins, route selection, commi
 + intended commit/push
 + complete post-push PR sweep
 + no actionable PR comments remaining
-+ no open same-cluster stop-rule gate
-+ no active negative exclusion against the selected route
++ no open same-cluster governor gate
++ no active negative exclusion against selected route
++ review_governor_record emitted for finding-bearing waves
 + material-improvement score reported
 ```
 
@@ -71,23 +75,97 @@ Review results must pin:
 - `HEAD` SHA;
 - target fingerprint when available.
 
-Switching backend/base/head/fingerprint resets the clean-review streak.
+Switching backend, base, head, or fingerprint resets the clean-review streak.
 
-## Same-Cluster Stop Rule
+## Review Governor loop
 
-A **cluster** is a group of review, validation, or PR findings sharing a subsystem, owner, state machine, protocol, authority boundary, parser/validator, lifecycle, proof surface, or invariant family.
+Repeat until `clean_review_streak == 3`:
 
-If a second finding appears in the same cluster during one `$resolve` run, `$resolve` must stop review-driven point-fixing.
+1. **Sense**
+   - Run selected review driver.
+   - Normalize CAS/native/PR/validation findings into sensor inputs.
+   - Separate observed facts, review claims, proposed changes, and uncertainty.
 
-After the stop rule fires, only these routes are allowed:
+2. **Estimate state**
+   - Cluster findings.
+   - Track same-cluster count and findings after first fix.
+   - Estimate review entropy.
+   - Classify system context when repeated events imply structure.
 
-1. `validate-only`
-2. `delete-collapse-canonicalize`
-3. `normal-form-decision`
-4. `review-distillation-mode`
-5. `blocked`
+3. **Govern**
+   - Enumerate candidate routes.
+   - Check negative route memory before repeating a route.
+   - Select the route that reduces review entropy with the least system surface.
+   - Disable local patching after same-cluster recurrence unless the route is a named normal form.
 
-`mutate-existing-owner` is allowed only when selected by a normal-form decision that names:
+4. **Actuate**
+   - Hand off only the selected route to `$fixed-point-driver` / `$accretive-implementer`.
+   - Preserve forbidden actions, proof matrix, and surface budget.
+
+5. **Observe**
+   - Run targeted proof.
+   - Update surface delta and cluster trajectory.
+   - Commit coherent green slices only when safe.
+   - Restart review on the current tuple.
+
+6. **Learn**
+   - Capture route failures as negative evidence.
+   - Update decision-impact and material-improvement metrics.
+   - Carry recommendation outcomes into the final report.
+
+## Review entropy
+
+Review entropy is the system’s tendency to keep generating unresolved or adjacent review findings.
+
+Track:
+
+```yaml
+review_entropy:
+  unresolved_counterexample_families:
+  same_cluster_recurrence:
+  production_surface_growth:
+  helper_wrapper_adapter_growth:
+  public_surface_growth:
+  fallback_or_compatibility_growth:
+  proof_matrix_sprawl:
+  repeated_failed_route_penalty:
+  delayed_feedback_risk:
+```
+
+A patch is allowed only when the selected route reduces review entropy better than the available alternatives.
+
+Ask:
+
+```text
+Does this reduce the system's tendency to generate this class of review findings?
+```
+
+Not merely:
+
+```text
+Does this silence this comment?
+```
+
+## Same-cluster governor rule
+
+A cluster is a group of review, validation, or PR findings sharing a subsystem, owner, state machine, protocol, authority boundary, parser/validator, lifecycle, proof surface, or invariant family.
+
+If a second finding appears in the same cluster during one `$resolve` run:
+
+```text
+ordinary local patching is disabled
+```
+
+Allowed routes after the governor rule fires:
+
+1. `no-change`
+2. `validate-only`
+3. `delete-collapse-canonicalize`
+4. `normal-form-decision`
+5. `review-distillation-mode`
+6. `blocked`
+
+`mutate-existing-owner` is allowed only as the implementation form of `normal-form-decision`, and only if the record names:
 
 - the owner;
 - the counterexample family;
@@ -95,213 +173,300 @@ After the stop rule fires, only these routes are allowed:
 - why this is not another local point fix;
 - the proof matrix.
 
-`add-new-surface` is disallowed after the stop rule unless the user or an upstream authority explicitly accepts expansion after negative-evidence and universalist/boundary checks.
+`add-new-surface` is not a normal route. It is a capital expenditure. It requires explicit expansion warrant, paid abstraction rent, and proof that lower-surface routes cannot satisfy the counterexample family.
 
-## Resolve Decision Record
+## Review Governor Record
 
-Use one default record instead of multiple mandatory packet types.
-
-A finding-bearing review wave, same-cluster stop, repeated route, distillation decision, or final report must emit or update:
+Every finding-bearing review wave and every same-cluster governor decision must emit or update:
 
 ```yaml
-resolve_decision_record:
-  record_version: RDR-v1
+review_governor_record:
+  record_version: RGR-v1
   resolve_run_id: "..."
   artifact_state:
     branch: "..."
     base_sha: "..."
     head_sha: "..."
+    review_backend: cas-lane | native-cli | cas-native-fallback | none
     target_fingerprint: "..."
-  review_wave:
-    backend: cas-lane | native-cli | cas-native-fallback | none
-    receipt_id: "..."
-    finding_ids: []
-  cluster:
+  sensor_input:
+    findings:
+      - id: "..."
+        source: cas | native_review | pr_comment | validation | user
+        cluster_id: "..."
+        evidence_discipline:
+          observed_fact: "..."
+          review_claim: "..."
+          proposed_change: "..."
+          uncertainty: "..."
+          scope_basis: "..."
+  state_estimate:
     cluster_id: "..."
     same_cluster_count: 0
-    stop_rule: not-triggered | triggered | closed | blocked
-    owner_candidates: []
+    findings_after_first_fix: 0
     counterexample_family: "..."
-  selected_route:
-    kind: no-change | validate-only | delete-collapse-canonicalize | normal-form-decision | review-distillation-mode | mutate-existing-owner | add-new-surface | blocked
-    owner: "..."
-    why_this_route: "..."
-    why_not_smaller: "..."
-    why_not_point_fix: "..."
-  negative_evidence:
+    system_type: clear | complicated | complex | chaotic | mixed | unknown
+    feedback_loop: "..."
+    delayed_feedback: yes | no | unknown
+    local_vs_whole_tradeoff: yes | no | unknown
+    review_entropy:
+      same_cluster_recurrence: 0
+      production_surface_growth: 0
+      helper_wrapper_adapter_growth: 0
+      public_surface_growth: 0
+      fallback_or_compatibility_growth: 0
+      proof_matrix_sprawl: 0
+      repeated_failed_route_penalty: 0
+  candidate_routes:
+    - route: no-change | validate-only | delete-collapse-canonicalize | normal-form-decision | review-distillation-mode | blocked
+      counterexamples_covered: []
+      production_surface_delta: negative | zero | bounded-positive | expansion | unknown
+      proof_cost: low | medium | high | unknown
+      recurrence_risk: low | medium | high | unknown
+      rejected_because: "..."
+  negative_memory:
     checked: yes | no
     active_exclusion_match: yes | no
-    exclusion_id: "none | NEG-..."
-    status: none | active | reopened | stale | superseded | blocked
     route_changed_by_exclusion: yes | no
-  universalist_check:
+    capture_created: yes | no
+    exclusion_id: "none | NEG-..."
+    handoff_allowed: yes | no
+  cybernetic_context:
     required: yes | no
-    decision: use-universalist | not-needed | blocked | not-required
-    reason: "..."
-  distillation:
-    required: yes | no
-    mode: none | review-lab-to-clean-delivery | blocked
-    delivery_base: "..."
-    lab_ref: "..."
-    scar_tissue_disposition: []
-  surface_delta:
+    system_type: clear | complicated | complex | chaotic | mixed | unknown
+    pattern: "..."
+    feedback_loop: "..."
+    leverage_level: parameter | buffer | stock_flow_structure | delay | balancing_loop | reinforcing_loop | information_flow | rules | self_organization | goal | paradigm | none
+    selected_intervention:
+      route: checklist | expert_analysis | safe_to_fail_probe | stabilize_first | redesign_feedback | change_rules | change_goal | handoff | blocked
+      downstream_skill: resolve | fixed-point-driver | review-adjudication | review-compression-compiler | universalist | reduce | negative-ledger | verification-closure | none
+    local_patch_allowed: yes | no
+    monitoring_or_probe: "..."
+  selected_route:
+    route: no-change | validate-only | delete-collapse-canonicalize | normal-form-decision | review-distillation-mode | mutate-existing-owner | add-new-surface | blocked
+    owner: "..."
+    why_this_route: "..."
+    why_not_lower_surface: "..."
+    why_not_point_fix: "..."
+    proof_matrix:
+      - proof_id: "..."
+        counterexamples_covered: []
+        command_or_test: "..."
+    forbidden_actions: []
+  actuation_handoff:
+    downstream_skill: fixed-point-driver | accretive-implementer | none
+    permitted_scope: []
+    surface_budget:
+      production_surface: zero_or_negative | bounded_positive | explicit_expansion
+      helpers_wrappers_adapters_allowed: yes | no
+      public_symbols_allowed: yes | no
+      fallback_or_compat_paths_allowed: yes | no
+    stale_if: []
+  outcome_metrics:
     production_insertions: 0
     production_deletions: 0
     production_net: 0
     test_insertions: 0
     test_deletions: 0
     test_net: 0
-    helpers_wrappers_adapters_added: 0
+    helpers_added: 0
     public_symbols_added: 0
     fallback_or_compat_paths_added: 0
     duplicate_or_shadow_surfaces_retired: 0
-    surface_delta_call: smaller | same | larger-with-warrant | larger-without-warrant | unknown
-  proof_matrix:
-    - proof_id: "..."
-      counterexamples_covered: []
-      command_or_test: "..."
-      existing_or_new: existing | new | modified | manual
-  implementation_handoff:
-    target_skill: fixed-point-driver | accretive-implementer | none
-    permitted_scope: []
-    forbidden_actions: []
-    proof_required: []
-  material_improvement:
-    same_cluster_findings: 0
-    same_cluster_findings_after_first_fix: 0
-    cas_review_iterations: 0
-    apply_patch_calls: 0
-    commits: 0
-    route_changed_by_negative_evidence: 0
-    compression_or_distillation_changed_route: yes | no
-    churn_reduced: yes | no | unknown
+    same_cluster_recurred_after: yes | no | unknown
   gate:
-    stop_rule_satisfied: pass | fail | not-triggered
+    governor_decision_complete: pass | fail
     negative_route_gate: pass | fail | not-required
+    cybernetic_gate: pass | fail | not-required
+    evidence_discipline_complete: pass | fail
     proof_matrix_present: pass | fail
-    surface_budget_ok: pass | fail | unknown
     implementation_handoff_allowed: yes | no
 ```
 
-If the same-cluster stop rule fires, this record is mandatory before any further production mutation.
-
 Prose may explain the record. Prose is not the record.
 
-## Negative-Ledger Route Ratchet
+If the record cannot show why the selected route reduces review entropy, do not mutate.
 
-`$negative-ledger` is not another report section. It is a route ratchet.
+## Evidence discipline
 
-Before repeating a route in a hot cluster, check whether that route was already falsified.
+Every review-derived finding must separate:
+
+```yaml
+evidence_discipline:
+  observed_fact: "..."
+  review_claim: "..."
+  proposed_change: "..."
+  uncertainty: "..."
+  scope_basis: "..."
+```
+
+Use `$review-adjudication` when actionability is contested. Use this field even when `$review-adjudication` is root-equivalent.
+
+## Negative route memory
+
+Before repeating any route in a hot cluster:
 
 ```yaml
 negative_route_gate:
-  prior_route_checked: yes | no
+  checked: yes | no
   active_exclusion_match: yes | no
-  if_match:
-    neg_id: "..."
-    selected_route: "..."
-    exclusion_rule: "..."
-    status: reopened | superseded | stale | blocked
+  route_changed_by_exclusion: yes | no
+  capture_created: yes | no
   handoff_allowed: yes | no
 ```
 
-If `active_exclusion_match: yes` and status is not `reopened`, `superseded`, or `stale`, implementation is blocked.
+If active negative evidence excludes the route and is not reopened, stale, superseded, or explicitly accepted, implementation is blocked.
 
-Same-cluster recurrence after a selected route creates a negative-evidence capture candidate unless proven unrelated, stale, or superseded.
+Same-cluster recurrence after a selected route creates a negative-evidence capture candidate unless proven unrelated.
 
-## Review Distillation Mode
+## Cybernetic context
 
-Review Distillation Mode is the escape hatch for review loops that should not be delivered.
+Use `$cybernetic` when repeated events imply structure, especially:
 
-Trigger when any are true:
+- same-cluster stop rule;
+- local fix loop;
+- review feedback keeps producing adjacent findings;
+- local proof passes but CAS finds family-adjacent counterexamples;
+- metrics/proxies/incentives/delays are shaping behavior.
 
-- same-cluster findings continue after the stop rule;
+If same-cluster governor rule fires, either produce `cybernetic_context` or explicitly state why the cluster is not a system pattern.
+
+If `cybernetic_context.local_patch_allowed: no`, do not route another ordinary local mutation.
+
+## Review distillation mode
+
+Use when the review loop itself should not be delivered.
+
+```text
+Review lab learns. Delivery branch forgets.
+```
+
+Trigger when:
+
+- same-cluster findings continue after governor decision;
 - dirty tree contains multiple review-driven repairs;
 - CAS keeps finding adjacent issues after green local proof;
-- exploratory repair history exists and should not become final branch history;
-- a proposed route would add public/fallback/compatibility/tolerance surface.
+- exploratory repair history exists and should not become branch history;
+- proposed route would add public/fallback/compatibility/tolerance surface.
 
 Policy:
 
-```text
-The lab learns. The delivery branch forgets.
-```
-
-Operationally:
-
-1. Freeze delivery base: branch, head SHA, base SHA, diff digest, proof state.
-2. Use a disposable review lab branch/worktree for exploration.
+1. Freeze delivery base.
+2. Use lab branch/worktree for exploration.
 3. Lift lab findings and repairs into counterexamples.
 4. Select a clean normal form.
 5. Rebuild from delivery base.
 6. Do not cherry-pick lab commits by default.
-7. Distill lab tests into a proof matrix.
-8. Prove delivery branch covers the counterexample family.
-9. Discard or retain lab only as evidence.
+7. Distill lab tests into proof matrix.
+8. Prove delivery covers counterexample family.
 
-## Review loop
+## Implementation handoff
 
-Repeat until `clean_review_streak == 3`:
+Do not hand off raw review findings.
 
-1. Run selected review driver.
-2. If clean:
-   - verify backend/base/head/fingerprint pins;
-   - increment streak;
-   - run another review if streak < 3.
-3. If findings/comments appear:
-   - reset streak;
-   - invoke `$review-adjudication` for each in-scope item;
-   - cluster findings before editing;
-   - if same-cluster count is 2, trigger the stop rule;
-   - before repeating a route, run negative route ratchet;
-   - if stop rule fired, select one allowed route;
-   - route implementation through `$fixed-point-driver` / `$accretive-implementer` only after the record permits it;
-   - run targeted proof;
-   - update material-improvement counters;
-   - restart review on current artifact state.
+Handoff must include:
 
-Do not use an arbitrary maximum iteration count. Stop for explicit blockers: unavailable review backend, ambiguous base, required validation unavailable, active negative exclusion, unresolved stop-rule gate, unresolved boundary/owner question, or PR sweep incompleteness.
+```yaml
+implementation_handoff:
+  selected_route:
+  owner:
+  permitted_scope: []
+  forbidden_actions: []
+  surface_budget:
+  proof_matrix: []
+  negative_route_gate:
+  cybernetic_context:
+  stale_if: []
+```
 
-## Review adjudication route consumption
+If `$fixed-point-driver` or `$accretive-implementer` is invoked, it must preserve the selected route and not expand into local patching outside the governor decision.
 
-Do not collapse all review items to `address`.
+## Validation, commit, push
 
-| adjudication route | `$resolve` handling |
-|---|---|
-| `address` / `mutate-code` | cluster; stop rule if needed; negative route ratchet; implementation handoff only after selected route |
-| `delete-collapse-canonicalize` | prefer after stop rule when behavior can be preserved |
-| `validate-only` | proof only; reset streak if files change |
-| `resolve-thread-only` | reply/resolve only if provider policy permits |
-| `do-not-address` | record rationale; review run still not clean |
-| `blocked` | stop before commit/push |
+After three clean reviews, run full validation. If validation fails and mutation may result, route failure through the same governor process.
 
-## Final validation
+Only after final review streak and validation:
 
-After three clean reviews, run full project validation using repository-native commands from CI, package scripts, task runners, project docs, or language/tool skills.
-
-If validation fails, route it through the same clustering/stop-rule/negative-route process when mutation may result.
-
-If no validation command exists, do not treat validation as passed. Block or explicitly report manual-only proof if accepted by the user.
-
-## Commit and push
-
-Only after final three-review clean streak and full validation:
-
-1. inspect `git status` and diff;
-2. stage only intended changes;
+1. inspect status/diff;
+2. stage intended changes only;
 3. commit intended changes;
 4. push current branch;
 5. run PR sweep.
 
-Checkpoint commits are allowed after a coherent green slice, but they are not final closure.
+Checkpoint commits are allowed after coherent green slices, but they are not final closure.
 
 ## PR sweep
 
-After push, inspect the associated PR. Prefer complete paginated review-thread inventory. Every in-scope PR item uses the same adjudication → cluster → stop-rule/negative-route → implementation route.
+After push, inspect associated PR and complete review-thread/comment inventory.
 
-If PR handling changes branch state, reset streak and repeat review/validation/commit/push/sweep.
+Every actionable PR item uses the same process:
 
-## Material Improvement Score
+```text
+sense -> estimate state -> govern -> actuate -> observe -> learn
+```
+
+If PR handling changes branch state, reset review streak and repeat review/validation/commit/push/sweep.
+
+## Report learning contract
+
+Every final `$resolve` report must support future learning.
+
+Include:
+
+```yaml
+resolve_learning_report:
+  report_version: RLR-v1
+  denominator:
+    raw_sessions:
+    false_positives:
+    effective_sessions:
+    confidence:
+  material_improvement:
+    apply_patch_calls:
+    commits:
+    production_insertions:
+    production_deletions:
+    production_net:
+    test_insertions:
+    test_deletions:
+    test_net:
+    same_cluster_findings:
+    same_cluster_findings_after_first_fix:
+    helpers_wrappers_adapters_added:
+    public_symbols_added:
+    fallback_or_compat_paths_added:
+    duplicate_or_shadow_surfaces_retired:
+  cluster_trajectory: []
+  finding_to_route_matrix: []
+  decision_impact: []
+  skill_obligation_matrix: []
+  recommendation_carry_forward: []
+  report_confidence:
+    denominator_quality:
+    false_positive_count:
+    attribution_gaps: []
+    confidence:
+  report_value_score:
+    answered_material_question:
+    identified_route_changing_gap:
+    measured_outcome_delta:
+    separated_invocation_from_impact:
+    produced_testable_next_change:
+    avoided_skill_mention_theatre:
+    overall:
+```
+
+The final report must answer:
+
+```text
+Did same-cluster recurrence drop?
+Did production net growth drop?
+Did delete/collapse/refactor routes appear?
+Did negative evidence change a route?
+Did CAS iterations per cluster decrease?
+```
+
+## Material improvement score
 
 Every final `$resolve` report must include:
 
@@ -336,24 +501,17 @@ resolve_material_improvement:
     checks:
     active_exclusions:
     route_changed_by_exclusion:
-  compression_or_distillation:
-    used:
-    changed_route:
+  cybernetic:
+    contexts_required:
+    contexts_emitted:
+    route_changed:
   outcome:
     resolved:
     blocked:
     churn_reduced:
 ```
 
-The success question is not "did we emit packets?" It is:
-
-```text
-Did same-cluster recurrence drop?
-Did production net growth drop?
-Did delete/collapse/refactor routes appear?
-Did negative evidence change a route?
-Did CAS iterations per cluster decrease?
-```
+No final success claim without this score.
 
 ## Final report
 
@@ -364,14 +522,15 @@ Resolve Bottom Line:
 - status: resolved | blocked | partial
 - review_backend/base/head:
 - clean_review_streak:
-- same_cluster_stop_rule:
+- governor_decision:
 - selected_route:
 - negative_route_gate:
-- distillation:
+- cybernetic_context:
 - surface_delta_call:
 - validation:
 - PR sweep:
 - material_improvement:
+- learning_report_value:
 - open blocker:
 - exact next action:
 ```
@@ -380,22 +539,30 @@ Resolve Bottom Line:
 
 - CAS-first; native review fallback-only.
 - Three clean pinned review runs required.
+- Reviews sense; the governor decides; implementation obeys.
 - Review findings are counterexamples, not tasks.
-- After the second same-cluster finding, stop point-fixing.
-- Do not mutate after stop rule until an allowed route is selected.
-- Do not repeat an actively excluded route unless reopened/stale/superseded or explicitly accepted.
-- Do not deliver review lab history.
-- Add-new-surface after stop rule requires explicit expansion acceptance.
-- Do not claim resolved without material-improvement score.
-- Do not claim resolved with failed validation, stale review tuple, open stop-rule gate, active negative exclusion, or incomplete PR sweep.
+- After the second same-cluster finding, local patching is disabled.
+- Do not mutate without a complete review_governor_record when the governor rule applies.
+- Do not repeat an actively excluded route unless reopened/stale/superseded/accepted.
+- Do not route implementation outside the selected route.
+- Add-new-surface is expansion and requires explicit warrant.
+- Do not claim resolved with failed validation, stale review tuple, open governor gate, active negative exclusion, incomplete PR sweep, or missing material-improvement score.
+- Do not claim learning improvement without decision-impact and outcome metrics.
 
 ## Resources
 
-- [same-cluster-stop-rule.md](references/same-cluster-stop-rule.md)
-- [resolve-decision-record.md](references/resolve-decision-record.md)
-- [negative-route-ratchet.md](references/negative-route-ratchet.md)
-- [review-distillation-mode.md](references/review-distillation-mode.md)
+- [review-governor-record.md](references/review-governor-record.md)
+- [same-cluster-governor-rule.md](references/same-cluster-governor-rule.md)
+- [review-entropy.md](references/review-entropy.md)
+- [finding-to-route-matrix.md](references/finding-to-route-matrix.md)
+- [decision-impact-reporting.md](references/decision-impact-reporting.md)
+- [cluster-trajectory.md](references/cluster-trajectory.md)
+- [skill-obligation-matrix.md](references/skill-obligation-matrix.md)
+- [recommendation-carry-forward.md](references/recommendation-carry-forward.md)
 - [material-improvement-score.md](references/material-improvement-score.md)
-- [implementation-handoff.md](references/implementation-handoff.md)
-- [final-report-contract.md](references/final-report-contract.md)
-- [rdr-gate.md](references/rdr-gate.md)
+- [negative-route-gate.md](references/negative-route-gate.md)
+- [cybernetic-governor-context.md](references/cybernetic-governor-context.md)
+- [evidence-discipline.md](references/evidence-discipline.md)
+- [companion-receipts.md](references/companion-receipts.md)
+- [cas-worker-attribution-spec.md](references/cas-worker-attribution-spec.md)
+- [rgr-gate.md](references/rgr-gate.md)

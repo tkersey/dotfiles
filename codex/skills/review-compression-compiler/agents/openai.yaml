@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Compression Compiler"
-  short_description: "Compile hot clusters into RDR normal forms"
-  default_prompt: "Use $review-compression-compiler to compile the hot review cluster into the normal-form section of a resolve_decision_record."
+  short_description: "Compress hot review clusters into governor decisions"
+  default_prompt: "Use $review-compression-compiler to compress hot review findings into the review_governor_record."

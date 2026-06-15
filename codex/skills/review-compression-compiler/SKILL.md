@@ -1,8 +1,8 @@
 ---
 name: review-compression-compiler
-description: "Read-only compiler for hot review clusters. Converts review findings into a normal-form section inside `resolve_decision_record` / RDR-v1. Use when `$resolve` hits the same-cluster stop rule, needs review distillation, or needs to decide whether a cluster is validate-only, delete/collapse, normal-form-decision, distillation, or blocked. Do not edit code."
+description: "Read-only compiler for hot review clusters. Use when `$resolve` as Review Governor needs to compress review findings into counterexample families, candidate routes, and normal-form decisions inside `review_governor_record`. Do not edit code."
 metadata:
-  version: "austere-1.0.0"
+  version: "governor-1.0.0"
   activation_cost: medium
   default_depth: strict
 ---
@@ -13,64 +13,41 @@ metadata:
 
 Review findings are counterexamples, not tasks.
 
-This skill is no longer a broad packet factory by default. It compiles a hot review cluster into the normal-form portion of a single `resolve_decision_record`.
+This skill helps `$resolve` compress a hot review cluster into the `review_governor_record`. It is no longer a default packet factory.
 
 It does not edit files.
 
 ## Use when
 
-- `$resolve` triggers the same-cluster stop rule;
-- same-cluster recurrence appears after a fix;
-- route would add public/fallback/compatibility/tolerance surface;
-- negative evidence may exclude the current route;
-- review-distillation mode may be needed;
-- a cluster needs a normal-form decision before implementation.
+- same-cluster recurrence appears;
+- `$resolve` governor rule fires;
+- repeated review findings need counterexample-family compression;
+- route choices need comparison by surface delta, proof cost, recurrence risk, and review-entropy reduction;
+- review-distillation mode may be needed.
 
 ## Output
 
-Emit or update:
+Contribute to:
 
 ```yaml
-resolve_decision_record:
-  record_version: RDR-v1
-  cluster:
-    cluster_id:
-    same_cluster_count:
-    stop_rule:
-    owner_candidates: []
+review_governor_record:
+  sensor_input:
+  state_estimate:
     counterexample_family:
+    review_entropy:
+  candidate_routes: []
   selected_route:
-    kind: validate-only | delete-collapse-canonicalize | normal-form-decision | review-distillation-mode | mutate-existing-owner | add-new-surface | blocked
-    owner:
-    why_this_route:
-    why_not_smaller:
+    why_not_lower_surface:
     why_not_point_fix:
-  negative_evidence:
-    checked:
-    active_exclusion_match:
-    route_changed_by_exclusion:
-  universalist_check:
-    required:
-    decision:
-    reason:
-  distillation:
-    required:
-    mode:
   proof_matrix: []
-  implementation_handoff:
-    target_skill:
-    permitted_scope: []
-    forbidden_actions: []
-    proof_required: []
 ```
 
-Prose may explain the record. Prose is not the record.
+## Route priority
 
-## Route priority after stop rule
-
-Prefer:
+After same-cluster recurrence, prefer:
 
 ```text
+no-change
 validate-only
 delete-collapse-canonicalize
 normal-form-decision
@@ -78,29 +55,12 @@ review-distillation-mode
 blocked
 ```
 
-Allow `mutate-existing-owner` only if the normal-form decision proves it is not another local point fix.
-
-`add-new-surface` requires explicit expansion acceptance.
-
-## Negative evidence
-
-Before selecting a route that resembles a prior failed route, require `$negative-ledger` or root-equivalent negative route check.
-
-The selected route must not violate active negative evidence unless reopened, stale, superseded, or explicitly accepted.
-
-## Distillation
-
-Use review-distillation mode when review repair history is becoming branch history.
-
-```text
-The lab learns. The delivery branch forgets.
-```
+Do not select ordinary local mutation as a route. It can only implement a normal-form decision.
 
 ## Hard rules
 
 - Do not edit files.
-- Do not create patch hunks.
-- Do not produce a normal-form decision without counterexamples.
-- Do not choose a repeated route without negative evidence check.
-- Do not treat YAML volume as improvement.
-- Do not use add-new-surface as an escape hatch after the stop rule.
+- Do not output patch hunks.
+- Do not produce "normal form" prose without a route comparison.
+- Do not treat add-new-surface as normal.
+- Do not skip negative route memory when a prior route failed.
