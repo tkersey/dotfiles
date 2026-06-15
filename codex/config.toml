@@ -131,6 +131,9 @@ trust_level = "trusted"
 [projects."/Users/tk/workspace/tk/blog"]
 trust_level = "trusted"
 
+[projects."/Users/tk/workspace/art"]
+trust_level = "trusted"
+
 [marketplaces.openai-bundled]
 last_updated = "2026-06-13T16:17:01Z"
 source_type = "local"
