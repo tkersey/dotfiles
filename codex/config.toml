@@ -24,7 +24,7 @@ mentions_v2 = true
 js_repl = false
 
 [features.multi_agent_v2]
-enabled = false
+enabled = true
 max_concurrent_threads_per_session = 24
 
 [apps._default]
