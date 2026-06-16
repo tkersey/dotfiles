@@ -9,25 +9,17 @@ finding_to_route_matrix:
     cluster_id:
     same_cluster_count:
     evidence_discipline:
-      observed_fact:
-      review_claim:
-      proposed_change:
-      uncertainty:
-      scope_basis:
-    adjudication:
-      route:
-      receipt_present:
     selected_route:
       kind:
       why_not_smaller:
       why_not_point_fix:
-    companion_gates:
+    gates:
+      production_embargo:
+      owner_coarseness:
+      boundary_inventory:
       negative_ledger:
-      cybernetic:
-      review_compression:
-      fixed_point:
+      proof_matrix:
     result:
-      changed_files: []
       production_net:
       test_net:
       proof:

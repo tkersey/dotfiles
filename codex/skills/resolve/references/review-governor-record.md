@@ -1,20 +1,22 @@
-# Review Governor Record
+# Review Governor Record v2
 
-The `review_governor_record` is the control state for a finding-bearing review wave.
+`review_governor_record` is the control record for finding-bearing review waves.
 
-It records:
+It must include:
 
 - artifact state;
-- sensor inputs;
+- sensor input;
 - state estimate;
+- owner coarseness gate;
+- boundary inventory;
 - candidate routes;
 - negative memory;
-- cybernetic context;
+- cybernetic context when required;
 - selected route;
+- proof matrix gate;
+- production embargo;
 - implementation handoff;
 - outcome metrics;
-- gates.
+- gate status.
 
-A production mutation after same-cluster recurrence requires this record.
-
-If the record cannot explain why the selected route reduces review entropy, do not mutate.
+After same-cluster recurrence, production mutation is blocked unless this record explains why the selected route reduces review entropy without unbounded code growth.

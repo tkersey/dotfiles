@@ -1,42 +1,23 @@
 # Review Governor Memory
 
-`$negative-ledger` is the Review Governor's memory.
+`$negative-ledger` is the Review Governor's route memory.
 
-It should answer:
-
-```text
-Was this route tried before?
-Did it fail?
-May it be repeated now?
-```
-
-## Required route gate
+Nominal checks are insufficient. Same-cluster recurrence requires operational evidence:
 
 ```yaml
 negative_route_gate:
-  checked: yes | no
+  checked: yes
+  evidence_source:
+    skill_read: yes | no
+    query_or_map: yes | no
+    prior_route_search_terms: []
+    current_cluster_compared_to_prior: yes | no
   active_exclusion_match: yes | no
   route_changed_by_exclusion: yes | no
   capture_created: yes | no
   handoff_allowed: yes | no
 ```
 
-## Capture trigger
+If `query_or_map: no` and same-cluster count is at least 2, mutation is blocked.
 
-Create a capture candidate when:
-
-- same cluster recurs after a selected route;
-- proof matrix missed a same-family counterexample;
-- public/fallback/compatibility/tolerance route was rejected;
-- selected normal form failed on current artifact;
-- universalist-not-needed was falsified.
-
-## Success metric
-
-The important report field is:
-
-```text
-route_changed_by_exclusion
-```
-
-not the number of negative-ledger mentions.
+Capture a negative evidence candidate when a route fails, same-cluster findings recur, or a proof matrix misses a family case.

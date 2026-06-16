@@ -1,6 +1,6 @@
 # Same-Cluster Governor Rule
 
-After the second same-cluster finding, local patching is disabled.
+After the second same-cluster finding, ordinary local patching is disabled.
 
 Allowed routes:
 
@@ -9,6 +9,9 @@ Allowed routes:
 - delete-collapse-canonicalize;
 - normal-form-decision;
 - review-distillation-mode;
+- boundary-redesign;
 - blocked.
 
-`mutate-existing-owner` is allowed only as implementation of a named normal form. `add-new-surface` is expansion and requires explicit warrant.
+`mutate-existing-owner` may only implement `normal-form-decision`.
+
+`add-new-surface` is expansion and requires explicit warrant.

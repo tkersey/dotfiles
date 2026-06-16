@@ -13,16 +13,23 @@ from pathlib import Path
 
 REQUIRED = [
     r"review_governor_record\s*:",
-    r"record_version\s*:\s*RGR-v1",
+    r"record_version\s*:\s*RGR-v2",
     r"artifact_state\s*:",
     r"sensor_input\s*:",
     r"state_estimate\s*:",
+    r"owner_coarseness_gate\s*:",
+    r"boundary_inventory\s*:",
     r"candidate_routes\s*:",
     r"negative_memory\s*:",
     r"selected_route\s*:",
+    r"proof_matrix_gate\s*:",
+    r"production_embargo\s*:",
     r"outcome_metrics\s*:",
     r"gate\s*:",
 ]
+
+def has(pattern: str, text: str) -> bool:
+    return re.search(pattern, text) is not None
 
 def main(argv: list[str]) -> int:
     if len(argv) != 2:
@@ -30,21 +37,41 @@ def main(argv: list[str]) -> int:
         return 2
 
     text = Path(argv[1]).read_text(encoding="utf-8")
-    missing = [pat for pat in REQUIRED if re.search(pat, text) is None]
+    missing = [pat for pat in REQUIRED if not has(pat, text)]
     if missing:
         print("RGR gate: FAIL")
         for pat in missing:
             print(f"missing pattern: {pat}")
         return 1
 
-    if re.search(r"active_exclusion_match\s*:\s*yes", text) and re.search(r"handoff_allowed\s*:\s*yes", text):
+    if has(r"same_cluster_count\s*:\s*[2-9]", text) and has(r"route\s*:\s*mutate-existing-owner", text) and not has(r"route\s*:\s*normal-form-decision", text):
         print("RGR gate: FAIL")
-        print("active negative exclusion cannot allow handoff")
+        print("same-cluster recurrence cannot select mutate-existing-owner directly")
         return 1
 
-    if re.search(r"local_patch_allowed\s*:\s*no", text) and re.search(r"route\s*:\s*mutate-existing-owner", text):
+    if has(r"production_embargo\s*:\s*fail", text):
         print("RGR gate: FAIL")
-        print("cybernetic local_patch_allowed=no conflicts with mutate-existing-owner")
+        print("production embargo failed")
+        return 1
+
+    if has(r"owner_coarseness_gate\s*:\s*fail", text):
+        print("RGR gate: FAIL")
+        print("owner coarseness gate failed")
+        return 1
+
+    if has(r"negative_route_gate\s*:\s*fail", text):
+        print("RGR gate: FAIL")
+        print("negative route gate failed")
+        return 1
+
+    if has(r"proof_matrix_gate\s*:\s*fail", text):
+        print("RGR gate: FAIL")
+        print("proof matrix gate failed")
+        return 1
+
+    if has(r"query_or_map\s*:\s*no", text) and has(r"same_cluster_count\s*:\s*[2-9]", text):
+        print("RGR gate: FAIL")
+        print("same-cluster recurrence requires operational negative-ledger query/map")
         return 1
 
     print("RGR gate: PASS")

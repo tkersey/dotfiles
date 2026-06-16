@@ -1,22 +1,21 @@
 # Review Governor Context
 
-When `$resolve` acts as Review Governor, `$cybernetic` classifies repeated feedback patterns.
+Use `$cybernetic` when review recurrence implies system structure.
+
+Required after same-cluster recurrence unless explicitly not a system pattern:
 
 ```yaml
 cybernetic_context:
-  required: yes | no
-  system_type: clear | complicated | complex | chaotic | mixed | unknown
-  pattern: "..."
-  feedback_loop: "..."
-  leverage_level: parameter | information_flow | rules | goal | paradigm | none
+  required:
+  system_type:
+  pattern:
+  feedback_loop:
+  leverage_level:
   selected_intervention:
-    route: checklist | expert_analysis | safe_to_fail_probe | stabilize_first | redesign_feedback | change_rules | change_goal | handoff | blocked
-    downstream_skill: resolve | fixed-point-driver | universalist | reduce | negative-ledger | none
-  local_patch_allowed: yes | no
-  monitoring_or_probe: "..."
-  route_changed: yes | no
+    route:
+    downstream_skill:
+  local_patch_allowed:
+  monitoring_or_probe:
 ```
 
-Use when repeated review events imply structure.
-
-Do not use for isolated local bugs.
+If `local_patch_allowed: no`, ordinary local mutation is blocked.

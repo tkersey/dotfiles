@@ -4,11 +4,13 @@ When invoked by `$resolve`, `$fixed-point-driver` must implement the selected go
 
 Reject handoff when:
 
-- review_governor_record is required but missing;
-- selected route is local patching after same-cluster recurrence without normal-form justification;
+- `review_governor_record` is required but missing;
+- same-cluster recurrence selected raw `mutate-existing-owner`;
+- positive production net embargo failed;
+- owner coarseness gate is unknown/failed;
+- boundary inventory requires universalist/reduce/distill but handoff is local mutation;
 - active negative evidence excludes the selected route;
-- cybernetic_context says `local_patch_allowed: no`;
-- proof matrix is missing;
+- proof matrix gate failed;
 - forbidden actions or surface budget are missing.
 
 Emit when invoked:

@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "CAS-first Review Governor"
-  default_prompt: "Use $resolve as a Review Governor: reviews sense, the governor decides, implementation obeys. Emit review_governor_record, govern same-cluster recurrence, measure decision impact and material improvement."
+  short_description: "Review Governor with production-growth embargo"
+  default_prompt: "Use $resolve as a Review Governor: reviews sense, the governor decides, implementation obeys. Enforce same-cluster local-patching disablement, production-net embargo, owner coarseness, negative-ledger operational evidence, boundary inventory, proof-matrix gate, and material-improvement reporting."

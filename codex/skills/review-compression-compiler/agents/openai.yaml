@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Compression Compiler"
-  short_description: "Compress hot review clusters into governor decisions"
-  default_prompt: "Use $review-compression-compiler to compress hot review findings into the review_governor_record."
+  short_description: "Compress hot clusters under production embargo"
+  default_prompt: "Use $review-compression-compiler to compress hot review findings into owner-coarseness, production-embargo, proof-matrix, and normal-form sections of the review_governor_record."

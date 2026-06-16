@@ -6,9 +6,13 @@ For `$resolve` closure, require:
 - full validation;
 - PR sweep;
 - governor gate closed or not triggered;
+- positive production net embargo passed or not required;
+- owner coarseness gate passed or not required;
+- boundary inventory satisfied or not required;
 - negative route gate pass or not-required;
+- proof matrix gate pass or not-required;
 - material improvement score present;
-- no active negative exclusion against the selected route.
+- no active negative exclusion against selected route.
 
 If invoked, emit:
 
@@ -20,5 +24,3 @@ verification_closure_receipt:
   unresolved_risk:
   closure_allowed:
 ```
-
-For cybernetic/complex interventions, green tests may be probe evidence rather than full closure. Record monitoring or next feedback interval.

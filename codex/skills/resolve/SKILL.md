@@ -1,32 +1,41 @@
 ---
 name: resolve
-description: "Resolve the current branch through a CAS-first Review Governor: reviews sense, the governor decides, implementation obeys. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR sweep, three consecutive clean reviews, review_governor_record / RGR-v1, review-entropy reduction, same-cluster recurrence, negative-ledger route memory, cybernetic context, finding-to-route matrices, decision-impact reports, and material-improvement scoring. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
+description: "Resolve the current branch through a CAS-first Review Governor with production-growth embargo after same-cluster recurrence. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR sweep, three consecutive clean reviews, review_governor_record / RGR-v2, same-cluster local-patching disablement, positive production net embargo, owner coarseness gate, proof matrix gate, negative-ledger operational evidence, boundary inventory/universalist trigger, governor compliance reporting, and material-improvement scoring. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
 ---
 
 # resolve
 
 ## Purpose
 
-Resolve the current branch to a pinned-review-clean, validated, committed, pushed, and PR-comment-swept state without letting review feedback directly actuate code.
+Resolve the current branch to a pinned-review-clean, validated, committed, pushed, and PR-comment-swept state without letting review feedback directly actuate unbounded code growth.
 
-`$resolve` is now a **Review Governor**.
+`$resolve` is a **Review Governor**.
 
 ```text
 Reviews sense. The governor decides. Implementation obeys.
 ```
 
-Review findings, CAS findings, PR comments, and validation failures are sensor signals. They are not tasks. `$resolve` converts them into counterexample families, estimates review entropy, chooses the lowest-surface entropy-reducing intervention, then permits implementation only through that selected route.
+This version adds the missing force from recent reports:
+
+```text
+After same-cluster recurrence, the default is no more production growth.
+```
+
+The governor must choose collapse, normal form, distillation, boundary clarification, or blocked. It may not keep adding validation/replay/evidence branches to an already-growing owner just because the owner is "existing."
 
 ## Core doctrine
 
 ```text
 Do not satisfy the reviewer. Govern the feedback loop.
 Review findings are counterexamples, not tasks.
+Existing-owner mutation is necessary but not sufficient.
 After the second same-cluster finding, local patching is disabled.
-Negative-ledger is route memory, not a decorative preflight note.
-Cybernetic classifies repeated feedback patterns, not isolated bugs.
-No decision-impact record, no claim of learning.
-No material-improvement score, no claim of improvement.
+After same-cluster recurrence, positive production net is embargoed.
+Same coarse owner + growing branches means owner coarseness must be adjudicated.
+Negative-ledger must be operationally evidenced, not asserted.
+Universalist/boundary inventory is required when the same owner keeps absorbing semantic branches.
+Tests must become a proof matrix, not a wound catalog.
+No governor-compliance metrics, no improvement claim.
 ```
 
 ## Activation Kernel
@@ -57,7 +66,11 @@ Root owns branch mutation, review streak, base/head pins, route selection, commi
 + no actionable PR comments remaining
 + no open same-cluster governor gate
 + no active negative exclusion against selected route
++ no owner-coarseness gate left unknown after recurrence
++ no positive production net after recurrence unless explicitly warranted
++ no one-test-per-wound proof growth without matrix justification
 + review_governor_record emitted for finding-bearing waves
++ governor-compliance metrics reported
 + material-improvement score reported
 ```
 
@@ -87,16 +100,20 @@ Repeat until `clean_review_streak == 3`:
    - Separate observed facts, review claims, proposed changes, and uncertainty.
 
 2. **Estimate state**
-   - Cluster findings.
+   - Cluster findings before editing.
    - Track same-cluster count and findings after first fix.
+   - Track owner growth, validation/evidence branch growth, and test-growth shape.
    - Estimate review entropy.
    - Classify system context when repeated events imply structure.
 
 3. **Govern**
    - Enumerate candidate routes.
-   - Check negative route memory before repeating a route.
-   - Select the route that reduces review entropy with the least system surface.
-   - Disable local patching after same-cluster recurrence unless the route is a named normal form.
+   - Disable local patching after same-cluster recurrence.
+   - Enforce positive production net embargo when recurrence occurs.
+   - Run owner coarseness gate when the same owner keeps growing.
+   - Run negative-ledger operational check before repeating routes.
+   - Run boundary inventory / universalist check when repeated owner growth suggests missing semantic surface.
+   - Select the lowest-surface entropy-reducing route.
 
 4. **Actuate**
    - Hand off only the selected route to `$fixed-point-driver` / `$accretive-implementer`.
@@ -104,18 +121,18 @@ Repeat until `clean_review_streak == 3`:
 
 5. **Observe**
    - Run targeted proof.
-   - Update surface delta and cluster trajectory.
+   - Update surface delta, proof matrix, and cluster trajectory.
    - Commit coherent green slices only when safe.
    - Restart review on the current tuple.
 
 6. **Learn**
    - Capture route failures as negative evidence.
-   - Update decision-impact and material-improvement metrics.
+   - Update governor-compliance, decision-impact, and material-improvement metrics.
    - Carry recommendation outcomes into the final report.
 
 ## Review entropy
 
-Review entropy is the system’s tendency to keep generating unresolved or adjacent review findings.
+Review entropy is the system's tendency to keep generating unresolved or adjacent review findings.
 
 Track:
 
@@ -127,12 +144,14 @@ review_entropy:
   helper_wrapper_adapter_growth:
   public_surface_growth:
   fallback_or_compatibility_growth:
+  validation_branch_growth:
+  evidence_predicate_growth:
   proof_matrix_sprawl:
   repeated_failed_route_penalty:
   delayed_feedback_risk:
 ```
 
-A patch is allowed only when the selected route reduces review entropy better than the available alternatives.
+A patch is allowed only when the selected route reduces review entropy better than the alternatives.
 
 Ask:
 
@@ -163,17 +182,170 @@ Allowed routes after the governor rule fires:
 3. `delete-collapse-canonicalize`
 4. `normal-form-decision`
 5. `review-distillation-mode`
-6. `blocked`
+6. `boundary-redesign`
+7. `blocked`
 
-`mutate-existing-owner` is allowed only as the implementation form of `normal-form-decision`, and only if the record names:
+`mutate-existing-owner` is **not selectable** after recurrence. It may appear only as the implementation detail of `normal-form-decision`, and only when the governor record proves:
 
-- the owner;
-- the counterexample family;
-- why delete/collapse is insufficient;
-- why this is not another local point fix;
-- the proof matrix.
+- the owner is not too coarse;
+- delete/collapse is insufficient;
+- the change removes/collapses more semantic surface than it adds, or positive growth is explicitly warranted;
+- this is not another local point fix;
+- the proof matrix covers the family.
 
-`add-new-surface` is not a normal route. It is a capital expenditure. It requires explicit expansion warrant, paid abstraction rent, and proof that lower-surface routes cannot satisfy the counterexample family.
+`add-new-surface` is not a normal route. It is a capital expenditure. It requires explicit expansion warrant, paid abstraction rent, boundary inventory, and proof that lower-surface routes cannot satisfy the counterexample family.
+
+## Positive Production Net Embargo
+
+After same-cluster recurrence:
+
+```text
+production_net must be <= 0
+```
+
+unless one of these is true:
+
+- the patch retires or collapses more semantic surface than it adds;
+- the patch makes an illegal state uninhabitable at the right boundary;
+- the user/upstream authority explicitly accepts expansion;
+- review-distillation or boundary redesign proves positive net is the lowest total-system-surface route.
+
+Allowed after recurrence:
+
+- delete/collapse;
+- canonicalize duplicated predicates;
+- replace several branches with one existing table/model;
+- move logic to a clearer existing seam while deleting old branches;
+- make an impossible state unrepresentable;
+- distill tests into a family matrix.
+
+Blocked by default after recurrence:
+
+- add one more validation branch;
+- add one more evidence predicate;
+- add one more fallback/compatibility case;
+- add one more focused regression for one wound;
+- grow a coarse owner without owner-coarseness adjudication.
+
+## Owner Coarseness Gate
+
+Required when any trigger is true:
+
+```yaml
+owner_coarseness_gate:
+  required: yes | no
+  trigger:
+    same_cluster_count_gte_2: yes | no
+    same_file_repeated_growth: yes | no
+    same_owner_repeated_mutation: yes | no
+    validation_branch_growth: yes | no
+    evidence_predicate_growth: yes | no
+    compatibility_or_version_branch_growth: yes | no
+  owner: "..."
+  owner_too_coarse: yes | no | unknown
+  decision:
+    route: continue_owner | split_boundary | universalist_check | reduce_surface | distill | blocked
+  reason: "..."
+```
+
+Hard rule:
+
+```text
+If owner_too_coarse is yes or unknown after same-cluster recurrence,
+do not add another validation/replay/evidence branch to that owner.
+```
+
+`continue_owner` is allowed only when the owner is proven to be the correct semantic unit and the change is surface-neutral or surface-reducing.
+
+## Boundary inventory / universalist trigger
+
+Do not require `$universalist` for every repeated cluster. Do require a boundary inventory when the same owner keeps absorbing semantic branches.
+
+Trigger when:
+
+- same cluster recurs;
+- same coarse owner keeps growing;
+- validation/replay/evidence branches accumulate;
+- compatibility/version semantics keep appearing;
+- receipt/journal/replay/authority semantics are spread across parallel predicates;
+- public/internal semantics are repeatedly reviewed.
+
+Minimum boundary inventory:
+
+```yaml
+boundary_inventory:
+  required: yes | no
+  semantic_surfaces: []
+  duplicated_or_parallel_predicates: []
+  implicit_table_or_algebra: yes | no | unknown
+  missing_boundary_artifact: yes | no | unknown
+  decision: universalist | reduce | normal-form | distill | blocked
+  reason: "..."
+```
+
+If `missing_boundary_artifact: yes | unknown` after recurrence, do not continue ordinary owner mutation. Route to `$universalist`, `$reduce`, distillation, or block.
+
+## Negative-ledger operational evidence
+
+Do not merely write:
+
+```text
+negative_route_gate: checked
+```
+
+The gate must show evidence:
+
+```yaml
+negative_route_gate:
+  checked: yes | no
+  evidence_source:
+    skill_read: yes | no
+    query_or_map: yes | no
+    prior_route_search_terms: []
+    current_cluster_compared_to_prior: yes | no
+  active_exclusion_match: yes | no
+  route_changed_by_exclusion: yes | no
+  capture_created: yes | no
+  handoff_allowed: yes | no
+```
+
+Hard rule:
+
+```text
+If same_cluster_count >= 2 and query_or_map is no, mutation is blocked.
+```
+
+Same-cluster recurrence after a selected route creates a negative-evidence capture candidate unless proven unrelated, stale, or superseded.
+
+## Proof Matrix Gate
+
+After same-cluster recurrence, tests must prove the counterexample family, not just the latest wound.
+
+```yaml
+proof_matrix_gate:
+  required: yes | no
+  one_test_per_wound: yes | no
+  family_matrix_present: yes | no
+  duplicate_fixture_cases: yes | no
+  tests_retired_or_merged: []
+  allowed: yes | no
+  reason: "..."
+```
+
+Hard rule:
+
+```text
+If the new test only encodes the latest wound and does not expand or compact a family matrix, block or justify explicitly.
+```
+
+Prefer:
+
+- table-driven cases;
+- invariant matrix;
+- authority-boundary matrix;
+- version/compatibility matrix with strict current-format guard;
+- existing test extension over a new bespoke test;
+- retiring/merging duplicate wound tests.
 
 ## Review Governor Record
 
@@ -181,7 +353,7 @@ Every finding-bearing review wave and every same-cluster governor decision must 
 
 ```yaml
 review_governor_record:
-  record_version: RGR-v1
+  record_version: RGR-v2
   resolve_run_id: "..."
   artifact_state:
     branch: "..."
@@ -205,6 +377,8 @@ review_governor_record:
     same_cluster_count: 0
     findings_after_first_fix: 0
     counterexample_family: "..."
+    recurring_owner: "..."
+    recurring_file: "..."
     system_type: clear | complicated | complex | chaotic | mixed | unknown
     feedback_loop: "..."
     delayed_feedback: yes | no | unknown
@@ -215,17 +389,38 @@ review_governor_record:
       helper_wrapper_adapter_growth: 0
       public_surface_growth: 0
       fallback_or_compatibility_growth: 0
+      validation_branch_growth: 0
+      evidence_predicate_growth: 0
       proof_matrix_sprawl: 0
       repeated_failed_route_penalty: 0
+  owner_coarseness_gate:
+    required: yes | no
+    owner_too_coarse: yes | no | unknown
+    decision:
+      route: continue_owner | split_boundary | universalist_check | reduce_surface | distill | blocked
+      reason: "..."
+  boundary_inventory:
+    required: yes | no
+    semantic_surfaces: []
+    duplicated_or_parallel_predicates: []
+    implicit_table_or_algebra: yes | no | unknown
+    missing_boundary_artifact: yes | no | unknown
+    decision: universalist | reduce | normal-form | distill | blocked
   candidate_routes:
-    - route: no-change | validate-only | delete-collapse-canonicalize | normal-form-decision | review-distillation-mode | blocked
+    - route: no-change | validate-only | delete-collapse-canonicalize | normal-form-decision | review-distillation-mode | boundary-redesign | blocked
       counterexamples_covered: []
       production_surface_delta: negative | zero | bounded-positive | expansion | unknown
+      semantic_surface_retired: []
       proof_cost: low | medium | high | unknown
       recurrence_risk: low | medium | high | unknown
       rejected_because: "..."
   negative_memory:
     checked: yes | no
+    evidence_source:
+      skill_read: yes | no
+      query_or_map: yes | no
+      prior_route_search_terms: []
+      current_cluster_compared_to_prior: yes | no
     active_exclusion_match: yes | no
     route_changed_by_exclusion: yes | no
     capture_created: yes | no
@@ -243,16 +438,29 @@ review_governor_record:
     local_patch_allowed: yes | no
     monitoring_or_probe: "..."
   selected_route:
-    route: no-change | validate-only | delete-collapse-canonicalize | normal-form-decision | review-distillation-mode | mutate-existing-owner | add-new-surface | blocked
+    route: no-change | validate-only | delete-collapse-canonicalize | normal-form-decision | review-distillation-mode | boundary-redesign | mutate-existing-owner | add-new-surface | blocked
     owner: "..."
     why_this_route: "..."
     why_not_lower_surface: "..."
     why_not_point_fix: "..."
+    expansion_warrant: "none | explicit-user | upstream | retired-more-surface | uninhabitable-state"
     proof_matrix:
       - proof_id: "..."
         counterexamples_covered: []
         command_or_test: "..."
     forbidden_actions: []
+  proof_matrix_gate:
+    required: yes | no
+    one_test_per_wound: yes | no
+    family_matrix_present: yes | no
+    duplicate_fixture_cases: yes | no
+    tests_retired_or_merged: []
+    allowed: yes | no
+  production_embargo:
+    required: yes | no
+    production_net_allowed: yes | no
+    expected_production_net: negative | zero | positive | unknown
+    reason: "..."
   actuation_handoff:
     downstream_skill: fixed-point-driver | accretive-implementer | none
     permitted_scope: []
@@ -272,20 +480,26 @@ review_governor_record:
     helpers_added: 0
     public_symbols_added: 0
     fallback_or_compat_paths_added: 0
+    validation_branches_added: 0
+    evidence_predicates_added: 0
     duplicate_or_shadow_surfaces_retired: 0
     same_cluster_recurred_after: yes | no | unknown
   gate:
     governor_decision_complete: pass | fail
+    same_cluster_stop_rule: pass | fail | not-triggered
+    production_embargo: pass | fail | not-required
+    owner_coarseness_gate: pass | fail | not-required
+    boundary_inventory_gate: pass | fail | not-required
     negative_route_gate: pass | fail | not-required
     cybernetic_gate: pass | fail | not-required
+    proof_matrix_gate: pass | fail | not-required
     evidence_discipline_complete: pass | fail
-    proof_matrix_present: pass | fail
     implementation_handoff_allowed: yes | no
 ```
 
 Prose may explain the record. Prose is not the record.
 
-If the record cannot show why the selected route reduces review entropy, do not mutate.
+If the record cannot show why the selected route reduces review entropy without unbounded surface growth, do not mutate.
 
 ## Evidence discipline
 
@@ -301,23 +515,6 @@ evidence_discipline:
 ```
 
 Use `$review-adjudication` when actionability is contested. Use this field even when `$review-adjudication` is root-equivalent.
-
-## Negative route memory
-
-Before repeating any route in a hot cluster:
-
-```yaml
-negative_route_gate:
-  checked: yes | no
-  active_exclusion_match: yes | no
-  route_changed_by_exclusion: yes | no
-  capture_created: yes | no
-  handoff_allowed: yes | no
-```
-
-If active negative evidence excludes the route and is not reopened, stale, superseded, or explicitly accepted, implementation is blocked.
-
-Same-cluster recurrence after a selected route creates a negative-evidence capture candidate unless proven unrelated.
 
 ## Cybernetic context
 
@@ -375,6 +572,10 @@ implementation_handoff:
   surface_budget:
   proof_matrix: []
   negative_route_gate:
+  owner_coarseness_gate:
+  boundary_inventory:
+  proof_matrix_gate:
+  production_embargo:
   cybernetic_context:
   stale_if: []
 ```
@@ -407,6 +608,32 @@ sense -> estimate state -> govern -> actuate -> observe -> learn
 
 If PR handling changes branch state, reset review streak and repeat review/validation/commit/push/sweep.
 
+## Governor compliance reporting
+
+Every final `$resolve` report must include:
+
+```yaml
+governor_compliance:
+  finding_bearing_waves:
+  review_governor_records_required:
+  review_governor_records_emitted:
+  same_cluster_stop_events:
+  mutations_after_stop_rule:
+  mutations_after_stop_rule_with_positive_production_net:
+  positive_production_net_embargo_required:
+  positive_production_net_embargo_passed:
+  owner_coarseness_gate_required:
+  owner_coarseness_gate_passed:
+  boundary_inventory_required:
+  boundary_inventory_emitted:
+  negative_ledger_required:
+  negative_ledger_operational:
+  proof_matrix_gate_required:
+  proof_matrix_gate_passed:
+```
+
+This must be reported even when the run blocks.
+
 ## Report learning contract
 
 Every final `$resolve` report must support future learning.
@@ -415,12 +642,7 @@ Include:
 
 ```yaml
 resolve_learning_report:
-  report_version: RLR-v1
-  denominator:
-    raw_sessions:
-    false_positives:
-    effective_sessions:
-    confidence:
+  report_version: RLR-v2
   material_improvement:
     apply_patch_calls:
     commits:
@@ -435,25 +657,17 @@ resolve_learning_report:
     helpers_wrappers_adapters_added:
     public_symbols_added:
     fallback_or_compat_paths_added:
+    validation_branches_added:
+    evidence_predicates_added:
     duplicate_or_shadow_surfaces_retired:
   cluster_trajectory: []
   finding_to_route_matrix: []
   decision_impact: []
   skill_obligation_matrix: []
+  governor_compliance:
   recommendation_carry_forward: []
   report_confidence:
-    denominator_quality:
-    false_positive_count:
-    attribution_gaps: []
-    confidence:
   report_value_score:
-    answered_material_question:
-    identified_route_changing_gap:
-    measured_outcome_delta:
-    separated_invocation_from_impact:
-    produced_testable_next_change:
-    avoided_skill_mention_theatre:
-    overall:
 ```
 
 The final report must answer:
@@ -461,7 +675,8 @@ The final report must answer:
 ```text
 Did same-cluster recurrence drop?
 Did production net growth drop?
-Did delete/collapse/refactor routes appear?
+Did owner growth stop after recurrence?
+Did tests become a matrix instead of a wound catalog?
 Did negative evidence change a route?
 Did CAS iterations per cluster decrease?
 ```
@@ -487,6 +702,8 @@ resolve_material_improvement:
   helpers_wrappers_adapters_added:
   public_symbols_added:
   fallback_or_compat_paths_added:
+  validation_branches_added:
+  evidence_predicates_added:
   duplicate_or_shadow_surfaces_retired:
   selected_routes:
     no_change:
@@ -494,17 +711,27 @@ resolve_material_improvement:
     delete_collapse_canonicalize:
     normal_form_decision:
     review_distillation_mode:
+    boundary_redesign:
     mutate_existing_owner:
     add_new_surface:
     blocked:
   negative_evidence:
     checks:
+    operational_checks:
     active_exclusions:
     route_changed_by_exclusion:
   cybernetic:
     contexts_required:
     contexts_emitted:
     route_changed:
+  owner_coarseness:
+    required:
+    owner_too_coarse:
+    route_changed:
+  proof_matrix:
+    gates_required:
+    one_test_per_wound_blocked:
+    tests_retired_or_merged:
   outcome:
     resolved:
     blocked:
@@ -524,11 +751,16 @@ Resolve Bottom Line:
 - clean_review_streak:
 - governor_decision:
 - selected_route:
+- production_embargo:
+- owner_coarseness_gate:
+- boundary_inventory:
 - negative_route_gate:
+- proof_matrix_gate:
 - cybernetic_context:
 - surface_delta_call:
 - validation:
 - PR sweep:
+- governor_compliance:
 - material_improvement:
 - learning_report_value:
 - open blocker:
@@ -542,27 +774,32 @@ Resolve Bottom Line:
 - Reviews sense; the governor decides; implementation obeys.
 - Review findings are counterexamples, not tasks.
 - After the second same-cluster finding, local patching is disabled.
-- Do not mutate without a complete review_governor_record when the governor rule applies.
+- After recurrence, positive production net is embargoed unless explicitly warranted.
+- Same coarse owner growth requires owner-coarseness adjudication.
+- Negative-ledger operational evidence is required before repeated-route mutation.
+- Boundary inventory is required when the same owner absorbs recurring semantic branches.
+- Proof-matrix gate is required after same-cluster recurrence.
+- Do not mutate without a complete `review_governor_record` when the governor rule applies.
 - Do not repeat an actively excluded route unless reopened/stale/superseded/accepted.
 - Do not route implementation outside the selected route.
 - Add-new-surface is expansion and requires explicit warrant.
 - Do not claim resolved with failed validation, stale review tuple, open governor gate, active negative exclusion, incomplete PR sweep, or missing material-improvement score.
-- Do not claim learning improvement without decision-impact and outcome metrics.
+- Do not claim learning improvement without governor-compliance and outcome metrics.
 
 ## Resources
 
 - [review-governor-record.md](references/review-governor-record.md)
 - [same-cluster-governor-rule.md](references/same-cluster-governor-rule.md)
+- [production-net-embargo.md](references/production-net-embargo.md)
+- [owner-coarseness-gate.md](references/owner-coarseness-gate.md)
+- [boundary-inventory.md](references/boundary-inventory.md)
+- [negative-ledger-operational-evidence.md](references/negative-ledger-operational-evidence.md)
+- [proof-matrix-gate.md](references/proof-matrix-gate.md)
+- [governor-compliance-reporting.md](references/governor-compliance-reporting.md)
 - [review-entropy.md](references/review-entropy.md)
 - [finding-to-route-matrix.md](references/finding-to-route-matrix.md)
 - [decision-impact-reporting.md](references/decision-impact-reporting.md)
 - [cluster-trajectory.md](references/cluster-trajectory.md)
-- [skill-obligation-matrix.md](references/skill-obligation-matrix.md)
-- [recommendation-carry-forward.md](references/recommendation-carry-forward.md)
 - [material-improvement-score.md](references/material-improvement-score.md)
-- [negative-route-gate.md](references/negative-route-gate.md)
-- [cybernetic-governor-context.md](references/cybernetic-governor-context.md)
 - [evidence-discipline.md](references/evidence-discipline.md)
-- [companion-receipts.md](references/companion-receipts.md)
-- [cas-worker-attribution-spec.md](references/cas-worker-attribution-spec.md)
 - [rgr-gate.md](references/rgr-gate.md)

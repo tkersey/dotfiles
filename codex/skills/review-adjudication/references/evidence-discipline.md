@@ -11,6 +11,4 @@ evidence_discipline:
   scope_basis: "Why this evidence justifies the proposed scope."
 ```
 
-Use this field before selecting `address`, `validate-only`, `delete-collapse-canonicalize`, `do-not-address`, or `blocked`.
-
-If evidence is ambiguous and mutation would result, prefer `validate-only`, `blocked`, or a narrower proof before code mutation.
+If evidence is ambiguous and mutation would result, prefer `validate-only`, `blocked`, or narrower proof before code mutation.
