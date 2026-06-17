@@ -47,23 +47,30 @@ This file is the compact, high-authority routing index for Codex in this repo. I
 
 ## Latent intelligence and doctrine
 
-Do not use doctrine words as tone. Use `doctrine-compiler` when non-trivial work needs a frame market, dominant-move selection, doctrine cash-out, route receipt, ablation/surface-tax judgment, review comment law, negative capability, reification, or proof-bearing route change.
+Do not use doctrine words as tone. When non-trivial work needs a frame market, dominant-move selection, doctrine cash-out, route receipt, ablation/surface-tax judgment, review comment law, negative capability, reification, or a proof-bearing route change, apply Challenge Escalation directly.
 
-Activation does not mean verbosity. It means selecting the right operator and leaving the smallest useful artifact when that operator changes the route. If no artifact is needed, do the task directly.
+Activation does not mean verbosity. Select the governing operator and leave the smallest useful artifact only when it changes the route. If no artifact is needed, do the task directly. Detailed doctrine workflows remain available only when explicitly invoked or reached through a documented handoff from an already-active skill.
 
 ## Evidence discipline
 
-Use `evidence-discipline` for bug reports, review comments, PR/issue prose, memories, generated summaries, public-tracker context, or any task where natural-language context could anchor the investigation. Keep the root rule simple:
+Natural-language context can anchor the investigation. For bug reports, review comments, PR/issue prose, memories, generated summaries, public-tracker context, claimed root causes, or proposed fixes:
 
 - separate observed facts, claims, proposals, and speculation before choosing implementation scope;
 - reconstruct the narrowest verified failure before broadening scope;
 - do not export speculative agent analysis into public issues, PRs, comments, discussions, or maintainer workflows.
 
+Detailed evidence workflows are explicit-only unless an already-active skill documents the handoff.
+
 ## Invariant stewardship
 
-Use `invariant-stewardship` or `invariant-ace` before local patching when the task involves invalid state, malformed persisted data, crashes, parser failures, migrations, cache drift, protocol problems, retries, races, compatibility behavior, tolerant readers, fallbacks, coercions, catch-and-continue logic, or local workarounds.
+Before local patching for invalid state, malformed persisted data, crashes, parser failures, migrations, cache drift, protocol problems, retries, races, compatibility behavior, tolerant readers, fallbacks, coercions, catch-and-continue logic, or local workarounds, identify:
 
-Root rule: identify the observed failure, state involved, invariant that should hold, owning producer/transition/boundary, and smallest fix that prevents recurrence without broadening accepted invalid state.
+- the observed failure and state involved;
+- the invariant that should hold;
+- the owning producer, transition, or boundary;
+- the smallest fix that prevents recurrence without broadening accepted invalid state.
+
+Detailed invariant workflows are explicit-only unless an already-active skill documents the handoff.
 
 ## Public tracker and maintainer hygiene
 
@@ -83,9 +90,9 @@ Default: use the local Codex execution surface that best matches the shape of th
 Routing order:
 
 1. **Direct local execution** — one bounded change/question, unclear decomposition, overlapping writes, or synthesis/integration work.
-2. **Frame/selection pass** — if the route is non-obvious, use Challenge Escalation or `doctrine-compiler` before choosing a heavy workflow.
+2. **Frame/selection pass** — if the route is non-obvious, use Challenge Escalation before choosing a heavy workflow.
 3. **Planning/selection pass** — if the user supplies `SLICES.md`, `plan-N.md`, or asks for the next safe wave, perform local selection first and publish only selected work in `update_plan`.
-4. **Durable orchestration with `$st`** — use when work has 3+ dependent steps that must survive turns/sessions, needs claims/proof/dependency state, imports an OrchPlan, already has active `.step/st-plan.jsonl`, or explicitly needs durable state.
+4. **Durable orchestration with `$st`** — explicit-only at root. Start it only when the user asks, or continue it when `.step/st-plan.jsonl` already participates in the task. Do not introduce `$st` merely because work is multi-step.
 5. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
 6. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
 7. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
@@ -95,7 +102,7 @@ Use built-in `explorer`, `worker`, and `default` roles unless a custom role is v
 
 ## Skill routing
 
-Skills are workflow selectors, not magic words. Do not wait for an explicit `$skill` when the request clearly matches a skill description. Use the smallest sufficient skill stack and let loaded skills own command syntax, checklists, templates, trigger taxonomies, and proof mechanics.
+Skills are workflow selectors, not magic words. Root-level implicit activation is intentionally narrow. Loaded skills own their command syntax, checklists, templates, trigger taxonomies, proof mechanics, and documented handoffs.
 
 Preferred stack shape:
 
@@ -103,30 +110,26 @@ Preferred stack shape:
 understand context -> separate evidence from claims -> frame if needed -> identify invariant/ownership/boundary -> implement/adjudicate/review -> verify -> close -> capture learnings
 ```
 
-Default implicit rails:
+### Implicit skills
 
-- Non-trivial implementation, remediation, migration, hardening, repair, or review-driven code changes -> `accretive-implementer`.
-- Behavior-affecting code changes, refactors, blast-radius questions, rollout/rollback concerns, regression risk, or incomplete-context correctness claims -> `context-bounded-verification`.
-- Issue/PR/reviewer/user reports with claimed root causes, generated analysis, public tracker context, or fake-minimal-repro risk -> `evidence-discipline` before selecting implementation scope.
-- State, protocol, invariant, impossible-state, race, idempotency, retry, cache-drift, lifecycle, validation-sprawl, tolerant-reader, fallback, migration, coercion, or local-workaround cues -> `invariant-stewardship`/`invariant-ace` before edits and `context-bounded-verification` before closure.
-- Review comments, reviewer suggestions, or “should we act on this?” before implementation -> `review-adjudication`.
-- Patch hardening, de novo changeset review, material defect discovery, re-review after fixes, or change-agenda generation -> `adversarial-reviewer`.
-- Final readiness, closure gates, fixed-point claims, or “is this ready?” after material work -> `verification-closure`.
-- Exhaustive hardening, repeated review/fix loops, “drive this to closure,” truth-owner normalization, ablation/isomorphism gates, or “find all impactful issues” -> `fixed-point-driver`.
-- Non-obvious route selection, dominant-move pressure, local-patch suspicion, doctrine cash-out, route receipts, ablation/surface-tax questions, reification, negative capability, or proof-bearing refusal to mutate -> `doctrine-compiler`.
-- Unfamiliar repo or onboarding -> `codebase-archaeology`; architecture/seam fit/docs-vs-code drift -> `parse`.
-- Performance, latency, throughput, memory, p95/p99, scalability, or performance regression -> `lift`; measurement-only hotspot/flamegraph/profile attribution -> `profiling-software-performance`.
-- Zig files/build/toolchain/comptime/allocator/FFI/concurrency/performance/cache/migration evidence -> `zig`. Do not wait for `$zig`; implicit triggering is preserved. Detailed trigger taxonomy lives under `codex/skills/zig/references/implicit_triggers.md`.
-- Lean/Lake/proof repair/formalization/termination/mathlib -> `lean`.
-- Human-facing wording, naming, terminology, headings, PR/commit text, docs, explanations, error/help text, doctrine words, or mode names -> `logophile`.
-- Existing skill refinement, trigger/frontmatter tuning, skill-boundary fixes, metadata repair, or validation-backed skill iteration -> `refine`.
-- Worlds meeting, arbitrary cross-boundary composition, exact context/certified context, semantic consumption boundaries, presentation strategy, possibility sheafification, or inexact abstraction repair -> `universalist`; the former standalone Kan route is internal mechanics, not a peer skill.
+Only these skills may activate implicitly from request or repository cues:
 
-Side-effect boundary: rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `prove-it`, and mutating app-server/session-control operations gated. `cas`, `$seq`, `refine`, and `logophile` may trigger implicitly when their routing cues match, but they must still respect publication, mutation, and side-effect boundaries. Public tracker side effects are separately gated by explicit user intent.
+- `$learnings` — recall before substantial implementation when `.learnings.jsonl` exists; capture only at decision-shaping checkpoints and delivery boundaries.
+- `$fixed-point-driver` — exhaustive hardening, repeated review/fix loops, PR review closure, invariant repair, local-patch risk, or requests to drive work to closure or find all impactful issues.
+- `$review-adjudication` — PR comments, reviewer suggestions, CAS findings, or review-like claims that must be classified before implementation, thread resolution, or fixed-point routing.
+- `$zig` — Zig files, build/test/toolchain output, comptime, allocator, FFI, concurrency, performance, cache, migration, or safety evidence. Do not wait for the user to type `$zig`; detailed trigger taxonomy lives under `codex/skills/zig/references/implicit_triggers.md`.
+- `$logophile` — human-facing wording, naming, terminology, headings, PR/commit text, docs, explanations, error/help text, doctrine words, or mode names. Preserve semantics and machine-consumed syntax.
+- `$universalist` — structural refactor, exact abstraction, certified context, canonical boundary, semantic-consumption, presentation-strategy, sheafification, or inexact-abstraction cues. Former Kan mechanics are internal to this skill.
+- `$cas` — Zig app-server/CAS helpers, app-server v2 protocol, goal lifecycle, detached review, multi-instance fanout, or `$st` swarm-conformance cues. Activation may be implicit, but mutating control operations still require clear intent.
+- `$seq` — historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Never use it for ordinary current-repo code search.
+
+All other skills are explicit-only at root. They may run only when the user invokes them or when an already-active skill's documented workflow hands off to them. A handoff does not create an independent root implicit trigger.
+
+Implicit activation does not waive side-effect boundaries. `$learnings` may append only under its lifecycle rules; `$cas` control mutations require clear intent; public tracker activity requires explicit user intent. `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `prove-it`, and every other unlisted skill do not start implicitly at root.
 
 ## Plan Sync (`$st` <-> Codex `update_plan`)
 
-Use only when `.step/st-plan.jsonl` participates because the user asked for `$st`, the repo already has active durable state, or the task explicitly needs cross-turn durable orchestration.
+Do not start a new `$st` workflow without explicit user intent. Apply this section only when the user asked for `$st` or `.step/st-plan.jsonl` already participates in the task.
 
 - `$st` is durable truth. `update_plan` is a selected, user-visible mirror.
 - Mutate durable state only through `st` commands. Do not hand-edit existing JSONL rows.
