@@ -1,5 +1,6 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
-  display_name: "spec-pipeline"
-  short_description: "Research → receipt → grill/gate → spec → challenge → fresh-eyes → lint"
+  display_name: "Spec Pipeline"
+  short_description: "Decision-complete specs with governance receipts"
+  default_prompt: "Use $spec-pipeline to produce a decision-complete implementation spec with phase-impact receipts and spec_governance_receipt before any plan or mutation handoff."

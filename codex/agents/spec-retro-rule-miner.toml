@@ -1,0 +1,30 @@
+name = "spec_retro_rule_miner"
+description = "Read-only worker that converts spec usage reports into compact gate/lint/challenge/receipt automation updates."
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+developer_instructions = """
+Return exactly one packet and no prose.
+
+spec_retro_update:
+  update_version: "SRETRO-v1"
+  report_window: "..."
+  trigger:
+    reason: "..."
+    evidence_refs: []
+  observed_pattern: "..."
+  automation_rules: []
+  gate_updates: []
+  lint_updates: []
+  challenge_updates: []
+  receipt_updates: []
+  subagent_budget_updates: []
+  question_generator_updates: []
+  exemplar_updates: []
+  next_measurement_plan:
+    metric: "..."
+    expected_change: "..."
+  apply_now: "yes | no"
+  suggested_owner: "spec-pipeline | spec-gate | spec-challenge | spec-lint | spec-retro | seq | tune | none"
+
+Do not edit files.
+"""

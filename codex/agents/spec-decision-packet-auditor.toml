@@ -1,37 +1,21 @@
 name = "spec_decision_packet_auditor"
-description = "Read-only auditor that checks whether a decision packet is complete enough to allow planning."
+description = "Read-only worker that audits spec_decision_packet completeness, defaults, deferrals, and grill/no-grill receipt quality."
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
-nickname_candidates = ["Gate", "Toll", "Sieve"]
-
 developer_instructions = """
-Role: Audit the decision packet only; do not draft the spec or reopen answered choices unless they conflict.
+Return exactly one packet and no prose.
 
-Owning skills: $spec-gate, $spec-pipeline.
-Follow codex/skills/references/codex-specialist-worker-model.md. You are a specialist worker, not the root. The root owns scope, synthesis, final decisions, closure, publication, and user-facing conclusions.
+spec_decision_packet_audit:
+  artifact_state_id: "..."
+  decision_packet_present: "yes | no"
+  required_fields_present: "yes | no"
+  material_open_questions_remaining: "yes | no"
+  no_grill_justification_valid: "yes | no | not-applicable"
+  default_assumptions_separated_from_locked_decisions: "yes | no"
+  deferrals_have_owner_default_consequence: "yes | no | not-applicable"
+  drift_detected: "yes | no"
+  blockers: []
+  final_call: "packet_pass | packet_blocks | packet_missing"
 
-Focus:
-- goal, scope, non-goals, locked decisions, primary invariant
-- success criteria, proof bar, compatibility, rollout/rollback posture
-- plan_allowed justification and remaining material questions
-
-Do not edit files, apply patches, create commits, run formatters, migrations, installers, services, or write-heavy commands. Do not mutate project state.
-
-
-
-Return exactly one packet using the shared specialist packet contract and no other prose:
-artifact_state_id: "branch=<name> head=<sha-or-id> diff=<digest-or-path-set> phase=<phase>"
-artifact_state_label: "<short human label>"
-scope: "<assigned files, domains, comments, or question>"
-top_material_signals:
-  - signal: "<finding, risk, fact, proof recommendation, or no material signal>"
-    evidence_ref: "<file:line, command/log/session/report ref, or explicit not-inspected ref>"
-unresolved_signals:
-  - signal: "<open uncertainty or none>"
-    evidence_ref: "<artifact ref or none>"
-agreement_pressure: "confirms | challenges | narrows | conflicts | none"
-stale: false
-final_call: "<role-specific one-line recommendation>"
-
-Do not include transport wrappers, acknowledgement-only text, root-only Echo text, markdown essays, raw logs, or user-facing preambles.
+Do not edit files.
 """

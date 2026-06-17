@@ -1,15 +1,8 @@
 ---
 name: spec-pipeline
-description: "Turn ambiguous project, architecture, implementation, or product requests into decision-complete implementation specs by researching first, emitting a spec-pipeline receipt, asking only material judgment questions or justifying skipped grilling, gating readiness before planning, compiling a spec, running one invariant challenge, running a fresh-eyes pass, linting final output, and preventing execution from outrunning decisions. Use for `$spec-pipeline`, write a spec, turn this plan into a spec, grill me then spec, spec automation, strict `$grill-me` to `$plan` handoff, spec receipts, or spec readiness automation. Never emit a proposed_plan block."
+description: "Turn ambiguous project, architecture, implementation, or product requests into decision-complete implementation specs with phase-impact receipts. Use for `$spec-pipeline`, write a spec, turn this plan into a spec, grill me then spec, spec automation, strict `$grill-me` to `$plan` handoff, spec receipts, spec readiness automation, spec governance receipt / SGR-v1, gate/challenge/fresh-eyes/lint impact, or report-driven spec-retro automation. Never emit a proposed_plan block."
 metadata:
-  version: "1.2.0"
-  base_repo: "tkersey/dotfiles"
-  base_ref: "main"
-  base_observed_commit: "615b3f7d446f717e2af2e88c4e3f8aa63dedda0a"
-  base_file_sha: "e6a3f326e30d9d96b37d3b0c7f4a4b56151898a7"
-  hardened_from:
-    - "2026-05-08 grill-me/plan forensics report"
-    - "2026-05-31 spec-pipeline usage report"
+  version: "1.3.0"
   activation_cost: high
   default_depth: full
   requires_explicit_invocation: false
@@ -24,10 +17,50 @@ Produce implementation-ready specifications without letting planning become obje
 `spec-pipeline` is a state machine, not a prose style. Its job is to keep these phases visibly separated:
 
 ```text
-Profile + Spec Pipeline Receipt -> Evidence Brief -> Grill or No-Grill Justification -> Decision Packet -> Gate Result -> Implementation Spec -> Invariant Challenge -> Fresh-Eyes Pass -> Spec Lint -> Execution Handoff
+Profile + Spec Pipeline Receipt
+-> Evidence Brief
+-> Grill or No-Grill Justification
+-> Decision Packet
+-> Gate Result
+-> Implementation Spec
+-> Invariant Challenge
+-> Fresh-Eyes Pass
+-> Spec Lint
+-> Spec Governance Receipt
+-> Execution Handoff
 ```
 
-The skill succeeds only when the user, a later agent, or a validator can tell which phase was completed, which facts were researched, which decisions were locked, which assumptions were defaulted, why grilling was or was not needed, why planning is or is not allowed, and whether downstream mutation may start.
+The skill succeeds only when a later user, agent, validator, or report can tell:
+
+- which phases completed;
+- which facts were researched;
+- which decisions were locked;
+- why grilling was or was not needed;
+- what the gate/challenge/fresh-eyes/lint phases changed;
+- whether downstream planning may start;
+- whether downstream mutation may start;
+- whether companion checks were phase-impacting or merely pass-no-delta.
+
+## New doctrine: phase impact, not companion-count theatre
+
+Do not optimize for standalone activations of `$spec-gate`, `$spec-challenge`, `$spec-lint`, or `$spec-retro`.
+
+The root workflow may perform gate/challenge/lint/fresh-eyes internally, but it must leave compact receipts that future reports can audit.
+
+A companion phase is materially useful when it does one of:
+
+```text
+blocked a bad handoff
+changed the spec
+changed the proof bar
+changed scope/risk/architecture
+created useful defaults
+confirmed readiness with script-backed evidence
+returned to grill
+triggered retro automation
+```
+
+If it does none of those, record it as `pass_no_delta`.
 
 ## Hard output boundary
 
@@ -37,23 +70,23 @@ A complete `spec-pipeline` output must be one of exactly three shapes:
 
 1. **Drift warning**: `SPEC_PIPELINE_DRIFT_WARNING`, `## Spec Pipeline Receipt`, and no spec, plan, or execution sequence.
 2. **Gate failure / questions-only**: `SPEC_PIPELINE_GATE_FAILURE`, `## Spec Pipeline Receipt`, no spec, no plan, only missing fields, drift/churn warnings if any, and 1-3 next questions.
-3. **Implementation spec handoff**: plain markdown with `## Spec Pipeline Receipt`, Evidence Brief, Gate Result, `spec_decision_packet`, required implementation spec sections, one Invariant Challenge, Fresh-Eyes Pass, Spec Lint Result, and a brief Execution Handoff.
+3. **Implementation spec handoff**: plain markdown with `## Spec Pipeline Receipt`, Evidence Brief, Gate Result, `spec_decision_packet`, required implementation spec sections, one Invariant Challenge, Fresh-Eyes Pass, Spec Lint Result, `spec_governance_receipt`, and a brief Execution Handoff.
 
-Do not emit `$plan` iteration scaffolding such as `Round Delta`, `Iteration Change Log`, `Decision Impact Map`, `Adversarial Findings`, `Contract Signals`, dependency rows, execution waves, or `<proposed_plan>` tags. `$plan` owns dependency-ordered execution planning after this skill passes gate, challenge, fresh-eyes, and lint.
+Do not emit `$plan` iteration scaffolding such as `Round Delta`, `Iteration Change Log`, `Decision Impact Map`, `Adversarial Findings`, `Contract Signals`, dependency rows, execution waves, or `<proposed_plan>` tags. `$plan` owns dependency-ordered execution planning after this skill passes gate, challenge, fresh-eyes, lint, and governance receipt.
 
 If the user explicitly asks for `$plan` and `$spec-pipeline` at the same time, run `spec-pipeline` first. End with an execution handoff that says whether `$plan` may now consume the spec. Do not combine the artifacts.
 
 ## Boundary with neighboring skills
 
 - `$grill-me` owns unresolved decisions, contradictions, priorities, non-goals, and authority questions.
-- `spec-pipeline` owns decision extraction, receipting, readiness gating, exact spec compilation, one invariant challenge, fresh-eyes review, and spec lint.
+- `spec-pipeline` owns decision extraction, receipting, readiness gating, exact spec compilation, one invariant challenge, fresh-eyes review, spec lint, governance receipt, and execution handoff.
 - `$plan` owns execution shape, dependency ordering, file-by-file implementation sequencing, rollback sequencing, and proof commands after the spec is ready.
-- `spec-gate` owns readiness judgment before planning.
-- `spec-challenge` owns exactly one strongest invariant/adversarial challenge.
-- `spec-lint` owns implementation-readiness lint after the spec exists.
-- `spec-retro` owns historical learning, churn detection, and future automation updates.
+- `spec-gate` owns readiness judgment before planning and contributes `spec_gate_receipt`.
+- `spec-challenge` owns exactly one strongest invariant/adversarial challenge and contributes `spec_challenge_receipt`.
+- `spec-lint` owns implementation-readiness lint after the spec exists and contributes `spec_lint_receipt`.
+- `spec-retro` owns historical learning, churn detection, and future automation updates when triggered by reports or repeated pipeline gaps.
 
-Do not let planning discover the objective. Do not let grilling rediscover facts already supplied or available from artifacts. Do not let a spec become an implementation plan. Do not let tool-heavy execution begin until the receipt says mutation is allowed.
+Do not let planning discover the objective. Do not let grilling rediscover facts already supplied or available from artifacts. Do not let a spec become an implementation plan. Do not let tool-heavy execution begin until the governance receipt says mutation is allowed.
 
 ## Profile and lane selection
 
@@ -72,9 +105,9 @@ Choose one lane:
 spec_only | spec_to_plan | repair | review_resolution | campaign_checkpoint
 ```
 
-Trigger `campaign` mode or a `campaign_checkpoint` when any of these are visible in the current work:
+Trigger `campaign` mode or a `campaign_checkpoint` when any of these are visible:
 
-- session or artifact volume is clearly large, or a local report shows a high-signal session;
+- session or artifact volume is clearly large;
 - subagents exceed 8 total or exceed profile budget;
 - `$plan` or `update_plan` is regenerated more than twice;
 - objective/title/scope changes after planning;
@@ -102,8 +135,9 @@ mutation_allowed: true|false
 subagent_budget: <used>/<limit> pre_gate=<used>/<limit|explicit> status=within_budget|over_budget|not_applicable
 subagent_receipt: spawned=<n> consumed=<n> rejected=<n> timed_out=<n> open_at_end=<n>
 invariant_challenge: pass|changed_architecture|changed_proof|changed_scope|changed_risk|skipped
-fresh_eyes: pass|changed_spec|skipped
+fresh_eyes: pass|changed_spec|return_to_grill|skipped
 lint_verdict: pass|fail|skipped
+spec_governance_receipt: present|missing
 execution_handoff: yes|no
 ```
 
@@ -111,7 +145,7 @@ Rules:
 
 - If `grill_rounds: 0`, `no_grill_justification` must be concrete and must say why material decisions were already researched, supplied, defaulted, deferred, or immaterial.
 - If any subagent is spawned, `subagent_receipt` must account for it as consumed, rejected, timed out, superseded, or still open. `open_at_end` must be `0` before a passing handoff.
-- `mutation_allowed: true` is allowed only after Gate Result, Invariant Challenge, Fresh-Eyes Pass, and Spec Lint Result have passed or after a consciously accepted fast-path exception with proof and rollback present.
+- `mutation_allowed: true` is allowed only after Gate Result, Invariant Challenge, Fresh-Eyes Pass, Spec Lint Result, and Spec Governance Receipt pass or after a consciously accepted fast-path exception with proof and rollback present.
 - A skipped gate, challenge, fresh-eyes pass, or lint must have a concrete reason in its own section.
 
 ## Decision-complete fast path
@@ -126,15 +160,13 @@ If the user supplies all of the following, treat the brief as presumptively suff
 - acceptance criteria or success criteria;
 - proof commands, proof surfaces, or validation bar.
 
-In this fast path, research discoverable facts, emit the exact Evidence Brief, emit `grill_rounds: 0` with a concrete No-Grill Justification, produce the decision packet, run the gate, compile the spec, run one challenge, run Fresh-Eyes, lint it, and hand off. Questions are allowed only for contradictions, missing authority, missing secrets, irreversible approval, or a proof bar that cannot be inferred.
-
-When prior plan or grill churn exists, anchor the fast path to the user's original or latest restated authoritative brief. Classify earlier mismatched questions or plan directions as `invalidated`, `deferred`, or `immaterial` instead of silently carrying them forward.
+In this fast path, research discoverable facts, emit the exact Evidence Brief, emit `grill_rounds: 0` with a concrete No-Grill Justification, produce the decision packet, run the gate, compile the spec, run one challenge, run Fresh-Eyes, lint it, emit `spec_governance_receipt`, and hand off. Questions are allowed only for contradictions, missing authority, missing secrets, irreversible approval, or a proof bar that cannot be inferred.
 
 ## Anti-drift checkpoint
 
 Before asking further questions, emitting a spec, or handing off to `$plan`, compare the current candidate objective against the original authoritative user brief.
 
-Check these fields:
+Check:
 
 - target;
 - scope;
@@ -156,7 +188,7 @@ why_this_matters:
 action: ask_user | restore_original_brief | defer_change
 ```
 
-Do not continue to questions, spec, lint, or plan handoff until the drift is resolved.
+Do not continue to questions, spec, lint, or plan handoff until drift is resolved.
 
 ## Research first
 
@@ -170,13 +202,13 @@ When useful and available, ask the parent to spawn read-only subagents within th
 Spawn spec_evidence_cartographer, spec_constraint_miner, and spec_proof_surface_mapper to gather current-state evidence, hard constraints, and proof surfaces, then synthesize their packets before asking questions.
 ```
 
-When those specialists are used, assign the current `artifact_state_id`, exact scope, and the shared specialist packet contract at `../references/specialist-packet-contract.md`. Consume only packet-native, scoped, evidence-bearing, current packets. Reject stale, wrong-scope, wrapper-leaking, acknowledgement-only, or no-evidence packets before they affect the Evidence Brief, decision packet, gate, spec, challenge, fresh-eyes pass, or lint.
+When specialists are used, assign the current `artifact_state_id`, exact scope, and the shared specialist packet contract. Consume only packet-native, scoped, evidence-bearing, current packets. Reject stale, wrong-scope, wrapper-leaking, acknowledgement-only, or no-evidence packets before they affect the Evidence Brief, decision packet, gate, spec, challenge, fresh-eyes pass, lint, governance receipt, or execution handoff.
 
-Record one value receipt per specialist packet using the shared contract. A valid but unsurprising packet is neutral. A malformed, stale, wrong-scope, timeout, acknowledgement-only, or wrapper-leaking packet is negative. A positive packet must change route, add a finding, change proof, or retire a risk.
+Record one value receipt per specialist packet. A valid but unsurprising packet is neutral. A malformed, stale, wrong-scope, timeout, acknowledgement-only, or wrapper-leaking packet is negative. A positive packet must change route, add a finding, change proof, or retire a risk.
 
 ## Exact Evidence Brief contract
 
-The Evidence Brief must contain exactly these labels, in this order. Do not rename, omit, reorder, or merge labels:
+The Evidence Brief must contain exactly these labels, in this order:
 
 ```text
 ## Evidence Brief
@@ -190,33 +222,19 @@ The Evidence Brief must contain exactly these labels, in this order. Do not rena
 - Judgment calls still needed:
 ```
 
-Keep each field concise but concrete. Use `none` only when the field was actually considered. Use `not yet verified` for facts that matter but were not inspected. Do not hide uncertainty by omitting a label.
+Keep each field concise but concrete. Use `none` only when actually considered. Use `not yet verified` for facts that matter but were not inspected.
 
 ## Grill only material decisions
 
 Ask 1-3 bounded questions per round using `$grill-me` style only when the Evidence Brief and anti-drift checkpoint show that material decisions remain.
 
-Each question must be atomic and have a stable `snake_case` id. Put the recommended option first when a recommendation is justified by evidence.
-
-Ask only for material gaps in:
-
-- problem and root cause;
-- user, maintainer, stakeholder, and owner;
-- scope and non-goals;
-- primary invariant or authority boundary;
-- compatibility posture;
-- rollout and rollback posture;
-- success criteria and proof bar;
-- dependencies, interfaces, and data boundaries;
-- edge cases, failure modes, abuse cases, and second-order effects.
+Each question must be atomic and have a stable `snake_case` id. Put the recommended option first when justified by evidence.
 
 Do not ask questions merely to make the interaction feel rigorous. If the user's brief is decision-complete, say `Judgment calls still needed: none`, emit the No-Grill Justification, and continue.
 
-If structured UI answers are ambiguous, incomplete, or fail to capture the needed free-form correction, ask one normal text question that names the missing decision. Do not keep looping through ambiguous UI selections.
-
 ## No-Grill Justification
 
-If no questions are asked, emit the reason in the receipt and ensure it is also visible near the decision packet:
+If no questions are asked, emit the reason in the receipt and ensure it is visible near the decision packet:
 
 ```yaml
 no_grill_justification:
@@ -259,7 +277,7 @@ spec_decision_packet:
 
 Rules:
 
-- `open_questions` are allowed only if each has an owner, default action, consequence, and reason it does not block the spec.
+- `open_questions` are allowed only if each has owner, default action, consequence, and reason it does not block the spec.
 - `default_assumptions` must distinguish inferred defaults from user-locked decisions.
 - If the user corrected drift, include the correction as a locked decision or invalidated prior assumption.
 - Do not smuggle implementation choices into the packet unless the user locked them or artifacts prove they are required.
@@ -288,17 +306,32 @@ deferrals:
 handoff_sentence:
 ```
 
+Also emit:
+
+```yaml
+spec_gate_receipt:
+  receipt_version: SGATE-v1
+  plan_allowed: yes | no
+  mutation_allowed_pre_spec: no
+  script_gate: passed | failed | skipped
+  gate_changed_decision: yes | no
+  gate_blocked_plan: yes | no
+  gate_defaulted_decisions: []
+  pass_no_delta: yes | no
+  reason: "..."
+```
+
 Planning is allowed only when `plan_allowed: true` and no material open question lacks an owner/default/consequence.
 
-Mutation is not allowed at the pre-spec gate. Downstream mutation becomes allowed only when the final Spec Pipeline Receipt says `mutation_allowed: true` after challenge, fresh-eyes, lint, and execution handoff pass.
+Mutation is not allowed at the pre-spec gate.
 
-When feasible, write the handoff packet to a temporary file and run the structural helper before final output:
+When feasible, write the handoff packet to a temporary file and run the structural helper:
 
 ```bash
 uv run python codex/skills/spec-gate/scripts/spec_gate.py --strict-receipts <handoff-file>
 ```
 
-If repo policy or environment requires a different runner, use the repo-approved runner. If the script is unavailable, the workspace is read-only, or the spec is produced in a context without shell/filesystem access, set `script_gate: skipped` and state the concrete reason. A skipped script is allowed only when semantic gating is still performed visibly.
+If the script is unavailable or environment lacks shell/filesystem access, set `script_gate: skipped` and state the concrete reason. A skipped script is allowed only when semantic gating is still performed visibly.
 
 ## Gate failure output
 
@@ -321,7 +354,7 @@ Ask at most 1-3 next questions. Do not include implementation sequence, plan wav
 
 When planning is allowed, produce an implementation spec, not a prose roadmap and not a `$plan` artifact.
 
-Required sections, in this order:
+Required sections, in order:
 
 1. Objective
 2. Context / Current State
@@ -344,14 +377,7 @@ The dependency-ordered sequence is allowed because implementers need ordering co
 
 After the first spec is generated, run exactly one strongest project-specific challenge.
 
-Choose the challenge most likely to invalidate the spec's primary invariant. Examples:
-
-- Does this create a second authority?
-- Does this preserve zero-cost abstraction?
-- Does this prove runtime behavior, not just scaffold shape?
-- Does this preserve public API compatibility?
-- Does this have a real rollback path?
-- Does this fail closed if dependencies are stale or missing?
+Choose the challenge most likely to invalidate the spec's primary invariant.
 
 Emit:
 
@@ -360,12 +386,28 @@ Emit:
 primary_invariant:
 strongest_challenge:
 affected_sections:
-classification: architecture_change_required|proof_change_required|scope_change_required|risk_mitigation_required|preference_only
+classification: pass|architecture_change_required|proof_change_required|scope_change_required|risk_mitigation_required|preference_only
 required_change:
 regenerate_spec: yes|no
 ```
 
-If the challenge changes architecture, proof, scope, or risk mitigation, revise only the affected spec sections and then run Fresh-Eyes and lint the revised spec. If it is preference-only, record it as non-blocking.
+Also emit:
+
+```yaml
+spec_challenge_receipt:
+  receipt_version: SCHAL-v1
+  primary_invariant: "..."
+  strongest_challenge: "..."
+  affected_sections: []
+  classification: pass | changed_architecture | changed_proof | changed_scope | changed_risk | preference_only | skipped
+  required_change: "..."
+  regenerate_spec: yes | no
+  changed_spec: yes | no
+  changed_route: yes | no
+  pass_no_delta: yes | no
+```
+
+If the challenge changes architecture, proof, scope, or risk mitigation, revise only the affected spec sections and then run Fresh-Eyes and lint the revised spec. If preference-only, record it as non-blocking.
 
 ## Fresh-Eyes Pass
 
@@ -380,9 +422,21 @@ changed_sections:
 why_preserves_authoritative_brief:
 ```
 
+Also emit:
+
+```yaml
+spec_fresh_eyes_receipt:
+  receipt_version: SFE-v1
+  changed_spec: yes | no
+  returned_to_grill: yes | no
+  changed_sections: []
+  drift_detected: yes | no
+  pass_no_delta: yes | no
+```
+
 Look for objective drift, missing non-goals, smuggled implementation choices, vague proof commands, scaffold-only proof where runtime proof is required, rollback/abort gaps, requirements without tests, plan-shaped execution waves, and stale defaults or assumptions.
 
-If the pass changes the spec, record the changed sections and rerun Spec Lint. If it finds material drift or missing decisions, return to gate failure / questions-only instead of handoff.
+If material drift or missing decisions are found, return to gate failure / questions-only instead of handoff.
 
 ## Spec lint
 
@@ -393,8 +447,6 @@ When feasible, write the spec to a temporary file and run:
 ```bash
 uv run python codex/skills/spec-lint/scripts/spec_lint.py --strict-receipts <spec-file>
 ```
-
-If repo policy or environment requires a different runner, use the repo-approved runner. If the script is unavailable, the workspace is read-only, or no file access exists, set `script_lint: skipped` and state the reason.
 
 Always emit:
 
@@ -416,6 +468,23 @@ churn_signals:
 recommended_next_action: proceed_to_plan|return_to_grill|revise_spec|run_spec_challenge|campaign_checkpoint
 ```
 
+Also emit:
+
+```yaml
+spec_lint_receipt:
+  receipt_version: SLINT-v1
+  verdict: pass | fail | skipped
+  script_lint: passed | failed | skipped
+  semantic_lint: passed | failed
+  changed_spec: yes | no
+  blocked_handoff: yes | no
+  proof_gaps_found: []
+  rollback_gaps_found: []
+  unmapped_requirements_found: []
+  receipt_gaps_found: []
+  pass_no_delta: yes | no
+```
+
 Fail the spec if:
 
 - material open questions remain without owner/default/consequence;
@@ -424,19 +493,93 @@ Fail the spec if:
 - major requirements are not mapped to tests;
 - rollback or abort criteria are missing;
 - implementation order is not dependency-aware;
-- the primary invariant is missing;
+- primary invariant is missing;
 - long audit sections repeat rationale without changing implementation behavior;
-- the spec changes the objective relative to the authoritative brief;
+- spec changes the objective relative to authoritative brief;
 - `grill_rounds: 0` but no No-Grill Justification is present;
 - spawned specialists are unaccounted for;
-- balanced/strict/campaign work skips the invariant challenge or fresh-eyes pass;
-- the output contains `<proposed_plan>`.
+- balanced/strict/campaign work skips invariant challenge or fresh-eyes pass;
+- output contains `<proposed_plan>`.
 
-A manual lint pass is lower proof than script-backed lint. If manual lint is used, say why script lint was skipped and keep the lint fields exact.
+## Spec Governance Receipt
+
+Every complete implementation spec handoff must include:
+
+```yaml
+spec_governance_receipt:
+  receipt_version: SGR-v1
+  spec_id: "..."
+  profile: fast | balanced | strict | campaign
+  lane: spec_only | spec_to_plan | repair | review_resolution | campaign_checkpoint
+  phase_presence:
+    evidence_brief: yes | no
+    decision_packet: yes | no
+    gate_result: yes | no
+    invariant_challenge: yes | no
+    fresh_eyes: yes | no
+    spec_lint: yes | no
+    execution_handoff: yes | no
+  gate:
+    plan_allowed: yes | no
+    mutation_allowed_pre_spec: no
+    script_gate: passed | failed | skipped
+    gate_changed_decision: yes | no
+    gate_blocked_plan: yes | no
+    pass_no_delta: yes | no
+  challenge:
+    classification: pass | changed_architecture | changed_proof | changed_scope | changed_risk | preference_only | skipped
+    changed_spec: yes | no
+    changed_route: yes | no
+    pass_no_delta: yes | no
+  fresh_eyes:
+    changed_spec: yes | no
+    returned_to_grill: yes | no
+    pass_no_delta: yes | no
+  lint:
+    verdict: pass | fail | skipped
+    script_lint: passed | failed | skipped
+    changed_spec: yes | no
+    blocked_handoff: yes | no
+    pass_no_delta: yes | no
+  execution_control:
+    handoff_allowed: yes | no
+    plan_started_after_gate: yes | no | unknown
+    mutation_started_after_lint: yes | no | unknown
+  retro:
+    retro_triggered: yes | no
+    reason: "..."
+```
+
+If `spec_governance_receipt` is missing, the spec is not implementation-ready even if the prose looks complete.
+
+## Spec-retro trigger
+
+`$spec-retro` is not per-spec ceremony. Trigger it when learning evidence exists.
+
+Trigger a `spec_retro_update` recommendation when any are true:
+
+- 5 or more `$spec-pipeline` sessions since last retro;
+- 2 or more repeated gate/lint/challenge gaps;
+- a report shows companion phases are invisible;
+- execution started before gate/lint/challenge readiness;
+- plan churn/campaign triggers recur;
+- subagent fanout repeatedly produces no route impact;
+- no-grill justifications are repeatedly generic.
+
+Emit:
+
+```yaml
+spec_retro_trigger:
+  required: yes | no
+  reason: "..."
+  suggested_owner: spec-retro | tune | none
+```
+
+Do not run a long retro inside every spec. If triggered, hand off a small retro brief.
 
 ## Blocked taxonomy
 
-When the run cannot proceed, emit a blocked receipt instead of a generic blocked statement:
+When the run cannot proceed, emit:
 
 ```yaml
 blocked_receipt:
@@ -451,7 +594,7 @@ A blocked session without `blocked_receipt` is telemetry loss.
 
 ## Execution handoff
 
-Only after Gate Result, Invariant Challenge, Fresh-Eyes Pass, and Spec Lint Result pass may the output include an execution handoff.
+Only after Gate Result, Invariant Challenge, Fresh-Eyes Pass, Spec Lint Result, and Spec Governance Receipt pass may the output include an execution handoff.
 
 Keep it short:
 
@@ -464,220 +607,53 @@ handoff_summary:
 do_not_execute_before:
 ```
 
-`spec-pipeline` may say that `$plan` should consume the spec next. It must not convert the spec into a `$plan` artifact.
+`spec-pipeline` may say `$plan` should consume the spec next. It must not convert the spec into a `$plan` artifact.
 
-## Output templates
+## Quality metrics for reports
 
-### Complete spec handoff
-
-```markdown
-# <Spec Title>
-
-## Spec Pipeline Receipt
-profile:
-lane:
-evidence_brief_emitted:
-grill_rounds:
-no_grill_justification:
-decision_packet_emitted:
-gate_verdict:
-plan_allowed:
-mutation_allowed:
-subagent_budget:
-subagent_receipt:
-invariant_challenge:
-fresh_eyes:
-lint_verdict:
-execution_handoff:
-
-## Evidence Brief
-- Current state:
-- Relevant surfaces:
-- Existing behavior:
-- Known constraints:
-- Obvious risks:
-- Proof surfaces already available:
-- Facts not yet verified:
-- Judgment calls still needed:
-
-## Gate Result
-plan_allowed: true
-mutation_allowed: false
-script_gate: passed|skipped
-script_gate_reason:
-clarification_receipt:
-material_open_questions:
-defaults:
-deferrals:
-handoff_sentence:
+Future reports should measure:
 
 ```yaml
-spec_decision_packet:
-  goal:
-  problem_layer:
-  target_user_or_maintainer:
-  scope:
-  non_goals:
-  locked_decisions:
-  tradeoffs_accepted:
-  primary_invariant:
-  success_criteria:
-  proof_bar:
-  compatibility_posture:
-  rollout_rollback_posture:
-  open_questions:
-  deferred_questions:
-  default_assumptions:
-  clarification_receipt:
-    grill_rounds:
-    no_grill_justification:
+spec_pipeline_quality:
+  receipts:
+    spec_pipeline_receipt_present:
+    spec_governance_receipt_present:
+    evidence_brief_present:
+    decision_packet_present:
+    gate_result_present:
+    invariant_challenge_present:
+    fresh_eyes_present:
+    spec_lint_result_present:
+    execution_handoff_present:
+  phase_impact:
+    gate_changed_decision:
+    gate_blocked_plan:
+    challenge_changed_spec:
+    fresh_eyes_changed_spec:
+    lint_changed_spec:
+    lint_blocked_handoff:
+    retro_triggered:
+  execution_control:
+    plan_started_before_gate:
+    mutation_started_before_lint:
+    apply_patch_before_mutation_allowed:
 ```
 
-## 1. Objective
+## Hard rules
 
-## 2. Context / Current State
+- Do not emit `<proposed_plan>`.
+- Do not treat companion phase mentions as success; emit phase receipts.
+- Do not call a spec ready without `spec_governance_receipt`.
+- Do not start execution before handoff.
+- Do not let `$plan` discover the objective.
+- Do not run multiple independent challenges unless the user asks for full review.
+- Do not use `$spec-retro` in every run; trigger it from repeated/report-backed learning signals.
+- Do not let scripts replace semantic judgment; structural script pass is necessary but not sufficient.
 
-## 3. Locked Decisions
+## Resources
 
-## 4. Scope
-
-## 5. Non-Goals
-
-## 6. Requirements
-
-## 7. Design / Implementation Approach
-
-## 8. Dependency-Ordered Implementation Sequence
-
-## 9. Requirement-to-Test Traceability
-
-## 10. Proof Commands
-
-## 11. Risks and Edge Cases
-
-## 12. Rollback / Abort Criteria
-
-## 13. Binary Done-State
-
-## 14. Open / Deferred Items
-
-## Invariant Challenge
-primary_invariant:
-strongest_challenge:
-affected_sections:
-classification:
-required_change:
-regenerate_spec:
-
-## Fresh-Eyes Pass
-fresh_eyes_delta:
-changed_sections:
-why_preserves_authoritative_brief:
-
-## Spec Lint Result
-SPEC_READY:
-script_lint:
-script_lint_reason:
-blocking_errors:
-material_risks:
-preferences:
-missing_sections:
-unmapped_requirements:
-rollback_gaps:
-proof_gaps:
-receipt_gaps:
-subagent_gaps:
-churn_signals:
-recommended_next_action:
-
-## Execution Handoff
-ready_for_plan:
-mutation_allowed:
-next_owner:
-handoff_summary:
-do_not_execute_before:
-```
-
-### Gate failure / questions-only
-
-```text
-SPEC_PIPELINE_GATE_FAILURE
-missing_fields:
-material_open_questions:
-blocking_risks:
-recommended_defaults:
-next_grill_questions:
-
-## Spec Pipeline Receipt
-profile:
-lane:
-evidence_brief_emitted:
-grill_rounds:
-no_grill_justification:
-decision_packet_emitted:
-gate_verdict: fail
-plan_allowed: false
-mutation_allowed: false
-subagent_budget:
-subagent_receipt:
-invariant_challenge: skipped
-fresh_eyes: skipped
-lint_verdict: skipped
-execution_handoff: no
-```
-
-### Drift warning
-
-```text
-SPEC_PIPELINE_DRIFT_WARNING
-changed_field:
-original_brief_value:
-candidate_value:
-why_this_matters:
-action:
-
-## Spec Pipeline Receipt
-profile:
-lane:
-evidence_brief_emitted:
-grill_rounds:
-no_grill_justification:
-decision_packet_emitted:
-gate_verdict: fail
-plan_allowed: false
-mutation_allowed: false
-subagent_budget:
-subagent_receipt:
-invariant_challenge: skipped
-fresh_eyes: skipped
-lint_verdict: skipped
-execution_handoff: no
-```
-
-## Optional output validator
-
-For a saved `spec-pipeline` output, use:
-
-```bash
-uv run python codex/skills/spec-pipeline/scripts/check_spec_pipeline_output.py path/to/spec-output.md
-```
-
-This helper checks the mechanical contract: no `<proposed_plan>`, exact Evidence Brief labels, Spec Pipeline Receipt, Gate Result, decision packet, required spec sections, Invariant Challenge, Fresh-Eyes Pass, Spec Lint Result, and Execution Handoff. It is not a semantic substitute for model judgment.
-
-## Success criteria
-
-A successful `spec-pipeline` run leaves the user with:
-
-- no `<proposed_plan>` output;
-- exact Evidence Brief labels;
-- visible Spec Pipeline Receipt;
-- concrete No-Grill Justification when `grill_rounds: 0`;
-- visible Gate Result;
-- explicit decision packet;
-- implementation spec with all required sections;
-- one strongest invariant challenge;
-- Fresh-Eyes Pass;
-- script-backed or explicitly skipped lint;
-- no unresolved objective drift;
-- all subagents accounted for;
-- a short execution handoff that tells `$plan` what to consume next and whether mutation is allowed.
+- [spec-governance-receipt.md](references/spec-governance-receipt.md)
+- [phase-impact-receipts.md](references/phase-impact-receipts.md)
+- [spec-retro-trigger.md](references/spec-retro-trigger.md)
+- [spec-report-metrics.md](references/spec-report-metrics.md)
+- [companion-boundary.md](references/companion-boundary.md)

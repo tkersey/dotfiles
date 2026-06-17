@@ -1,9 +1,8 @@
 ---
 name: spec-gate
-description: "Decide whether a grill/handoff packet is complete enough for `$plan`, spec generation, or downstream mutation. Use for `$spec-gate`, is this ready to plan, block planning, handoff packet, decision packet, premature specs, no-grill justification, mutation gate, or underspecified questions, proof bar, scope, non-goals, rollout/rollback, and receipts."
+description: "Decide whether a grill/handoff packet is complete enough for `$plan`, spec generation, or downstream mutation, and emit a spec_gate_receipt. Use for `$spec-gate`, is this ready to plan, block planning, handoff packet, decision packet, premature specs, no-grill justification, mutation gate, underspecified questions, proof bar, scope, non-goals, rollout/rollback, receipts, or SGATE-v1."
 metadata:
-  version: "1.2.0"
-  base_file_sha: "8689ba8bc8885737d470727319a95fe546985edd"
+  version: "1.3.0"
 ---
 
 # Spec Gate
@@ -14,7 +13,7 @@ Prevent `$plan` from discovering the objective and prevent mutation from outrunn
 
 A plan is allowed only when the handoff packet is decision-complete or every remaining gap is explicitly assumed, deferred, owned, and defaulted.
 
-Downstream mutation is allowed only after a complete spec has also passed invariant challenge, fresh-eyes pass, and lint. A pre-spec gate can allow planning while still keeping `mutation_allowed: false`.
+Downstream mutation is allowed only after a complete spec has also passed invariant challenge, fresh-eyes pass, spec lint, and governance receipt.
 
 ## Readiness test
 
@@ -43,17 +42,17 @@ We are building X, for Y, by changing Z, while explicitly not doing A/B/C, and s
 
 ## Blocking conditions
 
-Return `PLAN_ALLOWED: false` when any of these are true:
+Return `PLAN_ALLOWED: false` when any are true:
 
-- the goal can still be interpreted in multiple materially different ways;
+- goal can still be interpreted in multiple materially different ways;
 - scope or non-goals are missing;
-- the implementer must choose architecture, compatibility posture, or proof bar;
+- implementer must choose architecture, compatibility posture, or proof bar;
 - open questions exist without owner/default/consequence;
 - success criteria are vague;
-- proof is only scaffold proof when runtime/integration proof is required;
+- proof is scaffold-only when runtime/integration proof is required;
 - rollback or abort posture is absent;
-- the primary invariant is missing;
-- the strictness profile is mismatched to risk;
+- primary invariant is missing;
+- strictness profile is mismatched to risk;
 - `grill_rounds: 0` and no concrete `no_grill_justification` is present;
 - a plan, title, or Round Delta changed the objective without a locked user decision.
 
@@ -61,10 +60,11 @@ Return `PLAN_ALLOWED: false` when any of these are true:
 
 Emit `MUTATION_ALLOWED: false` for handoff-only gates unless the input already includes:
 
-- a complete implementation spec;
+- complete implementation spec;
 - passing invariant challenge;
 - passing fresh-eyes pass;
 - passing spec lint;
+- spec governance receipt;
 - no unaccounted subagents;
 - proof and rollback surfaces.
 
@@ -84,6 +84,22 @@ clarification_receipt:
 next_grill_questions:
 ```
 
+Also emit:
+
+```yaml
+spec_gate_receipt:
+  receipt_version: SGATE-v1
+  plan_allowed: yes | no
+  mutation_allowed_pre_spec: no
+  script_gate: passed | failed | skipped
+  gate_changed_decision: yes | no
+  gate_blocked_plan: yes | no
+  gate_defaulted_decisions: []
+  material_open_questions_remaining: yes | no
+  pass_no_delta: yes | no
+  reason: "..."
+```
+
 Ask at most 1-3 next grill questions, each with a stable `snake_case` id and bounded choices.
 
 ## Script helper
@@ -95,3 +111,10 @@ python codex/skills/spec-gate/scripts/spec_gate.py --strict-receipts path/to/han
 ```
 
 The script is a conservative structural check. The model must still judge semantic completeness.
+
+## Hard rules
+
+- Do not allow mutation from a pre-spec gate.
+- Do not count gate success without `spec_gate_receipt`.
+- Do not ask questions for discoverable facts.
+- Do not allow planning if the handoff sentence is vague.

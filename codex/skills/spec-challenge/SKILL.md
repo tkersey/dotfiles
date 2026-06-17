@@ -1,9 +1,8 @@
 ---
 name: spec-challenge
-description: "Run exactly one strongest project-specific invariant/adversarial challenge against a generated spec or plan, then decide whether to regenerate it. Use for `$spec-challenge`, A+ this plan, pressure-test the invariant, does this preserve X, single strongest critique, or after `$plan`/`$spec-pipeline` before implementation."
+description: "Run exactly one strongest project-specific invariant/adversarial challenge against a generated spec or plan, emit spec_challenge_receipt, then decide whether to regenerate it. Use for `$spec-challenge`, A+ this plan, pressure-test the invariant, does this preserve X, single strongest critique, SCHAL-v1, or after `$plan`/`$spec-pipeline` before implementation."
 metadata:
-  version: "1.2.0"
-  base_file_sha: "af7649f3416664f47ca55aab9f44ff39f4214d2c"
+  version: "1.3.0"
 ---
 
 # Spec Challenge
@@ -20,13 +19,15 @@ The challenge must be tied to the spec's primary invariant. Do not run a broad r
 2. Identify the spec section most likely to violate it.
 3. State the single strongest challenge.
 4. Classify the result:
-   - `architecture_change_required`
-   - `proof_change_required`
-   - `scope_change_required`
-   - `risk_mitigation_required`
+   - `pass`
+   - `changed_architecture`
+   - `changed_proof`
+   - `changed_scope`
+   - `changed_risk`
    - `preference_only`
+   - `skipped`
 5. If required, rewrite only the affected sections or return to `$spec-gate` / `$grill-me`.
-6. Record whether the challenge changed architecture, proof, scope, or risk in the Spec Pipeline Receipt.
+6. Record whether the challenge changed architecture, proof, scope, risk, or route in the Spec Pipeline Receipt / governance receipt.
 
 ## Challenge bank
 
@@ -55,6 +56,22 @@ classification:
 required_change:
 regenerate_spec: yes|no
 receipt_delta: pass|changed_architecture|changed_proof|changed_scope|changed_risk
+```
+
+Also emit:
+
+```yaml
+spec_challenge_receipt:
+  receipt_version: SCHAL-v1
+  primary_invariant: "..."
+  strongest_challenge: "..."
+  affected_sections: []
+  classification: pass | changed_architecture | changed_proof | changed_scope | changed_risk | preference_only | skipped
+  required_change: "..."
+  regenerate_spec: yes | no
+  changed_spec: yes | no
+  changed_route: yes | no
+  pass_no_delta: yes | no
 ```
 
 Do not run multiple independent critiques unless the user explicitly asks for a full review.
