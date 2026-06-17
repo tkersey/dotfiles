@@ -14,6 +14,7 @@ finding_to_route_matrix:
       why_not_smaller:
       why_not_point_fix:
     gates:
+      mutation_permit:
       production_embargo:
       owner_coarseness:
       boundary_inventory:

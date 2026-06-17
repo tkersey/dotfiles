@@ -21,6 +21,7 @@ REQUIRED = [
     r"boundary_inventory\s*:",
     r"candidate_routes\s*:",
     r"negative_memory\s*:",
+    r"mutation_permit\s*:",
     r"selected_route\s*:",
     r"proof_matrix_gate\s*:",
     r"production_embargo\s*:",
@@ -44,7 +45,12 @@ def main(argv: list[str]) -> int:
             print(f"missing pattern: {pat}")
         return 1
 
-    if has(r"same_cluster_count\s*:\s*[2-9]", text) and has(r"route\s*:\s*mutate-existing-owner", text) and not has(r"route\s*:\s*normal-form-decision", text):
+    if has(r"same_cluster_count\s*:\s*[2-9]", text) and has(r"emitted\s*:\s*no", text):
+        print("RGR gate: FAIL")
+        print("same-cluster recurrence requires mutation permit before mutation")
+        return 1
+
+    if has(r"same_cluster_count\s*:\s*[2-9]", text) and has(r"selected_route:\s*\n\s*route\s*:\s*mutate-existing-owner", text):
         print("RGR gate: FAIL")
         print("same-cluster recurrence cannot select mutate-existing-owner directly")
         return 1

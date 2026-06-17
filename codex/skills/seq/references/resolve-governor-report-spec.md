@@ -18,7 +18,9 @@ Key new fields:
 
 ```yaml
 governor_compliance:
-  mutations_after_stop_rule:
+  mutation_permits_required:
+  mutation_permits_emitted:
+  mutations_after_stop_rule_without_permit:
   mutations_after_stop_rule_with_positive_production_net:
   positive_production_net_embargo_required:
   owner_coarseness_gate_required:
@@ -27,4 +29,4 @@ governor_compliance:
   proof_matrix_gate_required:
 ```
 
-The report should answer whether code growth was blocked or justified after recurrence.
+The report should answer whether every same-cluster post-recurrence mutation was explicitly permitted.

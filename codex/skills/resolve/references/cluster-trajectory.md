@@ -11,6 +11,8 @@ cluster_trajectory:
     findings_after_first_fix:
     review_iterations:
     selected_routes:
+    mutation_permits_required:
+    mutation_permits_emitted:
     production_net:
     test_net:
     validation_branches_added:
@@ -20,4 +22,4 @@ cluster_trajectory:
     next_required_change:
 ```
 
-The key fields are `findings_after_first_fix`, `production_net`, and branch/predicate growth.
+The key fields are `findings_after_first_fix`, permit compliance, `production_net`, and branch/predicate growth.

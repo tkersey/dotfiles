@@ -5,6 +5,7 @@
 Require:
 
 - selected route from `review_governor_record`;
+- `RGR-V2-MUTATION-PERMIT` when same-cluster recurrence occurred;
 - permitted scope;
 - forbidden actions;
 - surface budget;
@@ -16,6 +17,6 @@ Require:
 
 Do not turn a feedback/rule/normal-form intervention into a local point fix.
 
-Do not add validation/replay/evidence branches after recurrence unless the governor record explicitly permits positive production growth.
+Do not add validation/replay/evidence branches after recurrence unless the mutation permit explicitly allows it.
 
 If the selected route is insufficient, stop and return to `$resolve` / `$fixed-point-driver`.

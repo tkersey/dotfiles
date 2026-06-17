@@ -21,4 +21,4 @@ boundary_inventory:
   decision: universalist | reduce | normal-form | distill | blocked
 ```
 
-If missing boundary artifact is yes or unknown after recurrence, ordinary owner mutation is blocked.
+If missing boundary artifact is yes or unknown after recurrence, ordinary owner mutation is blocked and any mutation permit must be denied.

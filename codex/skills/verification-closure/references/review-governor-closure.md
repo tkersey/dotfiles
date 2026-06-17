@@ -6,6 +6,7 @@ For `$resolve` closure, require:
 - full validation;
 - PR sweep;
 - governor gate closed or not triggered;
+- mutation permit emitted for every post-recurrence mutation;
 - positive production net embargo passed or not required;
 - owner coarseness gate passed or not required;
 - boundary inventory satisfied or not required;

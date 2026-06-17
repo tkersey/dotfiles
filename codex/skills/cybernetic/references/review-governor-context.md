@@ -18,4 +18,4 @@ cybernetic_context:
   monitoring_or_probe:
 ```
 
-If `local_patch_allowed: no`, ordinary local mutation is blocked.
+If `local_patch_allowed: no`, ordinary local mutation is blocked and the mutation permit must deny local owner mutation.

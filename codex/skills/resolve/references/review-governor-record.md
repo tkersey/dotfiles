@@ -11,6 +11,7 @@ It must include:
 - boundary inventory;
 - candidate routes;
 - negative memory;
+- mutation permit status;
 - cybernetic context when required;
 - selected route;
 - proof matrix gate;
@@ -19,4 +20,4 @@ It must include:
 - outcome metrics;
 - gate status.
 
-After same-cluster recurrence, production mutation is blocked unless this record explains why the selected route reduces review entropy without unbounded code growth.
+After same-cluster recurrence, production mutation is blocked unless this record explains why the selected route reduces review entropy and the required `RGR-V2-MUTATION-PERMIT` has been emitted.

@@ -8,7 +8,10 @@ governor_compliance:
   review_governor_records_required:
   review_governor_records_emitted:
   same_cluster_stop_events:
+  mutation_permits_required:
+  mutation_permits_emitted:
   mutations_after_stop_rule:
+  mutations_after_stop_rule_without_permit:
   mutations_after_stop_rule_with_positive_production_net:
   positive_production_net_embargo_required:
   positive_production_net_embargo_passed:

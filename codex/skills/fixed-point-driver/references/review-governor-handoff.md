@@ -5,6 +5,7 @@ When invoked by `$resolve`, `$fixed-point-driver` must implement the selected go
 Reject handoff when:
 
 - `review_governor_record` is required but missing;
+- same-cluster recurrence lacks `RGR-V2-MUTATION-PERMIT`;
 - same-cluster recurrence selected raw `mutate-existing-owner`;
 - positive production net embargo failed;
 - owner coarseness gate is unknown/failed;
@@ -18,6 +19,7 @@ Emit when invoked:
 ```yaml
 fixed_point_receipt:
   selected_route:
+  mutation_permit:
   owner:
   prior_route_checked:
   proof_required:

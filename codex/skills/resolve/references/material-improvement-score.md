@@ -9,6 +9,7 @@ Key fields:
 - test_net
 - validation_branches_added
 - evidence_predicates_added
+- mutation_permits_required/emitted/missing
 - route_changed_by_exclusion
 - owner_coarseness route changes
 - proof-matrix gates
