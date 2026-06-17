@@ -1,6 +1,6 @@
 ---
 name: logophile
-description: "Precision language surface: sharpen wording, names, labels, headings, PR replies, commit/PR text, docs, user-facing explanations, and doctrine stacks without semantic drift. Trigger implicitly when the task asks for wording, naming, terminology, phrasing, language polish, final copy, doctrine words, mode names, or human-facing text. Do not trigger for ordinary implementation, verification, code review, or machine-consumed artifacts unless wording/naming output is part of the requested result."
+description: "Precision language pass: sharpen wording, names, labels, headings, PR replies, commit/PR text, docs, explanations, and doctrine stacks without semantic drift. Trigger for wording, naming, terminology, phrasing, language polish, final copy, doctrine words, mode names, or human-facing text. Not for ordinary implementation, verification, code review, or machine-consumed artifacts unless wording/naming is requested."
 ---
 
 # Logophile

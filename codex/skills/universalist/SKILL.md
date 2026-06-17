@@ -1,6 +1,6 @@
 ---
 name: universalist
-description: "Use when a code change needs a structural refactor, exact abstraction, certified context, or canonical boundary artifact instead of ordinary feature work: flag/state matrices, repeated validation, branchy policy logic, syntax mixed with execution, opaque callbacks/effects/tool calls, duplicated projections, generated artifacts losing provenance, unclear protocols/state machines, public contracts shaping internals, semantic consumers needing certified context, or abstractions that are too broad/narrow/redundant/inconsistent. Default to one signal, one seam, smallest honest construction; produce proof/falsifier and Composition, Context, Sheafification, Syntax/Semantics, or Category Pivot certificate. Includes internal mechanics for Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/defunctionalization."
+description: "Use when code needs structural refactor, exact abstraction, certified context, or canonical boundary artifact instead of ordinary feature work: flag/state matrices, repeated validation, branchy policy, syntax mixed with execution, opaque callbacks/effects/tools, duplicated projections, provenance loss, unclear protocols/state machines, public contracts shaping internals, semantic consumers, or bad abstraction width. Default to one signal, one seam, smallest honest construction; produce proof/falsifier plus Composition, Context, Sheafification, Syntax/Semantics, or Category Pivot certificate. Includes Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/defunctionalization mechanics."
 ---
 
 # Universalist

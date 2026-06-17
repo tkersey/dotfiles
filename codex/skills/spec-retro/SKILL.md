@@ -1,6 +1,6 @@
 ---
 name: spec-retro
-description: "Mine historical Codex sessions, specs, plans, reports, and workflows to improve future spec automation. Use for `$spec-retro`, learn from past planning, mine plan churn, update exemplar library, derive automation from past practice, spec telemetry, receipt metrics, invisible companion phases, report-to-automation bridge, or which historical sessions should tune this spec workflow."
+description: "Mine historical Codex sessions, specs, plans, reports, and workflows to improve spec automation. Use for `$spec-retro`, past-planning lessons, plan churn, exemplar libraries, automation from past practice, spec telemetry, receipt metrics, invisible companion phases, report-to-automation bridge, or choosing sessions to tune spec workflows."
 metadata:
   version: "1.3.0"
 ---

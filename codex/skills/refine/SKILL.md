@@ -1,6 +1,6 @@
 ---
 name: refine
-description: "Refine an existing Codex skill in place with minimal diffs, then run quick_validate. Trigger for improving a skill's trigger description/frontmatter, workflow text, metadata, scripts/references/assets, or agents/openai.yaml; also iteration, refactor, rename, or fixes using usage/session-mining evidence such as `$seq`."
+description: "Refine an existing Codex skill in place with minimal diffs, then run quick_validate. Trigger for improving trigger descriptions/frontmatter, workflow text, metadata, scripts/references/assets, agents/openai.yaml, iteration, refactor, rename, or fixes using usage/session-mining evidence such as `$seq`."
 ---
 
 # Refine

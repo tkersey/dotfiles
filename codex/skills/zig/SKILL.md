@@ -1,6 +1,6 @@
 ---
 name: zig
-description: "Use for implementing, reviewing, migrating, zig fmt steering, linting, testing, fuzzing, profiling, optimizing, or hardening Zig 0.16.0 code, including hazardous-code/Illegal Behavior audits: .zig, build.zig/build.zig.zon, std.Io/process.Init migration, C interop, comptime/reflection/codegen, integer arithmetic/overflow/wrapping/saturating semantics, allocator ownership, FFI, concurrency, safety-disabled scopes, raw pointers/layout/ABI hazards, dependencies, cache hygiene/disk pressure, and measured performance."
+description: "Use for implementing, reviewing, migrating, zig fmt steering, linting, testing, fuzzing, profiling, optimizing, or hardening Zig 0.16.0 code, including hazardous-code/Illegal Behavior audits: .zig, build.zig/build.zig.zon, std.Io/process.Init migration, C interop, comptime/reflection/codegen, integer arithmetic/overflow/wrapping/saturating semantics, allocator ownership, FFI, concurrency, safety-disabled scopes, raw pointers/layout/ABI hazards, dependencies, cache/disk hygiene, and measured performance."
 ---
 
 # Zig

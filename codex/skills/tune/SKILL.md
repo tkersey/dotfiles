@@ -1,6 +1,6 @@
 ---
 name: tune
-description: "Goal-native skill tuning from orthogonal evidence. Use for `$tune`, skill usage analysis, intended-vs-observed behavior, missed/false/partial activations, repeated proposal-only gaps, skill delta candidates, `$refine` briefs, `$seq` evidence gaps, or applying a validated skill edit only when explicitly requested. Stop at audit/proposal unless apply is explicit. Do not edit `$seq` CLI without a separate special spec."
+description: "Goal-native skill tuning from orthogonal evidence. Use for `$tune`, skill usage analysis, intended-vs-observed behavior, missed/false/partial activations, proposal-only gaps, skill delta candidates, `$refine` briefs, `$seq` evidence gaps, or validated skill edits only when explicit. Stop at audit/proposal unless apply is explicit. Do not edit `$seq` CLI without a separate special spec."
 ---
 
 # Tune

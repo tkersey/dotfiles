@@ -1,6 +1,6 @@
 ---
 name: accretive-implementer
-description: "Right-sized single-writer implementation and remediation: implement, adapt, harden, repair, or validate non-trivial code with the smallest sufficient owned surface, contract-first, witness-backed, and surface-budgeted. Trigger for planned features, migrations, correctness-sensitive refactors, review fixes, bugs, regressions, failing tests, single-change hardening, minimal sufficient code, no-change validation, delete/collapse/canonicalize routes, or active review-adjudication/fixed-point-driver mutation handoffs. Alias: accretive-implementor. Do not use for trivial formatting, rote renames, informational questions, broad adjudication, final closure, or speculative code addition."
+description: "Right-sized single-writer implementation/remediation: implement, adapt, harden, repair, or validate non-trivial code with the smallest owned surface, contract-first, witness-backed, and surface-budgeted. Trigger for planned features, migrations, correctness-sensitive refactors, review fixes, bugs, regressions, failing tests, single-change hardening, no-change validation, delete/collapse/canonicalize routes, or review-adjudication/fixed-point-driver mutation handoffs. Alias: accretive-implementor. Not for trivial formatting, rote renames, informational questions, broad adjudication, final closure, or speculative code addition."
 ---
 
 # Accretive Implementer: Right-Sized Single-Writer Implementation

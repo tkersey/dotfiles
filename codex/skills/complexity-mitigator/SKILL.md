@@ -1,6 +1,6 @@
 ---
 name: complexity-mitigator
-description: "Use for existing-code readability/refactor preflight: simplify/refactor/clean up/untangle, hard to follow, nested branches, boolean soup, opaque names, mixed responsibilities, cross-file state, or review stalls. Output heat read, essential-vs-incidental/spec-risk verdict, and smallest clarity cut before implementation handoff. Not for greenfield planning, broad layer removal, invariant hardening, or bug remediation."
+description: "Use for existing-code readability/refactor preflight: simplify/refactor/clean up/untangle, hard-to-follow code, nested branches, boolean soup, opaque names, mixed responsibilities, cross-file state, or review stalls. Output heat read, essential-vs-incidental/spec-risk verdict, and smallest clarity cut before implementation. Not for greenfield planning, broad layer removal, invariant hardening, or bug remediation."
 ---
 
 # Complexity Mitigator

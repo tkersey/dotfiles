@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Finalize validated work into a proof-backed pull request without merging. Use for `$ship`, ship/finalize a branch, prepare/open/update/promote a PR, publish validation proof, choose ready-vs-draft PR state, update an existing PR body, or produce PR handoff after proof. Default PR state is ready after full validation; draft PRs require an explicit warrant."
+description: "Finalize validated work into a proof-backed pull request without merging. Use for `$ship`, ship/finalize a branch, prepare/open/update/promote a PR, publish validation proof, choose ready-vs-draft state, update a PR body, or produce PR handoff after proof. Default PR state is ready after full validation; draft PRs require an explicit warrant."
 ---
 
 # Ship

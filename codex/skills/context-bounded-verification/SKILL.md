@@ -1,6 +1,6 @@
 ---
 name: context-bounded-verification
-description: "Use for nontrivial code changes, refactors, bug fixes, PR reviews, AI-generated edits, blast-radius analysis, verification planning, regression tests, rollout/rollback, closure/readiness claims, implementation handoffs, or correctness under incomplete context/hidden constraints. Do not use for textual edits or trivial formatting unless risk analysis is requested. Alias: context-bound-verification."
+description: "Use for nontrivial code changes, refactors, bug fixes, PR reviews, AI-generated edits, blast-radius analysis, verification planning, regression tests, rollout/rollback, closure/readiness claims, handoffs, or correctness under incomplete context/hidden constraints. Not for textual edits or trivial formatting unless risk analysis is requested. Alias: context-bound-verification."
 ---
 
 # Context-Bounded Verification

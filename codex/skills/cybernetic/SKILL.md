@@ -1,6 +1,6 @@
 ---
 name: cybernetic
-description: "Ultimate systems-thinking and feedback-control skill. Use for `$cybernetic`, systems thinking, cybernetics, complex adaptive systems, root-cause vs structure, feedback loops, stocks and flows, leverage points, incentives, delayed effects, unintended consequences, DART diagnosis, clear/complicated/complex/chaotic system classification, intervention design, policy design, organizational dynamics, product/business/ecosystem diagnosis, workflow loops, same-cluster review recurrence, and avoiding local optimizations that harm the whole. Produces cybernetic_context or a cybernetic_packet; read-only unless explicitly routed to another implementation skill."
+description: "Systems-thinking and feedback-control skill. Use for `$cybernetic`, cybernetics, complex adaptive systems, root-cause vs structure, feedback loops, stocks/flows, leverage points, incentives, delayed effects, unintended consequences, DART diagnosis, clear/complicated/complex/chaotic classification, intervention/policy design, organizational dynamics, product/business/ecosystem diagnosis, workflow loops, same-cluster review recurrence, or avoiding local optimizations that harm the whole. Produces cybernetic_context or cybernetic_packet; read-only unless routed to implementation."
 metadata:
   version: "1.1.0"
   activation_cost: medium

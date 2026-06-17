@@ -1,6 +1,6 @@
 ---
 name: adversarial-reviewer
-description: "Challenge non-trivial code artifacts with authority-gated adversarial review. Surface only material, current, owned, witness-backed findings; separate candidate concern validity from material-finding eligibility; require no-finding countercases, soundness rows, authority clearance, verification paths, and change-agenda consistency before emitting a remediation agenda. Trigger for exhaustive review, fresh-eyes second pass, re-review after fixes, patch hardening, full-scope de novo challenge, or material fixed-point review. Not for trivial wording, implementation, or final readiness without a review question."
+description: "Authority-gated adversarial review for non-trivial code artifacts. Surface only material, current, owned, witness-backed findings; require countercases, soundness rows, authority clearance, verification paths, and change-agenda consistency before remediation. Trigger for exhaustive review, fresh-eyes second pass, re-review after fixes, patch hardening, de novo challenge, or material fixed-point review. Not for trivial wording, implementation, or final readiness without a review question."
 ---
 
 # Adversarial Reviewer

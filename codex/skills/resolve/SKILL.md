@@ -1,6 +1,6 @@
 ---
 name: resolve
-description: "Resolve the current branch through a CAS-first Review Governor with a mutation-permit interlock after same-cluster recurrence. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR sweep, three consecutive clean reviews, review_governor_record / RGR-v2, RGR-V2-MUTATION-PERMIT, same-cluster local-patching disablement, positive production net embargo, owner coarseness gate, proof matrix gate, negative-ledger operational evidence, boundary inventory/universalist trigger, governor compliance reporting, and material-improvement scoring. Do not use for one-shot review, PR creation only, merging/landing, isolated adjudication, or final closure proof without branch mutation."
+description: "Resolve the current branch through a CAS-first Review Governor with mutation permits after same-cluster recurrence. Use for `$resolve`, branch resolution, review/fix/validate/commit/push loops, PR sweep, three clean reviews, review_governor_record / RGR-v2, mutation permits, local-patching disablement, production net embargo, owner coarseness/proof matrix gates, negative-ledger evidence, boundary inventory/universalist trigger, compliance reporting, and material-improvement scoring. Not for one-shot review, PR creation, merging/landing, isolated adjudication, or final closure proof without branch mutation."
 ---
 
 # resolve

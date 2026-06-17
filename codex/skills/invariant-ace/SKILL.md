@@ -1,6 +1,6 @@
 ---
 name: invariant-ace
-description: "Turn should-never-happen into cannot-happen with authority-gated invariant design. Define owned inductive invariants, separate predicates from pre/postconditions and derived facts, require counterexample traces, owner/scope/source-of-truth proof, transition preservation, policy/exception authority, witness parity, enforcement-boundary choice, and verification. Use for invariants, impossible states, validation sprawl, cache/index drift, idempotency/versioning, retries/duplicates/out-of-order events, races, loop correctness, policy-owned exceptions, generator/validator parity, descriptor-vs-occurrence identity, certificate/proof witness drift, fixture precondition alignment, or invariant-first hardening. Not for generic refactors, broad architecture essays, or implementation without an invariant gate."
+description: "Turn should-never-happen into cannot-happen with authority-gated invariant design: owned inductive invariants, counterexample traces, source-of-truth proof, transition preservation, exception authority, witness parity, enforcement boundary, and verification. Use for invariants, impossible states, validation sprawl, cache/index drift, idempotency/versioning, retries/duplicates/out-of-order events, races, loop correctness, policy exceptions, generator/validator parity, descriptor identity, witness drift, fixture preconditions, or invariant-first hardening. Not for generic refactors, architecture essays, or implementation without an invariant gate."
 ---
 
 # Invariant Ace

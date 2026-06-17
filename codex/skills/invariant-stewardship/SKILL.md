@@ -1,6 +1,6 @@
 ---
 name: invariant-stewardship
-description: "Use before local patching when bugs, regressions, malformed state, crashes, parser failures, migrations, cache drift, protocol problems, compatibility requests, tolerant readers, fallbacks, coercions, retries, catch-and-continue logic, or local workarounds may broaden accepted invalid state."
+description: "Use before local patching when bugs, regressions, malformed state, crashes, parser failures, migrations, cache drift, protocol problems, compatibility requests, tolerant readers, fallbacks, coercions, retries, catch-and-continue, or local workarounds may broaden accepted invalid state."
 ---
 
 # Invariant Stewardship

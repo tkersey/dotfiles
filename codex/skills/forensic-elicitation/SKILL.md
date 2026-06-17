@@ -1,6 +1,6 @@
 ---
 name: forensic-elicitation
-description: "Implicitly use for forensic elicitation from prior Codex/coding-agent sessions: mine $seq/$cas/session JSONL/memories/tool traces/commits/PRs/review receipts to produce provenance-preserving canonical maps. Trigger on requests to learn from past sessions, reconstruct what happened, extract improvements or lessons, audit closure, compare memories vs traces, or resolve contradictions."
+description: "Forensic elicitation from prior Codex/coding-agent sessions: mine $seq/$cas/session JSONL, memories, tool traces, commits, PRs, and review receipts into provenance-preserving maps. Trigger for learning from past sessions, reconstructing what happened, extracting improvements/lessons, auditing closure, comparing memories vs traces, or resolving contradictions."
 ---
 
 # forensic-elicitation

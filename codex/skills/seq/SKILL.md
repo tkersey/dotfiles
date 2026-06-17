@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Mine Codex session JSONL (`~/.codex/sessions`) and memories (`~/.codex/memories`) for explicit `$seq` and artifact-forensics questions. Prefer `artifact-search`, then `skill-evidence` for one watched session, then `adjudication-audit` for selected/rejected review-adjudication audits, then `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, `orchestration-concurrency`, then `query-diagnose`, then generic `query`. Run opencode only when the request literally says `opencode`."
+description: "Mine Codex session JSONL (`~/.codex/sessions`) and memories (`~/.codex/memories`) for explicit `$seq` and artifact forensics. Prefer `artifact-search`, `skill-evidence`, `adjudication-audit`, `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, `orchestration-concurrency`, `query-diagnose`, then `query`. Run opencode only when the request literally says `opencode`."
 ---
 
 # seq

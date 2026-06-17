@@ -1,14 +1,6 @@
 ---
 name: st
-description: >-
-  Durable graph-planning and execution-aperture manager for `.step/st-plan.jsonl`.
-  Use for `use $st`, resuming durable work, tracking dependencies, proof-carrying
-  completion, mirroring bounded work into Codex/OpenCode native plan tools, and
-  especially for turning a plan, proposal, issue, spec, markdown document, TODO
-  list, or design into executable tasks. For material plans, compile intent and
-  self-contained graph capsules before selecting an aperture; do not skip straight
-  to `prime`/`complete` unless the repo already has a healthy `$st` graph or the
-  work is explicitly simple.
+description: "Durable graph-planning and execution-aperture manager for `.step/st-plan.jsonl`. Use for `use $st`, resuming durable work, dependencies, proof-carrying completion, mirroring bounded work into Codex/OpenCode plans, or turning a plan, proposal, issue, spec, markdown document, TODO list, or design into executable tasks. For material plans, compile intent and graph capsules before selecting an aperture; skip straight to `prime`/`complete` only for healthy existing `$st` graphs or explicitly simple work."
 ---
 
 # st

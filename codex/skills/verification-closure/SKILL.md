@@ -1,6 +1,6 @@
 ---
 name: verification-closure
-description: "Decide final readiness after material coding work by checking closure gates, current-head proof, soundness rows, invariant witnesses, stale handoffs, and residual risk. Trigger for final readiness, closure gates, fixed-point claims, proof receipts, or 'is this ready?' after material work. Do not use as the initial reviewer or implementer."
+description: "Decide final readiness after material coding work by checking closure gates, current-head proof, soundness rows, invariant witnesses, stale handoffs, and residual risk. Trigger for final readiness, closure gates, fixed-point claims, proof receipts, or 'is this ready?' after material work. Not the initial reviewer or implementer."
 ---
 
 # Verification Closure

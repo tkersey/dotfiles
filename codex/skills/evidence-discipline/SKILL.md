@@ -1,6 +1,6 @@
 ---
 name: evidence-discipline
-description: "Use for bug reports, PR/issue prose, reviewer comments, user diagnoses, generated summaries, memories, retrieved context, public tracker context, claimed root causes, proposed fixes, fake-minimal repro risk, or any investigation where natural-language context could anchor the implementation scope."
+description: "Use for bug reports, PR/issue prose, reviewer comments, user diagnoses, generated summaries, memories, retrieved context, public tracker context, claimed root causes/fixes, fake-minimal repro risk, or investigations where natural-language context could anchor implementation scope."
 ---
 
 # Evidence Discipline

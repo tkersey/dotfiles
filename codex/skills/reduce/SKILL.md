@@ -1,6 +1,6 @@
 ---
 name: reduce
-description: "Audit over-engineered codebases. Use when change latency or agent difficulty comes from frameworks, plugins, DI, codegen, task runners, config indirection, ORMs, GraphQL, monorepo/infra tooling, bundled web stacks, or requests to remove layers while preserving behavior. Produces evidence-backed cuts, lower-level replacements, phased migration, proof signals, rollback, and an essential-abstraction check."
+description: "Audit over-engineered codebases. Use when change latency or agent difficulty comes from frameworks, plugins, DI, codegen, task runners, config indirection, ORMs, GraphQL, monorepo/infra tooling, web stacks, or requests to remove layers while preserving behavior. Produces evidence-backed cuts, lower-level replacements, phased migration, proof signals, rollback, and an essential-abstraction check."
 ---
 
 # Reduce

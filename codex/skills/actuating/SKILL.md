@@ -1,15 +1,6 @@
 ---
 name: actuating
-description: >-
-  Plan-to-PR execution workflow. Turn a material plan/spec/proposal into durable
-  `$st` tasks, execute every task through `$fixed-point-driver` and the repo's
-  language-specific skills, keep proof-carrying completion in `$st`, run full
-  build/lint/test validation, then `$ship` the branch into a PR with explicit
-  ready-vs-draft mode. Trigger for `$actuating`, plan-to-PR, implement this plan
-  and open a PR, turn this plan into tasks and ship it, use `$st` then
-  `$fixed-point-driver` then `$ship`, or end-to-end plan execution. Do not use
-  for one-off bug fixes, pure planning, current-branch review resolution,
-  merge/land, or PR creation without implementation.
+description: "Plan-to-PR execution workflow: turn a material plan/spec/proposal into durable `$st` tasks, execute through `$fixed-point-driver` and language skills, keep proof in `$st`, run build/lint/test validation, then `$ship` with explicit ready-vs-draft mode. Trigger for `$actuating`, plan-to-PR, implement this plan and open a PR, turn this plan into tasks and ship it, `$st` then `$fixed-point-driver` then `$ship`, or end-to-end plan execution. Not for one-off bug fixes, pure planning, current-branch review resolution, merge/land, or PR creation without implementation."
 ---
 
 # Actuating

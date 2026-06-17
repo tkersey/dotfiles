@@ -1,6 +1,6 @@
 ---
 name: synesthesia
-description: "Cross-modal diagnostic/review workflow for software systems. Use to understand, explain, compare, critique, debug, profile, review, or refactor code by mapping technical signals into sensory models, then translating them back into engineering language. Best for architecture review, readability/maintainability, strange/flaky behavior, performance bottlenecks, API/UX critique, onboarding, and comparing implementations/designs by feel, friction, weight, rhythm, sharpness, smoothness, coupling, or complexity. Also use when prompts ask what a codebase, bug, logs, API, or system feels/sounds/looks like, or to make it lighter, smoother, cleaner, tighter, quieter, or more coherent. Do not use for exact API syntax, compliance/legal interpretation, security sign-off, rote code edits, or terse factual tasks."
+description: "Cross-modal diagnostic/review workflow for software systems: map technical signals into sensory models, then translate them back into engineering terms. Use for architecture review, readability, maintainability, strange/flaky behavior, performance bottlenecks, API/UX critique, onboarding, or comparisons by feel, friction, weight, rhythm, sharpness, smoothness, coupling, or complexity. Also trigger when prompts ask what code, bugs, logs, APIs, or systems feel/sound/look like, or to make them lighter, smoother, cleaner, tighter, quieter, or more coherent. Not for exact API syntax, legal/compliance, security sign-off, rote edits, or terse facts."
 ---
 
 # Synesthesia

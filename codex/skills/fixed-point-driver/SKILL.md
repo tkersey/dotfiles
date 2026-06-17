@@ -1,6 +1,6 @@
 ---
 name: fixed-point-driver
-description: "Drive exhaustive build-review-improve-verify loops to Truth-Owner Ablative-Isomorphic Normal Form: one canonical owner per material invariant, no duplicate truth surfaces, no unresolved review counterexamples, no unresolved adversarial or ablation vetoes, no unretired additive scaffolding, no dominated/vestigial/subsumed surface without a keep warrant, and behavior-preserving proof-gated closure. Trigger when coding needs de novo re-litigation, PR review closure, repeated review/fix loops, invariant repair, proof-surface hardening, negative-evidence pruning, CAS/Codex review resolution, parallel adversarial action, optional architecture fingerprint preflight, or when agents risk adding local patches instead of deleting/refactoring/canonicalizing. Do not use for trivial one-step tasks or when the user wants one narrow phase."
+description: "Drive exhaustive build-review-improve-verify loops to Truth-Owner Ablative-Isomorphic Normal Form: canonical invariant owners, no duplicate truth surfaces, unresolved counterexamples, ablation vetoes, unretired scaffolding, or dominated surfaces without warrants, with behavior-preserving proof closure. Trigger for de novo coding review, PR review closure, repeated review/fix loops, invariant repair, proof-surface hardening, CAS/Codex review resolution, parallel adversarial action, or local-patch risk. Not for trivial one-step tasks or one narrow phase."
 ---
 
 # Fixed-Point Driver

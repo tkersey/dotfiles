@@ -1,6 +1,6 @@
 ---
 name: latent-diver
-description: "Use before convergence for non-obvious but testable frames, analogies, inversions, or recombinations. Produces bounded frame packets with proof signals, assumptions, risks, and handoff guidance. Do not use for final selection, execution, routine brainstorming, wording polish, or option portfolios unless unusually distant frames are explicitly requested."
+description: "Use before convergence for non-obvious but testable frames, analogies, inversions, or recombinations. Produces bounded frame packets with proof signals, assumptions, risks, and handoff guidance. Not for final selection, execution, routine brainstorming, wording polish, or option portfolios unless unusually distant frames are requested."
 ---
 
 # Latent Diver

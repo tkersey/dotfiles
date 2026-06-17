@@ -1,6 +1,6 @@
 ---
 name: grill-me
-description: "Clarify ambiguous or conflicting requests by researching first, then exhaustively interrogating assumptions, constraints, dependencies, trade-offs, edge cases, and failure modes before planning or implementation. Use for `$grill-me`, \"grill me\", hard questions, relentless interrogation, pressure-testing assumptions, scope/success clarification, or product/system-design decisions before implementation. Reply in the user's language. Stop before implementation. Each question round must include compact context explaining the downstream decision."
+description: "Clarify ambiguous or conflicting requests by researching first, then interrogating assumptions, constraints, dependencies, trade-offs, edge cases, and failure modes before planning or implementation. Use for `$grill-me`, \"grill me\", hard questions, pressure-testing, scope/success clarification, or product/system-design decisions. Reply in the user's language. Stop before implementation. Each question round needs compact downstream-decision context."
 metadata:
   version: "2.1.0"
   posture: "research-first, context-bearing, decision-packet-backed, bounded-choice interrogation"

@@ -1,6 +1,6 @@
 ---
 name: negative-ledger
-description: "Capture, query, map, reopen, compact, and hand off evidence-backed failed hypotheses and falsified review routes. Use for `$negative-ledger`, negative evidence, negative route ratchet, repeated review decision, same-cluster recurrence, route already tried, no-effect repair, public-bypass failure, scar tissue, route veto, or search-space pruning."
+description: "Capture, query, map, reopen, compact, and hand off evidence-backed failed hypotheses and falsified review routes. Use for `$negative-ledger`, negative evidence, route ratchet, repeated review decisions, same-cluster recurrence, route already tried, no-effect repair, public-bypass failure, scar tissue, route veto, or search-space pruning."
 ---
 
 # Negative Ledger

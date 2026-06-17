@@ -1,6 +1,6 @@
 ---
 name: review-compression-compiler
-description: "Read-only compiler for hot review clusters. Use when `$resolve` as Review Governor needs to compress review findings into counterexample families, candidate routes, owner-coarseness decisions, proof matrices, production-embargo checks, mutation permit contents, and normal-form decisions inside `review_governor_record`. Do not edit code."
+description: "Read-only compiler for hot review clusters. Use when `$resolve` as Review Governor needs review findings compressed into counterexample families, candidate routes, owner-coarseness decisions, proof matrices, production-embargo checks, mutation permits, and normal-form decisions inside `review_governor_record`. Do not edit code."
 metadata:
   version: "governor-permit-1.0.0"
   activation_cost: medium

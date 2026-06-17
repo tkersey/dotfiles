@@ -1,18 +1,6 @@
 ---
 name: review-adjudication
-description: >-
-  Kernelized, warrant-issued adjudication for PR review comments, CAS findings,
-  and review-like claims before implementation or thread resolution. Treat each
-  comment as a claim to test, preserve raw identity and artifact state, emit a
-  tiny always-on Claim Decision Kernel, then issue scoped Resolution Warrants and
-  triggered annexes for address, validation, proof-only resolution,
-  do-not-address, delete/collapse/canonicalize, or blocked routes. Mutation is
-  permitted only by an active surface-budgeted warrant. Trigger for
-  `$review-adjudication`, review the review, adjudicate PR comments, refine this
-  list to just those worth resolving, select review comments to resolve, gate
-  review comments before implementation, or route review/CAS findings into
-  `$fixed-point-driver`. Not for implementing fixes, writing rebuttals only, or
-  final merge closure.
+description: "Adjudicate PR review comments, CAS findings, and review-like claims before implementation or thread resolution. Emit Claim Decision Kernel rows and Resolution Warrants for address, validate, proof-only, do-not-address, delete/collapse/canonicalize, or blocked routes; mutation requires an active surface-budgeted warrant. Trigger for `$review-adjudication`, review the review, selecting review comments to resolve, gating comments before implementation, or routing review/CAS findings into `$fixed-point-driver`. Not for implementing fixes, rebuttals only, or final merge closure."
 ---
 
 # Review Adjudication
