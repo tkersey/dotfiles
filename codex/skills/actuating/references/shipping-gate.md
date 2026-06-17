@@ -1,24 +1,13 @@
 # Shipping Gate
 
-`$ship` is permitted only after proof is current for the intended branch head.
+`$ship` is allowed only when:
 
-## Required checks before `$ship`
+- graph has no unhandled in-scope tasks, or caveated draft is explicitly warranted;
+- current head includes intended work;
+- validation passes or limitations are explicitly accounted for;
+- no fixed-point/ablation/soundness/verification blocker remains;
+- PR side effect is in scope;
+- proof summary is ready;
+- `pr_mode` is explicit.
 
-- all in-scope `$st` tasks are complete, blocked, deferred, or removed from scope with evidence
-- build proof is current or absent with evidence
-- lint/static proof is current or absent with evidence
-- tests/proofs are current or absent with evidence
-- language-specific proof lanes have run when relevant
-- no unresolved material fixed-point, ablation, soundness, or verification gate remains
-- PR creation/update is in scope
-
-## Missing commands
-
-If a repo lacks a build/lint/test command, record:
-
-- where you looked
-- what command category was missing
-- what substitute proof was run
-- whether this weakens shipping confidence
-
-Do not say “all checks pass” for categories that were not found or not run.
+Ready PR is default after full validation.

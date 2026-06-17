@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Ship"
-  short_description: "Help with Ship tasks and workflows"
-  default_prompt: "Use $ship for this task."
+  short_description: "Publish validated work as a ready PR by default"
+  default_prompt: "Use $ship to open/update/promote a proof-backed PR. Default to ready PR after full validation; create draft only with an explicit warrant."

@@ -4,12 +4,12 @@ description: >-
   Plan-to-PR execution workflow. Turn a material plan/spec/proposal into durable
   `$st` tasks, execute every task through `$fixed-point-driver` and the repo's
   language-specific skills, keep proof-carrying completion in `$st`, run full
-  build/lint/test validation, then `$ship` the branch into a PR. Trigger for
-  `$actuating`, plan-to-PR, implement this plan and open a PR, turn this plan
-  into tasks and ship it, use `$st` then `$fixed-point-driver` then `$ship`, or
-  end-to-end plan execution. Do not use for one-off bug fixes, pure planning,
-  current-branch review resolution, merge/land, or PR creation without
-  implementation.
+  build/lint/test validation, then `$ship` the branch into a PR with explicit
+  ready-vs-draft mode. Trigger for `$actuating`, plan-to-PR, implement this plan
+  and open a PR, turn this plan into tasks and ship it, use `$st` then
+  `$fixed-point-driver` then `$ship`, or end-to-end plan execution. Do not use
+  for one-off bug fixes, pure planning, current-branch review resolution,
+  merge/land, or PR creation without implementation.
 ---
 
 # Actuating
@@ -30,15 +30,16 @@ Use language-specific skills when the repo calls for them, such as $zig.
 
 ## Doctrine
 
-Operate in **ACTUATING**, **PLAN-GRAPHED**, **FIXED-POINTED**, **LANGUAGE-AWARE**, **PROOF-GATED**, **SURFACE-TAXED**, **SHIP-READY**, and **TAIL-PROOF** mode.
+Operate in **ACTUATING**, **PLAN-GRAPHED**, **FIXED-POINTED**, **LANGUAGE-AWARE**, **PROOF-GATED**, **SURFACE-TAXED**, **SHIP-READY**, **PR-MODE-EXPLICIT**, and **TAIL-PROOF** mode.
 
 - **ACTUATING**: identify the lever that moves the system from plan to shipped PR, then pull it with proof.
 - **PLAN-GRAPHED**: a material plan becomes durable `$st` task graph state, not transient prose or a fragile chat checklist.
 - **FIXED-POINTED**: implementation work is driven through `$fixed-point-driver` until each task is complete, blocked, or explicitly removed from scope.
 - **LANGUAGE-AWARE**: use repo/language skills such as `$zig`, `$lean`, or other visible language rails when files, toolchains, errors, or project conventions call for them.
 - **PROOF-GATED**: each completed task needs evidence; final shipping needs current build/lint/test proof.
-- **SURFACE-TAXED**: mutation-capable work must respect ablation, isomorphism, soundness, and surface-budget gates supplied by the called skills.
+- **SURFACE-TAXED**: mutation-capable work must respect ablation, isomorphism, soundness, and surface-budget gates supplied by called skills.
 - **SHIP-READY**: `$ship` is allowed only after all in-scope tasks are complete or explicitly blocked/deferred and the current head has passing proof.
+- **PR-MODE-EXPLICIT**: `$actuating` must pass an explicit PR mode to `$ship`; fully validated complete work defaults to ready, not draft.
 - **TAIL-PROOF**: the final output must end with the state, proof, PR status, and next bottleneck.
 
 ## Contract
@@ -51,8 +52,9 @@ Required outcomes:
 2. Every in-scope task is implemented, validated, or explicitly blocked/deferred with reason and proof state.
 3. `$fixed-point-driver` owns non-trivial implementation loops.
 4. Language-specific skills own language-specific proof lanes when applicable.
-5. `$ship` runs only after builds, lints, and tests pass, or after the repo proves no such command exists and the user explicitly accepts the limitation.
-6. The final response ends with an **Actuation Bottom Line**.
+5. `$ship` runs only after builds, lints, and tests pass, or after missing gates are explicitly accounted for and the user accepts the limitation.
+6. `$ship` receives explicit `pr_mode`.
+7. The final response ends with an **Actuation Bottom Line**.
 
 ## When to use
 
@@ -79,12 +81,10 @@ Do not use this skill for:
 ## Lifecycle
 
 ```text
-plan intake -> $st graph -> aperture -> fixed-point implementation -> task proof -> graph completion -> full validation -> $ship -> PR proof
+plan intake -> $st graph -> aperture -> fixed-point implementation -> task proof -> graph completion -> full validation -> explicit PR mode -> $ship -> PR proof
 ```
 
-## Workflow
-
-### 1. Plan intake
+## 1. Plan intake
 
 Bind the work to a concrete plan source:
 
@@ -101,11 +101,12 @@ Before task creation, identify:
 - acceptance checks;
 - language/toolchain clues;
 - expected PR scope;
-- public side effects expected by the user.
+- expected public side effects;
+- whether the user explicitly requested draft PR, ready PR, or just implementation.
 
 If the user has not clearly asked for PR creation/publication, stop before `$ship` and ask only if that is the real blocker. If the prompt clearly says plan-to-PR or ship once validated, PR creation is in scope.
 
-### 2. `$st` graph creation
+## 2. `$st` graph creation
 
 Use `$st` as the durable source of truth.
 
@@ -128,7 +129,7 @@ Rules:
 - Do not mark a task complete without proof.
 - Do not let chat prose become the source of task state.
 
-### 3. Aperture selection
+## 3. Aperture selection
 
 Select the next executable aperture from `$st`.
 
@@ -140,9 +141,9 @@ A good aperture has:
 - no hidden public side effects;
 - no ambiguous ownership boundary.
 
-If tasks are independent and read-heavy, use subagents or language-specific rails for evidence. Keep mutation single-rooted unless the repo's orchestration policy explicitly allows disjoint writes.
+If tasks are independent and read-heavy, use subagents or language-specific rails for evidence. Keep mutation single-rooted unless repo policy explicitly allows disjoint writes.
 
-### 4. Language-skill detection
+## 4. Language-skill detection
 
 Before implementation, inspect repo signals and activate the right language rails:
 
@@ -153,7 +154,7 @@ Before implementation, inspect repo signals and activate the right language rail
 
 Language skills should supply language-specific commands and hazards. They do not replace the plan graph, fixed-point loop, or final ship gate.
 
-### 5. Implementation loop
+## 5. Implementation loop
 
 For each executable `$st` item or aperture:
 
@@ -171,7 +172,7 @@ Do not stop after the first green patch. Continue until every in-scope task is:
 - `deferred` only when the plan or user scope explicitly permits deferral;
 - removed from scope by an evidence-backed graph/update decision.
 
-### 6. Validation gate
+## 6. Validation gate
 
 Before shipping, run the full repo-appropriate proof suite.
 
@@ -182,23 +183,91 @@ At minimum, attempt to identify and run:
 - tests;
 - typecheck/proof checks;
 - language-specific validation;
-- any plan-specific acceptance checks;
-- any PR-specific proof that `$ship` should include.
+- plan-specific acceptance checks;
+- PR-specific proof that `$ship` should include.
 
-If the repo lacks a build, lint, or test command, record the search evidence and the substitute proof. Do not claim “all checks pass” when a category was not found or not run.
+If the repo lacks a build, lint, or test command, record search evidence and substitute proof. Do not claim “all checks pass” when a category was not found or not run.
 
-### 7. Ship gate
+## 7. PR mode decision
+
+Before invoking `$ship`, compute explicit PR mode.
+
+```yaml
+pr_mode_decision:
+  mode: ready | draft | update-existing | promote-draft | blocked
+  reason: "..."
+  draft_allowed_reason: "none | explicit-user | incomplete-validation | blocked-tasks | early-visibility | missing-context | repo-policy"
+```
+
+Default:
+
+```text
+If all in-scope tasks are complete and validation passes, pr_mode = ready.
+```
+
+Use `draft` only when:
+
+- the user explicitly requested draft;
+- validation is incomplete, failing, blocked, or caveated;
+- tasks remain blocked/deferred/open and publication is still requested;
+- early visibility is intentionally requested;
+- repo policy requires draft.
+
+Existing PR:
+
+- if open ready PR exists: `update-existing`;
+- if open draft PR exists and blockers remain: `update-existing`;
+- if open draft PR exists and branch is fully validated with no blockers: `promote-draft` unless user/repo policy says preserve draft.
+
+Hard rule:
+
+```text
+$actuating must not call $ship without explicit pr_mode.
+```
+
+## 8. Ship gate
 
 Invoke `$ship` only when all are true:
 
-- `$st` graph has no unhandled in-scope tasks;
+- `$st` graph has no unhandled in-scope tasks, or blocked/deferred tasks are explicitly permitted in a caveated draft;
 - current head includes the intended work;
 - build/lint/test/proof gates pass or missing gates are explicitly accounted for;
 - no unresolved material fixed-point, ablation, soundness, or verification gate remains;
 - PR side effect is in scope;
-- proof summary is ready for the PR body.
+- proof summary is ready for the PR body;
+- `pr_mode_decision.mode` is not `blocked`.
 
-`$ship` opens or updates a PR. It does not merge. Use `$land` only for explicit merge/land intent.
+`$ship` opens, updates, or promotes a PR. It does not merge. Use `$land` only for explicit merge/land intent.
+
+## Ship handoff
+
+Pass:
+
+```yaml
+ship_handoff:
+  target_skill: ship
+  pr_mode: ready | draft | update-existing | promote-draft | blocked
+  pr_mode_reason: "..."
+  draft_allowed_reason: "none | explicit-user | incomplete-validation | blocked-tasks | early-visibility | missing-context | repo-policy"
+  validation_state:
+    build: pass | fail | missing | not-run
+    lint: pass | fail | missing | not-run
+    tests: pass | fail | missing | not-run
+    language_specific: pass | fail | missing | not-run
+    acceptance: pass | fail | missing | not-run
+  graph_state:
+    complete: 0
+    blocked: 0
+    deferred: 0
+    open: 0
+  proof_summary: "..."
+  existing_pr:
+    exists: yes | no | unknown
+    url: "..."
+    draft: yes | no | unknown
+```
+
+`$ship` must honor this mode and must not create a draft PR when `pr_mode: ready`.
 
 ## Actuation State Record
 
@@ -208,7 +277,7 @@ For material runs, maintain a compact state record:
 actuation_state:
   run_id: "..."
   plan_source: "..."
-  target_pr_state: opened | updated | not-yet | blocked
+  target_pr_state: ready | draft | updated | promoted | not-yet | blocked
   artifact_state:
     branch: "..."
     base: "..."
@@ -232,8 +301,12 @@ actuation_state:
     lint: pass | fail | missing | not-run
     tests: pass | fail | missing | not-run
     language_specific: pass | fail | missing | not-run
+    acceptance: pass | fail | missing | not-run
   ship:
     ship_allowed: yes | no
+    pr_mode: ready | draft | update-existing | promote-draft | blocked
+    pr_mode_reason: "..."
+    draft_allowed_reason: "..."
     pr_url: "..."
     blocker: "..."
 ```
@@ -247,8 +320,9 @@ Use tail-weighted sections:
 3. Execution Aperture
 4. Work Completed
 5. Validation
-6. Ship Status
-7. Actuation Bottom Line
+6. PR Mode
+7. Ship Status
+8. Actuation Bottom Line
 
 `Actuation Bottom Line` must be the final section.
 
@@ -262,6 +336,7 @@ Actuation Bottom Line:
 - graph state:
 - tasks complete:
 - validation:
+- PR mode:
 - PR:
 - proof:
 - blocker / next bottleneck:
@@ -273,10 +348,12 @@ Actuation Bottom Line:
 - Do not treat `update_plan` as durable state.
 - Do not implement beyond the plan without updating scope or graph state.
 - Do not keep going silently when the correct next step requires credentials, destructive approval, or public side-effect confirmation not already granted.
-- Do not run `$ship` with failing build/lint/test gates.
+- Do not run `$ship` with failing build/lint/test gates unless user explicitly requested a caveated draft.
 - Do not call missing validation “passed.”
+- Do not call `$ship` without explicit `pr_mode`.
+- Do not create draft PR by default after full validation.
 - Do not merge or land.
-- Do not bury the final graph state or PR status above the fold.
+- Do not bury the final graph state, PR mode, or PR status above the fold.
 
 ## Resources
 
@@ -284,5 +361,6 @@ Actuation Bottom Line:
 - [st-handoff.md](references/st-handoff.md)
 - [fixed-point-execution-loop.md](references/fixed-point-execution-loop.md)
 - [language-skill-detection.md](references/language-skill-detection.md)
+- [pr-mode-decision.md](references/pr-mode-decision.md)
 - [shipping-gate.md](references/shipping-gate.md)
 - [example-invocations.md](references/example-invocations.md)
