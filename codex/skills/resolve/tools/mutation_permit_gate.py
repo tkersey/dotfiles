@@ -28,6 +28,12 @@ REQUIRED = [
     r"missing_boundary_artifact\s*:\s*(yes|no|unknown)",
     r"negative_route_gate\s*:",
     r"query_or_map\s*:\s*(yes|no)",
+    r"ledger_cli\s*:\s*ledger",
+    r"store\s*:\s*\.ledger/negative-ledger\.jsonl",
+    r"command\s*:\s*.*ledger map",
+    r"exit_code\s*:\s*(0|2|3)",
+    r"ledger_available\s*:\s*(yes|no)",
+    r"active_exclusion_match\s*:\s*(yes|no|null)",
     r"proof_matrix_gate\s*:",
     r"family_matrix_present\s*:\s*(yes|no)",
     r"one_test_per_wound\s*:\s*(yes|no)",
@@ -75,6 +81,11 @@ def main(argv: list[str]) -> int:
     if has(r"query_or_map\s*:\s*no", text):
         print("Mutation permit gate: FAIL")
         print("mutation permit requires negative-ledger query_or_map: yes")
+        return 1
+
+    if has(r"ledger_available\s*:\s*no", text) or has(r"exit_code\s*:\s*3", text):
+        print("Mutation permit gate: FAIL")
+        print("mutation permit requires available ledger map evidence")
         return 1
 
     if has(r"one_test_per_wound\s*:\s*yes", text) and has(r"family_matrix_present\s*:\s*no", text):

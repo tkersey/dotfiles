@@ -80,6 +80,16 @@ def main(argv: list[str]) -> int:
         print("same-cluster recurrence requires operational negative-ledger query/map")
         return 1
 
+    if has(r"same_cluster_count\s*:\s*[2-9]", text):
+        if not has(r"ledger_cli\s*:\s*ledger", text) or not has(r"store\s*:\s*\.ledger/negative-ledger\.jsonl", text) or not has(r"command\s*:\s*.*ledger map", text) or not has(r"exit_code\s*:\s*(0|2|3)", text):
+            print("RGR gate: FAIL")
+            print("same-cluster recurrence requires machine-auditable ledger map evidence")
+            return 1
+        if has(r"ledger_available\s*:\s*no", text) or has(r"exit_code\s*:\s*3", text):
+            print("RGR gate: FAIL")
+            print("same-cluster recurrence cannot mutate with missing ledger evidence")
+            return 1
+
     print("RGR gate: PASS")
     return 0
 

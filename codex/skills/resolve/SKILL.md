@@ -238,7 +238,16 @@ RGR-V2-MUTATION-PERMIT:
     decision: universalist | reduce | normal-form | distill | blocked
   negative_route_gate:
     query_or_map: yes | no
+    ledger_cli: ledger
+    store: ".ledger/negative-ledger.jsonl"
+    command: "ledger map --route ... --cluster ... --artifact ..."
+    exit_code: 0 | 2 | 3
+    ledger_available: yes | no
     active_exclusion_match: yes | no
+    exclusion_id: "none | NEG-..."
+    fuzzy_candidates: 0
+    fuzzy_authority: suggest_only | none
+    failure: none | ledger_missing
     route_changed_by_exclusion: yes | no
     capture_created: yes | no
   proof_matrix_gate:
@@ -257,7 +266,7 @@ Hard rules:
 - If `mutate_existing_owner_as_implementation_detail: yes`, `selected_route` must be `normal-form-decision`.
 - If `expected_production_net: positive`, `positive_net_warrant` cannot be `none`.
 - If `owner_too_coarse: yes | unknown`, `decision` cannot be `continue_owner`.
-- If `negative_route_gate.query_or_map: no`, permit is invalid.
+- If `negative_route_gate.query_or_map: no`, `ledger_available: no`, or `exit_code: 3`, permit is invalid.
 - If `proof_matrix_gate.one_test_per_wound: yes` and `family_matrix_present: no`, permit is invalid.
 - If `handoff_allowed: no`, mutation is blocked.
 
@@ -367,9 +376,18 @@ negative_route_gate:
   evidence_source:
     skill_read: yes | no
     query_or_map: yes | no
+    ledger_cli: ledger
+    store: ".ledger/negative-ledger.jsonl"
+    command: "ledger map --route ... --cluster ... --artifact ..."
+    exit_code: 0 | 2 | 3
+    ledger_available: yes | no
     prior_route_search_terms: []
     current_cluster_compared_to_prior: yes | no
-  active_exclusion_match: yes | no
+  active_exclusion_match: yes | no | null
+  exclusion_id: "none | NEG-..."
+  fuzzy_candidates: 0
+  fuzzy_authority: suggest_only | none
+  failure: none | ledger_missing
   route_changed_by_exclusion: yes | no
   capture_created: yes | no
   handoff_allowed: yes | no
@@ -378,7 +396,7 @@ negative_route_gate:
 Hard rule:
 
 ```text
-If same_cluster_count >= 2 and query_or_map is no, mutation is blocked.
+If same_cluster_count >= 2 and query_or_map is no, `ledger map` is missing, `ledger_available: no`, or `exit_code: 3`, mutation is blocked.
 ```
 
 Same-cluster recurrence after a selected route creates a negative-evidence capture candidate unless proven unrelated, stale, or superseded.
@@ -485,6 +503,11 @@ review_governor_record:
     evidence_source:
       skill_read: yes | no
       query_or_map: yes | no
+      ledger_cli: ledger
+      store: ".ledger/negative-ledger.jsonl"
+      command: "ledger map --route ... --cluster ... --artifact ..."
+      exit_code: 0 | 2 | 3
+      ledger_available: yes | no
       prior_route_search_terms: []
       current_cluster_compared_to_prior: yes | no
     active_exclusion_match: yes | no

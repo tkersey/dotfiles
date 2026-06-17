@@ -8,7 +8,11 @@ When ambiguous companions are explicitly invoked, leave compact receipts.
 fixed_point_receipt:
   selected_route:
   owner:
-  prior_route_checked:
+  negative_route_gate:
+    query_or_map:
+    ledger_cli:
+    store:
+    exit_code:
   proof_required:
   handoff_result:
 ```

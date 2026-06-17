@@ -4,14 +4,18 @@ Before repeating a route in a hot cluster, check active negative evidence.
 
 ```yaml
 negative_route_gate:
-  prior_route_checked: yes | no
-  active_exclusion_match: yes | no
-  if_match:
-    neg_id:
-    selected_route:
-    exclusion_rule:
-    status: reopened | superseded | stale | blocked
+  query_or_map: yes | no
+  ledger_cli: ledger
+  store: .ledger/negative-ledger.jsonl
+  command: "ledger map --route ... --cluster ... --artifact ..."
+  exit_code: 0 | 2 | 3
+  ledger_available: yes | no
+  active_exclusion_match: yes | no | null
+  exclusion_id: "none | NEG-..."
+  fuzzy_candidates: 0
+  fuzzy_authority: suggest_only | none
+  failure: none | ledger_missing
   handoff_allowed: yes | no
 ```
 
-If active exclusion matches and is not reopened/stale/superseded, block implementation.
+If `ledger map` is missing or exits `3`, same-cluster mutation is blocked. If active exclusion matches and is not reopened/stale/superseded, block implementation. Fuzzy candidates are advisory only.

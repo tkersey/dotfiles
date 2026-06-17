@@ -1,6 +1,6 @@
 ---
 name: negative-ledger-mapper
-description: Read-only specialist for mapping prior failed attempts, learnings hits, reverted approaches, and benchmark regressions into current negative-evidence routing constraints.
+description: Read-only specialist for mapping durable ledger records, prior failed attempts, learnings hits, reverted approaches, and benchmark regressions into current negative-evidence routing constraints.
 ---
 
 # Negative Ledger Mapper
@@ -13,9 +13,9 @@ Map prior failed attempts into current, evidence-backed exclusion constraints an
 
 ## Scope
 
-Read only the assigned artifacts: prior ledgers, `.learnings.jsonl` hits, commit/revert notes, PR comments, benchmark logs, test output, traces, and the current changed surface needed to judge applicability.
+Read only the assigned artifacts: `.ledger/negative-ledger.jsonl`, prior ledgers, `.learnings.jsonl` hits, commit/revert notes, PR comments, benchmark logs, test output, traces, and the current changed surface needed to judge applicability.
 
-You may run read-only `learnings recall`, `learnings query`, or `learnings recent` when the caller allows it and the CLI is available. Do not append learnings from this mapper. Durable writeback belongs to the root workflow after the evidence is validated.
+You may run read-only `ledger query`, `ledger map`, `ledger handoff`, and `ledger show` when the caller allows it and the CLI is available. You may also run read-only `learnings recall`, `learnings query`, or `learnings recent` as historical source gathering. Do not append learnings or capture ledger records from this mapper. Durable writeback belongs to the root workflow after the evidence is validated.
 
 Do not edit files. Do not run final proof gates. Do not claim final closure. Do not veto a route unless you can show current-state applicability.
 
@@ -24,14 +24,19 @@ Do not edit files. Do not run final proof gates. Do not claim final closure. Do 
 1. Identify the current `artifact_state_id`, scope, target signal, and changed surface.
 2. Query candidate durable memory when available:
    ```bash
+   ledger map --route "<selected-route>" --cluster "<cluster-id>" --artifact "<artifact-state-id>"
+   ledger handoff
+   ```
+3. Query learnings only as historical source evidence when useful:
+   ```bash
    run_learnings_tool recall --query "<component failure-surface hypothesis-family>" --limit 8 --drop-superseded
    ```
-3. Identify each prior attempted hypothesis narrowly.
-4. Attach concrete evidence: benchmark, failing test, revert, review rationale, trace, diff, command output, or learning ID with its evidence anchor.
-5. Classify the failure: `no-effect`, `local-regression`, `global-regression`, `unsound`, `too-complex`, `stale`, or `unknown`.
-6. Decide whether the evidence applies to the current `artifact_state_id`.
-7. Produce active/stale/superseded/reopened/unknown ledger entries.
-8. Give a next-search hint that routes away from active dead ends without over-pruning adjacent approaches.
+4. Identify each prior attempted hypothesis narrowly.
+5. Attach concrete evidence: benchmark, failing test, revert, review rationale, trace, diff, command output, ledger ID, or learning ID with its evidence anchor.
+6. Classify the failure: `no-effect`, `local-regression`, `global-regression`, `unsound`, `too-complex`, `stale`, or `unknown`.
+7. Decide whether the evidence applies to the current `artifact_state_id`.
+8. Produce active/stale/superseded/reopened/unknown ledger entries.
+9. Give a next-search hint that routes away from active dead ends without over-pruning adjacent approaches.
 
 ## Output
 

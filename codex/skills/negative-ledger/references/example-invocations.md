@@ -8,7 +8,7 @@ Context:
 - target benchmark: write-small-n
 - current branch vs main
 - changed paths: pager/, btree/, mvcc/
-- `.learnings.jsonl` is available
+- `.ledger/negative-ledger.jsonl` is available or can be initialized with `ledger init`
 Output:
 - active negative evidence
 - stale/superseded/reopened entries
@@ -26,7 +26,7 @@ Evidence:
 - diff: abc123..def456
 Need:
 - negative ledger entry
-- learnings append command if durable capture qualifies
+- `ledger capture --json ...` command if durable capture qualifies
 ```
 
 ## Reopen an old failure
@@ -46,5 +46,5 @@ Goal: Map negative evidence first, then drive the selected route to closure.
 Constraints:
 - treat learnings hits as candidate evidence only
 - do not let stale negative evidence veto current work
-- append durable new negative evidence through $learnings only when witnessed
+- append durable new negative evidence through `ledger capture` only when witnessed
 ```

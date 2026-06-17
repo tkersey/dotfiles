@@ -7,6 +7,14 @@ description: "Capture, query, map, reopen, compact, and hand off evidence-backed
 
 `negative-ledger` preserves disconfirmed hypotheses so future work does not repeat dead ends.
 
+The durable source of truth is repo-local:
+
+```text
+.ledger/negative-ledger.jsonl
+```
+
+Use the `ledger` CLI for durable mutations and route gates. Do not store `$negative-ledger` state under `.step`, and do not use `.learnings.jsonl` as the primary negative-ledger store.
+
 ## Core rule for review workflows
 
 ```text
@@ -28,17 +36,33 @@ When the same cluster reappears after a selected route, that route becomes negat
 
 ```yaml
 negative_route_gate:
-  prior_route_checked: yes | no
-  active_exclusion_match: yes | no
-  if_match:
-    neg_id: "..."
-    selected_route: "..."
-    exclusion_rule: "..."
-    status: reopened | superseded | stale | blocked
+  query_or_map: yes | no
+  ledger_cli: ledger
+  store: .ledger/negative-ledger.jsonl
+  command: "ledger map --route ... --cluster ... --artifact ..."
+  exit_code: 0 | 2 | 3
+  ledger_available: yes | no
+  active_exclusion_match: yes | no | null
+  exclusion_id: "none | NEG-..."
+  fuzzy_candidates: 0
+  fuzzy_authority: suggest_only | none
+  failure: none | ledger_missing
   handoff_allowed: yes | no
 ```
 
-If active exclusion matches and is not reopened/stale/superseded, implementation is blocked.
+If the store is missing or `ledger map` was not run, same-cluster mutation is blocked. If an active exclusion matches and is not reopened/stale/superseded, implementation is blocked. Fuzzy candidates are advisory only.
+
+Operational commands:
+
+```bash
+ledger init
+ledger capture --json FILE
+ledger map --route "$ROUTE" --cluster "$CLUSTER" --artifact "$ARTIFACT"
+ledger show --id NEG-000001
+ledger reopen --id NEG-000001
+ledger handoff
+ledger doctor
+```
 
 ## Capture shape
 
@@ -71,7 +95,7 @@ Use compact topical queries:
 
 ## Durable writeback policy
 
-Do not flood `.learnings.jsonl`.
+Do not flood `.ledger/negative-ledger.jsonl`.
 
 Use durable writeback only when evidence is:
 
@@ -80,7 +104,7 @@ Use durable writeback only when evidence is:
 - counterfactually useful;
 - anchored by current proof/review/revert/benchmark evidence.
 
-One-off same-session route failures can stay in the route record.
+One-off same-session route failures can stay in the route record. `.learnings.jsonl` rows may be cited as historical evidence, but durable negative-route exclusion state belongs in `.ledger/negative-ledger.jsonl`.
 
 ## Guardrails
 
