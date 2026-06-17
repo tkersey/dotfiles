@@ -1,6 +1,6 @@
 ---
 name: cas
-description: "Run Zig CAS helpers (`cas`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, multi-instance fanout, and `$st` swarm conformance/retry-policy checks."
+description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, multi-instance fanout, and `$st` swarm conformance/retry-policy checks."
 ---
 
 # cas (Zig App-Server Control)
@@ -12,6 +12,7 @@ description: "Run Zig CAS helpers (`cas`, `cas_goal`, `cas_smoke_check`, `cas_in
 Use the native `cas` dispatcher and subcommands:
 
 - `cas conformance` for swarm conformance checks around `$st` claims and retry policy.
+- `cas account status` for read-only account/auth/rate-limit status with redacted account email by default.
 - `cas goal` for thread goal lifecycle control through app-server v2 `thread/goal/*` APIs.
 - `cas smoke_check` for protocol/API smoke checks.
 - `cas instance_runner` for method execution across one or many isolated instances.
@@ -19,6 +20,8 @@ Use the native `cas` dispatcher and subcommands:
 - `run_cas_tool request` (helper alias) for single-request flows via `instance_runner --instances 1`.
 
 Current `cas smoke_check` verifies the native client can complete the v2 handshake and reach `experimentalFeature/list`, `thread/start`, `thread/resume`, `turn/start`, `turn/interrupt`, and `turn/steer`.
+
+Current `cas account status` reads `account/read`, `account/rateLimits/read`, and optionally `account/usage/read`. It uses `getAuthStatus` only as a safe fallback with `includeToken=false` and `refreshToken=false`. Use `--show-email` only when the account email should be printed; normal output redacts it and never prints token-like fields or raw app-server error JSON.
 
 Current `cas goal` supports `resolve`, `get`, `set`, `clear`, `status`, and `wait`. Use `resolve` or `--dry-run` before mutating a `--latest` target; `set` can create a materialized goal-capable thread by default, while `get`, `clear`, `status`, and `wait` require `--thread-id` or explicit `--latest`.
 
@@ -188,7 +191,7 @@ When iterating on the Zig-backed `cas` helper CLI path, use these two repos:
 run_cas_tool() {
   local subcommand="${1:-}"
   if [ -z "$subcommand" ]; then
-    echo "usage: run_cas_tool <conformance|conformance-suite|goal|smoke-check|smoke_check|instance-runner|instance_runner|review-session|review_session|request> [args...]" >&2
+    echo "usage: run_cas_tool <account|conformance|conformance-suite|goal|smoke-check|smoke_check|instance-runner|instance_runner|review-session|review_session|request> [args...]" >&2
     return 2
   fi
   shift || true
@@ -196,6 +199,9 @@ run_cas_tool() {
   local cas_subcommand=""
   local -a pre_args=()
   case "$subcommand" in
+    account)
+      cas_subcommand="account"
+      ;;
     conformance|conformance-suite|conformance_suite)
       cas_subcommand="conformance"
       ;;
@@ -221,7 +227,23 @@ run_cas_tool() {
       ;;
   esac
 
+  helper_for_subcommand() {
+    case "$1" in
+      account) echo "cas_account" ;;
+      conformance) echo "cas_conformance_suite" ;;
+      goal) echo "cas_goal" ;;
+      smoke_check) echo "cas_smoke_check" ;;
+      instance_runner) echo "cas_instance_runner" ;;
+      review_session) echo "cas_review_session" ;;
+      *) return 1 ;;
+    esac
+  }
+
+  local required_helper
+  required_helper="$(helper_for_subcommand "$cas_subcommand")" || return 2
+
   install_cas_direct() {
+    local required_helper="$1"
     local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
     if ! command -v zig >/dev/null 2>&1; then
       echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
@@ -236,17 +258,18 @@ run_cas_tool() {
       echo "direct Zig build failed in $repo." >&2
       return 1
     fi
-    if [ ! -x "$repo/zig-out/bin/cas" ] || [ ! -x "$repo/zig-out/bin/cas_goal" ] || [ ! -x "$repo/zig-out/bin/cas_review_session" ] || [ ! -x "$repo/zig-out/bin/cas_smoke_check" ] || [ ! -x "$repo/zig-out/bin/cas_instance_runner" ] || [ ! -x "$repo/zig-out/bin/cas_conformance_suite" ]; then
-      echo "direct Zig build did not produce the full CAS binary set in $repo/zig-out/bin." >&2
+    if [ ! -x "$repo/zig-out/bin/cas" ] || [ ! -x "$repo/zig-out/bin/$required_helper" ]; then
+      echo "direct Zig build did not produce cas and $required_helper in $repo/zig-out/bin." >&2
       return 1
     fi
     mkdir -p "$HOME/.local/bin"
     install -m 0755 "$repo/zig-out/bin/cas" "$HOME/.local/bin/cas"
-    install -m 0755 "$repo/zig-out/bin/cas_goal" "$HOME/.local/bin/cas_goal"
-    install -m 0755 "$repo/zig-out/bin/cas_review_session" "$HOME/.local/bin/cas_review_session"
-    install -m 0755 "$repo/zig-out/bin/cas_smoke_check" "$HOME/.local/bin/cas_smoke_check"
-    install -m 0755 "$repo/zig-out/bin/cas_instance_runner" "$HOME/.local/bin/cas_instance_runner"
-    install -m 0755 "$repo/zig-out/bin/cas_conformance_suite" "$HOME/.local/bin/cas_conformance_suite"
+    local helper
+    for helper in cas_account cas_goal cas_review_session cas_smoke_check cas_instance_runner cas_conformance_suite; do
+      if [ -x "$repo/zig-out/bin/$helper" ]; then
+        install -m 0755 "$repo/zig-out/bin/$helper" "$HOME/.local/bin/$helper"
+      fi
+    done
   }
 
   local os="$(uname -s)"
@@ -255,8 +278,7 @@ run_cas_tool() {
       cas "$cas_subcommand" "${pre_args[@]}" "$@"
       return
     fi
-    echo "cas binary found, but subcommand help check failed for: $cas_subcommand" >&2
-    return 1
+    echo "cas binary found, but subcommand help check failed for: $cas_subcommand; attempting install/upgrade." >&2
   fi
 
   if [ "$os" = "Darwin" ]; then
@@ -268,8 +290,8 @@ run_cas_tool() {
       echo "brew install tkersey/tap/cas failed." >&2
       return 1
     fi
-  elif ! (command -v cas >/dev/null 2>&1 && cas --version >/dev/null 2>&1); then
-    if ! install_cas_direct; then
+  elif ! (command -v cas >/dev/null 2>&1 && cas --version >/dev/null 2>&1 && cas "$cas_subcommand" --help >/dev/null 2>&1); then
+    if ! install_cas_direct "$required_helper"; then
       return 1
     fi
   fi
@@ -279,13 +301,20 @@ run_cas_tool() {
       cas "$cas_subcommand" "${pre_args[@]}" "$@"
       return
     fi
+    if [ "$os" = "Darwin" ] && [ "$cas_subcommand" = "account" ]; then
+      echo "brew cas does not expose account yet; trying direct source build from SKILLS_ZIG_REPO." >&2
+      if install_cas_direct "$required_helper" && cas "$cas_subcommand" --help >/dev/null 2>&1; then
+        cas "$cas_subcommand" "${pre_args[@]}" "$@"
+        return
+      fi
+    fi
     echo "cas binary found, but subcommand help check failed for: $cas_subcommand" >&2
     return 1
   fi
 
   echo "cas binary missing or incompatible after install attempt." >&2
   if [ "$os" = "Darwin" ]; then
-    echo "expected install path: brew install tkersey/tap/cas" >&2
+    echo "expected install path: brew install tkersey/tap/cas, or SKILLS_ZIG_REPO=<skills-zig-path> for unreleased account helpers" >&2
   else
     echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
   fi
@@ -293,6 +322,7 @@ run_cas_tool() {
 }
 
 run_cas_tool smoke-check --cwd /path/to/workspace --json
+run_cas_tool account status --cwd /path/to/workspace --json
 run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 ```
 
@@ -441,10 +471,12 @@ Read `references/codex_app_server_contract.md` for API/method notes that inform 
 ## Resources
 
 - `cas` binary dispatcher:
+  - `cas account status`
   - `cas conformance`
   - `cas review_session`
   - `cas smoke_check`
   - `cas instance_runner`
+- `cas_account` binary: read-only account/auth/rate-limit status and optional usage summary.
 - `cas_conformance_suite` binary: swarm conformance around `$st` claims and retry policy.
 - `cas_review_session` binary: detached review start/status/wait/interrupt with persisted `reviewThreadId` handles.
 - `cas_smoke_check` binary: protocol/API smoke validation.
