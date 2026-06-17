@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Parse Architecture"
   short_description: "Infer dominant architecture with CLI-first evidence and mandatory thin-read follow-up"
