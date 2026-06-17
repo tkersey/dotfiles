@@ -1,6 +1,6 @@
 # Zig implicit trigger taxonomy
 
-This reference keeps the verbose Zig trigger list out of `AGENTS.md`. The `zig` skill should be used whenever the request, changed files, error output, or repo surface includes Zig-specific evidence, even when the user does not say `$zig`.
+This reference keeps the verbose Zig trigger list out of `AGENTS.md`. It strengthens, not weakens, implicit `$zig` routing: do not wait for the user to type `$zig`. Use the `zig` skill whenever the request, changed files, error output, or repo surface includes Zig-specific evidence.
 
 Trigger on:
 

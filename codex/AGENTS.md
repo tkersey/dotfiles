@@ -47,7 +47,7 @@ This file is the compact, high-authority routing index for Codex in this repo. I
 
 ## Latent intelligence and doctrine
 
-Do not use doctrine words as tone. Use `doctrine-compiler` when non-trivial work needs a frame market, dominant-move selection, doctrine cash-out, route receipt, or proof-bearing route change.
+Do not use doctrine words as tone. Use `doctrine-compiler` when non-trivial work needs a frame market, dominant-move selection, doctrine cash-out, route receipt, ablation/surface-tax judgment, review comment law, negative capability, reification, or proof-bearing route change.
 
 Activation does not mean verbosity. It means selecting the right operator and leaving the smallest useful artifact when that operator changes the route. If no artifact is needed, do the task directly.
 
@@ -74,7 +74,7 @@ Never open, update, comment on, draft-to-post, or suggest public tracker activit
 - Never use broad reset/checkout/clean commands to erase working-tree state unless the user explicitly requests that exact destructive operation.
 - Treat `.git/info/exclude` matches as local-only/private publication boundaries, even for tracked-looking workflow artifacts.
 - If a path is already tracked but also matches `.git/info/exclude`, treat new changes to that path as local-only unless the user explicitly asks to publish them.
-- Before staging local-state artifacts such as `.step/st-plan.jsonl`, `.step/*.lock`, or `.learnings.jsonl`, run `git check-ignore -v --no-index <path>` when in doubt. If the source is `.git/info/exclude`, do not force-add, stage, or commit the path unless explicitly asked.
+- Before staging local-state artifacts such as `.step/st-plan.jsonl`, `.step/*.lock`, or `.learnings.jsonl`, run `git check-ignore -v --no-index PATH` when in doubt. If the source is `.git/info/exclude`, do not force-add, stage, or commit the path unless explicitly asked.
 
 ## Local Codex execution guidance
 
@@ -116,13 +116,13 @@ Default implicit rails:
 - Non-obvious route selection, dominant-move pressure, local-patch suspicion, doctrine cash-out, route receipts, ablation/surface-tax questions, reification, negative capability, or proof-bearing refusal to mutate -> `doctrine-compiler`.
 - Unfamiliar repo or onboarding -> `codebase-archaeology`; architecture/seam fit/docs-vs-code drift -> `parse`.
 - Performance, latency, throughput, memory, p95/p99, scalability, or performance regression -> `lift`; measurement-only hotspot/flamegraph/profile attribution -> `profiling-software-performance`.
-- Zig files/build/toolchain/comptime/allocator/FFI/concurrency/performance/cache/migration evidence -> `zig`. Detailed trigger taxonomy lives under `codex/skills/zig/references/implicit_triggers.md`.
+- Zig files/build/toolchain/comptime/allocator/FFI/concurrency/performance/cache/migration evidence -> `zig`. Do not wait for `$zig`; implicit triggering is preserved. Detailed trigger taxonomy lives under `codex/skills/zig/references/implicit_triggers.md`.
 - Lean/Lake/proof repair/formalization/termination/mathlib -> `lean`.
 - Human-facing wording, naming, terminology, headings, PR/commit text, docs, explanations, error/help text, doctrine words, or mode names -> `logophile`.
 - Existing skill refinement, trigger/frontmatter tuning, skill-boundary fixes, metadata repair, or validation-backed skill iteration -> `refine`.
 - Worlds meeting, arbitrary cross-boundary composition, exact context/certified context, semantic consumption boundaries, presentation strategy, possibility sheafification, or inexact abstraction repair -> `universalist`; the former standalone Kan route is internal mechanics, not a peer skill.
 
-Side-effect boundary: rails and lenses may trigger implicitly; side-effecting workflows require clear intent. Keep `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, and `prove-it` gated. `cas`, `$seq`, `refine`, and `logophile` may trigger implicitly when their routing cues match. Public tracker side effects are separately gated by explicit user intent.
+Side-effect boundary: rails and lenses may trigger implicitly. Side-effecting workflows require clear intent. Keep `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `prove-it`, and mutating app-server/session-control operations gated. `cas`, `$seq`, `refine`, and `logophile` may trigger implicitly when their routing cues match, but they must still respect publication, mutation, and side-effect boundaries. Public tracker side effects are separately gated by explicit user intent.
 
 ## Plan Sync (`$st` <-> Codex `update_plan`)
 
@@ -138,7 +138,7 @@ Use only when `.step/st-plan.jsonl` participates because the user asked for `$st
 
 Use `$seq` for explicit `$seq` requests and implicitly for historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Do not use `$seq` for ordinary current-repo code search.
 
-- For finalized `<proposed_plan>` artifacts, start with `plan-search`.
+- For finalized `PROPOSED_PLAN` artifacts, start with `plan-search`.
 - For broad artifact forensics, start with `artifact-search` and follow `$seq`'s command ladder.
 - Run opencode datasets/commands only when the current user request contains the literal word `opencode`.
 - For knowledge extraction, use forensic/provenance-preserving doctrine and return a source-backed map, not a raw summary.
@@ -174,7 +174,7 @@ Use `$learnings` for evidence-backed recall, capture, promotion, supersession, a
 
 - Use `uv` for Python package/project operations unless the repo explicitly requires otherwise or the user asks.
 - Run scripts/tests/linters/CLIs through `uv run ...`.
-- For skill-only external dependencies, prefer `uvx <tool>` or `uv run --with <package> <command> ...`.
+- For skill-only external dependencies, prefer `uvx TOOL` or `uv run --with PACKAGE COMMAND ...`.
 - Do not create/reuse `.venv*` for skill-only tooling.
 - Prefer `#!/usr/bin/env -S uv run python` for Python automation scripts.
 

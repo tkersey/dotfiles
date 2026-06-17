@@ -1,6 +1,6 @@
 ---
 name: spec-lint
-description: "Lint generated implementation specs/proposed plans for missing non-goals, weak proof, unmapped requirements, absent rollback/abort criteria, unresolved questions, missing primary invariant/receipts, unaccounted subagents, skipped challenge/fresh-eyes pass, oversized audit prose, plan churn, or missing spec_governance_receipt. Use for `$spec-lint`, lint this spec, implementation-ready plan checks, proof/rollback/traceability checks, SLINT-v1, or is this more plan or better plan."
+description: "Lint generated implementation specs/proposed plans for missing non-goals, weak proof, unmapped requirements, absent rollback/abort criteria, unresolved material questions, missing primary invariant, missing receipts, unaccounted subagents, skipped challenge/fresh-eyes pass, oversized audit prose, plan churn, or missing spec_governance_receipt. Use for `$spec-lint`, lint this spec, implementation-ready plan checks, proof/rollback/traceability checks, SLINT-v1, or is this more plan or better plan."
 metadata:
   version: "1.3.0"
 ---

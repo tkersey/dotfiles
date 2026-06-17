@@ -1,6 +1,6 @@
 ---
 name: spec-pipeline
-description: "Turn ambiguous project, architecture, implementation, or product requests into decision-complete implementation specs with phase-impact receipts. Use for `$spec-pipeline`, write a spec, turn this plan into a spec, grill me then spec, spec automation, strict `$grill-me` to `$plan` handoff, spec receipts, readiness automation, SGR-v1, gate/challenge/fresh-eyes/lint impact, or report-driven spec-retro automation. Never emit a proposed_plan block."
+description: "Turn ambiguous project, architecture, implementation, or product requests into decision-complete implementation specs with phase-impact receipts. Use for `$spec-pipeline`, write a spec, turn this plan into a spec, grill me then spec, spec automation, strict `$grill-me` to `$plan` handoff, spec receipts, spec readiness automation, spec governance receipt / SGR-v1, gate/challenge/fresh-eyes/lint impact, or report-driven spec-retro automation. Never emit a proposed_plan block."
 metadata:
   version: "1.3.0"
   activation_cost: high

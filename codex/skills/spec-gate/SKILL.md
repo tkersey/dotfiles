@@ -1,6 +1,6 @@
 ---
 name: spec-gate
-description: "Decide whether a grill/handoff packet is complete enough for `$plan`, spec generation, or downstream mutation; emit spec_gate_receipt. Use for `$spec-gate`, ready to plan, block planning, handoff/decision packet, premature specs, no-grill justification, mutation gate, underspecified questions, proof bar, scope, non-goals, rollout/rollback, receipts, or SGATE-v1."
+description: "Decide whether a grill/handoff packet is complete enough for `$plan`, spec generation, or downstream mutation, and emit a spec_gate_receipt. Use for `$spec-gate`, is this ready to plan, block planning, handoff packet, decision packet, premature specs, no-grill justification, mutation gate, underspecified questions, proof bar, scope, non-goals, rollout/rollback, receipts, or SGATE-v1."
 metadata:
   version: "1.3.0"
 ---
