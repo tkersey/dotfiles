@@ -1,6 +1,8 @@
 fish_add_path /usr/local/sbin
 fish_add_path /opt/homebrew/bin
 fish_add_path /opt/homebrew/sbin
+# Prefer Homebrew formulae over app-bundled helper paths.
+set -gx PATH (string match --invert --regex '^/opt/homebrew/Caskroom/codex/[^/]+/codex-path$' $PATH)
 fish_add_path ~/.local/bin
 fish_add_path ~/.cargo/bin
 # Keep zigup-managed shim ahead of Homebrew so `zigup default` can update cleanly.
