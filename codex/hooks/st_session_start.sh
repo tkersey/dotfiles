@@ -49,7 +49,9 @@ context=$(cat <<EOF
 Repo contains a durable \$st plan at $plan_file.
 On SessionStart, the durable store is the source of truth.
 Do not call update_plan while Codex is in Plan Mode. After Plan Mode, import or compile the proposed plan into \$st first.
-Before substantive execution outside Plan Mode, mirror only plan_sync.codex.plan by calling update_plan exactly once with this payload emitted by st:
+Before substantive execution outside Plan Mode, mirror only the exact native projection payload emitted by st.
+If material graph work has no current GCR-v1 for the durable seq/fingerprints, run st compile aperture before execution.
+Mirror plan_sync.codex.plan by calling update_plan exactly once with this payload emitted by st:
 $update_plan_payload
 Preserve the emitted [st-id] step prefixes so any later manual \$st plan import can map rows back into the durable ledger safely.
 EOF
