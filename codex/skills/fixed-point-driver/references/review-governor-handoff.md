@@ -1,42 +1,30 @@
-# Review Governor Handoff v3
+# Cleanroom Resolve Handoff
 
-When invoked by `$resolve`, implement the selected permitted route—not the review queue.
+When invoked by `$resolve`, `$fixed-point-driver` may implement only a compiled delivery permit.
 
-Reject when:
+Reject handoff when:
 
-- RGR-v3 is required but missing;
-- RGR-V3-MUTATION-PERMIT is missing/stale;
-- finding liability does not permit mutation;
-- normal form is falsified and route is another ordinary normal form;
-- fuse is tripped without passing distillation/deletion/boundary route;
-- owner pressure exceeded but route continues the same owner;
-- production-net gate rejects change kind;
-- negative evidence excludes route or required capture is missing;
-- route did not change leverage after falsification;
-- proof matrix failed;
-- scope/budget/forbidden actions are missing.
+- delivery is frozen and no DPR-v1 recipe exists;
+- no RGR-V4-COMPILED-DELIVERY-PERMIT exists;
+- counterexample contract is missing;
+- non-branch-liable findings are included in recipe;
+- falsified route family remains selected;
+- ablation certificate is missing when closure is requested;
+- actual implementation would require lab-only artifacts;
+- new surface exceeds recipe;
+- proof matrix is missing.
 
-A permit is cumulative. Commits do not reset its counters.
-
-Stop and return to `$resolve` when:
-
-- budget is exhausted;
-- actual change kind differs from permitted change kind;
-- a new same-family finding appears;
-- implementation needs a new owner/file/helper/branch not permitted;
-- deletion offset cannot be delivered.
+Implement the recipe, not review comments.
 
 Emit:
 
 ```yaml
 fixed_point_receipt:
-  permit_id:
-  selected_route:
-  normal_form_id:
-  fuse_state:
-  actual_change_kind:
-  actual_production_net:
-  budget_exhausted: yes | no
-  family_recurred: yes | no
-  handoff_result: completed | return_to_governor | blocked
+  compiled_permit_id:
+  recipe_id:
+  implemented_from_frozen_base: yes | no
+  lab_commits_cherry_picked: yes | no
+  actual_surface_delta:
+  recipe_deviation: yes | no
+  handoff_result: completed | return_to_compiler | blocked
 ```

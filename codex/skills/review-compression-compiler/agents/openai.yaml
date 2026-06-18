@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Compression Compiler"
-  short_description: "Compile review families and falsify failed normal forms"
-  default_prompt: "Use $review-compression-compiler read-only to classify liability, counterexample families, normal-form status, owner pressure, fuse state, and distillation need."
+  short_description: "Compile review findings into counterexample contracts"
+  default_prompt: "Use $review-compression-compiler read-only to transform review findings into branch-liable counterexample families, proof obligations, falsified routes, and delivery recipe inputs."

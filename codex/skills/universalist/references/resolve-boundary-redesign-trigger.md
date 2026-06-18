@@ -1,11 +1,13 @@
-# Resolve Boundary-Redesign Trigger
+# Boundary Redesign Trigger
 
-Boundary redesign becomes required or blocking when:
+Use `$universalist` when the delivery recipe cannot satisfy the counterexample contract without a boundary or representation change.
 
-- a normal form is falsified;
-- owner pressure exceeds budget;
-- the same owner absorbs repeated semantic branches;
-- the invalid state can only be rejected, not made unrepresentable;
-- duplicate predicates express one implicit algebra/protocol.
+Trigger signs:
 
-Consume RDR-v1 and return a boundary/representation decision, not another local guard.
+- same route family repeatedly falsified in lab;
+- selected boundary keeps needing predicates;
+- invalid state is only rejectable, not unrepresentable;
+- one owner absorbs unrelated counterexample families;
+- proof obligations reveal an implicit algebra/protocol.
+
+Return a boundary decision suitable for DPR-v1.

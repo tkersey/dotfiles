@@ -1,18 +1,17 @@
-# Review Governor Closure v3
+# Cleanroom Resolve Closure
 
-Require:
+Closure requires:
 
-- frozen/current review charter;
-- all branch-liable findings discharged;
-- all normal forms closed/falsified/superseded;
-- no repeated ordinary normal form after falsification;
-- no mutation after fuse trip without passing distillation/deletion/boundary permit;
-- production net after fuse trip is zero or separately warranted by representation/distillation proof;
-- 2 charter-clean current-head reviews;
-- 1 final broad holdout closure-clean review;
-- full validation;
-- current push;
-- complete PR sweep;
-- RLR-v4 report.
+- delivery freeze emitted or Fast Path valid;
+- CEC-v1 present when findings existed;
+- DPR-v1 present for delivery mutation after findings;
+- delivery rederived from frozen base;
+- ABL-CERT-v1 present;
+- targeted charter review clean;
+- final broad holdout closure-clean;
+- full validation current to delivery head;
+- pushed branch;
+- PR sweep complete;
+- RCR-v1 report.
 
-Adjacent preexisting findings may be captured as follow-ups without blocking when liability is explicit.
+Do not require every valid adjacent finding to be fixed. Require liability disposition.

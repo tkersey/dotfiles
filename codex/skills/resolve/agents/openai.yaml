@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "Falsifiable Review Governor"
-  default_prompt: "Use $resolve with branch-liability adjudication, one-shot normal forms, cumulative owner pressure, a hard fuse, durable negative ratcheting, and mandatory distillation after falsification."
+  short_description: "Cleanroom Review Compiler"
+  default_prompt: "Use $resolve as a cleanroom Review Compiler: freeze delivery after finding-bearing review, learn in lab, compile counterexample contract and delivery recipe, ablate, then rederive the minimal delivery patch."

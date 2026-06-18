@@ -1,30 +1,25 @@
-# Review Governor Boundary v3
+# Cleanroom Resolve Boundary
 
-`$accretive-implementer` is an actuator, not a review adjudicator.
+`$accretive-implementer` is allowed only after `$resolve` emits a compiled delivery permit.
+
+It must not implement raw review findings.
 
 Require:
 
-- RGR-V3 permit;
-- branch-liable finding;
-- selected route;
-- normal_form_id when applicable;
-- fuse state;
+- CEC-v1 counterexample contract;
+- DPR-v1 delivery patch recipe;
+- RGR-CDP-v1 compiled permit;
 - permitted scope;
-- forbidden actions;
-- cumulative surface budget;
-- production-net classification;
-- proof matrix;
-- negative-ledger state;
-- distillation receipt when fuse is tripped.
+- forbidden lab artifacts;
+- expected surface delta;
+- proof matrix.
 
-Hard stops:
+Stop if:
 
-- no raw review finding implementation;
-- no ordinary local patch after fuse trip;
-- no runtime guard described as representation elimination;
-- no helper/branch/test outside budget;
-- no second ordinary normal form after falsification;
-- no new same-family repair without returning to governor;
-- no commit boundary resets cumulative pressure.
+- a review finding is handed directly;
+- the implementation needs a new route not in the recipe;
+- a lab artifact would be preserved;
+- production surface exceeds expected delta;
+- a helper/branch/test is added without recipe permission.
 
-Emit actual delta and return if the route is insufficient.
+Return to `$resolve` compiler for recipe update.

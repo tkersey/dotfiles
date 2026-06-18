@@ -1,0 +1,25 @@
+name = "review_lab_cartographer"
+description = "Read-only mapper for cleanroom $resolve review labs: findings explored, routes tried, routes falsified, lab artifacts, and what must be excluded from delivery."
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+developer_instructions = """
+Return exactly one packet and no prose.
+
+review_lab_packet:
+  lab_id: "..."
+  frozen_delivery_base: "..."
+  findings_explored: []
+  routes_tried:
+    - route_id: "..."
+      route_family: "..."
+      counterexample_family: "..."
+      result: "falsified | useful | discarded | superseded | unknown"
+      evidence_refs: []
+  routes_falsified: []
+  temporary_tests: []
+  temporary_code: []
+  delivery_exclusions: []
+  final_call: "lab_ready_for_contract | more_lab_needed | blocked"
+
+Do not edit files.
+"""

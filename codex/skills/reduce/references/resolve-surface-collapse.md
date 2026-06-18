@@ -1,12 +1,12 @@
-# Resolve Surface Collapse
+# Cleanroom Surface Collapse
 
-After the fuse trips, `$reduce` should search for:
+During delivery recipe and ablation:
 
-- duplicate validation predicates;
-- shadow truth owners;
-- obsolete compatibility paths;
-- wound-specific helpers;
-- tests that can be matrix-compacted;
-- branches subsumed by a canonical representation.
+- search for surfaces to retire;
+- compact wound-specific tests;
+- delete temporary lab artifacts;
+- collapse duplicate predicates;
+- privatize or decommission stale routes;
+- prefer representation/boundary repair over predicate accretion.
 
-The selected route must name surfaces retired or explain why boundary redesign is required.
+The ablation certificate should record every tried deletion/collapse and why any survivor remains.

@@ -1,8 +1,8 @@
 ---
 name: review-compression-compiler
-description: "Read-only compiler for repeated review findings. Use when `$resolve` needs comments compressed into clusters and counterexample families, branch liability separated from validity, one-shot normal forms tracked/falsified, cumulative owner pressure measured, lower-surface routes compared, a governor fuse decision made, or Review Distillation input prepared. Do not edit code."
+description: "Read-only compiler front-end for `$resolve`. Convert raw review/CAS/PR/validation findings into branch-liable counterexample families, proof obligations, falsified routes, lower-surface candidates, and delivery patch recipe inputs. Use for hot review clusters, same-family recurrence, cleanroom review labs, counterexample_contract / CEC-v1, delivery_patch_recipe / DPR-v1, or review-lab route falsification. Do not edit code."
 metadata:
-  version: "2.0.0"
+  version: "3.0.0"
   activation_cost: medium
   default_depth: strict
 ---
@@ -11,79 +11,73 @@ metadata:
 
 ## Mission
 
-Compile repeated review findings into a route decision that reduces the system's ability to generate the family again.
+Compile review information into the counterexample contract.
 
 ```text
-Review findings are counterexamples.
-A normal form is a closure prediction.
-A repeated family falsifies that prediction.
+Review findings are not tasks.
+They are possible counterexamples.
 ```
 
-Do not edit files.
+This skill is the front-end for the cleanroom `$resolve` compiler.
 
-## Required triggers
+It does not edit files.
 
-Use:
+## Use when
 
-- required at second same-cluster finding;
-- blocking at third same-cluster finding;
-- required immediately after same-family recurrence following a normal form;
-- required when cumulative owner pressure crosses a budget;
-- required before review distillation.
+- a review wave has any findings;
+- a same-cluster or same-family pattern appears;
+- PR sweep reopens a supposedly clean branch;
+- CAS finds adjacent issues after local proof;
+- `$resolve` needs CEC-v1, RLL-v1, DPR-v1, or lab route classification;
+- review feedback risks becoming serial delivery patches.
 
 ## Output
 
-Contribute directly to RGR-v3:
-
 ```yaml
-review_cluster_compilation:
-  compilation_version: RCC-v2
-  cluster_id:
-  findings: []
+review_compilation:
+  compilation_version: RCC-v3
+  frozen_delivery_base:
+  raw_findings:
+    - finding_id:
+      source:
+      observed_fact:
+      review_claim:
+      proposed_change:
+  branch_liability:
+    include_in_contract: []
+    exclude_from_contract: []
+    unknown_or_blocked: []
   counterexample_families:
     - family_id:
       findings: []
-      branch_liability:
+      required_behavior:
+      proof_obligations: []
       canonical_owner_candidate:
-  normal_forms_tried:
-    - normal_form_id:
-      family_id:
-      closure_prediction:
-      status: active | falsified | superseded | closed
-  falsified_route_families: []
-  owner_pressure:
-  lower_surface_candidates:
-    - route:
-      surfaces_retired: []
-      leverage_level:
-      proof_needed:
-      status: selected | defeated | blocked
-      reason:
-  surfaces_to_retire: []
-  proof_matrix:
-  fuse_recommendation:
-    state: open | tripped
-    reasons: []
-  distillation_required: yes | no
+      failure_surface:
+  route_learning:
+    routes_tried_in_lab: []
+    routes_falsified: []
+    negative_ledger_captures_required: []
+  delivery_recipe_inputs:
+    selected_boundary_candidates: []
+    surfaces_to_retire: []
+    permitted_new_surface_candidates: []
+    forbidden_lab_artifacts: []
+    proof_matrix: []
   final_call:
-    validate_only |
-    capture_followup |
-    delete-collapse-canonicalize |
-    normal-form-decision |
-    review-distillation-mode |
-    boundary-redesign |
+    ready_for_contract |
+    needs_lab |
+    needs_user_decision |
+    capture_followup_only |
     blocked
 ```
 
 ## Hard rules
 
-- Valid finding does not imply branch liability.
-- Same cluster does not necessarily mean same family.
-- One ordinary normal form per family.
-- Same-family recurrence falsifies the normal form.
-- A falsified normal form cannot be repaired by another ordinary normal form.
-- Runtime predicate accretion is not representation elimination.
-- When the fuse trips, `normal-form-decision` is no longer a valid final call.
-- Do not call the same coarse owner viable without cumulative pressure evidence.
 - Do not output patch hunks.
-- Do not hand off raw findings.
+- Do not authorize delivery mutation.
+- Do not include non-branch-liable findings in contract inputs.
+- Do not treat same cluster as same family without evidence.
+- Do not call a route normal form unless it has a closure prediction.
+- Do not let a falsified route family remain eligible for the delivery recipe.
+- Do not say "no active exclusion" without route-learning evidence or capture decision.

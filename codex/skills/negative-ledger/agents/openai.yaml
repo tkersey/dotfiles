@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Negative Ledger"
-  short_description: "Durable falsified-route memory"
-  default_prompt: "Use $negative-ledger to query/capture falsified normal forms and require a leverage-level route change."
+  short_description: "Review lab route-falsification memory"
+  default_prompt: "Use $negative-ledger to capture falsified lab routes and exclude failed route families from delivery recipes."

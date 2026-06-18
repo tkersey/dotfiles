@@ -1,6 +1,14 @@
-# Finding Liability
+# Finding Liability for Cleanroom Resolve
 
-Concern validity and branch liability are separate.
+Review adjudication must separate:
+
+```text
+claim validity
+branch liability
+delivery recipe eligibility
+```
+
+Use:
 
 ```yaml
 finding_liability:
@@ -13,10 +21,14 @@ finding_liability:
     unknown
   mutation_allowed:
   disposition:
-  evidence_refs:
-  reason:
+    include_in_contract |
+    validate_only |
+    capture_followup |
+    resolve_thread_only |
+    reject |
+    blocked
 ```
 
-A valid adjacent preexisting defect should normally become a follow-up, not branch growth.
+Only `include_in_contract` may feed CEC-v1.
 
-`address` is invalid without a mutation-capable liability.
+A valid adjacent preexisting defect is a follow-up, not automatic delivery scope.
