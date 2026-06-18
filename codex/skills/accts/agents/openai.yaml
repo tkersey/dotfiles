@@ -1,0 +1,4 @@
+interface:
+  display_name: "Accts"
+  short_description: "Manage Codex account switching safely"
+  default_prompt: "Use $accts to manage Codex account switching, queued activation, and weekly reset rotation safely."

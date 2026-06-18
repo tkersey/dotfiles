@@ -1,0 +1,51 @@
+accts proof receipt
+timestamp_utc: 2026-06-18T00:30:01Z
+cwd: /Users/tk/.dotfiles
+branch: feature/accts-codex-account-manager
+
+commands:
+- python3 codex/skills/accts/scripts/accts.py --help
+  result: pass
+  evidence: help rendered 25 lines
+
+- python3 -m unittest discover -s codex/skills/accts/tests -p 'test_*.py'
+  result: pass
+  evidence: 7 tests passed
+
+- CODEX_HOME="$(mktemp -d)" ACCTS_HOME="$(mktemp -d)" python3 codex/skills/accts/scripts/accts.py init --dry-run
+  result: pass
+  evidence: dry run printed metadata-only accts.toml template and wrote nothing
+
+- uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/accts
+  result: pass
+  evidence: Skill is valid!
+
+- /Users/tk/workspace/tk/skills-zig/zig-out/bin/cas_account status --cwd /Users/tk/.dotfiles --json --usage --hooks off
+  result: pass
+  evidence: {"emailRedacted": true, "failureCode": null, "ok": true, "secondaryResetsAt": 1782337865, "transport": "websocket", "windowKind": "secondary"}
+
+- codex debug prompt-input
+  result: pass
+  evidence: JSON prompt input parsed as a list with 3 top-level items
+
+- git diff --check
+  result: pass
+  evidence: no whitespace errors
+
+- st doctor --file .step/st-plan.jsonl
+  result: pass
+  evidence: seq contract ok
+
+- st assert-projection --file .step/st-plan.jsonl
+  result: pass
+  evidence: projection ok
+
+fixed_point_review:
+- no duplicate truth owner found for account metadata, vault auth material, pending switch state, reset-cycle state, or turn-use ledger
+- OAuth-bearing auth material remains confined to auth.json vault copies; TOML and state store only metadata/hashes/timestamps
+- hook install/uninstall uses tagged entries and preserves unrelated hooks.json entries
+- CAS status is used as reset timing observation only; Stop hook ledger rows are the actual-use proof
+- scaffold artifacts were retired; no README/INSTALL/CHANGELOG-style extra docs were added
+
+st_notes:
+- st-993 has two required proof obligations but this st binary stores one proof slot per item; completion used an explicit waiver while this log records both the unit-test proof and CAS smoke proof.
