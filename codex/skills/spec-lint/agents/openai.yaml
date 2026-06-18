@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: true
-interface:
-  display_name: "Spec Lint"
-  short_description: "Implementation-readiness lint with receipt"
-  default_prompt: "Use $spec-lint to lint implementation readiness and emit spec_lint_receipt."

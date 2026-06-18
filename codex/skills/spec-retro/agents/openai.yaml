@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Spec Retro"
-  short_description: "Report-to-automation bridge for spec workflows"
-  default_prompt: "Use $spec-retro to convert spec workflow reports into compact gate/lint/challenge/receipt updates."
+  short_description: "Historical learning for the spec system"
+  default_prompt: "Use $spec-retro to convert multi-run spec evidence into measurable updates to $spec-pipeline."

@@ -1,141 +1,184 @@
 ---
 name: spec-retro
-description: "Mine historical Codex sessions, specs, plans, reports, and workflows to improve future spec automation. Use for `$spec-retro`, learn from past planning, mine plan churn, update exemplar library, derive automation from past practice, spec telemetry, receipt metrics, invisible companion phases, report-to-automation bridge, or which historical sessions should tune this spec workflow."
+description: "Historical learning skill for the specification system. Mine multiple prior specs, SGR-v2 receipts, plans, sessions, reports, and churn evidence into concrete updates to `$spec-pipeline` contracts, tools, subagent policy, exemplars, and measurement. Use for `$spec-retro`, improve my spec process from history, analyze spec usage reports, mine plan churn, missing phase impact, repeated gate/challenge/lint failures, or report-to-automation work. Do not use for producing or linting one current spec."
 metadata:
-  version: "1.3.0"
+  version: "2.0.0"
+  activation_cost: medium
+  default_depth: balanced
 ---
 
 # Spec Retro
 
 ## Mission
 
-Drive future automation from observed practice instead of generic process advice.
+`$spec-retro` improves the specification system from observed practice.
 
-The highest-value retrospective output is not more process language. It is a small set of gate rules, lint rules, receipt fields, churn triggers, and exemplar patterns that can be encoded into skills/scripts.
+It is separate from `$spec-pipeline` because it operates across:
+
+- multiple prior sessions;
+- multiple prior specs;
+- plans and execution outcomes;
+- governance receipts;
+- reports and telemetry;
+- exemplar libraries;
+- repeated failure patterns.
+
+Its output is not a current implementation spec.
+
+Its highest-value output is a small set of:
+
+- pipeline gate-rule updates;
+- challenge-rule updates;
+- fresh-eyes updates;
+- lint-rule updates;
+- mode-routing updates;
+- governance-receipt updates;
+- tool updates;
+- subagent-policy updates;
+- exemplar updates;
+- measurement updates.
+
+Do not produce more process prose without an actionable rule or measurement.
 
 ## Trigger policy
 
-Do not run `$spec-retro` after every spec.
+Use when any are true:
 
-Trigger when one of these is true:
+- 5 or more full `$spec-pipeline` runs since the last retro;
+- 2 or more repeated gate/challenge/fresh-eyes/lint failures;
+- a report shows phase impact is invisible;
+- execution started before readiness;
+- plan or objective churn recurs;
+- no-grill justifications are repeatedly generic;
+- subagent fanout repeatedly has no impact;
+- strictness profiles are repeatedly mismatched;
+- current reports cannot distinguish pass-no-delta from route-changing phases.
 
-- 5 or more `$spec-pipeline` sessions since last retro;
-- 2 or more repeated gate/lint/challenge gaps;
-- a report shows companion phases are invisible;
-- execution started before gate/challenge/lint/governance readiness;
-- `$plan` or `update_plan` churn recurs;
-- repeated no-grill justifications are generic;
-- subagent fanout repeatedly produces no route impact;
-- pipeline reports cannot distinguish companion mentions from phase impact.
+Do not run after every spec.
 
 ## Inputs
 
 Use any available:
 
-- session JSONL;
-- spec outputs;
+- `spec_governance_receipt` / SGR-v2 records;
+- full spec outputs;
 - plan artifacts;
 - `$grill-me` snapshots;
-- `$plan` outputs;
-- `$spec-pipeline` outputs;
-- spec governance receipts;
-- reports about prior usage;
+- execution outcomes;
+- `$spec-pipeline` reports;
+- session history;
+- `seq` results;
 - `.learnings.jsonl`;
-- `seq` query results.
+- user-supplied retrospective reports.
 
-## Mine for these signals
+## Evidence discipline
 
-- clean pipeline examples;
-- missing `spec_governance_receipt`;
-- gate/challenge/lint/fresh-eyes phases that changed the spec;
-- gate/challenge/lint/fresh-eyes phases that were pass-no-delta;
-- plan-churn loops;
-- post-plan invariant challenges that improved architecture;
-- oversized specs with duplicate audit prose;
-- handoff packets with enough locked decisions;
-- lints that would have blocked bad plans;
-- size profile boundaries;
-- question types that actually unlocked planning;
-- no-grill paths that were justified vs. premature;
-- subagent fanout that produced value vs. noise;
-- blocked states that have or lack taxonomy;
-- mutation before gate/challenge/lint/governance readiness.
-
-## Exemplar library shape
+Separate:
 
 ```yaml
-spec_exemplars:
-  - id:
-    label: ordinary_clean_spec | ambition_escalation | invariant_challenge | plan_churn_warning | mode_boundary | no_grill_fast_path | subagent_fanout_warning | governance_receipt_good | governance_receipt_missing
-    source:
-    trigger:
-    good_pattern:
-    failure_pattern:
-    reusable_gate:
-    suggested_skill_update:
+retro_evidence:
+  observed_pattern:
+  supporting_sources: []
+  counterevidence: []
+  confidence:
+  proposed_automation:
+  expected_metric_change:
 ```
 
-## Retro update output
+Do not infer a system-wide rule from one ambiguous session.
 
-Emit a compact update, not a long essay:
+## Churn detection
+
+When given multiple plan/spec files, run:
+
+```bash
+python codex/skills/spec-retro/scripts/spec_churn_detect.py <files...>
+```
+
+The helper is heuristic. The model still judges whether churn is material.
+
+## Output
+
+Emit one compact object:
 
 ```yaml
 spec_retro_update:
-  update_version: SRETRO-v1
+  update_version: SRETRO-v2
   report_window: "..."
   trigger:
     reason: "..."
     evidence_refs: []
-  observed_pattern: "..."
-  automation_rules: []
-  gate_updates: []
-  lint_updates: []
-  challenge_updates: []
-  receipt_updates: []
-  subagent_budget_updates: []
-  question_generator_updates: []
+  observed_patterns:
+    - pattern: "..."
+      confidence: high | medium | low
+      counterevidence: []
+  pipeline_updates:
+    mode_routing: []
+    gate_contract: []
+    challenge_contract: []
+    fresh_eyes_contract: []
+    lint_contract: []
+    governance_receipt: []
+    output_templates: []
+  tool_updates:
+    spec_gate: []
+    spec_lint: []
+    sgr_gate: []
+    churn_detector: []
+  subagent_policy_updates: []
   exemplar_updates: []
-  next_measurement_plan:
-    metric: "..."
-    expected_change: "..."
+  measurement_updates:
+    - metric: "..."
+      baseline: "..."
+      expected_change: "..."
+      next_report_query: "..."
+  recommendations:
+    keep: []
+    revise: []
+    retire: []
   apply_now: yes | no
-  suggested_owner: spec-pipeline | spec-gate | spec-challenge | spec-lint | spec-retro | seq | tune | none
+  next_owner: spec-pipeline | spec-retro | tune | seq | user | none
 ```
 
-If no actionable automation rule exists, say so and retire the retro finding.
+## Decision standard
 
-## Churn detector
+A proposed change is useful only if it can later be graded.
 
-If given plan files or session excerpts, use:
-
-```bash
-python codex/skills/spec-retro/scripts/spec_churn_detect.py plan-*.md
-```
-
-The script looks for title drift, repeated replacement language, high iteration markers, many open questions, objective-changing Round Delta text, repeated blocked states, high subagent counts, and campaign-mode triggers.
-
-## Standard output
+Every recommendation must specify:
 
 ```text
-SPEC RETRO
-positive_exemplars:
-warning_exemplars:
-automation_rules:
-gate_updates:
-lint_updates:
-challenge_updates:
-receipt_updates:
-subagent_budget_updates:
-question_generator_updates:
-next_measurement_plan:
+hypothesis
+expected behavioral change
+metric
+next report query
+keep/revise/retire condition
 ```
 
-Also emit `spec_retro_update`.
+## Subagent use
+
+Preferred historical worker:
+
+```text
+spec_retro_miner
+```
+
+Use it only when evidence spans enough artifacts to benefit from a separate historical pass.
+
+The root owns synthesis and recommendation.
 
 ## Guardrails
 
-- Do not mutate skill files unless the user explicitly asks for edits.
-- Do not create process language with no automation rule.
-- Do not count companion mentions as phase impact.
-- Do not recommend standalone companion invocations merely to improve usage counts.
+- Do not create a current implementation spec.
+- Do not lint or challenge one current spec as the primary task.
+- Do not mutate skill files unless explicitly asked.
+- Do not chase old standalone companion-skill activation counts.
+- Do not turn phase pass-no-delta into success theatre.
+- Do not propose a process rule with no future measurement.
 - Do not run as per-spec ceremony.
+
+## Resources
+
+- [trigger-policy.md](references/trigger-policy.md)
+- [retro-update-schema.md](references/retro-update-schema.md)
+- [measurement-contract.md](references/measurement-contract.md)
+- [exemplar-contract.md](references/exemplar-contract.md)

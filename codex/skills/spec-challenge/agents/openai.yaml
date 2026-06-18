@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: true
-interface:
-  display_name: "Spec Challenge"
-  short_description: "One strongest invariant challenge"
-  default_prompt: "Use $spec-challenge to run one strongest invariant challenge and emit spec_challenge_receipt."

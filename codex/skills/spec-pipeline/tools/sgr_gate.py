@@ -1,63 +1,105 @@
 #!/usr/bin/env python3
-"""Lightweight gate for spec_governance_receipt artifacts.
-
-Avoids PyYAML; checks required textual keys.
-"""
+"""Lightweight consistency gate for SGR-v2."""
 
 from __future__ import annotations
 
+import argparse
+import json
 import re
 import sys
 from pathlib import Path
 
-REQUIRED = [
-    r"spec_governance_receipt\s*:",
-    r"receipt_version\s*:\s*SGR-v1",
-    r"phase_presence\s*:",
-    r"evidence_brief\s*:\s*(yes|no)",
-    r"decision_packet\s*:\s*(yes|no)",
-    r"gate_result\s*:\s*(yes|no)",
-    r"invariant_challenge\s*:\s*(yes|no)",
-    r"fresh_eyes\s*:\s*(yes|no)",
-    r"spec_lint\s*:\s*(yes|no)",
-    r"execution_handoff\s*:\s*(yes|no)",
-    r"gate\s*:",
-    r"challenge\s*:",
-    r"fresh_eyes\s*:",
-    r"lint\s*:",
-    r"execution_control\s*:",
-]
 
-def main(argv: list[str]) -> int:
-    if len(argv) != 2:
-        print("usage: sgr_gate.py <spec-file-or-receipt>", file=sys.stderr)
-        return 2
+def read_text(path: str) -> str:
+    return sys.stdin.read() if path == "-" else Path(path).read_text(encoding="utf-8")
 
-    text = Path(argv[1]).read_text(encoding="utf-8")
-    missing = [pat for pat in REQUIRED if not re.search(pat, text)]
-    if missing:
-        print("SGR gate: FAIL")
-        for pat in missing:
-            print(f"missing pattern: {pat}")
-        return 1
 
-    if re.search(r"handoff_allowed\s*:\s*yes", text):
-        for pat in [
-            r"evidence_brief\s*:\s*yes",
-            r"decision_packet\s*:\s*yes",
-            r"gate_result\s*:\s*yes",
-            r"invariant_challenge\s*:\s*yes",
-            r"fresh_eyes\s*:\s*yes",
-            r"spec_lint\s*:\s*yes",
-            r"execution_handoff\s*:\s*yes",
-        ]:
-            if not re.search(pat, text):
-                print("SGR gate: FAIL")
-                print(f"handoff allowed but missing required phase: {pat}")
-                return 1
+def scalar(text: str, field: str) -> str | None:
+    match = re.search(rf"(?im)^\s*{re.escape(field)}\s*:\s*(.*)$", text)
+    return match.group(1).strip() if match else None
 
-    print("SGR gate: PASS")
-    return 0
+
+def has(text: str, pattern: str) -> bool:
+    return re.search(pattern, text, re.M) is not None
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("file")
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args()
+
+    text = read_text(args.file)
+    blocking: list[str] = []
+
+    if not has(text, r"^\s*spec_governance_receipt\s*:"):
+        blocking.append("spec_governance_receipt_missing")
+    if not has(text, r"^\s*receipt_version\s*:\s*SGR-v2\s*$"):
+        blocking.append("sgr_v2_missing")
+    if not has(text, r"^\s*mode\s*:\s*(full|gate-only|challenge-only|lint-only|repair)\s*$"):
+        blocking.append("mode_missing_or_invalid")
+    if not has(text, r"^\s*profile\s*:\s*(fast|balanced|strict|campaign)\s*$"):
+        blocking.append("profile_missing_or_invalid")
+    if not has(text, r"^\s*status\s*:\s*(complete|blocked|drift|audit-only|partial)\s*$"):
+        blocking.append("status_missing_or_invalid")
+
+    mode = scalar(text, "mode") or ""
+    status = scalar(text, "status") or ""
+    mutation_allowed = scalar(text, "mutation_allowed") or "no"
+    execution_handoff = scalar(text, "execution_handoff") or "no"
+
+    required_patterns: list[tuple[str, str]] = []
+    if mode == "full" and status == "complete":
+        required_patterns = [
+            ("evidence_brief", r"^\s*evidence_brief\s*:\s*yes\s*$"),
+            ("decision_packet", r"^\s*decision_packet\s*:\s*yes\s*$"),
+            ("gate", r"^\s*gate\s*:\s*yes\s*$"),
+            ("implementation_spec", r"^\s*implementation_spec\s*:\s*yes\s*$"),
+            ("challenge", r"^\s*challenge\s*:\s*yes\s*$"),
+            ("fresh_eyes", r"^\s*fresh_eyes\s*:\s*yes\s*$"),
+            ("lint", r"^\s*lint\s*:\s*yes\s*$"),
+            ("execution_handoff", r"^\s*execution_handoff\s*:\s*yes\s*$"),
+            ("plan_allowed", r"^\s*plan_allowed\s*:\s*yes\s*$"),
+            ("mutation_allowed", r"^\s*mutation_allowed\s*:\s*yes\s*$"),
+            ("lint_verdict", r"^\s*verdict\s*:\s*pass\s*$"),
+            ("open_subagents", r"^\s*open_at_end\s*:\s*0\s*$"),
+        ]
+    elif mode == "gate-only":
+        required_patterns = [("gate", r"^\s*gate\s*:\s*yes\s*$")]
+    elif mode == "challenge-only":
+        required_patterns = [("challenge", r"^\s*challenge\s*:\s*yes\s*$")]
+    elif mode == "lint-only":
+        required_patterns = [("lint", r"^\s*lint\s*:\s*yes\s*$")]
+    elif mode == "repair" and execution_handoff == "yes":
+        required_patterns = [
+            ("gate", r"^\s*gate\s*:\s*yes\s*$"),
+            ("challenge", r"^\s*challenge\s*:\s*yes\s*$"),
+            ("fresh_eyes", r"^\s*fresh_eyes\s*:\s*yes\s*$"),
+            ("lint", r"^\s*lint\s*:\s*yes\s*$"),
+        ]
+
+    for name, pattern in required_patterns:
+        if not has(text, pattern):
+            blocking.append(f"required_phase_missing:{name}")
+
+    if mode in {"gate-only", "challenge-only", "lint-only"} and mutation_allowed == "yes":
+        blocking.append("audit_mode_cannot_authorize_mutation")
+    if mutation_allowed == "yes" and execution_handoff != "yes":
+        blocking.append("mutation_allowed_without_execution_handoff")
+
+    passed = not blocking
+    result = {
+        "sgr_gate": {
+            "receipt_version": "SGR-v2",
+            "passed": passed,
+            "mode": mode,
+            "status": status,
+            "blocking_errors": blocking,
+        }
+    }
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if passed else 2
+
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv))
+    raise SystemExit(main())

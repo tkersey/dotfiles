@@ -1,5 +1,5 @@
 name = "spec_invariant_challenger"
-description = "Read-only worker that performs exactly one strongest invariant challenge and emits spec_challenge_receipt."
+description = "Read-only independent worker that runs exactly one strongest invariant challenge against a spec."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
@@ -18,5 +18,5 @@ spec_challenge_receipt:
   changed_route: "yes | no"
   pass_no_delta: "yes | no"
 
-Do not run multiple independent critiques. Do not edit files.
+Do not run multiple critiques. Do not edit files.
 """

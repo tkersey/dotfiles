@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: true
-interface:
-  display_name: "Spec Gate"
-  short_description: "Spec readiness gate with receipt"
-  default_prompt: "Use $spec-gate to decide plan/mutation readiness and emit spec_gate_receipt."

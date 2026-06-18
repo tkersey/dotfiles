@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Spec Pipeline"
-  short_description: "Decision-complete specs with governance receipts"
-  default_prompt: "Use $spec-pipeline to produce a decision-complete implementation spec with phase-impact receipts and spec_governance_receipt before any plan or mutation handoff."
+  short_description: "Canonical current-spec engine"
+  default_prompt: "Use $spec-pipeline. Select full, gate-only, challenge-only, lint-only, or repair mode; emit one SGR-v2 governance receipt; never emit proposed_plan."

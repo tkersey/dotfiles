@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Heuristic plan/spec churn detector for spec automation retrospectives."""
+"""Heuristic plan/spec churn detector for `$spec-retro`."""
+
 from __future__ import annotations
 
 import argparse
@@ -10,89 +11,83 @@ from pathlib import Path
 
 
 def read(path: str) -> str:
-    if path == "-":
-        return sys.stdin.read()
-    return Path(path).read_text(encoding="utf-8")
+    return sys.stdin.read() if path == "-" else Path(path).read_text(encoding="utf-8")
 
 
 def title(text: str) -> str | None:
-    m = re.search(r"(?m)^\s*#\s+(.+?)\s*$", text)
-    return m.group(1).strip() if m else None
+    match = re.search(r"(?m)^\s*#\s+(.+?)\s*$", text)
+    return match.group(1).strip() if match else None
 
 
-def iteration_max(text: str) -> int | None:
-    nums = [int(n) for n in re.findall(r"(?i)iteration\s*[:=]\s*(\d+)", text)]
-    return max(nums) if nums else None
+def iteration_max(text: str) -> int:
+    values = [int(value) for value in re.findall(r"(?i)iteration\s*[:=]\s*(\d+)", text)]
+    return max(values) if values else 0
 
 
-def count_any(patterns: list[str], text: str) -> int:
-    return sum(len(re.findall(p, text, re.I | re.S)) for p in patterns)
-
-
-def score(texts: list[tuple[str, str]], signal_threshold: int, subagent_threshold: int, update_plan_threshold: int) -> dict:
-    titles = [title(t) for _, t in texts if title(t)]
-    unique_titles = sorted(set(titles))
-    iterations = [iteration_max(t) or 0 for _, t in texts]
-    combined = "\n".join(t for _, t in texts)
-
-    replacement_count = count_any([
-        r"\b(replaced|supersedes|replacement plan|prior plan|changed objective|new governing objective)\b",
-    ], combined)
-    open_q_count = len(re.findall(r"(?i)open questions", combined))
-    round_delta_strategy = len(re.findall(r"(?is)round delta.*?(strategy|objective|supersedes|replaced)", combined))
-    user_added_invariant = len(re.findall(r"(?i)(A\+|invariant|zero-cost|comptime|second authority|public API|runtime behavior)", combined))
-    blocked_count = len(re.findall(r"(?i)\bblocked\b", combined))
-    update_plan_count = len(re.findall(r"(?i)\bupdate_plan\b", combined))
-    spawn_agent_count = len(re.findall(r"(?i)\bspawn_agent\b", combined))
-    signal_markers = len(re.findall(r"(?i)\bsignal(s)?\b", combined))
-
-    high_iter = max(iterations or [0]) >= 10
-    title_drift = len(unique_titles) >= 2
-    campaign_shape = signal_markers >= signal_threshold or spawn_agent_count >= subagent_threshold or update_plan_count > update_plan_threshold
-
-    score_value = 0
-    score_value += 2 if title_drift else 0
-    score_value += 2 if high_iter else 0
-    score_value += min(3, replacement_count)
-    score_value += min(2, round_delta_strategy)
-    score_value += 1 if open_q_count >= 2 else 0
-    score_value += 1 if user_added_invariant >= 2 else 0
-    score_value += 1 if blocked_count >= 3 else 0
-    score_value += 2 if campaign_shape else 0
-
-    risk = "high" if score_value >= 6 else "medium" if score_value >= 3 else "low"
-    recommendation = "return_to_grill_or_spec_gate" if score_value >= 3 else "planning_can_continue_if_gate_passes"
-    if campaign_shape and risk != "low":
-        recommendation = "emit_campaign_checkpoint_then_return_to_gate"
-
-    return {
-        "churn_score": score_value,
-        "risk": risk,
-        "title_drift": title_drift,
-        "titles": unique_titles,
-        "max_iteration": max(iterations or [0]),
-        "replacement_language_count": replacement_count,
-        "round_delta_strategy_count": round_delta_strategy,
-        "open_questions_mentions": open_q_count,
-        "user_added_invariant_markers": user_added_invariant,
-        "blocked_mentions": blocked_count,
-        "update_plan_mentions": update_plan_count,
-        "spawn_agent_mentions": spawn_agent_count,
-        "signal_markers": signal_markers,
-        "campaign_shape": campaign_shape,
-        "recommendation": recommendation,
-    }
+def count(pattern: str, text: str) -> int:
+    return len(re.findall(pattern, text, re.I | re.S))
 
 
 def main() -> int:
-    p = argparse.ArgumentParser()
-    p.add_argument("files", nargs="+")
-    p.add_argument("--signal-threshold", type=int, default=750)
-    p.add_argument("--subagent-threshold", type=int, default=8)
-    p.add_argument("--update-plan-threshold", type=int, default=2)
-    args = p.parse_args()
-    texts = [(f, read(f)) for f in args.files]
-    print(json.dumps(score(texts, args.signal_threshold, args.subagent_threshold, args.update_plan_threshold), indent=2, sort_keys=True))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("files", nargs="+")
+    parser.add_argument("--signal-threshold", type=int, default=750)
+    parser.add_argument("--subagent-threshold", type=int, default=8)
+    parser.add_argument("--update-plan-threshold", type=int, default=2)
+    args = parser.parse_args()
+
+    texts = [(path, read(path)) for path in args.files]
+    combined = "\n".join(text for _, text in texts)
+    titles = sorted({value for _, text in texts if (value := title(text))})
+    max_iteration = max((iteration_max(text) for _, text in texts), default=0)
+
+    signals = {
+        "title_drift": len(titles) >= 2,
+        "high_iteration": max_iteration >= 10,
+        "replacement_language_count": count(r"\b(replaced|supersedes|replacement plan|changed objective|new governing objective)\b", combined),
+        "round_delta_strategy_count": count(r"round delta.*?(strategy|objective|supersedes|replaced)", combined),
+        "open_questions_mentions": count(r"\bopen questions\b", combined),
+        "blocked_mentions": count(r"\bblocked\b", combined),
+        "update_plan_mentions": count(r"\bupdate_plan\b", combined),
+        "spawn_agent_mentions": count(r"\bspawn_agent\b", combined),
+        "signal_markers": count(r"\bsignals?\b", combined),
+    }
+
+    campaign_shape = (
+        signals["signal_markers"] >= args.signal_threshold
+        or signals["spawn_agent_mentions"] >= args.subagent_threshold
+        or signals["update_plan_mentions"] > args.update_plan_threshold
+    )
+
+    score = 0
+    score += 2 if signals["title_drift"] else 0
+    score += 2 if signals["high_iteration"] else 0
+    score += min(3, signals["replacement_language_count"])
+    score += min(2, signals["round_delta_strategy_count"])
+    score += 1 if signals["open_questions_mentions"] >= 2 else 0
+    score += 1 if signals["blocked_mentions"] >= 3 else 0
+    score += 2 if campaign_shape else 0
+
+    risk = "high" if score >= 6 else "medium" if score >= 3 else "low"
+    trigger_retro = risk != "low" or campaign_shape
+
+    result = {
+        "spec_churn_result": {
+            "churn_score": score,
+            "risk": risk,
+            "titles": titles,
+            "max_iteration": max_iteration,
+            "campaign_shape": campaign_shape,
+            "retro_trigger_required": trigger_retro,
+            "signals": signals,
+            "recommended_next_action": (
+                "run_spec_retro"
+                if trigger_retro
+                else "continue_and_measure"
+            ),
+        }
+    }
+    print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 
 
