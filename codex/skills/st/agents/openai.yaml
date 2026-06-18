@@ -2,5 +2,9 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "st"
-  short_description: "Durable repo JSONL step manager and Codex projection source"
-  default_prompt: "Use $st as the durable step source of truth in `.step/st-plan.jsonl`; prime Codex with `st prime`, mirror only `plan_sync.codex.plan` through Codex `update_plan`, and mutate durable state only through `st` commands."
+  short_description: "Durable graph control, aperture, and proof source"
+  default_prompt: >
+    Use $st as durable work truth. For material work, require a current CLI-emitted
+    GCR-v1 before execution: compile intent, audit the graph, select one safe bounded
+    aperture, project only plan_sync.codex.plan, record obligation-level proof, and
+    recompile after durable mutations.

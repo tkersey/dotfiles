@@ -37,6 +37,9 @@ has_non_plan_changes() {
 st_supports_command() {
   bin="${1:?binary required}"
   command_name="${2:?command required}"
+  if "$bin" capabilities --format json 2>/dev/null | jq -e '.st_capabilities.version' >/dev/null 2>&1; then
+    return 0
+  fi
   "$bin" --help 2>/dev/null | grep -Fq "$command_name"
 }
 
