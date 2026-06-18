@@ -1,9 +1,16 @@
 # Review Distillation Mode
 
-Use only when same-cluster review churn or dirty-tree repair history should not be delivered.
+When the fuse trips, stop delivery-branch patching.
 
-```text
-The lab learns. The delivery branch forgets.
-```
+Distillation must identify:
 
-Freeze delivery base, use lab as evidence, then rederive the delivery patch from the clean base.
+- counterexample family;
+- branch-liability boundary;
+- canonical owner;
+- falsified normal forms/routes;
+- surfaces to retire;
+- candidate routes at different leverage levels;
+- proof matrix;
+- clean rederivation from frozen base.
+
+Do not cherry-pick exploratory lab commits by default.

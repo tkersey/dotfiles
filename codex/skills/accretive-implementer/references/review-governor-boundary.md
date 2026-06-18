@@ -1,22 +1,30 @@
-# Review Governor Boundary
+# Review Governor Boundary v3
 
-`$accretive-implementer` executes a selected route. It does not interpret raw review findings.
+`$accretive-implementer` is an actuator, not a review adjudicator.
 
 Require:
 
-- selected route from `review_governor_record`;
-- `RGR-V2-MUTATION-PERMIT` when same-cluster recurrence occurred;
+- RGR-V3 permit;
+- branch-liable finding;
+- selected route;
+- normal_form_id when applicable;
+- fuse state;
 - permitted scope;
 - forbidden actions;
-- surface budget;
+- cumulative surface budget;
+- production-net classification;
 - proof matrix;
-- negative route gate;
-- owner coarseness gate;
-- production embargo status;
-- boundary inventory when supplied.
+- negative-ledger state;
+- distillation receipt when fuse is tripped.
 
-Do not turn a feedback/rule/normal-form intervention into a local point fix.
+Hard stops:
 
-Do not add validation/replay/evidence branches after recurrence unless the mutation permit explicitly allows it.
+- no raw review finding implementation;
+- no ordinary local patch after fuse trip;
+- no runtime guard described as representation elimination;
+- no helper/branch/test outside budget;
+- no second ordinary normal form after falsification;
+- no new same-family repair without returning to governor;
+- no commit boundary resets cumulative pressure.
 
-If the selected route is insufficient, stop and return to `$resolve` / `$fixed-point-driver`.
+Emit actual delta and return if the route is insufficient.

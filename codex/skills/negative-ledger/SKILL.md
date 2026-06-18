@@ -1,120 +1,153 @@
 ---
 name: negative-ledger
-description: "Capture, query, map, reopen, compact, and hand off evidence-backed failed hypotheses and falsified review routes. Use for `$negative-ledger`, negative evidence, route ratchet, repeated review decisions, same-cluster recurrence, route already tried, no-effect repair, public-bypass failure, scar tissue, route veto, or search-space pruning."
+description: "Durably capture, query, gate, reopen, compact, and hand off evidence-backed failed hypotheses, falsified normal forms, and route-family exclusions from repo-local `.ledger/negative-ledger.jsonl`. Use for `$negative-ledger`, repeated review routes, same-family recurrence, normal-form falsification, route veto, route-family compaction, or `$resolve` negative-route gates."
+metadata:
+  version: "2.0.0"
 ---
 
 # Negative Ledger
 
-`negative-ledger` preserves disconfirmed hypotheses so future work does not repeat dead ends.
+## Mission
 
-The durable source of truth is repo-local:
+Preserve disconfirmed hypotheses so future work cannot rename and repeat them.
+
+Canonical durable store:
 
 ```text
 .ledger/negative-ledger.jsonl
 ```
 
-Use the `ledger` CLI for durable mutations and route gates. Do not store `$negative-ledger` state under `.step`, and do not use `.learnings.jsonl` as the primary negative-ledger store.
+Use the `ledger` CLI. `.learnings.jsonl` may summarize promoted lessons but is not the primary route-exclusion store.
 
-## Core rule for review workflows
+## Core rules
 
 ```text
-A repeated review decision is a falsified hypothesis.
+A repeated same-family finding after a permitted route falsifies that route's closure hypothesis.
+A falsified normal form must be captured before another mutation permit.
+The next route must differ at the leverage level.
+Same-cluster alone is related evidence, not automatically an exclusion.
 ```
 
-When the same cluster reappears after a selected route, that route becomes negative evidence unless proven unrelated, stale, or superseded.
+## Preferred CLI
 
-## Modes
-
-- `query`: retrieve relevant negative evidence before route selection.
-- `map`: convert evidence into current route constraints.
-- `capture`: record a newly falsified route or failed attempt.
-- `reopen`: decide whether evidence is stale/superseded/reopened.
-- `compact`: merge repeated route-family failures.
-- `handoff`: summarize active exclusions and safest next frontier.
-
-## Negative Route Gate
-
-```yaml
-negative_route_gate:
-  query_or_map: yes | no
-  ledger_cli: ledger
-  store: .ledger/negative-ledger.jsonl
-  command: "ledger map --route ... --cluster ... --artifact ..."
-  exit_code: 0 | 2 | 3
-  ledger_available: yes | no
-  active_exclusion_match: yes | no | null
-  exclusion_id: "none | NEG-..."
-  fuzzy_candidates: 0
-  fuzzy_authority: suggest_only | none
-  failure: none | ledger_missing
-  handoff_allowed: yes | no
-```
-
-If the store is missing or `ledger map` was not run, same-cluster mutation is blocked. If an active exclusion matches and is not reopened/stale/superseded, implementation is blocked. Fuzzy candidates are advisory only.
-
-Operational commands:
+When hardened NRG-v2 commands exist:
 
 ```bash
-ledger init
+ledger gate ...
 ledger capture --json FILE
+ledger reopen --id NEG-...
+ledger stale --id NEG-...
+ledger supersede --id NEG-... --by NEG-...
+ledger compact ...
+ledger handoff
+ledger audit
+```
+
+Compatibility with the current CLI:
+
+```bash
 ledger map --route "$ROUTE" --cluster "$CLUSTER" --artifact "$ARTIFACT"
-ledger show --id NEG-000001
-ledger reopen --id NEG-000001
+ledger show --id NEG-...
+ledger capture --json FILE
+ledger reopen --id NEG-...
 ledger handoff
 ledger doctor
 ```
 
-## Capture shape
+If the current `map` reports a cluster-only exact match, inspect the record with `show`; do not treat cluster identity alone as a route-family exclusion.
+
+## Negative route gate
 
 ```yaml
-negative_evidence_ledger:
-  - neg_id: NEG-001
-    hypothesis: "..."
-    attempted_change_or_decision: "..."
-    source_refs:
-      - kind: cas-review | validation | pr-comment | route-record | commit | learning | lab | test | diff
-        ref: "..."
-        summary: "..."
-    observed_outcome: "..."
-    failure_class: no-effect | local-regression | global-regression | unsound | too-complex | stale | unknown
-    applicability_conditions: []
-    current_status: active | stale | superseded | reopened | unknown
-    exclusion_rule: "..."
-    reopening_criteria: []
-    confidence: high | medium | low | unknown
-    next_search_hint: "..."
+negative_route_gate:
+  gate_version: NRG-v2 | compatibility-v1
+  query_or_map: yes | no
+  ledger_available: yes | no
+  command:
+  exit_code: 0 | 2 | 3
+  records_scanned:
+  current:
+    cluster:
+    counterexample_family:
+    route:
+    route_family:
+    owner:
+    artifact:
+  nearest_prior_records: []
+  active_exclusion_match: yes | no | unknown
+  exclusion_id: "none | NEG-..."
+  prior_normal_form_falsified: yes | no
+  capture_required: yes | no
+  capture_created: yes | no
+  captured_neg_id: "none | NEG-..."
+  eliminated_route_family:
+  route_changed_at_leverage_level: yes | no
+  handoff_allowed: yes | no
 ```
 
-## Query templates
+## Capture requirements
 
-Use compact topical queries:
+Capture when:
+
+- same-family recurrence follows a permitted route;
+- a normal form is falsified;
+- a route family has failed to reduce recurrence;
+- a public bypass/fallback/tolerance route is rejected;
+- distillation eliminates a prior route family.
+
+Minimum record:
+
+```yaml
+negative_evidence_record:
+  record_version: NER-v1
+  neg_id:
+  cluster_id:
+  counterexample_family:
+  normal_form_id:
+  route_id:
+  route_family:
+  hypothesis:
+  attempted_change_or_decision:
+  observed_outcome:
+  failure_class:
+  source_refs: []
+  exclusion_scope: route | route_family | counterexample_family | cluster_wide | none
+  exclusion_rule:
+  reopening_criteria: []
+  confidence:
+  status: active | need-evidence | capture_candidate | non_exclusion_observation | reopened | stale | superseded | accepted-risk | blocked
+```
+
+## Falsification ratchet
+
+After `prior_normal_form_falsified: yes`:
 
 ```text
-<repo> <cluster_id> <owner> <route_kind> <failure_surface>
+capture_created = yes
+route_changed_at_leverage_level = yes
 ```
 
-## Durable writeback policy
+Otherwise `handoff_allowed = no`.
 
-Do not flood `.ledger/negative-ledger.jsonl`.
+A route-family change is not established by a new helper name or another predicate in the same owner.
 
-Use durable writeback only when evidence is:
+## No-active-exclusion standard
 
-- decision-shaping;
-- transferable;
-- counterfactually useful;
-- anchored by current proof/review/revert/benchmark evidence.
+`no active exclusion` is insufficient alone.
 
-One-off same-session route failures can stay in the route record. `.learnings.jsonl` rows may be cited as historical evidence, but durable negative-route exclusion state belongs in `.ledger/negative-ledger.jsonl`.
+The gate must show:
+
+- which records were considered;
+- why each did not apply;
+- whether a capture was created;
+- whether current route differs from falsified route family;
+- whether handoff is allowed.
 
 ## Guardrails
 
-- Do not record hunches as negative evidence.
-- Do not convert one failed implementation into a broad strategy ban.
-- Do not use stale evidence without applicability explanation.
-- Do not use absence of a negative entry as proof that a route is novel.
-- Do not suppress adjacent approaches with an overbroad exclusion.
-
-## Resources
-
-- [review-route-ratchet.md](references/review-route-ratchet.md)
-- [writeback-policy.md](references/writeback-policy.md)
+- Do not record hunches as active exclusions.
+- Do not overblock adjacent approaches from cluster identity alone.
+- Do not use stale evidence without applicability.
+- Do not let an empty ledger masquerade as novelty.
+- Do not permit a second same-family route without capture.
+- Do not mark route change when leverage level is unchanged.

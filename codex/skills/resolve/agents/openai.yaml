@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "Review Governor with mutation permit interlock"
-  default_prompt: "Use $resolve as a Review Governor: reviews sense, the governor decides, implementation obeys. After same-cluster recurrence, emit RGR-V2-MUTATION-PERMIT before mutation."
+  short_description: "Falsifiable Review Governor"
+  default_prompt: "Use $resolve with branch-liability adjudication, one-shot normal forms, cumulative owner pressure, a hard fuse, durable negative ratcheting, and mandatory distillation after falsification."

@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Negative Ledger"
-  short_description: "Map failed hypotheses into routing constraints"
-  default_prompt: "Use $negative-ledger for this task."
+  short_description: "Durable falsified-route memory"
+  default_prompt: "Use $negative-ledger to query/capture falsified normal forms and require a leverage-level route change."

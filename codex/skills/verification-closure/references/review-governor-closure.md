@@ -1,27 +1,18 @@
-# Review Governor Closure
+# Review Governor Closure v3
 
-For `$resolve` closure, require:
+Require:
 
-- clean review streak;
+- frozen/current review charter;
+- all branch-liable findings discharged;
+- all normal forms closed/falsified/superseded;
+- no repeated ordinary normal form after falsification;
+- no mutation after fuse trip without passing distillation/deletion/boundary permit;
+- production net after fuse trip is zero or separately warranted by representation/distillation proof;
+- 2 charter-clean current-head reviews;
+- 1 final broad holdout closure-clean review;
 - full validation;
-- PR sweep;
-- governor gate closed or not triggered;
-- mutation permit emitted for every post-recurrence mutation;
-- positive production net embargo passed or not required;
-- owner coarseness gate passed or not required;
-- boundary inventory satisfied or not required;
-- negative route gate pass or not-required;
-- proof matrix gate pass or not-required;
-- material improvement score present;
-- no active negative exclusion against selected route.
+- current push;
+- complete PR sweep;
+- RLR-v4 report.
 
-If invoked, emit:
-
-```yaml
-verification_closure_receipt:
-  artifact_state:
-  proof_current: yes | no
-  closure_scope:
-  unresolved_risk:
-  closure_allowed:
-```
+Adjacent preexisting findings may be captured as follow-ups without blocking when liability is explicit.

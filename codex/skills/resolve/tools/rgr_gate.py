@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Lightweight gate for review_governor_record artifacts.
-
-This avoids PyYAML and checks for required textual keys so it can run in
-minimal Codex environments.
-"""
+"""Structural consistency gate for RGR-v3."""
 
 from __future__ import annotations
 
@@ -13,83 +9,50 @@ from pathlib import Path
 
 REQUIRED = [
     r"review_governor_record\s*:",
-    r"record_version\s*:\s*RGR-v2",
-    r"artifact_state\s*:",
-    r"sensor_input\s*:",
-    r"state_estimate\s*:",
-    r"owner_coarseness_gate\s*:",
-    r"boundary_inventory\s*:",
-    r"candidate_routes\s*:",
-    r"negative_memory\s*:",
-    r"mutation_permit\s*:",
-    r"selected_route\s*:",
+    r"record_version\s*:\s*RGR-v3",
+    r"review_charter\s*:",
+    r"finding_liabilities\s*:",
+    r"normal_form_register\s*:",
+    r"owner_pressure\s*:",
+    r"production_net_gate\s*:",
+    r"governor_fuse\s*:",
+    r"negative_route_gate\s*:",
     r"proof_matrix_gate\s*:",
-    r"production_embargo\s*:",
-    r"outcome_metrics\s*:",
+    r"selected_route\s*:",
     r"gate\s*:",
 ]
 
-def has(pattern: str, text: str) -> bool:
-    return re.search(pattern, text) is not None
+def has(text: str, pattern: str) -> bool:
+    return re.search(pattern, text, re.M) is not None
 
 def main(argv: list[str]) -> int:
     if len(argv) != 2:
-        print("usage: rgr_gate.py <review-governor-record.yml>", file=sys.stderr)
-        return 2
-
+        print("usage: rgr_gate.py <rgr.yml>", file=sys.stderr)
+        return 1
     text = Path(argv[1]).read_text(encoding="utf-8")
-    missing = [pat for pat in REQUIRED if not has(pat, text)]
-    if missing:
+    errors = [f"missing:{pattern}" for pattern in REQUIRED if not has(text, pattern)]
+
+    if has(text, r"same_family_after_normal_form\s*:\s*yes") and not has(text, r"fuse_state\s*:\s*tripped"):
+        errors.append("same-family recurrence after normal form must trip fuse")
+    if has(text, r"status\s*:\s*falsified") and has(text, r"route\s*:\s*normal-form-decision"):
+        errors.append("falsified normal form cannot select another ordinary normal form")
+    if has(text, r"fuse_state\s*:\s*tripped") and has(text, r"implementation_handoff_allowed\s*:\s*yes"):
+        allowed = any(has(text, rf"route\s*:\s*{route}") for route in (
+            "delete-collapse-canonicalize",
+            "review-distillation-mode",
+            "boundary-redesign",
+            "distilled-normal-form",
+        ))
+        if not allowed:
+            errors.append("tripped fuse handoff uses prohibited route")
+    if has(text, r"relation\s*:\s*(adjacent_preexisting|reviewer_preference|unknown)") and has(text, r"mutation_allowed\s*:\s*yes"):
+        errors.append("non-liable finding cannot authorize mutation")
+
+    if errors:
         print("RGR gate: FAIL")
-        for pat in missing:
-            print(f"missing pattern: {pat}")
-        return 1
-
-    if has(r"same_cluster_count\s*:\s*[2-9]", text) and has(r"emitted\s*:\s*no", text):
-        print("RGR gate: FAIL")
-        print("same-cluster recurrence requires mutation permit before mutation")
-        return 1
-
-    if has(r"same_cluster_count\s*:\s*[2-9]", text) and has(r"selected_route:\s*\n\s*route\s*:\s*mutate-existing-owner", text):
-        print("RGR gate: FAIL")
-        print("same-cluster recurrence cannot select mutate-existing-owner directly")
-        return 1
-
-    if has(r"production_embargo\s*:\s*fail", text):
-        print("RGR gate: FAIL")
-        print("production embargo failed")
-        return 1
-
-    if has(r"owner_coarseness_gate\s*:\s*fail", text):
-        print("RGR gate: FAIL")
-        print("owner coarseness gate failed")
-        return 1
-
-    if has(r"negative_route_gate\s*:\s*fail", text):
-        print("RGR gate: FAIL")
-        print("negative route gate failed")
-        return 1
-
-    if has(r"proof_matrix_gate\s*:\s*fail", text):
-        print("RGR gate: FAIL")
-        print("proof matrix gate failed")
-        return 1
-
-    if has(r"query_or_map\s*:\s*no", text) and has(r"same_cluster_count\s*:\s*[2-9]", text):
-        print("RGR gate: FAIL")
-        print("same-cluster recurrence requires operational negative-ledger query/map")
-        return 1
-
-    if has(r"same_cluster_count\s*:\s*[2-9]", text):
-        if not has(r"ledger_cli\s*:\s*ledger", text) or not has(r"store\s*:\s*\.ledger/negative-ledger\.jsonl", text) or not has(r"command\s*:\s*.*ledger map", text) or not has(r"exit_code\s*:\s*(0|2|3)", text):
-            print("RGR gate: FAIL")
-            print("same-cluster recurrence requires machine-auditable ledger map evidence")
-            return 1
-        if has(r"ledger_available\s*:\s*no", text) or has(r"exit_code\s*:\s*3", text):
-            print("RGR gate: FAIL")
-            print("same-cluster recurrence cannot mutate with missing ledger evidence")
-            return 1
-
+        for error in errors:
+            print(error)
+        return 2
     print("RGR gate: PASS")
     return 0
 
