@@ -3,10 +3,9 @@
 Structural tools:
 
 ```bash
-python codex/skills/resolve/tools/counterexample_contract_gate.py <cec.yml>
-python codex/skills/resolve/tools/delivery_recipe_gate.py <dpr.yml>
-python codex/skills/resolve/tools/ablation_certificate_gate.py <abl.yml>
-python codex/skills/resolve/tools/compiled_delivery_permit_gate.py <permit.yml>
+resolve-c3 legacy-gate --file <legacy-cleanroom-artifact.yml>
+resolve-c3 mrpc-gate --file <mrpc.json>
+resolve-c3 rdr-gate --file <record.yml>
 ```
 
-These are structural interlocks, not correctness proof.
+The cleanroom compiler gate scripts are retired. Current C3 structural authority is the controller-emitted MRPC-v1 plus RDR checks where a decision record is required.
