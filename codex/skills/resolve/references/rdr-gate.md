@@ -3,7 +3,7 @@
 Validate decision records with:
 
 ```bash
-python codex/skills/resolve/tools/rdr_gate.py <record.yml>
+resolve-c3 rdr-gate --file <record.yml>
 ```
 
 Gate pass is not proof of correctness; gate failure blocks closure.

@@ -3,10 +3,10 @@
 Validate permit files with:
 
 ```bash
-python codex/skills/resolve/tools/mutation_permit_gate.py <permit.yml>
+resolve-c3 legacy-gate --file <permit.yml>
 ```
 
-Gate failure blocks mutation.
+This legacy gate surface is retired. Current mutation authority comes from controller-emitted MRPC-v1 via `resolve-c3 mrpc-gate --file <mrpc.json>`.
 
 The gate checks the literal `RGR-V2-MUTATION-PERMIT:` key and rejects:
 

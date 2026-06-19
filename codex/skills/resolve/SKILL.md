@@ -68,20 +68,20 @@ review finding
 Use:
 
 ```bash
-python3 codex/skills/resolve/tools/review_compile.py ...
+resolve-c3 ...
 ```
 
 Canonical repo-local state:
 
 ```text
-.resolve-c3/
+.ledger/c3/
   state.json
   events.jsonl
   candidates/
   mrpc.json
 ```
 
-`.resolve-c3/` is local-excluded by default.
+`.ledger/c3/` is local-excluded by default.
 
 `MRPC-v1` is the one canonical workflow artifact. It evolves through:
 
@@ -133,7 +133,7 @@ zero or negative production net, or a trivial bounded edit
 Even this route uses MRPC. Record a tournament waiver:
 
 ```bash
-review_compile.py tournament-waiver --reason "..."
+resolve-c3 tournament-waiver --reason "..."
 ```
 
 ### Material review
@@ -156,9 +156,9 @@ a candidate route previously failed
 After the first branch-liable finding, initialize C³ before any review-derived delivery edit:
 
 ```bash
-python3 codex/skills/resolve/tools/review_compile.py begin \
+resolve-c3 begin \
   --root . \
-  --acceptance .resolve-c3/acceptance.json \
+  --acceptance .ledger/c3/acceptance.json \
   --lab ../<repo>-resolve-lab
 ```
 
@@ -207,7 +207,7 @@ A valid adjacent defect is captured as a follow-up, not absorbed into delivery s
 Register findings:
 
 ```bash
-review_compile.py add-counterexample --input counterexample.json
+resolve-c3 add-counterexample --input counterexample.json
 ```
 
 ## Phase 3: compress to a basis
@@ -238,7 +238,7 @@ counterexample_basis:
 Store it:
 
 ```bash
-review_compile.py set-basis --input basis.json
+resolve-c3 set-basis --input basis.json
 ```
 
 No candidate selection without a passing basis.
@@ -265,7 +265,7 @@ Candidate construction belongs in disposable worktrees or scratch trees.
 Create additional candidate worktrees through the controller:
 
 ```bash
-review_compile.py candidate-worktree   --candidate-id cand-subtractive   --path ../<repo>-cand-subtractive
+resolve-c3 candidate-worktree   --candidate-id cand-subtractive   --path ../<repo>-cand-subtractive
 ```
 
 Recommended specialists:
@@ -280,7 +280,7 @@ $fixed-point-driver        candidate verification and normal-form challenge
 Register each candidate:
 
 ```bash
-review_compile.py register-candidate \
+resolve-c3 register-candidate \
   --input candidate.json \
   --worktree /path/to/candidate-worktree
 ```
@@ -335,7 +335,7 @@ Never claim global program optimality.
 Run:
 
 ```bash
-review_compile.py select
+resolve-c3 select
 ```
 
 The tournament record must show every candidate, validity, negative-route state, cost vector, and rejection reason.
@@ -382,7 +382,7 @@ ablation:
 Run ablation through the controller:
 
 ```bash
-review_compile.py ablate \
+resolve-c3 ablate \
   --candidate-id cand-existing-owner \
   --input ablation-plan.json
 ```
@@ -414,7 +414,7 @@ clean
 Record:
 
 ```bash
-review_compile.py record-holdout \
+resolve-c3 record-holdout \
   --stage candidate \
   --input candidate-holdout.json
 ```
@@ -428,7 +428,7 @@ Do not patch the selected candidate.
 When basis, tournament, ablation, and candidate holdout pass:
 
 ```bash
-review_compile.py certify-apply
+resolve-c3 certify-apply
 ```
 
 This emits MRPC with:
@@ -443,7 +443,7 @@ gate:
 Only the controller may apply the patch:
 
 ```bash
-review_compile.py apply
+resolve-c3 apply
 ```
 
 The controller verifies the delivery head and worktree, applies the exact selected patch, and checks its fingerprint.
@@ -455,7 +455,7 @@ No cherry-pick of exploratory commits by default.
 Run current delivery proof through the controller:
 
 ```bash
-review_compile.py run-proof --input proof-plan.json
+resolve-c3 run-proof --input proof-plan.json
 ```
 
 `record-proof` remains a compatibility/import surface but cannot authorize final certification; final MRPC requires controller-run proof.
@@ -463,7 +463,7 @@ review_compile.py run-proof --input proof-plan.json
 Run final current-head holdout and PR sweep:
 
 ```bash
-review_compile.py record-holdout \
+resolve-c3 record-holdout \
   --stage delivery \
   --input delivery-holdout.json
 ```
@@ -483,11 +483,11 @@ Adjacent findings become follow-ups.
 ## Phase 10: final certificate, commit, push, closure
 
 ```bash
-review_compile.py certify-final
-review_compile.py commit --message "..."
-review_compile.py push --remote origin
-review_compile.py close --input pr-sweep.json
-review_compile.py cleanup-labs --confirm
+resolve-c3 certify-final
+resolve-c3 commit --message "..."
+resolve-c3 push --remote origin
+resolve-c3 close --input pr-sweep.json
+resolve-c3 cleanup-labs --confirm
 ```
 
 Raw `git commit`, `git commit --amend`, and `git push` are blocked while C³ is active.
@@ -495,11 +495,11 @@ Raw `git commit`, `git commit --amend`, and `git push` are blocked while C³ is 
 If the post-push PR sweep reveals a new branch-liable counterexample, do not amend the pushed commit. Abort the current run as reopened, then begin a new C³ run from the pushed head:
 
 ```bash
-review_compile.py abort --confirm --reason "post-push PR sweep reopened"
-review_compile.py begin --root . --acceptance /path/to/acceptance.json --lab ../<repo>-resolve-lab-next
+resolve-c3 abort --confirm --reason "post-push PR sweep reopened"
+resolve-c3 begin --root . --acceptance /path/to/acceptance.json --lab ../<repo>-resolve-lab-next
 ```
 
-The controller archives the prior terminal run under `.resolve-c3/archive/`.
+The controller archives the prior terminal run under `.ledger/c3/archive/`.
 
 ## MRPC-v1
 
@@ -531,7 +531,7 @@ minimal_review_patch_certificate:
 The file is:
 
 ```text
-.resolve-c3/mrpc.json
+.ledger/c3/mrpc.json
 ```
 
 A transcript summary may render the same fields. The durable JSON is authoritative.
@@ -647,7 +647,7 @@ Stop when:
 
 The drop-in extends the existing configured `$st` SessionStart, PreToolUse, and Stop hooks.
 
-When `.resolve-c3/state.json` is active:
+When `.ledger/c3/state.json` is active:
 
 - SessionStart injects current C³ phase and required next action.
 - PreToolUse blocks direct delivery mutation and raw commit/push.
