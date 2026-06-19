@@ -55,6 +55,7 @@ Current `cas review_session` is the review-control lane:
 - `lane review` reuses that app-server, starts a fresh parent/review session for exactly one review, emits a receipt, and best-effort archives the parent and review threads
 - `lane status` verifies the persisted lane process and record state
 - `lane stop` terminates the managed app-server and marks the lane stopped
+- `start` and `lane review` accept `--multi-agent-mode explicit-request-only|proactive` for fresh parent request flows. Use `proactive` for exploratory discovery reviews; keep canonical proof lanes explicit unless the caller opts in.
 
 `reviewThreadId` is the recoverable per-review handle. `laneId` is the recoverable long-lived app-server handle. Session and lane records live under `~/.codex/cas/review_sessions/`, and CAS appends raw request/response artifacts to a per-review NDJSON log beside each review record.
 
@@ -68,9 +69,10 @@ Review boundary:
 
 Review backend gate:
 
-- Treat `cas review_session lane` as a persistent review backend only when `cas --version` and `cas review_session --version` report `0.2.31` or newer and `cas review_session --help` exposes `lane start`, `lane review`, `lane status`, `lane stop`, `--lane-id`, `--json`, `--timeout-ms`, and `--fallback none|native-review`.
+- Treat `cas review_session lane` as a persistent review backend only when `cas --version` and `cas review_session --version` report `0.2.37` or newer and `cas review_session --help` exposes `lane start`, `lane review`, `lane status`, `lane stop`, `--lane-id`, `--json`, `--timeout-ms`, `--fallback none|native-review`, and `--multi-agent-mode explicit-request-only|proactive`.
 - The persistent CAS lane command shape is `cas review_session lane start --cwd <repo> --json --hooks off`, then repeated `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --timeout-ms 1800000 --json --fallback none`, then `cas review_session lane stop --lane-id <laneId> --json` at normal exit or abort.
 - Each `lane review` starts a fresh parent and detached review thread. "Reset after each review" means fresh review thread state on the same managed app-server, not relaunching the app-server.
+- Exploratory proactive discovery shape: `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --multi-agent-mode proactive --timeout-ms 1800000 --json --fallback none`. Treat its findings as discovery input, not proof of branch readiness.
 - `--fallback native-review` is an explicit degraded verdict path. It preserves a possible review result, but it is not persistent-lane proof and must be reported as native fallback.
 - Do not infer review success from session persistence. `reviewThreadId`, record paths, managed websocket metadata, or terminal turn state are receipts for lifecycle control only; structured review result fields decide whether a review verdict exists.
 
@@ -87,6 +89,10 @@ When `start`, `start --wait`, `status`, `wait`, or `lane review` emit JSON, the 
 - `managedServerListenUrl`
 - `managedServerStderrLogPath`
 - `orphanTtlSeconds`
+- `requestedMultiAgentMode`
+- `effectiveMultiAgentMode`
+- `multiAgentModeSupport`
+- `multiAgentModeMetricEligible`
 - `targetFingerprint`
 - `baseSha`
 - `headSha`
@@ -141,6 +147,10 @@ Use the fields this way:
 - `compatibilityVerdict="not_checked"` means no compatibility verdict was persisted for that record yet (older session record or pre-launch failure)
 - `selectedTransport="websocket"` means CAS used the managed loopback websocket lane for the detached review session
 - `selectedTransport="native-review"` with `degradedFallback=true` means CAS preserved the review verdict by degrading to native `codex review`; it is not detached-control proof
+- `requestedMultiAgentMode` records the CLI request (`explicit-request-only` or `proactive`) or `null`
+- `effectiveMultiAgentMode` is set only when CAS proved the request was applied to the fresh parent request flow
+- `multiAgentModeSupport="proven"` means the requested mode was passed through supported request surfaces; `unproven` means CAS could not prove the inherited parent context changed; `unsupported` means the run fell back to a path that cannot carry the mode; `not_requested` means no mode was requested
+- `multiAgentModeMetricEligible=true` only for proven proactive runs; exclude unproven or unsupported proactive requests from finding-yield metrics
 - `failureCode="wait_timed_out"` means retry `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 1800000 --json` on the same `reviewThreadId`; it is not a successful review and must not trigger a duplicate `lane review` for the same target
 - `failureCode="review_interrupted"` means the detached review was interrupted before it emitted a structured review result
 - `failureCode="approval_denied"` means the detached review stopped on an approval or permissions denial before it emitted a structured review result
@@ -379,6 +389,7 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 
 3. Detached review is the public review-control path; do not route review-session control through `instance_runner`.
    - `instance_runner` remains a method probe lane and is still useful for schema sanity checks.
+   - `instance_runner --multi-agent-mode proactive` is useful for request-flow probes against `thread/start` and `turn/start`; it is not review proof.
    - `review_session` owns persisted review handles, fresh-process status polling, wait loops, and interruption.
    - For workflows that need the actual review verdict, use the live connection lane the runtime supports: `start --wait` on Codex `0.118.x` stdio, or split `start ... --json` then `wait ... --json` on runtimes that keep detached review alive across connections.
    - Treat `failureCode` as authoritative. CAS never silently falls back to native `codex review`; callers that want a temporary fallback must do it explicitly at their own layer.
