@@ -32,8 +32,10 @@ Use graph mode for material plans with intent atoms, contracted executable items
 Required control command:
 
 ```bash
-st compile aperture --file .step/st-plan.jsonl --limit 7 --parallelism auto
+st compile aperture --file .step/st-plan.jsonl --limit 7
 ```
+
+Current `st` also accepts legacy `--parallelism auto` on this command as a no-op compatibility alias; do not write new instructions with that flag.
 
 For material graph work, do not execute or project a native plan without a current `GCR-v1`. Current means the receipt seq and fingerprints match the durable plan state being projected.
 
@@ -80,7 +82,7 @@ st intake scaffold --source docs/plan.md --out .step/st-intake.md
 st intake check --input .step/st-intake.md --gate implementation-ready --format json
 st intake normalize --input .step/st-intake.md --out .step/st-intake.normalized.md
 st intake apply --file .step/st-plan.jsonl --input .step/st-intake.normalized.md --gate implementation-ready
-st compile aperture --file .step/st-plan.jsonl --limit 7 --parallelism auto
+st compile aperture --file .step/st-plan.jsonl --limit 7
 ```
 
 `st intake plan` is a deprecated alias for scaffold. A scaffold is not semantic compilation until the agent-authored intake passes `check` and `apply`.
@@ -90,7 +92,7 @@ st compile aperture --file .step/st-plan.jsonl --limit 7 --parallelism auto
 For existing healthy graph work, start with:
 
 ```bash
-st compile aperture --file .step/st-plan.jsonl --limit 7 --parallelism auto
+st compile aperture --file .step/st-plan.jsonl --limit 7
 ```
 
 Then mirror only the emitted `plan_sync.codex.plan` into `update_plan` or `plan_sync.opencode.todos` into OpenCode.
@@ -121,7 +123,7 @@ st proof record \
   --evidence-ref .step/proof/st-001-proof-001.log \
   --artifact-ref "git:<sha-or-working-tree-fingerprint>"
 st complete --file .step/st-plan.jsonl --id st-001
-st compile aperture --file .step/st-plan.jsonl --limit 7 --parallelism auto
+st compile aperture --file .step/st-plan.jsonl --limit 7
 st assert-projection --file .step/st-plan.jsonl
 ```
 
