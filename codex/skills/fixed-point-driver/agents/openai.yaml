@@ -1,6 +1,6 @@
 policy:
   allow_implicit_invocation: true
 interface:
-  display_name: "Fixed-Point Driver"
-  short_description: "Drive changesets to material fixed point"
-  default_prompt: "Use $fixed-point-driver for this task."
+  display_name: "Fixed Point Driver"
+  short_description: "Normal-form driver and C³ candidate worker"
+  default_prompt: "When invoked by $resolve, generate or verify one disposable candidate from the immutable base; never patch delivery directly."

@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Accretive Implementer"
-  short_description: "Right-sized contract-first coding"
-  default_prompt: "Use $accretive-implementer to make the smallest sufficient witnessed code change."
+  short_description: "Right-sized implementation and C³ candidate generation"
+  default_prompt: "Implement only the bounded owned contract. Under $resolve, work in the candidate lab and return a patch plus semantic-cost evidence; never mutate delivery."

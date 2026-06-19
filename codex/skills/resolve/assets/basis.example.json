@@ -1,0 +1,33 @@
+{
+  "basis_version": "CEB-v1",
+  "branch_liabilities": [
+    {
+      "finding_id": "F-001"
+    }
+  ],
+  "non_branch_liabilities": [],
+  "families": [
+    {
+      "family_id": "family-001",
+      "governing_rule": "One compressed rule.",
+      "independent_witnesses": [
+        "F-001"
+      ],
+      "subsumed_findings": [],
+      "canonical_owner_candidates": [
+        "Owner.symbol"
+      ],
+      "proof_obligations": [
+        "proof-001"
+      ]
+    }
+  ],
+  "original_acceptance": [
+    "Acceptance criterion"
+  ],
+  "gate": {
+    "all_findings_classified": "pass",
+    "every_branch_liability_covered": "pass",
+    "non_branch_liabilities_excluded": "pass"
+  }
+}

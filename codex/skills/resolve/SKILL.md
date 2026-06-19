@@ -1,8 +1,8 @@
 ---
 name: resolve
-description: "Resolve the current branch through a cleanroom Review Compiler: review feedback mutates only a disposable review lab, counterexample contract, proof matrix, and delivery patch recipe; the delivery branch is frozen until a minimal rederived patch and ablation certificate exist. Use for `$resolve`, branch review/fix/validate/commit/push/PR-sweep closure, review lab, counterexample_contract / CEC-v1, delivery_patch_recipe / DPR-v1, ablation_certificate / ABL-CERT-v1, frozen delivery base, branch liability, review charter, CAS closure, PR sweep, and non-accumulating review resolution. Not for one-shot review, PR creation, merge/land, or isolated implementation."
+description: "Resolve review findings through C³, the Counterexample Compression Compiler. Reviews may add only verified counterexamples; candidate implementations are disposable; delivery receives one lexicographically minimal, ablated patch regenerated from an immutable base and authorized by MRPC-v1. Use for `$resolve`, branch review/fix/prove/push/PR-sweep closure, repeated CAS findings, review-induced code growth, candidate tournaments, semantic-cost minimization, counterexample compression, or minimal patch certification. Not for one-shot review, PR creation, merge/land, or an isolated implementation task."
 metadata:
-  version: "4.0.0"
+  version: "5.0.0"
   activation_cost: high
   default_depth: full
 ---
@@ -11,659 +11,673 @@ metadata:
 
 ## Mission
 
-`$resolve` is now a **cleanroom Review Compiler**.
+`$resolve` is the **C³ Counterexample Compression Compiler**.
 
 ```text
-Accrete knowledge, not code.
-Review lab learns. Delivery branch is recompiled.
+The specification grows.
+Candidates die.
+Only the smallest proven patch survives.
 ```
 
-Review feedback must not directly mutate the delivery branch after the first finding-bearing review wave.
-
-Review feedback may accumulate only in:
+The monotone object is the counterexample basis:
 
 ```text
-review lab ledger
-counterexample contract
-proof matrix
-delivery patch recipe
-ablation certificate
+C₀ ⊆ C₁ ⊆ C₂ ...
 ```
 
-The delivery branch receives a final minimal patch rederived from a frozen base. It must not inherit the review lab's wound-by-wound repair history.
-
-## Why this exists
-
-The prior Review Governor made review resolution more disciplined but still allowed many locally plausible permits to produce large aggregate growth. A recent 12-hour report found five true `$resolve` sessions with **132 `apply_patch` calls**, **24 commits**, and a supplemental repo delta of **+1,439 / -146**, net **+1,293** lines, overwhelmingly in `src/world.zig`. The report’s core diagnosis was that `$resolve` noticed recurrence and then repeatedly converted recurrence into permission to add more code. 
-
-The correction is architectural:
+Candidate code is disposable:
 
 ```text
-review feedback writes to the lab
-the compiler writes to delivery
+Pᵢ = compile(immutable_base, Cᵢ)
+
+new branch-liable counterexample c
+-> invalidate Pᵢ
+-> add c to Cᵢ
+-> regenerate from immutable_base
 ```
 
-A gate asks, “May I do this patch?”
+Never incrementally patch a candidate after a new branch-liable review finding.
 
-A compiler asks, “What is the smallest program that satisfies the accumulated constraints?”
+## The causal break
 
-## Core law
+The forbidden edge is:
 
 ```text
-After the first finding-bearing review wave, the delivery branch is read-only until $resolve emits:
-  1. counterexample_contract / CEC-v1
-  2. delivery_patch_recipe / DPR-v1
-  3. ablation_certificate / ABL-CERT-v1
-  4. current proof for the rederived delivery patch
+review finding -> direct delivery mutation
 ```
 
-If the first review wave is completely clean, no lab is required.
+The required path is:
 
-If the first finding-bearing wave contains exactly one trivial branch-liable finding and no recurrence risk, `$resolve` may use Fast Path. Any second finding, same-family recurrence, positive production pressure, or PR-thread reopening exits Fast Path and freezes delivery.
+```text
+review finding
+-> verified counterexample
+-> liability decision
+-> compressed counterexample family
+-> independent repair candidates
+-> common verification
+-> lexicographic semantic-cost selection
+-> edit-atom ablation
+-> independent holdout
+-> exact application to delivery
+-> current proof
+-> commit/push/PR closure
+```
+
+## Canonical durable controller
+
+Use:
+
+```bash
+python3 codex/skills/resolve/tools/review_compile.py ...
+```
+
+Canonical repo-local state:
+
+```text
+.resolve-c3/
+  state.json
+  events.jsonl
+  candidates/
+  mrpc.json
+```
+
+`.resolve-c3/` is local-excluded by default.
+
+`MRPC-v1` is the one canonical workflow artifact. It evolves through:
+
+```text
+collecting
+selected
+apply-certified
+applied
+final-certified
+committed
+pushed
+closed
+```
+
+Do not manually author MRPC. The controller emits it.
 
 ## Activation boundary
 
-Use `$resolve` when the user wants the current branch driven through:
+Use `$resolve` when the user wants current-branch review resolution through proof, push, and PR sweep.
+
+Do not use for:
+
+- review only;
+- PR creation: `$ship`;
+- merge and cleanup: `$land`;
+- selected implementation only: `$fixed-point-driver` or `$accretive-implementer`;
+- claim adjudication only: `$review-adjudication`;
+- final proof only: `$verification-closure`.
+
+## Entry modes
+
+### Clean review
+
+When the initial current-head review is clean, no compiler run is required. Complete current proof and PR sweep.
+
+### Isolated finding waiver
+
+One narrow finding may use a one-candidate tournament only when all are true:
 
 ```text
-review -> branch-liability classification -> lab learning -> compiled patch -> proof -> review closure -> push -> PR sweep
+exactly one branch-liable finding
+no recurrence
+no helper/wrapper/new state dimension
+no public or compatibility surface
+no new proof family
+zero or negative production net, or a trivial bounded edit
 ```
 
-Do not use `$resolve` for:
+Even this route uses MRPC. Record a tournament waiver:
 
-- one-shot review;
-- PR creation only: use `$ship`;
-- merge/land: use `$land`;
-- selected implementation task only: use `$fixed-point-driver` / `$accretive-implementer`;
-- claim adjudication only: use `$review-adjudication`;
-- final proof only: use `$verification-closure`.
+```bash
+review_compile.py tournament-waiver --reason "..."
+```
 
-## Cleanroom topology
+### Material review
+
+Any of these require the full tournament:
 
 ```text
-delivery branch:
-  frozen, read-only after first finding-bearing review wave
-  receives only compiled minimal patch
-
-review lab:
-  disposable branch/worktree/scratch record
-  may explore, patch, test, falsify, and discard
-
-counterexample compiler:
-  converts raw findings into branch-liable counterexample families
-
-delivery compiler:
-  emits minimal delivery patch recipe from frozen base
-
-ablation pass:
-  tries to delete every new helper, branch, fallback, test wound, and predicate
-
-holdout review:
-  verifies final patch without expanding scope
+two or more branch-liable findings
+same-cluster or same-family recurrence
+new helper/wrapper/state dimension
+positive production surface
+public/compatibility/fallback surface
+PR thread reopening
+uncertain liability
+a candidate route previously failed
 ```
 
-## Fast Path
+## Phase 1: immutable base
 
-Fast Path is allowed only when all are true:
+After the first branch-liable finding, initialize C³ before any review-derived delivery edit:
 
-```yaml
-fast_path:
-  first_review_findings: 0 | 1
-  branch_liability: introduced_by_current_diff | exposed_and_required_by_current_acceptance
-  same_cluster_recurrence: no
-  same_family_recurrence: no
-  expected_production_net: zero | negative | bounded_trivial_positive
-  public_surface_change: no
-  fallback_or_compat_path: no
-  new_helper_or_wrapper: no
-  proof_is_existing_or_single_existing_test_extension: yes
+```bash
+python3 codex/skills/resolve/tools/review_compile.py begin \
+  --root . \
+  --acceptance .resolve-c3/acceptance.json \
+  --lab ../<repo>-resolve-lab
 ```
 
-Fast Path still requires evidence discipline and current proof.
+`begin` requires a clean delivery worktree and records:
 
-Fast Path is revoked immediately by:
-
-- second finding-bearing review wave;
-- PR sweep finding a live defect;
-- same-cluster recurrence;
-- any new helper/wrapper/adapter;
-- positive production net that is not trivial;
-- test wound catalog growth;
-- branch-liability ambiguity.
-
-When revoked, freeze delivery and enter cleanroom mode.
-
-## Delivery freeze
-
-After the first finding-bearing review wave outside Fast Path:
-
-```yaml
-delivery_freeze:
-  freeze_version: DF-v1
-  freeze_id: "DF-..."
-  branch:
-  frozen_base_sha:
-  frozen_head_sha:
-  review_backend:
-  target_fingerprint:
-  charter_id:
-  frozen_at:
-  delivery_mutation_allowed: no
+```text
+delivery root
+branch
+immutable base SHA
+acceptance contract
+lab worktree
+run id
 ```
 
-Rules:
+Once active, delivery is frozen. The configured PreToolUse hook blocks direct delivery edits, raw commit/amend, and raw push.
 
-- No `apply_patch`, file edit, commit, or production-affecting mutation may happen on the delivery branch after freeze.
-- Lab mutation may occur only in an explicitly marked lab context.
-- If no separate worktree/branch can be created, use transcript-local scratch state and defer code edits until delivery recipe is ready.
-- A checkpoint commit after freeze is not a delivery patch unless produced from a compiled recipe.
+The lab may mutate. Delivery may not.
 
-## Review charter
+## Phase 2: review claims become counterexamples
 
-A broad review can discover. It must not expand forever.
+Use `$review-adjudication` and evidence discipline.
 
-```yaml
-review_charter:
-  charter_version: RC-v2
-  charter_id:
-  objective:
-  frozen_delivery_base:
-  in_scope_counterexample_families: []
-  in_scope_owners: []
-  explicit_non_goals: []
-  proof_bar: []
-  frozen: yes | no
-```
-
-After the charter is frozen:
-
-- new valid adjacent findings are classified for liability;
-- out-of-scope findings become follow-ups;
-- only branch-liable findings can enter the delivery recipe;
-- adding a new family to the charter is a scope change and resets charter-bound proof.
-
-## Finding liability
-
-A finding can be true and still not belong in this branch.
+A review claim contributes only:
 
 ```yaml
-finding_liability:
-  relation:
+counterexample:
+  id:
+  observed_behavior:
+  required_behavior:
+  liability:
     introduced_by_current_diff |
     exposed_and_required_by_current_acceptance |
     preexisting_but_blocks_current_invariant |
     adjacent_preexisting |
     reviewer_preference |
     unknown
-  mutation_allowed: yes | no
-  disposition:
-    include_in_contract |
-    validate_only |
-    capture_followup |
-    resolve_thread_only |
-    reject |
-    blocked
-  evidence_refs: []
-  reason:
+  reproduction_or_proof:
+  suspected_owner:
+  source_refs: []
 ```
 
-Only these normally enter the contract:
+Only the first three liability classes enter the branch-liable basis.
 
-```text
-introduced_by_current_diff
-exposed_and_required_by_current_acceptance
-preexisting_but_blocks_current_invariant
+A valid adjacent defect is captured as a follow-up, not absorbed into delivery scope.
+
+Register findings:
+
+```bash
+review_compile.py add-counterexample --input counterexample.json
 ```
 
-`adjacent_preexisting`, `reviewer_preference`, and `unknown` do not authorize delivery mutation.
+## Phase 3: compress to a basis
 
-## Counterexample Contract
+Use `$review-compression-compiler`.
 
-The counterexample contract is the source of truth for what delivery must satisfy.
+Raw findings are often several witnesses for one missing rule. Compile them into the smallest independent basis that still distinguishes incorrect implementations.
 
 ```yaml
-counterexample_contract:
-  contract_version: CEC-v1
-  contract_id: "CEC-..."
-  frozen_delivery_base:
-  charter_id:
-  branch_liabilities:
-    - finding_id:
-      relation:
-      counterexample_family:
-      observed_fact:
-      required_behavior:
-      proof_obligation:
-      evidence_refs: []
-  non_branch_liabilities:
-    - finding_id:
-      relation:
-      disposition:
-      followup_ref:
-      reason:
-  counterexample_families:
+counterexample_basis:
+  basis_version: CEB-v1
+  branch_liabilities: []
+  non_branch_liabilities: []
+  families:
     - family_id:
-      findings: []
-      canonical_owner_candidate:
-      failure_surface:
-      acceptance_dependency:
-      required_behavior:
+      governing_rule:
+      independent_witnesses: []
+      subsumed_findings: []
+      canonical_owner_candidates: []
       proof_obligations: []
-  proof_matrix:
-    - proof_id:
-      family_id:
-      existing_or_new: existing | extended | new
-      command_or_test:
-      wound_specific: yes | no
-  followups_captured: []
+  original_acceptance: []
   gate:
     all_findings_classified: pass | fail
-    non_branch_liabilities_not_in_recipe: pass | fail
-    proof_obligations_present: pass | fail
+    every_branch_liability_covered: pass | fail
+    non_branch_liabilities_excluded: pass | fail
 ```
 
-No delivery recipe without CEC-v1.
-
-## Review Lab Ledger
-
-The lab is for learning, not shipping.
-
-```yaml
-review_lab_ledger:
-  ledger_version: RLL-v1
-  lab_id: "RLL-..."
-  frozen_delivery_base:
-  lab_context:
-    kind: branch | worktree | scratch-record
-    ref:
-  findings_explored: []
-  routes_tried:
-    - route_id:
-      route_family:
-      counterexample_family:
-      implementation_shape:
-      result: falsified | useful | discarded | superseded
-      evidence_refs: []
-  routes_falsified: []
-  temporary_tests: []
-  temporary_code: []
-  discarded_from_delivery: yes
-```
-
-Rules:
-
-- Lab commits are exploratory.
-- Do not cherry-pick lab commits by default.
-- Lab work must be compiled into counterexamples, proof obligations, and a delivery recipe.
-- The lab may grow. Delivery must not.
-
-## Route-falsification rule
-
-A normal form is now a lab hypothesis or compile product, not a local patch label.
-
-```yaml
-normal_form_hypothesis:
-  normal_form_id:
-  counterexample_family:
-  selected_boundary:
-  closure_prediction:
-  route_family:
-  status: proposed | useful | falsified | superseded | compiled
-  falsified_by: []
-  negative_evidence_id:
-```
-
-If a same-family finding appears after a lab route or prior delivery route:
-
-- mark the route family falsified;
-- capture negative evidence when ledger CLI is available;
-- exclude that route family from the delivery recipe unless reopened/stale/superseded;
-- require the next candidate to differ at leverage level.
-
-## Negative-ledger integration
-
-Use `.ledger/negative-ledger.jsonl` through `ledger`.
-
-Preferred hardened command:
+Store it:
 
 ```bash
-ledger gate \
-  --root . \
-  --cluster "$CLUSTER" \
-  --route "$ROUTE" \
-  --route-family "$ROUTE_FAMILY" \
-  --counterexample-family "$FAMILY" \
-  --failure-surface "$SURFACE" \
-  --owner "$OWNER" \
-  --artifact "$HEAD_SHA" \
-  --same-cluster-count "$N" \
-  --require-capture-on-recurrence \
-  --format yaml
+review_compile.py set-basis --input basis.json
 ```
 
-Compatibility fallback:
+No candidate selection without a passing basis.
 
-```bash
-ledger map --route "$ROUTE" --cluster "$CLUSTER" --artifact "$HEAD_SHA"
-ledger show --id NEG-...
-ledger capture --json <capture-file>
-```
+## Phase 4: candidate tournament
 
-Delivery recipe cannot select a falsified route family unless it is explicitly reopened, stale, superseded, or accepted with user authority.
+Generate deliberately different route families from the same immutable base and complete basis.
 
-## Delivery Patch Recipe
-
-A delivery patch recipe is the only authority for delivery mutation.
-
-```yaml
-delivery_patch_recipe:
-  recipe_version: DPR-v1
-  recipe_id: "DPR-..."
-  frozen_base:
-  counterexample_contract_id:
-  selected_boundary:
-    owner:
-    representation_or_rule:
-    why_this_boundary:
-    why_not_lower_surface:
-  selected_route:
-    route:
-      delete-collapse-canonicalize |
-      compiled-normal-form |
-      boundary-redesign |
-      validate-only |
-      blocked
-    leverage_level:
-      parameter | predicate | representation | boundary | protocol | information-flow | rule | goal
-  branch_liabilities_included: []
-  branch_liabilities_excluded: []
-  falsified_routes_excluded: []
-  surfaces_to_retire:
-    - surface:
-      action: delete | collapse | canonicalize | privatize | decommission
-      proof_obligation:
-  permitted_new_surface:
-    - surface:
-      reason:
-      cannot_be_replaced_by_retirement:
-      proof_obligation:
-  forbidden_lab_artifacts: []
-  expected_surface_delta:
-    production_net: negative | zero | bounded_positive | unknown
-    test_net: negative | zero | bounded_positive | unknown
-    helpers_added:
-    branches_added:
-    public_symbols_added:
-    fallback_or_compat_paths_added:
-  proof_matrix: []
-  gate:
-    derived_from_contract: pass | fail
-    lower_surface_routes_considered: pass | fail
-    falsified_routes_excluded: pass | fail
-    delivery_mutation_allowed: yes | no
-```
-
-Rules:
-
-- No delivery mutation without DPR-v1.
-- Recipe must be derived from frozen base, not from lab patch history.
-- Recipe may include positive production net only when it names why surface retirement cannot satisfy the contract.
-- A recipe is invalid if it includes non-branch-liable findings.
-- A recipe is invalid if it preserves lab scaffolding without naming it as required new surface.
-
-## Delivery rederivation
-
-After DPR-v1 passes:
-
-```yaml
-delivery_rederivation:
-  rederivation_version: REDERIVE-v1
-  frozen_base:
-  recipe_id:
-  delivery_branch:
-  lab_commits_cherry_picked: no
-  changes_applied_from_recipe: []
-  lab_artifacts_excluded: []
-  status: pending | complete | blocked
-```
-
-Hard rule:
+Default tournament:
 
 ```text
-Do not cherry-pick lab commits by default.
+no-change or proof-only control
+subtractive/delete-collapse-canonicalize
+existing-owner normalization
+representation repair
+boundary/protocol redesign
+local-guard baseline
 ```
 
-If cherry-pick is explicitly used, the final patch must still be ablated and certified as recipe-equivalent.
+Do not generate all six mechanically. Generate at least three candidate records, at least two distinct route classes, and include a no-change or local-baseline control unless a tournament waiver explains why impossible.
 
-## Ablation Certificate
+Candidate construction belongs in disposable worktrees or scratch trees.
 
-Before final review closure, prove the delivery recipe is not carrying unnecessary surface.
+Create additional candidate worktrees through the controller:
+
+```bash
+review_compile.py candidate-worktree   --candidate-id cand-subtractive   --path ../<repo>-cand-subtractive
+```
+
+Recommended specialists:
+
+```text
+$reduce                    subtractive candidate
+$accretive-implementer     existing-owner/local baseline candidate
+$universalist              representation/boundary candidate
+$fixed-point-driver        candidate verification and normal-form challenge
+```
+
+Register each candidate:
+
+```bash
+review_compile.py register-candidate \
+  --input candidate.json \
+  --worktree /path/to/candidate-worktree
+```
+
+Candidate hard constraints:
+
+```text
+all branch-liable counterexamples pass
+original acceptance passes
+regressions pass
+proof is current to candidate patch
+active negative-route exclusions are not reused
+forbidden scope is absent
+```
+
+Invalid candidates remain in the tournament as defeated routes.
+
+## Phase 5: semantic-cost dominance
+
+Select by lexicographic semantic cost, not persuasive prose and not one weighted score.
+
+Canonical cost order:
 
 ```yaml
-ablation_certificate:
-  certificate_version: ABL-CERT-v1
-  recipe_id:
-  delivery_head:
-  ablation_attempts:
-    - target:
-      kind: helper | branch | predicate | fallback | compatibility_path | test | wrapper | public_symbol | file | state_variant
-      action: delete | collapse | merge | privatize | table-drive | remove
-      result: removed | survived | blocked
-      proof:
-      reason_if_survived:
-  removed_from_recipe: []
-  survived_ablation:
-    - surface:
-      why_needed:
+semantic_cost:
+  new_truth_owners:
+  new_public_symbols:
+  new_state_variants:
+  new_fallback_or_compatibility_paths:
+  new_protocol_cases:
+  new_control_flow_branches:
+  new_helpers_or_wrappers:
+  new_proof_obligations:
+  retained_retirable_surfaces:
+  owners_modified:
+  files_modified:
+  ast_edit_count:
+  production_net_lines:
+  test_net_lines:
+```
+
+Lower is better in the order shown.
+
+Selection means:
+
+```text
+minimum among generated valid candidates
+```
+
+Never claim global program optimality.
+
+Run:
+
+```bash
+review_compile.py select
+```
+
+The tournament record must show every candidate, validity, negative-route state, cost vector, and rejection reason.
+
+## Phase 6: delta-ablate the winner
+
+Before delivery application, attack every edit atom in the selected candidate:
+
+```text
+hunk
+helper
+branch
+predicate
+state field
+fallback
+compatibility case
+wrapper
+public symbol
+test
+file
+```
+
+Try delete/collapse/merge/privatize/table-drive/remove.
+
+For every survivor, record the counterexample or acceptance obligation that fails when removed.
+
+```yaml
+ablation:
+  ablation_version: ABL-v2
+  candidate_id:
+  edit_atoms:
+    - edit_id:
+      kind:
+      result: removed | survived
+      obligations: []
+      failure_witness:
       proof_ref:
-  tests_merged_or_retired: []
-  production_surface:
-    insertions:
-    deletions:
-    net:
-  test_surface:
-    insertions:
-    deletions:
-    net:
-  gate:
-    every_new_surface_challenged: pass | fail
-    wound_tests_compacted: pass | fail | not-required
-    production_net_justified: pass | fail
-    final_delivery_patch_allowed: yes | no
+  removed: []
+  survived: []
+  orphan_edit_atoms: []
+  one_minimal: yes | no
 ```
 
-Rules:
+Run ablation through the controller:
 
-- Try to delete every added helper.
-- Try to remove every added branch.
-- Try to merge wound-specific tests into a family matrix.
-- Try to remove fallback and compatibility paths.
-- Try to replace predicate accretion with representation/boundary constraints.
-- If proof still passes without a surface, that surface was not needed.
-- No closure without ABL-CERT-v1.
-
-## Cleanroom permit
-
-Delivery mutation uses one permit, not one permit per review wound.
-
-```yaml
-RGR-V4-COMPILED-DELIVERY-PERMIT:
-  permit_version: RGR-CDP-v1
-  permit_id:
-  frozen_delivery_base:
-  counterexample_contract_id:
-  delivery_patch_recipe_id:
-  ablation_certificate_required: yes
-  branch_liabilities_included: []
-  non_branch_liabilities_excluded: []
-  falsified_routes_excluded: []
-  selected_route:
-  permitted_scope: []
-  forbidden_actions: []
-  expected_surface_delta:
-  proof_matrix:
-  stale_if: []
-  handoff_allowed: yes | no
+```bash
+review_compile.py ablate \
+  --candidate-id cand-existing-owner \
+  --input ablation-plan.json
 ```
 
-This permit authorizes applying the compiled recipe to delivery.
+Each edit atom supplies a lab-only `remove_command`; a surviving atom also supplies a `restore_command`. The controller removes the atom, runs the common counterexample/acceptance/regression set, and restores it only when removal produces a failure witness.
 
-It does not authorize ad hoc review-derived mutation.
+`record-ablation` remains an external-import compatibility surface but cannot authorize `certify-apply`.
 
-## Review horizon
-
-Closure review is not a work queue.
+Target:
 
 ```text
-initial broad sensing review
--> delivery freeze if findings exist
--> lab learning / contract / recipe / ablation
--> targeted charter review on delivery patch
--> final broad holdout review
--> PR sweep
+orphan_edit_atoms = 0
 ```
 
-A final broad holdout finding is handled through the liability gate. It expands branch scope only if the current branch is liable.
+## Phase 7: independent candidate holdout
 
-## PR sweep
+Run one broad adversarial holdout against the ablated candidate.
 
-PR sweep is a sensor, not an automatic patch queue.
+Classify every result:
 
-For every live PR item:
+```text
+new branch-liable counterexample
+subsumed witness
+adjacent preexisting follow-up
+reviewer preference
+clean
+```
+
+Record:
+
+```bash
+review_compile.py record-holdout \
+  --stage candidate \
+  --input candidate-holdout.json
+```
+
+A new branch-liable counterexample invalidates the selected candidate. Add it to the basis and regenerate from the immutable base.
+
+Do not patch the selected candidate.
+
+## Phase 8: apply certificate
+
+When basis, tournament, ablation, and candidate holdout pass:
+
+```bash
+review_compile.py certify-apply
+```
+
+This emits MRPC with:
 
 ```yaml
-pr_thread_disposition:
-  thread_id:
-  current: yes | no
-  liability:
-  disposition:
-    covered_by_recipe |
-    add_to_counterexample_contract |
-    capture_followup |
-    resolve_thread_only |
-    blocked
+gate:
+  apply_allowed: yes
+  commit_allowed: no
+  push_allowed: no
 ```
 
-If it adds to the counterexample contract, update the recipe. Do not patch delivery directly.
+Only the controller may apply the patch:
+
+```bash
+review_compile.py apply
+```
+
+The controller verifies the delivery head and worktree, applies the exact selected patch, and checks its fingerprint.
+
+No cherry-pick of exploratory commits by default.
+
+## Phase 9: current delivery proof and holdout
+
+Run current delivery proof through the controller:
+
+```bash
+review_compile.py run-proof --input proof-plan.json
+```
+
+`record-proof` remains a compatibility/import surface but cannot authorize final certification; final MRPC requires controller-run proof.
+
+Run final current-head holdout and PR sweep:
+
+```bash
+review_compile.py record-holdout \
+  --stage delivery \
+  --input delivery-holdout.json
+```
+
+If a new branch-liable counterexample appears:
+
+```text
+certificate invalid
+candidate dead
+delivery patch reversed with reset-delivery
+counterexample added
+tournament rerun from immutable base
+```
+
+Adjacent findings become follow-ups.
+
+## Phase 10: final certificate, commit, push, closure
+
+```bash
+review_compile.py certify-final
+review_compile.py commit --message "..."
+review_compile.py push --remote origin
+review_compile.py close --input pr-sweep.json
+review_compile.py cleanup-labs --confirm
+```
+
+Raw `git commit`, `git commit --amend`, and `git push` are blocked while C³ is active.
+
+If the post-push PR sweep reveals a new branch-liable counterexample, do not amend the pushed commit. Abort the current run as reopened, then begin a new C³ run from the pushed head:
+
+```bash
+review_compile.py abort --confirm --reason "post-push PR sweep reopened"
+review_compile.py begin --root . --acceptance /path/to/acceptance.json --lab ../<repo>-resolve-lab-next
+```
+
+The controller archives the prior terminal run under `.resolve-c3/archive/`.
+
+## MRPC-v1
+
+The canonical certificate contains:
+
+```yaml
+minimal_review_patch_certificate:
+  certificate_version: MRPC-v1
+  stage:
+  immutable_base:
+  acceptance_contract:
+  counterexample_basis:
+  candidate_tournament:
+  selected_candidate:
+  negative_routes:
+  ablation:
+  obligation_to_edit_map:
+  proof:
+  holdout:
+  delivery:
+  metrics:
+  gate:
+    apply_allowed:
+    commit_allowed:
+    push_allowed:
+    closure_allowed:
+```
+
+The file is:
+
+```text
+.resolve-c3/mrpc.json
+```
+
+A transcript summary may render the same fields. The durable JSON is authoritative.
+
+## Negative-ledger rule
+
+Every falsified route family is captured through `$negative-ledger`.
+
+A tournament candidate must include:
+
+```yaml
+negative_route:
+  status: allowed | active_exclusion | reopened | stale | superseded | unknown
+  refs: []
+```
+
+An active excluded route is invalid.
+
+Cluster equality alone is not an exclusion.
+
+## Candidate-worker boundary
+
+Raw review findings may not be handed to implementation skills.
+
+A candidate handoff contains:
+
+```yaml
+candidate_handoff:
+  run_id:
+  immutable_base:
+  candidate_id:
+  route_class:
+  counterexample_basis:
+  forbidden_scope: []
+  semantic_cost_budget:
+  negative_route_refs: []
+  worktree:
+```
+
+Workers return a candidate patch and evidence. They do not edit delivery.
+
+## Holdout boundary
+
+The final broad review is not a work queue.
+
+It may:
+
+```text
+invalidate candidate with a new branch-liable counterexample
+add another witness to an existing family
+capture adjacent follow-up
+reject preference
+pass
+```
+
+It may not directly authorize a delivery patch.
 
 ## Reporting
 
-Every final report emits:
+Final `$resolve` output includes the MRPC id and:
 
 ```yaml
-resolve_compiler_report:
-  report_version: RCR-v1
-  delivery_freeze:
-    required:
-    emitted:
-    frozen_base:
-  review_lab:
-    used:
-    lab_patch_count:
-    lab_commits:
-    lab_surface_added:
-    lab_surface_discarded:
-  counterexample_contract:
-    branch_liabilities:
-    non_branch_liabilities:
-    families:
-    followups_captured:
-  delivery_recipe:
-    emitted:
-    selected_route:
-    falsified_routes_excluded:
-    surfaces_to_retire:
-    permitted_new_surface:
-  rederivation:
-    from_frozen_base:
-    lab_commits_cherry_picked:
-  ablation:
-    certificate_emitted:
-    surfaces_removed:
-    surfaces_survived:
-    tests_merged_or_retired:
-  delivery_surface:
-    production_insertions:
-    production_deletions:
-    production_net:
-    test_insertions:
-    test_deletions:
-    test_net:
-  review_horizon:
-    targeted_reviews:
-    final_holdout_reviews:
-    holdout_findings_added_to_scope:
-    holdout_followups_captured:
-  compliance:
-    delivery_mutations_before_recipe:
-    review_derived_delivery_patches:
-    recipe_missing:
-    ablation_missing:
-    non_branch_liability_mutated:
+resolve_c3_report:
+  run_id:
+  immutable_base:
+  raw_findings:
+  independent_families:
+  candidates_evaluated:
+  candidates_discarded:
+  selected_route:
+  semantic_cost:
+  edit_atoms_before_ablation:
+  edit_atoms_removed:
+  edit_atoms_survived:
+  orphan_edit_atoms:
+  lab_surface_discarded:
+  delivery_production_net:
+  delivery_test_net:
+  followups_captured:
+  holdout_recompilations:
+  commit:
+  push:
+  pr_sweep:
   outcome:
-    resolved:
-    blocked:
-    open_blocker:
 ```
 
-Key metrics:
+The core metric is:
 
 ```text
-lab churn discarded / delivery surface shipped
-delivery production net
-delivery mutations before recipe
-holdout findings added to scope
-non-branch-liable findings mutated
+independent branch-liable counterexamples discharged
+-----------------------------------------------------
+semantic surface cost of delivery patch
 ```
 
-## Companion roles
+## Fast failure rules
 
-- `$review-adjudication`: liability classification and claim discipline.
-- `$review-compression-compiler`: compiler front-end from findings to counterexample families.
-- `$negative-ledger`: failed route-family memory.
-- `$fixed-point-driver`: applies only compiled delivery permits.
-- `$accretive-implementer`: narrow actuator under DPR/CDP, not raw review fixes.
-- `$reduce`: ablation and surface retirement.
-- `$universalist`: boundary/representation redesign when recipe requires it.
-- `$cybernetic`: system classification when review loop is complex or incentives are wrong.
-- `$verification-closure`: final proof of delivery patch, charter review, holdout, PR sweep.
+Stop when:
 
-## Subagents
+- delivery is dirty at `begin`;
+- basis is incomplete;
+- fewer than required candidates exist without waiver;
+- all candidates fail hard constraints;
+- selected candidate reuses an active excluded route;
+- ablation has an orphan edit atom;
+- candidate holdout adds a branch-liable counterexample;
+- delivery patch fingerprint differs from selected candidate;
+- current proof fails;
+- final holdout adds a branch-liable counterexample;
+- MRPC is stale;
+- raw delivery mutation bypasses the controller.
 
-Preferred read-only workers:
+## Hook behavior
 
-```text
-review_lab_cartographer
-counterexample_contract_auditor
-delivery_recipe_auditor
-ablation_certificate_auditor
-```
+The drop-in extends the existing configured `$st` SessionStart, PreToolUse, and Stop hooks.
 
-Root owns mutation.
+When `.resolve-c3/state.json` is active:
+
+- SessionStart injects current C³ phase and required next action.
+- PreToolUse blocks direct delivery mutation and raw commit/push.
+- Stop blocks a resolved/done claim until the run is closed or explicitly aborted.
+
+The lab remains writable.
 
 ## Hard rules
 
-- Accrete knowledge, not code.
-- Review feedback cannot directly mutate delivery after first finding-bearing wave.
-- Lab may grow; delivery must be recompiled.
-- No delivery mutation without CEC-v1 + DPR-v1.
-- No closure without ABL-CERT-v1.
-- No lab commit cherry-pick by default.
-- No non-branch-liable finding in delivery recipe.
-- No final broad holdout as unbounded work queue.
-- No normal-form label without derivation from counterexample contract.
-- No positive delivery surface without ablation challenge.
-- No resolved claim without RCR-v1 report.
+- Reviews append constraints, not patches.
+- Candidate implementations are disposable.
+- No branch-liable finding bypasses the basis.
+- No single-candidate default for material review.
+- No active negative route in the tournament winner.
+- No direct delivery edit after C³ begins.
+- No incremental patching after a new counterexample.
+- No survivor without a failure witness.
+- No orphan edit atoms.
+- No holdout finding automatically expands scope.
+- No global-optimality claim beyond generated candidates.
+- No commit/push outside the controller while active.
+- No resolved claim without final MRPC-v1.
 
 ## Resources
 
-- [cleanroom-review-compiler.md](references/cleanroom-review-compiler.md)
-- [delivery-freeze.md](references/delivery-freeze.md)
-- [counterexample-contract.md](references/counterexample-contract.md)
-- [review-lab-ledger.md](references/review-lab-ledger.md)
-- [delivery-patch-recipe.md](references/delivery-patch-recipe.md)
-- [ablation-certificate.md](references/ablation-certificate.md)
-- [compiled-delivery-permit.md](references/compiled-delivery-permit.md)
-- [review-horizon.md](references/review-horizon.md)
-- [reporting-contract.md](references/reporting-contract.md)
-- [compiler-tooling.md](references/compiler-tooling.md)
+- [c3-model.md](references/c3-model.md)
+- [counterexample-basis.md](references/counterexample-basis.md)
+- [candidate-tournament.md](references/candidate-tournament.md)
+- [semantic-cost.md](references/semantic-cost.md)
+- [ablation-minimality.md](references/ablation-minimality.md)
+- [holdout-policy.md](references/holdout-policy.md)
+- [mrpc-schema.md](references/mrpc-schema.md)
+- [controller.md](references/controller.md)

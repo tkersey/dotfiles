@@ -1,18 +1,20 @@
 ---
 name: negative-ledger
-description: "Durably capture, query, gate, reopen, compact, and hand off falsified route families and failed normal-form hypotheses from repo-local `.ledger/negative-ledger.jsonl`. Use for `$negative-ledger`, review lab route failures, same-family recurrence, normal-form falsification, route-family exclusion, delivery recipe exclusion, or cleanroom `$resolve` negative route memory."
+description: "Durably preserve falsified repair routes and normal-form hypotheses in repo-local `.ledger/negative-ledger.jsonl`, then prune those route families from C³ candidate tournaments. Use for `$negative-ledger`, failed candidates, same-family recurrence, route exclusion, reopening, compaction, or delivery-candidate negative-route status."
 metadata:
-  version: "3.0.0"
+  version: "4.0.0"
 ---
 
 # Negative Ledger
 
 ## Mission
 
-Prevent the delivery compiler from reselecting failed route families.
+Convert failed candidate routes into durable search-space pruning.
 
 ```text
-A failed lab route becomes durable search-space pruning.
+failed candidate
+-> evidence-backed route-family record
+-> future tournament exclusion
 ```
 
 Canonical store:
@@ -21,52 +23,28 @@ Canonical store:
 .ledger/negative-ledger.jsonl
 ```
 
-## Cleanroom role
+## C³ contract
 
-In `$resolve`, the ledger records:
+Every candidate carries:
 
-- lab routes tried;
-- route families falsified;
-- normal-form hypotheses falsified;
-- route families excluded from the delivery recipe;
-- reopened/stale/superseded exclusions.
-
-The ledger is not just a preflight check. It is the review lab's memory.
-
-## Preferred commands
-
-```bash
-ledger gate ...
-ledger capture --json FILE
-ledger query ...
-ledger show --id NEG-...
-ledger reopen --id NEG-...
-ledger compact ...
-ledger handoff
-ledger audit
+```yaml
+negative_route:
+  status: allowed | active_exclusion | reopened | stale | superseded | unknown
+  refs: []
 ```
 
-Compatibility:
+An active exclusion invalidates the candidate.
 
-```bash
-ledger map --route "$ROUTE" --cluster "$CLUSTER" --artifact "$HEAD_SHA"
-ledger capture --json FILE
-ledger doctor
-```
-
-## Required record on route failure
+A failed candidate should capture:
 
 ```yaml
 negative_evidence_record:
   record_version: NER-v1
-  neg_id:
-  lab_id:
-  recipe_id:
+  run_id:
+  candidate_id:
   cluster_id:
   counterexample_family:
-  route_id:
   route_family:
-  normal_form_id:
   hypothesis:
   attempted_change_or_decision:
   observed_outcome:
@@ -76,16 +54,17 @@ negative_evidence_record:
   exclusion_rule:
   reopening_criteria: []
   status: active | capture_candidate | non_exclusion_observation | reopened | stale | superseded | accepted-risk | blocked
-  delivery_recipe_effect:
-    excluded_from_recipe: yes | no
+  tournament_effect:
+    excluded: yes | no
     replacement_route_family:
 ```
 
-## Hard rules
+## Rules
 
-- Every falsified lab route gets a record or an explicit no-write justification.
-- Same-family recurrence after a route requires capture.
-- Cluster-only evidence is related evidence, not automatic exclusion.
+- Cluster identity alone does not hard-exclude a route.
 - Fuzzy matches are suggest-only.
-- Delivery recipe cannot use an active excluded route family.
-- If ledger is unavailable during a repeated route decision, `$resolve` must fail closed or use a scratch negative record and mark closure blocked until durable capture succeeds.
+- Same-family recurrence after a selected route requires capture.
+- A new helper name does not establish a different route family.
+- An unavailable ledger during repeated-route selection blocks final certification.
+- `no active exclusion` must identify records considered and applicability.
+- MRPC must list excluded, reopened, stale, and superseded route refs.

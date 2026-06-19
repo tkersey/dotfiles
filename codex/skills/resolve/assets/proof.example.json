@@ -1,0 +1,11 @@
+{
+  "checks": [
+    {
+      "kind": "proof",
+      "command": "project test command",
+      "obligations": [
+        "delivery-proof"
+      ]
+    }
+  ]
+}

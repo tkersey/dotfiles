@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Negative Ledger"
-  short_description: "Review lab route-falsification memory"
-  default_prompt: "Use $negative-ledger to capture falsified lab routes and exclude failed route families from delivery recipes."
+  short_description: "Prune failed C³ candidate routes"
+  default_prompt: "Use $negative-ledger to capture falsified candidate routes and provide tournament-ready route exclusion status."

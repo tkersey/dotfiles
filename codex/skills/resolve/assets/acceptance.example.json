@@ -1,0 +1,12 @@
+{
+  "goal": "State the current branch objective.",
+  "original_acceptance": [
+    "Behavior that must remain true."
+  ],
+  "non_goals": [
+    "Adjacent work that must not enter this review patch."
+  ],
+  "proof_bar": [
+    "Exact commands or review surfaces required for closure."
+  ]
+}

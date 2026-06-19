@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Adjudication"
-  short_description: "Kernelized review/CAS adjudication with scoped warrants and surface budgets"
-  default_prompt: "Use $review-adjudication in Kernelized Surface-Budgeted v9 mode for this task."
+  short_description: "Verify claims and classify C³ liability"
+  default_prompt: "Verify each review claim against current code and emit branch liability plus a counterexample candidate, not a patch instruction."

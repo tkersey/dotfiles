@@ -1,0 +1,26 @@
+{
+  "candidate_id": "cand-existing-owner",
+  "route_class": "existing-owner",
+  "route_family": "canonical-owner-normalization",
+  "scope_valid": true,
+  "negative_route": {
+    "status": "allowed",
+    "refs": []
+  },
+  "semantic_cost": {
+    "new_truth_owners": 0,
+    "new_public_symbols": 0,
+    "new_state_variants": 0,
+    "new_fallback_or_compatibility_paths": 0,
+    "new_protocol_cases": 0,
+    "new_control_flow_branches": 0,
+    "new_helpers_or_wrappers": 0,
+    "new_proof_obligations": 0,
+    "retained_retirable_surfaces": 0,
+    "owners_modified": 1,
+    "files_modified": 1,
+    "ast_edit_count": 1,
+    "production_net_lines": 0,
+    "test_net_lines": 0
+  }
+}

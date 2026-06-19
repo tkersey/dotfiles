@@ -1,8 +1,8 @@
 ---
 name: review-compression-compiler
-description: "Read-only compiler front-end for `$resolve`. Convert raw review/CAS/PR/validation findings into branch-liable counterexample families, proof obligations, falsified routes, lower-surface candidates, and delivery patch recipe inputs. Use for hot review clusters, same-family recurrence, cleanroom review labs, counterexample_contract / CEC-v1, delivery_patch_recipe / DPR-v1, or review-lab route falsification. Do not edit code."
+description: "Compile raw review, CAS, PR, validation, and user findings into a smallest independent branch-liable counterexample basis for C³ `$resolve`. Use for repeated or adjacent findings, same-family recurrence, finding-family compression, liability separation, proof-obligation extraction, and candidate-route hints. Read-only; never output patch hunks or authorize delivery mutation."
 metadata:
-  version: "3.0.0"
+  version: "4.0.0"
   activation_cost: medium
   default_depth: strict
 ---
@@ -11,73 +11,76 @@ metadata:
 
 ## Mission
 
-Compile review information into the counterexample contract.
+Turn review findings into a **counterexample basis**, not a repair queue.
 
 ```text
-Review findings are not tasks.
-They are possible counterexamples.
+many comments
+-> few independent governing rules
+-> explicit proof obligations
 ```
 
-This skill is the front-end for the cleanroom `$resolve` compiler.
+## Input discipline
 
-It does not edit files.
+For every finding preserve:
 
-## Use when
+```text
+observed fact
+review claim
+proposed repair
+uncertainty
+artifact state
+source refs
+```
 
-- a review wave has any findings;
-- a same-cluster or same-family pattern appears;
-- PR sweep reopens a supposedly clean branch;
-- CAS finds adjacent issues after local proof;
-- `$resolve` needs CEC-v1, RLL-v1, DPR-v1, or lab route classification;
-- review feedback risks becoming serial delivery patches.
+Classify liability before compression.
 
 ## Output
 
 ```yaml
-review_compilation:
-  compilation_version: RCC-v3
-  frozen_delivery_base:
-  raw_findings:
+counterexample_basis:
+  basis_version: CEB-v1
+  immutable_base:
+  branch_liabilities:
     - finding_id:
-      source:
-      observed_fact:
-      review_claim:
-      proposed_change:
-  branch_liability:
-    include_in_contract: []
-    exclude_from_contract: []
-    unknown_or_blocked: []
-  counterexample_families:
-    - family_id:
-      findings: []
+      liability:
+      observed_behavior:
       required_behavior:
-      proof_obligations: []
-      canonical_owner_candidate:
+      reproduction_or_proof:
+      source_refs: []
+  non_branch_liabilities:
+    - finding_id:
+      disposition: followup | reject | validate-only | blocked
+      reason:
+  families:
+    - family_id:
+      governing_rule:
+      independent_witnesses: []
+      subsumed_findings: []
+      canonical_owner_candidates: []
       failure_surface:
-  route_learning:
-    routes_tried_in_lab: []
-    routes_falsified: []
-    negative_ledger_captures_required: []
-  delivery_recipe_inputs:
-    selected_boundary_candidates: []
-    surfaces_to_retire: []
-    permitted_new_surface_candidates: []
-    forbidden_lab_artifacts: []
-    proof_matrix: []
-  final_call:
-    ready_for_contract |
-    needs_lab |
-    needs_user_decision |
-    capture_followup_only |
-    blocked
+      proof_obligations: []
+      candidate_route_hints:
+        - no-change
+        - subtractive
+        - existing-owner
+        - representation
+        - boundary
+        - local-baseline
+  original_acceptance: []
+  gate:
+    all_findings_classified: pass | fail
+    every_branch_liability_covered: pass | fail
+    non_branch_liabilities_excluded: pass | fail
 ```
 
-## Hard rules
+## Compression rules
 
-- Do not output patch hunks.
-- Do not authorize delivery mutation.
-- Do not include non-branch-liable findings in contract inputs.
-- Do not treat same cluster as same family without evidence.
-- Do not call a route normal form unless it has a closure prediction.
-- Do not let a falsified route family remain eligible for the delivery recipe.
-- Do not say "no active exclusion" without route-learning evidence or capture decision.
+- Same cluster does not imply same family.
+- Similar prose does not imply one governing rule.
+- Several manifestations of one missing rule should not become several implementation tasks.
+- Preserve independent witnesses that distinguish bad candidates.
+- A finding may be valid and non-branch-liable.
+- Reviewer repair suggestions are hints only.
+- Candidate route hints must include a lower-surface alternative when plausible.
+- Do not output code.
+- Do not authorize mutation.

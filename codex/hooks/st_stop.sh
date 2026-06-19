@@ -19,6 +19,17 @@ mode="${ST_STOP_MODE:-block}"
   exit 0
 }
 
+resolve_tool="$HOME/.dotfiles/codex/skills/resolve/tools/review_compile.py"
+if [ -f "$resolve_tool" ]; then
+  resolve_output=$(printf '%s' "$payload" | python3 "$resolve_tool" stop-guard --cwd "$PWD" 2>/dev/null || true)
+  resolve_status=$(printf '%s' "$resolve_output" | jq -r '.status // "allow"' 2>/dev/null || printf allow)
+  if [ "$resolve_status" = "block" ]; then
+    reason=$(printf '%s' "$resolve_output" | jq -r '.reason // "C³ run is not closed."' 2>/dev/null || printf 'C³ run is not closed.')
+    jq -n --arg reason "$reason" '{continue: true, decision: "block", reason: $reason}'
+    exit 0
+  fi
+fi
+
 repo_root=$(find_st_root "$PWD" || true)
 [ -n "${repo_root:-}" ] || {
   json_continue

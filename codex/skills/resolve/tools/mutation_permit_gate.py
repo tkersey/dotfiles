@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-"""Compatibility wrapper for old RGR mutation permits."""
 from __future__ import annotations
-import subprocess, sys
-from pathlib import Path
-
-tool = Path(__file__).with_name("compiled_delivery_permit_gate.py")
-raise SystemExit(subprocess.call(["python3", str(tool), *sys.argv[1:]]))
+import sys
+print("This gate belongs to the superseded cleanroom artifact stack.")
+print("Use review_compile.py and mrpc_gate.py with MRPC-v1.")
+raise SystemExit(2)

@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Verification Closure"
-  short_description: "Final proof and closure gates"
-  default_prompt: "Use $verification-closure for this task."
+  short_description: "Final proof and MRPC closure gate"
+  default_prompt: "Verify current artifact state. Under C³, reject closure without a current final MRPC-v1 and zero orphan edit atoms."
