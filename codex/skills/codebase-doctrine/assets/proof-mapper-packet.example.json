@@ -1,0 +1,37 @@
+{
+  "codebase_doctrine_packet": {
+    "packet_version": "CBDP-v1",
+    "worker": "codebase_doctrine_proof_mapper",
+    "artifact_state_id": "AS-example-001",
+    "scope": "store proof surfaces",
+    "evidence_lanes": [
+      "behavior_and_tests",
+      "static_structure"
+    ],
+    "questions_addressed": [
+      "Q-PROOF"
+    ],
+    "facts": [
+      {
+        "claim_id": "CLAIM-PROOF",
+        "statement": "The commit-visibility law has a table-test proof surface.",
+        "evidence_refs": [
+          "test/store_test.zig:88"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "inferences": [],
+    "contradictions": [],
+    "open_questions": [],
+    "proposed_doctrine_updates": {
+      "proof_map": {
+        "proof_surfaces": [
+          "PROOF-COMMIT-TABLE"
+        ]
+      }
+    },
+    "stale": "no",
+    "final_call": "usable"
+  }
+}

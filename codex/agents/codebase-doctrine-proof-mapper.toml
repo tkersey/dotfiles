@@ -1,4 +1,4 @@
-name = "proof_surface_mapper"
+name = "codebase_doctrine_proof_mapper"
 description = "Read-only proof mapper for Codebase Doctrine: structural enforcement, static checks, unit/table/property/state-machine tests, integration proof, runtime witnesses, CI, and proof debt."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
@@ -25,7 +25,7 @@ Return exactly one YAML packet:
 
 codebase_doctrine_packet:
   packet_version: CBDP-v1
-  worker: proof_surface_mapper
+  worker: codebase_doctrine_proof_mapper
   artifact_state_id: "..."
   scope: "..."
   evidence_lanes:

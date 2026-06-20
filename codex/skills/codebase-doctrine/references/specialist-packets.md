@@ -27,6 +27,27 @@ codebase_doctrine_packet:
     blocked
 ```
 
+## Global worker identity
+
+Agent `name` values are global registry identities, even when their TOML file
+names differ.
+
+The Codebase Doctrine proof worker must use:
+
+```text
+file:   codex/agents/codebase-doctrine-proof-mapper.toml
+name:   codebase_doctrine_proof_mapper
+packet: worker: codebase_doctrine_proof_mapper
+```
+
+The existing general-purpose worker remains:
+
+```text
+name: proof_surface_mapper
+```
+
+Do not give both workers the same internal `name`.
+
 ## Root acceptance
 
 Accept only when:
@@ -38,18 +59,22 @@ Accept only when:
 - no wrapper/instruction leakage;
 - packet contains more than acknowledgement;
 - certainty matches evidence;
-- stale = no.
+- stale = no;
+- worker identity is one of the workflow-specific names below.
+
+The packet gate deliberately rejects the legacy Codebase Doctrine packet value
+`proof_surface_mapper` with a migration diagnostic.
 
 ## Worker ownership
 
 ```text
-cartographer             repository/system map
-authority mapper         owners/transitions/authority
-law miner                behavior/laws/invariants
-failure analyst          history/failure families/routes
-proof mapper             proof surfaces/gaps
-portfolio skeptic        routing/skill challenge
-saturation auditor       stop/challenge
+codebase_cartographer                repository/system map
+authority_state_mapper               owners/transitions/authority
+behavioral_law_miner                 behavior/laws/invariants
+failure_forensics_analyst            history/failure families/routes
+codebase_doctrine_proof_mapper       proof surfaces/gaps
+doctrine_portfolio_skeptic           routing/skill challenge
+search_saturation_auditor            stop/challenge
 ```
 
 Workers do not create final doctrine or skill files.

@@ -19,13 +19,17 @@ WORKERS = {
     "authority_state_mapper",
     "behavioral_law_miner",
     "failure_forensics_analyst",
-    "proof_surface_mapper",
+    "codebase_doctrine_proof_mapper",
     "doctrine_portfolio_skeptic",
     "search_saturation_auditor",
 }
 
 FINAL_CALLS = {"usable", "partial", "no_material_signal", "blocked"}
 CONFIDENCE = {"high", "medium", "low"}
+
+LEGACY_WORKER_RENAMES = {
+    "proof_surface_mapper": "codebase_doctrine_proof_mapper",
+}
 
 
 def load(path: str) -> dict[str, Any]:
@@ -62,7 +66,12 @@ def main() -> int:
 
     if packet.get("packet_version") != "CBDP-v1":
         errors.append("packet_version")
-    if packet.get("worker") not in WORKERS:
+    worker = packet.get("worker")
+    if worker in LEGACY_WORKER_RENAMES:
+        errors.append(
+            f"worker:renamed:{worker}->{LEGACY_WORKER_RENAMES[worker]}"
+        )
+    elif worker not in WORKERS:
         errors.append("worker")
     if not packet.get("artifact_state_id"):
         errors.append("artifact_state_id")

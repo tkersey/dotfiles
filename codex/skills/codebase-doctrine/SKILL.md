@@ -2,7 +2,7 @@
 name: codebase-doctrine
 description: "Learn how a repository actually works, extract the laws and ownership boundaries that make it correct, route durable knowledge to code/tests/tooling/docs/ledger/skills, and design the smallest repository-specific correctness-skill portfolio. Use for codebase learning plus doctrine design, repository correctness atlas, authority maps, failure archaeology, proof maps, skill candidacy, search saturation, or explicit deep read-only subagent exploration. Not for a quick architecture summary, one isolated invariant, direct skill creation, or implementation."
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
   activation_cost: high
   default_depth: standard
 ---
@@ -347,10 +347,14 @@ codebase_cartographer
 authority_state_mapper
 behavioral_law_miner
 failure_forensics_analyst
-proof_surface_mapper
+codebase_doctrine_proof_mapper
 doctrine_portfolio_skeptic
 search_saturation_auditor
 ```
+
+The proof worker uses the workflow-scoped identity
+`codebase_doctrine_proof_mapper`. Do not alias it to the general
+`proof_surface_mapper`; agent names are global registry identities.
 
 All workers:
 
