@@ -13,3 +13,5 @@ error: --mode body matched 2 distinct skill blocks; narrow with --history latest
 failed command: cd /Users/tk/workspace/tk/skills-zig/apps/seq && ./../../.zig-cache/o/1cfb91dbe37e65cba6094dacb0b5d7fb/test --cache-dir=./../../.zig-cache --seed=0x54215567 --listen=-
 
 Skill is valid!
+command_exit=0
+note=test-seq stderr above is expected negative-case fixture output; the aggregate proof command completed successfully.

@@ -29,7 +29,7 @@ rollback/abort posture
 Require:
 
 ```text
-.resolve-c3/mrpc.json
+.ledger/c3/mrpc.json
 certificate_version = MRPC-v1
 stage = pushed or closed
 immutable base matches run

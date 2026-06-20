@@ -17,6 +17,25 @@ st_plan_file() {
   printf '%s/.step/st-plan.jsonl\n' "$1"
 }
 
+find_c3_root() {
+  dir="${1:-$PWD}"
+  while [ "$dir" != "/" ]; do
+    if [ -f "$dir/.ledger/c3/state.json" ]; then
+      printf '%s\n' "$dir"
+      return 0
+    fi
+    dir=$(dirname "$dir")
+  done
+  return 1
+}
+
+resolve_c3_bin() {
+  candidate=$(command -v resolve-c3 2>/dev/null || true)
+  [ -n "${candidate:-}" ] || return 1
+  [ -x "$candidate" ] || return 1
+  printf '%s\n' "$candidate"
+}
+
 json_continue() {
   jq -n '{continue: true}'
 }
