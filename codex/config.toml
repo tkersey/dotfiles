@@ -44,6 +44,7 @@ voice = "marin"
 [memories]
 generate_memories = true
 use_memories = true
+dedicated_tools = true
 max_rollout_age_days = 90
 max_rollouts_per_startup = 128
 min_rollout_idle_hours = 6
