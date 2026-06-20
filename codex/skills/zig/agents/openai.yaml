@@ -2,49 +2,14 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Zig"
-  short_description: "Build, format, lint, test, fuzz, migrate, harden, audit hazardous code, profile, and design expert Zig 0.16.0 systems code"
+  short_description: "Route Zig work by surface and semantic failure family"
   default_prompt: >-
-    Use $zig for Zig 0.16.0 implementation, migration, build, formatting,
-    zig fmt steering, lint, fuzz, profiling, hazardous-code / Illegal Behavior
-    audits, FFI, concurrency, memory ownership, allocator architecture,
-    unsafe-boundary review, ABI/layout/MMIO/wire-format engineering, explicit
-    std.Io/effect injection, expert comptime/metaprogramming/reflection,
-    dependency, cache hygiene/disk-pressure, and performance work. Verify the
-    toolchain before version-sensitive edits; treat std.Io/process.Init,
-    build-system translate-c, @Type removal, Smith fuzzing, project-local
-    zig-pkg, --fork, cache/output paths, --cache-dir, --global-cache-dir,
-    --test-timeout, and Thread.Pool removal as 0.16.0 migration hotspots. For
-    native Codex review or subagent sandboxes, treat Zig global-cache
-    PermissionDenied as a proof-environment failure: rerun the same proof with a
-    writable ZIG_GLOBAL_CACHE_DIR or --global-cache-dir under /private/tmp or
-    the repo before making a code verdict. For
-    hazardous-code work, do not look for a Rust-style unsafe keyword: inventory
-    hazard operations and invariants such as @setRuntimeSafety(false),
-    unreachable/catch unreachable, undefined, @ptrCast, @alignCast,
-    @ptrFromInt, [*] and [*c] pointers, allowzero, extern/packed layout, FFI,
-    inline asm, volatile/MMIO, atomics, vectors/SIMD, allocator lifetime, and
-    ReleaseFast/ReleaseSmall-sensitive paths. Classify each hazard as
-    A/IRREDUCIBLE_BOUNDARY, B/PERF_OR_FOOTPRINT_ONLY, or
-    C/REFACTORABLE_TO_WITNESS, then require a falsifiable invariant proof,
-    witness or wrapper, and Debug/ReleaseSafe/ReleaseFast validation as
-    applicable. For comptime-heavy work, always produce the comptime contract:
-    compile-time inputs, runtime inputs, generated/specialized artifact,
-    runtime path, invalid compile-time failures, cost/specialization risk, and
-    proof fixtures. For cache/disk-pressure work, always inventory before
-    deletion, classify .zig-cache/zig-cache/zig-out/zig-pkg/global cache,
-    protect modified dependencies, dry-run destructive actions, and validate
-    refetch/rebuild after draining. For low-level systems work, always produce
-    the systems contract: ownership, allocator, lifetime/cleanup,
-    pointer/slice/sentinel/alignment, error-set and failure path, I/O/effect
-    capability, layout/ABI/endian, concurrency/atomic ordering,
-    target/build-mode validation, and test/fuzz/profile evidence. Prefer
-    explicit comptime T: type for type-subject APIs, constrain anytype with a
-    documented typeclass, centralize @typeInfo reflection, and replace removed
-    @Type forms with @Int, @Tuple, @Pointer, @Fn, @Struct, @Union, @Enum, and
-    @EnumLiteral. Prefer built-in formatting/static checks first; treat zig fmt
-    as canonical but steerable via optional trailing commas, array first-row
-    shaping, ++ chunking, and real comments rather than manual whitespace; use
-    zlinter#0.16.x for third-party linting on stable 0.16; and keep all proof
-    lanes explicit. Benchmark for performance proof, use zprof v4 for allocator
-    and leak questions, and use system or telemetry profilers for CPU, locks,
-    and timeline causality.
+    Use $zig for Zig 0.16.0 work. Verify the installed version and repository
+    state, then classify both the work surface and any active semantic family:
+    claim binding, lifetime escape, atomic transition, verifier completeness,
+    repository closure, or proof context. For material work, emit a ZSR-v1 route
+    before editing; let the active family constrain ownership, forbidden
+    shortcuts, and proof. Keep detailed comptime, allocator, pointer, FFI/layout,
+    concurrency, build, lint, fuzz, performance, and cache guidance in the
+    existing references. Treat proof as stale when its exact tree, command,
+    toolchain, target, options, dependencies, or generated artifacts change.

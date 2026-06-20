@@ -1,180 +1,51 @@
-# zig_trigger_audit.py update notes
+# Zig trigger and semantic-routing audit notes
 
-Add these cues to `INTENT_TERMS` and `STRONG_IMPLICIT_CUES` so the skill routes current Zig 0.16.0, comptime-heavy, low-level systems-engineering, hazardous-code / Illegal Behavior auditing, formatting, cache hygiene, and disk-pressure work reliably:
+The trigger surface now has two layers.
 
-```python
-ADDITIONAL_INTENT_TERMS = [
-    "zig ast-check",
-    "Illegal Behavior",
-    "Unchecked Illegal Behavior",
-    "safety-checked Illegal Behavior",
-    "hazardous Zig",
-    "Zig hazard",
-    "hazard audit",
-    "@setRuntimeSafety(false)",
-    "@setRuntimeSafety(true)",
-    "ReleaseFast safety",
-    "ReleaseSmall safety",
-    "raw pointer",
-    "many-item pointer",
-    "[*]",
-    "@fieldParentPtr",
-    "@addrSpaceCast",
-    "@constCast",
-    "@volatileCast",
-    "undefined",
-    "@memcpy",
-    "@memmove",
-    "@memset",
-    "extern fn",
-    "pub extern",
-    "export fn",
-    "@extern",
-    "@export",
-    "@cVaArg",
-    "inline asm",
-    "asm volatile",
-    "callconv",
-    "anyopaque",
-    "@bitCast",
-    "@setRuntimeSafety",
-    "SAFETY/ZIG-HAZARD",
-    "IRREDUCIBLE_BOUNDARY",
-    "PERF_OR_FOOTPRINT_ONLY",
-    "REFACTORABLE_TO_WITNESS",
-    "zig fmt",
-    "zig fmt --check",
-    "zig fmt steering",
-    "format steering",
-    "trailing comma",
-    "array column layout",
-    "columnar array",
-    "std.Io",
-    "std.process.Init",
-    "std.testing.Smith",
-    "checkAllAllocationFailures",
-    "addTranslateC",
-    "zig-pkg",
-    "--fork",
-    "--test-timeout",
-    "zprof",
-    "perf record",
-    "Instruments Time Profiler",
-    "Tracy",
-    "comptime",
-    "compile-time evaluation",
-    "type factory",
-    "reflection",
-    "metaprogramming",
-    "generated type",
-    "schema derivation",
-    "format string parser",
-    "derived serializer",
-    "ABI layout assertion",
-    "monomorphization",
-    "@typeInfo",
-    "@TypeOf",
-    "@FieldType",
-    "@hasDecl",
-    "@hasField",
-    "@field",
-    "@This",
-    "@compileError",
-    "@compileLog",
-    "@setEvalBranchQuota",
-    "@inComptime",
-    "inline for",
-    "inline while",
-    "inline switch",
-    "inline else",
-    "@Struct",
-    "@Union",
-    "@Enum",
-    "@Tuple",
-    "@Pointer",
-    "@Fn",
-    "@Int",
-    "@EnumLiteral",
-    "std.meta.Int",
-    "std.meta.Tuple",
-    "std.mem.Allocator",
-    "allocator ownership",
-    "ArenaAllocator",
-    "FixedBufferAllocator",
-    "FailingAllocator",
-    "errdefer",
-    "defer deinit",
-    "owned slice",
-    "borrowed slice",
-    "@ptrCast",
-    "@ptrFromInt",
-    "@alignCast",
-    "@intFromPtr",
-    "[*c]",
-    "sentinel-terminated",
-    "allowzero",
-    "volatile",
-    "MMIO",
-    "extern struct",
-    "packed struct",
-    "@offsetOf",
-    "@bitOffsetOf",
-    "@bitSizeOf",
-    "endian",
-    "wire format",
-    "C ABI",
-    "anyerror",
-    "catch unreachable",
-    "error set",
-    "std.atomic",
-    "atomic.Value",
-    "@atomicLoad",
-    "@atomicStore",
-    "@atomicRmw",
-    "@cmpxchgWeak",
-    "@cmpxchgStrong",
-    "memory order",
-    "ReleaseSafe",
-    "ReleaseFast",
-    "ReleaseSmall",
-    "disk space",
-    "out of disk",
-    "no space left on device",
-    "cache drain",
-    "cache hygiene",
-    ".zig-cache",
-    "zig-cache",
-    "zig-out",
-    "global cache",
-    "ZIG_GLOBAL_CACHE_DIR",
-    "--cache-dir",
-    "--global-cache-dir",
-    "build artifacts",
-    "stale build outputs",
-    "dependency cache",
-    "package cache",
-    "prune cache",
-]
+## Direct Zig cues
+
+Keep existing file/tool/version/comptime/hazard cues.
+
+## Contextual semantic-family cues
+
+Only count these when the session is already in a Zig context.
+
+```text
+claim-binding:
+  fingerprint receipt certificate cursor checkpoint replay evidence ref verify
+
+lifetime-escape:
+  arena parsed JSON decoded bytes returned slice snapshot report deinit
+
+atomic-transition:
+  rollback append commit stage transfer ledger journal outbox event pair
+
+verifier-completeness:
+  parser decoder verifier WASM opcode section LEB metadata stack result
+
+repo-closure:
+  golden expected output compile-fail path registry generated artifact manifest
+
+proof-context:
+  stale proof wrong head dirty tree after push/commit fork cache permission
 ```
 
-Also treat bare `allocator`, `pointer`, `packed`, `extern`, `atomic`, `undefined`, `unreachable`, and `trailing comma` as low-signal unless accompanied by a Zig cue such as `.zig`, `std.mem.Allocator`, `std.atomic`, `@ptrCast`, `build.zig`, `zprof`, `std.testing.allocator`, `checkAllAllocationFailures`, `zig fmt`, or `zig fmt --check`.
+Do not make generic words such as `commit`, `proof`, `manifest`, or `report` global `$zig` triggers.
 
+## Quality metrics
 
-Hazardous-code routing notes:
+Track separately:
 
-- Treat `Illegal Behavior`, `@setRuntimeSafety(false)`, `@ptrCast`, `@ptrFromInt`, `@alignCast`, `undefined`, `extern fn`, `packed struct`, `volatile`, `MMIO`, atomics, `ReleaseFast` safety questions, and "unsafe Zig" as strong Zig-routing terms when paired with Zig, `.zig`, `build.zig`, or Zig syntax.
-- Do not require the word `unsafe`; Zig has no Rust-style unsafe marker. Route by operation and invariant surface.
-- Route C ABI, translated C, `[*c]`, `anyopaque`, callback, and exported function questions to the FFI/hazard lane when they appear in Zig code.
-- Route performance-only `@setRuntimeSafety(false)`, `@prefetch`, vector/SIMD, and unchecked hot-loop questions to the hazard lane plus performance proof lane.
+```text
+Zig intent sessions
+$zig activation sessions
+semantic-family opportunity sessions
+ZSR-v1 route sessions
+family selected before first edit
+decision-effect episodes
+review reopen by family
+proof epoch stale events
+repository closure misses
+```
 
-Formatting routing notes:
-
-- Treat `zig fmt`, `zig fmt --check`, `zig fmt steering`, `format steering`, and Zig-specific `trailing comma` questions as strong Zig-routing terms.
-- Route array column layout and command-vector layout questions to Zig only when paired with Zig, `.zig`, `zig fmt`, or Zig literal syntax.
-- Distinguish general style-preference requests from Zig formatter steering requests; `zig fmt` layout is controlled by durable source-level cues, not configuration.
-
-Cache/disk-pressure routing notes:
-
-- Treat `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, `global cache`, `--cache-dir`, and `--global-cache-dir` as strong Zig-routing terms when paired with Zig, `.zig`, `build.zig`, `zig build`, or `zig env`.
-- Treat generic `cache`, `disk space`, and `out of disk` as low-signal unless the user also mentions Zig, a Zig path, or a Zig command.
-- Route `No space left on device` with `zig build` or `.zig-cache` to the cache hygiene lane.
+Activation recall is necessary but no longer sufficient.

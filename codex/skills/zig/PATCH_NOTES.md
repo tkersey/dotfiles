@@ -1,90 +1,115 @@
-# Zig skill upgrade notes — comptime + systems + cache hygiene expert edition
+# Zig Skill Upgrade Notes — Semantic Failure Router
 
-This bundle supersedes the previous `zig_skill_upgrade`, `zig_skill_comptime_expert`, and `zig_skill_ultimate_systems_bundle` bundles.
+Date: 2026-06-20
 
-## 2026-05-16 Zig hazardous-code / Illegal Behavior audit addition
+This release preserves the existing Zig 0.16 systems, comptime, hazardous-code, cache, formatting, linting, testing, FFI, concurrency, and performance resources while replacing the top-level encyclopedia-first workflow with a two-axis router.
 
-1. Upgraded the existing Zig skill rather than creating a new skill: hazardous-code review now plugs into the current systems, proof-lane, and reporting model.
-2. Added a Zig-native safety model that explicitly says Zig has no Rust-style `unsafe` keyword; audits must enumerate hazard operations and invariants instead.
-3. Added `zig-hazard/illegal-behavior` as a first-class hazard class with A/B/C buckets: `A/IRREDUCIBLE_BOUNDARY`, `B/PERF_OR_FOOTPRINT_ONLY`, and `C/REFACTORABLE_TO_WITNESS`.
-4. Added a full top-level `Zig hazardous-code and Illegal Behavior audit` section covering mental model, trigger conditions, phase loop, inventory scan, proof obligations, verification matrix, safety-proof comment shape, and remediation rules.
-5. Added `references/hazardous_code_audit_playbook.md`, a detailed playbook for auditing `@setRuntimeSafety`, `unreachable`, `undefined`, raw pointer casts, pointer/integer conversions, FFI, inline asm, `extern`/`packed`, MMIO, atomics, allocators, and vector/SIMD fast paths.
-6. Added `references/hazardous_site_template.md` for per-site audit write-ups.
-7. Added `references/hazard_patterns.zig` with small witness patterns such as `CheckedOffset` and `AlignedBytes`.
-8. Added `scripts/zig_hazard_audit_rg.sh` for a project-level hazard inventory scan.
-9. Updated `SOURCES.md` with Zig 0.16.0 source anchors for Illegal Behavior, runtime safety checks, build modes, pointers, `undefined`, volatile/MMIO, layout, atomics, allocators, FFI, and C translation.
-10. Updated `agents/openai.yaml` and trigger-audit notes so terms such as `Illegal Behavior`, `@setRuntimeSafety(false)`, `undefined`, raw pointer casts, `extern`/`packed`, MMIO, atomics, and ReleaseFast/ReleaseSmall-sensitive code route to the Zig skill.
-11. Preserved the existing Zig skill's comptime, systems, cache hygiene, linting, formatting, fuzzing, performance, and 0.16.0 migration guidance.
+## Governing change
 
-## 2026-05-10 `zig fmt` steering addition
+Before material mutation, `$zig` now classifies:
 
-1. Updated the skill trigger description to include formatting and `zig fmt` steering.
-2. Added formatting as a first-class workflow and hazard/proof concern alongside linting.
-3. Added top-level `zig fmt` rules for trailing-comma steering, array column shaping, `++`-composed array chunks, and real-comment layout anchors.
-4. Added `references/linting_playbook.md` guidance with compact-vs-expanded call examples, columnar array examples, and command vector examples.
-5. Updated agent routing text and trigger-audit notes with `zig fmt`, `zig fmt --check`, `zig fmt steering`, `format steering`, `trailing comma`, and column-layout cues.
-6. Added Matklad's 2026-05-08 "Steering Zig Fmt" as a source anchor and summarized its formatting cues.
+```text
+Axis A: Zig work surface
+Axis B: semantic failure family
+```
 
-## High-impact fixes retained from the 0.16.0 upgrade
+Semantic families:
 
-1. Updated lint guidance from `zlinter#master` to `zlinter#0.16.x` for stable Zig 0.16.x.
-2. Split built-in formatting/static checks from third-party linting.
-3. Added `zig fmt --check` and `.zig`-only `zig ast-check` baseline.
-4. Replaced "enable every zlinter rule" default with a curated-rule default and warning about pedantic all-rules mode.
-5. Updated `zprof` guidance from v3-era terminology to v4.0.0 terminology.
-6. Updated `zprof` metric names from stale `live_bytes`/`live_peak` to v4 `live_requested`/`peak_requested`.
-7. Added release-note-aware profiling caveat for the new ELF linker and DWARF-dependent profilers.
-8. Made version mismatch handling explicit instead of silently assuming the installed toolchain validates 0.16.0 behavior.
-9. Added stable unavailable-proof labels: `LINT_UNAVAILABLE`, `TEST_UNAVAILABLE`, `FUZZ_UNAVAILABLE`, `PROFILE_UNAVAILABLE`, `COMPTIME_PROOF_UNAVAILABLE`, `UNMEASURED`, `VERSION_MISMATCH`.
-10. Reduced duplicate/overlapping workflow text and made the proof lanes more operational.
+```text
+claim-binding
+lifetime-escape
+atomic-transition
+verifier-completeness
+repo-closure
+proof-context
+```
 
-## Comptime expert subsystem retained and integrated
+## New artifacts
 
-1. Added a first-class comptime contract requirement for all comptime-heavy work.
-2. Added `references/comptime_playbook.md`, a dedicated expert playbook for generics, type factories, reflection, generated types, compile-time parsers, diagnostics, testing, and cost governance.
-3. Added a comptime decision tree covering `comptime T: type`, `anytype`, generated types, reflection, `inline for`, `inline else`, ABI/layout assertions, and runtime/comptime dual paths.
-4. Added a dedicated comptime audit scan for `comptime`, `anytype`, `@typeInfo`, `@FieldType`, `@hasDecl`, `@hasField`, `@compileError`, `@compileLog`, `@setEvalBranchQuota`, `@inComptime`, inline loops, generated-type builtins, removed `@Type`, `std.meta.Int`, `std.meta.Tuple`, and `.is_comptime` assumptions.
-5. Added Zig 0.16 generated-type migration guidance: `@Int`, `@Tuple`, `@Pointer`, `@Fn`, `@Struct`, `@Union`, `@Enum`, and `@EnumLiteral`.
-6. Added reflection architecture guidance: `classifyType -> validateType -> derivePlan -> runtime function`.
-7. Added `anytype` discipline, inline-loop rules, diagnostics rubric, compile-time cost governance, and positive/negative proof requirements.
-8. Added `references/comptime_patterns.zig` with adaptable examples.
+```text
+ZSR-v1  zig semantic route
+ZPE-v1  zig proof epoch
+ZSFA-v1 read-only semantic failure audit
+```
 
-## New low-level systems expert subsystem
+## New references
 
-1. Added a top-level systems engineering contract covering ownership, allocator choice, lifetime/cleanup, pointer/slice/sentinel/alignment, error sets, effects, layout/ABI/endian, concurrency/atomic ordering, validation matrix, tests, fuzzing, and profiling evidence.
-2. Added `references/memory_ownership_playbook.md` for allocator strategy, owned/borrowed/transferred/arena-owned data, `defer`/`errdefer`, managed vs unmanaged containers, arena discipline, and allocation-failure testing.
-3. Added `references/unsafe_boundary_playbook.md` for pointers, slices, sentinel types, casts, C pointers, alignment, lifetime, zero-copy views, and volatile/MMIO discipline.
-4. Added `references/layout_abi_playbook.md` for `extern`, `packed`, ABI, MMIO, wire formats, endian parsing, layout proof tables, and target-matrix validation.
-5. Added `references/error_failure_playbook.md` for precise error sets, `anyerror` avoidance, `try`/`catch`, `errdefer`, boundary error mapping, and cleanup-after-failure tests.
-6. Added `references/io_effects_playbook.md` for Zig 0.16 `std.Io`, `std.process.Init`, args/env capture, current path, explicit capabilities, cancellation, and deterministic effect testing.
-7. Added `references/build_toolchain_playbook.md` for build.zig/build.zig.zon, cross-compilation, package pins, `zig-pkg`, `--fork`, C translation, release modes, and reproducibility.
-8. Added `references/atomics_concurrency_playbook.md` for shared-state invariants, atomics, memory order, lock-free review, volatile-vs-atomic distinction, cancellation, and concurrency tests.
-9. Added `references/testing_failure_discovery_playbook.md` for unit/build/integration tests, Smith fuzzing, allocation-failure tests, compile-fail fixtures, timeouts, optimizer matrices, and reproduction discipline.
-10. Added `references/performance_engineering_playbook.md` for benchmark-first optimization, decomposition, zprof allocation metrics, CPU profiling, cache layout, SIMD, binary size, and linker/debug-info caveats.
-11. Added `references/systems_contract_template.md` and `references/systems_patterns.zig` for practical review/report scaffolding and example snippets.
-12. Added `scripts/systems_audit_rg.sh` for project-level scans of allocators, ownership, raw pointers, layout, I/O, atomics, error paths, C interop, build modes, and migration cues.
-13. Updated `agents/openai.yaml` and trigger-audit notes with memory/allocator, unsafe-boundary, ABI/layout, I/O/effects, atomics, error-set, and performance-routing terms.
+```text
+semantic_failure_router.md
+claim_binding_playbook.md
+atomic_transition_playbook.md
+verifier_completeness_playbook.md
+repo_closure_playbook.md
+proof_epoch.md
+decision-contract.yaml
+```
 
-## New cache hygiene and disk-pressure subsystem
+## Strengthened references
 
-1. Added a top-level cache hygiene lane for Zig disk-pressure reports, stale caches, `No space left on device`, CI cache bloat, `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, global cache, `--cache-dir`, and `--global-cache-dir`.
-2. Added `references/cache_hygiene_playbook.md` with cache/output taxonomy, safe drain order, dependency-edit protection, dry-run policy, result labels, fast triage commands, cache relocation guidance, CI rules, and review checklist.
-3. Added `references/cache_ci_policy.md` with CI cache key inputs, recommended layout, drain order, and anti-patterns.
-4. Added `scripts/zig_cache_report.sh` for non-destructive inventory of project-local and global Zig cache/output candidates.
-5. Added `scripts/zig_cache_drain.sh`, a guarded dry-run-first drain script with `--yes`, `--include-zig-out`, `--include-zig-pkg`, `--include-global`, `--global-path`, and `--older-than` controls.
-6. Added `scripts/zig_cache_rebuild_probe.sh` to verify `zig build --fetch=needed` and `zig build --summary all` after cache draining.
-7. Added cache result labels: `CACHE_AUDITED`, `CACHE_DRY_RUN_ONLY`, `CACHE_LOCAL_DRAINED`, `CACHE_OUTPUT_DRAINED`, `CACHE_GLOBAL_DRAINED`, `CACHE_ZIG_PKG_DRAINED`, `CACHE_ZIG_PKG_SKIPPED`, `CACHE_MODIFIED_DEPENDENCY_UNTOUCHED`, `CACHE_ACTIVE_BUILD_REFUSED`, `CACHE_REBUILD_VERIFIED`, `CACHE_REBUILD_UNVERIFIED`, and `CACHE_PATH_UNDISCOVERED`.
-8. Updated `SKILL.md`, `agents/openai.yaml`, and trigger-audit notes so cache/disk-pressure work routes to the Zig skill and is handled as operational systems work, not as blind `rm -rf`.
+```text
+memory_ownership_playbook.md
+  mandatory escape table and owner-carried return pattern
 
-## Files in this bundle
+error_failure_playbook.md
+  prepare/commit/publish and full observable rollback
 
-- `SKILL.md` — drop-in replacement.
-- `references/linting_playbook.md` — updated built-in checks, `zig fmt` steering, and `zlinter` guidance.
-- `agents/openai.yaml` — refreshed routing prompt with formatting/steering terms.
-- `scripts/zig_trigger_audit_update_notes.md` — updated trigger-audit terms.
-- `SOURCES.md` — primary source anchors used for the 0.16.0/comptime/systems/cache/formatting upgrade.
-- Existing unmodified references and scripts remain part of the surrounding skill directory.
+testing_failure_discovery_playbook.md
+  semantic mutation matrix and epoch-bound reproduction
 
-## Validation note
+build_toolchain_playbook.md
+  repository registry/golden/generated-artifact closure
 
-The markdown in this drop-in bundle was assembled in this environment, but Zig snippets were not compiled here because a Zig 0.16.0 toolchain is not installed in the container. Validate in the target repository with `zig version`, `zig fmt --check`, `.zig`-only `zig ast-check`, `zig test`, and the repo's `zig build`/`zig build test` steps. For low-level changes, also run relevant `Debug`, `ReleaseSafe`, `ReleaseFast`, target-matrix, allocation-failure, fuzzing, and profiling lanes. For cache drains, validate first with `scripts/zig_cache_report.sh`, then use `scripts/zig_cache_drain.sh` in dry-run mode before any destructive run, and finish with `scripts/zig_cache_rebuild_probe.sh` when dependency/global cache state was touched.
+implicit_triggers.md
+  context-bounded semantic-family cues
+```
+
+## New tooling
+
+```text
+zig_semantic_route_gate.py
+zig_repo_closure_scan.py
+zig_proof_epoch.py
+regenerate_manifest.py
+```
+
+## Updated telemetry
+
+`zig_trigger_audit.py` now records semantic-family opportunity sessions only in a known Zig context.
+
+`zig_ops_scorecard.py` now reports ZSR route evidence and prefers `seq skill-decision-audit` when available instead of treating activation as proof that `$zig` changed the route.
+
+## New specialist
+
+```text
+zig_semantic_failure_auditor
+```
+
+The specialist is read-only. Root remains the sole writer.
+
+## Structural reduction
+
+`SKILL.md` is below 500 lines and delegates detailed protocols to references.
+
+The previous package had the right knowledge but often loaded the governing failure rule after implementation selection. This release makes the failure family a pre-edit gate.
+
+## Retained prior capabilities
+
+The surrounding existing skill directory continues to provide:
+
+```text
+Zig 0.16 migration
+comptime/reflection/generated types
+hazardous-code/Illegal Behavior auditing
+allocator and lifetime engineering
+unsafe pointer/zero-copy boundaries
+layout/ABI/MMIO/wire formats
+I/O/effects
+atomics/concurrency
+build/package/C translation
+cache hygiene
+formatting/lint steering
+testing/fuzzing/allocation failure
+performance/profiling
+```
+
+Do not delete unmodified references or scripts when installing this overlay.

@@ -1,0 +1,106 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: zig
+    kind: mixed
+    source_fingerprint: generated-with-semantic-router-v2
+  triggers:
+  - trigger_id: ZIG-DIRECT
+    description: The task contains direct Zig files, tools, APIs, or version-sensitive
+      behavior.
+    cue_literals:
+    - .zig
+    - build.zig
+    - zig build
+    - zig test
+    - zig fmt
+    - comptime
+    cue_regexes: []
+    exclusions: []
+  - trigger_id: ZIG-SEMANTIC
+    description: A known Zig repository/task contains a semantic failure-family cue.
+    cue_literals:
+    - fingerprint
+    - returned slice
+    - rollback
+    - verifier
+    - golden
+    - stale proof
+    cue_regexes: []
+    exclusions:
+    - non-Zig repository
+  routes:
+  - route_id: ZIG-ROUTE-NONMATERIAL
+    description: Perform version-aware non-material work without a semantic family.
+    aliases:
+    - none
+    - formatting-only
+    terminal: 'no'
+  - route_id: ZIG-ROUTE-CLAIM-BINDING
+    description: Bind proof-like claims to authoritative bytes and strongest predicates.
+    aliases:
+    - claim-binding
+    terminal: 'no'
+  - route_id: ZIG-ROUTE-LIFETIME
+    description: Resolve escaping borrowed ownership and lifetime.
+    aliases:
+    - lifetime-escape
+    terminal: 'no'
+  - route_id: ZIG-ROUTE-ATOMIC
+    description: Enforce prepare/commit/publish atomicity.
+    aliases:
+    - atomic-transition
+    terminal: 'no'
+  - route_id: ZIG-ROUTE-VERIFIER
+    description: Separate parser totality from semantic verifier completeness.
+    aliases:
+    - verifier-completeness
+    terminal: 'no'
+  - route_id: ZIG-ROUTE-REPO-CLOSURE
+    description: Synchronize repository registries, generated artifacts, and aggregate
+      proof.
+    aliases:
+    - repo-closure
+    terminal: 'no'
+  - route_id: ZIG-ROUTE-PROOF-CONTEXT
+    description: Bind final proof to an exact ZPE-v1 context.
+    aliases:
+    - proof-context
+    terminal: 'no'
+  - route_id: ZIG-ROUTE-BLOCKED
+    description: Stop when version, evidence, owner, or proof context is insufficient.
+    aliases:
+    - blocked
+    terminal: 'yes'
+  clauses:
+  - clause_id: ZIG-ROUTER-001
+    trigger_refs:
+    - ZIG-DIRECT
+    - ZIG-SEMANTIC
+    expected_routes:
+    - ZIG-ROUTE-NONMATERIAL
+    - ZIG-ROUTE-CLAIM-BINDING
+    - ZIG-ROUTE-LIFETIME
+    - ZIG-ROUTE-ATOMIC
+    - ZIG-ROUTE-VERIFIER
+    - ZIG-ROUTE-REPO-CLOSURE
+    - ZIG-ROUTE-PROOF-CONTEXT
+    - ZIG-ROUTE-BLOCKED
+    prohibited_routes: []
+    required_artifacts:
+    - Zig version
+    - artifact state
+    - ZSR-v1 for material work
+    - ZPE-v1 for material closure or explicit non-material reason
+    success_signals:
+    - semantic family selected before first edit
+    - owner and proof named
+    - final proof matches final context
+    failure_signals:
+    - green build treated as sufficient for active family
+    - semantic route selected after patching
+    - stale proof after context change
+    rationale: Zig expertise must govern route selection before implementation.
+  instrumentation:
+    decision_receipt: optional
+    rationale: ZSR-v1 and ZPE-v1 provide the material routing and proof evidence.

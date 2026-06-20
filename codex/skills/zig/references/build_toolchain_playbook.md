@@ -1,118 +1,126 @@
-# Zig build, cross-compilation, package, and C toolchain playbook
+# Zig Build, Package, Target, and Repository Closure
 
-Use this playbook for `build.zig`, `build.zig.zon`, cross-compilation, package pins, `zig fetch`, `zig-pkg`, `zig build --fork`, C/C++ interop, release modes, linker options, or reproducibility.
+Use for `build.zig`, `build.zig.zon`, cross compilation, package pins, C/C++ integration, generated artifacts, examples, compile-fail fixtures, repository path registries, release modes, linker options, or reproducibility.
 
-## Expert objective
+## Build contract
 
-Build work should produce a reproducible build contract:
+State:
 
-1. exact Zig version;
-2. targets and optimization modes;
-3. dependencies and hashes/fingerprints;
-4. build steps and user-facing `-D` options;
-5. C toolchain/linker inputs;
-6. test/lint/bench/fuzz steps;
-7. local overrides and whether they are ephemeral.
+```text
+Zig version
+targets and optimize modes
+dependencies/fingerprints/forks
+build steps and -D options
+C/linker inputs
+generated artifacts
+repository registries/goldens
+test/lint/bench/fuzz steps
+```
 
 ## Inspect first
-
-Before changing build logic:
 
 ```bash
 zig version
 zig build --help
 zig env
-find . -maxdepth 3 \( -name build.zig -o -name build.zig.zon \) -print
+find . -maxdepth 4 \( -name build.zig -o -name build.zig.zon \) -print
+python3 codex/skills/zig/scripts/zig_repo_closure_scan.py --root .
 ```
 
-Read existing steps before inventing new commands. Prefer adding named steps (`test`, `lint`, `bench`, `fuzz`, `docs`) that compose existing artifacts.
+Read existing steps before inventing commands.
 
 ## Target and optimize matrix
 
-Do not validate systems code in Debug only. Use relevant lanes:
+Low-level and ABI claims require relevant modes/targets.
 
 ```bash
 zig build test -Doptimize=Debug
 zig build test -Doptimize=ReleaseSafe
 zig build test -Doptimize=ReleaseFast
 zig build -Doptimize=ReleaseSmall
-zig build test -Dtarget=native
 ```
 
-For cross-platform libraries, add explicit target triples that match supported platforms. For ABI/layout code, target triples are part of the proof.
+Target triples are part of proof for ABI/layout/endian/pointer-width/vector claims.
 
-## Package workflow
+## Packages
 
-Rules:
+- `build.zig.zon` is dependency source of truth.
+- Use `zig fetch --save`.
+- Review name, URL, fingerprint/hash, version/tag, and paths.
+- Keep `zig-pkg/` untracked unless intentionally vendored.
+- Use `zig build --fork=/absolute/path` for temporary overrides.
+- Do not use `.zig-cache` as a dependency override.
+- Long-lived/security-sensitive pins need origin and release/commit provenance.
 
-- Treat `build.zig.zon` as source of truth.
-- Use `zig fetch --save ...` to add dependencies.
-- Review name, fingerprint/hash, version/tag, URL, and paths.
-- Keep `zig-pkg/` out of source control unless intentionally vendoring.
-- Use `zig build --fork=/absolute/path` for temporary local package overrides.
-- Do not edit `.zig-cache` as a dependency override.
+Dependency or fork changes invalidate prior proof epochs.
 
-For long-lived or security-sensitive pins, record origin repository, tag/commit, fetch date, and signer/attestation evidence if available.
+## C translation and interop
 
-## C/C++ interop and translation
+Prefer build-system translation for new Zig 0.16 code.
 
-For Zig 0.16, prefer build-system C translation for new code:
+Ensure:
 
-```zig
-const translate_c = b.addTranslateC(.{
-    .root_source_file = b.path("src/c.h"),
-    .target = target,
-    .optimize = optimize,
-});
-translate_c.linkLibC();
-
-exe.root_module.addImport("c", translate_c.createModule());
+```text
+target/cflags match
+libc/system libraries linked at correct artifact
+translated code behind boundary wrapper
+raw C pointers/status/ownership converted once
+source/include paths attached to correct module
+generated translation not hand-edited
 ```
-
-Expert checks:
-
-- target triple and cflags match the C ABI being compiled against;
-- system libraries are linked at the right artifact boundary;
-- translated C stays in a boundary module;
-- raw `[*c]T`, nullability, ownership, and errno/status are wrapped;
-- C source files and include paths are attached to the correct module/artifact;
-- generated/translated code is not edited unless intentionally vendored.
 
 ## Build options
 
-Expose intentional knobs through `b.option` and document them in `zig build --help`.
+Each option states:
 
-Avoid option explosion. Each option should answer:
+```text
+purpose
+default
+artifact/test effect
+ABI/generated-code effect
+CI matrix coverage
+```
 
-- user-facing purpose;
-- default;
-- effect on artifacts/tests;
-- whether it changes ABI or generated code;
-- whether CI covers both values.
+Avoid option explosion.
 
-## Linker/profiling interaction
+## Repository closure
 
-For profiling, debug info matters. Be careful with linker flags or incremental linker choices that remove or degrade DWARF or symbols. If CPU sampling uses DWARF call graphs, validate that the produced binary contains the expected debug information.
+When changing files/generated output, discover:
 
-## CI/reproducibility checklist
+```text
+source/path registries
+build enumeration
+lint/fmt path lists
+compile-fail registration
+goldens/expected output
+examples checked by CI
+generated headers/constants
+package/release manifests
+```
 
-- `zig version` pinned or reported.
-- `zig build --help` exposes expected steps/options.
-- `zig build test` runs through the build system, not only bare `zig test`, when modules/deps exist.
-- ReleaseSafe and ReleaseFast lanes exist for low-level code.
-- Package pins are reviewed.
-- Local forks are not accidentally committed as permanent overrides.
-- C translation uses matching target/cflags.
-- Build cache and `zig-pkg` policy is explicit.
+For each changed path:
 
-## Cache and disk-pressure handoff
+```yaml
+changed_path:
+  build_owner:
+  registry_owner:
+  generator_owner:
+  golden_owner:
+  aggregate_proof:
+```
 
-When build work becomes a disk-pressure or cache-growth issue, hand off to `references/cache_hygiene_playbook.md` instead of suggesting blind deletion.
+A new file compiling locally is not closure if aggregate repository contracts omit it.
 
-Rules:
+Generated output rewrites invalidate proof that ran before regeneration.
 
-- `.zig-cache` / `zig-cache` are local build caches and can be drained first.
-- `zig-out` is build output/install prefix and should be treated as an artifact/output decision.
-- `zig-pkg` is dependency working state in Zig 0.16 and requires modification/fork/vendor checks before deletion.
-- `--cache-dir` and `--global-cache-dir` are the preferred recurring-disk-pressure controls.
-- After dependency/global cache changes, run `zig build --fetch=needed` and the normal build lane.
+## CI/reproducibility
+
+- Zig version pinned/reported.
+- Build help exposes intended steps/options.
+- Build-system tests cover modules/dependencies.
+- Relevant optimize/target lanes exist.
+- Package pins/forks reviewed.
+- C translation matches target/cflags.
+- Cache/dependency policy explicit.
+- Repository closure scan reviewed.
+- Final proof epoch matches generated artifacts and dependencies.

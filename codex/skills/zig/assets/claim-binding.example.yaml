@@ -1,0 +1,26 @@
+claim_binding:
+  claim_id: CLAIM-REPLAY-001
+  claim: Replay evidence authorizes use of one exact committed object.
+  authoritative_owner: ObjectStore.commit
+  authoritative_sources:
+    - committed object bytes
+    - object domain and version
+    - commit sequence
+  canonical_encoding: domain-separated length-prefixed encoding
+  bound_fields:
+    - object bytes
+    - object domain
+    - format version
+    - commit sequence
+  trusted_but_unbound_fields: []
+  caller_controlled_fields:
+    - requested ref
+  public_predicate: ReplayEvidence.passed
+  strongest_internal_predicate: ReplayEvidence.validationReport().passed
+  predicate_parity: pass
+  forgery_tests:
+    - change object bytes
+    - replace with equal-length foreign ref
+    - zero commit sequence
+    - change format version
+    - omit evidence entry

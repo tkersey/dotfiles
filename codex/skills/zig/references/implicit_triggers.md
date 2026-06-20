@@ -1,15 +1,116 @@
-# Zig implicit trigger taxonomy
+# Zig Implicit Trigger Taxonomy
 
-This reference keeps the verbose Zig trigger list out of `AGENTS.md`. It strengthens, not weakens, implicit `$zig` routing: do not wait for the user to type `$zig`. Use the `zig` skill whenever the request, changed files, error output, or repo surface includes Zig-specific evidence.
+Use `$zig` when the repository/task is Zig-specific even if the user does not type `$zig`.
 
-Trigger on:
+## Direct Zig cues
 
-- `.zig`, `build.zig`, `build.zig.zon`, `zig build`, `zig test`, `zig fmt`, `zig ast-check`, `zlinter`, `zls`, `zig fetch`, `zig-pkg`, `.zig-cache`, `zig-cache`, `zig-out`, `ZIG_GLOBAL_CACHE_DIR`, `--cache-dir`, or `--global-cache-dir`.
-- Zig 0.16 migration cues such as `std.Io`, `std.process.Init`, `@cImport`, `addTranslateC`, removed `@Type`, `std.meta.Int`, `std.meta.Tuple`, `std.Thread.Pool`, `std.testing.Smith`, or `--test-timeout`.
-- Comptime, reflection, or codegen cues such as `comptime`, `anytype`, `@typeInfo`, `@FieldType`, `@hasDecl`, `@hasField`, `inline for`, generated types, format/schema derivation, specialization, `@compileError`, `@compileLog`, or `@setEvalBranchQuota`.
-- Low-level hazard cues such as allocator ownership, `errdefer`, raw pointers, slices, sentinels, alignment, `@ptrCast`, `@alignCast`, `@ptrFromInt`, `undefined`, `unreachable`, `@setRuntimeSafety`, `extern`, `packed`, FFI/C ABI, MMIO, atomics, concurrency, `ReleaseFast`, or `ReleaseSmall`.
-- Zig-project performance and cache cues such as benchmarks, profiling, `zprof`, allocator/live-byte metrics, disk pressure, cache drains, dependency fetches, or CI cache bloat.
+```text
+.zig
+build.zig
+build.zig.zon
+zig build/test/run/fmt/ast-check/fetch
+zlinter
+zls
+zig-pkg
+.zig-cache / zig-cache / zig-out
+ZIG_GLOBAL_CACHE_DIR
+--cache-dir / --global-cache-dir
+```
 
-Do not wait for a `.zig` filename when the project is known to be Zig and the issue is build, test, package, cache, performance, migration, or safety behavior.
+## Version/migration cues
 
-Combine `zig` with `context-bounded-verification` or `invariant-ace` when behavior or hazard risk is material. The `zig` skill owns Zig-specific proof lanes, version checks, trigger classification, migration scans, systems scans, cache-hygiene protocol, and reporting labels.
+```text
+std.Io
+std.process.Init
+@cImport / addTranslateC
+removed @Type
+std.meta.Int / Tuple
+std.Thread.Pool
+std.testing.Smith
+--test-timeout
+Zig 0.16
+```
+
+## Comptime/generation cues
+
+```text
+comptime
+anytype
+@typeInfo
+@FieldType
+@hasDecl / @hasField
+inline for
+generated types
+schema/format derivation
+specialization
+@compileError / @setEvalBranchQuota
+```
+
+## Low-level/hazard cues
+
+```text
+allocator ownership
+errdefer
+raw pointers/slices/sentinels/alignment
+@ptrCast / @alignCast / @ptrFromInt
+undefined / unreachable / @setRuntimeSafety
+extern / packed
+FFI/C ABI/MMIO
+atomics/concurrency
+ReleaseFast/ReleaseSmall
+```
+
+## Contextual semantic-family cues
+
+These trigger `$zig` only when the repository or changed surface is already known to be Zig.
+
+### Claim binding
+
+```text
+fingerprint receipt certificate proof evidence ref cursor manifest
+checkpoint replay passed verify attestation
+```
+
+### Lifetime escape
+
+```text
+parsed JSON decoded bytes arena snapshot report returned slice deinit refresh
+```
+
+### Atomic transition
+
+```text
+append commit put stage rollback transfer ledger journal outbox event pair
+```
+
+### Verifier completeness
+
+```text
+parser decoder verifier inspector WASM binary protocol opcode section LEB metadata stack
+```
+
+### Repository closure
+
+```text
+golden expected compile-fail path registry generated artifact source manifest
+```
+
+### Proof context
+
+```text
+stale proof wrong head dirty tree commit/push after tests fork dependency cache permission
+```
+
+## Routing discipline
+
+Do not trigger an extreme workflow from an adjacent generic word alone.
+
+Once `$zig` is active:
+
+```text
+classify work surface
+classify semantic failure family
+emit ZSR-v1 for material changes
+```
+
+Combine with repository invariant/verification skills only when their independent trigger is genuinely met. `$zig` owns Zig-specific routing, toolchain checks, proof context, and semantic-family contracts.

@@ -1,32 +1,35 @@
-# Zig error-set and failure-path engineering playbook
+# Zig Error, Failure-Path, and Atomic Transition Playbook
 
-Use this playbook when designing fallible APIs, reviewing `try`/`catch`, avoiding `anyerror`, adding `errdefer`, mapping C/system errors, or proving cleanup.
+Use for fallible APIs, `try`/`catch`, `errdefer`, precise error sets, boundary mapping, partial mutation, ownership transfer, event/ledger writes, or cleanup proof.
 
-## Expert objective
+## Error contract
 
-A Zig error contract should state:
+State:
 
-1. the precise error set where feasible;
-2. which errors are domain errors, resource errors, environmental errors, or programmer bugs;
-3. how cleanup happens after each failure;
-4. which errors propagate unchanged and which are translated;
-5. which tests prove success, expected failure, allocation failure, and cleanup-after-failure.
+```text
+precise error set
+domain/resource/environment/programmer categories
+translation boundary
+cleanup and rollback
+observable atomicity
+tests for success, domain failure, resource failure, and cleanup
+```
 
 ## Error taxonomy
 
-| Category | Examples | Preferred handling |
+| Category | Examples | Handling |
 | --- | --- | --- |
-| Domain/protocol | `error.InvalidHeader`, `error.UnsupportedVersion` | Precise error set; switch at caller. |
-| Resource | `error.OutOfMemory`, `error.NoSpaceLeft` | Propagate, test via failing allocator/storage. |
-| Environment | `error.FileNotFound`, permission, network unavailable | Surface with context at integration boundary. |
-| Programmer bug | impossible state, invalid internal invariant | `assert`/`unreachable` only with strong proof. |
-| Foreign/system | errno, Win32 errors, C library statuses | Translate once in boundary module. |
+| Domain/protocol | invalid header/version/state | Precise error; caller may switch. |
+| Resource | OOM/no space/capacity | Propagate and inject in tests. |
+| Environment | file/permission/network | Add context at integration boundary. |
+| Programmer bug | impossible internal state | Assert/unreachable only with proof. |
+| Foreign/system | errno/status | Translate once in boundary module. |
 
-Do not turn domain errors into panics. Do not turn bugs into vague error sets.
+Do not turn domain failures into panics or bugs into vague `anyerror`.
 
-## Precise error sets
+## Precise errors
 
-Prefer named or inferred precise error sets inside libraries. Avoid `anyerror` except at high-level integration boundaries or when truly unavoidable.
+Prefer named/inferred error sets inside libraries.
 
 ```zig
 const ParseError = error{
@@ -34,79 +37,100 @@ const ParseError = error{
     InvalidChar,
     Overflow,
 };
-
-pub fn parseId(s: []const u8) ParseError!u32 {
-    if (s.len == 0) return error.Empty;
-    // ...
-}
 ```
 
-Benefits:
-
-- callers can switch exhaustively;
-- documentation is clearer;
-- accidental error widening becomes visible;
-- tests can cover every domain error.
+Widen only at genuine integration boundaries.
 
 ## `try`, `catch`, and `errdefer`
 
-Review every `try` in context:
+For every `try`:
 
-- Is propagation correct, or should the error be mapped to a domain-specific error?
-- Is there acquired state that needs rollback before propagation?
-- Would a `catch` block swallow useful information?
-- Is `catch unreachable` backed by proof, or is it hiding a real failure?
+- is propagation correct?
+- should it map to a domain error?
+- has state been acquired or mutated?
+- does rollback cover all owners?
+- does `catch` discard useful evidence?
+- is `catch unreachable` actually closed-world?
 
-Use `errdefer` for rollback in constructors and multi-step mutation:
+Use `errdefer` for resource rollback, but do not confuse it with full transaction rollback.
 
-```zig
-pub fn addEntry(self: *Table, key: []const u8, value: Value) !void {
-    const owned_key = try self.allocator.dupe(u8, key);
-    errdefer self.allocator.free(owned_key);
+## Atomic-transition gate
 
-    try self.map.put(owned_key, value);
-    // ownership transferred to map after successful put
-}
+When later work can fail after mutation, inventory:
+
+```yaml
+failure_atomicity:
+  owners: []
+  first_observable_mutation:
+  later_fallible_steps: []
+  ownership_transfers: []
+  publications: []
+  commit_point:
+  rollback:
+  deterministic_failure_injection:
+  observable_pre_state:
+  observable_post_state:
 ```
 
-## Error mapping at boundaries
-
-For C or OS boundaries, convert raw statuses once:
+Preferred:
 
 ```text
-raw errno/status -> boundary-specific error set -> Zig core logic
+prepare fallible data
+-> commit non-fallible state
+-> publish
 ```
 
-Keep mappings centralized and documented. Include unknown/unsupported statuses if the foreign API can return values outside the documented range.
+Prepare includes allocations, clones, parsing, validation, reservation, event/ref construction, and external preflight.
 
-## Failure-path tests
+Publish only after commit includes receipts, refs, events, outbox work, callbacks, and external visibility.
 
-Test at four levels:
+## Partial mutation anti-patterns
 
-1. success path;
-2. expected domain failures;
-3. resource failures, especially allocation failure;
-4. cleanup after partial failure.
+- append one half of an event pair;
+- commit owner A before owner B can fail;
+- transfer ownership then allocate returned evidence;
+- disarm rollback before all fallible work;
+- mutate counters/indexes but roll back only memory;
+- persist journal state before proof construction;
+- rollback that itself allocates/fails;
+- return a ref for a transition that later fails.
 
-For parsers, every named domain error should have at least one fixture. For allocation-heavy APIs, use `checkAllAllocationFailures` or a deterministic failing allocator.
+## Boundary mapping
 
-## Reporting discipline
+Centralize:
 
-When reviewing or implementing, report:
+```text
+raw status/errno
+-> boundary-specific error set
+-> core domain behavior
+```
 
-- exact error set before/after the change;
-- whether `anyerror` was narrowed or widened;
-- new cleanup path and `errdefer` placements;
-- failure tests added or unavailable;
-- any remaining `catch unreachable` and why it is sound.
+Include unknown statuses.
 
-## Review checklist
+## Proof
 
-- Error set is precise unless high-level integration justifies widening.
-- `error.OutOfMemory` is propagated, not swallowed.
-- Boundary errors are translated once, not scattered.
-- `catch unreachable` has a written proof or is removed.
-- `errdefer` protects partial initialization and mutation.
-- Domain errors have fixtures.
-- Allocation failure has coverage for allocation-using APIs.
-- Cleanup-after-failure is tested.
+Test:
+
+1. success;
+2. each domain failure;
+3. allocation/resource failure;
+4. cleanup after partial acquisition;
+5. full observable pre-state equals post-state at each injected failure;
+6. no event/ref/receipt/publication escaped;
+7. ownership freed/transferred exactly once;
+8. durable external effects follow explicit recovery/idempotency protocol.
+
+Use `std.testing.checkAllAllocationFailures` for bounded allocation behavior and targeted fail indices for stateful transitions.
+
+## Reporting
+
+Report:
+
+- error set before/after;
+- widened/narrowed errors;
+- translation boundary;
+- resource rollback;
+- state rollback/commit point;
+- failure injection coverage;
+- remaining `catch unreachable` proofs;
+- unavailable atomicity proof.

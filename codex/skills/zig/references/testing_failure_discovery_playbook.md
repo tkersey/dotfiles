@@ -1,37 +1,26 @@
-# Zig testing, fuzzing, allocation-failure, and negative-proof playbook
+# Zig Testing, Fuzzing, Mutation, and Failure Discovery
 
-Use this playbook for correctness hardening, parser/data-structure tests, fuzzing, allocation failure, compile-fail fixtures, failure reproduction, or bug-minimization workflows.
-
-## Expert objective
-
-A robust Zig test strategy covers:
-
-1. normal behavior;
-2. edge cases and invariants;
-3. domain failures;
-4. allocation/resource failures;
-5. fuzz/differential exploration;
-6. compile-time negative tests when APIs reject types/shapes;
-7. optimizer-mode and target-specific hazards;
-8. reproduction commands for discovered failures.
+Use for correctness hardening, parsers/verifiers, data structures, state transitions, fuzzing, allocation failure, compile-fail fixtures, optimizer/target behavior, or reproductions.
 
 ## Test lanes
 
 | Lane | Purpose |
 | --- | --- |
-| Unit test | Local behavior and invariants. |
-| Build-system test | Correct modules/deps/options. |
-| Integration test | Files/network/process effects. |
-| Allocation-failure test | `OutOfMemory` cleanup coverage. |
-| Fuzz test | Explore parsers/state machines. |
-| Differential test | Compare optimized/custom path to reference. |
-| Compile-fail fixture | Prove invalid comptime/type shapes fail intentionally. |
-| Timeout test | Detect deadlocks/hangs. |
-| Optimize-mode matrix | Catch safety/optimizer differences. |
+| Unit | Local behavior and invariants. |
+| Build-system | Modules/deps/options/generated imports. |
+| Integration | Files/network/process/effects. |
+| Allocation-failure | OOM cleanup and atomicity. |
+| Fuzz | Parser totality/state exploration. |
+| Differential | Custom/optimized path versus reference. |
+| Semantic mutation | Verifier completeness and claim binding. |
+| Compile-fail | Invalid comptime/type shapes fail intentionally. |
+| Timeout/stress | Hangs/deadlocks/liveness. |
+| Optimize/target matrix | Safety, ABI, endian, optimizer differences. |
+| Proof-epoch | Bind result to exact artifact context. |
 
-## Commands
+Prefer repository build steps over bare `zig test` when modules/options/dependencies exist.
 
-Start with the repo harness:
+## Core commands
 
 ```bash
 zig build test
@@ -41,74 +30,123 @@ zig build test -Doptimize=ReleaseSafe
 zig build test -Doptimize=ReleaseFast
 ```
 
-For local files only, `zig test path/to/file.zig` can be useful, but do not rely on it when the build system wires modules, C imports, packages, or options.
+Inspect `zig build --help` before assuming runner argument placement.
 
-## Fuzzing with Smith
+## Fuzzing
 
-For Zig 0.16, fuzz callbacks use `*std.testing.Smith`. A good fuzz target:
+A good Zig 0.16 Smith target:
 
-- constrains generated size to avoid meaningless huge work;
-- preserves interesting seeds/corpus;
-- compares against a reference implementation when possible;
-- keeps crash reproduction fixtures under `testdata/fuzz/`;
-- uses `@embedFile` or explicit corpus options for regression.
+- bounds generated work;
+- keeps corpus/reproduction;
+- compares to a reference when possible;
+- captures exact version/target/mode/seed;
+- tests parsers/state machines/zero-copy validators.
 
-Suggested categories:
+Fuzzing proves exploration and totality better than semantic completeness.
 
-- parsers/decoders;
-- binary protocols;
-- state machines;
-- allocators/containers;
-- escaping/unescaping;
-- unicode/path handling;
-- zero-copy validators.
+## Semantic mutation matrix
 
-## Allocation failure
+For proof/certificate/verifier code, mutate one trusted fact at a time.
 
-Use `std.testing.checkAllAllocationFailures` for functions with bounded allocation behavior. For unbounded loops, use targeted `FailingAllocator` tests around known allocation points.
+Typical rows:
+
+```text
+claimed field changed
+field omitted
+zero/minimal evidence
+foreign equal-length ref
+reordered/duplicated evidence
+wrong version/domain/authority/epoch
+wrong opcode/tag
+unknown/duplicate section
+malformed/noncanonical varint
+metadata mismatch
+lower/upper bound violation
+extra/missing entity
+wrong final stack/state/result
+stale generated constant
+valid encoding with invalid semantics
+```
+
+Each row names:
+
+```yaml
+mutation_case:
+  case_id:
+  governing_claim_or_law:
+  baseline:
+  mutation:
+  public_predicate:
+  expected_failure:
+  proof_command:
+```
+
+## Allocation and atomicity failure
 
 Review:
 
-- Does failure after each allocation deinit prior allocations?
-- Does the function leave the object unchanged after failed mutation?
-- Are partial inserts rolled back?
-- Are moved/owned values freed exactly once?
+- each allocation index;
+- object unchanged after failed mutation;
+- partial insert rollback;
+- event/ledger/outbox rollback;
+- moved value freed exactly once;
+- no escaped ref/receipt;
+- failure after first observable mutation.
 
-## Negative tests
+`checkAllAllocationFailures` is useful but may not enumerate non-allocation failures; add targeted fail points where needed.
 
-For comptime-heavy APIs, invalid code should fail with intentional diagnostics. Options:
+## Negative compile-time proof
 
-- put compile-fail snippets in comments with exact command;
-- create a separate fixture directory that CI compiles expecting failure;
-- use a build step that runs invalid cases and checks error text if the repo already supports this pattern.
+Use repository-supported compile-fail fixtures for:
 
-Negative tests should cover:
+```text
+unsupported type shape
+missing declaration/method
+illegal field
+invalid comptime value
+removed Zig API
+contract diagnostic
+```
 
-- unsupported type shape;
-- missing required declaration/method;
-- illegal field type;
-- invalid comptime value;
-- removed Zig-version construct in migration work.
+Check intended error text when the repository supports stable diagnostics.
 
-## Reproduction discipline
+## Property/state-machine proof
 
-When a failure is found, preserve:
+Prefer law-level tests for recurring families.
 
-- exact Zig version;
-- target/optimize mode;
-- seed/corpus file;
-- command;
-- minimized input if available;
-- expected vs actual behavior;
-- whether the failure is safety panic, assertion, compile error, timeout, or wrong result.
+Examples:
 
-## Review checklist
+```text
+encode/decode round trip
+commit/publish visibility law
+rollback preserves observable state
+public verifier equals strongest predicate
+proof fingerprint changes with every claimed field
+```
 
-- Tests run through the build system when dependencies/modules exist.
-- Fuzz targets have bounded work and corpus reproduction.
-- Allocation-failure tests cover cleanup.
-- Domain error cases have explicit fixtures.
-- Compile-time negative cases exist for reflective/generic APIs.
-- Optimizer-sensitive code is tested in multiple modes.
-- Timeouts are used for concurrency/hang-prone tests.
-- Failure reproduction details are captured.
+## Reproduction record
+
+Preserve:
+
+```text
+Zig version
+repo/head/dirty fingerprint
+target/optimize/options
+dependency/fork state
+seed/corpus/input
+command
+expected/actual
+failure class
+proof epoch
+```
+
+## Checklist
+
+- Repository harness used.
+- Active semantic family has direct proof.
+- Fuzz target is bounded and reproducible.
+- Semantic mutation matrix exists for verifiers/claims.
+- Allocation and state atomicity failures are covered.
+- Compile-time invalid cases fail intentionally.
+- Optimizer/target-sensitive paths use a matrix.
+- Final proof epoch matches final tree/context.

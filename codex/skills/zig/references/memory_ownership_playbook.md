@@ -1,58 +1,115 @@
-# Zig memory ownership and allocator playbook
+# Zig Memory Ownership, Allocator, and Escape Playbook
 
-Use this playbook when the request touches `std.mem.Allocator`, containers, arenas, pools, buffers, `defer`, `errdefer`, ownership transfer, leak fixes, out-of-memory behavior, or lifetime-sensitive APIs.
+Use when code touches allocators, containers, arenas, pools, buffers, parsing/decoding, returned slices/refs, snapshots, reports, certificates, ownership transfer, leaks, OOM, or lifetime-sensitive APIs.
 
-## Expert objective
+## Objective
 
-Do not merely make allocation compile. Produce the memory contract:
+Every allocation and borrowed view has an explicit owner, lifetime, invalidation point, failure path, and proof.
 
-1. who owns each allocation;
-2. which allocator creates it;
-3. who frees it and when;
-4. whether ownership transfers across the API boundary;
-5. what happens on every failure edge;
-6. how allocation failure and leaks are tested.
+```text
+who owns it
+which allocator/storage created it
+who frees/resets/deinitializes it
+whether ownership transfers
+what invalidates borrows
+what happens on every failure edge
+how escape and OOM behavior are proved
+```
 
 No low-level Zig API should leave ownership implicit.
 
-## Ownership vocabulary
-
-Use precise terms in answers and comments:
+## Vocabulary
 
 | Term | Meaning |
 | --- | --- |
-| borrowed | Caller keeps ownership; callee may read/use only for the documented lifetime. |
-| owned | Callee or returned object must eventually free/deinit it. |
-| transferred | Ownership moves from one component to another; old owner must not free/use. |
-| arena-owned | Lifetime is tied to arena reset/deinit rather than individual free. |
-| caller-allocated | Caller supplies storage; callee writes into it without heap allocation. |
-| allocator-backed | The object owns heap allocations using a stored allocator. |
-| unmanaged | Container/object does not store allocator; allocator is passed to mutating/deinit functions. |
+| borrowed | Caller/backing owner retains ownership; use is limited to a documented lifetime. |
+| owned | Returned object/callee must eventually free/deinit. |
+| transferred | Ownership moves; old owner must not free/use. |
+| arena-owned | Lifetime ends at arena reset/deinit. |
+| caller-allocated | Caller supplies output storage. |
+| allocator-backed | Object stores allocator and owns allocations. |
+| unmanaged | Allocator is passed to mutation/deinit functions. |
+| snapshot-borrowed | View is valid only for a named snapshot/epoch and backing owner. |
 
-Prefer making this visible in type names and APIs: `OwnedBytes`, `BorrowedFrame`, `initOwned`, `fromBorrowed`, `deinit`, `clone`, `toOwnedSlice`, `release`, `intoInner`.
+Prefer visible APIs/types such as:
+
+```text
+OwnedBytes
+BorrowedFrame
+ValidatedView
+initOwned
+fromBorrowed
+clone
+toOwnedSlice
+release
+intoInner
+```
+
+## Mandatory escape table
+
+Whenever slices/refs cross a function boundary, include:
+
+```yaml
+escape_table:
+  - field:
+    source:
+    backing_owner:
+    allocator_or_storage:
+    returned_lifetime:
+    invalidated_by: []
+    result_ownership:
+      borrowed |
+      duplicated |
+      transferred |
+      owner-carried
+    deinit_owner:
+    failure_cleanup:
+    proof:
+```
+
+Use this for:
+
+```text
+parsed JSON
+decoded binary
+arena-backed state
+container-backed slices
+staged transaction refs
+snapshots/reports/certificates
+public []const u8 fields
+returned plans/descriptors/tables
+```
+
+## Default escape rule
+
+If runtime-owned slices escape:
+
+```text
+duplicate into the returned owner
+or
+transfer/carry the backing owner with the returned value
+```
+
+Do not return slices backed by temporary input, soon-deinitialized arenas/reports, moved staging objects, or containers that can reallocate unless the API exposes and enforces that lifetime.
 
 ## Allocator selection
 
-Choose based on lifetime and failure semantics, not habit.
-
 | Use case | Prefer |
 | --- | --- |
-| Library API | Accept `std.mem.Allocator` from caller. |
-| Test leak checks | `std.testing.allocator`. |
-| Test OOM behavior | `std.testing.FailingAllocator` or `std.testing.checkAllAllocationFailures`. |
-| Compile-time/known maximum storage | `std.heap.FixedBufferAllocator`. |
-| CLI that exits after one operation | Arena with one final `deinit`. |
-| Per-request/per-frame scratch | Arena reset/deinit at request/frame boundary. |
-| Long-running service | Explicit frees, pools, slabs, or arenas with bounded reset points. |
-| Hot path | Avoid allocation, preallocate, use caller storage, or prove allocation count with `zprof`. |
+| Library API | Caller-provided `std.mem.Allocator`. |
+| Leak tests | `std.testing.allocator`. |
+| OOM tests | `checkAllAllocationFailures` or targeted failing allocator. |
+| Known maximum | `FixedBufferAllocator` / caller storage. |
+| Short CLI operation | Arena with one explicit lifetime boundary. |
+| Per-request scratch | Arena reset/deinit at request boundary. |
+| Long-running service | Explicit free, bounded pools/slabs, or resettable arenas. |
+| Hot path | Preallocation/caller storage and measured allocation count. |
 
-Avoid `page_allocator` as a lazy default in libraries. It hides leak/failure behavior and loses caller control.
+Avoid `page_allocator` as a lazy library default.
 
 ## API patterns
 
-### Caller-owned output buffer
-
-Use when the maximum output is known or bounded.
+### Caller-owned output
 
 ```zig
 pub fn encodeInto(out: []u8, input: []const u8) ![]u8 {
@@ -62,131 +119,135 @@ pub fn encodeInto(out: []u8, input: []const u8) ![]u8 {
 }
 ```
 
-Contract: caller owns `out`; returned slice borrows `out`; no allocation.
+Returned slice borrows `out`.
 
 ### Returned owned allocation
 
-Use when the API must allocate and transfer ownership to the caller.
-
 ```zig
-pub fn duplicateOwned(allocator: std.mem.Allocator, input: []const u8) ![]u8 {
+pub fn duplicateOwned(
+    allocator: std.mem.Allocator,
+    input: []const u8,
+) ![]u8 {
     return allocator.dupe(u8, input);
 }
 ```
 
-Contract: caller must free with the same allocator.
+Caller frees with the same allocator.
 
-### Object owns allocator-backed state
+### Owner-carrying result
+
+When several returned slices borrow one parsed arena/buffer, return an owning wrapper:
 
 ```zig
-const Buffer = struct {
-    allocator: std.mem.Allocator,
-    bytes: []u8,
+const Parsed = struct {
+    arena: std.heap.ArenaAllocator,
+    value: Value,
 
-    pub fn init(allocator: std.mem.Allocator, len: usize) !Buffer {
-        const bytes = try allocator.alloc(u8, len);
-        return .{ .allocator = allocator, .bytes = bytes };
-    }
-
-    pub fn deinit(self: *Buffer) void {
-        self.allocator.free(self.bytes);
+    pub fn deinit(self: *Parsed) void {
+        self.arena.deinit();
         self.* = undefined;
     }
 };
 ```
 
-Contract: every successful `init` requires exactly one `deinit`.
+The wrapper must not be accidentally copied as duplicate ownership.
 
-### Multi-step init with rollback
+## Multi-step acquisition
 
-Use `errdefer` immediately after each successful acquisition.
+Use `errdefer` immediately after each acquisition.
 
 ```zig
-pub fn initPair(allocator: std.mem.Allocator, a_len: usize, b_len: usize) !Pair {
-    var a = try allocator.alloc(u8, a_len);
-    errdefer allocator.free(a);
+const a = try allocator.alloc(u8, a_len);
+errdefer allocator.free(a);
 
-    var b = try allocator.alloc(u8, b_len);
-    errdefer allocator.free(b);
-
-    return .{ .allocator = allocator, .a = a, .b = b };
-}
+const b = try allocator.alloc(u8, b_len);
+errdefer allocator.free(b);
 ```
 
-Contract: no partial allocation leaks on `error.OutOfMemory` or later initialization failure.
+Do not disarm rollback until ownership transfer is complete and all later fallible returned data is prepared.
 
-## Managed vs unmanaged containers
+For observable multi-owner mutation, use the atomic-transition playbook; allocator cleanup alone is not rollback.
 
-For library internals, prefer unmanaged containers when it improves allocator visibility and lets callers choose allocation scope. For application-level convenience, a managed wrapper may be appropriate.
+## Container invalidation
 
-Review questions:
+Review:
 
-- Does the type store an allocator? If yes, is that allocator part of the type's lifetime?
-- Does `deinit` need an allocator parameter? If yes, the type is effectively unmanaged.
-- Does copying the type duplicate allocator ownership accidentally?
-- Is there a `clone` or `toOwned` operation when ownership must be duplicated?
-- Are slices returned from containers invalidated by future mutation?
+- append/insert reallocation;
+- hash-map rehash;
+- swap/remove;
+- arena reset;
+- vector/list growth;
+- snapshot refresh;
+- object move/copy;
+- owner deinit.
+
+A slice/pointer returned before mutation may dangle afterward.
 
 ## Arena discipline
 
-Arenas are lifetime tools, not leak excuses.
+Good:
 
-Good arena uses:
+- temporary parse then copy compact durable result;
+- request/frame lifetime;
+- bounded CLI command.
 
-- parse all temporary data, then convert a small validated result to owned storage;
-- serve a request/frame and deinit/reset everything at the boundary;
-- short-lived CLI command where freeing everything at exit is the correct lifetime.
+Bad:
 
-Bad arena uses:
+- returning arena-backed fields after deinit;
+- long-running unbounded arena;
+- hiding ownership ambiguity;
+- resetting while snapshots/refs remain public.
 
-- long-lived service without reset points;
-- hiding ownership bugs;
-- allocating unbounded data without an admission-control limit;
-- returning arena-backed slices beyond arena lifetime.
+## Stable proof identities
+
+Do not build long-lived fingerprints/certificates from borrowed labels or descriptor names unless lifetime and canonical bytes are stable.
+
+Prefer authoritative stable fields:
+
+```text
+domain
+format/version
+owner/subject identity
+canonical content fingerprint
+artifact state
+```
 
 ## Failure-path review
 
-For each fallible function, inspect:
+Inspect:
 
-- every `try` after an allocation;
-- every branch between acquisition and ownership transfer;
-- every early `return`;
-- every callback that might retain a borrowed slice;
-- every container mutation that may reallocate and invalidate pointers/slices.
+- every `try` after acquisition;
+- branches before transfer;
+- early returns;
+- callbacks retaining borrows;
+- container mutations that invalidate views;
+- partial result construction;
+- deinit ordering;
+- copies of owner-bearing structs.
 
-Use `errdefer` for rollback and document ownership transfer points explicitly.
+## Proof
 
-## Test obligations
+Normally include:
 
-Allocator-using code should normally have:
+- zero/max inputs;
+- repeated init/deinit;
+- deterministic failure after each allocation;
+- no observable mutation after OOM;
+- escape remains valid for promised lifetime;
+- escape becomes invalid only at documented boundary;
+- mutation invalidation regression;
+- leak check;
+- allocation-count profile when performance is claimed.
 
-```zig
-test "allocation failure coverage" {
-    try std.testing.checkAllAllocationFailures(
-        std.testing.allocator,
-        functionUnderTest,
-        .{ /* args */ },
-    );
-}
-```
+## Checklist
 
-Also test:
-
-- zero-length and maximum-size inputs;
-- repeated init/deinit cycles;
-- failed second/third allocation in multi-step constructors;
-- returned slices after mutation when invalidation is possible;
-- leak check using `std.testing.allocator` or a debug allocator;
-- profiler lane (`zprof`) for allocation counts when performance is claimed.
-
-## Review checklist
-
-- Every allocation has an owner.
-- Every owner has a cleanup path.
-- Cleanup uses the same allocator that allocated the memory.
-- `errdefer` protects partial initialization.
-- Returned slices document whether they are borrowed or owned.
-- Arena-backed results do not outlive the arena.
-- Container mutation invalidation is documented.
-- `error.OutOfMemory` is not swallowed.
-- Allocation-failure testing is present or labeled unavailable.
+- Every allocation has one owner.
+- Allocation and free use compatible allocator domains.
+- Every owner has exactly one cleanup path.
+- Borrowed/owned/transferred state is explicit.
+- Every escaping field appears in the escape table.
+- No arena/temp/report-backed slice outlives its owner.
+- Reallocation invalidation is explicit.
+- `errdefer` protects partial acquisition.
+- OOM is propagated and tested.
+- Observable atomicity is proved separately.
