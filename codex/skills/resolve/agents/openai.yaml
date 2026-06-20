@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "Minimum Behavioral Kernel Review Compiler"
-  default_prompt: "Use $resolve to convert review findings into observations, minimize the behavioral kernel by observational equivalence, compile one whole-PR realization from the fixed campaign base, compress proof, conserve semantic surface, and close only with MBKC-v1."
+  short_description: "Compile review observations into a quotiented behavioral kernel, realize one normal form, prove recomposition, and close the branch."
+  default_prompt: "Use $resolve. Build MBK-v1 and RC-v1 before mutation: factor obligations, quotient indistinguishable distinctions with congruence proof, ablate discharged surfaces, normalize owners, realize one design with $fixed-point-driver, audit recomposition, then prove/push/close."

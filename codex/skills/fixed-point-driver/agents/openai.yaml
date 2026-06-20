@@ -1,6 +1,6 @@
 policy:
   allow_implicit_invocation: true
 interface:
-  display_name: "Fixed Point Driver"
-  short_description: "Canonical realization and kernel conformance"
-  default_prompt: "Under $resolve, compile one accepted kernel realization from campaign base, map every construct to the kernel, and return on new observations."
+  display_name: "Fixed-Point Driver"
+  short_description: "Realize one certified normal form, retire named surfaces, prove preservation and recomposition, and stop on new observations."
+  default_prompt: "Use $fixed-point-driver to realize the selected kernel/RC-v1 exactly. Do not invent a quotient. Apply certified operators, prove preservation, run recomposition audit, and return on any new observation."

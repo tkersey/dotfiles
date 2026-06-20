@@ -1,6 +1,6 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Review Compression Compiler"
-  short_description: "Compile review evidence into MBK-v1"
-  default_prompt: "Use $review-compression-compiler read-only to quotient review findings into accepted observations, governing laws, authorities, and a Minimum Behavioral Kernel."
+  short_description: "Factor review findings, quotient redundant distinctions, and emit a Minimum Behavioral Kernel plus Reduction Certificate."
+  default_prompt: "Use $review-compression-compiler to compile these findings into accepted observations, governing laws, a congruent behavioral quotient, a minimum kernel, and RC-v1. Do not emit code."

@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Complexity Mitigator"
-  short_description: "Readability/refactor preflight for tangled existing code, nested branches, boolean soup, opaque names, and cross-file understanding cost."
-  default_prompt: "Use $complexity-mitigator as an analysis-first preflight: identify essential vs incidental complexity, spec risk, and the smallest clarity cut before any implementation handoff."
+  short_description: "Local factorization and winnowing preflight for tangled existing code."
+  default_prompt: "Use $complexity-mitigator read-only. Factor the local whole, separate essential/incidental/spec-risk factors, winnow dominated or duplicated factors, state recomposition, and hand off the smallest clarity cut."

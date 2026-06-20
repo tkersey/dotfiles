@@ -1,10 +1,10 @@
 interface:
   display_name: "reduce"
-  short_description: "Spot costly abstractions and propose lower-level primitives without flattening real invariants."
+  short_description: "Factor costly layers, quotient redundancy, ablate unearned surface, and normalize the survivors with a Reduction Certificate."
   brand_color: "#64748B"
   default_prompt: >
-    Review this codebase with $reduce. Identify high-cost abstractions, score tax versus proven value,
-    run the essential-abstraction check, and propose a reversible cut list with lower-level replacements,
-    proof signals, and rollback. Do not implement unless I explicitly ask.
+    Use $reduce. Build an evidence-backed factorization, score tax versus live value,
+    check quotient congruence and essential abstractions, select winnowing operators,
+    emit RC-v1, and propose reversible proof-bearing cuts. Do not implement unless asked.
 policy:
   allow_implicit_invocation: true
