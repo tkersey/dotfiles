@@ -24,9 +24,9 @@ esac
 contexts=""
 messages=""
 
-resolve_tool="$HOME/.dotfiles/codex/skills/resolve/tools/review_compile.py"
-if [ -f "$resolve_tool" ]; then
-  resolve_output=$(python3 "$resolve_tool" hook-context --cwd "$PWD" 2>/dev/null || true)
+resolve_bin=$(resolve_c3_bin || true)
+if [ -n "${resolve_bin:-}" ]; then
+  resolve_output=$("$resolve_bin" hook-context --cwd "$PWD" 2>/dev/null || true)
   resolve_active=$(printf '%s' "$resolve_output" | jq -r '.active // false' 2>/dev/null || printf false)
   if [ "$resolve_active" = "true" ]; then
     resolve_context=$(printf '%s' "$resolve_output" | jq -r '.context // ""' 2>/dev/null || true)
@@ -36,6 +36,11 @@ if [ -f "$resolve_tool" ]; then
       messages="${messages}Hydrating active C³ review compiler state. "
     fi
   fi
+elif c3_root=$(find_c3_root "$PWD" || true); [ -n "${c3_root:-}" ]; then
+  resolve_context="Active C³ state exists at $c3_root/.ledger/c3/state.json, but resolve-c3 is unavailable. Install with: brew install tkersey/tap/resolve-c3"
+  contexts="${contexts}${resolve_context}
+"
+  messages="${messages}Active C³ state found without resolve-c3. "
 fi
 
 repo_root=$(find_st_root "$PWD" || true)

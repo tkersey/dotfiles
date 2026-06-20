@@ -71,6 +71,13 @@ Use:
 resolve-c3 ...
 ```
 
+If the controller is missing, install and verify it before starting C³:
+
+```bash
+brew install tkersey/tap/resolve-c3
+resolve-c3 doctor
+```
+
 Canonical repo-local state:
 
 ```text
