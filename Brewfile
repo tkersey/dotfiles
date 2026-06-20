@@ -27,6 +27,7 @@ brew "neovim", args: ['HEAD']
 brew "node"
 brew "prettierd"
 brew "python"
+brew "rclone"
 brew "ripgrep"
 brew "tree"
 brew "tree-sitter", args: ['HEAD']
