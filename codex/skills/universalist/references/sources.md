@@ -16,3 +16,9 @@ Mark every nontrivial claim as one of:
 - programming;
 - architecture inference;
 - repo observation.
+
+## Codex workflow sources
+
+- OpenAI Codex Subagents: https://developers.openai.com/codex/subagents
+- OpenAI Codex Subagent concepts: https://developers.openai.com/codex/concepts/subagents
+- OpenAI Codex Skills: https://developers.openai.com/codex/skills

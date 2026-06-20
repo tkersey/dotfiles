@@ -1,6 +1,6 @@
 # universalist
 
-Single drop-in Universal Architecture skill for structural, universal-construction-driven codebase architecture. This version folds the former `kan` skill into `universalist` as an internal mechanics layer, so `$universalist` is the only top-level skill needed for this doctrine.
+Single drop-in Universal Architecture workflow for structural, universal-construction-driven software synthesis. This version folds the former `kan` skill into `universalist` as an internal mechanics layer, so `$universalist` is the only top-level skill needed for this doctrine.
 
 It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It adds Track D for universal architecture boundaries: free syntax, coherent observations, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, explicit IR, and law tests.
 
@@ -10,7 +10,7 @@ From your repo root:
 
 ```bash
 rm -rf codex/skills/universalist
-unzip universalist-unified-architecture-dropin-v9.zip -d .
+unzip universalist-effective-substrate-team-dropin-v13.zip -d .
 cd codex/skills/universalist
 chmod +x scripts/*.sh scripts/*.py
 ./scripts/check_universalist.sh
@@ -137,6 +137,28 @@ Useful mechanics commands:
 ```
 
 You can safely remove `codex/skills/kan`; this package is self-contained.
+
+
+
+## Effective universal substrate and custom-agent workflow
+
+This version adds Track I and a bundled categorical-substrate team. The target thesis is:
+
+```text
+I can implement any computable software on an effective universal computational substrate
+while using category theory to define its architecture of composition, interpretation,
+effects, state, boundaries, observations, and laws.
+```
+
+The package installs custom agents under `codex/agents/`. Codex subagents are explicitly gated: say `Use $universalist in categorical-substrate team mode and spawn the bundled custom agents` when you want delegation. Normal implicit `$universalist` routing remains single-agent.
+
+Recommended command:
+
+```bash
+./scripts/emit_universalist_team_prompt.sh design
+```
+
+The root agent synthesizes specialist packets into one Effective Universal Architecture Certificate, chooses one witness seam, uses one writer, then verifies independently.
 
 ## Invocation metadata
 

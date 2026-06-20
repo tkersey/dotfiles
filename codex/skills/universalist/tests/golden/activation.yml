@@ -7,3 +7,15 @@ cases:
     expected: ["canonical boundary artifact", "generation path", "coherent observations"]
   - prompt: "Implement an unrelated endpoint with no structural smell."
     should_use_skill: false
+  - prompt: "Design and implement this whole system on a computationally universal categorical substrate."
+    should_use_skill: true
+    expected: ["Track I", "effective substrate", "concrete primitives", "resource model", "witness seam"]
+  - prompt: "Use $universalist in categorical-substrate team mode; spawn custom agents and synthesize the architecture."
+    should_use_skill: true
+    should_spawn_subagents: true
+    expected: ["specialist packets", "Effective Universal Architecture Certificate", "one writer", "verifier"]
+  - prompt: "Use $universalist for this small one-seam type refactor."
+    should_use_skill: true
+    should_spawn_subagents: false
+    expected: ["one seam", "smallest honest construction"]
+

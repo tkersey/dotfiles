@@ -1,8 +1,8 @@
 {
   "name": "universalist",
-  "version": "8.0.0",
-  "description": "Structural universal-construction-driven architecture skill with canonical boundary artifacts.",
-  "private": true
-,
-  "unified_mechanics": true
+  "version": "13.0.0",
+  "description": "Universal Architecture workflow with an effective computational substrate and custom categorical subagents.",
+  "private": true,
+  "unified_mechanics": true,
+  "custom_subagents": true
 }

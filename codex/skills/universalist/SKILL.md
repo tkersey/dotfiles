@@ -1,6 +1,6 @@
 ---
 name: universalist
-description: "Use when code needs structural refactor, exact abstraction, certified context, or canonical boundary artifact instead of ordinary feature work: flag/state matrices, repeated validation, branchy policy, syntax mixed with execution, opaque callbacks/effects/tools, duplicated projections, provenance loss, unclear protocols/state machines, public contracts shaping internals, semantic consumers, or bad abstraction width. Default to one signal, one seam, smallest honest construction; produce proof/falsifier plus Composition, Context, Sheafification, Syntax/Semantics, or Category Pivot certificate. Includes Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/defunctionalization mechanics."
+description: "Use when software needs a structural or categorical architecture rather than ordinary feature work: impossible-state models, repeated boundary validation, opaque callbacks/effects, syntax mixed with execution, duplicated projections, public contracts shaping internals, certified context, exact abstractions, or a request to design or implement any computable system on an effective universal substrate. Choose one signal, one seam, and the smallest honest construction; require effective presentation, concrete primitives, interpreter, observations, laws, falsifier, and resource model. When the user explicitly requests team/subagent mode, orchestrate the bundled Universalist agents and synthesize an Effective Universal Architecture Certificate. Includes internal Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/sheafification mechanics."
 ---
 
 # Universalist
@@ -13,8 +13,8 @@ This is now the single top-level skill for the Universal Architecture doctrine. 
 
 ## Doctrine index
 
-Universalist includes Track D, Track E, Track F, Track G, and Track H. It uses Universal architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, Syntax/Semantics Pivot, Easy-World Transfer, Category Pivot Certificate, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, Freyd/AFT, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
-Do not force a hard problem to stay in the ordinary executable-program world when syntax, semantics, posets, relations, coalgebras, schemas, resources, or presheaves make the required operation explicit.
+Universalist includes Track D, Track E, Track F, Track G, Track H, and Track I. It uses Universal architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, Syntax/Semantics Pivot, Easy-World Transfer, Category Pivot Certificate, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, Freyd/AFT, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
+Do not force a hard problem to stay in the ordinary executable-program world when syntax, semantics, posets, relations, coalgebras, schemas, resources, or presheaves make the required operation explicit. For whole-system work, require an effective computational substrate, concrete primitive register, universal evaluator or equivalent, recursion/partiality, effect and state semantics, observations, resource model, and executable witnesses.
 
 The enriched slogan is:
 
@@ -28,6 +28,91 @@ Core discipline:
 
 Ordinary code may live inside a boundary: I/O, math, parsing, vendor APIs, database drivers, model calls, clocks, randomness, local algorithms, and low-level loops. Composition boundaries should be explicit artifacts: syntax, observations, projections, transports, lifts, handlers, state transitions, IRs, or law tests.
 
+
+
+## Effective Universal Architecture Thesis
+
+Thesis:
+
+> I can implement any computable software on an effective universal computational substrate while using category theory to define its entire architecture of composition, interpretation, effects, state, boundaries, observations, and laws.
+
+Treat this as an engineering thesis with proof obligations, not as permission to call every abstraction categorical. Category theory governs architecture; effective syntax, interpreters, concrete primitives, and runtime machinery make it executable.
+
+A qualifying substrate must make these capabilities concrete:
+
+```text
+program/data representation
+universal evaluation or equivalent interpretation
+composition and identities
+general recursion, iteration, partiality, or another universal-computation mechanism
+external effects and concrete primitives
+state and ongoing interaction
+concurrency/distribution when the target requires them
+observations and an equivalence notion
+finite/effective presentations of categorical artifacts
+resource semantics: time, space, latency, failure, capability, or cost
+```
+
+Use the **Substrate Reality Law**:
+
+```text
+No universality claim without an effective program representation.
+No categorical artifact without an executable interpreter or compiler.
+No external behavior without a named concrete primitive and handler.
+No semantic-equivalence claim without observations.
+No practical architecture without a resource model.
+```
+
+A system is in **Effective Categorical Normal Form** when:
+
+- every architecture-level composition is governed by a named categorical artifact;
+- every artifact has a finite or effective presentation;
+- every presentation has an interpreter, compiler, handler, projection, or lowering;
+- concrete primitives are isolated behind explicit effect/boundary interfaces;
+- recursion/partiality and ongoing interaction are modeled honestly;
+- required observations and laws are executable;
+- resource and deployment constraints are part of the architecture rather than afterthoughts;
+- unsupported constructions produce obstruction reports instead of decorative mathematics.
+
+Use Track I when the task is to design, implement, or refactor an entire software capability under this thesis.
+
+## Categorical Substrate Team Mode
+
+Universalist is a workflow skill with bundled custom subagents. Subagent use is **explicitly gated**:
+
+```text
+Only spawn the team when the current user prompt explicitly asks for subagents,
+parallel agents, team mode, the categorical substrate team, or equivalent delegation.
+```
+
+Otherwise run the same workflow in the root agent without spawning children.
+
+When team mode is authorized, use the smallest sufficient roster from `codex/agents/`:
+
+- `universalist-world-cartographer` — map worlds, boundaries, existing abstractions, primitives, observations, and evidence.
+- `universalist-substrate-architect` — test computational universality, effective presentation, recursion/partiality, and concrete primitive support.
+- `universalist-categorical-architect` — select canonical constructions, category pivots, and boundary artifacts.
+- `universalist-semanticist` — separate syntax/semantics and model effects, state, interpretation, observations, and equivalence.
+- `universalist-resource-realist` — pressure-test time, space, latency, concurrency, failure, security, deployment, and operational fit.
+- `universalist-proof-auditor` — challenge effectivity, soundness, completeness, observational equivalence, laws, and falsifiers.
+- `universalist-witness-implementer` — implement exactly one root-selected witness seam after architecture is synthesized.
+- `universalist-verifier` — independently verify the implemented witness and certificate claims.
+
+Workflow:
+
+```text
+explicit team request
+  -> spawn 2-6 read-only specialists in parallel
+  -> wait for all packets
+  -> root synthesizes one Effective Universal Architecture Certificate
+  -> proof auditor challenges it
+  -> root selects one witness seam
+  -> one writer implements it
+  -> verifier checks the laws and resource claims
+  -> root integrates, certifies, and stops
+```
+
+The root agent owns scope, synthesis, final decisions, write ordering, closure, and user-facing conclusions. Specialist packets are evidence, not truth. Read-only agents must not edit. Only one writer may mutate a seam at a time. Child agents must not recursively spawn more agents.
 
 ## Universal Composition Doctrine
 
@@ -737,6 +822,39 @@ Track H falsifiers:
 syntax accepted but semantics invalid; semantic behavior needed but not representable; easy-world result loses required observation when transported back.
 ```
 
+
+### Track I — Effective Universal Software Synthesis
+
+Use when the user wants to design, build, or substantially refactor a whole software capability so that category theory defines the architecture while an effective universal substrate and concrete primitives make it executable.
+
+Typical triggers:
+
+```text
+implement any computable software
+computationally universal categorical architecture
+design the whole system from first principles
+use the Universalist custom subagent team
+make composition/effects/state/observations/laws categorical end to end
+build a reusable substrate rather than a one-off feature
+```
+
+Deliver:
+
+1. **System and observables** — user-visible behavior, external environment, equivalence notion, and non-goals.
+2. **Effective substrate** — program representation, universal evaluator or equivalent, recursion/partiality, composition, state, interaction, and target runtime.
+3. **Concrete primitive register** — I/O, storage, clocks, randomness, network, foreign APIs, numeric kernels, humans, models, hardware, and their handlers.
+4. **World/boundary architecture** — categories/worlds, objects, transformations, boundaries, embeddings, projections, interpreters, migrations, and ownership.
+5. **Syntax/semantics architecture** — editable syntax/IR, semantic domains, interpreters/handlers, observation functors, and adequacy/soundness laws.
+6. **Effects/state/interaction** — effect signatures, handlers, state transitions, coalgebras/protocols, concurrency, failure, and compensation.
+7. **Canonical construction map** — products, coproducts, refinements, free objects, Kan extensions/lifts, adjunctions, observations, quotients, sheafification, or obstruction reports.
+8. **Presentation/effectivity plan** — finite/effective representation, compilation/lowering, algorithms, termination/partiality boundary, and domain-specific assumptions.
+9. **Resource model** — complexity, latency, memory, throughput, capability/security, persistence, deployment, and operational observability.
+10. **Effective Universal Architecture Certificate** — laws, falsifiers, obstruction ledger, primitive exceptions, and proof commands.
+11. **One witness seam** — the smallest end-to-end slice that proves the substrate can express, execute, observe, and verify real behavior.
+12. **Accretive continuation** — next seam only after the witness is verified.
+
+In explicit team mode, synthesize specialist packets before choosing the witness. Do not ask parallel writers to implement competing architectures. The root selects one architecture and one seam.
+
 ## Non-negotiables
 
 - One signal, one seam, one smallest honest construction.
@@ -1053,7 +1171,22 @@ For Track H, also include:
 - **Category Pivot or Syntax/Semantics Certificate**
 - **Falsifier**
 
-For Track B, Track C, Track D, Track F, Track G, or Track H, also update `.universalist-plan.md`.
+
+For Track I, also include:
+
+- **Effective substrate and universality mechanism**
+- **Concrete Primitive Register**
+- **Universal evaluator / interpreter / compiler path**
+- **Recursion / partiality / interaction model**
+- **Effects / state / concurrency architecture**
+- **Observation and equivalence model**
+- **Resource model**
+- **Team roster and specialist packets**, when explicitly authorized
+- **Effective Universal Architecture Certificate**
+- **One witness seam and stop point**
+- **Obstruction ledger**
+
+For Track B, Track C, Track D, Track F, Track G, Track H, or Track I, also update `.universalist-plan.md`.
 
 ## Guardrails
 
@@ -1072,6 +1205,13 @@ For Track B, Track C, Track D, Track F, Track G, or Track H, also update `.unive
 - Do not pivot categories merely to sound profound; pivot only when the easy world makes inspection, proof, synthesis, minimization, replay, or certification materially easier and the transfer law is stated.
 - Do not claim an abstraction is exact without a usage site, local sections, overlap checks, gluing law, and falsifier.
 - Do not claim syntax/semantics separation without constructors/formation rules, interpreter, observations, soundness/adequacy law, and falsifier.
+- Do not claim computational universality without naming the effective program representation, evaluator or equivalent, recursion/partiality mechanism, and concrete runtime.
+- Do not confuse categorical definability with implementability; require an effective presentation and executable lowering.
+- Do not hide external reality behind abstract morphisms; maintain a Concrete Primitive Register with handlers and failure modes.
+- Do not omit time/space/latency/concurrency/security/resource structure when it can change feasibility.
+- Do not spawn subagents unless the user explicitly asks for subagents, parallel agents, or team mode.
+- In team mode, parallelize read-heavy specialist analysis; use one root-selected writer only after synthesis and adversarial review.
+- Child agents must not recursively delegate; the root owns synthesis, write ordering, verification, and closure.
 
 ## Internal mechanics and companion skills
 
@@ -1098,6 +1238,20 @@ Then read the relevant internal mechanics reference or run:
 ```
 
 Mechanics topics include Kan extensions/lifts, Freyd/AFT, Yoneda/Coyoneda, codensity presentations, categorical-data/context compilation, CQL fit, pushout reconciliation, defunctionalization, possibility sheafification, category pivots, and syntax/semantics.
+
+
+For Track I and team mode, read:
+
+- `references/effective-universal-architecture-thesis.md`
+- `references/effective-computational-substrate.md`
+- `references/concrete-primitives.md`
+- `references/effective-categorical-normal-form.md`
+- `references/universal-software-synthesis-playbook.md`
+- `references/workflow/subagent-orchestration.md`
+- `references/workflow/team-routing.md`
+- `references/workflow/subagent-packet-contract.md`
+
+Use `scripts/emit_universalist_team_prompt.sh` to produce an explicit orchestration prompt and `scripts/emit_effective_universal_architecture.sh` or `scripts/emit_substrate_certificate.sh` for the central artifacts.
 
 - Use **`invariant-ace`** when the main job is discovering or pinning down invariants before choosing structure.
 - Use **`accretive-implementer`** after the construction is chosen and the task becomes ordinary implementation.
@@ -1148,6 +1302,17 @@ Category pivot / syntax-semantics references:
 - `references/category-pivot-certificate.md`
 - `references/syntax-semantics-certificate.md`
 
+Effective substrate / workflow references:
+
+- `references/effective-universal-architecture-thesis.md`
+- `references/effective-computational-substrate.md`
+- `references/concrete-primitives.md`
+- `references/effective-categorical-normal-form.md`
+- `references/universal-software-synthesis-playbook.md`
+- `references/workflow/subagent-orchestration.md`
+- `references/workflow/team-routing.md`
+- `references/workflow/subagent-packet-contract.md`
+
 Internal mechanics references from former `kan` skill:
 
 - `references/mechanics/README.md`
@@ -1189,6 +1354,9 @@ Internal mechanics references from former `kan` skill:
 - `scripts/emit_category_pivot.sh`
 - `scripts/emit_syntax_semantics_certificate.sh`
 - `scripts/emit_mechanics_report.sh`
+- `scripts/emit_effective_universal_architecture.sh`
+- `scripts/emit_substrate_certificate.sh`
+- `scripts/emit_universalist_team_prompt.sh`
 - `scripts/emit_kan_stub.sh`
 - `scripts/emit_codensity_presentation.sh`
 - `scripts/emit_context_compilation_report.sh`
@@ -1208,4 +1376,7 @@ Internal mechanics references from former `kan` skill:
 - `templates/sheafification-certificate.md`
 - `templates/abstraction-normal-form-report.md`
 - `templates/category-pivot-certificate.md`
+- `templates/effective-universal-architecture-certificate.md`
+- `templates/computational-substrate-certificate.md`
+- `templates/universal-synthesis-packet.md`
 - `templates/syntax-semantics-certificate.md`

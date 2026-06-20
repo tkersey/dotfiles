@@ -1,7 +1,7 @@
 interface:
   display_name: "Universalist"
-  short_description: "Choose smallest honest structural refactors and universal architecture boundary artifacts."
+  short_description: "Design executable categorical architectures; optionally orchestrate a Universalist subagent team."
   brand_color: "#6D5EF6"
-  default_prompt: "Use $universalist to diagnose the structural smell, choose one seam, select the smallest honest construction or canonical boundary artifact, and name the proof signal, and gluing/sheafification evidence when abstractions are inexact."
+  default_prompt: "Use $universalist to select the smallest honest categorical architecture, effective substrate, concrete primitives, observations, laws, and one witness seam. Spawn the bundled custom agents only when the user explicitly requests team/subagent mode."
 policy:
   allow_implicit_invocation: true

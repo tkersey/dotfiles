@@ -4,3 +4,10 @@ invariants:
   - name: track_d_requires_artifact
     when: "Track D"
     required: ["Canonical boundary artifact", "Law / proof signal", "Falsifier"]
+  - name: track_i_requires_effective_substrate
+    when: "Track I"
+    required: ["Effective substrate", "Concrete Primitive Register", "Resource model", "Effective Universal Architecture Certificate", "Witness seam"]
+  - name: subagents_require_explicit_request
+    when: "team mode"
+    required: ["explicit request", "root synthesis", "one writer", "independent verifier"]
+

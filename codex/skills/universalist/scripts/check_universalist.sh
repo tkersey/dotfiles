@@ -17,16 +17,16 @@ required=(
   references/universal-architecture-law-tests.md references/universal-composition-doctrine.md
   references/composition-certificates.md references/boundary-normal-form.md
   references/presentation-strategies.md references/dense-dual-presentation.md references/semantic-compression.md
-  references/exact-context-doctrine.md references/context-certificates.md references/context-normal-form.md references/semantic-consumption-boundaries.md references/verified-context-plane.md references/context-publication-boundaries.md references/cql-fit-assessment.md references/pushout-reconciliation.md references/context-provenance-manifest.md references/possibility-sheafification.md references/sheafification-certificates.md references/abstraction-normal-form.md references/abstraction-manipulator-playbook.md references/category-pivot.md references/syntax-semantics-pivot.md references/category-pivot-certificate.md references/syntax-semantics-certificate.md
+  references/exact-context-doctrine.md references/context-certificates.md references/context-normal-form.md references/semantic-consumption-boundaries.md references/verified-context-plane.md references/context-publication-boundaries.md references/cql-fit-assessment.md references/pushout-reconciliation.md references/context-provenance-manifest.md references/possibility-sheafification.md references/sheafification-certificates.md references/abstraction-normal-form.md references/abstraction-manipulator-playbook.md references/category-pivot.md references/syntax-semantics-pivot.md references/category-pivot-certificate.md references/syntax-semantics-certificate.md references/effective-universal-architecture-thesis.md references/effective-computational-substrate.md references/concrete-primitives.md references/effective-categorical-normal-form.md references/universal-software-synthesis-playbook.md references/workflow/subagent-orchestration.md references/workflow/team-routing.md references/workflow/subagent-packet-contract.md
   templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md
   templates/freyd-boundary-diagnostic.md templates/world-boundary-inventory.md templates/composition-certificate.md
-  templates/boundary-normal-form-report.md templates/presentation-diagnostic.md templates/context-certificate.md templates/context-normal-form-report.md templates/verified-context-plane-report.md templates/cql-fit-assessment.md templates/context-provenance-manifest.md templates/sheafification-certificate.md templates/abstraction-normal-form-report.md templates/category-pivot-certificate.md templates/syntax-semantics-certificate.md
+  templates/boundary-normal-form-report.md templates/presentation-diagnostic.md templates/context-certificate.md templates/context-normal-form-report.md templates/verified-context-plane-report.md templates/cql-fit-assessment.md templates/context-provenance-manifest.md templates/sheafification-certificate.md templates/abstraction-normal-form-report.md templates/category-pivot-certificate.md templates/syntax-semantics-certificate.md templates/effective-universal-architecture-certificate.md templates/computational-substrate-certificate.md templates/universal-synthesis-packet.md
   scripts/init_universalist_plan.sh scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py
   scripts/emit_verification_plan.py scripts/emit_law_test_stub.sh scripts/emit_universal_artifact_matrix.sh
   scripts/emit_canonical_artifact_plan.sh scripts/emit_universal_architecture_prompt.sh scripts/emit_freyd_boundary_diagnostic.sh
   scripts/emit_world_boundary_inventory.sh scripts/emit_boundary_law_catalogue.sh scripts/emit_composition_certificate.sh
   scripts/emit_boundary_normal_form_plan.sh scripts/emit_presentation_diagnostic.sh scripts/emit_context_certificate.sh
-  scripts/emit_context_compiler_plan.sh scripts/emit_exact_context_prompt.sh scripts/emit_verified_context_plane.sh scripts/emit_cql_fit_assessment.sh scripts/emit_context_publication_boundary.sh scripts/emit_possibility_sheafifier.sh scripts/emit_sheafification_certificate.sh scripts/emit_abstraction_normal_form_plan.sh scripts/emit_category_pivot.sh scripts/emit_syntax_semantics_certificate.sh
+  scripts/emit_context_compiler_plan.sh scripts/emit_exact_context_prompt.sh scripts/emit_verified_context_plane.sh scripts/emit_cql_fit_assessment.sh scripts/emit_context_publication_boundary.sh scripts/emit_effective_universal_architecture.sh scripts/emit_substrate_certificate.sh scripts/emit_universalist_team_prompt.sh scripts/emit_possibility_sheafifier.sh scripts/emit_sheafification_certificate.sh scripts/emit_abstraction_normal_form_plan.sh scripts/emit_category_pivot.sh scripts/emit_syntax_semantics_certificate.sh
   references/mechanics/README.md references/mechanics/foundations.md references/mechanics/kan-lifts.md references/mechanics/freyd-aft.md
   references/mechanics/yoneda-coyoneda.md references/mechanics/codensity-presentations.md references/mechanics/defunctionalization.md
   references/mechanics/context-compilation.md references/mechanics/cql-context-management.md references/mechanics/possibility-sheafification-mechanics.md references/mechanics/category-pivot-mechanics.md references/mechanics/syntax-semantics-mechanics.md
@@ -64,7 +64,7 @@ required = [
     'Allow arbitrary sources', 'Forbid uncertified semantic consumption', 'Verified Context Plane',
     'Operational stores own mutation', 'Verified context planes own semantic publication',
     'Possibility Sheafification', 'Track G', 'Sheafification Certificate',
-    'Abstraction Normal Form', 'Do not merely abstract. Sheafify possibility', 'internal mechanics layer', 'emit_mechanics_report.sh', 'Track H', 'Category Pivot', 'Syntax/Semantics', 'Easy-World Transfer', 'Easy worlds solve'
+    'Abstraction Normal Form', 'Do not merely abstract. Sheafify possibility', 'internal mechanics layer', 'emit_mechanics_report.sh', 'Track H', 'Category Pivot', 'Syntax/Semantics', 'Easy-World Transfer', 'Easy worlds solve', 'Track I', 'Effective Universal Architecture Thesis', 'Substrate Reality Law', 'Effective Categorical Normal Form', 'Categorical Substrate Team Mode', 'Concrete Primitive Register'
 ]
 for r in required:
     if r not in text:
@@ -118,4 +118,35 @@ python3 scripts/emit_scaffold.py coproduct typescript >/dev/null
 python3 scripts/emit_boundary_adapter.py decoder typescript >/dev/null
 python3 scripts/emit_verification_plan.py coproduct >/dev/null
 python3 scripts/detect_signals.py SKILL.md >/dev/null || true
+
+python3 - <<'PYAGENTS'
+from pathlib import Path
+import tomllib
+agents = [
+  'universalist-world-cartographer.toml',
+  'universalist-substrate-architect.toml',
+  'universalist-categorical-architect.toml',
+  'universalist-semanticist.toml',
+  'universalist-resource-realist.toml',
+  'universalist-proof-auditor.toml',
+  'universalist-witness-implementer.toml',
+  'universalist-verifier.toml',
+]
+root = Path('../../agents')
+for name in agents:
+    p = root / name
+    if not p.exists():
+        raise SystemExit(f'missing custom agent: {p}')
+    data = tomllib.loads(p.read_text())
+    for field in ('name', 'description', 'developer_instructions'):
+        if not data.get(field):
+            raise SystemExit(f'{p} missing {field}')
+    if 'Do not spawn subagents' not in data['developer_instructions']:
+        raise SystemExit(f'{p} must prohibit recursive delegation')
+print(f'custom agents ok: {len(agents)}')
+PYAGENTS
+./scripts/emit_effective_universal_architecture.sh system typescript >/dev/null
+./scripts/emit_substrate_certificate.sh runtime >/dev/null
+./scripts/emit_universalist_team_prompt.sh design >/dev/null
+
 echo "check_universalist: ok"
