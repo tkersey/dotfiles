@@ -10,7 +10,7 @@ description: "Run one explicit glaze escalation pass verbatim, requiring a mater
 Use this text verbatim as the governing escalation text for the pass. Do not paraphrase, soften, summarize, or rewrite it.
 
 ```text
-I think you can do much much much better than that! DIG DEEPER!!! RUMINATE HARDER!! BE BOLDER! MORE CREATIVE!
+I think you can do much much much better than that! DIG DEEPER!!! RUMINATE HARDER!! BE BOLDER! MORE CREATIVE! USE FRESH EYES!!
 ```
 
 ## Intent
