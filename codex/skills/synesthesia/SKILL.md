@@ -1,180 +1,133 @@
 ---
 name: synesthesia
-description: "Cross-modal diagnostic/review workflow for software systems: map technical signals into sensory models, then translate them back into engineering terms. Use for architecture review, readability, maintainability, strange/flaky behavior, performance bottlenecks, API/UX critique, onboarding, or comparisons by feel, friction, weight, rhythm, sharpness, smoothness, coupling, or complexity. Also trigger when prompts ask what code, bugs, logs, APIs, or systems feel/sound/look like, or to make them lighter, smoother, cleaner, tighter, quieter, or more coherent. Not for exact API syntax, legal/compliance, security sign-off, rote edits, or terse facts."
+description: "Cross-modal diagnostic/review workflow for software systems: map technical signals into sensory models, translate them back into engineering terms, and selectively capture only explicitly endorsed or corrected durable mappings through memory-source-notes. Use for architecture, strange/flaky behavior, performance, readability, API/UX critique, onboarding, or comparisons by feel."
+metadata:
+  version: "2.0.0"
 ---
 
 # Synesthesia
 
-You are a cross-modal reasoning layer for software work.
+## Mission
 
-Your purpose is to translate code and systems into sensory models, use those models to surface hidden structure or tension, and then translate the result back into precise engineering language and action.
+Use reversible sensory models to surface software structure, then translate every useful observation back into precise engineering implications and action.
 
-## Core contract
+The sensory layer is a diagnostic instrument, not evidence and not mandatory output style. For an accepted mapping/boundary admission, load `$memory-source-notes` before invoking `run_memory_note_tool`.
 
-Always do these things:
-1. Start from literal evidence: code, tests, architecture, logs, runtime behavior, user flows, or repository structure.
-2. Build at least 2 and at most 4 sensory representations that illuminate the problem.
-3. Keep mappings consistent within a single answer.
-4. Mark uncertainty clearly.
-5. Convert every useful metaphor back into concrete technical implications.
-6. Prefer directness over poetry. This is a reasoning aid, not performance art.
+## Core Contract
 
-Never do these things:
-- Treat metaphor as evidence.
-- Use sensory language to hide uncertainty.
-- Overwrite exact technical facts with aesthetic judgments.
-- Force this framing onto small factual tasks that are better answered literally.
+Always:
 
-## When this skill is valuable
+1. start from literal evidence: code, tests, logs, architecture, runtime behavior, user flow, or repository structure;
+2. use only 2-4 modalities that illuminate the task;
+3. keep mappings internally consistent;
+4. mark uncertainty;
+5. translate every useful metaphor into concrete technical meaning;
+6. prefer directness over poetry;
+7. execute code changes literally even when the lens informed the decision.
 
-Use this skill for:
-- architecture review
-- debugging strange behavior
-- performance bottlenecks
-- codebase readability and maintainability assessment
-- refactoring strategy
-- onboarding explanations
-- API, UX, or developer-experience critique
-- comparing two implementations by "feel"
-
-## Sensory mapping guide
-
-Use these default correspondences unless the user defines a custom mapping.
-
-| Software property | Color / light | Sound / music | Shape / space | Texture / temperature |
-| --- | --- | --- | --- | --- |
-| High cohesion | saturated, stable hue | consonant, repeating motif | compact cluster | smooth, warm |
-| Loose coupling | clear separation | well-spaced notes | breathable layout | crisp |
-| Tight coupling | color bleed | muddy overlap | tangled edges | sticky, heavy |
-| Good abstraction | layered transparency | clean harmony | nested but legible forms | polished |
-| Hidden complexity | murky gradients | unresolved tension | folded interior space | rough underneath |
-| Hot path / high load | bright / hot | fast tempo | narrow corridor with traffic | hot, pressured |
-| Latency | delayed echo | dragging rhythm | long corridor | rubbery |
-| Flaky behavior | flicker | off-beat stutter | shifting geometry | gritty |
-| Race condition | interference pattern | phase clash | crossing vectors | sparking |
-| Memory leak / bloat | spreading stain | swelling drone | expanding mass | overheated, swollen |
-| Dead code | gray / dim | silence | abandoned room | cold, dusty |
-| Clean interface | sharp boundary | clean attack / release | defined doorway | smooth edge |
+Never treat metaphor as proof, hide uncertainty in aesthetic language, overwrite exact facts with feel, force this framing onto narrow factual tasks, or infer a durable user mapping from an assistant-generated phrase alone.
 
 ## Procedure
 
-### 1. Literal read
-Extract:
-- components
-- control or data flow
-- hotspots
-- failure modes
-- constraints
-- unknowns
+1. Literal read: extract components, flows, hotspots, failure modes, constraints, and unknowns.
+2. Sensory render: choose visual, auditory, spatial, tactile, or thermal models that expose structure.
+3. Dissonances: find mismatches between intended design and observed behavior.
+4. Engineering translation: state literal interpretation, why it matters, evidence, and change/investigation.
+5. Action: end with concrete steps.
 
-### 2. Sensory render
-Choose 2 to 4 modalities best suited to the task:
-- visual: color, brightness, contrast, motion
-- auditory: rhythm, harmony, noise, silence, dynamics
-- spatial: topology, compression, bottlenecks, symmetry
-- tactile or thermal: smoothness, drag, heat, brittleness, weight
+## Memory Capture Boundary
 
-### 3. Find harmonies and dissonances
-Look for:
-- places where intended design and observed behavior disagree
-- sharp transitions between clean and messy regions
-- components that dominate the whole system
-- parts that create friction, jitter, lag, or haze
+Most sensory output must not become memory.
 
-### 4. Translate back into engineering meaning
-For each important sensory observation, state:
-- the literal technical interpretation
-- why it matters
-- what change would improve it
+A custom synesthesia source note is allowed only for:
 
-### 5. Recommend action
-End with a concrete path such as:
-- refactor boundary
-- split module
-- add test
-- instrument runtime
-- cache result
-- simplify control flow
-- remove duplication
-- tighten interface
-- rename for clarity
-- defer work until uncertainty is reduced
+- explicit user endorsement of a mapping;
+- explicit correction of a mapping;
+- explicit rejection of a mapping;
+- explicit durable activation/non-activation boundary;
+- repeated accepted operational use across contexts;
+- stable repo/task-family vocabulary that changes future diagnosis.
 
-## Output format
+Do not capture one-off poetic phrases, assistant novelty, ambient UI colors or passive Chronicle context, transient incident descriptions, mappings with no concrete engineering translation, or general technical facts better owned by learnings or negative ledger.
 
-Use this shape unless the user wants something else:
+## Mapping Admission Gate
 
-**Literal read**
-2 to 6 bullets on what the code or system is doing.
+Require:
 
-**Synesthetic render**
-A concise multi-modal description of how the system feels, sounds, looks, or moves.
+1. `sensory_phrase`;
+2. `engineering_translation`;
+3. `activation_boundary`;
+4. `non_activation_boundary` when relevant;
+5. narrow scope;
+6. endorsement/correction/rejection authority;
+7. evidence reference;
+8. verification rule that keeps the mapping reversible.
 
-**Dissonances**
-The 1 to 3 most important mismatches, friction points, or instability signals.
+## Admission Payload
 
-**Engineering translation**
-Concrete explanation of what those signals mean technically.
+```json
+{
+  "operation": "assert",
+  "authority": "explicit-user-endorsement",
+  "summary": "Endorse long corridor as serialized-wait vocabulary.",
+  "scope": {
+    "kind": "task-family",
+    "repo": null,
+    "paths": []
+  },
+  "source_refs": [
+    {
+      "kind": "user-endorsement",
+      "ref": "rollout:019...",
+      "summary": "User explicitly accepted and reused the mapping"
+    }
+  ],
+  "related_ids": [],
+  "supersedes_id": null,
+  "payload": {
+    "sensory_phrase": "long corridor",
+    "engineering_translation": "serialized waits, chatty calls, or amplified dependency latency",
+    "activation_boundary": "performance and dependency-chain diagnosis",
+    "non_activation_boundary": "exact syntax or literal-only requests",
+    "scope": "task_family_scoped",
+    "scope_anchor": "performance-triage",
+    "endorsement_type": "explicit-user-endorsement",
+    "verification": "Every use names the concrete wait/latency mechanism and evidence"
+  }
+}
+```
 
-**Recommended changes**
-Specific next steps, ordered by leverage.
+Then hand off:
 
-## Special modes
+```bash
+run_memory_note_tool append \
+  --extension synesthesia \
+  --kind mapping-endorsement \
+  --json -
+```
 
-### Debugging mode
-Bias toward dissonance, jitter, interference, flicker, and timing language.
-Translate these into:
-- state bugs
-- race conditions
-- non-determinism
-- retries or timeouts
-- unexpected coupling
-- missing observability
+For corrections/rejections use `mapping-correction`, `mapping-rejection`, `activation-boundary`, or `boundary-retraction` and reference the previous note ID when known.
 
-### Refactoring mode
-Bias toward weight, balance, shape, airflow, and texture.
-Translate these into:
-- oversized modules
-- fractured responsibility
-- abstraction leakage
-- poor naming
-- duplicated logic
-- brittle seams
+## Proof Lines
 
-### Performance mode
-Bias toward tempo, pressure, congestion, heat, and echo.
-Translate these into:
-- bottlenecks
-- excessive allocation
-- serialization
-- network or disk latency
-- poor batching
-- unnecessary recomputation
+```text
+memory-note: id=MSN-... extension=synesthesia kind=mapping-endorsement status=created
+memory-note: not-attempted: source admission gate not met
+memory-note: not-attempted: cli unavailable
+```
 
-### Teaching mode
-Lean more vivid and intuitive, but keep the mapping reversible.
-Use metaphor to help the user build a correct mental model.
+## Cross-Extension Ownership
+
+- general workflow/operating correction -> harness-memory;
+- evidence-backed technical learning -> learnings;
+- failed-hypothesis exclusion/reopening -> negative-ledger;
+- sensory mapping or activation boundary -> synesthesia.
 
 ## Guardrails
 
-If the user asks for code changes:
-- do the code task normally
-- use the synesthetic analysis to guide decisions
-- briefly describe the before and after feel only if helpful
-
-If the user asks for a pure sensory rendition:
-- still anchor claims in the artifact
-- avoid pretending to perceive unseen details
-
-If the artifact is incomplete:
-- state what is missing
-- present the sensory model as tentative
-
-## Good trigger phrases
-- "What color is this codebase?"
-- "What does this bug sound like?"
-- "Make this architecture visible."
-- "Which part feels abrasive?"
-- "Refactor this so it feels lighter."
-- "Give me the texture of this API."
-- "Translate these logs into a sensory map."
+- Literal correctness outranks vividness.
+- Metaphor never substitutes for tests, profiling, logs, or proof.
+- Repo-local vocabulary remains repo-local until broader evidence exists.
+- Stable mappings are preferred over novelty.
+- Never directly edit compiled memory.
+- Never write custom notes without passing the endorsement gate.

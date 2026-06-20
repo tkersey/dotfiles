@@ -1,50 +1,37 @@
-# Example invocations
+# Example Invocations
 
-## Query prior failures before another optimization
-```md
-Use $negative-ledger.
-Goal: Before proposing the next optimization, find prior failed attempts and map which ones still apply.
-Context:
-- target benchmark: write-small-n
-- current branch vs main
-- changed paths: pager/, btree/, mvcc/
-- `.ledger/negative-ledger.jsonl` is available or can be initialized with `ledger init`
-Output:
-- active negative evidence
-- stale/superseded/reopened entries
-- safest next-search frontier
-```
+## Capture and Admit a Failed Route
 
-## Capture a failed attempt
 ```md
 Use $negative-ledger capture.
-Hypothesis: same-leaf batching will improve small-write throughput.
+Hypothesis: same-leaf batching improves small-write throughput.
 Attempted change: prototype in btree/mutation_run.*
-Evidence:
-- benchmark command: zig build bench -- write-small-n
-- result: regressed 7% versus baseline
-- diff: abc123..def456
+Witness:
+- command: zig build bench -- write-small-n
+- result: 7% regression
 Need:
-- negative ledger entry
-- `ledger capture --json ...` command if durable capture qualifies
+- ledger capture
+- full ledger export
+- negative-ledger memory admission if the route is likely to recur
+- separate proof lines for both stores
 ```
 
-## Reopen an old failure
+Expected flow:
+
+```bash
+ledger capture --json capture.json
+ledger export --id NEG-000001 --format memory-note |
+  memory-note append --extension negative-ledger --kind ledger-projection --json -
+```
+
+## Reopen Old Evidence
+
 ```md
 Use $negative-ledger reopen.
-Old negative evidence: NEG-004 same-leaf batching regression.
-New condition: the MVCC bookkeeping path was replaced and the old fixture no longer exercises the same code.
+Old record: NEG-000004.
+Changed condition: the MVCC bookkeeping path was replaced.
 Need:
-- whether NEG-004 is stale, active, or reopened
-- proof obligations before retrying the idea
-```
-
-## Handoff into fixed-point-driver
-```md
-Use $negative-ledger, then hand off to $fixed-point-driver.
-Goal: Map negative evidence first, then drive the selected route to closure.
-Constraints:
-- treat learnings hits as candidate evidence only
-- do not let stale negative evidence veto current work
-- append durable new negative evidence through `ledger capture` only when witnessed
+- append-only ledger status transition
+- proof obligations before retrying
+- memory-source ledger-status-transition note if the old exclusion is already durable memory
 ```
