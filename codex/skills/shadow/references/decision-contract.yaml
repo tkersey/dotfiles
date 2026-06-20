@@ -1,0 +1,83 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: shadow
+    kind: orchestration
+    source_fingerprint: generated-with-dropin
+  triggers:
+    - trigger_id: SHADOW-DELTA
+      description: A watched session has new decision-relevant evidence.
+      cue_literals:
+        - new decision episode
+        - validation failure
+        - session stopped
+        - new user feedback
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: SHADOW-NO-DELTA
+      description: The cursor contains no new decision-relevant evidence.
+      cue_literals:
+        - no decision-relevant delta
+      cue_regexes: []
+      exclusions: []
+  routes:
+    - route_id: SHADOW-STATUS-STOP
+      description: Emit compact status and stop the current cycle.
+      aliases:
+        - status-only-stop
+        - stop-cycle
+      terminal: "yes"
+    - route_id: SHADOW-HANDOFF-TUNE
+      description: Emit a tune packet for a concrete skill gap.
+      aliases:
+        - handoff-tune
+        - tune-packet
+      terminal: "yes"
+    - route_id: SHADOW-SEQ-SPEC
+      description: Transfer a missing watched-session evidence surface to seq.
+      aliases:
+        - seq-special-spec
+      terminal: "yes"
+    - route_id: SHADOW-CONTINUE
+      description: Continue watching after a meaningful nonterminal delta.
+      aliases:
+        - continue-watch
+      terminal: "no"
+  clauses:
+    - clause_id: SHADOW-CYCLE-001
+      trigger_refs:
+        - SHADOW-NO-DELTA
+      expected_routes:
+        - SHADOW-STATUS-STOP
+      prohibited_routes:
+        - SHADOW-HANDOFF-TUNE
+        - SHADOW-CONTINUE
+      required_artifacts:
+        - cursor start
+        - cursor end
+      success_signals:
+        - compact status-only record
+      failure_signals:
+        - repeated full report
+      rationale: No evidence delta means no full cycle.
+    - clause_id: SHADOW-DELTA-001
+      trigger_refs:
+        - SHADOW-DELTA
+      expected_routes:
+        - SHADOW-HANDOFF-TUNE
+        - SHADOW-SEQ-SPEC
+        - SHADOW-CONTINUE
+        - SHADOW-STATUS-STOP
+      prohibited_routes: []
+      required_artifacts:
+        - decision evidence strength
+        - episode refs
+      success_signals:
+        - one decision-relevant cycle result
+      failure_signals:
+        - raw transcript dump
+        - historical recurrence inferred from one session
+      rationale: New evidence must be interpreted without broadening scope.
+  instrumentation:
+    decision_receipt: not-needed
+    rationale: GSD-v2 is already the orchestration record.

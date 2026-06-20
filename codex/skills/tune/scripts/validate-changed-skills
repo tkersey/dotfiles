@@ -6,6 +6,7 @@ usage() {
 Usage: validate-changed-skills [--base <ref>] [--] [path ...]
 
 Validate changed non-system Codex skills with quick_validate.py.
+When references/decision-contract.yaml exists, also validate SKDC-v1.
 
 With explicit paths, each path may be a skill directory or a file under
 codex/skills/<skill>. Without paths, changed paths are discovered from:
@@ -14,8 +15,7 @@ codex/skills/<skill>. Without paths, changed paths are discovered from:
   - git ls-files --others --exclude-standard
 
 --base <ref> also includes paths changed from <ref>...HEAD.
-Deleted skill directories are skipped; this helper validates remaining skills,
-not intentional removals.
+Deleted skill directories are skipped.
 USAGE
 }
 
@@ -26,32 +26,16 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --base)
       base_ref="${2:-}"
-      if [[ -z "$base_ref" ]]; then
-        echo "--base requires a value" >&2
-        exit 2
-      fi
+      [[ -n "$base_ref" ]] || { echo "--base requires a value" >&2; exit 2; }
       shift 2
       ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
+    -h|--help) usage; exit 0 ;;
     --)
       shift
-      while [[ $# -gt 0 ]]; do
-        paths+=("$1")
-        shift
-      done
+      while [[ $# -gt 0 ]]; do paths+=("$1"); shift; done
       ;;
-    -*)
-      echo "unknown argument: $1" >&2
-      usage >&2
-      exit 2
-      ;;
-    *)
-      paths+=("$1")
-      shift
-      ;;
+    -*) echo "unknown argument: $1" >&2; usage >&2; exit 2 ;;
+    *) paths+=("$1"); shift ;;
   esac
 done
 
@@ -59,64 +43,42 @@ repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
 validator="codex/skills/.system/skill-creator/scripts/quick_validate.py"
-if [[ ! -f "$validator" ]]; then
-  cat >&2 <<VALIDATOR_MISSING
-quick_validate.py not found: $validator
+contract_linter="codex/skills/tune/tools/decision_contract_lint.py"
 
-This repository commonly keeps codex/skills/.system/ as local/generated assets.
-Install or generate the skill-creator .system assets before claiming skill validation passed.
-VALIDATOR_MISSING
+if [[ ! -f "$validator" ]]; then
+  echo "quick_validate.py not found: $validator" >&2
+  exit 1
+fi
+if [[ ! -f "$contract_linter" ]]; then
+  echo "decision contract linter not found: $contract_linter" >&2
   exit 1
 fi
 
+declare -A skill_dirs=()
+
 add_skill_dir_for_path() {
-  local path="$1"
-  local rel="$path"
-  local skill
-
+  local path="$1" rel="$1" skill
+  case "$rel" in "$repo_root"/*) rel="${rel#"$repo_root"/}" ;; esac
   case "$rel" in
-    "$repo_root"/*) rel="${rel#"$repo_root"/}" ;;
-  esac
-
-  case "$rel" in
-    codex/skills/.system|codex/skills/.system/*)
-      return
-      ;;
+    codex/skills/.system|codex/skills/.system/*) return ;;
     codex/skills/*)
       skill="${rel#codex/skills/}"
       skill="${skill%%/*}"
-      if [[ -n "$skill" && "$skill" != "$rel" ]]; then
-        skill_dirs["codex/skills/$skill"]=1
-      elif [[ -n "$skill" && -d "codex/skills/$skill" ]]; then
+      if [[ -n "$skill" && -d "codex/skills/$skill" ]]; then
         skill_dirs["codex/skills/$skill"]=1
       fi
       ;;
   esac
 }
 
-declare -A skill_dirs=()
-
 if [[ ${#paths[@]} -gt 0 ]]; then
-  for path in "${paths[@]}"; do
-    add_skill_dir_for_path "$path"
-  done
+  for path in "${paths[@]}"; do add_skill_dir_for_path "$path"; done
 else
-  while IFS= read -r path; do
-    [[ -n "$path" ]] && add_skill_dir_for_path "$path"
-  done < <(git diff --name-only)
-
-  while IFS= read -r path; do
-    [[ -n "$path" ]] && add_skill_dir_for_path "$path"
-  done < <(git diff --cached --name-only)
-
-  while IFS= read -r path; do
-    [[ -n "$path" ]] && add_skill_dir_for_path "$path"
-  done < <(git ls-files --others --exclude-standard)
-
+  while IFS= read -r path; do [[ -n "$path" ]] && add_skill_dir_for_path "$path"; done < <(git diff --name-only)
+  while IFS= read -r path; do [[ -n "$path" ]] && add_skill_dir_for_path "$path"; done < <(git diff --cached --name-only)
+  while IFS= read -r path; do [[ -n "$path" ]] && add_skill_dir_for_path "$path"; done < <(git ls-files --others --exclude-standard)
   if [[ -n "$base_ref" ]]; then
-    while IFS= read -r path; do
-      [[ -n "$path" ]] && add_skill_dir_for_path "$path"
-    done < <(git diff --name-only "$base_ref"...HEAD)
+    while IFS= read -r path; do [[ -n "$path" ]] && add_skill_dir_for_path "$path"; done < <(git diff --name-only "$base_ref"...HEAD)
   fi
 fi
 
@@ -127,6 +89,7 @@ fi
 
 failures=0
 validated=0
+contracts=0
 skipped=0
 
 for skill_dir in "${sorted_dirs[@]}"; do
@@ -142,12 +105,18 @@ for skill_dir in "${sorted_dirs[@]}"; do
   else
     failures=$((failures + 1))
   fi
+
+  contract="$skill_dir/references/decision-contract.yaml"
+  if [[ -f "$contract" ]]; then
+    echo "==> validating decision contract $contract"
+    if uv run --with pyyaml -- python3 "$contract_linter" "$contract"; then
+      contracts=$((contracts + 1))
+    else
+      failures=$((failures + 1))
+    fi
+  fi
 done
 
-echo "validated_skills=$validated skipped=$skipped failures=$failures"
-
-if [[ ${#sorted_dirs[@]} -eq 0 ]]; then
-  echo "no changed skill directories found"
-fi
-
+echo "validated_skills=$validated decision_contracts=$contracts skipped=$skipped failures=$failures"
+if [[ ${#sorted_dirs[@]} -eq 0 ]]; then echo "no changed skill directories found"; fi
 [[ "$failures" -eq 0 ]]

@@ -1,313 +1,240 @@
 ---
 name: tune
-description: "Goal-native skill tuning from orthogonal evidence. Use for `$tune`, skill usage analysis, intended-vs-observed behavior, missed/false/partial activations, proposal-only gaps, skill delta candidates, `$refine` briefs, `$seq` evidence gaps, or validated skill edits only when explicit. Stop at audit/proposal unless apply is explicit. Do not edit `$seq` CLI without a separate special spec."
+description: "Tune an existing Codex skill by comparing its intended decision contract with observed decision episodes and outcomes. Prefer `seq skill-decision-audit --mode tune-packet`; use for `$tune`, intended-vs-observed behavior, missed/false/ceremonial activations, ignored clauses, wrong routes, outcome regressions, repeated workarounds, STE-v1 packets, skill-delta candidates, or explicit `$refine` handoff. Stop at audit/proposal unless apply is explicit. `$seq` CLI changes require a separate special spec."
 ---
 
 # Tune
 
-## Purpose
+## Mission
 
-Use `$tune` to improve an existing Codex skill by comparing its intended contract with observed evidence.
-
-In `/goal` workflows, `$tune` should produce a bounded **decision delta** or a terminal state, not another repeated essay.
-
-Core rules:
+Improve a skill by finding the smallest evidence-backed change that alters future decisions for the better.
 
 ```text
-No decision delta, no full cycle.
-No repeated proposal without terminal state.
-No skill edit without explicit apply route.
-Seq CLI changes require a separate special spec.
+activation evidence asks: was the skill present?
+decision evidence asks: what changed because of it?
+outcome evidence asks: was that change useful?
 ```
 
-## Role boundaries
+`$tune` owns diagnosis and the refinement decision.
 
-- `$tune` owns diagnosis, evidence interpretation, gap classification, skill-delta candidates, and `$refine` briefs.
-- `$shadow` owns watched-session cycle filtering.
-- `$seq` owns historical/session/tool evidence surfaces.
-- `$refine` owns in-place skill edits once the gap and success criteria are known.
-- `$ship` and `$land` own PR and merge workflows.
-- `$ms` owns new skill creation or direct skill surgery when no usage-backed diagnosis is needed.
+`$seq` owns historical/session/tool evidence.
 
-## Trigger cues
+`$refine` owns in-place edits after the apply gate passes.
 
-Use `$tune` when the user asks to:
+## Canonical evidence
 
-- analyze a skill's current, in-flight, or historical usage;
-- determine whether a skill is working as intended;
-- optimize, improve, fix, or upgrade a skill based on usage/evidence;
-- compare intended vs observed behavior;
-- find missed, false, partial, or weak activations;
-- diagnose trigger, workflow, metadata, tooling, validation, resource, source-scope, or boundary gaps;
-- produce a usage-backed `$refine` brief;
-- apply a validated edit when explicitly asked.
+For historical or multi-session tuning, prefer:
 
-## Non-goals
+```bash
+seq skill-decision-audit \
+  --skill <skill> \
+  --skill-root codex/skills \
+  --repo <repo> \
+  --last 30d \
+  --exclude-current \
+  --mode tune-packet \
+  --format json
+```
 
-Do not use `$tune` to:
+Canonical packet:
 
-- edit directly without evidence;
-- mine arbitrary sessions without a target skill;
-- create a new skill;
-- apply an already-complete brief without diagnosis;
-- run broad autonomous ecosystem scans;
-- create PRs or merge work;
-- treat raw skill mentions as successful skill use;
-- make broad redesigns from one ambiguous session;
-- produce repeated proposal-only analyses without terminal state;
-- change `$seq` CLI without a separate special spec.
+```text
+skill_tuning_evidence / STE-v1
+```
+
+For one watched session, prefer:
+
+```bash
+seq skill-decision-audit \
+  --skill <skill> \
+  --session-id <session> \
+  --since-cursor '<cursor>' \
+  --mode delta \
+  --format json
+```
+
+If the installed CLI lacks `skill-decision-audit`:
+
+1. use the existing narrow `$seq` surfaces needed for the question;
+2. keep activation, decision, and outcome evidence separate;
+3. mark decision causality as `unknown` unless explicit;
+4. emit a `seq_special_spec_handoff` when the missing surface materially limits diagnosis;
+5. do not replace the missing CLI with broad ad hoc transcript mining as the normal workflow.
 
 ## Modes
 
-Choose exactly one mode before mining evidence.
+Choose exactly one:
+
+```text
+audit-only
+proposal-only
+apply-with-refine
+```
 
 ### audit-only
 
-Use when the user asks what evidence shows.
-
-Output:
-
-- intended-use contract;
-- evidence-source declaration;
-- observed-use summary;
-- evidence classes;
-- gap classification;
-- recommended next step.
+Explain what evidence supports and what it does not support.
 
 No edits.
 
 ### proposal-only
 
-Default for analysis, deep optimization, and "what should change?"
+Default for “improve,” “optimize,” or “what should change?”
 
-Output:
-
-- usage-backed diagnosis;
-- evidence ledger;
-- skill delta candidate or `$refine` brief;
-- success criteria;
-- validation plan;
-- remaining uncertainty.
+Produce a bounded decision delta, terminal repeat state, or no-action decision.
 
 No edits.
 
 ### apply-with-refine
 
-Use only when the user explicitly asks to apply, edit, patch, update, or change skill files now.
+Use only when the user explicitly asks to edit or apply changes now.
 
-Output:
+Produce the diagnosis first, then hand a bounded brief to `$refine`.
 
-- diagnosis;
-- evidence ledger;
-- `$refine` brief;
-- applied changes;
-- validation proof;
-- commit/push proof when policy allows;
-- remaining uncertainty.
+## Target skill type
 
-## Mode precedence
-
-1. Explicit file-change instruction: `apply-with-refine` if apply gate passes.
-2. Explicit audit/analysis/proposal: `audit-only` or `proposal-only`.
-3. Ambiguous optimization: `proposal-only`.
-4. Complete evidence-backed brief plus edit request: hand off to `$refine`.
-5. Protected/self-targeted skills: default `proposal-only`.
-
-## Apply gate
-
-All must hold before editing:
-
-- user explicitly asked to change files now;
-- target skill identified;
-- mode and evidence sources declared;
-- intended-use contract reconstructed first;
-- evidence is strong enough for the proposed change;
-- edit is smallest sufficient change;
-- protected-skill restrictions are satisfied;
-- validation is available or blockage is reported;
-- worktree and publishing context can be checked.
-
-If any condition fails, stop at audit/proposal.
-
-## Evidence source model
-
-Supported sources:
+Classify the target before judging it:
 
 ```text
-in-flight
-history
-provided
-worktree
+decision
+execution
+evidence
+orchestration
 mixed
 ```
 
-Declare:
+### decision
+
+Value lies in selecting, rejecting, narrowing, blocking, or escalating a route.
+
+Primary evidence:
 
 ```text
-Evidence source:
-- Kind:
-- Locator:
-- Scope:
-- Window:
-- Access method:
-- Privacy constraint:
-- Limitation:
+decision effect
+clause compliance
+downstream outcome
 ```
 
-Do not make historical `$seq` mandatory for in-flight tuning. Do not infer historical recurrence from current-turn evidence alone.
+### execution
 
-## Goal-native skill delta
+Value lies in performing a task correctly and efficiently.
 
-When `$tune` is invoked as part of `/goal` or `$shadow`, prefer a compact decision delta:
-
-```yaml
-skill_delta_candidate:
-  record_version: SDC-v1
-  target_skill: "..."
-  source:
-    kind: in-flight | history | provided | worktree | mixed
-    locator: "..."
-  observed_gap:
-    gap_type: activation | interpretation | workflow | tooling | resource | validation | metadata | boundary | source-scope
-    signature: "..."
-    evidence_class: explicit_current_turn_feedback | in_flight_validation_failure | repeated_session_evidence | clear_validation_failure | clear_routing_failure | repeated_manual_workaround | tooling_gap | weak_signal
-  expected_decision_delta:
-    from: "..."
-    to: "..."
-  proposed_action:
-    kind: no-action | status-only | final-brief | ask-apply-permission | handoff-refine | handoff-seq-special-spec | retire | apply-with-refine
-    reason: "..."
-  protected_contracts: []
-  validation_plan: []
-```
-
-If there is no expected decision delta, do not produce a long new analysis.
-
-## Repeat Proposal Ledger
-
-Track repeated proposal-only gaps:
-
-```yaml
-repeat_proposal_ledger:
-  proposal_signature: "..."
-  target_skill: "..."
-  first_seen: "..."
-  last_seen: "..."
-  repeat_count: 0
-  evidence_delta_since_first: yes | no | unknown
-  state: active | apply-blocked | final-brief | transferred-to-seq | retired
-  next_action: ask-apply-permission | emit-final-brief | handoff-seq-special-spec | retire-no-action | continue
-```
-
-Hard rule:
+Primary evidence:
 
 ```text
-If repeat_count >= 3 and evidence_delta_since_first == no, $tune must produce a terminal state, not another full diagnosis.
+handoff fidelity
+surface budget
+validation
+rework
 ```
 
-Terminal states:
+### evidence
 
-- `apply-blocked`: the only useful next step is explicit apply permission.
-- `final-brief`: produce one final `$refine` brief and stop repeating.
-- `transferred-to-seq`: produce a `$seq` special-spec handoff.
-- `retired`: no further action unless new evidence appears.
+Value lies in retrieving, classifying, or preserving trustworthy evidence.
 
-## `$seq` CLI boundary
-
-If tuning identifies a `$seq` CLI change, do not bundle it into ordinary skill edits.
-
-Produce a special-spec handoff:
-
-```yaml
-seq_special_spec_handoff:
-  spec_version: SEQ-SPEC-HANDOFF-v1
-  need: "..."
-  observed_gap: "..."
-  required_behavior: "..."
-  command_shape: "..."
-  acceptance_criteria: []
-  representative_validation: []
-  source_evidence: []
-```
-
-The user owns whether to create/apply the special `$seq` CLI spec.
-
-## Evidence strength
-
-Strong evidence:
-
-- explicit current-turn feedback;
-- in-flight validation failure;
-- provided artifact evidence;
-- repeated session evidence;
-- clear validation failure;
-- clear routing failure;
-- repeated manual workaround;
-- stale or contradictory metadata;
-- historical skill regression.
-
-Weak evidence:
-
-- thin usage signal;
-- single ambiguous session;
-- low activation count;
-- possible trigger overlap;
-- style preference only;
-- missing examples without failure;
-- unbounded history without sampling plan.
-
-Prefer no edit when evidence is weak.
-
-## Workflow
-
-### 1. Scope
+Primary evidence:
 
 ```text
-Goal: Tune <skill> so that <intended behavior> better matches <observed pattern>.
-Mode: audit-only | proposal-only | apply-with-refine
-Evidence source: <descriptor>
-Apply gate: pass | blocked: <reason>
+coverage
+precision
+provenance
+false-positive/negative behavior
 ```
 
-### 2. Reconstruct intended-use contract
+### orchestration
+
+Value lies in lifecycle, state transition, concurrency, or handoff control.
+
+Primary evidence:
+
+```text
+phase correctness
+handoff completeness
+blocked/terminal states
+loop efficiency
+```
+
+### mixed
+
+Name which evidence dimensions apply.
+
+Do not force a route-change metric onto a skill whose job is evidence retrieval or execution.
+
+## Intended-use contract
 
 Read the target skill before judging usage:
 
 ```text
-<skill-root>/<skill>/SKILL.md
-<skill-root>/<skill>/agents/openai.yaml
-<skill-root>/<skill>/scripts/
-<skill-root>/<skill>/references/
-<skill-root>/<skill>/assets/
+SKILL.md
+agents/openai.yaml
+references/decision-contract.yaml
+scripts/
+references/
+assets/
 ```
 
-Only read relevant resources.
-
-### 3. Select evidence
-
-Use the least invasive source that can answer the question. Use `$seq` for historical evidence. Keep mixed-source ledgers separate before synthesis.
-
-### 4. Build evidence ledger
-
-For each important source:
+Prefer an explicit:
 
 ```text
-- Source kind:
-- Command, locator, or source:
-- Why chosen:
-- What it proves:
-- What it does not prove:
-- Evidence class:
-- Confidence:
-- Scope/window:
-- Recurrence:
-- Counterevidence:
-- Sanitization note:
+skill_decision_contract / SKDC-v1
 ```
 
-### 5. Diagnose gap
+If absent, reconstruct only the minimum provisional contract needed for diagnosis and label it:
 
-Classify:
+```text
+contract_authority: inferred
+```
+
+Do not pretend inferred clauses are stable historical identifiers.
+
+## Evidence hierarchy
+
+Use the strongest available evidence and preserve weaker classes separately:
+
+```text
+1. SDR-v1 structured decision receipt
+2. explicit assistant statement tying skill to a decision
+3. explicit skill use plus contract-aligned route/action
+4. skill use plus downstream outcome with no route attribution
+5. co-occurrence or raw mention
+```
+
+Only levels 1–2 establish a strong skill-caused decision delta.
+
+Levels 3–4 support alignment or association, not causal proof.
+
+Level 5 is weak evidence.
+
+## Decision-effect classes
+
+```text
+explicit_route_change
+prevented_action
+narrowed_scope
+added_or_changed_proof
+escalated_or_blocked
+reinforced_existing_choice
+no_visible_delta
+contrary_to_contract
+trigger_missed
+false_activation
+ceremonial_activation
+unknown
+```
+
+### Ceremonial activation
+
+Use when the skill was loaded or declared but:
+
+- no clause was exercised;
+- no route, scope, proof, or lifecycle state changed;
+- the resulting work is indistinguishable from a no-skill path.
+
+Ceremony is not automatically harmful. It becomes a tuning gap when recurrent or costly.
+
+## Gap classes
+
+Classify the smallest useful gap:
 
 ```text
 activation
@@ -319,105 +246,250 @@ validation
 metadata
 boundary
 source-scope
+decision-contract
+observability
+outcome
+ceremony
+overconstraint
 ```
 
-Identify the smallest sufficient fix. Prefer no edit when evidence is thin or source scope ambiguous.
+Examples:
 
-### 6. Produce skill delta or `$refine` brief
+- trigger present, no activation -> `activation`
+- clause loaded but wrong route selected -> `interpretation`
+- repeated manual workaround -> `tooling` or `workflow`
+- no stable clause IDs -> `decision-contract`
+- skill appears useful but decision effect cannot be recovered -> `observability`
+- compliant route repeatedly reopens -> `outcome`
+- repeated use with no visible delta -> `ceremony`
 
-For proposal mode, produce either:
+## Decision episode analysis
 
-- `skill_delta_candidate`;
-- `repeat_proposal_ledger` terminal state;
-- `$refine` brief;
-- `seq_special_spec_handoff`;
-- no-action retirement.
+For each material episode, preserve:
 
-Do not produce another full diagnosis for a repeated unchanged proposal.
+```yaml
+decision_episode:
+  decision_id:
+  session_id:
+  artifact_state:
+  trigger:
+  activation_evidence:
+  question:
+  alternatives_considered: []
+  selected_route:
+  rejected_routes: []
+  clause_refs: []
+  decision_effect:
+  evidence_strength:
+  downstream:
+  counterevidence: []
+```
 
-### 7. Apply only if allowed
+Do not infer alternatives that were never observed.
 
-Use `$refine` only after apply gate passes:
+Do not count a later successful session as proof that a skill caused the success.
+
+## Counterfactual skepticism
+
+Before proposing a change, ask:
 
 ```text
-Use $refine on <skill> with this tuning brief. Make the smallest sufficient edit that closes the diagnosed <gap_type> gap. Preserve unrelated behavior. Validate with quick_validate.
+Would the observed action plausibly have happened without the skill?
+Did the skill change the route, or merely describe it?
+Did compliance improve the outcome?
+Did a missed activation actually cause a failure?
+Could another companion skill own the effect?
 ```
 
-If another skill cannot literally be invoked, follow `$refine` rules and report manual execution.
-
-### 8. Validate
-
-For applied edits:
-
-```bash
-uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py <skill-root>/<skill>
-```
-
-If shared assumptions or multiple skills changed:
-
-```bash
-codex/skills/tune/scripts/validate-changed-skills
-```
-
-If validation is unavailable, report blocked and do not claim pass.
-
-## Report shape
+For high-impact or ambiguous tuning, use:
 
 ```text
-Tuned: <skill>
+skill_decision_provenance_auditor
+skill_outcome_skeptic
+```
 
-Mode:
-- <audit-only | proposal-only | apply-with-refine>
+## Canonical tune packet
 
-Evidence sources:
-- <source descriptor summary>
+Consume or emit `skill_tuning_evidence / STE-v1`.
 
-Apply gate:
-- <pass | blocked: reason>
+It must preserve target kind, contract authority, window, denominator, trigger quality, decision influence, clause compliance, outcomes, workarounds, exemplars, recurrent gaps, and limitations.
+
+See [ste-v1.md](references/ste-v1.md).
+
+Validate:
+
+```bash
+python3 codex/skills/tune/tools/ste_gate.py <packet.json>
+```
+
+## Skill delta
+
+Produce at most one dominant `skill_delta_candidate / SDC-v2` per cycle.
+
+Required fields:
+
+```text
+target and type
+source packet
+gap signature/type
+episode and clause refs
+evidence class/recurrence/confidence
+expected decision delta
+smallest change
+protected contracts
+validation query and plan
+proposed action
+```
+
+If there is no expected decision delta, do not produce a long redesign.
+
+## Repeat proposal ledger
+
+Track proposal signature, first/last seen, repeat count, evidence delta, state, and next action.
+
+If the same proposal appears three times without new decision/outcome evidence, emit one terminal state:
+
+```text
+apply-blocked
+final-brief
+transferred-to-seq
+retired
+```
+
+## Apply gate
+
+All must hold:
+
+- explicit user request to edit now;
+- target skill identified;
+- evidence source declared;
+- intended contract reconstructed;
+- decision or outcome gap is sufficiently evidenced;
+- smallest sufficient change is known;
+- stable clause IDs are preserved unless the change intentionally replaces them;
+- validation query exists;
+- protected-skill restrictions are satisfied.
+
+If any fail, stop at audit/proposal.
+
+## `$refine` handoff
+
+Use `REFINE-SKILL-v3`.
+
+The brief must bind the source packet, target kind, gap and clause refs, expected delta, optimization boundary, intervention budget, forbidden changes, smallest-change hint, and static/contract/script/behavioral validation.
+
+Do not hand `$refine` raw transcripts when STE-v1 is available.
+
+## `$seq` special-spec handoff
+
+When a missing evidence surface blocks diagnosis, emit `SEQ-SPEC-HANDOFF-v2` with the need, observed gap, desired command/packet fields, acceptance criteria, validation examples, and source evidence.
+
+Do not edit `$seq` inside ordinary skill refinement.
+
+## Subagent policy
+
+Default root-only for small, explicit gaps.
+
+Use:
+
+```text
+skill_contract_modeler
+```
+
+when the target is decision-oriented and lacks SKDC-v1.
+
+Use:
+
+```text
+skill_decision_provenance_auditor
+```
+
+when episodes are numerous or attribution is ambiguous.
+
+Use:
+
+```text
+skill_outcome_skeptic
+```
+
+when compliance/outcome correlation could be mistaken for causation.
+
+`$refine` owns all authorized skill-package optimization after `$tune` produces a bounded packet or brief. Do not delegate this to a system-managed optimizer.
+
+## Validation
+
+Static:
+
+```bash
+uv run --with pyyaml -- python3 \
+  codex/skills/.system/skill-creator/scripts/quick_validate.py \
+  codex/skills/<skill>
+```
+
+Contract:
+
+```bash
+python3 codex/skills/tune/tools/decision_contract_lint.py \
+  codex/skills/<skill>/references/decision-contract.yaml
+```
+
+Behavioral:
+
+```text
+rerun the exact skill-decision-audit query named by validation_query
+```
+
+A text edit is not validated merely because frontmatter parses.
+
+## Report
+
+```text
+Tuned:
+- Target:
+- Target kind:
+- Mode:
 
 Evidence:
-- <evidence_class>: <sanitized summary>
+- Source:
+- Packet:
+- Contract authority:
+- Decision episodes:
+- Limitations:
 
 Diagnosis:
 - Intended:
 - Observed:
 - Gap:
+- Decision effect:
+- Outcome signal:
 
 Skill delta:
-- Decision delta:
-- Proposed action:
+- From:
+- To:
+- Smallest change:
 - Repeat state:
 
-Refinement / handoff:
-- <refine brief | seq special spec | no action | retired>
+Handoff / action:
+- <no action | refine brief | seq spec | applied edit>
 
 Validation:
-- <command>: <pass/fail/blocked/not run and why>
+- Static:
+- Contract:
+- Behavioral:
 
 Remaining uncertainty:
-- <what evidence did not prove>
 ```
 
-## Quality bar
+## Hard rules
 
-A good `$tune` run:
-
-- chooses mode first;
-- declares evidence source and limits;
-- reads target skill before judging;
-- separates intended vs observed;
-- classifies the gap;
-- produces a decision delta, terminal repeat state, or precise brief;
-- does not repeat unchanged proposal-only findings;
-- preserves protected skill boundaries;
-- validates applied changes.
-
-A bad `$tune` run:
-
-- treats "optimize" as edit permission;
-- repeats the same proposal without terminal state;
-- treats raw mentions as successful activations;
-- infers history from in-flight evidence;
-- edits `$seq` CLI without a special spec;
-- rewrites a skill without usage evidence;
-- commits unrelated work.
+- Raw mentions are not activation.
+- Activation is not decision influence.
+- Decision influence is not outcome causality.
+- A successful outcome is not proof of skill effectiveness by itself.
+- A clause never observed may be unnecessary, untriggered, or merely unobservable; do not assume which.
+- Preserve denominators.
+- Preserve counterevidence.
+- Prefer no edit over a weakly supported edit.
+- No decision delta, no full cycle.
+- No repeated proposal without terminal state.
+- No `$seq` CLI edit without a separate spec.

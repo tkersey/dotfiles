@@ -1,6 +1,6 @@
 policy:
   allow_implicit_invocation: true
 interface:
-  display_name: "refine"
-  short_description: "Refine existing Codex skills in place from evidence"
-  default_prompt: "Use $refine to improve an existing skill in this repo."
+  display_name: "Refine"
+  short_description: "User-owned evidence-backed skill optimizer"
+  default_prompt: "Use $refine as the user-owned skill optimizer: consume a complete tune brief, select one smallest intervention, edit only authorized files, preserve contract IDs, and validate static, contract, script, and behavioral surfaces."

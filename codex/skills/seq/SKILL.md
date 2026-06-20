@@ -1,737 +1,472 @@
 ---
 name: seq
-description: "Mine Codex session JSONL (`~/.codex/sessions`) and memories (`~/.codex/memories`) for explicit `$seq` and artifact forensics. Prefer `artifact-search`, `skill-evidence`, `adjudication-audit`, `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, `workdir-report`, `skill-blocks`, `plan-search`, `session-prompts`, `session-tooling`, `orchestration-concurrency`, `query-diagnose`, then `query`. Run opencode only when the request literally says `opencode`."
+description: "Mine Codex session JSONL and memory artifacts with the Zig `seq` CLI. Use for explicit `$seq`, artifact/session/tool/memory/plan forensics, skill activation and outcome audits, decision provenance, `$tune` evidence, watched-session deltas, worker attribution, or reproducible historical reports. Prefer the narrowest lifted command: `skill-decision-audit` for what a skill changed, `skill-evidence` for whether it appeared, then workflow/session/tool/memory surfaces, and generic `query` last. Run opencode only when the user literally says `opencode`."
 ---
 
 # seq
 
-## Overview
-Mine `~/.codex/sessions/` JSONL and `~/.codex/memories/` files quickly and consistently with the Zig `seq` CLI. Explicit `$seq` requests and artifact-forensics questions are `seq`-first. Focus on skill usage, format compliance, token counts, tool-call/tooling forensics, memory-file mining, and session-backed proof.
+## Mission
 
-## Trigger Cues
-- Explicit `$seq` asks.
-- Questions that ask to extract or query finalized `$plan` artifacts (`<proposed_plan>` blocks) for a repo, session, or time window.
-- Questions that ask to verify prior session output using artifacts (`"use $seq to find it"` / `"what did that session actually say"`).
-- Artifact-forensics questions about provenance, trace proof, or "show me the artifact that proves it".
-- Questions about Codex memory artifacts or provenance (`"what's in MEMORY.md"`, `"which rollout produced this memory"`, `"is this memory stale"`, `"how do memory_summary.md and rollout_summaries relate"`).
-- Execution ledger forensics from session traces (`Orchestration Ledger`, subagent lifecycle events, concurrency counts).
-- Concurrency math validation (`max_concurrency`, effective fanout, occurrences of peak parallelism, planned rows vs actual parallelism).
+Use deterministic session and memory evidence to answer:
 
-## Local-First Routing Ladder
-- Stay in `seq` first for explicit `$seq` asks and artifact-forensics work; do not jump to generic shell search unless `seq` cannot cover the need.
-- Preferred entrypoint: `seq artifact-search` for broad forensics; use `seq plan-search` first when the request is specifically about finalized `<proposed_plan>` artifacts.
-- Use this ladder:
-  1. `plan-search` for finalized `$plan` artifact retrieval; otherwise `artifact-search`.
-  2. Specialized follow-ups that already match the artifact shape:
-     - `memory-provenance` for "why is this memory here now?" / "which rollout introduced it?" questions about one memory thread or rollout summary.
-     - `memory-history` for "what changed over time?" questions about one memory thread or a topic across the memory corpus.
-     - `memory-map` for "what artifacts exist for this topic/thread and what's the fastest evidence path?" questions.
-     - `skill-blocks` for exact historical `<skill>...</skill>` extraction by skill name, with full block bodies and distinct-version history.
-       If the task needs term counts inside recovered skill block bodies, treat
-       `skill-blocks` as the owning surface; when the installed binary lacks a
-       native analysis mode, report a CLI-surface gap instead of hand-rolling
-       `jq`/Python text counting as the normal route.
-     - `plan-search` for strict repo/session/time/text retrieval of complete `<proposed_plan>` blocks.
-     - `find-session` for prompt-to-session lookup.
-     - `session-prompts` for "what did that session actually say" and transcript proof.
-     - `adjudication-audit` for selected/rejected `$review-adjudication` audits, including root-equivalent workflows such as `$resolve` when explicitly included.
-     - `skill-evidence` for one watched session when the question is "what skill-use evidence changed since cursor X?" It distinguishes injected skill blocks, assistant-declared use, manual `SKILL.md` reads, target-skill lens use, successful outcome evidence, and raw mentions without dumping raw transcript text by default.
-     - `skill-success-rank` for ranked successful skill activation reports over recent windows without raw mention inflation.
-     - `skill-audit` for raw skill mention summaries, one-skill mention rows, one-skill daily trends, and `--mode activation` evidence buckets.
-     - `workflow-audit` for workflow-cohort utilization reports across text, skill mentions, tool traces, session graph roles, and outcome signals.
-     - `tool-audit` for shell/tool command summaries by executable/tool/session/workdir/command plus row, args, and unresolved modes.
-     - `memory-inventory` for memory category/file/block/stage1/extension inventory without hand-writing `memory_*` query specs.
-     - `message-search` for direct message text search with `--contains`, `--regex`, `--contains-any`, or `--contains-all`.
-     - `workdir-report` for canonical session summaries and session lists by `cwd`.
-     - `session-tooling` for shell/tool summaries.
-     - `orchestration-concurrency` for ledger/concurrency proof.
-     - `sessions` for trace inventory: session ids, paths, cwd/repo, status, model, token totals, and worker kind.
-     - `turns` for canonical turn-level questions: per-turn status, user/final previews, duration, tokens, compaction, and errors.
-     - `session-detail` for full per-session proof: session metadata, turns, tools, graph edges, and warnings in one JSON or markdown artifact.
-     - `tool-lifecycle` when lifecycle completeness matters: declared/completed/failed/unresolved calls, exit/status/output evidence, and typed tool endings.
-     - `session-graph` for worker/orchestrator relationships, including parent/worker proof paths and DOT output.
-     - `tail` for active sessions or one-shot trace event status from the current/newest rollout.
-     - `message-audit` for role/session summaries around repeated message searches, especially when the next step would otherwise be `jq` grouping.
-     - `skill-cohort` for "what else appears in sessions that used this skill?" cohort work.
-     - `tool-search` for lifecycle-aware command/tool text search plus summary or argument grouping.
-     - `memory-extension-audit` for live memory extension inventory; treat its provenance fields as inventory evidence, not causal proof of behavior.
-     - `token-window` for max rolling token windows over timestamp-sorted `token_deltas`.
-     - `opencode-prompts` / `opencode-events` only when the literal gate is satisfied.
-  3. `query-diagnose` when a `seq query` run needs lifecycle debugging or deterministic next actions.
-  4. Generic `seq query` only when no specialized command covers the question.
-- Treat `query-diagnose` as a diagnostic tool for `seq query`, not the default artifact-discovery entrypoint.
-- Preserve the broad artifact-forensics ladder: start with `artifact-search` or `plan-search`, then specialized memory/session/tooling/orchestration/trace surfaces, then `query-diagnose`, and only then generic `query`.
-
-## Memory Artifact Model
-- Treat `~/.codex/memories` as a file-backed memory workspace, not an opaque store.
-- When Memories MCP tools are available, use them for direct memory file list/read/search operations; the Zig `seq` CLI remains the structured inventory, provenance, history, session-correlation, and reporting surface.
-- Use root artifacts deliberately:
-  - `memory_summary.md`: compact routing/index layer. Use it first when the question is broad or you need to decide where to dig.
-  - `MEMORY.md`: durable handbook/registry. Use it first when the question is about reusable guidance, prior decisions, or task-family history.
-  - `raw_memories.md`: merged stage-1 raw memories. Use it for recency and inventory, especially when tracing newly added or removed memory inputs.
-- Treat `rollout_summaries/*.md` as per-rollout markdown summaries, not JSONL logs.
-  - Expect fields like `thread_id`, `updated_at`, `cwd`, `rollout_path`, and sometimes `git_branch`.
-  - Use `rollout_path` to jump to the original session JSONL under `~/.codex/sessions` when you need raw evidence.
-- Treat `skills/` under the memory root as optional memory-derived helper assets.
-
-## Memory Mining Workflow
-- Use `seq` first for inventory, routing, and timestamp/category analysis; do not pretend it replaces reading the target markdown files.
-- If Memories MCP tools are available, prefer them over shell reads for opening specific memory files after `seq` has identified the relevant artifact; if they are unavailable, fall back to targeted file reads from `~/.codex/memories`.
-- Start broad, then go deeper:
-  1. Run `seq memory-inventory --mode categories` to see what categories and files exist.
-  2. If the question is navigational or "what do we know?", route through `memory_summary.md`.
-  3. If the question is durable/procedural, route through `MEMORY.md`.
-  3b. If the question is about one memory thread or one rollout summary artifact, prefer `memory-provenance` before manual markdown reads.
-  3c. If the question is about a topic across the memory corpus, prefer `memory-map` or `memory-history` before raw `query`.
-  4. If you need provenance for one memory block, inspect the relevant `rollout_summaries/*.md` file.
-  5. If you need raw session evidence, follow `rollout_path` into `~/.codex/sessions/...jsonl`; use `seq` session/orchestration commands only when they accept the handle you actually have, otherwise inspect the file directly.
-- Prefer `MEMORY.md` / `memory_summary.md` over `raw_memories.md` when both cover the topic; `raw_memories.md` is a lower-level consolidation input, not the highest-level answer.
-
-## Opencode Explicitness Gate (Hard)
-- Only run opencode research when the request text includes the literal word `opencode`.
-- Treat these as opencode research and block them without the literal cue:
-  - `seq opencode-prompts`
-  - `seq opencode-events`
-  - `seq query` specs targeting dataset `opencode_prompts` or `opencode_events`
-- For mixed searches without a literal `opencode` cue, hard-skip the opencode branch and continue with non-opencode `seq` datasets only.
-
-## Zig CLI Iteration Repos
-
-When iterating on the Zig-backed `seq` helper CLI path, use these two repos:
-
-- `skills-zig` (`$HOME/workspace/tk/skills-zig`): source for the `seq` Zig binary, build/test wiring, and release tags.
-- `homebrew-tap` (`$HOME/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `seq` binaries.
-
-## Quick Start
-```bash
-run_seq() {
-  local os="$(uname -s)"
-  if command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"; then
-    seq "$@"
-    return
-  fi
-
-  if [ "$os" = "Darwin" ]; then
-    if ! command -v brew >/dev/null 2>&1; then
-      echo "homebrew is required on macOS: https://brew.sh/" >&2
-      return 1
-    fi
-    if ! brew install tkersey/tap/seq; then
-      echo "brew install tkersey/tap/seq failed." >&2
-      return 1
-    fi
-  else
-    echo "seq runtime bootstrap is Homebrew/tap-backed; install seq from a released package before using this skill." >&2
-    return 1
-  fi
-
-  if command -v seq >/dev/null 2>&1 && seq --help 2>&1 | grep -q "skills-rank"; then
-    seq "$@"
-    return
-  fi
-  echo "no compatible seq binary found after install attempt." >&2
-  if [ "$os" = "Darwin" ]; then
-    echo "expected install path: brew install tkersey/tap/seq" >&2
-  fi
-  return 1
-}
-
-run_seq datasets --root ~/.codex/sessions
+```text
+what happened
+where it happened
+what evidence supports it
+what remains unknown
 ```
 
-Commands below use `seq` directly for brevity. Use `run_seq` when you want brew-aware bootstrap with binary-only execution.
+For skill tuning, distinguish:
 
-## Query (JSON Spec)
-Run flexible mining via `query` with a small JSON spec (inline or `@spec.json`).
-
-List datasets:
-```bash
-seq datasets --root ~/.codex/sessions
+```text
+skill presence
+skill decision influence
+downstream outcome
 ```
 
-Show dataset fields/params:
-```bash
-seq dataset-schema --dataset token_deltas --root ~/.codex/sessions
+These are not interchangeable.
+
+## Source boundary
+
+Primary sources:
+
+```text
+~/.codex/sessions
+~/.codex/memories
 ```
 
-Examples:
+`seq` reports local-corpus evidence, not product-wide telemetry.
 
-Rank skill usage:
-```bash
-seq query --root ~/.codex/sessions --spec \
-  '{"dataset":"skill_mentions","group_by":["skill"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"limit":20,"format":"table"}'
-```
-Prefer the lifted shortcut:
-```bash
-seq skill-success-rank --root ~/.codex/sessions --last 14d --format table
-seq skill-success-rank --root ~/.codex/sessions --skill seq --mode sessions --last 14d --format jsonl
-seq skill-evidence --root ~/.codex/sessions --session-id <session_id> --skill seq --format json
-seq skill-evidence --root ~/.codex/sessions --session-id <session_id> --skill seq --since-cursor '<cursor-token>' --format json
-seq skill-audit --root ~/.codex/sessions --limit 20 --format table
-seq skill-audit --root ~/.codex/sessions --skill seq --mode trend --format table
-seq skill-audit --root ~/.codex/sessions --skill universalist --mode activation --last 36h --exclude-current --format table
-seq workflow-audit --root ~/.codex/sessions --workflow fixed-point-driver --mode summary --since 2026-04-01T00:00:00Z --format table
-seq workflow-audit --root ~/.codex/sessions --workflow fixed-point-driver --mode report --since 2026-04-01T00:00:00Z --format markdown
-```
+State the denominator before reporting counts.
 
-Audit command/tool usage:
-```bash
-seq tool-audit --root ~/.codex/sessions --group-by executable --limit 20 --format table
-seq tool-audit --root ~/.codex/sessions --mode unresolved --format jsonl
+## Routing ladder
+
+Use the narrowest command that owns the question.
+
+### Skill decisions and tuning
+
+```text
+skill-decision-audit
+skill-evidence
+skill-success-rank
+skill-audit
+skill-cohort
+workflow-audit
+workflow-overlap
 ```
 
-Inventory file-backed memories:
-```bash
-seq memory-inventory --memory-root ~/.codex/memories --mode categories --format table
-seq memory-inventory --memory-root ~/.codex/memories --mode blocks --contains synesthesia --limit 10 --format table
+### Session and artifact forensics
+
+```text
+artifact-search
+plan-search
+find-session
+session-prompts
+sessions
+turns
+session-detail
+tail
 ```
 
-Search session messages:
-```bash
-seq message-search --root ~/.codex/sessions --contains "release workflow" --roles user,assistant --limit 20 --format table
-seq message-search --root ~/.codex/sessions --contains-any "stale packet,transport-invalid" --format jsonl
-seq message-audit --root ~/.codex/sessions --contains-any "jq,seq query" --roles user,assistant --exclude-current --format table
-seq message-audit --root ~/.codex/sessions --contains "release workflow" --mode sessions --show-query --format json
+### Tools and orchestration
+
+```text
+tool-lifecycle
+tool-audit
+tool-search
+session-tooling
+session-graph
+orchestration-concurrency
 ```
 
-Audit skill cohorts and tool searches without ad hoc post-processing:
-```bash
-seq skill-cohort --root ~/.codex/sessions --skill seq --since 2026-04-01T00:00:00Z --exclude-current --format table
-seq skill-cohort --root ~/.codex/sessions --skill fixed-point-driver --mode mentions --format jsonl
-seq tool-search --root ~/.codex/sessions --contains "seq query" --mode rows --exclude-current --format table
-seq tool-search --root ~/.codex/sessions --session-id <session_id> --contains-any "jq,shasum,brew test" --mode rows --format table
-seq tool-search --root ~/.codex/sessions --contains "jq " --mode args --format jsonl
+### Review and workflow-specific audits
+
+```text
+adjudication-audit
+resolve-churn-audit
+review-compiler-audit
+goal-audit
+routing-gap
 ```
 
-Report workdir/cwd session activity:
-```bash
-seq workdir-report --root ~/.codex/sessions --workdir /Users/tk/workspace/tk/skills-zig --format table
-seq workdir-report --root ~/.codex/sessions --contains "/Users/tk/workspace/tk" --mode sessions --limit 20 --format table
+### Memory
+
+```text
+memory-inventory
+memory-provenance
+memory-map
+memory-history
+memory-extension-audit
 ```
 
-Daily token totals (from `token_count` events):
-```bash
-seq query --root ~/.codex/sessions --spec \
-  '{"dataset":"token_deltas","group_by":["day"],"metrics":[{"op":"sum","field":"delta_total_tokens","as":"tokens"}],"sort":["day"],"format":"table"}'
-```
-Use `token-usage --tz ...` instead when the user means local calendar days or asks for averages/summaries rather than raw UTC buckets.
-Use `token-window` when the question is a rolling window, not a calendar bucket:
-```bash
-seq token-window --root ~/.codex/sessions --window-hours 24 --since 2026-04-01T00:00:00Z --exclude-current --format table
-seq token-window --root ~/.codex/sessions --window-hours 6 --mode rows --format jsonl
+### Messages, tokens, and generic query
+
+```text
+message-search
+message-audit
+token-usage
+token-window
+token-cost
+query-diagnose
+query
 ```
 
-Top sessions by total tokens:
-```bash
-seq query --root ~/.codex/sessions --spec \
-  '{"dataset":"token_sessions","select":["path","total_total_tokens"],"sort":["-total_total_tokens"],"limit":10,"format":"table"}'
+Start with `artifact-search` for broad artifact forensics.
+
+Use `query` only when no lifted surface fits.
+
+## Skill-decision audit
+
+When the question is:
+
+```text
+How did this skill affect actual decisions?
+Was its contract followed?
+Was it missed when its trigger appeared?
+Did compliance improve outcomes?
+What should $tune change?
 ```
 
-Audit memory extensions without implying behavioral causality:
+use:
+
 ```bash
-seq memory-extension-audit --extensions-root ~/.codex/memories/extensions --mode rows --format table
-seq memory-extension-audit --extensions-root ~/.codex/memories/extensions --mode summary --format json
+seq skill-decision-audit \
+  --root ~/.codex/sessions \
+  --skill <skill> \
+  --skill-root codex/skills \
+  --repo <repo> \
+  --last 30d \
+  --exclude-current \
+  --mode tune-packet \
+  --format json
 ```
 
-Rank tool calls:
-```bash
-seq query --root ~/.codex/sessions --spec \
-  '{"dataset":"tool_calls","group_by":["tool"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"limit":20,"format":"table"}'
-```
-Prefer lifecycle-aware lifted summaries:
-```bash
-seq tool-audit --root ~/.codex/sessions --group-by executable --limit 20 --format table
+Modes:
+
+```text
+summary
+episodes
+misses
+clauses
+outcomes
+matched-cohort
+tune-packet
+delta
 ```
 
-Inspect lifecycle-enriched tool invocations:
+### One-session delta
+
 ```bash
-seq query --root ~/.codex/sessions --spec \
-  '{"dataset":"tool_invocations","select":["timestamp","tool_name","command_text","workdir","wall_time_ms","exit_code","running_state"],"sort":["-timestamp"],"limit":20,"format":"table"}'
+seq skill-decision-audit \
+  --root ~/.codex/sessions \
+  --session-id <id> \
+  --skill <skill> \
+  --since-cursor '<cursor-token>' \
+  --mode delta \
+  --format json
 ```
 
-Flatten tool-call argument leaves:
-```bash
-seq query --root ~/.codex/sessions --spec \
-  '{"dataset":"tool_call_args","where":[{"field":"tool_name","op":"eq","value":"exec_command"}],"select":["timestamp","tool_name","arg_path","value_kind","value_text","value_number","value_bool"],"sort":["-timestamp"],"limit":20,"format":"table"}'
+This is the preferred `$shadow` / in-flight `$tune` surface.
+
+### Evidence levels
+
+The command must preserve:
+
+```text
+structured SDR-v1 receipt
+explicit assistant attribution
+contract-aligned action
+associated outcome
+co-occurrence only
 ```
 
-Memory files by category:
+Do not collapse these into one “used” count.
+
+### Tune packet
+
+`--mode tune-packet` emits:
+
+```text
+skill_tuning_evidence / STE-v1
+```
+
+It must include denominator, contract authority, trigger quality, decision influence, clause compliance, outcomes, workarounds, exemplars, gap signatures, and limitations.
+
+If the installed binary lacks `skill-decision-audit`, report the CLI gap and use existing narrow commands only as a bounded fallback.
+
+Do not hand-roll a pseudo-equivalent with broad shell transcript parsing as the normal route.
+
+## Skill presence audit
+
+Use `skill-evidence` when the question is only whether and how a skill appeared:
+
 ```bash
+seq skill-evidence \
+  --root ~/.codex/sessions \
+  --session-id <id> \
+  --skill <skill> \
+  --format json
+```
+
+Evidence classes should remain separate:
+
+```text
+explicit user call
+implicit assistant declaration
+injected skill block
+manual skill-file read
+target-skill lens use
+successful outcome evidence
+raw mention
+```
+
+Presence does not prove influence.
+
+## Contract-aware evidence
+
+Decision-oriented skills may carry:
+
+```text
+references/decision-contract.yaml
+```
+
+Schema:
+
+```text
+skill_decision_contract / SKDC-v1
+```
+
+The CLI should prefer:
+
+1. explicit `--contract`;
+2. target skill’s decision-contract file;
+3. no clause-level judgment.
+
+Do not semantically invent a contract in the CLI.
+
+When no explicit contract exists:
+
+```text
+contract_authority: absent
+clause_compliance: not_assessed
+```
+
+The model using `$tune` may reconstruct an inferred contract, but `$seq` must label it external/inferred.
+
+## Decision receipts
+
+Recognize structured assistant artifacts:
+
+```yaml
+skill_decision_receipt:
+  receipt_version: SDR-v1
+  decision_id:
+  skill:
+  skill_contract_fingerprint:
+  trigger_refs: []
+  clause_refs: []
+  question:
+  alternatives_considered: []
+  selected_route:
+  rejected_routes: []
+  expected_outcome:
+  artifact_state:
+```
+
+An SDR receipt is the strongest deterministic decision-attribution evidence.
+
+A receipt does not prove a good outcome.
+
+## Causality discipline
+
+Report:
+
+```text
+explicit decision delta
+contract-consistent but causality unproven
+associated outcome only
+co-occurrence only
+```
+
+Matched cohorts are observational.
+
+Never claim causal effect from a matched cohort.
+
+## Worker attribution
+
+Use linked workers only when requested or when the skill’s decision occurred in a delegated worker.
+
+Preserve:
+
+```text
+root session
+worker session
+parent edge evidence
+lane/receipt id
+declared skills
+decision receipt
+outcome
+```
+
+Do not merge unlinked worker sessions into a root denominator.
+
+## Current command patterns
+
+Representative lifted surfaces:
+
+```bash
+seq artifact-search --contains "<term>" --surface messages --format jsonl
+seq plan-search --repo <repo> --include-body --format jsonl
+seq skill-audit --skill <skill> --mode activation --last 30d --exclude-current
+seq workflow-audit --workflow <workflow> --mode cohort-report --last 7d
+seq tool-lifecycle --session-id <id> --format table
+seq session-detail --session-id <id> --format markdown
 seq memory-inventory --mode categories --format table
 ```
 
-Explain why a memory exists now:
-```bash
-seq memory-provenance --thread-id 019bae5d-7d12-7b01-9cb5-b8bb6046b85b --format table
+Use generic `query` only when no lifted command fits; use `query-diagnose` when it behaves unexpectedly.
+
+See [command-routing.md](references/command-routing.md).
+
+## Memory model
+
+Treat memory as file-backed:
+
+```text
+memory_summary.md  routing/index
+MEMORY.md          durable handbook
+raw_memories.md    lower-level consolidation
+rollout_summaries  per-rollout provenance
 ```
 
-Map the fastest evidence path for a memory topic:
-```bash
-seq memory-map --contains synesthesia --limit 5 --format table
+Use memory-specific lifted commands before generic query.
+
+## Opencode gate
+
+Only use:
+
+```text
+opencode-prompts
+opencode-events
+opencode datasets
 ```
 
-Show an observed timeline for one memory thread:
-```bash
-seq memory-history --thread-id 019bae5d-7d12-7b01-9cb5-b8bb6046b85b --format table
+when the literal user request includes:
+
+```text
+opencode
 ```
 
-Opencode prompts with source override:
-```bash
-seq query --spec \
-  '{"dataset":"opencode_prompts","params":{"source":"db","opencode_db_path":"~/.local/share/opencode/opencode.db"},"where":[{"field":"part_types","op":"contains","value":"file"}],"select":["session_slug","prompt_text","part_types"],"sort":["-time_created_epoch_ms"],"format":"jsonl"}'
+Skip that branch otherwise.
+
+## Time and contamination
+
+Use:
+
+```text
+--since
+--until
+--last
+--exclude-current
 ```
 
-### Ready-made specs
-Prebuilt specs live in `specs/`.
+when supported.
 
-```bash
-seq query --root ~/.codex/sessions --spec @specs/skills-rank.json
-seq query --root ~/.codex/sessions --spec @specs/tools-rank.json
-seq query --root ~/.codex/sessions --spec @specs/tokens-top-days.json
-seq query --root ~/.codex/sessions --spec @specs/tokens-top-sessions.json
-seq query --root ~/.codex/sessions --spec @specs/tk-trend-week.json
-```
+Treat pasted skill bodies, current audit prompts, developer instructions, memory summaries, and generated reports as potential contamination.
 
-### Spec reference
-Top-level keys:
-- `dataset` (string, required)
-- `params` (object, optional; dataset-specific)
-- `where` (list of predicates, optional)
-- `group_by` (list of field names, optional)
-- `metrics` (list of aggregations, optional; default `count` when grouping)
-- `select` (list of field names, optional; for non-grouped queries)
-- `sort` (list of field names; prefix with `-` for descending)
-- `limit` (int, optional)
-- `format` (`table` | `json` | `csv` | `jsonl`; default: `table` when grouped, else `jsonl`)
+State how the current session was handled.
 
-Where predicate shape:
-```json
-{"field":"day","op":"eq","value":"2026-02-05"}
+## Denominator rules
+
+Always distinguish:
+
+```text
+candidate sessions
+activation sessions
+decision episodes
+decision-effect episodes
+outcome-associated episodes
+worker episodes
 ```
 
-Supported `where.op`:
-- `eq`, `neq`
-- `gt`, `gte`, `lt`, `lte` (numeric-ish compare)
-- `in`, `nin` (value is a JSON list)
-- `contains` (substring)
-- `contains_any` (value is a JSON list of substrings; optional `case_insensitive: true`)
-- `regex` (regex-like matching with `^`, `$`, and alternation `|`; optional `case_insensitive: true`)
-- `regex_any` (value is a JSON list of regex-like strings; OR semantics)
-- `exists`, `not_exists`
+For example:
 
-Metrics shape (grouped queries):
-```json
-{"op":"sum","field":"delta_total_tokens","as":"tokens"}
+```text
+0 native activation rows
+12 explicit assistant declarations
+7 decision episodes
+3 explicit route changes
 ```
 
-Supported `metrics.op`:
-- `count`
-- `sum`, `min`, `max`, `avg`
-- `count_distinct`
+is better than:
 
-## Tasks
-
-### 1) Rank skill usage
-```bash
-seq skills-rank --root ~/.codex/sessions
-```
-Common options:
-- `--format json|csv`
-- `--max 20`
-- `--since 2026-01-01T00:00:00Z`
-- `--until 2026-03-01T00:00:00Z`
-
-Prefer `skill-success-rank` when the question asks which skills were used successfully rather than which skill names were mentioned most:
-```bash
-seq skill-success-rank --root ~/.codex/sessions --last 14d --format table
-seq skill-success-rank --root ~/.codex/sessions --skill prove-it --mode sessions --last 14d --format jsonl
+```text
+skill used 12 times
 ```
 
-Guardrail for "was this skill/workflow used?" audits:
+## Empty-result protocol
 
-- State the denominator before giving a count. "Native/user-called successful activation rows" is not the same denominator as "assistant-declared workflow use" or "root-equivalent companion use."
-- For a known watched session, start with `seq skill-evidence --session-id <id> --skill <name> --format json`; pass the prior `cursor_end.token` or `cursor_end.json` to `--since-cursor` when the user asks what changed since cursor X.
-- Treat `skill-evidence` raw mentions as a separate evidence class, not proof of successful activation. Successful activation/outcome evidence is its own class and should be reported separately.
-- For direct activation questions such as "has `$universalist` been called implicitly in the last 36 hours?", start with `seq skill-audit --skill universalist --mode activation --last 36h --exclude-current --format table`. Report the `implicit_assistant_call` count separately from `explicit_user_call`, `injected_skill_block`, and `other_reference`.
-- Do not conclude "not used" from an empty `skill-success-rank` result alone. First cross-check `workflow-audit` / `workflow_signals`, `message-search` over assistant messages, `skill-blocks` for injected skill text, and `session-tooling` / `orchestration-concurrency` when worker or subagent masking is plausible.
-- For companion-skill or root-equivalent workflows such as `$fixed-point-driver` delegating to `$accretive-implementer`, search assistant messages for declared routing phrases (`using <skill>`, `then <skill>`, `delegate ... <skill>`) and report those separately from native activation rows.
-- If search strings include Markdown backticks, `$`, or shell-sensitive text, prefer a single-quoted JSON spec, a `--spec @file` query, or plain substrings without formatting characters. Inspect stderr and any `--show-query` output before trusting an empty result.
-- When using `seq query` with aggregate `metrics`, include an explicit `group_by` unless row-level output is intended. If a lifted command emits an unexpected filter such as `role in [null]`, treat it as a CLI-surface gap and rerun the check with `seq query` over the underlying dataset.
+An empty lifted result is not automatically absence.
 
-### 2) Trend a skill over time
-```bash
-seq skill-trend --root ~/.codex/sessions --skill tk --bucket week
-```
+Check:
 
-### 3) Report on a specific skill
-```bash
-seq skill-report --root ~/.codex/sessions --skill tk
-```
-Another example:
-```bash
-seq skill-report --root ~/.codex/sessions --skill tk \
-  --since 2026-03-01T00:00:00Z
-```
+1. command stderr/status;
+2. time bounds;
+3. current-session exclusion;
+4. activation denominator;
+5. worker masking;
+6. raw mentions versus structured evidence;
+7. known command-surface gaps.
 
-### 4) Role breakdown by skill
-```bash
-seq role-breakdown --root ~/.codex/sessions --format table
-```
+Only then conclude no evidence found.
 
-### 5) Audit section compliance
-```bash
-seq section-audit --root ~/.codex/sessions \
-  --sections "Contract,Invariants,Creative Frame"
+## Output quality
+
+A good `$seq` answer contains:
+
+```text
+source
+scope/window
+denominator
+command surface
+evidence rows or artifact refs
+what the evidence proves
+what it does not prove
+limitations
 ```
 
-### 6) Export occurrences
-```bash
-seq occurrence-export --root ~/.codex/sessions --format jsonl --output occurrences.jsonl
+## CLI development
+
+Source:
+
+```text
+$HOME/workspace/tk/skills-zig
 ```
 
-### 7) Bundle a report
-```bash
-seq report-bundle --root ~/.codex/sessions --top 20
+Release packaging:
+
+```text
+$HOME/workspace/tk/homebrew-tap
 ```
 
-### 8) Token usage summary
-```bash
-seq token-usage --root ~/.codex/sessions --top 10
-```
-Rolling-window summary:
-```bash
-seq token-usage --root ~/.codex/sessions \
-  --last 24h \
-  --summary \
-  --format json
-```
-Local-day summary with averages:
-```bash
-seq token-usage --root ~/.codex/sessions \
-  --since 2026-03-26T00:00:00-07:00 \
-  --tz local \
-  --summary \
-  --format json
-```
-Local-day rows without post-processing:
-```bash
-seq token-usage --root ~/.codex/sessions \
-  --since 2026-03-26T00:00:00-07:00 \
-  --tz local \
-  --format table
-```
-Path-heavy scope check:
-```bash
-seq token-usage --root ~/.codex/sessions \
-  --since 2026-03-26T00:00:00-07:00 \
-  --group-by path \
-  --top 20 \
-  --format table
-```
-Self-auditing accounting proof for user-visible token totals:
-```bash
-seq token-usage --root ~/.codex/sessions \
-  --since 2026-03-26T00:00:00-07:00 \
-  --until 2026-03-27T00:00:00-07:00 \
-  --tz local \
-  --summary \
-  --audit \
-  --format table
-```
-Use `--audit` when the answer needs to explain or defend the number. It reports the monotonic `total_token_usage` delta total, the naive `last_token_usage` total, duplicate-total rows excluded, reset events, null/missing-total rows, requested/observed span days, and bucket counts. State the scope explicitly: this is local `~/.codex/sessions` corpus accounting, not OpenAI billing, organization-wide usage, or server-side metering.
+For new decision-provenance behavior, use the separate implementation spec included with this drop-in:
 
-When estimating what local Codex token usage would have cost at API prices, prefer native `seq token-cost --pricing api` with an exact model. If the trace does not record a known exact API model and the user has not supplied one, ask which API model/pricing to use instead of inferring from context window, Codex wording, or a Pro-tier label. Non-interactive/scripted runs should fail closed and tell the caller to pass `--model <name>`.
-
-```bash
-seq token-cost --root ~/.codex/sessions \
-  --last 24h \
-  --pricing api \
-  --model gpt-5.5 \
-  --reasoning-effort high \
-  --summary \
-  --format json
+```text
+SEQ_SKILL_DECISION_AUDIT_CLI_SPEC.md
 ```
 
-API pricing keeps cached tokens as their own billed input bucket: uncached input = total input tokens - cached input tokens; cached input uses cached-input pricing; output tokens are already the billable output bucket, while `reasoning_output_tokens` is reported separately and must not be double-counted. GPT-5.5 long-context pricing is reported separately when the input-token threshold is crossed.
+Do not approximate the new command by silently changing unrelated lifted commands.
 
-### 9) Reproducible perf harness
-Run stable workloads with fixed warmup/sample counts and optional baseline comparison.
+## Hard rules
 
-```bash
-zig build bench -Doptimize=ReleaseFast -- --config perf/frozen/workload_config.json
-```
-
-### 10) Find sessions by prompt text
-```bash
-seq find-session --root ~/.codex/sessions --prompt "adapter=auto" --limit 20
-```
-Constrain to a session window:
-```bash
-seq find-session --root ~/.codex/sessions \
-  --prompt "adapter=auto" \
-  --since 2026-03-01T00:00:00Z \
-  --until 2026-03-05T00:00:00Z \
-  --limit 20
-```
-
-### 11) List prompts/messages for one session
-```bash
-seq session-prompts --root ~/.codex/sessions --session-id <session_id> \
-  --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
-```
-Constrain to a time window within that session:
-```bash
-seq session-prompts --root ~/.codex/sessions --session-id <session_id> \
-  --roles user,assistant --since 2026-03-01T00:00:00Z --until 2026-03-05T00:00:00Z \
-  --strip-skill-blocks --limit 100 --format jsonl
-```
-Current session from the active Codex thread:
-```bash
-seq session-prompts --root ~/.codex/sessions --current \
-  --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
-```
-
-### 11b) Extract exact historical skill blocks
-Return all distinct historical versions for one skill:
-```bash
-seq skill-blocks --root ~/.codex/sessions --skill accretive --format jsonl
-```
-Target one known session:
-```bash
-seq skill-blocks --root ~/.codex/sessions \
-  --skill accretive \
-  --session-id 019d2d3e-3f14-7e23-b5b9-cf4899a456df \
-  --format jsonl
-```
-Return every exact occurrence instead of distinct versions:
-```bash
-seq skill-blocks --root ~/.codex/sessions \
-  --skill accretive \
-  --history all \
-  --format jsonl
-```
-Return only the newest distinct version:
-```bash
-seq skill-blocks --root ~/.codex/sessions \
-  --skill accretive \
-  --history latest \
-  --format json
-```
-For vocabulary or doctrine-term analysis inside exact injected skill bodies, keep
-the owner boundary on `skill-blocks`. Do not use `workflow-audit --mode
-term-summary` as a substitute for skill body analysis; `workflow-audit` counts
-workflow/session text after skill blocks are stripped.
-
-First confirm the active `seq skill-blocks --help` exposes term modes. If it
-does not, record a `seq` CLI-surface/release gap instead of falling back to
-ad hoc `jq` as the normal route.
-
-```bash
-seq skill-blocks --root ~/.codex/sessions \
-  --skill fixed-point-driver \
-  --mode term-counts \
-  --term-group ablation=ablative,ablation \
-  --term-group isomorphism=isomorphic,isomorphism \
-  --format table
-
-seq skill-blocks --root ~/.codex/sessions \
-  --skill fixed-point-driver \
-  --mode term-summary \
-  --term-group ablation=ablative,ablation \
-  --examples 5 \
-  --format table
-```
-Term modes count case-insensitive literal terms inside exact `block_text` for
-the selected `--history distinct|latest` aggregate population, include zero-count
-rows for selected blocks/groups, and reject `--history all` in v1.
-
-### 10b) Find finalized plan artifacts
-Repo-scoped metadata rows:
-```bash
-seq plan-search --root ~/.codex/sessions \
-  --repo "$HOME/workspace/tk/shift" \
-  --since 2026-03-01T00:00:00Z \
-  --format table
-```
-Filter by title/body text and show scan counters:
-```bash
-seq plan-search --root ~/.codex/sessions \
-  --repo "$HOME/workspace/tk/shift" \
-  --contains "PromptMode" \
-  --stats \
-  --format jsonl
-```
-Target one known session and include the exact plan block:
-```bash
-seq plan-search --root ~/.codex/sessions \
-  --session-id 019ce80b-9fb4-72a1-9c1e-3d626d4e4913 \
-  --include-body \
-  --format jsonl
-```
-
-### Query-Lift Shortcuts
-Use these before raw `seq query` when the request matches the shape:
-```bash
-seq skill-audit --root ~/.codex/sessions --skill seq --mode trend --since 2026-04-01T00:00:00Z --format table
-seq skill-audit --root ~/.codex/sessions --skill universalist --mode activation --last 36h --exclude-current --format table
-seq workflow-audit --root ~/.codex/sessions --workflow fixed-point-driver --mode report --since 2026-04-01T00:00:00Z --format markdown
-seq tool-audit --root ~/.codex/sessions --group-by executable --since 2026-04-01T00:00:00Z --limit 20 --format table
-seq memory-inventory --mode blocks --contains "release" --limit 20 --format table
-seq message-search --root ~/.codex/sessions --contains-any "release,homebrew,tap" --roles user,assistant --limit 20 --format table
-seq workdir-report --root ~/.codex/sessions --workdir "$HOME/workspace/tk/skills-zig" --mode sessions --format table
-```
-
-### Session-backed tooling diagnostics
-Summarize tool/shell activity for one session:
-```bash
-seq session-tooling --root ~/.codex/sessions --session-id <session_id> \
-  --since 2026-03-01T00:00:00Z --until 2026-03-05T00:00:00Z \
-  --summary --group-by executable --format table
-```
-Inspect `seq query` lifecycle health for one session:
-```bash
-seq query-diagnose --root ~/.codex/sessions --session-id <session_id> \
-  --since 2026-03-01T00:00:00Z --until 2026-03-05T00:00:00Z \
-  --threshold-ms 10000 --next-actions --format json
-```
-
-### 12) Cue vs invoked discovery-skill rate
-```bash
-seq routing-gap --root ~/.codex/sessions \
-  --cue-spec @cue-spec.json \
-  --discovery-skills grill-me,prove-it,complexity-mitigator,invariant-ace,tk \
-  --format table
-```
-
-### 13) Execution concurrency summary
-```bash
-seq orchestration-concurrency --root ~/.codex/sessions --session-id <session_id> --format table
-```
-Or target one JSONL directly:
-```bash
-seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl --format json
-```
-Assert the floor gate for non-trivial runs:
-```bash
-seq orchestration-concurrency --path /absolute/path/to/rollout.jsonl \
-  --floor-threshold 3 --fail-on-floor --format table
-```
-
-### 14) Query Opencode prompt history
-Only run this section when the user request explicitly includes `opencode`.
-```bash
-seq opencode-prompts --limit 20 --format jsonl
-```
-Filter and project:
-```bash
-seq opencode-prompts \
-  --source db \
-  --contains "grill me" \
-  --mode normal \
-  --part-type file \
-  --select session_slug,message_id,prompt_text,part_types \
-  --sort -time_created_epoch_ms \
-  --format table
-```
-Hybrid with `--spec` (CLI convenience flags override conflicting spec values):
-```bash
-seq opencode-prompts --spec @opencode-spec.json --contains "$plan" --limit 10
-```
-
-### 15) Query Opencode message/part events
-Only run this section when the user request explicitly includes `opencode`.
-```bash
-seq opencode-events --limit 50 --format jsonl
-```
-Filter event rows:
-```bash
-seq opencode-events \
-  --source db \
-  --role assistant \
-  --tool shell \
-  --status completed \
-  --select session_slug,message_id,event_index,part_type,tool_name,tool_status,text \
-  --sort -time_created_epoch_ms \
-  --format table
-```
-
-### 16) Inventory Codex memory artifacts
-```bash
-seq query --spec \
-  '{"dataset":"memory_files","group_by":["category"],"metrics":[{"op":"count","as":"count"}],"sort":["-count"],"format":"table"}'
-```
-List root artifacts explicitly:
-```bash
-seq query --spec \
-  '{"dataset":"memory_files","where":[{"field":"category","op":"eq","value":"root"}],"select":["relative_path","size_bytes","modified_at"],"sort":["relative_path"],"format":"table"}'
-```
-
-### 17) Find recent rollout summaries behind memory updates
-```bash
-seq query --spec \
-  '{"dataset":"memory_files","where":[{"field":"category","op":"eq","value":"rollout_summaries"}],"select":["relative_path","modified_at","size_bytes"],"sort":["-modified_at"],"limit":20,"format":"table"}'
-```
-Then open the matching `rollout_summaries/*.md` file and use its `rollout_path` to jump into the original session JSONL when deeper proof is required.
-
-## Notes
-- Default root: `~/.codex/sessions`.
-- `memory_files` defaults to `~/.codex/memories` and accepts `params.memory_root` and `params.include_preview`.
-- `memory_files` exposes `path`, `relative_path`, `name`, `category`, `extension`, `size_bytes`, `modified_at`, and `preview`.
-- `memory_stage1_outputs` reads the local Codex state DB and accepts `params.state_db_path`.
-- `memory_extensions` reads `~/.codex/memories/extensions` and accepts `params.extensions_root`.
-- Current memory-file categories are `root`, `rollout_summaries`, and `skills`; `root` may also include non-canonical files, so do not assume every root file is part of the memory contract.
-- `rollout_summaries/*.md` are markdown summaries; the original JSONL evidence lives at the `rollout_path` referenced inside those files.
-- `memory_files` is best for inventory and routing; when the answer depends on markdown body content, use `seq` to find the file and then read that specific file directly.
-- `memory-provenance` is the default archaeology surface for one thread or rollout summary file.
-- `memory-map` is the default archaeology surface for topic- or artifact-routing questions.
-- `memory-history` emits an observed evidence timeline, not a reconstructed historical `MEMORY.md` diff; do not overclaim that it proves exact past memory contents.
-- Opencode datasets (`opencode_prompts`, `opencode_events`) default to `source=auto`, which resolves DB-first (`$HOME/.local/share/opencode/opencode.db`) with JSONL fallback (`$HOME/.local/state/opencode/prompt-history.jsonl`).
-- Opencode params: `params.source`, `params.opencode_db_path`, `params.opencode_path`, `params.include_raw`; `opencode_prompts` also supports `params.include_summary_fallback`.
-- Skill names are inferred from `${CODEX_HOME:-$HOME/.codex}/skills` by default, and from `${CLAUDE_HOME:-$HOME/.claude}/skills` when needed.
-- Runtime bootstrap policy: require a released `seq` binary. On macOS, install through `brew install tkersey/tap/seq`; do not shadow it with `~/.local/bin/seq` or a local `zig-out` copy for normal skill execution.
-- Add `--output <path>` to write results to a file.
-- `query` auto-projects only referenced dataset fields (`where`, `group_by`, `metrics.field`, `select`, and non-grouped `sort`) to reduce scan overhead.
-- `query.params` is now parsed and routed into dataset collectors for dataset-specific source overrides.
-- `query.joins` can enrich one dataset with another by `left`/`right` keys, optional `type=inner|left`, optional `prefix`, and join-local `where`/`params`.
-- `workflow_signals` normalizes `$workflow` mentions, cleaned skill mentions, deterministic outcome signals, tool calls, and session-graph agent roles into one session-derived dataset.
-- `token-usage` now supports `--last <Nm|Nh|Nd>`, `--tz utc|local|+HH:MM|-HH:MM`, `--summary`, `--audit`, `--group-by day|path`, and `--path` / `--session-id` targeting for exact scope reporting.
-- `token-cost --pricing api` uses exact known API model pricing; ask for `--model <name>` when the model is absent or unknown instead of assuming.
-- Prefer `token-usage` over generic `query` for "since yesterday/last Thursday", daily averages, or local-calendar token questions; reserve `token_deltas` queries for lower-level accounting checks.
-- For disputed daily averages, run `token-usage --summary --audit` and report both the authoritative monotonic total and the naive last-token overcount fields, with the local-corpus-not-billing boundary.
-- Session-tooling datasets now include `tool_invocations` and `tool_call_args` in addition to `tool_calls`.
-- `tool_calls` now exposes raw argument/input text plus command/workdir fields: `arguments_text`, `input_text`, `command_text`, `primary_executable`, `workdir`, `parse_error`.
-- `tool_invocations` adds lifecycle fields such as `end_timestamp`, `pty_session_id`, `wall_time_ms`, `exit_code`, `running_state`, and `unresolved`.
-- `tool_call_args` flattens JSON argument/input leaves with `payload_source`, `arg_path`, `value_kind`, `value_text`, `value_number`, `value_bool`, `is_null`, and `array_index`.
-- `find-session` returns `session_id` and `path`; use these to target follow-on `query` or resume workflows.
-- `find-session`, `session-prompts`, `session-tooling`, and `query-diagnose` accept ISO-8601 `--since` / `--until` filters for session-backed narrowing.
-- `plan-search` accepts repo/session/time/text filters for strict `<proposed_plan>` retrieval and defaults to metadata rows sorted newest-first.
-- `plan-search --stats` emits scan counters and filter-usage flags so repo-scoped plan queries can prove they narrowed the corpus.
-- Prefer the routing ladder: `plan-search` for finalized plan artifacts, otherwise `artifact-search`, then specialized follow-ups, then `query-diagnose`, and generic `query` only when needed.
-- `session-prompts` defaults to `--roles user`; set `--roles user,assistant` to include both sides of a conversation.
-- `session-prompts --current` resolves the current session from `CODEX_THREAD_ID` and fails closed if that env var is unavailable.
-- `session-prompts` deduplicates mirrored duplicate rows by default; pass `--no-dedupe-exact` to keep all duplicates.
-- Use `session-prompts --session-id <id>` when the question is "what did this one session say?" or when expanding a `session-detail` / `turns` preview for a known session. `message-search` is corpus-wide text mining and does not session-scope a known watched session.
-- `skill-blocks` is the exact-body recovery surface for session-injected skills;
-  it returns full `<skill>...</skill>` envelopes, not loose `$skill` mentions or
-  narrative references. It is also the correct owner for term or vocabulary
-  analysis over injected skill block bodies; if the current binary cannot do
-  that natively, treat the missing mode as a `seq` CLI-surface gap rather than
-  normalizing caller-side `jq`.
-- `skill-blocks` defaults to `--history distinct` and `--format jsonl`; use `--history all` to keep repeated identical injections and `--history latest` to select the newest distinct version.
-- `skill-evidence` is the first-class watched-session delta surface for skill use. It accepts `--session-id` / `--path`, `--skill`, `--since-cursor`, `--last` / `--since` / `--until`, `--include-raw`, and JSON output only.
-- Typical flow: run `find-session`, then pass the returned `session_id` into `session-prompts --session-id <id>`.
-- `skill-success-rank`, `skill-audit`, `workflow-audit`, `tool-audit`, `memory-inventory`, `message-search`, and `workdir-report` are first-class lifted query commands; use them before raw `seq query` for matching successful skill usage, raw skill mentions and activation buckets, workflow, tool, memory, message, and cwd questions.
-- Raw `seq query` is still correct when it is the clearer expression for a novel dataset shape, custom join, or denominator the lifted commands do not own.
-- Use `adjudication-audit` before raw `query`/`message-search` when the question asks whether `$review-adjudication` selected, rejected, over-selected, or routed comments correctly.
-- For `$resolve` or other root-equivalent adjudication runs, pass `--include-root-equivalent resolve` so the audit distinguishes direct `$review-adjudication` from root-equivalent decision-bearing sessions.
-- `skill-success-rank` counts user-called skills, reports `successful_sessions`, `used_sessions`, `blocked_sessions`, and raw mention/session diagnostics, and supports `--mode sessions` for per-session proof rows.
-- `workflow-audit` selects sessions by exact workflow or skill mention after stripping injected skill blocks, then reports source breakdown, outcomes, sessions, or a markdown report without Python post-processing.
-- `session-tooling` summarizes per-invocation shell/tool behavior and can aggregate via `--summary --group-by executable|command|tool`.
-- `tool-search` accepts `--session-id`/`--path` and `--contains-any` for session-scoped tool forensics without broad scans or caller-side `jq`.
-- `query-diagnose` emits per-query diagnostics from rollout JSONL and can suggest deterministic follow-up commands with `--next-actions`.
-- `orchestration-concurrency` reports configured and effective fanout, plus how many times each maximum occurred.
-- It also emits `effective_peak`, `spawn_substrate`, direct-lane counters (`spawn_agent_calls`, `wait_agent_calls`, `close_agent_calls`), `serialized_wait_agent_ratio`, and floor-gate fields (`floor_threshold`, `floor_applicable`, `floor_result`).
-
-## Resources
-- `seq` binary: CLI for ranking skills, auditing sections, querying datasets, and summarizing token usage.
-- `zig build bench -Doptimize=ReleaseFast -- --config perf/frozen/workload_config.json`: frozen-workload performance runner.
+- `$seq` first for explicit `$seq` and artifact-forensics requests.
+- Use the narrowest lifted surface.
+- Raw mention is not activation.
+- Activation is not influence.
+- Influence is not causality.
+- Do not merge unrelated workers.
+- Do not hide denominator changes.
+- Do not use opencode without literal permission.
+- Do not treat memory inventory as behavioral causality.
+- Do not use generic query when a stable lifted command owns the question.
+- Report a CLI surface gap when the needed deterministic operation is absent.

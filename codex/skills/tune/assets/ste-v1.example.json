@@ -1,0 +1,85 @@
+{
+  "skill_tuning_evidence": {
+    "packet_version": "STE-v1",
+    "target_skill": "team-patterns",
+    "target_kind": "decision",
+    "skill_versions_observed": [
+      "sha256:abc"
+    ],
+    "contract": {
+      "authority": "explicit",
+      "fingerprint": "sha256:def",
+      "clause_ids": [
+        "PATTERN-OWNER-001"
+      ]
+    },
+    "window": {
+      "since": "2026-06-01T00:00:00Z",
+      "until": "2026-06-20T00:00:00Z"
+    },
+    "denominator": {
+      "candidate_sessions": 12,
+      "activation_sessions": 8,
+      "decision_episodes": 7,
+      "explicit_effect_episodes": 3,
+      "associated_outcome_episodes": 5,
+      "matched_control_episodes": 0
+    },
+    "trigger_quality": {
+      "trigger_present": 9,
+      "correctly_activated": 7,
+      "missed": 2,
+      "false_activations": 1,
+      "ambiguous": 0
+    },
+    "decision_influence": {
+      "explicit_route_changes": 3,
+      "prevented_actions": 1,
+      "scope_narrowings": 1,
+      "proof_changes": 0,
+      "no_visible_delta": 2
+    },
+    "contract_compliance": {
+      "followed": {
+        "PATTERN-OWNER-001": 5
+      },
+      "violated": {
+        "PATTERN-OWNER-001": 1
+      },
+      "ambiguous": {
+        "PATTERN-OWNER-001": 1
+      },
+      "never_exercised": []
+    },
+    "outcomes": {
+      "first_pass_success": 3,
+      "review_reopens": 1,
+      "reversals": 0,
+      "blocked_correctly": 1
+    },
+    "workarounds": [],
+    "recurrent_gap_signatures": [
+      {
+        "signature": "missed-owner-boundary-trigger",
+        "gap_type": "activation",
+        "episode_refs": [
+          "DEC-004",
+          "DEC-006"
+        ],
+        "recurrence": 2,
+        "confidence": "high"
+      }
+    ],
+    "exemplars": {
+      "positive": [
+        "DEC-001"
+      ],
+      "negative": [
+        "DEC-004"
+      ]
+    },
+    "evidence_limitations": [
+      "Outcome association is observational."
+    ]
+  }
+}

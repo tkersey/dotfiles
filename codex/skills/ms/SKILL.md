@@ -1,102 +1,200 @@
 ---
 name: ms
-description: "Create, update, or refactor Codex skills in this repo: SKILL.md, frontmatter triggers, agents/openai.yaml, scripts, references, and assets. Use for creating a skill or direct in-place skill edits now; not for read-only analysis or \"should we update this?\" Treat `$refine` as evidence-driven existing-skill refinement."
+description: "Create or directly edit Codex skill packages: SKILL.md, triggers, agents/openai.yaml, scripts, references, assets, and optional decision instrumentation. Use for explicit skill creation or direct skill surgery now; classify the skill as decision/execution/evidence/orchestration/mixed, and scaffold SKDC-v1 only when stable decision rules need future `$seq`/`$tune` observability. Use `$refine` instead for usage-backed existing-skill refinement."
 ---
 
 # ms
 
-## Overview
+## Mission
 
-Create and update Codex skills with minimal diffs. Use this as the direct skill-surgery primitive: work directly in the skill folder (no external registry) and keep the skill lean.
+Create lean, composable, valid skill packages.
+
+For skills whose value lies in changing choices, make future decision evidence observable without turning every run into receipt ceremony.
 
 ## Hard constraints
 
-- Minimal diff: change only what is needed to satisfy the new requirement.
-- No extra docs: do not add README/INSTALL/CHANGELOG-style files.
-- Frontmatter:
-  - Default: only `name` and `description`.
-  - Preserve existing allowed keys (e.g., `metadata`, `license`, `allowed-tools`) when updating system skills.
-  - `name` must be hyphen-case (<=64 chars) and match the folder name.
-  - `description` is the trigger surface: include "when to use" cues; no angle brackets; <=1024 chars.
-- SKILL.md body:
-  - Imperative voice.
-  - Keep under 500 lines; spill deep details into `references/`.
-  - Do not put trigger guidance in the body; put it in frontmatter `description`.
-- `agents/openai.yaml` (if present/needed):
-  - Prefer generating via `generate_openai_yaml.py`.
-  - `short_description` must be 25-64 chars.
-  - `default_prompt` must be one short sentence and mention `$skill-name`.
-- Proof of completion (required):
-  - Record `agents/openai.yaml` disposition as one of: `regenerated`, `verified unchanged`, or `not present`.
-  - Include the exact `quick_validate.py` command used and its pass/fail result in the final summary.
-- Always run `quick_validate.py` before calling it done.
-  - Recommended (no global installs):
-    - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py <path/to/skill>`
-  - Note: skill-creator scripts require PyYAML (`import yaml`).
+- Make the smallest sufficient change.
+- Do not add README/INSTALL/CHANGELOG files inside a skill package.
+- Default frontmatter to `name` and `description`.
+- `name` is hyphen-case, at most 64 characters, and matches the folder.
+- `description` is the trigger surface and remains under 1024 characters.
+- Keep `SKILL.md` under 500 lines; move deep detail into `references/`.
+- Keep `agents/openai.yaml` aligned.
+- Always run `quick_validate.py`.
+- Record the `agents/openai.yaml` disposition.
 
-## Workflow Decision Tree
+## Skill type
 
-- If a matching skill already exists: run Update Workflow.
-- If no matching skill exists: run Create Workflow.
-- If the turn is read-only, asks whether a skill should change, or only asks for evidence/proof checklists: do not use `ms` yet.
-- If the user already invoked `$refine` for an existing skill: let `$refine` own the refinement turn and treat `$ms` as implicit/redundant.
-- If the name, location, or triggers are unclear: ask 1-3 targeted questions, then proceed.
-- If refining `ms` itself: run the Seq Feedback Loop first and use that evidence to choose the smallest update set.
+Classify:
 
-## Create Workflow
+```text
+decision
+execution
+evidence
+orchestration
+mixed
+```
 
-1. De-duplicate: search for an existing skill that already covers the intent; prefer updating over creating a near-duplicate.
-2. Discover and define: collect 2-3 concrete user prompts, then write:
-   - Problem statement (1 line)
-   - Success criteria (how we'll know it works)
-3. Plan reusable assets: decide whether `scripts/`, `references/`, or `assets/` are required; create only what is necessary.
-4. Initialize (scaffold):
-   - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/init_skill.py <skill-name> --path codex/skills`
-   - Add `--resources scripts,references,assets` only when needed.
-   - If you need UI metadata now, pass `--interface key=value` (repeatable).
-5. Author `SKILL.md`:
-   - Update frontmatter `description` to include concrete triggers (file types, tools, tasks, key phrases).
-   - Keep the body procedural and composable (decision tree + steps + pointers into `references/`).
-6. Sync UI metadata (optional but recommended for new skills):
-   - Generate or regenerate: `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py codex/skills/<skill-name> --interface key=value`
-   - If the skill already had `default_prompt`, include it again in overrides (generator does not infer it).
-   - For field constraints, read `codex/skills/.system/skill-creator/references/openai_yaml.md`.
-7. Validate:
-   - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/<skill-name>`
-8. Iterate with the user: tighten triggers, remove redundancy, and promote repeatable code into `scripts/`.
+Examples:
 
-## Update Workflow (In Place)
+- pattern-selection doctrine -> decision
+- code implementer -> execution
+- session miner -> evidence
+- lifecycle controller -> orchestration
+- review governor -> mixed
 
-1. Locate the target skill folder in `codex/skills` (or `codex/skills/.system` for system skills).
-2. Read the current `SKILL.md` and resources to identify the smallest set of required changes.
-3. Edit in place:
-   - Update frontmatter `description` if triggers changed.
-   - Adjust workflows, tasks, or references with minimal diffs (no formatting churn).
-   - Add or remove resource folders only when they create real reuse.
-4. Sync UI metadata:
-   - If `agents/openai.yaml` exists, keep it consistent with the skill and regenerate if stale.
-   - If missing and UI metadata is desired, create it with `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py <path/to/skill> --interface key=value`.
-5. Validate with `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py <path/to/skill>`.
-6. Summarize changes and next steps.
-   - Include `openai_yaml: regenerated|verified unchanged|not present`.
-   - Include `quick_validate: <exact command> -> <result>`.
+The classification guides observability. It does not belong in frontmatter unless the local convention supports it.
 
-## Seq Feedback Loop (for improving `ms`)
+## Decision instrumentation gate
 
-When the target skill is `ms`, mine recent sessions before editing:
+Create:
 
-1. Collect assistant outputs that mention `$ms`:
-   - `seq query --root ~/.codex/sessions --spec '{"dataset":"messages","where":[{"field":"role","op":"eq","value":"assistant"},{"field":"text","op":"contains","value":"$ms"}],"select":["path","timestamp","text"],"sort":["timestamp"],"format":"jsonl"}'`
-2. Compute adherence rates for required proof markers:
-   - `quick_validate.py`
-   - `uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py`
-   - `agents/openai.yaml`
-   - `generate_openai_yaml.py`
-3. Promote repeated misses into minimal-incision SKILL.md constraints/workflow edits.
+```text
+references/decision-contract.yaml
+```
 
-## Trigger Examples
+only when all are true:
 
-- "Create a skill to manage OpenAPI specs and generate SDKs."
-- "Update skill X to include a new workflow and regenerate agents/openai.yaml."
-- "Refactor this skill's SKILL.md and add references/ for schemas."
-- "Refactor this skill's SKILL.md, move deep details into references/, and keep it under 500 lines."
+- the skill contains stable triggers and decision rules;
+- future tuning would benefit from clause-level evidence;
+- selected/rejected/no-action routes can be named;
+- the contract is likely to survive wording changes.
+
+Do not create a decision contract for a simple file transformer, narrow executor, or evidence fetcher unless it also makes consequential route decisions.
+
+## SKDC-v1
+
+A decision contract contains stable:
+
+```text
+trigger IDs
+route IDs
+clause IDs
+required/prohibited routes
+success/failure signals
+required artifacts
+```
+
+Use:
+
+```yaml
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name:
+    kind:
+  triggers: []
+  routes: []
+  clauses: []
+```
+
+Validate:
+
+```bash
+python3 codex/skills/tune/tools/decision_contract_lint.py \
+  codex/skills/<skill>/references/decision-contract.yaml
+```
+
+## Optional SDR-v1
+
+A decision-oriented skill may specify an optional:
+
+```text
+skill_decision_receipt / SDR-v1
+```
+
+Use only when the skill makes a real route decision that later tuning cannot otherwise recover.
+
+Do not emit receipts for ordinary prose, every checklist step, or simple tool execution.
+
+## Create workflow
+
+1. Search for an existing skill covering the intent.
+2. Collect 2–3 realistic trigger prompts.
+3. Write:
+   - one-line problem statement;
+   - success criteria;
+   - non-trigger boundary.
+4. Classify the skill type.
+5. Decide whether reusable resources are justified.
+6. Decide whether SKDC-v1 is justified.
+7. Scaffold:
+   ```bash
+   uv run --with pyyaml -- python3 \
+     codex/skills/.system/skill-creator/scripts/init_skill.py \
+     <skill-name> --path codex/skills
+   ```
+8. Author procedural `SKILL.md`.
+9. Create decision contract only if the gate passes.
+10. Generate or update `agents/openai.yaml`.
+11. Validate.
+12. Remove redundant doctrine and examples.
+
+## Update workflow
+
+Use for direct user-authorized surgery without a `$tune` diagnosis.
+
+1. Read the current package.
+2. Preserve unrelated behavior.
+3. If a decision contract exists:
+   - preserve stable IDs;
+   - update only affected clauses;
+   - avoid silent contract drift.
+4. If the skill is becoming decision-oriented, evaluate the instrumentation gate.
+5. Update metadata.
+6. Validate.
+
+## Future tuneability check
+
+Before completion, ask:
+
+```text
+Can future evidence tell whether this skill was present?
+Can it tell whether a consequential decision changed?
+Can it tell which rule was exercised?
+Can it distinguish compliance from success?
+```
+
+It is acceptable for the answer to be “not applicable.”
+
+Do not add instrumentation merely to make every answer “yes.”
+
+## Seq feedback for `ms`
+
+When refining `ms` itself, prefer:
+
+```bash
+seq skill-decision-audit \
+  --skill ms \
+  --mode tune-packet \
+  --last 30d \
+  --exclude-current \
+  --format json
+```
+
+If unavailable, use narrow activation/message/validation evidence and report the CLI gap.
+
+## Validation
+
+```bash
+uv run --with pyyaml -- python3 \
+  codex/skills/.system/skill-creator/scripts/quick_validate.py \
+  codex/skills/<skill>
+```
+
+If scripts were added, run representative samples.
+
+If SKDC-v1 was added, run its linter.
+
+## Final report
+
+```text
+Skill:
+- Action:
+- Type:
+- Decision instrumentation: added | updated | not justified
+- agents/openai.yaml:
+- quick_validate:
+- contract validation:
+- Remaining uncertainty:
+```

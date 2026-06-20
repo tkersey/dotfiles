@@ -1,6 +1,6 @@
 policy:
   allow_implicit_invocation: true
 interface:
-  display_name: "ms"
-  short_description: "Directly create or edit Codex skills in this repo"
-  default_prompt: "Use $ms to directly create or edit a Codex skill in this repo."
+  display_name: "Make Skill"
+  short_description: "Create lean observable Codex skills"
+  default_prompt: "Use $ms for direct skill creation or surgery; classify the skill type, add decision instrumentation only when justified, and always validate."

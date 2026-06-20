@@ -1,6 +1,6 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
-  display_name: "opt"
-  short_description: "Coordinate CAS goals, Shadow session evidence, Tune briefs, and skill-optimizer subagent passes for Codex skill optimization."
-  default_prompt: "Use $opt to optimize a Codex skill package. Identify the target skill, choose audit/propose/tune/shadow-diagnose/patch/validate/regression mode, use $cas for parent goal state when needed, use $shadow for one watched-session evidence source, use $tune for intended-vs-observed diagnosis, then spawn skill-optimizer with a bounded contract."
+  display_name: "Optimize Skills"
+  short_description: "Orchestrate seq, tune, and user-owned refine"
+  default_prompt: "Use $opt to route evidence through $seq/$shadow, diagnosis through $tune, and all authorized skill-package optimization through the user-owned $refine skill."

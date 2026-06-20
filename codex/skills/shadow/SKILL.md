@@ -1,397 +1,340 @@
 ---
 name: shadow
-description: "Goal-native session shadowing: watch exactly one Codex session through `$seq`, apply one named target-skill lens, emit a compact cycle result, and avoid repeated full analysis when evidence has not changed. Use for `$shadow`, shadow/tail/watch/follow/monitor/supervise one session, `$shadow $tune`, goal-cycle monitoring, target-skill evidence delta, partial activation, status-only-stop, or proposal handoff. Do not use for broad session mining, autonomous scans, raw transcript inspection, editing without apply mode, or creating a second continual controller outside `/goal`."
+description: "Watch exactly one Codex session through one target-skill lens and emit only decision-relevant deltas. Prefer `seq skill-decision-audit --mode delta` for `$shadow $tune`; use for shadow/tail/follow/monitor one session, missed or contrary skill decisions, validation/outcome changes, worker decisions, or goal-cycle status. Do not scan broad history, inspect raw JSONL, create a second continual controller, or repeat full analysis when the cursor contains no new decision evidence."
 ---
 
 # Shadow
 
-## Purpose
+## Mission
 
-`$shadow` is a **goal-native cycle filter** for exactly one watched Codex session.
-
-It monitors one watched session through `$seq`, applies one named target skill as an interpretation lens, and returns a decision for the current `/goal` cycle.
-
-Core rule:
+`$shadow` is a one-session decision-delta filter.
 
 ```text
-No evidence delta, no full shadow report.
+No decision-relevant delta, no full report.
 ```
 
-`/goal` owns continuation. `$shadow` owns only the current cycle decision.
+`/goal` owns continuation.
 
-## Mental model
-
-```text
-/goal cycle
-  -> $shadow checks watched-session evidence delta
-  -> if no decision-relevant delta: status-only-stop
-  -> if delta exists: apply target-skill lens
-  -> emit goal_skill_delta_record
-  -> /goal decides whether to continue, stop, hand off, apply, or wait
-```
-
-`$shadow` must not become a second autonomous runtime.
-
-## Trigger cues
-
-Use `$shadow` when the user explicitly asks to:
-
-- use `$shadow`;
-- shadow/tail/follow/watch/monitor one session;
-- watch one running session through a named skill;
-- use `/goal` to keep checking another session;
-- apply a target-skill lens to one session over time;
-- monitor a session with `$tune`, `$seq`, `$refine`, `$ship`, or another skill lens.
-
-Example prompts:
-
-```text
-Use $shadow on session <id> with $tune.
-Give /goal a $shadow objective: watch session <id> through $tune.
-Shadow this session with $seq and report trace anomalies.
-Follow session <id> with $ship as the lens and tell me when it becomes PR-ready.
-```
-
-## Non-goals
-
-Do not use `$shadow` to:
-
-- monitor multiple unrelated root sessions;
-- run broad autonomous skill-ecosystem scans;
-- mine arbitrary sessions without one watched-session target;
-- replace the target skill's workflow;
-- hard-code `$tune` behavior;
-- edit files unless apply mode is explicit and the target skill supports action;
-- promise asynchronous/background monitoring outside `/goal` or explicit reinvocation;
-- inject messages into or steer the watched session;
-- treat raw skill mentions as proof of correct skill use;
-- inspect watched-session JSONL directly with `tail`, `cat`, `jq`, `rg`, Python, or raw file reads;
-- bypass `$seq` when `$seq` lacks a monitoring surface;
-- produce another full analysis when no decision-relevant evidence changed.
+`$shadow` owns one current-cycle decision.
 
 ## Required inputs
 
-Identify before the first cycle:
+```text
+watched session id or path
+target skill
+mode: observe | propose | apply
+watch objective
+include workers: yes | no
+prior cursor
+```
 
-- watched session id or path;
-- target skill name or path;
-- mode: `observe`, `propose`, or `apply`;
-- specific watch objective or concern, if provided;
-- include-workers setting, default `no`;
-- raw-excerpt policy, default `no`;
-- prior cycle cursor, if any.
+Default:
 
-If mode is omitted, default to `propose`.
+```text
+mode = propose
+include workers = no
+```
 
-If target skill is omitted, ask for the target skill unless the prompt clearly implies one. Do not default to `$tune`.
+Do not default the target skill to `$tune`.
 
 ## Self-shadow guard
 
-Bare `$shadow $tune` with no external watched session, no target skill concern, and no evidence question is a partial activation.
-
-Return one compact cycle:
-
-```yaml
-goal_skill_delta_record:
-  record_version: GSD-v1
-  cycle_result: partial_activation
-  reason: "No external watched session or target evidence concern was supplied."
-  next_goal_action: stop-cycle
-```
-
-Do not recursively shadow the current shadowing session unless the user explicitly supplies a distinct watched session and asks for nested monitoring.
-
-## Input normalization
-
-- Treat `$tune` and `tune` as the same target skill name.
-- If the watched session input is path-like or ends in `.jsonl`, use `$seq --path` surfaces where supported.
-- If the watched session input is an id, use `--session-id <id> --root <root>`.
-- If target skill is a directory or `SKILL.md` path, normalize to its skill directory.
-- If watched session cannot be resolved through `$seq`, return `state_unknown` or `tooling_gap`; do not inspect raw JSONL.
-
-## Operating modes
-
-### observe
-
-Monitor and report only. Do not create an action brief unless asked.
-
-### propose
-
-Default. Interpret new evidence through the target skill and produce concise proposals, briefs, or next-step recommendations. Do not mutate.
-
-### apply
-
-Use only when explicitly requested with `apply`, `edit`, `patch`, `fix`, `refine`, `ship`, `open PR`, or similar. Produce the brief first, then take only the smallest target-skill-supported action.
-
-`shadow` alone never implies apply mode.
-
-## Skill lens
-
-A skill lens is the target skill's intended-use contract applied to new watched-session evidence.
-
-For every target skill:
-
-1. Read the target skill first.
-2. Reconstruct its intended-use contract.
-3. Inspect only the watched session by default.
-4. Compare new session evidence to the target skill contract.
-5. Decide whether the watched session is aligned, missing, misusing, or producing evidence for that skill.
-6. Report, propose, or act according to mode.
-
-Do not use `$tune` rules unless `$tune` is the target skill.
-
-## Protected skill gate
-
-Protected target skills:
-
-- `seq`
-- `shadow`
-- `tune`
-- `refine`
-- `ship`
-- `land`
-- `.system/*`
-
-For protected targets:
-
-- proceed only when explicitly named;
-- default to `propose`;
-- keep changes narrow;
-- preserve companion boundaries;
-- require validation proof for edits.
-
-## Evidence rules
-
-Use `$seq` only for watched-session evidence.
-
-`$shadow` may read the target skill files to reconstruct the skill contract, but it must monitor the watched session only through `$seq`.
-
-If a needed watched-session fact is not available through `$seq`:
-
-- classify as `tooling_gap`, `seq_tuning_gap`, or `state_unknown`;
-- produce a `$tune`-on-`$seq` handoff when concrete;
-- do not substitute raw transcript/file inspection.
-
-Preferred `$seq` surfaces:
-
-```bash
-seq session-detail --root ~/.codex/sessions --session-id <session_id> --format markdown
-seq turns --root ~/.codex/sessions --session-id <session_id> --format table
-seq tool-lifecycle --root ~/.codex/sessions --session-id <session_id> --format table
-seq session-tooling --root ~/.codex/sessions --session-id <session_id> --summary --group-by executable --format table
-seq session-prompts --root ~/.codex/sessions --session-id <session_id> --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
-seq tool-search --root ~/.codex/sessions --session-id <session_id> --contains "<pattern>" --mode summary --group-by command --limit 20 --format table
-```
-
-For proposed `$seq` CLI changes, `$shadow` may produce a special-spec handoff only. It does not modify `$seq`.
-
-## Cycle cursor
-
-Track a compact cursor across cycles:
-
-```yaml
-cycle_cursor:
-  last_seen_turn_index:
-  last_seen_assistant_message_index:
-  last_seen_assistant_timestamp:
-  last_seen_tool_call_id:
-  last_seen_tool_end_timestamp:
-  last_seen_session_state:
-  last_reported_finding_signature:
-```
-
-Classify the raw cursor delta:
+Bare:
 
 ```text
-none
-turn_added
-assistant_message_added
-tool_started
-tool_completed
-tool_failed
-session_state_changed
-worker_added
-unknown
+$shadow $tune
 ```
+
+with no distinct watched session or target concern is partial activation.
+
+Emit one compact stop record.
+
+Do not recursively shadow the current session.
+
+## Evidence source
+
+Monitor the watched session only through `$seq`.
+
+Preferred when target lens is `$tune` or when decision influence matters:
+
+```bash
+seq skill-decision-audit \
+  --root ~/.codex/sessions \
+  --session-id <session> \
+  --skill <target> \
+  --since-cursor '<cursor>' \
+  --include-workers=<yes|no> \
+  --mode delta \
+  --format json
+```
+
+Fallback when the installed CLI lacks the command:
+
+```text
+skill-evidence
+session-detail
+turns
+tool-lifecycle
+session-prompts
+session-graph
+```
+
+Use the smallest set required.
+
+Do not inspect raw watched-session JSONL with shell, Python, `jq`, `rg`, `cat`, or `tail`.
+
+If `$seq` cannot expose the required fact:
+
+```text
+tooling_gap
+seq_tuning_gap
+state_unknown
+```
+
+and produce a special-spec handoff when concrete.
+
+## Target skill contract
+
+Read the target skill package outside the watched session evidence boundary:
+
+```text
+SKILL.md
+agents/openai.yaml
+references/decision-contract.yaml
+relevant references/scripts
+```
+
+If SKDC-v1 exists, preserve clause IDs.
+
+If absent, use only a provisional contract and label it inferred.
 
 ## Productive-cycle gate
 
-Before a full target-skill report, decide whether there is a **decision-relevant delta**.
+A full report is allowed only when at least one is new:
 
-Full analysis is allowed only when at least one is true:
+```text
+target-skill activation evidence
+decision episode
+clause compliance/violation
+validation failure
+user feedback
+worker decision
+outcome reversal/reopen
+watched session state change
+prior finding falsified/resolved
+explicit full-analysis request
+```
 
-- new target-skill evidence appeared;
-- new validation failure appeared;
-- new user feedback appeared;
-- watched session stopped;
-- new concrete skill gap appeared;
-- new worker evidence changes the interpretation;
-- prior finding was falsified or resolved;
-- user explicitly asked for full analysis.
-
-If none are true, emit a compact status-only record and stop the current cycle:
+Otherwise emit:
 
 ```yaml
 goal_skill_delta_record:
-  record_version: GSD-v1
-  watched_session:
-    session_id_or_path: "..."
-    state: running | stopped | unknown
+  record_version: GSD-v2
+  cycle_result: status_only_stop
   evidence_delta:
     changed: no
-  decision_event:
-    needed: no
-    reason: "No new evidence capable of changing the target-skill decision."
-  proposed_delta:
-    kind: status-only-stop
+    decision_relevant: no
   next_goal_action: stop-cycle
 ```
 
-Do not expand unchanged findings every cycle.
+Do not restate unchanged findings.
+
+## Decision-aware cycle
+
+When new evidence exists, classify:
+
+```text
+trigger appeared
+skill activated
+decision changed
+clause followed/violated
+outcome changed
+causality unknown
+```
+
+Do not treat a new tool call or message as decision-relevant by itself.
 
 ## Goal Skill Delta Record
 
-Every cycle should return this compact record, either inline or in the final report:
-
 ```yaml
 goal_skill_delta_record:
-  record_version: GSD-v1
-  goal_id: "unknown | ..."
-  cycle_id: "..."
-  target_skill: "..."
+  record_version: GSD-v2
+  goal_id:
+  cycle_id:
+  target_skill:
   watched_session:
-    session_id_or_path: "..."
-    cursor_start: "..."
-    cursor_end: "..."
-    state: running | stopped | unknown
+    session_id_or_path:
+    cursor_start:
+    cursor_end:
+    state:
+    workers_included:
+  contract:
+    authority: explicit | inferred | absent
+    fingerprint:
   evidence_delta:
     changed: yes | no | unknown
-    new_target_skill_evidence: yes | no | unknown
+    new_activation_evidence: yes | no | unknown
+    new_decision_episodes: 0
+    new_clause_events: 0
     new_validation_failure: yes | no | unknown
     new_user_feedback: yes | no | unknown
-    watched_session_stopped: yes | no | unknown
-    new_skill_gap: yes | no | unknown
     new_worker_evidence: yes | no | unknown
-  decision_event:
-    needed: yes | no | unknown
-    reason: "..."
+    new_outcome_event: yes | no | unknown
+    watched_session_stopped: yes | no | unknown
+  decision_delta:
+    classification:
+      explicit_route_change |
+      prevented_action |
+      narrowed_scope |
+      added_or_changed_proof |
+      escalated_or_blocked |
+      reinforced_existing_choice |
+      no_visible_delta |
+      contrary_to_contract |
+      trigger_missed |
+      false_activation |
+      ceremonial_activation |
+      unknown |
+      none
+    episode_refs: []
+    clause_refs: []
+    evidence_strength:
   proposed_delta:
-    kind: none | status-only-stop | target-skill-brief | apply-request | seq-special-spec | retire | blocked
-    expected_decision_change: "..."
+    kind:
+      none |
+      status-only-stop |
+      target-skill-brief |
+      tune-packet |
+      apply-request |
+      seq-special-spec |
+      retire |
+      blocked
+    expected_decision_change:
   next_goal_action:
-    continue-watch | stop-cycle | ask-apply-permission | handoff-refine | handoff-seq-special-spec | retire-finding | wait-for-session-stop
+    continue-watch |
+    stop-cycle |
+    handoff-tune |
+    ask-apply-permission |
+    handoff-refine |
+    handoff-seq-special-spec |
+    retire-finding |
+    wait-for-session-stop
 ```
 
-This is the return value of one `/goal` cycle. It is not a background subscription.
+## `$tune` handoff
 
-## Stop condition
+When the target lens identifies a skill gap, prefer a small watched-session STE packet:
 
-`$shadow` stops the current cycle when:
-
-- watched session has stopped;
-- evidence delta is not decision-relevant;
-- state remains unknown after one follow-up cycle;
-- target action needs approval;
-- target evidence is insufficient;
-- `/goal` is unavailable and the current cycle is complete.
-
-`$shadow` does not promise to keep watching in the background.
-
-## `$seq` special-spec handoff
-
-If `$shadow` discovers a `$seq` CLI surface gap, produce a special-spec brief rather than editing `$seq`:
-
-```text
-Target: seq CLI special spec
-
-Need:
-- <watched-session monitoring need>
-
-Observed gap:
-- <sanitized missing or inefficient seq command shape>
-
-Required behavior:
-- <desired session-scoped evidence surface>
-
-Acceptance:
-- <representative command should distinguish injected skill blocks, assistant-declared use, manual skill-file reads, target-skill lens use, successful activation evidence, and raw mentions>
-
-Validation:
-- quick_validate seq
-- representative seq command samples
+```yaml
+skill_tuning_evidence:
+  packet_version: STE-v1
+  target_skill:
+  window:
+    session_id:
+    cursor_start:
+    cursor_end:
+  decision_episodes: []
+  recurrent_gap_signatures: []
+  evidence_limitations: []
 ```
+
+Do not infer historical recurrence from one watched session.
+
+## Modes
+
+### observe
+
+Report evidence only.
+
+### propose
+
+Default. Emit a tune packet or brief when the decision delta justifies it.
+
+### apply
+
+Only when explicitly requested.
+
+`$shadow` still does not edit the watched session or steer it.
+
+Any target-skill edit follows that skill’s own apply boundary.
 
 ## Worker sessions
 
-Default scope is the watched root session only.
+Include workers only when:
 
-Include linked workers only when user asks, the watched session delegates target-skill-relevant work, or the target skill requires worker evidence.
+- the user requests them;
+- target decisions were delegated;
+- the target skill requires worker evidence.
 
-Root watched session remains the lifecycle anchor unless user says otherwise.
+Require a parent/worker proof path.
 
-## Report shape
+Do not sweep corpus-wide workers.
 
-Use this compact shape:
+## Stop conditions
+
+Stop the current cycle when:
+
+```text
+no decision-relevant delta
+watched session stopped
+state unknown after one bounded follow-up
+action requires approval
+evidence insufficient
+finding retired/transferred
+```
+
+## `$seq` special-spec handoff
+
+```yaml
+seq_special_spec_handoff:
+  spec_version: SEQ-SPEC-HANDOFF-v2
+  need:
+  watched_session:
+  target_skill:
+  missing_decision_evidence:
+  desired_command:
+  acceptance_criteria: []
+  validation_examples: []
+```
+
+## Report
 
 ```text
 Shadowing:
 - Session:
 - Lens:
 - Mode:
-- Watched session state:
+- State:
 
-Cycle cursor:
-- Previous:
-- Current:
+Cursor:
+- Start:
+- End:
 - Delta:
 
-Goal skill delta:
-- Evidence changed:
-- Decision needed:
+Decision evidence:
+- Activation:
+- Episode:
+- Clauses:
+- Outcome:
+- Strength:
+
+Cycle result:
+- Decision-relevant:
 - Proposed delta:
-- Next goal action:
+- Next action:
 
-Finding:
-- <classification and explanation>
-
-Action:
-- <none | target-skill brief | seq special-spec handoff | applied change | needs approval>
+Limitations:
 ```
 
-If stopped:
+## Hard rules
 
-```text
-Shadow complete:
-- Session:
-- Lens:
-- Final state:
-- Key findings:
-- Actions proposed/taken:
-- Remaining uncertainty:
-```
-
-## Quality bar
-
-A good `$shadow` run:
-
-- follows exactly one watched root session;
-- uses `$seq` only for watched-session evidence;
-- reads the target skill before interpreting;
-- tracks cursor state;
-- emits status-only-stop when no decision-relevant evidence changed;
-- fails fast for bare/self-shadow partial activation;
-- returns a `goal_skill_delta_record`;
-- does not edit in observe/propose mode;
-- preserves protected-skill boundaries;
-- lets `/goal` own continuation.
-
-A bad `$shadow` run:
-
-- broadly scans all sessions;
-- re-reports unchanged evidence;
-- treats `$tune` as mandatory;
-- dumps raw transcripts;
-- edits files without apply mode;
-- bypasses `$seq`;
-- treats raw mentions as skill success;
-- tries to manage its own continual loop outside `/goal`.
+- Exactly one root watched session.
+- `$seq` only for watched-session evidence.
+- No raw JSONL inspection.
+- No broad historical claims.
+- No full report without decision-relevant delta.
+- Raw mention is not activation.
+- Activation is not influence.
+- Influence is not causality.
+- Do not edit in observe/propose.
+- Do not promise background monitoring.

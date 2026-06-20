@@ -1,0 +1,132 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: refine
+    kind: mixed
+    source_fingerprint: generated-with-corrected-dropin
+  triggers:
+    - trigger_id: REFINE-BRIEF-READY
+      description: A complete evidence-backed refinement brief and explicit edit authority are present.
+      cue_literals:
+        - REFINE-SKILL-v3
+        - apply refinement
+        - edit authorized
+      cue_regexes: []
+      exclusions:
+        - proposal only
+    - trigger_id: REFINE-BRIEF-INCOMPLETE
+      description: The expected delta or edit boundary is incomplete.
+      cue_literals:
+        - expected delta unknown
+        - allowed files unknown
+        - evidence insufficient
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: REFINE-REGRESSION
+      description: A reproducible prior skill failure needs a bounded guard.
+      cue_literals:
+        - regression
+        - missed activation
+        - prohibited route
+        - repeated workaround
+      cue_regexes: []
+      exclusions: []
+  routes:
+    - route_id: REFINE-NO-CHANGE
+      description: The existing skill already satisfies the brief or evidence does not justify mutation.
+      aliases:
+        - no_change
+      terminal: "yes"
+    - route_id: REFINE-TRIGGER
+      description: Refine trigger or non-trigger boundaries.
+      aliases:
+        - trigger_refinement
+        - boundary_refinement
+      terminal: "no"
+    - route_id: REFINE-DECISION
+      description: Refine a decision rule, route, mode, or stop condition.
+      aliases:
+        - decision_rule_refinement
+        - routing_refinement
+        - workflow_refinement
+      terminal: "no"
+    - route_id: REFINE-SURFACE
+      description: Refine an artifact, tool, resource, metadata, validation, or observability surface.
+      aliases:
+        - artifact_refinement
+        - tooling_refinement
+        - resource_refinement
+        - metadata_refinement
+        - validation_refinement
+        - observability_refinement
+      terminal: "no"
+    - route_id: REFINE-CONSOLIDATE
+      description: Delete or consolidate redundant skill surface.
+      aliases:
+        - consolidate_or_delete
+      terminal: "no"
+    - route_id: REFINE-BLOCKED
+      description: Return to tune because the brief or authority is insufficient.
+      aliases:
+        - blocked
+      terminal: "yes"
+  clauses:
+    - clause_id: REFINE-AUTHORITY-001
+      trigger_refs:
+        - REFINE-BRIEF-READY
+      expected_routes:
+        - REFINE-NO-CHANGE
+        - REFINE-TRIGGER
+        - REFINE-DECISION
+        - REFINE-SURFACE
+        - REFINE-CONSOLIDATE
+      prohibited_routes:
+        - REFINE-BLOCKED
+      required_artifacts:
+        - expected delta
+        - allowed files
+        - validation plan
+      success_signals:
+        - one dominant intervention
+        - SRR-v1
+      failure_signals:
+        - system optimizer dependency
+        - unrelated package rewrite
+      rationale: A complete brief authorizes one bounded user-owned refinement.
+    - clause_id: REFINE-BOUNDARY-001
+      trigger_refs:
+        - REFINE-BRIEF-INCOMPLETE
+      expected_routes:
+        - REFINE-BLOCKED
+      prohibited_routes:
+        - REFINE-TRIGGER
+        - REFINE-DECISION
+        - REFINE-SURFACE
+        - REFINE-CONSOLIDATE
+      required_artifacts:
+        - missing-field report
+      success_signals:
+        - returned to tune without edits
+      failure_signals:
+        - mutation from weak evidence
+      rationale: Refine must not rediscover or invent the diagnosis.
+    - clause_id: REFINE-REGRESSION-001
+      trigger_refs:
+        - REFINE-REGRESSION
+      expected_routes:
+        - REFINE-TRIGGER
+        - REFINE-DECISION
+        - REFINE-SURFACE
+        - REFINE-CONSOLIDATE
+      prohibited_routes: []
+      required_artifacts:
+        - reproducible prior failure
+        - regression validation
+      success_signals:
+        - prior failure becomes detectable
+      failure_signals:
+        - wording-only regression
+      rationale: Regression work must bind to observable skill behavior.
+  instrumentation:
+    decision_receipt: optional
+    rationale: SRR-v1 is sufficient for most refinement decisions.

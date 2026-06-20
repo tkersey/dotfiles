@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Shadow"
-  short_description: "Goal-native one-session shadowing"
-  default_prompt: "Use $shadow for exactly one watched session. Emit a goal_skill_delta_record and stop on no decision-relevant evidence."
+  short_description: "Watch one session for decision deltas"
+  default_prompt: "Use $shadow on exactly one watched session; prefer seq skill-decision-audit delta mode and stop when no decision-relevant evidence changed."

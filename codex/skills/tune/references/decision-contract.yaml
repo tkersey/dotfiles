@@ -1,0 +1,93 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: tune
+    kind: decision
+    source_fingerprint: generated-with-dropin
+  triggers:
+    - trigger_id: TUNE-EVIDENCE-GAP
+      description: Evidence shows intended and observed skill behavior diverge.
+      cue_literals:
+        - intended-vs-observed
+        - skill gap
+        - missed activation
+        - false activation
+        - no visible delta
+      cue_regexes: []
+      exclusions:
+        - style preference only
+    - trigger_id: TUNE-APPLY-REQUEST
+      description: The user explicitly requests skill-file changes now.
+      cue_literals:
+        - apply
+        - edit
+        - patch
+        - update the skill
+      cue_regexes: []
+      exclusions:
+        - what should change
+  routes:
+    - route_id: TUNE-NO-ACTION
+      description: Evidence is too weak or no decision delta exists.
+      aliases:
+        - no-action
+        - retire
+      terminal: "yes"
+    - route_id: TUNE-PROPOSE
+      description: Emit one bounded skill delta or final brief.
+      aliases:
+        - proposal-only
+        - final-brief
+      terminal: "yes"
+    - route_id: TUNE-REFINE
+      description: Hand a complete bounded edit brief to refine.
+      aliases:
+        - handoff-refine
+        - apply-with-refine
+      terminal: "no"
+    - route_id: TUNE-SEQ-SPEC
+      description: Transfer an evidence-surface gap into a separate seq CLI spec.
+      aliases:
+        - handoff-seq-special-spec
+        - transferred-to-seq
+      terminal: "yes"
+  clauses:
+    - clause_id: TUNE-DECISION-001
+      trigger_refs:
+        - TUNE-EVIDENCE-GAP
+      expected_routes:
+        - TUNE-NO-ACTION
+        - TUNE-PROPOSE
+        - TUNE-SEQ-SPEC
+      prohibited_routes:
+        - TUNE-REFINE
+      required_artifacts:
+        - evidence source
+        - denominator
+        - expected decision delta
+      success_signals:
+        - one dominant delta
+        - evidence limitations preserved
+      failure_signals:
+        - raw mention treated as success
+        - broad edit from weak evidence
+      rationale: Diagnosis must precede mutation.
+    - clause_id: TUNE-APPLY-001
+      trigger_refs:
+        - TUNE-APPLY-REQUEST
+      expected_routes:
+        - TUNE-REFINE
+        - TUNE-NO-ACTION
+      prohibited_routes: []
+      required_artifacts:
+        - complete refine brief
+        - static validation
+        - behavioral validation query
+      success_signals:
+        - minimal authorized edit
+      failure_signals:
+        - edit without explicit request
+      rationale: Apply only after the evidence and edit boundaries are complete.
+  instrumentation:
+    decision_receipt: optional
+    rationale: Emit for material route decisions or repeated proposal terminal states.

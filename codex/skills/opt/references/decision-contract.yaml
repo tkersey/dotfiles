@@ -1,0 +1,103 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: opt
+    kind: orchestration
+    source_fingerprint: generated-with-dropin
+  triggers:
+    - trigger_id: OPT-HISTORICAL
+      description: Skill optimization requires historical intended-vs-observed evidence.
+      cue_literals:
+        - historical usage
+        - last 30 days
+        - skill decisions
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: OPT-WATCHED
+      description: Optimization evidence comes from one watched session.
+      cue_literals:
+        - shadow session
+        - watched session
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: OPT-EDIT
+      description: The user explicitly authorizes skill edits.
+      cue_literals:
+        - apply
+        - patch
+        - edit files
+      cue_regexes: []
+      exclusions:
+        - propose
+  routes:
+    - route_id: OPT-TUNE
+      description: Route historical evidence through seq and tune.
+      aliases:
+        - tune
+      terminal: "no"
+    - route_id: OPT-SHADOW
+      description: Route one-session evidence through shadow.
+      aliases:
+        - shadow-diagnose
+      terminal: "no"
+    - route_id: OPT-REFINE
+      description: Apply a bounded brief through refine.
+      aliases:
+        - patch
+      terminal: "no"
+    - route_id: OPT-PROPOSE
+      description: Produce a proposal without edits.
+      aliases:
+        - propose
+        - audit
+      terminal: "yes"
+  clauses:
+    - clause_id: OPT-ROUTE-001
+      trigger_refs:
+        - OPT-HISTORICAL
+      expected_routes:
+        - OPT-TUNE
+        - OPT-PROPOSE
+      prohibited_routes:
+        - OPT-SHADOW
+      required_artifacts:
+        - evidence packet
+        - denominator
+      success_signals:
+        - STE-v1 consumed
+      failure_signals:
+        - broad raw transcript mining
+      rationale: Historical tuning belongs to seq plus tune.
+    - clause_id: OPT-ROUTE-002
+      trigger_refs:
+        - OPT-WATCHED
+      expected_routes:
+        - OPT-SHADOW
+      prohibited_routes:
+        - OPT-TUNE
+      required_artifacts:
+        - watched session
+        - cursor
+      success_signals:
+        - GSD-v2
+      failure_signals:
+        - broad history inferred from one session
+      rationale: One watched session belongs to shadow.
+    - clause_id: OPT-APPLY-001
+      trigger_refs:
+        - OPT-EDIT
+      expected_routes:
+        - OPT-REFINE
+      prohibited_routes: []
+      required_artifacts:
+        - complete refine brief
+        - allowed files
+        - validation
+      success_signals:
+        - minimal validated edit
+      failure_signals:
+        - edit without decision delta
+      rationale: Authorized edits must remain bounded.
+  instrumentation:
+    decision_receipt: optional
+    rationale: Use only for material orchestration route choices.
