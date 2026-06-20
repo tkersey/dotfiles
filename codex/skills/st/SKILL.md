@@ -129,6 +129,8 @@ st assert-projection --file .step/st-plan.jsonl
 
 `st set-proof` remains a compatibility convenience. Do not use one ambiguous legacy proof to satisfy several distinct required commands.
 
+If a local installed `st` rejects a documented proof flag combination, do not spend the shipping loop on parser archaeology. Prefer the canonical `st proof record` form above when it accepts the obligation/action/command flags. If this installed build only accepts the smaller completion surface, keep graph status aligned with the minimal accepted `st complete` command and record the parser mismatch as a follow-up tool fix rather than inventing sidecar proof state.
+
 ## Graph Debt
 
 Use graph debt commands when the GCR blocks execution:
