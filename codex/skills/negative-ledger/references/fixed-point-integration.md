@@ -1,25 +1,25 @@
 # Fixed-Point Driver Integration
 
-Use `negative-ledger` as a routine companion protocol for non-trivial `fixed-point-driver` runs.
+Use `$negative-ledger` as a routine companion for non-trivial fixed-point campaigns.
 
-For every non-trivial fixed-point run:
+## Preflight
 
 1. Establish `artifact_state_id`.
-2. Run root-owned negative-ledger query/map during routing preflight.
-3. Normalize candidate evidence into a Negative Evidence Ledger.
-4. Convert active entries into narrow exclusion rules.
-5. Convert stale/reopened entries into proof prompts or reopening tests.
-6. Before one-change challenge, check whether the candidate route matches active negative evidence.
-7. Before final closure, emit Negative Ledger Handoff.
-8. After witnessed failure/no-effect/regression/revert/rejection/pivot, run capture decision.
+2. Run `ledger doctor` when store integrity matters.
+3. Run root-owned `ledger map` before route selection.
+4. Carry active, stale, reopened, superseded, and accepted-risk evidence into the campaign.
+5. Convert active entries into narrow exclusion cards.
+6. Convert stale/reopened entries into proof prompts.
 
-When consuming RCP/RDP, also consume:
+## During the Loop
 
-- `negative_evidence.active_exclusions`
-- `negative_route_exclusion_cards`
-- `negative_evidence.reopened_or_stale`
-- `negative_evidence.capture_required`
-- `scar_tissue_inventory` for RDP
-- route-wave negative evidence status
+- Before a one-change challenge, check the candidate route against active ledger evidence.
+- Fuzzy overlap may suggest investigation but cannot block.
+- After witnessed failure, regression, revert, no-effect result, or proof-wound recurrence, run the ledger capture decision.
+- Use `ledger status` when current artifact changes invalidate or reopen old evidence.
 
-Reject or reroute if the selected normal form matches an active exclusion that has not been reopened or defeated by current proof.
+## Memory Admission
+
+After canonical capture or lifecycle transition, run `ledger export --id NEG-* --format memory-note`, apply the negative-ledger memory admission gate, and append with `memory-note` only when the record has future cross-run value.
+
+Memory admission is not required for campaign correctness and must not block closure when the canonical ledger is valid.

@@ -1,32 +1,43 @@
 # Review Governor Memory
 
-`$negative-ledger` is the Review Governor's route memory.
+`$negative-ledger` is the Review Governor's operational route memory.
 
-Nominal checks are insufficient. Same-cluster recurrence requires operational evidence:
+## Operational Gate
 
 ```yaml
 negative_route_gate:
   checked: yes
   evidence_source:
-    skill_read: yes | no
-    query_or_map: yes | no
+    query_or_map: yes
     ledger_cli: ledger
     store: .ledger/negative-ledger.jsonl
     command: "ledger map --route ... --cluster ... --artifact ..."
     exit_code: 0 | 2 | 3
     ledger_available: yes | no
-    prior_route_search_terms: []
-    current_cluster_compared_to_prior: yes | no
   active_exclusion_match: yes | no | null
   exclusion_id: "none | NEG-..."
   fuzzy_candidates: 0
   fuzzy_authority: suggest_only | none
-  failure: none | ledger_missing
+  failure: none | ledger_missing | store_invalid
   route_changed_by_exclusion: yes | no
   capture_created: yes | no
   handoff_allowed: yes | no
 ```
 
-If `query_or_map: no`, `ledger_available: no`, or `exit_code: 3` and same-cluster count is at least 2, mutation is blocked.
+If the parent workflow requires an operational same-cluster gate and the ledger is unavailable or invalid, mutation is blocked.
 
-Capture a negative evidence candidate when a route fails, same-cluster findings recur, or a proof matrix misses a family case.
+## Memory Admission Receipt
+
+Memory admission is downstream of the operational gate and never substitutes for it:
+
+```yaml
+negative_memory_admission:
+  required: yes | no
+  ledger_export_available: yes | no
+  projection_fingerprint: "none | sha256..."
+  memory_note_attempted: yes | no
+  memory_note_id: "none | MSN-..."
+  outcome: created | duplicate_skip | not_qualified | cli_unavailable | export_unavailable | failed
+```
+
+A failed or skipped memory admission does not invalidate a valid canonical ledger capture. It only means future global memory has not yet received the projection.
