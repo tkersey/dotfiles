@@ -1,66 +1,69 @@
 ---
 name: verification-closure
-description: "Make the final current-artifact readiness decision from proof, review, risk, and durable workflow state. For C³ `$resolve`, require a final MRPC-v1 whose patch fingerprint, proof, ablation, holdout, commit, and push all match current delivery state."
+description: "Make the final current-artifact readiness decision. For Minimum Behavioral Kernel `$resolve`, require a current MBKC-v1, fixed campaign base, accepted kernel, whole-PR realization, semantic-surface conservation, zero orphan code, compressed proof, current holdouts, physical commit/push, and explicit closure horizon."
 metadata:
-  version: "3.0.0"
+  version: "4.0.0"
 ---
 
 # Verification Closure
 
-## Mission
+## General mission
 
 Decide whether the current artifact is actually ready.
 
-## General closure
+## Kernel-mode closure
 
 Require:
 
 ```text
-current artifact identity
-acceptance criteria
-proof commands and evidence
-review disposition
-residual risk
-rollback/abort posture
+.ledger/c3/mbkc.json
+certificate_version = MBKC-v1
+campaign_base unchanged
+review-ready baseline unchanged
+kernel accepted
+realization compiled from campaign base
+orphan code constructs = 0
+wound-specific tests = 0
+semantic-surface gate passed
+proof current
+kernel holdout clean
+conformance holdout clean
+PR sweep current
+physical commit/push current
 ```
 
-## C³ closure
-
-Require:
+Closure verdicts:
 
 ```text
-.ledger/c3/mrpc.json
-certificate_version = MRPC-v1
-stage = pushed or closed
-immutable base matches run
-selected patch fingerprint matches applied delivery patch
-all proof entries pass
-candidate and delivery holdouts contain no unresolved branch liability
-ablation.one_minimal = true
-orphan_edit_atoms = []
-commit SHA matches delivery
-push state is current
+kernel_accepted
+conformance_closed_for_tuple
+terminal_closed
+blocked
 ```
 
-Reject closure when:
+Reject:
 
-- review-derived delivery mutation bypassed the controller;
-- a new counterexample was patched instead of triggering recompilation;
-- a surviving edit lacks a witness;
-- raw commit/push bypassed MRPC gates;
-- adjacent findings were silently absorbed;
-- the certificate is stale.
+- unqualified `complete`;
+- tuple closure presented as terminal;
+- silent scope expansion;
+- realization from a prior closure head;
+- manual delivery mutation;
+- stale MBKC;
+- proof mapped to review wounds instead of kernel laws;
+- code or test surface without kernel mapping.
 
 Output:
 
 ```yaml
 verification_closure:
-  artifact_state_match:
-  mrpc_gate:
-  proof_gate:
+  mbkc_gate:
+  campaign_gate:
+  kernel_gate:
+  realization_gate:
+  semantic_surface_gate:
+  proof_compression_gate:
   holdout_gate:
-  minimality_gate:
   delivery_gate:
-  residual_risk:
-  verdict: ready | blocked
+  closure_horizon:
+  verdict:
 ```

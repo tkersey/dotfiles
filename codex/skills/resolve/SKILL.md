@@ -1,8 +1,8 @@
 ---
 name: resolve
-description: "Resolve review findings through C³, the Counterexample Compression Compiler. Reviews may add only verified counterexamples; candidate implementations are disposable; delivery receives one lexicographically minimal, ablated patch regenerated from an immutable base and authorized by MRPC-v1. Use for `$resolve`, branch review/fix/prove/push/PR-sweep closure, repeated CAS findings, review-induced code growth, candidate tournaments, semantic-cost minimization, counterexample compression, or minimal patch certification. Not for one-shot review, PR creation, merge/land, or an isolated implementation task."
+description: "Resolve review findings by compiling a Minimum Behavioral Kernel before compiling code. Reviews may add observations, witnesses, or explicit scope changes; they may not directly request additive delivery code. Use for `$resolve`, branch review/fix/prove/push/PR closure, repeated CAS findings, review-driven growth, authority/replay/reconstruction invariants, behavioral quotienting, semantic-surface conservation, proof compression, or MBKC-v1. Not for one-shot review, PR creation, merge/land, or isolated implementation."
 metadata:
-  version: "5.0.0"
+  version: "6.0.0"
   activation_cost: high
   default_depth: full
 ---
@@ -11,188 +11,292 @@ metadata:
 
 ## Mission
 
-`$resolve` is the **C³ Counterexample Compression Compiler**.
+`$resolve` is the **Minimum Behavioral Kernel Review Compiler**.
 
 ```text
-The specification grows.
-Candidates die.
-Only the smallest proven patch survives.
+Review adds observations.
+Observations refine the kernel.
+The kernel replaces the code.
 ```
 
-The monotone object is the counterexample basis:
+The system must keep these objects separate:
 
 ```text
-C₀ ⊆ C₁ ⊆ C₂ ...
+monotone:
+  accepted observations
+  counterexample witnesses
+  durable negative evidence
+
+replaceable:
+  behavioral kernel draft
+  realization design
+  implementation
+  proof layout
 ```
 
-Candidate code is disposable:
+A review finding must never directly mean:
 
 ```text
-Pᵢ = compile(immutable_base, Cᵢ)
-
-new branch-liable counterexample c
--> invalidate Pᵢ
--> add c to Cᵢ
--> regenerate from immutable_base
+add another guard
+add another state field
+add another helper
+add another fallback
+add another wound-specific test
 ```
 
-Never incrementally patch a candidate after a new branch-liable review finding.
-
-## The causal break
-
-The forbidden edge is:
+It must mean exactly one of:
 
 ```text
-review finding -> direct delivery mutation
+existing kernel law is implemented incorrectly
+finding is another witness for an existing law
+finding proves a missing semantic distinction
+finding is not current-branch liability
 ```
 
-The required path is:
+## Governing insight
+
+Patch minimization is too late when the behavioral model is over-distinguished.
+
+A large implementation can be locally irreducible while realizing a needlessly large model.
+
+Therefore minimize in this order:
 
 ```text
-review finding
--> verified counterexample
--> liability decision
--> compressed counterexample family
--> independent repair candidates
--> common verification
--> lexicographic semantic-cost selection
--> edit-atom ablation
--> independent holdout
--> exact application to delivery
--> current proof
--> commit/push/PR closure
+1. accepted behavioral distinctions
+2. implementation realization
+3. proof realization
+4. textual surface
 ```
 
-## Canonical durable controller
+The first three are semantic. Lines of code are a final tie-breaker and an audit signal.
 
-Use:
+## Controller requirement
+
+The canonical controller remains:
 
 ```bash
-resolve-c3 ...
+resolve-c3
 ```
 
-If the controller is missing, install and verify it before starting C³:
+Before material `$resolve` work, run:
 
 ```bash
-brew install tkersey/tap/resolve-c3
-resolve-c3 doctor
+python3 codex/skills/resolve/tools/controller_preflight.py
 ```
 
-Canonical repo-local state:
+Required controller capabilities:
 
 ```text
-.ledger/c3/
-  state.json
-  events.jsonl
-  candidates/
-  mrpc.json
+campaign_base_v1
+minimum_behavioral_kernel_v1
+mbkc_v1
+kernel_quotient_v1
+semantic_surface_v1
+proof_compression_v1
+physical_apply
+physical_commit
+physical_push
+closure_horizon_v1
 ```
 
-`.ledger/c3/` is local-excluded by default.
-
-`MRPC-v1` is the one canonical workflow artifact. It evolves through:
+If these capabilities are unavailable:
 
 ```text
-collecting
-selected
-apply-certified
-applied
-final-certified
-committed
-pushed
-closed
+analysis and kernel drafting are allowed
+delivery mutation is forbidden
+closure is forbidden
+next owner is the skills-zig controller implementation spec
 ```
 
-Do not manually author MRPC. The controller emits it.
+Do not silently fall back to legacy C³ patch-tournament behavior for material review.
 
-## Activation boundary
+## Campaign identity
 
-Use `$resolve` when the user wants current-branch review resolution through proof, push, and PR sweep.
+A review campaign has two fixed anchors:
 
-Do not use for:
+```yaml
+review_campaign:
+  campaign_id:
+  pr_number:
+  campaign_base_sha:
+  review_ready_baseline_sha:
+  current_delivery_head:
+```
 
-- review only;
-- PR creation: `$ship`;
-- merge and cleanup: `$land`;
-- selected implementation only: `$fixed-point-driver` or `$accretive-implementer`;
-- claim adjudication only: `$review-adjudication`;
-- final proof only: `$verification-closure`.
+### Campaign base
+
+`campaign_base_sha` is the PR merge base or an explicitly approved feature root.
+
+It never advances within the campaign.
+
+A tuple-local closure head does not become the next compiler base.
+
+### Review-ready baseline
+
+`review_ready_baseline_sha` is the first head presented as implementation-complete and ready for review.
+
+Its semantic-surface vector becomes the post-review ceiling.
+
+New review waves do not reset that ceiling.
+
+## Core laws
+
+### Law 1 — no direct review-to-code edge
+
+```text
+review finding -> observation ledger
+```
+
+Never:
+
+```text
+review finding -> delivery patch
+```
+
+### Law 2 — no distinction without an observation
+
+Every surviving behavioral distinction needs an accepted observation that can distinguish it.
+
+A distinction may be:
+
+```text
+state class
+authority
+transition
+protocol case
+mode
+error class
+fallback
+receipt/evidence kind
+public operation
+```
+
+If no acceptance criterion or branch-liable counterexample distinguishes two states or paths, they must be quotiented, merged, or represented by one canonical rule.
+
+### Law 3 — one PR-wide kernel
+
+All review waves refine one campaign kernel.
+
+Do not create a new kernel whose base is a prior closure head.
+
+### Law 4 — implementation review is conformance review
+
+Once the kernel is accepted, code review may report:
+
+```text
+nonconformance
+missing proof
+orphan realization surface
+stale artifact state
+```
+
+A finding that changes accepted behavior crosses back into kernel review.
+
+### Law 5 — post-review semantic conservation
+
+After `review_ready_baseline_sha`:
+
+```text
+silent scope expansion = forbidden
+hard semantic dimensions = nonincreasing
+total semantic description = nonincreasing unless explicitly rebaselined
+```
+
+A larger model or realization requires an explicit scope/complexity expansion decision. It is not ordinary review remediation.
+
+### Law 6 — no orphan code or proof
+
+Every surviving code construct maps to a kernel element.
+
+Every surviving proof action maps to a kernel law.
+
+Targets:
+
+```text
+orphan_code_constructs = 0
+wound_specific_tests = 0
+unmapped_proof_actions = 0
+```
 
 ## Entry modes
 
 ### Clean review
 
-When the initial current-head review is clean, no compiler run is required. Complete current proof and PR sweep.
+If the initial current-head review is clean:
 
-### Isolated finding waiver
+- run current proof;
+- sweep PR threads;
+- emit tuple-bound closure;
+- no kernel campaign is required.
 
-One narrow finding may use a one-candidate tournament only when all are true:
+### Isolated conformance correction
+
+A one-realization fast path is allowed only when:
 
 ```text
 exactly one branch-liable finding
-no recurrence
-no helper/wrapper/new state dimension
-no public or compatibility surface
-no new proof family
-zero or negative production net, or a trivial bounded edit
+kernel impact = existing_law_violation
+no new behavioral distinction
+no new helper/wrapper/state field/public symbol/fallback
+semantic-surface vector is componentwise nonincreasing
+proof extends an existing law family
 ```
 
-Even this route uses MRPC. Record a tournament waiver:
-
-```bash
-resolve-c3 tournament-waiver --reason "..."
-```
+It still emits MBKC-v1.
 
 ### Material review
 
-Any of these require the full tournament:
+Any of these requires the full kernel workflow:
 
 ```text
 two or more branch-liable findings
 same-cluster or same-family recurrence
-new helper/wrapper/state dimension
-positive production surface
-public/compatibility/fallback surface
-PR thread reopening
-uncertain liability
-a candidate route previously failed
+new state/protocol/authority distinction
+positive semantic-surface pressure
+public/compatibility/fallback pressure
+PR-thread reopening
+review finding proposes new behavior
+current families are named after local surfaces rather than governing laws
 ```
 
-## Phase 1: immutable base
+## Phase 1 — begin one PR-wide campaign
 
-After the first branch-liable finding, initialize C³ before any review-derived delivery edit:
+Preferred controller command:
 
 ```bash
-resolve-c3 begin \
+resolve-c3 campaign begin \
   --root . \
-  --acceptance .ledger/c3/acceptance.json \
-  --lab ../<repo>-resolve-lab
+  --pr <number> \
+  --base auto \
+  --baseline HEAD \
+  --acceptance .ledger/c3/acceptance.json
 ```
 
-`begin` requires a clean delivery worktree and records:
+The controller must record:
 
 ```text
-delivery root
-branch
-immutable base SHA
+campaign base
+review-ready baseline
+current delivery head
+PR base/head tuple
 acceptance contract
-lab worktree
-run id
+non-goals
+proof bar
+semantic-surface baseline
 ```
 
-Once active, delivery is frozen. The configured PreToolUse hook blocks direct delivery edits, raw commit/amend, and raw push.
+Delivery becomes controller-gated.
 
-The lab may mutate. Delivery may not.
+## Phase 2 — adjudicate findings as observations
 
-## Phase 2: review claims become counterexamples
+Use `$review-adjudication`.
 
-Use `$review-adjudication` and evidence discipline.
-
-A review claim contributes only:
+For each finding emit:
 
 ```yaml
-counterexample:
-  id:
+review_observation:
+  observation_id:
+  artifact_state:
   observed_behavior:
   required_behavior:
   liability:
@@ -202,489 +306,617 @@ counterexample:
     adjacent_preexisting |
     reviewer_preference |
     unknown
+  kernel_impact:
+    existing_law_violation |
+    additional_witness |
+    missing_semantic_distinction |
+    no_kernel_impact |
+    unknown
+  acceptance_entailment:
+    entailed |
+    scope_expansion |
+    unknown
   reproduction_or_proof:
-  suspected_owner:
   source_refs: []
+  disposition:
+    enter_kernel |
+    attach_witness |
+    validate_only |
+    capture_followup |
+    reject |
+    blocked
 ```
 
-Only the first three liability classes enter the branch-liable basis.
+Rules:
 
-A valid adjacent defect is captured as a follow-up, not absorbed into delivery scope.
+- `additional_witness` strengthens an existing family; it does not authorize another branch or test family.
+- `missing_semantic_distinction + scope_expansion` returns to `$spec-pipeline` or explicit user authority.
+- `adjacent_preexisting`, `reviewer_preference`, and `unknown` do not enter delivery scope.
+- Reviewer repair proposals are non-authoritative hints.
 
-Register findings:
-
-```bash
-resolve-c3 add-counterexample --input counterexample.json
-```
-
-## Phase 3: compress to a basis
+## Phase 3 — compile the Minimum Behavioral Kernel
 
 Use `$review-compression-compiler`.
 
-Raw findings are often several witnesses for one missing rule. Compile them into the smallest independent basis that still distinguishes incorrect implementations.
+The kernel artifact is:
 
 ```yaml
-counterexample_basis:
-  basis_version: CEB-v1
-  branch_liabilities: []
-  non_branch_liabilities: []
-  families:
+minimum_behavioral_kernel:
+  kernel_version: MBK-v1
+  campaign_id:
+  campaign_base_sha:
+  acceptance_contract:
+  non_goals: []
+
+  authorities:
+    - authority_id:
+      owns:
+      publishes:
+      may_transition: []
+
+  carriers:
+    - carrier_id:
+      meaning:
+      representation_independent: yes | no
+
+  observations:
+    - observation_id:
+      source: acceptance | counterexample | compatibility
+      observes:
+      expected:
+      proof_ref:
+
+  equivalence_classes:
+    - class_id:
+      members_or_predicate:
+      preserved_observations: []
+      distinguished_from:
+        - class_id:
+          witness_observation_ids: []
+
+  operations:
+    - operation_id:
+      inputs: []
+      outputs: []
+      authority_id:
+
+  transitions:
+    - transition_id:
+      from_classes: []
+      operation_id:
+      to_classes: []
+      guards: []
+      emitted_observations: []
+
+  laws:
+    - law_id:
+      statement:
+      owner:
+      observation_ids: []
+      counterexample_family_ids: []
+      proof_obligations: []
+
+  non_laws: []
+  forbidden_states_or_transitions: []
+
+  counterexample_families:
     - family_id:
-      governing_rule:
+      governing_law_ids: []
       independent_witnesses: []
       subsumed_findings: []
-      canonical_owner_candidates: []
-      proof_obligations: []
-  original_acceptance: []
+      local_surfaces: []
+
+  quotient:
+    method:
+      exact_partition_refinement |
+      exact_bisimulation |
+      witness_checked_manual |
+      not_applicable
+    optimality:
+      exact |
+      witnessed |
+      unknown
+    merged_distinctions: []
+    unresolved_distinctions: []
+
   gate:
-    all_findings_classified: pass | fail
-    every_branch_liability_covered: pass | fail
-    non_branch_liabilities_excluded: pass | fail
+    all_branch_liabilities_covered: pass | fail
+    every_distinction_has_witness: pass | fail
+    every_family_maps_to_law: pass | fail
+    no_local_surface_family_without_governing_law: pass | fail
+    non_goals_preserved: pass | fail
+    kernel_review_allowed: yes | no
 ```
 
-Store it:
+Run the structural checker:
 
 ```bash
-resolve-c3 set-basis --input basis.json
+python3 codex/skills/resolve/tools/kernel_lint.py kernel.json
 ```
 
-No candidate selection without a passing basis.
+## Phase 4 — kernel review firewall
 
-## Phase 4: candidate tournament
+Review the kernel before reviewing code.
 
-Generate deliberately different route families from the same immutable base and complete basis.
-
-Default tournament:
+Required independent passes:
 
 ```text
-no-change or proof-only control
-subtractive/delete-collapse-canonicalize
-existing-owner normalization
-representation repair
-boundary/protocol redesign
-local-guard baseline
+behavioral_kernel_modeler
+observational_equivalence_auditor
 ```
 
-Do not generate all six mechanically. Generate at least three candidate records, at least two distinct route classes, and include a no-change or local-baseline control unless a tournament waiver explains why impossible.
-
-Candidate construction belongs in disposable worktrees or scratch trees.
-
-Create additional candidate worktrees through the controller:
-
-```bash
-resolve-c3 candidate-worktree   --candidate-id cand-subtractive   --path ../<repo>-cand-subtractive
-```
-
-Recommended specialists:
+The kernel review asks:
 
 ```text
-$reduce                    subtractive candidate
-$accretive-implementer     existing-owner/local baseline candidate
-$universalist              representation/boundary candidate
-$fixed-point-driver        candidate verification and normal-form challenge
+Are the authorities real?
+Are observations sufficient?
+Are two classes distinguishable by accepted behavior?
+Are local findings compressed under the right governing law?
+Does the kernel admit impossible states?
+Does it omit valid behavior?
+Does it silently expand scope?
 ```
 
-Register each candidate:
-
-```bash
-resolve-c3 register-candidate \
-  --input candidate.json \
-  --worktree /path/to/candidate-worktree
-```
-
-Candidate hard constraints:
-
-```text
-all branch-liable counterexamples pass
-original acceptance passes
-regressions pass
-proof is current to candidate patch
-active negative-route exclusions are not reused
-forbidden scope is absent
-```
-
-Invalid candidates remain in the tournament as defeated routes.
-
-## Phase 5: semantic-cost dominance
-
-Select by lexicographic semantic cost, not persuasive prose and not one weighted score.
-
-Canonical cost order:
+Output:
 
 ```yaml
-semantic_cost:
-  new_truth_owners:
-  new_public_symbols:
-  new_state_variants:
-  new_fallback_or_compatibility_paths:
-  new_protocol_cases:
-  new_control_flow_branches:
-  new_helpers_or_wrappers:
-  new_proof_obligations:
-  retained_retirable_surfaces:
-  owners_modified:
-  files_modified:
-  ast_edit_count:
-  production_net_lines:
-  test_net_lines:
+kernel_review:
+  artifact_state:
+  overdistinctions: []
+  missing_distinctions: []
+  authority_gaps: []
+  impossible_states_admitted: []
+  valid_states_omitted: []
+  scope_expansions: []
+  verdict:
+    accepted |
+    revise_kernel |
+    return_to_spec |
+    blocked
 ```
 
-Lower is better in the order shown.
+No implementation handoff until `accepted`.
 
-Selection means:
+## Phase 5 — select a realization design without writing code
+
+Do not begin with several full implementations.
+
+Generate 2–4 **design records**, not code candidates:
 
 ```text
-minimum among generated valid candidates
+subtractive/quotient realization
+existing-owner canonical realization
+representation/boundary realization
+local-baseline control
 ```
 
-Never claim global program optimality.
+Each design must contain:
+
+```yaml
+realization_design:
+  design_id:
+  route_class:
+  kernel_elements_realized: []
+  owner_map: []
+  surfaces_to_retire: []
+  predicted_new_surface: []
+  negative_route_refs: []
+  predicted_semantic_surface:
+  proof_strategy:
+  risks: []
+```
+
+For material review:
+
+- require at least two structurally different designs;
+- include a subtractive or quotient-oriented design when plausible;
+- reject active negative-ledger routes;
+- prefer the design with the smallest kernel-faithful predicted surface.
+
+Do not implement multiple designs merely to satisfy ceremony.
+
+## Phase 6 — compile one realization from the campaign base
+
+The controller creates one realization worktree from `campaign_base_sha`.
+
+Handoff:
+
+```yaml
+kernel_realization_handoff:
+  campaign_id:
+  campaign_base_sha:
+  review_ready_baseline_sha:
+  accepted_kernel_ref:
+  selected_design:
+  permitted_owners: []
+  surfaces_to_retire: []
+  forbidden_actions: []
+  hard_surface_ceiling:
+  proof_laws: []
+  worktree:
+```
+
+Use `$fixed-point-driver` or `$accretive-implementer`.
+
+Hard rules:
+
+- no raw review comments as tasks;
+- no new semantic distinction absent from the kernel;
+- no incremental patch after a new observation;
+- a new observation invalidates the realization;
+- implementation starts again from campaign base;
+- delivery remains frozen.
+
+## Phase 7 — realization conformance and semantic accounting
+
+Create:
+
+```yaml
+kernel_realization_map:
+  map_version: KRM-v1
+  code_constructs:
+    - construct_id:
+      path:
+      symbol:
+      kind:
+      realizes:
+        kernel_element_ids: []
+      necessity_witness:
+      status: required | retire | orphan
+
+  proof_actions:
+    - proof_id:
+      kind:
+        law |
+        table |
+        property |
+        state_machine |
+        generative |
+        example |
+        compile_fail
+      proves_law_ids: []
+      covers_observation_ids: []
+      wound_specific: yes | no
+      irreducibility_witness:
+
+  semantic_surface:
+    baseline:
+    current:
+    delta:
+    hard_dimensions_nonincreasing: yes | no
+    total_description_nonincreasing: yes | no
+
+  gate:
+    kernel_conformance: pass | fail
+    orphan_code_constructs_zero: pass | fail
+    wound_specific_tests_zero: pass | fail
+    proof_laws_covered: pass | fail
+    semantic_surface_conserved: pass | fail
+```
+
+Use:
+
+```text
+realization_conformance_auditor
+proof_compression_auditor
+semantic_surface_accountant
+```
+
+## Phase 8 — proof compression
+
+Review-created tests are not exempt from code-growth control.
+
+Preferred proof shapes:
+
+```text
+law/property test
+table-driven counterexample family
+state-machine model
+generative test
+shared fixture with parameterized witnesses
+compile-fail family
+```
+
+A test that exists only because one reviewer found one wound must be:
+
+```text
+subsumed into a family proof
+or
+marked irreducible with a law-level witness
+```
+
+The final proof basis should prove kernel laws, not replay review chronology.
+
+## Phase 9 — semantic-surface conservation gate
+
+The canonical vector is grouped, not flattened into an easily gamed score.
+
+```yaml
+semantic_surface_vector:
+  kernel:
+    authorities:
+    observable_state_classes:
+    transitions:
+    laws:
+    protocol_cases:
+
+  realization:
+    truth_owners:
+    public_symbols:
+    state_fields:
+    fallback_or_compatibility_paths:
+    control_flow_branches:
+    helpers_or_wrappers:
+    files:
+    ast_nodes:
+    production_lines:
+
+  proof:
+    proof_laws:
+    test_families:
+    wound_specific_tests:
+    fixtures:
+    test_ast_nodes:
+    test_lines:
+```
+
+### Hard dimensions
+
+These may not increase after the review-ready baseline without explicit scope/complexity expansion:
+
+```text
+truth owners
+public symbols
+state dimensions
+fallback/compatibility paths
+protocol cases
+wound-specific tests
+```
+
+### Total description
+
+The combined kernel + realization + proof vector must be nonincreasing under the controller's documented comparison policy.
+
+If correctness cannot fit under the ceiling:
+
+```yaml
+scope_complexity_decision:
+  required: yes
+  reason:
+  options:
+    - reduce scope
+    - split PR
+    - redesign kernel
+    - explicitly approve rebaseline
+```
+
+Do not silently relabel growth as review remediation.
+
+## Phase 10 — physically replace delivery from the campaign base realization
+
+Only the controller may apply the selected realization.
+
+Preferred command:
+
+```bash
+resolve-c3 delivery apply
+```
+
+Requirements:
+
+- capture realization tree from campaign base;
+- verify fingerprints and conformance;
+- create a backup ref for current delivery head;
+- replace the delivery worktree tree with the realization tree;
+- preserve or rewrite history according to explicit campaign policy;
+- verify final PR diff against campaign base;
+- emit updated MBKC-v1.
+
+No raw `git apply`, `git commit --amend`, or manual patch transplantation.
+
+## Phase 11 — two holdouts
+
+### Kernel holdout
+
+Ask whether new review evidence requires a new accepted distinction.
+
+### Conformance holdout
+
+Ask whether delivery faithfully realizes the accepted kernel.
+
+A holdout finding routes as:
+
+```text
+existing-law nonconformance -> discard realization, recompile from campaign base
+additional witness -> attach to existing family, no new code
+missing distinction entailed by acceptance -> revise kernel, discard realization
+scope expansion -> return to spec/user authority
+adjacent preexisting -> follow-up
+preference -> reject
+clean -> advance closure
+```
+
+Never patch the current realization in place.
+
+## Closure states
+
+Do not use unqualified `complete`.
+
+```text
+kernel_accepted
+conformance_closed_for_tuple
+terminal_closed
+blocked
+```
+
+### `conformance_closed_for_tuple`
+
+Must name:
+
+```text
+campaign base
+head
+kernel fingerprint
+proof fingerprint
+review backend/receipt
+review horizon
+reopen conditions
+```
+
+### `terminal_closed`
+
+Requires:
+
+```text
+accepted MBK
+whole-PR realization compiled from campaign base
+semantic-surface conservation
+zero orphan code
+zero wound-specific tests
+current proof
+kernel holdout clean
+conformance holdout clean
+PR thread sweep current
+controller physical commit/push current
+```
+
+## MBKC-v1
+
+One durable certificate:
+
+```yaml
+minimum_behavioral_kernel_certificate:
+  certificate_version: MBKC-v1
+  certificate_id:
+  stage:
+    kernel_accepted |
+    realization_verified |
+    applied |
+    final_certified |
+    committed |
+    pushed |
+    conformance_closed_for_tuple |
+    terminal_closed
+
+  campaign:
+    campaign_id:
+    pr_number:
+    campaign_base_sha:
+    review_ready_baseline_sha:
+    current_delivery_head:
+
+  acceptance:
+  observations:
+  kernel:
+  kernel_review:
+  realization_designs:
+  selected_design:
+  realization_map:
+  semantic_surface:
+  proof_basis:
+  negative_evidence:
+  holdouts:
+  delivery:
+  closure_horizon:
+
+  gate:
+    kernel_allowed:
+    realization_allowed:
+    apply_allowed:
+    commit_allowed:
+    push_allowed:
+    tuple_closure_allowed:
+    terminal_closure_allowed:
+```
+
+Canonical location:
+
+```text
+.ledger/c3/mbkc.json
+```
 
 Run:
 
 ```bash
-resolve-c3 select
+python3 codex/skills/resolve/tools/mbkc_gate.py .ledger/c3/mbkc.json
 ```
 
-The tournament record must show every candidate, validity, negative-route state, cost vector, and rejection reason.
+## Negative-ledger integration
 
-## Phase 6: delta-ablate the winner
-
-Before delivery application, attack every edit atom in the selected candidate:
+Capture not only failed patches but failed semantic routes:
 
 ```text
-hunk
-helper
-branch
-predicate
-state field
-fallback
-compatibility case
-wrapper
-public symbol
-test
-file
+overdistinguished kernel
+wrong authority model
+local-surface family that failed to close the governing law
+proof-wound pattern
+realization route
 ```
 
-Try delete/collapse/merge/privatize/table-drive/remove.
-
-For every survivor, record the counterexample or acceptance obligation that fails when removed.
-
-```yaml
-ablation:
-  ablation_version: ABL-v2
-  candidate_id:
-  edit_atoms:
-    - edit_id:
-      kind:
-      result: removed | survived
-      obligations: []
-      failure_witness:
-      proof_ref:
-  removed: []
-  survived: []
-  orphan_edit_atoms: []
-  one_minimal: yes | no
-```
-
-Run ablation through the controller:
-
-```bash
-resolve-c3 ablate \
-  --candidate-id cand-existing-owner \
-  --input ablation-plan.json
-```
-
-Each edit atom supplies a lab-only `remove_command`; a surviving atom also supplies a `restore_command`. The controller removes the atom, runs the common counterexample/acceptance/regression set, and restores it only when removal produces a failure witness.
-
-`record-ablation` remains an external-import compatibility surface but cannot authorize `certify-apply`.
-
-Target:
-
-```text
-orphan_edit_atoms = 0
-```
-
-## Phase 7: independent candidate holdout
-
-Run one broad adversarial holdout against the ablated candidate.
-
-Classify every result:
-
-```text
-new branch-liable counterexample
-subsumed witness
-adjacent preexisting follow-up
-reviewer preference
-clean
-```
-
-Record:
-
-```bash
-resolve-c3 record-holdout \
-  --stage candidate \
-  --input candidate-holdout.json
-```
-
-A new branch-liable counterexample invalidates the selected candidate. Add it to the basis and regenerate from the immutable base.
-
-Do not patch the selected candidate.
-
-## Phase 8: apply certificate
-
-When basis, tournament, ablation, and candidate holdout pass:
-
-```bash
-resolve-c3 certify-apply
-```
-
-This emits MRPC with:
-
-```yaml
-gate:
-  apply_allowed: yes
-  commit_allowed: no
-  push_allowed: no
-```
-
-Only the controller may apply the patch:
-
-```bash
-resolve-c3 apply
-```
-
-The controller verifies the delivery head and worktree, applies the exact selected patch, and checks its fingerprint.
-
-No cherry-pick of exploratory commits by default.
-
-## Phase 9: current delivery proof and holdout
-
-Run current delivery proof through the controller:
-
-```bash
-resolve-c3 run-proof --input proof-plan.json
-```
-
-`record-proof` remains a compatibility/import surface but cannot authorize final certification; final MRPC requires controller-run proof.
-
-Run final current-head holdout and PR sweep:
-
-```bash
-resolve-c3 record-holdout \
-  --stage delivery \
-  --input delivery-holdout.json
-```
-
-If a new branch-liable counterexample appears:
-
-```text
-certificate invalid
-candidate dead
-delivery patch reversed with reset-delivery
-counterexample added
-tournament rerun from immutable base
-```
-
-Adjacent findings become follow-ups.
-
-## Phase 10: final certificate, commit, push, closure
-
-```bash
-resolve-c3 certify-final
-resolve-c3 commit --message "..."
-resolve-c3 push --remote origin
-resolve-c3 close --input pr-sweep.json
-resolve-c3 cleanup-labs --confirm
-```
-
-Raw `git commit`, `git commit --amend`, and `git push` are blocked while C³ is active.
-
-If the post-push PR sweep reveals a new branch-liable counterexample, do not amend the pushed commit. Abort the current run as reopened, then begin a new C³ run from the pushed head:
-
-```bash
-resolve-c3 abort --confirm --reason "post-push PR sweep reopened"
-resolve-c3 begin --root . --acceptance /path/to/acceptance.json --lab ../<repo>-resolve-lab-next
-```
-
-The controller archives the prior terminal run under `.ledger/c3/archive/`.
-
-## MRPC-v1
-
-The canonical certificate contains:
-
-```yaml
-minimal_review_patch_certificate:
-  certificate_version: MRPC-v1
-  stage:
-  immutable_base:
-  acceptance_contract:
-  counterexample_basis:
-  candidate_tournament:
-  selected_candidate:
-  negative_routes:
-  ablation:
-  obligation_to_edit_map:
-  proof:
-  holdout:
-  delivery:
-  metrics:
-  gate:
-    apply_allowed:
-    commit_allowed:
-    push_allowed:
-    closure_allowed:
-```
-
-The file is:
-
-```text
-.ledger/c3/mrpc.json
-```
-
-A transcript summary may render the same fields. The durable JSON is authoritative.
-
-## Negative-ledger rule
-
-Every falsified route family is captured through `$negative-ledger`.
-
-A tournament candidate must include:
-
-```yaml
-negative_route:
-  status: allowed | active_exclusion | reopened | stale | superseded | unknown
-  refs: []
-```
-
-An active excluded route is invalid.
-
-Cluster equality alone is not an exclusion.
-
-## Candidate-worker boundary
-
-Raw review findings may not be handed to implementation skills.
-
-A candidate handoff contains:
-
-```yaml
-candidate_handoff:
-  run_id:
-  immutable_base:
-  candidate_id:
-  route_class:
-  counterexample_basis:
-  forbidden_scope: []
-  semantic_cost_budget:
-  negative_route_refs: []
-  worktree:
-```
-
-Workers return a candidate patch and evidence. They do not edit delivery.
-
-## Holdout boundary
-
-The final broad review is not a work queue.
-
-It may:
-
-```text
-invalidate candidate with a new branch-liable counterexample
-add another witness to an existing family
-capture adjacent follow-up
-reject preference
-pass
-```
-
-It may not directly authorize a delivery patch.
+A failed local route should prevent future design records from reintroducing the same semantic distinction under a new helper name.
 
 ## Reporting
 
-Final `$resolve` output includes the MRPC id and:
+Final output:
 
 ```yaml
-resolve_c3_report:
-  run_id:
-  immutable_base:
+resolve_kernel_report:
+  certificate_id:
+  campaign_base:
+  review_ready_baseline:
   raw_findings:
-  independent_families:
-  candidates_evaluated:
-  candidates_discarded:
-  selected_route:
-  semantic_cost:
-  edit_atoms_before_ablation:
-  edit_atoms_removed:
-  edit_atoms_survived:
-  orphan_edit_atoms:
-  lab_surface_discarded:
-  delivery_production_net:
-  delivery_test_net:
-  followups_captured:
-  holdout_recompilations:
-  commit:
-  push:
-  pr_sweep:
+  independent_observations:
+  counterexample_families:
+  governing_laws:
+  observable_state_classes:
+  distinctions_merged:
+  scope_expansions_rejected:
+  realization_designs_considered:
+  selected_design:
+  surfaces_retired:
+  orphan_code_constructs:
+  proof_laws:
+  wound_specific_tests:
+  semantic_surface_delta:
+  tuple_closure:
+  terminal_closure:
   outcome:
 ```
 
-The core metric is:
+Core metrics:
 
 ```text
-independent branch-liable counterexamples discharged
------------------------------------------------------
-semantic surface cost of delivery patch
+raw findings / governing laws
+local surfaces / observable distinctions
+independent laws / proof families
+accepted observations / total semantic description
 ```
-
-## Fast failure rules
-
-Stop when:
-
-- delivery is dirty at `begin`;
-- basis is incomplete;
-- fewer than required candidates exist without waiver;
-- all candidates fail hard constraints;
-- selected candidate reuses an active excluded route;
-- ablation has an orphan edit atom;
-- candidate holdout adds a branch-liable counterexample;
-- delivery patch fingerprint differs from selected candidate;
-- current proof fails;
-- final holdout adds a branch-liable counterexample;
-- MRPC is stale;
-- raw delivery mutation bypasses the controller.
-
-## Hook behavior
-
-The drop-in extends the existing configured `$st` SessionStart, PreToolUse, and Stop hooks.
-
-When `.ledger/c3/state.json` is active:
-
-- SessionStart injects current C³ phase and required next action.
-- PreToolUse blocks direct delivery mutation and raw commit/push.
-- Stop blocks a resolved/done claim until the run is closed or explicitly aborted.
-
-The lab remains writable.
 
 ## Hard rules
 
-- Reviews append constraints, not patches.
-- Candidate implementations are disposable.
-- No branch-liable finding bypasses the basis.
-- No single-candidate default for material review.
-- No active negative route in the tournament winner.
-- No direct delivery edit after C³ begins.
-- No incremental patching after a new counterexample.
-- No survivor without a failure witness.
-- No orphan edit atoms.
-- No holdout finding automatically expands scope.
-- No global-optimality claim beyond generated candidates.
-- No commit/push outside the controller while active.
-- No resolved claim without final MRPC-v1.
+- Review may add observations, not implementation instructions.
+- Campaign base never advances within a PR campaign.
+- A tuple-local closure head never becomes the new optimization base.
+- No distinction without an observation witness.
+- No local-surface counterexample family without a governing law.
+- No code review that silently changes the kernel.
+- No realization from a prior closure head.
+- No orphan code construct.
+- No wound-specific test without irreducibility evidence.
+- No post-baseline increase in hard semantic dimensions.
+- No silent scope/complexity rebaseline.
+- No manual delivery mutation during an active campaign.
+- No unqualified `complete`.
+- No terminal closure without MBKC-v1.
 
 ## Resources
 
-- [c3-model.md](references/c3-model.md)
-- [counterexample-basis.md](references/counterexample-basis.md)
-- [candidate-tournament.md](references/candidate-tournament.md)
-- [semantic-cost.md](references/semantic-cost.md)
-- [ablation-minimality.md](references/ablation-minimality.md)
-- [holdout-policy.md](references/holdout-policy.md)
-- [mrpc-schema.md](references/mrpc-schema.md)
-- [controller.md](references/controller.md)
+- [minimum-behavioral-kernel.md](references/minimum-behavioral-kernel.md)
+- [observational-equivalence.md](references/observational-equivalence.md)
+- [kernel-review-firewall.md](references/kernel-review-firewall.md)
+- [semantic-surface-conservation.md](references/semantic-surface-conservation.md)
+- [realization-contract.md](references/realization-contract.md)
+- [proof-compression.md](references/proof-compression.md)
+- [closure-states.md](references/closure-states.md)
+- [mbkc-schema.md](references/mbkc-schema.md)
+- [controller-capabilities.md](references/controller-capabilities.md)

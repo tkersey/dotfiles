@@ -1,0 +1,146 @@
+{
+  "minimum_behavioral_kernel": {
+    "kernel_version": "MBK-v1",
+    "campaign_id": "campaign-001",
+    "campaign_base_sha": "BASE_SHA",
+    "acceptance_contract": {
+      "goal": "One accepted behavior."
+    },
+    "non_goals": [],
+    "authorities": [
+      {
+        "authority_id": "AUTH-1",
+        "owns": "portable evidence identity",
+        "publishes": "bound reconstruction evidence",
+        "may_transition": [
+          "OP-1"
+        ]
+      }
+    ],
+    "carriers": [
+      {
+        "carrier_id": "STATE",
+        "meaning": "portable reconstruction state",
+        "representation_independent": "yes"
+      }
+    ],
+    "observations": [
+      {
+        "observation_id": "OBS-001",
+        "source": "counterexample",
+        "observes": "authority binding",
+        "expected": "evidence remains bound to producer",
+        "proof_ref": "test:authority-binding"
+      }
+    ],
+    "equivalence_classes": [
+      {
+        "class_id": "VALID",
+        "members_or_predicate": "evidence is producer-bound",
+        "preserved_observations": [
+          "OBS-001"
+        ],
+        "distinguished_from": [
+          {
+            "class_id": "INVALID",
+            "witness_observation_ids": [
+              "OBS-001"
+            ]
+          }
+        ]
+      },
+      {
+        "class_id": "INVALID",
+        "members_or_predicate": "evidence is unbound or foreign",
+        "preserved_observations": [],
+        "distinguished_from": [
+          {
+            "class_id": "VALID",
+            "witness_observation_ids": [
+              "OBS-001"
+            ]
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "operation_id": "OP-1",
+        "inputs": [
+          "STATE"
+        ],
+        "outputs": [
+          "STATE"
+        ],
+        "authority_id": "AUTH-1"
+      }
+    ],
+    "transitions": [
+      {
+        "transition_id": "T-1",
+        "from_classes": [
+          "VALID"
+        ],
+        "operation_id": "OP-1",
+        "to_classes": [
+          "VALID"
+        ],
+        "guards": [],
+        "emitted_observations": [
+          "OBS-001"
+        ]
+      }
+    ],
+    "laws": [
+      {
+        "law_id": "LAW-1",
+        "statement": "Portable evidence remains bound to its producing authority.",
+        "owner": "AUTH-1",
+        "observation_ids": [
+          "OBS-001"
+        ],
+        "counterexample_family_ids": [
+          "FAM-1"
+        ],
+        "proof_obligations": [
+          "property:authority-binding"
+        ]
+      }
+    ],
+    "non_laws": [],
+    "forbidden_states_or_transitions": [
+      "foreign authority evidence accepted as local"
+    ],
+    "counterexample_families": [
+      {
+        "family_id": "FAM-1",
+        "governing_law_ids": [
+          "LAW-1"
+        ],
+        "independent_witnesses": [
+          "OBS-001"
+        ],
+        "subsumed_findings": [],
+        "local_surfaces": [
+          "restore",
+          "archive",
+          "wasm"
+        ]
+      }
+    ],
+    "quotient": {
+      "method": "witness_checked_manual",
+      "optimality": "witnessed",
+      "merged_distinctions": [],
+      "unresolved_distinctions": []
+    },
+    "gate": {
+      "all_branch_liabilities_covered": "pass",
+      "every_distinction_has_witness": "pass",
+      "every_family_maps_to_law": "pass",
+      "no_local_surface_family_without_governing_law": "pass",
+      "non_goals_preserved": "pass",
+      "kernel_review_allowed": "yes"
+    }
+  }
+}

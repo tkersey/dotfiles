@@ -1,8 +1,8 @@
 ---
 name: review-compression-compiler
-description: "Compile raw review, CAS, PR, validation, and user findings into a smallest independent branch-liable counterexample basis for C³ `$resolve`. Use for repeated or adjacent findings, same-family recurrence, finding-family compression, liability separation, proof-obligation extraction, and candidate-route hints. Read-only; never output patch hunks or authorize delivery mutation."
+description: "Compile raw review/CAS/PR/validation findings into a Minimum Behavioral Kernel rather than a repair queue. Use for repeated findings, local-surface families, authority/replay/reconstruction invariants, observational equivalence, counterexample compression, proof-law extraction, or MBK-v1. Read-only; never emit patch hunks or authorize mutation."
 metadata:
-  version: "4.0.0"
+  version: "5.0.0"
   activation_cost: medium
   default_depth: strict
 ---
@@ -11,76 +11,81 @@ metadata:
 
 ## Mission
 
-Turn review findings into a **counterexample basis**, not a repair queue.
-
 ```text
-many comments
--> few independent governing rules
--> explicit proof obligations
+many review findings
+-> few accepted observations
+-> few governing laws
+-> minimum behavioral kernel
 ```
 
-## Input discipline
+The compiler does not answer “what code should we add?”
 
-For every finding preserve:
+It answers:
 
 ```text
+What behavior is actually distinguishable?
+Who owns it?
+Which observations prove the distinction?
+Which local findings are witnesses of one law?
+```
+
+## Input
+
+Preserve:
+
+```text
+artifact state
 observed fact
 review claim
-proposed repair
-uncertainty
-artifact state
+suggested repair
+liability
+acceptance entailment
 source refs
 ```
 
-Classify liability before compression.
-
 ## Output
 
-```yaml
-counterexample_basis:
-  basis_version: CEB-v1
-  immutable_base:
-  branch_liabilities:
-    - finding_id:
-      liability:
-      observed_behavior:
-      required_behavior:
-      reproduction_or_proof:
-      source_refs: []
-  non_branch_liabilities:
-    - finding_id:
-      disposition: followup | reject | validate-only | blocked
-      reason:
-  families:
-    - family_id:
-      governing_rule:
-      independent_witnesses: []
-      subsumed_findings: []
-      canonical_owner_candidates: []
-      failure_surface:
-      proof_obligations: []
-      candidate_route_hints:
-        - no-change
-        - subtractive
-        - existing-owner
-        - representation
-        - boundary
-        - local-baseline
-  original_acceptance: []
-  gate:
-    all_findings_classified: pass | fail
-    every_branch_liability_covered: pass | fail
-    non_branch_liabilities_excluded: pass | fail
-```
+Emit `minimum_behavioral_kernel / MBK-v1`.
+
+Required sections:
+
+1. Acceptance and Non-Goals
+2. Observation Ledger
+3. Liability Ledger
+4. Counterexample Family Compression
+5. Authority Inventory
+6. Carriers / State Vocabulary
+7. Operations and Transitions
+8. Governing Laws and Non-Laws
+9. Observational Equivalence Partition
+10. Forbidden States / Transitions
+11. Proof-Law Basis
+12. Local-Surface-to-Law Map
+13. Kernel Gate
 
 ## Compression rules
 
-- Same cluster does not imply same family.
-- Similar prose does not imply one governing rule.
-- Several manifestations of one missing rule should not become several implementation tasks.
-- Preserve independent witnesses that distinguish bad candidates.
-- A finding may be valid and non-branch-liable.
-- Reviewer repair suggestions are hints only.
-- Candidate route hints must include a lower-surface alternative when plausible.
+- Same cluster does not imply same law.
+- Different local surfaces may witness one law.
+- A family named only after a file/API/check is undercompressed until its governing law is named.
+- A new state distinction requires an accepted observation witness.
+- Multiple representations with identical accepted observations should be quotiented.
+- Reviewer repair proposals are hints.
+- Non-branch-liable findings remain outside the kernel.
+- Scope expansion returns to spec/user authority.
 - Do not output code.
-- Do not authorize mutation.
+- Do not authorize realization.
+
+## Kernel gate
+
+```yaml
+kernel_gate:
+  all_branch_liabilities_covered:
+  every_distinction_has_witness:
+  every_family_maps_to_law:
+  local_surface_families_eliminated:
+  authorities_owned:
+  non_goals_preserved:
+  proof_laws_present:
+  kernel_review_allowed:
+```

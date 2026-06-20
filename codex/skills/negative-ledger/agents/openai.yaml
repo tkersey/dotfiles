@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Negative Ledger"
-  short_description: "Prune failed C³ candidate routes"
-  default_prompt: "Use $negative-ledger to capture falsified candidate routes and provide tournament-ready route exclusion status."
+  short_description: "Prune failed kernel and realization routes"
+  default_prompt: "Use $negative-ledger to record and query failed semantic routes, authority models, kernel distinctions, and proof patterns."

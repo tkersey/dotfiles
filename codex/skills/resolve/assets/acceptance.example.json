@@ -1,12 +1,15 @@
 {
-  "goal": "State the current branch objective.",
-  "original_acceptance": [
-    "Behavior that must remain true."
+  "goal": "State the branch objective.",
+  "acceptance_criteria": [
+    "Externally observable behavior that must hold."
+  ],
+  "compatibility": [
+    "Behavior that must remain stable."
   ],
   "non_goals": [
-    "Adjacent work that must not enter this review patch."
+    "Adjacent behavior that review must not silently add."
   ],
   "proof_bar": [
-    "Exact commands or review surfaces required for closure."
+    "Exact proof command or review surface."
   ]
 }

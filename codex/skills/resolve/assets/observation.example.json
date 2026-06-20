@@ -1,0 +1,18 @@
+{
+  "observation_id": "OBS-001",
+  "artifact_state": {
+    "base": "BASE_SHA",
+    "head": "HEAD_SHA",
+    "review_backend": "cas",
+    "review_receipt": "receipt"
+  },
+  "observed_behavior": "Describe the witnessed behavior.",
+  "required_behavior": "Describe the accepted behavior.",
+  "liability": "introduced_by_current_diff",
+  "kernel_impact": "existing_law_violation",
+  "acceptance_entailment": "entailed",
+  "reproduction_or_proof": "test or trace",
+  "source_refs": [
+    "cas:receipt"
+  ]
+}

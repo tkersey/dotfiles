@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Accretive Implementer"
-  short_description: "Right-sized implementation and C³ candidate generation"
-  default_prompt: "Implement only the bounded owned contract. Under $resolve, work in the candidate lab and return a patch plus semantic-cost evidence; never mutate delivery."
+  short_description: "Exact kernel realization"
+  default_prompt: "Implement the accepted kernel with no invented distinctions, no orphan surface, and law-level proof."

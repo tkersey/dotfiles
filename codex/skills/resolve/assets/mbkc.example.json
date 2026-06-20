@@ -1,0 +1,40 @@
+{
+  "minimum_behavioral_kernel_certificate": {
+    "certificate_version": "MBKC-v1",
+    "certificate_id": "MBKC-...",
+    "stage": "kernel_accepted",
+    "campaign": {
+      "campaign_id": "campaign-001",
+      "pr_number": 1,
+      "campaign_base_sha": "BASE_SHA",
+      "review_ready_baseline_sha": "BASELINE_SHA",
+      "current_delivery_head": "HEAD_SHA"
+    },
+    "acceptance": {},
+    "observations": [],
+    "kernel": {
+      "kernel_version": "MBK-v1"
+    },
+    "kernel_review": {
+      "verdict": "accepted"
+    },
+    "realization_designs": [],
+    "selected_design": null,
+    "realization_map": null,
+    "semantic_surface": {},
+    "proof_basis": {},
+    "negative_evidence": {},
+    "holdouts": {},
+    "delivery": {},
+    "closure_horizon": {},
+    "gate": {
+      "kernel_allowed": "yes",
+      "realization_allowed": "no",
+      "apply_allowed": "no",
+      "commit_allowed": "no",
+      "push_allowed": "no",
+      "tuple_closure_allowed": "no",
+      "terminal_closure_allowed": "no"
+    }
+  }
+}

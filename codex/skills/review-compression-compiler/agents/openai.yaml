@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Compression Compiler"
-  short_description: "Compile review findings into CEB-v1"
-  default_prompt: "Use $review-compression-compiler read-only to produce the smallest independent branch-liable counterexample basis and proof obligations."
+  short_description: "Compile review evidence into MBK-v1"
+  default_prompt: "Use $review-compression-compiler read-only to quotient review findings into accepted observations, governing laws, authorities, and a Minimum Behavioral Kernel."

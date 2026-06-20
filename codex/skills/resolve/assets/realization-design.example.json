@@ -1,0 +1,28 @@
+{
+  "design_version": "RD-v1",
+  "design_id": "DESIGN-1",
+  "route_class": "representation",
+  "kernel_elements_realized": [
+    "AUTH-1",
+    "LAW-1",
+    "T-1"
+  ],
+  "owner_map": [
+    {
+      "kernel_element_id": "AUTH-1",
+      "owner": "Module.Owner"
+    }
+  ],
+  "surfaces_to_retire": [
+    "duplicate local authority checks"
+  ],
+  "predicted_new_surface": [],
+  "negative_route_refs": [],
+  "predicted_semantic_surface": {
+    "truth_owners": 1,
+    "state_fields": 0,
+    "control_flow_branches": 1
+  },
+  "proof_strategy": "one property family",
+  "risks": []
+}

@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Adjudication"
-  short_description: "Verify claims and classify C³ liability"
-  default_prompt: "Verify each review claim against current code and emit branch liability plus a counterexample candidate, not a patch instruction."
+  short_description: "Classify review liability and kernel impact"
+  default_prompt: "Verify the finding and classify branch liability, kernel impact, acceptance entailment, and non-mutation disposition."

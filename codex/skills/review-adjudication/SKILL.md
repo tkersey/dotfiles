@@ -1,8 +1,8 @@
 ---
 name: review-adjudication
-description: "Treat review comments and generated findings as claims, verify them against current code, classify branch liability, and choose address/validate/follow-up/reject/blocked dispositions. In C³ `$resolve`, emit counterexample candidates only; never issue direct delivery-mutation authority."
+description: "Verify review claims against current code, classify branch liability and kernel impact, and route findings into kernel observation, witness attachment, validation, follow-up, rejection, or blocking. Under `$resolve`, never issue direct code-mutation authority."
 metadata:
-  version: "3.0.0"
+  version: "4.0.0"
 ---
 
 # Review Adjudication
@@ -14,20 +14,25 @@ Separate:
 ```text
 observed fact
 review claim
-repair proposal
+repair suggestion
 branch liability
+kernel impact
 permitted disposition
 ```
 
-## Output
+## Required decision
 
 ```yaml
-review_claim_decision:
-  finding_id:
+review_observation:
+  observation_id:
   artifact_state:
-  observed_fact:
-  claim:
-  validity: confirmed | refuted | stale | unknown
+  observed_behavior:
+  required_behavior:
+  validity:
+    confirmed |
+    refuted |
+    stale |
+    unknown
   liability:
     introduced_by_current_diff |
     exposed_and_required_by_current_acceptance |
@@ -35,27 +40,32 @@ review_claim_decision:
     adjacent_preexisting |
     reviewer_preference |
     unknown
+  kernel_impact:
+    existing_law_violation |
+    additional_witness |
+    missing_semantic_distinction |
+    no_kernel_impact |
+    unknown
+  acceptance_entailment:
+    entailed |
+    scope_expansion |
+    unknown
+  reproduction_or_proof:
+  source_refs: []
   disposition:
-    counterexample |
-    validate-only |
-    follow-up |
-    resolve-thread-only |
+    enter_kernel |
+    attach_witness |
+    validate_only |
+    capture_followup |
     reject |
     blocked
-  counterexample:
-    observed_behavior:
-    required_behavior:
-    reproduction_or_proof:
-    suspected_owner:
-    source_refs: []
 ```
 
-## C³ boundary
+## Hard rules
 
-When `$resolve` is active:
-
-- `counterexample` feeds the basis;
-- follow-up/reject/thread-only never enter delivery scope;
-- reviewer repair proposals are hints;
-- no direct mutation warrant is emitted;
-- no implementation skill receives raw review prose.
+- Valid does not mean branch-liable.
+- Reviewer repair suggestions are not implementation scope.
+- `additional_witness` does not create a new code branch or test family.
+- `missing_semantic_distinction + scope_expansion` returns to spec/user authority.
+- Under `$resolve`, emit no direct mutation warrant.
+- Raw review prose must not be handed to an implementer.

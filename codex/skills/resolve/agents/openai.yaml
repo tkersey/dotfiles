@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "Counterexample Compression Compiler"
-  default_prompt: "Use $resolve as C³: freeze delivery, compress review findings into a counterexample basis, compare independent candidate routes by semantic cost, ablate the winner, and allow delivery only through a current MRPC-v1."
+  short_description: "Minimum Behavioral Kernel Review Compiler"
+  default_prompt: "Use $resolve to convert review findings into observations, minimize the behavioral kernel by observational equivalence, compile one whole-PR realization from the fixed campaign base, compress proof, conserve semantic surface, and close only with MBKC-v1."
