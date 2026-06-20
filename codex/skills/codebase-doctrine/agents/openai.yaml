@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Codebase Doctrine"
+  short_description: "Learn a repository and design correctness doctrine"
+  default_prompt: "Use $codebase-doctrine read-only to map architecture, authority, laws, failures, proof, knowledge destinations, and the smallest repository-specific correctness-skill portfolio."

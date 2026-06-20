@@ -1,0 +1,16 @@
+search_questions:
+  - question_id: Q-AUTH-001
+    question: Who may publish portable reconstruction evidence?
+    why_it_matters: Publication authority determines replay and restore correctness.
+    lanes:
+      - authority_and_mutation
+      - behavior_and_tests
+      - history_and_forensics
+    search_methods:
+      - symbol references for publication methods
+      - write-path search for receipt/evidence construction
+      - git -G for prior authority fixes
+      - tests for foreign/unbound evidence
+    evidence_found: []
+    model_change: ""
+    status: open

@@ -1,0 +1,31 @@
+codebase_skill_handoff:
+  handoff_version: CBSH-v1
+  doctrine_id: CBD-example-001
+  artifact_state_id: AS-example-001
+  candidate_id: SKILL-PUBLICATION
+  proposed_name: example-publication-authority
+  governing_law_ids:
+    - LAW-COMMITTED-VISIBILITY
+  trigger_examples:
+    - change commit or visibility semantics
+  non_triggers:
+    - read-only documentation edit
+  consequential_decisions:
+    - where publication validation belongs
+  prohibited_routes:
+    - reader-side tolerance
+  required_artifacts:
+    - owner evidence
+    - law-level proof
+  success_signals:
+    - single publication owner
+  failure_signals:
+    - duplicate visibility check
+  protected_doctrine_ids:
+    - AUTH-STORE
+    - LAW-COMMITTED-VISIBILITY
+  allowed_package: codex/skills/example-publication-authority
+  validation:
+    - quick_validate
+    - decision-contract lint
+    - future seq skill-decision-audit query

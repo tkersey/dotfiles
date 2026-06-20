@@ -1,0 +1,38 @@
+{
+  "codebase_doctrine_packet": {
+    "packet_version": "CBDP-v1",
+    "worker": "authority_state_mapper",
+    "artifact_state_id": "AS-example-001",
+    "scope": "store",
+    "evidence_lanes": [
+      "authority_and_mutation",
+      "behavior_and_tests"
+    ],
+    "questions_addressed": [
+      "Q-OWNER"
+    ],
+    "facts": [
+      {
+        "claim_id": "CLAIM-OWNER",
+        "statement": "Store.commit is the canonical publication authority.",
+        "evidence_refs": [
+          "src/store.zig:120",
+          "test/store_test.zig:88"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "inferences": [],
+    "contradictions": [],
+    "open_questions": [],
+    "proposed_doctrine_updates": {
+      "authority_map": {
+        "authorities": [
+          "AUTH-STORE"
+        ]
+      }
+    },
+    "stale": "no",
+    "final_call": "usable"
+  }
+}

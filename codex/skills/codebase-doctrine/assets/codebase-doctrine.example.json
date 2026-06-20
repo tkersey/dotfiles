@@ -1,0 +1,551 @@
+{
+  "codebase_doctrine": {
+    "doctrine_version": "CBD-v1",
+    "doctrine_id": "CBD-example-001",
+    "artifact_state": {
+      "artifact_state_id": "AS-example-001",
+      "repository_root": "/repo",
+      "repository_name": "example",
+      "branch": "main",
+      "head": "abc123",
+      "dirty_state": "clean",
+      "scope": "whole repository",
+      "captured_at": "2026-06-20T00:00:00Z"
+    },
+    "request": {
+      "mode": "doctrine",
+      "scope": "whole repository",
+      "depth": "standard"
+    },
+    "search_ledger": [
+      {
+        "question_id": "Q-OWNER",
+        "question": "Who may publish durable records?",
+        "why_it_matters": "Publication authority controls visibility.",
+        "lanes": [
+          "authority_and_mutation",
+          "behavior_and_tests"
+        ],
+        "search_methods": [
+          "symbol references",
+          "tests"
+        ],
+        "evidence_found": [
+          "E-CODE",
+          "E-TEST"
+        ],
+        "model_change": "identified AUTH-STORE",
+        "status": "answered"
+      }
+    ],
+    "evidence_index": [
+      {
+        "evidence_id": "E-DOC",
+        "lane": "guidance",
+        "question_id": "Q-SHAPE",
+        "observation": "README describes a durable record store.",
+        "evidence_ref": "README.md:1",
+        "artifact_state_id": "AS-example-001",
+        "scope": "repository",
+        "confidence": "medium",
+        "supports_claim_ids": [
+          "CLAIM-SHAPE"
+        ],
+        "contradicts_claim_ids": []
+      },
+      {
+        "evidence_id": "E-CODE",
+        "lane": "authority_and_mutation",
+        "question_id": "Q-OWNER",
+        "observation": "Store.commit is the only durable publication write path.",
+        "evidence_ref": "src/store.zig:120",
+        "artifact_state_id": "AS-example-001",
+        "scope": "store",
+        "confidence": "high",
+        "supports_claim_ids": [
+          "CLAIM-OWNER",
+          "CLAIM-LAW"
+        ],
+        "contradicts_claim_ids": []
+      },
+      {
+        "evidence_id": "E-TEST",
+        "lane": "behavior_and_tests",
+        "question_id": "Q-OWNER",
+        "observation": "Uncommitted records are not visible to readers.",
+        "evidence_ref": "test/store_test.zig:88",
+        "artifact_state_id": "AS-example-001",
+        "scope": "store",
+        "confidence": "high",
+        "supports_claim_ids": [
+          "CLAIM-LAW"
+        ],
+        "contradicts_claim_ids": []
+      },
+      {
+        "evidence_id": "E-HISTORY",
+        "lane": "history_and_forensics",
+        "question_id": "Q-FAILURE",
+        "observation": "Two prior fixes addressed visibility before commit.",
+        "evidence_ref": "git:deadbeef",
+        "artifact_state_id": "AS-example-001",
+        "scope": "store",
+        "confidence": "medium",
+        "supports_claim_ids": [
+          "CLAIM-FAILURE"
+        ],
+        "contradicts_claim_ids": []
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "CLAIM-SHAPE",
+        "kind": "fact",
+        "statement": "The repository is a library centered on a durable record store.",
+        "evidence_refs": [
+          "E-DOC"
+        ],
+        "counterevidence_refs": [],
+        "confidence": "medium",
+        "status": "active",
+        "durable": false
+      },
+      {
+        "claim_id": "CLAIM-OWNER",
+        "kind": "fact",
+        "statement": "AUTH-STORE is the canonical publication authority.",
+        "evidence_refs": [
+          "E-CODE"
+        ],
+        "counterevidence_refs": [],
+        "confidence": "high",
+        "status": "active",
+        "durable": true
+      },
+      {
+        "claim_id": "CLAIM-LAW",
+        "kind": "fact",
+        "statement": "Only committed records are externally visible.",
+        "evidence_refs": [
+          "E-CODE",
+          "E-TEST"
+        ],
+        "counterevidence_refs": [],
+        "confidence": "high",
+        "status": "active",
+        "durable": true
+      },
+      {
+        "claim_id": "CLAIM-FAILURE",
+        "kind": "inference",
+        "statement": "Visibility-before-commit is a recurring failure family.",
+        "evidence_refs": [
+          "E-HISTORY"
+        ],
+        "counterevidence_refs": [],
+        "confidence": "medium",
+        "status": "active",
+        "durable": true
+      }
+    ],
+    "repository_fingerprint": {
+      "repository_kind": "library",
+      "primary_languages": [
+        "Zig"
+      ],
+      "build_and_test_systems": [
+        "zig build"
+      ],
+      "deployment_or_distribution": "library package",
+      "dominant_architecture": "stateful library with canonical store owner",
+      "secondary_architecture": "none observed",
+      "dependency_direction": "public API -> store -> persistence",
+      "top_level_subsystems": [
+        "store",
+        "tests"
+      ],
+      "public_contract_roots": [
+        "src/root.zig"
+      ],
+      "entrypoint_classes": [
+        "library API"
+      ],
+      "repository_dialect": "commit, record, store",
+      "confidence": "medium",
+      "evidence_refs": [
+        "E-DOC",
+        "E-CODE"
+      ]
+    },
+    "system_map": {
+      "components": [
+        "public API",
+        "store",
+        "reader"
+      ],
+      "connections": [
+        "API writes through store",
+        "reader observes committed records"
+      ],
+      "representative_flows": [
+        "append -> commit -> publish -> read"
+      ],
+      "external_boundaries": [],
+      "configuration_roots": [],
+      "persistence_roots": [
+        "src/store.zig"
+      ],
+      "feedback_loops": [],
+      "delays_and_async_boundaries": []
+    },
+    "authority_map": {
+      "authorities": [
+        {
+          "authority_id": "AUTH-STORE",
+          "owner": "Store.commit",
+          "owned_state": [
+            "durable records",
+            "publication frontier"
+          ],
+          "creation_paths": [
+            "Store.append"
+          ],
+          "transition_paths": [
+            "Store.commit"
+          ],
+          "readers": [
+            "Store.get"
+          ],
+          "certificates_or_witnesses": [
+            "commit sequence"
+          ],
+          "enforcement_boundary": "Store.commit",
+          "authority_transfers": [],
+          "shadow_owners": [],
+          "late_validations": [],
+          "evidence_refs": [
+            "E-CODE",
+            "E-TEST"
+          ]
+        }
+      ]
+    },
+    "behavioral_model": {
+      "carriers": [
+        "record",
+        "commit frontier"
+      ],
+      "operations": [
+        "append",
+        "commit",
+        "read"
+      ],
+      "observations": [
+        "reader visibility"
+      ],
+      "state_classes": [
+        "pending",
+        "committed"
+      ],
+      "transitions": [
+        "pending -> committed"
+      ],
+      "laws": [
+        "LAW-COMMITTED-VISIBILITY"
+      ],
+      "non_laws": [
+        "append does not imply visibility"
+      ],
+      "forbidden_states_or_transitions": [
+        "pending record visible"
+      ],
+      "interpreters_or_projections": [
+        "Store.get"
+      ]
+    },
+    "governing_laws": [
+      {
+        "law_id": "LAW-COMMITTED-VISIBILITY",
+        "statement": "A record is externally visible only after Store.commit publishes it.",
+        "owner": "AUTH-STORE",
+        "observations": [
+          "reader visibility"
+        ],
+        "counterexamples": [
+          "pending record visible"
+        ],
+        "proof_obligations": [
+          "test pending invisibility",
+          "test committed visibility"
+        ],
+        "evidence_refs": [
+          "E-CODE",
+          "E-TEST"
+        ]
+      }
+    ],
+    "owned_invariants": [
+      {
+        "invariant_id": "INV-COMMIT-FRONTIER",
+        "statement": "The publication frontier never advances beyond committed state.",
+        "owner": "AUTH-STORE",
+        "source_of_truth": "Store.commit sequence",
+        "initialization": "frontier starts at zero",
+        "preserving_transitions": [
+          "Store.commit"
+        ],
+        "violating_counterexamples": [
+          "pending record visible"
+        ],
+        "enforcement_boundary": "Store.commit",
+        "current_enforcement": [
+          "Store.get compares commit sequence"
+        ],
+        "missing_or_late_enforcement": [],
+        "exception_ownership": "none",
+        "proof_surface_ids": [
+          "PROOF-COMMIT-TABLE"
+        ],
+        "evidence_refs": [
+          "E-CODE",
+          "E-TEST"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "boundary_rules": [
+      {
+        "boundary_rule_id": "BOUNDARY-PUBLISH",
+        "statement": "Only Store.commit may publish record visibility.",
+        "authority_before": "pending store state",
+        "authority_after": "committed store state",
+        "evidence_refs": [
+          "E-CODE"
+        ]
+      }
+    ],
+    "failure_families": [
+      {
+        "family_id": "FAM-VISIBILITY-BEFORE-COMMIT",
+        "governing_law_ids": [
+          "LAW-COMMITTED-VISIBILITY"
+        ],
+        "local_surfaces": [
+          "reader",
+          "projection"
+        ],
+        "independent_witnesses": [
+          "pending record visible"
+        ],
+        "recurring_signatures": [
+          "visibility before commit"
+        ],
+        "historical_repairs": [
+          "git:deadbeef"
+        ],
+        "routes_that_failed": [
+          "reader-side tolerance"
+        ],
+        "unresolved_risk": "none known",
+        "evidence_refs": [
+          "E-HISTORY",
+          "E-TEST"
+        ],
+        "status": "active"
+      }
+    ],
+    "negative_routes": [
+      {
+        "route_id": "NEG-READER-TOLERANCE",
+        "route_family": "reader-side tolerance",
+        "reason": "Leaves publication authority ambiguous.",
+        "evidence_refs": [
+          "E-HISTORY"
+        ]
+      }
+    ],
+    "proof_map": {
+      "proof_surfaces": [
+        {
+          "proof_surface_id": "PROOF-COMMIT-TABLE",
+          "law_or_invariant_ids": [
+            "LAW-COMMITTED-VISIBILITY",
+            "INV-COMMIT-FRONTIER"
+          ],
+          "kind": "table_test",
+          "artifact_refs": [
+            "test/store_test.zig:88"
+          ],
+          "strength": "law-level examples for pending and committed states",
+          "gaps": []
+        }
+      ]
+    },
+    "contradictions": [],
+    "open_questions": [],
+    "knowledge_routes": [
+      {
+        "knowledge_id": "KNOW-OWNER",
+        "statement": "Store.commit owns publication.",
+        "source_claim_ids": [
+          "CLAIM-OWNER"
+        ],
+        "primary_destination": "code",
+        "secondary_destinations": [
+          "AGENTS_or_repository_guidance"
+        ],
+        "reason": "Canonical ownership should be structural and briefly documented.",
+        "enforcement_strength": "strong",
+        "owner": "AUTH-STORE",
+        "status": "accepted"
+      },
+      {
+        "knowledge_id": "KNOW-LAW",
+        "statement": "Pending records are not visible.",
+        "source_claim_ids": [
+          "CLAIM-LAW"
+        ],
+        "primary_destination": "test_or_property",
+        "secondary_destinations": [
+          "repository_root_skill"
+        ],
+        "reason": "The law needs executable proof and future decision routing.",
+        "enforcement_strength": "strong",
+        "owner": "AUTH-STORE",
+        "status": "accepted"
+      },
+      {
+        "knowledge_id": "KNOW-FAILURE",
+        "statement": "Reader-side tolerance is a failed route.",
+        "source_claim_ids": [
+          "CLAIM-FAILURE"
+        ],
+        "primary_destination": "negative_ledger",
+        "secondary_destinations": [],
+        "reason": "Future repairs should not repeat the failed semantic route.",
+        "enforcement_strength": "advisory",
+        "owner": "AUTH-STORE",
+        "status": "accepted"
+      }
+    ],
+    "repository_root_skill": {
+      "candidate_id": "SKILL-ROOT",
+      "proposed_name": "example-correctness",
+      "mission": "Route changes through store authority and proof laws.",
+      "trigger_boundary": "material changes to record creation, commit, publication, or reads",
+      "routing_table": [
+        "publication changes -> LAW-COMMITTED-VISIBILITY"
+      ],
+      "references": [
+        "authority map",
+        "proof map"
+      ],
+      "decision_contract_outline": [
+        "reject reader-side tolerance"
+      ],
+      "accepted": true
+    },
+    "focused_skill_candidates": [
+      {
+        "candidate_id": "SKILL-PUBLICATION",
+        "proposed_name": "example-publication-authority",
+        "governing_law_ids": [
+          "LAW-COMMITTED-VISIBILITY"
+        ],
+        "trigger_examples": [
+          "change commit or visibility semantics"
+        ],
+        "non_triggers": [
+          "read-only documentation edit"
+        ],
+        "consequential_decisions": [
+          "where publication validation belongs"
+        ],
+        "prohibited_routes": [
+          "reader-side tolerance"
+        ],
+        "required_artifacts": [
+          "owner evidence",
+          "law-level proof"
+        ],
+        "success_signals": [
+          "single publication owner"
+        ],
+        "failure_signals": [
+          "duplicate visibility check"
+        ],
+        "standalone_use_cases": [
+          "review publication changes"
+        ],
+        "candidacy": {
+          "recurring_trigger": "yes",
+          "consequential_decision": "yes",
+          "stable_governing_law": "yes",
+          "independent_activation": "yes",
+          "standalone_workflow": "yes",
+          "observable_success_and_failure": "yes",
+          "better_as_code": "no",
+          "better_as_test": "no",
+          "better_as_tooling": "no",
+          "better_as_docs": "no",
+          "accepted": "yes"
+        },
+        "evidence_refs": [
+          "E-CODE",
+          "E-TEST",
+          "E-HISTORY"
+        ]
+      }
+    ],
+    "rejected_skill_candidates": [
+      {
+        "candidate_id": "SKILL-TEST-NAMING",
+        "proposed_name": "example-test-naming",
+        "reason": "Better as repository guidance.",
+        "primary_destination": "AGENTS_or_repository_guidance"
+      }
+    ],
+    "saturation": {
+      "lanes_required": [
+        "guidance",
+        "authority_and_mutation",
+        "behavior_and_tests",
+        "history_and_forensics"
+      ],
+      "lanes_covered": [
+        "guidance",
+        "authority_and_mutation",
+        "behavior_and_tests",
+        "history_and_forensics"
+      ],
+      "open_questions": [],
+      "contradictions_remaining": [],
+      "last_material_model_change": "identified failed reader-tolerance route",
+      "additional_search_would_change": {
+        "repository_fingerprint": "no",
+        "authority_map": "no",
+        "governing_laws": "no",
+        "proof_map": "no",
+        "knowledge_routes": "no",
+        "skill_portfolio": "no"
+      },
+      "verdict": "saturated",
+      "next_targeted_queries": []
+    },
+    "confidence": {
+      "overall": "medium",
+      "high_confidence_sections": [
+        "authority map",
+        "law",
+        "proof"
+      ],
+      "low_confidence_sections": [
+        "portfolio usefulness before live use"
+      ]
+    },
+    "next_actions": [
+      "Ask for authorization before creating accepted repository skills.",
+      "Use seq/tune/refine after real skill use."
+    ]
+  }
+}
