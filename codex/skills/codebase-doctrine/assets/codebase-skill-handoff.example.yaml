@@ -1,6 +1,7 @@
 codebase_skill_handoff:
   handoff_version: CBSH-v1
   doctrine_id: CBD-example-001
+  intent_id: CDI-example-001
   artifact_state_id: AS-example-001
   candidate_id: SKILL-PUBLICATION
   proposed_name: example-publication-authority

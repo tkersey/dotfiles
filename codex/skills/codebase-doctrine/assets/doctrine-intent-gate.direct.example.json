@@ -1,0 +1,99 @@
+{
+  "doctrine_intent_gate": {
+    "gate_version": "DIG-v1",
+    "gate_id": "DIG-direct-001",
+    "provisional_artifact_state": {
+      "repository_root": "/repo",
+      "repository_name": "example",
+      "branch": "main",
+      "head": "abc123",
+      "dirty_state": "clean",
+      "captured_at": "2026-06-21T00:00:00Z"
+    },
+    "repository_facts_researched": [
+      {
+        "fact_id": "FACT-ROOT",
+        "statement": "The repository has one store-centered product boundary.",
+        "evidence_ref": "README.md:1",
+        "confidence": "high"
+      }
+    ],
+    "user_request": {
+      "original_ask": "Build doctrine for the store and propose skills.",
+      "explicit_target": "store lifecycle",
+      "explicit_consumers": [
+        "maintainers",
+        "coding agents"
+      ],
+      "explicit_products": [
+        "correctness atlas",
+        "skill candidates"
+      ],
+      "explicit_posture": "mixed",
+      "explicit_non_goals": [
+        "release packaging"
+      ],
+      "explicit_proof_bar": "code, tests, and history"
+    },
+    "working_defaults": [],
+    "material_user_judgment_gaps": [],
+    "grill_required": "no",
+    "reason": "The user supplied the target, consumers, products, posture, non-goals, and proof bar.",
+    "grill_handoff": null,
+    "direct_intent_candidate": {
+      "intent_version": "CDI-v1",
+      "intent_id": "CDI-direct-001",
+      "source": {
+        "kind": "direct",
+        "intent_gate_id": "DIG-direct-001",
+        "grill_packet_digest": null
+      },
+      "target": {
+        "repository": "example",
+        "boundary_statement": "The durable record store and its publication/read lifecycle.",
+        "included_subsystems": [
+          "store",
+          "public API",
+          "reader"
+        ],
+        "excluded_subsystems": [
+          "release packaging"
+        ],
+        "cross_cutting_flows": [
+          "append -> commit -> publish -> read"
+        ]
+      },
+      "consumers": [
+        "future maintainers",
+        "coding agents"
+      ],
+      "posture": "mixed",
+      "desired_products": [
+        "correctness_atlas",
+        "knowledge_routing",
+        "repository_root_skill",
+        "focused_skill_candidates"
+      ],
+      "primary_invariant": "Only committed records are externally visible.",
+      "correctness_priorities": [
+        "publication authority",
+        "rollback atomicity",
+        "law-level proof"
+      ],
+      "non_goals": [
+        "redesign unrelated packaging"
+      ],
+      "proof_bar": "Current code and tests plus Git failure evidence for durable claims.",
+      "compatibility_posture": "Preserve public behavior unless doctrine proves it invalid.",
+      "persistence_posture": "Conversational by default; persist only on request.",
+      "skill_portfolio_requested": "yes",
+      "enforcement_routing_requested": "yes",
+      "assumptions": [],
+      "deferred_questions": [],
+      "doctrine_allowed": "yes"
+    },
+    "gate": {
+      "doctrine_may_proceed": "yes"
+    }
+  }
+}

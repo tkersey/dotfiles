@@ -1,0 +1,44 @@
+grill_decision_packet:
+  goal: Produce current-state and gap-oriented correctness doctrine for the store lifecycle, including an atlas, knowledge routing, and skill candidates.
+  problem_layer: Repository-specific correctness and future-agent decision guidance.
+  target_user_or_maintainer:
+    - future maintainers
+    - coding agents
+  stakeholders_and_owners:
+    - store maintainers
+  scope:
+    included:
+      - store
+      - public API
+      - reader
+    excluded:
+      - release packaging
+  non_goals:
+    - redesign release packaging
+  locked_decisions:
+    - posture is mixed descriptive and gap analysis
+    - produce atlas, routing, root skill, and focused candidates
+  tradeoffs_accepted:
+    - deeper proof for durable laws over broad shallow coverage
+  primary_invariant: Only committed records are externally visible.
+  success_criteria:
+    - authorities, laws, failures, and proof surfaces are evidence-backed
+    - every durable finding has a knowledge destination
+  proof_bar: Current code and tests plus Git failure evidence for durable claims.
+  compatibility_posture: Preserve public behavior unless doctrine proves it invalid.
+  rollout_rollback_posture: Not applicable to read-only doctrine work.
+  support_and_maintenance_posture: Maintainers own doctrine refresh after material architecture changes.
+  researched_facts:
+    - store and release tooling are distinct subsystems
+  default_assumptions: []
+  open_questions: []
+  deferred_questions: []
+  immaterial_questions: []
+  lane_status:
+    problem_layer: answered
+    users_stakeholders_owners: answered
+    scope: answered
+    non_goals: answered
+    success_criteria: answered
+    verification_observability_acceptance: answered
+  plan_allowed: true

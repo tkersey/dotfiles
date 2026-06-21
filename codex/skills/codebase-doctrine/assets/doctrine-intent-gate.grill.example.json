@@ -1,0 +1,96 @@
+{
+  "doctrine_intent_gate": {
+    "gate_version": "DIG-v1",
+    "gate_id": "DIG-example-001",
+    "provisional_artifact_state": {
+      "repository_root": "/repo",
+      "repository_name": "example",
+      "branch": "main",
+      "head": "abc123",
+      "dirty_state": "clean",
+      "captured_at": "2026-06-21T00:00:00Z"
+    },
+    "repository_facts_researched": [
+      {
+        "fact_id": "FACT-MULTI",
+        "statement": "The repository has a store subsystem and unrelated release tooling.",
+        "evidence_ref": "build.zig:1",
+        "confidence": "high"
+      }
+    ],
+    "user_request": {
+      "original_ask": "Produce doctrine for this codebase.",
+      "explicit_target": "",
+      "explicit_consumers": [],
+      "explicit_products": [],
+      "explicit_posture": "",
+      "explicit_non_goals": [],
+      "explicit_proof_bar": ""
+    },
+    "working_defaults": [],
+    "material_user_judgment_gaps": [
+      {
+        "gap_id": "target_boundary",
+        "lane": "target_boundary",
+        "question": "Which boundary should the doctrine govern?",
+        "why_material": "The store and release tooling have different authorities, laws, and skill triggers.",
+        "discoverable_from_artifacts": "no",
+        "options": [
+          "store lifecycle",
+          "whole repository",
+          "release tooling only"
+        ]
+      },
+      {
+        "gap_id": "desired_products",
+        "lane": "desired_products",
+        "question": "Which doctrine products should be produced?",
+        "why_material": "Atlas-only and skill-portfolio work require different synthesis and validation.",
+        "discoverable_from_artifacts": "no",
+        "options": [
+          "atlas plus routing and skills",
+          "atlas plus routing",
+          "atlas only"
+        ]
+      }
+    ],
+    "grill_required": "yes",
+    "reason": "Two user-owned choices materially change the evidence scope and output.",
+    "grill_handoff": {
+      "handoff_version": "CDGH-v1",
+      "gate_id": "DIG-example-001",
+      "provisional_artifact_state": {
+        "repository_root": "/repo",
+        "head": "abc123"
+      },
+      "current_frame": "Clarify the doctrine boundary and desired products.",
+      "researched_facts": [
+        "Store and release tooling are distinct subsystems."
+      ],
+      "working_defaults": [],
+      "material_judgment_gaps": [
+        "target_boundary",
+        "desired_products"
+      ],
+      "allowed_question_lanes": [
+        "target_boundary",
+        "desired_products"
+      ],
+      "forbidden_questions": [
+        "discoverable repository facts",
+        "implementation design"
+      ],
+      "closure_projection": [
+        "target",
+        "desired_products",
+        "consumers",
+        "posture",
+        "proof_bar"
+      ]
+    },
+    "direct_intent_candidate": null,
+    "gate": {
+      "doctrine_may_proceed": "no"
+    }
+  }
+}

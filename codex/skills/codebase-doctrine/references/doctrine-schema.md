@@ -5,6 +5,27 @@ codebase_doctrine:
   doctrine_version: CBD-v1
   doctrine_id:
 
+  intent:
+    codebase_doctrine_intent:
+      intent_version: CDI-v1
+      intent_id:
+      source:
+      target:
+      consumers: []
+      posture:
+      desired_products: []
+      primary_invariant:
+      correctness_priorities: []
+      non_goals: []
+      proof_bar:
+      compatibility_posture:
+      persistence_posture:
+      skill_portfolio_requested:
+      enforcement_routing_requested:
+      assumptions: []
+      deferred_questions: []
+      doctrine_allowed:
+
   artifact_state:
   request:
 
@@ -36,6 +57,21 @@ codebase_doctrine:
   next_actions: []
 ```
 
+## Intent checks
+
+- CDI-v1 is valid and `doctrine_allowed` is yes.
+- Artifact state carries the same `intent_id`.
+- If source is `grill`, a grill packet digest is present.
+- Scope, consumers, posture, products, non-goals, and proof bar are explicit.
+- CBD output does not silently expand beyond included boundaries or products.
+
+Legacy CBD-v1 without intent may be inspected with a warning, but new doctrine generation should validate with:
+
+```bash
+python3 codex/skills/codebase-doctrine/tools/doctrine_gate.py \
+  --require-intent doctrine.yaml
+```
+
 ## Required relational checks
 
 - unique IDs;
@@ -56,6 +92,7 @@ codebase_doctrine:
 codebase_skill_handoff:
   handoff_version: CBSH-v1
   doctrine_id:
+  intent_id:
   artifact_state_id:
   candidate_id:
   proposed_name:

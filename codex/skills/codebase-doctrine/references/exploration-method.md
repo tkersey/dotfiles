@@ -1,5 +1,14 @@
 # Exploration Method
 
+## Intake reconnaissance
+
+Before doctrine questions, run a shallow fact-finding pass over guidance, manifests, build/test roots, major subsystems, architecture docs, and existing repository skills.
+
+Its purpose is to remove discoverable facts from the user-question queue. It is not yet doctrine evidence saturation.
+
+Only user-owned, route-changing judgments may be handed to `$grill-me`.
+
+
 ## Question ledger
 
 Every search answers a named question.

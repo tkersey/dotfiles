@@ -32,6 +32,8 @@ DESTINATIONS = {
 SATURATION = {"saturated", "targeted_search_required", "blocked"}
 YES = {"yes", True}
 NO = {"no", False}
+INTENT_POSTURES = {"descriptive", "prescriptive", "gap_analysis", "mixed"}
+INTENT_SOURCES = {"direct", "grill", "prior_doctrine"}
 
 
 def load(path: str) -> dict[str, Any]:
@@ -98,6 +100,85 @@ def list_refs(
             errors.append(f"{prefix}.{key}:unknown:{value}")
 
 
+
+def validate_intent(
+    value: Any,
+    artifact_state: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    required: bool,
+) -> bool:
+    if value is None:
+        if required:
+            errors.append("intent:missing")
+        else:
+            warnings.append("intent:missing-legacy")
+        return False
+    if not isinstance(value, dict):
+        errors.append("intent:must-be-object")
+        return False
+
+    body = value.get("codebase_doctrine_intent", value)
+    if not isinstance(body, dict):
+        errors.append("intent.codebase_doctrine_intent:must-be-object")
+        return False
+    if body.get("intent_version") != "CDI-v1":
+        errors.append("intent.intent_version:expected-CDI-v1")
+    intent_id = body.get("intent_id")
+    if not intent_id:
+        errors.append("intent.intent_id:missing")
+    elif artifact_state.get("intent_id") != intent_id:
+        errors.append("artifact_state.intent_id:mismatch")
+
+    source = body.get("source")
+    if not isinstance(source, dict):
+        errors.append("intent.source:must-be-object")
+        source = {}
+    if source.get("kind") not in INTENT_SOURCES:
+        errors.append("intent.source.kind:invalid")
+    if not source.get("intent_gate_id"):
+        errors.append("intent.source.intent_gate_id:missing")
+    if source.get("kind") == "grill" and not source.get("grill_packet_digest"):
+        errors.append("intent.source.grill_packet_digest:required")
+
+    target = body.get("target")
+    if not isinstance(target, dict):
+        errors.append("intent.target:must-be-object")
+        target = {}
+    for field in ("repository", "boundary_statement"):
+        if not target.get(field):
+            errors.append(f"intent.target.{field}:missing")
+    for field in ("included_subsystems", "excluded_subsystems", "cross_cutting_flows"):
+        if not isinstance(target.get(field), list):
+            errors.append(f"intent.target.{field}:must-be-list")
+
+    if not isinstance(body.get("consumers"), list) or not body.get("consumers"):
+        errors.append("intent.consumers:empty")
+    if body.get("posture") not in INTENT_POSTURES:
+        errors.append("intent.posture:invalid")
+    if not isinstance(body.get("desired_products"), list) or not body.get("desired_products"):
+        errors.append("intent.desired_products:empty")
+    for field in (
+        "primary_invariant",
+        "proof_bar",
+        "compatibility_posture",
+        "persistence_posture",
+    ):
+        if not body.get(field):
+            errors.append(f"intent.{field}:missing")
+    if not isinstance(body.get("correctness_priorities"), list) or not body.get("correctness_priorities"):
+        errors.append("intent.correctness_priorities:empty")
+    for field in ("non_goals", "assumptions", "deferred_questions"):
+        if not isinstance(body.get(field), list):
+            errors.append(f"intent.{field}:must-be-list")
+    for field in ("skill_portfolio_requested", "enforcement_routing_requested"):
+        if body.get(field) not in YES | NO:
+            errors.append(f"intent.{field}:expected-yes-or-no")
+    if body.get("doctrine_allowed") not in YES:
+        errors.append("intent.doctrine_allowed:not-yes")
+    return True
+
 def candidacy_passes(candidacy: dict[str, Any]) -> bool:
     positive = [
         "recurring_trigger",
@@ -119,6 +200,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("file")
     parser.add_argument("--require-saturated", action="store_true")
+    parser.add_argument("--require-intent", action="store_true")
     args = parser.parse_args()
 
     errors: list[str] = []
@@ -141,6 +223,14 @@ def main() -> int:
         artifact_state = {}
     if not artifact_state.get("artifact_state_id"):
         errors.append("artifact_state.artifact_state_id")
+
+    intent_present = validate_intent(
+        doctrine.get("intent"),
+        artifact_state,
+        errors,
+        warnings,
+        required=args.require_intent,
+    )
 
     for field in [
         "request",
@@ -321,6 +411,7 @@ def main() -> int:
                 "failure_families": len(family_ids),
                 "knowledge_routes": len(knowledge_ids),
                 "accepted_focused_skills": accepted_focused,
+                "intent_present": 1 if intent_present else 0,
             },
             "errors": errors,
             "warnings": warnings,

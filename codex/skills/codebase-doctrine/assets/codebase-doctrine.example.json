@@ -2,6 +2,60 @@
   "codebase_doctrine": {
     "doctrine_version": "CBD-v1",
     "doctrine_id": "CBD-example-001",
+    "intent": {
+      "codebase_doctrine_intent": {
+        "intent_version": "CDI-v1",
+        "intent_id": "CDI-example-001",
+        "source": {
+          "kind": "grill",
+          "intent_gate_id": "DIG-example-001",
+          "grill_packet_digest": "sha256:grill-example"
+        },
+        "target": {
+          "repository": "example",
+          "boundary_statement": "The durable record store and its publication/read lifecycle.",
+          "included_subsystems": [
+            "store",
+            "public API",
+            "reader"
+          ],
+          "excluded_subsystems": [
+            "release packaging"
+          ],
+          "cross_cutting_flows": [
+            "append -> commit -> publish -> read"
+          ]
+        },
+        "consumers": [
+          "future maintainers",
+          "coding agents"
+        ],
+        "posture": "mixed",
+        "desired_products": [
+          "correctness_atlas",
+          "knowledge_routing",
+          "repository_root_skill",
+          "focused_skill_candidates"
+        ],
+        "primary_invariant": "Only committed records are externally visible.",
+        "correctness_priorities": [
+          "publication authority",
+          "rollback atomicity",
+          "law-level proof"
+        ],
+        "non_goals": [
+          "redesign unrelated packaging"
+        ],
+        "proof_bar": "Current code and tests plus Git failure evidence for durable claims.",
+        "compatibility_posture": "Preserve public behavior unless doctrine proves it invalid.",
+        "persistence_posture": "Conversational by default; persist only on request.",
+        "skill_portfolio_requested": "yes",
+        "enforcement_routing_requested": "yes",
+        "assumptions": [],
+        "deferred_questions": [],
+        "doctrine_allowed": "yes"
+      }
+    },
     "artifact_state": {
       "artifact_state_id": "AS-example-001",
       "repository_root": "/repo",
@@ -10,7 +64,8 @@
       "head": "abc123",
       "dirty_state": "clean",
       "scope": "whole repository",
-      "captured_at": "2026-06-20T00:00:00Z"
+      "captured_at": "2026-06-20T00:00:00Z",
+      "intent_id": "CDI-example-001"
     },
     "request": {
       "mode": "doctrine",
