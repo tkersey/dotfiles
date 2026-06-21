@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Retrace"
+  short_description: "Replay and challenge historical session decisions"
+  default_prompt: "Use $retrace to freeze a historical decision with $seq, run bounded read-only ephemeral counterfactual forks through $cas, separate contemporaneous and hindsight evidence, and emit a cautious DRR-v1 reconstruction."

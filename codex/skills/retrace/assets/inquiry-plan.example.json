@@ -1,0 +1,55 @@
+{
+  "retrace_inquiry_plan": {
+    "plan_version": "RIP-v1",
+    "inquiry_id": "INQ-example-001",
+    "source_capsule": "DCP-example-001",
+    "objective": "Test why canonical-owner was selected and whether the route is stable.",
+    "lanes": [
+      {
+        "lane_id": "rationale-1",
+        "temporal_horizon": "post_decision_pre_outcome",
+        "inquiry_mode": "rationale",
+        "fork_count": 1,
+        "prompt_template": "rationale-witness-v1",
+        "evidence_allowed": [
+          "source-visible-context"
+        ],
+        "evidence_withheld": [],
+        "expected_receipt_fields": [
+          "selected_route",
+          "evidence_refs",
+          "assumptions"
+        ]
+      },
+      {
+        "lane_id": "replay-1",
+        "temporal_horizon": "pre_decision",
+        "inquiry_mode": "counterfactual",
+        "fork_count": 2,
+        "prompt_template": "counterfactual-v1",
+        "evidence_allowed": [
+          "source-visible-context"
+        ],
+        "evidence_withheld": [],
+        "expected_receipt_fields": [
+          "selected_route",
+          "alternatives",
+          "route_flip_conditions"
+        ]
+      }
+    ],
+    "model_policy": "current_recorded",
+    "workspace_policy": "transcript_only",
+    "permission_policy": {
+      "read_only": true,
+      "network": false
+    },
+    "budgets": {
+      "max_forks": 3,
+      "max_turns_per_fork": 1,
+      "max_total_tokens": 30000,
+      "timeout_ms": 600000
+    },
+    "cleanup": "delete_persisted_fallbacks"
+  }
+}

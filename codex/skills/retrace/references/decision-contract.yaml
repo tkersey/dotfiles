@@ -1,0 +1,131 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: retrace
+    kind: mixed
+    source_fingerprint: generated-with-retrace-v1
+  triggers:
+    - trigger_id: RETRACE-HISTORICAL-WHY
+      description: The user asks why a prior session made a consequential decision.
+      cue_literals:
+        - why did that session
+        - ask the old session
+        - fork the session
+        - replay the decision
+        - counterfactual decision
+      cue_regexes: []
+      exclusions:
+        - summarize the session only
+    - trigger_id: RETRACE-SKILL-EFFECT
+      description: The user asks whether a skill or instruction changed a historical route.
+      cue_literals:
+        - did the skill change the decision
+        - instruction effect
+        - skill ablation
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: RETRACE-RETROSPECTIVE
+      description: The user asks what should be learned from a decision after outcomes are known.
+      cue_literals:
+        - in hindsight
+        - what should we learn
+        - retrospective
+      cue_regexes: []
+      exclusions: []
+  routes:
+    - route_id: RETRACE-DETERMINISTIC
+      description: Use source trace evidence only.
+      aliases:
+        - audit
+        - no-fork
+      terminal: "yes"
+    - route_id: RETRACE-OUTCOME-BLIND
+      description: Run exact pre/post-decision outcome-blind forks.
+      aliases:
+        - explain
+        - replay
+        - challenge
+      terminal: "yes"
+    - route_id: RETRACE-HINDSIGHT
+      description: Run a clearly labeled outcome-aware retrospective.
+      aliases:
+        - retrospective
+      terminal: "yes"
+    - route_id: RETRACE-COMPARE
+      description: Run a bounded multi-lane experiment.
+      aliases:
+        - compare
+      terminal: "yes"
+    - route_id: RETRACE-BLOCKED
+      description: Stop because source, anchor, permissions, runtime, or workspace cannot be proven.
+      aliases:
+        - blocked
+      terminal: "yes"
+  clauses:
+    - clause_id: RETRACE-EPISTEMIC-001
+      trigger_refs:
+        - RETRACE-HISTORICAL-WHY
+        - RETRACE-SKILL-EFFECT
+        - RETRACE-RETROSPECTIVE
+      expected_routes:
+        - RETRACE-DETERMINISTIC
+        - RETRACE-OUTCOME-BLIND
+        - RETRACE-HINDSIGHT
+        - RETRACE-COMPARE
+        - RETRACE-BLOCKED
+      prohibited_routes: []
+      required_artifacts:
+        - DCP-v1
+        - explicit evidence classes
+        - limitations
+      success_signals:
+        - fork output never presented as hidden historical chain of thought
+        - historical and fork evidence remain separate
+      failure_signals:
+        - original model secretly thought
+        - fork consensus treated as historical fact
+      rationale: Session forks are new experiments, not access to private historical reasoning.
+    - clause_id: RETRACE-ANCHOR-001
+      trigger_refs:
+        - RETRACE-HISTORICAL-WHY
+        - RETRACE-SKILL-EFFECT
+      expected_routes:
+        - RETRACE-OUTCOME-BLIND
+        - RETRACE-COMPARE
+        - RETRACE-BLOCKED
+      prohibited_routes:
+        - RETRACE-HINDSIGHT
+      required_artifacts:
+        - exact pre-decision or post-decision/pre-outcome anchor
+        - fork lineage
+        - rollback/prefix receipt
+      success_signals:
+        - no later outcome visible to outcome-blind lane
+      failure_signals:
+        - full-history fork told to ignore later evidence
+      rationale: Outcome blindness must be structural, not prompt-only.
+    - clause_id: RETRACE-SAFETY-001
+      trigger_refs:
+        - RETRACE-HISTORICAL-WHY
+        - RETRACE-SKILL-EFFECT
+        - RETRACE-RETROSPECTIVE
+      expected_routes:
+        - RETRACE-DETERMINISTIC
+        - RETRACE-OUTCOME-BLIND
+        - RETRACE-HINDSIGHT
+        - RETRACE-COMPARE
+        - RETRACE-BLOCKED
+      prohibited_routes: []
+      required_artifacts:
+        - read-only permissions
+        - fork budget
+        - cleanup status
+      success_signals:
+        - ephemeral bounded forks
+      failure_signals:
+        - mutation approval
+        - uncontrolled fork proliferation
+      rationale: Historical inquiry must not create operational side effects.
+  instrumentation:
+    decision_receipt: optional
+    rationale: DCP/FIR/DRR artifacts already capture material decisions.
