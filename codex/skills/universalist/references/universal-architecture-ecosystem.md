@@ -11,6 +11,8 @@ free builders behind projections
 obstruction reports
 behavioral coalgebras
 effect signatures with handlers
+Freyd/premonoidal effect geometry
+operadic composition grammars
 explicit IRs
 law tests
 ```
@@ -43,6 +45,9 @@ The boundary artifact is valuable only if it changes code shape or tests.
 | Residual obligation | public constraint implies internal checks | obligation IR plus failing counterexample |
 | Behavioral coalgebra | ongoing behavior over time | state transition plus observation |
 | Algebraic effects | operations need multiple handlers | operation syntax plus handlers |
+| Freyd category | pure values coexist with ordered call-by-value effects | pure embedding + premonoidal sequencing + centrality law |
+| Colored operad | typed components assemble hierarchically | ports/colors + substitution grammar + semantic algebras |
+| PROP/properad | multiple-input/multiple-output network wiring | explicit network composition |
 | Yoneda | object by observations | `Observation` plus `runObservation` |
 | Coyoneda | payload plus deferred map | `Generated(payload,path)` plus `lowerGenerated` |
 | Defunctionalization | callbacks/functions to data | first-order IR plus `apply` |

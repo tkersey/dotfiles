@@ -169,6 +169,48 @@ Proof signals:
 - every operation has a handler case;
 - handler omits operation -> failing test or exhaustive-match failure.
 
+
+## Freyd effect boundary
+
+Use when pure transformations and ordered effectful computations share types, but the architecture must not grant interchange or parallelism without proof.
+
+Code shape:
+
+```text
+Pure C
+Effectful K
+embedPure J : C -> K
+sequence : K(A,B) × K(B,C) -> K(A,C)
+centrality / commutativity witnesses
+```
+
+Proof signals:
+
+- `J` preserves identity and composition;
+- pure operations commute with effect context;
+- reordered effectful operations agree observationally only when certified;
+- at least one noncommuting pair demonstrates why sequencing matters.
+
+## Operadic composition grammar
+
+Use when typed components have input/output ports, assemble hierarchically, and the wiring itself is domain syntax.
+
+Code shape:
+
+```text
+data Color / PortType
+data Operation(inputs, output)
+substitute : Operation × [Operation] -> Operation
+interpret : Operation -> SemanticComponent
+```
+
+Proof signals:
+
+- ports/colors type-check;
+- identity and substitution laws hold;
+- `interpret(substitute(...))` equals composition of interpreted components;
+- forbidden wiring and unjustified permutations are rejected.
+
 ## Explicit IR
 
 Use when callbacks, closures, handlers, continuations, predicates, or mappers cross an architecture boundary.

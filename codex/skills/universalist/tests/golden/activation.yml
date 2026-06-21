@@ -19,3 +19,9 @@ cases:
     should_spawn_subagents: false
     expected: ["one seam", "smallest honest construction"]
 
+  - prompt: "Our typed service components are wired through arbitrary call graphs; make the legal hierarchical assembly explicit."
+    should_use_skill: true
+    expected: ["Track D", "colored operad", "ports", "substitution law", "forbidden wiring"]
+  - prompt: "Pure planning code and effectful tool calls are mixed, and someone wants to parallelize them."
+    should_use_skill: true
+    expected: ["Freyd category", "premonoidal", "evaluation order", "central operations", "noncommuting witness"]

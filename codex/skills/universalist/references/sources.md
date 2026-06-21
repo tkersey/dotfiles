@@ -9,6 +9,10 @@ Stable references:
 - Reynolds, “Definitional Interpreters for Higher-Order Programming Languages”: origin context for defunctionalization.
 - Danvy and Nielsen, “Defunctionalization at Work”: higher-order to first-order transformation.
 - Spivak/Wisnesky functorial data migration work: schemas as categories and Sigma/Delta/Pi migration.
+- Power and Robinson, “Premonoidal Categories and Notions of Computation”: ordered effectful composition and central morphisms.
+- Power and Thielecke, “Closed Freyd- and kappa-categories”: Freyd-category semantics for call-by-value.
+- Spivak, “The Operad of Wiring Diagrams”: typed hierarchical system assembly.
+- Fong and Spivak, *Seven Sketches in Compositionality*: practical operadic and wiring-diagram composition.
 
 Mark every nontrivial claim as one of:
 

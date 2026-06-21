@@ -11,6 +11,8 @@ Focus on:
 - hidden operation/plan/policy/workflow syntax;
 - interpreters, compilers, handlers, renderers, and projections;
 - effect signatures and concrete handlers;
+- operadic architecture syntax versus semantic algebras;
+- pure/effectful call-by-value separation, Freyd embeddings, centrality, and order-sensitive observations;
 - state machines, coalgebras, protocols, traces, and interaction;
 - observation families and semantic equivalence;
 - soundness, adequacy/completeness, preservation, totality, and falsifiers;

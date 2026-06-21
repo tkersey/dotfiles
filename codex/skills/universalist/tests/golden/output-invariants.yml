@@ -11,3 +11,6 @@ invariants:
     when: "team mode"
     required: ["explicit request", "root synthesis", "one writer", "independent verifier"]
 
+  - name: composition_geometry_requires_law
+    when: "operad or Freyd category"
+    required: ["Composition geometry", "Semantic interpretation", "Law witness", "Falsifier"]

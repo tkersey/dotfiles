@@ -21,6 +21,8 @@ Mechanics include:
 ```text
 Kan extensions and lifts
 Freyd/AFT boundary diagnostics
+Freyd categories / premonoidal effect geometry
+Operads and typed composition grammars
 Yoneda/Coyoneda representation
 codensity and dense-dual presentations
 defunctionalization

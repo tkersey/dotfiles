@@ -1,6 +1,6 @@
 ---
 name: universalist
-description: "Use when software needs a structural or categorical architecture rather than ordinary feature work: impossible-state models, repeated boundary validation, opaque callbacks/effects, syntax mixed with execution, duplicated projections, public contracts shaping internals, certified context, exact abstractions, or a request to design or implement any computable system on an effective universal substrate. Choose one signal, one seam, and the smallest honest construction; require effective presentation, concrete primitives, interpreter, observations, laws, falsifier, and resource model. When the user explicitly requests team/subagent mode, orchestrate the bundled Universalist agents and synthesize an Effective Universal Architecture Certificate. Includes internal Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/sheafification mechanics."
+description: "Use when software needs a structural or categorical architecture rather than ordinary feature work: impossible-state models, repeated boundary validation, opaque callbacks/effects, typed component wiring, effect-ordering ambiguity, syntax mixed with execution, duplicated projections, public contracts shaping internals, certified context, exact abstractions, or a request to design or implement any computable system on an effective universal substrate. Choose one signal, one seam, and the smallest honest construction; require effective presentation, concrete primitives, interpreter, observations, laws, falsifier, and resource model. When the user explicitly requests team/subagent mode, orchestrate the bundled Universalist agents and synthesize an Effective Universal Architecture Certificate. Includes internal Kan/Yoneda/Coyoneda/Freyd-AFT/Freyd-category/operad/codensity/CQL/sheafification mechanics."
 ---
 
 # Universalist
@@ -13,7 +13,7 @@ This is now the single top-level skill for the Universal Architecture doctrine. 
 
 ## Doctrine index
 
-Universalist includes Track D, Track E, Track F, Track G, Track H, and Track I. It uses Universal architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, Syntax/Semantics Pivot, Easy-World Transfer, Category Pivot Certificate, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, Freyd/AFT, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
+Universalist includes Track D, Track E, Track F, Track G, Track H, and Track I. It uses Universal architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, Syntax/Semantics Pivot, Easy-World Transfer, Category Pivot Certificate, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, Freyd/AFT, Freyd categories, operads, composition geometry, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
 Do not force a hard problem to stay in the ordinary executable-program world when syntax, semantics, posets, relations, coalgebras, schemas, resources, or presheaves make the required operation explicit. For whole-system work, require an effective computational substrate, concrete primitive register, universal evaluator or equivalent, recursion/partiality, effect and state semantics, observations, resource model, and executable witnesses.
 
 The enriched slogan is:
@@ -358,6 +358,37 @@ Laws certify them: accepted syntax denotes valid semantics; required semantic di
 
 Use syntax when behavior needs inspection, replay, policy checks, serialization, diffing, total handling, simulation, provenance, or multiple interpreters. Use semantics when deciding what observations define correctness. Do not let agentic systems execute opaque intent; interpret certified syntax into observed semantics.
 
+## Composition Geometry Selector
+
+A universal artifact is not enough when the **geometry of composition** is itself the architectural decision. Before encoding a call graph, pipeline, service graph, effect runner, or subsystem assembly, select the weakest structure that makes legal composition explicit.
+
+Use this selector:
+
+| Composition pressure | Preferred structure | Architectural reading |
+| --- | --- | --- |
+| One transformation after another | Category | sequential typed composition |
+| Independent context or parallel composition with lawful interchange | Monoidal category | components compose side-by-side |
+| Pure values coexist with ordered call-by-value effects | Freyd / premonoidal category | pure transformations commute; effectful computations preserve sequencing |
+| Typed many-input, one-output hierarchical assembly | Colored operad | legal component wiring and substitution grammar |
+| Multiple inputs and outputs are fundamental | PROP or properad | network/process architecture without artificial product bundling |
+| Feedback, recursion, or cyclic signal flow is fundamental | Traced monoidal category, temporal wiring, or coalgebra | explicit feedback and ongoing behavior |
+| Inputs are consumable, affine, graded, permissioned, or costly | Linear / graded / resource-sensitive category | resource use and duplication are part of composition |
+
+Core distinction:
+
+```text
+Categories describe transformations.
+Operads describe legal hierarchical assembly.
+Freyd categories describe ordered effectful execution under call-by-value.
+Algebras/interpreters give these structures concrete semantics.
+```
+
+Use a **colored operad** when typed ports, hierarchical substitution, and several interpretations of the same wiring matter. Use a **nonsymmetric/planar operad** when order is semantic. Escalate to a PROP/properad for genuine multiple-output wiring, and to traced/coalgebraic structure for feedback.
+
+Use a **Freyd category** when values and computations share types, pure code should remain freely compositional, effects make evaluation order observable, and only certified-central operations may commute or parallelize. Distinguish this from **Freyd's adjoint functor theorem**: use `freyd-category` for effectful call-by-value mechanics and `freyd-aft` for free-builder existence diagnostics.
+
+Do not introduce these structures when ordinary composition is already exact, the grammar changes no code or tests, or a smaller sum/product/interface suffices.
+
 ## Do not trigger for
 
 - Routine feature work with no structural smell.
@@ -368,7 +399,7 @@ Use syntax when behavior needs inspection, replay, policy checks, serialization,
 
 ## Step -1 — World and Boundary Inventory
 
-Before choosing Track A/B/C/D/E/F/G/H for any non-trivial structural request, inventory the worlds and boundaries. This prevents fake category labels and keeps the response anchored in repo reality.
+Before choosing Track A/B/C/D/E/F/G/H/I for any non-trivial structural request, inventory the worlds and boundaries. This prevents fake category labels and keeps the response anchored in repo reality.
 
 A **world** is a structured domain where some objects, transformations, invariants, observations, primitives, and composition rules make sense.
 
@@ -420,6 +451,8 @@ Classify boundary maps before choosing canonical artifacts.
 | Serializer/codec | internal model -> wire/storage | adapter, projection law, round-trip/invariant preservation |
 | View/query | model -> read/report/client view | coherent observations, Yoneda observation vocabulary |
 | Handler | effect syntax -> runtime behavior | effect signature, handler laws, defunctionalized operations |
+| Pure/effect boundary | pure values enter ordered effectful call-by-value execution | Freyd/premonoidal category, centrality and order laws |
+| Component assembly | typed ports and hierarchical subsystem wiring | colored operad; PROP/properad for multiple outputs |
 | Observer | subject -> observation result | Yoneda vocabulary, law-test oracle |
 | Migration | old schema/world -> new schema/world | `Delta`, `Lan`/Sigma, `Ran`/Pi, provenance path |
 | Category pivot | hard operation in current world -> easier structured world | Syntax/Semantics Pivot, abstract domain, relation, coalgebra, schema, resource, presheaf |
@@ -457,6 +490,8 @@ Common drift signals:
 - control-flow drift: callbacks, closures, handlers, or continuations carry architecture semantics invisibly;
 - behavioral drift: protocols, state machines, or distributed traces are tested by snapshots but not boundary laws;
 - effect drift: operations are interpreted differently by test, production, audit, retry, or simulation handlers;
+- effect-order drift: computations are reordered, parallelized, duplicated, or discarded without a centrality/commutativity witness;
+- assembly drift: typed components are wired through arbitrary call graphs rather than an explicit hierarchical composition grammar;
 - context drift: raw retrieved chunks, stale memories, tool outputs, or summaries flow directly into a model/human/tool without schema, provenance, freshness, observables, or minimization;
 - category drift: a hard operation is being forced to remain in executable code when syntax, semantics, a poset, relation, coalgebra, schema, resource model, or presheaf would make the structure inspectable.
 
@@ -471,6 +506,8 @@ generation drift      -> Coyoneda-style generation path vocabulary
 control-flow drift    -> defunctionalized explicit IR
 behavioral drift      -> behavioral coalgebra / protocol observation law
 effect drift          -> effect signature + handler laws
+effect-order drift    -> Freyd/premonoidal effect geometry
+assembly drift        -> colored operad / PROP / properad
 context drift         -> task-indexed context instance + Context Certificate
 category drift        -> Category Pivot / Easy-World Transfer Certificate
 ```
@@ -488,6 +525,8 @@ Use these named law shapes when designing proof signals:
 | Serializer law | `decode(encode(internal))` preserves public invariants |
 | Migration law | `oldReport(old) == oldReport(restrict(migrate(old)))` |
 | Handler law | `run(handler(program))` satisfies operation observations |
+| Freyd effect-order law | pure embedding preserves identity/composition; reordering is allowed only with observational commutativity |
+| Operadic substitution law | `interpret(substitute(f,g1,...,gn)) == compose(interpret(f),interpret(g1),...,interpret(gn))` |
 | Coalgebra law | `observe(step(state,input))` satisfies protocol trace expectations |
 | Generation law | `lowerGenerated(payload,path) == directInterpret(path,payload)` |
 | Observation law | `runObservation(obs,repack(subject)) == runObservation(obs,subject)` |
@@ -552,6 +591,7 @@ Deliver:
 - boundary map, projection, embedding, interpreter, forgetful API, or observation map;
 - known side and unknown artifact;
 - canonical boundary artifact;
+- composition geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive;
 - presentation strategy: algebraic / codensity / mixed / primitive;
 - dense probe family and dual/observation bridge when applicable;
 - domain-specific theorem or assumption when reconstruction depends on it;
@@ -564,6 +604,8 @@ Use Track D for:
 - generated artifacts losing provenance;
 - public contract determining internal implementation obligations;
 - plugin, workflow, effect, rule-engine, or DSL boundaries;
+- typed component/service/dataflow wiring where legal hierarchical assembly should replace an accidental call graph;
+- effectful call-by-value boundaries where sequencing, centrality, or claimed parallelism must be explicit;
 - protocols, state machines, streams, actors, schedulers, or distributed processes whose behavior is best specified by observations over time;
 - effect or workflow operations that need test, production, audit, explanation, simulation, and retry handlers;
 - callback/closure/handler behavior that should become explicit IR;
@@ -585,10 +627,12 @@ Use this kernel for Track D decisions:
 8. **Obstruction reports** — a free/lifted implementation cannot exist because lost evidence, missing internal structure, or unbounded templates are named.
 9. **Behavioral coalgebras** — state/process behavior specified by transitions and observations over time.
 10. **Effect signatures and handlers** — operation syntax separated from runtime interpretation.
-11. **Explicit IR** — callbacks, handlers, continuations, predicates, mappers, and rules become data plus interpreter.
-12. **Exact context** — task-indexed context instances prepared before semantic consumption.
-13. **Context certificates** — schema, observables, provenance, freshness, missingness, contradiction, rendering, and falsifier for a context.
-14. **Law tests** — executable witnesses that the boundary artifact does what it claims.
+11. **Freyd effect geometry** — pure values and ordered effectful computations share types without granting unjustified interchange.
+12. **Operadic composition grammar** — typed ports and hierarchical substitution define which subsystems can be assembled.
+13. **Explicit IR** — callbacks, handlers, continuations, predicates, mappers, and rules become data plus interpreter.
+14. **Exact context** — task-indexed context instances prepared before semantic consumption.
+15. **Context certificates** — schema, observables, provenance, freshness, missingness, contradiction, rendering, and falsifier for a context.
+16. **Law tests** — executable witnesses that the boundary artifact does what it claims.
 
 ## Unknown-location artifact selector
 
@@ -604,6 +648,8 @@ Choose by where the unknown lives:
 | In structured syntax from generators | Free construction / initial algebra | interpreter agrees with old evaluator |
 | In ongoing behavior over time | Behavioral coalgebra | traces/unfolds satisfy observations |
 | In effectful operations with handlers | Effect signature / free effect syntax | test and production handlers agree on declared observations |
+| In pure/effectful call-by-value composition | Freyd / premonoidal effect boundary | pure embedding laws plus an order-sensitive counterexample |
+| In typed hierarchical component assembly | Colored operad / operadic wiring syntax | interpretation preserves substitution; illegal wiring rejected |
 | After a source-to-target boundary `K` | Transported semantics / Lan-style | identity or embedding path preserves behavior |
 | In coherent behavior under observations | Coherent observations / Ran/Yoneda-style | overlapping observations commute |
 | Behind a projection `P` | Lifted implementation / Kan-lift-style | `project(realize(case)) == required(case)` |
@@ -731,6 +777,42 @@ Do **not** teach Freyd’s theorem in full inside ordinary responses. Translate 
 > Does this observation boundary support a canonical implementation builder, or is it too lossy/ad hoc?
 
 
+## Freyd Category Diagnostic for Effectful Call-by-Value
+
+Use this mechanics only when the architectural pressure is pure/effectful composition, not free-builder existence.
+
+Model:
+
+```text
+C = pure values and pure transformations
+K = effectful computations with explicit sequencing
+J : C -> K = pure embedding, identity on shared objects/types
+```
+
+Require:
+
+- pure morphisms are central and may commute with surrounding effects;
+- effectful computations are not reordered unless an observational commutativity witness exists;
+- context/threading of values through computations is explicit;
+- claimed parallelism has an ordering, centrality, or commutation law;
+- higher-order effectful functions use a representable/closed or strong-monad-like presentation when needed.
+
+Certificate fields:
+
+```text
+pure world
+computation world
+pure embedding J
+central operations
+evaluation order
+context action
+noncommuting witness
+observational law
+```
+
+Do not confuse this with Freyd/AFT. The mechanics commands are intentionally separate: `freyd-aft` and `freyd-category`.
+
+
 ### Track G — Possibility Sheafification / inevitable architecture
 
 Use when the codebase already has an abstraction, but the abstraction appears semantically inexact: too broad, too narrow, redundant, inconsistent, misplaced, callback-shaped, stringly typed, optional-field-heavy, or arbitrary.
@@ -846,7 +928,7 @@ Deliver:
 4. **World/boundary architecture** — categories/worlds, objects, transformations, boundaries, embeddings, projections, interpreters, migrations, and ownership.
 5. **Syntax/semantics architecture** — editable syntax/IR, semantic domains, interpreters/handlers, observation functors, and adequacy/soundness laws.
 6. **Effects/state/interaction** — effect signatures, handlers, state transitions, coalgebras/protocols, concurrency, failure, and compensation.
-7. **Canonical construction map** — products, coproducts, refinements, free objects, Kan extensions/lifts, adjunctions, observations, quotients, sheafification, or obstruction reports.
+7. **Canonical construction map** — products, coproducts, refinements, free objects, Kan extensions/lifts, adjunctions, Freyd/premonoidal effect geometry, operads/PROPs/properads, observations, quotients, sheafification, or obstruction reports.
 8. **Presentation/effectivity plan** — finite/effective representation, compilation/lowering, algorithms, termination/partiality boundary, and domain-specific assumptions.
 9. **Resource model** — complexity, latency, memory, throughput, capability/security, persistence, deployment, and operational observability.
 10. **Effective Universal Architecture Certificate** — laws, falsifiers, obstruction ledger, primitive exceptions, and proof commands.
@@ -870,6 +952,8 @@ In explicit team mode, synthesize specialist packets before choosing the witness
 - For lift-shaped Track D work, make `P : B -> C` concrete before proposing implementation changes.
 - If proposing a free builder behind `P`, include a Freyd/AFT-style obstruction check: constraint structure, preservation, and bounded templates.
 - If proposing effects/handlers, include operation syntax, at least one handler, and a handler observation law.
+- If proposing Freyd/premonoidal structure, name pure and effectful worlds, the pure embedding, evaluation order, central operations, and one noncommuting witness.
+- If proposing an operad, name colors/ports, primitive operations, substitution rules, symmetry/order, semantic algebra, forbidden wiring, and the substitution law.
 - If proposing coalgebra/protocol structure, include transition, observation, trace law, and invalid-transition witness.
 
 ## Step 0 — Create or update `.universalist-plan.md`
@@ -889,6 +973,7 @@ Minimum fields:
 ## Canonical boundary artifact:
 ## Worlds / boundaries inventory:
 ## Boundary kind:
+## Composition geometry:
 ## Boundary law:
 ## Freyd/AFT boundary diagnostic:
 ## Composition Certificate:

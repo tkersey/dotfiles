@@ -27,3 +27,16 @@ Use when syntax should be separated from execution. Laws: interpreters agree on 
 ## Canonical boundary artifact
 
 Use when a boundary requires free syntax, coherent observations, transported semantics, lifted implementations, explicit IR, or residual obligations. Laws depend on the artifact: preservation, coherence, projection, lowering, or interpreter equivalence.
+
+
+## Freyd / premonoidal category
+
+Use when pure values and effectful computations share types but order is observable. Laws: pure embedding preserves identity/composition; central operations commute; effect reordering requires observational commutativity.
+
+## Colored operad
+
+Use when typed components assemble hierarchically and a composite remains a component. Laws: port typing, identity wiring, associative substitution, and semantic interpretation preserving substitution.
+
+## PROP / properad / traced structure
+
+Use when multiple outputs or feedback are fundamental rather than conveniently bundled. Laws: network composition/feedback preserves the chosen semantic observations and resource constraints.

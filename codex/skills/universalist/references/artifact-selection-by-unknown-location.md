@@ -12,6 +12,8 @@ Choose the artifact by asking where the unknown lives.
 | Syntax from generators | Free construction / initial algebra | AST/IR plus interpreters | interpreter agrees with old evaluator |
 | Ongoing behavior over time | Behavioral coalgebra | state transition + observation | traces satisfy observations |
 | Operations with many runtimes | Effect signature + handlers | operation IR + handlers | handlers agree on declared observations |
+| Pure values with order-sensitive effects | Freyd / premonoidal category | pure/effect boundary + centrality registry | pure embedding laws and noncommuting witness |
+| Typed hierarchical component assembly | Colored operad | colors/ports + operations + semantic algebras | interpretation preserves substitution |
 | Meaning after `K` | Transported semantics / Lan-style | transport path + interpreter | identity/embedding path preserves behavior |
 | Coherent old views | Ran/Yoneda-style observation | observation vocabulary + facade | overlapping observations commute |
 | Implementation behind `P` | Lifted implementation | realizer + projection | `project(realize(case)) == required(case)` |

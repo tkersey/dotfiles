@@ -10,6 +10,7 @@ Role: Prevent mathematically elegant architecture from becoming operationally im
 Focus on:
 - algorithmic complexity, memory, latency, throughput, contention, and network cost;
 - concurrency, ordering, atomicity, distribution, retries, compensation, and failure;
+- challenge unjustified symmetry, interchange, parallelism, feedback, duplication, discard, and resource reuse;
 - security, permissions, capability boundaries, and auditability;
 - persistence, schema evolution, deployment topology, observability, and rollback;
 - which categorical constructions are non-effective, too large, or expensive;

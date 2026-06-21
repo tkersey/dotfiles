@@ -13,6 +13,8 @@ cat <<'OUT'
 | Public policy implies internal checks | Residual obligations | Right-lift / weakest obligation | missing obligation fails projection |
 | Stateful behavior unfolds over time | Behavioral coalgebra | coalgebra / observation over traces | trace law and invalid transition rejection |
 | Operations need multiple handlers | Effect signature + handlers | algebraic effects / free operation syntax | handler observation parity |
+| Pure values coexist with order-sensitive effects | Freyd / premonoidal effect boundary | call-by-value effect geometry | pure embedding and noncommuting witness |
+| Typed components need legal hierarchical assembly | Colored operad / composition grammar | operadic substitution and semantic algebras | interpretation preserves substitution |
 | Generated payloads lose provenance | Generation path vocabulary | Coyoneda | lowering equals direct interpretation |
 | Query/projection sprawl | Observation vocabulary | Yoneda | representation change preserves observations |
 | Callbacks/closures cross boundaries | Explicit first-order IR | Defunctionalization | apply(encodedCase,x) == oldCallback(x) |

@@ -33,8 +33,36 @@ OUT
     ;;
   lifted-implementation|lift|kan-lift)
     echo "# Lifted implementation law test (${language})"; echo "project(realize(case)) == required(case)" ;;
-  free-builder|freyd)
-    echo "# Free builder law test (${language})"; echo "project(free(required(case))) satisfies required(case) or reports obstruction" ;;
+  free-builder|freyd-aft|aft)
+    echo "# Free builder / Freyd-AFT law test (${language})"; echo "project(free(required(case))) satisfies required(case) or reports obstruction" ;;
+  freyd-category|premonoidal|effect-order)
+    cat <<OUT
+# Freyd category effect-order law test (${language})
+
+- J(id) == id
+- J(g . f) == J(g) . J(f)
+- pure operations commute with surrounding effects
+- reorder(m,n) is accepted only if observe(m;n) == observe(n;m)
+
+Falsifier:
+- one pair of computations whose reversed order changes state, trace, result, or failure
+OUT
+    ;;
+  operad|operadic|wiring)
+    cat <<OUT
+# Operadic substitution law test (${language})
+
+interpret(substitute(f,g1,...,gn))
+  == compose(interpret(f), interpret(g1), ..., interpret(gn))
+
+Also test:
+- ports/colors type-check
+- forbidden wiring is rejected
+- order-sensitive operations are not permuted without proof
+OUT
+    ;;
+  freyd)
+    echo "ambiguous law-test kind: use freyd-aft or freyd-category" >&2; exit 2 ;;
   obstruction|obstruction-report)
     echo "# Obstruction report law test (${language})"; echo "required behavior fails for named evidence/template/constraint reason" ;;
   residual|obligation|rift)

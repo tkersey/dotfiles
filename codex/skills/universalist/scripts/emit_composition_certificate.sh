@@ -43,6 +43,28 @@ Target world:
 - why this artifact:
 - nearby alternative rejected:
 
+## Composition grammar
+
+- geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive
+- colors / port types:
+- primitive operations / components:
+- substitution / wiring rules:
+- symmetry / ordering / centrality:
+- multiple-output / feedback / resource requirements:
+- forbidden wiring / effect reorderings:
+- semantic algebras / interpretations:
+
+## Effect geometry
+
+- pure world/category:
+- effectful world/category:
+- pure embedding J:
+- central operations:
+- evaluation order:
+- context action / value threading:
+- certified commuting or parallel operations:
+- noncommuting witness:
+
 ## Primitive effects
 
 - allowed primitives:

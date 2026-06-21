@@ -38,6 +38,28 @@ Artifact:
 Why this artifact:
 Nearby alternative rejected:
 
+## Composition grammar
+
+Geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive
+Colors / port types:
+Primitive operations / components:
+Substitution / wiring rules:
+Symmetry / ordering / centrality:
+Multiple-output or feedback requirements:
+Forbidden wiring / effect reorderings:
+Semantic algebras / interpretations:
+
+## Effect geometry
+
+Pure world/category:
+Effectful world/category:
+Pure embedding `J`:
+Central operations:
+Evaluation order:
+Context action / value threading:
+Certified commuting or parallel operations:
+Noncommuting witness:
+
 ## Presentation
 
 Mode: algebraic / codensity / mixed / primitive

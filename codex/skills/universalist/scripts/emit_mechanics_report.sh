@@ -13,7 +13,10 @@ Available mechanics topics:
 - kan-extension
 - kan-lift
 - boundary-kind
-- freyd
+- freyd-aft
+- freyd-category
+- operad
+- composition-geometry
 - yoneda
 - defunctionalization
 - codensity-presentation
@@ -37,8 +40,18 @@ OUT
     ./scripts/emit_kan_stub.sh "$topic" "$language" ;;
   boundary-kind|boundary)
     ./scripts/emit_boundary_kind_map.sh "$language" ;;
-  freyd|aft|free-builder)
+  freyd-aft|aft|free-builder)
     ./scripts/emit_freyd_pass.sh boundary-diagnostic "$language" ;;
+  freyd-category|premonoidal|effect-order)
+    ./scripts/emit_freyd_category.sh effect-boundary "$language" ;;
+  operad|operads|operadic|component-wiring)
+    ./scripts/emit_operadic_architecture.sh component-wiring "$language" ;;
+  composition-geometry|geometry)
+    cat references/composition-geometry.md ;;
+  freyd)
+    echo "Ambiguous mechanics topic: freyd" >&2
+    echo "Use 'freyd-aft' for the adjoint-functor/free-builder diagnostic or 'freyd-category' for effectful call-by-value composition." >&2
+    exit 2 ;;
   yoneda|coyoneda|representation)
     ./scripts/emit_yoneda_pass.sh mixed "$language" ;;
   defunctionalization|defun)

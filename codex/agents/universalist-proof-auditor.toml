@@ -12,6 +12,8 @@ Check:
 - category-theoretic claims versus engineering analogy;
 - syntax/semantics soundness and adequacy;
 - effect/state/interaction totality;
+- operadic substitution and port-typing laws;
+- Freyd pure-embedding, centrality, evaluation-order, and observational-commutativity claims;
 - observation family and equivalence claims;
 - primitive completeness and hidden effects;
 - resource feasibility;

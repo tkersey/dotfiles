@@ -17,7 +17,7 @@ required=(
   references/universal-architecture-law-tests.md references/universal-composition-doctrine.md
   references/composition-certificates.md references/boundary-normal-form.md
   references/presentation-strategies.md references/dense-dual-presentation.md references/semantic-compression.md
-  references/exact-context-doctrine.md references/context-certificates.md references/context-normal-form.md references/semantic-consumption-boundaries.md references/verified-context-plane.md references/context-publication-boundaries.md references/cql-fit-assessment.md references/pushout-reconciliation.md references/context-provenance-manifest.md references/possibility-sheafification.md references/sheafification-certificates.md references/abstraction-normal-form.md references/abstraction-manipulator-playbook.md references/category-pivot.md references/syntax-semantics-pivot.md references/category-pivot-certificate.md references/syntax-semantics-certificate.md references/effective-universal-architecture-thesis.md references/effective-computational-substrate.md references/concrete-primitives.md references/effective-categorical-normal-form.md references/universal-software-synthesis-playbook.md references/workflow/subagent-orchestration.md references/workflow/team-routing.md references/workflow/subagent-packet-contract.md
+  references/exact-context-doctrine.md references/context-certificates.md references/context-normal-form.md references/semantic-consumption-boundaries.md references/verified-context-plane.md references/context-publication-boundaries.md references/cql-fit-assessment.md references/pushout-reconciliation.md references/context-provenance-manifest.md references/possibility-sheafification.md references/sheafification-certificates.md references/abstraction-normal-form.md references/abstraction-manipulator-playbook.md references/category-pivot.md references/syntax-semantics-pivot.md references/category-pivot-certificate.md references/syntax-semantics-certificate.md references/effective-universal-architecture-thesis.md references/effective-computational-substrate.md references/concrete-primitives.md references/effective-categorical-normal-form.md references/universal-software-synthesis-playbook.md references/composition-geometry.md references/workflow/subagent-orchestration.md references/workflow/team-routing.md references/workflow/subagent-packet-contract.md
   templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md
   templates/freyd-boundary-diagnostic.md templates/world-boundary-inventory.md templates/composition-certificate.md
   templates/boundary-normal-form-report.md templates/presentation-diagnostic.md templates/context-certificate.md templates/context-normal-form-report.md templates/verified-context-plane-report.md templates/cql-fit-assessment.md templates/context-provenance-manifest.md templates/sheafification-certificate.md templates/abstraction-normal-form-report.md templates/category-pivot-certificate.md templates/syntax-semantics-certificate.md templates/effective-universal-architecture-certificate.md templates/computational-substrate-certificate.md templates/universal-synthesis-packet.md
@@ -27,11 +27,11 @@ required=(
   scripts/emit_world_boundary_inventory.sh scripts/emit_boundary_law_catalogue.sh scripts/emit_composition_certificate.sh
   scripts/emit_boundary_normal_form_plan.sh scripts/emit_presentation_diagnostic.sh scripts/emit_context_certificate.sh
   scripts/emit_context_compiler_plan.sh scripts/emit_exact_context_prompt.sh scripts/emit_verified_context_plane.sh scripts/emit_cql_fit_assessment.sh scripts/emit_context_publication_boundary.sh scripts/emit_effective_universal_architecture.sh scripts/emit_substrate_certificate.sh scripts/emit_universalist_team_prompt.sh scripts/emit_possibility_sheafifier.sh scripts/emit_sheafification_certificate.sh scripts/emit_abstraction_normal_form_plan.sh scripts/emit_category_pivot.sh scripts/emit_syntax_semantics_certificate.sh
-  references/mechanics/README.md references/mechanics/foundations.md references/mechanics/kan-lifts.md references/mechanics/freyd-aft.md
+  references/mechanics/README.md references/mechanics/foundations.md references/mechanics/kan-lifts.md references/mechanics/freyd-aft.md references/mechanics/freyd-categories.md references/mechanics/operads.md
   references/mechanics/yoneda-coyoneda.md references/mechanics/codensity-presentations.md references/mechanics/defunctionalization.md
   references/mechanics/context-compilation.md references/mechanics/cql-context-management.md references/mechanics/possibility-sheafification-mechanics.md references/mechanics/category-pivot-mechanics.md references/mechanics/syntax-semantics-mechanics.md
-  templates/mechanics-report.md templates/mechanics/codensity-presentation-report.md templates/mechanics/context-compilation-report.md templates/mechanics/sheafification-kan-report.md templates/mechanics/category-pivot-report.md templates/mechanics/syntax-semantics-report.md
-  scripts/emit_mechanics_report.sh scripts/emit_kan_stub.sh scripts/emit_codensity_presentation.sh scripts/emit_context_compilation_report.sh
+  templates/mechanics-report.md templates/mechanics/freyd-category-report.md templates/mechanics/operadic-composition-report.md templates/mechanics/codensity-presentation-report.md templates/mechanics/context-compilation-report.md templates/mechanics/sheafification-kan-report.md templates/mechanics/category-pivot-report.md templates/mechanics/syntax-semantics-report.md
+  scripts/emit_mechanics_report.sh scripts/emit_kan_stub.sh scripts/emit_freyd_category.sh scripts/emit_operadic_architecture.sh scripts/emit_codensity_presentation.sh scripts/emit_context_compilation_report.sh
   scripts/emit_cql_context_report.sh scripts/emit_sheafification_kan.sh scripts/emit_abstraction_replacement_kan.sh
   tests/golden/activation.yml tests/golden/output-invariants.yml
 )
@@ -64,7 +64,7 @@ required = [
     'Allow arbitrary sources', 'Forbid uncertified semantic consumption', 'Verified Context Plane',
     'Operational stores own mutation', 'Verified context planes own semantic publication',
     'Possibility Sheafification', 'Track G', 'Sheafification Certificate',
-    'Abstraction Normal Form', 'Do not merely abstract. Sheafify possibility', 'internal mechanics layer', 'emit_mechanics_report.sh', 'Track H', 'Category Pivot', 'Syntax/Semantics', 'Easy-World Transfer', 'Easy worlds solve', 'Track I', 'Effective Universal Architecture Thesis', 'Substrate Reality Law', 'Effective Categorical Normal Form', 'Categorical Substrate Team Mode', 'Concrete Primitive Register'
+    'Abstraction Normal Form', 'Do not merely abstract. Sheafify possibility', 'internal mechanics layer', 'emit_mechanics_report.sh', 'Track H', 'Category Pivot', 'Syntax/Semantics', 'Easy-World Transfer', 'Easy worlds solve', 'Track I', 'Effective Universal Architecture Thesis', 'Substrate Reality Law', 'Effective Categorical Normal Form', 'Categorical Substrate Team Mode', 'Concrete Primitive Register', 'Composition Geometry Selector', 'Freyd Category Diagnostic', 'Colored operad', 'Operadic substitution law'
 ]
 for r in required:
     if r not in text:
@@ -73,7 +73,9 @@ print('metadata ok')
 PY
 ./scripts/emit_law_test_stub.sh coproduct typescript >/dev/null
 ./scripts/emit_law_test_stub.sh universal-architecture agnostic >/dev/null
-./scripts/emit_law_test_stub.sh freyd agnostic >/dev/null
+./scripts/emit_law_test_stub.sh freyd-aft agnostic >/dev/null
+./scripts/emit_law_test_stub.sh freyd-category agnostic >/dev/null
+./scripts/emit_law_test_stub.sh operad agnostic >/dev/null
 ./scripts/emit_law_test_stub.sh obstruction agnostic >/dev/null
 ./scripts/emit_law_test_stub.sh behavioral-coalgebra agnostic >/dev/null
 ./scripts/emit_law_test_stub.sh effect-handler agnostic >/dev/null
@@ -85,6 +87,8 @@ PY
 ./scripts/emit_canonical_artifact_plan.sh obstruction-report agnostic >/dev/null
 ./scripts/emit_canonical_artifact_plan.sh behavioral-coalgebra typescript >/dev/null
 ./scripts/emit_canonical_artifact_plan.sh effect-handler typescript >/dev/null
+./scripts/emit_canonical_artifact_plan.sh freyd-category typescript >/dev/null
+./scripts/emit_canonical_artifact_plan.sh operad typescript >/dev/null
 ./scripts/emit_canonical_artifact_plan.sh dense-probe agnostic >/dev/null
 ./scripts/emit_universal_architecture_prompt.sh >/dev/null
 ./scripts/emit_freyd_boundary_diagnostic.sh boundary-diagnostic agnostic >/dev/null
@@ -92,6 +96,8 @@ PY
 ./scripts/emit_freyd_boundary_diagnostic.sh no-exact-lift agnostic >/dev/null
 ./scripts/emit_world_boundary_inventory.sh architecture typescript >/dev/null
 ./scripts/emit_boundary_law_catalogue.sh projection >/dev/null
+./scripts/emit_boundary_law_catalogue.sh freyd-category >/dev/null
+./scripts/emit_boundary_law_catalogue.sh operad >/dev/null
 ./scripts/emit_composition_certificate.sh api-boundary typescript >/dev/null
 ./scripts/emit_boundary_normal_form_plan.sh >/dev/null
 ./scripts/emit_presentation_diagnostic.sh compare agnostic >/dev/null
@@ -109,11 +115,21 @@ PY
 ./scripts/emit_syntax_semantics_certificate.sh ToolOperation typescript >/dev/null
 ./scripts/emit_mechanics_report.sh index agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh kan-lift typescript >/dev/null
+./scripts/emit_mechanics_report.sh freyd-aft agnostic >/dev/null
+./scripts/emit_mechanics_report.sh freyd-category typescript >/dev/null
+./scripts/emit_mechanics_report.sh operad typescript >/dev/null
+./scripts/emit_mechanics_report.sh composition-geometry agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh codensity-presentation agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh cql-context agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh sheafification typescript >/dev/null
 ./scripts/emit_mechanics_report.sh category-pivot agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh syntax-semantics typescript >/dev/null
+./scripts/emit_freyd_category.sh effect-boundary typescript >/dev/null
+./scripts/emit_operadic_architecture.sh component-wiring typescript >/dev/null
+if ./scripts/emit_mechanics_report.sh freyd agnostic >/dev/null 2>&1; then
+  echo "bare freyd mechanics topic must be rejected as ambiguous" >&2
+  exit 1
+fi
 python3 scripts/emit_scaffold.py coproduct typescript >/dev/null
 python3 scripts/emit_boundary_adapter.py decoder typescript >/dev/null
 python3 scripts/emit_verification_plan.py coproduct >/dev/null

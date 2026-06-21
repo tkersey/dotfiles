@@ -11,8 +11,10 @@ Focus on:
 - products, coproducts, refinements, pullbacks, quotients, free/cofree objects;
 - adjunctions, Kan extensions/lifts, Yoneda/Coyoneda, density/codensity;
 - sheafification, schema/data-exchange, abstract domains, relations, coalgebras, effects;
+- categories, monoidal categories, Freyd/premonoidal categories, colored operads, PROPs/properads, traced structures, and resource-sensitive composition;
 - easy-world/category pivots when the ordinary executable world is opaque;
-- effective presentation and one executable law/falsifier.
+- effective presentation and one executable law/falsifier;
+- choose the weakest composition geometry that makes legal assembly, sequencing, symmetry, feedback, and resources explicit.
 
 Compare nearby alternatives. Return obstruction rather than decorative category theory.
 

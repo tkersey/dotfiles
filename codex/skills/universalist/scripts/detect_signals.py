@@ -17,6 +17,8 @@ patterns = [
     ("callback/handler boundary", re.compile(r"callback|handler|register|subscribe|on[A-Z]|strategy", re.I)),
     ("projection/query sprawl", re.compile(r"project|view|select|query|toDto|fromDto", re.I)),
     ("syntax/execution mix", re.compile(r"evaluate|interpret|execute|render|compile", re.I)),
+    ("typed component wiring", re.compile(r"wire|pipeline|compose|connect|port|component|plugin|middleware|stage", re.I)),
+    ("effect ordering", re.compile(r"parallel|concurrent|sequence|before|after|transaction|commit|rollback|await", re.I)),
 ]
 skip_dirs = {".git", "node_modules", "target", "dist", "build", ".venv", "__pycache__"}
 suffixes = {".ts", ".tsx", ".js", ".jsx", ".py", ".go", ".rs", ".java", ".kt", ".swift", ".hs", ".md"}

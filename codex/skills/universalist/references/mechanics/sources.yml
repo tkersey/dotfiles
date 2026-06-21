@@ -19,3 +19,20 @@ sources:
     title: "Defunctionalization at Work"
     kind: paper
     safe_for: ["defunctionalization"]
+
+  POWER-ROBINSON-PREMONOIDAL:
+    title: "Premonoidal Categories and Notions of Computation"
+    kind: paper
+    safe_for: ["premonoidal categories", "central morphisms", "effectful sequencing"]
+  POWER-THIELECKE-FREYD:
+    title: "Closed Freyd- and kappa-categories"
+    kind: paper
+    safe_for: ["Freyd categories", "call-by-value semantics", "relation to strong monads"]
+  SPIVAK-WIRING-OPERAD:
+    title: "The Operad of Wiring Diagrams"
+    kind: paper
+    safe_for: ["typed wiring diagrams", "operadic substitution", "hierarchical systems"]
+  FONG-SPIVAK-COMPOSITIONALITY:
+    title: "Seven Sketches in Compositionality"
+    kind: textbook
+    safe_for: ["operads", "wiring diagrams", "compositional systems"]

@@ -2,7 +2,7 @@
 
 Single drop-in Universal Architecture workflow for structural, universal-construction-driven software synthesis. This version folds the former `kan` skill into `universalist` as an internal mechanics layer, so `$universalist` is the only top-level skill needed for this doctrine.
 
-It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It adds Track D for universal architecture boundaries: free syntax, coherent observations, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, explicit IR, and law tests.
+It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It adds Track D for universal architecture boundaries: free syntax, coherent observations, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, Freyd/premonoidal effect boundaries, operadic component grammars, explicit IR, and law tests.
 
 ## Install
 
@@ -10,7 +10,7 @@ From your repo root:
 
 ```bash
 rm -rf codex/skills/universalist
-unzip universalist-effective-substrate-team-dropin-v13.zip -d .
+unzip universalist-composition-geometry-dropin-v14.zip -d .
 cd codex/skills/universalist
 chmod +x scripts/*.sh scripts/*.py
 ./scripts/check_universalist.sh
@@ -106,6 +106,31 @@ Useful commands:
 ./scripts/emit_syntax_semantics_certificate.sh ToolOperation typescript
 ```
 
+
+
+## Composition geometry: Freyd categories and operads
+
+Track D now selects not only a canonical artifact but the weakest honest **composition geometry**:
+
+```text
+category                sequential transformations
+monoidal category       independent/parallel context
+Freyd/premonoidal       pure values plus ordered call-by-value effects
+colored operad          typed many-input hierarchical assembly
+PROP/properad            genuine multiple-input/multiple-output wiring
+traced/coalgebraic       feedback and ongoing behavior
+resource-sensitive      consumable, graded, or permissioned resources
+```
+
+The former `freyd` mechanics name was ambiguous. Use:
+
+```bash
+./scripts/emit_mechanics_report.sh freyd-aft agnostic
+./scripts/emit_mechanics_report.sh freyd-category typescript
+./scripts/emit_mechanics_report.sh operad typescript
+```
+
+A bare `freyd` mechanics request now fails with a disambiguation message rather than silently selecting the wrong construction.
 
 ## Unified mechanics layer
 

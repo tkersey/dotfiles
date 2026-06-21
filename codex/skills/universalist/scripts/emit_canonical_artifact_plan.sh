@@ -85,7 +85,7 @@ Public behavior is known before internals.
 project(realize(case)) == required(case)
 OUT
     ;;
-  free-builder|free-builder-behind-projection|freyd)
+  free-builder|free-builder-behind-projection|freyd-aft|aft)
     cat <<OUT
 # Canonical artifact plan: free builder behind projection (${language})
 
@@ -192,6 +192,48 @@ Operations need multiple handlers: test, production, audit, explanation, simulat
 ## Proof signal
 test handler and production projection agree on declared observations
 every operation has a handler case
+OUT
+    ;;
+  freyd-category|premonoidal|effect-order)
+    cat <<OUT
+# Canonical artifact plan: Freyd effect boundary (${language})
+
+## Signal
+Pure values and effectful computations share types, but order/parallelism/centrality is implicit.
+
+## Artifact
+- Pure category C
+- Effectful premonoidal category K
+- pure embedding J : C -> K
+- central operation registry / proof surface
+
+## First seam
+- one pure transformation:
+- one order-sensitive effect pair:
+
+## Proof signal
+J preserves identity/composition; claimed reorderings agree observationally; noncommuting witness stays ordered.
+OUT
+    ;;
+  operad|operadic|component-wiring)
+    cat <<OUT
+# Canonical artifact plan: colored operad / composition grammar (${language})
+
+## Signal
+Typed components assemble hierarchically, but legal wiring is hidden in an accidental call graph.
+
+## Artifact
+- colors / port types
+- primitive operations
+- substitution rules
+- semantic algebras
+
+## First seam
+- one composite subsystem:
+- one forbidden wiring:
+
+## Proof signal
+interpret(substitute(f,g1,...,gn)) == compose(interpret(f),interpret(g1),...,interpret(gn))
 OUT
     ;;
   explicit-ir|defunctionalization|ir)
