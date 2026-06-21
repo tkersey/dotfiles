@@ -38,6 +38,8 @@ st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate imp
 
 `st intake apply` should parse and normalize it into durable `$st` graph state.
 
+Intake must target the canonical `.step/st-plan.jsonl`. If the canonical graph has legacy debt, the CLI should either repair/audit that graph or fail with diagnostics; it must not encourage agents to create alternate durable `.step/*-st-plan.jsonl` sidecars to route around the problem.
+
 ## Graph Debt Warnings
 
 `st prime --mode aperture` and `st compile aperture` should warn when a material-looking plan has no graph lineage.

@@ -87,6 +87,8 @@ st compile aperture --file .step/st-plan.jsonl --limit 7
 
 `st intake plan` is a deprecated alias for scaffold. A scaffold is not semantic compilation until the agent-authored intake passes `check` and `apply`.
 
+Intake always applies to the canonical `.step/st-plan.jsonl`. Do not create an alternate durable plan file such as `.step/*-st-plan.jsonl` to bypass existing canonical graph debt; repair the canonical graph with `st` commands or fail with the audit/intake diagnostics.
+
 ## Existing Healthy Graph
 
 For existing healthy graph work, start with:
@@ -100,6 +102,7 @@ Then mirror only the emitted `plan_sync.codex.plan` into `update_plan` or `plan_
 ## Projection Rules
 
 - Durable source: `.step/st-plan.jsonl`.
+- Do not create sidecar durable plan files to work around canonical graph debt.
 - Native plan tools are projection only.
 - Mutate durable state only through `st` commands.
 - Project only `plan_sync.codex.plan` or `plan_sync.opencode.todos`, never the full `plan_sync` object.
