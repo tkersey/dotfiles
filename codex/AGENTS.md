@@ -206,11 +206,12 @@ Admission thresholds:
 
 ### Python
 
-- Use `uv` for Python package/project operations unless the repo explicitly requires otherwise or the user asks.
-- Run scripts/tests/linters/CLIs through `uv run ...`.
-- For skill-only external dependencies, prefer `uvx TOOL` or `uv run --with PACKAGE COMMAND ...`.
-- Do not create/reuse `.venv*` for skill-only tooling.
-- Prefer `#!/usr/bin/env -S uv run python` for Python automation scripts.
+- Use `uv` for Python package/project operations. Do not use direct `python`, `pip`, `pipx`, `venv`, `virtualenv`, `poetry`, or `conda` unless the user explicitly asks or the repo requires it.
+- Run scripts, tests, linters, and CLIs through `uv run ...`.
+- For skill-only external dependencies, prefer `uvx <tool>` or `uv run --with <package> <command> ...` so dependencies remain ephemeral and non-project-scoped.
+- Do not create or reuse `.venv*` for skill-only tooling. Do not `uv pip install` external packages for skills unless the user explicitly requests a persistent dependency.
+- For projects that intentionally manage Python dependencies, keep `pyproject.toml`/`uv.lock` authoritative with `uv sync` or `uv lock` plus `uv sync`.
+- For Python automation scripts, prefer `#!/usr/bin/env -S uv run python`.
 
 ## Verification and final response
 
