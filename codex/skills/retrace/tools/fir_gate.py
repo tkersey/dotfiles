@@ -13,6 +13,7 @@ HORIZONS = {"pre_decision", "post_decision_pre_outcome", "outcome_aware"}
 OUTCOME_BLIND = {"pre_decision", "post_decision_pre_outcome"}
 TERMINAL = {"completed", "failed", "interrupted", "timeout", "budget_exhausted"}
 WORKSPACES = {"exact", "head_only", "transcript_only", "unavailable"}
+LINEAGE = {"thread_fork", "rollout_transcript"}
 
 
 def load(path: str) -> dict[str, Any]:
@@ -68,15 +69,34 @@ def main() -> int:
         errors.append("source.source_turn_digest")
 
     fork = obj(receipt, "fork", errors)
+    lineage_mode = (
+        receipt.get("lineage_mode")
+        or source.get("lineage_mode")
+        or fork.get("lineage_mode")
+    )
+    if lineage_mode not in LINEAGE:
+        errors.append("lineage_mode")
+
     if not fork.get("fork_thread_id"):
         errors.append("fork.fork_thread_id")
-    if (
-        source.get("source_thread_id")
-        and fork.get("fork_thread_id") == source.get("source_thread_id")
-    ):
-        errors.append("fork:must-differ-from-source")
-    if source.get("source_thread_id") and fork.get("forked_from_id") != source.get("source_thread_id"):
-        errors.append("fork.forked_from_id:mismatch")
+
+    if lineage_mode == "thread_fork":
+        if not source.get("source_thread_id"):
+            errors.append("thread_fork:source_thread_id")
+        if source.get("source_rollout_path") and not source.get("source_thread_id"):
+            warnings.append("thread_fork:rollout-only-source")
+        if source.get("source_thread_id") and fork.get("forked_from_id") != source.get("source_thread_id"):
+            errors.append("thread_fork:forked_from_id-mismatch")
+        if source.get("source_thread_id") == fork.get("fork_thread_id"):
+            errors.append("thread_fork:fork-must-differ-from-source")
+    elif lineage_mode == "rollout_transcript":
+        if not source.get("source_rollout_path"):
+            errors.append("rollout_transcript:source_rollout_path")
+        if source.get("source_thread_id"):
+            warnings.append("rollout_transcript:source-thread-id-present")
+        if fork.get("forked_from_id"):
+            warnings.append("rollout_transcript:forked_from_id-should-be-empty")
+
     for key in ("model", "model_provider", "codex_version"):
         if not fork.get(key):
             warnings.append(f"fork.{key}:missing")
@@ -115,6 +135,11 @@ def main() -> int:
         errors.append("workspace_reconstruction.network_allowed")
     if workspace.get("mode") == "transcript_only" and workspace.get("tools_allowed") is not False:
         errors.append("workspace_reconstruction:transcript-only-tools")
+    if lineage_mode == "rollout_transcript":
+        if workspace.get("mode") != "transcript_only":
+            errors.append("rollout_transcript:workspace-must-be-transcript-only")
+        if workspace.get("path"):
+            warnings.append("rollout_transcript:workspace-path-present")
     lst(workspace, "limitations", errors)
 
     inquiry = obj(receipt, "inquiry", errors)
@@ -160,15 +185,14 @@ def main() -> int:
         errors.append("lifecycle:persisted-fork-not-cleaned")
 
     gate = obj(receipt, "gate", errors)
-    required_gates = (
+    for key in (
         "lineage_valid",
         "anchor_valid",
         "permissions_valid",
         "hindsight_label_valid",
         "answer_complete",
         "receipt_valid",
-    )
-    for key in required_gates:
+    ):
         if gate.get(key) is not True:
             errors.append(f"gate.{key}")
 
@@ -176,6 +200,7 @@ def main() -> int:
         "fir_gate": {
             "verdict": "pass" if not errors else "fail",
             "receipt_id": receipt.get("receipt_id"),
+            "lineage_mode": lineage_mode,
             "horizon": horizon,
             "errors": errors,
             "warnings": warnings,

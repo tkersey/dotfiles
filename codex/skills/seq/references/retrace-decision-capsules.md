@@ -1,41 +1,33 @@
-# `$retrace` Decision Capsules
+# `$retrace` Source and Decision Capsules
 
-`$seq` owns the deterministic source packet for historical inquiry.
+`$seq` owns deterministic source selection.
 
-Preferred future command:
+For a workflow-specific replay:
+
+```text
+1. run the native workflow audit;
+2. select the exact included-session row;
+3. classify governance and closure provenance;
+4. produce SGG-v1;
+5. locate the visible route decision;
+6. produce DCP-v1.
+```
+
+Do not use aggregate counts or transcript similarity to select the source.
+
+When automatic decisions are absent:
 
 ```bash
+seq turns --session-id <id> --format table
+seq session-detail --session-id <id> --format markdown
 seq decision-capsule \
   --session-id <id> \
-  --decision-id <decision> \
+  --turn-index <n> \
   --anchor all \
+  --outcome-policy conservative \
   --format json
 ```
 
-Output:
+DCP must include source thread or rollout identity, turn digest, artifact reconstructability, and exact temporal anchors.
 
-```text
-decision_context_packet / DCP-v1
-```
-
-The capsule must include:
-
-- source session/thread/rollout identity;
-- artifact state;
-- visible decision episode;
-- explicit rationale and assumptions;
-- selected/rejected routes actually present;
-- skills/instructions/tools present;
-- total turn count and decision/outcome indexes;
-- exact turns-to-drop for pre-decision and post-decision/pre-outcome horizons;
-- contamination and limitations.
-
-`$seq` must not infer hidden rationale or alternatives.
-
-When exact anchoring is unavailable, report that fact rather than creating a prompt-only pseudo-replay.
-
-Implementation requirements are in:
-
-```text
-SEQ_DECISION_CAPSULE_CLI_SPEC.md
-```
+`$seq` does not ask a model to infer hidden rationale.

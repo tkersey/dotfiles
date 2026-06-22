@@ -9,6 +9,18 @@
       "explain",
       "replay"
     ],
+    "source_governance": {
+      "required": true,
+      "gate_id": "SGG-example-001",
+      "workflow": "team-patterns",
+      "verdict": "authoritative",
+      "replay_allowed": true,
+      "governing_evidence_refs": [
+        "E-GOV-1"
+      ],
+      "incidental_evidence_refs": [],
+      "limitations": []
+    },
     "historical_evidence": {
       "explicit_at_time": [
         "The producer owns the invariant."

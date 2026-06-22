@@ -1,14 +1,25 @@
 # Decision Reconstruction: DRR-v1
 
+DRR-v1 separates deterministic source evidence from replay evidence and hindsight.
+
 ```yaml
 decision_reconstruction_record:
   record_version: DRR-v1
   record_id:
   inquiry_id:
   source_capsule_id:
-
   question:
   modes: []
+
+  source_governance:
+    required:
+    gate_id:
+    workflow:
+    verdict:
+    replay_allowed:
+    governing_evidence_refs: []
+    incidental_evidence_refs: []
+    limitations: []
 
   historical_evidence:
     explicit_at_time: []
@@ -45,7 +56,7 @@ decision_reconstruction_record:
 
   hindsight:
     lessons: []
-    kept_separate: yes | no
+    kept_separate: yes
 
   contradictions: []
   adjudication:
@@ -55,12 +66,27 @@ decision_reconstruction_record:
   prohibited_claims: []
 ```
 
+## Source-governance effect
+
+```text
+authoritative
+  workflow-governed replay claims allowed
+
+declared_uncontrolled
+  replay may study why the controller/workflow was not operationally used
+
+incidental / ambiguous / absent
+  no valid replay population for workflow-effect claims
+```
+
+A classifier row is not itself authoritative. The SGG evidence and provenance decide.
+
 ## Route stability
 
 Stable:
 
 ```text
-all valid pre-decision replays select historical route
+all valid pre-decision replays select the historical route
 ```
 
 Mixed:
@@ -78,33 +104,31 @@ most valid pre-decision replays select another route
 Unavailable:
 
 ```text
-exact outcome-blind anchor unavailable
+no valid outcome-blind replay or source governance blocked replay
 ```
 
-Small samples must be reported.
+Always report sample size and lineage modes.
 
-## Skill effect
+## Skill/workflow effect
 
-A skill-effect claim is strongest when:
+Strongest:
 
 ```text
-source explicitly attributes route to skill
-and/or
-controlled instruction ablation changes route
+historical explicit attribution
++ authoritative governance
++ exact anchor
++ controlled instruction/evidence ablation
++ route change
 ```
 
-Fork self-report without ablation is weak.
+Weak:
+
+```text
+fork self-report
+consensus without ablation
+outcome association
+```
 
 ## Confidence
 
-Consider:
-
-- source explicitness;
-- anchor exactness;
-- workspace exactness;
-- model match;
-- fork agreement;
-- counterevidence;
-- framing diversity;
-- receipt validity;
-- sample size.
+Consider source explicitness, governance provenance, anchor exactness, lineage mode, workspace mode, model match, framing diversity, receipt validity, sample size, and counterevidence.

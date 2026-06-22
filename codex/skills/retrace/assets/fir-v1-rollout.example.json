@@ -1,19 +1,19 @@
 {
   "fork_inquiry_receipt": {
     "receipt_version": "FIR-v1",
-    "receipt_id": "FIR-example-001",
+    "receipt_id": "FIR-rollout-example-001",
     "inquiry_id": "INQ-example-001",
     "lane_id": "replay-1",
     "source": {
       "capsule_id": "DCP-example-001",
-      "source_thread_id": "thr_source",
-      "source_rollout_path": "/home/user/.codex/sessions/example.jsonl",
+      "source_thread_id": null,
+      "source_rollout_path": "/home/user/.codex/sessions/rollout-example.jsonl",
       "source_turn_digest": "sha256:turns",
       "source_artifact_reconstructability": "transcript_only"
     },
     "fork": {
-      "fork_thread_id": "thr_fork",
-      "forked_from_id": "thr_source",
+      "fork_thread_id": "thr_fresh_inquiry",
+      "forked_from_id": null,
       "anchor": {
         "temporal_horizon": "pre_decision",
         "turns_before": 8,
@@ -99,6 +99,6 @@
       "answer_complete": true,
       "receipt_valid": true
     },
-    "lineage_mode": "thread_fork"
+    "lineage_mode": "rollout_transcript"
   }
 }

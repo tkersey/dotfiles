@@ -43,6 +43,42 @@ def main() -> int:
     if not isinstance(record.get("modes"), list) or not record["modes"]:
         errors.append("modes")
 
+
+    source_governance = record.get("source_governance")
+    if source_governance is not None:
+        if not isinstance(source_governance, dict):
+            errors.append("source_governance")
+        else:
+            required = source_governance.get("required")
+            if required not in {True, False}:
+                errors.append("source_governance.required")
+            if required:
+                if not source_governance.get("gate_id"):
+                    errors.append("source_governance.gate_id")
+                if not source_governance.get("workflow"):
+                    errors.append("source_governance.workflow")
+                if source_governance.get("verdict") not in {
+                    "authoritative",
+                    "declared_uncontrolled",
+                    "incidental",
+                    "ambiguous",
+                    "absent",
+                }:
+                    errors.append("source_governance.verdict")
+                if source_governance.get("replay_allowed") not in {True, False}:
+                    errors.append("source_governance.replay_allowed")
+                for key in ("governing_evidence_refs", "incidental_evidence_refs", "limitations"):
+                    if not isinstance(source_governance.get(key), list):
+                        errors.append(f"source_governance.{key}")
+                if source_governance.get("verdict") in {"incidental", "ambiguous", "absent"}:
+                    if source_governance.get("replay_allowed") is not False:
+                        errors.append("source_governance:blocked-verdict-must-deny-replay")
+                    population_for_gate = record.get("fork_population")
+                    if isinstance(population_for_gate, dict) and population_for_gate.get("valid_receipts"):
+                        errors.append("source_governance:blocked-verdict-has-valid-receipts")
+    else:
+        warnings.append("source_governance:not-recorded")
+
     historical = record.get("historical_evidence")
     if not isinstance(historical, dict):
         errors.append("historical_evidence")

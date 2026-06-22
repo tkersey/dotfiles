@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "seq"
-  short_description: "Mine sessions, decisions, tools, and memory"
-  default_prompt: "Use $seq with the narrowest lifted command; prefer skill-decision-audit for skill influence, skill-evidence for presence, and generic query only when no specialized surface fits."
+  short_description: "Mine sessions, decisions, provenance, tools, and memory"
+  default_prompt: "Use $seq with the narrowest lifted command. Prove the installed capability surface, preserve denominators and evidence provenance, use included-session rows before session-level review-compiler claims, and never treat artifact/path mentions or generic closure prose as workflow governance."

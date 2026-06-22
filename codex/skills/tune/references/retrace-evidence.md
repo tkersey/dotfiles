@@ -1,13 +1,14 @@
 # Using `$retrace` Evidence in `$tune`
 
-A DRR-v1 may strengthen a skill diagnosis when the question is whether a skill changed a route.
+A DRR-v1 may strengthen a skill diagnosis only after source governance is classified.
 
-Preserve evidence classes:
+Preserve:
 
 ```text
+source-governance verdict
 historically explicit attribution
 trace-inferred alignment
-fork-consistent reconstruction
+valid replay receipts
 controlled instruction/evidence ablation
 outcome association
 self-report only
@@ -16,20 +17,24 @@ self-report only
 Strongest skill-effect evidence:
 
 ```text
-historical explicit attribution
-+ exact pre-decision context
-+ controlled instruction ablation
+authoritative source governance
++ historical explicit attribution
++ exact pre-decision anchor
++ controlled ablation
 + route change
 ```
 
 Weak evidence:
 
 ```text
-fork says the skill mattered
-all forks agree
+incidental workflow mention
+replay self-report
+fork consensus without ablation
 successful outcome followed
 ```
 
-`$tune` may use DRR-v1 to propose a bounded delta.
+`declared_uncontrolled` may justify a routing/adoption gap, but not a controller-compliance claim.
 
-DRR-v1 does not directly authorize edits; `$refine` still owns mutation.
+`incidental`, `ambiguous`, and `absent` governance states must not produce workflow-effect tuning conclusions.
+
+DRR-v1 informs a bounded proposal; `$refine` still owns mutation.

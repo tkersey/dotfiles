@@ -1,17 +1,57 @@
 # Fork Inquiry Receipt: FIR-v1
 
+A FIR is controller evidence, not merely a model answer.
+
+## Lineage modes
+
+### `thread_fork`
+
+```text
+stored source thread
+-> thread/fork
+-> thread/rollback
+-> retained-anchor verification
+```
+
+Requires source thread identity and matching `forked_from_id`.
+
+### `rollout_transcript`
+
+```text
+verified source rollout
+-> retained transcript prefix
+-> fresh thread/start
+-> bounded transcript-context turn/start
+```
+
+Requires:
+
+- source rollout path;
+- source and anchor digest verification;
+- `workspace_reconstruction.mode = transcript_only`;
+- no live historical workspace claim;
+- fresh inquiry thread identity.
+
+It is not a live fork of the source thread.
+
+## Required receipt shape
+
 ```yaml
 fork_inquiry_receipt:
   receipt_version: FIR-v1
   receipt_id:
   inquiry_id:
   lane_id:
+  lineage_mode:
+    thread_fork |
+    rollout_transcript
 
   source:
     capsule_id:
     source_thread_id:
     source_rollout_path:
     source_turn_digest:
+    source_artifact_reconstructability:
 
   fork:
     fork_thread_id:
@@ -26,14 +66,11 @@ fork_inquiry_receipt:
       exact:
     model:
     model_provider:
-    service_tier:
     codex_version:
     ephemeral:
     permissions:
     sandbox:
     approval_policy:
-    hooks:
-    multi_agent_mode:
 
   workspace_reconstruction:
     mode:
@@ -89,17 +126,14 @@ fork_inquiry_receipt:
 
 ## Validity
 
-`receipt_valid` requires:
+A valid FIR requires:
 
-- source/fork lineage;
-- exact or honestly unavailable anchor;
-- requested temporal horizon;
-- permission proof;
-- terminal turn result;
-- answer schema;
-- hindsight classification;
+- source and replay lineage;
+- exact outcome-blind anchor;
+- requested hindsight horizon;
+- read-only/no-network policy;
+- terminal turn;
+- structured answer;
 - cleanup state.
 
-## Failure
-
-A model answer is preserved as raw evidence when useful, but an invalid receipt cannot contribute to consensus/stability counts.
+Invalid receipts remain audit evidence but do not contribute to route distributions or consensus.

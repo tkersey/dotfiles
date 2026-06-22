@@ -1,37 +1,48 @@
 # `$retrace` Session Inquiry
 
-`$cas` owns controlled Codex app-server fork lifecycle for `$retrace`.
+`$cas` owns safe replay lifecycle for `$retrace`.
 
-Preferred future command:
+Current supported lineage modes:
+
+```text
+thread_fork
+  stored source thread -> thread/fork -> rollback -> anchor verification
+
+rollout_transcript
+  verified rollout + retained-anchor digest -> fresh thread -> bounded
+  transcript-context turn
+```
+
+Rollout-transcript replay requires:
+
+```text
+workspace_policy = transcript_only
+no current-checkout tools
+read-only
+network off
+approvals denied
+```
+
+It is not live historical workspace reconstruction.
+
+Preferred command:
 
 ```bash
 cas session_inquiry run \
   --capsule capsule.json \
-  --plan inquiry-plan.json \
+  --plan plan.json \
   --receipt-dir .retrace/<inquiry-id> \
   --json
 ```
 
-Required behavior:
+Before execution:
 
-```text
-thread/fork
-exact thread/rollback or equivalent prefix anchor
-read-only permission profile
-ephemeral by default
-network off by default
-one bounded inquiry turn
-wait/interrupt
-FIR-v1 receipt
-cleanup
+```bash
+cas --version
+cas capabilities --json
+cas session_inquiry preflight --json
 ```
 
-Do not let a fork access the current checkout when the capsule requests transcript-only or historical workspace reconstruction is incomplete.
+FIR-v1 must preserve `lineage_mode`, source identity, anchor digests, workspace mode, model/provider, policy proof, terminal state, and cleanup.
 
-Do not use `thread/shellCommand`; it is unsandboxed.
-
-Implementation requirements are in:
-
-```text
-CAS_SESSION_INQUIRY_CLI_SPEC.md
-```
+`$cas` does not select the historical source and does not decide what the replay means.

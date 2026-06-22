@@ -2,14 +2,18 @@ SKILL.md
 agents/openai.yaml
 assets/dcp-v1.example.json
 assets/drr-v1.example.json
+assets/fir-v1-rollout.example.json
 assets/fir-v1.example.json
 assets/inquiry-plan.example.json
+assets/source-governance-incidental.example.json
+assets/source-governance.example.json
 references/decision-capsule.md
 references/decision-contract.yaml
 references/epistemic-boundary.md
 references/fork-inquiry.md
 references/inquiry-lanes.md
 references/security-and-budget.md
+references/source-governance.md
 references/synthesis.md
 references/workspace-reconstruction.md
 tests/test_retrace_tools.py
@@ -18,5 +22,6 @@ tools/drr_gate.py
 tools/fir_gate.py
 tools/retrace_preflight.py
 tools/rip_gate.py
+tools/source_governance_gate.py
 MANIFEST.files
 MANIFEST.sha256

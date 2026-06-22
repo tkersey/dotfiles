@@ -1,74 +1,60 @@
-# Historical Workspace Reconstruction
+# Historical Workspace and Replay Lineage
 
-## Modes
+Workspace reconstruction and conversation lineage are separate.
+
+## Workspace modes
 
 ### exact
 
-```text
-historical HEAD
-+ exact dirty patch/untracked content
-+ required generated artifacts
-+ required dependency/fork state
-```
+Historical HEAD, dirty state, generated artifacts, and dependencies are verified.
 
 ### head_only
 
-Historical commit is exact; dirty/generated/dependency state is incomplete.
+Historical commit is known; dirty/generated/dependency state is incomplete.
 
 ### transcript_only
 
-No repository tools.
-
-The fork reasons only from inherited conversation and capsule evidence.
+No repository tools. The replay reasons only from the verified retained transcript and explicit capsule evidence.
 
 ### unavailable
 
-Historical source cannot be reconstructed safely.
+No safe historical environment is available.
 
-## Default
+## Lineage modes
 
-Prefer transcript-only for explanation and route replay unless code inspection is necessary.
+### thread_fork
 
-This avoids accidental contamination from today's checkout.
+May use exact, head-only, or transcript-only workspace according to DCP evidence.
 
-## Exact reconstruction
+### rollout_transcript
 
-Use a disposable checkout or linked worktree.
+Must use transcript-only workspace.
 
-Requirements:
+CAS verifies the rollout and retained-anchor digests, starts a fresh inquiry thread, and supplies bounded historical transcript context.
 
-- path outside active delivery worktree;
-- detached historical HEAD;
-- captured patch applied with fingerprint verification;
-- read-only fork permissions;
-- no commit/push;
-- cleanup receipt;
-- no secret copying;
-- generated/dependency uncertainty recorded.
+Do not describe rollout transcript lineage as a live historical thread fork.
 
 ## Current checkout prohibition
 
-Do not expose the current checkout when:
+Never expose today's checkout as historical context when HEAD, dirty state, generated artifacts, or dependencies differ.
 
-```text
-current HEAD differs
-dirty state differs
-generated artifacts differ
-dependencies/forks differ
-```
+## Exact reconstruction
 
-unless the lane is explicitly outcome/current-state-aware.
+Use a disposable checkout/worktree, read-only fork policy, exact patch verification, isolated caches, and cleanup receipts.
 
 ## Tool policy
 
-Read-only means:
+Transcript-only:
 
 ```text
-file reads/search
-git show/log/diff
-build/test only when sandbox and workspace policy permit and no mutation occurs
+no repository tools
+no network
 ```
 
-Build tools may write caches/artifacts.
+Exact/head-only:
 
-For strict inquiry, disable tools or use a disposable workspace with isolated caches.
+```text
+read/search/git-show tools only unless the explicit experiment requires safe proof
+```
+
+Build tools may mutate caches and generated output, so use disposable state or disable them.
