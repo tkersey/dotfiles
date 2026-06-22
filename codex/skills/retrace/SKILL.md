@@ -2,7 +2,7 @@
 name: retrace
 description: "Reconstruct and experimentally challenge decisions from prior Codex sessions. Use for `$retrace`, historical decision replay, counterfactual forks, alternative-route challenges, hindsight-separated retrospectives, workflow-governance audits, skill decision attribution, or 'why did that session choose this?'. `$seq` owns deterministic history and source-governance evidence; `$cas` owns safe thread/rollout replay and FIR lifecycle; `$retrace` owns bounded experiments and DRR synthesis. Never present fork output as the source model's hidden chain of thought."
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   activation_cost: high
   default_depth: standard
 ---
@@ -65,7 +65,7 @@ Owns:
 Artifacts:
 ```text
 source_governance_gate / SGG-v1
-decision_context_packet / DCP-v1
+decision_context_packet / DCP-v2
 ```
 ### `$cas`
 Owns:
@@ -234,7 +234,7 @@ seq decision-capsule \
   --format json
 ```
 Do not let replay models select the historical source episode.
-### 2. Validate DCP-v1
+### 2. Validate DCP-v2
 ```bash
 python3 codex/skills/retrace/tools/dcp_gate.py capsule.json
 ```

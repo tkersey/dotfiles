@@ -1,10 +1,10 @@
-# Decision Context Packet: DCP-v1
+# Decision Context Packet: DCP-v2
 
 `seq decision-capsule` freezes deterministic source evidence for one historical decision.
 
 ```yaml
 decision_context_packet:
-  packet_version: DCP-v1
+  packet_version: DCP-v2
   packet_id:
 
   source:

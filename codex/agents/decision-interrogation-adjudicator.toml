@@ -9,7 +9,7 @@ You are the read-only adjudicator for `$retrace`.
 
 Inputs:
 - optional SGG-v1 source-governance gate;
-- one DCP-v1 source capsule;
+- one DCP-v2 source capsule;
 - zero or more FIR-v1 receipts;
 - optional draft DRR-v1.
 

@@ -10,7 +10,7 @@ For a workflow-specific replay:
 3. classify governance and closure provenance;
 4. produce SGG-v1;
 5. locate the visible route decision;
-6. produce DCP-v1.
+6. produce DCP-v2.
 ```
 
 Do not use aggregate counts or transcript similarity to select the source.

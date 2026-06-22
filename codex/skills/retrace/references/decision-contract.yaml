@@ -111,7 +111,7 @@ skill_decision_contract:
         - RETRACE-BLOCKED
       prohibited_routes: []
       required_artifacts:
-        - DCP-v1
+        - DCP-v2
         - explicit evidence classes
         - limitations
       success_signals:

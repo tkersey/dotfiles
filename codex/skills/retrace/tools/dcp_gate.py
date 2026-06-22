@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate decision_context_packet / DCP-v1."""
+"""Validate decision_context_packet / DCP-v2."""
 
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ def main() -> int:
         print(json.dumps({"dcp_gate": {"verdict": "fail", "errors": [str(exc)]}}, indent=2))
         return 1
 
-    if packet.get("packet_version") != "DCP-v1":
+    if packet.get("packet_version") != "DCP-v2":
         errors.append("packet_version")
     if not packet.get("packet_id"):
         errors.append("packet_id")

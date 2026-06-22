@@ -2,7 +2,7 @@
 name: seq
 description: "Mine Codex session JSONL and memory artifacts with the Zig `seq` CLI. Use for explicit `$seq`, artifact/session/tool/memory/plan forensics, skill activation and outcome audits, decision provenance, `$tune` evidence, `$retrace` source capsules, review-compiler provenance, watched-session deltas, worker attribution, or reproducible historical reports. Prefer the narrowest lifted command and preserve denominators, provenance, contamination, and uncertainty."
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 # seq
 
@@ -262,7 +262,7 @@ aggregate audit
 -> included session row
 -> provenance classification
 -> SGG-v1
--> DCP-v1
+-> DCP-v2
 ```
 Do not select a replay source from aggregate counts or fallback transcript similarity.
 Allowed source-governance states:

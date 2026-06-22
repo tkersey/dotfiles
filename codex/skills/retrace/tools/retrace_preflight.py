@@ -90,8 +90,8 @@ def main() -> int:
     parser.add_argument("--seq", default="seq")
     parser.add_argument("--cas", default="cas")
     parser.add_argument("--codex", default="codex")
-    parser.add_argument("--minimum-seq", default="0.3.5")
-    parser.add_argument("--minimum-cas", default="0.2.40")
+    parser.add_argument("--minimum-seq", default="0.3.7")
+    parser.add_argument("--minimum-cas", default="0.2.44")
     args = parser.parse_args()
 
     seq_version_row = run(args.seq, ["--version"])

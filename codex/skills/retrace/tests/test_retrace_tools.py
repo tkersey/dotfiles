@@ -45,7 +45,7 @@ def main() -> int:
     fixtures = [
         ("source_governance_gate.py", "source-governance.example.json"),
         ("source_governance_gate.py", "source-governance-incidental.example.json"),
-        ("dcp_gate.py", "dcp-v1.example.json"),
+        ("dcp_gate.py", "dcp-v2.example.json"),
         ("rip_gate.py", "inquiry-plan.example.json"),
         ("fir_gate.py", "fir-v1.example.json"),
         ("fir_gate.py", "fir-v1-rollout.example.json"),
@@ -87,7 +87,7 @@ def main() -> int:
         assert result.returncode == 2
         assert "controller-governance-required" in result.stdout
 
-        bad_dcp = load("dcp-v1.example.json")
+        bad_dcp = load("dcp-v2.example.json")
         bad_dcp["decision_context_packet"]["anchors"]["pre_decision"][
             "drop_last_n_turns"
         ] = 1
