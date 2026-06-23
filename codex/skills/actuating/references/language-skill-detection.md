@@ -1,27 +1,21 @@
 # Language Skill Detection
 
-Activate language-specific skills when project surface, files, commands, or errors make them relevant.
+Activate language rails from files, toolchain, errors, and proof obligations.
 
 ## Zig
 
-Use `$zig` for:
-
-- `.zig`, `build.zig`, `build.zig.zon`
-- `zig build`, `zig test`, `zig fmt`, `zig ast-check`
-- comptime, allocator, FFI, packed/extern, pointer, safety, cache, or migration hazards
+Use `$zig` for `.zig`, `build.zig`, Zig commands, ownership, comptime, FFI/layout, parser/verifier, proof binding, atomicity, concurrency, performance, and cache/environment issues.
 
 ## Lean
 
-Use `$lean` for:
-
-- `.lean`, `lake`, mathlib, theorem/proof repair, termination, formalization
+Use `$lean` for `.lean`, `lake`, theorem/proof repair, termination, formalization, and mathlib work.
 
 ## Python
 
-Use repo Python tooling standards for:
+Use repository Python standards for `pyproject.toml`, `uv`, tests, typing, linting, packaging, and scripts.
 
-- `pyproject.toml`, `uv`, `pytest`, `ruff`, `mypy`, packaging, script/test work
+## Contract fingerprint
 
-## Other languages
+AFR records the language skill/version/fingerprint used for the slice.
 
-Use any visible repo skill that clearly owns the toolchain or proof lane. Language skills inform commands and hazards; `$actuating` still owns the end-to-end plan-to-PR lifecycle.
+Do not reread an unchanged language skill after every compaction.

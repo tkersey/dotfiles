@@ -1,33 +1,63 @@
 # Fixed-Point Execution Loop
 
-Use `$fixed-point-driver` for each non-trivial implementation aperture.
+## Ownership
 
-## Route shape
+`$actuating` selects the route.
+
+`$fixed-point-driver` realizes it.
 
 ```text
-ready $st task
-  -> fixed-point-driver frame
-  -> route selection
-  -> accretive implementation / validation-first / ablation / no-change / blocked
-  -> de novo review
-  -> one-change challenge
-  -> proof receipt
-  -> st complete or st blocked
+current GCR
+-> valid AFR
+-> ARH-v1
+-> implementation
+-> focused proof
+-> FPSR-v1
+-> st proof/complete
+-> new GCR
 ```
 
-## Required handoff context
+## Required handoff
 
-For each aperture, provide:
+```text
+run/slice/GCR/AFR IDs
+selected task IDs
+selected route
+canonical owner
+permitted scope
+forbidden actions
+surface budget
+counterexample class
+invariant
+proof obligations
+```
 
-- `$st` task id(s)
-- plan excerpt / acceptance criterion
-- permitted scope
-- forbidden actions
-- proof required
-- relevant files/tests
-- language/toolchain signals
-- known non-goals
+## Driver results
 
-## Stop conditions
+```text
+valid
+  route realized within boundary and focused proof passed
 
-Continue until all in-scope `$st` tasks are complete or explicitly blocked/deferred. Do not stop merely because one implementation pass is green.
+return_to_frontier
+  new observation, owner change, scope expansion, or route invalidation
+
+blocked
+  environment/dependency/authority prevents realization
+
+invalid
+  boundary/surface/proof contract violated
+```
+
+## No hidden route selection
+
+The driver must not:
+
+```text
+change owner
+merge classes
+introduce a new distinction
+expand file/symbol scope
+invent a fallback
+```
+
+It returns instead.

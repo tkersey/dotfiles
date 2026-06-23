@@ -1,26 +1,48 @@
 # Example Invocations
 
-## Ready by default
+## Standard plan-to-ready-PR
 
 ```text
-Use $actuating. Turn this plan into tasks, implement, validate, and open a PR.
+Use $actuating. Compile this plan into $st, implement it, validate it, and open a PR.
 ```
 
-If tasks complete and validation passes, `$actuating` passes:
-
-```yaml
-pr_mode: ready
-```
-
-## Explicit draft
+Expected:
 
 ```text
-Use $actuating and open a draft PR for early visibility once the first validated slice is done.
+material graph -> GCR -> AFR slices -> proof -> ready PR
 ```
 
-Then `$actuating` may pass:
+## Explicit early draft
+
+```text
+Use $actuating and open a draft after the first validated wave for early visibility.
+```
+
+Expected:
 
 ```yaml
 pr_mode: draft
 draft_allowed_reason: explicit-user
+```
+
+## Implementation only
+
+```text
+Use $actuating to implement and validate this plan, but do not publish a PR.
+```
+
+Stop before `$ship`.
+
+## Graph failure
+
+```text
+st compile aperture failed
+```
+
+Expected:
+
+```text
+graph-repair mode
+no delivery mutation
+no update_plan prose fallback
 ```

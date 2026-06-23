@@ -1,0 +1,118 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: fixed-point-driver
+    kind: implementation
+    source_fingerprint: fixed-point-driver-v6-realization-only
+  triggers:
+    - trigger_id: FPD-ARH
+      description: A valid ARH-v1 selects a bounded route for realization.
+      cue_literals:
+        - actuation_realization_handoff
+        - ARH-v1
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: FPD-KERNEL
+      description: A certified kernel/RC-v1 is ready for realization.
+      cue_literals:
+        - kernel_realization_handoff
+        - RC-v1
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: FPD-GENERAL
+      description: One bounded standalone task has an unambiguous owner and route.
+      cue_literals:
+        - fixed_point_frame
+        - FPF-v1
+      cue_regexes: []
+      exclusions:
+        - material route ambiguity
+        - behavioral quotient decision
+    - trigger_id: FPD-NEW-OBSERVATION
+      description: Realization discovers a class, owner, route, scope, or proof change.
+      cue_literals:
+        - new observation
+        - scope expansion
+        - owner changed
+      cue_regexes: []
+      exclusions: []
+  routes:
+    - route_id: FPD-REALIZE
+      description: Realize selected route within boundary.
+      aliases:
+        - valid
+      terminal: "yes"
+    - route_id: FPD-RETURN
+      description: Stop and return to frontier.
+      aliases:
+        - return_to_frontier
+      terminal: "yes"
+    - route_id: FPD-BLOCK
+      description: Stop on environment/dependency/authority blocker.
+      aliases:
+        - blocked
+      terminal: "yes"
+    - route_id: FPD-INVALID
+      description: Reject a boundary/budget/proof violation.
+      aliases:
+        - invalid
+      terminal: "yes"
+  clauses:
+    - clause_id: FPD-SELECTION-001
+      trigger_refs:
+        - FPD-ARH
+        - FPD-KERNEL
+        - FPD-GENERAL
+      expected_routes:
+        - FPD-REALIZE
+        - FPD-BLOCK
+        - FPD-INVALID
+      prohibited_routes:
+        - FPD-RETURN
+      required_artifacts:
+        - accepted route handoff or unambiguous FPF-v1
+        - owner/scope/budget/proof
+      success_signals:
+        - route realized without alteration
+      failure_signals:
+        - driver invents route or quotient
+      rationale: Selection authority remains upstream.
+    - clause_id: FPD-OBSERVATION-001
+      trigger_refs:
+        - FPD-NEW-OBSERVATION
+      expected_routes:
+        - FPD-RETURN
+        - FPD-BLOCK
+      prohibited_routes:
+        - FPD-REALIZE
+      required_artifacts:
+        - FPSR-v1 new_observations
+      success_signals:
+        - mutation stops immediately
+      failure_signals:
+        - adjacent patch added under stale route
+      rationale: A changed problem requires a new frontier decision.
+    - clause_id: FPD-BOUNDARY-001
+      trigger_refs:
+        - FPD-ARH
+        - FPD-KERNEL
+      expected_routes:
+        - FPD-REALIZE
+        - FPD-RETURN
+        - FPD-BLOCK
+        - FPD-INVALID
+      prohibited_routes: []
+      required_artifacts:
+        - FPSR-v1
+        - construct map
+        - surface accounting
+        - focused proof
+      success_signals:
+        - no orphan or budget violation
+      failure_signals:
+        - scope expansion
+        - orphan construct
+      rationale: Realization is contract-bounded and auditable.
+  instrumentation:
+    decision_receipt: optional
+    rationale: FPSR-v1 records the realization result; route selection belongs to AFR/SDR.

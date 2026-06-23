@@ -1,147 +1,306 @@
 ---
 name: fixed-point-driver
-description: "Realize one selected canonical normal form and prove it. Consume an accepted kernel and Reduction Certificate when present; implement only certified factors/operators, retire named surfaces, verify quotient/refinement conformance, audit recomposition, and return on any new observation or semantic distinction. Never invent a behavioral quotient during realization and never patch delivery directly."
+description: "Realize one bounded route and prove it. In `$actuating` mode require ARH-v1; in kernel mode consume kernel/RC-v1; in simple standalone mode permit one unambiguous owner/route frame without quotienting. Implement only the named scope/operators, enforce the surface budget, map constructs and proof to the invariant, and return when new evidence changes class, owner, route, or scope. Never invent a behavioral quotient, normal form, or delivery plan."
 metadata:
-  version: "5.0.0"
+  version: "6.0.0"
+  activation_cost: medium
+  default_depth: standard
 ---
 
 # Fixed-Point Driver
 
 ## Mission
 
-Reach:
+Reach one bounded realization:
 
 ```text
-one canonical owner
-no unresolved counterexample
-no shadow truth
-no unnecessary surface
-current proof
-proved recomposition
+selected route
+-> smallest sufficient owned change
+-> focused proof
+-> no orphan construct
+-> no new observation
 ```
 
-This skill realizes a selected normal form. It does not independently decide which behavioral distinctions are disposable.
+The driver is a realization authority.
 
-## General mode
+It is not a route-selection authority.
 
-For a normal fixed-point task without a kernel handoff:
+## Modes
 
-- identify the contract and canonical owner;
-- use the smallest owned implementation;
-- surface any reduction opportunity as a candidate;
-- do not quotient behavior without an accepted observation model;
-- close only when another full current-state pass yields no new material work.
+### Actuating mode
 
-## Reduction-certificate mode
+When called by `$actuating`, require:
 
-Activate when the handoff contains:
+```text
+actuation_realization_handoff / ARH-v1
+```
+
+No ARH means:
+
+```text
+result = blocked
+reason = selected_route_missing
+```
+
+### Kernel / RC-v1 mode
+
+Consume `kernel_realization_handoff` and the accepted reduction certificate.
+
+### Simple standalone mode
+
+For one bounded task outside `$actuating`, the root/driver may form:
 
 ```yaml
-kernel_realization_handoff:
-  campaign_id:
-  campaign_base_sha:
-  accepted_kernel_ref:
-  reduction_certificate_ref:
-  selected_design:
-  permitted_owners:
-  surfaces_to_retire:
-  retained_factor_map:
-  quotient_relation_ref:
-  preservation_relation:
-  recomposition_rule:
-  hard_surface_ceiling:
-  proof_laws:
-  worktree:
+fixed_point_frame:
+  frame_version: FPF-v1
+  goal:
+  canonical_owner:
+  selected_route:
+  permitted_scope: []
+  forbidden_actions: []
+  non_goals: []
+  surface_budget:
+  proof_obligations: []
 ```
 
-Rules:
+This mode is allowed only when:
 
-- Work only in the named realization worktree and permitted owners.
-- Start from the campaign base.
-- Implement the accepted kernel and RC-v1, not raw review findings.
-- Add no behavioral distinction absent from the kernel.
-- Apply only certified operators: factor, quotient, ablate, normalize.
-- Retire superseded surfaces named by the certificate.
-- Map every surviving construct to a retained factor/kernel element.
-- Map every proof to a kernel law or preservation obligation.
-- Do not overclaim `isomorphic`; respect the certificate’s preservation relation.
-- Run recomposition audit before reporting valid.
-- Stop on a new observation, failed congruence, lost obligation, or required scope expansion.
-- Do not incrementally patch after a kernel change.
-- Do not edit, commit, or push delivery outside the named realization surface.
+```text
+one canonical owner is evident
+no behavioral quotient is proposed
+no competing material route remains
+no delivery workflow is being bypassed
+```
+
+When owner/route/distinctions are materially ambiguous:
+
+```text
+result = blocked
+reason = selection_required
+```
+
+See [general-frame.md](references/general-frame.md).
+
+## ARH-v1 contract
+
+Required:
+
+```yaml
+actuation_realization_handoff:
+  handoff_version: ARH-v1
+  run_id:
+  slice_id:
+  gcr_id:
+  afr_id:
+  st_task_ids: []
+  artifact_state:
+  selected_route:
+  canonical_owner:
+  permitted_scope: []
+  forbidden_actions: []
+  non_goals: []
+  surface_budget:
+  counterexample_class:
+  invariant:
+  proof_obligations: []
+  proof_dag_ref:
+```
+
+Validate:
+
+```bash
+python3 codex/skills/fixed-point-driver/tools/arh_gate.py <handoff.json>
+```
+
+## Allowed realization routes
+
+```text
+reuse_existing_owner
+delete_or_collapse
+canonicalize
+representation_change
+bounded_new_surface
+```
+
+`no_change`, `validate_only`, and `blocked` do not authorize implementation.
 
 ## Realization procedure
 
-1. Validate artifact state, campaign base, kernel ref, and RC-v1.
-2. Confirm every selected operator has a proof path.
-3. Implement one certified seam at a time.
-4. Track:
-   - factors realized;
-   - quotient classes realized;
-   - surfaces retired;
-   - canonical owners;
-   - semantic-surface delta.
-5. Run kernel conformance and preservation checks.
-6. Run `recomposition_auditor` or root-equivalent audit.
-7. If a new observation appears, return to kernel review.
-8. Report the current patch/result; do not self-authorize delivery commit/push.
+1. Verify artifact state, GCR/AFR IDs, selected task IDs, route, owner, permitted scope, surface budget, and proof obligations.
+2. Inspect only enough current code to realize the route.
+3. Use `$accretive-implementer` for narrow owned writing when useful.
+4. Apply one coherent change inside the boundary.
+5. Track every added/retired construct against the route/invariant.
+6. Run focused proof named by the handoff.
+7. Produce FPSR-v1.
+8. Stop.
 
-## Output
+## Surface budget
 
-```yaml
-kernel_realization_result:
-  campaign_id:
-  design_id:
-  artifact_state_id:
-  realization_patch_ref:
-  reduction_certificate_ref:
-  kernel_conformance:
-  quotient_conformance:
-  refinement_conformance:
-  preservation_relation:
-  code_construct_map:
-  factor_realization_map:
-  surfaces_retired:
-  retained_obligations_covered:
-  removed_obligations_discharged:
-  semantic_surface:
-  proof_law_map:
-  recomposition_audit_ref:
-  normal_form_reached:
-  new_observations: []
-  result:
-    valid |
-    invalid |
-    return_to_kernel |
-    blocked
-```
-
-## Gate
-
-`valid` requires:
+Count at least:
 
 ```text
-current artifact state
-kernel conformance
-quotient congruence
-certificate-conformant ablation
-preservation relation proved
-every live obligation covered
-every removed factor discharged
-recomposition passed
-no orphan surface
+helpers
+branches
+fields
+public symbols
+fallback paths
+test families
+surfaces retired
+```
+
+Every construct must map to:
+
+```text
+selected counterexample class
+governing invariant
+accepted route
+proof obligation
+```
+
+An unmapped construct is an orphan.
+
+## New observation rule
+
+A new observation includes:
+
+```text
+counterexample not covered by selected class
+different canonical owner
+required file/symbol outside permitted scope
+new behavioral distinction
+route no longer sufficient
+proof obligation changed
+surface budget insufficient
+```
+
+On any new observation:
+
+```text
+stop writing
+preserve current patch/result
+return_to_frontier
+```
+
+Do not patch the new observation incrementally.
+
+## Proof
+
+The driver runs focused proof only unless the handoff explicitly names an affected aggregate proof.
+
+It does not own final full-repository closure or shipping.
+
+Proof must bind:
+
+```text
+command
+artifact fingerprint
+toolchain/target/options when relevant
+result
+evidence ref
+invalidators
+```
+
+## FPSR-v1
+
+```yaml
+fixed_point_slice_result:
+  result_version: FPSR-v1
+  run_id:
+  slice_id:
+  gcr_id:
+  afr_id:
+  artifact_state_before:
+  artifact_state_after:
+  selected_route:
+  canonical_owner:
+  permitted_scope: []
+  files_changed: []
+  construct_map:
+    - construct:
+      kind:
+      class_id:
+      invariant:
+      route:
+      proof_ids: []
+  surfaces:
+    helpers_added:
+    branches_added:
+    fields_added:
+    public_symbols_added:
+    fallback_paths_added:
+    test_families_added:
+    surfaces_retired: []
+  proof:
+    obligations: []
+    commands: []
+    evidence_refs: []
+    status:
+  orphan_constructs: []
+  scope_violations: []
+  budget_violations: []
+  new_observations: []
+  patch_ref:
+  result:
+    valid |
+    return_to_frontier |
+    blocked |
+    invalid
+  reason:
+```
+
+Validate:
+
+```bash
+python3 codex/skills/fixed-point-driver/tools/fpsr_gate.py <result.json>
+```
+
+## Certified kernel realization
+
+When handed a certified kernel:
+
+- work only in the named realization worktree and permitted owners;
+- implement the accepted kernel and RC-v1;
+- apply only certified factor/quotient/ablation/normalization operators;
+- retire named superseded surfaces;
+- prove the stated preservation relation;
+- run recomposition audit;
+- return on any new observation or failed congruence;
+- never mutate delivery outside the named realization surface.
+
+See [reduction-certificate.md](references/reduction-certificate.md).
+
+## Handoff to root
+
+`valid` means:
+
+```text
+selected route realized
+scope and budget respected
+focused proof passed
+no orphan construct
 no new observation
+```
+
+Root then records proof in `$st`, completes eligible tasks, and recompiles the GCR.
+
+The driver does not:
+
+```text
+complete durable tasks
+publish update_plan
+commit/push
+ship
+land
 ```
 
 ## Hard rules
 
-- Never invent a quotient during realization.
-- Never use implementation convenience as evidence that distinctions are equivalent.
-- Never delete a factor missing obligation discharge.
-- Never claim isomorphism for a refinement-only contraction.
-- Never report normal form without recomposition.
-- Never continue after a new observation changes the kernel.
-
-## Resources
-
-- [reduction-certificate.md](references/reduction-certificate.md)
+- Never select or invent the route.
+- Never change the canonical owner.
+- Never expand permitted scope.
+- Never add a distinction absent from the handoff.
+- Never exceed the surface budget.
+- Never continue after a new observation.
+- Never use implementation convenience as equivalence evidence.
+- Never self-authorize delivery or closure.

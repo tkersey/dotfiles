@@ -1,0 +1,65 @@
+{
+  "actuation_state": {
+    "run_version": "ASR-v2",
+    "run_id": "ACT-example-001",
+    "plan_source": "docs/example-plan.md",
+    "objective": "Implement and ship example plan.",
+    "repository": "/repo",
+    "artifact_state": {
+      "branch": "feature/example",
+      "base": "base-sha",
+      "head": "head-sha",
+      "dirty_fingerprint": "sha256:clean"
+    },
+    "control": {
+      "plan_ref": ".step/st-plan.jsonl",
+      "gcr_id": "GCR-example-final",
+      "gcr_current": true,
+      "execution_allowed": true,
+      "blocking_debt": [],
+      "projection_valid": true,
+      "selected_task_ids": []
+    },
+    "graph_state": {
+      "total": 1,
+      "complete": 1,
+      "blocked": 0,
+      "deferred": 0,
+      "open": 0
+    },
+    "frontiers": {
+      "afr_refs": [
+        ".step/actuation/ACT-example-001/slice-001.afr.json"
+      ],
+      "terminal": 1,
+      "return_to_frontier": 0,
+      "blocked": 0,
+      "open": 0
+    },
+    "proof": {
+      "focused": "pass",
+      "wave": "pass",
+      "closure": "pass",
+      "closure_artifact_fingerprint": "sha256:clean",
+      "stale_receipts": []
+    },
+    "surface": {
+      "helpers_added": 0,
+      "branches_added": 1,
+      "fields_added": 0,
+      "public_symbols_added": 0,
+      "fallback_paths_added": 0,
+      "test_families_added": 0,
+      "surfaces_retired": []
+    },
+    "ship": {
+      "ship_allowed": true,
+      "pr_mode": "ready",
+      "pr_mode_reason": "Graph and frontier complete; full proof current.",
+      "draft_allowed_reason": "none",
+      "pr_url": null,
+      "blocker": null
+    },
+    "residual_risk": []
+  }
+}

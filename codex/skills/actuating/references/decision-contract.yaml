@@ -1,0 +1,204 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: actuating
+    kind: workflow
+    source_fingerprint: actuating-v2-frontier-control
+  triggers:
+    - trigger_id: ACT-MATERIAL-PLAN
+      description: A material plan/spec/proposal is to be implemented and validated.
+      cue_literals:
+        - $actuating
+        - plan to PR
+        - implement this plan
+        - turn this plan into tasks
+      cue_regexes: []
+      exclusions:
+        - one-shot bounded fix
+        - review-only current branch
+        - merge-only request
+    - trigger_id: ACT-GRAPH-FAILURE
+      description: Material graph compilation/currentness/debt gate fails.
+      cue_literals:
+        - st compile aperture failed
+        - GCR stale
+        - execution_allowed no
+        - blocking graph debt
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: ACT-FRONTIER
+      description: A current GCR aperture needs a domain route and proof slice.
+      cue_literals:
+        - selected aperture
+        - counterexample class
+        - route selection
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: ACT-SHIP
+      description: Graph and frontier are terminal and current-head proof is complete.
+      cue_literals:
+        - ship
+        - open a PR
+        - PR mode
+      cue_regexes: []
+      exclusions:
+        - merge
+        - land
+  routes:
+    - route_id: ACT-ROUTE-GRAPH-COMPILE
+      description: Compile/repair the canonical material graph and obtain current GCR.
+      aliases:
+        - graph
+        - intake
+      terminal: "no"
+    - route_id: ACT-ROUTE-GRAPH-REPAIR
+      description: Fail closed and repair graph/debt/currentness before mutation.
+      aliases:
+        - graph-repair
+      terminal: "no"
+    - route_id: ACT-ROUTE-FRONTIER
+      description: Compile AFR-v1 and select owner/route/proof.
+      aliases:
+        - frontier
+      terminal: "no"
+    - route_id: ACT-ROUTE-REALIZE
+      description: Hand an accepted route to fixed-point realization.
+      aliases:
+        - implement
+      terminal: "no"
+    - route_id: ACT-ROUTE-WAVE-PROOF
+      description: Run affected aggregate proof and recompile graph.
+      aliases:
+        - wave-proof
+      terminal: "no"
+    - route_id: ACT-ROUTE-SHIP
+      description: Run final closure proof and ship with explicit PR mode.
+      aliases:
+        - ship
+      terminal: "yes"
+    - route_id: ACT-ROUTE-BLOCKED
+      description: Stop because graph, frontier, proof, authority, or publication is blocked.
+      aliases:
+        - blocked
+      terminal: "yes"
+  clauses:
+    - clause_id: ACT-GCR-001
+      trigger_refs:
+        - ACT-MATERIAL-PLAN
+        - ACT-GRAPH-FAILURE
+      expected_routes:
+        - ACT-ROUTE-GRAPH-COMPILE
+        - ACT-ROUTE-GRAPH-REPAIR
+        - ACT-ROUTE-BLOCKED
+      prohibited_routes:
+        - ACT-ROUTE-REALIZE
+        - ACT-ROUTE-SHIP
+      required_artifacts:
+        - canonical .step/st-plan.jsonl
+        - current executable GCR-v1
+      success_signals:
+        - execution_allowed yes
+        - no blocking unwaived debt
+      failure_signals:
+        - material mutation after failed compile
+        - prose or update_plan used as fallback state
+      rationale: Material execution capability is owned by current CLI-emitted graph control.
+    - clause_id: ACT-AFR-001
+      trigger_refs:
+        - ACT-FRONTIER
+        - ACT-MATERIAL-PLAN
+      expected_routes:
+        - ACT-ROUTE-FRONTIER
+        - ACT-ROUTE-REALIZE
+        - ACT-ROUTE-BLOCKED
+      prohibited_routes:
+        - ACT-ROUTE-SHIP
+      required_artifacts:
+        - AFR-v1
+        - selected counterexample class
+        - selected route and owner
+        - surface budget
+        - proof DAG
+      success_signals:
+        - route selected before mutation
+        - raw combinations quotient into proof classes
+      failure_signals:
+        - one hole discovered and patched without frontier update
+        - route invented by implementer
+      rationale: Domain reasoning must survive compaction and constrain realization.
+    - clause_id: ACT-PROJECTION-001
+      trigger_refs:
+        - ACT-MATERIAL-PLAN
+      expected_routes:
+        - ACT-ROUTE-GRAPH-COMPILE
+        - ACT-ROUTE-FRONTIER
+        - ACT-ROUTE-REALIZE
+        - ACT-ROUTE-WAVE-PROOF
+      prohibited_routes: []
+      required_artifacts:
+        - exact GCR projection fingerprint
+      success_signals:
+        - one update_plan publication per GCR sequence
+      failure_signals:
+        - repeated hand-authored update_plan frontier
+      rationale: Native plan state is a projection, not durable truth.
+    - clause_id: ACT-REALIZE-001
+      trigger_refs:
+        - ACT-FRONTIER
+      expected_routes:
+        - ACT-ROUTE-REALIZE
+        - ACT-ROUTE-BLOCKED
+      prohibited_routes:
+        - ACT-ROUTE-GRAPH-COMPILE
+      required_artifacts:
+        - ARH-v1 handoff
+        - FPSR-v1 result
+      success_signals:
+        - fixed-point driver realizes accepted route
+        - new observation returns to frontier
+      failure_signals:
+        - fixed-point driver changes owner or route
+      rationale: Selection and realization are separate authorities.
+    - clause_id: ACT-PROOF-001
+      trigger_refs:
+        - ACT-MATERIAL-PLAN
+        - ACT-SHIP
+      expected_routes:
+        - ACT-ROUTE-REALIZE
+        - ACT-ROUTE-WAVE-PROOF
+        - ACT-ROUTE-SHIP
+        - ACT-ROUTE-BLOCKED
+      prohibited_routes: []
+      required_artifacts:
+        - focused proof per slice
+        - affected aggregate proof per wave
+        - full current-head proof before ship
+      success_signals:
+        - proof status and invalidators are explicit
+      failure_signals:
+        - full suite after every local patch without warrant
+        - stale proof used for ship
+      rationale: Tiered proof preserves rigor without repetitive aggregate waits.
+    - clause_id: ACT-SHIP-001
+      trigger_refs:
+        - ACT-SHIP
+      expected_routes:
+        - ACT-ROUTE-SHIP
+        - ACT-ROUTE-BLOCKED
+      prohibited_routes:
+        - ACT-ROUTE-REALIZE
+      required_artifacts:
+        - ASR-v2
+        - terminal AFR set
+        - current full proof
+        - explicit pr_mode
+      success_signals:
+        - ready PR default after full validation
+      failure_signals:
+        - draft by default
+        - ship with open frontier or stale proof
+        - land/merge
+      rationale: Publication occurs only after graph, frontier, and proof closure.
+  instrumentation:
+    decision_receipt: required_for_material_routes
+    rationale: AFR-v1 embeds an SDR-compatible route decision.

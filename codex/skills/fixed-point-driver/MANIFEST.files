@@ -1,0 +1,15 @@
+PATCH_NOTES.md
+SKILL.md
+SOURCES.md
+agents/openai.yaml
+assets/arh-v1.example.json
+assets/fpsr-v1.example.json
+references/actuation-handoff.md
+references/decision-contract.yaml
+references/general-frame.md
+references/reduction-certificate.md
+references/result-contract.md
+tools/arh_gate.py
+tools/fpsr_gate.py
+MANIFEST.files
+MANIFEST.sha256

@@ -2,5 +2,11 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Fixed-Point Driver"
-  short_description: "Realize one certified normal form, retire named surfaces, prove preservation and recomposition, and stop on new observations."
-  default_prompt: "Use $fixed-point-driver to realize the selected kernel/RC-v1 exactly. Do not invent a quotient. Apply certified operators, prove preservation, run recomposition audit, and return on any new observation."
+  short_description: "Realize one bounded route and return on new evidence"
+  default_prompt: >-
+    Use $fixed-point-driver to realize one bounded route. Require ARH-v1 when
+    called by $actuating, consume kernel/RC-v1 in reduction mode, or use a
+    simple standalone frame only when one owner and route are unambiguous.
+    Enforce scope and surface budget, run focused proof, emit FPSR-v1, and
+    return immediately when evidence changes the class, owner, route, scope,
+    or proof obligation.

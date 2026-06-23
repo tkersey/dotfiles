@@ -1,357 +1,358 @@
 ---
 name: actuating
-description: "Plan-to-PR execution workflow: turn a material plan/spec/proposal into durable `$st` tasks, execute through `$fixed-point-driver` and language skills, keep proof in `$st`, run build/lint/test validation, then `$ship` with explicit ready-vs-draft mode. Trigger for `$actuating`, plan-to-PR, implement this plan and open a PR, turn this plan into tasks and ship it, `$st` then `$fixed-point-driver` then `$ship`, or end-to-end plan execution. Not for one-off bug fixes, pure planning, current-branch review resolution, merge/land, or PR creation without implementation."
+description: "Plan-to-PR execution controller for material work. Compile intent into canonical `$st` graph state, require a current CLI-emitted GCR-v1, compile one AFR-v1 frontier/route record for each non-trivial aperture, realize only that selected route through `$fixed-point-driver`, record obligation-level proof, recompile the graph, and ship with explicit PR mode. Use for `$actuating`, plan-to-PR, implement this plan and open a PR, or `$st` -> fixed point -> proof -> `$ship`. Never degrade a failed material graph into prose-driven mutation."
+metadata:
+  version: "2.0.0"
+  activation_cost: high
+  default_depth: standard
 ---
 
 # Actuating
 
-## Purpose
-
-Drive a material plan from **plan text** to **proof-backed PR**.
-
-This skill replaces the repeated manual prompt:
+## Mission
 
 ```text
-Use $st to turn this plan into steps/tasks.
-Use $fixed-point-driver to implement them.
-Do not stop until all steps are complete.
-Use $ship once all builds, lints, and tests pass.
-Use language-specific skills when the repo calls for them, such as $zig.
+plan
+-> canonical $st graph
+-> current GCR-v1
+-> AFR-v1
+-> selected-route realization
+-> focused proof + $st completion
+-> new GCR
+-> wave/final proof
+-> explicit PR mode
+-> $ship
 ```
 
-## Doctrine
-
-Operate in **ACTUATING**, **PLAN-GRAPHED**, **FIXED-POINTED**, **LANGUAGE-AWARE**, **PROOF-GATED**, **SURFACE-TAXED**, **SHIP-READY**, **PR-MODE-EXPLICIT**, and **TAIL-PROOF** mode.
-
-- **ACTUATING**: identify the lever that moves the system from plan to shipped PR, then pull it with proof.
-- **PLAN-GRAPHED**: a material plan becomes durable `$st` task graph state, not transient prose or a fragile chat checklist.
-- **FIXED-POINTED**: implementation work is driven through `$fixed-point-driver` until each task is complete, blocked, or explicitly removed from scope.
-- **LANGUAGE-AWARE**: use repo/language skills such as `$zig`, `$lean`, or other visible language rails when files, toolchains, errors, or project conventions call for them.
-- **PROOF-GATED**: each completed task needs evidence; final shipping needs current build/lint/test proof.
-- **SURFACE-TAXED**: mutation-capable work must respect ablation, isomorphism, soundness, and surface-budget gates supplied by called skills.
-- **SHIP-READY**: `$ship` is allowed only after all in-scope tasks are complete or explicitly blocked/deferred and the current head has passing proof.
-- **PR-MODE-EXPLICIT**: `$actuating` must pass an explicit PR mode to `$ship`; fully validated complete work defaults to ready, not draft.
-- **TAIL-PROOF**: the final output must end with the state, proof, PR status, and next bottleneck.
-
-## Contract
-
-This skill is a workflow driver. It does not replace `$st`, `$fixed-point-driver`, language skills, `verification-closure`, or `$ship`; it composes them.
-
-Required outcomes:
-
-1. The plan is converted into a durable `$st` graph or a clearly named fallback graph artifact.
-2. Every in-scope task is implemented, validated, or explicitly blocked/deferred with reason and proof state.
-3. `$fixed-point-driver` owns non-trivial implementation loops.
-4. Language-specific skills own language-specific proof lanes when applicable.
-5. `$ship` runs only after builds, lints, and tests pass, or after missing gates are explicitly accounted for and the user accepts the limitation.
-6. `$ship` receives explicit `pr_mode`.
-7. The final response ends with an **Actuation Bottom Line**.
-
-## When to use
-
-Use this skill when the user asks to take a plan/spec/proposal through implementation and PR publication, especially with phrases like:
-
-- `$actuating`
-- `plan to PR`
-- `turn this plan into tasks and ship it`
-- `use $st to turn this plan into steps/tasks`
-- `use $fixed-point-driver to implement them`
-- `don't stop until all steps are complete`
-- `ship once builds, lints, and tests pass`
-- `implement this plan and open a PR`
-
-Do not use this skill for:
-
-- one-shot implementation with no material plan graph;
-- pure planning with no implementation intent;
-- current-branch review/fix/PR-sweep loops; use `$resolve`;
-- final readiness only; use `$verification-closure`;
-- PR creation only after work is already complete; use `$ship`;
-- merge/land; use `$land`.
-
-## Lifecycle
+Invariant:
 
 ```text
-plan intake -> $st graph -> aperture -> fixed-point implementation -> task proof -> graph completion -> full validation -> explicit PR mode -> $ship -> PR proof
+No material delivery mutation without a current executable GCR and a valid
+AFR bound to that GCR, artifact state, and selected task set.
 ```
 
-## 1. Plan intake
+## Authority
 
-Bind the work to a concrete plan source:
+```text
+$st                  durable graph, proof/status, GCR, projection
+$actuating           frontier/route, cadence, plan-to-PR and ship decision
+$fixed-point-driver  bounded realization of an already selected route
+language skills      language hazards and proof lanes
+read-only specialists frontier/proof/wave evidence
+$ship                PR creation/update/promotion
+$land                separate explicit merge workflow
+```
 
-- pasted plan;
-- markdown/spec/proposal file;
-- issue/PR description;
-- existing `.step/st-plan.jsonl`;
-- active proposed plan.
+## Modes
 
-Before task creation, identify:
+### Material graph
 
-- target outcome;
-- non-goals;
-- acceptance checks;
-- language/toolchain clues;
-- expected PR scope;
-- expected public side effects;
-- whether the user explicitly requested draft PR, ready PR, or just implementation.
+Use for material plans, cross-file work, meaningful dependency/proof graphs, or work expected to survive compaction.
 
-If the user has not clearly asked for PR creation/publication, stop before `$ship` and ask only if that is the real blocker. If the prompt clearly says plan-to-PR or ship once validated, PR creation is in scope.
+Require:
 
-## 2. `$st` graph creation
+```text
+canonical .step/st-plan.jsonl
+implementation-ready graph
+current executable GCR-v1
+valid AFR-v1
+```
 
-Use `$st` as the durable source of truth.
+### Graph repair
 
-Preferred path for material plans:
+Enter when graph compile/currentness/projection fails or blocking unwaived debt exists.
+
+Only read/search, graph/intake/debt repair, and proof/frontier analysis are allowed.
+
+No delivery mutation, task completion, or ship.
+
+### Simple ledger
+
+Only for clearly bounded work with no material graph.
+
+Report:
+
+```text
+Graph not compiled; proceeding in ledger mode.
+```
+
+A material plan never silently degrades to ledger mode.
+
+## 1. Pin ASR-v2
+
+Maintain `actuation_state / ASR-v2` with run/plan/objective, artifact state, target PR intent, contract versions, graph/GCR, AFR set, proof, surface, and ship state.
+
+After compaction, reread a skill only when its recorded version/fingerprint changed or current evidence requires it.
+
+## 2. Compile the plan
 
 ```bash
-st intake plan --file .step/st-plan.jsonl --source <plan.md> --out .step/st-intake.md
-st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate implementation-ready
-st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format markdown
+st intake scaffold --source <plan.md> --out .step/st-intake.md
+# Fill/edit semantic intake.
+st intake check --input .step/st-intake.md \
+  --gate implementation-ready --format json
+st intake normalize --input .step/st-intake.md \
+  --out .step/st-intake.normalized.md
+st intake apply --file .step/st-plan.jsonl \
+  --input .step/st-intake.normalized.md \
+  --gate implementation-ready
 st compile aperture --file .step/st-plan.jsonl --limit 7
 ```
 
-If `st intake` / `st graph` / `st compile` are unavailable, use the fallback described by `$st`, and record graph debt explicitly. Do not pretend a durable graph exists when it does not.
+`st intake plan` is only a deprecated scaffold alias.
 
-Rules:
+Use only `.step/st-plan.jsonl`; never create a sidecar durable plan to route around debt.
 
-- `.step/st-plan.jsonl` is durable truth.
-- Native plan tools are only the visible aperture.
-- Preserve `[st-id]` prefixes in user-visible plan rows.
-- Do not mark a task complete without proof.
-- Do not let chat prose become the source of task state.
+## 3. Enforce GCR-v1
 
-## 3. Aperture selection
+Material execution requires a CLI-emitted GCR proving:
 
-Select the next executable aperture from `$st`.
+```text
+current durable seq/fingerprints
+implementation-ready gate
+execution_allowed = yes
+no blocking unwaived debt
+dependency-ready selected tasks
+proof obligations
+current native projection
+```
 
-A good aperture has:
+When this fails:
 
-- dependency-ready tasks;
-- small enough scope for reviewable implementation;
-- explicit proof signals;
-- no hidden public side effects;
-- no ambiguous ownership boundary.
+```text
+graph-repair mode
+no delivery mutation
+```
 
-If tasks are independent and read-heavy, use subagents or language-specific rails for evidence. Keep mutation single-rooted unless repo policy explicitly allows disjoint writes.
+See [st-control-gate.md](references/st-control-gate.md).
 
-## 4. Language-skill detection
+## 4. Project once
 
-Before implementation, inspect repo signals and activate the right language rails:
+Publish only exact `plan_sync.codex.plan` from the current GCR.
 
-- Zig: `.zig`, `build.zig`, `zig build`, `zig test`, `zig fmt`, `zls`, Zig migration/safety/performance cues -> `$zig`.
-- Lean: `.lean`, `lake`, proof repair, theorem/proof/termination/mathlib cues -> `$lean`.
-- Python: `pyproject.toml`, `uv`, `pytest`, `mypy`, ruff/format/test cues -> use repo Python tooling standards.
-- Other language rails: use any visible repo skill whose trigger clearly owns the files/toolchain/proof lane.
+- preserve `[st-id]`;
+- never project graph envelope;
+- never hand-author the frontier;
+- one `update_plan` publication per GCR sequence/fingerprint;
+- another requires explicit projection-drift repair.
 
-Language skills should supply language-specific commands and hazards. They do not replace the plan graph, fixed-point loop, or final ship gate.
+Block:
 
-## 5. Implementation loop
+```text
+failed/stale graph
+-> repeated update_plan
+-> prose frontier
+-> material mutation
+```
 
-For each executable `$st` item or aperture:
+## 5. Compile AFR-v1
 
-1. Route non-trivial code changes to `$fixed-point-driver`.
-2. Let `$fixed-point-driver` select implementation, ablation, adversarial review, validation, and closure subpasses.
-3. Use `$accretive-implementer` only when `$fixed-point-driver` hands off a narrow owned implementation task or when a task is small enough to avoid full fixed-point orchestration.
-4. Use language-specific skills inside the loop when proof or safety is language-shaped.
-5. When a task is done, complete it in `$st` with the command/check/evidence that proves it.
-6. Compile the next aperture and continue.
+Create:
 
-Do not stop after the first green patch. Continue until every in-scope task is:
+```text
+.step/actuation/<run-id>/<slice-id>.afr.json
+```
 
-- `complete` with proof;
-- `blocked` with a concrete blocker;
-- `deferred` only when the plan or user scope explicitly permits deferral;
-- removed from scope by an evidence-backed graph/update decision.
+AFR references `$st`; it does not own task status.
 
-## 6. Validation gate
+It binds artifact/GCR/tasks, owner/invariant, counterexample quotient, selected/rejected routes, mutation boundary, surface budget, proof DAG, next frontier, and SDR-v1 decision projection.
 
-Before shipping, run the full repo-appropriate proof suite.
+Group raw combinations only when accepted observations, owner, route, and proof law match.
 
-At minimum, attempt to identify and run:
+```bash
+python3 codex/skills/actuating/tools/afr_gate.py <afr.json>
+```
 
-- build;
-- lint/static checks;
-- tests;
-- typecheck/proof checks;
-- language-specific validation;
-- plan-specific acceptance checks;
-- PR-specific proof that `$ship` should include.
+See [actuation-frontier-record.md](references/actuation-frontier-record.md) and [counterexample-quotient.md](references/counterexample-quotient.md).
 
-If the repo lacks a build, lint, or test command, record search evidence and substitute proof. Do not claim “all checks pass” when a category was not found or not run.
+## 6. Use specialists conditionally
 
-## 7. PR mode decision
+Root is the sole writer.
 
-Before invoking `$ship`, compute explicit PR mode.
+```text
+actuation_frontier_mapper  unclear/recurring state space or owner
+actuation_proof_mapper     unclear proof cut/currentness
+actuation_wave_skeptic     material completed wave or surface growth
+```
+
+Use them at frontier/wave boundaries, not after every patch.
+
+See [frontier-specialists.md](references/frontier-specialists.md).
+
+## 7. Select before realization
+
+Routes:
+
+```text
+no_change
+validate_only
+reuse_existing_owner
+delete_or_collapse
+canonicalize
+representation_change
+bounded_new_surface
+blocked
+```
+
+Before mutation record alternatives, selected/rejected routes, owner, permitted scope, forbidden actions/non-goals, surface budget, proof obligations, route-flip condition, and expected outcome.
+
+If selection is unresolved, do not call `$fixed-point-driver`.
+
+## 8. Hand off ARH-v1
+
+For non-trivial mutation emit `actuation_realization_handoff / ARH-v1` containing:
+
+```text
+run/slice/GCR/AFR/task identity
+artifact state
+selected route and owner
+scope and forbidden actions
+surface budget
+selected class/invariant
+proof obligations
+```
+
+`$fixed-point-driver` realizes this route and may use `$accretive-implementer` for narrow writing.
+
+It may not change class, route, owner, scope, or semantics.
+
+See [fixed-point-execution-loop.md](references/fixed-point-execution-loop.md).
+
+## 9. Consume FPSR-v1
+
+```bash
+python3 codex/skills/fixed-point-driver/tools/fpsr_gate.py <result.json>
+```
+
+Results:
+
+```text
+valid
+return_to_frontier
+blocked
+invalid
+```
+
+`return_to_frontier` stops mutation, updates the quotient/evidence and `$st` scope/obligations when needed, then requires a new AFR/ARH.
+
+Never append an adjacent patch under the stale route.
+
+## 10. Tier proof
+
+```text
+slice  focused proof for selected class/invariant
+wave   affected aggregate proof after coherent aperture/subset
+ship   one complete current-head closure suite
+```
+
+Run full proof earlier only when repository policy or the dependency cut requires it.
+
+Track proof as missing/running/pass/fail/stale with explicit invalidators.
+
+See [validation-cadence.md](references/validation-cadence.md).
+
+## 11. Record and recompile
+
+After valid realization/focused proof:
+
+```bash
+st proof plan --file .step/st-plan.jsonl --scope aperture --format json
+st proof record --file .step/st-plan.jsonl \
+  --id <st-id> --obligation <proof-id> --action <proof-action-id> \
+  --command "<command>" --evidence-ref <proof-log> \
+  --artifact-ref "git:<sha-or-working-tree-fingerprint>"
+st complete --file .step/st-plan.jsonl --id <st-id>
+st compile aperture --file .step/st-plan.jsonl --limit 7
+st assert-projection --file .step/st-plan.jsonl
+```
+
+If the installed proof parser is narrower, keep `$st` truthful with the smallest accepted command and report the parser gap. Do not create sidecar task status.
+
+## 12. Resume after compaction
+
+Resume from ASR-v2, latest GCR, active AFR, current proof receipts, and Git state:
+
+```bash
+python3 codex/skills/actuating/tools/actuation_resume.py \
+  --state <asr.json> --frontier <afr.json>
+```
+
+Invalidate resume when artifact state, GCR/tasks, proof currentness, or contract fingerprints changed.
+
+Do not reconstruct the frontier from prose or repeated skill reads.
+
+## 13. Learn at inflections
+
+Use `$learnings` for validation transitions, strategy pivots, hidden footguns, repeated acceleration patterns, and delivery boundaries—not every turn.
+
+## 14. Ship gate
+
+Require:
+
+```text
+no unhandled in-scope tasks
+current GCR/projection
+all AFRs terminal
+no unresolved return-to-frontier observation
+focused/wave proof accounted for
+full closure proof current
+PR publication in scope
+explicit PR mode
+```
 
 ```yaml
 pr_mode_decision:
   mode: ready | draft | update-existing | promote-draft | blocked
-  reason: "..."
-  draft_allowed_reason: "none | explicit-user | incomplete-validation | blocked-tasks | early-visibility | missing-context | repo-policy"
+  reason:
+  draft_allowed_reason:
 ```
 
 Default:
 
 ```text
-If all in-scope tasks are complete and validation passes, pr_mode = ready.
+complete graph + terminal AFRs + current full proof -> ready
 ```
 
-Use `draft` only when:
+No `$ship` without explicit mode. `$ship` does not merge.
 
-- the user explicitly requested draft;
-- validation is incomplete, failing, blocked, or caveated;
-- tasks remain blocked/deferred/open and publication is still requested;
-- early visibility is intentionally requested;
-- repo policy requires draft.
+See [shipping-gate.md](references/shipping-gate.md) and [pr-mode-decision.md](references/pr-mode-decision.md).
 
-Existing PR:
+## 15. Validate final state
 
-- if open ready PR exists: `update-existing`;
-- if open draft PR exists and blockers remain: `update-existing`;
-- if open draft PR exists and branch is fully validated with no blockers: `promote-draft` unless user/repo policy says preserve draft.
-
-Hard rule:
-
-```text
-$actuating must not call $ship without explicit pr_mode.
+```bash
+python3 codex/skills/actuating/tools/asr_gate.py <state.json> --mode ship
 ```
 
-## 8. Ship gate
+ASR-v2 binds graph/GCR/projection, AFR/FPSR set, task counts, decision receipts, proof currentness, surface delta, ship mode, and blockers.
 
-Invoke `$ship` only when all are true:
-
-- `$st` graph has no unhandled in-scope tasks, or blocked/deferred tasks are explicitly permitted in a caveated draft;
-- current head includes the intended work;
-- build/lint/test/proof gates pass or missing gates are explicitly accounted for;
-- no unresolved material fixed-point, ablation, soundness, or verification gate remains;
-- PR side effect is in scope;
-- proof summary is ready for the PR body;
-- `pr_mode_decision.mode` is not `blocked`.
-
-`$ship` opens, updates, or promotes a PR. It does not merge. Use `$land` only for explicit merge/land intent.
-
-## Ship handoff
-
-Pass:
-
-```yaml
-ship_handoff:
-  target_skill: ship
-  pr_mode: ready | draft | update-existing | promote-draft | blocked
-  pr_mode_reason: "..."
-  draft_allowed_reason: "none | explicit-user | incomplete-validation | blocked-tasks | early-visibility | missing-context | repo-policy"
-  validation_state:
-    build: pass | fail | missing | not-run
-    lint: pass | fail | missing | not-run
-    tests: pass | fail | missing | not-run
-    language_specific: pass | fail | missing | not-run
-    acceptance: pass | fail | missing | not-run
-  graph_state:
-    complete: 0
-    blocked: 0
-    deferred: 0
-    open: 0
-  proof_summary: "..."
-  existing_pr:
-    exists: yes | no | unknown
-    url: "..."
-    draft: yes | no | unknown
-```
-
-`$ship` must honor this mode and must not create a draft PR when `pr_mode: ready`.
-
-## Actuation State Record
-
-For material runs, maintain a compact state record:
-
-```yaml
-actuation_state:
-  run_id: "..."
-  plan_source: "..."
-  target_pr_state: ready | draft | updated | promoted | not-yet | blocked
-  artifact_state:
-    branch: "..."
-    base: "..."
-    head: "..."
-  st_graph:
-    file: ".step/st-plan.jsonl"
-    intake_status: complete | fallback | blocked
-    audit_status: pass | fail | not-run
-    total_tasks: 0
-    complete: 0
-    blocked: 0
-    deferred: 0
-    open: 0
-  execution:
-    fixed_point_driver_used: yes | no
-    language_skills_used: []
-    ablation_activation: required | not-required | blocked | not-applicable
-    verification_closure_used: yes | no
-  validation:
-    build: pass | fail | missing | not-run
-    lint: pass | fail | missing | not-run
-    tests: pass | fail | missing | not-run
-    language_specific: pass | fail | missing | not-run
-    acceptance: pass | fail | missing | not-run
-  ship:
-    ship_allowed: yes | no
-    pr_mode: ready | draft | update-existing | promote-draft | blocked
-    pr_mode_reason: "..."
-    draft_allowed_reason: "..."
-    pr_url: "..."
-    blocker: "..."
-```
-
-## Output contract
-
-Use tail-weighted sections:
-
-1. Plan Source / Goal
-2. `$st` Graph State
-3. Execution Aperture
-4. Work Completed
-5. Validation
-6. PR Mode
-7. Ship Status
-8. Actuation Bottom Line
-
-`Actuation Bottom Line` must be the final section.
-
-### Actuation Bottom Line
+## Output
 
 End with:
 
 ```text
 Actuation Bottom Line:
 - target state:
-- graph state:
-- tasks complete:
-- validation:
+- GCR / graph mode:
+- active or final AFR:
+- tasks complete / blocked / deferred / open:
+- selected route / owner:
+- focused / wave / closure proof:
+- surface delta:
 - PR mode:
 - PR:
-- proof:
-- blocker / next bottleneck:
+- blocker / next frontier:
 ```
 
 ## Hard rules
 
-- Do not bypass `$st` for material plans.
-- Do not treat `update_plan` as durable state.
-- Do not implement beyond the plan without updating scope or graph state.
-- Do not keep going silently when the correct next step requires credentials, destructive approval, or public side-effect confirmation not already granted.
-- Do not run `$ship` with failing build/lint/test gates unless user explicitly requested a caveated draft.
-- Do not call missing validation “passed.”
-- Do not call `$ship` without explicit `pr_mode`.
-- Do not create draft PR by default after full validation.
+- No material mutation without current executable GCR-v1.
+- No material mutation with blocking unwaived graph debt.
+- No material graph-failure fallback to prose/ledger execution.
+- No non-trivial mutation without valid AFR-v1.
+- `update_plan` is a GCR projection, never the state machine.
+- `$actuating` selects; `$fixed-point-driver` realizes.
+- New observations return to frontier.
+- Root is the sole writer.
+- Full proof is wave/ship cadence, not default per patch.
+- No ship without current graph, terminal frontier, current proof, and explicit PR mode.
 - Do not merge or land.
-- Do not bury the final graph state, PR mode, or PR status above the fold.
-
-## Resources
-
-- [plan-to-pr-lifecycle.md](references/plan-to-pr-lifecycle.md)
-- [st-handoff.md](references/st-handoff.md)
-- [fixed-point-execution-loop.md](references/fixed-point-execution-loop.md)
-- [language-skill-detection.md](references/language-skill-detection.md)
-- [pr-mode-decision.md](references/pr-mode-decision.md)
-- [shipping-gate.md](references/shipping-gate.md)
-- [example-invocations.md](references/example-invocations.md)

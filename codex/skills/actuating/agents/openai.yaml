@@ -2,5 +2,12 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Actuating"
-  short_description: "Plan-to-PR with explicit PR mode"
-  default_prompt: "Use $actuating to convert a material plan into $st tasks, execute through fixed-point proof, validate, then ship with explicit PR mode. Ready PR is default after full validation; draft requires a warrant."
+  short_description: "GCR + frontier controlled plan-to-PR execution"
+  default_prompt: >-
+    Use $actuating to compile a material plan into canonical $st graph state,
+    require a current executable GCR-v1, compile one AFR-v1 per non-trivial
+    aperture, select the route and owner before realization, hand only that
+    route to $fixed-point-driver, record focused proof in $st, recompile the
+    graph, run wave and final closure proof at the proper cadence, then call
+    $ship with explicit PR mode. Never degrade a failed graph into prose-driven
+    mutation.
