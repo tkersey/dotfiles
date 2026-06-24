@@ -1,0 +1,62 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: review-adjudication
+    kind: decision
+    source_fingerprint: review-adjudication-v5-cex
+  triggers:
+    - trigger_id: RA-CLAIM
+      description: A current review claim needs classification.
+      cue_literals: [review finding, PR comment, CAS finding, review claim]
+      cue_regexes: []
+      exclusions: []
+  routes:
+    - route_id: RA-ENTER-KERNEL
+      description: Novel in-horizon class.
+      aliases: [enter_kernel]
+      terminal: "yes"
+    - route_id: RA-ATTACH-WITNESS
+      description: Existing class witness or missing proof.
+      aliases: [attach_witness]
+      terminal: "yes"
+    - route_id: RA-INVALIDATE
+      description: Existing-law nonconformance/orphan realization.
+      aliases: [invalidate_realization]
+      terminal: "yes"
+    - route_id: RA-RETURN-CONTRACT
+      description: Scope-expanding or contract-invalidating evidence.
+      aliases: [return_to_contract]
+      terminal: "yes"
+    - route_id: RA-FOLLOWUP
+      description: Outside-horizon issue.
+      aliases: [capture_followup]
+      terminal: "yes"
+    - route_id: RA-REJECT
+      description: Refuted/stale/duplicate/preference/unrelated claim.
+      aliases: [reject]
+      terminal: "yes"
+    - route_id: RA-BLOCK
+      description: Unknown or missing authority.
+      aliases: [blocked]
+      terminal: "yes"
+  clauses:
+    - clause_id: RA-CEX-001
+      trigger_refs: [RA-CLAIM]
+      expected_routes:
+        - RA-ENTER-KERNEL
+        - RA-ATTACH-WITNESS
+        - RA-INVALIDATE
+        - RA-RETURN-CONTRACT
+        - RA-FOLLOWUP
+        - RA-REJECT
+        - RA-BLOCK
+      prohibited_routes: []
+      required_artifacts: [CEX-v1, minimal trace, AC/law anchors]
+      success_signals:
+        - mutation authority no
+      failure_signals:
+        - raw repair suggestion handed to implementer
+      rationale: Adjudication classifies evidence; it never authorizes code directly.
+  instrumentation:
+    decision_receipt: required
+    rationale: CEX disposition is a material review decision.

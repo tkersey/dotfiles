@@ -1,16 +1,7 @@
-# MRPC-v1
+# MRPC Compatibility
 
-`minimal_review_patch_certificate` is one evolving durable artifact.
+MRPC-v1 remains readable for historical C3/MRPC audits and migration.
 
-Stages:
+It is not writable as the current intent-closed material protocol.
 
-```text
-apply-certified
-applied
-final-certified
-committed
-pushed
-closed
-```
-
-It binds immutable base, basis, tournament, selected patch fingerprint, semantic cost, ablation, proof, holdout, delivery commit, and gate authority.
+Migration must not infer AC/CEB/kernel acceptance from a prior MRPC close.

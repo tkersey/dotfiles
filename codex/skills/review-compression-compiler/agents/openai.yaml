@@ -1,6 +1,9 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "Review Compression Compiler"
-  short_description: "Factor review findings, quotient redundant distinctions, and emit a Minimum Behavioral Kernel plus Reduction Certificate."
-  default_prompt: "Use $review-compression-compiler to compile these findings into accepted observations, governing laws, a congruent behavioral quotient, a minimum kernel, and RC-v1. Do not emit code."
+  short_description: "Quotient sealed counterexamples into one kernel"
+  default_prompt: >-
+    Use $review-compression-compiler on a sealed AC-v2/RB-v1/CEX-v1 batch.
+    Quotient duplicate witnesses into CEB-v2, compile MBK-v1 and RC-v1,
+    generate targeted RAP-v1 apertures and a PHI-v1 baseline, and emit no code.

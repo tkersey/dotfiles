@@ -1,22 +1,12 @@
-# Negative Writeback Policy
+# Negative Writeback
 
-Do not write every local failure to `.learnings.jsonl`.
+Write failed design/route-family evidence only after controller-proven falsification:
 
-```yaml
-negative_writeback_policy:
-  in_wave_only:
-    - one-off same-session route failure
-    - low confidence
-    - unclear applicability
-  route_wave_artifact:
-    - same-cluster recurrence
-    - proof matrix gap
-    - failed selected normal form
-  durable_learnings:
-    - repeated across sessions
-    - generalizable to future branches
-    - benchmark/regression/revert/public-bypass pattern
-    - current proof anchors exist
+```text
+same-class recurrence
+hard-surface violation
+construct/law mapping failure
+proof failure intrinsic to selected normal form
 ```
 
-Root owns durable writeback.
+Do not write negative evidence merely because a reviewer suggested another route.

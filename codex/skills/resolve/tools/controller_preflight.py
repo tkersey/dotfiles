@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed capability check for the resolve-c3 MBK controller."""
+"""Fail-closed preflight for intent-closed resolve-c3."""
 
 from __future__ import annotations
 
@@ -7,78 +7,113 @@ import argparse
 import json
 import shutil
 import subprocess
-import sys
+from typing import Any
 
-REQUIRED = {
-    "campaign_base_v1",
+REQUIRED = (
+    "acceptance_contract_v2",
+    "sealed_review_horizon_v1",
+    "review_batch_v1",
+    "review_aperture_v1",
+    "counterexample_v1",
+    "counterexample_basis_v2",
     "minimum_behavioral_kernel_v1",
-    "mbkc_v1",
-    "kernel_quotient_v1",
-    "semantic_surface_v1",
-    "proof_compression_v1",
+    "reduction_certificate_v1",
+    "review_potential_v1",
+    "intent_closed_conformance_v1",
+    "terminal_holdout_v1",
     "physical_apply",
     "physical_commit",
     "physical_push",
     "closure_horizon_v1",
-}
+)
+
+
+def find_key(value: Any, key: str) -> Any:
+    if isinstance(value, dict):
+        if key in value:
+            return value[key]
+        for child in value.values():
+            found = find_key(child, key)
+            if found is not None:
+                return found
+    elif isinstance(value, list):
+        for child in value:
+            found = find_key(child, key)
+            if found is not None:
+                return found
+    return None
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--controller", default="resolve-c3")
+    parser.add_argument("--binary", default="resolve-c3")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
-    path = shutil.which(args.controller)
-    result = {
-        "controller_preflight": {
-            "controller": args.controller,
-            "path": path,
-            "available": path is not None,
-            "required": sorted(REQUIRED),
-            "present": [],
-            "missing": sorted(REQUIRED),
-            "mutation_allowed": False,
-        }
-    }
+    path = shutil.which(args.binary)
+    errors: list[str] = []
+    warnings: list[str] = []
+    capabilities: dict[str, Any] = {}
+    version = None
 
     if path is None:
-        print(json.dumps(result, indent=2, sort_keys=True))
-        return 2
-
-    proc = subprocess.run(
-        [path, "capabilities", "--json"],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if proc.returncode != 0:
-        result["controller_preflight"]["error"] = (
-            proc.stderr.strip() or proc.stdout.strip() or
-            "controller lacks `capabilities --json`"
+        errors.append("controller:not-found")
+    else:
+        version_proc = subprocess.run(
+            [path, "--version"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
         )
-        print(json.dumps(result, indent=2, sort_keys=True))
-        return 2
+        if version_proc.returncode == 0:
+            version = version_proc.stdout.strip() or version_proc.stderr.strip()
+        else:
+            warnings.append("controller:version-unavailable")
 
-    try:
-        payload = json.loads(proc.stdout)
-    except json.JSONDecodeError as exc:
-        result["controller_preflight"]["error"] = f"invalid capability JSON: {exc}"
-        print(json.dumps(result, indent=2, sort_keys=True))
-        return 2
+        proc = subprocess.run(
+            [path, "capabilities", "--json"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if proc.returncode != 0:
+            errors.append("controller:capabilities-command-failed")
+            warnings.append(proc.stderr.strip()[:500])
+        else:
+            try:
+                value = json.loads(proc.stdout)
+                capabilities = value if isinstance(value, dict) else {}
+            except json.JSONDecodeError as exc:
+                errors.append(f"controller:capabilities-invalid-json:{exc}")
 
-    features = payload.get("resolve_c3_capabilities", {}).get("features", {})
-    present = {name for name, enabled in features.items() if enabled is True}
-    missing = REQUIRED - present
-    result["controller_preflight"].update({
-        "version": payload.get("resolve_c3_capabilities", {}).get("version"),
-        "present": sorted(present & REQUIRED),
-        "missing": sorted(missing),
-        "mutation_allowed": not missing,
-    })
+    feature_status: dict[str, bool] = {}
+    for feature in REQUIRED:
+        value = find_key(capabilities, feature)
+        supported = value is True or value == "yes" or value == "supported"
+        feature_status[feature] = supported
+        if not supported:
+            errors.append(f"missing-capability:{feature}")
 
+    delivery_allowed = not errors
+    result = {
+        "resolve_controller_preflight": {
+            "verdict": "pass" if delivery_allowed else "analysis-only",
+            "binary": path,
+            "version": version,
+            "protocol_profile": "intent-closed-cegis-v1",
+            "features": feature_status,
+            "missing": [feature for feature, supported in feature_status.items() if not supported],
+            "analysis_allowed": True,
+            "delivery_mutation_allowed": delivery_allowed,
+            "closure_allowed": delivery_allowed,
+            "errors": errors,
+            "warnings": warnings,
+        }
+    }
     print(json.dumps(result, indent=2, sort_keys=True))
-    return 0 if not missing else 2
+    return 0 if delivery_allowed else 2
 
 
 if __name__ == "__main__":

@@ -1,0 +1,62 @@
+{
+  "counterexample": {
+    "counterexample_version": "CEX-v1",
+    "counterexample_id": "CEX-OUTSIDE-001",
+    "campaign_id": "campaign-example-001",
+    "batch_id": "RB-discovery-001",
+    "aperture_id": "RAP-discovery-001",
+    "review_mode": "discovery",
+    "artifact_state": {
+      "base": "BASE_SHA",
+      "head": "HEAD_SHA",
+      "dirty_fingerprint": "sha256:clean",
+      "review_receipt": "cas:review-001"
+    },
+    "claim": {
+      "statement": "A closure with a foreign parent state can pass validation.",
+      "source_refs": [
+        "cas:review-001#finding-1"
+      ],
+      "suggested_repair": "Add a downstream check."
+    },
+    "observation": {
+      "actor": "restore consumer",
+      "operation": "restore closure",
+      "pre_state": "closure payload bound to parent A but claims parent B",
+      "minimal_trace": [
+        "construct otherwise valid closure for parent A",
+        "replace claimed parent with B",
+        "invoke restore"
+      ],
+      "expected": "restore rejected before state mutation",
+      "actual": "restore accepted",
+      "externally_visible_difference": "foreign parent state becomes trusted",
+      "reproduction_or_proof": "test:foreign-parent-closure"
+    },
+    "validity": "confirmed",
+    "liability": "introduced_by_current_diff",
+    "intent": {
+      "contract_id": "AC-world-turn-closure-v2",
+      "contract_fingerprint": "sha256:acceptance-example",
+      "horizon_fingerprint": "sha256:acceptance-example",
+      "acceptance_refs": [],
+      "compatibility_refs": [],
+      "forbidden_refs": [],
+      "non_goal_refs": [
+        "NON-1"
+      ],
+      "kernel_law_refs": [],
+      "relation": "outside_horizon",
+      "witness": "The claim concerns an unrelated host request protocol.",
+      "scope_effect": "expands"
+    },
+    "novelty": "new_equivalence_class",
+    "existing_class_ref": null,
+    "kernel_impact": "no_kernel_impact",
+    "disposition": "capture_followup",
+    "mutation_authority": {
+      "allowed": "no",
+      "reason": "A single finding cannot authorize mutation; seal and compile the batch."
+    }
+  }
+}

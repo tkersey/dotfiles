@@ -1,0 +1,135 @@
+{
+  "acceptance_contract": {
+    "contract_version": "AC-v2",
+    "contract_id": "AC-world-turn-closure-v2",
+    "campaign_id": "campaign-example-001",
+    "fingerprint": "sha256:acceptance-example",
+    "source": {
+      "plan_refs": [
+        "docs/world-turn-closure-plan.md"
+      ],
+      "issue_refs": [
+        "issue:19"
+      ],
+      "pr_intent_refs": [
+        "pr:19"
+      ],
+      "compatibility_baseline_refs": [
+        "git:BASE_SHA"
+      ]
+    },
+    "goal": {
+      "goal_id": "GOAL-1",
+      "statement": "Close a turn with authority-bound, replay-safe evidence."
+    },
+    "required": [
+      {
+        "requirement_id": "ACC-1",
+        "statement": "Turn closure evidence remains bound to the authority and parent state that produced it.",
+        "source_refs": [
+          "docs/world-turn-closure-plan.md#authority"
+        ],
+        "observable_witnesses": [
+          "closure restore rejects foreign parent state"
+        ]
+      }
+    ],
+    "compatibility": [
+      {
+        "obligation_id": "COMPAT-1",
+        "statement": "Previously valid current-format turn closures remain restorable.",
+        "baseline_ref": "git:BASE_SHA",
+        "observable_witnesses": [
+          "baseline valid closure restores"
+        ]
+      }
+    ],
+    "forbidden": [
+      {
+        "prohibition_id": "FORBID-1",
+        "statement": "A closure payload may not claim a parent state or authority different from its bound evidence.",
+        "source_refs": [
+          "docs/world-turn-closure-plan.md#invalid-states"
+        ],
+        "observable_witnesses": [
+          "mismatched parent closure is rejected"
+        ]
+      }
+    ],
+    "permitted_but_unrequired": [
+      {
+        "behavior_id": "MAY-1",
+        "statement": "Diagnostics may include additional non-authoritative context.",
+        "reason": "Permitted output detail does not justify new closure semantics."
+      }
+    ],
+    "non_goals": [
+      {
+        "non_goal_id": "NON-1",
+        "statement": "Redesign unrelated host request protocols.",
+        "source_refs": [
+          "docs/world-turn-closure-plan.md#non-goals"
+        ]
+      }
+    ],
+    "proof_bar": [
+      {
+        "proof_id": "PROOF-1",
+        "statement": "Focused authority-binding proof plus complete repository closure proof.",
+        "command_or_surface": "zig build check --summary all"
+      }
+    ],
+    "observation_language": {
+      "actors": [
+        "turn producer",
+        "restore consumer"
+      ],
+      "operations": [
+        "close turn",
+        "serialize closure",
+        "restore closure"
+      ],
+      "states": [
+        "open",
+        "closed-valid",
+        "closed-invalid"
+      ],
+      "transitions": [
+        "open->closed-valid",
+        "closed-valid->restored"
+      ],
+      "externally_visible_results": [
+        "restore accepted",
+        "restore rejected"
+      ],
+      "failure_observations": [
+        "foreign parent/authority rejected"
+      ],
+      "authority_observations": [
+        "producer identity matches payload and parent"
+      ]
+    },
+    "horizon": {
+      "state": "sealed",
+      "sequence": 1,
+      "sealed_at": "2026-06-24T00:00:00Z",
+      "prior_fingerprint": null,
+      "rebase_reason": null,
+      "rebase_authority": null
+    },
+    "authority": {
+      "accepted_by": "user",
+      "accepted_at": "2026-06-24T00:00:00Z",
+      "change_requires_explicit_rebase": "yes"
+    },
+    "gate": {
+      "sources_bound": "yes",
+      "required_behavior_nonempty": "yes",
+      "observation_language_nonempty": "yes",
+      "non_goals_explicit": "yes",
+      "proof_bar_present": "yes",
+      "horizon_consistent": "yes",
+      "seal_allowed": "yes"
+    }
+  }
+}

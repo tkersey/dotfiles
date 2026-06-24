@@ -2,5 +2,8 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Adjudication"
-  short_description: "Classify review liability and kernel impact"
-  default_prompt: "Verify the finding and classify branch liability, kernel impact, acceptance entailment, and non-mutation disposition."
+  short_description: "Compile review claims into intent-anchored CEX-v1"
+  default_prompt: >-
+    Use $review-adjudication to verify the current behavior, compile a minimal
+    CEX-v1 trace, bind it to AC-v2 or kernel laws, classify novelty and legal
+    disposition, and leave mutation authority disabled.

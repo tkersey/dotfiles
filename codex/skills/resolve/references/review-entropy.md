@@ -1,18 +1,15 @@
 # Review Entropy
 
-Review entropy is the tendency of the branch/review loop to generate more unresolved or adjacent review findings.
+Legacy review-entropy counters remain useful diagnostics:
 
-Track:
+```text
+same-class recurrence
+production/helper/public/fallback growth
+validation/proof-family growth
+failed route recurrence
+whole-diff conformance
+```
 
-- same-cluster recurrence;
-- production surface growth;
-- helper/wrapper/adapter growth;
-- public surface growth;
-- fallback/compatibility growth;
-- validation branch growth;
-- evidence predicate growth;
-- proof matrix sprawl;
-- repeated failed route penalty;
-- delayed feedback risk.
+They no longer grant or deny mutation directly.
 
-A route should reduce review entropy, not merely silence a comment.
+PHI-v1 is the authoritative convergence gate.

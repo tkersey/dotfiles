@@ -1,0 +1,186 @@
+{
+  "minimum_behavioral_kernel": {
+    "kernel_version": "MBK-v1",
+    "campaign_id": "campaign-example-001",
+    "campaign_base_sha": "BASE_SHA",
+    "kernel_fingerprint": "sha256:kernel-example",
+    "acceptance_contract_ref": {
+      "contract_id": "AC-world-turn-closure-v2",
+      "contract_fingerprint": "sha256:acceptance-example",
+      "horizon_fingerprint": "sha256:acceptance-example"
+    },
+    "counterexample_basis_ref": {
+      "basis_id": "CEB-example-001",
+      "basis_fingerprint": "sha256:basis-example"
+    },
+    "authorities": [
+      {
+        "authority_id": "AUTH-1",
+        "owns": "turn closure evidence binding",
+        "publishes": "authority-bound closure payload",
+        "may_transition": [
+          "OP-1"
+        ]
+      }
+    ],
+    "carriers": [
+      {
+        "carrier_id": "CLOSURE",
+        "meaning": "serialized turn closure state",
+        "representation_independent": "yes"
+      }
+    ],
+    "observations": [
+      {
+        "observation_id": "OBS-1",
+        "counterexample_refs": [
+          "CEX-001"
+        ],
+        "acceptance_refs": [
+          "ACC-1"
+        ],
+        "compatibility_refs": [],
+        "forbidden_refs": [
+          "FORBID-1"
+        ],
+        "observes": "closure parent and authority binding",
+        "expected": "foreign parent/authority closure is rejected",
+        "proof_ref": "property:closure-authority-binding"
+      }
+    ],
+    "equivalence_classes": [
+      {
+        "class_id": "VALID",
+        "members_or_predicate": "payload, parent, and authority bindings agree",
+        "preserved_observations": [
+          "OBS-1"
+        ],
+        "distinguished_from": [
+          {
+            "class_id": "INVALID",
+            "witness_observation_ids": [
+              "OBS-1"
+            ]
+          }
+        ]
+      },
+      {
+        "class_id": "INVALID",
+        "members_or_predicate": "any authority-bearing binding disagrees",
+        "preserved_observations": [],
+        "distinguished_from": [
+          {
+            "class_id": "VALID",
+            "witness_observation_ids": [
+              "OBS-1"
+            ]
+          }
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "operation_id": "OP-1",
+        "inputs": [
+          "CLOSURE"
+        ],
+        "outputs": [
+          "CLOSURE"
+        ],
+        "authority_id": "AUTH-1"
+      }
+    ],
+    "transitions": [
+      {
+        "transition_id": "T-1",
+        "from_classes": [
+          "VALID",
+          "INVALID"
+        ],
+        "operation_id": "OP-1",
+        "to_classes": [
+          "VALID",
+          "INVALID"
+        ],
+        "guards": [
+          "authority bindings agree"
+        ],
+        "emitted_observations": [
+          "OBS-1"
+        ]
+      }
+    ],
+    "laws": [
+      {
+        "law_id": "LAW-1",
+        "statement": "A closure is trusted only when every authority-bearing field agrees with its producing parent state.",
+        "owner": "AUTH-1",
+        "acceptance_refs": [
+          "ACC-1"
+        ],
+        "compatibility_refs": [
+          "COMPAT-1"
+        ],
+        "forbidden_refs": [
+          "FORBID-1"
+        ],
+        "observation_ids": [
+          "OBS-1"
+        ],
+        "counterexample_class_refs": [
+          "CLASS-foreign-parent"
+        ],
+        "proof_obligations": [
+          "property:closure-authority-binding"
+        ]
+      }
+    ],
+    "non_laws": [
+      "Additional diagnostic context is not authoritative closure state."
+    ],
+    "forbidden_states_or_transitions": [
+      "foreign parent or authority payload accepted as local"
+    ],
+    "counterexample_families": [
+      {
+        "family_id": "FAM-1",
+        "governing_law_ids": [
+          "LAW-1"
+        ],
+        "class_refs": [
+          "CLASS-foreign-parent"
+        ],
+        "independent_witnesses": [
+          "CEX-001"
+        ],
+        "local_surfaces": [
+          "serialize",
+          "bundle",
+          "restore"
+        ]
+      }
+    ],
+    "non_goals_preserved": [
+      "NON-1"
+    ],
+    "quotient": {
+      "method": "witness_checked_manual",
+      "optimality": "witnessed",
+      "merged_distinctions": [],
+      "unresolved_distinctions": [],
+      "congruence_witnesses": [
+        "OP-1 preserves VALID/INVALID observability"
+      ]
+    },
+    "gate": {
+      "all_branch_liabilities_covered": "pass",
+      "every_observation_intent_anchored": "pass",
+      "every_distinction_has_witness": "pass",
+      "every_family_maps_to_law": "pass",
+      "quotient_is_congruent": "pass",
+      "non_goals_preserved": "pass",
+      "recomposition_proved": "pass",
+      "kernel_review_allowed": "yes"
+    }
+  }
+}

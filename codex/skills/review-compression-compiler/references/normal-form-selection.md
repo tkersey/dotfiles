@@ -1,20 +1,14 @@
-# Normal Form Selection
+# Normal-Form Selection
 
-Select among:
+Select realization constraints lexicographically:
 
 ```text
-no-change-proof
-validate-only
-delete-collapse-canonicalize
-refactor-existing-owner
-mutate-existing-owner
-add-new-surface
-distill-from-lab
-blocked
+no invented accepted distinction
+no new authority owner
+no new state/protocol/public/fallback dimension
+maximum retirement of duplicate/orphan surface
+minimum branches/helpers/test families
+minimum textual diff
 ```
 
-Prefer the earliest route that kills the counterexample family with executable proof.
-
-Before `add-new-surface`, run universalist check and pay abstraction rent.
-
-Before repeating a previously failed route, consult negative evidence and either reopen/defeat it or choose another route.
+Selection is over the complete sealed basis, never one finding.

@@ -1,9 +1,15 @@
-# RDR Gate
+# Resolve Decision Records
 
-Validate decision records with:
+Legacy RDR records may be read as historical evidence.
 
-```bash
-resolve-c3 rdr-gate --file <record.yml>
+New route-changing decisions should be emitted as SDR-v1-compatible receipts derived from:
+
+```text
+AC seal/rebase
+CEX disposition
+class merge/split
+kernel/design decision
+realization invalidation
+PHI gate
+closure
 ```
-
-Gate pass is not proof of correctness; gate failure blocks closure.

@@ -1,11 +1,39 @@
-# Controller
+# Controller Boundary
 
-Canonical command:
+`resolve-c3` owns:
 
-```bash
-resolve-c3 --help
+```text
+campaign identity
+AC seal/rebase
+review batch lifecycle
+CEX storage/classification
+CEB/MBK/RC state
+design selection
+realization worktree/capture/map/measure/verify
+PHI comparison
+physical delivery
+tuple/terminal closure
 ```
 
-The controller stores local state under `.ledger/c3/`, manages the lab worktree, registers candidates, selects the lexicographic winner, emits MRPC, applies the exact patch, and gates commit/push.
+Agents own proposals and evidence.
 
-The existing configured `$st` hooks delegate to the controller when C³ state is active.
+Agents do not self-assert:
+
+```text
+horizon sealed
+batch sealed
+mutation allowed
+strict progress
+delivery allowed
+closure allowed
+```
+
+Those are controller-derived.
+
+State root:
+
+```text
+.ledger/c3/
+```
+
+Local-exclude by default unless the user deliberately versions campaign evidence.

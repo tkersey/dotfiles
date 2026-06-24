@@ -1,14 +1,13 @@
 # Review Charter
 
-Use one initial broad sensing review, then freeze scope.
-
-Closure uses:
+The review charter is now the AC-v2 horizon plus RB-v1 mode rules.
 
 ```text
-2 charter-clean reviews
-1 final broad holdout
+one broad discovery batch
+targeted kernel/conformance batches
+one broad terminal holdout
 ```
 
-A valid adjacent preexisting finding is captured, not automatically added to branch scope.
+A scope change requires AC rebase and invalidates downstream proof.
 
-Scope change resets charter-bound proof.
+A valid adjacent issue is classified as outside-horizon or contract-invalidating; it is not silently added to delivery.

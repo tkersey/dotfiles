@@ -2,5 +2,10 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Resolve"
-  short_description: "Compile review observations into a quotiented behavioral kernel, realize one normal form, prove recomposition, and close the branch."
-  default_prompt: "Use $resolve. Build MBK-v1 and RC-v1 before mutation: factor obligations, quotient indistinguishable distinctions with congruence proof, ablate discharged surfaces, normalize owners, realize one design with $fixed-point-driver, audit recomposition, then prove/push/close."
+  short_description: "Intent-closed counterexample synthesis and closure"
+  default_prompt: >-
+    Use $resolve as an intent-closed counterexample synthesis compiler. Seal
+    AC-v2, run bounded review batches, admit only minimal in-horizon CEX-v1,
+    quotient them into one MBK/RC, realize one design, require strict PHI-v1
+    progress, run targeted conformance plus one terminal holdout, and close only
+    against current controller, proof, PR, and delivery receipts.

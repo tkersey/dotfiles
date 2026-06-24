@@ -1,9 +1,15 @@
-# RGR Gate
+# Review Governor Compatibility
 
-Validate record files with:
+Legacy RGR/fuse records are diagnostic inputs.
 
-```bash
-resolve-c3 legacy-gate --file <review-governor-record.yml>
+They cannot substitute for:
+
+```text
+AC-v2
+sealed RB-v1
+validated CEX-v1
+CEB-v2
+PHI-v1
 ```
 
-This legacy gate surface is retired. Use `resolve-c3 mrpc-gate --file <mrpc.json>` and `resolve-c3 rdr-gate --file <record.yml>` for current C3 closure checks.
+The semantic controller gates supersede self-asserted `owner_not_too_coarse` or positive-net warrants.

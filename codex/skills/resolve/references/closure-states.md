@@ -1,14 +1,24 @@
 # Closure States
 
 ```text
-kernel_accepted
-conformance_closed_for_tuple
-terminal_closed
-blocked
+OPEN
+INTENT_SEALED
+BASIS_SEALED
+KERNEL_ACCEPTED
+REALIZATION_VERIFIED
+CONFORMANCE_SEALED
+POTENTIAL_CERTIFIED
+APPLIED
+COMMITTED
+PUSHED
+TUPLE_CLOSED
+HOLDOUT_SEALED
+TERMINAL_CLOSED
+BLOCKED
 ```
 
-Never say only `complete`.
+Always report the exact campaign tuple, AC horizon fingerprint, and closure kind.
 
-Tuple closure names exact artifact state and review horizon.
+`TUPLE_CLOSED` may reopen.
 
-Terminal closure requires current MBKC, proof, holdouts, PR sweep, and controller-owned delivery state.
+`TERMINAL_CLOSED` still carries explicit reopen conditions.

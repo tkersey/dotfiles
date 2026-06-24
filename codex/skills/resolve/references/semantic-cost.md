@@ -1,18 +1,18 @@
-# Semantic Cost
+# Semantic Surface
 
-Use lexicographic minimization:
+Hard dimensions:
 
-1. new truth owners;
-2. public surface;
-3. state dimensions;
-4. fallback/compatibility surface;
-5. protocol cases;
-6. branches;
-7. helpers/wrappers;
-8. proof obligations;
-9. retained retirable surface;
-10. owners/files touched;
-11. AST edits;
-12. production and test net lines.
+```text
+truth owners
+public symbols
+state variants
+protocol cases
+fallback/compatibility paths
+control-flow branches
+helpers/wrappers
+test families
+```
 
-Do not collapse these into one easy-to-game weighted score.
+PHI-v1 requires componentwise nonincrease absent an AC rebase.
+
+Textual line count is diagnostic only.

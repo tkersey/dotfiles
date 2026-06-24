@@ -1,0 +1,17 @@
+PATCH_NOTES.md
+SKILL.md
+SOURCES.md
+agents/openai.yaml
+assets/counterexample-basis-v2.example.json
+references/counterexample-basis.md
+references/decision-contract.yaml
+references/falsification-rules.md
+references/hitting-set-realization.md
+references/negative-writeback-policy.md
+references/normal-form-selection.md
+references/proof-matrix.md
+references/resolve-integration.md
+tools/common.py
+tools/counterexample_basis_gate.py
+MANIFEST.files
+MANIFEST.sha256

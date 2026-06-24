@@ -1,37 +1,18 @@
 # Governor Fuse
 
-Semantic trigger:
+Quantitative fuses are secondary backstops, not semantic authority.
+
+Suggested warning thresholds:
 
 ```text
-same family recurs after active normal form
-```
-
-Default quantitative backstops:
-
-```text
-same cluster >= 3
-findings after first fix >= 2
+same raw cluster >= 3
+same-class recurrence >= 1
 owner mutations >= 3
 same-owner commits >= 3
-apply_patch calls >= 10
+apply_patch >= 10
 production net > +250
 ```
 
-Once tripped:
+Any same-class recurrence is already a hard realization invalidation under the current protocol.
 
-```text
-delivery mutation frozen
-ordinary normal form prohibited
-predicate/helper/test accretion prohibited
-```
-
-Allowed:
-
-```text
-proof-only
-capture-followup
-delete/collapse/canonicalize
-review distillation
-boundary redesign
-blocked
-```
+Threshold trips may trigger read-only distillation or blocking, but cannot override AC/CEX/PHI gates.

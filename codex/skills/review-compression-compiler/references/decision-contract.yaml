@@ -1,0 +1,48 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: review-compression-compiler
+    kind: decision
+    source_fingerprint: review-compression-v7-cegis
+  triggers:
+    - trigger_id: RCC-SEALED-BATCH
+      description: A sealed counterexample batch needs quotient/kernel compilation.
+      cue_literals: [sealed review batch, CEX-v1, counterexample basis]
+      cue_regexes: []
+      exclusions: [open batch]
+  routes:
+    - route_id: RCC-COMPILE
+      description: Compile CEB/MBK/RC/apertures/potential.
+      aliases: [compile]
+      terminal: "yes"
+    - route_id: RCC-REVISE-BASIS
+      description: Basis is incomplete or novelty/equivalence is unresolved.
+      aliases: [revise-basis]
+      terminal: "yes"
+    - route_id: RCC-RETURN-CONTRACT
+      description: Evidence exceeds or invalidates AC.
+      aliases: [return-to-contract]
+      terminal: "yes"
+    - route_id: RCC-BLOCK
+      description: Inputs/gates are insufficient.
+      aliases: [blocked]
+      terminal: "yes"
+  clauses:
+    - clause_id: RCC-COMPILE-001
+      trigger_refs: [RCC-SEALED-BATCH]
+      expected_routes: [RCC-COMPILE, RCC-REVISE-BASIS, RCC-RETURN-CONTRACT, RCC-BLOCK]
+      prohibited_routes: []
+      required_artifacts:
+        - sealed AC-v2
+        - sealed RB-v1
+        - valid CEX-v1 set
+      success_signals:
+        - duplicates quotiented
+        - every law intent-anchored
+        - no code emitted
+      failure_signals:
+        - raw finding becomes realization instruction
+      rationale: The compiler closes the semantic basis before implementation.
+  instrumentation:
+    decision_receipt: required
+    rationale: Class merge/split, kernel acceptance, and aperture selection are material decisions.

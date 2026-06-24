@@ -1,14 +1,14 @@
-# Proof Matrix
+# Proof-Law Matrix
 
-The proof matrix prevents one-test-per-wound accumulation.
+Map:
 
-Prefer proof that covers a family:
+```text
+law
+counterexample class
+focused witness proof
+family/property proof
+recomposition proof
+terminal holdout proof
+```
 
-- authority-boundary table;
-- rejection matrix;
-- invariant/state transition proof;
-- canonicalization/round-trip test;
-- existing test extension;
-- one representative regression plus table.
-
-In distillation mode, include which lab tests were discarded or merged.
+Flag proof families named only after review comments or local wounds.

@@ -1,18 +1,28 @@
-# MBKC-v1
+# MBKC-v1 Intent-Closed Profile
 
-`minimum_behavioral_kernel_certificate` is the one durable campaign certificate.
+MBKC-v1 remains the certificate wrapper.
 
-It binds:
+Required protocol profile:
 
-- campaign base and review-ready baseline;
-- accepted observations;
-- minimum kernel;
-- kernel review;
-- realization designs;
-- selected realization and mapping;
-- semantic-surface comparison;
-- proof basis;
-- negative evidence;
-- holdouts;
-- physical delivery state;
-- tuple and terminal closure gates.
+```text
+intent-closed-cegis-v1
+```
+
+It now binds:
+
+```text
+AC-v2
+review batches
+CEB-v2
+MBK-v1
+RC-v1
+realization
+PHI-v1
+conformance
+terminal holdout
+proof
+delivery
+closure horizon
+```
+
+See `assets/mbkc-intent-closed-terminal.example.json` and `tools/mbkc_gate.py`.

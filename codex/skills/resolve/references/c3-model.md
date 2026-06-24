@@ -1,18 +1,16 @@
-# C³ Model
+# Intent-Closed C3 Model
 
 ```text
-immutable base B
-monotone counterexample basis C
-disposable candidates P
-minimal surviving delivery patch P*
+contract closure
+counterexample search
+equivalence quotient
+kernel synthesis
+bounded realization
+conformance falsification
+potential descent
+terminal holdout
 ```
 
-A new branch-liable counterexample invalidates the candidate:
+C3 is finite only relative to the sealed observation language.
 
-```text
-C := C ∪ {counterexample}
-discard P
-regenerate from B
-```
-
-Never patch the candidate in response to new review evidence.
+Changing that language is an explicit rebase, not another review patch.
