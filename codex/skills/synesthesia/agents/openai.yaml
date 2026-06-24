@@ -2,5 +2,12 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Synesthesia"
-  short_description: "Help with Synesthesia tasks"
-  default_prompt: "Use $synesthesia for this task."
+  short_description: "Turn software evidence into reversible sensory diagnostics"
+  default_prompt: >-
+    Use $synesthesia only as an evidence-bound diagnostic lens. Start from
+    literal observations, choose the minimum sufficient and non-redundant
+    modalities, and translate every sensory statement into a concrete technical
+    hypothesis, uncertainty, falsifier, and next move. Hand implementation and
+    proof to the owning technical workflow. Do not capture a durable mapping
+    without explicit endorsement, correction, rejection, retraction, a direct
+    remember request, or repeated accepted operational use.

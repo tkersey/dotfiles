@@ -1,133 +1,267 @@
 ---
 name: synesthesia
-description: "Cross-modal diagnostic/review workflow for software systems: map technical signals into sensory models, translate them back into engineering terms, and selectively capture only explicitly endorsed or corrected durable mappings through memory-source-notes. Use for architecture, strange/flaky behavior, performance, readability, API/UX critique, onboarding, or comparisons by feel."
+description: "Reversible cross-modal diagnostic lens for software. Use when the user asks what code, architecture, behavior, logs, APIs, or alternatives feel, sound, look, or move like; for compare-by-feel analysis; or after an owning technical workflow identifies a concrete ambiguity that spatial, temporal, tactile, thermal, visual, or auditory recoding may clarify. Start from literal evidence and translate every sensory statement into a technical hypothesis, uncertainty, falsifier, and next move. Not for ordinary architecture, performance, readability, UX, or debugging work by subject alone; exact syntax; legal/compliance or security sign-off; or code mutation by itself."
 metadata:
-  version: "2.0.0"
+  version: "3.0.0"
+  activation_cost: low
+  default_depth: adaptive
 ---
 
 # Synesthesia
 
 ## Mission
 
-Use reversible sensory models to surface software structure, then translate every useful observation back into precise engineering implications and action.
+Use a reversible sensory representation to expose or communicate software structure that a literal model has not made clear.
 
-The sensory layer is a diagnostic instrument, not evidence and not mandatory output style. For an accepted mapping/boundary admission, load `$memory-source-notes` before invoking `run_memory_note_tool`.
+The sensory layer is a diagnostic instrument. It is not evidence, proof, a mandatory output style, or an implementation owner.
 
-## Core Contract
+## Ownership
+
+Synesthesia owns:
+
+```text
+literal observations
+-> alternate sensory representation
+-> dissonance or structural insight
+-> engineering translation
+-> falsifier
+-> decision, explanation, or investigation delta
+```
+
+It does not own:
+
+- profiling, benchmarking, or performance proof;
+- architecture authority or categorical construction;
+- security, legal, compliance, or correctness sign-off;
+- code mutation, review closure, or delivery;
+- memory-note command syntax or compiled-memory mutation.
+
+The relevant technical workflow remains authoritative. Synesthesia may refine its model, not replace it.
+
+## Activation boundary
+
+### Use this skill when
+
+At least one condition is true:
+
+1. The user explicitly asks what an artifact feels, sounds, looks, moves, weighs, or behaves like in sensory terms.
+2. The user asks to compare alternatives by feel, friction, texture, rhythm, weight, coherence, or another experiential axis.
+3. An already-active owning workflow hands off a **named representational ambiguity** and explains why cross-modal recoding may distinguish competing interpretations.
+4. A teaching or onboarding task explicitly benefits from a sensory mental model and the model can remain technically reversible.
+
+### Do not activate by subject alone
+
+These topics do not independently justify Synesthesia:
+
+- architecture or system design;
+- performance, latency, throughput, or memory;
+- readability, maintainability, or refactoring;
+- APIs, UX, CLI behavior, or onboarding;
+- strange, flaky, concurrent, or intermittent behavior.
+
+Route the literal task to its governing workflow first. Add Synesthesia only when the representation itself is expected to change the diagnosis, comparison, investigation order, or mental model.
+
+### Hard non-triggers
+
+Do not use Synesthesia for:
+
+- exact API, command, or language syntax;
+- legal or compliance interpretation;
+- security sign-off;
+- terse factual lookup;
+- rote edits with no explanatory or diagnostic component;
+- aesthetic rewriting that belongs to `$logophile`;
+- metaphor requested as a substitute for evidence.
+
+## Core contract
 
 Always:
 
-1. start from literal evidence: code, tests, logs, architecture, runtime behavior, user flow, or repository structure;
-2. use only 2-4 modalities that illuminate the task;
-3. keep mappings internally consistent;
-4. mark uncertainty;
-5. translate every useful metaphor into concrete technical meaning;
-6. prefer directness over poetry;
-7. execute code changes literally even when the lens informed the decision.
+1. Start from literal evidence: code, tests, logs, traces, profiles, architecture, runtime behavior, user flow, or repository structure.
+2. Separate observations from inferences before creating a sensory model.
+3. Choose the **minimum sufficient modalities**, usually one or two. Add a modality only when it exposes an independent technical dimension.
+4. Keep each mapping internally consistent for the current scope.
+5. Mark uncertainty explicitly.
+6. Translate every material sensory statement into concrete engineering terms.
+7. Name what would falsify a diagnostic mapping.
+8. State the resulting decision, explanation, or investigation delta.
+9. Omit or compress the sensory layer when it produces no material delta.
+10. Execute implementation and verification literally through the owning workflow.
 
-Never treat metaphor as proof, hide uncertainty in aesthetic language, overwrite exact facts with feel, force this framing onto narrow factual tasks, or infer a durable user mapping from an assistant-generated phrase alone.
+Never:
+
+- treat metaphor as evidence;
+- invent unseen runtime facts;
+- hide uncertainty in aesthetic language;
+- repeat one conclusion through several decorative modalities;
+- globalize a repo-local or user-local mapping without evidence;
+- infer a durable preference from assistant-authored wording alone.
+
+## Mapping record
+
+Every material mapping must be reconstructible as:
+
+```yaml
+synesthetic_mapping:
+  literal_observations: []
+  sensory_model:
+  modalities: []
+  engineering_translation:
+  uncertainty:
+  falsifier:
+  decision_delta:
+  evidence_refs: []
+```
+
+A mapping with no evidence reference, engineering translation, falsifier, or meaningful delta is explanatory decoration, not a diagnostic result.
+
+## Modes
+
+Choose exactly one primary mode.
+
+### Diagnose
+
+Use when the goal is to distinguish causes or choose an investigation order.
+
+Output:
+
+```text
+observations -> sensory model -> candidate mechanism -> falsifier -> next check
+```
+
+Do not present the candidate mechanism as a verified root cause.
+
+### Explain
+
+Use for onboarding or teaching when the user wants an intuitive mental model.
+
+Output:
+
+```text
+literal system model -> sensory representation -> exact correspondence -> limits of the analogy
+```
+
+End with boundaries or misconceptions, not an obligatory change list.
+
+### Compare
+
+Use when two or more designs are evaluated experientially.
+
+Use stable axes across all alternatives. Translate each axis into a technical tradeoff and end with the decision implication or unresolved tie.
+
+### Implementation lens
+
+Use only after another workflow owns the code change. Produce at most one route-shaping insight, then return to literal implementation and proof.
+
+Synesthesia must not become a second implementation plan.
 
 ## Procedure
 
-1. Literal read: extract components, flows, hotspots, failure modes, constraints, and unknowns.
-2. Sensory render: choose visual, auditory, spatial, tactile, or thermal models that expose structure.
-3. Dissonances: find mismatches between intended design and observed behavior.
-4. Engineering translation: state literal interpretation, why it matters, evidence, and change/investigation.
-5. Action: end with concrete steps.
+1. **Literal read** — identify components, flows, states, timing, boundaries, constraints, unknowns, and available evidence.
+2. **Mode selection** — choose `diagnose`, `explain`, `compare`, or `implementation-lens`.
+3. **Modality selection** — use [modality-selection.md](references/modality-selection.md) and select the minimum independent set.
+4. **Sensory render** — describe only the structure supported by the evidence.
+5. **Dissonance extraction** — identify the smallest mismatch, interference, discontinuity, congestion, drag, or ambiguity that matters.
+6. **Engineering translation** — state the literal mechanism, uncertainty, and evidence.
+7. **Falsification** — name the observation, command, trace, or code fact that would defeat the mapping.
+8. **Delta** — state what changes: investigation order, architectural interpretation, comparison, explanation, or owning-workflow route.
+9. **Stop or hand off** — do not continue adding modalities once the governing delta is clear.
 
-## Memory Capture Boundary
+## Cross-skill routing
+
+| Literal task | Governing owner | Synesthesia role |
+|---|---|---|
+| Measured performance optimization | `$lift` | Explain a measured profile or temporal topology after evidence exists |
+| Structural or categorical architecture | `$universalist` | Optional representation of worlds, boundaries, effects, or observations |
+| Local comprehension and refactoring preflight | `$complexity-mitigator` | Optional representation of cognitive or structural friction |
+| Security, UX, performance, API, copy, or CLI audit | `$codebase-audit` | Interpretive lane only; never evidence or severity authority |
+| Wording and naming | `$logophile` | No role unless the user explicitly requests sensory explanation |
+| Explicit feel/sound/look/texture comparison | `$synesthesia` | Governing skill |
+
+When another skill owns the task, preserve its artifacts, terminology, proof obligations, and stop conditions.
+
+## Output contract
+
+Use the smallest useful form. A full diagnostic answer may use:
+
+```text
+Literal observations
+- evidence-backed facts only
+
+Sensory model
+- one or two non-redundant modalities
+
+Engineering translation
+- concrete mechanism and uncertainty
+
+Falsifier
+- what would show the mapping is wrong
+
+Delta
+- next investigation, interpretation, decision, or handoff
+```
+
+Do not force headings for a brief implementation-lens or teaching answer.
+
+## Memory admission boundary
 
 Most sensory output must not become memory.
 
-A custom synesthesia source note is allowed only for:
+Evaluate admission only when the user explicitly endorses, corrects, rejects, retracts, or asks to remember a mapping or boundary, or when repeated accepted operational use is independently evidenced.
 
-- explicit user endorsement of a mapping;
-- explicit correction of a mapping;
-- explicit rejection of a mapping;
-- explicit durable activation/non-activation boundary;
-- repeated accepted operational use across contexts;
-- stable repo/task-family vocabulary that changes future diagnosis.
+The Synesthesia skill owns only the admission decision and payload semantics. `$memory-source-notes` owns CLI discovery, safe writing, result parsing, and proof lines.
 
-Do not capture one-off poetic phrases, assistant novelty, ambient UI colors or passive Chronicle context, transient incident descriptions, mappings with no concrete engineering translation, or general technical facts better owned by learnings or negative ledger.
+Before handoff:
 
-## Mapping Admission Gate
+1. Read [memory-admission.md](references/memory-admission.md).
+2. Build the complete source-note envelope.
+3. Run the skill-local preflight and canonicalizer.
+4. Hand the canonical JSON bytes to `$memory-source-notes`.
 
-Require:
+Do not print a routine `memory-note: not-attempted` line when no durable event occurred. Mention memory only when the gate was materially evaluated or a write was requested.
 
-1. `sensory_phrase`;
-2. `engineering_translation`;
-3. `activation_boundary`;
-4. `non_activation_boundary` when relevant;
-5. narrow scope;
-6. endorsement/correction/rejection authority;
-7. evidence reference;
-8. verification rule that keeps the mapping reversible.
+## Subagents
 
-## Admission Payload
+Do not create or require a dedicated Synesthesia custom subagent.
 
-```json
-{
-  "operation": "assert",
-  "authority": "explicit-user-endorsement",
-  "summary": "Endorse long corridor as serialized-wait vocabulary.",
-  "scope": {
-    "kind": "task-family",
-    "repo": null,
-    "paths": []
-  },
-  "source_refs": [
-    {
-      "kind": "user-endorsement",
-      "ref": "rollout:019...",
-      "summary": "User explicitly accepted and reused the mapping"
-    }
-  ],
-  "related_ids": [],
-  "supersedes_id": null,
-  "payload": {
-    "sensory_phrase": "long corridor",
-    "engineering_translation": "serialized waits, chatty calls, or amplified dependency latency",
-    "activation_boundary": "performance and dependency-chain diagnosis",
-    "non_activation_boundary": "exact syntax or literal-only requests",
-    "scope": "task_family_scoped",
-    "scope_anchor": "performance-triage",
-    "endorsement_type": "explicit-user-endorsement",
-    "verification": "Every use names the concrete wait/latency mechanism and evidence"
-  }
-}
-```
+When the user explicitly requests parallel analysis, a read-only worker may receive a bounded Synesthesia lane only if it is given:
 
-Then hand off:
+- exact artifact state;
+- literal observations or files to inspect;
+- one representational question;
+- required engineering translation and falsifier;
+- no mutation authority.
+
+The root integrates the result and owns all conclusions.
+
+## Stop conditions
+
+Stop the sensory pass when any condition holds:
+
+- the mapping does not expose an independent technical dimension;
+- a literal explanation is clearer;
+- the governing insight and falsifier are already stated;
+- evidence is insufficient to support further detail;
+- the task has returned to implementation or proof;
+- the user requested literal-only output.
+
+## Validation
+
+Run after changing this package:
 
 ```bash
-run_memory_note_tool append \
-  --extension synesthesia \
-  --kind mapping-endorsement \
-  --json -
+uv run --with pyyaml python \
+  codex/skills/synesthesia/scripts/validate_synesthesia.py all
+
+uv run --with pyyaml python -m unittest discover \
+  -s codex/skills/synesthesia/tests \
+  -p 'test_*.py'
+
+uv run --with pyyaml python \
+  codex/skills/tune/tools/decision_contract_lint.py \
+  codex/skills/synesthesia/references/decision-contract.yaml
+
+uv run --with pyyaml python \
+  codex/skills/.system/skill-creator/scripts/quick_validate.py \
+  codex/skills/synesthesia
 ```
-
-For corrections/rejections use `mapping-correction`, `mapping-rejection`, `activation-boundary`, or `boundary-retraction` and reference the previous note ID when known.
-
-## Proof Lines
-
-```text
-memory-note: id=MSN-... extension=synesthesia kind=mapping-endorsement status=created
-memory-note: not-attempted: source admission gate not met
-memory-note: not-attempted: cli unavailable
-```
-
-## Cross-Extension Ownership
-
-- general workflow/operating correction -> harness-memory;
-- evidence-backed technical learning -> learnings;
-- failed-hypothesis exclusion/reopening -> negative-ledger;
-- sensory mapping or activation boundary -> synesthesia.
-
-## Guardrails
-
-- Literal correctness outranks vividness.
-- Metaphor never substitutes for tests, profiling, logs, or proof.
-- Repo-local vocabulary remains repo-local until broader evidence exists.
-- Stable mappings are preferred over novelty.
-- Never directly edit compiled memory.
-- Never write custom notes without passing the endorsement gate.

@@ -1,0 +1,229 @@
+{
+  "schema": "synesthesia-memory-cases/v1",
+  "cases": [
+    {
+      "id": "valid-endorsement",
+      "kind": "mapping-endorsement",
+      "expected_valid": true,
+      "input": {
+        "operation": "assert",
+        "authority": "explicit-user-endorsement",
+        "summary": "Endorse long corridor for serialized waits.",
+        "scope": {"kind": "task-family", "repo": null, "paths": []},
+        "source_refs": [{"kind": "user-endorsement", "ref": "rollout:019", "summary": "User explicitly accepted the mapping."}],
+        "related_ids": [],
+        "supersedes_id": null,
+        "payload": {
+          "sensory_phrase": "long corridor",
+          "engineering_translation": "serialized waits or amplified dependency latency",
+          "activation_boundary": "performance and dependency-chain diagnosis",
+          "non_activation_boundary": "literal-only or exact syntax work",
+          "verification": "Every use identifies the concrete latency mechanism and evidence"
+        }
+      }
+    },
+    {
+      "id": "valid-correction",
+      "kind": "mapping-correction",
+      "expected_valid": true,
+      "input": {
+        "operation": "supersede",
+        "authority": "explicit-user-correction",
+        "summary": "Narrow corridor mapping to serialized waits only.",
+        "scope": {"kind": "task-family", "repo": null, "paths": []},
+        "source_refs": [{"kind": "user-correction", "ref": "rollout:020", "summary": "User narrowed the prior mapping."}],
+        "related_ids": [],
+        "supersedes_id": "MSN-20260620T183000Z-a91f4e2c6b5d3f10",
+        "payload": {
+          "sensory_phrase": "long corridor",
+          "engineering_translation": "serialized waits",
+          "activation_boundary": "measured serialized dependency waits",
+          "non_activation_boundary": "parallel fanout or exact syntax work",
+          "verification": "Use only when evidence identifies serialization"
+        }
+      }
+    },
+    {
+      "id": "valid-new-rejection",
+      "kind": "mapping-rejection",
+      "expected_valid": true,
+      "input": {
+        "operation": "reject",
+        "authority": "explicit-user-rejection",
+        "summary": "Reject red as a default risk mapping.",
+        "scope": {"kind": "global", "repo": null, "paths": []},
+        "source_refs": [{"kind": "user-rejection", "ref": "rollout:021", "summary": "User rejected the newly proposed mapping before admission."}],
+        "related_ids": [],
+        "supersedes_id": null,
+        "payload": {
+          "sensory_phrase": "red",
+          "activation_boundary": "none",
+          "non_activation_boundary": "all automatic diagnostic use",
+          "verification": "Do not use red without an explicit local definition"
+        }
+      }
+    },
+    {
+      "id": "invalid-assistant-authority",
+      "kind": "mapping-endorsement",
+      "expected_valid": false,
+      "input": {
+        "operation": "assert",
+        "authority": "assistant-inference",
+        "summary": "Assistant liked the mapping.",
+        "scope": {"kind": "global", "repo": null, "paths": []},
+        "source_refs": [{"kind": "assistant", "ref": "turn:1", "summary": "Assistant generated it."}],
+        "related_ids": [],
+        "supersedes_id": null,
+        "payload": {
+          "sensory_phrase": "glass",
+          "engineering_translation": "fragility",
+          "activation_boundary": "API review",
+          "non_activation_boundary": "literal work",
+          "verification": "Translate literally"
+        }
+      }
+    },
+    {
+      "id": "invalid-correction-without-prior",
+      "kind": "mapping-correction",
+      "expected_valid": false,
+      "input": {
+        "operation": "supersede",
+        "authority": "explicit-user-correction",
+        "summary": "Correction with no prior note.",
+        "scope": {"kind": "global", "repo": null, "paths": []},
+        "source_refs": [{"kind": "user-correction", "ref": "rollout:22", "summary": "Correction."}],
+        "related_ids": [],
+        "supersedes_id": null,
+        "payload": {
+          "sensory_phrase": "glass",
+          "engineering_translation": "strict error surface",
+          "activation_boundary": "API review",
+          "non_activation_boundary": "literal work",
+          "verification": "Name the exact error surface"
+        }
+      }
+    },
+    {
+      "id": "invalid-kind-operation",
+      "kind": "mapping-endorsement",
+      "expected_valid": false,
+      "input": {
+        "operation": "reject",
+        "authority": "explicit-user-rejection",
+        "summary": "Mismatched kind and operation.",
+        "scope": {"kind": "global", "repo": null, "paths": []},
+        "source_refs": [{"kind": "user-rejection", "ref": "rollout:23", "summary": "Rejected."}],
+        "related_ids": [],
+        "supersedes_id": null,
+        "payload": {
+          "sensory_phrase": "glass",
+          "engineering_translation": "fragility",
+          "activation_boundary": "API review",
+          "non_activation_boundary": "literal work",
+          "verification": "Do not use"
+        }
+      }
+    },
+    {
+      "id": "invalid-duplicated-scope",
+      "kind": "mapping-endorsement",
+      "expected_valid": false,
+      "input": {
+        "operation": "assert",
+        "authority": "explicit-user-endorsement",
+        "summary": "Payload duplicates envelope scope.",
+        "scope": {"kind": "repo", "repo": "owner/repo", "paths": []},
+        "source_refs": [{"kind": "user-endorsement", "ref": "rollout:24", "summary": "Endorsed."}],
+        "related_ids": [],
+        "supersedes_id": null,
+        "payload": {
+          "sensory_phrase": "corridor",
+          "engineering_translation": "serialization",
+          "activation_boundary": "latency",
+          "non_activation_boundary": "syntax",
+          "verification": "Name serialization",
+          "scope": "repo_scoped"
+        }
+      }
+    },
+    {
+      "id": "invalid-missing-non-activation",
+      "kind": "mapping-endorsement",
+      "expected_valid": false,
+      "input": {
+        "operation": "assert",
+        "authority": "explicit-user-endorsement",
+        "summary": "Missing non-activation boundary.",
+        "scope": {"kind": "global", "repo": null, "paths": []},
+        "source_refs": [{"kind": "user-endorsement", "ref": "rollout:25", "summary": "Endorsed."}],
+        "related_ids": [],
+        "supersedes_id": null,
+        "payload": {
+          "sensory_phrase": "corridor",
+          "engineering_translation": "serialization",
+          "activation_boundary": "latency",
+          "verification": "Name serialization"
+        }
+      }
+    },
+    {
+      "id": "invalid-boundary-retraction-without-prior",
+      "kind": "boundary-retraction",
+      "expected_valid": false,
+      "input": {
+        "operation": "retract",
+        "authority": "explicit-user-retraction",
+        "summary": "Retract boundary without prior link.",
+        "scope": {"kind": "global", "repo": null, "paths": []},
+        "source_refs": [{"kind": "user-retraction", "ref": "rollout:26", "summary": "Retracted."}],
+        "related_ids": [],
+        "supersedes_id": null,
+        "payload": {
+          "sensory_phrase": "corridor",
+          "activation_boundary": "latency",
+          "non_activation_boundary": "all other work",
+          "verification": "Do not retrieve the old boundary"
+        }
+      }
+    }
+  ],
+  "canonical_pairs": [
+    {
+      "id": "equivalent-key-order",
+      "left": {
+        "operation": "assert",
+        "authority": "explicit-user-endorsement",
+        "summary": "Same",
+        "scope": {"kind": "global", "repo": null, "paths": []},
+        "source_refs": [{"kind": "user", "ref": "r", "summary": "s"}],
+        "related_ids": [],
+        "supersedes_id": null,
+        "payload": {
+          "sensory_phrase": "corridor",
+          "engineering_translation": "serialization",
+          "activation_boundary": "latency",
+          "non_activation_boundary": "syntax",
+          "verification": "name the mechanism"
+        }
+      },
+      "right": {
+        "payload": {
+          "verification": "name the mechanism",
+          "non_activation_boundary": "syntax",
+          "activation_boundary": "latency",
+          "engineering_translation": "serialization",
+          "sensory_phrase": "corridor"
+        },
+        "supersedes_id": null,
+        "related_ids": [],
+        "source_refs": [{"summary": "s", "ref": "r", "kind": "user"}],
+        "scope": {"paths": [], "repo": null, "kind": "global"},
+        "summary": "Same",
+        "authority": "explicit-user-endorsement",
+        "operation": "assert"
+      }
+    }
+  ]
+}

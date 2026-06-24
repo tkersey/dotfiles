@@ -1,0 +1,125 @@
+{
+  "schema": "synesthesia-routing-cases/v1",
+  "cases": [
+    {
+      "id": "positive-explicit-sound",
+      "prompt": "What does this lock-contention trace sound like?",
+      "expected_activation": true,
+      "expected_route": "SYN-R1-DIAGNOSE",
+      "governing_owner": "synesthesia",
+      "reason": "The user explicitly requests a cross-modal diagnostic representation."
+    },
+    {
+      "id": "positive-explicit-spatial",
+      "prompt": "Make this dependency architecture spatially visible and tell me where it constricts.",
+      "expected_activation": true,
+      "expected_route": "SYN-R2-EXPLAIN",
+      "governing_owner": "synesthesia",
+      "reason": "The representation itself is the requested product."
+    },
+    {
+      "id": "positive-compare-feel",
+      "prompt": "Compare these two APIs by texture, friction, and reversibility.",
+      "expected_activation": true,
+      "expected_route": "SYN-R3-COMPARE",
+      "governing_owner": "synesthesia",
+      "reason": "The user requests stable experiential comparison axes."
+    },
+    {
+      "id": "positive-handoff",
+      "prompt": "The profiler established two equal-cost candidates. Use a Synesthesia handoff to clarify whether the bottleneck is temporal coordination or dependency topology.",
+      "expected_activation": true,
+      "expected_route": "SYN-R4-IMPLEMENTATION-LENS",
+      "governing_owner": "lift",
+      "reason": "The owning workflow names a concrete representational ambiguity."
+    },
+    {
+      "id": "positive-teaching",
+      "prompt": "Explain this event loop as a sensory mental model, then state exactly where the analogy breaks.",
+      "expected_activation": true,
+      "expected_route": "SYN-R2-EXPLAIN",
+      "governing_owner": "synesthesia",
+      "reason": "The user explicitly requests a reversible teaching model."
+    },
+    {
+      "id": "near-miss-performance",
+      "prompt": "Optimize p99 latency in this service and prove the improvement.",
+      "expected_activation": false,
+      "expected_route": "SYN-R6-NO-SYNESTHESIA",
+      "governing_owner": "lift",
+      "reason": "Performance subject matter alone does not justify a sensory lens."
+    },
+    {
+      "id": "near-miss-api-audit",
+      "prompt": "Audit this API for correctness, ergonomics, and compatibility risks.",
+      "expected_activation": false,
+      "expected_route": "SYN-R6-NO-SYNESTHESIA",
+      "governing_owner": "codebase-audit",
+      "reason": "An ordinary domain audit remains literal and evidence-backed."
+    },
+    {
+      "id": "near-miss-refactor",
+      "prompt": "Simplify this deeply nested function without changing behavior.",
+      "expected_activation": false,
+      "expected_route": "SYN-R6-NO-SYNESTHESIA",
+      "governing_owner": "complexity-mitigator",
+      "reason": "Local comprehension and winnowing have a stronger owner."
+    },
+    {
+      "id": "near-miss-architecture",
+      "prompt": "Design the canonical effect boundary for this subsystem.",
+      "expected_activation": false,
+      "expected_route": "SYN-R6-NO-SYNESTHESIA",
+      "governing_owner": "universalist",
+      "reason": "Structural architecture does not activate Synesthesia by subject alone."
+    },
+    {
+      "id": "near-miss-flaky",
+      "prompt": "Find the root cause of this flaky test and fix it.",
+      "expected_activation": false,
+      "expected_route": "SYN-R6-NO-SYNESTHESIA",
+      "governing_owner": "direct",
+      "reason": "Normal reproduction and debugging must precede any optional representation handoff."
+    },
+    {
+      "id": "near-miss-naming",
+      "prompt": "Choose a sharper name for this execution mode.",
+      "expected_activation": false,
+      "expected_route": "SYN-R6-NO-SYNESTHESIA",
+      "governing_owner": "logophile",
+      "reason": "Naming is a language-surface task."
+    },
+    {
+      "id": "hard-negative-security",
+      "prompt": "Is this cryptographic protocol secure? Give a sign-off.",
+      "expected_activation": false,
+      "expected_route": "SYN-R6-NO-SYNESTHESIA",
+      "governing_owner": "security-review",
+      "reason": "Sensory framing cannot supply security authority."
+    },
+    {
+      "id": "hard-negative-legal",
+      "prompt": "What does this statute require for data retention?",
+      "expected_activation": false,
+      "expected_route": "SYN-R6-NO-SYNESTHESIA",
+      "governing_owner": "legal",
+      "reason": "Legal interpretation is a hard non-trigger."
+    },
+    {
+      "id": "hard-negative-syntax",
+      "prompt": "What is the exact Zig syntax for a tagged union?",
+      "expected_activation": false,
+      "expected_route": "SYN-R6-NO-SYNESTHESIA",
+      "governing_owner": "zig",
+      "reason": "Exact syntax is literal and version-sensitive."
+    },
+    {
+      "id": "hard-negative-rote-edit",
+      "prompt": "Change this string literal from old to new and nothing else.",
+      "expected_activation": false,
+      "expected_route": "SYN-R6-NO-SYNESTHESIA",
+      "governing_owner": "direct",
+      "reason": "A rote edit has no representational need."
+    }
+  ]
+}

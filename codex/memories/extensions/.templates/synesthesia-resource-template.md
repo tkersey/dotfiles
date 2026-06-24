@@ -1,65 +1,72 @@
 # Synesthesia resource digest
 
 generated_at: <YYYY-MM-DDTHH-MM-SSZ>
-source: <user corrections / rollout summaries / learnings / manual digest>
-scope: <global_default | repo_scoped | task_family_scoped | tentative>
+source: <immutable source notes only>
+scope: <global | repo | path-family | task-family | workflow | tool>
+
+> This digest is a temporary consolidation aid. Every promotable entry must cite
+> valid immutable `source_note_ids`. Entries without them target `none`.
 
 ## Endorsed mappings
 
 ### <short mapping title>
 
+- source_note_ids: [<MSN-...>]
 - sensory_phrase:
 - engineering_translation:
 - activation_boundary:
 - non_activation_boundary:
 - scope:
 - scope_anchor:
-- evidence_source:
-- confidence: <high | medium | low>
 - verification:
-- related_skill: synesthesia
-- memory_target: <memory_summary | MEMORY | skill | none>
-- memory_skill_candidate: <none | skill-name + why>
-- mcp_search_terms: synesthesia, <phrase>, <repo>, <task>, <technical pattern>
+- confidence: <high | medium | low>
+- memory_target: <memory_summary | MEMORY | none>
+- retrieval_terms: [synesthesia, <phrase>, <repo>, <task>, <technical-pattern>]
 
 ## Activation boundaries
 
 ### <boundary title>
 
+- source_note_ids: [<MSN-...>]
 - use_when:
 - do_not_use_when:
-- evidence_source:
 - failure_avoided:
-- mcp_search_terms:
+- verification:
+- memory_target: <memory_summary | MEMORY | none>
+- retrieval_terms: []
 
-## Rejected mappings
+## Corrections and supersessions
 
-- sensory_phrase:
+### <correction title>
+
+- source_note_ids: [<MSN-new>, <MSN-prior>]
+- superseded_mapping_or_boundary:
+- current_mapping_or_boundary:
 - reason:
 - scope:
-- source:
-- mcp_search_terms:
+- verification:
+- memory_target: <memory_summary | MEMORY | none>
+
+## Rejected or retracted mappings
+
+### <rejection title>
+
+- source_note_ids: [<MSN-...>]
+- sensory_phrase_or_boundary:
+- disposition: <rejected | retracted>
+- reason:
+- scope:
+- retrieval_terms: []
+- memory_target: none
 
 ## Failure shields
 
 ### <shield title>
 
+- source_note_ids: [<MSN-...>]
 - trigger:
 - mistake_to_avoid:
 - preferred_behavior:
 - engineering_translation_required: true
 - verification:
-- mcp_search_terms:
-
-## Skill candidates
-
-### <skill candidate name>
-
-- trigger:
-- repeated_workflow:
-- source_evidence:
-- first_memory_searches:
-- procedure_outline:
-- verification:
-- why_existing_synesthesia_skill_is_not_enough:
-- mcp_search_terms:
+- memory_target: <memory_summary | MEMORY | none>

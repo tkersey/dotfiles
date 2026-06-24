@@ -1,0 +1,161 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: synesthesia
+    kind: mixed
+    source_fingerprint: synesthesia-v3-reversible-lens
+  triggers:
+  - trigger_id: SYN-T1-SENSORY
+    description: The user explicitly requests a sensory, experiential, or cross-modal representation of a software artifact or behavior.
+    cue_literals:
+    - feels like
+    - sound like
+    - looks like
+    - texture
+    - color of this codebase
+    - make this visible
+    - rhythm
+    - friction
+    - weight
+    cue_regexes:
+    - "(?i)what (does|do) .+ (feel|sound|look) like"
+    exclusions:
+    - literal-only request
+    - exact syntax
+    - legal or compliance interpretation
+    - security sign-off
+  - trigger_id: SYN-T2-COMPARE
+    description: The user asks to compare multiple implementations or designs by feel, friction, coherence, rhythm, weight, or another experiential axis.
+    cue_literals:
+    - compare by feel
+    - which feels cleaner
+    - which is smoother
+    - which is more coherent
+    cue_regexes: []
+    exclusions:
+    - benchmark-only comparison
+    - security-only comparison
+  - trigger_id: SYN-T3-HANDOFF
+    description: An owning technical workflow names a concrete representational ambiguity that cross-modal recoding may clarify.
+    cue_literals:
+    - synesthesia handoff
+    - representational ambiguity
+    cue_regexes: []
+    exclusions:
+    - generic architecture task
+    - generic performance task
+    - generic readability task
+    - generic flaky-debugging task
+  routes:
+  - route_id: SYN-R1-DIAGNOSE
+    description: Use an evidence-bound sensory model to distinguish candidate mechanisms or choose an investigation order.
+    aliases:
+    - diagnose
+    terminal: 'no'
+  - route_id: SYN-R2-EXPLAIN
+    description: Build a reversible mental model for teaching or onboarding and state the analogy's limits.
+    aliases:
+    - explain
+    - teaching
+    terminal: 'no'
+  - route_id: SYN-R3-COMPARE
+    description: Compare alternatives on stable sensory axes translated into technical tradeoffs.
+    aliases:
+    - compare
+    terminal: 'no'
+  - route_id: SYN-R4-IMPLEMENTATION-LENS
+    description: Produce one route-shaping representation inside an already-owned implementation workflow, then return to literal execution.
+    aliases:
+    - implementation-lens
+    terminal: 'no'
+  - route_id: SYN-R5-MEMORY-ADMISSION
+    description: Validate an explicitly authorized durable mapping or boundary and hand canonical JSON to memory-source-notes.
+    aliases:
+    - memory-admission
+    terminal: 'no'
+  - route_id: SYN-R6-NO-SYNESTHESIA
+    description: Stay literal because the subject alone does not justify the lens or no independent representational value is expected.
+    aliases:
+    - direct
+    - no-synesthesia
+    terminal: 'yes'
+  - route_id: SYN-R7-BLOCKED
+    description: Stop the sensory pass because literal evidence, scope, or a falsifiable translation is missing.
+    aliases:
+    - blocked
+    terminal: 'yes'
+  clauses:
+  - clause_id: SYN-ACT-001
+    trigger_refs:
+    - SYN-T1-SENSORY
+    - SYN-T2-COMPARE
+    - SYN-T3-HANDOFF
+    expected_routes:
+    - SYN-R1-DIAGNOSE
+    - SYN-R2-EXPLAIN
+    - SYN-R3-COMPARE
+    - SYN-R4-IMPLEMENTATION-LENS
+    - SYN-R6-NO-SYNESTHESIA
+    - SYN-R7-BLOCKED
+    prohibited_routes: []
+    required_artifacts:
+    - literal observations or explicit missing-evidence statement
+    - selected primary mode
+    success_signals:
+    - activation is based on representational need rather than subject alone
+    - governing technical owner remains explicit when another workflow owns the task
+    failure_signals:
+    - ordinary architecture, performance, readability, UX, or debugging task activates Synesthesia merely by topic
+    - sensory language substitutes for the governing technical workflow
+    rationale: Synesthesia is a representation-changing lens, not a broad software domain owner.
+  - clause_id: SYN-MAP-001
+    trigger_refs:
+    - SYN-T1-SENSORY
+    - SYN-T2-COMPARE
+    - SYN-T3-HANDOFF
+    expected_routes:
+    - SYN-R1-DIAGNOSE
+    - SYN-R2-EXPLAIN
+    - SYN-R3-COMPARE
+    - SYN-R4-IMPLEMENTATION-LENS
+    prohibited_routes: []
+    required_artifacts:
+    - evidence references
+    - engineering translation
+    - uncertainty
+    - falsifier for diagnostic claims
+    - decision, explanation, or investigation delta
+    success_signals:
+    - modalities are minimum sufficient and non-redundant
+    - every material sensory statement is reversible
+    - the lens changes a decision, investigation order, comparison, or mental model
+    failure_signals:
+    - metaphor is presented as evidence
+    - several modalities repeat one conclusion
+    - no falsifier or material delta exists
+    rationale: A sensory model is useful only when it remains evidence-bound and operationally reversible.
+  - clause_id: SYN-MEM-001
+    trigger_refs:
+    - SYN-T1-SENSORY
+    - SYN-T2-COMPARE
+    - SYN-T3-HANDOFF
+    expected_routes:
+    - SYN-R5-MEMORY-ADMISSION
+    - SYN-R6-NO-SYNESTHESIA
+    prohibited_routes: []
+    required_artifacts:
+    - explicit endorsement, correction, rejection, retraction, remember request, or repeated accepted-use evidence
+    - complete source-note envelope
+    - successful skill-local preflight before handoff
+    success_signals:
+    - payload does not duplicate envelope authority or scope
+    - operation and kind are compatible
+    - canonical JSON is handed to memory-source-notes
+    failure_signals:
+    - assistant-generated phrase is captured without user authority
+    - correction, rejection, retraction, confirmation, or reopening omits prior-note linkage
+    - routine answers emit memory proof noise
+    rationale: Durable mappings must be explicitly authorized, narrowly scoped, reversible, and safely transported.
+  instrumentation:
+    decision_receipt: optional
+    rationale: Use seq skill-decision-audit and the stable SYN clause IDs to distinguish useful, false, missed, and ceremonial activation.
