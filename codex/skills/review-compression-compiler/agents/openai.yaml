@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Review Compression Compiler"
   short_description: "Quotient sealed counterexamples into one kernel"
