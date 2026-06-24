@@ -1,46 +1,35 @@
 # $opt Routing Matrix
 
-## Fast routing
-
-| User intent | $opt mode | Companion | Edit default |
-| --- | --- | --- | --- |
-| "Is this skill well shaped?" | audit | skill-optimizer | no_edit |
-| "Optimize this skill" | propose | skill-optimizer, maybe $tune | no_edit |
-| "Tune from this session" | tune or shadow-diagnose | $shadow, $tune | no_edit |
-| "Fix the skill now" | patch | skill-optimizer, maybe $refine | edit_allowed after gate |
-| "Validate this skill edit" | validate | opt-sanity, target checks | no_edit |
-| "Prevent that failure again" | regression | $tune + skill-optimizer | no_edit unless explicit |
-| "Keep working until the skill is improved" | goal-loop | $cas + skill-optimizer | depends on explicit apply gate |
+| User intent | Mode | Governing route | Edit default |
+|---|---|---|---|
+| “Is this skill well shaped?” | audit | root plus optional read-only modeler | no edit |
+| “Optimize this skill” | propose | `$tune` | no edit |
+| “Tune from this session” | tune / shadow-diagnose | `$shadow` -> `$tune` | no edit |
+| “Fix the skill now” | apply | `$tune` -> complete `REFINE-SKILL-v3` -> `$refine` | explicit authority required |
+| “Validate this skill edit” | validate | `$refine validate` | no edit |
+| “Prevent that failure again” | regression | `$tune` -> `$refine regression` | explicit authority required |
+| “Keep working until improved” | goal-loop | `$cas` + `$opt` | each mutation separately gated |
 
 ## Evidence routing
 
 - Current user feedback: use current-turn evidence first; do not claim recurrence.
-- Watched session id/path: use `$shadow` on exactly that session, then pass the report to `skill-optimizer`.
-- Historical sessions: use `$tune` and its evidence-source model, usually via `$seq` when appropriate.
-- Worktree diffs: inspect target skill files and validation output.
-- Supplied brief: treat it as provided evidence and state what it cannot prove.
+- One watched session: use `$shadow`; do not inspect raw transcript files unless explicitly authorized.
+- Historical sessions: use `$seq` and `$tune`'s evidence hierarchy.
+- Worktree changes: inspect only the target skill package and named validation surfaces.
+- Supplied brief: preserve its evidence limits and authorized boundary.
 
-## Apply routing
+## Apply semantics
 
-The words below do not imply edit permission by themselves:
+These words do not by themselves authorize edits:
 
-- optimize
-- improve
-- tune
-- harden
-- audit
-- review
-- diagnose
-- make better
+```text
+optimize improve tune harden audit review diagnose make better
+```
 
-The words below usually imply possible edit permission if a target skill is identified:
+These normally express edit intent when the target skill is explicit:
 
-- edit
-- patch
-- apply
-- update the file
-- change SKILL.md
-- make the change
-- implement the fix
+```text
+edit patch apply update the file change SKILL.md implement the fix
+```
 
-Protected or self-targeted skill edits still require an apply gate and validation surface.
+Even with edit intent, mutation requires a complete `REFINE-SKILL-v3` handoff. `$refine` is the sole writer.

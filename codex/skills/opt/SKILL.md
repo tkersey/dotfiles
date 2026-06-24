@@ -1,32 +1,38 @@
 ---
 name: opt
-description: "Orchestrate user-owned skill optimization through `$seq` decision evidence, `$shadow` one-session deltas, `$tune` diagnosis, and `$refine` package optimization. Use for `$opt`, session-driven skill improvement, false/missed/ceremonial activation, decision-contract tuning, STE-v1 review, regression repair, or explicitly requested validated skill edits. Not for application-code optimization, system-managed optimizer modification, or autonomous ecosystem-wide scans."
+description: "Orchestrate evidence-backed optimization of user-owned Codex skills through $seq or $shadow evidence, $tune diagnosis, and $refine package editing and validation. Use for explicit skill audits, missed/false/ceremonial activation, decision-contract tuning, regression repair, or authorized skill edits. Not for application-code optimization or autonomous portfolio mutation."
 ---
 
 # opt
 
 ## Mission
 
-Coordinate the user-owned skill-improvement loop without blurring ownership.
+Coordinate the user-owned skill-improvement loop without blurring authority:
 
 ```text
 $seq      historical and session evidence
 $shadow   one watched-session delta
 $tune     diagnosis and expected decision delta
-$refine   skill-package optimization, editing, and validation
-$cas      optional parent goal lifecycle
+$refine   sole skill-package writer and validator
+$opt      orchestration, gates, and final synthesis
 ```
 
-Do not invoke, modify, or depend on a system-managed `skill-optimizer`.
-
-## Core question
+Core question:
 
 ```text
-What is the smallest evidence-backed skill change that improves future
-decisions, execution, evidence quality, or orchestration?
+What is the smallest evidence-backed change that improves future decisions,
+execution, evidence quality, or orchestration?
 ```
 
+## Activation boundary
+
+`$opt` is explicit-intent. Generic uses of “optimize,” “improve,” or “tune” for application code do not activate it.
+
+Skill-package mutation requires explicit edit authority. Ambiguous improvement requests default to proposal-only.
+
 ## Modes
+
+Choose exactly one:
 
 ```text
 audit
@@ -39,16 +45,16 @@ regression
 goal-loop
 ```
 
-Ambiguous “optimize” defaults to:
+Defaults:
 
 ```text
-propose
-no edit
+ambiguous optimize -> propose
+edit authority      -> absent
 ```
 
-## Target skill type
+## Target type
 
-Carry one target type through the workflow:
+Carry one type through the workflow:
 
 ```text
 decision
@@ -58,17 +64,16 @@ orchestration
 mixed
 ```
 
-Evaluate accordingly:
+Evaluate the type with its relevant evidence:
 
-- decision -> route influence, clause compliance, outcome association;
-- execution -> handoff fidelity, proof, rework, surface;
-- evidence -> coverage, precision, provenance, false results;
-- orchestration -> lifecycle, handoff, stop/terminal correctness;
-- mixed -> name the applicable dimensions.
+- decision: route influence, clause compliance, rejected alternatives, downstream outcome;
+- execution: handoff fidelity, surface budget, proof, rework;
+- evidence: coverage, precision, provenance, false results;
+- orchestration: phase correctness, handoff completeness, terminal state, loop efficiency.
 
 ## Evidence routing
 
-### Historical use
+### Historical or multi-session evidence
 
 Prefer:
 
@@ -81,140 +86,92 @@ seq skill-decision-audit \
   --format json
 ```
 
-Pass STE-v1 to `$tune`.
+Pass `STE-v1` to `$tune`.
 
 ### One watched session
 
-Use `$shadow` with:
-
-```text
-one root session
-one target skill
-one cursor
-```
-
-Pass GSD-v2 or watched-session STE-v1 to `$tune`.
+Use `$shadow` over exactly one target skill, one root session, and one cursor. Pass `GSD-v2` or watched-session `STE-v1` to `$tune`. Do not infer recurrence from one session.
 
 ### Direct user feedback
 
-Use current-turn evidence first.
+Use current-turn evidence first. Do not mine history to overrule an explicit correction.
 
-Do not mine history merely to overrule explicit feedback.
+## Workflow
 
-## Audit
+### Audit
 
-1. Identify target and type.
-2. Read the target package.
+1. Identify the target and target type.
+2. Read the target package and decision contract when present.
 3. Gather the least evidence needed.
-4. Use read-only specialists only when needed:
-   ```text
-   skill_contract_modeler
-   skill_decision_provenance_auditor
-   skill_outcome_skeptic
-   ```
-5. Return findings only.
+4. Use read-only specialists only for unresolved route-changing uncertainty.
+5. Return findings; do not edit.
 
-No edits.
-
-## Propose
-
-1. Produce or consume STE-v1.
-2. Run `$tune`.
-3. Select one dominant SDC-v2 delta or terminal no-action state.
-4. Include the exact validation query.
-5. Stop at proposal.
-
-No edits.
-
-## Tune
-
-1. Require:
-   ```text
-   target
-   target kind
-   evidence source
-   mode
-   apply policy
-   ```
-2. Use `$tune` for diagnosis.
-3. Produce:
-   ```text
-   SDC-v2
-   REFINE-SKILL-v3 brief
-   terminal no-action/repeat state
-   or seq special-spec handoff
-   ```
-4. Do not pass broad raw transcripts to `$refine` when STE-v1 exists.
-
-## Shadow diagnose
-
-1. Use `$shadow` on exactly one watched session.
-2. Stop when no decision-relevant evidence changed.
-3. Escalate to `$tune` only for a concrete gap.
-4. Do not infer historical recurrence from one session.
-
-## Apply
-
-Use only with explicit edit authorization.
-
-Require a complete:
+Optional read-only roles:
 
 ```text
-REFINE-SKILL-v3
+skill_contract_modeler
+skill_decision_provenance_auditor
+skill_outcome_skeptic
+skill_edit_fresh_eyes_auditor
 ```
 
-Then invoke `$refine` in `apply` or `regression` mode.
+### Propose
+
+1. Produce or consume `STE-v1`.
+2. Invoke `$tune` in proposal mode.
+3. Select one dominant `SDC-v2` delta or a terminal no-action state.
+4. Include the exact validation query.
+5. Stop without editing.
+
+### Apply
+
+Use only with explicit edit authorization and a complete `REFINE-SKILL-v3` brief.
 
 `$refine` owns:
 
 ```text
 target-package inspection
-intervention selection
-edits
-contract preservation
+one dominant intervention
+authorized edits
+stable contract preservation
 static validation
 script/fixture validation
 behavioral validation query
 SRR-v1
 ```
 
-Root `$opt` owns orchestration and final synthesis.
+The root owns final synthesis. Custom agents do not write skill packages.
 
-## Validate
+### Validate
 
-Ask `$refine` to validate:
-
-```text
-static package
-decision contract
-changed scripts/tests
-behavioral query or future query
-```
-
-Historical behavior does not retroactively change.
-
-Distinguish:
+Require:
 
 ```text
-validation passed now
-future behavioral validation pending
+static package validation
+decision-contract validation when present
+changed script and fixture validation
+behavioral validation now or an exact future query
 ```
 
-## Regression
+Historical behavior does not change retroactively. Distinguish current static/fixture success from future live behavioral evidence.
 
-For a known skill failure:
+### Regression
 
-1. identify the episode or fixture;
-2. identify trigger/clause/route;
-3. state prior bad behavior;
-4. state expected future behavior;
-5. produce a bounded REFINE-SKILL-v3 brief;
-6. run `$refine regression`;
-7. retain the exact recurrence query.
+Bind the repair to:
 
-## Goal loop
+```text
+observed episode or fixture
+trigger / clause / route
+prior bad behavior
+expected future behavior
+reproduction query or test
+```
 
-When `/goal` or `$cas` owns continuation:
+Install the smallest guard that detects the behavioral failure rather than changed wording.
+
+### Goal loop
+
+When `$cas` owns continuation:
 
 ```text
 new evidence
@@ -224,7 +181,7 @@ new evidence
 -> parent goal decision
 ```
 
-No evidence delta means no full optimization cycle.
+No evidence delta means no repeated full optimization cycle.
 
 ## Refine handoff
 
@@ -252,43 +209,24 @@ Rules:
 - preserve stable clause IDs;
 - do not reinterpret the evidence packet;
 - do not broaden allowed files;
-- one dominant intervention;
-- no commit/push unless explicitly delegated;
-- require SRR-v1.
-
-## Subagents
-
-### skill_contract_modeler
-
-Read-only contract modeling.
-
-### skill_decision_provenance_auditor
-
-Read-only attribution and denominator audit.
-
-### skill_outcome_skeptic
-
-Read-only challenge to causal/outcome claims.
-
-No workspace-writing optimization subagent is required.
-
-`$refine` root is the sole skill-package writer.
+- select one dominant intervention;
+- do not commit or push without explicit delegation;
+- require `SRR-v1`.
 
 ## Completion bar
 
-Do not call optimization complete until:
+Optimization is complete only when:
 
 - target and type are explicit;
 - evidence source and denominator are explicit;
 - expected delta is explicit;
 - `$tune` selected one bounded route;
-- `$refine` stayed within the authorized package surface;
+- `$refine` stayed inside the authorized package surface;
 - stable contract IDs were preserved;
-- static validation passed;
-- contract validation passed when applicable;
+- static and contract validation passed;
 - changed scripts/tests passed;
 - behavioral validation passed or its exact future query is retained;
-- SRR-v1 was emitted;
+- `SRR-v1` was emitted;
 - residual uncertainty is stated.
 
 ## Output
@@ -314,14 +252,14 @@ $opt result:
 
 ## Hard rules
 
-- `$seq` owns evidence.
+- `$seq` owns historical/session evidence.
 - `$shadow` owns one-session monitoring.
 - `$tune` owns diagnosis.
-- `$refine` owns user skill optimization and edits.
-- Do not modify or depend on system-managed optimization agents.
+- `$refine` is the sole skill-package writer.
+- `$opt` owns orchestration and final synthesis.
 - No raw mention inflation.
 - No causal claim from co-occurrence.
 - No edit from weak evidence.
 - No broad scan without a target.
-- No repeated full cycle without evidence delta.
-- No apply without a complete refine brief.
+- No repeated cycle without evidence delta.
+- No apply without a complete refine brief and explicit edit authority.
