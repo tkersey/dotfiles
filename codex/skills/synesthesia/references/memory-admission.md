@@ -2,133 +2,193 @@
 
 ## Boundary
 
-Synesthesia owns the decision that a mapping or activation boundary is admissible. `$memory-source-notes` owns safe transport and proof lines. Phase 2 owns compiled memory.
+Synesthesia owns the decision that a sensory mapping or activation boundary is durable enough to admit. `$memory-source-notes` owns validation, canonicalization, safe transport, copy-based adapter synchronization, diagnostics, and proof lines.
 
-No ordinary Synesthesia answer creates a durable note.
+Ordinary sensory output is not persisted.
 
-## Admissible events
+## Durable event classes
 
-A note is allowed only for one of these witnessed events:
+| Event | Logical kind | Stored kind | Operation | Prior note required |
+|---|---|---|---|---|
+| first explicit endorsement | `mapping-endorsement` | `mapping-endorsement` | `assert` | no |
+| repeated explicit acceptance | `mapping-confirmation` | `mapping-endorsement` | `confirm` | yes, in `related_ids` |
+| correction | `mapping-correction` | `mapping-correction` | `supersede` | yes |
+| rejection | `mapping-rejection` | `mapping-rejection` | `reject` | yes |
+| boundary assertion | `activation-boundary` | `activation-boundary` | `assert` | no |
+| boundary confirmation | `activation-boundary` | `activation-boundary` | `confirm` | yes |
+| boundary correction | `activation-boundary` | `activation-boundary` | `supersede` | yes |
+| boundary reopening | `activation-boundary` | `activation-boundary` | `reopen` | yes |
+| boundary withdrawal | `boundary-retraction` | `boundary-retraction` | `retract` | yes |
+| mapping reopening | `mapping-endorsement` | `mapping-endorsement` | `reopen` | yes |
 
-- explicit user endorsement;
-- explicit user correction;
-- explicit user rejection;
-- explicit retraction;
-- explicit request to remember the mapping or boundary;
-- repeated accepted operational use with independent source references.
+`mapping-confirmation` is a logical convenience. The current `memory-note` binary stores it as `kind=mapping-endorsement` plus `operation=confirm`.
 
-Assistant-authored novelty, inferred taste, one-off poetic language, and task-local incident descriptions are not sufficient.
+## Authority matrix
 
-## Supported kinds and operations
-
-| Kind | Allowed operation | Prior note required |
-|---|---|---|
-| `mapping-endorsement` | `assert`, `confirm`, `reopen` | for `confirm` and `reopen` |
-| `mapping-correction` | `supersede` | yes |
-| `mapping-rejection` | `reject` | yes unless rejecting a newly proposed unrecorded mapping |
-| `activation-boundary` | `assert`, `confirm`, `supersede`, `reopen` | except initial `assert` |
-| `boundary-retraction` | `retract` | yes |
-
-A required prior note must appear in `supersedes_id` or `related_ids`.
-
-## Envelope authority
-
-The source-note envelope exclusively owns:
-
-- `operation`;
-- `authority`;
-- `scope`;
-- `source_refs`;
-- `related_ids`;
-- `supersedes_id`.
-
-Do not duplicate those concepts in the payload.
-
-Allowed Synesthesia authorities are:
+Use the narrowest matching authority:
 
 ```text
-explicit-user-endorsement
-explicit-user-correction
-explicit-user-rejection
-explicit-user-retraction
-explicit-user-remember-request
-repeated-accepted-use
+mapping endorsement       explicit-user-endorsement | repeated-accepted-use
+mapping confirmation      explicit-user-endorsement | repeated-accepted-use
+mapping correction        explicit-user-correction
+mapping rejection         explicit-user-rejection
+activation boundary       explicit-user-endorsement | explicit-user-correction | repeated-accepted-use
+boundary retraction       explicit-user-correction | explicit-user-rejection
 ```
 
-`assistant-inference` and `source-skill` alone are insufficient.
+Assistant inference is never sufficient.
 
-## Payload
+## Canonical payload
 
-For an accepted mapping:
+Envelope fields own authority, scope, source references, and prior-note relationships. The payload owns only the sensory contract.
+
+For endorsement, confirmation, or correction:
 
 ```json
 {
-  "sensory_phrase": "long corridor",
-  "engineering_translation": "serialized waits or amplified dependency latency",
-  "activation_boundary": "performance and dependency-chain diagnosis",
-  "non_activation_boundary": "literal-only or exact syntax work",
-  "verification": "Every use identifies the concrete latency mechanism and evidence"
+  "operation": "assert",
+  "authority": "explicit-user-endorsement",
+  "summary": "Endorse long corridor as serialized-wait vocabulary.",
+  "scope": {
+    "kind": "task-family",
+    "repo": null,
+    "paths": []
+  },
+  "source_refs": [
+    {
+      "kind": "user-endorsement",
+      "ref": "rollout:019...",
+      "summary": "User explicitly accepted the mapping as reusable"
+    }
+  ],
+  "related_ids": [],
+  "supersedes_id": null,
+  "payload": {
+    "sensory_phrase": "long corridor",
+    "engineering_translation": "serialized waits, chatty calls, or amplified dependency latency",
+    "activation_boundary": "performance and dependency-chain diagnosis",
+    "non_activation_boundary": "exact syntax or literal-only requests",
+    "verification": "Every use names the concrete wait or latency mechanism and evidence"
+  }
 }
 ```
 
-Allowed payload fields:
+The adapter generates legacy compatibility fields required by the current writer. Do not manually make payload scope or endorsement type a second authority.
 
-```text
-sensory_phrase
-engineering_translation
-activation_boundary
-non_activation_boundary
-verification
+For rejection, replace `engineering_translation` with:
+
+```json
+"rejection_reason": "The phrase repeatedly implied the wrong failure family"
 ```
 
-A `mapping-rejection` may omit `engineering_translation` only when the rejected mapping has no accepted translation.
+For a pure activation boundary, the payload contains:
 
-## Scope
-
-Use the envelope's canonical scope values:
-
-```text
-global
-repo
-path-family
-task-family
-workflow
-tool
+```json
+{
+  "activation_boundary": "Use for explicit compare-by-feel requests",
+  "non_activation_boundary": "Do not activate for ordinary architecture review",
+  "verification": "Future use must name the representational ambiguity or explicit sensory request"
+}
 ```
 
-Use the narrowest reusable scope. Repo-local vocabulary remains repo-local until separately endorsed at broader scope.
+For boundary retraction:
 
-## Preflight and canonicalization
+```json
+{
+  "retracted_boundary": "Implicitly use for every performance task",
+  "reason": "Performance alone does not establish representational need",
+  "verification": "Future activation requires explicit sensory language or a documented handoff"
+}
+```
 
-Write the proposed envelope to a temporary JSON file, then run:
+## Same-turn append
+
+After the gate passes and `$memory-source-notes` is loaded:
 
 ```bash
-uv run --with pyyaml python \
-  codex/skills/synesthesia/scripts/validate_synesthesia.py \
-  memory-file proposed.json --kind mapping-endorsement --emit-canonical \
-  > proposed.canonical.json
+uv run python \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  append \
+  --kind mapping-endorsement \
+  --json -
 ```
 
-Pass **the canonical file** to `$memory-source-notes`. The canonicalizer sorts object keys and removes insignificant JSON formatting differences so equivalent Synesthesia calls produce identical input bytes for the current `memory-note` fingerprinting behavior.
+For confirmation:
 
-Do not hand-author a note if the CLI is unavailable.
+```bash
+uv run python \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  append \
+  --kind mapping-confirmation \
+  --json -
+```
 
-## Resource-digest provenance
+The adapter validates the operation-kind matrix, prior-note relationship, scope, authority, payload, and source references; injects writer-compatibility fields; canonicalizes JSON before fingerprinting; invokes `memory-note`; and emits the writer result.
 
-A Synesthesia resource digest is only a temporary consolidation aid. Every promotable mapping, boundary, rejection, or failure shield in a resource digest must include:
+## Copy-based adapter synchronization
+
+Memory extension instructions must be regular copied files, not symlinks.
+
+From the dotfiles repository root:
+
+```bash
+uv run python \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  sync-instructions
+```
+
+This copies:
 
 ```text
-source_note_ids: [MSN-...]
+codex/memories/extensions/synesthesia/instructions.md
 ```
 
-An entry with no valid source-note ID is an unadmitted proposal and must target `none`.
+into:
 
-## Proof-line discipline
+```text
+${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/instructions.md
+```
 
-Only `$memory-source-notes` emits the final proof line. Synesthesia should mention no memory result unless:
+It refuses a symlinked destination or symlinked destination component.
 
-- the user requested capture;
-- an admissible event occurred;
-- preflight or writing was attempted.
+## Doctor workflow
 
-Do not add routine “not attempted” lines to ordinary diagnostic answers.
+```bash
+uv run python \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  doctor \
+  --format text
+```
+
+The doctor distinguishes:
+
+```text
+no source notes
+adapter missing, stale, or symlinked
+source notes present but not compiled
+compiled memory mentions present
+writer unavailable or writer doctor failure
+```
+
+## Phase 2 promotion
+
+Explicit durable user endorsement, correction, rejection, retraction, or boundary instruction is sufficient evidence of intended persistence when the mapping is concrete, scoped, reversible, and future behavior would change.
+
+Do not impose a repetition requirement on explicit durable authority.
+
+Without explicit durability, require repeated accepted operational use across at least two independent contexts.
+
+Resource digests are only staging artifacts. Every promotable resource entry must cite one or more immutable `source_note_ids`. Resource-only prose is not admitted evidence.
+
+## Proof lines
+
+Emit a proof line only when persistence was requested or the admission gate passed:
+
+```text
+memory-note: id=MSN-... extension=synesthesia kind=<kind> status=created
+memory-note: duplicate-skip: extension=synesthesia fingerprint=<fingerprint>
+memory-note: not-attempted: cli unavailable
+memory-note: failed: <concise reason>
+```
+
+Do not emit routine `not-attempted` lines for ordinary diagnostic use.

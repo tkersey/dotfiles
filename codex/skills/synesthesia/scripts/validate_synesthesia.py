@@ -1,626 +1,306 @@
 #!/usr/bin/env -S uv run --with pyyaml python
-"""Validate the Synesthesia skill package, eval corpus, and memory admissions."""
+"""Validate the Synesthesia skill package, routing corpus, and memory contract."""
 
 from __future__ import annotations
 
 import argparse
-import hashlib
+import importlib.util
 import json
-import re
-import sys
 from pathlib import Path
+import re
+import subprocess
+import sys
 from typing import Any
 
-try:
-    import yaml
-except ImportError:  # pragma: no cover - surfaced as a clear CLI error
-    yaml = None
-
-SKILL_ROOT = Path(__file__).resolve().parents[1]
-NOTE_ID_RE = re.compile(r"^MSN-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{16}$")
-SCOPE_KINDS = {"global", "repo", "path-family", "task-family", "workflow", "tool"}
-MODALITIES = {"visual", "auditory", "spatial", "tactile", "thermal", "pressure"}
-MODES = {"diagnose", "explain", "compare", "implementation-lens"}
-
-KIND_OPERATIONS: dict[str, set[str]] = {
-    "mapping-endorsement": {"assert", "confirm", "reopen"},
-    "mapping-correction": {"supersede"},
-    "mapping-rejection": {"reject"},
-    "activation-boundary": {"assert", "confirm", "supersede", "reopen"},
-    "boundary-retraction": {"retract"},
-}
-
-PRIOR_REQUIRED: set[tuple[str, str]] = {
-    ("mapping-endorsement", "confirm"),
-    ("mapping-endorsement", "reopen"),
-    ("mapping-correction", "supersede"),
-    ("activation-boundary", "confirm"),
-    ("activation-boundary", "supersede"),
-    ("activation-boundary", "reopen"),
-    ("boundary-retraction", "retract"),
-}
-
-ALLOWED_AUTHORITIES = {
-    "explicit-user-endorsement",
-    "explicit-user-correction",
-    "explicit-user-rejection",
-    "explicit-user-retraction",
-    "explicit-user-remember-request",
-    "repeated-accepted-use",
-}
-
-OPERATION_AUTHORITIES: dict[str, set[str]] = {
-    "assert": {
-        "explicit-user-endorsement",
-        "explicit-user-remember-request",
-        "repeated-accepted-use",
-    },
-    "confirm": {"explicit-user-endorsement", "repeated-accepted-use"},
-    "supersede": {"explicit-user-correction"},
-    "reject": {"explicit-user-rejection"},
-    "retract": {"explicit-user-retraction"},
-    "reopen": {
-        "explicit-user-endorsement",
-        "explicit-user-correction",
-        "repeated-accepted-use",
-    },
-}
-
-ALLOWED_PAYLOAD_FIELDS = {
-    "sensory_phrase",
-    "engineering_translation",
-    "activation_boundary",
-    "non_activation_boundary",
-    "verification",
-}
-
-DUPLICATED_ENVELOPE_FIELDS = {
-    "operation",
-    "authority",
-    "scope",
-    "scope_anchor",
-    "endorsement_type",
-    "source_refs",
-    "related_ids",
-    "supersedes_id",
-}
-
-EXPECTED_PACKAGE_FILES = {
-    "SKILL.md",
-    "agents/openai.yaml",
-    "references/decision-contract.yaml",
-    "references/modality-selection.md",
-    "references/memory-admission.md",
-    "evals/routing-cases.json",
-    "evals/translation-cases.json",
-    "evals/memory-cases.json",
-    "scripts/validate_synesthesia.py",
-    "tests/test_validate_synesthesia.py",
-}
+import yaml
 
 
-class ValidationFailure(Exception):
-    """Raised for invalid user-supplied admission data."""
+class CheckFailure(RuntimeError):
+    pass
 
 
-def _read_json(path: Path) -> Any:
-    return json.loads(path.read_text(encoding="utf-8"))
+def load_json(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise CheckFailure(f"{path}: expected JSON object")
+    return value
 
 
-def _read_yaml(path: Path) -> Any:
-    if yaml is None:
-        raise RuntimeError("PyYAML is required; run with `uv run --with pyyaml python ...`")
-    return yaml.safe_load(path.read_text(encoding="utf-8"))
-
-
-def _string(value: Any) -> bool:
-    return isinstance(value, str) and bool(value.strip())
-
-
-def _canonical_bytes(value: Any) -> bytes:
-    return (
-        json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-        + "\n"
-    ).encode("utf-8")
-
-
-def canonical_text(value: Any) -> str:
-    return _canonical_bytes(value).decode("utf-8")
-
-
-def canonical_sha256(value: Any) -> str:
-    return hashlib.sha256(_canonical_bytes(value)).hexdigest()
-
-
-def validate_package(skill_root: Path = SKILL_ROOT) -> list[str]:
-    errors: list[str] = []
-    present = {
-        str(path.relative_to(skill_root))
-        for path in skill_root.rglob("*")
-        if path.is_file()
-    }
-    for expected in sorted(EXPECTED_PACKAGE_FILES):
-        if expected not in present:
-            errors.append(f"package:missing:{expected}")
-
-    skill_path = skill_root / "SKILL.md"
-    if skill_path.is_file():
-        text = skill_path.read_text(encoding="utf-8")
-        if not text.startswith("---\n"):
-            errors.append("skill:frontmatter-missing")
-        else:
-            try:
-                _, raw, _ = text.split("---\n", 2)
-                frontmatter = yaml.safe_load(raw) if yaml is not None else {}
-            except Exception as exc:  # noqa: BLE001
-                errors.append(f"skill:frontmatter-invalid:{exc}")
-                frontmatter = {}
-            if frontmatter.get("name") != "synesthesia":
-                errors.append("skill:name")
-            metadata = frontmatter.get("metadata", {})
-            if not isinstance(metadata, dict) or metadata.get("version") != "3.0.0":
-                errors.append("skill:version")
-            description = frontmatter.get("description")
-            if not _string(description) or "Reversible" not in description:
-                errors.append("skill:description-reversibility")
-
-        required_phrases = {
-            "## Activation boundary",
-            "## Mapping record",
-            "## Modes",
-            "## Cross-skill routing",
-            "## Memory admission boundary",
-            "## Stop conditions",
-            "minimum sufficient modalities",
-            "falsifier",
-        }
-        for phrase in sorted(required_phrases):
-            if phrase not in text:
-                errors.append(f"skill:missing-phrase:{phrase}")
-        prohibited_phrases = {
-            "Build at least 2 and at most 4 sensory representations",
-            "Use these default correspondences unless",
-            "Help with Synesthesia tasks",
-        }
-        for phrase in sorted(prohibited_phrases):
-            if phrase in text:
-                errors.append(f"skill:legacy-phrase:{phrase}")
-
-    interface_path = skill_root / "agents/openai.yaml"
-    if interface_path.is_file():
-        try:
-            interface = _read_yaml(interface_path)
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"interface:parse:{exc}")
-            interface = {}
-        implicit = interface.get("policy", {}).get("allow_implicit_invocation")
-        if implicit is not True:
-            errors.append("interface:implicit-policy")
-        data = interface.get("interface", {})
-        if data.get("display_name") != "Synesthesia":
-            errors.append("interface:display-name")
-        short = data.get("short_description", "")
-        prompt = data.get("default_prompt", "")
-        for needle in ("reversible", "evidence"):
-            if needle not in short.lower() and needle not in prompt.lower():
-                errors.append(f"interface:missing:{needle}")
-        for needle in ("falsifier", "owning technical workflow"):
-            if needle not in prompt.lower():
-                errors.append(f"interface:prompt-missing:{needle}")
-
-    errors.extend(validate_decision_contract(skill_root / "references/decision-contract.yaml"))
-    return errors
-
-
-def validate_decision_contract(path: Path) -> list[str]:
-    errors: list[str] = []
+def parse_frontmatter(path: Path) -> tuple[dict[str, Any], str]:
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        raise CheckFailure(f"{path}: missing frontmatter")
     try:
-        raw = _read_yaml(path)
-    except Exception as exc:  # noqa: BLE001
-        return [f"contract:parse:{exc}"]
-    contract = raw.get("skill_decision_contract", raw) if isinstance(raw, dict) else {}
-    if contract.get("contract_version") != "SKDC-v1":
-        errors.append("contract:version")
-    skill = contract.get("skill", {})
-    if skill.get("name") != "synesthesia" or skill.get("kind") != "mixed":
-        errors.append("contract:skill")
-
-    def collect(rows: Any, key: str, prefix: str) -> set[str]:
-        ids: set[str] = set()
-        if not isinstance(rows, list):
-            errors.append(f"contract:{prefix}:not-list")
-            return ids
-        for index, row in enumerate(rows):
-            if not isinstance(row, dict) or not _string(row.get(key)):
-                errors.append(f"contract:{prefix}[{index}]:id")
-                continue
-            value = row[key]
-            if value in ids:
-                errors.append(f"contract:{prefix}:duplicate:{value}")
-            ids.add(value)
-        return ids
-
-    trigger_ids = collect(contract.get("triggers"), "trigger_id", "triggers")
-    route_ids = collect(contract.get("routes"), "route_id", "routes")
-    clause_ids = collect(contract.get("clauses"), "clause_id", "clauses")
-    required_clause_ids = {"SYN-ACT-001", "SYN-MAP-001", "SYN-MEM-001"}
-    if not required_clause_ids.issubset(clause_ids):
-        errors.append("contract:required-clauses")
-
-    for row in contract.get("clauses", []) if isinstance(contract.get("clauses"), list) else []:
-        for ref in row.get("trigger_refs", []):
-            if ref not in trigger_ids:
-                errors.append(f"contract:unknown-trigger:{ref}")
-        for field in ("expected_routes", "prohibited_routes"):
-            for ref in row.get(field, []):
-                if ref not in route_ids:
-                    errors.append(f"contract:unknown-route:{ref}")
-    return errors
+        _, raw, body = text.split("---\n", 2)
+    except ValueError as exc:
+        raise CheckFailure(f"{path}: unclosed frontmatter") from exc
+    value = yaml.safe_load(raw)
+    if not isinstance(value, dict):
+        raise CheckFailure(f"{path}: invalid frontmatter")
+    return value, body
 
 
-def validate_routing_corpus(path: Path) -> list[str]:
-    errors: list[str] = []
-    value = _read_json(path)
-    if value.get("schema") != "synesthesia-routing-cases/v1":
-        errors.append("routing:schema")
-    cases = value.get("cases")
-    if not isinstance(cases, list):
-        return errors + ["routing:cases-not-list"]
-    ids: set[str] = set()
-    positives = 0
-    negatives = 0
-    owners: set[str] = set()
-    for index, case in enumerate(cases):
-        prefix = f"routing[{index}]"
-        if not isinstance(case, dict):
-            errors.append(f"{prefix}:not-object")
-            continue
-        case_id = case.get("id")
-        if not _string(case_id) or case_id in ids:
-            errors.append(f"{prefix}:id")
-        else:
-            ids.add(case_id)
-        if not _string(case.get("prompt")):
-            errors.append(f"{prefix}:prompt")
-        activation = case.get("expected_activation")
-        if not isinstance(activation, bool):
-            errors.append(f"{prefix}:activation")
-        elif activation:
-            positives += 1
-        else:
-            negatives += 1
-            if case.get("expected_route") != "SYN-R6-NO-SYNESTHESIA":
-                errors.append(f"{prefix}:negative-route")
-        if not _string(case.get("expected_route")):
-            errors.append(f"{prefix}:route")
-        owner = case.get("governing_owner")
-        if not _string(owner):
-            errors.append(f"{prefix}:owner")
-        else:
-            owners.add(owner)
-        if not _string(case.get("reason")):
-            errors.append(f"{prefix}:reason")
-    if positives < 4:
-        errors.append("routing:insufficient-positive-cases")
-    if negatives < 8:
-        errors.append("routing:insufficient-negative-cases")
-    expected_owners = {"lift", "codebase-audit", "complexity-mitigator", "universalist", "logophile"}
-    if not expected_owners.issubset(owners):
-        errors.append("routing:missing-owner-near-miss")
-    return errors
+def load_memory_adapter(repo_root: Path):
+    path = (
+        repo_root
+        / "codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py"
+    )
+    spec = importlib.util.spec_from_file_location("synesthesia_memory_note", path)
+    if spec is None or spec.loader is None:
+        raise CheckFailure(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
-def validate_translation_candidate(candidate: Any) -> list[str]:
-    errors: list[str] = []
-    if not isinstance(candidate, dict):
-        return ["candidate:not-object"]
-    mode = candidate.get("mode")
-    if mode not in MODES:
-        errors.append("candidate:mode")
-    observations = candidate.get("literal_observations")
-    if not isinstance(observations, list) or not observations or not all(_string(item) for item in observations):
-        errors.append("candidate:literal-observations")
-    for field in (
-        "sensory_model",
+def validate_translation_cases(path: Path, errors: list[str]) -> None:
+    data = load_json(path)
+    if data.get("schema") != "synesthesia-translation-cases/v1":
+        errors.append("translation-cases:schema")
+    cases = data.get("cases")
+    if not isinstance(cases, list) or not cases:
+        errors.append("translation-cases:empty")
+        return
+    required = {
+        "evidence",
+        "sensory_representation",
         "engineering_translation",
         "uncertainty",
         "falsifier",
         "decision_delta",
-    ):
-        if not _string(candidate.get(field)):
-            errors.append(f"candidate:{field}")
-    if str(candidate.get("decision_delta", "")).strip().lower() in {"none", "no change", "n/a"}:
-        errors.append("candidate:no-material-delta")
-    refs = candidate.get("evidence_refs")
-    if not isinstance(refs, list) or not refs or not all(_string(item) for item in refs):
-        errors.append("candidate:evidence-refs")
-    modalities = candidate.get("modalities")
-    if not isinstance(modalities, list) or not modalities:
-        errors.append("candidate:modalities")
-        modalities = []
-    elif len(modalities) != len(set(modalities)):
-        errors.append("candidate:duplicate-modalities")
-    elif len(modalities) > 3:
-        errors.append("candidate:modality-inflation")
-    for modality in modalities:
-        if modality not in MODALITIES:
-            errors.append(f"candidate:unknown-modality:{modality}")
-    dimensions = candidate.get("modality_dimensions")
-    if not isinstance(dimensions, dict):
-        errors.append("candidate:modality-dimensions")
-    else:
-        if set(dimensions) != set(modalities):
-            errors.append("candidate:dimension-keys")
-        values = [str(value).strip().lower() for value in dimensions.values() if _string(value)]
-        if len(values) != len(modalities):
-            errors.append("candidate:dimension-values")
-        if len(values) != len(set(values)):
-            errors.append("candidate:redundant-modalities")
-    if len(modalities) == 3 and not _string(candidate.get("multi_dimensional_justification")):
-        errors.append("candidate:three-modality-justification")
-    return errors
-
-
-def validate_translation_corpus(path: Path) -> list[str]:
-    errors: list[str] = []
-    value = _read_json(path)
-    if value.get("schema") != "synesthesia-translation-cases/v1":
-        errors.append("translation:schema")
-    cases = value.get("cases")
-    if not isinstance(cases, list):
-        return errors + ["translation:cases-not-list"]
-    ids: set[str] = set()
-    for index, case in enumerate(cases):
-        prefix = f"translation[{index}]"
-        if not isinstance(case, dict):
-            errors.append(f"{prefix}:not-object")
+    }
+    valid_count = 0
+    invalid_count = 0
+    for row in cases:
+        if not isinstance(row, dict) or not row.get("id"):
+            errors.append("translation-cases:invalid-row")
             continue
-        case_id = case.get("id")
-        if not _string(case_id) or case_id in ids:
-            errors.append(f"{prefix}:id")
+        mapping = row.get("mapping")
+        if not isinstance(mapping, dict):
+            errors.append(f"translation-cases:{row.get('id')}:mapping")
+            continue
+        missing = sorted(field for field in required if not mapping.get(field))
+        declared_valid = row.get("valid") is True
+        actual_valid = not missing
+        if declared_valid:
+            valid_count += 1
         else:
-            ids.add(case_id)
-        expected = case.get("expected_valid")
-        if not isinstance(expected, bool):
-            errors.append(f"{prefix}:expected-valid")
-            continue
-        actual_errors = validate_translation_candidate(case.get("candidate"))
-        if expected and actual_errors:
-            errors.append(f"{prefix}:unexpected-invalid:{','.join(actual_errors)}")
-        if not expected and not actual_errors:
-            errors.append(f"{prefix}:unexpected-valid")
-    return errors
+            invalid_count += 1
+        if actual_valid != declared_valid:
+            errors.append(
+                f"translation-cases:{row.get('id')}:declared={declared_valid}:missing={missing}"
+            )
+    if valid_count == 0 or invalid_count == 0:
+        errors.append("translation-cases:need-positive-and-negative")
 
 
-def _validate_source_refs(value: Any, errors: list[str]) -> None:
-    if not isinstance(value, list) or not value:
-        errors.append("memory:source-refs")
+def validate_routing_cases(path: Path, errors: list[str]) -> None:
+    data = load_json(path)
+    if data.get("schema") != "synesthesia-routing-cases/v1":
+        errors.append("routing-cases:schema")
+    cases = data.get("cases")
+    if not isinstance(cases, list) or not cases:
+        errors.append("routing-cases:empty")
         return
-    for index, row in enumerate(value):
+    positives = [row for row in cases if isinstance(row, dict) and row.get("activate") is True]
+    negatives = [row for row in cases if isinstance(row, dict) and row.get("activate") is False]
+    if len(positives) < 4:
+        errors.append("routing-cases:need-at-least-four-positive")
+    if len(negatives) < 5:
+        errors.append("routing-cases:need-at-least-five-negative")
+    owners = {row.get("owner") for row in negatives}
+    for owner in {"lift", "codebase-audit", "complexity-mitigator", "universalist", "zig"}:
+        if owner not in owners:
+            errors.append(f"routing-cases:missing-owner-near-miss:{owner}")
+    if not any(row.get("mode") == "memory-admission" for row in positives):
+        errors.append("routing-cases:missing-memory-admission")
+
+
+def validate_memory_cases(path: Path, adapter: Any, errors: list[str]) -> None:
+    data = load_json(path)
+    if data.get("schema") != "synesthesia-memory-cases/v1":
+        errors.append("memory-cases:schema")
+    cases = data.get("cases")
+    if not isinstance(cases, list) or not cases:
+        errors.append("memory-cases:empty")
+        return
+    valid_count = 0
+    invalid_count = 0
+    for row in cases:
         if not isinstance(row, dict):
-            errors.append(f"memory:source-ref[{index}]:not-object")
+            errors.append("memory-cases:invalid-row")
             continue
-        if set(row) != {"kind", "ref", "summary"}:
-            errors.append(f"memory:source-ref[{index}]:fields")
-        for field in ("kind", "ref", "summary"):
-            if not _string(row.get(field)):
-                errors.append(f"memory:source-ref[{index}]:{field}")
+        case_id = row.get("id", "unknown")
+        expected_valid = row.get("valid") is True
+        try:
+            physical, normalized = adapter.validate_and_normalize(
+                row.get("logical_kind"), row.get("input")
+            )
+            canonical = adapter.canonical_json_bytes(normalized)
+            if canonical != adapter.canonical_json_bytes(
+                json.loads(canonical.decode("utf-8"))
+            ):
+                errors.append(f"memory-cases:{case_id}:noncanonical")
+            if not expected_valid:
+                errors.append(f"memory-cases:{case_id}:unexpected-pass")
+            else:
+                valid_count += 1
+                if row.get("physical_kind") != physical:
+                    errors.append(
+                        f"memory-cases:{case_id}:physical-kind:{physical}"
+                    )
+        except adapter.ValidationError as exc:
+            if expected_valid:
+                errors.append(f"memory-cases:{case_id}:unexpected-fail:{exc}")
+            else:
+                invalid_count += 1
+                needle = row.get("expected_error")
+                if needle and needle not in str(exc):
+                    errors.append(
+                        f"memory-cases:{case_id}:error-mismatch:{exc}"
+                    )
+    if valid_count == 0 or invalid_count == 0:
+        errors.append("memory-cases:need-positive-and-negative")
 
 
-def _prior_ids(value: dict[str, Any]) -> list[str]:
-    out: list[str] = []
-    supersedes = value.get("supersedes_id")
-    if isinstance(supersedes, str):
-        out.append(supersedes)
-    related = value.get("related_ids")
-    if isinstance(related, list):
-        out.extend(item for item in related if isinstance(item, str))
-    return out
-
-
-def validate_memory_envelope(value: Any, kind: str) -> list[str]:
-    errors: list[str] = []
-    if not isinstance(value, dict):
-        return ["memory:not-object"]
-    if kind not in KIND_OPERATIONS:
-        return [f"memory:unknown-kind:{kind}"]
-    required = {
-        "operation",
-        "authority",
-        "summary",
-        "scope",
-        "source_refs",
-        "related_ids",
-        "supersedes_id",
-        "payload",
-    }
-    missing = required - set(value)
-    if missing:
-        errors.append(f"memory:missing:{','.join(sorted(missing))}")
-    operation = value.get("operation")
-    if operation not in KIND_OPERATIONS[kind]:
-        errors.append("memory:kind-operation")
-    authority = value.get("authority")
-    if authority not in ALLOWED_AUTHORITIES:
-        errors.append("memory:authority")
-    if operation in OPERATION_AUTHORITIES and authority not in OPERATION_AUTHORITIES[operation]:
-        errors.append("memory:operation-authority")
-    if not _string(value.get("summary")):
-        errors.append("memory:summary")
-
-    scope = value.get("scope")
-    if not isinstance(scope, dict):
-        errors.append("memory:scope")
-    else:
-        if set(scope) != {"kind", "repo", "paths"}:
-            errors.append("memory:scope-fields")
-        if scope.get("kind") not in SCOPE_KINDS:
-            errors.append("memory:scope-kind")
-        if scope.get("repo") is not None and not _string(scope.get("repo")):
-            errors.append("memory:scope-repo")
-        paths = scope.get("paths")
-        if not isinstance(paths, list) or not all(_string(item) for item in paths):
-            errors.append("memory:scope-paths")
-        if scope.get("kind") in {"repo", "path-family"} and not _string(scope.get("repo")):
-            errors.append("memory:scope-repo-required")
-
-    _validate_source_refs(value.get("source_refs"), errors)
-    related = value.get("related_ids")
-    if not isinstance(related, list):
-        errors.append("memory:related-ids")
-        related = []
-    else:
-        for item in related:
-            if not isinstance(item, str) or not NOTE_ID_RE.match(item):
-                errors.append("memory:related-id-format")
-    supersedes = value.get("supersedes_id")
-    if supersedes is not None and (not isinstance(supersedes, str) or not NOTE_ID_RE.match(supersedes)):
-        errors.append("memory:supersedes-id-format")
-
-    if (kind, operation) in PRIOR_REQUIRED and not _prior_ids(value):
-        errors.append("memory:prior-note-required")
-
-    payload = value.get("payload")
-    if not isinstance(payload, dict):
-        errors.append("memory:payload")
-        return errors
-    extras = set(payload) - ALLOWED_PAYLOAD_FIELDS
-    if extras:
-        errors.append(f"memory:payload-extra:{','.join(sorted(extras))}")
-    duplicated = set(payload) & DUPLICATED_ENVELOPE_FIELDS
-    if duplicated:
-        errors.append(f"memory:payload-duplicates-envelope:{','.join(sorted(duplicated))}")
-
-    required_payload = {
-        "sensory_phrase",
-        "activation_boundary",
-        "non_activation_boundary",
-        "verification",
-    }
-    if kind not in {"mapping-rejection", "boundary-retraction"}:
-        required_payload.add("engineering_translation")
-    for field in sorted(required_payload):
-        if not _string(payload.get(field)):
-            errors.append(f"memory:payload:{field}")
-    if "engineering_translation" in payload and not _string(payload.get("engineering_translation")):
-        errors.append("memory:payload:engineering_translation")
-    return errors
-
-
-def validate_memory_corpus(path: Path) -> list[str]:
-    errors: list[str] = []
-    value = _read_json(path)
-    if value.get("schema") != "synesthesia-memory-cases/v1":
-        errors.append("memory-corpus:schema")
-    cases = value.get("cases")
-    if not isinstance(cases, list):
-        return errors + ["memory-corpus:cases-not-list"]
-    ids: set[str] = set()
-    for index, case in enumerate(cases):
-        prefix = f"memory-corpus[{index}]"
-        if not isinstance(case, dict):
-            errors.append(f"{prefix}:not-object")
-            continue
-        case_id = case.get("id")
-        if not _string(case_id) or case_id in ids:
-            errors.append(f"{prefix}:id")
-        else:
-            ids.add(case_id)
-        kind = case.get("kind")
-        expected = case.get("expected_valid")
-        if not isinstance(expected, bool):
-            errors.append(f"{prefix}:expected-valid")
-            continue
-        actual_errors = validate_memory_envelope(case.get("input"), kind)
-        if expected and actual_errors:
-            errors.append(f"{prefix}:unexpected-invalid:{','.join(actual_errors)}")
-        if not expected and not actual_errors:
-            errors.append(f"{prefix}:unexpected-valid")
-
-    pairs = value.get("canonical_pairs")
-    if not isinstance(pairs, list) or not pairs:
-        errors.append("memory-corpus:canonical-pairs")
-    else:
-        for index, pair in enumerate(pairs):
-            if canonical_text(pair.get("left")) != canonical_text(pair.get("right")):
-                errors.append(f"memory-corpus:canonical-pair[{index}]")
-    return errors
-
-
-def run_all(skill_root: Path = SKILL_ROOT) -> dict[str, list[str]]:
-    return {
-        "package": validate_package(skill_root),
-        "routing": validate_routing_corpus(skill_root / "evals/routing-cases.json"),
-        "translation": validate_translation_corpus(skill_root / "evals/translation-cases.json"),
-        "memory": validate_memory_corpus(skill_root / "evals/memory-cases.json"),
-    }
-
-
-def print_result(results: dict[str, list[str]]) -> int:
-    errors = [f"{section}:{error}" for section, rows in results.items() for error in rows]
-    payload = {
-        "synesthesia_validation": {
-            "verdict": "pass" if not errors else "fail",
-            "sections": {name: {"errors": rows} for name, rows in results.items()},
-            "errors": errors,
-        }
-    }
-    print(json.dumps(payload, indent=2, sort_keys=True))
-    return 0 if not errors else 2
+def validate_contract(path: Path, errors: list[str]) -> None:
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    contract = data.get("skill_decision_contract") if isinstance(data, dict) else None
+    if not isinstance(contract, dict):
+        errors.append("decision-contract:missing-root")
+        return
+    if contract.get("contract_version") != "SKDC-v1":
+        errors.append("decision-contract:version")
+    skill = contract.get("skill")
+    if not isinstance(skill, dict) or skill.get("name") != "synesthesia":
+        errors.append("decision-contract:skill")
+    triggers = contract.get("triggers")
+    routes = contract.get("routes")
+    clauses = contract.get("clauses")
+    if not isinstance(triggers, list) or len(triggers) < 4:
+        errors.append("decision-contract:triggers")
+    if not isinstance(routes, list) or len(routes) < 6:
+        errors.append("decision-contract:routes")
+    if not isinstance(clauses, list) or len(clauses) < 3:
+        errors.append("decision-contract:clauses")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    sub = parser.add_subparsers(dest="command", required=True)
-    for command in ("all", "package", "routing", "translation", "memory-evals"):
-        child = sub.add_parser(command)
-        child.add_argument("--skill-root", type=Path, default=SKILL_ROOT)
-    memory_file = sub.add_parser("memory-file")
-    memory_file.add_argument("file", type=Path)
-    memory_file.add_argument("--kind", required=True, choices=sorted(KIND_OPERATIONS))
-    memory_file.add_argument("--emit-canonical", action="store_true")
-
+    parser.add_argument(
+        "--repo-root",
+        default=str(Path(__file__).resolve().parents[4]),
+    )
     args = parser.parse_args()
-    if args.command == "memory-file":
-        try:
-            value = _read_json(args.file)
-        except Exception as exc:  # noqa: BLE001
-            print(json.dumps({"synesthesia_memory_preflight": {"verdict": "fail", "errors": [str(exc)]}}, indent=2))
-            return 2
-        errors = validate_memory_envelope(value, args.kind)
-        if errors:
-            print(json.dumps({"synesthesia_memory_preflight": {"verdict": "fail", "errors": errors}}, indent=2), file=sys.stderr)
-            return 2
-        if args.emit_canonical:
-            sys.stdout.write(canonical_text(value))
-        else:
-            print(
-                json.dumps(
-                    {
-                        "synesthesia_memory_preflight": {
-                            "verdict": "pass",
-                            "kind": args.kind,
-                            "canonical_sha256": canonical_sha256(value),
-                        }
-                    },
-                    indent=2,
-                    sort_keys=True,
-                )
-            )
-        return 0
+    repo_root = Path(args.repo_root).resolve()
+    skill_root = repo_root / "codex/skills/synesthesia"
+    required = [
+        skill_root / "SKILL.md",
+        skill_root / "agents/openai.yaml",
+        skill_root / "references/decision-contract.yaml",
+        skill_root / "references/modality-selection.md",
+        skill_root / "references/memory-admission.md",
+        skill_root / "evals/routing-cases.json",
+        skill_root / "evals/translation-cases.json",
+        skill_root / "evals/memory-cases.json",
+        repo_root
+        / "codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py",
+        repo_root / "codex/memories/extensions/synesthesia/instructions.md",
+        repo_root
+        / "codex/memories/extensions/.templates/synesthesia-resource-template.md",
+    ]
+    errors: list[str] = []
+    warnings: list[str] = []
+    for path in required:
+        if not path.is_file():
+            errors.append(f"missing:{path.relative_to(repo_root)}")
 
-    root = args.skill_root.resolve()
-    if args.command == "all":
-        return print_result(run_all(root))
-    if args.command == "package":
-        return print_result({"package": validate_package(root)})
-    if args.command == "routing":
-        return print_result({"routing": validate_routing_corpus(root / "evals/routing-cases.json")})
-    if args.command == "translation":
-        return print_result({"translation": validate_translation_corpus(root / "evals/translation-cases.json")})
-    if args.command == "memory-evals":
-        return print_result({"memory": validate_memory_corpus(root / "evals/memory-cases.json")})
-    raise AssertionError(args.command)
+    if errors:
+        print(json.dumps({"synesthesia_validation": {"verdict": "fail", "errors": errors}}, indent=2))
+        return 2
+
+    frontmatter, body = parse_frontmatter(skill_root / "SKILL.md")
+    if frontmatter.get("name") != "synesthesia":
+        errors.append("frontmatter:name")
+    version = str(frontmatter.get("metadata", {}).get("version", ""))
+    if version != "3.1.0":
+        errors.append(f"frontmatter:version:{version}")
+    for phrase in (
+        "representational ambiguity",
+        "minimum sufficient",
+        "falsifier",
+        "Durable memory events",
+        "same turn",
+        "$memory-source-notes",
+        "Do not activate merely because",
+    ):
+        if phrase.lower() not in body.lower():
+            errors.append(f"skill:missing-contract-phrase:{phrase}")
+    if "| Software property |" in body or "fixed universal mapping table" not in body:
+        errors.append("skill:fixed-ontology-regression")
+
+    interface = yaml.safe_load((skill_root / "agents/openai.yaml").read_text(encoding="utf-8"))
+    prompt = interface.get("interface", {}).get("default_prompt", "") if isinstance(interface, dict) else ""
+    for phrase in (
+        "evidence-bound diagnostic lens",
+        "representational ambiguity",
+        "falsifier",
+        "same turn",
+        "$memory-source-notes",
+    ):
+        if phrase not in prompt:
+            errors.append(f"interface:missing:{phrase}")
+
+    validate_contract(skill_root / "references/decision-contract.yaml", errors)
+    validate_routing_cases(skill_root / "evals/routing-cases.json", errors)
+    validate_translation_cases(skill_root / "evals/translation-cases.json", errors)
+    adapter = load_memory_adapter(repo_root)
+    validate_memory_cases(skill_root / "evals/memory-cases.json", adapter, errors)
+
+    template = (
+        repo_root
+        / "codex/memories/extensions/.templates/synesthesia-resource-template.md"
+    ).read_text(encoding="utf-8")
+    if template.count("source_note_ids") < 5:
+        errors.append("resource-template:source-note-provenance")
+
+    agents_path = repo_root / "codex/AGENTS.md"
+    if agents_path.is_file():
+        agents = agents_path.read_text(encoding="utf-8")
+        if "representational ambiguity" not in agents:
+            warnings.append("AGENTS.md does not contain narrowed Synesthesia routing")
+
+    lint = repo_root / "codex/skills/tune/tools/decision_contract_lint.py"
+    if lint.is_file():
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(lint),
+                str(skill_root / "references/decision-contract.yaml"),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if proc.returncode != 0:
+            errors.append(f"decision-contract-lint:{proc.stdout.strip()}:{proc.stderr.strip()}")
+
+    result = {
+        "synesthesia_validation": {
+            "verdict": "pass" if not errors else "fail",
+            "version": version,
+            "errors": errors,
+            "warnings": warnings,
+            "checks": {
+                "required_files": len(required),
+                "routing_cases": len(load_json(skill_root / "evals/routing-cases.json")["cases"]),
+                "translation_cases": len(load_json(skill_root / "evals/translation-cases.json")["cases"]),
+                "memory_cases": len(load_json(skill_root / "evals/memory-cases.json")["cases"]),
+            },
+        }
+    }
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if not errors else 2
 
 
 if __name__ == "__main__":

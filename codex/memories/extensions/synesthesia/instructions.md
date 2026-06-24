@@ -2,25 +2,31 @@
 
 Use this file only during Codex Phase 2 memory consolidation.
 
+This checked-in file must be copied as a regular file into:
+
+```text
+${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/instructions.md
+```
+
+Do not symlink it. Use the copy-based synchronization command documented by the installed `memory-source-notes` skill.
+
 ## Role
 
-This extension interprets immutable, evidence-backed source notes for user-endorsed sensory mappings and activation boundaries used in software diagnosis.
+Interpret evidence-backed, user-authorized sensory mappings and activation boundaries for software diagnosis and explanation.
 
-It does not:
-
-- turn aesthetic language into evidence;
-- replace the installed `synesthesia` skill;
-- infer preferences from assistant-authored prose;
-- promote unadmitted resource-digest entries;
-- write or mutate source notes.
+This adapter does not turn aesthetic language into evidence and does not replace the installed `synesthesia` skill.
 
 ## Primary source
+
+Process valid new or changed immutable events under:
 
 ```text
 extensions/synesthesia/notes/*.md
 ```
 
-Supported kinds:
+Prioritize notes surfaced by `phase2_workspace_diff.md` when that artifact is available.
+
+Supported stored kinds:
 
 ```text
 mapping-endorsement
@@ -30,11 +36,18 @@ activation-boundary
 boundary-retraction
 ```
 
-A valid note is an immutable `memory-source-note/v1` event that passed the Synesthesia skill's admission preflight before `$memory-source-notes` wrote it.
+A logical mapping confirmation is stored as:
 
-## Required envelope authority
+```text
+kind = mapping-endorsement
+operation = confirm
+```
 
-The note envelope owns:
+A valid note is an immutable `memory-source-note/v1` event created after the Synesthesia source skill's admission gate and validated by the Synesthesia memory-source adapter.
+
+## Envelope authority
+
+The envelope is authoritative for:
 
 ```text
 operation
@@ -43,107 +56,141 @@ scope
 source_refs
 related_ids
 supersedes_id
+fingerprint
+note id
 ```
 
-Do not reconstruct or override those fields from payload prose.
+Legacy payload fields named `scope`, `scope_anchor`, or `endorsement_type` are generated compatibility projections. They must agree with the envelope and must not be treated as independent authority.
 
-Accept only explicit user endorsement, correction, rejection, retraction, direct remember requests, or independently evidenced repeated accepted use.
+## Required mapping payload
 
-`assistant-inference` is never sufficient.
-
-## Mapping payload
-
-Promotable mapping payloads contain:
+For endorsement, confirmation, or correction:
 
 ```text
 sensory_phrase
-engineering_translation when the mapping has one
+engineering_translation
 activation_boundary
 non_activation_boundary
 verification
 ```
 
-Do not promote payloads that duplicate envelope scope or authority through fields such as `scope`, `scope_anchor`, or `endorsement_type`.
+For rejection:
+
+```text
+sensory_phrase
+activation_boundary
+non_activation_boundary
+rejection_reason
+verification
+```
+
+For a pure activation boundary:
+
+```text
+activation_boundary
+non_activation_boundary
+verification
+```
+
+For boundary retraction:
+
+```text
+retracted_boundary
+reason
+verification
+```
+
+The envelope must contain explicit or repeated-accepted authority, narrow scope, and source references.
+
+Assistant-authored phrases, templates, ontologies, or resource digests are not evidence by themselves.
 
 ## Operation semantics
 
-- `assert`: establish a newly accepted mapping or boundary;
-- `confirm`: strengthen a prior accepted mapping through repeated accepted use;
-- `supersede`: replace a prior phrase, translation, or boundary;
-- `reject`: record explicit rejection and prevent unsupported promotion;
-- `retract`: withdraw a prior mapping or boundary;
-- `reopen`: restore a prior mapping only after fresh accepted evidence.
+- `assert` + `mapping-endorsement`: consider an explicitly endorsed mapping for promotion;
+- `confirm` + `mapping-endorsement`: strengthen an existing mapping without duplicating it;
+- `supersede` + `mapping-correction`: replace phrase, translation, scope, or boundary;
+- `reject` + `mapping-rejection`: prevent promotion and remove prior compiled support when independently unsupported;
+- `reopen` + `mapping-endorsement`: reconsider a previously rejected or retracted mapping only with new explicit evidence;
+- `assert` + `activation-boundary`: install a durable activation/non-activation rule;
+- `confirm` + `activation-boundary`: strengthen an existing boundary;
+- `supersede` + `activation-boundary`: replace an existing boundary;
+- `reopen` + `activation-boundary`: restore a boundary only with new explicit evidence;
+- `retract` + `boundary-retraction`: withdraw a boundary or mapping support.
 
-Corrections, confirmations, retractions, and reopenings require prior-note linkage. Rejections require prior-note linkage when rejecting an already admitted mapping.
+Confirmation, correction, rejection, retraction, and reopening require a prior note reference in `related_ids` or `supersedes_id`.
 
-Never edit or delete source notes. Resolve current state from the immutable event history.
+Never mutate or delete source notes.
 
 ## Promotion gate
 
-Require all of:
+Promote an explicit endorsement, correction, rejection, retraction, reopening, or durable boundary when all of these hold:
 
-- accepted authority;
-- concrete future diagnostic or routing utility;
-- reversible engineering translation;
-- explicit activation and non-activation boundaries;
-- narrow scope;
-- verification rule;
-- likely stability beyond the originating task;
-- a future behavior delta.
+- the envelope has matching explicit user authority and source references;
+- the mapping or boundary has concrete diagnostic or explanatory utility;
+- activation and non-activation boundaries are clear;
+- scope is narrow and reusable;
+- verification keeps the mapping reversible;
+- future Codex behavior would materially change.
+
+Explicit durable user authority is sufficient evidence of intended persistence unless the user scopes the statement to the current task or session.
+
+Do not impose a repetition requirement on explicit durable authority.
+
+Without explicit durable authority, require repeated accepted operational use across at least two independent contexts, with evidence that the mapping changed diagnosis or explanation.
 
 Reject:
 
 - one-off poetic language;
-- assistant novelty;
-- ambient UI colors or passive Chronicle context;
+- ambient colors or passive screen context;
 - transient incident details;
-- mappings with no engineering translation or decision value;
-- generic technical facts better owned by learnings;
-- failed-route evidence better owned by the negative ledger.
-
-## Resource digests
-
-Files under:
-
-```text
-extensions/synesthesia/resources/*.md
-```
-
-are temporary consolidation aids, not independent evidence.
-
-Every promotable mapping, boundary, rejection, or failure shield in a resource digest must cite one or more valid immutable note IDs:
-
-```text
-source_note_ids: [MSN-...]
-```
-
-An entry without source-note IDs is an unadmitted proposal. Its target is `none`.
+- assistant novelty;
+- mappings without engineering translation;
+- mappings with no activation boundary or verification rule;
+- resource entries without immutable source-note IDs;
+- material that does not change future behavior.
 
 ## Conflict and precedence
 
-Prefer, in order:
+When evidence conflicts, prefer:
 
-1. latest explicit user correction or retraction;
-2. narrower applicable scope;
-3. repeated accepted use over a single endorsement;
-4. concrete engineering utility over aesthetic vividness.
+1. the latest explicit user correction or rejection;
+2. a narrower repo/path/task scope over a broad scope for that context;
+3. explicit durable authority over inferred repetition;
+4. repeated accepted evidence over a single non-durable use;
+5. concrete engineering utility over vividness.
 
-Do not globalize repo-local vocabulary without separate broader authority.
+Do not globalize repo-local vocabulary without explicit broader authority.
+
+## Resource digest boundary
+
+Files under `extensions/synesthesia/resources/` are temporary consolidation aids.
+
+A resource entry is promotable only when it includes one or more valid:
+
+```text
+source_note_ids
+```
+
+Each ID must resolve to a current immutable Synesthesia source note supporting the entry. Resource-only prose is an unadmitted proposal and must target `none`.
 
 ## Artifact targeting
 
-- `memory_summary.md`: compact activation/non-activation defaults and the requirement for literal engineering translation.
-- `MEMORY.md`: scoped mappings, verification rules, source note IDs, and retrieval terms.
-- `skills/*`: only for a repeated sub-workflow beyond the installed Synesthesia skill.
-- `none`: tentative, decorative, duplicate, retracted, unendorsed, or task-local material.
+- `memory_summary.md`: compact cross-task activation/non-activation defaults and the requirement for reversible engineering translation;
+- `MEMORY.md`: task-group entries with scope, phrase, engineering translation, activation/non-activation boundaries, verification, and `source_note_ids`;
+- `skills/*`: only when several admitted notes prove a reusable sub-workflow beyond the installed Synesthesia skill;
+- `none`: tentative, task-local, decorative, duplicate, unsupported, superseded, retracted, or already-codified material.
 
-Do not reproduce the full Synesthesia workflow in compiled memory.
+Do not recreate the installed Synesthesia skill in memory.
+
+## Retrieval terms
+
+Preserve exact endorsed phrases when retrieval-relevant, plus concrete technical terms from their engineering translations. Keep retrieval terms narrow enough to avoid activating the lens for ordinary domain tasks.
 
 ## Security and hygiene
 
-- no secrets, credentials, raw transcripts, or long tool outputs;
-- no raw chronology;
-- no private local paths unless essential and safely scoped;
+- no secrets, raw chronology, passive screen context, or unbounded examples;
+- no direct note or source-skill mutation;
+- no direct compiled-memory edit outside Phase 2;
 - plain operational compiled memory, not decorative prose;
-- exact endorsed phrase only when retrieval depends on it;
-- no direct source-skill or compiled-memory mutation outside the owning phase.
+- exact source note IDs for every promoted mapping or boundary;
+- no symlinked live instruction files.

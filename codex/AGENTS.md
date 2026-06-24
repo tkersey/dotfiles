@@ -126,7 +126,7 @@ Only these skills may activate implicitly from request or repository cues:
 - `$cas` — Zig app-server/CAS helpers, app-server v2 protocol, goal lifecycle, detached review, multi-instance fanout, or `$st` swarm-conformance cues. Activation may be implicit, but mutating control operations still require clear intent.
 - `$seq` — historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Never use it for ordinary current-repo code search.
 - `$negative-ledger` — failed attempts, no-effect results, reverts, benchmark regressions, repeated semantic routes or same-cluster retries, prior-route questions, or reopening after artifact-state changes. Implicit activation permits query, mapping, and evidence classification; canonical writes and memory admission remain gated by witnessed evidence, current applicability, and a complete ledger export.
-- `$synesthesia` — explicit sensory/experiential requests, compare-by-feel analysis, or a documented handoff from an owning workflow that names a concrete representational ambiguity. Ordinary architecture, performance, readability, API/UX, onboarding, or flaky-debugging tasks do not activate it by subject alone. Every material mapping must remain evidence-bound, technically reversible, and falsifiable; durable capture still requires explicit authority or repeated accepted operational use.
+- `$synesthesia` — explicit sensory/feel/look/sound/motion language, compare-by-feel requests, or a documented handoff from an owning workflow after a concrete representational ambiguity is identified. Do not activate merely because a task concerns architecture, performance, readability, flakiness, onboarding, or UX. Durable mapping capture remains gated by explicit endorsement, confirmation, correction, rejection, retraction, reopening, or repeated accepted operational use.
 - `$memory-source-notes` - append-only custom memory-source capture only after a documented handoff from `$harness-memory`, `$learnings`, `$negative-ledger`, or `$synesthesia`, or when the user explicitly asks to record an event in one of those custom sources. It never writes compiled memory.
 - `$harness-memory` - direct user correction or repeated steering about how Codex should operate, but only when the correction expresses a durable trigger/behavior/verification rule rather than tone, frustration, or one-off task detail.
 
@@ -177,17 +177,18 @@ synesthesia
 - `memory-note` creates immutable typed notes under `~/.codex/memories/extensions/<source>/notes/`.
 - Do not use `memory-note` for `ad_hoc` or `chronicle`.
 - Source skills own admission decisions and payload semantics.
-- The `memory-source-notes` skill owns CLI syntax, path safety, proof lines, and failure behavior.
+- The `memory-source-notes` skill owns CLI syntax, path safety, proof lines, failure behavior, copy-based extension-instruction synchronization, and extension-specific validation adapters.
 - Phase 2 owns promotion into `memory_summary.md`, `MEMORY.md`, and memory-root `skills/*`.
 - A missing `memory-note` CLI must not block canonical domain capture. Complete `.learnings.jsonl` or `.ledger` writes first, then report `memory-note: not-attempted: cli unavailable`.
 - Do not hand-write custom source notes as a fallback.
+- Do not symlink live memory extension instruction files; copy them through the owning adapter and preserve live `notes/` and `resources/` directories.
 
 Admission thresholds:
 
 - harness: explicit durable operating correction or repeated evidence-backed steering;
 - learnings: `codify_now`, repeated theme, explicit durable user preference, or unusually high-value failure shield;
 - negative-ledger: complete exported ledger projection or witnessed lifecycle transition; never prose-only exclusion claims;
-- synesthesia: explicit endorsement/correction/rejection/retraction, direct remember request, or independently evidenced repeated accepted operational use; never assistant-authored novelty alone.
+- synesthesia: explicit durable endorsement, confirmation, correction, rejection, retraction, reopening, or boundary instruction is sufficient without repetition; otherwise require accepted operational use across at least two independent contexts.
 
 ## Tooling standards
 

@@ -1,11 +1,10 @@
 # Synesthesia resource digest
 
 generated_at: <YYYY-MM-DDTHH-MM-SSZ>
-source: <immutable source notes only>
-scope: <global | repo | path-family | task-family | workflow | tool>
+source: <source-note selection or bounded manual analysis>
+scope: <global | repo | path-family | task-family | workflow | tool | tentative>
 
-> This digest is a temporary consolidation aid. Every promotable entry must cite
-> valid immutable `source_note_ids`. Entries without them target `none`.
+This is a temporary consolidation aid. A promotable entry must cite immutable `source_note_ids`. Resource-only prose is not admitted evidence and must target `none`.
 
 ## Endorsed mappings
 
@@ -18,10 +17,28 @@ scope: <global | repo | path-family | task-family | workflow | tool>
 - non_activation_boundary:
 - scope:
 - scope_anchor:
-- verification:
+- authority:
+- evidence_summary:
 - confidence: <high | medium | low>
+- verification:
+- related_skill: synesthesia
+- memory_target: <memory_summary | MEMORY | skill | none>
+- memory_skill_candidate: <none | skill-name + why>
+- retrieval_terms: [synesthesia, <phrase>, <repo>, <task>, <technical pattern>]
+
+## Confirmed mappings
+
+### <short mapping title>
+
+- source_note_ids: [<original MSN-...>, <confirmation MSN-...>]
+- sensory_phrase:
+- engineering_translation:
+- activation_boundary:
+- non_activation_boundary:
+- independent_contexts:
+- verification:
 - memory_target: <memory_summary | MEMORY | none>
-- retrieval_terms: [synesthesia, <phrase>, <repo>, <task>, <technical-pattern>]
+- retrieval_terms: []
 
 ## Activation boundaries
 
@@ -30,34 +47,26 @@ scope: <global | repo | path-family | task-family | workflow | tool>
 - source_note_ids: [<MSN-...>]
 - use_when:
 - do_not_use_when:
+- scope:
+- evidence_summary:
 - failure_avoided:
 - verification:
 - memory_target: <memory_summary | MEMORY | none>
 - retrieval_terms: []
 
-## Corrections and supersessions
+## Corrected, rejected, or retracted mappings
 
-### <correction title>
+### <mapping or boundary title>
 
-- source_note_ids: [<MSN-new>, <MSN-prior>]
-- superseded_mapping_or_boundary:
-- current_mapping_or_boundary:
+- source_note_ids: [<prior MSN-...>, <change MSN-...>]
+- operation: <supersede | reject | retract | reopen>
+- prior_rule:
+- current_rule:
 - reason:
 - scope:
 - verification:
 - memory_target: <memory_summary | MEMORY | none>
-
-## Rejected or retracted mappings
-
-### <rejection title>
-
-- source_note_ids: [<MSN-...>]
-- sensory_phrase_or_boundary:
-- disposition: <rejected | retracted>
-- reason:
-- scope:
 - retrieval_terms: []
-- memory_target: none
 
 ## Failure shields
 
@@ -70,3 +79,18 @@ scope: <global | repo | path-family | task-family | workflow | tool>
 - engineering_translation_required: true
 - verification:
 - memory_target: <memory_summary | MEMORY | none>
+- retrieval_terms: []
+
+## Skill candidates
+
+### <skill candidate name>
+
+- source_note_ids: [<MSN-...>, <MSN-...>]
+- trigger:
+- repeated_workflow:
+- source_evidence:
+- procedure_outline:
+- verification:
+- why_existing_synesthesia_skill_is_not_enough:
+- memory_target: <skill | none>
+- retrieval_terms: []

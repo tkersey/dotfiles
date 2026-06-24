@@ -1,72 +1,56 @@
-# Modality Selection
+# Synesthesia Modality Selection
 
 ## Purpose
 
-Choose representations from the shape of the evidence, not from a fixed metaphor dictionary.
-
-A modality is useful only when it exposes an independent technical dimension or materially improves the user's mental model.
+Choose a representation because its structure matches the available evidence, not because a phrase sounds vivid.
 
 ## Minimum-sufficient rule
 
-Start with one modality. Add a second only when it answers a different technical question.
-
 ```text
-one observation repeated in two vocabularies != two useful modalities
+one modality if one independent dimension is enough
+second modality only when it exposes a different technical dimension
+more than two only with an explicit reason
 ```
 
-Use no more than three modalities, and only for genuinely multi-dimensional systems.
+A modality is redundant when removing it leaves the same technical translation, uncertainty, falsifier, and next move.
 
 ## Evidence-shape guide
 
-| Evidence shape | Candidate modality | Technical dimension exposed |
+| Evidence shape | Primary representation | Technical dimensions it may expose |
 |---|---|---|
-| Dependencies, ownership, boundaries, topology | Spatial | adjacency, distance, bottlenecks, centrality, containment |
-| Timing, sequencing, retries, concurrency | Auditory or rhythmic | cadence, phase, interruption, delay, synchronization |
-| API or workflow interaction | Tactile | friction, resistance, brittleness, feedback, reversibility |
-| CPU, allocation, saturation, contention | Thermal or pressure | concentration, buildup, dissipation, hot regions |
-| State visibility, distribution, contrast | Visual | separation, gradients, flicker, occlusion, change over time |
-| Several orthogonal dimensions | At most two initially | explicit independent axes only |
+| dependencies, ownership, boundaries, layering | spatial | topology, direction, bottlenecks, boundary leakage, centrality |
+| timing, retries, sequencing, concurrency | rhythmic or auditory | cadence, jitter, phase conflict, serialization, feedback |
+| API or workflow interaction | tactile | friction, brittleness, hidden state, rollback cost, affordance |
+| CPU, allocation, contention, saturation | thermal or pressure | concentration, accumulation, pressure transfer, cooling paths |
+| state visibility, contrast, distribution, change | visual | hidden state, unstable contrast, spread, clustering, transitions |
 
-These are selection heuristics, not canonical mappings.
+This table maps evidence shapes to representational affordances. It is not a fixed metaphor ontology.
 
-## Independence test
+## Selection procedure
 
-Before adding a modality, complete this sentence:
+1. Name the literal evidence and unresolved question.
+2. Choose the representation whose structure is most nearly isomorphic to that evidence.
+3. State the engineering translation before elaborating the sensory language.
+4. Add a second modality only when it answers a different question.
+5. Remove any modality that does not change the diagnosis, explanation, comparison, or next move.
+
+## Common mistakes
+
+- **Synonym stacking:** several modalities restate “complex” without exposing independent dimensions.
+- **Ontology substitution:** a canned phrase is treated as if it were an observed system property.
+- **Unfalsifiable texture:** a description cannot be contradicted by code, traces, tests, or user behavior.
+- **Aesthetic ranking:** one alternative is made to sound better without a stable comparison axis.
+- **Narrative overrun:** implementation is narrated metaphorically after the route is already selected.
+
+## Verification
+
+For each material modality, answer:
 
 ```text
-This modality adds <technical dimension> that the existing model does not show.
+What literal evidence selected it?
+What independent technical dimension does it expose?
+What would falsify the translation?
+What decision or explanation changes because of it?
 ```
 
-Reject the modality when the answer is merely a synonym, aesthetic variation, or restatement of the same diagnosis.
-
-## Mapping sources
-
-Use mappings in this order:
-
-1. Current user-defined mapping.
-2. Applicable user-endorsed durable mapping for the exact scope.
-3. Stable domain convention that is explicitly labeled as a convention.
-4. Provisional mapping created for the current answer.
-
-A provisional mapping must be presented as provisional and must not be admitted to memory without the normal evidence gate.
-
-## Consistency
-
-Within one scope:
-
-- one phrase should retain one technical meaning;
-- one technical distinction should not silently switch phrases;
-- comparison axes must remain identical across alternatives;
-- repo-local mappings must not be generalized globally;
-- a changed mapping must be called out rather than silently substituted.
-
-## Failure modes
-
-Avoid:
-
-- modality inflation;
-- canned color or sound tables;
-- sensory claims that imply unseen runtime facts;
-- mutually inconsistent metaphors;
-- using vividness to imply confidence;
-- mapping every code smell to the same notion of heat, weight, or noise.
+If any answer is missing, omit or compress the modality.

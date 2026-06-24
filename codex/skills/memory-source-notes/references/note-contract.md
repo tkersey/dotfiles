@@ -6,28 +6,28 @@ A note is an immutable source event, not compiled memory and not an instruction 
 
 ## Generated envelope
 
-The CLI writes a canonical note envelope to a timestamped `.md` file:
+The native writer creates one canonical envelope in a timestamped `.md` file:
 
 ```json
 {
   "schema": "memory-source-note/v1",
   "id": "MSN-20260620T183000Z-a91f4e2c6b5d3f10",
   "captured_at": "2026-06-20T18:30:00Z",
-  "extension": "negative-ledger",
-  "kind": "ledger-projection",
+  "extension": "synesthesia",
+  "kind": "mapping-endorsement",
   "operation": "assert",
-  "authority": "ledger-cli",
-  "summary": "NEG-000001 active exclusion projection",
+  "authority": "explicit-user-endorsement",
+  "summary": "Endorse long corridor.",
   "scope": {
-    "kind": "repo",
-    "repo": "owner/repo",
-    "paths": ["src/mvcc"]
+    "kind": "task-family",
+    "repo": null,
+    "paths": []
   },
   "source_refs": [
     {
-      "kind": "negative-ledger",
-      "ref": ".ledger/negative-ledger.jsonl#NEG-000001",
-      "summary": "Full exported current projection"
+      "kind": "user-endorsement",
+      "ref": "rollout:019...",
+      "summary": "User explicitly accepted the mapping"
     }
   ],
   "related_ids": [],
@@ -44,30 +44,25 @@ The CLI writes a canonical note envelope to a timestamped `.md` file:
 - no overwrite, mutation, or delete command;
 - UTC timestamp filename;
 - allowlisted extension and kind;
-- stable fingerprint input for semantically equivalent source events;
 - non-empty authority, summary, source references, and payload;
 - safe memory-root-relative destination;
 - no symlink traversal;
 - maximum input and output sizes;
 - structured stdout and deterministic exit codes.
 
-## Canonical caller input
+For Synesthesia writes, the extension adapter additionally guarantees:
 
-The writer's generated envelope is canonical. Source-specific callers are also responsible for passing a stable source-event representation when duplicate detection depends on input bytes.
-
-For Synesthesia, the accepted writer input is the canonical stdout of:
-
-```bash
-uv run --with pyyaml python \
-  codex/skills/synesthesia/scripts/validate_synesthesia.py \
-  memory-file proposed.json --kind <kind> --emit-canonical
-```
-
-Do not reformat or augment the canonical JSON before handing it to `memory-note`.
+- operation-kind compatibility;
+- authority-kind compatibility;
+- prior-note relationships for state-changing operations;
+- required activation and non-activation boundaries;
+- canonical key ordering and compact JSON before writer fingerprinting;
+- envelope-owned authority and scope;
+- deterministic mapping of logical confirmation to the current stored kind.
 
 ## Authority values
 
-Recommended values:
+Recommended general values:
 
 ```text
 explicit-user-correction
@@ -76,10 +71,14 @@ learnings-cli
 ledger-cli
 explicit-user-endorsement
 explicit-user-rejection
-explicit-user-retraction
-explicit-user-remember-request
-repeated-accepted-use
+source-skill
 verified-artifact
+```
+
+Synesthesia additionally uses:
+
+```text
+repeated-accepted-use
 ```
 
 `assistant-inference` is never enough by itself for durable admission.
@@ -97,36 +96,43 @@ tool
 
 Use the narrowest reusable scope.
 
+## Synesthesia operation matrix
+
+| Logical kind | Stored kind | Allowed operation | Required prior relationship |
+|---|---|---|---|
+| `mapping-endorsement` | `mapping-endorsement` | `assert` | no |
+| `mapping-confirmation` | `mapping-endorsement` | `confirm` | `related_ids` |
+| `mapping-correction` | `mapping-correction` | `supersede` | `supersedes_id` or `related_ids` |
+| `mapping-rejection` | `mapping-rejection` | `reject` | `supersedes_id` or `related_ids` |
+| `mapping-endorsement` reopening | `mapping-endorsement` | `reopen` | `supersedes_id` or `related_ids` |
+| `activation-boundary` | `activation-boundary` | `assert` | no |
+| `activation-boundary` confirmation | `activation-boundary` | `confirm` | `related_ids` |
+| `activation-boundary` correction | `activation-boundary` | `supersede` | `supersedes_id` or `related_ids` |
+| `activation-boundary` reopening | `activation-boundary` | `reopen` | `supersedes_id` or `related_ids` |
+| `boundary-retraction` | `boundary-retraction` | `retract` | `supersedes_id` or `related_ids` |
+
 ## Supersession and retraction
 
-A superseding, rejecting, retracting, confirming, or reopening event that acts on an admitted prior state must include:
+A superseding, rejecting, retracting, confirming, or reopening note must include:
 
 ```text
 operation
 supersedes_id or related_ids
 source_refs explaining the change
-payload containing the replacement, confirmation, rejection, or withdrawal semantics
+payload containing the replacement, confirmation, rejection, withdrawal, or reopening rule
 ```
 
-Phase 2 updates compiled memory surgically. It must not delete source notes.
-
-## Synesthesia kind-operation compatibility
-
-| Kind | Allowed operations | Prior note requirement |
-|---|---|---|
-| `mapping-endorsement` | `assert`, `confirm`, `reopen` | confirmation and reopening require prior linkage |
-| `mapping-correction` | `supersede` | required |
-| `mapping-rejection` | `reject` | required for an already admitted mapping |
-| `activation-boundary` | `assert`, `confirm`, `supersede`, `reopen` | all except initial assertion require prior linkage |
-| `boundary-retraction` | `retract` | required |
-
-The Synesthesia package preflight enforces this matrix before handoff.
+Phase 2 updates compiled memory surgically. It never deletes source notes.
 
 ## Canonical versus admission authority
 
 A note can be authoritative that Phase 2 must consider an event while remaining subordinate to its canonical domain source.
 
-- A negative-ledger note is authoritative as an exported snapshot, but `.ledger/negative-ledger.jsonl` owns route state.
-- A learnings admission note is authoritative that a row should be considered, but `.learnings.jsonl` owns the full learning record.
-- A harness note may itself be canonical when it records an explicit user correction with evidence.
-- A Synesthesia note may itself be canonical when it records explicit user endorsement, correction, rejection, retraction, or a directly requested durable boundary.
+- a negative-ledger note is an exported snapshot; `.ledger/negative-ledger.jsonl` owns route state;
+- a learnings note admits a row; `.learnings.jsonl` owns the full learning;
+- a harness note may itself be canonical when it records explicit operating correction;
+- a Synesthesia note may itself be canonical when it records explicit endorsement, correction, rejection, retraction, reopening, or a durable boundary.
+
+## Instruction deployment
+
+Extension `instructions.md` files in the live memory root must be regular copied files. Do not symlink them. Copy only the instruction file; leave `notes/` and `resources/` as live private state.

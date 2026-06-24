@@ -2,160 +2,168 @@ skill_decision_contract:
   contract_version: SKDC-v1
   skill:
     name: synesthesia
-    kind: mixed
-    source_fingerprint: synesthesia-v3-reversible-lens
+    kind: decision
+    source_fingerprint: synesthesia-v3.1.0
   triggers:
-  - trigger_id: SYN-T1-SENSORY
-    description: The user explicitly requests a sensory, experiential, or cross-modal representation of a software artifact or behavior.
+  - trigger_id: SYN-EXPLICIT-SENSORY
+    description: The user explicitly asks what software feels, sounds, looks, moves, weighs, or resembles.
     cue_literals:
     - feels like
     - sound like
-    - looks like
+    - look like
     - texture
-    - color of this codebase
-    - make this visible
     - rhythm
-    - friction
     - weight
+    - sensory map
     cue_regexes:
     - "(?i)what (does|do) .+ (feel|sound|look) like"
-    exclusions:
-    - literal-only request
-    - exact syntax
-    - legal or compliance interpretation
-    - security sign-off
-  - trigger_id: SYN-T2-COMPARE
-    description: The user asks to compare multiple implementations or designs by feel, friction, coherence, rhythm, weight, or another experiential axis.
+    exclusions: []
+  - trigger_id: SYN-COMPARE-FEEL
+    description: The user asks to compare alternatives by feel or another stable sensory axis.
     cue_literals:
     - compare by feel
-    - which feels cleaner
-    - which is smoother
-    - which is more coherent
+    - which feels
+    - smoother
+    - lighter
+    - quieter
     cue_regexes: []
-    exclusions:
-    - benchmark-only comparison
-    - security-only comparison
-  - trigger_id: SYN-T3-HANDOFF
-    description: An owning technical workflow names a concrete representational ambiguity that cross-modal recoding may clarify.
+    exclusions: []
+  - trigger_id: SYN-HANDOFF-AMBIGUITY
+    description: An owning workflow documents a concrete representational ambiguity that cross-modal recoding may clarify.
     cue_literals:
     - synesthesia handoff
     - representational ambiguity
     cue_regexes: []
     exclusions:
-    - generic architecture task
-    - generic performance task
-    - generic readability task
-    - generic flaky-debugging task
+    - generic architecture task with no ambiguity
+    - generic performance task with no ambiguity
+    - generic readability task with no ambiguity
+  - trigger_id: SYN-DURABLE-MEMORY-EVENT
+    description: The user explicitly endorses, confirms, corrects, rejects, retracts, reopens, or asks to remember a sensory mapping or boundary.
+    cue_literals:
+    - remember this mapping
+    - save this mapping
+    - from now on
+    - when I say
+    - reject that mapping
+    - retract that boundary
+    cue_regexes: []
+    exclusions:
+    - assistant-authored novelty without user authority
   routes:
-  - route_id: SYN-R1-DIAGNOSE
-    description: Use an evidence-bound sensory model to distinguish candidate mechanisms or choose an investigation order.
+  - route_id: SYN-ROUTE-DIAGNOSE
+    description: Use a reversible sensory representation to generate or rank technical hypotheses.
     aliases:
     - diagnose
     terminal: 'no'
-  - route_id: SYN-R2-EXPLAIN
-    description: Build a reversible mental model for teaching or onboarding and state the analogy's limits.
+  - route_id: SYN-ROUTE-EXPLAIN
+    description: Build a reversible mental model without forcing implementation advice.
     aliases:
     - explain
-    - teaching
+    - teach
     terminal: 'no'
-  - route_id: SYN-R3-COMPARE
-    description: Compare alternatives on stable sensory axes translated into technical tradeoffs.
+  - route_id: SYN-ROUTE-COMPARE
+    description: Compare alternatives on stable mapping axes and state the decision implication.
     aliases:
     - compare
     terminal: 'no'
-  - route_id: SYN-R4-IMPLEMENTATION-LENS
-    description: Produce one route-shaping representation inside an already-owned implementation workflow, then return to literal execution.
+  - route_id: SYN-ROUTE-IMPLEMENTATION-LENS
+    description: Return one route-shaping insight and hand control back to the implementation owner.
     aliases:
     - implementation-lens
     terminal: 'no'
-  - route_id: SYN-R5-MEMORY-ADMISSION
-    description: Validate an explicitly authorized durable mapping or boundary and hand canonical JSON to memory-source-notes.
+  - route_id: SYN-ROUTE-MEMORY-ADMISSION
+    description: Classify and append one durable Synesthesia source note through memory-source-notes.
     aliases:
     - memory-admission
     terminal: 'no'
-  - route_id: SYN-R6-NO-SYNESTHESIA
-    description: Stay literal because the subject alone does not justify the lens or no independent representational value is expected.
+  - route_id: SYN-ROUTE-DIRECT-LITERAL
+    description: Decline the sensory lens because literal handling or another governing skill is sufficient.
     aliases:
     - direct
-    - no-synesthesia
+    - handoff
     terminal: 'yes'
-  - route_id: SYN-R7-BLOCKED
-    description: Stop the sensory pass because literal evidence, scope, or a falsifiable translation is missing.
+  - route_id: SYN-ROUTE-BLOCKED
+    description: Stop when literal evidence, scope, authority, prior-note relationship, or reversibility is insufficient.
     aliases:
     - blocked
     terminal: 'yes'
   clauses:
-  - clause_id: SYN-ACT-001
+  - clause_id: SYN-ACTIVATION-001
     trigger_refs:
-    - SYN-T1-SENSORY
-    - SYN-T2-COMPARE
-    - SYN-T3-HANDOFF
+    - SYN-EXPLICIT-SENSORY
+    - SYN-COMPARE-FEEL
+    - SYN-HANDOFF-AMBIGUITY
     expected_routes:
-    - SYN-R1-DIAGNOSE
-    - SYN-R2-EXPLAIN
-    - SYN-R3-COMPARE
-    - SYN-R4-IMPLEMENTATION-LENS
-    - SYN-R6-NO-SYNESTHESIA
-    - SYN-R7-BLOCKED
-    prohibited_routes: []
+    - SYN-ROUTE-DIAGNOSE
+    - SYN-ROUTE-EXPLAIN
+    - SYN-ROUTE-COMPARE
+    - SYN-ROUTE-IMPLEMENTATION-LENS
+    - SYN-ROUTE-DIRECT-LITERAL
+    - SYN-ROUTE-BLOCKED
+    prohibited_routes:
+    - SYN-ROUTE-MEMORY-ADMISSION
     required_artifacts:
-    - literal observations or explicit missing-evidence statement
-    - selected primary mode
+    - literal evidence or explicit not-inspected boundary
+    - selected mode
+    - minimum-sufficient modality rationale
     success_signals:
-    - activation is based on representational need rather than subject alone
-    - governing technical owner remains explicit when another workflow owns the task
+    - activation is based on representational need or explicit sensory language
+    - ordinary domain work remains owned by its technical workflow
     failure_signals:
-    - ordinary architecture, performance, readability, UX, or debugging task activates Synesthesia merely by topic
-    - sensory language substitutes for the governing technical workflow
-    rationale: Synesthesia is a representation-changing lens, not a broad software domain owner.
-  - clause_id: SYN-MAP-001
+    - activation solely because the task mentions architecture, performance, readability, flakiness, onboarding, or UX
+    - sensory prose with no technical delta
+    rationale: Synesthesia is a representational lens, not a broad domain owner.
+  - clause_id: SYN-REVERSIBILITY-002
     trigger_refs:
-    - SYN-T1-SENSORY
-    - SYN-T2-COMPARE
-    - SYN-T3-HANDOFF
+    - SYN-EXPLICIT-SENSORY
+    - SYN-COMPARE-FEEL
+    - SYN-HANDOFF-AMBIGUITY
     expected_routes:
-    - SYN-R1-DIAGNOSE
-    - SYN-R2-EXPLAIN
-    - SYN-R3-COMPARE
-    - SYN-R4-IMPLEMENTATION-LENS
+    - SYN-ROUTE-DIAGNOSE
+    - SYN-ROUTE-EXPLAIN
+    - SYN-ROUTE-COMPARE
+    - SYN-ROUTE-IMPLEMENTATION-LENS
+    - SYN-ROUTE-BLOCKED
     prohibited_routes: []
     required_artifacts:
-    - evidence references
+    - evidence
     - engineering translation
-    - uncertainty
-    - falsifier for diagnostic claims
-    - decision, explanation, or investigation delta
+    - uncertainty for inferential claims
+    - falsifier for material diagnostic claims
+    - decision or explanation delta
     success_signals:
-    - modalities are minimum sufficient and non-redundant
-    - every material sensory statement is reversible
-    - the lens changes a decision, investigation order, comparison, or mental model
+    - every material mapping is reversible and falsifiable
+    - redundant modalities are omitted
     failure_signals:
-    - metaphor is presented as evidence
-    - several modalities repeat one conclusion
-    - no falsifier or material delta exists
-    rationale: A sensory model is useful only when it remains evidence-bound and operationally reversible.
-  - clause_id: SYN-MEM-001
+    - metaphor treated as evidence
+    - several modalities restate the same claim
+    - invented runtime facts
+    rationale: The lens is useful only when it preserves literal accountability.
+  - clause_id: SYN-MEMORY-003
     trigger_refs:
-    - SYN-T1-SENSORY
-    - SYN-T2-COMPARE
-    - SYN-T3-HANDOFF
+    - SYN-DURABLE-MEMORY-EVENT
     expected_routes:
-    - SYN-R5-MEMORY-ADMISSION
-    - SYN-R6-NO-SYNESTHESIA
-    prohibited_routes: []
+    - SYN-ROUTE-MEMORY-ADMISSION
+    - SYN-ROUTE-BLOCKED
+    prohibited_routes:
+    - SYN-ROUTE-DIRECT-LITERAL
     required_artifacts:
-    - explicit endorsement, correction, rejection, retraction, remember request, or repeated accepted-use evidence
-    - complete source-note envelope
-    - successful skill-local preflight before handoff
+    - durable authority
+    - narrow scope
+    - source references
+    - canonical sensory payload
+    - prior note relationship when changing existing state
+    - memory-note proof line
     success_signals:
-    - payload does not duplicate envelope authority or scope
-    - operation and kind are compatible
-    - canonical JSON is handed to memory-source-notes
+    - explicit durable authority is persisted in the same turn
+    - unendorsed assistant novelty is not persisted
+    - confirmation, correction, rejection, retraction, and reopening reference prior notes
     failure_signals:
-    - assistant-generated phrase is captured without user authority
-    - correction, rejection, retraction, confirmation, or reopening omits prior-note linkage
-    - routine answers emit memory proof noise
-    rationale: Durable mappings must be explicitly authorized, narrowly scoped, reversible, and safely transported.
+    - qualifying explicit durable event described but not appended
+    - routine diagnostic output appended without authority
+    - resource digest promoted without source note IDs
+    rationale: Explicit durable user authority should reliably reach the source-note pipeline without weakening admission hygiene.
   instrumentation:
     decision_receipt: optional
-    rationale: Use seq skill-decision-audit and the stable SYN clause IDs to distinguish useful, false, missed, and ceremonial activation.
+    rationale: Routing evals and immutable memory-source notes provide decision and persistence evidence.

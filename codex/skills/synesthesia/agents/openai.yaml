@@ -4,10 +4,16 @@ interface:
   display_name: "Synesthesia"
   short_description: "Turn software evidence into reversible sensory diagnostics"
   default_prompt: >-
-    Use $synesthesia only as an evidence-bound diagnostic lens. Start from
-    literal observations, choose the minimum sufficient and non-redundant
-    modalities, and translate every sensory statement into a concrete technical
-    hypothesis, uncertainty, falsifier, and next move. Hand implementation and
-    proof to the owning technical workflow. Do not capture a durable mapping
-    without explicit endorsement, correction, rejection, retraction, a direct
-    remember request, or repeated accepted operational use.
+    Use $synesthesia only as an evidence-bound diagnostic lens. Activate for
+    explicit sensory or compare-by-feel requests, or for a documented handoff
+    that names a concrete representational ambiguity; do not activate merely
+    because a task concerns architecture, performance, readability, flakiness,
+    onboarding, or UX. Start from literal observations, choose the minimum
+    sufficient non-redundant modalities, and translate every material sensory
+    statement into concrete technical meaning, uncertainty, a falsifier, and a
+    next move. Hand implementation and proof back to the owning workflow. When
+    the user explicitly endorses, confirms, corrects, rejects, retracts, reopens,
+    or asks to remember a durable mapping or activation boundary, load
+    $memory-source-notes and append the appropriate Synesthesia source note in
+    the same turn. Do not capture assistant novelty, task-local metaphors, or
+    unendorsed sensory prose.

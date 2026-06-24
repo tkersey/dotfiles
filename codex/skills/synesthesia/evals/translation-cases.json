@@ -2,132 +2,51 @@
   "schema": "synesthesia-translation-cases/v1",
   "cases": [
     {
-      "id": "valid-temporal-diagnosis",
-      "expected_valid": true,
-      "candidate": {
-        "mode": "diagnose",
-        "literal_observations": [
-          "Requests complete in periodic bursts after a shared retry timer fires.",
-          "The trace shows no CPU saturation during the idle intervals."
-        ],
-        "sensory_model": "A synchronized stutter rather than continuous pressure.",
-        "modalities": ["auditory"],
-        "modality_dimensions": {
-          "auditory": "phase alignment and cadence"
-        },
-        "engineering_translation": "The burst pattern is consistent with coordinated retries or timer alignment, not a continuously saturated compute path.",
-        "uncertainty": "The trace does not yet identify which retry owner aligns the timers.",
-        "falsifier": "A trace showing independently distributed retry wakeups with the same burst pattern would defeat the phase-alignment interpretation.",
-        "decision_delta": "Inspect retry scheduling and jitter configuration before optimizing CPU work.",
-        "evidence_refs": ["trace:retry-bursts"]
+      "id": "valid-spatial",
+      "valid": true,
+      "mapping": {
+        "evidence": "A -> B -> C performs three serialized network calls.",
+        "sensory_representation": "A long corridor with three sequential doors.",
+        "engineering_translation": "Dependency latency is amplified because calls cannot overlap.",
+        "uncertainty": "The trace does not yet prove that parallel execution is safe.",
+        "falsifier": "A trace showing overlap or a dependency requirement that enforces serialization.",
+        "decision_delta": "Measure dependency independence before implementing concurrency."
       }
     },
     {
-      "id": "valid-spatial-explanation",
-      "expected_valid": true,
-      "candidate": {
-        "mode": "explain",
-        "literal_observations": [
-          "All writes pass through one coordinator before reaching independent stores."
-        ],
-        "sensory_model": "Several rooms share one narrow doorway.",
-        "modalities": ["spatial"],
-        "modality_dimensions": {
-          "spatial": "centrality and constrained passage"
-        },
-        "engineering_translation": "The coordinator is a serialization and ownership boundary for otherwise independent stores.",
-        "uncertainty": "The analogy does not establish whether the serialization is required by consistency semantics.",
-        "falsifier": "If writes can commit independently without violating the consistency contract, the single-doorway model overstates the required boundary.",
-        "decision_delta": "The learner should inspect the consistency invariant before treating the coordinator as accidental complexity.",
-        "evidence_refs": ["src/coordinator.zig:commit"]
+      "id": "missing-evidence",
+      "valid": false,
+      "expected_error": "evidence",
+      "mapping": {
+        "sensory_representation": "The service feels hot and noisy.",
+        "engineering_translation": "There may be contention.",
+        "uncertainty": "unknown",
+        "falsifier": "profile shows no contention",
+        "decision_delta": "profile it"
       }
     },
     {
-      "id": "invalid-no-evidence",
-      "expected_valid": false,
-      "candidate": {
-        "mode": "diagnose",
-        "literal_observations": [],
-        "sensory_model": "The system feels muddy.",
-        "modalities": ["visual"],
-        "modality_dimensions": {"visual": "separation"},
-        "engineering_translation": "Responsibilities may be mixed.",
-        "uncertainty": "High.",
-        "falsifier": "Inspect ownership.",
-        "decision_delta": "Maybe refactor.",
-        "evidence_refs": []
+      "id": "missing-falsifier",
+      "valid": false,
+      "expected_error": "falsifier",
+      "mapping": {
+        "evidence": "Retries occur every 500 ms.",
+        "sensory_representation": "A metronome that never resolves.",
+        "engineering_translation": "The retry loop is periodic and may be self-sustaining.",
+        "uncertainty": "The trigger source is not yet known.",
+        "decision_delta": "inspect retry origin"
       }
     },
     {
-      "id": "invalid-redundant-modalities",
-      "expected_valid": false,
-      "candidate": {
-        "mode": "compare",
-        "literal_observations": ["Both APIs require five ordered setup calls."],
-        "sensory_model": "Heavy and loud.",
-        "modalities": ["tactile", "auditory"],
-        "modality_dimensions": {
-          "tactile": "interaction cost",
-          "auditory": "interaction cost"
-        },
-        "engineering_translation": "Both APIs have high setup cost.",
-        "uncertainty": "None stated.",
-        "falsifier": "A one-call setup path.",
-        "decision_delta": "Prefer neither.",
-        "evidence_refs": ["api:setup"]
-      }
-    },
-    {
-      "id": "invalid-no-falsifier",
-      "expected_valid": false,
-      "candidate": {
-        "mode": "diagnose",
-        "literal_observations": ["The failure occurs after cancellation."],
-        "sensory_model": "A brittle edge.",
-        "modalities": ["tactile"],
-        "modality_dimensions": {"tactile": "failure tolerance"},
-        "engineering_translation": "Cancellation cleanup may be incomplete.",
-        "uncertainty": "The owner is unknown.",
-        "falsifier": "",
-        "decision_delta": "Inspect cleanup ownership.",
-        "evidence_refs": ["test:cancellation"]
-      }
-    },
-    {
-      "id": "invalid-no-delta",
-      "expected_valid": false,
-      "candidate": {
-        "mode": "explain",
-        "literal_observations": ["The module has three layers."],
-        "sensory_model": "Three translucent sheets.",
-        "modalities": ["visual"],
-        "modality_dimensions": {"visual": "layering"},
-        "engineering_translation": "The module has three layers.",
-        "uncertainty": "None.",
-        "falsifier": "A fourth runtime layer.",
-        "decision_delta": "none",
-        "evidence_refs": ["src/module"]
-      }
-    },
-    {
-      "id": "invalid-modality-inflation",
-      "expected_valid": false,
-      "candidate": {
-        "mode": "diagnose",
-        "literal_observations": ["One lock protects the queue."],
-        "sensory_model": "A hot, loud, narrow, sticky point.",
-        "modalities": ["thermal", "auditory", "spatial", "tactile"],
-        "modality_dimensions": {
-          "thermal": "contention",
-          "auditory": "contention cadence",
-          "spatial": "centrality",
-          "tactile": "interaction resistance"
-        },
-        "engineering_translation": "The lock may be contended.",
-        "uncertainty": "No wait-time evidence exists.",
-        "falsifier": "Lock-wait metrics remain negligible under load.",
-        "decision_delta": "Measure lock wait time.",
-        "evidence_refs": ["src/queue"]
+      "id": "no-delta-decoration",
+      "valid": false,
+      "expected_error": "decision_delta",
+      "mapping": {
+        "evidence": "The module has twelve public methods.",
+        "sensory_representation": "A blue glass box.",
+        "engineering_translation": "The module has twelve public methods.",
+        "uncertainty": "none",
+        "falsifier": "method count changes"
       }
     }
   ]
