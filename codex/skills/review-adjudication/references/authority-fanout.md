@@ -1,55 +1,58 @@
-# Authority fanout
+# Review Adjudication Authority Fanout
 
-Use authority fanout to solve both bandwidth and authority for `$review-adjudication`.
-Subagents are not voters. Each lane owns one bounded clearance dimension. The
-root adjudicator integrates packets, but cannot permissively override an
-unresolved veto into `address`.
+Authority lanes are not voters. Each lane owns one bounded clearance dimension. The root integrates valid packets and may choose a stricter route, but may not upgrade past an unresolved veto.
 
-## Authority lanes
+All lanes use `specialist-packet-v2`; role-specific results live in `domain_payload`.
 
-| role | owns | clearance values |
+## Available lanes
+
+| Lane | Owns | Include when |
 |---|---|---|
-| `evidence-authority` | current grounding, reachability, proof-surface false positives | `clear` / `veto` / `unresolved` / `not-required` |
-| `direction-ownership-authority` | same-objective direction, PR ownership, non-goals | `clear` / `veto` / `unresolved` / `not-required` |
-| `criticality-authority` | accepted criticality, P2+ severity, review-closure-only downgrades | `clear` / `veto` / `unresolved` / `not-required` |
-| `no-change-advocate` | strongest no-change/no-resolve case | `defeated` / `veto` / `unresolved` / `not-required` |
-| `validation-value-authority` | mutate now versus validate first versus no validation value | `mutate-now` / `validate-first` / `no-validation-value` / `unresolved` / `not-required` |
-| `fix-shape-authority` | minimum safe fix shape and wrong/overbroad fix risk | `clear` / `veto` / `unresolved` / `not-required` |
-| `ablative-surface-authority` | deletion/collapse/reuse/privatization/decommissioning/canonicalization before additive mutation | `clear` / `veto` / `unresolved` / `not-required` |
-| `ablation-activation-sentinel` | whether ablation is required, not-required, or blocked for the pass | `required` / `not-required` / `blocked` |
+| evidence authority | current grounding, reachability, proof-surface false positives | current evidence is not locally decisive |
+| direction/ownership authority | objective, branch ownership, non-goals | direction or owner is contested |
+| criticality authority | accepted severity and closure significance | severity changes disposition |
+| no-change advocate | strongest no-change or no-resolve case | non-trivial mutation remains plausible |
+| validation-value authority | mutate now vs validate first vs no value | validation order is route-changing |
+| fix-shape authority | minimum safe fix and overbroad-fix risk | mutation is plausible but shape is unresolved |
+| ablative-surface authority | delete, collapse, reuse, privatize, decommission, canonicalize | additive surface or duplicate truth is possible |
+| ablation activation sentinel | whether ablation is required or blocked | applicability itself is ambiguous |
 
-## Trigger policy
+## Adaptive selection
 
-Root-equivalent authority packets are allowed for empty live sets, already-fixed
-proof-only threads, synthetic triage, or narrow obvious cases with no contested
-implementation handoff.
+```text
+direct:    root-equivalent local clearance, no specialist
+focused:   1-2 unresolved lanes
+tested:    3-4 independently material lanes
+high-risk: 5-8 lanes for public, security-critical, irreversible, or broad semantic work
+```
 
-Use full seven-lane fanout plus the activation sentinel, or root-equivalent packets with the same schema, when:
+The default is focused, not full fanout. Full fanout is justified only when at least five lanes remain independently route-changing or the control-plane registry classifies the work as high-risk.
 
-- any P2+ row might be selected as `address`;
-- every current automated finding would be selected as `address` or `validate-only`;
-- any current CAS/Codex finding is invariant-framed and would mutate code;
-- direction comes primarily from `$st`, `.step/proposed-plan.md`, or update-plan;
-- the no-change countercase is weak, generic, or reviewer-authority-shaped;
-- validation-only is rejected for an unproven but plausible finding;
-- implementation would route to `$fixed-point-driver`;
-- any selected action can add helpers, wrappers, adapters, flags, knobs, state variants, public symbols, fallback paths, branches, or abstractions;
-- multiple comments orbit the same governing invariant or duplicate truth surface.
+Every spawned lane requires a `specialist_intent` stating the unresolved question and expected decision delta.
 
-## Packet contract
+## Clearance law
+
+A finding may route to mutation only when:
+
+- evidence clearance is current;
+- direction and ownership are compatible;
+- accepted criticality warrants action;
+- the strongest no-change case is defeated or narrowed below the action threshold;
+- validation sequencing is resolved;
+- fix shape is bounded;
+- ablative alternatives are cleared when additive or keep-surface choices exist;
+- no required lane is vetoed, unresolved, stale, or missing.
+
+Root may always downgrade to validate-only, no-change, defer, follow-up, or blocked. Root may not permissively override a veto into mutation.
+
+## Domain payload
+
+Authority lanes place this under `domain_payload`:
 
 ```yaml
-authority_packet:
-  role: evidence-authority | direction-ownership-authority | criticality-authority | no-change-advocate | validation-value-authority | fix-shape-authority | ablative-surface-authority | ablation-activation-sentinel
-  packet_status: accepted | rejected | root-equivalent
-  artifact_state_id: "..."
-  direction_state_id: "..."
-  scoped_comment_ids: []
-  scope_match: yes | no
-  artifact_state_match: yes | no
-  direction_state_match: yes | no | not-applicable
-  clearance_by_id:
-    "<id>": clear | veto | unresolved | defeated | mutate-now | validate-first | no-validation-value | not-required
+authority:
+  scoped_ids: []
+  clearance_by_id: {}
   vetoes:
     - id:
       class:
@@ -58,29 +61,10 @@ authority_packet:
       required_to_clear:
   positive_evidence:
     - id:
-      evidence_ref:
       claim:
-  packet_status_reason:
+      evidence_ref:
 ```
 
-Reject stale, wrong-scope, wrong-objective, wrapper-leaking, acknowledgement-only,
-role-exceeding, or no-evidence packets.
+## Value accounting
 
-## Root authority rule
-
-Root may always downgrade a row to a stricter route. Root may not upgrade a row
-to `address` against `veto`, `unresolved`, missing clearance, a row in the
-Authority Veto Ledger, or missing ablative-surface clearance when ablation was
-triggered. Clear the veto with a fresh authority packet or block.
-
-## Required output sections
-
-- `Authority Packet Receipts`
-- `Authority Clearance Matrix`
-- `Authority Veto Ledger`
-- `Ablation Activation Receipt`
-- `Ablation Activation Sentinel Packet` when activation is ambiguous, root-equivalent, or mutation-capable
-
-`address` requires `authority status: cleared-for-address`, all required authority
-clearances, no veto row for that id, and ablative-surface clearance when any
-mutation-capable route or keep-surface decision exists.
+A valid packet can be neutral. Record whether it changed route, finding, proof, or retired risk. Recurrent neutral lanes should be removed from default fanout while remaining available for explicit high-risk use.
