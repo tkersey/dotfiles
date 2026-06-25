@@ -1,15 +1,15 @@
 ---
 name: memory-source-notes
-description: "Safely append, inspect, validate, and deploy typed source-evidence notes for controlled Codex memory extensions. Use only after a handoff from harness-memory, learnings, negative-ledger, or synesthesia, or an explicit custom source capture request. Never edits compiled memory."
+description: "Safely append, inspect, validate, deploy, and materialize derived digests for typed source-evidence notes in controlled Codex memory extensions. Use only after a handoff from harness-memory, learnings, negative-ledger, or synesthesia, or an explicit custom source capture or diagnostic request. Never edits compiled memory."
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Memory Source Notes
 
 ## Mission
 
-Provide one append-only transport path for controlled custom memory sources while preserving domain authority and Phase 2's compiler boundary.
+Provide one append-only transport path plus bounded derived-digest tooling for controlled custom memory sources while preserving domain authority and Phase 2's compiler boundary.
 
 This skill writes source evidence only:
 
@@ -41,7 +41,7 @@ source skill or canonical domain store
 - `harness-memory` owns durable operating-correction admission.
 - `synesthesia` owns sensory mapping and activation-boundary admission.
 - `memory-note` owns safe immutable transport.
-- this skill owns command syntax, extension-specific adapters, copy-based instruction deployment, diagnostics, and proof-line interpretation;
+- this skill owns command syntax, extension-specific adapters, derived digest generation, copy-based instruction deployment, diagnostics, and proof-line interpretation;
 - Phase 2 owns promotion, deduplication, supersession, and compiled-memory updates.
 
 ## Allowed extensions
@@ -138,9 +138,31 @@ The adapter:
 - injects compatibility fields required by the current `memory-note` writer;
 - serializes canonical JSON before writer fingerprinting;
 - maps logical `mapping-confirmation` to stored `mapping-endorsement` with `operation=confirm`;
-- invokes `memory-note` without hand-authoring notes.
+- invokes `memory-note` without hand-authoring notes;
+- refreshes the generated Synesthesia current-state digest after every successful non-dry-run append;
+- treats digest failure as a non-rollback warning, never as failure of the immutable source-note write.
 
 Do not bypass this adapter for new Synesthesia writes.
+
+## Synesthesia current-state digest
+
+Manual refresh:
+
+```bash
+uv run python \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  memory-digest
+```
+
+Default output:
+
+```text
+${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
+```
+
+The generator validates all stored Synesthesia notes and folds `assert`, `confirm`, `supersede`, `reject`, `retract`, and `reopen` into a deterministic current-state projection. It preserves active mappings, active boundaries, inactive entries, unresolved event chains, invalid-note diagnostics, source-note provenance, and a source fingerprint.
+
+The default digest is a complete materialized view and must remain a regular file. Partial or active-only reports require an explicit `--output` and must not replace the default digest. The digest never replaces immutable source notes or compiled memory.
 
 ## Copy-based extension instruction deployment
 
@@ -175,6 +197,8 @@ The doctor reports:
 
 - live adapter status and source/live hashes;
 - source-note count, kinds, operations, parse failures, and latest note IDs;
+- digest status (`missing`, `current`, `stale`, `invalid`, or unsafe path);
+- current active/inactive/unresolved projection counts;
 - `memory-note` availability and doctor output;
 - compiled-memory mentions of Synesthesia or source-note IDs;
 - the likely failing stage and next action.
@@ -222,7 +246,7 @@ Unsafe topology or validation failure:
 memory-note: failed: <concise reason>
 ```
 
-Do not emit memory proof lines during ordinary work when no durable event or persistence request exists.
+Do not emit memory proof lines during ordinary work when no durable event or persistence request exists. Digest refresh is silent on successful automatic runs; only manual `memory-digest` calls print a digest summary.
 
 A source-note failure must not undo a successful canonical learning or negative-ledger write. Report canonical and admission outcomes separately.
 

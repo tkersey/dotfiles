@@ -104,8 +104,8 @@ def validate_routing_cases(path: Path, errors: list[str]) -> None:
         return
     positives = [row for row in cases if isinstance(row, dict) and row.get("activate") is True]
     negatives = [row for row in cases if isinstance(row, dict) and row.get("activate") is False]
-    if len(positives) < 4:
-        errors.append("routing-cases:need-at-least-four-positive")
+    if len(positives) < 5:
+        errors.append("routing-cases:need-at-least-five-positive")
     if len(negatives) < 5:
         errors.append("routing-cases:need-at-least-five-negative")
     owners = {row.get("owner") for row in negatives}
@@ -223,16 +223,20 @@ def main() -> int:
     if frontmatter.get("name") != "synesthesia":
         errors.append("frontmatter:name")
     version = str(frontmatter.get("metadata", {}).get("version", ""))
-    if version != "3.1.0":
+    if version != "3.3.0":
         errors.append(f"frontmatter:version:{version}")
     for phrase in (
         "representational ambiguity",
+        "multiple plausible structural, temporal, interaction, or boundary interpretations",
         "minimum sufficient",
         "falsifier",
         "Durable memory events",
         "same turn",
         "$memory-source-notes",
+        "current-state",
         "Do not activate merely because",
+        "Generated current-state digest",
+        "memory-digest",
     ):
         if phrase.lower() not in body.lower():
             errors.append(f"skill:missing-contract-phrase:{phrase}")
@@ -243,10 +247,12 @@ def main() -> int:
     prompt = interface.get("interface", {}).get("default_prompt", "") if isinstance(interface, dict) else ""
     for phrase in (
         "evidence-bound diagnostic lens",
+        "multiple plausible structural, temporal, interaction, or boundary",
         "representational ambiguity",
         "falsifier",
         "same turn",
         "$memory-source-notes",
+        "current-state",
     ):
         if phrase not in prompt:
             errors.append(f"interface:missing:{phrase}")
@@ -256,6 +262,24 @@ def main() -> int:
     validate_translation_cases(skill_root / "evals/translation-cases.json", errors)
     adapter = load_memory_adapter(repo_root)
     validate_memory_cases(skill_root / "evals/memory-cases.json", adapter, errors)
+    for attribute in (
+        "build_digest_projection",
+        "render_memory_digest",
+        "generate_memory_digest",
+        "inspect_digest",
+    ):
+        if not hasattr(adapter, attribute):
+            errors.append(f"memory-adapter:missing:{attribute}")
+
+    instructions = (repo_root / "codex/memories/extensions/synesthesia/instructions.md").read_text(encoding="utf-8")
+    for phrase in (
+        "latest_synesthesia_digest.md",
+        "source_fingerprint",
+        "source_note_id",
+        "generated current-state digest",
+    ):
+        if phrase.lower() not in instructions.lower():
+            errors.append(f"memory-instructions:missing:{phrase}")
 
     template = (
         repo_root
@@ -265,10 +289,18 @@ def main() -> int:
         errors.append("resource-template:source-note-provenance")
 
     agents_path = repo_root / "codex/AGENTS.md"
-    if agents_path.is_file():
+    if not agents_path.is_file():
+        errors.append("missing:codex/AGENTS.md")
+    else:
         agents = agents_path.read_text(encoding="utf-8")
-        if "representational ambiguity" not in agents:
-            warnings.append("AGENTS.md does not contain narrowed Synesthesia routing")
+        for phrase in (
+            "literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations",
+            "translate it back into engineering terms with uncertainty and a falsifier",
+            "hand off to `$memory-source-notes` in the same turn",
+            "digest refreshes automatically after a successful append",
+        ):
+            if phrase not in agents:
+                errors.append(f"AGENTS.md:missing-synesthesia-routing:{phrase}")
 
     lint = repo_root / "codex/skills/tune/tools/decision_contract_lint.py"
     if lint.is_file():

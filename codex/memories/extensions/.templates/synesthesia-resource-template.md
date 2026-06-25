@@ -1,10 +1,10 @@
-# Synesthesia resource digest
+# Supplemental Synesthesia resource digest
 
 generated_at: <YYYY-MM-DDTHH-MM-SSZ>
 source: <source-note selection or bounded manual analysis>
 scope: <global | repo | path-family | task-family | workflow | tool | tentative>
 
-This is a temporary consolidation aid. A promotable entry must cite immutable `source_note_ids`. Resource-only prose is not admitted evidence and must target `none`.
+This template is only for bounded supplemental analysis. Do not use it to replace or overwrite `resources/latest_synesthesia_digest.md`, which is generated automatically from immutable source notes. A promotable entry must cite immutable `source_note_ids`. Resource-only prose is not admitted evidence and must target `none`.
 
 ## Endorsed mappings
 

@@ -14,8 +14,9 @@ class SynesthesiaPackageTests(unittest.TestCase):
         cases = data["cases"]
         positives = [row for row in cases if row["activate"]]
         negatives = [row for row in cases if not row["activate"]]
-        self.assertGreaterEqual(len(positives), 4)
+        self.assertGreaterEqual(len(positives), 5)
         self.assertGreaterEqual(len(negatives), 5)
+        self.assertTrue(any(row["id"] == "root-discovered-ambiguity" for row in positives))
         owners = {row["owner"] for row in negatives}
         self.assertTrue(
             {"lift", "codebase-audit", "complexity-mitigator", "universalist", "zig"}
@@ -27,11 +28,14 @@ class SynesthesiaPackageTests(unittest.TestCase):
         for phrase in (
             "literal evidence",
             "minimum sufficient",
+            "multiple plausible structural, temporal, interaction, or boundary interpretations",
             "falsifier",
             "decision or explanation delta",
             "same turn",
             "$memory-source-notes",
             "do not activate merely because",
+            "generated current-state digest",
+            "memory-digest",
         ):
             self.assertIn(phrase, text)
 

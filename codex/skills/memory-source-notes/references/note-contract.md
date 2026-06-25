@@ -136,3 +136,14 @@ A note can be authoritative that Phase 2 must consider an event while remaining 
 ## Instruction deployment
 
 Extension `instructions.md` files in the live memory root must be regular copied files. Do not symlink them. Copy only the instruction file; leave `notes/` and `resources/` as live private state.
+
+## Derived Synesthesia digest
+
+The Synesthesia adapter may derive a disposable current-state digest from immutable source notes. The digest is not a source event, is not compiled memory, and is never canonical. Its guarantees are:
+
+- complete folding of `assert`, `confirm`, `supersede`, `reject`, `retract`, and `reopen` chains;
+- deterministic ordering and source fingerprinting;
+- every projected entry preserves immutable `source_note_ids`;
+- unresolved, invalid, rejected, and retracted state remains visible;
+- the default digest is a regular full projection, not a partial report;
+- digest failure never rolls back an accepted source-note append.

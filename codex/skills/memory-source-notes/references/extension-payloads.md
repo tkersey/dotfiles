@@ -117,3 +117,13 @@ A mapping requires explicit endorsement, correction, rejection, retraction, reop
   "verification": "Future activation requires explicit sensory language or a documented handoff"
 }
 ```
+
+## Synesthesia generated digest
+
+A successful validated Synesthesia append refreshes this non-canonical materialized view:
+
+```text
+${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
+```
+
+The digest folds immutable operation chains into active mappings and boundaries. It must retain `source_note_ids`, a current source fingerprint, unresolved-chain diagnostics, and inactive states. It never becomes independent admission authority.

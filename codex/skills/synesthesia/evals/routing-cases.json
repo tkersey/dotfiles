@@ -23,11 +23,25 @@
       "owner": "synesthesia"
     },
     {
+      "id": "root-discovered-ambiguity",
+      "prompt": "The trace is consistent with either serialized backpressure or a phase-ordering bug. The literal model does not distinguish them; use the smallest reversible representation to decide what to inspect first.",
+      "activate": true,
+      "mode": "diagnose",
+      "owner": "synesthesia"
+    },
+    {
       "id": "handoff-ambiguity",
       "prompt": "The architecture pass found two plausible ownership boundaries. Use a Synesthesia handoff to make the representational difference explicit.",
       "activate": true,
       "mode": "implementation-lens",
       "owner": "synesthesia"
+    },
+    {
+      "id": "generic-confusion-near-miss",
+      "prompt": "This architecture is confusing. Review it and tell me what is wrong.",
+      "activate": false,
+      "mode": null,
+      "owner": "codebase-audit"
     },
     {
       "id": "performance-owner",

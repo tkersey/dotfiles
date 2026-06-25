@@ -165,10 +165,44 @@ The doctor distinguishes:
 ```text
 no source notes
 adapter missing, stale, or symlinked
-source notes present but not compiled
+digest missing, stale, invalid, or current
+source notes and digest present but not compiled
 compiled memory mentions present
 writer unavailable or writer doctor failure
 ```
+
+## Generated current-state digest
+
+Every successful non-dry-run Synesthesia append refreshes:
+
+```text
+${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
+```
+
+Manual refresh:
+
+```bash
+uv run python \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  memory-digest
+```
+
+The generator reads the complete immutable note history, validates stored envelopes, and folds event chains in captured-time and note-ID order:
+
+```text
+assert     -> create an active mapping or boundary
+confirm    -> add support to the referenced active lineage
+supersede  -> replace the referenced current rule
+reject     -> make the referenced mapping inactive
+retract    -> make the referenced mapping or boundary inactive
+reopen     -> restore an inactive referenced lineage with new evidence
+```
+
+Dangling, forward, cross-lineage, category-mismatched, or content-mismatched events remain under `Unresolved event chains` and never become active implicitly. Invalid source notes remain visible under `Invalid source notes`.
+
+The default digest is always complete: active mappings, active boundaries, rejected/retracted entries, unresolved chains, and invalid notes. Partial human reports require an explicit `--output`; they must not overwrite the default `latest_synesthesia_digest.md`.
+
+The digest embeds a deterministic source fingerprint over note IDs, note fingerprints, kinds, operations, and source-file hashes. Re-running without source changes returns `current` and does not rewrite the file. Digest failure is reported as a warning and never rolls back a successful source-note append.
 
 ## Phase 2 promotion
 

@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: synesthesia
     kind: decision
-    source_fingerprint: synesthesia-v3.1.0
+    source_fingerprint: synesthesia-v3.3.0
   triggers:
   - trigger_id: SYN-EXPLICIT-SENSORY
     description: The user explicitly asks what software feels, sounds, looks, moves, weighs, or resembles.
@@ -16,7 +16,7 @@ skill_decision_contract:
     - weight
     - sensory map
     cue_regexes:
-    - "(?i)what (does|do) .+ (feel|sound|look) like"
+    - (?i)what (does|do) .+ (feel|sound|look) like
     exclusions: []
   - trigger_id: SYN-COMPARE-FEEL
     description: The user asks to compare alternatives by feel or another stable sensory axis.
@@ -28,6 +28,17 @@ skill_decision_contract:
     - quieter
     cue_regexes: []
     exclusions: []
+  - trigger_id: SYN-ROOT-AMBIGUITY
+    description: Literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations and a reversible cross-modal representation is expected to distinguish them.
+    cue_literals:
+    - multiple plausible interpretations
+    - literal model does not distinguish
+    - representational ambiguity
+    cue_regexes: []
+    exclusions:
+    - generic uncertainty with no competing interpretations
+    - request for colorful prose without a technical distinction
+    - ordinary domain task already clear literally
   - trigger_id: SYN-HANDOFF-AMBIGUITY
     description: An owning workflow documents a concrete representational ambiguity that cross-modal recoding may clarify.
     cue_literals:
@@ -93,6 +104,7 @@ skill_decision_contract:
     trigger_refs:
     - SYN-EXPLICIT-SENSORY
     - SYN-COMPARE-FEEL
+    - SYN-ROOT-AMBIGUITY
     - SYN-HANDOFF-AMBIGUITY
     expected_routes:
     - SYN-ROUTE-DIAGNOSE
@@ -118,6 +130,7 @@ skill_decision_contract:
     trigger_refs:
     - SYN-EXPLICIT-SENSORY
     - SYN-COMPARE-FEEL
+    - SYN-ROOT-AMBIGUITY
     - SYN-HANDOFF-AMBIGUITY
     expected_routes:
     - SYN-ROUTE-DIAGNOSE
@@ -155,14 +168,17 @@ skill_decision_contract:
     - canonical sensory payload
     - prior note relationship when changing existing state
     - memory-note proof line
+    - refreshed current-state digest or an explicit non-rollback digest warning
     success_signals:
     - explicit durable authority is persisted in the same turn
     - unendorsed assistant novelty is not persisted
     - confirmation, correction, rejection, retraction, and reopening reference prior notes
+    - successful source-note appends refresh a digest whose entries retain source note IDs
     failure_signals:
     - qualifying explicit durable event described but not appended
     - routine diagnostic output appended without authority
     - resource digest promoted without source note IDs
+    - digest failure treated as failure of an otherwise successful source-note append
     rationale: Explicit durable user authority should reliably reach the source-note pipeline without weakening admission hygiene.
   instrumentation:
     decision_receipt: optional

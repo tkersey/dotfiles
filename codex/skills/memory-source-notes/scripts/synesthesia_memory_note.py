@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -437,12 +438,884 @@ def sync_instructions(home: Path, source: Path | None = None) -> dict[str, Any]:
     }
 
 
+class StoredNote:
+    __slots__ = (
+        "path", "id", "captured_at", "kind", "operation", "authority",
+        "summary", "scope", "source_refs", "related_ids", "supersedes_id",
+        "fingerprint", "payload", "file_sha256",
+    )
+
+    def __init__(
+        self, *, path: Path, id: str, captured_at: str, kind: str,
+        operation: str, authority: str, summary: str, scope: dict[str, Any],
+        source_refs: list[dict[str, str]], related_ids: list[str],
+        supersedes_id: str | None, fingerprint: str, payload: dict[str, Any],
+        file_sha256: str,
+    ) -> None:
+        self.path = path
+        self.id = id
+        self.captured_at = captured_at
+        self.kind = kind
+        self.operation = operation
+        self.authority = authority
+        self.summary = summary
+        self.scope = scope
+        self.source_refs = source_refs
+        self.related_ids = related_ids
+        self.supersedes_id = supersedes_id
+        self.fingerprint = fingerprint
+        self.payload = payload
+        self.file_sha256 = file_sha256
+
+
+DIGEST_VERSION = "synesthesia-digest/v1"
+DIGEST_FILENAME = "latest_synesthesia_digest.md"
+PHYSICAL_ALLOWED_OPERATIONS = {
+    "mapping-endorsement": {"assert", "confirm", "reopen"},
+    "mapping-correction": {"supersede"},
+    "mapping-rejection": {"reject"},
+    "activation-boundary": {"assert", "confirm", "supersede", "reopen"},
+    "boundary-retraction": {"retract"},
+}
+PHYSICAL_ALLOWED_AUTHORITIES = {
+    "mapping-endorsement": {"explicit-user-endorsement", "repeated-accepted-use"},
+    "mapping-correction": {"explicit-user-correction"},
+    "mapping-rejection": {"explicit-user-rejection"},
+    "activation-boundary": {
+        "explicit-user-endorsement",
+        "explicit-user-correction",
+        "repeated-accepted-use",
+    },
+    "boundary-retraction": {"explicit-user-correction", "explicit-user-rejection"},
+}
+SCOPE_SPECIFICITY = {
+    "path-family": 6,
+    "repo": 5,
+    "task-family": 4,
+    "workflow": 3,
+    "tool": 3,
+    "global": 1,
+}
+
+
+def _parse_iso_datetime(value: Any, field: str) -> str:
+    text = _nonempty_string(value, field)
+    try:
+        datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValidationError(f"{field}: invalid ISO-8601 timestamp") from exc
+    return text
+
+
+def _validate_stored_payload(kind: str, payload: Any) -> dict[str, Any]:
+    if not isinstance(payload, dict) or not payload:
+        raise ValidationError("payload: expected non-empty object")
+    value = copy.deepcopy(payload)
+    if kind in {"mapping-endorsement", "mapping-correction"}:
+        _require_strings(
+            value,
+            (
+                "sensory_phrase",
+                "engineering_translation",
+                "activation_boundary",
+                "non_activation_boundary",
+                "verification",
+            ),
+            "payload",
+        )
+    elif kind == "mapping-rejection":
+        _require_strings(
+            value,
+            (
+                "sensory_phrase",
+                "activation_boundary",
+                "non_activation_boundary",
+                "rejection_reason",
+                "verification",
+            ),
+            "payload",
+        )
+    elif kind == "activation-boundary":
+        _require_strings(
+            value,
+            ("activation_boundary", "non_activation_boundary", "verification"),
+            "payload",
+        )
+    elif kind == "boundary-retraction":
+        _require_strings(
+            value,
+            ("retracted_boundary", "reason", "verification"),
+            "payload",
+        )
+    return value
+
+
+def _stored_note_from_value(path: Path, value: Any, file_sha256: str) -> StoredNote:
+    if not isinstance(value, dict):
+        raise ValidationError("note: expected JSON object")
+    if value.get("schema") != "memory-source-note/v1":
+        raise ValidationError("schema: expected memory-source-note/v1")
+    note_id = _validate_note_id(value.get("id"), "id")
+    captured_at = _parse_iso_datetime(value.get("captured_at"), "captured_at")
+    if value.get("extension") != "synesthesia":
+        raise ValidationError("extension: expected synesthesia")
+    kind = _nonempty_string(value.get("kind"), "kind")
+    if kind not in PHYSICAL_ALLOWED_OPERATIONS:
+        raise ValidationError(f"kind: unsupported stored kind {kind!r}")
+    operation = _nonempty_string(value.get("operation"), "operation")
+    if operation not in PHYSICAL_ALLOWED_OPERATIONS[kind]:
+        allowed = ", ".join(sorted(PHYSICAL_ALLOWED_OPERATIONS[kind]))
+        raise ValidationError(
+            f"operation: {operation!r} is invalid for stored kind {kind}; expected {allowed}"
+        )
+    authority = _nonempty_string(value.get("authority"), "authority")
+    if authority not in PHYSICAL_ALLOWED_AUTHORITIES[kind]:
+        allowed = ", ".join(sorted(PHYSICAL_ALLOWED_AUTHORITIES[kind]))
+        raise ValidationError(
+            f"authority: {authority!r} is invalid for stored kind {kind}; expected {allowed}"
+        )
+    summary = _nonempty_string(value.get("summary"), "summary")
+    scope = _validate_scope(value.get("scope"))
+    source_refs = _validate_source_refs(value.get("source_refs"))
+    related_ids, supersedes_id = _validate_relationships(value, operation)
+    fingerprint = _nonempty_string(value.get("fingerprint"), "fingerprint")
+    if not re.fullmatch(r"[a-f0-9]{64}", fingerprint):
+        raise ValidationError("fingerprint: expected 64 lowercase hex characters")
+    payload = _validate_stored_payload(kind, value.get("payload"))
+    _reject_sensitive_keys(value)
+    return StoredNote(
+        path=path,
+        id=note_id,
+        captured_at=captured_at,
+        kind=kind,
+        operation=operation,
+        authority=authority,
+        summary=summary,
+        scope=scope,
+        source_refs=source_refs,
+        related_ids=related_ids,
+        supersedes_id=supersedes_id,
+        fingerprint=fingerprint,
+        payload=payload,
+        file_sha256=file_sha256,
+    )
+
+
 def parse_note(path: Path) -> dict[str, Any] | None:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
     return value if isinstance(value, dict) else None
+
+
+def notes_directory(home: Path) -> Path:
+    return home / "memories/extensions/synesthesia/notes"
+
+
+def resources_directory(home: Path) -> Path:
+    return home / "memories/extensions/synesthesia/resources"
+
+
+def default_digest_path(home: Path) -> Path:
+    return resources_directory(home) / DIGEST_FILENAME
+
+
+def _source_manifest_fingerprint(
+    notes: list[StoredNote], invalid_notes: list[dict[str, Any]]
+) -> str:
+    manifest: list[dict[str, Any]] = []
+    for note in sorted(notes, key=lambda item: item.id):
+        manifest.append(
+            {
+                "id": note.id,
+                "fingerprint": note.fingerprint,
+                "kind": note.kind,
+                "operation": note.operation,
+                "file_sha256": note.file_sha256,
+            }
+        )
+    for row in sorted(invalid_notes, key=lambda item: str(item.get("path", ""))):
+        manifest.append(
+            {
+                "invalid_path": row.get("path"),
+                "file_sha256": row.get("file_sha256"),
+                "error": row.get("error"),
+            }
+        )
+    return hashlib.sha256(canonical_json_bytes(manifest)).hexdigest()
+
+
+def load_stored_notes(
+    home: Path,
+) -> tuple[list[StoredNote], list[dict[str, Any]], str, int]:
+    directory = notes_directory(home)
+    if directory.is_symlink():
+        raise ValidationError(f"notes directory is a symlink: {directory}")
+    ensure_no_symlink_components(directory)
+    if not directory.exists():
+        empty = hashlib.sha256(canonical_json_bytes([])).hexdigest()
+        return [], [], empty, 0
+    if not directory.is_dir():
+        raise ValidationError(f"notes path is not a directory: {directory}")
+
+    notes: list[StoredNote] = []
+    invalid: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    paths = sorted(directory.glob("*.md"), key=lambda item: item.name)
+    for path in paths:
+        if path.is_symlink():
+            invalid.append(
+                {
+                    "path": str(path),
+                    "file_sha256": None,
+                    "error": "source note is a symlink",
+                }
+            )
+            continue
+        if not path.is_file():
+            continue
+        try:
+            raw = path.read_bytes()
+            file_sha256 = hashlib.sha256(raw).hexdigest()
+            value = json.loads(raw.decode("utf-8"))
+            note = _stored_note_from_value(path, value, file_sha256)
+            if note.id in seen_ids:
+                raise ValidationError(f"id: duplicate source note id {note.id}")
+            seen_ids.add(note.id)
+            notes.append(note)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValidationError) as exc:
+            try:
+                file_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+            except OSError:
+                file_sha256 = None
+            invalid.append(
+                {
+                    "path": str(path),
+                    "file_sha256": file_sha256,
+                    "error": str(exc),
+                }
+            )
+    notes.sort(key=lambda item: (item.captured_at, item.id, item.path.name))
+    return notes, invalid, _source_manifest_fingerprint(notes, invalid), len(paths)
+
+
+def _note_category(note: StoredNote) -> str | None:
+    if note.kind in {"mapping-endorsement", "mapping-correction", "mapping-rejection"}:
+        return "mapping"
+    if note.kind == "activation-boundary":
+        return "boundary"
+    return None
+
+
+def _prior_ids(note: StoredNote) -> list[str]:
+    values: list[str] = []
+    if note.supersedes_id:
+        values.append(note.supersedes_id)
+    for value in note.related_ids:
+        if value not in values:
+            values.append(value)
+    return values
+
+
+def _lineage_signature(note: StoredNote, category: str) -> tuple[str, ...]:
+    scope = json.dumps(note.scope, sort_keys=True, separators=(",", ":"))
+    if category == "mapping":
+        fields = (
+            "sensory_phrase",
+            "engineering_translation",
+            "activation_boundary",
+            "non_activation_boundary",
+            "verification",
+        )
+    else:
+        fields = ("activation_boundary", "non_activation_boundary", "verification")
+    return (scope, *(str(note.payload.get(field, "")).strip() for field in fields))
+
+
+def _unresolved_event(note: StoredNote, reason: str) -> dict[str, Any]:
+    return {
+        "id": note.id,
+        "captured_at": note.captured_at,
+        "kind": note.kind,
+        "operation": note.operation,
+        "prior_ids": _prior_ids(note),
+        "reason": reason,
+        "path": str(note.path),
+    }
+
+
+def build_digest_projection(home: Path) -> dict[str, Any]:
+    notes, invalid_notes, source_fingerprint, source_file_count = load_stored_notes(home)
+    lineages: dict[str, dict[str, Any]] = {}
+    note_to_lineage: dict[str, str] = {}
+    unresolved: list[dict[str, Any]] = []
+
+    for note in notes:
+        category = _note_category(note)
+        if note.operation == "assert":
+            if category not in {"mapping", "boundary"}:
+                unresolved.append(_unresolved_event(note, "assert-kind-does-not-create-lineage"))
+                continue
+            lineage = {
+                "root_id": note.id,
+                "category": category,
+                "active": True,
+                "state": "asserted",
+                "current_note": note,
+                "last_active_note": note,
+                "terminal_note": None,
+                "events": [note],
+                "confirmation_count": 0,
+            }
+            lineages[note.id] = lineage
+            note_to_lineage[note.id] = note.id
+            continue
+
+        prior_ids = _prior_ids(note)
+        if not prior_ids:
+            unresolved.append(_unresolved_event(note, "missing-prior-note-relationship"))
+            continue
+        missing = [value for value in prior_ids if value not in note_to_lineage]
+        if missing:
+            unresolved.append(
+                _unresolved_event(note, f"missing-or-forward-prior-note:{','.join(missing)}")
+            )
+            continue
+        roots = {note_to_lineage[value] for value in prior_ids}
+        if len(roots) != 1:
+            unresolved.append(_unresolved_event(note, "prior-notes-cross-lineages"))
+            continue
+        root_id = next(iter(roots))
+        lineage = lineages[root_id]
+
+        if note.operation == "confirm":
+            if not lineage["active"]:
+                unresolved.append(_unresolved_event(note, "cannot-confirm-inactive-lineage"))
+                continue
+            if category != lineage["category"]:
+                unresolved.append(_unresolved_event(note, "confirmation-category-mismatch"))
+                continue
+            current = lineage["current_note"]
+            if _lineage_signature(note, category) != _lineage_signature(current, category):
+                unresolved.append(_unresolved_event(note, "confirmation-content-mismatch"))
+                continue
+            lineage["events"].append(note)
+            lineage["confirmation_count"] += 1
+            lineage["state"] = "confirmed"
+            note_to_lineage[note.id] = root_id
+            continue
+
+        if note.operation == "supersede":
+            if not lineage["active"]:
+                unresolved.append(_unresolved_event(note, "cannot-supersede-inactive-lineage"))
+                continue
+            if category != lineage["category"]:
+                unresolved.append(_unresolved_event(note, "supersession-category-mismatch"))
+                continue
+            lineage["events"].append(note)
+            lineage["current_note"] = note
+            lineage["last_active_note"] = note
+            lineage["terminal_note"] = None
+            lineage["state"] = "corrected"
+            note_to_lineage[note.id] = root_id
+            continue
+
+        if note.operation == "reject":
+            if lineage["category"] != "mapping":
+                unresolved.append(_unresolved_event(note, "rejection-target-is-not-mapping"))
+                continue
+            if not lineage["active"]:
+                unresolved.append(_unresolved_event(note, "cannot-reject-inactive-lineage"))
+                continue
+            lineage["events"].append(note)
+            lineage["active"] = False
+            lineage["state"] = "rejected"
+            lineage["terminal_note"] = note
+            note_to_lineage[note.id] = root_id
+            continue
+
+        if note.operation == "retract":
+            if not lineage["active"]:
+                unresolved.append(_unresolved_event(note, "cannot-retract-inactive-lineage"))
+                continue
+            lineage["events"].append(note)
+            lineage["active"] = False
+            lineage["state"] = "retracted"
+            lineage["terminal_note"] = note
+            note_to_lineage[note.id] = root_id
+            continue
+
+        if note.operation == "reopen":
+            if lineage["active"]:
+                unresolved.append(_unresolved_event(note, "cannot-reopen-active-lineage"))
+                continue
+            if category != lineage["category"]:
+                unresolved.append(_unresolved_event(note, "reopening-category-mismatch"))
+                continue
+            lineage["events"].append(note)
+            lineage["active"] = True
+            lineage["state"] = "reopened"
+            lineage["current_note"] = note
+            lineage["last_active_note"] = note
+            lineage["terminal_note"] = None
+            note_to_lineage[note.id] = root_id
+            continue
+
+        unresolved.append(_unresolved_event(note, "unsupported-event-operation"))
+
+    def lineage_sort_key(lineage: dict[str, Any]) -> tuple[Any, ...]:
+        note: StoredNote = lineage["current_note"]
+        specificity = SCOPE_SPECIFICITY.get(note.scope["kind"], 0)
+        label = (
+            note.payload.get("sensory_phrase")
+            if lineage["category"] == "mapping"
+            else note.payload.get("activation_boundary")
+        )
+        return (-specificity, str(label).lower(), lineage["root_id"])
+
+    active_mappings = sorted(
+        [row for row in lineages.values() if row["active"] and row["category"] == "mapping"],
+        key=lineage_sort_key,
+    )
+    active_boundaries = sorted(
+        [row for row in lineages.values() if row["active"] and row["category"] == "boundary"],
+        key=lineage_sort_key,
+    )
+    inactive = sorted(
+        [row for row in lineages.values() if not row["active"]],
+        key=lambda row: (row["state"], lineage_sort_key(row)),
+    )
+    unresolved.sort(key=lambda row: (row["captured_at"], row["id"]))
+
+    kind_counts: dict[str, int] = {}
+    operation_counts: dict[str, int] = {}
+    for note in notes:
+        kind_counts[note.kind] = kind_counts.get(note.kind, 0) + 1
+        operation_counts[note.operation] = operation_counts.get(note.operation, 0) + 1
+
+    return {
+        "home": home,
+        "notes": notes,
+        "source_file_count": source_file_count,
+        "valid_note_count": len(notes),
+        "invalid_notes": invalid_notes,
+        "source_fingerprint": source_fingerprint,
+        "source_latest_at": notes[-1].captured_at if notes else None,
+        "kind_counts": kind_counts,
+        "operation_counts": operation_counts,
+        "lineages": lineages,
+        "active_mappings": active_mappings,
+        "active_boundaries": active_boundaries,
+        "inactive_entries": inactive,
+        "unresolved_events": unresolved,
+    }
+
+
+def _markdown_text(value: Any) -> str:
+    return " ".join(str(value or "").strip().split())
+
+
+def _lineage_note_ids(lineage: dict[str, Any]) -> list[str]:
+    return [note.id for note in lineage["events"]]
+
+
+def _aggregate_source_refs(lineage: dict[str, Any]) -> list[dict[str, str]]:
+    seen: set[tuple[str, str, str]] = set()
+    rows: list[dict[str, str]] = []
+    for note in lineage["events"]:
+        for ref in note.source_refs:
+            key = (ref["kind"], ref["ref"], ref["summary"])
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append(ref)
+    rows.sort(key=lambda row: (row["kind"], row["ref"], row["summary"]))
+    return rows
+
+
+def _scope_lines(note: StoredNote) -> list[str]:
+    lines = [f"- scope_kind: `{note.scope['kind']}`"]
+    lines.append(f"- scope_repo: `{_markdown_text(note.scope.get('repo') or 'none')}`")
+    paths = note.scope.get("paths", [])
+    lines.append(f"- scope_paths: `{', '.join(paths) if paths else 'none'}`")
+    return lines
+
+
+def _suggested_target(lineage: dict[str, Any]) -> str:
+    note: StoredNote = lineage["current_note"]
+    if lineage["category"] == "boundary" and note.scope["kind"] == "global":
+        return "memory_summary.md"
+    return "MEMORY.md"
+
+
+def _render_source_provenance(lines: list[str], lineage: dict[str, Any]) -> None:
+    lines.append("- source_note_ids:")
+    for note_id in _lineage_note_ids(lineage):
+        lines.append(f"  - `{note_id}`")
+    lines.append("- source_refs:")
+    refs = _aggregate_source_refs(lineage)
+    if not refs:
+        lines.append("  - none")
+    else:
+        for ref in refs:
+            lines.append(
+                f"  - `{_markdown_text(ref['kind'])}` `{_markdown_text(ref['ref'])}` — "
+                f"{_markdown_text(ref['summary'])}"
+            )
+
+
+def _render_active_mapping(lines: list[str], lineage: dict[str, Any]) -> None:
+    note: StoredNote = lineage["current_note"]
+    payload = note.payload
+    phrase = _markdown_text(payload.get("sensory_phrase"))
+    lines.extend(
+        [
+            f"### {phrase}",
+            "",
+            f"- state: `{lineage['state']}`",
+            f"- lineage_root: `{lineage['root_id']}`",
+            f"- authority: `{note.authority}`",
+            f"- confirmation_count: `{lineage['confirmation_count']}`",
+            f"- latest_event_at: `{note.captured_at}`",
+            f"- suggested_target: `{_suggested_target(lineage)}`",
+        ]
+    )
+    lines.extend(_scope_lines(note))
+    lines.extend(
+        [
+            f"- sensory_phrase: {_markdown_text(payload.get('sensory_phrase'))}",
+            f"- engineering_translation: {_markdown_text(payload.get('engineering_translation'))}",
+            f"- activation_boundary: {_markdown_text(payload.get('activation_boundary'))}",
+            f"- non_activation_boundary: {_markdown_text(payload.get('non_activation_boundary'))}",
+            f"- verification: {_markdown_text(payload.get('verification'))}",
+            "- retrieval_terms:",
+            f"  - {_markdown_text(payload.get('sensory_phrase'))}",
+            f"  - {_markdown_text(payload.get('engineering_translation'))}",
+        ]
+    )
+    _render_source_provenance(lines, lineage)
+    lines.append("")
+
+
+def _render_active_boundary(lines: list[str], lineage: dict[str, Any]) -> None:
+    note: StoredNote = lineage["current_note"]
+    payload = note.payload
+    title = _markdown_text(payload.get("activation_boundary"))[:96]
+    lines.extend(
+        [
+            f"### {title}",
+            "",
+            f"- state: `{lineage['state']}`",
+            f"- lineage_root: `{lineage['root_id']}`",
+            f"- authority: `{note.authority}`",
+            f"- confirmation_count: `{lineage['confirmation_count']}`",
+            f"- latest_event_at: `{note.captured_at}`",
+            f"- suggested_target: `{_suggested_target(lineage)}`",
+        ]
+    )
+    lines.extend(_scope_lines(note))
+    lines.extend(
+        [
+            f"- activation_boundary: {_markdown_text(payload.get('activation_boundary'))}",
+            f"- non_activation_boundary: {_markdown_text(payload.get('non_activation_boundary'))}",
+            f"- verification: {_markdown_text(payload.get('verification'))}",
+        ]
+    )
+    _render_source_provenance(lines, lineage)
+    lines.append("")
+
+
+def _render_inactive_entry(lines: list[str], lineage: dict[str, Any]) -> None:
+    active_note: StoredNote = lineage["last_active_note"]
+    terminal: StoredNote = lineage["terminal_note"]
+    if lineage["category"] == "mapping":
+        title = _markdown_text(active_note.payload.get("sensory_phrase"))
+        prior_rule = _markdown_text(active_note.payload.get("engineering_translation"))
+    else:
+        title = _markdown_text(active_note.payload.get("activation_boundary"))[:96]
+        prior_rule = _markdown_text(active_note.payload.get("activation_boundary"))
+    reason = _markdown_text(
+        terminal.payload.get("rejection_reason")
+        or terminal.payload.get("reason")
+        or terminal.summary
+    )
+    lines.extend(
+        [
+            f"### {title}",
+            "",
+            f"- state: `{lineage['state']}`",
+            f"- category: `{lineage['category']}`",
+            f"- lineage_root: `{lineage['root_id']}`",
+            f"- terminal_event: `{terminal.id}`",
+            f"- prior_rule: {prior_rule}",
+            f"- reason: {reason}",
+            "- suggested_target: `none`",
+        ]
+    )
+    _render_source_provenance(lines, lineage)
+    lines.append("")
+
+
+def render_memory_digest(
+    projection: dict[str, Any],
+    generated_at: str,
+    *,
+    include_inactive: bool = True,
+    limit: int = 0,
+) -> str:
+    active_mappings = list(projection["active_mappings"])
+    active_boundaries = list(projection["active_boundaries"])
+    if limit > 0:
+        combined = [*(('mapping', row) for row in active_mappings), *(('boundary', row) for row in active_boundaries)]
+        combined = combined[:limit]
+        active_mappings = [row for category, row in combined if category == 'mapping']
+        active_boundaries = [row for category, row in combined if category == 'boundary']
+
+    lines = [
+        "# Synesthesia Digest",
+        "",
+        f"generated_at: {generated_at}",
+        f"generator: synesthesia_memory_note.py memory-digest",
+        f"digest_version: {DIGEST_VERSION}",
+        "canonical: false",
+        "source: immutable memory-source-note/v1 events",
+        f"source_fingerprint: sha256:{projection['source_fingerprint']}",
+        f"source_latest_at: {projection['source_latest_at'] or 'none'}",
+        f"source_note_count: {projection['source_file_count']}",
+        f"valid_note_count: {projection['valid_note_count']}",
+        f"invalid_note_count: {len(projection['invalid_notes'])}",
+        f"active_mapping_count: {len(projection['active_mappings'])}",
+        f"active_boundary_count: {len(projection['active_boundaries'])}",
+        f"inactive_entry_count: {len(projection['inactive_entries'])}",
+        f"unresolved_event_count: {len(projection['unresolved_events'])}",
+        f"render_mode: {'full' if include_inactive else 'active-only'}",
+        f"entry_limit: {limit}",
+        "",
+        "This is a generated current-state projection of immutable Synesthesia source notes.",
+        "It is not independent evidence and must not replace the source-note event history.",
+        "Phase 2 must resolve every `source_note_id` before promoting an entry.",
+        "",
+        "## Active mappings",
+        "",
+    ]
+    if not active_mappings:
+        lines.append("No active mappings.\n")
+    else:
+        for lineage in active_mappings:
+            _render_active_mapping(lines, lineage)
+
+    lines.extend(["## Active activation boundaries", ""])
+    if not active_boundaries:
+        lines.append("No active activation boundaries.\n")
+    else:
+        for lineage in active_boundaries:
+            _render_active_boundary(lines, lineage)
+
+    if include_inactive:
+        lines.extend(["## Rejected or retracted mappings and boundaries", ""])
+        if not projection["inactive_entries"]:
+            lines.append("No rejected or retracted entries.\n")
+        else:
+            for lineage in projection["inactive_entries"]:
+                _render_inactive_entry(lines, lineage)
+
+    lines.extend(["## Unresolved event chains", ""])
+    if not projection["unresolved_events"]:
+        lines.append("No unresolved event chains.\n")
+    else:
+        for row in projection["unresolved_events"]:
+            lines.extend(
+                [
+                    f"- `{row['id']}` kind=`{row['kind']}` operation=`{row['operation']}`",
+                    f"  reason: {_markdown_text(row['reason'])}",
+                    f"  prior_ids: {', '.join(row['prior_ids']) if row['prior_ids'] else 'none'}",
+                ]
+            )
+        lines.append("")
+
+    lines.extend(["## Invalid source notes", ""])
+    if not projection["invalid_notes"]:
+        lines.append("No invalid source notes.\n")
+    else:
+        for row in projection["invalid_notes"]:
+            lines.extend(
+                [
+                    f"- `{_markdown_text(row.get('path'))}`",
+                    f"  error: {_markdown_text(row.get('error'))}",
+                ]
+            )
+        lines.append("")
+
+    lines.extend(
+        [
+            "## Promotion rules",
+            "",
+            "- Use this digest as an index; immutable notes remain authoritative.",
+            "- Promote only entries with resolvable source-note IDs and a current event chain.",
+            "- Put compact global activation boundaries in `memory_summary.md`.",
+            "- Put scoped mappings and verification rules in `MEMORY.md`.",
+            "- Do not recreate the installed Synesthesia skill in memory.",
+            "- Regenerate this digest after source-note changes before Phase 2 consolidation.",
+            "",
+        ]
+    )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _digest_metadata(path: Path) -> dict[str, str] | None:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "# Synesthesia Digest":
+        return None
+    out: dict[str, str] = {}
+    for line in lines[1:40]:
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        key = key.strip()
+        if re.fullmatch(r"[a-z_]+", key):
+            out[key] = value.strip()
+    return out
+
+
+def _metadata_int(metadata: dict[str, str], key: str) -> int:
+    try:
+        return int(metadata.get(key, "0") or 0)
+    except ValueError as exc:
+        raise ValidationError(f"digest metadata {key}: expected integer") from exc
+
+
+def inspect_digest(
+    home: Path,
+    projection: dict[str, Any],
+    path: Path | None = None,
+) -> dict[str, Any]:
+    digest_path = path or default_digest_path(home)
+    expected = f"sha256:{projection['source_fingerprint']}"
+    if digest_path.is_symlink():
+        return {"path": str(digest_path), "status": "symlinked", "expected_source_fingerprint": expected}
+    if not digest_path.exists():
+        return {"path": str(digest_path), "status": "missing", "expected_source_fingerprint": expected}
+    if not digest_path.is_file():
+        return {"path": str(digest_path), "status": "not-file", "expected_source_fingerprint": expected}
+    metadata = _digest_metadata(digest_path)
+    if metadata is None or metadata.get("digest_version") != DIGEST_VERSION:
+        return {
+            "path": str(digest_path),
+            "status": "invalid",
+            "expected_source_fingerprint": expected,
+            "metadata": metadata,
+        }
+    full_projection = metadata.get("render_mode") == "full" and metadata.get("entry_limit") == "0"
+    status = (
+        "current"
+        if metadata.get("source_fingerprint") == expected and full_projection
+        else "stale"
+    )
+    try:
+        counts = {
+            "active_mappings": _metadata_int(metadata, "active_mapping_count"),
+            "active_boundaries": _metadata_int(metadata, "active_boundary_count"),
+            "inactive_entries": _metadata_int(metadata, "inactive_entry_count"),
+            "unresolved_events": _metadata_int(metadata, "unresolved_event_count"),
+            "invalid_notes": _metadata_int(metadata, "invalid_note_count"),
+        }
+    except ValidationError:
+        return {
+            "path": str(digest_path),
+            "status": "invalid",
+            "expected_source_fingerprint": expected,
+            "metadata": metadata,
+        }
+    return {
+        "path": str(digest_path),
+        "status": status,
+        "generated_at": metadata.get("generated_at"),
+        "source_fingerprint": metadata.get("source_fingerprint"),
+        "expected_source_fingerprint": expected,
+        **counts,
+        "render_mode": metadata.get("render_mode"),
+        "entry_limit": metadata.get("entry_limit"),
+    }
+
+
+def _atomic_write_regular(path: Path, content: bytes) -> None:
+    ensure_no_symlink_components(path)
+    if path.is_symlink():
+        raise ValidationError(f"digest destination is a symlink: {path}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_no_symlink_components(path.parent)
+    fd, temp_name = tempfile.mkstemp(prefix=".synesthesia-digest-", dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.chmod(temp_name, 0o644)
+        os.replace(temp_name, path)
+    finally:
+        if os.path.exists(temp_name):
+            os.unlink(temp_name)
+
+
+def now_utc() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def generate_memory_digest(
+    home: Path,
+    *,
+    output: Path | None = None,
+    include_inactive: bool = True,
+    limit: int = 0,
+    force: bool = False,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if limit < 0:
+        raise ValidationError("limit: expected zero or a positive integer")
+    destination = output.expanduser().absolute() if output else default_digest_path(home)
+    if output is None and (not include_inactive or limit != 0):
+        raise ValidationError(
+            "partial digest options require --output; the default latest digest must be complete"
+        )
+    projection = build_digest_projection(home)
+    before = inspect_digest(home, projection, destination)
+    if before["status"] == "current" and not force:
+        return {
+            "status": "current",
+            "path": str(destination),
+            "source_fingerprint": f"sha256:{projection['source_fingerprint']}",
+            "source_notes": projection["source_file_count"],
+            "active_mappings": len(projection["active_mappings"]),
+            "active_boundaries": len(projection["active_boundaries"]),
+            "inactive_entries": len(projection["inactive_entries"]),
+            "unresolved_events": len(projection["unresolved_events"]),
+            "invalid_notes": len(projection["invalid_notes"]),
+        }
+    timestamp = generated_at or now_utc()
+    digest = render_memory_digest(
+        projection,
+        timestamp,
+        include_inactive=include_inactive,
+        limit=limit,
+    )
+    _atomic_write_regular(destination, digest.encode("utf-8"))
+    return {
+        "status": "written",
+        "path": str(destination),
+        "generated_at": timestamp,
+        "source_fingerprint": f"sha256:{projection['source_fingerprint']}",
+        "source_notes": projection["source_file_count"],
+        "active_mappings": len(projection["active_mappings"]),
+        "active_boundaries": len(projection["active_boundaries"]),
+        "inactive_entries": len(projection["inactive_entries"]),
+        "unresolved_events": len(projection["unresolved_events"]),
+        "invalid_notes": len(projection["invalid_notes"]),
+    }
 
 
 def _scan_compiled_memory(home: Path, note_ids: list[str]) -> dict[str, Any]:
@@ -479,35 +1352,18 @@ def doctor(home: Path) -> dict[str, Any]:
     else:
         adapter_status = "stale-or-local"
 
-    notes_dir = home / "memories/extensions/synesthesia/notes"
-    note_paths = sorted(notes_dir.glob("*.md")) if notes_dir.is_dir() else []
-    kind_counts: dict[str, int] = {}
-    operation_counts: dict[str, int] = {}
-    parse_errors: list[str] = []
-    latest: list[dict[str, Any]] = []
-    note_ids: list[str] = []
-    for path in note_paths:
-        note = parse_note(path)
-        if note is None:
-            parse_errors.append(str(path))
-            continue
-        kind = str(note.get("kind", "unknown"))
-        operation = str(note.get("operation", "unknown"))
-        kind_counts[kind] = kind_counts.get(kind, 0) + 1
-        operation_counts[operation] = operation_counts.get(operation, 0) + 1
-        note_id = note.get("id")
-        if isinstance(note_id, str):
-            note_ids.append(note_id)
-        latest.append(
-            {
-                "id": note_id,
-                "kind": kind,
-                "operation": operation,
-                "captured_at": note.get("captured_at"),
-                "path": str(path),
-            }
-        )
-    latest = latest[-10:][::-1]
+    projection = build_digest_projection(home)
+    note_ids = [note.id for note in projection["notes"]]
+    latest = [
+        {
+            "id": note.id,
+            "kind": note.kind,
+            "operation": note.operation,
+            "captured_at": note.captured_at,
+            "path": str(note.path),
+        }
+        for note in projection["notes"][-10:][::-1]
+    ]
 
     binary = find_memory_note_binary()
     writer_result: dict[str, Any] = {
@@ -529,22 +1385,29 @@ def doctor(home: Path) -> dict[str, Any]:
             }
         )
 
+    digest = inspect_digest(home, projection)
     compiled = _scan_compiled_memory(home, note_ids)
-    if not note_paths:
+    if projection["source_file_count"] == 0:
         stage = "no-source-notes"
         recommendation = "Create a note only after a qualifying durable user event."
     elif adapter_status != "current":
         stage = "adapter-not-current"
-        recommendation = "Run sync-instructions, then trigger Phase 2 consolidation."
-    elif not compiled["mentions"]:
-        stage = "source-notes-awaiting-or-not-promoted"
-        recommendation = (
-            "Source notes exist. Check Phase 2 scheduling and promotion output; explicit durable "
-            "authority should not require repetition."
-        )
-    else:
+        recommendation = "Run sync-instructions, then regenerate the digest."
+    elif digest["status"] == "missing":
+        stage = "source-notes-digest-missing"
+        recommendation = "Run memory-digest to materialize the current Synesthesia state."
+    elif digest["status"] in {"stale", "invalid", "symlinked", "not-file"}:
+        stage = f"source-notes-digest-{digest['status']}"
+        recommendation = "Repair the digest path if needed, then run memory-digest --force."
+    elif compiled["mentions"]:
         stage = "compiled-memory-present"
         recommendation = "Verify retrieval scope and wording if the mapping is still not recalled."
+    else:
+        stage = "source-notes-digest-current-awaiting-promotion"
+        recommendation = (
+            "The current digest is ready for Phase 2. Resolve any invalid or unresolved chains, "
+            "then inspect Phase 2 scheduling and promotion output."
+        )
 
     return {
         "synesthesia_memory_doctor": {
@@ -559,12 +1422,21 @@ def doctor(home: Path) -> dict[str, Any]:
                 "live_sha256": sha256_file(live) if live.is_file() and not live.is_symlink() else None,
             },
             "notes": {
-                "directory": str(notes_dir),
-                "count": len(note_paths),
-                "kind_counts": kind_counts,
-                "operation_counts": operation_counts,
-                "parse_errors": parse_errors,
+                "directory": str(notes_directory(home)),
+                "count": projection["source_file_count"],
+                "valid_count": projection["valid_note_count"],
+                "kind_counts": projection["kind_counts"],
+                "operation_counts": projection["operation_counts"],
+                "parse_errors": projection["invalid_notes"],
                 "latest": latest,
+            },
+            "digest": digest,
+            "projection": {
+                "active_mappings": len(projection["active_mappings"]),
+                "active_boundaries": len(projection["active_boundaries"]),
+                "inactive_entries": len(projection["inactive_entries"]),
+                "unresolved_events": len(projection["unresolved_events"]),
+                "invalid_notes": len(projection["invalid_notes"]),
             },
             "writer": writer_result,
             "compiled_memory": compiled,
@@ -577,7 +1449,16 @@ def print_doctor_text(report: dict[str, Any]) -> None:
     print(f"stage: {body['stage']}")
     print(f"codex_home: {body['codex_home']}")
     print(f"adapter: {body['adapter']['status']} ({body['adapter']['live']})")
-    print(f"source_notes: {body['notes']['count']}")
+    print(f"source_notes: {body['notes']['count']} valid={body['notes']['valid_count']}")
+    print(f"digest: {body['digest']['status']} ({body['digest']['path']})")
+    print(
+        "projection: "
+        f"mappings={body['projection']['active_mappings']} "
+        f"boundaries={body['projection']['active_boundaries']} "
+        f"inactive={body['projection']['inactive_entries']} "
+        f"unresolved={body['projection']['unresolved_events']} "
+        f"invalid={body['projection']['invalid_notes']}"
+    )
     print(f"compiled_mentions: {len(body['compiled_memory']['mentions'])}")
     print(f"memory_note_available: {str(body['writer']['available']).lower()}")
     print(f"recommendation: {body['recommendation']}")
@@ -635,7 +1516,33 @@ def cmd_append(args: argparse.Namespace) -> int:
         sys.stdout.buffer.write(proc.stdout)
     if proc.stderr:
         sys.stderr.buffer.write(proc.stderr)
+    if proc.returncode == 0 and not args.dry_run:
+        try:
+            generate_memory_digest(codex_home(args.codex_home))
+        except Exception as exc:  # Digest failure must never roll back source-note capture.
+            print(f"memory-digest warning: {exc}", file=sys.stderr)
     return proc.returncode
+
+
+def cmd_memory_digest(args: argparse.Namespace) -> int:
+    output = Path(args.output).expanduser() if args.output else None
+    result = generate_memory_digest(
+        codex_home(args.codex_home),
+        output=output,
+        include_inactive=args.include_inactive,
+        limit=args.limit,
+        force=args.force,
+    )
+    if args.format == "json":
+        print(json.dumps({"synesthesia_memory_digest": result}, indent=2, sort_keys=True))
+    else:
+        print(
+            f"memory-digest: {result['status']} {result['path']} "
+            f"mappings={result['active_mappings']} boundaries={result['active_boundaries']} "
+            f"inactive={result['inactive_entries']} unresolved={result['unresolved_events']} "
+            f"invalid={result['invalid_notes']}"
+        )
+    return 0
 
 
 def cmd_sync(args: argparse.Namespace) -> int:
@@ -655,12 +1562,14 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     body = report["synesthesia_memory_doctor"]
     if body["adapter"]["status"] in {"symlinked", "not-file"}:
         return 2
+    if body["digest"]["status"] in {"symlinked", "not-file", "invalid"}:
+        return 2
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Synesthesia memory-source note validation and deployment adapter"
+        description="Synesthesia memory-source note, digest, and deployment adapter"
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -669,12 +1578,29 @@ def build_parser() -> argparse.ArgumentParser:
     validate_parser.add_argument("--json", required=True, help="JSON input file or - for stdin")
     validate_parser.set_defaults(func=cmd_validate)
 
-    append_parser = sub.add_parser("append", help="Validate, canonicalize, and invoke memory-note")
+    append_parser = sub.add_parser("append", help="Validate, append, and refresh the digest")
     append_parser.add_argument("--kind", required=True, choices=sorted(LOGICAL_TO_PHYSICAL_KIND))
     append_parser.add_argument("--json", required=True, help="JSON input file or - for stdin")
     append_parser.add_argument("--codex-home")
     append_parser.add_argument("--dry-run", action="store_true")
     append_parser.set_defaults(func=cmd_append)
+
+    digest_parser = sub.add_parser(
+        "memory-digest", help="Fold Synesthesia events into a current-state digest"
+    )
+    digest_parser.add_argument("--codex-home")
+    digest_parser.add_argument("--output")
+    digest_parser.add_argument("--limit", type=int, default=0)
+    digest_parser.add_argument("--force", action="store_true")
+    digest_mode = digest_parser.add_mutually_exclusive_group()
+    digest_mode.add_argument(
+        "--include-inactive", dest="include_inactive", action="store_true", default=True
+    )
+    digest_mode.add_argument(
+        "--active-only", dest="include_inactive", action="store_false"
+    )
+    digest_parser.add_argument("--format", choices=("text", "json"), default="text")
+    digest_parser.set_defaults(func=cmd_memory_digest)
 
     sync_parser = sub.add_parser(
         "sync-instructions", help="Copy the checked-in adapter into the live memory root"
@@ -683,7 +1609,7 @@ def build_parser() -> argparse.ArgumentParser:
     sync_parser.add_argument("--source")
     sync_parser.set_defaults(func=cmd_sync)
 
-    doctor_parser = sub.add_parser("doctor", help="Diagnose source-note and Phase 2 state")
+    doctor_parser = sub.add_parser("doctor", help="Diagnose note, digest, and Phase 2 state")
     doctor_parser.add_argument("--codex-home")
     doctor_parser.add_argument("--format", choices=("json", "text"), default="json")
     doctor_parser.set_defaults(func=cmd_doctor)

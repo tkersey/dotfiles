@@ -2,52 +2,44 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
+import subprocess
+import sys
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "validate_synesthesia.py"
-SPEC = importlib.util.spec_from_file_location("validate_synesthesia", SCRIPT)
-assert SPEC and SPEC.loader
-MODULE = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(MODULE)
+REPO_ROOT = ROOT.parents[2]
+VALIDATOR = ROOT / "scripts/validate_synesthesia.py"
+ADAPTER = REPO_ROOT / "codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py"
 
 
 class SynesthesiaValidationTests(unittest.TestCase):
-    def test_complete_package(self) -> None:
-        results = MODULE.run_all(ROOT)
-        self.assertEqual(results, {"package": [], "routing": [], "translation": [], "memory": []})
+    def test_complete_package_validator_passes(self) -> None:
+        proc = subprocess.run(
+            [sys.executable, str(VALIDATOR), "--repo-root", str(REPO_ROOT)],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
 
-    def test_canonical_json_ignores_object_key_order(self) -> None:
-        corpus = json.loads((ROOT / "evals" / "memory-cases.json").read_text())
-        pair = corpus["canonical_pairs"][0]
-        self.assertEqual(MODULE.canonical_text(pair["left"]), MODULE.canonical_text(pair["right"]))
-        self.assertEqual(MODULE.canonical_sha256(pair["left"]), MODULE.canonical_sha256(pair["right"]))
+    def test_memory_adapter_exposes_digest_surface(self) -> None:
+        spec = importlib.util.spec_from_file_location("synesthesia_memory_note", ADAPTER)
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for name in (
+            "build_digest_projection",
+            "render_memory_digest",
+            "generate_memory_digest",
+            "inspect_digest",
+        ):
+            self.assertTrue(hasattr(module, name), name)
 
-    def test_assistant_inference_is_not_admission_authority(self) -> None:
-        corpus = json.loads((ROOT / "evals" / "memory-cases.json").read_text())
-        case = next(row for row in corpus["cases"] if row["id"] == "invalid-assistant-authority")
-        errors = MODULE.validate_memory_envelope(case["input"], case["kind"])
-        self.assertIn("memory:authority", errors)
-
-    def test_correction_requires_prior_note(self) -> None:
-        corpus = json.loads((ROOT / "evals" / "memory-cases.json").read_text())
-        case = next(row for row in corpus["cases"] if row["id"] == "invalid-correction-without-prior")
-        errors = MODULE.validate_memory_envelope(case["input"], case["kind"])
-        self.assertIn("memory:prior-note-required", errors)
-
-    def test_payload_cannot_duplicate_scope(self) -> None:
-        corpus = json.loads((ROOT / "evals" / "memory-cases.json").read_text())
-        case = next(row for row in corpus["cases"] if row["id"] == "invalid-duplicated-scope")
-        errors = MODULE.validate_memory_envelope(case["input"], case["kind"])
-        self.assertTrue(any(error.startswith("memory:payload-extra:") for error in errors))
-
-    def test_redundant_modalities_are_rejected(self) -> None:
-        corpus = json.loads((ROOT / "evals" / "translation-cases.json").read_text())
-        case = next(row for row in corpus["cases"] if row["id"] == "invalid-redundant-modalities")
-        errors = MODULE.validate_translation_candidate(case["candidate"])
-        self.assertIn("candidate:redundant-modalities", errors)
+    def test_skill_version_is_3_3(self) -> None:
+        text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn('version: "3.3.0"', text)
+        self.assertIn("latest_synesthesia_digest.md", text)
 
 
 if __name__ == "__main__":

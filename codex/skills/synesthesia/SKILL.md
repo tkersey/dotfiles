@@ -1,8 +1,8 @@
 ---
 name: synesthesia
-description: "Reversible cross-modal diagnostic lens for software. Use when the user asks what code, architecture, behavior, logs, APIs, or alternatives feel, sound, look, or move like; for compare-by-feel analysis; or after an owning technical workflow identifies a concrete ambiguity that spatial, temporal, tactile, thermal, visual, or auditory recoding may clarify. Start from literal evidence and translate every sensory statement into a technical hypothesis, uncertainty, falsifier, and next move. Not for ordinary architecture, performance, readability, or UX audits; exact syntax; legal/compliance or security sign-off; or code mutation by itself."
+description: "Reversible cross-modal diagnostic lens for software. Use when the user asks what code, architecture, behavior, logs, APIs, or alternatives feel, sound, look, or move like; for compare-by-feel analysis; when literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations that cross-modal recoding could distinguish; or after an owning technical workflow documents such an ambiguity. Start from literal evidence and translate every sensory statement into a technical hypothesis, uncertainty, falsifier, and next move. Not for ordinary architecture, performance, readability, or UX audits; exact syntax; legal/compliance or security sign-off; or code mutation by itself."
 metadata:
-  version: "3.1.0"
+  version: "3.3.0"
   activation_cost: low
   default_depth: adaptive
 ---
@@ -33,8 +33,11 @@ Use this skill when at least one of these is true:
 
 1. the user explicitly asks what software feels, sounds, looks, moves, weighs, or resembles;
 2. the user asks for a compare-by-feel analysis;
-3. an owning workflow has produced a concrete representational ambiguity and documents why cross-modal recoding may distinguish the alternatives;
-4. the user asks to reuse, correct, reject, retract, or remember an established sensory mapping.
+3. literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations and a reversible cross-modal representation is expected to distinguish them;
+4. an owning workflow has produced a concrete representational ambiguity and documents why cross-modal recoding may distinguish the alternatives;
+5. the user asks to reuse, correct, reject, retract, or remember an established sensory mapping.
+
+The root-discovered ambiguity route requires the competing interpretations, the evidence each explains, and the distinction the sensory representation is expected to expose. General uncertainty, novelty, or a desire for colorful prose is not sufficient.
 
 Do not activate merely because a task concerns:
 
@@ -287,7 +290,35 @@ Do not capture:
 - failed-route exclusions better owned by negative ledger;
 - general operating corrections better owned by harness memory.
 
-See [memory-admission.md](references/memory-admission.md) for the operation matrix, payload contract, copy-based adapter synchronization, and doctor workflow.
+See [memory-admission.md](references/memory-admission.md) for the operation matrix, payload contract, copy-based adapter synchronization, digest projection, and doctor workflow.
+
+## Generated current-state digest
+
+A successful Synesthesia source-note append refreshes this regular-file materialized view automatically:
+
+```text
+${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
+```
+
+The digest folds immutable `assert`, `confirm`, `supersede`, `reject`, `retract`, and `reopen` events into the current active mappings and activation boundaries. It also preserves inactive entries, invalid notes, and unresolved event chains.
+
+The digest is disposable and non-canonical. Every promotable entry must retain resolvable `source_note_ids`; immutable notes remain authoritative. A digest-generation failure must never invalidate or roll back a successful source-note append.
+
+Manual refresh:
+
+```bash
+uv run python \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  memory-digest
+```
+
+Run the doctor after copy-deploying the Phase 2 adapter or when promotion appears stale:
+
+```bash
+uv run python \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  doctor --format text
+```
 
 ## Cross-extension ownership
 
