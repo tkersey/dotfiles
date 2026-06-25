@@ -1,21 +1,21 @@
 # Language Skill Detection
 
-Activate language rails from files, toolchain, errors, and proof obligations.
+Activate the language/domain route before ASL preparation when it constrains owner, hazards, boundary, or proof.
 
 ## Zig
 
-Use `$zig` for `.zig`, `build.zig`, Zig commands, ownership, comptime, FFI/layout, parser/verifier, proof binding, atomicity, concurrency, performance, and cache/environment issues.
+Use `$zig` for `.zig`, `build.zig`, Zig commands, comptime, ownership, FFI/layout, parser/verifier, atomics, proof binding, repository closure, or proof epochs.
+
+For material Zig work, ASL should reference `ZSR-v1`.
+
+PDAG nodes should reference `ZPE-v1` when available.
 
 ## Lean
 
-Use `$lean` for `.lean`, `lake`, theorem/proof repair, termination, formalization, and mathlib work.
+Use `$lean` for `.lean`, `lake`, theorem repair, proof/termination, mathlib, or formalization.
 
-## Python
+## Other
 
-Use repository Python standards for `pyproject.toml`, `uv`, tests, typing, linting, packaging, and scripts.
+Use the repository-specific or language skill that owns the actual files/toolchain/proof lane.
 
-## Contract fingerprint
-
-AFR records the language skill/version/fingerprint used for the slice.
-
-Do not reread an unchanged language skill after every compaction.
+Do not repeatedly reload a whole skill when the active ASL already records its route and fingerprint.

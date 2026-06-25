@@ -1,0 +1,44 @@
+{
+  "execution_policy_state": {
+    "active_action_id": null,
+    "artifact_state": {
+      "base": "base-sha",
+      "branch": "feature/cache",
+      "dirty_fingerprint": "sha256:85067f37b8beae9917f4a78fc064f83002089a7eefaa11f4f5ab70a00784eb20",
+      "head": "head-sha",
+      "repo_bound": "yes",
+      "repository": "/repo/cache"
+    },
+    "closed_obligations": [],
+    "completed_actions": [
+      "ACTION-PROBE"
+    ],
+    "current_potential": {
+      "critical_unknowns": 0,
+      "hard_semantic_surface": 1,
+      "safety_violations": 0,
+      "unsatisfied_obligations": 2
+    },
+    "failed_actions": [],
+    "policy_digest": "sha256:eff535bc88c9471ba4d7b2f87838948436bd93ac5b0f5e083489b00af3f81a5f",
+    "policy_id": "POLICY-cache-strategy",
+    "policy_revision": 1,
+    "resolved_unknowns": [
+      "UNKNOWN-ROUTE"
+    ],
+    "satisfied_atoms": [
+      "action:ACTION-PROBE=success",
+      "fact:FACT-API-LOCKED",
+      "fact:FACT-SOURCE-CURRENT",
+      "obs:OBS-ROUTE=route_a",
+      "unknown:UNKNOWN-ROUTE=resolved"
+    ],
+    "state_digest": "sha256:aa68083b3063b8f53430e762a8d0137d81ff27a6b7d7e2f21ded6cad84883406",
+    "state_id": "STATE-1",
+    "state_version": "EPS-v1",
+    "transition_receipts": [
+      "ETR-PROBE-001"
+    ],
+    "updated_at": "2026-06-24T18:40:01.997918+00:00"
+  }
+}

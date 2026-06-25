@@ -1,48 +1,29 @@
 # Example Invocations
 
-## Standard plan-to-ready-PR
+## New plan
 
 ```text
-Use $actuating. Compile this plan into $st, implement it, validate it, and open a PR.
+Use $actuating.
+
+Plan: docs/plan.md
+
+Compile it into canonical $st graph state, require a current GCR, prepare
+bounded ASL slices, realize them with $fixed-point-driver, run focused/wave/final
+proof, and open a ready PR when complete. Do not merge.
 ```
 
-Expected:
+## Resume
 
 ```text
-material graph -> GCR -> AFR slices -> proof -> ready PR
-```
+Use $actuating.
 
-## Explicit early draft
-
-```text
-Use $actuating and open a draft after the first validated wave for early visibility.
-```
-
-Expected:
-
-```yaml
-pr_mode: draft
-draft_allowed_reason: explicit-user
+Resume the existing .step/st-plan.jsonl and .step/actuating checkpoint.
+Verify the current GCR and ASL before mutation. Continue to a ready PR.
 ```
 
 ## Implementation only
 
 ```text
-Use $actuating to implement and validate this plan, but do not publish a PR.
-```
-
-Stop before `$ship`.
-
-## Graph failure
-
-```text
-st compile aperture failed
-```
-
-Expected:
-
-```text
-graph-repair mode
-no delivery mutation
-no update_plan prose fallback
+Use $actuating for implementation only. Stop after proof-complete graph closure;
+do not call $ship.
 ```

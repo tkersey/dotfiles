@@ -1,0 +1,100 @@
+{
+  "execution_transition_receipt": {
+    "receipt_version": "ETR-v1",
+    "transition_id": "ETR-PROBE-001",
+    "policy_id": "POLICY-cache-strategy",
+    "policy_revision": 1,
+    "policy_digest": "sha256:eff535bc88c9471ba4d7b2f87838948436bd93ac5b0f5e083489b00af3f81a5f",
+    "action_id": "ACTION-PROBE",
+    "decision_ref": "EPD-STATE-0",
+    "state_before": {
+      "state_id": "STATE-0",
+      "state_digest": "sha256:0a427a0fc6072c85744c3f5d00aada9d7c2ec89b0ef0a67601b991645fded94e",
+      "potential": {
+        "critical_unknowns": 1,
+        "hard_semantic_surface": 1,
+        "safety_violations": 0,
+        "unsatisfied_obligations": 2
+      }
+    },
+    "artifact_state_before": {
+      "base": "base-sha",
+      "branch": "feature/cache",
+      "dirty_fingerprint": "sha256:85067f37b8beae9917f4a78fc064f83002089a7eefaa11f4f5ab70a00784eb20",
+      "head": "head-sha",
+      "repo_bound": "yes",
+      "repository": "/repo/cache"
+    },
+    "predicted": {
+      "facts_added": [],
+      "unknowns_resolved": [
+        "UNKNOWN-ROUTE"
+      ],
+      "obligations_closed": [],
+      "observation_refs": [
+        "OBS-ROUTE"
+      ],
+      "potential_after": {
+        "safety_violations": 0,
+        "critical_unknowns": 0,
+        "unsatisfied_obligations": 2,
+        "hard_semantic_surface": 1
+      }
+    },
+    "observed": {
+      "facts_added": [],
+      "unknowns_resolved": [
+        "UNKNOWN-ROUTE"
+      ],
+      "obligations_closed": [],
+      "observations": [
+        {
+          "observation_id": "OBS-ROUTE",
+          "outcome": "route_a",
+          "evidence_ref": ".step/policy/evidence/cache-comparison.json"
+        }
+      ],
+      "potential_after": {
+        "safety_violations": 0,
+        "critical_unknowns": 0,
+        "unsatisfied_obligations": 2,
+        "hard_semantic_surface": 1
+      }
+    },
+    "proof": {
+      "obligations": [
+        "PROOF-PROBE"
+      ],
+      "evidence_refs": [
+        ".step/policy/evidence/cache-comparison.json"
+      ],
+      "status": "pass"
+    },
+    "surprise": {
+      "present": false,
+      "classification": "none",
+      "statement": "Route A won within the modeled evidence alternatives."
+    },
+    "artifact_state_after": {
+      "base": "base-sha",
+      "branch": "feature/cache",
+      "dirty_fingerprint": "sha256:85067f37b8beae9917f4a78fc064f83002089a7eefaa11f4f5ab70a00784eb20",
+      "head": "head-sha",
+      "repo_bound": "yes",
+      "repository": "/repo/cache"
+    },
+    "state_after": {
+      "state_id": "STATE-1",
+      "potential": {
+        "safety_violations": 0,
+        "critical_unknowns": 0,
+        "unsatisfied_obligations": 2,
+        "hard_semantic_surface": 1
+      }
+    },
+    "result": "success",
+    "evidence_refs": [
+      ".step/policy/evidence/cache-comparison.json"
+    ]
+  }
+}

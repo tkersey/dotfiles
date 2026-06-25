@@ -1,8 +1,8 @@
 ---
 name: actuating
-description: "Plan-to-PR execution controller for material work. Compile intent into canonical `$st` graph state, require a current CLI-emitted GCR-v1, compile one AFR-v1 frontier/route record for each non-trivial aperture, realize only that selected route through `$fixed-point-driver`, record obligation-level proof, recompile the graph, and ship with explicit PR mode. Use for `$actuating`, plan-to-PR, implement this plan and open a PR, or `$st` -> fixed point -> proof -> `$ship`. Never degrade a failed material graph into prose-driven mutation."
+description: "Closed-loop plan-to-PR execution controller. Use for `$actuating`, plan-to-PR, or executing EPG-v1 policies. Validate the current execution policy/state, select one EPD-v1 action, materialize only its commitment horizon into canonical `$st`, require a current GCR-v1 and prepared ASL-v1 for material mutation, realize through `$fixed-point-driver`, record ETR-v1 predicted-versus-observed evidence, advance policy state atomically, and repeat until a proven success terminal permits `$ship`. Never flatten dormant policy branches into tasks or degrade graph failure into prose mutation."
 metadata:
-  version: "2.0.0"
+  version: "4.0.0"
   activation_cost: high
   default_depth: standard
 ---
@@ -11,348 +11,555 @@ metadata:
 
 ## Mission
 
+Interpret one bounded execution-policy tick at a time.
+
 ```text
-plan
--> canonical $st graph
+EPG-v1 + current EPS-v1
+-> deterministic EPD-v1 selection
+-> one commitment-horizon materialization
+-> canonical `$st` graph
 -> current GCR-v1
--> AFR-v1
--> selected-route realization
--> focused proof + $st completion
--> new GCR
--> wave/final proof
--> explicit PR mode
--> $ship
+-> prepared ASL-v1
+-> bounded FPS-v1 realization
+-> focused proof and observations
+-> ETR-v1
+-> atomic next EPS-v1
+-> repeat or terminal
 ```
 
-Invariant:
+The hard invariant is:
 
 ```text
-No material delivery mutation without a current executable GCR and a valid
-AFR bound to that GCR, artifact state, and selected task set.
+No material repository mutation without:
+  source-current EPG/EPS/EPD lineage
+  current executable GCR-v1
+  valid prepared ASL-v1
+  valid bounded FPS-v1
 ```
 
-## Authority
+## Authority split
 
 ```text
-$st                  durable graph, proof/status, GCR, projection
-$actuating           frontier/route, cadence, plan-to-PR and ship decision
-$fixed-point-driver  bounded realization of an already selected route
-language skills      language hazards and proof lanes
-read-only specialists frontier/proof/wave evidence
-$ship                PR creation/update/promotion
-$land                separate explicit merge workflow
+EPG-v1
+  strategy, invariants, belief model, observations, actions, policy, shield,
+  progress potential, terminal states
+
+EPS-v1
+  current evidence state and completed/failed action history
+
+EPD-v1
+  selected action or terminal; prediction and selection rationale
+
+$st / GCR-v1
+  durable task/proof graph, current commitment horizon, execution permission
+
+VMX-v1 / PDAG-v1 / ASL-v1
+  semantic frontier, proof frontier, route, mutation boundary, surface budget
+
+FPS-v1 / FPSR-v1
+  one selected bounded realization and its observed result
+
+ETR-v1
+  predicted-versus-observed transition evidence and next-state proposal
+
+$actuating
+  runtime orchestration, materialization, proof, transition, and delivery gate
 ```
+
+No layer may silently override another layer's authority.
 
 ## Modes
 
-### Material graph
+### Policy runtime
 
-Use for material plans, cross-file work, meaningful dependency/proof graphs, or work expected to survive compaction.
+Default for EPG-v1 material work.
 
 Require:
 
 ```text
-canonical .step/st-plan.jsonl
-implementation-ready graph
-current executable GCR-v1
-valid AFR-v1
+valid source-current EPG-v1
+valid current EPS-v1
+valid EPD-v1 selected from that exact state
 ```
+
+### Legacy material plan
+
+Existing plan-to-PR work without EPG may continue through:
+
+```text
+plan -> `$st` -> GCR -> VMX/ASL -> FPS/FPSR -> proof -> `$ship`
+```
+
+Do not fabricate EPG history for an in-flight legacy run.
 
 ### Graph repair
 
-Enter when graph compile/currentness/projection fails or blocking unwaived debt exists.
+Enter when graph compile/currentness/debt/projection fails.
 
-Only read/search, graph/intake/debt repair, and proof/frontier analysis are allowed.
-
-No delivery mutation, task completion, or ship.
-
-### Simple ledger
-
-Only for clearly bounded work with no material graph.
-
-Report:
+Allowed:
 
 ```text
-Graph not compiled; proceeding in ledger mode.
+read/search
+policy/state inspection
+st intake/graph/debt repair
+proof/frontier analysis
 ```
 
-A material plan never silently degrades to ledger mode.
+Forbidden:
 
-## 1. Pin ASR-v2
+```text
+delivery mutation
+task completion
+policy success transition
+ship
+```
 
-Maintain `actuation_state / ASR-v2` with run/plan/objective, artifact state, target PR intent, contract versions, graph/GCR, AFR set, proof, surface, and ship state.
+### Simple bounded execution
 
-After compaction, reread a skill only when its recorded version/fingerprint changed or current evidence requires it.
+Allowed only for small work with no material policy/graph.
 
-## 2. Compile the plan
+A material EPG run may not silently fall back to simple or ledger mode.
+
+## 0. Pin the run
+
+Maintain `ASR-v4` or equivalent run state:
+
+```yaml
+actuation_state:
+  run_version: ASR-v4
+  run_id:
+  policy_ref:
+  policy_digest:
+  policy_state_ref:
+  current_decision_ref:
+  artifact_state:
+  st_plan_ref:
+  current_gcr_ref:
+  active_asl_ref:
+  fixed_point_result_refs: []
+  transition_receipts: []
+  proof_state:
+  ship_state:
+```
+
+After compaction, resume from durable EPG/EPS/GCR/ASL/proof state, not prose.
+
+## 1. Validate and select one action
 
 ```bash
-st intake scaffold --source <plan.md> --out .step/st-intake.md
-# Fill/edit semantic intake.
-st intake check --input .step/st-intake.md \
-  --gate implementation-ready --format json
-st intake normalize --input .step/st-intake.md \
+python3 codex/skills/plan/tools/execution_policy_gate.py policy.json
+
+python3 codex/skills/plan/tools/policy_select.py \
+  --policy policy.json \
+  --state state.json \
+  --out decision.json
+```
+
+EPD-v1 has no mutation authority.
+
+It records:
+
+```text
+eligible rules/actions
+shielded actions and reasons
+selected action or terminal
+expected effects and observations
+GCR/ASL requirements
+```
+
+## 2. Handle terminal decisions
+
+### success
+
+Do not ship solely because EPD selected success.
+
+Require:
+
+```text
+terminal predicates satisfied in current EPS
+all referenced proof current
+no active action/materialization
+source and artifact state current
+canonical `$st` graph proof-complete
+all required ETRs valid
+```
+
+Then compute explicit PR mode and call `$ship`.
+
+### blocked
+
+Report the exact evidence, shield/controller reason, and required next authority.
+
+### return_to_spec
+
+Stop material execution and return to `$spec-pipeline`.
+
+### return_to_grill
+
+Stop and route the unresolved judgment to `$grill-me`.
+
+### rollback
+
+Execute only the policy-declared rollback. Repository-mutating rollback still requires GCR and ASL.
+
+## 3. Materialize only the commitment horizon
+
+For a selected action, compile semantic intake containing exact:
+
+```text
+policy ID/revision/digest
+state ID/digest
+decision ID
+selected action ID and kind
+owner and preconditions
+required prior actions
+mutation boundary and lock roots
+expected effects and observations
+proof obligations and rollback
+```
+
+Compatibility path:
+
+```bash
+st intake scaffold --source decision.json --out .step/st-intake.md
+# Map EPD fields exactly; do not change policy semantics.
+st intake check \
+  --input .step/st-intake.md \
+  --gate implementation-ready \
+  --format json
+st intake normalize \
+  --input .step/st-intake.md \
   --out .step/st-intake.normalized.md
-st intake apply --file .step/st-plan.jsonl \
+st intake apply \
+  --file .step/st-plan.jsonl \
   --input .step/st-intake.normalized.md \
   --gate implementation-ready
 st compile aperture --file .step/st-plan.jsonl --limit 7
 ```
 
-`st intake plan` is only a deprecated scaffold alias.
+Do not materialize dormant policy branches as ready or blocked tasks.
 
-Use only `.step/st-plan.jsonl`; never create a sidecar durable plan to route around debt.
+See [execution-policy-runtime.md](references/execution-policy-runtime.md).
 
-## 3. Enforce GCR-v1
+## 4. Enforce GCR-v1
 
-Material execution requires a CLI-emitted GCR proving:
+A repository-mutating action requires a current CLI-emitted GCR proving:
 
 ```text
-current durable seq/fingerprints
-implementation-ready gate
+implementation-ready graph
 execution_allowed = yes
-no blocking unwaived debt
-dependency-ready selected tasks
-proof obligations
-current native projection
+selected tasks bound to current policy/state/decision/action
+no blocking unwaived graph debt
+proof obligations present
+projection current
 ```
 
-When this fails:
+Failure enters graph-repair mode.
+
+`update_plan` remains a projection, never policy or graph truth.
+
+## 5. Compile the semantic frontier
+
+Use VMX-v1 when the selected action touches a multidimensional invariant space:
 
 ```text
-graph-repair mode
-no delivery mutation
+parser/verifier behavior
+state loading/restoration
+versioned formats
+continuation/frame transitions
+multi-field acceptance predicates
+authority/proof binding
+repeated adjacent counterexamples
 ```
 
-See [st-control-gate.md](references/st-control-gate.md).
+A new semantic row updates the policy/frontier before another patch.
 
-## 4. Project once
-
-Publish only exact `plan_sync.codex.plan` from the current GCR.
-
-- preserve `[st-id]`;
-- never project graph envelope;
-- never hand-author the frontier;
-- one `update_plan` publication per GCR sequence/fingerprint;
-- another requires explicit projection-drift repair.
-
-Block:
-
-```text
-failed/stale graph
--> repeated update_plan
--> prose frontier
--> material mutation
-```
-
-## 5. Compile AFR-v1
-
-Create:
-
-```text
-.step/actuation/<run-id>/<slice-id>.afr.json
-```
-
-AFR references `$st`; it does not own task status.
-
-It binds artifact/GCR/tasks, owner/invariant, counterexample quotient, selected/rejected routes, mutation boundary, surface budget, proof DAG, next frontier, and SDR-v1 decision projection.
-
-Group raw combinations only when accepted observations, owner, route, and proof law match.
+Validate:
 
 ```bash
-python3 codex/skills/actuating/tools/afr_gate.py <afr.json>
+python3 codex/skills/actuating/tools/validation_matrix_gate.py matrix.json
 ```
 
-See [actuation-frontier-record.md](references/actuation-frontier-record.md) and [counterexample-quotient.md](references/counterexample-quotient.md).
+## 6. Prepare policy-bound ASL-v1
 
-## 6. Use specialists conditionally
+ASL remains the mutation capability for one semantic slice.
 
-Root is the sole writer.
+In EPG mode add `policy_control`:
 
-```text
-actuation_frontier_mapper  unclear/recurring state space or owner
-actuation_proof_mapper     unclear proof cut/currentness
-actuation_wave_skeptic     material completed wave or surface growth
+```yaml
+policy_control:
+  mode: epg
+  policy_id:
+  policy_revision:
+  policy_digest:
+  state_id:
+  state_digest:
+  decision_id:
+  action_id:
+  action_kind:
+  policy_current: yes
+  decision_selected: yes
+  commitment_horizon_sequence:
+  expected_effects:
+  expected_observation_refs: []
+  failure_observation_refs: []
 ```
 
-Use them at frontier/wave boundaries, not after every patch.
-
-See [frontier-specialists.md](references/frontier-specialists.md).
-
-## 7. Select before realization
-
-Routes:
+ASL also binds:
 
 ```text
-no_change
-validate_only
-reuse_existing_owner
-delete_or_collapse
-canonicalize
-representation_change
-bounded_new_surface
-blocked
-```
-
-Before mutation record alternatives, selected/rejected routes, owner, permitted scope, forbidden actions/non-goals, surface budget, proof obligations, route-flip condition, and expected outcome.
-
-If selection is unresolved, do not call `$fixed-point-driver`.
-
-## 8. Hand off ARH-v1
-
-For non-trivial mutation emit `actuation_realization_handoff / ARH-v1` containing:
-
-```text
-run/slice/GCR/AFR/task identity
-artifact state
-selected route and owner
-scope and forbidden actions
+GCR and `$st` task refs
+owner/invariant and VMX rows
+selected/rejected route
+normal form
+patch boundary and forbidden actions
 surface budget
-selected class/invariant
-proof obligations
+PDAG proof obligations
+next frontier
 ```
 
-`$fixed-point-driver` realizes this route and may use `$accretive-implementer` for narrow writing.
-
-It may not change class, route, owner, scope, or semantics.
-
-See [fixed-point-execution-loop.md](references/fixed-point-execution-loop.md).
-
-## 9. Consume FPSR-v1
+Validate and persist:
 
 ```bash
-python3 codex/skills/fixed-point-driver/tools/fpsr_gate.py <result.json>
+python3 codex/skills/actuating/tools/actuation_slice_gate.py slice.json
+
+python3 codex/skills/actuating/tools/actuation_checkpoint.py \
+  write \
+  --input slice.json \
+  --root .step/actuating
 ```
 
-Results:
+ASL does not duplicate policy state or `$st` task status.
+
+See [actuation-slice-contract.md](references/actuation-slice-contract.md).
+
+## 7. Activate language/domain routes
+
+Before mutation, activate the route that constrains owner, hazards, boundary, or proof.
+
+For material Zig work:
 
 ```text
-valid
-return_to_frontier
-blocked
-invalid
+ASL references ZSR-v1
+PDAG references current ZPE-v1 proof epochs
 ```
 
-`return_to_frontier` stops mutation, updates the quotient/evidence and `$st` scope/obligations when needed, then requires a new AFR/ARH.
+Language skills do not own policy, task state, or delivery.
 
-Never append an adjacent patch under the stale route.
+## 8. Compile policy-bound FPS-v1
 
-## 10. Tier proof
+FPS-v1 is the existing bounded realization handoff.
+
+In EPG mode include matching `policy_control` and carry:
 
 ```text
-slice  focused proof for selected class/invariant
-wave   affected aggregate proof after coherent aperture/subset
-ship   one complete current-head closure suite
+GCR/ASL/task refs
+owner/invariant/selected rows
+selected normal form and rejected alternatives
+patch boundary and forbidden actions
+surface budget
+proof obligations and stop conditions
+expected effects/observations from EPD
 ```
 
-Run full proof earlier only when repository policy or the dependency cut requires it.
-
-Track proof as missing/running/pass/fail/stale with explicit invalidators.
-
-See [validation-cadence.md](references/validation-cadence.md).
-
-## 11. Record and recompile
-
-After valid realization/focused proof:
+Validate input and result:
 
 ```bash
-st proof plan --file .step/st-plan.jsonl --scope aperture --format json
-st proof record --file .step/st-plan.jsonl \
-  --id <st-id> --obligation <proof-id> --action <proof-action-id> \
-  --command "<command>" --evidence-ref <proof-log> \
-  --artifact-ref "git:<sha-or-working-tree-fingerprint>"
-st complete --file .step/st-plan.jsonl --id <st-id>
-st compile aperture --file .step/st-plan.jsonl --limit 7
-st assert-projection --file .step/st-plan.jsonl
+python3 codex/skills/fixed-point-driver/tools/fixed_point_slice_gate.py \
+  --input fps.json \
+  --result fps-result.json
 ```
 
-If the installed proof parser is narrower, keep `$st` truthful with the smallest accepted command and report the parser gap. Do not create sidecar task status.
+`$fixed-point-driver` may realize, prove no-change, block, or return to frontier.
+
+It may not invent another policy branch, expand scope, or patch a newly discovered observation.
+
+See [policy-action-handoff.md](references/policy-action-handoff.md).
+
+## 9. Run tiered proof
+
+### Action proof
+
+After one realization, prove the selected policy action, semantic rows, and `$st` obligations.
+
+### Policy-wave proof
+
+Run affected aggregate proof when multiple evidence actions close one policy branch or shared dependency cut.
+
+### Terminal proof
+
+Before `$ship`, run complete current-head repository closure proof.
+
+Use PDAG-v1 and proof epochs for dependency and freshness.
+
+Do not run the full repository suite after every micro-action unless the selected obligation or dependency cut requires it.
+
+## 10. Emit ETR-v1
+
+Combine FPSR and actual evidence into one transition receipt:
+
+```bash
+python3 codex/skills/plan/tools/transition_receipt_gate.py \
+  --policy policy.json \
+  --state state.json \
+  --decision decision.json \
+  --receipt receipt.json
+```
+
+ETR records separately:
+
+```text
+prediction
+actual observations/effects
+proof
+potential before/after
+surprise classification
+result
+```
+
+Never rewrite observed evidence to match the prediction.
+
+Classify surprise:
+
+```text
+none
+expected_variance
+new_branch
+model_failure
+intent_failure
+```
+
+`model_failure` blocks another material action under the unchanged policy.
+
+`intent_failure` returns to `$spec-pipeline`.
+
+Use `policy_transition_skeptic` when prediction and observation differ materially.
+
+See [policy-state-transition.md](references/policy-state-transition.md).
+
+## 11. Advance EPS atomically
+
+```bash
+python3 codex/skills/plan/tools/policy_checkpoint.py apply \
+  --policy policy.json \
+  --state state.json \
+  --decision decision.json \
+  --receipt receipt.json \
+  --out next-state.json
+```
+
+The checkpoint tool revalidates EPG, EPS, EPD, and ETR before writing.
+
+After a successful transition:
+
+```text
+record obligation proof in `$st`
+complete/block only current materialized tasks
+archive/retire the old horizon
+recompile GCR
+select the next policy action
+```
 
 ## 12. Resume after compaction
 
-Resume from ASR-v2, latest GCR, active AFR, current proof receipts, and Git state:
+Resume from:
 
-```bash
-python3 codex/skills/actuating/tools/actuation_resume.py \
-  --state <asr.json> --frontier <afr.json>
+```text
+ASR-v4
+EPG-v1
+current EPS-v1
+latest EPD/ETR
+current GCR
+active ASL/VMX/PDAG/FPSR
+current artifact state
 ```
 
-Invalidate resume when artifact state, GCR/tasks, proof currentness, or contract fingerprints changed.
+Verify all digests and fingerprints first.
 
-Do not reconstruct the frontier from prose or repeated skill reads.
+Reread only changed skill contracts or the active reference.
 
-## 13. Learn at inflections
+Do not reconstruct the policy frontier from prose or `update_plan`.
 
-Use `$learnings` for validation transitions, strategy pivots, hidden footguns, repeated acceleration patterns, and delivery boundaries—not every turn.
+## 13. Learn from transitions
+
+Use ETR and `$seq` evidence to improve:
+
+```text
+prediction calibration
+probe information value
+unknown-resolution latency
+route rework
+proof sufficiency
+semantic-surface growth
+rollback frequency
+```
+
+Use `$negative-ledger` only for controller-proven failed action models with reopening criteria.
+
+Use `$retrace` to compare actions from equivalent historical evidence states.
 
 ## 14. Ship gate
 
-Require:
+Call `$ship` only after a success terminal and:
 
 ```text
-no unhandled in-scope tasks
-current GCR/projection
-all AFRs terminal
-no unresolved return-to-frontier observation
-focused/wave proof accounted for
-full closure proof current
-PR publication in scope
+policy/source/state current
+no active action or open commitment horizon
+all terminal obligations and proof current
+canonical `$st` graph proof-complete
+all required ASL/FPSR/ETR artifacts valid
+no unresolved model/intent failure
 explicit PR mode
 ```
 
-```yaml
-pr_mode_decision:
-  mode: ready | draft | update-existing | promote-draft | blocked
-  reason:
-  draft_allowed_reason:
-```
-
-Default:
+Default after full completion:
 
 ```text
-complete graph + terminal AFRs + current full proof -> ready
+ready
 ```
 
-No `$ship` without explicit mode. `$ship` does not merge.
+`$ship` does not merge.
 
-See [shipping-gate.md](references/shipping-gate.md) and [pr-mode-decision.md](references/pr-mode-decision.md).
+## Decision observability
 
-## 15. Validate final state
+Emit SDR-v1-compatible receipts for:
 
-```bash
-python3 codex/skills/actuating/tools/asr_gate.py <state.json> --mode ship
+```text
+policy action selection
+shield block
+action realization result
+surprise classification
+policy revision/authority return
+terminal and PR-mode decision
 ```
 
-ASR-v2 binds graph/GCR/projection, AFR/FPSR set, task counts, decision receipts, proof currentness, surface delta, ship mode, and blockers.
+Decision contract: [decision-contract.yaml](references/decision-contract.yaml).
 
 ## Output
 
-End with:
-
 ```text
 Actuation Bottom Line:
-- target state:
-- GCR / graph mode:
-- active or final AFR:
-- tasks complete / blocked / deferred / open:
-- selected route / owner:
-- focused / wave / closure proof:
-- surface delta:
-- PR mode:
-- PR:
-- blocker / next frontier:
+- policy / state / decision:
+- selected action or terminal:
+- GCR / ASL / materialized tasks:
+- predicted vs observed effects:
+- surprise classification:
+- potential before / after:
+- focused / wave / final proof:
+- next policy state:
+- PR mode / PR:
+- blocker / return route:
 ```
 
 ## Hard rules
 
-- No material mutation without current executable GCR-v1.
-- No material mutation with blocking unwaived graph debt.
-- No material graph-failure fallback to prose/ledger execution.
-- No non-trivial mutation without valid AFR-v1.
-- `update_plan` is a GCR projection, never the state machine.
-- `$actuating` selects; `$fixed-point-driver` realizes.
-- New observations return to frontier.
-- Root is the sole writer.
-- Full proof is wave/ship cadence, not default per patch.
-- No ship without current graph, terminal frontier, current proof, and explicit PR mode.
+- No material mutation without EPG/EPS/EPD lineage in policy mode.
+- No repository mutation without a current executable GCR.
+- No non-trivial repository mutation without a prepared ASL and FPS.
+- Materialize only the current commitment horizon.
+- EPD is selection evidence, not mutation authority.
+- Never hide prediction failure or new observations.
+- New branch returns to policy; model failure revises policy; intent failure returns to source authority.
+- Root remains sole delivery writer.
+- No ship without a proven success terminal and explicit PR mode.
 - Do not merge or land.

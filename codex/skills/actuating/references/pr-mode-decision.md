@@ -15,16 +15,15 @@ pr_mode_decision:
     incomplete-validation |
     blocked-tasks |
     early-visibility |
-    missing-context |
     repo-policy
 ```
 
 Default:
 
 ```text
-complete graph + terminal AFRs + current full proof -> ready
+all in-scope work complete + current final proof -> ready
 ```
 
-Draft requires a warrant.
+Draft requires an explicit warrant.
 
-No `$ship` call without explicit mode.
+`$actuating` must pass the mode to `$ship`.

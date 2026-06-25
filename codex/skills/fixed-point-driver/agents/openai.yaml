@@ -2,11 +2,10 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Fixed-Point Driver"
-  short_description: "Realize one bounded route and return on new evidence"
+  short_description: "Realize one selected action and report actual evidence"
   default_prompt: >-
-    Use $fixed-point-driver to realize one bounded route. Require ARH-v1 when
-    called by $actuating, consume kernel/RC-v1 in reduction mode, or use a
-    simple standalone frame only when one owner and route are unambiguous.
-    Enforce scope and surface budget, run focused proof, emit FPSR-v1, and
-    return immediately when evidence changes the class, owner, route, scope,
-    or proof obligation.
+    Use $fixed-point-driver only after a route/action is selected. Validate
+    FPS-v1 and any EPG policy lineage, realize the named owner/invariant/rows
+    inside the patch boundary and surface budget, run focused proof, emit
+    FPSR-v1 with actual observations, and return immediately when evidence
+    changes the policy, owner, route, class, scope, or proof obligation.

@@ -1,19 +1,50 @@
-# $st Handoff
+# `$st` Handoff
 
-Use `$st` for all material plan intake and durable execution state.
-
-## Preferred material-plan command trace
+## New material plan
 
 ```bash
-st intake plan --file .step/st-plan.jsonl --source <plan.md> --out .step/st-intake.md
-st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate implementation-ready
-st graph audit --file .step/st-plan.jsonl --gate implementation-ready --format markdown
+st intake scaffold --source <plan.md> --out .step/st-intake.md
+# Agent authors/corrects semantic intake.
+st intake check --input .step/st-intake.md --gate implementation-ready --format json
+st intake normalize --input .step/st-intake.md --out .step/st-intake.normalized.md
+st intake apply \
+  --file .step/st-plan.jsonl \
+  --input .step/st-intake.normalized.md \
+  --gate implementation-ready
 st compile aperture --file .step/st-plan.jsonl --limit 7
 ```
 
-## Completion trace
+## Existing graph
 
 ```bash
+st compile aperture --file .step/st-plan.jsonl --limit 7
+```
+
+## Hard rule
+
+For material work:
+
+```text
+no current executable GCR
+or
+unwaived blocking graph debt
+=> no delivery mutation
+```
+
+Do not silently switch to ledger/prose execution.
+
+## Projection
+
+Project only `plan_sync.codex.plan`.
+
+Default to one `update_plan` call per GCR sequence.
+
+Repeated projection without a graph/GCR change is a projection-inversion warning.
+
+## Completion
+
+```bash
+st proof plan --file .step/st-plan.jsonl --scope aperture --format json
 st proof record \
   --file .step/st-plan.jsonl \
   --id <st-id> \
@@ -23,15 +54,8 @@ st proof record \
   --evidence-ref <proof-log> \
   --artifact-ref "git:<sha-or-working-tree-fingerprint>"
 st complete --file .step/st-plan.jsonl --id <st-id>
+st compile aperture --file .step/st-plan.jsonl --limit 7
 st assert-projection --file .step/st-plan.jsonl
 ```
 
-If the installed `st` build rejects a documented proof flag combination, keep the graph status aligned with the smallest accepted `st complete` command and track the parser mismatch as a tool fix. Do not create sidecar proof state outside `$st`.
-
-## Fallback when intake/graph commands are missing
-
-- Probe capability once.
-- Use the fallback path from `$st`.
-- Record graph debt.
-- Continue with the best durable representation available.
-- Never pretend prose or chat state is durable `$st` graph state.
+ASL may reference `$st` IDs and receipts. It may not independently mark `$st` tasks complete.

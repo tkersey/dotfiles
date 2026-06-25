@@ -1,63 +1,41 @@
 # Fixed-Point Execution Loop
 
-## Ownership
+```text
+current GCR
+-> prepared ASL
+-> validated FPS
+-> bounded realization
+-> focused proof
+-> FPSR
+-> matrix/$st frontier update
+```
 
 `$actuating` selects the route.
 
-`$fixed-point-driver` realizes it.
-
-```text
-current GCR
--> valid AFR
--> ARH-v1
--> implementation
--> focused proof
--> FPSR-v1
--> st proof/complete
--> new GCR
-```
+`$fixed-point-driver` realizes the selected route.
 
 ## Required handoff
 
-```text
-run/slice/GCR/AFR IDs
-selected task IDs
-selected route
-canonical owner
-permitted scope
-forbidden actions
-surface budget
-counterexample class
-invariant
-proof obligations
-```
+- GCR and ASL refs;
+- `$st` task IDs;
+- owner/invariant;
+- selected VMX rows;
+- selected normal form;
+- rejected routes;
+- patch boundary;
+- forbidden actions;
+- surface budget;
+- focused proof obligations;
+- stop conditions.
 
-## Driver results
+## Stop conditions
 
-```text
-valid
-  route realized within boundary and focused proof passed
+Return to frontier when:
 
-return_to_frontier
-  new observation, owner change, scope expansion, or route invalidation
+- a new counterexample class appears;
+- authority/owner changes;
+- boundary expansion is needed;
+- a missing proof obligation was not represented;
+- the selected normal form no longer covers the case.
 
-blocked
-  environment/dependency/authority prevents realization
-
-invalid
-  boundary/surface/proof contract violated
-```
-
-## No hidden route selection
-
-The driver must not:
-
-```text
-change owner
-merge classes
-introduce a new distinction
-expand file/symbol scope
-invent a fallback
-```
-
-It returns instead.
+Do not immediately patch the new observation.

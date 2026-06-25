@@ -2,5 +2,10 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Plan"
-  short_description: "Help with Plan tasks and workflows"
-  default_prompt: "Use $plan for this task."
+  short_description: "Compile intent into an observable execution policy"
+  default_prompt: >-
+    Use $plan to compile accepted intent into one source-bound EPG-v1:
+    explicit belief state, critical unknowns, observations, guarded actions,
+    safety shield, progress potential, terminal states, and a short commitment
+    horizon for $st/$actuating. Do not mutate the repository or pretend an
+    uncertain future is a fixed task list.

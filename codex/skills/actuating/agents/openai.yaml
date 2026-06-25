@@ -2,12 +2,10 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Actuating"
-  short_description: "GCR + frontier controlled plan-to-PR execution"
+  short_description: "Interpret one execution-policy horizon through GCR and ASL"
   default_prompt: >-
-    Use $actuating to compile a material plan into canonical $st graph state,
-    require a current executable GCR-v1, compile one AFR-v1 per non-trivial
-    aperture, select the route and owner before realization, hand only that
-    route to $fixed-point-driver, record focused proof in $st, recompile the
-    graph, run wave and final closure proof at the proper cadence, then call
-    $ship with explicit PR mode. Never degrade a failed graph into prose-driven
-    mutation.
+    Use $actuating as a closed-loop EPG interpreter. Validate the current
+    policy and state, select one EPD action, materialize only its commitment
+    horizon into canonical $st, require current GCR and policy-bound ASL/FPS
+    for mutation, record proof and ETR predicted-versus-observed evidence,
+    advance EPS atomically, and ship only from a proven success terminal.

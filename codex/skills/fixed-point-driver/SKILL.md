@@ -1,8 +1,8 @@
 ---
 name: fixed-point-driver
-description: "Realize one bounded route and prove it. In `$actuating` mode require ARH-v1; in kernel mode consume kernel/RC-v1; in simple standalone mode permit one unambiguous owner/route frame without quotienting. Implement only the named scope/operators, enforce the surface budget, map constructs and proof to the invariant, and return when new evidence changes class, owner, route, or scope. Never invent a behavioral quotient, normal form, or delivery plan."
+description: "Realize one already selected bounded action and prove it. In EPG mode consume policy-bound FPS-v1; in legacy `$actuating` mode consume ordinary FPS-v1; in kernel mode consume kernel/RC-v1; in standalone mode permit one unambiguous frame. Implement only the named owner, boundary, and surface budget, map constructs and proof to obligations, report observed effects, and return immediately when evidence changes the policy, owner, route, class, or scope. Never invent a policy branch, behavioral quotient, normal form, or delivery plan."
 metadata:
-  version: "6.0.0"
+  version: "7.0.0"
   activation_cost: medium
   default_depth: standard
 ---
@@ -11,283 +11,327 @@ metadata:
 
 ## Mission
 
-Reach one bounded realization:
-
 ```text
-selected route
--> smallest sufficient owned change
+selected bounded action
+-> smallest sufficient owned realization
 -> focused proof
+-> observed effects
 -> no orphan construct
--> no new observation
+-> no unmodeled continuation
 ```
 
 The driver is a realization authority.
 
-It is not a route-selection authority.
+It is not a policy, route-selection, task, or delivery authority.
 
 ## Modes
 
-### Actuating mode
+### EPG policy-action mode
 
-When called by `$actuating`, require:
+Consume `fixed_point_slice / FPS-v1` with a current `policy_control` block.
 
-```text
-actuation_realization_handoff / ARH-v1
-```
+The handoff binds EPG/EPS/EPD/GCR/ASL identities and one selected action.
 
-No ARH means:
+### Legacy actuating mode
 
-```text
-result = blocked
-reason = selected_route_missing
-```
+Consume ordinary FPS-v1 compiled from ASL-v1.
 
 ### Kernel / RC-v1 mode
 
-Consume `kernel_realization_handoff` and the accepted reduction certificate.
+Consume an accepted kernel and reduction certificate.
 
 ### Simple standalone mode
 
-For one bounded task outside `$actuating`, the root/driver may form:
+Permit one bounded frame only when owner, route, scope, and proof are unambiguous and no delivery workflow is bypassed.
+
+## FPS-v1
+
+Required general shape:
 
 ```yaml
-fixed_point_frame:
-  frame_version: FPF-v1
-  goal:
-  canonical_owner:
-  selected_route:
-  permitted_scope: []
-  forbidden_actions: []
-  non_goals: []
-  surface_budget:
-  proof_obligations: []
-```
-
-This mode is allowed only when:
-
-```text
-one canonical owner is evident
-no behavioral quotient is proposed
-no competing material route remains
-no delivery workflow is being bypassed
-```
-
-When owner/route/distinctions are materially ambiguous:
-
-```text
-result = blocked
-reason = selection_required
-```
-
-See [general-frame.md](references/general-frame.md).
-
-## ARH-v1 contract
-
-Required:
-
-```yaml
-actuation_realization_handoff:
-  handoff_version: ARH-v1
-  run_id:
+fixed_point_slice:
+  slice_version: FPS-v1
   slice_id:
-  gcr_id:
-  afr_id:
-  st_task_ids: []
   artifact_state:
-  selected_route:
-  canonical_owner:
-  permitted_scope: []
-  forbidden_actions: []
-  non_goals: []
-  surface_budget:
-  counterexample_class:
+  st_task_refs: []
+  graph_control_ref:
+  actuation_slice_ref:
+  semantic_route_refs: []
+  owner:
   invariant:
+  selected_rows: []
+  selected_normal_form:
+  alternatives:
+    - route:
+      rejected_because:
+  patch_boundary:
+    files: []
+    symbols: []
+  forbidden_actions: []
+  surface_budget:
   proof_obligations: []
-  proof_dag_ref:
+  stop_conditions: []
+  gate:
+    prepared:
+    mutation_allowed:
+```
+
+EPG mode additionally requires:
+
+```yaml
+policy_control:
+  mode: epg
+  policy_id:
+  policy_revision:
+  policy_digest:
+  state_id:
+  state_digest:
+  decision_id:
+  action_id:
+  action_kind:
+  commitment_horizon_sequence:
+  expected_effects:
+  expected_observation_refs: []
+  failure_observation_refs: []
 ```
 
 Validate:
 
 ```bash
-python3 codex/skills/fixed-point-driver/tools/arh_gate.py <handoff.json>
+python3 codex/skills/fixed-point-driver/tools/fixed_point_slice_gate.py \
+  --input fps.json
 ```
 
-## Allowed realization routes
+## Mutation gate
+
+Mutation is permitted only when:
 
 ```text
-reuse_existing_owner
-delete_or_collapse
-canonicalize
-representation_change
-bounded_new_surface
+FPS validates
+prepared = yes
+mutation_allowed = yes
+artifact state is current
+GCR and ASL refs exist
+owner/invariant are named
+selected row or exact bounded obligation exists
+normal form is selected
+patch boundary is non-empty
+proof obligations are non-empty
 ```
 
-`no_change`, `validate_only`, and `blocked` do not authorize implementation.
+In EPG mode also require current, matching policy/state/decision/action lineage.
 
 ## Realization procedure
 
-1. Verify artifact state, GCR/AFR IDs, selected task IDs, route, owner, permitted scope, surface budget, and proof obligations.
-2. Inspect only enough current code to realize the route.
-3. Use `$accretive-implementer` for narrow owned writing when useful.
+1. Verify artifact, GCR, ASL, and optional policy identities.
+2. Verify owner, route, boundary, surface budget, proof, and stop conditions.
+3. Inspect only enough code/evidence to realize the selected action.
 4. Apply one coherent change inside the boundary.
-5. Track every added/retired construct against the route/invariant.
-6. Run focused proof named by the handoff.
-7. Produce FPSR-v1.
-8. Stop.
+5. Map every changed construct to action, owner, invariant, selected rows, obligations, and proof.
+6. Enforce the hard surface budget.
+7. Run focused proof.
+8. Record actual observations/effects without rewriting the prediction.
+9. Emit FPSR-v1.
+10. Stop.
+
+Use `$accretive-implementer` for narrow owned writing when useful.
 
 ## Surface budget
 
-Count at least:
+Account for at least:
 
 ```text
+files
+production net
 helpers
 branches
-fields
+fields/state variants
 public symbols
-fallback paths
+protocol/fallback cases
 test families
 surfaces retired
 ```
 
-Every construct must map to:
+Every construct maps to:
 
 ```text
-selected counterexample class
-governing invariant
-accepted route
+selected action/route
+accepted obligation or evidence purpose
+canonical owner
 proof obligation
 ```
 
-An unmapped construct is an orphan.
+An unmapped construct is orphan surface.
 
 ## New observation rule
 
-A new observation includes:
+Return immediately when realization discovers:
 
 ```text
-counterexample not covered by selected class
-different canonical owner
-required file/symbol outside permitted scope
-new behavioral distinction
-route no longer sufficient
+new counterexample/observation class
+new authority owner
+new EPG branch
+required boundary expansion
+new accepted behavioral distinction
+selected prediction no longer fits
 proof obligation changed
 surface budget insufficient
 ```
 
-On any new observation:
+Do not append-patch the new observation.
+
+In EPG mode return:
 
 ```text
-stop writing
-preserve current patch/result
-return_to_frontier
+result = return_to_frontier
+policy_result.new_observations non-empty
 ```
 
-Do not patch the new observation incrementally.
-
-## Proof
-
-The driver runs focused proof only unless the handoff explicitly names an affected aggregate proof.
-
-It does not own final full-repository closure or shipping.
-
-Proof must bind:
-
-```text
-command
-artifact fingerprint
-toolchain/target/options when relevant
-result
-evidence ref
-invalidators
-```
+Root decides whether to continue policy selection, revise EPG, return to source authority, or rollback.
 
 ## FPSR-v1
 
 ```yaml
 fixed_point_slice_result:
   result_version: FPSR-v1
-  run_id:
   slice_id:
-  gcr_id:
-  afr_id:
-  artifact_state_before:
-  artifact_state_after:
-  selected_route:
-  canonical_owner:
-  permitted_scope: []
-  files_changed: []
+  artifact_state:
+  owner:
+  invariant:
+  selected_rows: []
+  realization_patch_ref:
+  changed_files: []
+  changed_symbols: []
   construct_map:
     - construct:
-      kind:
-      class_id:
+      owner:
       invariant:
-      route:
-      proof_ids: []
-  surfaces:
-    helpers_added:
-    branches_added:
-    fields_added:
-    public_symbols_added:
-    fallback_paths_added:
-    test_families_added:
-    surfaces_retired: []
-  proof:
-    obligations: []
-    commands: []
-    evidence_refs: []
-    status:
-  orphan_constructs: []
-  scope_violations: []
-  budget_violations: []
+      row_refs: []
+      obligation_refs: []
+      proof_refs: []
+  surface_delta:
+  proof_refs: []
+  obligations_covered: []
+  budget:
+    respected:
+    violations: []
   new_observations: []
-  patch_ref:
   result:
     valid |
+    no_change |
     return_to_frontier |
     blocked |
     invalid
-  reason:
+
+  policy_result:
+    policy_id:
+    policy_revision:
+    policy_digest:
+    state_id:
+    decision_id:
+    action_id:
+    observed_effects:
+      facts_added: []
+      unknowns_resolved: []
+      obligations_closed: []
+    observations:
+      - observation_id:
+        outcome:
+        evidence_ref:
+    prediction_invalidated:
 ```
 
-Validate:
+`policy_result` is required only when the input has `policy_control`.
+
+Validate input/result together:
 
 ```bash
-python3 codex/skills/fixed-point-driver/tools/fpsr_gate.py <result.json>
+python3 codex/skills/fixed-point-driver/tools/fixed_point_slice_gate.py \
+  --input fps.json \
+  --result fps-result.json
 ```
 
-## Certified kernel realization
+## Result laws
 
-When handed a certified kernel:
+### valid
 
-- work only in the named realization worktree and permitted owners;
-- implement the accepted kernel and RC-v1;
-- apply only certified factor/quotient/ablation/normalization operators;
-- retire named superseded surfaces;
-- prove the stated preservation relation;
-- run recomposition audit;
-- return on any new observation or failed congruence;
-- never mutate delivery outside the named realization surface.
-
-See [reduction-certificate.md](references/reduction-certificate.md).
-
-## Handoff to root
-
-`valid` means:
+Requires:
 
 ```text
-selected route realized
-scope and budget respected
+identity and route unchanged
+changed files/symbols inside boundary
+surface budget respected
+all constructs mapped
 focused proof passed
-no orphan construct
+required obligations covered
 no new observation
 ```
 
-Root then records proof in `$st`, completes eligible tasks, and recompiles the GCR.
+### no_change
+
+Requires current proof that the selected obligation already holds.
+
+### return_to_frontier
+
+Requires at least one new observation or prediction invalidation.
+
+### blocked
+
+External/tool/dependency/authority blocker without contract violation.
+
+### invalid
+
+Scope, budget, orphan, proof, identity, or lineage violation.
+
+## EPG observation discipline
+
+The driver reports observations; it does not interpret the next policy state.
+
+It must not:
+
+```text
+change the EPG prediction after seeing the result
+select another policy action
+advance EPS
+classify an intent failure as success
+continue under a stale decision
+```
+
+Root combines FPSR and independent evidence into ETR-v1.
+
+## Kernel / RC-v1 mode
+
+Preserve the existing reduction laws:
+
+```text
+no quotient without congruence
+no retained distinction without a witness
+no ablation without obligation discharge
+no normal form without recomposition
+no preservation overclaim
+```
+
+Work only in the named realization surface and return on new evidence.
+
+See [reduction-certificate.md](references/reduction-certificate.md).
+
+## Standalone mode
+
+Use FPF-v1 only for one bounded, unambiguous task outside `$actuating`.
+
+Reject standalone mode when there is more than one plausible owner/route, a behavioral quotient decision, scope expansion, or delivery authority.
+
+See [general-frame.md](references/general-frame.md).
+
+## Handoff to root
+
+Root consumes FPSR, records proof in `$st`, and—in EPG mode—builds ETR-v1.
 
 The driver does not:
 
 ```text
-complete durable tasks
+advance EPS
+complete durable `$st` tasks
 publish update_plan
 commit/push
 ship
@@ -296,11 +340,10 @@ land
 
 ## Hard rules
 
-- Never select or invent the route.
-- Never change the canonical owner.
-- Never expand permitted scope.
-- Never add a distinction absent from the handoff.
-- Never exceed the surface budget.
+- Never invent or select a policy branch.
+- Never change the canonical owner or route.
+- Never expand boundary or budget silently.
+- Never add an unmodeled behavioral distinction.
 - Never continue after a new observation.
-- Never use implementation convenience as equivalence evidence.
-- Never self-authorize delivery or closure.
+- Never claim proof without obligation coverage.
+- Never self-authorize task completion, delivery, or policy transition.

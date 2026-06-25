@@ -1,0 +1,64 @@
+{
+  "execution_policy_decision": {
+    "decision_id": "EPD-STATE-1",
+    "decision_version": "EPD-v1",
+    "eligible_action_ids": [
+      "ACTION-IMPLEMENT-A"
+    ],
+    "eligible_rule_ids": [
+      "RULE-IMPLEMENT-A"
+    ],
+    "expected_effects": {
+      "facts_added": [],
+      "obligations_closed": [
+        "OBL-IMPL"
+      ],
+      "potential_delta": {
+        "critical_unknowns": 0,
+        "hard_semantic_surface": 0,
+        "unsatisfied_obligations": -1
+      },
+      "unknowns_resolved": []
+    },
+    "expected_observation_refs": [
+      "OBS-IMPLEMENT-A"
+    ],
+    "failure_observation_refs": [
+      "OBS-IMPLEMENT-A"
+    ],
+    "mutation_authority": "no",
+    "policy_digest": "sha256:eff535bc88c9471ba4d7b2f87838948436bd93ac5b0f5e083489b00af3f81a5f",
+    "policy_id": "POLICY-cache-strategy",
+    "policy_revision": 1,
+    "rationale": "Route A won the governed evidence comparison.",
+    "requires_frontier_record": true,
+    "requires_gcr": true,
+    "satisfied_atoms": [
+      "action:ACTION-PROBE=success",
+      "fact:FACT-API-LOCKED",
+      "fact:FACT-SOURCE-CURRENT",
+      "obs:OBS-ROUTE=route_a",
+      "unknown:UNKNOWN-ROUTE=resolved"
+    ],
+    "selected_action_id": "ACTION-IMPLEMENT-A",
+    "selected_rule_id": "RULE-IMPLEMENT-A",
+    "shielded_actions": {
+      "ACTION-IMPLEMENT-B": [
+        "SHIELD-B:Route B mutation requires route-B evidence and locked API authority.:missing=obs:OBS-ROUTE=route_b"
+      ]
+    },
+    "state_digest": "sha256:aa68083b3063b8f53430e762a8d0137d81ff27a6b7d7e2f21ded6cad84883406",
+    "state_id": "STATE-1",
+    "terminal": null,
+    "utility": {
+      "downstream_unlock": 80,
+      "execution_cost": 50,
+      "information_gain": 20,
+      "irreversible_risk": 20,
+      "obligation_reduction": 80,
+      "proof_gain": 60,
+      "rework_risk": 20,
+      "semantic_surface_growth": 20
+    }
+  }
+}

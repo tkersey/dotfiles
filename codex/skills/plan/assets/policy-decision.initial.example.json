@@ -1,0 +1,64 @@
+{
+  "execution_policy_decision": {
+    "decision_id": "EPD-STATE-0",
+    "decision_version": "EPD-v1",
+    "eligible_action_ids": [
+      "ACTION-PROBE"
+    ],
+    "eligible_rule_ids": [
+      "RULE-PROBE"
+    ],
+    "expected_effects": {
+      "facts_added": [],
+      "obligations_closed": [],
+      "potential_delta": {
+        "critical_unknowns": -1,
+        "hard_semantic_surface": 0,
+        "unsatisfied_obligations": 0
+      },
+      "unknowns_resolved": [
+        "UNKNOWN-ROUTE"
+      ]
+    },
+    "expected_observation_refs": [
+      "OBS-ROUTE"
+    ],
+    "failure_observation_refs": [
+      "OBS-ROUTE"
+    ],
+    "mutation_authority": "no",
+    "policy_digest": "sha256:eff535bc88c9471ba4d7b2f87838948436bd93ac5b0f5e083489b00af3f81a5f",
+    "policy_id": "POLICY-cache-strategy",
+    "policy_revision": 1,
+    "rationale": "Resolve the critical route uncertainty before production mutation.",
+    "requires_frontier_record": false,
+    "requires_gcr": true,
+    "satisfied_atoms": [
+      "fact:FACT-API-LOCKED",
+      "fact:FACT-SOURCE-CURRENT"
+    ],
+    "selected_action_id": "ACTION-PROBE",
+    "selected_rule_id": "RULE-PROBE",
+    "shielded_actions": {
+      "ACTION-IMPLEMENT-A": [
+        "SHIELD-A:Route A mutation requires route-A evidence and locked API authority.:missing=obs:OBS-ROUTE=route_a"
+      ],
+      "ACTION-IMPLEMENT-B": [
+        "SHIELD-B:Route B mutation requires route-B evidence and locked API authority.:missing=obs:OBS-ROUTE=route_b"
+      ]
+    },
+    "state_digest": "sha256:0a427a0fc6072c85744c3f5d00aada9d7c2ec89b0ef0a67601b991645fded94e",
+    "state_id": "STATE-0",
+    "terminal": null,
+    "utility": {
+      "downstream_unlock": 100,
+      "execution_cost": 25,
+      "information_gain": 100,
+      "irreversible_risk": 5,
+      "obligation_reduction": 0,
+      "proof_gain": 30,
+      "rework_risk": 5,
+      "semantic_surface_growth": 0
+    }
+  }
+}

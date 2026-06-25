@@ -3,23 +3,19 @@
 ```text
 plan source
 -> canonical $st intake
--> implementation-ready graph
--> current GCR
--> AFR route/frontier
--> fixed-point realization
--> focused proof + st completion
--> graph recompile
+-> current executable GCR
+-> VMX when semantic state-space is material
+-> prepared ASL
+-> validated FPS
+-> bounded realization
+-> focused proof
 -> wave proof
--> full closure proof
+-> graph/frontier update
+-> final proof
 -> explicit PR mode
 -> $ship
 ```
 
-Completion means:
+A material run cannot skip from graph failure to prose-driven mutation.
 
-- every in-scope task is complete, explicitly blocked/deferred, or removed by a durable graph decision;
-- every material aperture has a terminal AFR;
-- current graph/projection and final proof match the final head;
-- PR mode is explicit.
-
-`$land` is not part of `$actuating`.
+Shipping is a terminal workflow phase, not the source of implementation truth.

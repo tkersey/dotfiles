@@ -1,0 +1,100 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: plan
+    kind: workflow
+    source_fingerprint: plan-v4-epg
+  triggers:
+    - trigger_id: PLAN-COMPILE
+      description: Accepted intent needs an execution strategy.
+      cue_literals: [$plan, execution policy, implementation strategy, plan to execute]
+      cue_regexes: []
+      exclusions: [pure specification, one-shot implementation]
+    - trigger_id: PLAN-UNCERTAINTY
+      description: Material uncertainty changes the correct next action.
+      cue_literals: [probe, experiment, unknown route, stabilize first]
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: PLAN-REVISE
+      description: A prior policy needs a source-bound revision.
+      cue_literals: [revise this plan, improve this policy, continue planning]
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: PLAN-READINESS
+      description: Existing policy readiness is being judged.
+      cue_literals: [is this plan ready, policy ready, plan readiness]
+      cue_regexes: []
+      exclusions: []
+  routes:
+    - route_id: PLAN-CLEAR
+      description: Compile a clear-system procedure policy.
+      aliases: [clear]
+      terminal: "yes"
+    - route_id: PLAN-COMPLICATED
+      description: Compile analysis/specialist evidence before execution.
+      aliases: [complicated]
+      terminal: "yes"
+    - route_id: PLAN-COMPLEX
+      description: Compile probes and evidence-conditioned adaptation.
+      aliases: [complex]
+      terminal: "yes"
+    - route_id: PLAN-CHAOTIC
+      description: Compile stabilization and reclassification first.
+      aliases: [chaotic]
+      terminal: "yes"
+    - route_id: PLAN-RETURN-SPEC
+      description: Return semantic contradiction or missing authority to spec.
+      aliases: [return_to_spec]
+      terminal: "yes"
+    - route_id: PLAN-RETURN-GRILL
+      description: Return unresolved user judgment.
+      aliases: [return_to_grill]
+      terminal: "yes"
+    - route_id: PLAN-READY
+      description: Current EPG and state pass readiness.
+      aliases: [ready]
+      terminal: "yes"
+    - route_id: PLAN-STALE
+      description: Source/artifact binding invalidated the policy.
+      aliases: [stale]
+      terminal: "yes"
+    - route_id: PLAN-BLOCKED
+      description: Required authority/evidence/tooling is unavailable.
+      aliases: [blocked]
+      terminal: "yes"
+  clauses:
+    - clause_id: PLAN-AUTHORITY-001
+      trigger_refs: [PLAN-COMPILE, PLAN-REVISE]
+      expected_routes: [PLAN-CLEAR, PLAN-COMPLICATED, PLAN-COMPLEX, PLAN-CHAOTIC, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-STALE, PLAN-BLOCKED]
+      prohibited_routes: []
+      required_artifacts: [source binding, accepted semantic constraints]
+      success_signals: [semantic drift absent or authorized]
+      failure_signals: [accepted architecture silently redesigned]
+      rationale: Planning compiles strategy under source authority.
+    - clause_id: PLAN-BELIEF-001
+      trigger_refs: [PLAN-UNCERTAINTY, PLAN-COMPILE]
+      expected_routes: [PLAN-CLEAR, PLAN-COMPLICATED, PLAN-COMPLEX, PLAN-CHAOTIC, PLAN-BLOCKED]
+      prohibited_routes: []
+      required_artifacts: [facts, critical unknowns, observations]
+      success_signals: [every critical unknown observable or blocked]
+      failure_signals: [assumption converted to invisible certainty]
+      rationale: Strategy must remain evidence-responsive.
+    - clause_id: PLAN-POLICY-001
+      trigger_refs: [PLAN-COMPILE, PLAN-REVISE]
+      expected_routes: [PLAN-CLEAR, PLAN-COMPLICATED, PLAN-COMPLEX, PLAN-CHAOTIC, PLAN-BLOCKED]
+      prohibited_routes: []
+      required_artifacts: [EPG-v1, safety shield, potential, terminal states]
+      success_signals: [every modeled outcome has a lawful successor]
+      failure_signals: [speculative full task list with no observation branches]
+      rationale: A ready plan is a closed execution policy.
+    - clause_id: PLAN-READINESS-001
+      trigger_refs: [PLAN-READINESS, PLAN-REVISE]
+      expected_routes: [PLAN-READY, PLAN-STALE, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCKED, PLAN-CLEAR, PLAN-COMPLICATED, PLAN-COMPLEX, PLAN-CHAOTIC]
+      prohibited_routes: []
+      required_artifacts: [EPG validation, source-current evidence, runtime handoff]
+      success_signals: [derived policy readiness]
+      failure_signals: [self-declared convergence]
+      rationale: Readiness is lawful closed-loop execution, not document stasis.
+  instrumentation:
+    decision_receipt: required_for_material_routes
+    rationale: Regime, branch, shield, and authority returns are material decisions.
