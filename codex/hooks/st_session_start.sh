@@ -37,7 +37,8 @@ if [ -n "${resolve_bin:-}" ]; then
     fi
   fi
 elif c3_root=$(find_c3_root "$PWD" || true); [ -n "${c3_root:-}" ]; then
-  resolve_context="Active C³ state exists at $c3_root/.ledger/c3/state.json, but resolve-c3 is unavailable. Install with: brew install tkersey/tap/resolve-c3"
+  c3_state=$(c3_state_rel "$c3_root")
+  resolve_context="Active C³ state exists at $c3_root/$c3_state, but resolve-c3 is unavailable. Install with: brew install tkersey/tap/resolve-c3"
   contexts="${contexts}${resolve_context}
 "
   messages="${messages}Active C³ state found without resolve-c3. "
@@ -47,7 +48,8 @@ repo_root=$(find_st_root "$PWD" || true)
 if [ -n "${repo_root:-}" ] && [ -n "${session_id:-}" ]; then
   st_bin=$(resolve_st_bin "guard-session-start" || true)
   if [ -n "${st_bin:-}" ]; then
-    update_plan_payload=$(cd "$repo_root" && "$st_bin" guard-session-start --file .step/st-plan.jsonl --session-id "$session_id" 2>/dev/null || true)
+    plan_rel=$(st_plan_rel "$repo_root")
+    update_plan_payload=$(cd "$repo_root" && "$st_bin" guard-session-start --file "$plan_rel" --session-id "$session_id" 2>/dev/null || true)
     if [ -n "${update_plan_payload:-}" ]; then
       plan_file=$(st_plan_file "$repo_root")
       st_context=$(cat <<EOF

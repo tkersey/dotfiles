@@ -33,7 +33,7 @@ Those are controller-derived.
 State root:
 
 ```text
-.ledger/c3/
+.ledger/resolve/c3/
 ```
 
 Local-exclude by default unless the user deliberately versions campaign evidence.

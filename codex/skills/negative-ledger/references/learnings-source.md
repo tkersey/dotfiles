@@ -3,7 +3,7 @@
 `$learnings` supplies historical candidate evidence. The negative ledger owns failed-hypothesis semantics and operational route state in:
 
 ```text
-.ledger/negative-ledger.jsonl
+.ledger/negative-ledger/events.jsonl
 ```
 
 ## Read Path

@@ -45,7 +45,7 @@ repair intake/graph/proof contract
 recompile
 ```
 
-Do not route around debt with another `.step/*-st-plan.jsonl`.
+Do not route around debt with another `.ledger/st/*-st-plan.jsonl`.
 
 ## Projection
 

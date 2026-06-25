@@ -138,6 +138,24 @@ def main() -> int:
         assert packet["verdict"] == "pass"
         assert packet["semantic_frontier"]["selected_rows"] == ["VMX-row-002"]
 
+        default_result = subprocess.run(
+            [
+                sys.executable,
+                str(TOOLS / "actuation_checkpoint.py"),
+                "write",
+                "--input",
+                str(ASSETS / "actuation-slice.example.json"),
+            ],
+            cwd=temp,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=20,
+        )
+        assert default_result.returncode == 0, default_result.stdout + default_result.stderr
+        assert (temp / ".ledger" / "actuating" / "ACT-example-001" / "current.json").exists()
+
     print("actuating frontier tools: PASS")
     return 0
 

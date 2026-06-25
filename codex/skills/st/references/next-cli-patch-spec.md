@@ -17,8 +17,8 @@ Therefore, reduce the graph path to one obvious intake artifact and one obvious 
 ## Add Commands
 
 ```bash
-st intake plan --file .step/st-plan.jsonl --source <plan.md> --out .step/st-intake.md
-st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate implementation-ready
+st intake plan --file .ledger/st/st-plan.jsonl --source <plan.md> --out .ledger/st/intake/st-intake.md
+st intake apply --file .ledger/st/st-plan.jsonl --input .ledger/st/intake/st-intake.md --gate implementation-ready
 ```
 
 ## Intake Markdown
@@ -38,7 +38,7 @@ st intake apply --file .step/st-plan.jsonl --input .step/st-intake.md --gate imp
 
 `st intake apply` should parse and normalize it into durable `$st` graph state.
 
-Intake must target the canonical `.step/st-plan.jsonl`. If the canonical graph has legacy debt, the CLI should either repair/audit that graph or fail with diagnostics; it must not encourage agents to create alternate durable `.step/*-st-plan.jsonl` sidecars to route around the problem.
+Intake must target the canonical `.ledger/st/st-plan.jsonl`. If the canonical graph has legacy debt, the CLI should either repair/audit that graph or fail with diagnostics; it must not encourage agents to create alternate durable `.ledger/st/*-st-plan.jsonl` sidecars to route around the problem.
 
 ## Graph Debt Warnings
 
@@ -65,7 +65,7 @@ Suggested warning payload:
 Preferred behavior:
 
 ```bash
-st import-proposed-plan --mode graph-intake --input .step/proposed-plan.md
+st import-proposed-plan --mode graph-intake --input .ledger/plan/proposed-plan.md
 ```
 
 or emit:
@@ -73,8 +73,8 @@ or emit:
 ```text
 Imported as draft rows only.
 For material plans, run:
-  st intake plan --source .step/proposed-plan.md --out .step/st-intake.md
-  st intake apply --input .step/st-intake.md --gate implementation-ready
+  st intake plan --source .ledger/plan/proposed-plan.md --out .ledger/st/intake/st-intake.md
+  st intake apply --input .ledger/st/intake/st-intake.md --gate implementation-ready
 ```
 
 ## CLI Shape Compatibility
@@ -83,7 +83,7 @@ Improve or alias common old-style invocations:
 
 ```bash
 st set-status st-001 in_progress
-st set-proof st-001 pass "zig build test-st" .step/proof.log
+st set-proof st-001 pass "zig build test-st" .ledger/proof/st/proof.log
 ```
 
 If not supported, emit precise "did you mean" diagnostics with long-option form.

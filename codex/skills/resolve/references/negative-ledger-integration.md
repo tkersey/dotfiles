@@ -18,4 +18,4 @@ Operational source:
 ledger map --route "<selected-route>" --cluster "<cluster-id>" --artifact "<artifact-state-id>"
 ```
 
-Use `.ledger/negative-ledger.jsonl` through the `ledger` CLI. Do not treat prose or `.learnings.jsonl` recall as an operational route gate.
+Use `.ledger/negative-ledger/events.jsonl` through the `ledger` CLI. Do not treat prose or `.learnings.jsonl` recall as an operational route gate.

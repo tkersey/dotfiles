@@ -13,9 +13,9 @@
       "st_plan_fingerprint": "sha256:plan"
     },
     "task_control": {
-      "plan_ref": ".step/st-plan.jsonl",
+      "plan_ref": ".ledger/st/st-plan.jsonl",
       "gcr_id": "GCR-example-001",
-      "gcr_ref": ".step/proof/gcr-example.json",
+      "gcr_ref": ".ledger/proof/gcr-example.json",
       "gcr_seq": 42,
       "gcr_current": "yes",
       "execution_allowed": "yes",
@@ -28,11 +28,11 @@
     },
     "semantic_control": {
       "semantic_route_refs": [
-        ".step/actuating/routes/zsr.json"
+        ".ledger/actuating/routes/zsr.json"
       ],
       "owner": "LoadedSessionImage.validate",
       "invariant": "A loaded session image must bind continuation fields to one authoritative state.",
-      "matrix_ref": ".step/actuating/ACT-example-001/validation-matrix.json",
+      "matrix_ref": ".ledger/actuating/ACT-example-001/validation-matrix.json",
       "selected_rows": [
         "VMX-row-002"
       ],
@@ -98,12 +98,12 @@
       }
     },
     "realization": {
-      "fixed_point_slice_ref": ".step/actuating/ACT-example-001/fps.json",
+      "fixed_point_slice_ref": ".ledger/actuating/ACT-example-001/fps.json",
       "fixed_point_result_ref": null,
       "status": "prepared"
     },
     "proof": {
-      "proof_dag_ref": ".step/actuating/ACT-example-001/proof-dag.json",
+      "proof_dag_ref": ".ledger/actuating/ACT-example-001/proof-dag.json",
       "focused_obligations": [
         "proof-loaded-session-row-002"
       ],
@@ -128,7 +128,7 @@
         "active_clauses": [
           "ZIG-ROUTER-001"
         ],
-        "route_ref": ".step/actuating/routes/zsr.json"
+        "route_ref": ".ledger/actuating/routes/zsr.json"
       }
     ],
     "state": "prepared",

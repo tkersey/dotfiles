@@ -51,7 +51,7 @@
         {
           "observation_id": "OBS-ROUTE",
           "outcome": "route_a",
-          "evidence_ref": ".step/policy/evidence/cache-comparison.json"
+          "evidence_ref": ".ledger/plan/evidence/cache-comparison.json"
         }
       ],
       "potential_after": {
@@ -66,7 +66,7 @@
         "PROOF-PROBE"
       ],
       "evidence_refs": [
-        ".step/policy/evidence/cache-comparison.json"
+        ".ledger/plan/evidence/cache-comparison.json"
       ],
       "status": "pass"
     },
@@ -94,7 +94,7 @@
     },
     "result": "success",
     "evidence_refs": [
-      ".step/policy/evidence/cache-comparison.json"
+      ".ledger/plan/evidence/cache-comparison.json"
     ]
   }
 }

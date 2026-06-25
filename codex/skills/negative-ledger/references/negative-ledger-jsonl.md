@@ -3,7 +3,7 @@
 ## Canonical Operational Store
 
 ```text
-<repo>/.ledger/negative-ledger.jsonl
+<repo>/.ledger/negative-ledger/events.jsonl
 ```
 
 Use the `ledger` CLI. Do not hand-edit the store and do not treat `.learnings.jsonl` as the operational negative-ledger authority.
@@ -29,7 +29,7 @@ ledger status --id NEG-000001 --to stale --reason "..."
 ## Operational Versus Memory Authority
 
 ```text
-.ledger/negative-ledger.jsonl
+.ledger/negative-ledger/events.jsonl
   decides current route state
 
 extensions/negative-ledger/notes/*.md

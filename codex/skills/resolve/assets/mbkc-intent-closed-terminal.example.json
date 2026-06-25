@@ -53,9 +53,9 @@
     },
     "realization": {
       "selected_design_id": "DESIGN-1",
-      "manifest_ref": ".ledger/c3/realization/manifest.json",
-      "construct_map_ref": ".ledger/c3/realization/construct-map.json",
-      "surface_ref": ".ledger/c3/realization/surface.json",
+      "manifest_ref": ".ledger/resolve/c3/realization/manifest.json",
+      "construct_map_ref": ".ledger/resolve/c3/realization/construct-map.json",
+      "surface_ref": ".ledger/resolve/c3/realization/surface.json",
       "verified": "yes",
       "new_observations": []
     },
@@ -78,7 +78,7 @@
       "all_laws_covered": "yes",
       "wound_specific_tests": [],
       "unmapped_proof_actions": [],
-      "basis_ref": ".ledger/c3/proof/basis.json"
+      "basis_ref": ".ledger/resolve/c3/proof/basis.json"
     },
     "terminal_holdout": {
       "novel_in_horizon_counterexamples": 0,

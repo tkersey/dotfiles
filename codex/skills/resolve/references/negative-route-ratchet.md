@@ -6,7 +6,7 @@ Before repeating a route in a hot cluster, check active negative evidence.
 negative_route_gate:
   query_or_map: yes | no
   ledger_cli: ledger
-  store: .ledger/negative-ledger.jsonl
+  store: .ledger/negative-ledger/events.jsonl
   command: "ledger map --route ... --cluster ... --artifact ..."
   exit_code: 0 | 2 | 3
   ledger_available: yes | no

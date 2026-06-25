@@ -5,7 +5,7 @@
 Suggested path:
 
 ```text
-.step/proof/resolve/<resolve-run-id>/review-wave-<n>.route.yml
+.ledger/proof/resolve/<resolve-run-id>/review-wave-<n>.route.yml
 ```
 
 Shape includes:

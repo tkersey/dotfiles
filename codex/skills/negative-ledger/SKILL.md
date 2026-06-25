@@ -1,6 +1,6 @@
 ---
 name: negative-ledger
-description: "Durably capture, query, map, transition, compact, export, and hand off witnessed negative evidence in repo-local `.ledger/negative-ledger.jsonl`; selectively admit full ledger projections to Codex memory through memory-source-notes. Use for failed semantic routes, benchmark regressions, no-effect attempts, reverts, route exclusions, reopening, or search-space pruning."
+description: "Durably capture, query, map, transition, compact, export, and hand off witnessed negative evidence in repo-local `.ledger/negative-ledger/events.jsonl`; selectively admit full ledger projections to Codex memory through memory-source-notes. Use for failed semantic routes, benchmark regressions, no-effect attempts, reverts, route exclusions, reopening, or search-space pruning."
 metadata:
   version: "6.0.0"
 ---
@@ -14,7 +14,7 @@ Prune semantic search space without turning stale failures into permanent dogma.
 The operational truth is:
 
 ```text
-<repo>/.ledger/negative-ledger.jsonl
+<repo>/.ledger/negative-ledger/events.jsonl
 ```
 
 The memory-admission channel is:
@@ -41,7 +41,7 @@ Never use memory notes as the operational route gate. For accepted admission, lo
 ## Canonical Store and CLI
 
 ```text
-.ledger/negative-ledger.jsonl
+.ledger/negative-ledger/events.jsonl
 ledger
 ```
 
@@ -197,7 +197,7 @@ Report both layers separately.
 - Do not block from fuzzy matches.
 - Do not use stale benchmarks without current applicability reasoning.
 - Do not treat absence of a ledger entry as novelty proof.
-- Do not hand-edit `.ledger/negative-ledger.jsonl`.
+- Do not hand-edit `.ledger/negative-ledger/events.jsonl`.
 - Do not let memory notes outrank the repo-local ledger.
 - Do not write compiled memory directly.
 - Do not publish incomplete projections to Phase 2.

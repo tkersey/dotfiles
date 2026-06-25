@@ -7,14 +7,14 @@ description: "Read-only specialist for mapping repo-local ledger records, learni
 
 ## Mission
 
-Prevent repeated semantic dead ends by mapping canonical `.ledger/negative-ledger.jsonl` evidence against the current artifact state.
+Prevent repeated semantic dead ends by mapping canonical `.ledger/negative-ledger/events.jsonl` evidence against the current artifact state.
 
 This specialist is read-only. It never captures ledger events, changes statuses, or writes memory-source notes.
 
 ## Allowed Reads
 
 - `ledger doctor`, `query`, `map`, `handoff`, `show`, and `export`;
-- `.ledger/negative-ledger.jsonl` through the CLI;
+- `.ledger/negative-ledger/events.jsonl` through the CLI;
 - selected `.learnings.jsonl` hits as historical candidate evidence;
 - relevant commits, reverts, reviews, benchmarks, tests, traces, and diffs;
 - the current changed surface needed to judge applicability.

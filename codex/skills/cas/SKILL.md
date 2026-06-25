@@ -395,8 +395,8 @@ run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
    - Treat `failureCode` as authoritative. CAS never silently falls back to native `codex review`; callers that want a temporary fallback must do it explicitly at their own layer.
 
 4. For swarm-hardening runs, treat `$st` as the durable source of truth before any worker starts.
-   - `st import-orchplan --file .step/st-plan.jsonl --input .step/orchplan.yaml`
-   - `st claim --file .step/st-plan.jsonl --wave w1 --executor codex`
+   - `st import-orchplan --file .ledger/st/st-plan.jsonl --input .ledger/st/orchplan.yaml`
+   - `st claim --file .ledger/st/st-plan.jsonl --wave w1 --executor codex`
    - CAS probes the wave; it does not replace the durable claim ledger.
 
 5. Enforce handshake assumptions when diagnosing failures.

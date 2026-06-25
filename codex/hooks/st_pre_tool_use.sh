@@ -15,7 +15,8 @@ if [ -n "${resolve_bin:-}" ]; then
     exit 0
   fi
 elif c3_root=$(find_c3_root "$PWD" || true); [ -n "${c3_root:-}" ]; then
-  reason=$(printf 'Active C³ state exists at %s/.ledger/c3/state.json, but resolve-c3 is unavailable.' "$c3_root")
+  c3_state=$(c3_state_rel "$c3_root")
+  reason=$(printf 'Active C³ state exists at %s/%s, but resolve-c3 is unavailable.' "$c3_root" "$c3_state")
   jq -n --arg reason "$reason" '{continue: true, decision: "block", reason: $reason}'
   exit 0
 fi
@@ -40,10 +41,12 @@ st_bin=$(resolve_st_bin "guard-pre-tool-use" || true)
   exit 0
 }
 
+plan_rel=$(st_plan_rel "$repo_root")
+
 if [ -n "${transcript_path:-}" ]; then
-  output=$(cd "$repo_root" && "$st_bin" guard-pre-tool-use --file .step/st-plan.jsonl --session-id "$session_id" --transcript-path "$transcript_path" 2>/dev/null || true)
+  output=$(cd "$repo_root" && "$st_bin" guard-pre-tool-use --file "$plan_rel" --session-id "$session_id" --transcript-path "$transcript_path" 2>/dev/null || true)
 else
-  output=$(cd "$repo_root" && "$st_bin" guard-pre-tool-use --file .step/st-plan.jsonl --session-id "$session_id" 2>/dev/null || true)
+  output=$(cd "$repo_root" && "$st_bin" guard-pre-tool-use --file "$plan_rel" --session-id "$session_id" 2>/dev/null || true)
 fi
 
 status=$(printf '%s' "$output" | jq -r '.status // "allow"' 2>/dev/null || printf allow)
