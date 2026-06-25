@@ -1,8 +1,8 @@
 ---
 name: plan
-description: "Compile accepted intent into a source-bound execution policy and an immutable `plan_id`, ready for import into the multi-plan `$st` workspace under `.ledger/st/`. Use for `$plan`, spec-to-execution lowering, adaptive probes, stabilization plans, or plan revision. Preserve semantic authority; never mutate the repository or silently select an existing `$st` plan."
+description: "Compile accepted intent into a source-bound execution policy and immutable `plan_id`, then exhaustively refine it to a policy-synthesis fixed point before handoff to the multi-plan `$st` workspace under `.ledger/st/`. Use for `$plan`, spec-to-execution lowering, adaptive probes, stabilization plans, or plan revision. Preserve semantic authority; never mutate the repository or silently select an existing `$st` plan."
 metadata:
-  version: "4.0.0"
+  version: "4.1.0"
   activation_cost: medium
   default_depth: balanced
 ---
@@ -12,7 +12,8 @@ metadata:
 ## Mission
 
 Compile intent into an execution policy that can inhabit one independent `$st`
-plan namespace.
+plan namespace, then refine that policy until no material execution improvement
+remains.
 
 ```text
 source contract
@@ -20,8 +21,23 @@ source contract
 -> belief/unknowns
 -> guarded actions
 -> proof and rollback
+-> policy synthesis fixed point
 -> execution policy
 -> `$st plan create/import`
+```
+
+The best old `$plan` behavior is still mandatory:
+
+```text
+iterate until exhausted
+```
+
+The bad old artifact ceremony is not:
+
+```text
+no public iteration footers
+no self-reported rewrite ratios
+no synthetic round logs as readiness proof
 ```
 
 ## Artifact root
@@ -37,6 +53,7 @@ Recommended:
 ```text
 .ledger/plan/<plan-id>/policy.json
 .ledger/plan/<plan-id>/projection.md
+.ledger/plan/<plan-id>/synthesis-receipt.json
 .ledger/plan/<plan-id>/revisions/
 ```
 
@@ -70,7 +87,8 @@ $spec-pipeline
   semantics, scope, non-goals, architecture, compatibility, proof bar
 
 $plan
-  execution policy, evidence gates, bounded actions, rollback, plan identity
+  execution policy, evidence gates, bounded actions, rollback, plan identity,
+  exhaustive policy refinement
 
 $st
   durable graph, plan namespace, scheduling, resource coordination, proof state
@@ -93,6 +111,9 @@ adaptive
 stabilization
   compile containment and observability before normal work
 ```
+
+Regime classification is revisited during synthesis. If a lens proves the
+chosen regime is wrong, revise the policy or return to the source authority.
 
 ## Execution policy
 
@@ -129,6 +150,122 @@ repo:all
 
 Unknown scope becomes `repo:all / exclusive`.
 
+## Policy synthesis fixed point
+
+Before emitting a plan, run an internal exhaustive refinement loop.
+
+A complete sweep evaluates these lenses:
+
+```text
+source fidelity
+semantic authority and non-goals
+system regime classification
+facts, unknowns, and observation coverage
+action and resource-boundary completeness
+policy closure over reachable states
+safety, rollback, and irreversible-risk control
+proof and terminal-state sufficiency
+simplicity, surface minimization, and `$st` compileability
+```
+
+Rules:
+
+- No fixed iteration cap.
+- A material improvement restarts the sweep from the earliest affected lens.
+- A material blocker routes to `return_to_spec`, `return_to_grill`, or `blocked`.
+- Stop only after one complete zero-material-delta sweep.
+- Then run an independent fresh-eyes pass.
+- Emit only the final plan, not the draft history.
+
+See [policy-synthesis-fixed-point.md](references/policy-synthesis-fixed-point.md).
+
+## Mandatory radical candidate
+
+Before finalization, run one radical creativity pass.
+
+Question:
+
+```text
+What is the single smartest, most radically innovative, accretive, useful,
+compelling, and execution-improving change available to this plan?
+```
+
+The pass must produce a candidate or explicitly say `none`.
+
+Then classify the candidate:
+
+```text
+adopt
+  improves execution without violating source authority or minimality
+
+reject
+  clever but unsafe, unnecessary, source-expanding, or surface-increasing
+
+defer
+  promising but outside the current execution horizon; record trigger
+
+return_to_spec
+  changes semantics, scope, architecture, compatibility, authority, or proof bar
+
+none
+  no non-obvious candidate survived generation
+```
+
+Creativity is mandatory.
+
+Accretion is not.
+
+Never add content merely because finalization is near. A rejected radical
+candidate is a successful creativity pass when the rejection is evidence-based.
+
+## Policy synthesis receipt
+
+Emit or persist one compact `PSR-v1` receipt:
+
+```yaml
+policy_synthesis_receipt:
+  receipt_version: PSR-v1
+  plan_id:
+  revision:
+  source_digest:
+  initial_policy_digest:
+  final_policy_digest:
+  passes:
+    - pass_id:
+      lens:
+      candidate_digest_before:
+      candidate_digest_after:
+      findings: []
+      material_changes: []
+      disposition:
+        changed |
+        clean |
+        blocked |
+        return_to_spec |
+        return_to_grill
+  radical_candidate:
+    candidate:
+    disposition:
+      adopt |
+      reject |
+      defer |
+      return_to_spec |
+      none
+    reason:
+    affected_refs: []
+  convergence:
+    complete_clean_sweep:
+    independent_press_pass_clean:
+    unresolved_errors:
+    untreated_material_risks:
+    improvements_exhausted:
+```
+
+The receipt proves synthesis happened; it does not expose private reasoning.
+
+The final `<proposed_plan>` should include a concise `Policy Synthesis Receipt`
+section or a reference to the persisted receipt.
+
 ## Multi-plan handoff
 
 Create/import explicitly:
@@ -153,6 +290,8 @@ st_handoff:
   plan_id:
   policy_ref:
   policy_digest:
+  synthesis_receipt_ref:
+  synthesis_receipt_digest:
   target_branch:
   proposed_resources: []
   mutation_allowed: no
@@ -190,6 +329,9 @@ unknowns are gated
 proof/rollback complete
 no semantic drift
 target branch explicit
+policy synthesis fixed point reached
+radical candidate evaluated
+independent press pass clean
 ```
 
 Readiness does not mean execution is safe.
@@ -214,10 +356,40 @@ Policy State and Unknowns
 Actions and Resource Predictions
 Decision/Observation Rules
 Proof, Rollback, and Invalidators
+Policy Synthesis Receipt
 `$st` Workspace Handoff
 ```
 
 Do not include internal iteration logs.
+
+The synthesis receipt should summarize the fixed point in compact form:
+
+```text
+lenses swept
+material changes accepted
+radical candidate disposition
+clean sweep result
+fresh-eyes result
+remaining blockers
+```
+
+## Fast readiness response
+
+When the user asks only whether an existing plan is ready:
+
+- validate source currentness;
+- validate policy structure;
+- validate PSR-v1 convergence;
+- validate radical candidate disposition;
+- validate `$st` handoff readiness.
+
+If all pass and no revision is requested, reply exactly:
+
+```text
+Plan is ready.
+```
+
+Do not use self-attested readiness without PSR/source evidence.
 
 ## Hard rules
 
@@ -228,3 +400,8 @@ Do not include internal iteration logs.
 - Never create cross-plan edges outside `$st`.
 - Never grant mutation authority.
 - Unknown scope means exclusive scope.
+- Exhaustive policy synthesis is mandatory before emission.
+- No fixed iteration cap.
+- Do not expose full internal iteration logs.
+- Mandatory radical creativity candidate; optional adoption.
+- No arbitrary addition after convergence.
