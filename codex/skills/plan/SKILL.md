@@ -218,6 +218,10 @@ Accretion is not.
 Never add content merely because finalization is near. A rejected radical
 candidate is a successful creativity pass when the rejection is evidence-based.
 
+If the candidate is adopted, apply it and restart synthesis from the earliest
+affected lens. Final readiness requires the post-adoption policy to pass the
+clean sweep and independent press pass.
+
 ## Policy synthesis receipt
 
 Emit or persist one compact `PSR-v1` receipt:
@@ -383,7 +387,8 @@ When the user asks only whether an existing plan is ready:
 - validate radical candidate disposition;
 - validate `$st` handoff readiness.
 
-If all pass and no revision is requested, reply exactly:
+If all pass and no revision is requested, include this readiness sentence in the
+final response:
 
 ```text
 Plan is ready.

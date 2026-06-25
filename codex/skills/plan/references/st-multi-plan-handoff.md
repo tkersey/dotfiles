@@ -7,6 +7,8 @@ st_handoff:
   plan_alias:
   policy_ref:
   policy_digest:
+  synthesis_receipt_ref:
+  synthesis_receipt_digest:
   source_digest:
   target_branch:
   resource_predictions:
