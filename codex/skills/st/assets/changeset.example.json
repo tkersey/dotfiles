@@ -1,0 +1,49 @@
+{
+  "change_set": {
+    "change_set_version": "CS-v1",
+    "change_set_id": "CS-auth-001",
+    "workspace_id": "workspace-example",
+    "workspace_sequence": 42,
+    "plan_id": "auth-hardening",
+    "plan_sequence": 11,
+    "item_ids": [
+      "st-001",
+      "st-002"
+    ],
+    "claim_id": "claim-auth-001",
+    "fencing_token": 109,
+    "base_branch": "feature/shared",
+    "base_head": "abc123",
+    "branch_epoch": 7,
+    "worktree_ref": ".ledger/st/worktrees/claim-auth-001.json",
+    "changed_paths": [
+      "src/auth.zig",
+      "test/auth_test.zig"
+    ],
+    "resource_roots": [
+      {
+        "root": "path:src/auth.zig",
+        "mode": "write"
+      },
+      {
+        "root": "path:test/auth_test.zig",
+        "mode": "write"
+      }
+    ],
+    "patch_digest": "sha256:9c95db323a02a12a1fcc29bfa78b0c9fb55082d93796c873b51e763eb0cc9a55",
+    "resulting_tree_digest": "sha256:52b2e2044861d9af086b14dd5f25529f4cea4e413688523fed6b661fea062ae7",
+    "focused_proof_refs": [
+      ".ledger/st/proof/auth-hardening/proof-auth-focused.json"
+    ],
+    "integration_proof_required": [
+      "zig build check --summary all"
+    ],
+    "status": "sealed",
+    "lineage": {
+      "workspace_ref": ".ledger/st/workspace.jsonl@42",
+      "plan_ref": ".ledger/st/plans/auth-hardening/plan.jsonl@11",
+      "claim_ref": ".ledger/st/runtime/claims.jsonl#claim-auth-001",
+      "gcr_ref": ".ledger/st/plans/auth-hardening/gcr/GCR-auth-001.json"
+    }
+  }
+}

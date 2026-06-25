@@ -2,10 +2,9 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Plan"
-  short_description: "Compile intent into an observable execution policy"
+  short_description: "Compile intent into a named multi-plan execution policy"
   default_prompt: >-
-    Use $plan to compile accepted intent into one source-bound EPG-v1:
-    explicit belief state, critical unknowns, observations, guarded actions,
-    safety shield, progress potential, terminal states, and a short commitment
-    horizon for $st/$actuating. Do not mutate the repository or pretend an
-    uncertain future is a fixed task list.
+    Use $plan to compile accepted intent into a source-bound execution policy
+    with an immutable plan_id, explicit resource predictions, proof, rollback,
+    and a handoff to the .ledger/st workspace. Never infer an existing plan or
+    grant mutation authority.

@@ -2,10 +2,9 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Fixed-Point Driver"
-  short_description: "Realize one selected action and report actual evidence"
+  short_description: "Realize one fenced workspace action"
   default_prompt: >-
-    Use $fixed-point-driver only after a route/action is selected. Validate
-    FPS-v1 and any EPG policy lineage, realize the named owner/invariant/rows
-    inside the patch boundary and surface budget, run focused proof, emit
-    FPSR-v1 with actual observations, and return immediately when evidence
-    changes the policy, owner, route, class, scope, or proof obligation.
+    Use $fixed-point-driver only with an explicit plan, GCR-v2, held claim,
+    current fencing token, branch epoch, isolated worktree, and resource
+    boundary. Realize one selected action, run focused proof, emit FPSR-v2 and a
+    change-set handoff, and stop on new observations or resource expansion.

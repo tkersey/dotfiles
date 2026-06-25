@@ -1,0 +1,133 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: st
+    kind: workflow
+    source_fingerprint: st-v2-multi-plan-ledger-workspace
+  triggers:
+    - trigger_id: ST-WORKSPACE
+      description: Repository work needs durable one- or multi-plan graph state.
+      cue_literals:
+        - $st
+        - durable graph
+        - multiple plans
+        - two coding agents
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: ST-CLAIM
+      description: A session needs executable mutation authority.
+      cue_literals:
+        - claim work
+        - compile aperture
+        - execution_allowed
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: ST-INTEGRATE
+      description: A worker change set must enter the target branch.
+      cue_literals:
+        - integrate change set
+        - target branch
+        - branch epoch
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: ST-MIGRATE
+      description: Legacy `.step` state must move to `.ledger/st`.
+      cue_literals:
+        - migrate st
+        - .step/st-plan.jsonl
+        - .ledger/st
+      cue_regexes: []
+      exclusions: []
+  routes:
+    - route_id: ST-PLAN-LOCAL
+      description: Perform a plan-local graph operation.
+      aliases: [plan-local]
+      terminal: "no"
+    - route_id: ST-WORKSPACE-ALLOCATE
+      description: Allocate conflict-free work across plans and agents.
+      aliases: [workspace-aperture]
+      terminal: "no"
+    - route_id: ST-CLAIM-GRANT
+      description: Grant a fenced resource claim.
+      aliases: [claim]
+      terminal: "no"
+    - route_id: ST-CLAIM-DENY
+      description: Deny mutation because coordination state is unsafe.
+      aliases: [deny]
+      terminal: "yes"
+    - route_id: ST-INTEGRATE
+      description: Serialize a change set into the target branch.
+      aliases: [integrate]
+      terminal: "yes"
+    - route_id: ST-MIGRATE
+      description: Atomically migrate legacy state.
+      aliases: [migrate]
+      terminal: "yes"
+    - route_id: ST-BLOCK
+      description: Stop on stale or unavailable authority.
+      aliases: [blocked]
+      terminal: "yes"
+  clauses:
+    - clause_id: ST-NAMESPACE-001
+      trigger_refs: [ST-WORKSPACE]
+      expected_routes:
+        - ST-PLAN-LOCAL
+        - ST-WORKSPACE-ALLOCATE
+        - ST-BLOCK
+      prohibited_routes: []
+      required_artifacts:
+        - STW-v1 workspace
+        - immutable plan ID
+      success_signals:
+        - plan-local graph features remain isolated
+      failure_signals:
+        - alternate unmanaged plan files
+      rationale: Multiple plans need namespaces, not unrelated stores.
+    - clause_id: ST-CLAIM-001
+      trigger_refs: [ST-CLAIM]
+      expected_routes:
+        - ST-CLAIM-GRANT
+        - ST-CLAIM-DENY
+        - ST-BLOCK
+      prohibited_routes: []
+      required_artifacts:
+        - WCL-v1 claim
+        - fencing token
+        - resource conflict result
+      success_signals:
+        - no conflicting held claims
+      failure_signals:
+        - optimistic concurrency from different plan IDs
+      rationale: Interference is workspace-global.
+    - clause_id: ST-INTEGRATE-001
+      trigger_refs: [ST-INTEGRATE]
+      expected_routes:
+        - ST-INTEGRATE
+        - ST-BLOCK
+      prohibited_routes: []
+      required_artifacts:
+        - CS-v1
+        - current branch epoch
+        - serialized integration authority
+      success_signals:
+        - target branch advances by compare-and-swap
+      failure_signals:
+        - worker directly pushes shared target branch
+      rationale: Filesystem isolation alone does not serialize Git state.
+    - clause_id: ST-ROOT-001
+      trigger_refs: [ST-WORKSPACE, ST-MIGRATE]
+      expected_routes:
+        - ST-MIGRATE
+        - ST-PLAN-LOCAL
+        - ST-BLOCK
+      prohibited_routes: []
+      required_artifacts:
+        - .ledger/st path
+      success_signals:
+        - no new writes under .step
+      failure_signals:
+        - sidecar artifact root
+      rationale: One artifact namespace prevents lifecycle fragmentation.
+  instrumentation:
+    decision_receipt: required_for_claim_and_integration
+    rationale: Allocation, denial, fencing, and integration are material decisions.

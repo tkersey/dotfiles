@@ -2,10 +2,10 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Actuating"
-  short_description: "Interpret one execution-policy horizon through GCR and ASL"
+  short_description: "Execute one fenced plan inside the multi-plan workspace"
   default_prompt: >-
-    Use $actuating as a closed-loop EPG interpreter. Validate the current
-    policy and state, select one EPD action, materialize only its commitment
-    horizon into canonical $st, require current GCR and policy-bound ASL/FPS
-    for mutation, record proof and ETR predicted-versus-observed evidence,
-    advance EPS atomically, and ship only from a proven success terminal.
+    Use $actuating for one explicit plan in .ledger/st. Bind the session, obtain
+    a conflict-free workspace claim and fencing token, require current GCR-v2,
+    realize only inside the claimed external worktree, record branch-epoch proof,
+    seal a change set, and let the serialized st integrator advance the target
+    branch.

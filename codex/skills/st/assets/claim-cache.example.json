@@ -1,0 +1,34 @@
+{
+  "workspace_claim": {
+    "claim_version": "WCL-v1",
+    "claim_id": "claim-cache-001",
+    "workspace_id": "workspace-example",
+    "workspace_sequence": 42,
+    "plan_id": "cache-redesign",
+    "plan_sequence": 9,
+    "session_id": "session-agent-b",
+    "executor": "codex-b",
+    "item_ids": [
+      "st-001"
+    ],
+    "resources": [
+      {
+        "root": "path:src/cache.zig",
+        "mode": "write"
+      },
+      {
+        "root": "path:test/cache_test.zig",
+        "mode": "write"
+      }
+    ],
+    "branch": "feature/shared",
+    "branch_epoch": 7,
+    "base_head": "abc123",
+    "claimed_at": "2026-06-25T12:00:30Z",
+    "lease_seconds": 900,
+    "lease_expires_at": "2026-06-25T12:15:30Z",
+    "heartbeat_at": "2026-06-25T12:05:30Z",
+    "fencing_token": 110,
+    "state": "held"
+  }
+}

@@ -1,8 +1,8 @@
 ---
 name: actuating
-description: "Closed-loop plan-to-PR execution controller. Use for `$actuating`, plan-to-PR, or executing EPG-v1 policies. Validate the current execution policy/state, select one EPD-v1 action, materialize only its commitment horizon into canonical `$st`, require a current GCR-v1 and prepared ASL-v1 for material mutation, realize through `$fixed-point-driver`, record ETR-v1 predicted-versus-observed evidence, advance policy state atomically, and repeat until a proven success terminal permits `$ship`. Never flatten dormant policy branches into tasks or degrade graph failure into prose mutation."
+description: "Plan-to-PR execution controller for one named plan inside the multi-plan `$st` workspace. Use for `$actuating`, implementing a material plan, resuming an actuation run, or driving one execution-policy action. Require explicit workspace, plan, session, claim, fencing token, branch epoch, and current GCR-v2. Workers produce fenced change sets; target-branch integration is serialized through `$st`."
 metadata:
-  version: "4.0.0"
+  version: "5.0.0"
   activation_cost: high
   default_depth: standard
 ---
@@ -11,555 +11,406 @@ metadata:
 
 ## Mission
 
-Interpret one bounded execution-policy tick at a time.
+Drive one plan through bounded, proof-carrying execution without conflicting
+with other plans or agents.
 
 ```text
-EPG-v1 + current EPS-v1
--> deterministic EPD-v1 selection
--> one commitment-horizon materialization
--> canonical `$st` graph
--> current GCR-v1
--> prepared ASL-v1
--> bounded FPS-v1 realization
--> focused proof and observations
--> ETR-v1
--> atomic next EPS-v1
--> repeat or terminal
+named plan
+-> session binding
+-> workspace allocation
+-> fenced claim
+-> GCR-v2
+-> bounded semantic/action slice
+-> isolated realization
+-> focused proof
+-> sealed change set
+-> serialized integration
+-> branch-epoch proof refresh
+-> delivery
 ```
 
-The hard invariant is:
+## Artifact root
+
+Persist actuation control under:
 
 ```text
-No material repository mutation without:
-  source-current EPG/EPS/EPD lineage
-  current executable GCR-v1
-  valid prepared ASL-v1
-  valid bounded FPS-v1
+.ledger/actuating/<run-id>/
 ```
 
-## Authority split
+References to plan/claim/proof remain authoritative at their owning paths under:
 
 ```text
-EPG-v1
-  strategy, invariants, belief model, observations, actions, policy, shield,
-  progress potential, terminal states
-
-EPS-v1
-  current evidence state and completed/failed action history
-
-EPD-v1
-  selected action or terminal; prediction and selection rationale
-
-$st / GCR-v1
-  durable task/proof graph, current commitment horizon, execution permission
-
-VMX-v1 / PDAG-v1 / ASL-v1
-  semantic frontier, proof frontier, route, mutation boundary, surface budget
-
-FPS-v1 / FPSR-v1
-  one selected bounded realization and its observed result
-
-ETR-v1
-  predicted-versus-observed transition evidence and next-state proposal
-
-$actuating
-  runtime orchestration, materialization, proof, transition, and delivery gate
+.ledger/st/
 ```
 
-No layer may silently override another layer's authority.
+Never create new actuation artifacts under `.step/`.
 
-## Modes
-
-### Policy runtime
-
-Default for EPG-v1 material work.
-
-Require:
-
-```text
-valid source-current EPG-v1
-valid current EPS-v1
-valid EPD-v1 selected from that exact state
-```
-
-### Legacy material plan
-
-Existing plan-to-PR work without EPG may continue through:
-
-```text
-plan -> `$st` -> GCR -> VMX/ASL -> FPS/FPSR -> proof -> `$ship`
-```
-
-Do not fabricate EPG history for an in-flight legacy run.
-
-### Graph repair
-
-Enter when graph compile/currentness/debt/projection fails.
-
-Allowed:
-
-```text
-read/search
-policy/state inspection
-st intake/graph/debt repair
-proof/frontier analysis
-```
-
-Forbidden:
-
-```text
-delivery mutation
-task completion
-policy success transition
-ship
-```
-
-### Simple bounded execution
-
-Allowed only for small work with no material policy/graph.
-
-A material EPG run may not silently fall back to simple or ledger mode.
-
-## 0. Pin the run
-
-Maintain `ASR-v4` or equivalent run state:
+## Required run identity
 
 ```yaml
-actuation_state:
-  run_version: ASR-v4
+actuation_run:
   run_id:
-  policy_ref:
-  policy_digest:
-  policy_state_ref:
-  current_decision_ref:
-  artifact_state:
-  st_plan_ref:
-  current_gcr_ref:
-  active_asl_ref:
-  fixed_point_result_refs: []
-  transition_receipts: []
-  proof_state:
-  ship_state:
+  workspace: .ledger/st
+  plan_id:
+  session_id:
+  executor:
+  target_branch:
+  actuation_root: .ledger/actuating/<run-id>
 ```
 
-After compaction, resume from durable EPG/EPS/GCR/ASL/proof state, not prose.
+One run controls one plan and one current session binding.
 
-## 1. Validate and select one action
+It may observe other plans through workspace receipts but may not mutate their
+graphs.
 
-```bash
-python3 codex/skills/plan/tools/execution_policy_gate.py policy.json
-
-python3 codex/skills/plan/tools/policy_select.py \
-  --policy policy.json \
-  --state state.json \
-  --out decision.json
-```
-
-EPD-v1 has no mutation authority.
-
-It records:
-
-```text
-eligible rules/actions
-shielded actions and reasons
-selected action or terminal
-expected effects and observations
-GCR/ASL requirements
-```
-
-## 2. Handle terminal decisions
-
-### success
-
-Do not ship solely because EPD selected success.
+## Capability gate
 
 Require:
 
 ```text
-terminal predicates satisfied in current EPS
-all referenced proof current
-no active action/materialization
-source and artifact state current
-canonical `$st` graph proof-complete
-all required ETRs valid
+st workspace_v1
+st workspace_claim_v1
+st fencing_token_v1
+st session_view_v1
+st changeset_v1
+st serialized_integration_v1
+st gcr_v2
 ```
 
-Then compute explicit PR mode and call `$ship`.
-
-### blocked
-
-Report the exact evidence, shield/controller reason, and required next authority.
-
-### return_to_spec
-
-Stop material execution and return to `$spec-pipeline`.
-
-### return_to_grill
-
-Stop and route the unresolved judgment to `$grill-me`.
-
-### rollback
-
-Execute only the policy-declared rollback. Repository-mutating rollback still requires GCR and ASL.
-
-## 3. Materialize only the commitment horizon
-
-For a selected action, compile semantic intake containing exact:
+If any required capability is unavailable:
 
 ```text
-policy ID/revision/digest
-state ID/digest
-decision ID
-selected action ID and kind
-owner and preconditions
-required prior actions
-mutation boundary and lock roots
-expected effects and observations
-proof obligations and rollback
+analysis, plan repair, and proof planning allowed
+material mutation and delivery forbidden
 ```
 
-Compatibility path:
+## Phase 1 — bind the plan and session
 
 ```bash
-st intake scaffold --source decision.json --out .ledger/st/intake/st-intake.md
-# Map EPD fields exactly; do not change policy semantics.
-st intake check \
-  --input .ledger/st/intake/st-intake.md \
+st session bind \
+  --workspace .ledger/st \
+  --session <session-id> \
+  --executor <executor-id> \
+  --plan <plan-id>
+```
+
+Do not infer the plan when multiple plans are active.
+
+## Phase 2 — compile current plan state
+
+For a healthy existing plan:
+
+```bash
+st graph audit \
+  --workspace .ledger/st \
+  --plan <plan-id> \
   --gate implementation-ready \
   --format json
-st intake normalize \
-  --input .ledger/st/intake/st-intake.md \
-  --out .ledger/st/intake/st-intake.normalized.md
-st intake apply \
-  --file .ledger/st/st-plan.jsonl \
-  --input .ledger/st/intake/st-intake.normalized.md \
-  --gate implementation-ready
-st compile aperture --file .ledger/st/st-plan.jsonl --limit 7
 ```
 
-Do not materialize dormant policy branches as ready or blocked tasks.
-
-See [execution-policy-runtime.md](references/execution-policy-runtime.md).
-
-## 4. Enforce GCR-v1
-
-A repository-mutating action requires a current CLI-emitted GCR proving:
+For a new plan, complete the `$st` intake path under:
 
 ```text
-implementation-ready graph
+.ledger/st/plans/<plan-id>/intake/
+```
+
+Plan-local graph readiness does not yet grant mutation.
+
+## Phase 3 — workspace allocation and claim
+
+Inspect global allocation:
+
+```bash
+st workspace aperture \
+  --workspace .ledger/st \
+  --executors <executor-id> \
+  --format json
+```
+
+Claim the selected work:
+
+```bash
+st claim \
+  --workspace .ledger/st \
+  --plan <plan-id> \
+  --session <session-id> \
+  --ids <ids> \
+  --lease-seconds 900
+```
+
+Record:
+
+```text
+claim ID
+fencing token
+workspace sequence
+plan sequence
+branch epoch
+resource set
+external worktree metadata ref
+```
+
+If claim is denied, do not “work around” it by narrowing paths in prose or
+opening another plan file.
+
+## Phase 4 — GCR-v2
+
+```bash
+st compile aperture \
+  --workspace .ledger/st \
+  --plan <plan-id> \
+  --session <session-id> \
+  --claim <claim-id> \
+  --limit 7
+```
+
+Material mutation requires:
+
+```text
 execution_allowed = yes
-selected tasks bound to current policy/state/decision/action
-no blocking unwaived graph debt
-proof obligations present
-projection current
+current workspace/plan sequence
+current branch epoch
+current held claim
+current fencing token
+no conflicting claim
+current session view
+no unwaived blocking debt
 ```
 
-Failure enters graph-repair mode.
+Validate exported GCR when needed:
 
-`update_plan` remains a projection, never policy or graph truth.
+```bash
+python3 codex/skills/st/tools/gcr_v2_gate.py gcr.json
+```
 
-## 5. Compile the semantic frontier
+`update_plan` remains projection only.
 
-Use VMX-v1 when the selected action touches a multidimensional invariant space:
+## Phase 5 — prepare one bounded slice
+
+The slice references:
 
 ```text
-parser/verifier behavior
-state loading/restoration
-versioned formats
-continuation/frame transitions
-multi-field acceptance predicates
-authority/proof binding
-repeated adjacent counterexamples
+workspace/plan/session
+claim and fencing
+GCR-v2
+selected task IDs
+selected execution-policy action or semantic route
+owner and invariant
+patch/resource boundary
+proof obligations
+stop/new-observation conditions
 ```
 
-A new semantic row updates the policy/frontier before another patch.
+No slice may widen the claim.
+
+A wider boundary requires:
+
+```text
+release or amend claim through `$st`
+re-run conflict analysis
+obtain new fencing authority
+compile a new GCR-v2
+```
+
+## Phase 6 — realize in the claimed worktree
+
+Invoke `$fixed-point-driver` with:
+
+```text
+external worktree ref
+claim ID and fencing token
+resource roots
+base head and branch epoch
+selected normal form/action
+proof obligations
+surface budget
+```
+
+Workers must not:
+
+```text
+write the primary checkout
+stage the shared Git index
+commit/push the target branch
+edit another plan
+write outside claimed resources
+```
+
+## Phase 7 — proof and transition
+
+Run focused proof in the worker tree.
+
+Record proof under:
+
+```text
+.ledger/st/proof/<plan-id>/
+```
+
+Proof receipts bind:
+
+```text
+claim
+branch epoch
+tree digest
+dependency cut
+```
+
+A new observation that changes route, owner, required resources, or accepted
+behavior stops realization and returns to the plan/policy frontier.
+
+## Phase 8 — seal the change set
+
+```bash
+st changeset seal \
+  --workspace .ledger/st \
+  --claim <claim-id> \
+  --fencing-token <token>
+```
 
 Validate:
 
 ```bash
-python3 codex/skills/actuating/tools/validation_matrix_gate.py matrix.json
+python3 codex/skills/st/tools/changeset_gate.py changeset.json
 ```
 
-## 6. Prepare policy-bound ASL-v1
+Require every changed path to be covered by the claim.
 
-ASL remains the mutation capability for one semantic slice.
-
-In EPG mode add `policy_control`:
-
-```yaml
-policy_control:
-  mode: epg
-  policy_id:
-  policy_revision:
-  policy_digest:
-  state_id:
-  state_digest:
-  decision_id:
-  action_id:
-  action_kind:
-  policy_current: yes
-  decision_selected: yes
-  commitment_horizon_sequence:
-  expected_effects:
-  expected_observation_refs: []
-  failure_observation_refs: []
-```
-
-ASL also binds:
-
-```text
-GCR and `$st` task refs
-owner/invariant and VMX rows
-selected/rejected route
-normal form
-patch boundary and forbidden actions
-surface budget
-PDAG proof obligations
-next frontier
-```
-
-Validate and persist:
+## Phase 9 — integrate
 
 ```bash
-python3 codex/skills/actuating/tools/actuation_slice_gate.py slice.json
-
-python3 codex/skills/actuating/tools/actuation_checkpoint.py \
-  write \
-  --input slice.json \
-  --root .ledger/actuating
+st integrate enqueue \
+  --workspace .ledger/st \
+  --changeset <changeset-id>
 ```
 
-ASL does not duplicate policy state or `$st` task status.
+The workspace integrator—not the worker—advances the target branch.
 
-See [actuation-slice-contract.md](references/actuation-slice-contract.md).
-
-## 7. Activate language/domain routes
-
-Before mutation, activate the route that constrains owner, hazards, boundary, or proof.
-
-For material Zig work:
+After integration:
 
 ```text
-ASL references ZSR-v1
-PDAG references current ZPE-v1 proof epochs
+branch epoch advances
+foreign proof invalidation is computed
+plan/session views become stale as needed
+next GCR-v2 must bind the new epoch
 ```
 
-Language skills do not own policy, task state, or delivery.
+If integration rebases or materially changes the patch, rerun affected proof.
 
-## 8. Compile policy-bound FPS-v1
+## Phase 10 — close the plan
 
-FPS-v1 is the existing bounded realization handoff.
-
-In EPG mode include matching `policy_control` and carry:
-
-```text
-GCR/ASL/task refs
-owner/invariant/selected rows
-selected normal form and rejected alternatives
-patch boundary and forbidden actions
-surface budget
-proof obligations and stop conditions
-expected effects/observations from EPD
-```
-
-Validate input and result:
+After all plan work is integrated:
 
 ```bash
-python3 codex/skills/fixed-point-driver/tools/fixed_point_slice_gate.py \
-  --input fps.json \
-  --result fps-result.json
+st graph audit \
+  --workspace .ledger/st \
+  --plan <plan-id> \
+  --gate proof-complete \
+  --format json
 ```
 
-`$fixed-point-driver` may realize, prove no-change, block, or return to frontier.
+Final plan delivery additionally requires:
 
-It may not invent another policy branch, expand scope, or patch a newly discovered observation.
+```text
+integration queue quiescent for the plan
+current target-branch epoch
+current final-tree proof
+no cross-plan blocker
+current PR/review state
+```
 
-See [policy-action-handoff.md](references/policy-action-handoff.md).
+Other active plans need not be complete unless their cross-plan dependencies
+block this plan’s terminal predicates.
 
-## 9. Run tiered proof
+## Projection
 
-### Action proof
-
-After one realization, prove the selected policy action, semantic rows, and `$st` obligations.
-
-### Policy-wave proof
-
-Run affected aggregate proof when multiple evidence actions close one policy branch or shared dependency cut.
-
-### Terminal proof
-
-Before `$ship`, run complete current-head repository closure proof.
-
-Use PDAG-v1 and proof epochs for dependency and freshness.
-
-Do not run the full repository suite after every micro-action unless the selected obligation or dependency cut requires it.
-
-## 10. Emit ETR-v1
-
-Combine FPSR and actual evidence into one transition receipt:
+Prime only the bound session:
 
 ```bash
-python3 codex/skills/plan/tools/transition_receipt_gate.py \
-  --policy policy.json \
-  --state state.json \
-  --decision decision.json \
-  --receipt receipt.json
+st prime \
+  --workspace .ledger/st \
+  --plan <plan-id> \
+  --session <session-id> \
+  --claim <claim-id> \
+  --mode aperture
 ```
 
-ETR records separately:
+Project only the emitted native-plan rows.
 
-```text
-prediction
-actual observations/effects
-proof
-potential before/after
-surprise classification
-result
-```
+Never publish another session’s view.
 
-Never rewrite observed evidence to match the prediction.
+## Heartbeats and compaction
 
-Classify surprise:
-
-```text
-none
-expected_variance
-new_branch
-model_failure
-intent_failure
-```
-
-`model_failure` blocks another material action under the unchanged policy.
-
-`intent_failure` returns to `$spec-pipeline`.
-
-Use `policy_transition_skeptic` when prediction and observation differ materially.
-
-See [policy-state-transition.md](references/policy-state-transition.md).
-
-## 11. Advance EPS atomically
+Before long proof or likely compaction:
 
 ```bash
-python3 codex/skills/plan/tools/policy_checkpoint.py apply \
-  --policy policy.json \
-  --state state.json \
-  --decision decision.json \
-  --receipt receipt.json \
-  --out next-state.json
+st heartbeat \
+  --workspace .ledger/st \
+  --claim <claim-id> \
+  --fencing-token <token>
 ```
 
-The checkpoint tool revalidates EPG, EPS, EPD, and ETR before writing.
-
-After a successful transition:
+Persist actuation checkpoint:
 
 ```text
-record obligation proof in `$st`
-complete/block only current materialized tasks
-archive/retire the old horizon
-recompile GCR
-select the next policy action
+.ledger/actuating/<run-id>/current.json
 ```
 
-## 12. Resume after compaction
-
-Resume from:
+On resume, verify:
 
 ```text
-ASR-v4
-EPG-v1
-current EPS-v1
-latest EPD/ETR
-current GCR
-active ASL/VMX/PDAG/FPSR
-current artifact state
+claim still held
+fencing current
+workspace/plan sequence current
+branch epoch current
+worktree still bound to claim
 ```
 
-Verify all digests and fingerprints first.
+Any mismatch returns to workspace allocation.
 
-Reread only changed skill contracts or the active reference.
+## Shipping
 
-Do not reconstruct the policy frontier from prose or `update_plan`.
+`$ship` receives the integrated target-branch state, not a worker worktree.
 
-## 13. Learn from transitions
-
-Use ETR and `$seq` evidence to improve:
+Pass:
 
 ```text
-prediction calibration
-probe information value
-unknown-resolution latency
-route rework
-proof sufficiency
-semantic-surface growth
-rollback frequency
-```
-
-Use `$negative-ledger` only for controller-proven failed action models with reopening criteria.
-
-Use `$retrace` to compare actions from equivalent historical evidence states.
-
-## 14. Ship gate
-
-Call `$ship` only after a success terminal and:
-
-```text
-policy/source/state current
-no active action or open commitment horizon
-all terminal obligations and proof current
-canonical `$st` graph proof-complete
-all required ASL/FPSR/ETR artifacts valid
-no unresolved model/intent failure
+plan ID
+integrated change-set receipts
+current target branch/head/epoch
+proof-complete plan receipt
+cross-plan dependency status
 explicit PR mode
 ```
 
-Default after full completion:
+`$actuating` does not merge.
+
+## Final report
 
 ```text
-ready
-```
-
-`$ship` does not merge.
-
-## Decision observability
-
-Emit SDR-v1-compatible receipts for:
-
-```text
-policy action selection
-shield block
-action realization result
-surprise classification
-policy revision/authority return
-terminal and PR-mode decision
-```
-
-Decision contract: [decision-contract.yaml](references/decision-contract.yaml).
-
-## Output
-
-```text
-Actuation Bottom Line:
-- policy / state / decision:
-- selected action or terminal:
-- GCR / ASL / materialized tasks:
-- predicted vs observed effects:
-- surprise classification:
-- potential before / after:
-- focused / wave / final proof:
-- next policy state:
+Actuation:
+- run / workspace / plan:
+- session / executor:
+- claim / fencing / resources:
+- GCR-v2:
+- selected action/tasks:
+- worker worktree:
+- focused proof:
+- change set:
+- integration receipt / branch epoch:
+- stale foreign proof:
+- plan graph closure:
 - PR mode / PR:
-- blocker / return route:
 ```
 
 ## Hard rules
 
-- No material mutation without EPG/EPS/EPD lineage in policy mode.
-- No repository mutation without a current executable GCR.
-- No non-trivial repository mutation without a prepared ASL and FPS.
-- Materialize only the current commitment horizon.
-- EPD is selection evidence, not mutation authority.
-- Never hide prediction failure or new observations.
-- New branch returns to policy; model failure revises policy; intent failure returns to source authority.
-- Root remains sole delivery writer.
-- No ship without a proven success terminal and explicit PR mode.
-- Do not merge or land.
+- One actuation run owns one plan.
+- No plan inference when several plans are active.
+- No material mutation without current GCR-v2.
+- No mutation without current fenced claim.
+- No boundary widening outside `$st`.
+- No worker writes to primary checkout or shared target branch.
+- No direct commit/push by worker agents.
+- Integration is serialized.
+- Proof is branch-epoch bound.
+- All new artifacts live under `.ledger/`.

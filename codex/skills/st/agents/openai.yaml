@@ -2,9 +2,10 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "st"
-  short_description: "Durable graph control, aperture, and proof source"
-  default_prompt: >
-    Use $st as durable work truth. For material work, require a current CLI-emitted
-    GCR-v1 before execution: compile intent, audit the graph, select one safe bounded
-    aperture, project only plan_sync.codex.plan, record obligation-level proof, and
-    recompile after durable mutations.
+  short_description: "Multi-plan graph workspace and conflict-free execution"
+  default_prompt: >-
+    Use $st as the repository-level workspace under .ledger/st. Keep each plan
+    graph independent, bind the current session to one plan, obtain a global
+    resource claim and fencing token, compile GCR-v2, project only the
+    session-local aperture, record proof with branch-epoch lineage, and route
+    all target-branch integration through the serialized workspace queue.

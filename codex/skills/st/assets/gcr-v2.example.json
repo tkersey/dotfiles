@@ -1,0 +1,82 @@
+{
+  "graph_control_receipt": {
+    "receipt_version": "GCR-v2",
+    "gcr_id": "GCR-auth-001",
+    "workspace": {
+      "workspace_id": "workspace-example",
+      "workspace_sequence": 42,
+      "target_branch": "feature/shared",
+      "branch_epoch": 7,
+      "head": "abc123",
+      "working_tree_fingerprint": "sha256:648a9a8a9374df724992772684548bb379838a7b618430f14e30ab6a849f4e18"
+    },
+    "plan": {
+      "plan_id": "auth-hardening",
+      "plan_sequence": 11,
+      "selected_task_ids": [
+        "st-001",
+        "st-002"
+      ],
+      "graph_fingerprints": {
+        "structure": "sha256:235328bdb0843a0c127367092de7554a4a7ac10e543a85b090afcb1ce9ef40b1",
+        "contract": "sha256:35ba93ef4a82e1434fc8a53191ca0f3cc5b3a583fa6842419de8fd901d0ca04a",
+        "coverage": "sha256:ab90563f2321b6304c933463be22d397f170a2bfd44dabbb3595432d8ed4c24b",
+        "execution": "sha256:193767ae1e770910d6cdff79807cc6f693afb74b158b5ffcd705ad418e9b587c"
+      }
+    },
+    "coordination": {
+      "claim_id": "claim-auth-001",
+      "session_id": "session-agent-a",
+      "executor": "codex-a",
+      "fencing_token": 109,
+      "workspace_sequence": 42,
+      "plan_sequence": 11,
+      "branch_epoch": 7,
+      "resources": [
+        {
+          "root": "path:src/auth.zig",
+          "mode": "write"
+        },
+        {
+          "root": "path:test/auth_test.zig",
+          "mode": "write"
+        }
+      ],
+      "conflicting_claims": [],
+      "lease_current": true,
+      "fencing_current": true
+    },
+    "graph": {
+      "ready_frontier": [
+        "st-001",
+        "st-002"
+      ],
+      "blocked_frontier": [
+        "st-003"
+      ],
+      "critical_path": [
+        "st-001",
+        "st-002",
+        "st-003"
+      ],
+      "proof_cut": [
+        "proof-auth-focused",
+        "proof-auth-wave"
+      ],
+      "graph_debt": [],
+      "gate": "execution-ready",
+      "gate_passed": true
+    },
+    "projection": {
+      "view_id": "session-agent-a",
+      "session_id": "session-agent-a",
+      "selected_task_ids": [
+        "st-001",
+        "st-002"
+      ],
+      "projection_digest": "sha256:3934b547e5948caf48e293c7a8d2b12d40a8c4db345f54ce3c06f75ddbccba22"
+    },
+    "execution_allowed": "yes",
+    "denial_reasons": []
+  }
+}

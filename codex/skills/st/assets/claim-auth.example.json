@@ -1,0 +1,35 @@
+{
+  "workspace_claim": {
+    "claim_version": "WCL-v1",
+    "claim_id": "claim-auth-001",
+    "workspace_id": "workspace-example",
+    "workspace_sequence": 42,
+    "plan_id": "auth-hardening",
+    "plan_sequence": 11,
+    "session_id": "session-agent-a",
+    "executor": "codex-a",
+    "item_ids": [
+      "st-001",
+      "st-002"
+    ],
+    "resources": [
+      {
+        "root": "path:src/auth.zig",
+        "mode": "write"
+      },
+      {
+        "root": "path:test/auth_test.zig",
+        "mode": "write"
+      }
+    ],
+    "branch": "feature/shared",
+    "branch_epoch": 7,
+    "base_head": "abc123",
+    "claimed_at": "2026-06-25T12:00:00Z",
+    "lease_seconds": 900,
+    "lease_expires_at": "2026-06-25T12:15:00Z",
+    "heartbeat_at": "2026-06-25T12:05:00Z",
+    "fencing_token": 109,
+    "state": "held"
+  }
+}

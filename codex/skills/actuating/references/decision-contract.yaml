@@ -3,198 +3,81 @@ skill_decision_contract:
   skill:
     name: actuating
     kind: workflow
-    source_fingerprint: actuating-v4-closed-loop-policy
+    source_fingerprint: actuating-v5-workspace-fenced
   triggers:
-    - trigger_id: ACT-POLICY-RUNTIME
-      description: A source-current EPG/EPS requires one bounded controller tick.
-      cue_literals:
-        - execution_policy_graph
-        - EPG-v1
-        - policy_select
-        - execute this policy
+    - trigger_id: ACT-WORK
+      description: One named plan is ready for bounded execution.
+      cue_literals: [$actuating, implement plan, plan to PR]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-MATERIAL-PLAN
-      description: A material legacy plan/spec/proposal is intended for implementation and delivery.
-      cue_literals:
-        - $actuating
-        - plan to PR
-        - implement this plan
-      cue_regexes: []
-      exclusions:
-        - one bounded local fix
-        - pure planning
-    - trigger_id: ACT-NEW-EVIDENCE
-      description: Execution produced a new branch, model failure, or intent failure.
-      cue_literals:
-        - new observation
-        - model failure
-        - intent failure
-        - return to policy
+    - trigger_id: ACT-EXPAND
+      description: Realization requires new resources or another plan.
+      cue_literals: [resource expansion, cross-plan blocker, new owner]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-SHIP
-      description: A proven success terminal may permit explicit PR-mode delivery.
-      cue_literals:
-        - ship once complete
-        - open a PR
-        - success terminal
+    - trigger_id: ACT-INTEGRATE
+      description: A valid worker result is ready for target-branch integration.
+      cue_literals: [seal change set, integrate]
       cue_regexes: []
-      exclusions:
-        - merge
-        - land
+      exclusions: []
   routes:
-    - route_id: ACT-SELECT-ACTION
-      description: Select one EPD-v1 action or terminal from current EPG/EPS.
-      aliases: [select]
-      terminal: "no"
-    - route_id: ACT-GRAPH-REPAIR
-      description: Repair canonical graph/currentness/debt before mutation.
-      aliases: [graph-repair]
-      terminal: "no"
-    - route_id: ACT-PREPARE-SLICE
-      description: Materialize one commitment horizon and prepare policy-bound ASL/FPS.
-      aliases: [prepare-slice]
+    - route_id: ACT-CLAIM
+      description: Obtain or refresh workspace authority.
+      aliases: [claim]
       terminal: "no"
     - route_id: ACT-REALIZE
-      description: Realize the selected bounded action through fixed-point-driver.
+      description: Realize one bounded slice.
       aliases: [realize]
       terminal: "no"
-    - route_id: ACT-ADVANCE-STATE
-      description: Validate ETR and atomically advance EPS.
-      aliases: [advance-state]
+    - route_id: ACT-RETURN-WORKSPACE
+      description: Stop and reallocate after authority/resource change.
+      aliases: [return-to-workspace]
       terminal: "no"
-    - route_id: ACT-RETURN-POLICY
-      description: Stop material mutation and revise/select policy after new evidence.
-      aliases: [return-to-policy]
+    - route_id: ACT-INTEGRATE
+      description: Enqueue a sealed change set.
+      aliases: [integrate]
       terminal: "no"
-    - route_id: ACT-RETURN-SPEC
-      description: Stop because evidence invalidated source intent.
-      aliases: [return-to-spec]
-      terminal: "yes"
-    - route_id: ACT-ROLLBACK
-      description: Execute policy-declared rollback under normal mutation gates.
-      aliases: [rollback]
-      terminal: "no"
-    - route_id: ACT-SHIP
-      description: Call ship with explicit PR mode after proven success terminal.
-      aliases: [ship]
-      terminal: "yes"
-    - route_id: ACT-BLOCKED
-      description: Stop because policy, graph, proof, authority, or delivery gate failed.
+    - route_id: ACT-BLOCK
+      description: Stop on stale or unavailable authority.
       aliases: [blocked]
       terminal: "yes"
   clauses:
-    - clause_id: ACT-POLICY-001
-      trigger_refs: [ACT-POLICY-RUNTIME]
-      expected_routes:
-        - ACT-SELECT-ACTION
-        - ACT-GRAPH-REPAIR
-        - ACT-PREPARE-SLICE
-        - ACT-BLOCKED
-      prohibited_routes:
-        - ACT-REALIZE
-        - ACT-SHIP
-      required_artifacts:
-        - EPG-v1
-        - EPS-v1
-        - EPD-v1
-      success_signals:
-        - exactly one commitment action is selected
-        - dormant policy branches are not materialized
-      failure_signals:
-        - speculative full policy flattened into tasks
-        - EPD treated as mutation authority
-      rationale: Execution is closed-loop and evidence-conditioned.
-    - clause_id: ACT-GCR-001
-      trigger_refs: [ACT-POLICY-RUNTIME, ACT-MATERIAL-PLAN]
-      expected_routes:
-        - ACT-GRAPH-REPAIR
-        - ACT-PREPARE-SLICE
-        - ACT-BLOCKED
-      prohibited_routes:
-        - ACT-REALIZE
-        - ACT-SHIP
-      required_artifacts:
-        - current executable GCR-v1
-        - canonical .ledger/st/st-plan.jsonl
-      success_signals:
-        - selected tasks match current policy action/materialization
-      failure_signals:
-        - mutation after failed or stale graph compile
-        - update_plan used as state
-      rationale: Graph control is a material execution capability.
-    - clause_id: ACT-SLICE-001
-      trigger_refs: [ACT-POLICY-RUNTIME, ACT-MATERIAL-PLAN]
-      expected_routes:
-        - ACT-PREPARE-SLICE
-        - ACT-REALIZE
-        - ACT-BLOCKED
-      prohibited_routes: [ACT-SHIP]
-      required_artifacts:
-        - ASL-v1
-        - FPS-v1
-        - selected owner, boundary, budget, and proof
-      success_signals:
-        - policy lineage matches EPG/EPS/EPD/GCR when in EPG mode
-      failure_signals:
-        - prose-only frontier
-        - boundary expansion without policy return
-      rationale: Strategy selection and bounded realization remain separate.
-    - clause_id: ACT-TRANSITION-001
-      trigger_refs: [ACT-NEW-EVIDENCE, ACT-POLICY-RUNTIME]
-      expected_routes:
-        - ACT-ADVANCE-STATE
-        - ACT-RETURN-POLICY
-        - ACT-RETURN-SPEC
-        - ACT-ROLLBACK
-        - ACT-BLOCKED
+    - clause_id: ACT-GCR-002
+      trigger_refs: [ACT-WORK]
+      expected_routes: [ACT-CLAIM, ACT-REALIZE, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
-        - FPSR-v1
-        - ETR-v1
-        - predicted and observed effects
-        - surprise classification
+        - GCR-v2
+        - WCL-v1
+        - fencing token
       success_signals:
-        - EPS advances only after validated ETR
+        - every mutation is claim bound
       failure_signals:
-        - prediction rewritten to match outcome
-        - material action continues after model failure
-        - intent failure does not return to source authority
-      rationale: Transitions make planning knowledge accretive.
-    - clause_id: ACT-PROOF-001
-      trigger_refs: [ACT-POLICY-RUNTIME, ACT-MATERIAL-PLAN, ACT-SHIP]
-      expected_routes:
-        - ACT-REALIZE
-        - ACT-ADVANCE-STATE
-        - ACT-SHIP
-        - ACT-BLOCKED
+        - plan-local readiness treated as execution authority
+      rationale: Multi-plan safety requires workspace authority.
+    - clause_id: ACT-BOUNDARY-002
+      trigger_refs: [ACT-EXPAND]
+      expected_routes: [ACT-RETURN-WORKSPACE, ACT-BLOCK]
+      prohibited_routes: [ACT-REALIZE]
+      required_artifacts:
+        - requested resource expansion
+      success_signals:
+        - new claim and GCR before resumed mutation
+      failure_signals:
+        - related edit outside claim
+      rationale: Boundary expansion must rerun global conflict analysis.
+    - clause_id: ACT-INTEGRATE-002
+      trigger_refs: [ACT-INTEGRATE]
+      expected_routes: [ACT-INTEGRATE, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
-        - focused action proof
-        - affected policy-wave proof when required
-        - final current-head proof before ship
+        - CS-v1
+        - current branch epoch
       success_signals:
-        - proof is bound to action/obligation/artifact state
+        - worker never advances target branch
       failure_signals:
-        - stale proof reused
-        - full suite repeated after every micro-action without dependency warrant
-      rationale: Proof follows the selected obligation and commitment horizon.
-    - clause_id: ACT-SHIP-001
-      trigger_refs: [ACT-SHIP]
-      expected_routes: [ACT-SHIP, ACT-BLOCKED]
-      prohibited_routes: []
-      required_artifacts:
-        - success terminal evidence
-        - proof-complete `$st` graph
-        - valid ASL/FPSR/ETR lineage
-        - explicit pr_mode
-      success_signals:
-        - fully validated work defaults to ready PR
-      failure_signals:
-        - local action success treated as terminal success
-        - ship with active action or stale state
-      rationale: Delivery is terminal, policy-bound, and explicit.
+        - direct push from worker
+      rationale: Target-branch state is globally serialized.
   instrumentation:
-    decision_receipt: required_for_material_routes
-    rationale: Selection, shield, surprise, authority return, and terminal decisions are material.
+    decision_receipt: required
+    rationale: Claim, return, and integration choices are material.
