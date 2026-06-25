@@ -3,6 +3,7 @@ SKILL.md
 agents/openai.yaml
 references/artifact-root.md
 references/decision-contract.yaml
+references/policy-synthesis-fixed-point.md
 references/st-multi-plan-handoff.md
 MANIFEST.files
 MANIFEST.sha256
