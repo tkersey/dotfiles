@@ -2,9 +2,11 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Plan"
-  short_description: "Compile intent into a named multi-plan execution policy"
+  short_description: "Compile and exhaustively refine a named execution policy"
   default_prompt: >-
     Use $plan to compile accepted intent into a source-bound execution policy
     with an immutable plan_id, explicit resource predictions, proof, rollback,
-    and a handoff to the .ledger/st workspace. Never infer an existing plan or
-    grant mutation authority.
+    and a handoff to the .ledger/st workspace. Internally iterate the policy to
+    a fixed point, run the mandatory radical creativity candidate, emit a compact
+    PSR-v1 synthesis receipt, and never infer an existing plan or grant mutation
+    authority.
