@@ -1,23 +1,7 @@
 # Search Saturation
 
-Saturation does not mean every file was read.
-
-It means additional search is unlikely to change a material doctrine decision.
-
-## Material changes
-
-```text
-architecture classification
-authority owner
-governing law
-invariant boundary
-failure family
-proof gap
-knowledge destination
-skill acceptance/rejection
-```
-
-## Receipt
+Saturation means more search is unlikely to change a material doctrine decision.
+It never means every file was read.
 
 ```yaml
 saturation:
@@ -25,37 +9,26 @@ saturation:
   lanes_covered: []
   open_questions: []
   contradictions_remaining: []
-  last_material_model_change:
+  last_material_model_change_ref:
   additional_search_would_change:
-    repository_fingerprint:
-    authority_map:
-    governing_laws:
-    proof_map:
-    knowledge_routes:
-    skill_portfolio:
-  verdict:
-    saturated |
-    targeted_search_required |
-    blocked
+    repository_fingerprint: yes | no
+    authority_map: yes | no
+    governing_laws: yes | no
+    proof_map: yes | no
+    knowledge_routes: yes | no
+    skill_portfolio: yes | no
+  verdict: saturated | targeted_search_required | blocked
   next_targeted_queries: []
 ```
 
-## Deep-mode challenge
+`saturated` requires:
 
-The saturation auditor should attempt to find:
+- every required lane covered;
+- no open or blocked search question;
+- no route-changing open question;
+- no unresolved material contradiction;
+- all `additional_search_would_change` values are no;
+- all durable active claims routed.
 
-- an unsearched evidence lane;
-- a high-impact unsupported claim;
-- a contradiction hidden by terminology;
-- a skill candidate based on weak evidence;
-- a proof gap that changes routing.
-
-## Stop
-
-Stop on `saturated`.
-
-On `targeted_search_required`, name exact questions and methods.
-
-On `blocked`, name missing access or unavailable evidence.
-
-Do not continue broad exploration without a route-changing question.
+On `targeted_search_required`, name exact questions and methods. On `blocked`,
+name missing access or unavailable evidence.

@@ -3,175 +3,206 @@ skill_decision_contract:
   skill:
     name: codebase-doctrine
     kind: mixed
-    source_fingerprint: generated-with-grill-intent-v1
+    source_fingerprint: codebase-doctrine-v2.0.0
+
   triggers:
     - trigger_id: CBD-TRIGGER-DOCTRINE
-      description: The user wants deep repository understanding plus durable correctness doctrine or skill recommendations.
+      description: The user wants deep repository understanding plus durable correctness doctrine, knowledge routing, authority/proof maps, or skill recommendations.
       cue_literals:
-        - learn the codebase and suggest skills
         - repository correctness doctrine
-        - authority map and invariants
-        - skills for this codebase
+        - learn this codebase and recommend skills
+        - authority map and proof map
+        - durable codebase laws
       cue_regexes: []
       exclusions:
-        - quick architecture summary
+        - quick onboarding
+        - one isolated invariant
+        - ordinary implementation
+        - generic review
         - create the skill files now
-    - trigger_id: CBD-TRIGGER-INTENT-GAP
-      description: A material user-owned doctrine choice remains after repository reconnaissance.
+
+    - trigger_id: CBD-TRIGGER-SURVEY
+      description: The user wants provisional reconnaissance and exact next questions without committed doctrine or portfolio.
       cue_literals:
-        - which subsystem
-        - current or desired doctrine
+        - survey the codebase doctrine
+        - provisional doctrine map
+      cue_regexes: []
+      exclusions:
+        - complete doctrine
+
+    - trigger_id: CBD-TRIGGER-INTENT-GAP
+      description: Repository reconnaissance leaves a material user-owned doctrine choice.
+      cue_literals:
+        - target boundary
+        - current or target doctrine
         - atlas or skills
         - proof bar
+        - compatibility posture
       cue_regexes: []
       exclusions:
         - discoverable repository fact
-        - low-consequence default
-    - trigger_id: CBD-TRIGGER-PORTFOLIO
-      description: A trustworthy CBD-v1 exists and only knowledge routing or skill candidacy needs reevaluation.
-      cue_literals:
-        - reevaluate the skill portfolio
-        - portfolio only
-      cue_regexes: []
-      exclusions: []
+        - low-consequence reversible default
+
     - trigger_id: CBD-TRIGGER-REFRESH
-      description: Existing doctrine must be checked against a new repository head or intent boundary.
+      description: Existing CBD-v2 must be checked at a new artifact or intent state.
       cue_literals:
         - refresh doctrine
         - doctrine drift
-        - intent drift
       cue_regexes: []
       exclusions: []
+
+    - trigger_id: CBD-TRIGGER-PORTFOLIO
+      description: A valid doctrine exists and only routing or skill candidacy needs reevaluation.
+      cue_literals:
+        - reevaluate the doctrine skill portfolio
+        - portfolio only
+      cue_regexes: []
+      exclusions: []
+
+    - trigger_id: CBD-TRIGGER-AUDIT
+      description: Current guidance or skills must be compared with existing doctrine.
+      cue_literals:
+        - audit skills against doctrine
+        - doctrine conformance audit
+      cue_regexes: []
+      exclusions: []
+
   routes:
     - route_id: CBD-ROUTE-GRILL
-      description: Pause repository doctrine and delegate only material intent clarification to grill-me.
-      aliases:
-        - grill-me
-        - intent clarification
+      description: Pause doctrine and clarify only material user-owned intent.
+      aliases: [grill-me, intent clarification]
       terminal: "no"
+
     - route_id: CBD-ROUTE-SURVEY
-      description: Produce a provisional map and exact next searches.
-      aliases:
-        - survey
+      description: Emit CBS-v1 with a provisional map and exact next questions.
+      aliases: [survey]
       terminal: "yes"
+
     - route_id: CBD-ROUTE-DOCTRINE
-      description: Run the complete evidence, routing, portfolio, and saturation workflow under CDI-v1.
-      aliases:
-        - doctrine
-        - deep
+      description: Compile complete CBD-v2 without custom specialists.
+      aliases: [doctrine]
       terminal: "yes"
-    - route_id: CBD-ROUTE-PORTFOLIO
-      description: Reevaluate knowledge destinations and skill candidacy under existing intent.
-      aliases:
-        - portfolio
+
+    - route_id: CBD-ROUTE-DEEP
+      description: Compile CBD-v2 with adaptive read-only specialists and receipts.
+      aliases: [deep]
       terminal: "yes"
+
     - route_id: CBD-ROUTE-REFRESH
-      description: Refresh existing doctrine at a new artifact state without silent intent drift.
-      aliases:
-        - refresh
-        - audit
+      description: Emit CBDD-v1 and resulting CBD-v2 for a new artifact state.
+      aliases: [refresh]
       terminal: "yes"
+
+    - route_id: CBD-ROUTE-PORTFOLIO
+      description: Emit CBP-v1 under existing valid doctrine.
+      aliases: [portfolio]
+      terminal: "yes"
+
+    - route_id: CBD-ROUTE-AUDIT
+      description: Emit CBA-v1 comparing current guidance or skills with doctrine.
+      aliases: [audit]
+      terminal: "yes"
+
     - route_id: CBD-ROUTE-BLOCKED
-      description: Stop because intent, evidence, access, or proof is insufficient.
-      aliases:
-        - blocked
+      description: Stop because intent, evidence, access, artifact state, or proof is insufficient.
+      aliases: [blocked]
       terminal: "yes"
+
   clauses:
-    - clause_id: CBD-INTENT-001
-      trigger_refs:
-        - CBD-TRIGGER-DOCTRINE
-        - CBD-TRIGGER-INTENT-GAP
+    - clause_id: CBD-ACTIVATION-001
+      trigger_refs: [CBD-TRIGGER-DOCTRINE]
       expected_routes:
-        - CBD-ROUTE-GRILL
-        - CBD-ROUTE-SURVEY
         - CBD-ROUTE-DOCTRINE
+        - CBD-ROUTE-DEEP
+        - CBD-ROUTE-GRILL
         - CBD-ROUTE-BLOCKED
       prohibited_routes: []
-      required_artifacts:
-        - DIG-v1
-        - CDI-v1 for material doctrine
+      required_artifacts: [DIG-v2, CDI-v2 for material doctrine]
+      success_signals:
+        - compound deep-understanding plus durable-doctrine trigger
+        - near-miss onboarding and implementation tasks stay outside
+      failure_signals:
+        - activated for generic review
+        - activated for one isolated invariant
+      rationale: Root implicit activation is narrow and compound.
+
+    - clause_id: CBD-INTENT-001
+      trigger_refs: [CBD-TRIGGER-DOCTRINE, CBD-TRIGGER-INTENT-GAP]
+      expected_routes:
+        - CBD-ROUTE-GRILL
+        - CBD-ROUTE-DOCTRINE
+        - CBD-ROUTE-DEEP
+        - CBD-ROUTE-BLOCKED
+      prohibited_routes: []
+      required_artifacts: [DIG-v2, deterministic CDI-v2]
       success_signals:
         - discoverable facts researched before questions
-        - material user judgments explicitly locked
-        - grill packet projected without implementation authority
+        - every material gap resolved
+        - no repository-derived law locked as user intent
       failure_signals:
         - user asked for repository facts
-        - doctrine target silently assumed
-        - grill-me used for repository analysis
-      rationale: Doctrine must be scoped by user judgment without outsourcing evidence analysis.
-    - clause_id: CBD-SCOPE-001
-      trigger_refs:
-        - CBD-TRIGGER-DOCTRINE
-      expected_routes:
-        - CBD-ROUTE-SURVEY
-        - CBD-ROUTE-DOCTRINE
-        - CBD-ROUTE-BLOCKED
+        - hand-authored CDI projection drift
+      rationale: Intent authorizes inquiry but cannot pre-decide repository laws.
+
+    - clause_id: CBD-GRAPH-001
+      trigger_refs: [CBD-TRIGGER-DOCTRINE]
+      expected_routes: [CBD-ROUTE-DOCTRINE, CBD-ROUTE-DEEP, CBD-ROUTE-BLOCKED]
       prohibited_routes: []
       required_artifacts:
         - artifact-state pin
-        - evidence ledger
-        - saturation verdict
+        - closed question/evidence/claim graph
+        - proof receipts
+        - saturation receipt
       success_signals:
-        - one CBD-v1
-        - facts separated from inference
+        - every typed reference resolves
+        - every durable active claim has exactly one primary route
       failure_signals:
-        - random file dump
-        - outputs merely concatenated from other skills
-      rationale: Repository doctrine requires one coherent evidence-backed workflow.
-    - clause_id: CBD-ROUTING-001
-      trigger_refs:
-        - CBD-TRIGGER-DOCTRINE
-        - CBD-TRIGGER-PORTFOLIO
+        - dangling question or proof reference
+        - stale evidence accepted
+      rationale: CBD-v2 is a closed artifact-bound graph, not an outline.
+
+    - clause_id: CBD-PORTFOLIO-001
+      trigger_refs: [CBD-TRIGGER-DOCTRINE, CBD-TRIGGER-PORTFOLIO]
       expected_routes:
         - CBD-ROUTE-DOCTRINE
+        - CBD-ROUTE-DEEP
         - CBD-ROUTE-PORTFOLIO
       prohibited_routes: []
       required_artifacts:
-        - knowledge-route ledger
-        - focused skill candidacy gates
+        - knowledge routes
+        - evidence-bearing candidacy
       success_signals:
-        - deterministic rules routed before skills
-        - one root and at most five focused candidates
+        - zero skills is valid
+        - zero or one root and at most five focused candidates
+        - initial candidates normally recommended for trial
       failure_signals:
-        - everything becomes a skill
-        - directory-tree skill taxonomy
-      rationale: Skills are for recurring judgment, not every important rule.
-    - clause_id: CBD-DRIFT-001
+        - mandatory root skill
+        - self-attested candidacy
+        - directory-shaped portfolio
+      rationale: Skills are optional and subordinate to stronger enforcement.
+
+    - clause_id: CBD-MODES-001
       trigger_refs:
+        - CBD-TRIGGER-SURVEY
         - CBD-TRIGGER-REFRESH
-        - CBD-TRIGGER-INTENT-GAP
+        - CBD-TRIGGER-PORTFOLIO
+        - CBD-TRIGGER-AUDIT
       expected_routes:
-        - CBD-ROUTE-GRILL
+        - CBD-ROUTE-SURVEY
         - CBD-ROUTE-REFRESH
+        - CBD-ROUTE-PORTFOLIO
+        - CBD-ROUTE-AUDIT
         - CBD-ROUTE-BLOCKED
       prohibited_routes: []
       required_artifacts:
-        - original CDI-v1
-        - changed field
-        - user resolution or explicit deferral
+        - mode-specific terminal artifact
       success_signals:
-        - no silent target, posture, product, or proof-bar drift
+        - audit is not aliased to refresh
+        - survey does not commit a portfolio
       failure_signals:
-        - research silently expands doctrine scope
-      rationale: Research may reveal intent mismatch but cannot authorize a new target.
-    - clause_id: CBD-SATURATION-001
-      trigger_refs:
-        - CBD-TRIGGER-DOCTRINE
-        - CBD-TRIGGER-REFRESH
-      expected_routes:
-        - CBD-ROUTE-DOCTRINE
-        - CBD-ROUTE-REFRESH
-        - CBD-ROUTE-BLOCKED
-      prohibited_routes: []
-      required_artifacts:
-        - lane coverage
-        - route-changing open questions
-      success_signals:
-        - saturated or exact targeted-search decision
-      failure_signals:
-        - exhaustive understanding claim
-        - endless broad search
-      rationale: Stop only when more search is unlikely to change doctrine decisions.
+        - one monolithic artifact forced on every mode
+      rationale: Each lifecycle question has a distinct proof contract.
+
   instrumentation:
-    decision_receipt: optional
-    rationale: DIG-v1, CDI-v1, and CBD-v1 record the material routing decisions.
+    decision_receipt: required
+    rationale: Record activation, mode, intent route, artifact state, portfolio decision, and saturation.

@@ -1,0 +1,75 @@
+{
+  "base": "../assets/codebase-doctrine.example.yaml",
+  "cases": [
+    {
+      "expected_error": "question_id:unknown",
+      "id": "unknown-question",
+      "path": "codebase_doctrine.evidence_index.0.question_id",
+      "value": "Q-MISSING"
+    },
+    {
+      "expected_error": "artifact_state_id:mismatch",
+      "id": "stale-evidence",
+      "path": "codebase_doctrine.evidence_index.0.artifact_state_id",
+      "value": "AS-stale"
+    },
+    {
+      "expected_error": "evidence_refs:reverse-missing:E-CODE",
+      "id": "claim-reverse-missing",
+      "path": "codebase_doctrine.evidence_index.1.supports_claim_ids",
+      "value": [
+        "CLAIM-OWNER"
+      ]
+    },
+    {
+      "expected_error": "law_or_invariant_ids:unknown:LAW-MISSING",
+      "id": "unknown-proof-subject",
+      "path": "codebase_doctrine.proof_map.proof_surfaces.0.law_or_invariant_ids",
+      "value": [
+        "LAW-MISSING"
+      ]
+    },
+    {
+      "expected_error": "verification.artifact_state_id:mismatch",
+      "id": "wrong-proof-state",
+      "path": "codebase_doctrine.proof_map.proof_surfaces.0.verification.artifact_state_id",
+      "value": "AS-stale"
+    },
+    {
+      "expected_error": "prohibited_route_ids:unknown:NEG-READER-TOLERANCE",
+      "id": "noncanonical-negative-prohibited",
+      "path": "codebase_doctrine.negative_routes.0.status",
+      "value": "witnessed"
+    },
+    {
+      "expected_error": "accepted-requires-empirical-evidence",
+      "id": "accepted-without-empirical",
+      "path": "codebase_doctrine.focused_skill_candidates.0.status",
+      "value": "accepted"
+    },
+    {
+      "expected_error": "skill_portfolio:not-requested",
+      "id": "portfolio-not-requested",
+      "path": "codebase_doctrine.intent.codebase_doctrine_intent.skill_portfolio_requested",
+      "value": "no"
+    },
+    {
+      "expected_error": "multiple-primary-routes:CLAIM-OWNER",
+      "id": "multiple-primary-routes",
+      "path": "codebase_doctrine.knowledge_routes.1.source_claim_ids",
+      "value": [
+        "CLAIM-LAW",
+        "CLAIM-OWNER"
+      ]
+    },
+    {
+      "expected_error": "saturated-with-uncovered-lanes",
+      "id": "saturated-uncovered-lane",
+      "path": "codebase_doctrine.saturation.lanes_covered",
+      "value": [
+        "guidance"
+      ]
+    }
+  ],
+  "schema": "codebase-doctrine-graph-integrity-cases/v2"
+}

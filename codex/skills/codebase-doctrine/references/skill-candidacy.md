@@ -1,76 +1,61 @@
-# Skill Candidacy
+# Skill Candidacy v2
 
-## Portfolio shape
-
-Default:
+Portfolio shape:
 
 ```text
-one root repository skill
+zero or one root repository skill
 zero to five focused skills
 ```
 
-The root routes work and references doctrine.
+No skill is mandatory.
 
-Focused skills own independently triggered decisions.
-
-## Gate
+Each criterion is evidence-bearing:
 
 ```yaml
-skill_candidacy:
-  recurring_trigger: yes | no
-  consequential_decision: yes | no
-  stable_governing_law: yes | no
-  independent_activation: yes | no
-  standalone_workflow: yes | no
-  observable_success_and_failure: yes | no
-  better_as_code: yes | no
-  better_as_test: yes | no
-  better_as_tooling: yes | no
-  better_as_docs: yes | no
-  accepted: yes | no
-```
-
-Accepted requires:
-
-```text
-first six yes
-all better_as_* no
-```
-
-## Candidate
-
-```yaml
-focused_skill_candidate:
-  candidate_id:
-  proposed_name:
-  governing_law_ids: []
-  trigger_examples: []
-  non_triggers: []
-  consequential_decisions: []
-  prohibited_routes: []
-  required_artifacts: []
-  success_signals: []
-  failure_signals: []
-  standalone_use_cases: []
-  candidacy:
+recurring_trigger:
+  verdict: yes | no | unknown
   evidence_refs: []
+  counterevidence_refs: []
+  rationale:
 ```
 
-## Rejection reasons
+Positive criteria:
 
 ```text
-mechanical rule
-better type/test/tool/docs
-unstable law
-no independent trigger
-duplicates root skill
-directory-shaped taxonomy
-too little evidence
-too narrow/one-off
+recurring_trigger
+consequential_decision
+stable_governing_law
+independent_activation
+standalone_workflow
+observable_success_and_failure
 ```
 
-## Creation handoff
+Negative criteria:
 
-Only accepted candidates receive CBSH-v1.
+```text
+better_as_code
+better_as_test
+better_as_tooling
+better_as_docs
+```
 
-`$ms` creates packages only after explicit user authorization.
+A trial recommendation requires all positive criteria `yes` and all negative
+criteria `no`.
+
+Status:
+
+```text
+rejected
+recommended_for_trial
+accepted
+```
+
+`accepted` additionally requires empirical use evidence. Initial doctrine should
+normally use `recommended_for_trial`.
+
+A candidate records governing law IDs, source claims, triggers, non-triggers,
+consequential decisions, canonical prohibited route IDs, required artifacts,
+success/failure signals, standalone use cases, and empirical evidence.
+
+Reject directory-shaped, one-off, unstable-law, mechanically enforceable, or
+root-duplicating candidates.

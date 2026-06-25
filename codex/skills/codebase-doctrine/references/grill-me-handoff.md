@@ -1,16 +1,18 @@
-# `$grill-me` Handoff for Codebase Doctrine
+# `$grill-me` handoff for Codebase Doctrine
 
-`$codebase-doctrine` may invoke `$grill-me` only for material user-owned intent decisions.
+`$grill-me` owns only material user judgments. It does not analyze the
+repository, infer current laws, choose knowledge destinations, or design skill
+files.
 
-## CDGH-v1
+## CDGH-v2
 
 ```yaml
 codebase_doctrine_grill_handoff:
-  handoff_version: CDGH-v1
+  handoff_version: CDGH-v2
   gate_id:
-  provisional_artifact_state:
+  provisional_artifact_state_digest:
   current_frame:
-  researched_facts: []
+  researched_fact_ids: []
   working_defaults: []
   material_judgment_gaps:
     - gap_id:
@@ -18,72 +20,58 @@ codebase_doctrine_grill_handoff:
       question:
       why_material:
       options: []
-  allowed_question_lanes:
-    - target_boundary
+  allowed_question_lanes: []
+  forbidden_questions:
+    - discoverable repository facts
+    - implementation design
+    - skill-file content
+    - repository laws not yet researched
+  closure_projection:
+    - target
     - consumers
     - posture
     - desired_products
+    - primary_correctness_question
+    - primary_risk_or_priority
     - correctness_priorities
     - non_goals
     - proof_bar
-    - persistence
-  forbidden_questions:
-    - repository facts discoverable from artifacts
-    - implementation design
-    - skill-file content
-    - codebase laws not yet researched
-  closure_projection:
+    - compatibility_posture
+    - persistence_posture
+```
+
+Ask at most three high-leverage questions per round.
+
+## Required grill closure
+
+The normal `grill_decision_packet` must add:
+
+```yaml
+codebase_doctrine_closure:
+  source_gate_id:
+  source_handoff_digest:
+  resolved_gap_ids: []
+  deferred_gap_ids: []
+  doctrine_projection:
     target:
-    consumers:
+    consumers: []
     posture:
-    desired_products:
-    primary_invariant:
-    correctness_priorities:
-    non_goals:
+    desired_products: []
+    primary_correctness_question:
+    primary_risk_or_priority:
+    user_supplied_invariant_hypotheses: []
+    correctness_priorities: []
+    non_goals: []
     proof_bar:
     compatibility_posture:
     persistence_posture:
+    skill_portfolio_requested:
+    enforcement_routing_requested:
+    assumptions: []
+    deferred_questions: []
 ```
 
-## Question pack
+`plan_allowed: true` is valid only when every material DIG gap is resolved and
+`deferred_gap_ids` is empty.
 
-Ask no more than three high-leverage questions per round.
-
-Preferred order:
-
-1. Subject boundary: whole coherent repository, named subsystem, or cross-cutting workflow/law family.
-2. Doctrine posture: descriptive, prescriptive, gap analysis, or mixed.
-3. Desired products: atlas only, atlas plus knowledge routing, atlas plus root skill, or atlas plus focused candidates.
-
-Later rounds may ask consumer, correctness priority, non-goal, proof bar, or persistence only when still material.
-
-## Output
-
-`$grill-me` emits its standard `grill_decision_packet`.
-
-The following fields project naturally:
-
-```text
-goal                         -> target and desired products
-problem_layer                -> doctrine posture/problem layer
-target_user_or_maintainer    -> consumers
-scope                        -> included/excluded boundaries
-non_goals                    -> non-goals
-primary_invariant            -> primary invariant
-success_criteria             -> desired doctrine outcomes
-proof_bar                    -> evidence/proof requirement
-compatibility_posture        -> compatibility posture
-locked_decisions             -> posture/products/priorities
-researched_facts             -> intake provenance only
-default_assumptions          -> CDI assumptions
-deferred_questions           -> CDI deferred questions
-plan_allowed                 -> doctrine inquiry may proceed
-```
-
-Do not insert repository-derived laws into the grill packet as if the user supplied them.
-
-## Closure rule
-
-Proceed only when `plan_allowed: true`.
-
-This allows doctrine analysis only. It does not authorize code changes, skill creation, persistence, commit, or push.
+The compiler checks gate ID, handoff digest, and exact gap closure.

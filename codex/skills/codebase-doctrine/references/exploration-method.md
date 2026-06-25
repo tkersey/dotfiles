@@ -1,118 +1,43 @@
 # Exploration Method
 
-## Intake reconnaissance
+Every search answers a named, falsifiable question.
 
-Before doctrine questions, run a shallow fact-finding pass over guidance, manifests, build/test roots, major subsystems, architecture docs, and existing repository skills.
-
-Its purpose is to remove discoverable facts from the user-question queue. It is not yet doctrine evidence saturation.
-
-Only user-owned, route-changing judgments may be handed to `$grill-me`.
-
-
-## Question ledger
-
-Every search answers a named question.
-
-```yaml
-search_question:
-  question_id:
-  question:
-  why_it_matters:
-  lanes: []
-  search_methods: []
-  evidence_found: []
-  model_change:
-  status:
-```
-
-Questions should be falsifiable where possible:
+Prefer the cheapest method that can materially update the model:
 
 ```text
-Which symbol owns durable state mutation?
-Can a request bypass the canonical validator?
-Do two state representations encode the same accepted behavior?
-Which historical repair family keeps recurring?
-What proof surface actually establishes the law?
+definition/reference          symbol or language-aware search
+ownership                     write-site, transition, certificate, rollback
+behavior                      tests, fixtures, public observations
+historical recurrence         git log, -S, -G, blame, reverts
+runtime path                  trace, coverage, reproduction
+agent decision history        bounded $seq query
+failed route                  canonical negative-ledger query/export
+incomplete historical reason  bounded $retrace replay
 ```
 
-## Search lanes
-
-### Guidance
-
-Read repository-local instructions, README, architecture docs, ADRs, manifests, build files, CI, and release metadata.
-
-Use declared architecture as a claim to verify, not truth.
-
-### Static structure
-
-Map top-level modules, dependency direction, public APIs, entrypoints, major types, and boundaries.
-
-### Symbols and references
-
-Use language-aware references, LSP, AST queries, ctags, or precise text search to locate definitions, callers, implementations, and write sites.
-
-### Behavior and tests
-
-Read tests, fixtures, golden outputs, examples, compile-fail cases, and state-machine/property tests.
-
-Tests reveal intended behavior and proof gaps, but may preserve historical accidents.
-
-### Authority and mutation
-
-Search constructors, setters, mutation functions, transactions, validation, commit/publish paths, state transitions, and error/rollback paths.
-
-Authority claims should be based mainly on writes and certificates.
-
-### History and forensics
-
-Use Git log, blame, `-S`, `-G`, reverts, bug-fix subjects, and PR/review history.
-
-Historical frequency is evidence of recurrence, not automatically a current law.
-
-### Runtime
-
-When safe and available, use traces, coverage, logs, benchmarks, telemetry schemas, and reproductions.
-
-Do not expose secrets or claim runtime evidence when none was gathered.
-
-### Agent history
-
-Use local `$seq` evidence to find recurring decisions, workarounds, review clusters, and skill behavior.
-
-Separate activation, decision influence, and outcome.
-
-### Negative evidence
-
-Read durable negative-ledger records and failed-route evidence.
-
-Fuzzy or stale matches are suggestive only.
-
-## Search method selection
-
-Prefer the cheapest method that can materially update the model.
-
-Examples:
+Search lanes:
 
 ```text
-definition/reference question -> LSP or symbol search
-ownership question -> write-site and transition search
-historical recurrence -> git -S/-G/log
-intended behavior -> tests/fixtures/docs comparison
-runtime path -> trace or coverage
-agent decision history -> seq
+guidance
+static_structure
+symbols_and_references
+behavior_and_tests
+authority_and_mutation
+history_and_forensics
+runtime
+agent_history
+negative_evidence
+user_authority
 ```
 
-## Search record
+A no-result search is evidence only when its corpus, pattern, and scope are
+recorded.
 
-Record method, result, and model change.
+Avoid:
 
-A search that finds nothing may still be useful when the corpus and pattern are explicit.
-
-## Anti-patterns
-
-- reading large files sequentially without questions;
+- reading large files without a question;
 - treating directory names as architecture;
 - treating comments as proof;
-- using one search method for every lane;
-- counting matches instead of understanding ownership;
-- endless search after material decisions have stabilized.
+- counting matches instead of tracing authority;
+- using every mechanism mechanically;
+- continuing broad search after material decisions stabilize.

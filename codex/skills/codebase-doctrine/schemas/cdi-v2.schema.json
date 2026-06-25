@@ -1,0 +1,122 @@
+{
+  "$defs": {
+    "nonemptyString": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "yesNo": {
+      "enum": [
+        "yes",
+        "no",
+        true,
+        false
+      ]
+    }
+  },
+  "$id": "urn:codebase-doctrine:CDI-v2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "codebase_doctrine_intent": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "type": "array"
+        },
+        "compatibility_posture": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "consumers": {
+          "minItems": 1,
+          "type": "array"
+        },
+        "correctness_priorities": {
+          "minItems": 1,
+          "type": "array"
+        },
+        "deferred_questions": {
+          "type": "array"
+        },
+        "desired_products": {
+          "minItems": 1,
+          "type": "array"
+        },
+        "doctrine_allowed": {
+          "$ref": "#/$defs/yesNo"
+        },
+        "enforcement_routing_requested": {
+          "$ref": "#/$defs/yesNo"
+        },
+        "intent_id": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "intent_version": {
+          "const": "CDI-v2"
+        },
+        "non_goals": {
+          "type": "array"
+        },
+        "persistence_posture": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "posture": {
+          "enum": [
+            "descriptive",
+            "prescriptive",
+            "gap_analysis",
+            "mixed"
+          ]
+        },
+        "primary_correctness_question": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "primary_risk_or_priority": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "proof_bar": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "skill_portfolio_requested": {
+          "$ref": "#/$defs/yesNo"
+        },
+        "source": {
+          "type": "object"
+        },
+        "target": {
+          "type": "object"
+        },
+        "user_supplied_invariant_hypotheses": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "intent_version",
+        "intent_id",
+        "source",
+        "target",
+        "consumers",
+        "posture",
+        "desired_products",
+        "primary_correctness_question",
+        "primary_risk_or_priority",
+        "user_supplied_invariant_hypotheses",
+        "correctness_priorities",
+        "non_goals",
+        "proof_bar",
+        "compatibility_posture",
+        "persistence_posture",
+        "skill_portfolio_requested",
+        "enforcement_routing_requested",
+        "assumptions",
+        "deferred_questions",
+        "doctrine_allowed"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "codebase_doctrine_intent"
+  ],
+  "title": "Codebase Doctrine Intent v2",
+  "type": "object"
+}

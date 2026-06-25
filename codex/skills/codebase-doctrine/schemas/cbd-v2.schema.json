@@ -1,0 +1,136 @@
+{
+  "$id": "urn:codebase-doctrine:CBD-v2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "codebase_doctrine": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_state": {
+          "type": "object"
+        },
+        "authority_map": {
+          "type": "object"
+        },
+        "behavioral_model": {
+          "type": "object"
+        },
+        "boundary_rules": {
+          "type": "array"
+        },
+        "claims": {
+          "type": "array"
+        },
+        "confidence": {
+          "type": "object"
+        },
+        "contradictions": {
+          "type": "array"
+        },
+        "doctrine_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "doctrine_version": {
+          "const": "CBD-v2"
+        },
+        "evidence_index": {
+          "type": "array"
+        },
+        "failure_families": {
+          "type": "array"
+        },
+        "focused_skill_candidates": {
+          "type": "array"
+        },
+        "governing_laws": {
+          "type": "array"
+        },
+        "intent": {
+          "$ref": "cdi-v2.schema.json"
+        },
+        "knowledge_routes": {
+          "type": "array"
+        },
+        "negative_routes": {
+          "type": "array"
+        },
+        "next_actions": {
+          "type": "array"
+        },
+        "open_questions": {
+          "type": "array"
+        },
+        "owned_invariants": {
+          "type": "array"
+        },
+        "proof_map": {
+          "type": "object"
+        },
+        "rejected_skill_candidates": {
+          "type": "array"
+        },
+        "repository_fingerprint": {
+          "type": "object"
+        },
+        "repository_root_skill": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "request": {
+          "type": "object"
+        },
+        "saturation": {
+          "type": "object"
+        },
+        "search_ledger": {
+          "type": "array"
+        },
+        "specialist_receipts": {
+          "type": "array"
+        },
+        "system_map": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "doctrine_version",
+        "doctrine_id",
+        "intent",
+        "artifact_state",
+        "request",
+        "search_ledger",
+        "evidence_index",
+        "claims",
+        "repository_fingerprint",
+        "system_map",
+        "authority_map",
+        "behavioral_model",
+        "governing_laws",
+        "owned_invariants",
+        "boundary_rules",
+        "failure_families",
+        "negative_routes",
+        "proof_map",
+        "contradictions",
+        "open_questions",
+        "knowledge_routes",
+        "repository_root_skill",
+        "focused_skill_candidates",
+        "rejected_skill_candidates",
+        "specialist_receipts",
+        "saturation",
+        "confidence",
+        "next_actions"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "codebase_doctrine"
+  ],
+  "title": "Codebase Doctrine v2",
+  "type": "object"
+}

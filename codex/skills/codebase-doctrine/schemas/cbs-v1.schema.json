@@ -1,0 +1,33 @@
+{
+  "$id": "urn:codebase-doctrine:CBS-v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "codebase_survey": {
+      "additionalProperties": true,
+      "properties": {
+        "survey_version": {
+          "const": "CBS-v1"
+        }
+      },
+      "required": [
+        "survey_version",
+        "survey_id",
+        "provisional_artifact_state",
+        "intent_gate_id",
+        "repository_fingerprint",
+        "provisional_system_map",
+        "evidence_refs",
+        "exact_next_questions",
+        "open_user_judgments",
+        "no_committed_portfolio"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "codebase_survey"
+  ],
+  "title": "Codebase Survey v1",
+  "type": "object"
+}

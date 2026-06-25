@@ -1,23 +1,31 @@
 {
   "codebase_doctrine_packet": {
-    "packet_version": "CBDP-v1",
+    "packet_version": "CBDP-v2",
     "worker": "codebase_doctrine_proof_mapper",
-    "artifact_state_id": "AS-example-001",
-    "scope": "store proof surfaces",
+    "assignment_id": "CBDA-PROOF-001",
+    "artifact_state_id": "AS-ce619f3a519dcde1",
+    "intent_id": "CDI-39fccd09a78289b2",
+    "scope": "store lifecycle",
     "evidence_lanes": [
       "behavior_and_tests",
-      "static_structure"
+      "runtime"
     ],
     "questions_addressed": [
       "Q-PROOF"
     ],
     "facts": [
       {
-        "claim_id": "CLAIM-PROOF",
-        "statement": "The commit-visibility law has a table-test proof surface.",
+        "claim_id": "WORKER-CLAIM-PROOF",
+        "claim_class": "fact",
+        "statement": "The focused table test covers pending and committed visibility.",
         "evidence_refs": [
-          "test/store_test.zig:88"
+          "test/store_test.zig:88",
+          "receipt:test-20260625-001"
         ],
+        "question_ids": [
+          "Q-PROOF"
+        ],
+        "artifact_state_id": "AS-ce619f3a519dcde1",
         "confidence": "high"
       }
     ],
@@ -29,7 +37,8 @@
         "proof_surfaces": [
           "PROOF-COMMIT-TABLE"
         ]
-      }
+      },
+      "knowledge_route_candidates": {}
     },
     "stale": "no",
     "final_call": "usable"

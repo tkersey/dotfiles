@@ -1,110 +1,64 @@
-# CBD-v1 Schema
+# CBD-v2 schema
+
+CBD-v2 is a closed graph, not a prose outline.
 
 ```yaml
 codebase_doctrine:
-  doctrine_version: CBD-v1
+  doctrine_version: CBD-v2
   doctrine_id:
 
   intent:
-    codebase_doctrine_intent:
-      intent_version: CDI-v1
-      intent_id:
-      source:
-      target:
-      consumers: []
-      posture:
-      desired_products: []
-      primary_invariant:
-      correctness_priorities: []
-      non_goals: []
-      proof_bar:
-      compatibility_posture:
-      persistence_posture:
-      skill_portfolio_requested:
-      enforcement_routing_requested:
-      assumptions: []
-      deferred_questions: []
-      doctrine_allowed:
-
-  artifact_state:
+    codebase_doctrine_intent: {}
+  artifact_state: {}
   request:
+    mode: doctrine | deep
+    scope:
+    depth:
 
   search_ledger: []
   evidence_index: []
   claims: []
 
-  repository_fingerprint:
-  system_map:
+  repository_fingerprint: {}
+  system_map: {}
   authority_map:
-  behavioral_model:
+    authorities: []
+  behavioral_model: {}
   governing_laws: []
   owned_invariants: []
   boundary_rules: []
   failure_families: []
   negative_routes: []
   proof_map:
+    proof_surfaces: []
 
   contradictions: []
   open_questions: []
   knowledge_routes: []
 
-  repository_root_skill:
+  repository_root_skill: null
   focused_skill_candidates: []
   rejected_skill_candidates: []
+  specialist_receipts: []
 
-  saturation:
-  confidence:
+  saturation: {}
+  confidence: {}
   next_actions: []
 ```
 
-## Intent checks
+Relational requirements include:
 
-- CDI-v1 is valid and `doctrine_allowed` is yes.
-- Artifact state carries the same `intent_id`.
-- If source is `grill`, a grill packet digest is present.
-- Scope, consumers, posture, products, non-goals, and proof bar are explicit.
-- CBD output does not silently expand beyond included boundaries or products.
+- DIG/grill deterministically compiled to valid CDI-v2;
+- artifact state bound to the CDI digest;
+- question/evidence and evidence/claim reverse links close;
+- every evidence item uses the current artifact state;
+- laws and invariants have current or target authority and proof posture;
+- proof IDs resolve and executed proof is current;
+- canonical negative routes cite ledger IDs and projection fingerprints;
+- every durable active claim has exactly one primary route;
+- every candidate criterion cites evidence;
+- zero skills is valid;
+- saturation is relationally proved.
 
-Legacy CBD-v1 without intent may be inspected with a warning, but new doctrine generation should validate with:
-
-```bash
-python3 codex/skills/codebase-doctrine/tools/doctrine_gate.py \
-  --require-intent doctrine.yaml
-```
-
-## Required relational checks
-
-- unique IDs;
-- evidence references exist;
-- laws have owners, observations/counterexamples, and proof obligations;
-- invariants have owner/boundary/counterexample/proof;
-- failure families map to laws or remain explicitly provisional;
-- every durable knowledge item is routed;
-- accepted skills pass candidacy;
-- focused accepted count ≤ 5;
-- exactly one root skill design;
-- saturation verdict valid;
-- no terminal exhaustive-understanding claim.
-
-## Handoff
-
-```yaml
-codebase_skill_handoff:
-  handoff_version: CBSH-v1
-  doctrine_id:
-  intent_id:
-  artifact_state_id:
-  candidate_id:
-  proposed_name:
-  governing_law_ids: []
-  trigger_examples: []
-  non_triggers: []
-  consequential_decisions: []
-  prohibited_routes: []
-  required_artifacts: []
-  success_signals: []
-  failure_signals: []
-  protected_doctrine_ids: []
-  allowed_package:
-  validation:
-```
+Use `schemas/cbd-v2.schema.json` for structure and `tools/doctrine_gate.py` for
+relational closure.

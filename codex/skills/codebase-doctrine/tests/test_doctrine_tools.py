@@ -1,114 +1,99 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --with pyyaml python
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
-import subprocess
 import sys
-import tempfile
+import unittest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "tools"
 ASSETS = ROOT / "assets"
+EVALS = ROOT / "evals"
+sys.path.insert(0, str(TOOLS))
+
+import doctrine_diff
+import doctrine_gate
 
 
-def run(tool: str, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(TOOLS / tool), *map(str, args)],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+def set_path(value, path: str, replacement) -> None:
+    current = value
+    parts = path.split(".")
+    for part in parts[:-1]:
+        current = current[int(part)] if isinstance(current, list) else current[part]
+    last = parts[-1]
+    if isinstance(current, list):
+        current[int(last)] = replacement
+    else:
+        current[last] = replacement
 
 
-def write_agent(path: Path, name: str) -> None:
-    path.write_text(
-        f'name = "{name}"\n'
-        'description = "fixture"\n'
-        'sandbox_mode = "read-only"\n',
-        encoding="utf-8",
-    )
+class DoctrineToolsTests(unittest.TestCase):
+    def load_yaml(self, name: str):
+        return yaml.safe_load((ASSETS / name).read_text(encoding="utf-8"))
 
-
-def main() -> int:
-    packet = run("packet_gate.py", ASSETS / "specialist-packet.example.json")
-    assert packet.returncode == 0, packet.stdout + packet.stderr
-
-    proof_packet = run(
-        "packet_gate.py", ASSETS / "proof-mapper-packet.example.json"
-    )
-    assert proof_packet.returncode == 0, proof_packet.stdout + proof_packet.stderr
-    assert (
-        json.loads(proof_packet.stdout)["packet_gate"]["worker"]
-        == "codebase_doctrine_proof_mapper"
-    )
-
-    with tempfile.TemporaryDirectory() as td:
-        temp = Path(td)
-
-        bad = json.loads(
-            (ASSETS / "codebase-doctrine.example.json").read_text()
+    def test_example_is_closed_and_saturated(self) -> None:
+        errors, warnings, counts = doctrine_gate.validate_value(
+            self.load_yaml("codebase-doctrine.example.yaml"),
+            require_saturated=True,
         )
-        bad["codebase_doctrine"]["focused_skill_candidates"][0]["candidacy"][
-            "better_as_code"
-        ] = "yes"
-        path = temp / "bad-doctrine.json"
-        path.write_text(json.dumps(bad))
-        result = run("doctrine_gate.py", "--require-intent", path)
-        assert result.returncode == 2
-        assert "accepted-with-failed-gate" in result.stdout
+        self.assertEqual(errors, [])
+        self.assertEqual(warnings, [])
+        self.assertEqual(counts["active_root_skills"], 0)
+        self.assertEqual(counts["active_focused_skills"], 1)
 
-        packet_bad = json.loads(
-            (ASSETS / "specialist-packet.example.json").read_text()
-        )
-        packet_bad["codebase_doctrine_packet"]["stale"] = "yes"
-        path = temp / "stale-packet.json"
-        path.write_text(json.dumps(packet_bad))
-        result = run("packet_gate.py", path)
-        assert result.returncode == 2
-        assert "stale:true" in result.stdout
+    def test_graph_integrity_corpus(self) -> None:
+        corpus = json.loads((EVALS / "graph-integrity-cases.json").read_text())
+        base = self.load_yaml("codebase-doctrine.example.yaml")
+        for case in corpus["cases"]:
+            with self.subTest(case=case["id"]):
+                mutated = copy.deepcopy(base)
+                set_path(mutated, case["path"], case["value"])
+                errors, _warnings, _counts = doctrine_gate.validate_value(mutated)
+                self.assertTrue(
+                    any(case["expected_error"] in item for item in errors),
+                    f"{case['id']}: {errors}",
+                )
 
-        legacy = json.loads(
-            (ASSETS / "proof-mapper-packet.example.json").read_text()
-        )
-        legacy["codebase_doctrine_packet"]["worker"] = "proof_surface_mapper"
-        path = temp / "legacy-packet.json"
-        path.write_text(json.dumps(legacy))
-        result = run("packet_gate.py", path)
-        assert result.returncode == 2
-        assert (
-            "worker:renamed:proof_surface_mapper"
-            "->codebase_doctrine_proof_mapper"
-        ) in result.stdout
+    def test_zero_skills_is_valid(self) -> None:
+        value = self.load_yaml("codebase-doctrine.example.yaml")
+        body = value["codebase_doctrine"]
+        body["focused_skill_candidates"] = []
+        body["rejected_skill_candidates"] = []
+        body["knowledge_routes"][1]["secondary_destinations"] = []
+        errors, _warnings, _counts = doctrine_gate.validate_value(value)
+        self.assertEqual(errors, [])
 
-        duplicate_root = temp / "agents-duplicate"
-        duplicate_root.mkdir()
-        write_agent(duplicate_root / "one.toml", "proof_surface_mapper")
-        write_agent(duplicate_root / "two.toml", "proof_surface_mapper")
-        result = run(
-            "agent_identity_check.py", "--agents-root", duplicate_root
-        )
-        assert result.returncode == 2
-        assert "duplicate:proof_surface_mapper" in result.stdout
+    def test_current_and_target_status_are_required(self) -> None:
+        value = self.load_yaml("codebase-doctrine.example.yaml")
+        law = value["codebase_doctrine"]["governing_laws"][0]
+        del law["doctrine_status"]
+        errors, _warnings, _counts = doctrine_gate.validate_value(value)
+        self.assertTrue(any("doctrine_status" in item for item in errors))
 
-        fixed_root = temp / "agents-fixed"
-        fixed_root.mkdir()
-        write_agent(fixed_root / "proof_surface_mapper.toml", "proof_surface_mapper")
-        write_agent(
-            fixed_root / "codebase-doctrine-proof-mapper.toml",
-            "codebase_doctrine_proof_mapper",
-        )
-        result = run(
-            "agent_identity_check.py",
-            "--agents-root",
-            fixed_root,
-            "--require-codebase-doctrine-proof-mapper",
-        )
-        assert result.returncode == 0, result.stdout + result.stderr
+    def test_negative_route_must_be_canonical_before_prohibition(self) -> None:
+        value = self.load_yaml("codebase-doctrine.example.yaml")
+        value["codebase_doctrine"]["negative_routes"][0]["status"] = "witnessed"
+        errors, _warnings, _counts = doctrine_gate.validate_value(value)
+        self.assertTrue(any("prohibited_route_ids:unknown" in item for item in errors))
 
-    print("codebase-doctrine tools: PASS")
-    return 0
+    def test_delta_partitions_are_disjoint(self) -> None:
+        prior = self.load_yaml("codebase-doctrine.example.yaml")
+        new = self.load_yaml("codebase-doctrine.refreshed.example.yaml")
+        delta = doctrine_diff.compile_delta(prior, new, ["src/store.zig"])
+        body = delta["codebase_doctrine_delta"]
+        sets = [
+            set(body["invalidated_ids"]),
+            set(body["retained_ids"]),
+            set(body["added_ids"]),
+            set(body["modified_ids"]),
+        ]
+        for i, left in enumerate(sets):
+            for right in sets[i + 1 :]:
+                self.assertFalse(left & right)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    unittest.main()

@@ -1,25 +1,22 @@
 # Failure Forensics
 
-## Sources
+Sources include current code, bug fixes, reverts, incidents, review recurrence,
+regression tests, hot symbols, fallback growth, negative-ledger projections, and
+bounded session evidence.
+
+Normalize:
 
 ```text
-bug-fix commits
-reverts
-incident notes
-review findings
-regressions
-hot symbols
-duplicate validations
-fallback/compatibility paths
-negative-ledger records
-agent/session decision history
+local wound
+-> recurring family
+-> violated law or authority
+-> wrong representation, boundary, transition, or proof shape
 ```
-
-## Family record
 
 ```yaml
 failure_family:
   family_id:
+  status: active | provisional | retired
   governing_law_ids: []
   local_surfaces: []
   independent_witnesses: []
@@ -30,36 +27,5 @@ failure_family:
   evidence_refs: []
 ```
 
-## Normalization
-
-Do not stop at local labels:
-
-```text
-WASM parser bug
-archive acknowledgement bug
-restore scheduler bug
-```
-
-Ask whether they share a deeper rule such as authority binding, replay safety, ordering, identity, or transaction atomicity.
-
-## Historical searches
-
-Use:
-
-```text
-git log --grep
-git log -S
-git log -G
-git blame
-git show
-revert pairs
-repeated test names
-```
-
-Record scope and date.
-
-## Route failure
-
-A route becomes negative evidence when it was applied to the same governing law and materially failed to close the family.
-
-Do not exclude adjacent routes from name similarity alone.
+A route is durable negative evidence only when represented by a current canonical
+negative-ledger projection. Similar names or one failed attempt are not enough.

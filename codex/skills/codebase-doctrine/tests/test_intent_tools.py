@@ -1,102 +1,75 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --with pyyaml python
 from __future__ import annotations
 
-import json
+import copy
 from pathlib import Path
-import subprocess
 import sys
-import tempfile
+import unittest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "tools"
 ASSETS = ROOT / "assets"
+sys.path.insert(0, str(TOOLS))
+
+import common
+import intent_compile
+import intent_gate
 
 
-def run(tool: str, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(TOOLS / tool), *map(str, args)],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+class IntentToolsTests(unittest.TestCase):
+    def load(self, name: str):
+        return yaml.safe_load((ASSETS / name).read_text(encoding="utf-8"))
 
+    def test_direct_gate_compiles_deterministically(self) -> None:
+        gate = self.load("doctrine-intent-gate.direct.example.yaml")
+        kind, errors, _warnings = intent_gate.validate_value(gate, kind="dig")
+        self.assertEqual(kind, "dig")
+        self.assertEqual(errors, [])
+        left = intent_compile.compile_intent(gate)
+        right = intent_compile.compile_intent(copy.deepcopy(gate))
+        self.assertEqual(left, right)
+        kind, errors, _warnings = intent_gate.validate_value(left, kind="cdi")
+        self.assertEqual(errors, [])
 
-def main() -> int:
-    for fixture in (
-        "doctrine-intent-gate.direct.example.json",
-        "doctrine-intent-gate.grill.example.json",
-        "codebase-doctrine-intent.example.json",
-    ):
-        result = run("intent_gate.py", ASSETS / fixture)
-        assert result.returncode == 0, result.stdout + result.stderr
-        assert json.loads(result.stdout)["intent_gate"]["verdict"] == "pass"
+    def test_grill_gate_closes_exact_gaps(self) -> None:
+        gate = self.load("doctrine-intent-gate.grill.example.yaml")
+        grill = self.load("grill-decision-packet.example.yaml")
+        compiled = intent_compile.compile_intent(gate, grill)
+        self.assertEqual(compiled["codebase_doctrine_intent"]["source"]["kind"], "grill")
+        self.assertEqual(intent_gate.validate_value(compiled, kind="cdi")[1], [])
 
-    grill = run(
-        "intent_gate.py",
-        "--require-plan-allowed",
-        ASSETS / "grill-decision-packet.example.yaml",
-    )
-    assert grill.returncode == 0, grill.stdout + grill.stderr
+    def test_direct_seed_is_fully_validated(self) -> None:
+        gate = self.load("doctrine-intent-gate.direct.example.yaml")
+        del gate["doctrine_intent_gate"]["direct_intent_seed"]["proof_bar"]
+        errors = intent_gate.validate_value(gate, kind="dig")[1]
+        self.assertTrue(any("intent_seed.proof_bar:missing" in item for item in errors))
 
-    doctrine = run(
-        "doctrine_gate.py",
-        "--require-intent",
-        "--require-saturated",
-        ASSETS / "codebase-doctrine.example.json",
-    )
-    assert doctrine.returncode == 0, doctrine.stdout + doctrine.stderr
-    result = json.loads(doctrine.stdout)["doctrine_gate"]
-    assert result["counts"]["intent_present"] == 1
+    def test_repository_law_is_not_required_at_intake(self) -> None:
+        gate = self.load("doctrine-intent-gate.direct.example.yaml")
+        seed = gate["doctrine_intent_gate"]["direct_intent_seed"]
+        self.assertNotIn("primary_invariant", seed)
+        self.assertIn("primary_correctness_question", seed)
+        self.assertEqual(intent_gate.validate_value(gate, kind="dig")[1], [])
 
-    with tempfile.TemporaryDirectory() as td:
-        temp = Path(td)
+    def test_grill_closure_must_bind_handoff_digest(self) -> None:
+        gate = self.load("doctrine-intent-gate.grill.example.yaml")
+        grill = self.load("grill-decision-packet.example.yaml")
+        grill["grill_decision_packet"]["codebase_doctrine_closure"][
+            "source_handoff_digest"
+        ] = "sha256:wrong"
+        with self.assertRaisesRegex(ValueError, "handoff_digest"):
+            intent_compile.compile_intent(gate, grill)
 
-        bad_dig = json.loads(
-            (ASSETS / "doctrine-intent-gate.grill.example.json").read_text()
-        )
-        bad_dig["doctrine_intent_gate"]["material_user_judgment_gaps"][0][
-            "discoverable_from_artifacts"
-        ] = "yes"
-        path = temp / "bad-dig.json"
-        path.write_text(json.dumps(bad_dig))
-        result = run("intent_gate.py", path)
-        assert result.returncode == 2
-        assert "discoverable_from_artifacts:must-be-no" in result.stdout
-
-        bad_grill = yaml.safe_load(
-            (ASSETS / "grill-decision-packet.example.yaml").read_text()
-        )
-        bad_grill["grill_decision_packet"]["plan_allowed"] = False
-        path = temp / "bad-grill.yaml"
-        path.write_text(yaml.safe_dump(bad_grill))
-        result = run("intent_gate.py", "--require-plan-allowed", path)
-        assert result.returncode == 2
-        assert "plan_allowed:not-true" in result.stdout
-
-        bad_cdi = json.loads(
-            (ASSETS / "codebase-doctrine-intent.example.json").read_text()
-        )
-        bad_cdi["codebase_doctrine_intent"]["source"]["grill_packet_digest"] = ""
-        path = temp / "bad-cdi.json"
-        path.write_text(json.dumps(bad_cdi))
-        result = run("intent_gate.py", path)
-        assert result.returncode == 2
-        assert "grill_packet_digest:required-for-grill" in result.stdout
-
-        mismatch = json.loads(
-            (ASSETS / "codebase-doctrine.example.json").read_text()
-        )
-        mismatch["codebase_doctrine"]["artifact_state"]["intent_id"] = "CDI-other"
-        path = temp / "intent-mismatch.json"
-        path.write_text(json.dumps(mismatch))
-        result = run("doctrine_gate.py", "--require-intent", path)
-        assert result.returncode == 2
-        assert "artifact_state.intent_id:mismatch" in result.stdout
-
-    print("codebase-doctrine intent tools: PASS")
-    return 0
+    def test_material_gap_cannot_remain_deferred(self) -> None:
+        gate = self.load("doctrine-intent-gate.grill.example.yaml")
+        grill = self.load("grill-decision-packet.example.yaml")
+        closure = grill["grill_decision_packet"]["codebase_doctrine_closure"]
+        closure["resolved_gap_ids"].remove("GAP-TARGET")
+        closure["deferred_gap_ids"] = ["GAP-TARGET"]
+        with self.assertRaisesRegex(ValueError, "invalid grill closure|deferred"):
+            intent_compile.compile_intent(gate, grill)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    unittest.main()

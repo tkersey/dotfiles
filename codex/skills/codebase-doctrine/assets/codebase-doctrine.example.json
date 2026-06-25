@@ -1,15 +1,16 @@
 {
   "codebase_doctrine": {
-    "doctrine_version": "CBD-v1",
-    "doctrine_id": "CBD-example-001",
+    "doctrine_version": "CBD-v2",
+    "doctrine_id": "CBD-example-002",
     "intent": {
       "codebase_doctrine_intent": {
-        "intent_version": "CDI-v1",
-        "intent_id": "CDI-example-001",
+        "intent_version": "CDI-v2",
+        "intent_id": "CDI-39fccd09a78289b2",
         "source": {
-          "kind": "grill",
-          "intent_gate_id": "DIG-example-001",
-          "grill_packet_digest": "sha256:grill-example"
+          "kind": "direct",
+          "intent_gate_id": "DIG-direct-001",
+          "intent_gate_digest": "sha256:d33211726a02ae8d635cffd4feb4f23f0658a60d1f5779d795e52835f9add446",
+          "grill_packet_digest": null
         },
         "target": {
           "repository": "example",
@@ -34,10 +35,11 @@
         "desired_products": [
           "correctness_atlas",
           "knowledge_routing",
-          "repository_root_skill",
           "focused_skill_candidates"
         ],
-        "primary_invariant": "Only committed records are externally visible.",
+        "primary_correctness_question": "Which transition owns durable publication, and what proves that uncommitted records remain invisible?",
+        "primary_risk_or_priority": "publication authority and rollback atomicity",
+        "user_supplied_invariant_hypotheses": [],
         "correctness_priorities": [
           "publication authority",
           "rollback atomicity",
@@ -47,7 +49,7 @@
           "redesign unrelated packaging"
         ],
         "proof_bar": "Current code and tests plus Git failure evidence for durable claims.",
-        "compatibility_posture": "Preserve public behavior unless doctrine proves it invalid.",
+        "compatibility_posture": "Preserve public behavior unless current evidence and explicit target authority justify change.",
         "persistence_posture": "Conversational by default; persist only on request.",
         "skill_portfolio_requested": "yes",
         "enforcement_routing_requested": "yes",
@@ -57,39 +59,107 @@
       }
     },
     "artifact_state": {
-      "artifact_state_id": "AS-example-001",
+      "artifact_state_id": "AS-ce619f3a519dcde1",
       "repository_root": "/repo",
       "repository_name": "example",
       "branch": "main",
       "head": "abc123",
       "dirty_state": "clean",
-      "scope": "whole repository",
-      "captured_at": "2026-06-20T00:00:00Z",
-      "intent_id": "CDI-example-001"
+      "tracked_diff_sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "untracked_path_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "scope_path_digest": "sha256:53c51a6ccf0822f46188fe9ba805525eef7d575bb300d4e817e186be07f34153",
+      "intent_digest": "sha256:4378da4f39ace9f931c1a928bf397d576f9ada400b5add9d4329fb108abc3893",
+      "scope": "store lifecycle",
+      "intent_id": "CDI-39fccd09a78289b2",
+      "captured_at": "2026-06-25T00:30:00Z"
     },
     "request": {
       "mode": "doctrine",
-      "scope": "whole repository",
+      "scope": "store lifecycle",
       "depth": "standard"
     },
     "search_ledger": [
+      {
+        "question_id": "Q-SHAPE",
+        "question": "What coherent product boundary is in scope?",
+        "why_it_matters": "The doctrine boundary must match one system.",
+        "lanes": [
+          "guidance",
+          "static_structure"
+        ],
+        "search_methods": [
+          "guidance and manifest inspection"
+        ],
+        "evidence_found": [
+          "E-DOC"
+        ],
+        "model_change": "Confirmed a store-centered lifecycle boundary.",
+        "status": "answered"
+      },
       {
         "question_id": "Q-OWNER",
         "question": "Who may publish durable records?",
         "why_it_matters": "Publication authority controls visibility.",
         "lanes": [
           "authority_and_mutation",
+          "symbols_and_references"
+        ],
+        "search_methods": [
+          "write-site and transition search"
+        ],
+        "evidence_found": [
+          "E-CODE"
+        ],
+        "model_change": "Identified Store.commit as canonical publication owner.",
+        "status": "answered"
+      },
+      {
+        "question_id": "Q-LAW",
+        "question": "What observable law separates pending and committed records?",
+        "why_it_matters": "The law defines valid external visibility.",
+        "lanes": [
           "behavior_and_tests"
         ],
         "search_methods": [
-          "symbol references",
-          "tests"
+          "test and observable behavior inspection"
         ],
         "evidence_found": [
-          "E-CODE",
           "E-TEST"
         ],
-        "model_change": "identified AUTH-STORE",
+        "model_change": "Established pending invisibility and committed visibility.",
+        "status": "answered"
+      },
+      {
+        "question_id": "Q-FAILURE",
+        "question": "Does reader-side tolerance repeatedly fail to close the same family?",
+        "why_it_matters": "Failed routes should not be repeated.",
+        "lanes": [
+          "history_and_forensics",
+          "negative_evidence"
+        ],
+        "search_methods": [
+          "git history and canonical ledger projection"
+        ],
+        "evidence_found": [
+          "E-HISTORY"
+        ],
+        "model_change": "Identified a canonical negative route against reader-side tolerance.",
+        "status": "answered"
+      },
+      {
+        "question_id": "Q-PROOF",
+        "question": "What current proof establishes the visibility law?",
+        "why_it_matters": "Doctrine requires executable proof.",
+        "lanes": [
+          "behavior_and_tests"
+        ],
+        "search_methods": [
+          "run focused test command and inspect CI"
+        ],
+        "evidence_found": [
+          "E-CI"
+        ],
+        "model_change": "Bound the law to a current successful test command.",
         "status": "answered"
       }
     ],
@@ -98,11 +168,12 @@
         "evidence_id": "E-DOC",
         "lane": "guidance",
         "question_id": "Q-SHAPE",
-        "observation": "README describes a durable record store.",
+        "observation": "README and build roots describe one store-centered library lifecycle.",
         "evidence_ref": "README.md:1",
-        "artifact_state_id": "AS-example-001",
-        "scope": "repository",
+        "artifact_state_id": "AS-ce619f3a519dcde1",
+        "scope": "store lifecycle",
         "confidence": "medium",
+        "provenance": "current_guidance",
         "supports_claim_ids": [
           "CLAIM-SHAPE"
         ],
@@ -114,9 +185,10 @@
         "question_id": "Q-OWNER",
         "observation": "Store.commit is the only durable publication write path.",
         "evidence_ref": "src/store.zig:120",
-        "artifact_state_id": "AS-example-001",
+        "artifact_state_id": "AS-ce619f3a519dcde1",
         "scope": "store",
         "confidence": "high",
+        "provenance": "current_code",
         "supports_claim_ids": [
           "CLAIM-OWNER",
           "CLAIM-LAW"
@@ -126,14 +198,16 @@
       {
         "evidence_id": "E-TEST",
         "lane": "behavior_and_tests",
-        "question_id": "Q-OWNER",
-        "observation": "Uncommitted records are not visible to readers.",
+        "question_id": "Q-LAW",
+        "observation": "Focused tests show pending records are invisible and committed records visible.",
         "evidence_ref": "test/store_test.zig:88",
-        "artifact_state_id": "AS-example-001",
+        "artifact_state_id": "AS-ce619f3a519dcde1",
         "scope": "store",
         "confidence": "high",
+        "provenance": "current_test",
         "supports_claim_ids": [
-          "CLAIM-LAW"
+          "CLAIM-LAW",
+          "CLAIM-PROOF"
         ],
         "contradicts_claim_ids": []
       },
@@ -141,13 +215,29 @@
         "evidence_id": "E-HISTORY",
         "lane": "history_and_forensics",
         "question_id": "Q-FAILURE",
-        "observation": "Two prior fixes addressed visibility before commit.",
-        "evidence_ref": "git:deadbeef",
-        "artifact_state_id": "AS-example-001",
+        "observation": "Two repairs and canonical ledger NEG-0001 identify reader-side tolerance as a failed route.",
+        "evidence_ref": ".ledger/negative-ledger.jsonl#NEG-0001",
+        "artifact_state_id": "AS-ce619f3a519dcde1",
         "scope": "store",
-        "confidence": "medium",
+        "confidence": "high",
+        "provenance": "canonical_negative_ledger_projection",
         "supports_claim_ids": [
           "CLAIM-FAILURE"
+        ],
+        "contradicts_claim_ids": []
+      },
+      {
+        "evidence_id": "E-CI",
+        "lane": "behavior_and_tests",
+        "question_id": "Q-PROOF",
+        "observation": "`zig build test` passes the visibility table tests at this artifact state.",
+        "evidence_ref": "receipt:test-20260625-001",
+        "artifact_state_id": "AS-ce619f3a519dcde1",
+        "scope": "store",
+        "confidence": "high",
+        "provenance": "executed_current_proof",
+        "supports_claim_ids": [
+          "CLAIM-PROOF"
         ],
         "contradicts_claim_ids": []
       }
@@ -156,26 +246,26 @@
       {
         "claim_id": "CLAIM-SHAPE",
         "kind": "fact",
-        "statement": "The repository is a library centered on a durable record store.",
+        "statement": "The selected boundary is a store-centered durable record lifecycle.",
         "evidence_refs": [
           "E-DOC"
         ],
         "counterevidence_refs": [],
         "confidence": "medium",
         "status": "active",
-        "durable": false
+        "durable": "no"
       },
       {
         "claim_id": "CLAIM-OWNER",
         "kind": "fact",
-        "statement": "AUTH-STORE is the canonical publication authority.",
+        "statement": "Store.commit is the canonical publication authority.",
         "evidence_refs": [
           "E-CODE"
         ],
         "counterevidence_refs": [],
         "confidence": "high",
         "status": "active",
-        "durable": true
+        "durable": "yes"
       },
       {
         "claim_id": "CLAIM-LAW",
@@ -188,19 +278,32 @@
         "counterevidence_refs": [],
         "confidence": "high",
         "status": "active",
-        "durable": true
+        "durable": "yes"
       },
       {
         "claim_id": "CLAIM-FAILURE",
         "kind": "inference",
-        "statement": "Visibility-before-commit is a recurring failure family.",
+        "statement": "Reader-side tolerance is a witnessed and canonically projected failed route for the publication family.",
         "evidence_refs": [
           "E-HISTORY"
         ],
         "counterevidence_refs": [],
-        "confidence": "medium",
+        "confidence": "high",
         "status": "active",
-        "durable": true
+        "durable": "yes"
+      },
+      {
+        "claim_id": "CLAIM-PROOF",
+        "kind": "fact",
+        "statement": "The current table test and `zig build test` execution prove pending invisibility and committed visibility.",
+        "evidence_refs": [
+          "E-TEST",
+          "E-CI"
+        ],
+        "counterevidence_refs": [],
+        "confidence": "high",
+        "status": "active",
+        "durable": "yes"
       }
     ],
     "repository_fingerprint": {
@@ -251,12 +354,18 @@
         "src/store.zig"
       ],
       "feedback_loops": [],
-      "delays_and_async_boundaries": []
+      "delays_and_async_boundaries": [],
+      "evidence_refs": [
+        "E-CODE",
+        "E-TEST"
+      ]
     },
     "authority_map": {
       "authorities": [
         {
           "authority_id": "AUTH-STORE",
+          "doctrine_status": "observed_current",
+          "normative_authority": "current code and executable behavior",
           "owner": "Store.commit",
           "owned_state": [
             "durable records",
@@ -278,6 +387,12 @@
           "authority_transfers": [],
           "shadow_owners": [],
           "late_validations": [],
+          "current_evidence_refs": [
+            "E-CODE",
+            "E-TEST"
+          ],
+          "target_authority_refs": [],
+          "gap_statement": "",
           "evidence_refs": [
             "E-CODE",
             "E-TEST"
@@ -316,11 +431,17 @@
       ],
       "interpreters_or_projections": [
         "Store.get"
+      ],
+      "evidence_refs": [
+        "E-CODE",
+        "E-TEST"
       ]
     },
     "governing_laws": [
       {
         "law_id": "LAW-COMMITTED-VISIBILITY",
+        "doctrine_status": "observed_current",
+        "normative_authority": "current code and executable behavior",
         "statement": "A record is externally visible only after Store.commit publishes it.",
         "owner": "AUTH-STORE",
         "observations": [
@@ -330,9 +451,19 @@
           "pending record visible"
         ],
         "proof_obligations": [
-          "test pending invisibility",
-          "test committed visibility"
+          "pending record remains invisible",
+          "committed record becomes visible"
         ],
+        "proof_surface_ids": [
+          "PROOF-COMMIT-TABLE"
+        ],
+        "proof_gap": "",
+        "current_evidence_refs": [
+          "E-CODE",
+          "E-TEST"
+        ],
+        "target_authority_refs": [],
+        "gap_statement": "",
         "evidence_refs": [
           "E-CODE",
           "E-TEST"
@@ -342,6 +473,8 @@
     "owned_invariants": [
       {
         "invariant_id": "INV-COMMIT-FRONTIER",
+        "doctrine_status": "observed_current",
+        "normative_authority": "current code and executable behavior",
         "statement": "The publication frontier never advances beyond committed state.",
         "owner": "AUTH-STORE",
         "source_of_truth": "Store.commit sequence",
@@ -361,6 +494,12 @@
         "proof_surface_ids": [
           "PROOF-COMMIT-TABLE"
         ],
+        "current_evidence_refs": [
+          "E-CODE",
+          "E-TEST"
+        ],
+        "target_authority_refs": [],
+        "gap_statement": "",
         "evidence_refs": [
           "E-CODE",
           "E-TEST"
@@ -371,17 +510,36 @@
     "boundary_rules": [
       {
         "boundary_rule_id": "BOUNDARY-PUBLISH",
+        "doctrine_status": "observed_current",
+        "normative_authority": "current code and executable behavior",
         "statement": "Only Store.commit may publish record visibility.",
-        "authority_before": "pending store state",
-        "authority_after": "committed store state",
+        "accepted_input": "committed store state",
+        "rejected_input": "pending or foreign state",
+        "authority_before": "store owns pending state",
+        "authority_after": "store issues committed visibility",
+        "transferred_state_or_evidence": "commit sequence",
+        "governing_law_ids": [
+          "LAW-COMMITTED-VISIBILITY"
+        ],
+        "proof_surface_ids": [
+          "PROOF-COMMIT-TABLE"
+        ],
+        "current_evidence_refs": [
+          "E-CODE",
+          "E-TEST"
+        ],
+        "target_authority_refs": [],
+        "gap_statement": "",
         "evidence_refs": [
-          "E-CODE"
+          "E-CODE",
+          "E-TEST"
         ]
       }
     ],
     "failure_families": [
       {
         "family_id": "FAM-VISIBILITY-BEFORE-COMMIT",
+        "status": "active",
         "governing_law_ids": [
           "LAW-COMMITTED-VISIBILITY"
         ],
@@ -390,30 +548,42 @@
           "projection"
         ],
         "independent_witnesses": [
-          "pending record visible"
+          "pending record visible",
+          "duplicate downstream validation"
         ],
         "recurring_signatures": [
           "visibility before commit"
         ],
         "historical_repairs": [
-          "git:deadbeef"
+          "git:deadbeef",
+          "git:feedface"
         ],
         "routes_that_failed": [
           "reader-side tolerance"
         ],
-        "unresolved_risk": "none known",
+        "unresolved_risk": "Future compatibility code may reintroduce a shadow publication owner.",
         "evidence_refs": [
           "E-HISTORY",
           "E-TEST"
-        ],
-        "status": "active"
+        ]
       }
     ],
     "negative_routes": [
       {
         "route_id": "NEG-READER-TOLERANCE",
         "route_family": "reader-side tolerance",
-        "reason": "Leaves publication authority ambiguous.",
+        "status": "canonical_projection",
+        "reason": "It leaves publication authority ambiguous and has failed to close the same family.",
+        "ledger_id": "NEG-0001",
+        "projection_fingerprint": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "applicability_conditions": [
+          "same committed-visibility law",
+          "reader-side repair proposed"
+        ],
+        "reopening_criteria": [
+          "canonical owner or accepted behavior changes",
+          "new proof defeats the prior failure"
+        ],
         "evidence_refs": [
           "E-HISTORY"
         ]
@@ -431,8 +601,24 @@
           "artifact_refs": [
             "test/store_test.zig:88"
           ],
-          "strength": "law-level examples for pending and committed states",
-          "gaps": []
+          "strength": "law-level examples cover pending and committed states",
+          "gaps": [],
+          "evidence_refs": [
+            "E-TEST",
+            "E-CI"
+          ],
+          "verification": {
+            "status": "executed_current",
+            "command": "zig build test",
+            "exit_code": 0,
+            "result_ref": "receipt:test-20260625-001",
+            "artifact_state_id": "AS-ce619f3a519dcde1",
+            "toolchain": "Zig 0.15.2",
+            "target": "store visibility table tests",
+            "options": "default",
+            "verified_at": "2026-06-25T00:25:00Z",
+            "reason_not_executed": ""
+          }
         }
       ]
     },
@@ -449,7 +635,7 @@
         "secondary_destinations": [
           "AGENTS_or_repository_guidance"
         ],
-        "reason": "Canonical ownership should be structural and briefly documented.",
+        "reason": "Canonical ownership should remain structural and briefly documented.",
         "enforcement_strength": "strong",
         "owner": "AUTH-STORE",
         "status": "accepted"
@@ -462,120 +648,217 @@
         ],
         "primary_destination": "test_or_property",
         "secondary_destinations": [
-          "repository_root_skill"
+          "focused_skill"
         ],
-        "reason": "The law needs executable proof and future decision routing.",
+        "reason": "The law needs executable proof; contextual route selection may be trialed as a focused skill.",
         "enforcement_strength": "strong",
         "owner": "AUTH-STORE",
         "status": "accepted"
       },
       {
         "knowledge_id": "KNOW-FAILURE",
-        "statement": "Reader-side tolerance is a failed route.",
+        "statement": "Reader-side tolerance is a canonical failed route.",
         "source_claim_ids": [
           "CLAIM-FAILURE"
         ],
         "primary_destination": "negative_ledger",
         "secondary_destinations": [],
-        "reason": "Future repairs should not repeat the failed semantic route.",
-        "enforcement_strength": "advisory",
+        "reason": "Canonical negative evidence should prevent repeated semantic routes.",
+        "enforcement_strength": "canonical",
+        "owner": "AUTH-STORE",
+        "status": "accepted"
+      },
+      {
+        "knowledge_id": "KNOW-PROOF",
+        "statement": "The visibility law is proved by the focused table test and current execution receipt.",
+        "source_claim_ids": [
+          "CLAIM-PROOF"
+        ],
+        "primary_destination": "CI_gate",
+        "secondary_destinations": [
+          "test_or_property"
+        ],
+        "reason": "Current executable proof should remain a regression gate.",
+        "enforcement_strength": "strong",
         "owner": "AUTH-STORE",
         "status": "accepted"
       }
     ],
-    "repository_root_skill": {
-      "candidate_id": "SKILL-ROOT",
-      "proposed_name": "example-correctness",
-      "mission": "Route changes through store authority and proof laws.",
-      "trigger_boundary": "material changes to record creation, commit, publication, or reads",
-      "routing_table": [
-        "publication changes -> LAW-COMMITTED-VISIBILITY"
-      ],
-      "references": [
-        "authority map",
-        "proof map"
-      ],
-      "decision_contract_outline": [
-        "reject reader-side tolerance"
-      ],
-      "accepted": true
-    },
+    "repository_root_skill": null,
     "focused_skill_candidates": [
       {
         "candidate_id": "SKILL-PUBLICATION",
+        "candidate_type": "focused",
         "proposed_name": "example-publication-authority",
+        "mission": "Route material publication and visibility changes through the canonical owner, current law, canonical negative route, and proof surface.",
         "governing_law_ids": [
           "LAW-COMMITTED-VISIBILITY"
         ],
+        "source_claim_ids": [
+          "CLAIM-OWNER",
+          "CLAIM-LAW",
+          "CLAIM-FAILURE",
+          "CLAIM-PROOF"
+        ],
         "trigger_examples": [
-          "change commit or visibility semantics"
+          "change commit, publication, visibility, rollback, or read exposure semantics"
         ],
         "non_triggers": [
-          "read-only documentation edit"
+          "read-only documentation edit",
+          "unrelated release packaging"
         ],
         "consequential_decisions": [
-          "where publication validation belongs"
+          "where publication validation belongs",
+          "whether a compatibility path violates canonical authority"
         ],
-        "prohibited_routes": [
-          "reader-side tolerance"
+        "prohibited_route_ids": [
+          "NEG-READER-TOLERANCE"
         ],
         "required_artifacts": [
-          "owner evidence",
-          "law-level proof"
+          "current owner evidence",
+          "law-level proof receipt",
+          "negative-ledger applicability check"
         ],
         "success_signals": [
-          "single publication owner"
+          "single publication owner",
+          "pending invisibility preserved",
+          "focused proof passes"
         ],
         "failure_signals": [
-          "duplicate visibility check"
+          "reader repairs producer state",
+          "duplicate visibility checks",
+          "route repeats NEG-0001"
         ],
         "standalone_use_cases": [
-          "review publication changes"
+          "review publication changes",
+          "plan a visibility migration"
         ],
         "candidacy": {
-          "recurring_trigger": "yes",
-          "consequential_decision": "yes",
-          "stable_governing_law": "yes",
-          "independent_activation": "yes",
-          "standalone_workflow": "yes",
-          "observable_success_and_failure": "yes",
-          "better_as_code": "no",
-          "better_as_test": "no",
-          "better_as_tooling": "no",
-          "better_as_docs": "no",
-          "accepted": "yes"
+          "recurring_trigger": {
+            "verdict": "yes",
+            "evidence_refs": [
+              "E-HISTORY"
+            ],
+            "counterevidence_refs": [],
+            "rationale": "The same publication family recurred across independent repairs."
+          },
+          "consequential_decision": {
+            "verdict": "yes",
+            "evidence_refs": [
+              "E-CODE",
+              "E-TEST"
+            ],
+            "counterevidence_refs": [],
+            "rationale": "Placement of authority changes externally visible behavior."
+          },
+          "stable_governing_law": {
+            "verdict": "yes",
+            "evidence_refs": [
+              "E-CODE",
+              "E-TEST"
+            ],
+            "counterevidence_refs": [],
+            "rationale": "Current code and behavior agree on committed visibility."
+          },
+          "independent_activation": {
+            "verdict": "yes",
+            "evidence_refs": [
+              "E-HISTORY"
+            ],
+            "counterevidence_refs": [],
+            "rationale": "Publication/visibility changes form an independently recognizable trigger."
+          },
+          "standalone_workflow": {
+            "verdict": "yes",
+            "evidence_refs": [
+              "E-CODE",
+              "E-CI"
+            ],
+            "counterevidence_refs": [],
+            "rationale": "Owner, negative route, and proof form a complete review workflow."
+          },
+          "observable_success_and_failure": {
+            "verdict": "yes",
+            "evidence_refs": [
+              "E-TEST",
+              "E-CI"
+            ],
+            "counterevidence_refs": [],
+            "rationale": "Visibility states and focused proof are observable."
+          },
+          "better_as_code": {
+            "verdict": "no",
+            "evidence_refs": [
+              "E-CODE"
+            ],
+            "counterevidence_refs": [],
+            "rationale": "Code owns the invariant, but cross-surface route selection remains contextual."
+          },
+          "better_as_test": {
+            "verdict": "no",
+            "evidence_refs": [
+              "E-TEST"
+            ],
+            "counterevidence_refs": [],
+            "rationale": "Tests prove the law but do not choose authority placement for future changes."
+          },
+          "better_as_tooling": {
+            "verdict": "no",
+            "evidence_refs": [
+              "E-HISTORY"
+            ],
+            "counterevidence_refs": [],
+            "rationale": "The decision requires contextual classification beyond a mechanical rule."
+          },
+          "better_as_docs": {
+            "verdict": "no",
+            "evidence_refs": [
+              "E-CODE",
+              "E-HISTORY"
+            ],
+            "counterevidence_refs": [],
+            "rationale": "Static prose cannot adjudicate competing publication routes."
+          }
         },
-        "evidence_refs": [
-          "E-CODE",
-          "E-TEST",
-          "E-HISTORY"
-        ]
+        "status": "recommended_for_trial",
+        "empirical_evidence_refs": [],
+        "rejection_reason": ""
       }
     ],
     "rejected_skill_candidates": [
       {
         "candidate_id": "SKILL-TEST-NAMING",
         "proposed_name": "example-test-naming",
-        "reason": "Better as repository guidance.",
-        "primary_destination": "AGENTS_or_repository_guidance"
+        "reason": "Deterministic naming guidance is better as concise repository guidance.",
+        "primary_destination": "AGENTS_or_repository_guidance",
+        "evidence_refs": [
+          "E-DOC"
+        ]
       }
     ],
+    "specialist_receipts": [],
     "saturation": {
       "lanes_required": [
         "guidance",
-        "authority_and_mutation",
+        "static_structure",
+        "symbols_and_references",
         "behavior_and_tests",
-        "history_and_forensics"
+        "authority_and_mutation",
+        "history_and_forensics",
+        "negative_evidence"
       ],
       "lanes_covered": [
         "guidance",
-        "authority_and_mutation",
+        "static_structure",
+        "symbols_and_references",
         "behavior_and_tests",
-        "history_and_forensics"
+        "authority_and_mutation",
+        "history_and_forensics",
+        "negative_evidence"
       ],
       "open_questions": [],
       "contradictions_remaining": [],
-      "last_material_model_change": "identified failed reader-tolerance route",
+      "last_material_model_change_ref": "Q-FAILURE",
       "additional_search_would_change": {
         "repository_fingerprint": "no",
         "authority_map": "no",
@@ -599,7 +882,7 @@
       ]
     },
     "next_actions": [
-      "Ask for authorization before creating accepted repository skills.",
+      "Ask for explicit authorization before creating the trial skill.",
       "Use seq/tune/refine after real skill use."
     ]
   }

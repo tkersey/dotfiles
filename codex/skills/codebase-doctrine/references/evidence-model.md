@@ -1,6 +1,23 @@
-# Evidence Model
+# Evidence Model v2
 
-## Evidence item
+## Question
+
+```yaml
+search_question:
+  question_id:
+  question:
+  why_it_matters:
+  lanes: []
+  search_methods: []
+  evidence_found: []
+  model_change:
+  status: answered | no_evidence | open | blocked
+```
+
+Every evidence item references one existing question. The question's
+`evidence_found` list must exactly match all evidence carrying that question ID.
+
+## Evidence
 
 ```yaml
 codebase_evidence:
@@ -11,76 +28,62 @@ codebase_evidence:
   evidence_ref:
   artifact_state_id:
   scope:
-  confidence: high | medium | low
+  confidence: high | medium | low | unknown
+  provenance:
   supports_claim_ids: []
   contradicts_claim_ids: []
 ```
 
-## Claim classes
+Evidence and claim references are bidirectional. A support or contradiction edge
+must appear on both nodes.
+
+## Claim
 
 ```yaml
 doctrine_claim:
   claim_id:
-  kind:
-    fact |
-    inference |
-    open_question |
-    recommendation
+  kind: fact | inference | open_question | recommendation
   statement:
   evidence_refs: []
   counterevidence_refs: []
-  confidence:
-  status:
-    active |
-    contradicted |
-    superseded |
-    unresolved
+  confidence: high | medium | low | unknown
+  status: active | contradicted | superseded | unresolved
+  durable: yes | no
 ```
 
-## Confidence
+Every durable active claim receives exactly one primary knowledge route.
 
-High:
+## Doctrine status
 
-- direct current-code evidence;
-- current executable proof;
-- several independent lanes agree;
-- exact historical artifact.
+Authorities, laws, invariants, and boundaries carry:
 
-Medium:
+```yaml
+doctrine_status:
+  observed_current |
+  documented_intent |
+  explicit_target |
+  proposed |
+  contradicted |
+  retired
+normative_authority:
+current_evidence_refs: []
+target_authority_refs: []
+gap_statement:
+```
 
-- one strong lane;
-- inference from current structure;
-- documentation plus partial code support.
+Do not represent current behavior and desired behavior as one unlabeled row.
 
-Low:
-
-- naming;
-- one comment;
-- stale history;
-- incomplete search;
-- worker hypothesis without direct evidence.
-
-## Contradiction discipline
-
-Do not average incompatible claims.
-
-Record the contradiction, stronger evidence, resolution, and residual uncertainty.
-
-## Citation discipline
+## Evidence hierarchy
 
 Prefer:
 
-```text
-path:line
-symbol
-commit SHA
-test name
-trace/receipt ID
-session/artifact reference
-```
+1. current mutation, transition, and certificate paths;
+2. current executable proof;
+3. current runtime evidence;
+4. several independent current lanes;
+5. exact history;
+6. current guidance;
+7. naming and comments.
 
-Avoid large pasted snippets.
-
-## Contamination
-
-Treat generated reports, injected skill blocks, current audit prompts, copied examples, and memory summaries as possible contamination when mining history.
+Generated reports, skill prompts, examples, and memory summaries are possible
+contamination, not independent proof.

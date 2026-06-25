@@ -1,0 +1,90 @@
+doctrine_intent_gate:
+  gate_version: DIG-v2
+  gate_id: DIG-grill-001
+  provisional_artifact_state:
+    repository_root: /repo
+    repository_name: example
+    branch: main
+    head: abc123
+    dirty_state: clean
+    tracked_diff_sha256: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    untracked_path_digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    captured_at: '2026-06-25T00:00:00Z'
+  provisional_artifact_state_digest: sha256:da64a1c29bfd26263e0e91c4ed925eddfa29f413467428729ed1128c70ab0e0e
+  repository_facts_researched:
+  - fact_id: FACT-MULTI
+    statement: The repository has a store subsystem and unrelated release tooling.
+    evidence_ref: build.zig:1
+    confidence: high
+  user_request:
+    original_ask: Produce doctrine for this codebase.
+    explicit_target: ''
+    explicit_consumers: []
+    explicit_products: []
+    explicit_posture: ''
+    explicit_non_goals: []
+    explicit_proof_bar: ''
+    explicit_compatibility_posture: ''
+  working_defaults: []
+  material_user_judgment_gaps:
+  - gap_id: GAP-TARGET
+    lane: target_boundary
+    question: Which boundary should doctrine govern?
+    why_material: Store and release tooling have different authorities and laws.
+    discoverable_from_artifacts: 'no'
+    options: &id001
+    - store lifecycle
+    - whole repository
+    - release tooling only
+  - gap_id: GAP-PRODUCTS
+    lane: desired_products
+    question: Should the output include a skill portfolio?
+    why_material: Atlas-only and portfolio work have different synthesis obligations.
+    discoverable_from_artifacts: 'no'
+    options: &id002
+    - atlas and routing only
+    - atlas, routing, and skill candidates
+  grill_required: 'yes'
+  reason: Two user-owned choices materially change scope and output.
+  grill_handoff:
+    handoff_version: CDGH-v2
+    gate_id: DIG-grill-001
+    provisional_artifact_state_digest: sha256:da64a1c29bfd26263e0e91c4ed925eddfa29f413467428729ed1128c70ab0e0e
+    current_frame: Clarify doctrine boundary and products.
+    researched_fact_ids:
+    - FACT-MULTI
+    working_defaults: []
+    material_judgment_gaps:
+    - gap_id: GAP-TARGET
+      lane: target_boundary
+      question: Which boundary should doctrine govern?
+      why_material: Store and release tooling have different authorities and laws.
+      options: *id001
+    - gap_id: GAP-PRODUCTS
+      lane: desired_products
+      question: Should the output include a skill portfolio?
+      why_material: Atlas-only and portfolio work have different synthesis obligations.
+      options: *id002
+    allowed_question_lanes:
+    - target_boundary
+    - desired_products
+    forbidden_questions:
+    - discoverable repository facts
+    - implementation design
+    - skill-file content
+    - repository laws not yet researched
+    closure_projection:
+    - target
+    - consumers
+    - posture
+    - desired_products
+    - primary_correctness_question
+    - primary_risk_or_priority
+    - correctness_priorities
+    - non_goals
+    - proof_bar
+    - compatibility_posture
+    - persistence_posture
+  direct_intent_seed: null
+  gate:
+    doctrine_may_proceed: 'no'

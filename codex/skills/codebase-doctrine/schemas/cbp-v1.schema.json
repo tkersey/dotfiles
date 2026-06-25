@@ -1,0 +1,34 @@
+{
+  "$id": "urn:codebase-doctrine:CBP-v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "codebase_portfolio": {
+      "additionalProperties": true,
+      "properties": {
+        "portfolio_version": {
+          "const": "CBP-v1"
+        }
+      },
+      "required": [
+        "portfolio_version",
+        "portfolio_id",
+        "doctrine_id",
+        "intent_id",
+        "artifact_state_id",
+        "knowledge_route_decisions",
+        "repository_root_skill_decision",
+        "focused_skill_decisions",
+        "rejected_skill_decisions",
+        "evidence_refs",
+        "recommendation"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "codebase_portfolio"
+  ],
+  "title": "Codebase Portfolio Report v1",
+  "type": "object"
+}

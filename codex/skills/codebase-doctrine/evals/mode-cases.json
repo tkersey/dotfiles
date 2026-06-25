@@ -1,0 +1,31 @@
+{
+  "cases": [
+    {
+      "artifact": "CBS-v1",
+      "mode": "survey"
+    },
+    {
+      "artifact": "CBD-v2",
+      "mode": "doctrine"
+    },
+    {
+      "artifact": "CBD-v2",
+      "mode": "deep",
+      "requires_specialist_receipts": true
+    },
+    {
+      "also_requires": "CBD-v2",
+      "artifact": "CBDD-v1",
+      "mode": "refresh"
+    },
+    {
+      "artifact": "CBP-v1",
+      "mode": "portfolio"
+    },
+    {
+      "artifact": "CBA-v1",
+      "mode": "audit"
+    }
+  ],
+  "schema": "codebase-doctrine-mode-cases/v1"
+}

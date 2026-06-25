@@ -1,0 +1,17 @@
+codebase_doctrine_assignment:
+  assignment_version: CBDA-v1
+  assignment_id: CBDA-PROOF-001
+  worker: codebase_doctrine_proof_mapper
+  artifact_state_id: AS-ce619f3a519dcde1
+  intent_id: CDI-39fccd09a78289b2
+  scope: store lifecycle
+  allowed_question_ids:
+  - Q-PROOF
+  allowed_evidence_lanes:
+  - behavior_and_tests
+  - runtime
+  allowed_update_keys:
+  - proof_map
+  - knowledge_route_candidates
+  objective: Map current executable proof for the committed-visibility law.
+  stop_condition: Stop after proof surfaces and gaps for Q-PROOF are recorded.

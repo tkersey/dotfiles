@@ -1,32 +1,49 @@
 codebase_skill_handoff:
-  handoff_version: CBSH-v1
-  doctrine_id: CBD-example-001
-  intent_id: CDI-example-001
-  artifact_state_id: AS-example-001
+  handoff_version: CBSH-v2
+  doctrine_id: CBD-example-002
+  intent_id: CDI-39fccd09a78289b2
+  artifact_state_id: AS-ce619f3a519dcde1
   candidate_id: SKILL-PUBLICATION
+  candidate_status: recommended_for_trial
   proposed_name: example-publication-authority
   governing_law_ids:
-    - LAW-COMMITTED-VISIBILITY
+  - LAW-COMMITTED-VISIBILITY
   trigger_examples:
-    - change commit or visibility semantics
+  - change commit, publication, visibility, rollback, or read exposure semantics
   non_triggers:
-    - read-only documentation edit
+  - read-only documentation edit
+  - unrelated release packaging
   consequential_decisions:
-    - where publication validation belongs
-  prohibited_routes:
-    - reader-side tolerance
+  - where publication validation belongs
+  - whether a compatibility path violates canonical authority
+  prohibited_route_ids:
+  - NEG-READER-TOLERANCE
   required_artifacts:
-    - owner evidence
-    - law-level proof
+  - current owner evidence
+  - law-level proof receipt
+  - negative-ledger applicability check
   success_signals:
-    - single publication owner
+  - single publication owner
+  - pending invisibility preserved
+  - focused proof passes
   failure_signals:
-    - duplicate visibility check
+  - reader repairs producer state
+  - duplicate visibility checks
+  - route repeats NEG-0001
   protected_doctrine_ids:
-    - AUTH-STORE
-    - LAW-COMMITTED-VISIBILITY
+  - AUTH-STORE
+  - LAW-COMMITTED-VISIBILITY
+  - INV-COMMIT-FRONTIER
+  - NEG-READER-TOLERANCE
   allowed_package: codex/skills/example-publication-authority
+  explicit_user_authorization:
+    authorized: 'yes'
+    source_ref: user-turn:example-authorization
+    authorized_scope: Create the recommended trial package only.
+    authorized_at: '2026-06-25T01:00:00Z'
   validation:
-    - quick_validate
-    - decision-contract lint
-    - future seq skill-decision-audit query
+  - quick_validate
+  - decision-contract lint
+  future_evaluation:
+  - seq skill-decision-audit after 30 days
+  - tune matched decision episodes

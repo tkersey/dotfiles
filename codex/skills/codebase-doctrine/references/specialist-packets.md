@@ -1,80 +1,67 @@
-# Specialist Packets
+# Specialist Assignments and Packets
 
-Each worker returns exactly one:
+Every specialist receives a bounded assignment:
+
+```yaml
+codebase_doctrine_assignment:
+  assignment_version: CBDA-v1
+  assignment_id:
+  worker:
+  artifact_state_id:
+  intent_id:
+  scope:
+  allowed_question_ids: []
+  allowed_evidence_lanes: []
+  allowed_update_keys: []
+  objective:
+  stop_condition:
+```
+
+Every specialist returns one packet:
 
 ```yaml
 codebase_doctrine_packet:
-  packet_version: CBDP-v1
+  packet_version: CBDP-v2
   worker:
+  assignment_id:
   artifact_state_id:
+  intent_id:
   scope:
   evidence_lanes: []
   questions_addressed: []
   facts:
     - claim_id:
+      claim_class: fact
       statement:
       evidence_refs: []
+      question_ids: []
+      artifact_state_id:
       confidence:
-  inferences: []
+  inferences:
+    - claim_id:
+      claim_class: inference
+      statement:
+      evidence_refs: []
+      question_ids: []
+      artifact_state_id:
+      confidence:
   contradictions: []
   open_questions: []
   proposed_doctrine_updates: {}
-  stale: yes | no
-  final_call:
-    usable |
-    partial |
-    no_material_signal |
-    blocked
+  stale: no
+  final_call: usable | partial | no_material_signal | blocked
 ```
 
-## Global worker identity
+Validate with the assignment:
 
-Agent `name` values are global registry identities, even when their TOML file
-names differ.
-
-The Codebase Doctrine proof worker must use:
-
-```text
-file:   codex/agents/codebase-doctrine-proof-mapper.toml
-name:   codebase_doctrine_proof_mapper
-packet: worker: codebase_doctrine_proof_mapper
+```bash
+uv run --with pyyaml python \
+  codex/skills/codebase-doctrine/tools/packet_gate.py packet.yaml \
+  --assignment assignment.yaml
 ```
 
-The existing general-purpose worker remains:
+The gate enforces worker identity, artifact state, intent, scope, assigned
+questions, evidence lanes, allowed update keys, fact/inference separation, and
+wrapper-leakage rejection.
 
-```text
-name: proof_surface_mapper
-```
-
-Do not give both workers the same internal `name`.
-
-## Root acceptance
-
-Accept only when:
-
-- artifact state matches;
-- scope matches;
-- material facts have evidence;
-- facts and inferences are separate;
-- no wrapper/instruction leakage;
-- packet contains more than acknowledgement;
-- certainty matches evidence;
-- stale = no;
-- worker identity is one of the workflow-specific names below.
-
-The packet gate deliberately rejects the legacy Codebase Doctrine packet value
-`proof_surface_mapper` with a migration diagnostic.
-
-## Worker ownership
-
-```text
-codebase_cartographer                repository/system map
-authority_state_mapper               owners/transitions/authority
-behavioral_law_miner                 behavior/laws/invariants
-failure_forensics_analyst            history/failure families/routes
-codebase_doctrine_proof_mapper       proof surfaces/gaps
-doctrine_portfolio_skeptic           routing/skill challenge
-search_saturation_auditor            stop/challenge
-```
-
-Workers do not create final doctrine or skill files.
+Workers do not spawn children, edit files, create skills, or own final doctrine.

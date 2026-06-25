@@ -1,15 +1,18 @@
 {
   "doctrine_intent_gate": {
-    "gate_version": "DIG-v1",
-    "gate_id": "DIG-example-001",
+    "gate_version": "DIG-v2",
+    "gate_id": "DIG-grill-001",
     "provisional_artifact_state": {
       "repository_root": "/repo",
       "repository_name": "example",
       "branch": "main",
       "head": "abc123",
       "dirty_state": "clean",
-      "captured_at": "2026-06-21T00:00:00Z"
+      "tracked_diff_sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "untracked_path_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "captured_at": "2026-06-25T00:00:00Z"
     },
+    "provisional_artifact_state_digest": "sha256:da64a1c29bfd26263e0e91c4ed925eddfa29f413467428729ed1128c70ab0e0e",
     "repository_facts_researched": [
       {
         "fact_id": "FACT-MULTI",
@@ -25,15 +28,16 @@
       "explicit_products": [],
       "explicit_posture": "",
       "explicit_non_goals": [],
-      "explicit_proof_bar": ""
+      "explicit_proof_bar": "",
+      "explicit_compatibility_posture": ""
     },
     "working_defaults": [],
     "material_user_judgment_gaps": [
       {
-        "gap_id": "target_boundary",
+        "gap_id": "GAP-TARGET",
         "lane": "target_boundary",
-        "question": "Which boundary should the doctrine govern?",
-        "why_material": "The store and release tooling have different authorities, laws, and skill triggers.",
+        "question": "Which boundary should doctrine govern?",
+        "why_material": "Store and release tooling have different authorities and laws.",
         "discoverable_from_artifacts": "no",
         "options": [
           "store lifecycle",
@@ -42,35 +46,50 @@
         ]
       },
       {
-        "gap_id": "desired_products",
+        "gap_id": "GAP-PRODUCTS",
         "lane": "desired_products",
-        "question": "Which doctrine products should be produced?",
-        "why_material": "Atlas-only and skill-portfolio work require different synthesis and validation.",
+        "question": "Should the output include a skill portfolio?",
+        "why_material": "Atlas-only and portfolio work have different synthesis obligations.",
         "discoverable_from_artifacts": "no",
         "options": [
-          "atlas plus routing and skills",
-          "atlas plus routing",
-          "atlas only"
+          "atlas and routing only",
+          "atlas, routing, and skill candidates"
         ]
       }
     ],
     "grill_required": "yes",
-    "reason": "Two user-owned choices materially change the evidence scope and output.",
+    "reason": "Two user-owned choices materially change scope and output.",
     "grill_handoff": {
-      "handoff_version": "CDGH-v1",
-      "gate_id": "DIG-example-001",
-      "provisional_artifact_state": {
-        "repository_root": "/repo",
-        "head": "abc123"
-      },
-      "current_frame": "Clarify the doctrine boundary and desired products.",
-      "researched_facts": [
-        "Store and release tooling are distinct subsystems."
+      "handoff_version": "CDGH-v2",
+      "gate_id": "DIG-grill-001",
+      "provisional_artifact_state_digest": "sha256:da64a1c29bfd26263e0e91c4ed925eddfa29f413467428729ed1128c70ab0e0e",
+      "current_frame": "Clarify doctrine boundary and products.",
+      "researched_fact_ids": [
+        "FACT-MULTI"
       ],
       "working_defaults": [],
       "material_judgment_gaps": [
-        "target_boundary",
-        "desired_products"
+        {
+          "gap_id": "GAP-TARGET",
+          "lane": "target_boundary",
+          "question": "Which boundary should doctrine govern?",
+          "why_material": "Store and release tooling have different authorities and laws.",
+          "options": [
+            "store lifecycle",
+            "whole repository",
+            "release tooling only"
+          ]
+        },
+        {
+          "gap_id": "GAP-PRODUCTS",
+          "lane": "desired_products",
+          "question": "Should the output include a skill portfolio?",
+          "why_material": "Atlas-only and portfolio work have different synthesis obligations.",
+          "options": [
+            "atlas and routing only",
+            "atlas, routing, and skill candidates"
+          ]
+        }
       ],
       "allowed_question_lanes": [
         "target_boundary",
@@ -78,17 +97,25 @@
       ],
       "forbidden_questions": [
         "discoverable repository facts",
-        "implementation design"
+        "implementation design",
+        "skill-file content",
+        "repository laws not yet researched"
       ],
       "closure_projection": [
         "target",
-        "desired_products",
         "consumers",
         "posture",
-        "proof_bar"
+        "desired_products",
+        "primary_correctness_question",
+        "primary_risk_or_priority",
+        "correctness_priorities",
+        "non_goals",
+        "proof_bar",
+        "compatibility_posture",
+        "persistence_posture"
       ]
     },
-    "direct_intent_candidate": null,
+    "direct_intent_seed": null,
     "gate": {
       "doctrine_may_proceed": "no"
     }

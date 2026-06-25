@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "nonemptyString": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "yesNo": {
+      "enum": [
+        "yes",
+        "no",
+        true,
+        false
+      ]
+    }
+  },
+  "$id": "urn:codebase-doctrine:DIG-v2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "doctrine_intent_gate": {
+      "additionalProperties": false,
+      "properties": {
+        "direct_intent_seed": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "gate": {
+          "required": [
+            "doctrine_may_proceed"
+          ],
+          "type": "object"
+        },
+        "gate_id": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "gate_version": {
+          "const": "DIG-v2"
+        },
+        "grill_handoff": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "grill_required": {
+          "$ref": "#/$defs/yesNo"
+        },
+        "material_user_judgment_gaps": {
+          "type": "array"
+        },
+        "provisional_artifact_state": {
+          "type": "object"
+        },
+        "provisional_artifact_state_digest": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "reason": {
+          "$ref": "#/$defs/nonemptyString"
+        },
+        "repository_facts_researched": {
+          "type": "array"
+        },
+        "user_request": {
+          "type": "object"
+        },
+        "working_defaults": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "gate_version",
+        "gate_id",
+        "provisional_artifact_state",
+        "provisional_artifact_state_digest",
+        "repository_facts_researched",
+        "user_request",
+        "working_defaults",
+        "material_user_judgment_gaps",
+        "grill_required",
+        "reason",
+        "gate"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "doctrine_intent_gate"
+  ],
+  "title": "Doctrine Intent Gate v2",
+  "type": "object"
+}

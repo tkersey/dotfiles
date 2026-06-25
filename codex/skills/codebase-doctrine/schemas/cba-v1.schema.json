@@ -1,0 +1,36 @@
+{
+  "$id": "urn:codebase-doctrine:CBA-v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "codebase_doctrine_audit": {
+      "additionalProperties": true,
+      "properties": {
+        "audit_version": {
+          "const": "CBA-v1"
+        }
+      },
+      "required": [
+        "audit_version",
+        "audit_id",
+        "doctrine_id",
+        "intent_id",
+        "artifact_state_id",
+        "audited_at",
+        "audited_surfaces",
+        "conforming",
+        "drift",
+        "stale_guidance",
+        "remediation",
+        "evidence_refs",
+        "verdict"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "codebase_doctrine_audit"
+  ],
+  "title": "Codebase Doctrine Audit v1",
+  "type": "object"
+}

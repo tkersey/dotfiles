@@ -1,0 +1,38 @@
+{
+  "$id": "urn:codebase-doctrine:CBDP-v2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "codebase_doctrine_packet": {
+      "additionalProperties": true,
+      "properties": {
+        "packet_version": {
+          "const": "CBDP-v2"
+        }
+      },
+      "required": [
+        "packet_version",
+        "worker",
+        "assignment_id",
+        "artifact_state_id",
+        "intent_id",
+        "scope",
+        "evidence_lanes",
+        "questions_addressed",
+        "facts",
+        "inferences",
+        "contradictions",
+        "open_questions",
+        "proposed_doctrine_updates",
+        "stale",
+        "final_call"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "codebase_doctrine_packet"
+  ],
+  "title": "Codebase Doctrine Specialist Packet v2",
+  "type": "object"
+}

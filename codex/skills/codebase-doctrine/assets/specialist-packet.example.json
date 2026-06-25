@@ -1,24 +1,31 @@
 {
   "codebase_doctrine_packet": {
-    "packet_version": "CBDP-v1",
-    "worker": "authority_state_mapper",
-    "artifact_state_id": "AS-example-001",
-    "scope": "store",
+    "packet_version": "CBDP-v2",
+    "worker": "codebase_cartographer",
+    "assignment_id": "CBDA-CARTO-001",
+    "artifact_state_id": "AS-ce619f3a519dcde1",
+    "intent_id": "CDI-39fccd09a78289b2",
+    "scope": "store lifecycle",
     "evidence_lanes": [
-      "authority_and_mutation",
-      "behavior_and_tests"
+      "guidance",
+      "static_structure"
     ],
     "questions_addressed": [
-      "Q-OWNER"
+      "Q-SHAPE"
     ],
     "facts": [
       {
-        "claim_id": "CLAIM-OWNER",
-        "statement": "Store.commit is the canonical publication authority.",
+        "claim_id": "WORKER-CLAIM-SHAPE",
+        "claim_class": "fact",
+        "statement": "The selected boundary is a store-centered library lifecycle.",
         "evidence_refs": [
-          "src/store.zig:120",
-          "test/store_test.zig:88"
+          "README.md:1",
+          "build.zig:1"
         ],
+        "question_ids": [
+          "Q-SHAPE"
+        ],
+        "artifact_state_id": "AS-ce619f3a519dcde1",
         "confidence": "high"
       }
     ],
@@ -26,9 +33,14 @@
     "contradictions": [],
     "open_questions": [],
     "proposed_doctrine_updates": {
-      "authority_map": {
-        "authorities": [
-          "AUTH-STORE"
+      "repository_fingerprint": {
+        "repository_kind": "library"
+      },
+      "system_map": {
+        "components": [
+          "public API",
+          "store",
+          "reader"
         ]
       }
     },

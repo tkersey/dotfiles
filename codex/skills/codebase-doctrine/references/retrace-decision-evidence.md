@@ -1,34 +1,20 @@
-# Historical Decision Replay for Codebase Doctrine
+# Historical Decision Replay
 
-Use `$retrace` selectively when a consequential architecture, ownership, or proof decision has incomplete visible rationale.
+Use `$retrace` only when a consequential architecture, ownership, or proof
+decision has incomplete visible rationale.
 
-Before a workflow-specific replay, require SGG-v1:
-
-```text
-authoritative
-or
-declared_uncontrolled
-```
-
-Do not use sources where the workflow name appears only in:
+Classify replay evidence as:
 
 ```text
-an artifact path
-a deleted sidecar
-historical documentation
-generic completion prose
+historically_explicit
+trace_inferred
+replay_consistent
+counterfactual_stable
+hindsight_informed
 ```
 
-Route DRR evidence as:
+Replay output remains evidence, not doctrine. Current code, tests, authority,
+artifact state, and proof still govern CBD-v2.
 
-```text
-historically explicit
-trace-inferred
-replay-consistent
-counterfactual-stable
-hindsight-informed
-```
-
-Replay consensus does not become repository doctrine by itself.
-
-Doctrine still requires current code, tests, history, authority, and proof evidence.
+Record the replay artifact ID and contamination posture in `evidence_ref` and
+`provenance`.

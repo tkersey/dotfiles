@@ -1,0 +1,43 @@
+{
+  "$id": "urn:codebase-doctrine:CBSH-v2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "codebase_skill_handoff": {
+      "additionalProperties": true,
+      "properties": {
+        "handoff_version": {
+          "const": "CBSH-v2"
+        }
+      },
+      "required": [
+        "handoff_version",
+        "doctrine_id",
+        "intent_id",
+        "artifact_state_id",
+        "candidate_id",
+        "candidate_status",
+        "proposed_name",
+        "governing_law_ids",
+        "trigger_examples",
+        "non_triggers",
+        "consequential_decisions",
+        "prohibited_route_ids",
+        "required_artifacts",
+        "success_signals",
+        "failure_signals",
+        "protected_doctrine_ids",
+        "allowed_package",
+        "explicit_user_authorization",
+        "validation",
+        "future_evaluation"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "codebase_skill_handoff"
+  ],
+  "title": "Codebase Skill Handoff v2",
+  "type": "object"
+}

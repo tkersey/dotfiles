@@ -1,8 +1,6 @@
 # Knowledge Routing
 
-Every durable finding gets one primary destination.
-
-## Destinations
+Every durable active claim receives exactly one primary destination:
 
 ```text
 code
@@ -19,19 +17,17 @@ retain_in_doctrine
 reject
 ```
 
-## Routing hierarchy
+Routing hierarchy:
 
-1. Prevent invalid state in representation/code.
-2. Enforce mechanical rules with tools/CI.
-3. Prove behavioral laws with tests/properties/models.
-4. Put universal repository conventions in concise guidance.
-5. Put rationale/history in references/ADRs.
-6. Put failed routes in the negative ledger.
-7. Use skills for recurring judgment, route selection, and context-sensitive decisions.
-8. Retain uncertainty in doctrine.
-9. Reject noise.
-
-## Route record
+1. prevent invalid state in representation or code;
+2. enforce mechanical rules in tools or CI;
+3. prove behavior with tests/properties/models;
+4. place universal conventions in concise repository guidance;
+5. preserve rationale in ADRs/references;
+6. place witnessed failed routes in the canonical negative ledger;
+7. use skills for recurring context-sensitive judgment;
+8. retain unresolved material in doctrine;
+9. reject noise.
 
 ```yaml
 knowledge_route:
@@ -46,8 +42,4 @@ knowledge_route:
   status:
 ```
 
-## Skill anti-bias
-
-A finding is not skill-worthy merely because it is important.
-
-Skills are weaker than code/tools for deterministic constraints.
+Important does not imply skill-worthy.

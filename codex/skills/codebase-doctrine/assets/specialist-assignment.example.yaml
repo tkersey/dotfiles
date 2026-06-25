@@ -1,0 +1,17 @@
+codebase_doctrine_assignment:
+  assignment_version: CBDA-v1
+  assignment_id: CBDA-CARTO-001
+  worker: codebase_cartographer
+  artifact_state_id: AS-ce619f3a519dcde1
+  intent_id: CDI-39fccd09a78289b2
+  scope: store lifecycle
+  allowed_question_ids:
+  - Q-SHAPE
+  allowed_evidence_lanes:
+  - guidance
+  - static_structure
+  allowed_update_keys:
+  - repository_fingerprint
+  - system_map
+  objective: Confirm the selected repository boundary and system map.
+  stop_condition: Stop after the assigned question is answered or blocked.

@@ -1,8 +1,6 @@
 # Repository Fingerprint
 
-The fingerprint is a structural hypothesis, not doctrine.
-
-Required:
+A fingerprint is a structural hypothesis, not doctrine.
 
 ```yaml
 repository_fingerprint:
@@ -21,39 +19,8 @@ repository_fingerprint:
   evidence_refs: []
 ```
 
-## Classification questions
+Support architecture labels with dependency direction and responsibilities, not
+folder names. Record subsystem exceptions and runner-up patterns.
 
-- What starts execution?
-- Which modules depend on which?
-- Where does orchestration live?
-- Where do domain transitions live?
-- What is public?
-- What persists?
-- What crosses process/network/file boundaries?
-- Is the repository homogeneous?
-- Which conventions are local rather than language-wide?
-
-## Pattern evidence
-
-A pattern is supported by dependency direction and responsibilities, not folder labels.
-
-Examples:
-
-```text
-layered
-hexagonal/ports-adapters
-pipeline
-plugin
-event-driven
-state-machine/kernel
-MVC/MVVM
-compiler/interpreter
-library plus adapters
-monorepo of heterogeneous subsystems
-```
-
-Record runner-up patterns and subsystem exceptions.
-
-## Repository dialect
-
-Capture local vocabulary, naming, file organization, error model, test style, and ownership conventions that future skill language should use.
+Capture local vocabulary, error model, test style, ownership conventions, and
+file organization so future guidance uses the repository's actual dialect.

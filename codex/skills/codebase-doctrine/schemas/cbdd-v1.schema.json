@@ -1,0 +1,36 @@
+{
+  "$id": "urn:codebase-doctrine:CBDD-v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "codebase_doctrine_delta": {
+      "additionalProperties": true,
+      "properties": {
+        "delta_version": {
+          "const": "CBDD-v1"
+        }
+      },
+      "required": [
+        "delta_version",
+        "delta_id",
+        "prior_doctrine_id",
+        "prior_artifact_state_id",
+        "new_artifact_state_id",
+        "changed_paths",
+        "invalidated_ids",
+        "retained_ids",
+        "added_ids",
+        "modified_ids",
+        "proof_rechecks",
+        "intent_drift",
+        "resulting_doctrine_id"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "codebase_doctrine_delta"
+  ],
+  "title": "Codebase Doctrine Delta v1",
+  "type": "object"
+}

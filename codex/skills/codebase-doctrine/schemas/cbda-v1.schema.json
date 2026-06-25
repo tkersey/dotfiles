@@ -1,0 +1,34 @@
+{
+  "$id": "urn:codebase-doctrine:CBDA-v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "codebase_doctrine_assignment": {
+      "additionalProperties": true,
+      "properties": {
+        "assignment_version": {
+          "const": "CBDA-v1"
+        }
+      },
+      "required": [
+        "assignment_version",
+        "assignment_id",
+        "worker",
+        "artifact_state_id",
+        "intent_id",
+        "scope",
+        "allowed_question_ids",
+        "allowed_evidence_lanes",
+        "allowed_update_keys",
+        "objective",
+        "stop_condition"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "codebase_doctrine_assignment"
+  ],
+  "title": "Codebase Doctrine Specialist Assignment v1",
+  "type": "object"
+}

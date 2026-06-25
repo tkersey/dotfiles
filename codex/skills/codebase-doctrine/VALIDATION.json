@@ -1,0 +1,20 @@
+{
+  "codebase_doctrine_dropin_validation": {
+    "checks": [
+      "DIG-v2 direct and grill validation",
+      "deterministic CDI-v2 compilation",
+      "CBD-v2 closed graph and saturation",
+      "CBDP-v2 assignment binding",
+      "CBSH-v2 authorization binding",
+      "CBS-v1, CBP-v1, CBA-v1, CBDD-v1 mode validation",
+      "seven read-only worker identities and authorities",
+      "routing and near-miss corpus",
+      "JSON/YAML/TOML parse validation",
+      "direct uv-run execution"
+    ],
+    "unit_tests": 23,
+    "validated_at": "2026-06-25",
+    "verdict": "pass",
+    "version": "2.0.0"
+  }
+}

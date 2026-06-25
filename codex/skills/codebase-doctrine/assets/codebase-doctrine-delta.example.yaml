@@ -1,0 +1,35 @@
+codebase_doctrine_delta:
+  delta_version: CBDD-v1
+  delta_id: CBDD-6e2b4dc9e21d462d
+  prior_doctrine_id: CBD-example-002
+  prior_artifact_state_id: AS-ce619f3a519dcde1
+  new_artifact_state_id: AS-7edb540f90b51f4b
+  changed_paths:
+  - src/store.zig
+  invalidated_ids: []
+  retained_ids:
+  - authority_map:AUTH-STORE
+  - boundary_rules:BOUNDARY-PUBLISH
+  - claims:CLAIM-FAILURE
+  - claims:CLAIM-LAW
+  - claims:CLAIM-OWNER
+  - claims:CLAIM-PROOF
+  - claims:CLAIM-SHAPE
+  - failure_families:FAM-VISIBILITY-BEFORE-COMMIT
+  - focused_skill_candidates:SKILL-PUBLICATION
+  - governing_laws:LAW-COMMITTED-VISIBILITY
+  - knowledge_routes:KNOW-FAILURE
+  - knowledge_routes:KNOW-LAW
+  - knowledge_routes:KNOW-OWNER
+  - knowledge_routes:KNOW-PROOF
+  - negative_routes:NEG-READER-TOLERANCE
+  - owned_invariants:INV-COMMIT-FRONTIER
+  added_ids: []
+  modified_ids:
+  - proof_map:PROOF-COMMIT-TABLE
+  proof_rechecks:
+  - proof_map:PROOF-COMMIT-TABLE
+  intent_drift:
+    detected: 'no'
+    resolution: No intent drift detected.
+  resulting_doctrine_id: CBD-example-003

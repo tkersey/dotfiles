@@ -1,10 +1,10 @@
 # Owned Invariant Method
 
-## Invariant record
-
 ```yaml
 owned_invariant:
   invariant_id:
+  doctrine_status:
+  normative_authority:
   statement:
   owner:
   source_of_truth:
@@ -16,42 +16,24 @@ owned_invariant:
   missing_or_late_enforcement: []
   exception_ownership:
   proof_surface_ids: []
+  current_evidence_refs: []
+  target_authority_refs: []
+  gap_statement:
   evidence_refs: []
   confidence:
 ```
 
-## Discovery
-
-Start with a concrete bad trace:
+Begin with a bad trace:
 
 ```text
-valid state
--> transition
--> invalid observable state
+valid state -> transition -> invalid observable state
 ```
 
-Then ask:
+Reject or downgrade an invariant without owner, initialization, transition
+coverage, violating counterexample, enforcement boundary, exception ownership,
+and proof.
 
-- which transition first permits the violation?
-- which owner had enough information to prevent it?
-- is the invalid state representable by design?
-- which readers compensate for it?
-- what proof would catch recurrence?
-
-## Gate
-
-Reject/downgrade when missing:
-
-```text
-owner
-counterexample
-initialization
-transition coverage
-enforcement boundary
-proof
-```
-
-## Enforcement preference
+Prefer enforcement in this order when semantics permit:
 
 ```text
 representation/type
@@ -62,9 +44,3 @@ static tool
 runtime validation
 downstream tolerance
 ```
-
-Prefer earlier/stronger enforcement when it does not distort valid semantics.
-
-## Exception ownership
-
-Every exception states who may authorize it, under what evidence, and how it is proved.

@@ -1,16 +1,59 @@
 search_questions:
-  - question_id: Q-AUTH-001
-    question: Who may publish portable reconstruction evidence?
-    why_it_matters: Publication authority determines replay and restore correctness.
-    lanes:
-      - authority_and_mutation
-      - behavior_and_tests
-      - history_and_forensics
-    search_methods:
-      - symbol references for publication methods
-      - write-path search for receipt/evidence construction
-      - git -G for prior authority fixes
-      - tests for foreign/unbound evidence
-    evidence_found: []
-    model_change: ""
-    status: open
+- question_id: Q-SHAPE
+  question: What coherent product boundary is in scope?
+  why_it_matters: The doctrine boundary must match one system.
+  lanes:
+  - guidance
+  - static_structure
+  search_methods:
+  - guidance and manifest inspection
+  evidence_found:
+  - E-DOC
+  model_change: Confirmed a store-centered lifecycle boundary.
+  status: answered
+- question_id: Q-OWNER
+  question: Who may publish durable records?
+  why_it_matters: Publication authority controls visibility.
+  lanes:
+  - authority_and_mutation
+  - symbols_and_references
+  search_methods:
+  - write-site and transition search
+  evidence_found:
+  - E-CODE
+  model_change: Identified Store.commit as canonical publication owner.
+  status: answered
+- question_id: Q-LAW
+  question: What observable law separates pending and committed records?
+  why_it_matters: The law defines valid external visibility.
+  lanes:
+  - behavior_and_tests
+  search_methods:
+  - test and observable behavior inspection
+  evidence_found:
+  - E-TEST
+  model_change: Established pending invisibility and committed visibility.
+  status: answered
+- question_id: Q-FAILURE
+  question: Does reader-side tolerance repeatedly fail to close the same family?
+  why_it_matters: Failed routes should not be repeated.
+  lanes:
+  - history_and_forensics
+  - negative_evidence
+  search_methods:
+  - git history and canonical ledger projection
+  evidence_found:
+  - E-HISTORY
+  model_change: Identified a canonical negative route against reader-side tolerance.
+  status: answered
+- question_id: Q-PROOF
+  question: What current proof establishes the visibility law?
+  why_it_matters: Doctrine requires executable proof.
+  lanes:
+  - behavior_and_tests
+  search_methods:
+  - run focused test command and inspect CI
+  evidence_found:
+  - E-CI
+  model_change: Bound the law to a current successful test command.
+  status: answered

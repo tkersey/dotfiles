@@ -2,5 +2,14 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Codebase Doctrine"
-  short_description: "Clarify intent, learn a repository, and design correctness doctrine"
-  default_prompt: "Use $codebase-doctrine read-only. Research repository facts first, invoke $grill-me only for material user-owned doctrine choices, lock CDI-v1, then map architecture, authority, laws, failures, proof, knowledge destinations, and the smallest repository-specific skill portfolio."
+  short_description: "Compile repository evidence into correctness doctrine and optional skills"
+  default_prompt: >-
+    Use $codebase-doctrine read-only when the request combines deep repository
+    understanding with durable correctness doctrine, authority/proof maps,
+    knowledge routing, or repository-specific skill recommendations. Research
+    discoverable facts before asking; use $grill-me only for material user-owned
+    choices. Compile DIG-v2 to CDI-v2, pin artifact state, close every evidence
+    graph edge, distinguish current from target doctrine, route durable knowledge
+    before skills, permit zero skills, and emit the mode-specific validated
+    artifact. Do not implement, persist, or create skills without explicit
+    authorization.
