@@ -27,8 +27,53 @@
           ]
         },
         "gate": {
+          "additionalProperties": false,
+          "properties": {
+            "doctrine_may_proceed": {
+              "$ref": "#/$defs/yesNo"
+            },
+            "intent_route": {
+              "additionalProperties": false,
+              "properties": {
+                "handoff_digest": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "handoff_kind": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "hard_stop": {
+                  "$ref": "#/$defs/yesNo"
+                },
+                "next_action": {
+                  "enum": [
+                    "compile_direct_cdi",
+                    "activate_grill_me"
+                  ]
+                },
+                "route": {
+                  "enum": [
+                    "direct",
+                    "grill-me"
+                  ]
+                }
+              },
+              "required": [
+                "route",
+                "hard_stop",
+                "next_action"
+              ],
+              "type": "object"
+            }
+          },
           "required": [
-            "doctrine_may_proceed"
+            "doctrine_may_proceed",
+            "intent_route"
           ],
           "type": "object"
         },

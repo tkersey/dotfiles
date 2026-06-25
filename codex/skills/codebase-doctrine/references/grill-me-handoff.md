@@ -4,6 +4,28 @@
 repository, infer current laws, choose knowledge destinations, or design skill
 files.
 
+## Mandatory dispatch
+
+When DIG-v2 sets `grill_required: yes`, Codebase Doctrine must not keep
+working locally. The validated DIG must include:
+
+```yaml
+gate:
+  doctrine_may_proceed: no
+  intent_route:
+    route: grill-me
+    hard_stop: yes
+    next_action: activate_grill_me
+    handoff_kind: codebase_doctrine_grill_handoff
+    handoff_digest: sha256:...
+```
+
+The root must load `$grill-me` immediately with the exact
+`codebase_doctrine_grill_handoff`. The root must not ask the material DIG
+questions directly, choose defaults, compile CDI-v2, or continue doctrine
+analysis until the returned `grill_decision_packet` is bound to the handoff and
+`plan_allowed: true`.
+
 ## CDGH-v2
 
 ```yaml

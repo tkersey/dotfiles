@@ -88,3 +88,9 @@ doctrine_intent_gate:
   direct_intent_seed: null
   gate:
     doctrine_may_proceed: 'no'
+    intent_route:
+      route: grill-me
+      hard_stop: 'yes'
+      next_action: activate_grill_me
+      handoff_kind: codebase_doctrine_grill_handoff
+      handoff_digest: sha256:c22e19ec7307b8bb42745b3b2dcace9646a095b5f92aa91010095537b3e584b9

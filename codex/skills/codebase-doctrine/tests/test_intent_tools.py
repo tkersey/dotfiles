@@ -32,6 +32,33 @@ class IntentToolsTests(unittest.TestCase):
         kind, errors, _warnings = intent_gate.validate_value(left, kind="cdi")
         self.assertEqual(errors, [])
 
+
+    def test_grill_required_has_assertive_intent_route(self) -> None:
+        gate = self.load("doctrine-intent-gate.grill.example.yaml")
+        route = gate["doctrine_intent_gate"]["gate"]["intent_route"]
+        self.assertEqual(route["route"], "grill-me")
+        self.assertEqual(route["hard_stop"], "yes")
+        self.assertEqual(route["next_action"], "activate_grill_me")
+        errors = intent_gate.validate_value(gate, kind="dig")[1]
+        self.assertEqual(errors, [])
+
+    def test_grill_required_rejects_soft_handoff(self) -> None:
+        gate = self.load("doctrine-intent-gate.grill.example.yaml")
+        gate["doctrine_intent_gate"]["gate"].pop("intent_route")
+        errors = intent_gate.validate_value(gate, kind="dig")[1]
+        self.assertIn("gate.intent_route:must-be-object", errors)
+
+    def test_grill_required_rejects_direct_route(self) -> None:
+        gate = self.load("doctrine-intent-gate.grill.example.yaml")
+        route = gate["doctrine_intent_gate"]["gate"]["intent_route"]
+        route["route"] = "direct"
+        route["hard_stop"] = "no"
+        route["next_action"] = "compile_direct_cdi"
+        errors = intent_gate.validate_value(gate, kind="dig")[1]
+        self.assertIn("gate.intent_route.route:expected-grill-me", errors)
+        self.assertIn("gate.intent_route.hard_stop:must-be-yes-for-grill", errors)
+        self.assertIn("gate.intent_route.next_action:expected-activate_grill_me", errors)
+
     def test_grill_gate_closes_exact_gaps(self) -> None:
         gate = self.load("doctrine-intent-gate.grill.example.yaml")
         grill = self.load("grill-decision-packet.example.yaml")

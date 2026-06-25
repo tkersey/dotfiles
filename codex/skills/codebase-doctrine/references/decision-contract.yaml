@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: codebase-doctrine
     kind: mixed
-    source_fingerprint: codebase-doctrine-v2.0.0
+    source_fingerprint: codebase-doctrine-v2.0.1
 
   triggers:
     - trigger_id: CBD-TRIGGER-DOCTRINE
@@ -69,7 +69,7 @@ skill_decision_contract:
 
   routes:
     - route_id: CBD-ROUTE-GRILL
-      description: Pause doctrine and clarify only material user-owned intent.
+      description: Mandatory hard-stop route when DIG-v2 has grill_required=yes; pass only CDGH-v2 to grill-me and resume only after a bound plan_allowed closure.
       aliases: [grill-me, intent clarification]
       terminal: "no"
 
@@ -134,13 +134,16 @@ skill_decision_contract:
         - CBD-ROUTE-DEEP
         - CBD-ROUTE-BLOCKED
       prohibited_routes: []
-      required_artifacts: [DIG-v2, deterministic CDI-v2]
+      required_artifacts: [DIG-v2, gate.intent_route, deterministic CDI-v2]
       success_signals:
         - discoverable facts researched before questions
         - every material gap resolved
+        - grill_required=yes produces route=grill-me, hard_stop=yes, next_action=activate_grill_me
         - no repository-derived law locked as user intent
       failure_signals:
         - user asked for repository facts
+        - soft or advisory grill handoff
+        - continued doctrine work while grill_required=yes
         - hand-authored CDI projection drift
       rationale: Intent authorizes inquiry but cannot pre-decide repository laws.
 

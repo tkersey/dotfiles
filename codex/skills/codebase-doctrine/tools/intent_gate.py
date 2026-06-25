@@ -48,6 +48,8 @@ LANES = {
 }
 HYPOTHESIS_AUTHORITIES = {"explicit_user", "repository_guidance", "provisional"}
 HYPOTHESIS_STATUSES = {"normative_requirement", "hypothesis", "question"}
+INTENT_ROUTES = {"direct", "grill-me"}
+INTENT_NEXT_ACTIONS = {"compile_direct_cdi", "activate_grill_me"}
 
 
 def intent_material(body: dict[str, Any]) -> dict[str, Any]:
@@ -251,6 +253,60 @@ def validate_cdgh(
     return handoff
 
 
+def validate_intent_route(
+    value: Any,
+    errors: list[str],
+    *,
+    grill_required: bool,
+    doctrine_may_proceed: Any,
+    grill_handoff: dict[str, Any] | None,
+) -> None:
+    """Validate the mandatory post-DIG state transition.
+
+    This is intentionally assertive: a DIG that requires grilling is not a
+    permission slip to keep researching or ask questions directly. It is a hard
+    route to `$grill-me` with a digest-bound handoff.
+    """
+    route = require_object(value, "gate.intent_route", errors, nonempty=True)
+    selected = route.get("route")
+    if selected not in INTENT_ROUTES:
+        errors.append("gate.intent_route.route:invalid")
+    next_action = route.get("next_action")
+    if next_action not in INTENT_NEXT_ACTIONS:
+        errors.append("gate.intent_route.next_action:invalid")
+
+    if grill_required:
+        if selected != "grill-me":
+            errors.append("gate.intent_route.route:expected-grill-me")
+        if not is_yes(route.get("hard_stop")):
+            errors.append("gate.intent_route.hard_stop:must-be-yes-for-grill")
+        if next_action != "activate_grill_me":
+            errors.append("gate.intent_route.next_action:expected-activate_grill_me")
+        if route.get("handoff_kind") != "codebase_doctrine_grill_handoff":
+            errors.append("gate.intent_route.handoff_kind:expected-codebase_doctrine_grill_handoff")
+        if not isinstance(grill_handoff, dict) or not grill_handoff:
+            errors.append("gate.intent_route.handoff_digest:missing-handoff")
+        else:
+            expected_digest = sha256_digest(grill_handoff)
+            if route.get("handoff_digest") != expected_digest:
+                errors.append("gate.intent_route.handoff_digest:mismatch")
+        if not is_no(doctrine_may_proceed):
+            errors.append("gate.intent_route:grill-requires-doctrine_may_proceed-no")
+        return
+
+    if selected != "direct":
+        errors.append("gate.intent_route.route:expected-direct")
+    if not is_no(route.get("hard_stop")):
+        errors.append("gate.intent_route.hard_stop:must-be-no-for-direct")
+    if next_action != "compile_direct_cdi":
+        errors.append("gate.intent_route.next_action:expected-compile_direct_cdi")
+    if route.get("handoff_kind") not in (None, ""):
+        errors.append("gate.intent_route.handoff_kind:must-be-null-for-direct")
+    if route.get("handoff_digest") not in (None, ""):
+        errors.append("gate.intent_route.handoff_digest:must-be-null-for-direct")
+    if not is_yes(doctrine_may_proceed):
+        errors.append("gate.intent_route:direct-requires-doctrine_may_proceed-yes")
+
 def validate_dig(body: dict[str, Any], errors: list[str], warnings: list[str]) -> None:
     if body.get("gate_version") != "DIG-v2":
         errors.append("gate_version:expected-DIG-v2")
@@ -320,6 +376,14 @@ def validate_dig(body: dict[str, Any], errors: list[str], warnings: list[str]) -
     may_proceed = gate.get("doctrine_may_proceed")
     if may_proceed not in BOOLISH:
         errors.append("gate.doctrine_may_proceed:expected-yes-or-no")
+
+    validate_intent_route(
+        gate.get("intent_route"),
+        errors,
+        grill_required=is_yes(grill_required),
+        doctrine_may_proceed=may_proceed,
+        grill_handoff=body.get("grill_handoff") if isinstance(body.get("grill_handoff"), dict) else None,
+    )
 
     if is_yes(grill_required):
         if not gaps:

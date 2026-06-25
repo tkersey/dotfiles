@@ -77,3 +77,9 @@ doctrine_intent_gate:
     deferred_questions: []
   gate:
     doctrine_may_proceed: 'yes'
+    intent_route:
+      route: direct
+      hard_stop: 'no'
+      next_action: compile_direct_cdi
+      handoff_kind: null
+      handoff_digest: null

@@ -1,4 +1,4 @@
-# Codebase Doctrine v2.0.0
+# Codebase Doctrine v2.0.1
 
 This package is a direct replacement for the existing Codebase Doctrine skill.
 
@@ -7,7 +7,7 @@ This package is a direct replacement for the existing Codebase Doctrine skill.
 Extract the drop-in ZIP at the dotfiles repository root:
 
 ```bash
-unzip -o codebase-doctrine-dropin-v2.0.0.zip
+unzip -o codebase-doctrine-dropin-v2.0.1.zip
 ```
 
 ## Validate
@@ -16,6 +16,13 @@ unzip -o codebase-doctrine-dropin-v2.0.0.zip
 uv run --with pyyaml python \
   codex/skills/codebase-doctrine/tools/quick_validate.py
 ```
+
+## v2.0.1 assertion
+
+DIG-v2 now contains an explicit `gate.intent_route`. When `grill_required: yes`,
+the route must be `grill-me`, `hard_stop: yes`, and `next_action: activate_grill_me`;
+Codebase Doctrine may not continue until a bound `$grill-me` closure returns
+`plan_allowed: true`.
 
 ## Main changes
 

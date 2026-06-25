@@ -2,6 +2,7 @@
   "codebase_doctrine_dropin_validation": {
     "checks": [
       "DIG-v2 direct and grill validation",
+      "mandatory DIG-v2 grill-me intent route",
       "deterministic CDI-v2 compilation",
       "CBD-v2 closed graph and saturation",
       "CBDP-v2 assignment binding",
@@ -12,9 +13,9 @@
       "JSON/YAML/TOML parse validation",
       "direct uv-run execution"
     ],
-    "unit_tests": 23,
+    "unit_tests": 26,
     "validated_at": "2026-06-25",
     "verdict": "pass",
-    "version": "2.0.0"
+    "version": "2.0.1"
   }
 }

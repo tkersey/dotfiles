@@ -62,7 +62,30 @@ doctrine_intent_gate:
   direct_intent_seed:
   gate:
     doctrine_may_proceed: yes | no
+    intent_route:
+      route: direct | grill-me
+      hard_stop: yes | no
+      next_action: compile_direct_cdi | activate_grill_me
+      handoff_kind: codebase_doctrine_grill_handoff | null
+      handoff_digest: sha256:... | null
 ```
+
+## Assertive routing rule
+
+When `grill_required: yes`, the DIG is not a suggestion. It is a hard state
+transition:
+
+```text
+validate DIG-v2
+-> activate $grill-me with codebase_doctrine_grill_handoff
+-> stop Codebase Doctrine
+-> wait for bound grill_decision_packet with plan_allowed=true
+-> compile CDI-v2
+```
+
+Do not continue doctrine research, ask the DIG questions directly, or choose
+defaults while `gate.intent_route.route = grill-me`. A missing or soft
+`intent_route` is invalid.
 
 ## Allowed judgment lanes
 

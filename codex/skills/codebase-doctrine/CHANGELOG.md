@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.1 — 2026-06-25
+
+- Made DIG-v2 `$grill-me` escalation a hard state transition via `gate.intent_route`.
+- Required same-turn `$grill-me` activation and Codebase Doctrine hard-stop when `grill_required: yes`.
+- Added validation and regression tests for soft-handoff failures.
+- Updated `AGENTS.md`, runtime prompt, schema, examples, and docs to make the handoff assertive.
+
 ## 2.0.0 — 2026-06-25
 
 - Added narrow root implicit routing and aligned interface metadata.

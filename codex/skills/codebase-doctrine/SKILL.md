@@ -2,7 +2,7 @@
 name: codebase-doctrine
 description: "Compile deep repository evidence into artifact-bound correctness doctrine, authority/law/proof maps, strongest knowledge destinations, and an optional minimal repository-skill portfolio. Use when the user wants both deep codebase understanding and durable doctrine, knowledge routing, or repository-specific skill recommendations. Research discoverable facts before asking; use `$grill-me` only for material user-owned intent choices. Not for quick onboarding, one isolated invariant, ordinary implementation, generic review, or direct skill creation."
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   activation_cost: high
   default_depth: standard
 ---
@@ -111,7 +111,7 @@ uv run --with pyyaml python \
   codex/skills/codebase-doctrine/tools/intent_gate.py gate.yaml
 ```
 
-### `$grill-me` boundary
+### Mandatory `$grill-me` dispatch
 
 `$grill-me` may clarify only material user-owned choices such as:
 
@@ -130,8 +130,28 @@ persistence
 Do not ask it for repository facts, laws, implementation design, or skill-file
 content.
 
+When DIG-v2 validates with:
+
+```yaml
+grill_required: yes
+gate:
+  doctrine_may_proceed: no
+  intent_route:
+    route: grill-me
+    hard_stop: yes
+    next_action: activate_grill_me
+```
+
+then Codebase Doctrine must immediately activate `$grill-me` in the same turn,
+pass only the validated `codebase_doctrine_grill_handoff`, and hard-stop. Do not
+continue repository exploration, synthesize CDI/CBD, ask the questions directly,
+or choose defaults. Resume this workflow only after a bound
+`grill_decision_packet` returns `plan_allowed: true` and resolves every material
+DIG gap.
+
 A grill closure must bind to the original DIG and explicitly resolve every
-material gap. `plan_allowed: true` authorizes doctrine inquiry only.
+material gap. `plan_allowed: true` authorizes doctrine inquiry only; it does not
+authorize persistence, skill creation, code edits, commit, push, or publication.
 
 ### CDI-v2
 

@@ -112,7 +112,7 @@ def main() -> int:
     result = {
         "codebase_doctrine_validation": {
             "verdict": "pass" if not failures else "fail",
-            "version": "2.0.0",
+            "version": "2.0.1",
             "checks": checks,
             "failures": failures,
         }
