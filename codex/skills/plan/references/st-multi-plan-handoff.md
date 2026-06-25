@@ -23,5 +23,8 @@ Importing a policy creates or updates one plan namespace only.
 If the plan ID already exists, update requires the expected current plan
 sequence and source-policy digest.
 
-If another plan owns a prerequisite, propose a qualified dependency. Do not
-copy its work into the current plan.
+If another plan owns a prerequisite, propose a qualified dependency. Do not copy
+its work into the current plan.
+
+A `$st` handoff is not ready unless the corresponding PSR-v1 proves synthesis
+convergence and radical-candidate disposition.

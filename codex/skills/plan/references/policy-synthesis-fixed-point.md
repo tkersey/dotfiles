@@ -75,11 +75,6 @@ The candidate is mandatory.
 
 Adoption is not mandatory.
 
-If the disposition is `adopt`, apply the candidate and restart synthesis from
-the earliest affected lens before finalization. The final policy digest must
-belong to the post-adoption clean sweep and fresh-eyes pass, not to the policy
-state that existed before the radical candidate changed it.
-
 Valid dispositions:
 
 ```text

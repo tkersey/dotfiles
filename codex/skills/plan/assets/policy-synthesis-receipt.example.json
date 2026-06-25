@@ -1,0 +1,122 @@
+{
+  "policy_synthesis_receipt": {
+    "receipt_version": "PSR-v1",
+    "plan_id": "PLAN-example-fixed-point",
+    "revision": 1,
+    "source_digest": "sha256:41cf6794ba4200b839c53531555f0f3998df4cbb01a4d5cb0b94e3ca5e23947d",
+    "initial_policy_digest": "sha256:7ff8bc1b737d2606d020be06429e72509dee640280e9f05ab3e374b078d406b5",
+    "final_policy_digest": "sha256:d80520759e4fc8e3f61c693d04bf20e4704a38adf01eaa25e2b8d30ed0122c00",
+    "passes": [
+      {
+        "pass_id": "PASS-00",
+        "lens": "action_completeness",
+        "candidate_digest_before": "sha256:7ff8bc1b737d2606d020be06429e72509dee640280e9f05ab3e374b078d406b5",
+        "candidate_digest_after": "sha256:3b3af77cb43053ece7946dc8384fbd11b81935fcadd530a8dd3b83eb9b72375b",
+        "findings": [
+          "WORK-2 lacked explicit rollback trigger."
+        ],
+        "material_changes": [
+          "Added rollback trigger and affected proof reference to WORK-2."
+        ],
+        "disposition": "changed"
+      },
+      {
+        "pass_id": "PASS-01",
+        "lens": "source_fidelity",
+        "candidate_digest_before": "sha256:ea24b12042dcc78386a4e7039b56566c056a5fb62eeded83acc930183fd207c9",
+        "candidate_digest_after": "sha256:ea24b12042dcc78386a4e7039b56566c056a5fb62eeded83acc930183fd207c9",
+        "findings": [],
+        "material_changes": [],
+        "disposition": "clean"
+      },
+      {
+        "pass_id": "PASS-02",
+        "lens": "semantic_authority",
+        "candidate_digest_before": "sha256:17d585fafcffb94e715b304e611cd555739b5c5d760bde5f89a0dd176e6a3feb",
+        "candidate_digest_after": "sha256:17d585fafcffb94e715b304e611cd555739b5c5d760bde5f89a0dd176e6a3feb",
+        "findings": [],
+        "material_changes": [],
+        "disposition": "clean"
+      },
+      {
+        "pass_id": "PASS-03",
+        "lens": "system_regime",
+        "candidate_digest_before": "sha256:a9d60d90e96f107d3f43fce5f7361b4998aac88919d44834e39ea1505081502e",
+        "candidate_digest_after": "sha256:a9d60d90e96f107d3f43fce5f7361b4998aac88919d44834e39ea1505081502e",
+        "findings": [],
+        "material_changes": [],
+        "disposition": "clean"
+      },
+      {
+        "pass_id": "PASS-04",
+        "lens": "belief_and_observation",
+        "candidate_digest_before": "sha256:b078300330ceb19a0f1cb03cf89ea5badc7852a8b6d3887aa0ad6836d7d45cbd",
+        "candidate_digest_after": "sha256:b078300330ceb19a0f1cb03cf89ea5badc7852a8b6d3887aa0ad6836d7d45cbd",
+        "findings": [],
+        "material_changes": [],
+        "disposition": "clean"
+      },
+      {
+        "pass_id": "PASS-05",
+        "lens": "action_completeness",
+        "candidate_digest_before": "sha256:32f945fbb61b0a299ffc50f5d2789a4c939fc159e0e748b36d09e6d4dc293bfc",
+        "candidate_digest_after": "sha256:32f945fbb61b0a299ffc50f5d2789a4c939fc159e0e748b36d09e6d4dc293bfc",
+        "findings": [],
+        "material_changes": [],
+        "disposition": "clean"
+      },
+      {
+        "pass_id": "PASS-06",
+        "lens": "policy_closure",
+        "candidate_digest_before": "sha256:246566af525fa52318c703b7c2c0d0c0dfa09a9fed30ef6ff7d2df2cd776f88e",
+        "candidate_digest_after": "sha256:246566af525fa52318c703b7c2c0d0c0dfa09a9fed30ef6ff7d2df2cd776f88e",
+        "findings": [],
+        "material_changes": [],
+        "disposition": "clean"
+      },
+      {
+        "pass_id": "PASS-07",
+        "lens": "safety_and_rollback",
+        "candidate_digest_before": "sha256:0fefbb2461a1ad9e5bb9c01a792e712afc82811e5ce35e7b165b2314ca5de9c0",
+        "candidate_digest_after": "sha256:0fefbb2461a1ad9e5bb9c01a792e712afc82811e5ce35e7b165b2314ca5de9c0",
+        "findings": [],
+        "material_changes": [],
+        "disposition": "clean"
+      },
+      {
+        "pass_id": "PASS-08",
+        "lens": "proof_and_terminal_state",
+        "candidate_digest_before": "sha256:cc4e0d18113584edf3bbeed9bcb9d10d7b221d53ea31415ab94cbd23cca7d2c9",
+        "candidate_digest_after": "sha256:cc4e0d18113584edf3bbeed9bcb9d10d7b221d53ea31415ab94cbd23cca7d2c9",
+        "findings": [],
+        "material_changes": [],
+        "disposition": "clean"
+      },
+      {
+        "pass_id": "PASS-09",
+        "lens": "simplicity_and_st_compileability",
+        "candidate_digest_before": "sha256:e4c2305bcb87b5104e531eeff87157df12f10dc4d93de1dfc7c6469bfd0491f9",
+        "candidate_digest_after": "sha256:e4c2305bcb87b5104e531eeff87157df12f10dc4d93de1dfc7c6469bfd0491f9",
+        "findings": [],
+        "material_changes": [],
+        "disposition": "clean"
+      }
+    ],
+    "radical_candidate": {
+      "candidate": "Replace the planned broad implementation wave with a two-action evidence-first slice that validates resource ownership before mutation.",
+      "disposition": "adopt",
+      "reason": "It improves execution safety and `$st` compileability without changing semantic authority.",
+      "affected_refs": [
+        "ACTION-1",
+        "GCR-v2-precondition"
+      ]
+    },
+    "convergence": {
+      "complete_clean_sweep": true,
+      "independent_press_pass_clean": true,
+      "unresolved_errors": 0,
+      "untreated_material_risks": 0,
+      "improvements_exhausted": true
+    }
+  }
+}

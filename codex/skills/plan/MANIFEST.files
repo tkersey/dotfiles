@@ -1,9 +1,16 @@
 PATCH_NOTES.md
 SKILL.md
 agents/openai.yaml
+assets/policy-synthesis-receipt.example.json
+assets/policy-synthesis-receipt.rejected-radical.example.json
+assets/proposed-plan.fixed-point.example.md
 references/artifact-root.md
 references/decision-contract.yaml
 references/policy-synthesis-fixed-point.md
 references/st-multi-plan-handoff.md
+tests/__pycache__/test_policy_synthesis_receipt_gate.cpython-313.pyc
+tests/test_policy_synthesis_receipt_gate.py
+tools/__pycache__/policy_synthesis_receipt_gate.cpython-313.pyc
+tools/policy_synthesis_receipt_gate.py
 MANIFEST.files
 MANIFEST.sha256

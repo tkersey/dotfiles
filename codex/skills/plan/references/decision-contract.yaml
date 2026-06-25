@@ -81,7 +81,7 @@ skill_decision_contract:
         - one-shot plan emitted without synthesis receipt
       rationale: Planning quality depends on exhaustive refinement, not just schema presence.
     - clause_id: PLAN-CREATIVITY-001
-      trigger_refs: [PLAN-COMPILE, PLAN-SYNTHESIS]
+      trigger_refs: [PLAN-SYNTHESIS]
       expected_routes: [PLAN-REFINE, PLAN-EMIT, PLAN-RETURN-SPEC, PLAN-BLOCK]
       prohibited_routes: []
       required_artifacts:

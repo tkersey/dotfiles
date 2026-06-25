@@ -218,10 +218,6 @@ Accretion is not.
 Never add content merely because finalization is near. A rejected radical
 candidate is a successful creativity pass when the rejection is evidence-based.
 
-If the candidate is adopted, apply it and restart synthesis from the earliest
-affected lens. Final readiness requires the post-adoption policy to pass the
-clean sweep and independent press pass.
-
 ## Policy synthesis receipt
 
 Emit or persist one compact `PSR-v1` receipt:
@@ -269,6 +265,13 @@ The receipt proves synthesis happened; it does not expose private reasoning.
 
 The final `<proposed_plan>` should include a concise `Policy Synthesis Receipt`
 section or a reference to the persisted receipt.
+
+Validate:
+
+```bash
+python3 codex/skills/plan/tools/policy_synthesis_receipt_gate.py \
+  .ledger/plan/<plan-id>/synthesis-receipt.json
+```
 
 ## Multi-plan handoff
 
@@ -387,8 +390,7 @@ When the user asks only whether an existing plan is ready:
 - validate radical candidate disposition;
 - validate `$st` handoff readiness.
 
-If all pass and no revision is requested, include this readiness sentence in the
-final response:
+If all pass and no revision is requested, reply exactly:
 
 ```text
 Plan is ready.

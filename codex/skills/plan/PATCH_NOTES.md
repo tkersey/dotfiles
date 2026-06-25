@@ -12,6 +12,7 @@ Adds:
 - Mandatory radical creativity candidate with evidence-based disposition.
 - Readiness requirement for clean synthesis sweep and independent press pass.
 - Decision-contract clauses for synthesis and creativity.
+- `policy_synthesis_receipt_gate.py` with adversarial fixtures and tests.
 
 Keeps:
 
