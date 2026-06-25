@@ -221,20 +221,20 @@ proof obligations and rollback
 Compatibility path:
 
 ```bash
-st intake scaffold --source decision.json --out .step/st-intake.md
+st intake scaffold --source decision.json --out .ledger/st/intake/st-intake.md
 # Map EPD fields exactly; do not change policy semantics.
 st intake check \
-  --input .step/st-intake.md \
+  --input .ledger/st/intake/st-intake.md \
   --gate implementation-ready \
   --format json
 st intake normalize \
-  --input .step/st-intake.md \
-  --out .step/st-intake.normalized.md
+  --input .ledger/st/intake/st-intake.md \
+  --out .ledger/st/intake/st-intake.normalized.md
 st intake apply \
-  --file .step/st-plan.jsonl \
-  --input .step/st-intake.normalized.md \
+  --file .ledger/st/st-plan.jsonl \
+  --input .ledger/st/intake/st-intake.normalized.md \
   --gate implementation-ready
-st compile aperture --file .step/st-plan.jsonl --limit 7
+st compile aperture --file .ledger/st/st-plan.jsonl --limit 7
 ```
 
 Do not materialize dormant policy branches as ready or blocked tasks.
@@ -326,7 +326,7 @@ python3 codex/skills/actuating/tools/actuation_slice_gate.py slice.json
 python3 codex/skills/actuating/tools/actuation_checkpoint.py \
   write \
   --input slice.json \
-  --root .step/actuating
+  --root .ledger/actuating
 ```
 
 ASL does not duplicate policy state or `$st` task status.

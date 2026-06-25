@@ -320,7 +320,7 @@ See [inquiry-lanes.md](references/inquiry-lanes.md).
 cas session_inquiry run \
   --capsule capsule.json \
   --plan plan.json \
-  --receipt-dir .retrace/<inquiry-id> \
+  --receipt-dir .ledger/retrace/<inquiry-id> \
   --json
 ```
 CAS must prove source lineage, retained anchor, model/provider, permission policy, workspace mode, turn state, and cleanup.
@@ -423,7 +423,7 @@ bounded excerpts and refs
 ```
 Do not use `thread/shellCommand`.
 Do not persist private reasoning.
-Use `.retrace/<inquiry-id>/` only when receipts are required, and local-exclude it by default.
+Use `.ledger/retrace/<inquiry-id>/` only when receipts are required, and local-exclude it by default.
 A blocked replay does not erase deterministic source evidence.
 
 ## Output

@@ -20,7 +20,7 @@ actuation_slice:
     st_plan_fingerprint:
 
   task_control:
-    plan_ref: .step/st-plan.jsonl
+    plan_ref: .ledger/st/st-plan.jsonl
     gcr_id:
     gcr_ref:
     gcr_seq:
@@ -152,8 +152,8 @@ A new observation that changes owner, invariant, row set, route, or boundary for
 Recommended local path:
 
 ```text
-.step/actuating/<run-id>/current.json
-.step/actuating/<run-id>/history/<timestamp>-<slice-id>.json
+.ledger/actuating/<run-id>/current.json
+.ledger/actuating/<run-id>/history/<timestamp>-<slice-id>.json
 ```
 
 These are workflow-control artifacts, not an alternate task graph.

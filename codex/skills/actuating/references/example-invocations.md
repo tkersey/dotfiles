@@ -17,7 +17,7 @@ proof, and open a ready PR when complete. Do not merge.
 ```text
 Use $actuating.
 
-Resume the existing .step/st-plan.jsonl and .step/actuating checkpoint.
+Resume the existing .ledger/st/st-plan.jsonl and .ledger/actuating checkpoint.
 Verify the current GCR and ASL before mutation. Continue to a ready PR.
 ```
 

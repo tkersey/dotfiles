@@ -13,6 +13,13 @@ codex/skills/deckset/references/refresh-metadata.json
 **/node_modules
 
 .step/st-plan.jsonl.lock
+.ledger/st/st-plan.jsonl.lock
+.ledger/resolve/c3/
+.ledger/actuating/*/current.json
+.ledger/actuating/*/history/
+.ledger/actuating/**/scratch/
+.ledger/retrace/*
+.ledger/seq/*
 codex/memories/extensions/learnings/resources/latest_learnings_digest.md
 codex/memories/extensions/chronicle/resources/*
 

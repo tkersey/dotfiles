@@ -530,7 +530,7 @@ Current compatibility path:
 EPG/current state
 -> EPD-v1 selected action
 -> semantic intake for only the current commitment horizon
--> canonical .step/st-plan.jsonl
+-> canonical .ledger/st/st-plan.jsonl
 -> GCR-v1
 ```
 

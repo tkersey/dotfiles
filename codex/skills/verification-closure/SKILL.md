@@ -16,7 +16,7 @@ Decide whether the current artifact is actually ready.
 Require:
 
 ```text
-.ledger/c3/mbkc.json
+.ledger/resolve/c3/mbkc.json
 certificate_version = MBKC-v1
 campaign_base unchanged
 review-ready baseline unchanged

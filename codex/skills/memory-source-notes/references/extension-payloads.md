@@ -40,7 +40,7 @@ The complete canonical row remains in `.learnings.jsonl`.
 {
   "neg_id": "NEG-000001",
   "record_version": "NER-v2",
-  "ledger_path": ".ledger/negative-ledger.jsonl",
+  "ledger_path": ".ledger/negative-ledger/events.jsonl",
   "projection_fingerprint": "...",
   "status": "active",
   "kind": "realization_route",

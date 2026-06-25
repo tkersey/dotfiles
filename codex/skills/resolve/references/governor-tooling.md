@@ -8,4 +8,4 @@ resolve-c3 mrpc-gate --file <mrpc.json>
 resolve-c3 rdr-gate --file <record.yml>
 ```
 
-The Python governor validators are retired. Current C3 closure uses `resolve-c3` gate subcommands and controller state under `.ledger/c3/`.
+The Python governor validators are retired. Current C3 closure uses `resolve-c3` gate subcommands and controller state under `.ledger/resolve/c3/`.

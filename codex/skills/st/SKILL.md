@@ -1,6 +1,6 @@
 ---
 name: st
-description: "Durable graph control, aperture, and proof source for `.step/st-plan.jsonl`. Use for `use $st`, resuming durable work, dependencies, proof-carrying completion, mirroring bounded work into Codex/OpenCode plans, or turning a plan, proposal, issue, spec, markdown document, TODO list, or design into executable tasks. For material work, require a current CLI-emitted GCR-v1 before execution projection."
+description: "Durable graph control, aperture, and proof source for `.ledger/st/st-plan.jsonl`. Use for `use $st`, resuming durable work, dependencies, proof-carrying completion, mirroring bounded work into Codex/OpenCode plans, or turning a plan, proposal, issue, spec, markdown document, TODO list, or design into executable tasks. For material work, require a current CLI-emitted GCR-v1 before execution projection."
 ---
 
 # st
@@ -32,7 +32,7 @@ Use graph mode for material plans with intent atoms, contracted executable items
 Required control command:
 
 ```bash
-st compile aperture --file .step/st-plan.jsonl --limit 7
+st compile aperture --file .ledger/st/st-plan.jsonl --limit 7
 ```
 
 Current `st` also accepts legacy `--parallelism auto` on this command as a no-op compatibility alias; do not write new instructions with that flag.
@@ -77,31 +77,31 @@ Cache that result for the session.
 For a new material plan, use the intake check/apply path:
 
 ```bash
-st intake scaffold --source docs/plan.md --out .step/st-intake.md
+st intake scaffold --source docs/plan.md --out .ledger/st/intake/st-intake.md
 # Agent fills or edits the semantic intake artifact.
-st intake check --input .step/st-intake.md --gate implementation-ready --format json
-st intake normalize --input .step/st-intake.md --out .step/st-intake.normalized.md
-st intake apply --file .step/st-plan.jsonl --input .step/st-intake.normalized.md --gate implementation-ready
-st compile aperture --file .step/st-plan.jsonl --limit 7
+st intake check --input .ledger/st/intake/st-intake.md --gate implementation-ready --format json
+st intake normalize --input .ledger/st/intake/st-intake.md --out .ledger/st/intake/st-intake.normalized.md
+st intake apply --file .ledger/st/st-plan.jsonl --input .ledger/st/intake/st-intake.normalized.md --gate implementation-ready
+st compile aperture --file .ledger/st/st-plan.jsonl --limit 7
 ```
 
 `st intake plan` is a deprecated alias for scaffold. A scaffold is not semantic compilation until the agent-authored intake passes `check` and `apply`.
 
-Intake always applies to the canonical `.step/st-plan.jsonl`. Do not create an alternate durable plan file such as `.step/*-st-plan.jsonl` to bypass existing canonical graph debt; repair the canonical graph with `st` commands or fail with the audit/intake diagnostics.
+Intake always applies to the canonical `.ledger/st/st-plan.jsonl`. Do not create an alternate durable plan file such as `.ledger/st/*-st-plan.jsonl` to bypass existing canonical graph debt; repair the canonical graph with `st` commands or fail with the audit/intake diagnostics.
 
 ## Existing Healthy Graph
 
 For existing healthy graph work, start with:
 
 ```bash
-st compile aperture --file .step/st-plan.jsonl --limit 7
+st compile aperture --file .ledger/st/st-plan.jsonl --limit 7
 ```
 
 Then mirror only the emitted `plan_sync.codex.plan` into `update_plan` or `plan_sync.opencode.todos` into OpenCode.
 
 ## Projection Rules
 
-- Durable source: `.step/st-plan.jsonl`.
+- Durable source: `.ledger/st/st-plan.jsonl`.
 - Do not create sidecar durable plan files to work around canonical graph debt.
 - Native plan tools are projection only.
 - Mutate durable state only through `st` commands.
@@ -116,18 +116,18 @@ Then mirror only the emitted `plan_sync.codex.plan` into `update_plan` or `plan_
 Execute only the selected aperture. After work, record proof at obligation level:
 
 ```bash
-st proof plan --file .step/st-plan.jsonl --scope aperture --format json
+st proof plan --file .ledger/st/st-plan.jsonl --scope aperture --format json
 st proof record \
-  --file .step/st-plan.jsonl \
+  --file .ledger/st/st-plan.jsonl \
   --id st-001 \
   --obligation proof-001 \
   --action proof-action-test-st \
   --command "zig build test-st" \
-  --evidence-ref .step/proof/st-001-proof-001.log \
+  --evidence-ref .ledger/proof/st-001-proof-001.log \
   --artifact-ref "git:<sha-or-working-tree-fingerprint>"
-st complete --file .step/st-plan.jsonl --id st-001
-st compile aperture --file .step/st-plan.jsonl --limit 7
-st assert-projection --file .step/st-plan.jsonl
+st complete --file .ledger/st/st-plan.jsonl --id st-001
+st compile aperture --file .ledger/st/st-plan.jsonl --limit 7
+st assert-projection --file .ledger/st/st-plan.jsonl
 ```
 
 `st set-proof` remains a compatibility convenience. Do not use one ambiguous legacy proof to satisfy several distinct required commands.
@@ -139,22 +139,22 @@ If a local installed `st` rejects a documented proof flag combination, do not sp
 Use graph debt commands when the GCR blocks execution:
 
 ```bash
-st graph debt list --file .step/st-plan.jsonl --format json
-st graph debt waive --file .step/st-plan.jsonl --id debt-... --reason "..." --expires on-next-touch
-st graph debt resolve --file .step/st-plan.jsonl --id debt-...
+st graph debt list --file .ledger/st/st-plan.jsonl --format json
+st graph debt waive --file .ledger/st/st-plan.jsonl --id debt-... --reason "..." --expires on-next-touch
+st graph debt resolve --file .ledger/st/st-plan.jsonl --id debt-...
 ```
 
 For material work, unwaived blocking debt means `execution_allowed: no`.
 
 ## First-Use Storage Policy
 
-Before the first `st init` or mutation in a repo, determine whether `.step/st-plan.jsonl` is shared or local.
+Before the first `st init` or mutation in a repo, determine whether `.ledger/st/st-plan.jsonl` is shared or local.
 
 - If already tracked, respect shared mode.
 - If ignored, respect local mode.
-- If unclear, ask whether `.step/st-plan.jsonl` should be committed for shared review or kept local via `.git/info/exclude`.
-- Shared mode: track `.step/st-plan.jsonl`; ignore `.step/st-plan.jsonl.lock`.
-- Local mode: ignore both `.step/st-plan.jsonl` and `.step/st-plan.jsonl.lock`.
+- If unclear, ask whether `.ledger/st/st-plan.jsonl` should be committed for shared review or kept local via `.git/info/exclude`.
+- Shared mode: track `.ledger/st/st-plan.jsonl`; ignore `.ledger/st/st-plan.jsonl.lock`.
+- Local mode: ignore both `.ledger/st/st-plan.jsonl` and `.ledger/st/st-plan.jsonl.lock`.
 
 ## Final Response
 

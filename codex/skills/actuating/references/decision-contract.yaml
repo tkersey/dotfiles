@@ -117,7 +117,7 @@ skill_decision_contract:
         - ACT-SHIP
       required_artifacts:
         - current executable GCR-v1
-        - canonical .step/st-plan.jsonl
+        - canonical .ledger/st/st-plan.jsonl
       success_signals:
         - selected tasks match current policy action/materialization
       failure_signals:

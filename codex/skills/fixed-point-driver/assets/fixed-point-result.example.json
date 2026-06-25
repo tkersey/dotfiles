@@ -36,7 +36,7 @@
       "new_public_symbols": 0
     },
     "proof_refs": [
-      ".step/proof/proof-loaded-session-row-002.json"
+      ".ledger/proof/proof-loaded-session-row-002.json"
     ],
     "obligations_covered": [
       "proof-loaded-session-row-002"

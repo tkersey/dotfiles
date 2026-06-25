@@ -9,10 +9,10 @@
     "st_task_refs": [
       "st-101"
     ],
-    "graph_control_ref": ".step/proof/gcr-example.json",
-    "actuation_slice_ref": ".step/actuating/ACT-example-001/current.json",
+    "graph_control_ref": ".ledger/proof/gcr-example.json",
+    "actuation_slice_ref": ".ledger/actuating/ACT-example-001/current.json",
     "semantic_route_refs": [
-      ".step/actuating/routes/zsr.json"
+      ".ledger/actuating/routes/zsr.json"
     ],
     "owner": "LoadedSessionImage.validate",
     "invariant": "Current format requires continuation identity.",

@@ -31,7 +31,7 @@ Preferred command:
 cas session_inquiry run \
   --capsule capsule.json \
   --plan plan.json \
-  --receipt-dir .retrace/<inquiry-id> \
+  --receipt-dir .ledger/retrace/<inquiry-id> \
   --json
 ```
 

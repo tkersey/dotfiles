@@ -195,17 +195,17 @@ def main() -> int:
 
     p_write = sub.add_parser("write")
     p_write.add_argument("--input", required=True)
-    p_write.add_argument("--root", default=".step/actuating")
+    p_write.add_argument("--root", default=".ledger/actuating")
     p_write.set_defaults(func=write_slice)
 
     p_resume = sub.add_parser("resume")
-    p_resume.add_argument("--root", default=".step/actuating")
+    p_resume.add_argument("--root", default=".ledger/actuating")
     p_resume.add_argument("--run-id", required=True)
     p_resume.add_argument("--repo")
     p_resume.set_defaults(func=resume)
 
     p_check = sub.add_parser("check")
-    p_check.add_argument("--root", default=".step/actuating")
+    p_check.add_argument("--root", default=".ledger/actuating")
     p_check.add_argument("--run-id", required=True)
     p_check.set_defaults(func=check)
 

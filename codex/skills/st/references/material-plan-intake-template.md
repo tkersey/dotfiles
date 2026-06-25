@@ -1,6 +1,6 @@
 # Material Plan Intake Template
 
-Copy this file to `.step/st-intake.md` when the installed `st` binary does not yet provide `st intake plan`.
+Copy this file to `.ledger/st/intake/st-intake.md` when the installed `st` binary does not yet provide `st intake plan`.
 
 ```markdown
 # st graph intake

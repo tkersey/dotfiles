@@ -12,7 +12,7 @@
       "dirty_fingerprint": "sha256:clean"
     },
     "control": {
-      "plan_ref": ".step/st-plan.jsonl",
+      "plan_ref": ".ledger/st/st-plan.jsonl",
       "gcr_id": "GCR-example-final",
       "gcr_current": true,
       "execution_allowed": true,
@@ -29,7 +29,7 @@
     },
     "frontiers": {
       "afr_refs": [
-        ".step/actuation/ACT-example-001/slice-001.afr.json"
+        ".ledger/actuating/ACT-example-001/slice-001.afr.json"
       ],
       "terminal": 1,
       "return_to_frontier": 0,

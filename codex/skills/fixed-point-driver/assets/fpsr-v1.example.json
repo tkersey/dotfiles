@@ -46,7 +46,7 @@
         "zig build test-session-image --summary all"
       ],
       "evidence_refs": [
-        ".step/proof/session-image-authority.log"
+        ".ledger/proof/session-image-authority.log"
       ],
       "status": "pass"
     },

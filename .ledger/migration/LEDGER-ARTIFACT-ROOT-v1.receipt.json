@@ -1,0 +1,42 @@
+{
+  "schema_version": "MIGRATION-RECEIPT-v1",
+  "receipt_id": "MIGRATION-LEDGER-ARTIFACT-ROOT-v1",
+  "stable_identity": "LEDGER-ARTIFACT-ROOT-v1:.dotfiles:path-default-migration",
+  "spec_id": "LEDGER-ARTIFACT-ROOT-v1",
+  "written_at": "2026-06-25T19:34:31Z",
+  "repository": "/Users/tk/.dotfiles",
+  "base_head": "e79ae0403b3e34f4130ea96274387293f4986ceb",
+  "summary": "Migrated machine-owned workflow artifact defaults and examples to owner namespaces under .ledger/ while preserving explicit legacy read fallbacks for migration windows.",
+  "canonical_owner_namespaces": [
+    ".ledger/plan/",
+    ".ledger/st/",
+    ".ledger/actuating/",
+    ".ledger/resolve/",
+    ".ledger/retrace/",
+    ".ledger/seq/",
+    ".ledger/negative-ledger/",
+    ".ledger/proof/",
+    ".ledger/migration/"
+  ],
+  "legacy_read_fallbacks": [
+    ".step/st-plan.jsonl",
+    ".ledger/c3/state.json",
+    ".step/resolve-c3-st-plan.jsonl"
+  ],
+  "local_runtime_defaults": [
+    ".ledger/st/st-plan.jsonl.lock",
+    ".ledger/resolve/c3/",
+    ".ledger/actuating/*/current.json",
+    ".ledger/actuating/*/history/",
+    ".ledger/actuating/**/scratch/",
+    ".ledger/retrace/*",
+    ".ledger/seq/*"
+  ],
+  "verification": [
+    "sh -n codex/hooks/st_hook_common.sh codex/hooks/st_pre_tool_use.sh codex/hooks/st_session_start.sh codex/hooks/st_stop.sh codex/hooks/tests/test_st_hook_common.sh",
+    "codex/hooks/tests/test_st_hook_common.sh",
+    "uv run python codex/skills/actuating/tests/test_actuating_tools.py",
+    "git diff --name-only -- '*.json' | xargs -r jq empty",
+    "git diff --name-only -- '*.yaml' '*.yml' | xargs -r ruby -e 'require \"yaml\"; ARGV.each { |path| YAML.load_file(path) }'"
+  ]
+}

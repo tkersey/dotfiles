@@ -47,6 +47,6 @@
     "proof_obligations": [
       "proof-focused-authority"
     ],
-    "proof_dag_ref": ".step/actuation/ACT-example-001/slice-001.afr.json#/proof_dag"
+    "proof_dag_ref": ".ledger/actuating/ACT-example-001/slice-001.afr.json#/proof_dag"
   }
 }

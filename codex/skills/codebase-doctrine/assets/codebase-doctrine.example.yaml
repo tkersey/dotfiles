@@ -170,7 +170,7 @@ codebase_doctrine:
     question_id: Q-FAILURE
     observation: Two repairs and canonical ledger NEG-0001 identify reader-side tolerance
       as a failed route.
-    evidence_ref: .ledger/negative-ledger.jsonl#NEG-0001
+    evidence_ref: .ledger/negative-ledger/events.jsonl#NEG-0001
     artifact_state_id: AS-ce619f3a519dcde1
     scope: store
     confidence: high

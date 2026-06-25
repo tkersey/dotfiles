@@ -8,7 +8,7 @@ Current compatibility path:
 EPG + EPS state
 -> EPD selected action
 -> `$st` semantic intake containing exact policy/state/action refs
--> canonical `.step/st-plan.jsonl`
+-> canonical `.ledger/st/st-plan.jsonl`
 -> GCR-v1
 ```
 

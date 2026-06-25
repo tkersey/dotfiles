@@ -5,7 +5,7 @@ Publish route/RCP/RDP/NREC/negative-ledger/universalist decisions into a first-c
 Preferred path:
 
 ```text
-.step/proof/resolve/<resolve-run-id>/review-wave-<n>.route.yml
+.ledger/proof/resolve/<resolve-run-id>/review-wave-<n>.route.yml
 ```
 
 Validate with:

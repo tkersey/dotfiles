@@ -208,18 +208,18 @@ Finding shape is `{code,severity,target,message,waived,waiver_id}`.
 - Canonical rewrite shape is two records: one `event` (`op=replace`) and one `checkpoint`, both at the new watermark
 - Checkpoint seq rule: each checkpoint `seq` must equal the watermark immediately before that checkpoint record
 - Replay contract: latest checkpoint + records with `seq` greater than checkpoint `seq` must equal full replay
-- Repair path: `st doctor --file .step/st-plan.jsonl --repair-seq` rewrites a canonical replace+checkpoint stream at the current watermark
+- Repair path: `st doctor --file .ledger/st/st-plan.jsonl --repair-seq` rewrites a canonical replace+checkpoint stream at the current watermark
 
 ## Plan-file storage policy
 
-- The JSONL format is the same whether `.step/st-plan.jsonl` is repo-tracked or locally ignored
-- On first use in a repo, ask which policy should govern `.step/st-plan.jsonl` unless the repo already makes the choice obvious
-- Shared mode: keep `.step/st-plan.jsonl` tracked and ignore only the lock sidecar
-- Local mode: add both `.step/st-plan.jsonl` and `.step/st-plan.jsonl.lock` to `.git/info/exclude`
+- The JSONL format is the same whether `.ledger/st/st-plan.jsonl` is repo-tracked or locally ignored
+- On first use in a repo, ask which policy should govern `.ledger/st/st-plan.jsonl` unless the repo already makes the choice obvious
+- Shared mode: keep `.ledger/st/st-plan.jsonl` tracked and ignore only the lock sidecar
+- Local mode: add both `.ledger/st/st-plan.jsonl` and `.ledger/st/st-plan.jsonl.lock` to `.git/info/exclude`
 
 ## Lock sidecar policy
 
-- Mutation paths acquire a sidecar file lock at `<plan-file>.lock` (for example `.step/st-plan.jsonl.lock`)
+- Mutation paths acquire a sidecar file lock at `<plan-file>.lock` (for example `.ledger/st/st-plan.jsonl.lock`)
 - In git worktrees, mutating commands require that sidecar path to be ignored (`git check-ignore`) before writes proceed
 - Use `.gitignore` for the sidecar in shared mode, or `.git/info/exclude` for both plan and sidecar in local-only mode
 
