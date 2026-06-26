@@ -1,8 +1,8 @@
 ---
 name: actuating
-description: "Plan-to-PR execution controller for one named plan inside the multi-plan `$st` workspace. Use for `$actuating`, implementing a material plan, resuming an actuation run, or driving one execution-policy action. Require explicit workspace, plan, session, claim, fencing token, branch epoch, and current GCR-v2. Workers produce fenced change sets; target-branch integration is serialized through `$st`."
+description: "Plan-to-PR execution controller for one named plan inside the multi-plan `$st` workspace. Use for `$actuating`, implementing a material plan, resuming an actuation run, or driving one execution-policy action. Mutation is forbidden until APMA-v1 proves a current GCR-v2 with execution_allowed=yes, current claim, current fencing token, current branch epoch, selected task IDs, and resource coverage for the intended edit. Workers produce fenced change sets; target-branch integration is serialized through `$st`."
 metadata:
-  version: "5.0.0"
+  version: "5.1.0"
   activation_cost: high
   default_depth: standard
 ---
@@ -11,8 +11,7 @@ metadata:
 
 ## Mission
 
-Drive one plan through bounded, proof-carrying execution without conflicting
-with other plans or agents.
+Drive one plan through bounded, proof-carrying execution without conflicting with other plans or agents.
 
 ```text
 named plan
@@ -20,6 +19,7 @@ named plan
 -> workspace allocation
 -> fenced claim
 -> GCR-v2
+-> APMA-v1 pre-mutation authority
 -> bounded semantic/action slice
 -> isolated realization
 -> focused proof
@@ -29,6 +29,55 @@ named plan
 -> delivery
 ```
 
+`$actuating` is not an implementer. It is a transaction controller. Code mutation is legal only after the controller is the upstream authority.
+
+## Non-negotiable authority invariant
+
+```text
+No APMA-v1 mutation-authorized receipt
+= no actuation-labeled patch
+```
+
+APMA-v1 must prove all of the following before any `apply_patch`, editor write, shell mutation, proof write, change-set seal, or integration step in an actuation-labeled run:
+
+```text
+GCR-v2 execution_allowed = yes
+current workspace sequence
+current plan sequence
+current branch epoch
+current held claim
+current fencing token
+current session projection
+nonempty selected task IDs
+no conflicting claim
+no unwaived graph debt
+intended edit resources covered by claim resources
+```
+
+Use:
+
+```bash
+uv run python codex/skills/actuating/tools/actuation_authority_gate.py \
+  authorize \
+  --gcr <gcr-v2.json> \
+  --run-id <run-id> \
+  --path <repo-relative-file-or-dir> \
+  --out .ledger/actuating/<run-id>/apma-v1.json
+```
+
+Then, immediately before the patch, check the exact intended path/resource:
+
+```bash
+uv run python codex/skills/actuating/tools/actuation_authority_gate.py \
+  check \
+  --apma .ledger/actuating/<run-id>/apma-v1.json \
+  --path <repo-relative-file-or-dir>
+```
+
+A failed check is a hard stop.
+
+See [pre-mutation-interlock.md](references/pre-mutation-interlock.md).
+
 ## Artifact root
 
 Persist actuation control under:
@@ -37,7 +86,7 @@ Persist actuation control under:
 .ledger/actuating/<run-id>/
 ```
 
-References to plan/claim/proof remain authoritative at their owning paths under:
+References to plan, claim, proof, change sets, and integration receipts remain authoritative at their owning paths under:
 
 ```text
 .ledger/st/
@@ -58,23 +107,26 @@ actuation_run:
   actuation_root: .ledger/actuating/<run-id>
 ```
 
-One run controls one plan and one current session binding.
-
-It may observe other plans through workspace receipts but may not mutate their
-graphs.
+One run controls one plan and one current session binding. It may observe other plans through workspace receipts but may not mutate their graphs.
 
 ## Capability gate
 
-Require:
+Require current `st` capabilities:
 
 ```text
-st workspace_v1
-st workspace_claim_v1
-st fencing_token_v1
-st session_view_v1
-st changeset_v1
-st serialized_integration_v1
-st gcr_v2
+workspace_v1
+workspace_claim_v1
+fencing_token_v1
+session_view_v1
+changeset_v1
+serialized_integration_v1
+gcr_v2
+```
+
+Probe when uncertain:
+
+```bash
+st capabilities --format json
 ```
 
 If any required capability is unavailable:
@@ -114,7 +166,7 @@ For a new plan, complete the `$st` intake path under:
 .ledger/st/plans/<plan-id>/intake/
 ```
 
-Plan-local graph readiness does not yet grant mutation.
+Plan-local graph readiness does not grant mutation.
 
 ## Phase 3 — workspace allocation and claim
 
@@ -127,15 +179,14 @@ st workspace aperture \
   --format json
 ```
 
-Claim the selected work:
+Grant a resource claim for the exact intended mutation boundary:
 
 ```bash
-st claim \
+st claim grant \
   --workspace .ledger/st \
-  --plan <plan-id> \
   --session <session-id> \
-  --ids <ids> \
-  --lease-seconds 900
+  --executor <executor-id> \
+  --resources write:path:<repo-relative-file-or-dir>
 ```
 
 Record:
@@ -147,13 +198,26 @@ workspace sequence
 plan sequence
 branch epoch
 resource set
-external worktree metadata ref
+external worktree metadata ref when created
 ```
 
-If claim is denied, do not “work around” it by narrowing paths in prose or
-opening another plan file.
+If claim is denied, do not work around it by narrowing paths in prose, opening another plan file, or editing directly while still claiming `$actuating` authority.
 
-## Phase 4 — GCR-v2
+## Phase 4 — bind claim and compile GCR-v2
+
+Re-bind the session with the held claim and fencing token when the installed CLI supports it:
+
+```bash
+st session bind \
+  --workspace .ledger/st \
+  --session <session-id> \
+  --executor <executor-id> \
+  --plan <plan-id> \
+  --claim <claim-id> \
+  --fencing-token <token>
+```
+
+Compile the current GCR-v2 authority receipt:
 
 ```bash
 st compile aperture \
@@ -161,29 +225,59 @@ st compile aperture \
   --plan <plan-id> \
   --session <session-id> \
   --claim <claim-id> \
-  --limit 7
+  --fencing-token <token> \
+  --expect-workspace-seq <workspace-seq> \
+  --expect-plan-seq <plan-seq> \
+  --expect-branch-epoch <branch-epoch> \
+  --format json > .ledger/actuating/<run-id>/gcr-v2.json
 ```
 
-Material mutation requires:
-
-```text
-execution_allowed = yes
-current workspace/plan sequence
-current branch epoch
-current held claim
-current fencing token
-no conflicting claim
-current session view
-no unwaived blocking debt
-```
-
-Validate exported GCR when needed:
+Validate if needed:
 
 ```bash
-python3 codex/skills/st/tools/gcr_v2_gate.py gcr.json
+uv run python codex/skills/st/tools/gcr_v2_gate.py \
+  .ledger/actuating/<run-id>/gcr-v2.json
 ```
 
-`update_plan` remains projection only.
+Then emit APMA-v1 with the intended mutation resource:
+
+```bash
+uv run python codex/skills/actuating/tools/actuation_authority_gate.py \
+  authorize \
+  --gcr .ledger/actuating/<run-id>/gcr-v2.json \
+  --run-id <run-id> \
+  --path <repo-relative-file-or-dir> \
+  --out .ledger/actuating/<run-id>/apma-v1.json
+```
+
+`update_plan` remains projection only. It never substitutes for GCR-v2 or APMA-v1.
+
+## Self-invalidating GCR stop rule
+
+If GCR-v2 denies execution because the session view, workspace sequence, plan sequence, or branch epoch became stale during aperture compilation, classify the path as:
+
+```text
+blocked-self-invalidating-gcr-candidate
+```
+
+Run:
+
+```bash
+uv run python codex/skills/actuating/tools/actuation_authority_gate.py \
+  diagnose-gcr \
+  --gcr .ledger/actuating/<run-id>/gcr-v2.json
+```
+
+On that verdict:
+
+1. stop actuation immediately;
+2. do not retry blindly;
+3. do not mutate product files under `$actuating`;
+4. release any held claim when safe;
+5. mark the run blocked on `$st` authority tooling;
+6. repair `$st` so GCR compilation is non-self-invalidating, or explicitly leave `$actuating` before any direct implementation.
+
+A command that emits GCR-v2 must not invalidate the session projection it later validates.
 
 ## Phase 5 — prepare one bounded slice
 
@@ -193,6 +287,7 @@ The slice references:
 workspace/plan/session
 claim and fencing
 GCR-v2
+APMA-v1
 selected task IDs
 selected execution-policy action or semantic route
 owner and invariant
@@ -201,24 +296,25 @@ proof obligations
 stop/new-observation conditions
 ```
 
-No slice may widen the claim.
-
-A wider boundary requires:
+No slice may widen the claim. A wider boundary requires:
 
 ```text
 release or amend claim through `$st`
 re-run conflict analysis
 obtain new fencing authority
 compile a new GCR-v2
+emit a new APMA-v1
 ```
 
 ## Phase 6 — realize in the claimed worktree
 
-Invoke `$fixed-point-driver` with:
+Invoke `$fixed-point-driver` only with:
 
 ```text
 external worktree ref
 claim ID and fencing token
+GCR-v2 ID
+APMA-v1 ID
 resource roots
 base head and branch epoch
 selected normal form/action
@@ -234,7 +330,10 @@ stage the shared Git index
 commit/push the target branch
 edit another plan
 write outside claimed resources
+patch without APMA-v1
 ```
+
+Before every patch call, the lead must verify APMA-v1 covers the intended edit path.
 
 ## Phase 7 — proof and transition
 
@@ -250,13 +349,15 @@ Proof receipts bind:
 
 ```text
 claim
+fencing token
+GCR-v2
+APMA-v1
 branch epoch
 tree digest
 dependency cut
 ```
 
-A new observation that changes route, owner, required resources, or accepted
-behavior stops realization and returns to the plan/policy frontier.
+A new observation that changes route, owner, required resources, or accepted behavior stops realization and returns to the plan/policy frontier.
 
 ## Phase 8 — seal the change set
 
@@ -264,23 +365,20 @@ behavior stops realization and returns to the plan/policy frontier.
 st changeset seal \
   --workspace .ledger/st \
   --claim <claim-id> \
-  --fencing-token <token>
+  --session <session-id> \
+  --fencing-token <token> \
+  --worktree <external-worktree> \
+  --id <changeset-id>
 ```
 
-Validate:
-
-```bash
-python3 codex/skills/st/tools/changeset_gate.py changeset.json
-```
-
-Require every changed path to be covered by the claim.
+Require every changed path to be covered by the claim and by the APMA-v1 resource coverage used before mutation.
 
 ## Phase 9 — integrate
 
 ```bash
 st integrate enqueue \
   --workspace .ledger/st \
-  --changeset <changeset-id>
+  --id <changeset-id>
 ```
 
 The workspace integrator—not the worker—advances the target branch.
@@ -292,6 +390,7 @@ branch epoch advances
 foreign proof invalidation is computed
 plan/session views become stale as needed
 next GCR-v2 must bind the new epoch
+next APMA-v1 must bind the new GCR-v2
 ```
 
 If integration rebases or materially changes the patch, rerun affected proof.
@@ -318,8 +417,7 @@ no cross-plan blocker
 current PR/review state
 ```
 
-Other active plans need not be complete unless their cross-plan dependencies
-block this plan’s terminal predicates.
+Other active plans need not be complete unless their cross-plan dependencies block this plan’s terminal predicates.
 
 ## Projection
 
@@ -334,18 +432,17 @@ st prime \
   --mode aperture
 ```
 
-Project only the emitted native-plan rows.
-
-Never publish another session’s view.
+Project only the emitted native-plan rows. Never publish another session’s view.
 
 ## Heartbeats and compaction
 
 Before long proof or likely compaction:
 
 ```bash
-st heartbeat \
+st claim heartbeat \
   --workspace .ledger/st \
   --claim <claim-id> \
+  --session <session-id> \
   --fencing-token <token>
 ```
 
@@ -363,6 +460,8 @@ fencing current
 workspace/plan sequence current
 branch epoch current
 worktree still bound to claim
+GCR-v2 still current for the next mutation
+APMA-v1 either current for the exact next resource or reissued
 ```
 
 Any mismatch returns to workspace allocation.
@@ -392,6 +491,7 @@ Actuation:
 - session / executor:
 - claim / fencing / resources:
 - GCR-v2:
+- APMA-v1:
 - selected action/tasks:
 - worker worktree:
 - focused proof:
@@ -402,15 +502,26 @@ Actuation:
 - PR mode / PR:
 ```
 
+If no APMA-v1 was emitted and checked, the final report must say:
+
+```text
+actuation mutation authority: absent
+actuation verdict: blocked or not-actuated
+```
+
+Do not describe direct implementation as an actuation run.
+
 ## Hard rules
 
 - One actuation run owns one plan.
 - No plan inference when several plans are active.
 - No material mutation without current GCR-v2.
+- No actuation-labeled patch without APMA-v1.
 - No mutation without current fenced claim.
 - No boundary widening outside `$st`.
 - No worker writes to primary checkout or shared target branch.
 - No direct commit/push by worker agents.
 - Integration is serialized.
-- Proof is branch-epoch bound.
+- Proof is branch-epoch and APMA-bound.
+- Self-invalidating GCR is a hard stop, not a retry loop.
 - All new artifacts live under `.ledger/`.
