@@ -34,6 +34,7 @@ references/review-potential.md
 references/rgr-gate.md
 references/semantic-cost.md
 tests/test_authority_chain_gate.py
+tests/test_mutation_gate.py
 tests/test_intent_closed_protocol.py
 tools/acceptance_contract_gate.py
 tools/common.py
@@ -41,6 +42,7 @@ tools/controller_preflight.py
 tools/kernel_lint.py
 tools/mbkc_gate.py
 tools/resolve_authority_chain_gate.py
+tools/resolve_mutation_gate.py
 tools/review_batch_gate.py
 tools/review_potential_gate.py
 MANIFEST.files

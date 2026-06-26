@@ -9,10 +9,22 @@ Native check:
 resolve-c3 authority-chain check --chain rac.yaml --format json
 ```
 
+Native mutation gate:
+
+```bash
+resolve-c3 mutation-gate --chain rac.yaml --format json
+```
+
 Reference compatibility check:
 
 ```bash
 python3 codex/skills/resolve/tools/resolve_authority_chain_gate.py rac.yaml
+```
+
+Reference mutation gate:
+
+```bash
+python3 codex/skills/resolve/tools/resolve_mutation_gate.py --chain rac.yaml
 ```
 
 Exit codes:
@@ -33,6 +45,12 @@ The compatibility script emits:
   "campaign_id": "c3-example"
 }
 ```
+
+The mutation gate exits `0` only when mutation is allowed, `2` when a RAC
+artifact was evaluated but mutation is blocked, and `3` when input could not be
+evaluated. Blocked workflows may only adjudicate the claim, seal or repair the
+batch, compile or repair CEB/MBK/RC, rebase AC, create a follow-up, reject the
+finding, or block.
 
 Mutation-authorizing chains require current artifact state, a complete review
 claim, in-horizon acceptance law, confirmed adjudication, sealed batch,
