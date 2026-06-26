@@ -102,6 +102,9 @@ reduction_certificate_v1
 review_potential_v1
 intent_closed_conformance_v1
 terminal_holdout_v1
+authority_chain_rac_v1
+mutation_gate_rac_v1
+closure_gate_v1
 physical_apply
 physical_commit
 physical_push
