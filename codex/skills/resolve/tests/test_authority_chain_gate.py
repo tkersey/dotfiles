@@ -69,7 +69,8 @@ def main() -> int:
         "invalid_cex",
         "unsealed_batch",
         "artifact_state_stale",
-        "mutation_gate_disagrees",
+        "realization_not_allowed",
+        "incomplete_chain",
     ):
         assert reason in body["violations"], body
 
@@ -77,6 +78,46 @@ def main() -> int:
     assert missing.returncode == 3, missing.stdout + missing.stderr
 
     with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        no_wrapper = root / "no-wrapper.json"
+        no_wrapper.write_text(json.dumps({"chain_version": "RAC-v1"}), encoding="utf-8")
+        result = run(no_wrapper)
+        assert result.returncode == 3, result.stdout + result.stderr
+
+        weak = root / "weak.json"
+        weak.write_text(
+            json.dumps(
+                {
+                    "resolve_authority_chain": {
+                        "chain_version": "RAC-v1",
+                        "chain_id": "",
+                        "campaign_id": "c3-example",
+                        "artifact_state": {"base_sha": "base", "head_sha": "", "dirty_fingerprint": "clean", "review_receipt": "review"},
+                        "review_claim": {"claim_id": "claim"},
+                        "acceptance": {"contract_id": "ac", "contract_fingerprint": "sha256:ac", "horizon_fingerprint": "sha256:h", "law_refs": [""], "relation": "contract_invalidating"},
+                        "adjudication": {"cex_id": "cex", "validity": "confirmed", "liability": "none", "novelty": "duplicate", "disposition": "refuted"},
+                        "batch": {"batch_id": "batch", "sealed": True, "mode": "terminal_holdout"},
+                        "compression": {"ceb_id": "ceb", "class_id": "class", "class_status": "rejected", "quotient_witness_ref": "w", "mbk_id": "mbk", "rc_id": "rc", "transition_ref": "t", "proof_obligation_ref": "p"},
+                        "realization": {"allowed": True},
+                        "gate": {"current_artifact_state": "yes", "complete_chain": "yes", "mutation_allowed": "yes"},
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        result = run(weak)
+        assert result.returncode == 2, result.stdout + result.stderr
+        body = json_body(result)
+        assert "missing_chain_identity" in body["missing"], body
+        assert "missing_artifact_state" in body["missing"], body
+        assert "missing_review_claim" in body["missing"], body
+        assert "missing_law_refs" in body["missing"], body
+        assert "outside_horizon" in body["violations"], body
+        assert "invalid_cex" in body["violations"], body
+        assert "unsealed_batch" in body["violations"], body
+        assert "ceb_class_not_accepted" in body["violations"], body
+        assert "realization_not_allowed" in body["violations"], body
+
         unsupported = Path(td) / "rac.txt"
         unsupported.write_text("not a RAC document\n", encoding="utf-8")
         result = run(unsupported)

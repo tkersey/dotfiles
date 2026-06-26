@@ -23,7 +23,7 @@ LEGAL_NEXT_ACTIONS = [
 
 
 def normalize(reason: str) -> str:
-    if reason == "missing_chain_version":
+    if reason in {"missing_chain_version", "missing_chain_identity"}:
         return "rac_v1"
     if reason in {"missing_artifact_state", "artifact_state_stale"}:
         return "artifact_state"
@@ -41,7 +41,7 @@ def normalize(reason: str) -> str:
         return "confirmed_cex"
     if reason == "unsealed_batch":
         return "sealed_batch"
-    if reason == "missing_ceb_class":
+    if reason in {"missing_ceb_class", "ceb_class_not_accepted"}:
         return "ceb_class"
     if reason in {"missing_mbk_or_rc", "missing_transition"}:
         return "mbk_transition"
@@ -49,7 +49,7 @@ def normalize(reason: str) -> str:
         return "proof_obligation"
     if reason == "realization_not_allowed":
         return "realization_allowed"
-    if reason == "mutation_gate_disagrees":
+    if reason in {"mutation_gate_disagrees", "incomplete_chain"}:
         return "gate_mutation_allowed"
     return reason
 
