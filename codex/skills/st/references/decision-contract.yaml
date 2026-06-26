@@ -170,7 +170,7 @@ skill_decision_contract:
         - sidecar artifact root
       rationale: One artifact namespace prevents lifecycle fragmentation.
     - clause_id: ST-GRAPH-CONTROL-001
-      trigger_refs: [ST-GRAPH-CONTROL, ST-CLAIM]
+      trigger_refs: [ST-GRAPH-CONTROL]
       expected_routes:
         - ST-RECEIPT
         - ST-BLOCK

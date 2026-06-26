@@ -29,17 +29,24 @@ st_artifact_maintenance_receipt:
 
 ## Required use
 
-Emit or report AMR-v1 when touching:
+Emit or report AMR-v1 when touching legacy, sidecar, or migration artifacts such
+as:
 
 ```text
 .step/st-plan.jsonl
 .step/*st-plan*.jsonl
 .step/resolve-c3-st-plan.jsonl
-.ledger/st/**
+.ledger/st/migration/**
 ```
 
 or any migrated workflow artifact whose path contains the name of another
 workflow.
+
+Do not require AMR-v1 for ordinary native `$st` controller writes under
+`.ledger/st`, including workspace records, plan records, runtime claims, session
+views, GCR receipts, proof receipts, changesets, integration receipts, locks, or
+transactions. Those artifacts are workflow evidence only when controller-grade
+evidence exists.
 
 ## Audit rule
 

@@ -51,6 +51,11 @@
         "st-001",
         "st-002"
       ],
+      "selected_frontier": [
+        "st-001",
+        "st-002"
+      ],
+      "unselected_ready": [],
       "blocked_frontier": [
         "st-003"
       ],
@@ -59,13 +64,37 @@
         "st-002",
         "st-003"
       ],
-      "proof_cut": [
-        "proof-auth-focused",
-        "proof-auth-wave"
-      ],
+      "downstream_unlocks": ["st-003"],
+      "parallel_width": 2,
+      "antichain_candidates": [["st-001", "st-002"]],
+      "high_fanout_nodes": [],
+      "articulation_nodes": [],
       "graph_debt": [],
       "gate": "execution-ready",
       "gate_passed": true
+    },
+    "proof": {
+      "obligations": [
+        "proof-auth-focused",
+        "proof-auth-wave"
+      ],
+      "missing": [],
+      "minimum_proof_cut": [
+        "proof-auth-focused",
+        "proof-auth-wave"
+      ],
+      "proof_cut_kind": "exact"
+    },
+    "aperture_decision": {
+      "selected_nodes": [
+        "st-001",
+        "st-002"
+      ],
+      "why_selected": [
+        "ready frontier is conflict-free and covers the minimum proof cut"
+      ],
+      "why_not_parallelized": [],
+      "why_unselected_ready_waits": []
     },
     "projection": {
       "view_id": "session-agent-a",
