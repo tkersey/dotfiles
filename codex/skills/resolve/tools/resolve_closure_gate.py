@@ -112,6 +112,44 @@ def rows_for_campaign(rows: list[dict[str, Any]], campaign: str) -> list[dict[st
     return [row for row in rows if campaign_id(row) == campaign]
 
 
+def collect_campaign_ids(summary: dict[str, Any], rows: list[dict[str, Any]]) -> set[str]:
+    ids: set[str] = set()
+    direct = campaign_id(summary)
+    if direct:
+        ids.add(direct)
+
+    campaigns = summary.get("campaigns")
+    if isinstance(campaigns, list):
+        for row in campaigns:
+            if isinstance(row, dict):
+                value = campaign_id(row)
+                if value:
+                    ids.add(value)
+    elif isinstance(campaigns, dict):
+        for key, value in campaigns.items():
+            if isinstance(key, str) and key:
+                ids.add(key)
+            if isinstance(value, dict):
+                nested = campaign_id(value)
+                if nested:
+                    ids.add(nested)
+
+    for row in rows:
+        value = campaign_id(row)
+        if value:
+            ids.add(value)
+    return ids
+
+
+def infer_campaign(summary: dict[str, Any], rows: list[dict[str, Any]]) -> str:
+    ids = collect_campaign_ids(summary, rows)
+    if len(ids) == 1:
+        return next(iter(ids))
+    if not ids:
+        return ""
+    raise InputError("--campaign is required when multiple campaigns are present")
+
+
 def summary_campaign(summary: dict[str, Any], campaign: str) -> dict[str, Any]:
     if campaign_id(summary) == campaign:
         return summary
@@ -310,7 +348,7 @@ def emit_text(body: dict[str, Any]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--campaign", required=True)
+    parser.add_argument("--campaign")
     parser.add_argument("--summary", required=True)
     parser.add_argument("--runs", required=True)
     parser.add_argument("--format", choices=("json", "text"), default="json")
@@ -319,7 +357,8 @@ def main() -> int:
     try:
         summary = load_json(args.summary)
         rows = load_jsonl(args.runs)
-        body = payload(summary, rows, args.campaign)
+        campaign = args.campaign if args.campaign is not None else infer_campaign(summary, rows)
+        body = payload(summary, rows, campaign)
     except InputError as exc:
         body = {
             "closure_allowed": False,

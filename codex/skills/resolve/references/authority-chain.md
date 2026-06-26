@@ -36,7 +36,7 @@ python3 codex/skills/resolve/tools/resolve_mutation_gate.py --chain rac.yaml
 Reference closure gate:
 
 ```bash
-python3 codex/skills/resolve/tools/resolve_closure_gate.py --campaign C3-example --summary /tmp/seq-resolve-summary.json --runs /tmp/seq-resolve-runs.jsonl
+python3 codex/skills/resolve/tools/resolve_closure_gate.py --summary /tmp/seq-resolve-summary.json --runs /tmp/seq-resolve-runs.jsonl
 ```
 
 Exit codes:
@@ -73,8 +73,10 @@ non-mutation route.
 
 The closure gate exits `0` only when material delivery closure is allowed, `2`
 when mechanically inspectable authority gaps remain, and `3` when the summary
-or runs input cannot be evaluated. Material closure requires entered and sealed
-C3 authority, non-`NONE` compression, sealed finding batches, accepted kernel,
+or runs input cannot be evaluated. The compatibility script accepts an optional
+`--campaign`; without it, exactly one campaign must be mechanically inferable
+from the summary or runs input. Material closure requires entered and sealed C3
+authority, non-`NONE` compression, sealed finding batches, accepted kernel,
 strict positive progress, delivery and terminal closure agreement, zero orphan
 code constructs, zero unmapped proof actions, no unmapped wound-specific tests,
 and no positive semantic surface delta without explicit AC rebase. Text output

@@ -20,19 +20,24 @@ def write_case(root: Path, summary: dict, rows: list[dict]) -> tuple[Path, Path]
     return summary_path, runs_path
 
 
-def run(summary: Path, runs: Path, *extra: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+def run(summary: Path, runs: Path, *extra: str, campaign: str | None = "C3-test") -> subprocess.CompletedProcess[str]:
+    args = [
+        sys.executable,
+        str(TOOL),
+    ]
+    if campaign is not None:
+        args.extend(["--campaign", campaign])
+    args.extend(
         [
-            sys.executable,
-            str(TOOL),
-            "--campaign",
-            "C3-test",
             "--summary",
             str(summary),
             "--runs",
             str(runs),
             *extra,
-        ],
+        ]
+    )
+    return subprocess.run(
+        args,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -72,6 +77,10 @@ def main() -> int:
         root = Path(td)
         summary, runs = write_case(root, {"campaign_id": "C3-test", "c3_required": True, "strict_progress": 1}, [healthy_row()])
         result = run(summary, runs)
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert body(result)["closure_allowed"] is True
+
+        result = run(summary, runs, campaign=None)
         assert result.returncode == 0, result.stdout + result.stderr
         assert body(result)["closure_allowed"] is True
 
@@ -137,6 +146,10 @@ def main() -> int:
         assert result.returncode == 2, result.stdout
         assert "material_campaign_without_runs" in {item["code"] for item in body(result)["violations"]}
 
+        result = run(summary, runs, campaign=None)
+        assert result.returncode == 2, result.stdout
+        assert "material_campaign_without_runs" in {item["code"] for item in body(result)["violations"]}
+
         summary, runs = write_case(root, {"campaign_id": "C3-test"}, [{"campaign_id": "C3-test", "run_id": "incidental", "path": ".step/resolve-c3-st-plan.jsonl"}])
         result = run(summary, runs)
         assert result.returncode == 0, result.stdout
@@ -144,6 +157,16 @@ def main() -> int:
         summary, runs = write_case(root, {"campaign_id": "C3-test", "c3_required": True, "strict_progress": 1}, [healthy_row(campaign_id="other")])
         result = run(summary, runs)
         assert result.returncode == 2, result.stdout
+
+        summary, runs = write_case(
+            root,
+            {"campaigns": [{"campaign_id": "C3-test"}, {"campaign_id": "other"}]},
+            [healthy_row(), healthy_row(campaign_id="other", run_id="run-other")],
+        )
+        result = run(summary, runs, campaign=None)
+        assert result.returncode == 3, result.stdout + result.stderr
+        assert body(result)["status"] == "error"
+        assert "multiple campaigns" in body(result)["violations"][0]["detail"]
 
         summary, runs = write_case(root, {"campaign_id": "C3-test", "c3_required": True, "strict_progress": 1}, [healthy_row(terminal_closed=False)])
         result = run(summary, runs, "--format", "text")
