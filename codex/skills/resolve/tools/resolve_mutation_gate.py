@@ -32,30 +32,52 @@ LEGAL_NEXT_ACTIONS = [
 def main(argv: List[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Gate review-originated mutation on RAC-v1 authority")
     parser.add_argument("--chain", required=True, help="RAC-v1 JSON or YAML file")
-    parser.add_argument("--format", choices=["text", "json"], default="text")
+    parser.add_argument("--review-claim-id", default=None, help="expected review claim id")
+    parser.add_argument("--format", choices=["text", "json"], default="json")
     args = parser.parse_args(argv)
 
     try:
         chain = auth.unwrap(auth.load_data(args.chain))
+        if args.review_claim_id and auth.get(chain, "review_claim.claim_id") != args.review_claim_id:
+            raise ValueError(f"review claim id mismatch: expected {args.review_claim_id}")
         result = auth.validate(chain)
     except Exception as exc:
         out = {
             "mutation_allowed": False,
             "status": "error",
-            "reason": "gate_unavailable",
+            "reason": "could_not_evaluate_input",
             "missing": [],
             "violations": [str(exc)],
             "legal_next_actions": LEGAL_NEXT_ACTIONS,
         }
-        print(json.dumps(out, indent=2, sort_keys=True) if args.format == "json" else text(out), file=sys.stderr)
+        rendered = json.dumps(out, indent=2, sort_keys=True) if args.format == "json" else text(out)
+        print(rendered, file=sys.stderr if args.format == "text" else sys.stdout)
         return 3
 
     allowed = result["status"] == "valid" and result["mutation_allowed"] is True
+    missing = list(result.get("missing", []))
+    if "missing_artifact_state" in missing:
+        missing.append("artifact_state")
+    if "missing_review_claim" in missing:
+        missing.append("review_claim")
+    if "missing_ceb_class" in missing:
+        missing.append("ceb_class")
+    if "missing_mbk_or_rc" in missing or "missing_transition" in missing:
+        missing.append("mbk_transition")
+    if "missing_proof_obligation" in missing:
+        missing.append("proof_obligation")
+    if result["status"] == "valid" and not allowed:
+        if auth.get(chain, "adjudication.validity") != "confirmed":
+            missing.append("confirmed_cex")
+        if not auth.truthy(auth.get(chain, "realization.allowed")):
+            missing.append("realization_allowed")
+        if not auth.truthy(auth.get(chain, "gate.mutation_allowed")):
+            missing.append("gate_mutation_allowed")
     out = {
         "mutation_allowed": allowed,
         "status": "passed" if allowed else "blocked",
-        "reason": None if allowed else "uncompiled_review_text",
-        "missing": result.get("missing", []),
+        "reason": "compiled_review_authority" if allowed else "uncompiled_review_text",
+        "missing": missing,
         "violations": result.get("violations", []),
         "chain_id": result.get("chain_id"),
         "campaign_id": result.get("campaign_id"),
@@ -68,6 +90,7 @@ def main(argv: List[str] | None = None) -> int:
 
 def text(out: Dict[str, Any]) -> str:
     lines = [
+        "mutation-gate passed" if out["mutation_allowed"] else "mutation-gate blocked",
         f"status: {out['status']}",
         f"mutation_allowed: {str(out['mutation_allowed']).lower()}",
     ]

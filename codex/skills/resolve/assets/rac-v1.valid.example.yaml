@@ -32,7 +32,7 @@ resolve_authority_chain:
   compression:
     ceb_id: CEB-001
     class_id: CLASS-001
-    class_status: open
+    class_status: accepted
     quotient_witness_ref: quotient/class-001.md
     mbk_id: MBK-001
     rc_id: RC-001

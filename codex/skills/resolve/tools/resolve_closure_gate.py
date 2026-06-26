@@ -87,6 +87,8 @@ def num(value: Any, default: float = 0) -> float:
             return float(value.strip())
         except ValueError:
             return default
+    if isinstance(value, (list, dict)):
+        return float(len(value))
     return default
 
 
@@ -156,7 +158,11 @@ def is_material(row: Dict[str, Any]) -> bool:
     marker = get(row, "material", "is_material", "campaign.material", default=None)
     if marker is not None:
         return truthy(marker)
-    return truthy(get(row, "c3_required", "c3.required", default=False)) or truthy(get(row, "delivery_closed", "delivery.closed", default=False))
+    return (
+        truthy(get(row, "c3_required", "c3.required", default=False))
+        or truthy(get(row, "delivery_closed", "delivery.closed", default=False))
+        or truthy(get(row, "finding_bearing_workflow", default=False))
+    )
 
 
 def finding_bearing(row: Dict[str, Any]) -> bool:
@@ -198,33 +204,62 @@ def evaluate_run(row: Dict[str, Any], index: int) -> List[Dict[str, str]]:
     strict_progress = truthy(get(row, "potential.strict_progress", "strict_progress", "potential_strict_progress", default=False))
     semantic_surface_delta = num(get(row, "semantic_surface_delta", "semantic_surface.delta", default=0))
     ac_rebased = truthy(get(row, "ac_rebased", "acceptance.rebased", default=False))
-    orphan_code_constructs = num(get(row, "orphan_code_constructs", "orphans.code_constructs", default=0))
-    unmapped_proof_actions = num(get(row, "unmapped_proof_actions", "proof.unmapped_actions", default=0))
-    wound_specific_tests = num(get(row, "wound_specific_tests", "proof.wound_specific_tests", default=0))
+    orphan_code_constructs = max(
+        num(get(row, "orphan_code_constructs", "orphans.code_constructs", default=0)),
+        num(get(row, "realization_map.orphan_code_constructs", default=0)),
+    )
+    unmapped_proof_actions = max(
+        num(get(row, "unmapped_proof_actions", "proof.unmapped_actions", default=0)),
+        num(get(row, "proof_basis.unmapped_proof_actions", default=0)),
+    )
+    wound_specific_tests = max(
+        num(get(row, "wound_specific_tests", "proof.wound_specific_tests", default=0)),
+        num(get(row, "proof_basis.wound_specific_tests", default=0)),
+    )
     wound_tests_mapped = truthy(get(row, "wound_specific_tests_class_mapped", "wound_specific_tests_mapped", "proof.wound_specific_tests_class_mapped", default=False))
+    open_batches = num(get(row, "open_batches_total", "batches.open_total", default=0)) + num(get(row, "open_batch_ids", "batches.open_ids", default=0))
+    terminal_counterexamples = num(get(row, "conformance.novel_in_horizon_counterexamples", default=0)) + num(get(row, "terminal_holdout.unknown_counterexamples", default=0))
+    current_delivery = get(row, "delivery.current_head_validation_passed", "proof_basis.current_head_validation_passed", default=None)
+    all_laws_covered = get(row, "proof_basis.all_laws_covered", default=None)
 
-    if c3_required and not c3_closed:
-        out.append(violation("run", ident, "c3_required_not_closed", "c3_required=true and c3_closed=false"))
+    if material and not c3_entered:
+        out.append(violation("run", ident, "c3_required_without_c3_entry", "material run has no C3 entry evidence"))
+    if material and not c3_closed:
+        out.append(violation("run", ident, "c3_required_without_c3_closure", "material run has no C3 closure evidence"))
+    elif c3_required and not c3_closed:
+        out.append(violation("run", ident, "c3_required_without_c3_closure", "c3_required=true and c3_closed=false"))
     if c3_required and not c3_entered:
-        out.append(violation("run", ident, "c3_required_not_entered", "c3_required=true and c3_entered=false"))
+        out.append(violation("run", ident, "c3_required_without_c3_entry", "c3_required=true and c3_entered=false"))
     if material and compression_state in {"", "NONE", "NULL"}:
-        out.append(violation("run", ident, "compression_missing", "compression_state=NONE for material run"))
+        out.append(violation("run", ident, "compression_state_none", "compression_state=NONE for material run"))
     if finding_bearing(row) and batches_total <= 0:
-        out.append(violation("run", ident, "missing_review_batches", "batches_total=0 for finding-bearing workflow"))
+        out.append(violation("run", ident, "finding_workflow_without_batches", "batches_total=0 for finding-bearing workflow"))
+    if open_batches > 0:
+        out.append(violation("run", ident, "open_batches", "open review batches remain"))
     if material and not kernel_accepted:
         out.append(violation("run", ident, "kernel_not_accepted", "kernel.accepted=false for material run"))
+    if material and not delivery_closed:
+        out.append(violation("run", ident, "delivery_not_closed", "delivery_closed=false for material run"))
     if delivery_closed and not terminal_closed:
-        out.append(violation("run", ident, "delivery_without_terminal", "delivery_closed=true while terminal_closed=false"))
+        out.append(violation("run", ident, "delivery_closed_without_terminal_closure", "delivery_closed=true while terminal_closed=false"))
     if material and not strict_progress:
-        out.append(violation("run", ident, "no_strict_progress", "potential.strict_progress is false/zero for material campaign"))
+        out.append(violation("run", ident, "strict_progress_zero", "potential.strict_progress is false/zero for material campaign"))
     if orphan_code_constructs > 0:
         out.append(violation("run", ident, "orphan_code_constructs", f"orphan_code_constructs={orphan_code_constructs:g}"))
     if unmapped_proof_actions > 0:
         out.append(violation("run", ident, "unmapped_proof_actions", f"unmapped_proof_actions={unmapped_proof_actions:g}"))
     if wound_specific_tests > 0 and not wound_tests_mapped:
-        out.append(violation("run", ident, "wound_specific_tests_unmapped", f"wound_specific_tests={wound_specific_tests:g} without class mapping"))
-    if semantic_surface_delta > 0 and not ac_rebased:
-        out.append(violation("run", ident, "semantic_surface_growth", f"semantic_surface_delta=+{semantic_surface_delta:g} without AC rebase"))
+        out.append(violation("run", ident, "unmapped_wound_specific_tests", f"wound_specific_tests={wound_specific_tests:g} without class mapping"))
+    if semantic_surface_delta > 0 and not (ac_rebased or truthy(get(row, "explicit_ac_rebase", default=False))):
+        out.append(violation("run", ident, "semantic_surface_delta_without_ac_rebase", f"semantic_surface_delta=+{semantic_surface_delta:g} without AC rebase"))
+    if num(get(row, "conformance.novel_in_horizon_counterexamples", default=0)) > 0:
+        out.append(violation("run", ident, "unresolved_conformance_evidence", "conformance evidence remains unresolved"))
+    if num(get(row, "terminal_holdout.unknown_counterexamples", default=0)) > 0:
+        out.append(violation("run", ident, "unresolved_terminal_holdout_evidence", "terminal holdout evidence remains unresolved"))
+    if current_delivery is not None and not truthy(current_delivery):
+        out.append(violation("run", ident, "proof_or_delivery_not_current", "delivery proof is not current"))
+    if all_laws_covered is not None and not truthy(all_laws_covered):
+        out.append(violation("run", ident, "proof_or_delivery_not_current", "proof basis does not cover all laws"))
     return out
 
 
@@ -266,7 +301,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--campaign", help="campaign id; inferred only when exactly one non-empty id is present", default=None)
     parser.add_argument("--summary", help="summary JSON/YAML projection", default=None)
     parser.add_argument("--runs", help="runs JSONL projection", default=None)
-    parser.add_argument("--format", choices=["text", "json"], default="text")
+    parser.add_argument("--format", choices=["text", "json"], default="json")
     args = parser.parse_args(argv)
 
     try:
@@ -282,7 +317,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             violations.extend(evaluate_run(row, idx))
     except Exception as exc:
         out = {"closure_allowed": False, "status": "error", "violations": [{"scope": "gate", "id": "input", "code": "gate_unavailable", "detail": str(exc)}]}
-        print(json.dumps(out, indent=2, sort_keys=True) if args.format == "json" else text(out), file=sys.stderr)
+        rendered = json.dumps(out, indent=2, sort_keys=True) if args.format == "json" else text(out)
+        print(rendered, file=sys.stderr if args.format == "text" else sys.stdout)
         return 3
 
     allowed = not violations
@@ -306,14 +342,17 @@ def main(argv: Optional[List[str]] = None) -> int:
 
 
 def text(out: Dict[str, Any]) -> str:
-    lines = [
+    lines = []
+    if not out["closure_allowed"]:
+        lines.append("closure gate failed")
+    lines.extend([
         f"status: {out['status']}",
         f"closure_allowed: {str(out['closure_allowed']).lower()}",
-    ]
+    ])
     if out.get("violations"):
         lines.append("violations:")
         for item in out["violations"]:
-            lines.append(f"  - {item['scope']}:{item['id']}:{item['code']}: {item['detail']}")
+            lines.append(f"  - {item['scope']}:{item['id']}: evidence blocked")
     if out.get("legal_next_actions"):
         lines.append("legal_next_actions:")
         lines.extend(f"  - {item}" for item in out["legal_next_actions"])
