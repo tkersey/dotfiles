@@ -94,6 +94,64 @@ def run_id(row: Dict[str, Any], index: int) -> str:
     return str(get(row, "run_id", "id", "session_id", default=f"row-{index}"))
 
 
+def campaign_id(row: Dict[str, Any]) -> str:
+    return str(get(row, "campaign_id", "campaign.id", default="") or "").strip()
+
+
+def campaign_ids(summary: Any, rows: List[Dict[str, Any]]) -> List[str]:
+    ids: List[str] = []
+    if isinstance(summary, dict):
+        single = str(get(summary, "campaign_id", default="") or "").strip()
+        if single:
+            ids.append(single)
+        campaigns = summary.get("campaigns")
+        if isinstance(campaigns, list):
+            for item in campaigns:
+                if not isinstance(item, dict):
+                    continue
+                ident = str(get(item, "campaign_id", default="") or "").strip()
+                if ident:
+                    ids.append(ident)
+    for row in rows:
+        ident = campaign_id(row)
+        if ident:
+            ids.append(ident)
+    return sorted(set(ids))
+
+
+def resolve_campaign(explicit: Optional[str], summary: Any, rows: List[Dict[str, Any]]) -> str:
+    if explicit is not None:
+        ident = explicit.strip()
+        if not ident:
+            raise ValueError("--campaign cannot be empty")
+        return ident
+    ids = campaign_ids(summary, rows)
+    if len(ids) == 1:
+        return ids[0]
+    if not ids:
+        raise ValueError("no mechanically inferable campaign id")
+    raise ValueError(f"multiple campaigns found; pass --campaign ({', '.join(ids)})")
+
+
+def rows_for_campaign(rows: List[Dict[str, Any]], campaign: str) -> List[Dict[str, Any]]:
+    return [row for row in rows if campaign_id(row) == campaign]
+
+
+def summary_for_campaign(summary: Any, campaign: str) -> Any:
+    if not isinstance(summary, dict):
+        return summary
+    if str(get(summary, "campaign_id", default="") or "").strip() == campaign:
+        return summary
+    campaigns = summary.get("campaigns")
+    if isinstance(campaigns, list):
+        for item in campaigns:
+            if isinstance(item, dict) and str(get(item, "campaign_id", default="") or "").strip() == campaign:
+                return item
+    if not str(get(summary, "campaign_id", default="") or "").strip() and not campaigns:
+        return summary
+    return {}
+
+
 def is_material(row: Dict[str, Any]) -> bool:
     marker = get(row, "material", "is_material", "campaign.material", default=None)
     if marker is not None:
@@ -106,6 +164,18 @@ def finding_bearing(row: Dict[str, Any]) -> bool:
     if findings is not None:
         return num(findings) > 0
     return truthy(get(row, "c3_required", "c3.required", default=False))
+
+
+def summary_requires_material_runs(summary: Any) -> bool:
+    if not isinstance(summary, dict):
+        return False
+    return (
+        truthy(get(summary, "c3_required", "c3.required", default=False))
+        or truthy(get(summary, "finding_bearing_workflow", default=False))
+        or truthy(get(summary, "material", default=False))
+        or num(get(summary, "strict_progress", "potential.strict_progress", default=0)) > 0
+        or num(get(summary, "runs_total", "material_runs_total", default=0)) > 0
+    )
 
 
 def violation(scope: str, ident: str, code: str, detail: str) -> Dict[str, str]:
@@ -193,6 +263,7 @@ def evaluate_summary(summary: Any) -> List[Dict[str, str]]:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Gate `$resolve` closure on material authority evidence")
+    parser.add_argument("--campaign", help="campaign id; inferred only when exactly one non-empty id is present", default=None)
     parser.add_argument("--summary", help="summary JSON/YAML projection", default=None)
     parser.add_argument("--runs", help="runs JSONL projection", default=None)
     parser.add_argument("--format", choices=["text", "json"], default="text")
@@ -201,8 +272,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         summary = load_doc(args.summary)
         rows = load_jsonl(args.runs)
-        violations = evaluate_summary(summary)
-        for idx, row in enumerate(rows, 1):
+        campaign = resolve_campaign(args.campaign, summary, rows)
+        scoped_summary = summary_for_campaign(summary, campaign)
+        scoped_rows = rows_for_campaign(rows, campaign)
+        violations = evaluate_summary(scoped_summary)
+        if summary_requires_material_runs(scoped_summary) and not scoped_rows:
+            violations.append(violation("campaign", campaign, "material_campaign_without_runs", "campaign summary requires material run evidence but no scoped run rows matched"))
+        for idx, row in enumerate(scoped_rows, 1):
             violations.extend(evaluate_run(row, idx))
     except Exception as exc:
         out = {"closure_allowed": False, "status": "error", "violations": [{"scope": "gate", "id": "input", "code": "gate_unavailable", "detail": str(exc)}]}
