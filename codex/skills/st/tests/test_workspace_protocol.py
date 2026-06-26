@@ -140,6 +140,22 @@ def main() -> int:
         path = put(temp, "projection-mismatch.json", value)
         expect_fail("gcr_v2_gate.py", path, "projection.selected_task_ids:mismatch")
 
+        # GCR-v2 must include graph intelligence, proof, and aperture rationale.
+        value = load("gcr-v2.example.json")
+        del value["graph_control_receipt"]["graph"]["selected_frontier"]
+        path = put(temp, "missing-selected-frontier.json", value)
+        expect_fail("gcr_v2_gate.py", path, "graph.selected_frontier:must-be-list")
+
+        value = load("gcr-v2.example.json")
+        del value["graph_control_receipt"]["proof"]
+        path = put(temp, "missing-proof.json", value)
+        expect_fail("gcr_v2_gate.py", path, "proof:must-be-object")
+
+        value = load("gcr-v2.example.json")
+        del value["graph_control_receipt"]["aperture_decision"]
+        path = put(temp, "missing-aperture.json", value)
+        expect_fail("gcr_v2_gate.py", path, "aperture_decision:must-be-object")
+
         # A change set cannot touch paths outside the claim.
         value = load("changeset.example.json")
         value["change_set"]["changed_paths"].append("src/cache.zig")

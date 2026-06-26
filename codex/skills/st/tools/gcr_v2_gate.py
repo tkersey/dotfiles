@@ -93,9 +93,26 @@ def main() -> int:
     graph = object_field(gcr, "graph", errors)
     ready = list_field(graph, "ready_frontier", errors, "graph.")
     blocked = list_field(graph, "blocked_frontier", errors, "graph.")
+    selected_frontier = list_field(graph, "selected_frontier", errors, "graph.")
+    unselected_ready = list_field(graph, "unselected_ready", errors, "graph.")
     list_field(graph, "critical_path", errors, "graph.")
-    list_field(graph, "proof_cut", errors, "graph.")
+    list_field(graph, "downstream_unlocks", errors, "graph.")
+    list_field(graph, "antichain_candidates", errors, "graph.")
+    list_field(graph, "high_fanout_nodes", errors, "graph.")
+    list_field(graph, "articulation_nodes", errors, "graph.")
     debt = list_field(graph, "graph_debt", errors, "graph.")
+    if selected_frontier != selected:
+        errors.append("graph.selected_frontier:plan-selected-mismatch")
+    if any(task not in ready for task in selected_frontier):
+        errors.append("graph.selected_frontier:not-ready")
+    expected_unselected = [task for task in ready if task not in selected_frontier]
+    if unselected_ready != expected_unselected:
+        errors.append("graph.unselected_ready:ready-frontier-mismatch")
+    if any(task in selected_frontier for task in unselected_ready):
+        errors.append("graph.unselected_ready:contains-selected")
+    parallel_width = graph.get("parallel_width")
+    if not isinstance(parallel_width, int) or parallel_width < 0:
+        errors.append("graph.parallel_width")
     if graph.get("gate") not in {
         "draft",
         "implementation-ready",
@@ -105,6 +122,16 @@ def main() -> int:
         errors.append("graph.gate")
     if not isinstance(graph.get("gate_passed"), bool):
         errors.append("graph.gate_passed")
+
+    proof = object_field(gcr, "proof", errors)
+    list_field(proof, "obligations", errors, "proof.")
+    missing_proof = list_field(proof, "missing", errors, "proof.")
+    minimum_proof_cut = list_field(proof, "minimum_proof_cut", errors, "proof.")
+    proof_cut_kind = proof.get("proof_cut_kind")
+    if proof_cut_kind not in {"exact", "approximation", "unavailable"}:
+        errors.append("proof.proof_cut_kind")
+    if proof_cut_kind == "approximation":
+        require(proof, "approximation_basis", errors, "proof.")
 
     projection = object_field(gcr, "projection", errors)
     for key in ("view_id", "projection_digest"):
@@ -116,6 +143,28 @@ def main() -> int:
     projected = list_field(projection, "selected_task_ids", errors, "projection.")
     if projected != selected:
         errors.append("projection.selected_task_ids:mismatch")
+
+    aperture = object_field(gcr, "aperture_decision", errors)
+    aperture_selected = list_field(aperture, "selected_nodes", errors, "aperture_decision.")
+    why_selected = list_field(aperture, "why_selected", errors, "aperture_decision.")
+    why_not_parallelized = list_field(
+        aperture, "why_not_parallelized", errors, "aperture_decision."
+    )
+    why_unselected_ready_waits = list_field(
+        aperture, "why_unselected_ready_waits", errors, "aperture_decision."
+    )
+    if aperture_selected != selected_frontier:
+        errors.append("aperture_decision.selected_nodes:frontier-mismatch")
+    if selected_frontier and not why_selected:
+        errors.append("aperture_decision.why_selected:empty")
+    if (
+        isinstance(parallel_width, int)
+        and parallel_width > len(selected_frontier)
+        and not why_not_parallelized
+    ):
+        errors.append("aperture_decision.why_not_parallelized:empty")
+    if unselected_ready and not why_unselected_ready_waits:
+        errors.append("aperture_decision.why_unselected_ready_waits:empty")
 
     allowed = gcr.get("execution_allowed")
     if not (yes(allowed) or no(allowed)):
@@ -132,6 +181,9 @@ def main() -> int:
         and coordination.get("branch_epoch") == workspace.get("branch_epoch")
         and graph.get("gate_passed") is True
         and not debt
+        and proof_cut_kind != "unavailable"
+        and not missing_proof
+        and bool(minimum_proof_cut)
     )
 
     if yes(allowed) and not prerequisites:
@@ -144,6 +196,8 @@ def main() -> int:
         warnings.append("execution_allowed:no-despite-prerequisites")
     if not selected and yes(allowed):
         errors.append("execution_allowed:no-selected-tasks")
+    if yes(allowed) and proof_cut_kind == "unavailable":
+        errors.append("execution_allowed:proof-cut-unavailable")
 
     return emit(
         "gcr_v2_gate",

@@ -124,8 +124,13 @@ branch_epoch_v1
 changeset_v1
 serialized_integration_v1
 gcr_v2
+graph_intelligence_receipt_v1
+graph_repair_receipt_v1
+st_artifact_maintenance_receipt_v1
 ledger_artifact_root_v1
 ```
+
+See [capability-and-legacy-mode.md](references/capability-and-legacy-mode.md).
 
 If unavailable:
 

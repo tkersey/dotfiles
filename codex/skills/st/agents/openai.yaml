@@ -6,6 +6,10 @@ interface:
   default_prompt: >-
     Use $st as the repository-level workspace under .ledger/st. Keep each plan
     graph independent, bind the current session to one plan, obtain a global
-    resource claim and fencing token, compile GCR-v2, project only the
-    session-local aperture, record proof with branch-epoch lineage, and route
-    all target-branch integration through the serialized workspace queue.
+    resource claim and fencing token, and require a graph-intelligence-complete
+    GCR-v2 before material mutation. If graph compilation fails, emit/repair
+    GRR-v1 and block execution. If touching migrated or sidecar artifacts,
+    classify the work as AMR-v1 artifact maintenance rather than workflow
+    activation evidence. Project only the session-local aperture, record proof
+    with branch-epoch lineage, and route target-branch integration through the
+    serialized workspace queue.
