@@ -8,7 +8,11 @@ assets/claims-disjoint.example.json
 assets/gcr-v2.example.json
 assets/session-view.example.json
 assets/workspace.example.json
+references/artifact-maintenance-provenance.md
+references/capability-and-legacy-mode.md
 references/decision-contract.yaml
+references/graph-control-receipt.md
+references/graph-repair-and-ledger-mode.md
 references/migration.md
 references/plan-namespacing.md
 references/proof-epochs.md
