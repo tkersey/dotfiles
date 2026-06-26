@@ -1,0 +1,49 @@
+resolve_authority_chain:
+  chain_version: RAC-v1
+  chain_id: RAC-example-001
+  campaign_id: resolve-example
+  artifact_state:
+    base_sha: abc123
+    head_sha: def456
+    dirty_fingerprint: clean
+    review_receipt: review-1.json
+  review_claim:
+    claim_id: claim-001
+    source: cas-review
+    statement: "Confirmed invariant violation at owner transition."
+    suggested_repair: "Do not use directly; compiler selected MBK transition."
+  acceptance:
+    contract_id: AC-example
+    contract_fingerprint: ac-fp
+    horizon_fingerprint: horizon-fp
+    law_refs: [law-001]
+    relation: directly_entailed
+  adjudication:
+    cex_id: CEX-001
+    validity: confirmed
+    liability: introduced_by_current_diff
+    novelty: new_equivalence_class
+    disposition: enter_kernel
+    minimal_trace_ref: traces/cex-001.md
+  batch:
+    batch_id: RB-001
+    sealed: true
+    mode: conformance
+  compression:
+    ceb_id: CEB-001
+    class_id: CLASS-001
+    class_status: open
+    quotient_witness_ref: quotient/class-001.md
+    mbk_id: MBK-001
+    rc_id: RC-001
+    transition_ref: mbk/transitions/t-001
+    proof_obligation_ref: proof/law-001
+  realization:
+    allowed: true
+    target_owner: src/example.zig#Owner
+    target_boundary: path:src/example.zig
+    forbidden_expansions: []
+  gate:
+    current_artifact_state: yes
+    complete_chain: yes
+    mutation_allowed: yes
