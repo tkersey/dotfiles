@@ -1,0 +1,50 @@
+resolve_authority_chain:
+  chain_version: RAC-v1
+  chain_id: RAC-nonmutation-example
+  campaign_id: c3-example
+  artifact_state:
+    base_sha: base
+    head_sha: head
+    dirty_fingerprint: clean
+    review_receipt: review.example
+  review_claim:
+    claim_id: claim.example
+    source: review
+    statement: refuted finding
+    suggested_repair: none
+  acceptance:
+    contract_id: ac.example
+    contract_fingerprint: sha256:ac
+    horizon_fingerprint: sha256:horizon
+    law_refs:
+      - law.example
+    relation: directly_entailed
+  adjudication:
+    cex_id: cex.example
+    validity: refuted
+    liability: none
+    novelty: none
+    disposition: refuted
+    minimal_trace_ref: trace.example
+  batch:
+    batch_id: batch.example
+    sealed: true
+    mode: conformance
+  compression:
+    ceb_id: basis.example
+    class_id: class.example
+    class_status: existing
+    quotient_witness_ref: witness.example
+    mbk_id: mbk.example
+    rc_id: rc.example
+    transition_ref: transition.example
+    proof_obligation_ref: proof.example
+  realization:
+    allowed: false
+    target_owner: owner.example
+    target_boundary: path:src/example.zig
+    forbidden_expansions: []
+  gate:
+    current_artifact_state: yes
+    complete_chain: yes
+    mutation_allowed: no
