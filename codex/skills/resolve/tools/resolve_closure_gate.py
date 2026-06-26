@@ -82,6 +82,10 @@ def intish(value: Any) -> int | None:
         return int(value)
     if isinstance(value, int):
         return value
+    if isinstance(value, list):
+        return len(value)
+    if isinstance(value, dict):
+        return len(value)
     if isinstance(value, str) and value.strip().isdigit():
         return int(value)
     return None
@@ -109,7 +113,7 @@ def rows_for_campaign(rows: list[dict[str, Any]], campaign: str) -> list[dict[st
 
 
 def summary_campaign(summary: dict[str, Any], campaign: str) -> dict[str, Any]:
-    if campaign_id(summary) == campaign or not campaign_id(summary):
+    if campaign_id(summary) == campaign:
         return summary
     campaigns = summary.get("campaigns")
     if isinstance(campaigns, list):
@@ -120,6 +124,8 @@ def summary_campaign(summary: dict[str, Any], campaign: str) -> dict[str, Any]:
         value = campaigns.get(campaign)
         if isinstance(value, dict):
             return value
+    if not campaign_id(summary) and "campaigns" not in summary:
+        return summary
     return {}
 
 
@@ -135,9 +141,9 @@ def material(row: dict[str, Any]) -> bool:
     return truthy(row.get("c3_required")) or finding_bearing(row)
 
 
-def compression_none(row: dict[str, Any]) -> bool:
+def compression_ready(row: dict[str, Any]) -> bool:
     value = row.get("compression_state", row.get("closure_compression"))
-    return isinstance(value, str) and value.strip().upper() == "NONE"
+    return isinstance(value, str) and bool(value.strip()) and value.strip().upper() != "NONE"
 
 
 def strict_progress(row: dict[str, Any]) -> int:
@@ -173,17 +179,63 @@ def violation(scope: str, code: str, detail: str, row: dict[str, Any] | None = N
     return item
 
 
+def open_batch_count(row: dict[str, Any]) -> int:
+    return (
+        counter(row, "open_batches", "open_batches_total")
+        or counter(row, "open_batch_ids")
+        or nested_counter(row, "review", "open_batch_ids")
+    )
+
+
+def unresolved_conformance_count(row: dict[str, Any]) -> int:
+    conformance = object_field(row, "conformance")
+    return counter(
+        conformance,
+        "novel_in_horizon_counterexamples",
+        "unknown_counterexamples",
+        "unresolved_counterexamples",
+        "accepted_counterexamples",
+    )
+
+
+def unresolved_holdout_count(row: dict[str, Any]) -> int:
+    holdout = object_field(row, "terminal_holdout")
+    return counter(
+        holdout,
+        "unknown_counterexamples",
+        "in_horizon_counterexamples",
+        "novel_in_horizon_counterexamples",
+        "unresolved_counterexamples",
+    )
+
+
+def proof_or_delivery_stale(row: dict[str, Any]) -> bool:
+    proof_basis = object_field(row, "proof_basis")
+    delivery = object_field(row, "delivery")
+    gate = object_field(row, "gate")
+    return (
+        boolish(proof_basis.get("all_laws_covered")) is False
+        or boolish(delivery.get("current_head_validation_passed")) is False
+        or boolish(gate.get("proof_current")) is False
+        or boolish(gate.get("delivery_current")) is False
+    )
+
+
 def collect_run_violations(row: dict[str, Any]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
-    if truthy(row.get("c3_required")) and not truthy(row.get("c3_closed")):
-        out.append(violation("run", "c3_required_without_c3_closure", "c3_required=true and c3_closed=false", row))
-    if truthy(row.get("c3_required")) and not truthy(row.get("c3_entered")):
-        out.append(violation("run", "c3_required_without_c3_entry", "c3_required=true while c3_entered is not true", row))
-    if compression_none(row):
-        out.append(violation("run", "compression_state_none", "compression_state=NONE", row))
+    if not truthy(row.get("c3_closed")):
+        out.append(violation("run", "c3_required_without_c3_closure", "material run requires c3_closed=true", row))
+    if not truthy(row.get("c3_entered")):
+        out.append(violation("run", "c3_required_without_c3_entry", "material run requires c3_entered=true", row))
+    if not compression_ready(row):
+        out.append(violation("run", "compression_state_none", "compression_state missing or NONE", row))
     if finding_bearing(row) and counter(row, "batches_total") == 0:
         out.append(violation("run", "finding_workflow_without_batches", "batches_total=0 for a finding-bearing workflow", row))
-    if truthy(row.get("delivery_closed")) and not truthy(row.get("terminal_closed")):
+    if open_batch_count(row) > 0:
+        out.append(violation("run", "open_batches", "open batch indicators remain before closure", row))
+    if not truthy(row.get("delivery_closed")):
+        out.append(violation("run", "delivery_not_closed", "delivery_closed is not true", row))
+    if not truthy(row.get("terminal_closed")):
         out.append(violation("run", "delivery_closed_without_terminal_closure", "delivery_closed=true while terminal_closed=false", row))
     if strict_progress(row) == 0:
         out.append(violation("run", "strict_progress_zero", "potential.strict_progress=0 for a material campaign", row))
@@ -201,6 +253,12 @@ def collect_run_violations(row: dict[str, Any]) -> list[dict[str, Any]]:
     surface_delta = counter(row, "semantic_surface_delta")
     if surface_delta > 0 and not ac_rebased(row):
         out.append(violation("run", "semantic_surface_delta_without_ac_rebase", "semantic_surface_delta > 0 without explicit AC rebase", row))
+    if unresolved_conformance_count(row) > 0:
+        out.append(violation("run", "unresolved_conformance_evidence", "conformance unresolved counterexamples remain", row))
+    if unresolved_holdout_count(row) > 0:
+        out.append(violation("run", "unresolved_terminal_holdout_evidence", "terminal holdout unresolved counterexamples remain", row))
+    if proof_or_delivery_stale(row):
+        out.append(violation("run", "proof_or_delivery_not_current", "proof or delivery current gate is not true", row))
     return out
 
 
@@ -211,7 +269,7 @@ def collect_violations(summary: dict[str, Any], rows: list[dict[str, Any]], camp
     summary_material = material(campaign_summary)
     out: list[dict[str, Any]] = []
 
-    if summary_material and not material_rows and counter(campaign_summary, "runs_total", "material_runs_total") == 0:
+    if summary_material and not material_rows:
         out.append(violation("campaign", "material_campaign_without_runs", "material campaign has no material runs"))
 
     for row in material_rows:
