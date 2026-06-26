@@ -1,0 +1,11 @@
+SKILL.md
+PATCH_NOTES.md
+agents/openai.yaml
+references/auto-plan-tail-call.md
+tools/auto_plan_handoff_gate.py
+tools/quick_validate.py
+assets/sgr-auto-plan.eligible.json
+assets/sgr-auto-plan.blocked.json
+tests/test_auto_plan_handoff_gate.py
+MANIFEST.files
+MANIFEST.sha256

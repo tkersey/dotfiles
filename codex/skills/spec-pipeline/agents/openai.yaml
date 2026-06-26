@@ -2,5 +2,14 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Spec Pipeline"
-  short_description: "Canonical current-spec engine"
-  default_prompt: "Use $spec-pipeline. Select full, gate-only, challenge-only, lint-only, or repair mode; emit one SGR-v2 governance receipt; never emit proposed_plan."
+  short_description: "Canonical current-spec engine with automatic $plan handoff"
+  default_prompt: >-
+    Use $spec-pipeline. Select full, gate-only, challenge-only, lint-only, or
+    repair mode; emit exactly one SGR-v2 governance receipt; never emit
+    <proposed_plan>. In full or fully repaired repair mode, when SGR-v2 and the
+    Execution Handoff say the spec is complete, lane=spec_to_plan, planning is
+    allowed, lint passed, no blockers remain, next_owner=$plan, and
+    auto_plan_handoff.eligible=yes, immediately tail-call $plan in the same
+    turn using the final implementation spec and SGR-v2 as the source contract.
+    Do not ask the user to invoke $plan separately. If the runtime cannot load
+    $plan, emit AUTO_PLAN_HANDOFF_REQUIRED with the reason.
