@@ -1,6 +1,6 @@
 ---
 name: goal-actuating
-description: "Execute an accepted spec or direct /goal through the recursive goal runtime. Lowers SGR-v2/spec intent into GC-v1, chooses lightweight vs review-first vs st-governed mode, then runs goal-workgraph/goal-grind/evidence-fold/review-fold/proof-patch as needed."
+description: "Execute an accepted spec or direct /goal through the recursive goal runtime. Lowers SGR-v2/spec intent into GC-v1, chooses lightweight vs review-first vs st-governed mode, optionally uses $cas as a review source, then runs goal-workgraph/goal-grind/evidence-fold/review-fold/proof-patch as needed."
 metadata:
   version: "1.0.0"
   activation_cost: medium
@@ -46,7 +46,7 @@ goal_actuating_mode:
   source: direct-goal|spec-first|review-first|dry-plan|st-governed
   persistence: update_plan|goal-artifacts|st
   implementation: proof-only|minimal-fix|refactor-kernel|branch-race
-  review: none|adjudicate-first|proof-only|minimal-fix|refactor-kernel|st-governed
+  review: none|existing-review|cas-probe|cas-lane|adjudicate-first|proof-only|minimal-fix|refactor-kernel|st-governed
   closure: proof-patch|ship-handoff|blocked
 ```
 
@@ -79,7 +79,7 @@ Use when PSR-v1, resource claims, fencing, worktrees, serialized integration, or
    - `update_plan` for lightweight session-local steps;
    - `goal-artifacts` when attempts/evidence/memo rows matter;
    - `st` when durable coordination, claims, fencing, worktrees, or serialized integration are required.
-5. If review pressure exists, run `$review-fold` before any implementation.
+5. If review pressure exists or the proof bar asks for adversarial review, use the review backend policy below.
 6. If decomposition changes execution, run `$goal-workgraph`.
 7. Execute with `$goal-grind` one frontier node at a time unless in `st-governed` mode.
 8. Run `$evidence-fold` after material verification or review results.
@@ -102,6 +102,49 @@ review expectations            -> goal_contract.review_policy
 human-owned decisions          -> goal_contract.ambiguity.human_owned_decisions
 planning/execution allowed     -> goal_contract.authority
 ```
+
+## CAS review backend
+
+`$goal-actuating` may use `$cas` as a **review source**, not as an implementation authority.
+
+Use `$cas` review when one of these is true:
+
+```text
+the user asks for review closure or adversarial review
+the accepted spec/SGR-v2 names review as part of the proof bar
+review-first mode is selected and no current review artifact exists
+repeated review cycles need a persistent detached lane
+```
+
+Do not run `$cas` review automatically on every goal. A goal can close without CAS review when its proof bar is satisfied by focused tests, static checks, artifact inspection, or existing review evidence.
+
+### Review source modes
+
+```yaml
+review_source:
+  mode: none|existing-review|cas-probe|cas-lane
+  backend: none|github-comments|cas-review-session|native-review-fallback
+  multi_agent_mode: explicit-request-only|proactive
+  blocking: yes|no
+```
+
+- `existing-review`: consume current PR comments, existing CAS verdicts, or reviewer findings.
+- `cas-probe`: run one bounded `$cas` review as adversarial discovery/proof input.
+- `cas-lane`: use persistent CAS review lane for repeated review/fix cycles.
+- `proactive`: discovery only by default; findings are not blocking until `$review-fold` accepts liability.
+
+### CAS consumption rule
+
+CAS output must pass through `$review-fold` before it can change code:
+
+```text
+$cas review verdict / findings
+-> $review-fold
+-> reject | proof-only | minimal-fix | refactor-kernel | ask-human | follow-up
+-> $goal-grind only for accepted code-change liabilities
+```
+
+Treat CAS findings as claims until they are bound to current diff, intent, validity, liability, novelty, and disposition. CAS transport success, lane receipts, review thread IDs, or raw review text are not proof of readiness or mutation authority.
 
 ## Review behavior
 
@@ -144,6 +187,7 @@ At closure, emit:
 Goal Actuation:
 - source spec / SGR-v2 / PSR-v1:
 - mode / persistence:
+- review_source / CAS backend, if any:
 - GC-v1 summary:
 - WorkGraph / frontier:
 - review-fold disposition, if any:
