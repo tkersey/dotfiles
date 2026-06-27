@@ -1,0 +1,14 @@
+{
+  "candidate_sessions": 1,
+  "true_resolve_sessions": 1,
+  "tuple_closed_sessions": 1,
+  "terminal_closed_sessions": 1,
+  "semantic_surface_delta": 0,
+  "orphan_code_constructs": 0,
+  "unmapped_proof_actions": 0,
+  "wound_specific_tests": 0,
+  "raw_delivery_mutations_while_active": 0,
+  "state_only_apply_violations": 0,
+  "state_only_commit_violations": 0,
+  "state_only_push_violations": 0
+}
