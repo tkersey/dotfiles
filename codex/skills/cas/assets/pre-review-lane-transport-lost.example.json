@@ -1,0 +1,21 @@
+{
+  "action": "lane-review",
+  "baseSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "failureClass": "transport",
+  "failureCode": "pre_review_lane_transport_lost",
+  "failureHint": "persistent CAS lane app-server is not alive before review/start; no review attempt exists",
+  "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "laneId": "lane_123_456",
+  "lastReviewThreadId": null,
+  "managedServerListenUrl": "ws://127.0.0.1:45678",
+  "managedServerPid": 12345,
+  "proofVerdictExists": false,
+  "reviewAttemptExists": false,
+  "reviewAttemptPhase": "pre_review_start",
+  "reviewCount": 0,
+  "reviewThreadId": null,
+  "reviewTurnId": null,
+  "serverExitStatus": "exited",
+  "stderrLogPath": "/tmp/cas-lane.stderr.log",
+  "targetFingerprint": "sha256:pre-review-target"
+}

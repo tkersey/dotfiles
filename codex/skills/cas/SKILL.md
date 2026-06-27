@@ -1,496 +1,299 @@
 ---
 name: cas
-description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, multi-instance fanout, and `$st` swarm conformance/retry-policy checks."
+description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, multi-instance fanout, and `$st` swarm conformance/retry-policy checks. For review sessions, distinguish pre-review lane transport, real review attempts, normalized tuple-bound review verdicts, account/resource exhaustion, and tuple concurrency guards."
 ---
 
 # cas (Zig App-Server Control)
 
-## Overview
+## Mission
 
-`$cas` is Zig-only in this repo.
+`$cas` is the Zig-backed app-server control skill. It owns protocol preflight, account/status probes, goal lifecycle control, direct method execution, detached review lifecycle, persistent review lanes, receipt normalization, and `$st` conformance probes.
 
-Use the native `cas` dispatcher and subcommands:
+For review work, the governing invariant is:
 
-- `cas conformance` for swarm conformance checks around `$st` claims and retry policy.
-- `cas account status` for read-only account/auth/rate-limit status with redacted account email by default.
-- `cas goal` for thread goal lifecycle control through app-server v2 `thread/goal/*` APIs.
-- `cas smoke_check` for protocol/API smoke checks.
-- `cas instance_runner` for method execution across one or many isolated instances.
-- `cas review_session` for detached `review/start` lifecycle control with persisted `reviewThreadId` handles.
-- `run_cas_tool request` (helper alias) for single-request flows via `instance_runner --instances 1`.
-
-Current `cas smoke_check` verifies the native client can complete the v2 handshake and reach `experimentalFeature/list`, `thread/start`, `thread/resume`, `turn/start`, `turn/interrupt`, and `turn/steer`.
-
-Current `cas account status` reads `account/read`, `account/rateLimits/read`, and optionally `account/usage/read`. It uses `getAuthStatus` only as a safe fallback with `includeToken=false` and `refreshToken=false`. Use `--show-email` only when the account email should be printed; normal output redacts it and never prints token-like fields or raw app-server error JSON.
-
-Current `cas goal` supports `resolve`, `get`, `set`, `clear`, `status`, and `wait`. Use `resolve` or `--dry-run` before mutating a `--latest` target; `set` can create a materialized goal-capable thread by default, while `get`, `clear`, `status`, and `wait` require `--thread-id` or explicit `--latest`.
-
-Hook policy:
-
-- `--hooks inherit` is the default and lets the resolved Codex runtime load and run hooks normally.
-- `--hooks off` launches CAS-owned app-server processes with `--disable codex_hooks`; this is best-effort control for CAS-owned stdio and managed websocket transports, not authority over an externally supplied app-server URL.
-- `--hooks require-observed` keeps hooks enabled and fails closed with `hook_not_observed` if the lane captured no `hook/started` or `hook/completed` notifications.
-- `hooks_unsupported` means the resolved `codex app-server --help` surface did not prove the app-server can accept the hook control/observation contract.
-- Bad observed hook statuses block the CAS lane with precedence `hook_blocked`, then `hook_failed`, then `hook_stopped`.
-- JSON outputs that observe hooks include `hookSummary`; raw hook notifications are written only to local NDJSON paths referenced by `hookSummary.hookLogPath`.
-
-Current `cas conformance` covers these swarm-hardening scenarios:
-
-- `claim_safe_wave`: verify two disjoint `$st` claims can run in parallel without overlapping lock roots
-- `stale_claim_reclaim`: verify expired held claims become stale and return to pending
-- `mesh_row_accountability`: verify mesh result accountability rows remain complete
-- `overload_backoff`: verify the bounded retry/backoff policy with a deterministic synthetic overload script
-
-`cas conformance` is the harness; it is not the owner of durable claims. `$st` remains the source of truth for claims/runtime/proof metadata.
-
-Current `cas review_session` is the review-control lane:
-
-- `start` launches detached `review/start` on a supplied or freshly created parent thread
-- `start` supports `--parent-mode auto|fresh|reuse`; `reuse` rejects unsafe or unmaterialized parent threads, and fresh-parent startup retries once after a bootstrap materialization turn when the installed `codex` needs it
-- `start` now prefers a CAS-managed loopback websocket app-server so detached review survives the launching CLI process and fresh-process `status` / `wait` / `interrupt` can reconnect to the same review session
-- `wait` is the primary completion path for persisted detached review handles and reconnects through the stored websocket session metadata when present
-- `status` reads the detached review thread from a fresh CAS process through the persisted transport metadata when that runtime path is supported
-- `interrupt` sends `turn/interrupt` for the persisted detached review turn
-- `lane start` launches one managed websocket app-server for a review lane and persists a lane record
-- `lane review` reuses that app-server, starts a fresh parent/review session for exactly one review, emits a receipt, and best-effort archives the parent and review threads
-- `lane status` verifies the persisted lane process and record state
-- `lane stop` terminates the managed app-server and marks the lane stopped
-- `start` and `lane review` accept `--multi-agent-mode explicit-request-only|proactive` for fresh parent request flows. Use `proactive` for exploratory discovery reviews; keep canonical proof lanes explicit unless the caller opts in.
-
-`reviewThreadId` is the recoverable per-review handle. `laneId` is the recoverable long-lived app-server handle. Session and lane records live under `~/.codex/cas/review_sessions/`, and CAS appends raw request/response artifacts to a per-review NDJSON log beside each review record.
-
-Review boundary:
-
-- Use `cas review_session` when you need detached lifecycle control: persisted `reviewThreadId`, explicit interrupt, compatibility diagnostics, or approval/runtime overrides on the detached lane. The websocket-backed lane is local-only and CAS-managed in this repo.
-- Use `cas review_session lane` when a caller such as `$resolve` needs repeated Codex reviews without relaunching a fresh `codex review` subprocess every time. The lane owns transport reuse only; the caller still owns review adjudication, clean-streak accounting, validation, commits, and PR comment handling.
-- If you only need a one-shot git-backed review verdict and do not need detached control, native `codex review --base ...` or `codex review --commit ...` remains acceptable. First-party multi-cycle remediation flows such as `$resolve` should treat `cas review_session lane` as the default review backend and use native review only as an explicit fallback.
-- `cas smoke_check` is never review proof; it only proves handshake/method reachability.
-- `cas instance_runner` is never the production review lane; it is for method probing and schema sanity checks.
-
-Review backend gate:
-
-- Treat `cas review_session lane` as a persistent review backend only when `cas --version` and `cas review_session --version` report `0.2.37` or newer and `cas review_session --help` exposes `lane start`, `lane review`, `lane status`, `lane stop`, `--lane-id`, `--json`, `--timeout-ms`, `--fallback none|native-review`, and `--multi-agent-mode explicit-request-only|proactive`.
-- The persistent CAS lane command shape is `cas review_session lane start --cwd <repo> --json --hooks off`, then repeated `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --timeout-ms 1800000 --json --fallback none`, then `cas review_session lane stop --lane-id <laneId> --json` at normal exit or abort.
-- Each `lane review` starts a fresh parent and detached review thread. "Reset after each review" means fresh review thread state on the same managed app-server, not relaunching the app-server.
-- Exploratory proactive discovery shape: `cas review_session lane review --lane-id <laneId> --base <base-ref-or-sha> --multi-agent-mode proactive --timeout-ms 1800000 --json --fallback none`. Treat its findings as discovery input, not proof of branch readiness.
-- `--fallback native-review` is an explicit degraded verdict path. It preserves a possible review result, but it is not persistent-lane proof and must be reported as native fallback.
-- Do not infer review success from session persistence. `reviewThreadId`, record paths, managed websocket metadata, or terminal turn state are receipts for lifecycle control only; structured review result fields decide whether a review verdict exists.
-
-When `start`, `start --wait`, `status`, `wait`, or `lane review` emit JSON, the output includes the detached review handle/result fields plus launch compatibility metadata:
-
-- `resolvedCodexPath`
-- `resolvedCodexVersion`
-- `compatibilityVerdict`
-- `selectedTransport`
-- `selectionReason`
-- `degradedFallback`
-- `laneId`
-- `managedServerPid`
-- `managedServerListenUrl`
-- `managedServerStderrLogPath`
-- `orphanTtlSeconds`
-- `requestedMultiAgentMode`
-- `effectiveMultiAgentMode`
-- `multiAgentModeSupport`
-- `multiAgentModeMetricEligible`
-- `targetFingerprint`
-- `baseSha`
-- `headSha`
-- `failureCode`
-- `failureHint`
-- `reviewResultAvailable`
-- `reviewResultSource`
-- `rawReviewText`
-- `dualParseVerdict`
-- `archiveStatus`
-- `reviewResult`
-  - `findings`
-  - `overallCorrectness`
-  - `overallExplanation`
-  - `overallConfidenceScore`
-- `fallbackUsed`
-- `fallbackTransport`
-- `fallbackExitCode`
-- `fallbackOutputText`
-- `fallbackErrorText`
-- `reviewVerdict`
-  - `status` (`clean`, `findings`, `timeout`, `parse_mismatch`, `transport_failure`, or `incomplete`)
-  - `backendClass` (`cas-lane` or `cas-native-fallback`)
-  - `clean`
-  - `findingCount`
-  - `failureCode`
-  - `failureHint`
-  - `baseSha`
-  - `headSha`
-  - `targetFingerprint`
-  - `reviewThreadId`
-  - `reviewTurnId`
-  - `recordPath`
-  - `eventLogPath`
-  - compact `findings` with `title`, `file`, `line`, and `priority`
-
-`reviewVerdict` is the consumption surface for callers. The full CAS receipt remains the audit artifact. `cas review_session lane review --verdict-only ...` emits only the compact verdict object while preserving the same exit semantics.
-
-When `cas --version` and `cas review_session --version` report `0.2.33` or newer and `cas review_session --help` exposes `receipt`, use it for offline receipt inspection:
-
-```bash
-cas review_session receipt --path "$run_dir/review-1.json" --format table --summary
-cas review_session receipt --glob "$run_dir/review-*.json" --format json --summary
+```text
+A lane is not a review.
+A managed server is not a review.
+A parent thread is not a review.
+A review attempt starts only after `review/start` returns `reviewThreadId`.
+A proof verdict exists only after `reviewVerdict` binds base/head/fingerprint.
 ```
 
-`receipt` is a generic artifact summarizer. It reads saved full CAS receipts or compact `--verdict-only` JSON, normalizes `reviewVerdict` fields, sorts multi-file output by source path, and emits `table`, `json`, or `jsonl` with optional aggregate counts. It never starts, waits on, interrupts, or mutates a review session; it must not compute `$resolve` clean streaks, compare against current `HEAD`, adjudicate findings, resolve PR comments, or decide branch readiness. Missing or partial verdict fields fail closed instead of being treated as clean proof.
+Use this skill when the task mentions `cas`, app-server v2 methods, detached review, `reviewThreadId`, persistent review lanes, multi-instance fanout, account/rate-limit status, goal lifecycle, or `$st` conformance.
 
-Use the fields this way:
+## Native commands
 
-- `compatibilityVerdict="compatible"` means the detached review launch path succeeded under the resolved `codex` binary
-- `compatibilityVerdict="incompatible"` means CAS identified a detached-review runtime mismatch and failed closed
-- `compatibilityVerdict="not_checked"` means no compatibility verdict was persisted for that record yet (older session record or pre-launch failure)
-- `selectedTransport="websocket"` means CAS used the managed loopback websocket lane for the detached review session
-- `selectedTransport="native-review"` with `degradedFallback=true` means CAS preserved the review verdict by degrading to native `codex review`; it is not detached-control proof
-- `requestedMultiAgentMode` records the CLI request (`explicit-request-only` or `proactive`) or `null`
-- `effectiveMultiAgentMode` is set only when CAS proved the request was applied to the fresh parent request flow
-- `multiAgentModeSupport="proven"` means the requested mode was passed through supported request surfaces; `unproven` means CAS could not prove the inherited parent context changed; `unsupported` means the run fell back to a path that cannot carry the mode; `not_requested` means no mode was requested
-- `multiAgentModeMetricEligible=true` only for proven proactive runs; exclude unproven or unsupported proactive requests from finding-yield metrics
-- `failureCode="wait_timed_out"` means retry `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 1800000 --json` on the same `reviewThreadId`; it is not a successful review and must not trigger a duplicate `lane review` for the same target
-- `failureCode="review_interrupted"` means the detached review was interrupted before it emitted a structured review result
-- `failureCode="approval_denied"` means the detached review stopped on an approval or permissions denial before it emitted a structured review result
-- `failureCode="review_failed"` means the detached review failed or errored before it emitted a structured review result
-- `failureCode="review_output_missing"` means the detached review reached terminal state without a structured review result even though it was not classified as an interrupt or approval failure
-- `failureCode="websocket_bootstrap_failed"` means CAS could not launch or connect to the managed websocket app-server before detached review startup completed
-- `failureCode="review_transport_lost"` means a persisted websocket-backed detached review could not be reconnected and CAS had to fail closed or degrade to explicit native fallback
-- `failureCode="hooks_unsupported"` means the resolved Codex app-server does not support the requested `--hooks` policy
-- `failureCode="hook_not_observed"` means `--hooks require-observed` was requested and CAS saw no hook notifications in the observed lane
-- `failureCode="hook_blocked"`, `failureCode="hook_failed"`, or `failureCode="hook_stopped"` means Codex ran hooks and CAS failed closed on the worst observed hook status
-- `failureCode="parent_thread_not_materialized"` or `failureCode="unsafe_parent_thread_state"` means the supplied parent thread is not safe to reuse for detached review
-- `fallbackUsed=true` means `--fallback native-review` ran `codex review` and returned its raw text output instead of a structured detached-review result
+Use the native dispatcher and helpers:
 
-Review result classification:
+```text
+cas account status
+cas goal <resolve|get|set|clear|status|wait>
+cas smoke_check
+cas instance_runner
+cas review_session
+cas conformance
+```
 
-- Prefer `reviewVerdict` for caller control flow. `reviewVerdict.status="clean"` with `backendClass="cas-lane"`, `clean=true`, `findingCount=0`, matching base/head/fingerprint, and no `failureCode` is the compact success signal.
-- `reviewVerdict.status="findings"` is a completed review verdict, not a CAS transport failure. The caller should reset its clean streak and adjudicate/fix the compact findings, using the full receipt only when more context is needed.
-- `reviewVerdict.status="timeout"` with a `reviewThreadId` is recoverable by waiting on the same handle.
-- An empty caller-side receipt file while `cas review_session lane review` is still running is `in_progress`, not malformed CAS output.
-- Detached review success requires all of: `selectedTransport="websocket"`, `fallbackUsed=false`, `reviewResultAvailable=true`, `reviewResultSource="rollout_exited_review_mode"`, `dualParseVerdict="match"`, no blocking `failureCode`, and zero structured findings.
-- Native-fallback success is a different class of result: `fallbackUsed=true` means the review text came from native `codex review`, not detached CAS review. Report it as native fallback, not detached-review proof.
-- Transport progress is not review success: `reviewThreadId` creation, `start --wait` returning, or `status` showing a terminal turn is insufficient unless the result fields above classify it as success.
-- A lane timeout receipt is recoverable only when it includes `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, `target`, `targetFingerprint`, `baseSha`, and `headSha`. Recover by waiting on that same `reviewThreadId`; do not start a second review against the same target while the original detached review may still complete.
-- Archive failure is an operational warning, not review correctness proof. Report `archiveStatus`, but do not infer review cleanliness from archive success or failure.
+`cas smoke_check` proves app-server handshake and method reachability. It is never review proof.
 
-Long-running lane reviews are normal. If `lane review` is still attached and
-within its configured timeout, keep waiting on that attempt and use `lane status`
-or event-log inspection only as observation. Do not start another `lane review`,
-switch backends, mutate the checkout, or classify silence as failure until the
-attempt returns a structured verdict or a recoverable timeout receipt.
+`cas conformance` probes `$st` swarm-hardening scenarios. `$st` remains the durable source of truth for claims, resources, fencing, branch epochs, and proof metadata.
 
-Compatibility note: on Codex `0.118.x` stdio, detached review still requires fresh-parent materialization before detached `review/start`, so CAS `--parent-mode auto` keeps that pre-materialization path. The websocket-backed review lane exists specifically to restore truthful fresh-process detached control across commands instead of depending on stdio connection lifetime.
+## Review session boundary
 
-Node runtime paths (`cas_proxy.mjs`, `cas_client.mjs`, and related wrappers) are removed from this skill and must not be used.
+Use `cas review_session` when detached review lifecycle control matters: persisted `reviewThreadId`, wait/status/interrupt, compatibility diagnostics, approval/runtime overrides, or repeatable review receipts.
 
-This skill assumes `codex` is available on PATH and does not require access to any repo source tree.
+Use `cas review_session lane` only when persistent review-lane capability has been proven for the current `cas`/`codex`/repo tuple. The lane owns transport reuse only. Callers such as `$resolve` still own review adjudication, clean-streak accounting, proof gates, commits, PR comments, and closure decisions.
 
-## Zig CLI Iteration Repos
-
-When iterating on the Zig-backed `cas` helper CLI path, use these two repos:
-
-- `skills-zig` (`$HOME/workspace/tk/skills-zig`): source for the `cas` Zig binaries, build/test wiring, and release tags.
-- `homebrew-tap` (`$HOME/workspace/tk/homebrew-tap`): Homebrew formula updates/checksum bumps for released `cas` binaries.
-
-## Quick Start
+If a caller only needs one proof-bearing review and persistent lane smoke is unproven or recently failed, prefer:
 
 ```bash
-run_cas_tool() {
-  local subcommand="${1:-}"
-  if [ -z "$subcommand" ]; then
-    echo "usage: run_cas_tool <account|conformance|conformance-suite|goal|smoke-check|smoke_check|instance-runner|instance_runner|review-session|review_session|request> [args...]" >&2
-    return 2
-  fi
-  shift || true
+cas review_session start --wait --cwd <repo> --base <base> --json --fallback none
+cas review_session receipt normalize --path <start-wait-output.json> --cwd <repo> --base <base> --format json
+```
 
-  local cas_subcommand=""
-  local -a pre_args=()
-  case "$subcommand" in
-    account)
-      cas_subcommand="account"
-      ;;
-    conformance|conformance-suite|conformance_suite)
-      cas_subcommand="conformance"
-      ;;
-    goal)
-      cas_subcommand="goal"
-      ;;
-    smoke-check|smoke_check)
-      cas_subcommand="smoke_check"
-      ;;
-    instance-runner|instance_runner)
-      cas_subcommand="instance_runner"
-      ;;
-    review-session|review_session)
-      cas_subcommand="review_session"
-      ;;
-    request)
-      cas_subcommand="instance_runner"
-      pre_args=(--instances 1 --sample 1)
-      ;;
-    *)
-      echo "unknown cas subcommand: $subcommand" >&2
-      return 2
-      ;;
-  esac
+until `start --wait` natively emits the same normalized `reviewVerdict` surface.
 
-  helper_for_subcommand() {
-    case "$1" in
-      account) echo "cas_account" ;;
-      conformance) echo "cas_conformance_suite" ;;
-      goal) echo "cas_goal" ;;
-      smoke_check) echo "cas_smoke_check" ;;
-      instance_runner) echo "cas_instance_runner" ;;
-      review_session) echo "cas_review_session" ;;
-      *) return 1 ;;
-    esac
+## CLI spec order
+
+Implementation specs live under `references/cli-specs/` and must be implemented in order:
+
+1. `01-review-attempt-phase.md` — shared phase model.
+2. `02-pre-review-lane-transport.md` — pre-review lane death classification.
+3. `03-normalized-review-verdict.md` — tuple-bound `reviewVerdict` for all review backends.
+4. `04-account-resource-exhaustion.md` — `usageLimitExceeded` as account/resource terminal class.
+5. `05-review-tuple-lock.md` — one active attempt per repo/base/head/account tuple.
+6. `06-lane-smoke.md` — first-review creation smoke for persistent lanes.
+7. `07-seq-cas-review-audit-projection.md` — audit projection for local-session evidence.
+
+## Review attempt phases
+
+Every review-session JSON surface should include:
+
+```text
+reviewAttemptPhase:
+  pre_lane_start
+  lane_started
+  pre_review_start
+  review_started
+  review_waiting
+  review_terminal
+  normalized_verdict
+
+reviewAttemptExists: bool
+proofVerdictExists: bool
+reviewThreadId: string|null
+reviewTurnId: string|null
+baseSha: string|null
+headSha: string|null
+targetFingerprint: string|null
+```
+
+Rules:
+
+```text
+reviewAttemptExists = reviewThreadId != null
+proofVerdictExists = reviewVerdict != null && reviewVerdict.baseSha/headSha/targetFingerprint match the requested tuple
+```
+
+A lane with `reviewCount=0`, no `lastReviewThreadId`, no `lastHeadSha`, and no verdict is not a failed review. It is pre-review lane transport failure.
+
+## Failure taxonomy
+
+### Completed review verdicts
+
+`reviewVerdict.status="findings"` is a completed review, not a CAS failure. The caller should reset clean streak and adjudicate the findings.
+
+`reviewVerdict.status="clean"` is clean proof only when all hold:
+
+```text
+backendClass is allowed for this workflow
+reviewThreadId exists
+baseSha/headSha/targetFingerprint match the requested tuple
+findingCount = 0
+failureCode = null
+```
+
+### Pre-review lane transport
+
+Use `failureCode="pre_review_lane_transport_lost"` when persistent-lane transport fails before `review/start` creates `reviewThreadId`.
+
+Required fields include:
+
+```text
+reviewAttemptPhase = pre_review_start
+reviewAttemptExists = false
+reviewThreadId = null
+reviewTurnId = null
+laneId
+managedServerPid
+managedServerListenUrl
+serverExitStatus
+stderrLogPath
+reviewCount
+lastReviewThreadId
+baseSha
+headSha
+targetFingerprint
+```
+
+Legal next actions: restart lane, run lane smoke, use `start --wait`, or use explicit fallback. Do not count this as review evidence and do not start duplicate reviews for the same tuple without a tuple-lock decision.
+
+### Review-attempt transport
+
+Use `failureCode="review_transport_lost"` only after `reviewThreadId` exists and the review attempt loses transport while waiting or reconnecting.
+
+If a timeout receipt contains `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, target fingerprint, base SHA, and head SHA, recover by waiting on that same `reviewThreadId`. Do not start another review against the same target while the original may still complete.
+
+### Account/resource exhaustion
+
+If event logs, turn errors, or output contain `usageLimitExceeded`, emit:
+
+```text
+failureCode = account_resource_exhausted
+failureClass = account_resource
+retryableSameTupleNow = false
+```
+
+This is not reviewer-quality evidence and not transport evidence. It blocks same-account retry until limits reset, account changes, or a human explicitly overrides the tuple lock.
+
+### Output missing and parse mismatch
+
+`review_output_missing` means a review attempt reached terminal state without structured review output. It is not clean proof.
+
+`review_parse_mismatch` means structured findings and rendered review-text parsing disagree. Treat it as a completed but untrusted receipt until adjudicated or normalized.
+
+## Normalized `reviewVerdict`
+
+All review backends should produce one caller-facing surface:
+
+```json
+{
+  "reviewVerdict": {
+    "status": "clean|findings|timeout|transport_failure|account_resource_exhausted|parse_mismatch|incomplete|no_attempt",
+    "backendClass": "cas-lane|cas-start-wait|cas-native-fallback|cas-receipt-normalized",
+    "clean": false,
+    "findingCount": 0,
+    "failureCode": null,
+    "failureHint": null,
+    "baseSha": null,
+    "headSha": null,
+    "targetFingerprint": null,
+    "reviewThreadId": null,
+    "reviewTurnId": null,
+    "recordPath": null,
+    "eventLogPath": null,
+    "findings": []
   }
-
-  local required_helper
-  required_helper="$(helper_for_subcommand "$cas_subcommand")" || return 2
-
-  install_cas_direct() {
-    local required_helper="$1"
-    local repo="${SKILLS_ZIG_REPO:-$HOME/workspace/tk/skills-zig}"
-    if ! command -v zig >/dev/null 2>&1; then
-      echo "zig not found. Install Zig from https://ziglang.org/download/ and retry." >&2
-      return 1
-    fi
-    if [ ! -d "$repo" ]; then
-      echo "skills-zig repo not found at $repo." >&2
-      echo "clone it with: git clone https://github.com/tkersey/skills-zig \"$repo\"" >&2
-      return 1
-    fi
-    if ! (cd "$repo" && zig build -Doptimize=ReleaseSafe); then
-      echo "direct Zig build failed in $repo." >&2
-      return 1
-    fi
-    if [ ! -x "$repo/zig-out/bin/cas" ] || [ ! -x "$repo/zig-out/bin/$required_helper" ]; then
-      echo "direct Zig build did not produce cas and $required_helper in $repo/zig-out/bin." >&2
-      return 1
-    fi
-    mkdir -p "$HOME/.local/bin"
-    install -m 0755 "$repo/zig-out/bin/cas" "$HOME/.local/bin/cas"
-    local helper
-    for helper in cas_account cas_goal cas_review_session cas_smoke_check cas_instance_runner cas_conformance_suite; do
-      if [ -x "$repo/zig-out/bin/$helper" ]; then
-        install -m 0755 "$repo/zig-out/bin/$helper" "$HOME/.local/bin/$helper"
-      fi
-    done
-  }
-
-  local os="$(uname -s)"
-  if command -v cas >/dev/null 2>&1 && cas --version >/dev/null 2>&1; then
-    if cas "$cas_subcommand" --help >/dev/null 2>&1; then
-      cas "$cas_subcommand" "${pre_args[@]}" "$@"
-      return
-    fi
-    echo "cas binary found, but subcommand help check failed for: $cas_subcommand; attempting install/upgrade." >&2
-  fi
-
-  if [ "$os" = "Darwin" ]; then
-    if ! command -v brew >/dev/null 2>&1; then
-      echo "homebrew is required on macOS: https://brew.sh/" >&2
-      return 1
-    fi
-    if ! brew install tkersey/tap/cas; then
-      echo "brew install tkersey/tap/cas failed." >&2
-      return 1
-    fi
-  elif ! (command -v cas >/dev/null 2>&1 && cas --version >/dev/null 2>&1 && cas "$cas_subcommand" --help >/dev/null 2>&1); then
-    if ! install_cas_direct "$required_helper"; then
-      return 1
-    fi
-  fi
-
-  if command -v cas >/dev/null 2>&1 && cas --version >/dev/null 2>&1; then
-    if cas "$cas_subcommand" --help >/dev/null 2>&1; then
-      cas "$cas_subcommand" "${pre_args[@]}" "$@"
-      return
-    fi
-    if [ "$os" = "Darwin" ] && [ "$cas_subcommand" = "account" ]; then
-      echo "brew cas does not expose account yet; trying direct source build from SKILLS_ZIG_REPO." >&2
-      if install_cas_direct "$required_helper" && cas "$cas_subcommand" --help >/dev/null 2>&1; then
-        cas "$cas_subcommand" "${pre_args[@]}" "$@"
-        return
-      fi
-    fi
-    echo "cas binary found, but subcommand help check failed for: $cas_subcommand" >&2
-    return 1
-  fi
-
-  echo "cas binary missing or incompatible after install attempt." >&2
-  if [ "$os" = "Darwin" ]; then
-    echo "expected install path: brew install tkersey/tap/cas, or SKILLS_ZIG_REPO=<skills-zig-path> for unreleased account helpers" >&2
-  else
-    echo "expected direct path: SKILLS_ZIG_REPO=<skills-zig-path> zig build -Doptimize=ReleaseSafe" >&2
-  fi
-  return 1
 }
-
-run_cas_tool smoke-check --cwd /path/to/workspace --json
-run_cas_tool account status --cwd /path/to/workspace --json
-run_cas_tool review-session start --cwd /path/to/workspace --uncommitted --json
 ```
 
-## Terminology (Instances)
+`start --wait` output is useful review evidence but is not strict caller proof until normalized into this surface with base/head/fingerprint.
 
-- An "instance" is one `cas_proxy_client`-managed `codex app-server` child process.
-- Each instance executes one request path with isolated client metadata and optional state-file isolation.
-- "N instances" means N parallel client+app-server pairs in `cas instance_runner`.
+## Persistent lane policy
 
-## Trigger Cues
+Persistent lane is canonical only when:
 
-- "instances" / "multi-instance" / "parallel sessions"
-- "review session" / "detached review" / "reviewThreadId" / "interrupt review"
-- "swarm conformance" / "claim-safe wave" / "stale-claim reclaim"
-- app-server method checks (`thread/start`, `thread/resume`, `thread/fork`, `thread/read`, `thread/list`, `thread/archive`, `thread/unarchive`, `thread/rollback`, `turn/start`, `turn/steer`, `turn/interrupt`, `review/start`)
-- command/file approval behavior, especially `availableDecisions`
-- session mining through direct app-server method execution
-- protocol sanity checks before orchestration
-
-## Workflow
-
-1. Validate basic app-server wiring first.
-   - `run_cas_tool smoke-check --cwd /path/to/workspace --json`
-   - Treat this as a protocol preflight before any fanout run.
-
-2. Use `review_session` when the real job is detached review lifecycle control rather than one-shot probing.
-   - Default decision rule:
-     - Need detached control on Codex `0.118.x` stdio: use `cas review_session start --wait`.
-     - Need detached control on a runtime that keeps detached review alive across connections: use `cas review_session` split `start` plus `wait`.
-     - Need only a one-shot git-backed verdict outside a first-party remediation loop: native `codex review` is acceptable unless the caller explicitly needs detached control.
-     - Running a first-party multi-cycle remediation loop such as `$resolve`: use `cas review_session lane` first, with native review only as an explicit fallback after CAS cannot produce a reliable verdict.
-   - Start detached review:
-     - `cas review_session start --cwd /path/to/workspace --uncommitted --json`
-     - `cas review_session start --cwd /path/to/workspace --base main --json`
-     - `cas review_session start --cwd /path/to/workspace --parent-thread-id <threadId> --parent-mode reuse --base main --json`
-     - `cas review_session start --cwd /path/to/workspace --commit <sha> --title "<subject>" --json`
-     - `cas review_session start --cwd /path/to/workspace --custom-instructions @review.txt --json`
-     - `cas review_session start --wait --cwd /path/to/workspace --base main --fallback native-review --json`
-   - Read current status from a fresh process when the runtime supports detached polling:
-     - `cas review_session status --review-thread-id <reviewThreadId> --json`
-   - Wait for the detached review turn to settle when the runtime supports detached polling:
-     - `cas review_session wait --review-thread-id <reviewThreadId> --timeout-ms 1800000 --json`
-   - Supported same-process lane on Codex `0.118.x` stdio:
-     - `cas review_session start --wait --cwd /path/to/workspace --base main --json`
-   - Interrupt the detached review turn:
-     - `cas review_session interrupt --review-thread-id <reviewThreadId> --json`
-   - `reviewThreadId` is the handle; do not invent a second review session id.
-   - Review hygiene:
-  - On Codex `0.118.x` stdio, prefer `start --wait ... --json` when the detached verdict matters; that is the supported lane because review items stream on the live connection.
-  - On runtimes that keep detached review alive across connections, prefer `start ... --json` followed by `wait ... --json` when the verdict matters; it leaves a recoverable handle if wait times out or the process dies.
-  - In first-party caller workflows, treat one detached CAS attempt as one `start` plus any `wait` retries on the returned `reviewThreadId`, keyed by the frozen review target plus resolved Codex path/version. If that attempt returns `incompatible_codex_review_runtime`, stop relaunching detached CAS for the same key in that run and let the caller decide whether to switch to native `codex review`.
-  - Reuse a parent thread only with `--parent-mode reuse` plus a known materialized parent; otherwise let CAS choose `auto` or force `fresh`.
-     - Treat `reviewResultAvailable`, `compatibilityVerdict`, `fallbackUsed`, and `failureCode` as the verdict surface. Do not infer success from process exit alone.
-
-3. Detached review is the public review-control path; do not route review-session control through `instance_runner`.
-   - `instance_runner` remains a method probe lane and is still useful for schema sanity checks.
-   - `instance_runner --multi-agent-mode proactive` is useful for request-flow probes against `thread/start` and `turn/start`; it is not review proof.
-   - `review_session` owns persisted review handles, fresh-process status polling, wait loops, and interruption.
-   - For workflows that need the actual review verdict, use the live connection lane the runtime supports: `start --wait` on Codex `0.118.x` stdio, or split `start ... --json` then `wait ... --json` on runtimes that keep detached review alive across connections.
-   - Treat `failureCode` as authoritative. CAS never silently falls back to native `codex review`; callers that want a temporary fallback must do it explicitly at their own layer.
-
-4. For swarm-hardening runs, treat `$st` as the durable source of truth before any worker starts.
-   - `st import-orchplan --file .ledger/st/st-plan.jsonl --input .ledger/st/orchplan.yaml`
-   - `st claim --file .ledger/st/st-plan.jsonl --wave w1 --executor codex`
-   - CAS probes the wave; it does not replace the durable claim ledger.
-
-5. Enforce handshake assumptions when diagnosing failures.
-   - Confirm the session completed `initialize` then `initialized` before method calls.
-   - If you see `"Not initialized"` or `"Already initialized"`, treat it as connection-lifecycle error, not a method payload error.
-
-6. Run one direct method request (single-request lane).
-   - `run_cas_tool request --cwd /path/to/workspace --method thread/start --params-json '{"cwd":"/path/to/workspace","experimentalRawEvents":false}' --json`
-
-7. Run fanout/multi-instance requests.
-   - `run_cas_tool instance-runner --cwd /path/to/workspace --instances 12 --method thread/list --params-json '{"cursor":null,"limit":1}' --json`
-
-8. Run the conformance suite when you need repeatable swarm checks around claims or retry policy.
-   - `cas conformance --cwd /path/to/workspace --json`
-   - Narrow to one scenario when debugging with `--scenario <name>`.
-   - Use `--skip-smoke-check` only when you intentionally want local `$st` scenarios without the live CAS preflight.
-
-9. Apply overload handling on request saturation.
-   - If app-server returns JSON-RPC error code `-32001` (`"Server overloaded; retry later."`), retry with exponential backoff and jitter.
-   - Do not treat `-32001` as a permanent protocol mismatch.
-   - In `cas conformance`, the retry policy scenario is currently synthetic and should be treated as retry-policy proof, not live saturation proof.
-
-10. Drive specific thread/turn methods as needed.
-   - Start thread:
-     - `run_cas_tool request --cwd /path/to/workspace --method thread/start --params-json '{"cwd":"/path/to/workspace","experimentalRawEvents":false}' --json`
-   - Start turn:
-     - `run_cas_tool request --cwd /path/to/workspace --method turn/start --params-json '{"threadId":"thr_123","input":[{"type":"text","text":"summarize the repo status"}]}' --json`
-   - Thread read:
-     - `run_cas_tool request --cwd /path/to/workspace --method thread/read --params-json '{"threadId":"thr_123","includeTurns":true}' --json`
-   - Resume thread:
-     - `run_cas_tool request --cwd /path/to/workspace --method thread/resume --params-json '{"threadId":"thr_123"}' --json`
-   - Steer turn:
-     - `run_cas_tool request --cwd /path/to/workspace --method turn/steer --params-json '{"threadId":"thr_123","expectedTurnId":"turn_abc","input":[{"type":"text","text":"continue"}]}' --json`
-   - Interrupt turn:
-     - `run_cas_tool request --cwd /path/to/workspace --method turn/interrupt --params-json '{"threadId":"thr_123","turnId":"turn_abc"}' --json`
-
-11. Use method-specific params for list/mine flows.
-   - `thread/list` supports filter params (`cursor`, `limit`, `searchTerm`, `cwd`, etc.) as provided by your app-server version.
-   - `turn/steer` requires `expectedTurnId`.
-
-12. Gate experimental methods and payload fields explicitly.
-   - Experimental surfaces such as `thread/backgroundTerminals/clean`, `thread/realtime/*`, and `thread/start` dynamic-tool fields require `initialize.params.capabilities.experimentalApi = true`.
-   - If omitted, treat failures as capability negotiation errors.
-
-13. Respect native CAS server-request limits.
-   - The current Zig client auto-answers `item/commandExecution/requestApproval`, `item/fileChange/requestApproval`, `item/permissions/requestApproval`, `item/tool/requestUserInput`, `mcpServer/elicitation/request`, and `item/tool/call`.
-   - Default native behavior is conservative: permissions requests are denied, request-user-input questions use the first option label when present, MCP elicitations are declined, and dynamic tool calls return `success: false` unless you override with explicit CLI flags.
-
-## Approval and Request Semantics
-
-- Exec/file approval decisions are handled by the Zig client (`--exec-approval`, `--file-approval`, `--read-only`).
-- Permission approvals can be controlled with `--permissions-approval deny|grant-turn|grant-session`.
-- `item/tool/requestUserInput`, `mcpServer/elicitation/request`, and `item/tool/call` can be overridden with `--request-user-input-response-json`, `--elicitation-action` plus `--elicitation-content-json`, and `--dynamic-tool-response-json`.
-- `cas review_session` now accepts the same approval/runtime overrides as `cas instance_runner`; use them when detached review must be permissioned or fully deterministic under approval prompts.
-- For command approvals, CAS resolves decisions against server-provided `availableDecisions` when present.
-- Unknown server-request methods are rejected fail-closed in native mode to prevent deadlocks.
-- For overload responses (`-32001`), CAS callers should retry with exponential backoff and jitter.
-
-## Scope Boundaries (Zig-Only Cutover)
-
-- This skill no longer exposes a Node JSONL proxy lifecycle.
-- Legacy message envelopes (`cas/request`, `cas/respond`, `cas/send`, `cas/state/get`, `cas/stats/get`) are removed from this skill contract.
-- Dynamic tool reply loops are supported only through static response payloads passed on the CAS CLI; native CAS is not a full interactive tool-runtime host.
-- `cas review_session` persists raw request/response artifacts and detached review handles; it is not a generalized streaming event mirror for all app-server notifications.
-
-## Canonical Schema Source
-
-Use your installed `codex` binary to generate schemas that match your version:
-
-```sh
-codex app-server generate-ts --out DIR
-codex app-server generate-json-schema --out DIR
-
-# If you need experimental methods/fields, include:
-codex app-server generate-ts --experimental --out DIR
-codex app-server generate-json-schema --experimental --out DIR
+```text
+cas review_session lane smoke passes for the current repo/codex/cas tuple
+cas --version and cas review_session --version meet the caller's required version
+lane review emits normalized reviewVerdict
+lane failure surfaces include reviewAttemptPhase and reviewAttemptExists
 ```
 
-## Local References
+If smoke is missing or recently failed with `pre_review_lane_transport_lost`, do not use persistent lane as the canonical closeout backend. Use `start --wait` plus normalized receipt, or explicit native fallback with degraded proof class.
 
-Read `references/codex_app_server_contract.md` for API/method notes that inform CAS request usage.
+## Tuple concurrency guard
 
-## Resources
+There must be at most one active review attempt per tuple:
 
-- `cas` binary dispatcher:
-  - `cas account status`
-  - `cas conformance`
-  - `cas review_session`
-  - `cas smoke_check`
-  - `cas instance_runner`
-- `cas_account` binary: read-only account/auth/rate-limit status and optional usage summary.
-- `cas_conformance_suite` binary: swarm conformance around `$st` claims and retry policy.
-- `cas_review_session` binary: detached review start/status/wait/interrupt with persisted `reviewThreadId` handles.
-- `cas_smoke_check` binary: protocol/API smoke validation.
-- `cas_instance_runner` binary: single or multi-instance method execution.
+```text
+repo_realpath
+base_sha
+head_sha
+target_fingerprint
+resolved_codex_path
+resolved_codex_version
+account_fingerprint
+```
 
-Runtime bootstrap policy mirrors `seq`: require installed `cas` Zig binaries, default to `brew install tkersey/tap/cas` on macOS, and fallback to direct Zig install from `skills-zig` on non-macOS.
+Store locks under:
+
+```text
+~/.codex/cas/review_sessions/locks/<tuple_hash>.json
+```
+
+States:
+
+```text
+starting_lane
+pre_review_start_failed
+review_started
+waiting
+terminal
+normalized
+account_resource_exhausted
+stale
+```
+
+Rules:
+
+```text
+review_started|waiting + reviewThreadId => return existing handle; do not start duplicate
+pre_review_start_failed + no reviewThreadId => restart lane/start-wait allowed, but not counted as review evidence
+terminal + not normalized => normalize existing receipt; do not re-review
+account_resource_exhausted => block same-account retry until reset/override
+stale => require explicit takeover
+```
+
+## Hooks, approvals, and fallback
+
+`--hooks inherit` lets Codex hooks run normally. `--hooks off` disables Codex hooks only for CAS-owned app-server processes. `--hooks require-observed` fails closed if no hook notifications are observed.
+
+`--fallback native-review` is explicit degraded verdict preservation. It is not detached CAS proof and must be reported as `backendClass="cas-native-fallback"` with `fallbackUsed=true`.
+
+Do not infer success from app-server process liveness, `reviewThreadId` creation alone, `start --wait` returning, archived threads, or a terminal turn status. Structured `reviewVerdict` decides caller control flow.
+
+## Tools and examples
+
+Reference validators and classifiers:
+
+```bash
+python3 codex/skills/cas/tools/cas_review_verdict_gate.py <receipt.json>
+python3 codex/skills/cas/tools/cas_review_tuple_lock_gate.py <lock.json>
+python3 codex/skills/cas/tools/cas_review_receipt_classifier.py <receipts.jsonl> --format jsonl
+```
+
+Example receipts live under `assets/`.
+
+## Final report
+
+When reporting CAS review work, include:
+
+```text
+CAS Review:
+- backend:
+- reviewAttemptPhase:
+- reviewAttemptExists:
+- proofVerdictExists:
+- reviewThreadId / reviewTurnId:
+- base/head/fingerprint:
+- verdict status / finding count:
+- failure class / failure code:
+- tuple lock:
+- fallback/degraded proof:
+- next legal action:
+```
+
+## Hard rules
+
+- A lane is not a review.
+- A review starts at `reviewThreadId`.
+- A proof starts at tuple-bound `reviewVerdict`.
+- Do not treat `pre_review_lane_transport_lost` as a failed review.
+- Do not duplicate a review when an active tuple lock points to an existing `reviewThreadId`.
+- Do not treat completed findings as transport failure.
+- Do not treat `usageLimitExceeded` as reviewer output or transport failure.
+- Do not use persistent lane as canonical closeout backend until first-review creation smoke is current.
+- `start --wait` evidence must be normalized before strict consumers use it as review proof.
+- `cas smoke_check` is protocol proof, not review proof.
+- Native fallback is degraded proof, not detached CAS proof.

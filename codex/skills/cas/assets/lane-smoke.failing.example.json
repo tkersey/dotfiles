@@ -1,0 +1,18 @@
+{
+  "action": "lane-smoke",
+  "baseSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "failureClass": "transport",
+  "failureCode": "pre_review_lane_transport_lost",
+  "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "laneId": "lane_smoke_failed",
+  "lastReviewThreadId": null,
+  "managedServerPid": 9999,
+  "proofVerdictExists": false,
+  "reviewAttemptExists": false,
+  "reviewAttemptPhase": "pre_review_start",
+  "reviewCount": 0,
+  "reviewThreadId": null,
+  "reviewTurnId": null,
+  "smokeStatus": "failed",
+  "targetFingerprint": "sha256:smoke-target"
+}

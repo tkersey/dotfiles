@@ -1,8 +1,8 @@
 ---
 name: plan
-description: "Compile accepted intent into a source-bound execution policy and immutable `plan_id`, then exhaustively refine it to a policy-synthesis fixed point before handoff to the multi-plan `$st` workspace under `.ledger/st/`. Use for `$plan`, spec-to-execution lowering, adaptive probes, stabilization plans, or plan revision. Preserve semantic authority; never mutate the repository or silently select an existing `$st` plan."
+description: "Compile accepted intent or a `$spec-pipeline` PSC-v1 source contract into a source-bound execution policy and immutable `plan_id`, then exhaustively refine it to a policy-synthesis fixed point before handoff to the multi-plan `$st` workspace under `.ledger/st/`. Use for `$plan`, spec-to-execution lowering, adaptive probes, stabilization plans, or plan revision. Preserve semantic authority; never mutate the repository or silently select an existing `$st` plan."
 metadata:
-  version: "4.1.0"
+  version: "4.2.0"
   activation_cost: medium
   default_depth: balanced
 ---
@@ -11,12 +11,13 @@ metadata:
 
 ## Mission
 
-Compile intent into an execution policy that can inhabit one independent `$st`
-plan namespace, then refine that policy until no material execution improvement
-remains.
+Compile accepted intent into an execution policy that can inhabit one independent
+`$st` plan namespace, then refine that policy until no material execution
+improvement remains.
 
 ```text
 source contract
+-> plan source contract gate
 -> plan identity
 -> belief/unknowns
 -> guarded actions
@@ -39,6 +40,64 @@ no public iteration footers
 no self-reported rewrite ratios
 no synthetic round logs as readiness proof
 ```
+
+## Accepted source contracts
+
+`$plan` may start from one of:
+
+```text
+direct user-authorized execution objective
+plan_source_contract / PSC-v1 from `$spec-pipeline`
+revision request for an existing plan_id
+```
+
+A `$spec-pipeline` tail-call must pass:
+
+```yaml
+plan_source_contract:
+  contract_version: PSC-v1
+  source_owner: spec-pipeline
+  spec_id:
+  implementation_spec:
+  decision_packet:
+  sgr_v2:
+  proof_bar:
+  non_goals: []
+  target_branch:
+  do_not_execute_before: []
+```
+
+Validate PSC-v1 before planning:
+
+```bash
+uv run python codex/skills/plan/tools/plan_source_contract_gate.py <psc-file>
+```
+
+Fail closed when:
+
+```text
+source_owner != spec-pipeline
+SGR-v2 missing
+SGR-v2 mode not in {full, repair}
+SGR-v2 status != complete
+SGR-v2 lane != spec_to_plan
+SGR-v2 gate.plan_allowed != yes
+SGR-v2 lint.verdict != pass
+SGR-v2 execution_handoff.ready_for_plan != yes
+SGR-v2 execution_handoff.next_owner != $plan
+SGR-v2 auto_plan_handoff.eligible != yes
+do_not_execute_before is non-empty
+implementation_spec missing
+proof_bar missing
+target_branch missing
+```
+
+A semantic gap returns to `$spec-pipeline` or `$grill-me`. `$plan` must not
+repair missing semantics by inventing scope, non-goals, compatibility, or proof
+bar.
+
+See [03-plan-source-contract.md](references/cli-specs/03-plan-source-contract.md)
+and [04-plan-source-contract-gate.md](references/cli-specs/04-plan-source-contract-gate.md).
 
 ## Artifact root
 
@@ -78,7 +137,8 @@ plan_identity:
 
 A materially different objective receives a new plan ID.
 
-Do not choose an existing plan merely because it is active or recently used.
+Do not choose an existing plan merely because it is active or recently used. PSC
+source digest and objective identity participate in plan identity selection.
 
 ## Authority boundary
 
@@ -112,8 +172,8 @@ stabilization
   compile containment and observability before normal work
 ```
 
-Regime classification is revisited during synthesis. If a lens proves the
-chosen regime is wrong, revise the policy or return to the source authority.
+Regime classification is revisited during synthesis. If a lens proves the chosen
+regime is wrong, revise the policy or return to the source authority.
 
 ## Execution policy
 
@@ -177,8 +237,6 @@ Rules:
 - Then run an independent fresh-eyes pass.
 - Emit only the final plan, not the draft history.
 
-See [policy-synthesis-fixed-point.md](references/policy-synthesis-fixed-point.md).
-
 ## Mandatory radical candidate
 
 Before finalization, run one radical creativity pass.
@@ -211,9 +269,7 @@ none
   no non-obvious candidate survived generation
 ```
 
-Creativity is mandatory.
-
-Accretion is not.
+Creativity is mandatory. Accretion is not.
 
 Never add content merely because finalization is near. A rejected radical
 candidate is a successful creativity pass when the rejection is evidence-based.
@@ -228,6 +284,11 @@ policy_synthesis_receipt:
   plan_id:
   revision:
   source_digest:
+  source_contract:
+    kind: direct | PSC-v1 | revision
+    source_owner:
+    spec_id:
+    sgr_digest:
   initial_policy_digest:
   final_policy_digest:
   passes:
@@ -269,24 +330,19 @@ section or a reference to the persisted receipt.
 Validate:
 
 ```bash
-python3 codex/skills/plan/tools/policy_synthesis_receipt_gate.py \
-  .ledger/plan/<plan-id>/synthesis-receipt.json
+uv run python codex/skills/plan/tools/policy_synthesis_receipt_gate.py   .ledger/plan/<plan-id>/synthesis-receipt.json
 ```
+
+See [05-policy-synthesis-receipt.md](references/cli-specs/05-policy-synthesis-receipt.md).
 
 ## Multi-plan handoff
 
 Create/import explicitly:
 
 ```bash
-st plan create \
-  --workspace .ledger/st \
-  --plan <plan-id> \
-  --source .ledger/plan/<plan-id>/policy.json
+st plan create   --workspace .ledger/st   --plan <plan-id>   --source .ledger/plan/<plan-id>/policy.json
 
-st plan import-policy \
-  --workspace .ledger/st \
-  --plan <plan-id> \
-  --input .ledger/plan/<plan-id>/policy.json
+st plan import-policy   --workspace .ledger/st   --plan <plan-id>   --input .ledger/plan/<plan-id>/policy.json
 ```
 
 The handoff records:
@@ -320,7 +376,7 @@ proposed_cross_plan_dependency:
 
 Only the `$st` workspace may accept and persist one.
 
-Do not flatten another plan’s tasks into the current plan merely to express a
+Do not flatten another plan's tasks into the current plan merely to express a
 dependency.
 
 ## Readiness
@@ -402,6 +458,7 @@ Do not use self-attested readiness without PSR/source evidence.
 
 - Persist only under `.ledger/plan/`.
 - Every plan has an explicit immutable plan ID.
+- Validate PSC-v1 before planning from `$spec-pipeline`.
 - Never infer the target `$st` plan.
 - Never merge separate objectives into one plan for convenience.
 - Never create cross-plan edges outside `$st`.

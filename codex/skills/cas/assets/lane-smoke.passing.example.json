@@ -1,0 +1,14 @@
+{
+  "action": "lane-smoke",
+  "baseSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "failureCode": null,
+  "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "laneId": "lane_smoke",
+  "proofVerdictExists": false,
+  "reviewAttemptExists": true,
+  "reviewAttemptPhase": "review_started",
+  "reviewThreadId": "thr_smoke",
+  "reviewTurnId": "turn_smoke",
+  "smokeStatus": "passed",
+  "targetFingerprint": "sha256:smoke-target"
+}

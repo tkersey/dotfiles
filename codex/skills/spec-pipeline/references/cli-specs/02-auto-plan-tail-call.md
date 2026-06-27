@@ -1,4 +1,4 @@
-# Automatic `$plan` Tail-Call
+# 02 — Automatic `$plan` Tail-Call
 
 `$spec-pipeline` owns the decision that a spec is ready for planning. `$plan`
 owns execution-policy synthesis. This reference makes the seam automatic without

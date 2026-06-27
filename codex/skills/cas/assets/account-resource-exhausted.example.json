@@ -1,0 +1,32 @@
+{
+  "action": "wait",
+  "baseSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "eventLogPath": "/tmp/thr_limit.events.ndjson",
+  "failureClass": "account_resource",
+  "failureCode": "account_resource_exhausted",
+  "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "proofVerdictExists": true,
+  "rawErrorText": "usageLimitExceeded: Reviewer failed to output a response.",
+  "retryableSameTupleNow": false,
+  "reviewAttemptExists": true,
+  "reviewAttemptPhase": "review_terminal",
+  "reviewThreadId": "thr_limit",
+  "reviewTurnId": "turn_limit",
+  "reviewVerdict": {
+    "backendClass": "cas-lane",
+    "baseSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "clean": false,
+    "eventLogPath": "/tmp/thr_limit.events.ndjson",
+    "failureCode": "account_resource_exhausted",
+    "failureHint": "usageLimitExceeded during review; do not retry same account tuple now",
+    "findingCount": 0,
+    "findings": [],
+    "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "recordPath": "/tmp/thr_limit.json",
+    "reviewThreadId": "thr_limit",
+    "reviewTurnId": "turn_limit",
+    "status": "account_resource_exhausted",
+    "targetFingerprint": "sha256:limit-target"
+  },
+  "targetFingerprint": "sha256:limit-target"
+}

@@ -1,26 +1,28 @@
 # Patch Notes
 
-Version: `2.1.0`
+Version: `2.2.0`
 
-Adds automatic same-turn `$plan` handoff when `$spec-pipeline` recommends it.
+Adds a fail-closed lane-selection correction and an explicit `$plan` source
+contract seam.
 
-Key change:
+Key correction:
 
 ```text
-SGR-v2 complete + lane=spec_to_plan + plan_allowed=yes + lint pass
-+ execution_handoff.next_owner=$plan + no blockers
-= same-turn $plan tail-call
+explicit $spec-pipeline invocation
+!= spec_only request
 ```
 
-The change is fail-closed:
-
-- no `<proposed_plan>` from `$spec-pipeline`;
-- no auto-plan from gate-only, challenge-only, or lint-only modes;
-- no auto-plan with drift, open material questions, failed lint, open subagents, or `do_not_execute_before` blockers;
-- if the runtime cannot load `$plan`, emit `AUTO_PLAN_HANDOFF_REQUIRED` rather than silently stopping.
+In `full` mode, default to `lane=spec_to_plan` unless the user explicitly asks
+for spec-only/no-plan output or a material gate blocks planning. A successful,
+plan-ready SGR-v2 must tail-call `$plan` or emit `AUTO_PLAN_HANDOFF_REQUIRED` if
+same-turn loading is unavailable.
 
 Adds:
 
+- `references/cli-specs/01-lane-selection.md`
+- `references/cli-specs/02-auto-plan-tail-call.md`
+- `references/lane-selection.md`
 - `references/auto-plan-tail-call.md`
+- `tools/spec_lane_selection_gate.py`
 - `tools/auto_plan_handoff_gate.py`
-- fixtures and tests for eligible and blocked handoffs
+- good/bad SGR-v2 fixtures

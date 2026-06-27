@@ -1,29 +1,28 @@
 # Patch Notes
 
-Version: `4.1.0`
+Version: `4.2.0`
 
-Restores the best pre-v4 `$plan` behavior: exhaustive internal refinement until
-improvements are exhausted.
+Adds explicit receiver support for `$spec-pipeline` same-turn tail-calls.
 
-Adds:
+Key additions:
 
-- `Policy Synthesis Fixed Point` phase.
-- `PSR-v1` policy synthesis receipt.
-- Mandatory radical creativity candidate with evidence-based disposition.
-- Readiness requirement for clean synthesis sweep and independent press pass.
-- Decision-contract clauses for synthesis and creativity.
-- `policy_synthesis_receipt_gate.py` with adversarial fixtures and tests.
+```text
+plan_source_contract / PSC-v1
+plan_source_contract_gate.py
+PSR-v1 source_contract binding
+```
 
-Keeps:
+The fix pairs with `$spec-pipeline` v2.2.0:
 
-- `.ledger/plan/` artifact root.
-- explicit immutable `plan_id`.
-- `.ledger/st` multi-plan handoff.
-- compact final output.
+```text
+full plan-ready SGR-v2
+-> lane=spec_to_plan
+-> PSC-v1
+-> $plan validates PSC-v1
+-> fixed-point execution policy
+-> <proposed_plan>
+```
 
-Does not restore:
-
-- public `Iteration: N` footers.
-- self-reported rewrite ratios.
-- synthetic round logs as readiness proof.
-- mandatory arbitrary addition after convergence.
+`$plan` must fail closed when the SGR-v2 is missing, blocked, drifted,
+spec_only, not lint-passing, not ready_for_plan, not owned by `$plan`, or has a
+non-empty `do_not_execute_before` list.
