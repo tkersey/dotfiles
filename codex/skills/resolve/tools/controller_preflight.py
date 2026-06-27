@@ -30,6 +30,17 @@ REQUIRED = (
     "closure_horizon_v1",
 )
 
+ALIASES = {
+    "resolve_authority_chain_v1": (
+        "resolve_authority_chain_v1",
+        "authority_chain_rac_v1",
+    ),
+    "mutation_gate_v1": (
+        "mutation_gate_v1",
+        "mutation_gate_rac_v1",
+    ),
+}
+
 
 def find_key(value: Any, key: str) -> Any:
     if isinstance(value, dict):
@@ -93,7 +104,11 @@ def main() -> int:
 
     feature_status: dict[str, bool] = {}
     for feature in REQUIRED:
-        value = find_key(capabilities, feature)
+        value = None
+        for key in ALIASES.get(feature, (feature,)):
+            value = find_key(capabilities, key)
+            if value is not None:
+                break
         supported = value is True or value == "yes" or value == "supported"
         feature_status[feature] = supported
         if not supported:
