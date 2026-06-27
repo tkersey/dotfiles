@@ -1,0 +1,10 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Evidence Fold"
+  short_description: "Reduce tests, diffs, logs, reviews, and artifact state into a progress verdict"
+  default_prompt: >-
+    Use $evidence-fold after verification, review classification, branch races,
+    or material diffs. Return EF-v1 with done/continue/regress/blocked/
+    invalid-proof/ask-human/refactor-kernel, anti-gaming checks, proof gaps, and
+    exactly one next action.
