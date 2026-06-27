@@ -95,13 +95,14 @@ Routing order:
 1. **Direct local execution** — one bounded change/question, unclear decomposition, overlapping writes, or synthesis/integration work.
 2. **Frame/selection pass** — if the route is non-obvious, use Challenge Escalation before choosing a heavy workflow.
 3. **Planning/selection pass** — if the user supplies `SLICES.md`, `plan-N.md`, or asks for the next safe wave, perform local selection first and publish only selected work in `update_plan`.
-4. **Recursive goal scheme** — for `/goal`, long-running coding tasks, hard debugging, review closure, migrations, or repeated verification loops, prefer `$goal-contract -> $goal-workgraph when needed -> $goal-grind -> $evidence-fold -> $proof-patch`.
-5. **Review reducer** — for reviewer comments, CAS findings, or review-like claims, prefer `$review-fold` before implementation; use `$review-adjudication` for detailed CEX-v1 claim law or thread-resolution preparation.
-6. **Durable orchestration with `$st`** — explicit-only at root. Start it only when the user asks, when `.step/st-plan.jsonl` already participates in the task, or when an active goal/review skill emits `st-required`. Do not introduce `$st` merely because work is multi-step.
-7. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
-8. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
-9. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
-10. **Recursive orchestration** — encourage when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches.
+4. **Spec-to-goal actuation** — when the user invokes `$actuating`, run the workflow façade: `$spec-pipeline` when semantic closure is not already accepted, then `$goal-actuating`.
+5. **Recursive goal scheme** — for `/goal`, long-running coding tasks, hard debugging, review closure, migrations, or repeated verification loops, prefer `$goal-actuating` when an accepted spec/direct goal exists; otherwise use `$goal-contract -> $goal-workgraph when needed -> $goal-grind -> $evidence-fold -> $proof-patch`.
+6. **Review reducer** — for reviewer comments, CAS findings, or review-like claims, prefer `$review-fold` before implementation; use `$review-adjudication` for detailed CEX-v1 claim law or thread-resolution preparation.
+7. **Durable orchestration with `$st`** — explicit-only at root. Start it only when the user asks, when `.step/st-plan.jsonl` already participates in the task, or when an active goal/review skill emits `st-required`. Do not introduce `$st` merely because work is multi-step.
+8. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
+9. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
+10. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
+11. **Recursive orchestration** — encourage when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches.
 
 Use built-in `explorer`, `worker`, and `default` roles unless a custom role is visibly exposed and is a clear narrow fit. Goal/review work may also use the custom agents `goal_architect`, `repo_scout`, `patch_worker`, `evidence_critic`, `review_reducer`, `branch_racer`, and `workflow_forensic` when their descriptions are a clear fit. Close subagents after their contribution is integrated.
 
@@ -112,13 +113,14 @@ Skills are workflow selectors, not magic words. Root-level implicit activation i
 Preferred stack shape:
 
 ```text
-understand context -> separate evidence from claims -> frame if needed -> bind goal/review contract -> unfold work -> implement/adjudicate minimally -> fold evidence -> close -> capture learnings
+understand context -> separate evidence from claims -> frame if needed -> close spec semantics -> actuate through goal runtime -> implement/adjudicate minimally -> fold evidence -> close -> capture learnings
 ```
 
 ### Implicit skills
 
 Only these skills may activate implicitly from request or repository cues:
 
+- `$goal-actuating` — accepted SGR-v2/specs, direct `/goal` execution, review-first remediation, dry actuation plans, or st-governed goal execution that should run through the recursive goal runtime.
 - `$goal-contract` — `/goal`, long-running coding tasks, hard debugging, migrations, review campaigns, or any task needing outcome/verifier/constraints/authority/stop-rule binding before recursion.
 - `$goal-workgraph` — goal contracts that need decomposition into inspect/edit/verify/review/branch/reuse nodes; do not use for one focused edit.
 - `$goal-grind` — recursive goal execution, repeated verification loops, hard debugging, review closure, or migrations with proof surfaces.
@@ -141,14 +143,28 @@ Only these skills may activate implicitly from request or repository cues:
 
 All other skills are explicit-only at root. They may run only when the user invokes them or when an already-active skill's documented workflow hands off to them. A handoff does not create an independent root implicit trigger.
 
-Implicit activation does not waive side-effect boundaries. `$learnings` may append only under its lifecycle rules; `$negative-ledger` may mutate its canonical ledger or admit memory only after its witness, applicability, and export gates pass; `$synesthesia` may admit mappings only after its endorsement gate passes; `$codebase-doctrine` remains read-only and may persist doctrine only after explicit authorization; `$cas` control mutations require clear intent; `$goal-grind` and `$review-fold` do not authorize public tracker activity; `$st`, `$fixed-point-driver`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `prove-it`, and every other unlisted skill do not start implicitly at root.
+Implicit activation does not waive side-effect boundaries. `$learnings` may append only under its lifecycle rules; `$negative-ledger` may mutate its canonical ledger or admit memory only after its witness, applicability, and export gates pass; `$synesthesia` may admit mappings only after its endorsement gate passes; `$codebase-doctrine` remains read-only and may persist doctrine only after explicit authorization; `$cas` control mutations require clear intent; `$goal-grind`, `$goal-actuating`, and `$review-fold` do not authorize public tracker activity; `$actuating`, `$st`, `$fixed-point-driver`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `prove-it`, and every other unlisted skill do not start implicitly at root.
+
+## Actuating workflow
+
+`$actuating` is the explicit user-facing workflow for spec-first implementation:
+
+```text
+/goal $actuating <implementation request>
+  -> $spec-pipeline when semantic closure is absent or stale
+  -> $goal-actuating with accepted spec / SGR-v2 as semantic authority
+  -> $proof-patch or explicit $ship handoff
+```
+
+Use `$actuating` when the operator wants the familiar one-skill workflow. Use `$goal-actuating` directly only when the accepted spec, SGR-v2, PSR-v1, or direct goal is already the clear source of authority.
 
 ## Goal Scheme routing
 
 Use the goal scheme as the default recursive loop for material coding goals:
 
 ```text
-$goal-contract
+$goal-actuating
+  -> $goal-contract
   -> $goal-workgraph when decomposition matters
   -> $goal-grind for one-node-at-a-time execution
   -> $evidence-fold after material verification
