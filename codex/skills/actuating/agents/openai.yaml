@@ -2,13 +2,11 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Workflow facade for $spec-pipeline -> $goal-actuating"
+  short_description: "Workflow for $spec-pipeline -> $goal-actuating"
   default_prompt: >-
-    Use $actuating as an explicit /goal workflow facade. First establish semantic
-    closure with $spec-pipeline when an accepted SGR-v2/spec is not already
-    present, then hand the accepted spec to $goal-actuating. $actuating chooses
-    direct-goal, spec-first, review-first, dry-plan, or st-governed mode, but it
-    does not directly mutate code. Review pressure must pass through
-    $review-fold before implementation. Use st-governed mode only when durable
-    claims, fencing, worktrees, serialized integration, or existing $st state
-    must own execution.
+    Use $actuating as the explicit /goal workflow. First get an accepted
+    implementation spec from $spec-pipeline when one is not already available,
+    then hand that accepted spec to $goal-actuating. Fresh or exhaustive review
+    must use $cas review, and findings must pass through $review-fold before any
+    implementation. Use $st mode only when durable coordination or existing $st
+    state must own execution.
