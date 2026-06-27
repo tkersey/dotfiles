@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Fixed-Point Driver"
   short_description: "Realize one fenced workspace action"
