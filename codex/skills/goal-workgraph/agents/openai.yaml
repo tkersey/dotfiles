@@ -1,0 +1,10 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Goal WorkGraph"
+  short_description: "Unfold a GoalContract into typed inspect/edit/verify/review/branch/reuse nodes"
+  default_prompt: >-
+    Use $goal-workgraph to compile a GC-v1 contract into a small WG-v1 work graph.
+    Prefer verifier-first, representative-class-first decomposition; group review
+    findings by kernel; choose update_plan, goal-workgraph, or st-required
+    persistence explicitly.
