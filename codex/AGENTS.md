@@ -120,12 +120,12 @@ understand context -> separate evidence from claims -> frame if needed -> close 
 
 Only these skills may activate implicitly from request or repository cues:
 
-- `$goal-actuating` — accepted SGR-v2/specs, direct `/goal` execution, review-first remediation, dry actuation plans, or st-governed goal execution that should run through the recursive goal runtime.
+- `$goal-actuating` — accepted SGR-v2/specs, direct `/goal` execution, review-first remediation, dry actuation plans, or st-governed goal execution that should run through the recursive goal runtime; if it performs code review, it must use `$cas` review.
 - `$goal-contract` — `/goal`, long-running coding tasks, hard debugging, migrations, review campaigns, or any task needing outcome/verifier/constraints/authority/stop-rule binding before recursion.
 - `$goal-workgraph` — goal contracts that need decomposition into inspect/edit/verify/review/branch/reuse nodes; do not use for one focused edit.
 - `$goal-grind` — recursive goal execution, repeated verification loops, hard debugging, review closure, or migrations with proof surfaces.
 - `$evidence-fold` — tests, diffs, logs, benchmarks, screenshots, review results, or artifact state that must reduce to done/continue/regress/blocked/invalid-proof/refactor-kernel.
-- `$review-fold` — PR comments, CAS findings, reviewer suggestions, or review-like claims where the next response must be reject/proof-only/minimal-fix/refactor-kernel/ask/follow-up before code.
+- `$review-fold` — PR comments, CAS findings, reviewer suggestions, or review-like claims where the next response must be reject/proof-only/minimal-fix/refactor-kernel/ask/follow-up before code. It consumes review findings; workflow-initiated code review must come from `$cas`.
 - `$failure-memory` — repeated failures, same-shaped compiler/test/review findings, oscillation, regressions, or strategy retry risk.
 - `$proof-patch` — final `/goal` completion, PR handoff, or readiness claim needing current-artifact proof, review disposition, anti-gaming checks, and residual risk.
 - `$grill-me` — research-backed clarification for material user-owned choices; use after discoverable facts have been exhausted or via a skill handoff that needs a bound `grill_decision_packet`.
@@ -158,6 +158,22 @@ Implicit activation does not waive side-effect boundaries. `$learnings` may appe
 
 Use `$actuating` when the operator wants the familiar one-skill workflow. Use `$goal-actuating` directly only when the accepted spec, SGR-v2, PSR-v1, or direct goal is already the clear source of authority.
 
+## Code review backend mandate
+
+If the goal workflow performs code review, it must use `$cas` review. Do not substitute generic critique, non-CAS subagent review, or an ad-hoc prose pass for workflow code review.
+
+Use `$cas` review when:
+
+```text
+review closure, code review, adversarial review, or exhaustive review is requested
+the accepted spec/SGR-v2 includes review in the proof bar
+proof-patch or ship-handoff relies on a review claim
+review-first mode needs a fresh review artifact
+repeated review/fix cycles need a persistent detached lane
+```
+
+Review findings from `$cas`, GitHub, or humans still pass through `$review-fold` before implementation. Exhaustive review is not minimized away: when requested or required, it remains a blocking review gate until CAS is clean, blocked, or all findings have accepted dispositions with current-artifact proof.
+
 ## Goal Scheme routing
 
 Use the goal scheme as the default recursive loop for material coding goals:
@@ -185,7 +201,7 @@ Do not create a receipt unless it affects routing, validation, authority, stoppi
 Review loops must reduce comments before patching:
 
 ```text
-raw review pressure
+$cas review when fresh/exhaustive workflow review is needed
   -> $review-fold
   -> reject | proof-only | minimal-fix | refactor-kernel | ask-human | follow-up
   -> $goal-grind only for accepted code-change liabilities
