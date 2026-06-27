@@ -1,0 +1,48 @@
+{
+  "actuation_delivery_context": {
+    "base_branch": "main",
+    "branch_epoch": 4,
+    "cross_plan_dependency_status": "clear",
+    "current_pr_state": {
+      "draft": "unknown",
+      "exists": "no",
+      "url": ""
+    },
+    "do_not_ship_before": [],
+    "integration": {
+      "queue_quiescent": "yes",
+      "receipts": [
+        ".ledger/st/integration/receipts/igr-001.json"
+      ]
+    },
+    "plan_id": "plan-example",
+    "pr_intent": {
+      "present": "no",
+      "requested_mode": "none",
+      "source": "none"
+    },
+    "proof_complete_receipt": {
+      "current": "yes",
+      "present": "yes",
+      "ref": ".ledger/st/proof/plan-example/proof-complete.json"
+    },
+    "proof_summary": "Proof-complete graph audit and integration receipt are current.",
+    "repo_policy_pr_mode": "unknown",
+    "run_id": "run-no-ship-001",
+    "target_branch": "feature/example",
+    "target_head": "abc123",
+    "task_state": {
+      "blocked": "no",
+      "complete": "yes",
+      "deferred": "no",
+      "open": "no"
+    },
+    "validation": {
+      "acceptance": "pass",
+      "build": "pass",
+      "language_specific": "pass",
+      "lint": "pass",
+      "tests": "pass"
+    }
+  }
+}

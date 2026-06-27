@@ -1,8 +1,8 @@
 ---
 name: actuating
-description: "Plan-to-PR execution controller for one named plan inside the multi-plan `$st` workspace. Use for `$actuating`, implementing a material plan, resuming an actuation run, or driving one execution-policy action. Mutation is forbidden until APMA-v1 proves a current GCR-v2 with execution_allowed=yes, current claim, current fencing token, current branch epoch, selected task IDs, and resource coverage for the intended edit. Workers produce fenced change sets; target-branch integration is serialized through `$st`."
+description: "Plan-to-PR execution controller for one named plan inside the multi-plan `$st` workspace. Use for `$actuating`, implementing a material plan, resuming an actuation run, or driving one execution-policy action. Mutation is forbidden until APMA-v1 proves a current GCR-v2 with execution_allowed=yes, current claim, current fencing token, current branch epoch, selected task IDs, and resource coverage for the intended edit. Workers produce fenced change sets; target-branch integration is serialized through `$st`; proof-complete handoff must continue to `$ship` when PR delivery is requested."
 metadata:
-  version: "5.1.0"
+  version: "5.2.0"
   activation_cost: high
   default_depth: standard
 ---
@@ -26,7 +26,8 @@ named plan
 -> sealed change set
 -> serialized integration
 -> branch-epoch proof refresh
--> delivery
+-> ADD-v1 delivery decision
+-> `$ship` PR handoff when requested
 ```
 
 `$actuating` is not an implementer. It is a transaction controller. Code mutation is legal only after the controller is the upstream authority.
@@ -419,6 +420,81 @@ current PR/review state
 
 Other active plans need not be complete unless their cross-plan dependencies block this plan’s terminal predicates.
 
+Proof-complete is not terminal when the actuation run, source handoff, or user request includes PR delivery intent.
+
+## Phase 11 — delivery decision and `$ship` handoff
+
+After proof-complete and serialized integration, emit or validate one ADD-v1 delivery decision:
+
+```bash
+uv run python codex/skills/actuating/tools/actuation_delivery_gate.py \
+  decide \
+  --context .ledger/actuating/<run-id>/delivery-context.json \
+  --out .ledger/actuating/<run-id>/delivery-decision.json
+```
+
+ADD-v1 classifies the terminal delivery state:
+
+```yaml
+actuation_delivery_decision:
+  decision_version: ADD-v1
+  verdict: handoff_to_ship | shipping_not_requested | blocked
+  run_id:
+  plan_id:
+  target_branch:
+  target_head:
+  branch_epoch:
+  proof_complete_receipt:
+  integrated_change_set_receipts: []
+  cross_plan_dependency_status: clear | blocked | unknown
+  pr_intent:
+    present: yes | no
+    source: user | actuation_run | source_handoff | none
+    requested_mode: ready | draft | update-existing | promote-draft | none
+  blocked_reasons: []
+  ship_handoff:
+    next_owner: $ship
+    ship_input: {}
+```
+
+Use `handoff_to_ship` only when all are true:
+
+```text
+proof-complete receipt is present and current
+integrated change-set receipts are present
+integration queue is quiescent for the plan
+target branch/head/epoch are current
+cross-plan dependency status is clear
+current PR state is inspected or explicitly unknown
+PR delivery intent is present
+no do_not_ship_before blocker remains
+```
+
+PR delivery intent may come from:
+
+```text
+explicit user request to open/update/promote a PR
+source request shaped as plan-to-PR
+actuation_run.pr_mode = ready|draft|update-existing|promote-draft
+source handoff next owner = $ship
+```
+
+If ADD-v1 verdict is `handoff_to_ship`, immediately load `$ship` in the same turn and pass the integrated target-branch state. Do not pass a worker worktree. Do not stop at proof-complete.
+
+If ADD-v1 verdict is `shipping_not_requested`, report integrated/proof-complete state and explicitly say shipping was not requested.
+
+If ADD-v1 verdict is `blocked`, report the blocked reasons and do not invoke `$ship`.
+
+Validate ADD-v1 when needed:
+
+```bash
+uv run python codex/skills/actuating/tools/actuation_delivery_gate.py \
+  check \
+  --decision .ledger/actuating/<run-id>/delivery-decision.json
+```
+
+See [delivery-handoff.md](references/delivery-handoff.md).
+
 ## Projection
 
 Prime only the bound session:
@@ -470,7 +546,7 @@ Any mismatch returns to workspace allocation.
 
 `$ship` receives the integrated target-branch state, not a worker worktree.
 
-Pass:
+Pass exactly the ADD-v1 `ship_handoff.ship_input` fields derived from:
 
 ```text
 plan ID
@@ -478,10 +554,21 @@ integrated change-set receipts
 current target branch/head/epoch
 proof-complete plan receipt
 cross-plan dependency status
-explicit PR mode
+explicit or inherited PR mode
+current PR state
+proof summary
+remaining follow-ups/blockers
 ```
 
-`$actuating` does not merge.
+`$actuating` does not merge. `$ship` opens, updates, or promotes a PR according to its readiness policy.
+
+A successful actuation run with PR intent is not closed until one of these is true:
+
+```text
+$ship created, updated, or promoted the PR and returned SHIP-v1
+ADD-v1 blocked shipping and named the missing condition
+ADD-v1 classified shipping_not_requested because no PR intent existed
+```
 
 ## Final report
 
@@ -492,6 +579,7 @@ Actuation:
 - claim / fencing / resources:
 - GCR-v2:
 - APMA-v1:
+- ADD-v1 delivery decision:
 - selected action/tasks:
 - worker worktree:
 - focused proof:
@@ -499,7 +587,7 @@ Actuation:
 - integration receipt / branch epoch:
 - stale foreign proof:
 - plan graph closure:
-- PR mode / PR:
+- PR mode / PR / SHIP-v1:
 ```
 
 If no APMA-v1 was emitted and checked, the final report must say:
@@ -523,5 +611,8 @@ Do not describe direct implementation as an actuation run.
 - No direct commit/push by worker agents.
 - Integration is serialized.
 - Proof is branch-epoch and APMA-bound.
+- Proof-complete graph audit is not terminal when PR delivery is requested.
+- No `$ship` handoff without ADD-v1 `handoff_to_ship`.
+- No public PR side effect without explicit or inherited PR intent.
 - Self-invalidating GCR is a hard stop, not a retry loop.
 - All new artifacts live under `.ledger/`.

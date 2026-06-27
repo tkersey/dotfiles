@@ -2,7 +2,7 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Actuating"
-  short_description: "Execute one fenced plan inside the multi-plan workspace"
+  short_description: "Execute one fenced plan through integration and PR delivery"
   default_prompt: >-
     Use $actuating as a transaction controller for one explicit plan in
     .ledger/st. Bind the session, obtain a conflict-free workspace claim and
@@ -14,4 +14,7 @@ interface:
     stale, stop immediately, release held claims when safe, mark actuation
     blocked on tooling, and do not continue as $actuating. Realize only inside
     the claimed external worktree, record branch-epoch proof, seal a change set,
-    and let the serialized st integrator advance the target branch.
+    and let the serialized st integrator advance the target branch. After
+    proof-complete integration, do not stop early when PR delivery was requested
+    or inherited from a plan-to-PR run: emit ADD-v1 and hand the integrated
+    target-branch state to $ship when ADD-v1 verdict is handoff_to_ship.

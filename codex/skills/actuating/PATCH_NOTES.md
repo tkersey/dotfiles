@@ -1,29 +1,27 @@
-# Actuating v5.1.0 Patch Notes
+# Patch Notes
 
-## Intent
+Version: `5.2.0`
 
-Make `$actuating` a true mutation authority rather than an implementation aesthetic.
+Restores `$actuating` delivery closure after the v5.1 pre-mutation interlock.
 
-## Added
+Adds:
 
-- APMA-v1 pre-mutation authority receipt.
-- `tools/actuation_authority_gate.py`.
-- `references/pre-mutation-interlock.md`.
-- Self-invalidating GCR diagnosis.
-- Regression tests for authorization, resource coverage, APMA checking, and stale-sequence GCR diagnosis.
+- ADD-v1 `actuation_delivery_decision`.
+- Post-integration delivery gate and `$ship` tail-call rule.
+- `actuation_delivery_gate.py` with decide/check commands.
+- Delivery examples and tests.
+- Decision-contract route `ACT-SHIP`.
 
-## Hard rule
+Preserves:
+
+- APMA-v1 pre-mutation authority.
+- GCR-v2 self-invalidating stop rule.
+- Claim/fencing/resource coverage requirements.
+- Serialized `$st` integration.
+
+Critical repair:
 
 ```text
-No APMA-v1 mutation-authorized receipt => no actuation-labeled patch.
-```
-
-## Expected audit effect
-
-Future true/control `$actuating` rows should have:
-
-```text
-mutations_without_gcr = 0
-graph_bypass_rows = 0
-projection_inversion_rows = 0
+proof-complete graph audit != terminal when PR delivery is requested
+proof-complete + integrated target branch + ADD-v1 handoff_to_ship -> $ship
 ```

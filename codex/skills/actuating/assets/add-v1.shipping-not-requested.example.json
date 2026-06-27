@@ -1,0 +1,40 @@
+{
+  "actuation_delivery_decision": {
+    "blocked_reasons": [],
+    "branch_epoch": 4,
+    "cross_plan_dependency_status": "clear",
+    "current_pr_state": {
+      "draft": "unknown",
+      "exists": "no",
+      "url": ""
+    },
+    "decision_version": "ADD-v1",
+    "do_not_ship_before": [],
+    "integrated_change_set_receipts": [
+      ".ledger/st/integration/receipts/igr-001.json"
+    ],
+    "integration": {
+      "queue_quiescent": "yes",
+      "receipts": [
+        ".ledger/st/integration/receipts/igr-001.json"
+      ]
+    },
+    "issued_at": "2026-06-26T00:00:00Z",
+    "plan_id": "plan-example",
+    "pr_intent": {
+      "present": "no",
+      "requested_mode": "none",
+      "source": "none"
+    },
+    "proof_complete_receipt": {
+      "current": "yes",
+      "present": "yes",
+      "ref": ".ledger/st/proof/plan-example/proof-complete.json"
+    },
+    "run_id": "run-no-ship-001",
+    "ship_handoff": null,
+    "target_branch": "feature/example",
+    "target_head": "abc123",
+    "verdict": "shipping_not_requested"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "actuation_delivery_decision": {
+    "blocked_reasons": [
+      "proof_complete_receipt:not-current",
+      "integration.queue_quiescent:not-yes",
+      "cross_plan_dependency_status:unknown",
+      "do_not_ship_before:current PR state unavailable"
+    ],
+    "branch_epoch": 4,
+    "cross_plan_dependency_status": "unknown",
+    "current_pr_state": {
+      "draft": "unknown",
+      "exists": "no",
+      "url": ""
+    },
+    "decision_version": "ADD-v1",
+    "do_not_ship_before": [
+      "current PR state unavailable"
+    ],
+    "integrated_change_set_receipts": [
+      ".ledger/st/integration/receipts/igr-001.json"
+    ],
+    "integration": {
+      "queue_quiescent": "no",
+      "receipts": [
+        ".ledger/st/integration/receipts/igr-001.json"
+      ]
+    },
+    "issued_at": "2026-06-26T00:00:00Z",
+    "plan_id": "plan-example",
+    "pr_intent": {
+      "present": "yes",
+      "requested_mode": "ready",
+      "source": "actuation_run"
+    },
+    "proof_complete_receipt": {
+      "current": "no",
+      "present": "yes",
+      "ref": ".ledger/st/proof/plan-example/proof-complete.json"
+    },
+    "run_id": "run-blocked-001",
+    "ship_handoff": null,
+    "target_branch": "feature/example",
+    "target_head": "abc123",
+    "verdict": "blocked"
+  }
+}

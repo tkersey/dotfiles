@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: actuating
     kind: workflow
-    source_fingerprint: actuating-v5-workspace-fenced
+    source_fingerprint: actuating-v5.2-apma-add-delivery
   triggers:
     - trigger_id: ACT-WORK
       description: One named plan is ready for bounded execution.
@@ -20,13 +20,18 @@ skill_decision_contract:
       cue_literals: [seal change set, integrate]
       cue_regexes: []
       exclusions: []
+    - trigger_id: ACT-SHIP
+      description: Integrated proof-complete target-branch state is ready for PR delivery.
+      cue_literals: [ship, PR, draft PR, ready PR, plan to PR, delivery]
+      cue_regexes: []
+      exclusions: [shipping not requested, proof incomplete, integration blocked]
   routes:
     - route_id: ACT-CLAIM
       description: Obtain or refresh workspace authority.
       aliases: [claim]
       terminal: "no"
     - route_id: ACT-REALIZE
-      description: Realize one bounded slice.
+      description: Realize one bounded APMA-authorized slice.
       aliases: [realize]
       terminal: "no"
     - route_id: ACT-RETURN-WORKSPACE
@@ -37,8 +42,16 @@ skill_decision_contract:
       description: Enqueue a sealed change set.
       aliases: [integrate]
       terminal: "no"
+    - route_id: ACT-SHIP
+      description: Hand integrated target-branch state to $ship.
+      aliases: [ship, delivery, pr]
+      terminal: "yes"
+    - route_id: ACT-SHIPPING-NOT-REQUESTED
+      description: Close without PR because no PR delivery intent exists.
+      aliases: [shipping-not-requested]
+      terminal: "yes"
     - route_id: ACT-BLOCK
-      description: Stop on stale or unavailable authority.
+      description: Stop on stale, unavailable, or incomplete authority/delivery state.
       aliases: [blocked]
       terminal: "yes"
   clauses:
@@ -48,13 +61,15 @@ skill_decision_contract:
       prohibited_routes: []
       required_artifacts:
         - GCR-v2
+        - APMA-v1
         - WCL-v1
         - fencing token
       success_signals:
-        - every mutation is claim bound
+        - every mutation is claim and APMA bound
       failure_signals:
         - plan-local readiness treated as execution authority
-      rationale: Multi-plan safety requires workspace authority.
+        - mutation occurs before APMA-v1
+      rationale: Multi-plan safety requires workspace authority before material transition.
     - clause_id: ACT-BOUNDARY-002
       trigger_refs: [ACT-EXPAND]
       expected_routes: [ACT-RETURN-WORKSPACE, ACT-BLOCK]
@@ -62,7 +77,7 @@ skill_decision_contract:
       required_artifacts:
         - requested resource expansion
       success_signals:
-        - new claim and GCR before resumed mutation
+        - new claim, GCR, and APMA before resumed mutation
       failure_signals:
         - related edit outside claim
       rationale: Boundary expansion must rerun global conflict analysis.
@@ -78,6 +93,26 @@ skill_decision_contract:
       failure_signals:
         - direct push from worker
       rationale: Target-branch state is globally serialized.
+    - clause_id: ACT-SHIP-002
+      trigger_refs: [ACT-SHIP]
+      expected_routes: [ACT-SHIP, ACT-SHIPPING-NOT-REQUESTED, ACT-BLOCK]
+      prohibited_routes: []
+      required_artifacts:
+        - ADD-v1
+        - proof-complete plan receipt
+        - integrated change-set receipts
+        - current target branch/head/epoch
+        - cross-plan dependency status
+        - explicit or inherited PR mode when shipping
+      success_signals:
+        - $ship receives integrated target-branch state
+        - worker worktree is not shipped
+        - PR URL or delivery-blocked reason is reported
+      failure_signals:
+        - graph audit proof-complete treated as terminal when PR delivery was requested
+        - $ship receives worker worktree instead of integrated branch
+        - public PR side effect occurs without PR intent
+      rationale: $actuating includes delivery for plan-to-PR runs; proof-complete is implementation closure, not PR delivery closure.
   instrumentation:
     decision_receipt: required
-    rationale: Claim, return, and integration choices are material.
+    rationale: Claim, mutation authority, integration, and delivery choices are material.

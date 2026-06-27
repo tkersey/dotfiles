@@ -1,0 +1,83 @@
+{
+  "actuation_delivery_decision": {
+    "blocked_reasons": [],
+    "branch_epoch": 4,
+    "cross_plan_dependency_status": "clear",
+    "current_pr_state": {
+      "draft": "unknown",
+      "exists": "no",
+      "url": ""
+    },
+    "decision_version": "ADD-v1",
+    "do_not_ship_before": [],
+    "integrated_change_set_receipts": [
+      ".ledger/st/integration/receipts/igr-001.json"
+    ],
+    "integration": {
+      "queue_quiescent": "yes",
+      "receipts": [
+        ".ledger/st/integration/receipts/igr-001.json"
+      ]
+    },
+    "issued_at": "2026-06-26T00:00:00Z",
+    "plan_id": "plan-example",
+    "pr_intent": {
+      "present": "yes",
+      "requested_mode": "ready",
+      "source": "actuation_run"
+    },
+    "proof_complete_receipt": {
+      "current": "yes",
+      "present": "yes",
+      "ref": ".ledger/st/proof/plan-example/proof-complete.json"
+    },
+    "run_id": "run-ship-001",
+    "ship_handoff": {
+      "next_owner": "$ship",
+      "ship_input": {
+        "actuation": {
+          "branch_epoch": 4,
+          "cross_plan_dependency_status": "clear",
+          "integrated_change_set_receipts": [
+            ".ledger/st/integration/receipts/igr-001.json"
+          ],
+          "plan_id": "plan-example",
+          "proof_complete_receipt": {
+            "current": "yes",
+            "present": "yes",
+            "ref": ".ledger/st/proof/plan-example/proof-complete.json"
+          },
+          "run_id": "run-ship-001"
+        },
+        "base_branch": "main",
+        "branch": "feature/example",
+        "existing_pr": {
+          "draft": "unknown",
+          "exists": "no",
+          "state": "unknown",
+          "url": ""
+        },
+        "head_sha": "abc123",
+        "proof_summary": "Proof-complete graph audit and integration receipt are current.",
+        "repo_policy_pr_mode": "unknown",
+        "task_state": {
+          "blocked": "no",
+          "complete": "yes",
+          "deferred": "no",
+          "open": "no"
+        },
+        "user_requested_pr_mode": "ready",
+        "validation": {
+          "acceptance": "pass",
+          "build": "pass",
+          "language_specific": "pass",
+          "lint": "pass",
+          "tests": "pass"
+        }
+      }
+    },
+    "target_branch": "feature/example",
+    "target_head": "abc123",
+    "verdict": "handoff_to_ship"
+  }
+}
