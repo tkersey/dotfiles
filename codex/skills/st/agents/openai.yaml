@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "st"
   short_description: "Multi-plan graph workspace and conflict-free execution"
