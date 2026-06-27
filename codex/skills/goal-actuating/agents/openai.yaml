@@ -2,10 +2,12 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Goal Actuating"
-  short_description: "Run accepted specs or direct goals through GC-v1, WorkGraph, grind, review fold, evidence, and proof"
+  short_description: "Run accepted specs or direct goals through GC-v1, WorkGraph, grind, CAS review, evidence, and proof"
   default_prompt: >-
     Use $goal-actuating to execute an accepted spec, SGR-v2, PSR-v1, direct
     /goal, or review-first remediation through the recursive goal runtime.
     Treat SGR-v2 as semantic authority, derive GC-v1, choose update_plan,
-    goal-artifacts, or st-governed persistence, run review-fold before review
-    mutations, and close with evidence-fold and proof-patch.
+    goal-artifacts, or st-governed persistence. If the workflow performs code
+    review, the review backend must be $cas review; then route CAS findings
+    through $review-fold before any implementation. Close with evidence-fold and
+    proof-patch.
