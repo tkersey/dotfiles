@@ -4,6 +4,18 @@
 owns execution-policy synthesis. This reference makes the seam automatic without
 letting `$spec-pipeline` emit plan artifacts.
 
+## Lane selection before the predicate
+
+Before the final SGR-v2 exists, choose the lane with the rule in
+[lane-selection.md](lane-selection.md): in `full` mode, default to `spec_to_plan`
+unless the user explicitly requested spec-only output or a material gate blocks
+planning.
+
+Explicit `$spec-pipeline` invocation is not a request for `spec_only`. If the
+run completes with a plan-ready governed spec, the lane must remain
+`spec_to_plan` and this tail-call predicate decides whether same-turn `$plan`
+runs.
+
 ## Predicate
 
 Run `$plan` immediately after the final SGR-v2 only when every predicate holds:
@@ -58,17 +70,17 @@ PSR-v1 synthesis receipt, and `.ledger/st` handoff.
 
 Do not auto-run `$plan` when:
 
-- user requested `spec_only` or `do not plan`;
+- user explicitly requested `spec_only`, `spec only`, `no plan`, or equivalent;
 - mode is `gate-only`, `challenge-only`, or `lint-only`;
 - status is `blocked`, `drift`, `audit-only`, or `partial`;
-- lane is not `spec_to_plan`;
+- lane is not `spec_to_plan` for a legal blocker recorded in the receipt;
 - material questions remain;
 - lint failed, was skipped when required, or blocked handoff;
 - fresh-eyes returned to grill or detected drift;
 - any subagent remains open;
 - `next_owner` is not `$plan`;
 - `do_not_execute_before` is non-empty;
-- `auto_plan_handoff.eligible = no`.
+- `auto_plan_handoff.eligible = no` with a concrete blocker other than “the user did not separately ask for `$plan`.”
 
 If same-turn loading of `$plan` is unavailable, emit:
 
@@ -79,6 +91,8 @@ next_owner: $plan
 ```
 
 That marker means automation failed; it does not authorize implementation.
+It must not be replaced with `spec_only` merely because the tail-call could not
+run.
 
 ## Validator
 
