@@ -20,7 +20,7 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 
 ## Purpose
 
-This file is the compact, high-authority routing index for Codex in this repo. It owns repository safety, side-effect boundaries, response format, challenge escalation posture, recursive orchestration posture, and publication hygiene. Detailed operating procedures belong in skills.
+This file is the compact, high-authority routing index for Codex in this repo. Detailed procedures belong in skills. This file owns safety, side-effect boundaries, skill routing, review routing, `$st` boundaries, and final-response proof discipline.
 
 ## Core invariants
 
@@ -48,23 +48,13 @@ This file is the compact, high-authority routing index for Codex in this repo. I
 - Prefer compounding moves that make future good work easier, safer, or faster.
 - Ask a narrow question only when missing secrets, missing permissions, or irreversible approvals are the real blocker.
 
-## Latent intelligence and doctrine
-
-Do not use doctrine words as tone. When non-trivial work needs a frame market, dominant-move selection, doctrine cash-out, route receipt, ablation/surface-tax judgment, review comment law, negative capability, reification, or a proof-bearing route change, apply Challenge Escalation directly.
-
-Activation does not mean verbosity. Select the governing operator and leave the smallest useful artifact only when it changes the route. If no artifact is needed, do the task directly. Detailed doctrine workflows remain available only when explicitly invoked or reached through a documented handoff from an already-active skill.
-
 ## Evidence discipline
 
-Natural-language context can anchor the investigation. For bug reports, review comments, PR/issue prose, memories, generated summaries, public-tracker context, claimed root causes, or proposed fixes:
+For bug reports, review comments, PR/issue prose, memories, generated summaries, public-tracker context, claimed root causes, or proposed fixes:
 
 - separate observed facts, claims, proposals, and speculation before choosing implementation scope;
 - reconstruct the narrowest verified failure before broadening scope;
 - do not export speculative agent analysis into public issues, PRs, comments, discussions, or maintainer workflows.
-
-Detailed evidence workflows are explicit-only unless an already-active skill documents the handoff.
-
-## Invariant stewardship
 
 Before local patching for invalid state, malformed persisted data, crashes, parser failures, migrations, cache drift, protocol problems, retries, races, compatibility behavior, tolerant readers, fallbacks, coercions, catch-and-continue logic, or local workarounds, identify:
 
@@ -73,7 +63,7 @@ Before local patching for invalid state, malformed persisted data, crashes, pars
 - the owning producer, transition, or boundary;
 - the smallest fix that prevents recurrence without broadening accepted invalid state.
 
-Detailed invariant workflows are explicit-only unless an already-active skill documents the handoff.
+Detailed evidence and invariant workflows are explicit-only unless an already-active skill documents the handoff.
 
 ## Public tracker and maintainer hygiene
 
@@ -84,6 +74,7 @@ Never open, update, comment on, draft-to-post, or suggest public tracker activit
 - Never use broad reset/checkout/clean commands to erase working-tree state unless the user explicitly requests that exact destructive operation.
 - Treat `.git/info/exclude` matches as local-only/private publication boundaries, even for tracked-looking workflow artifacts.
 - If a path is already tracked but also matches `.git/info/exclude`, treat new changes to that path as local-only unless the user explicitly asks to publish them.
+- `.goal/` is local goal-loop state and must stay ignored or explicitly local-only.
 - Before staging local-state artifacts such as `.step/st-plan.jsonl`, `.step/*.lock`, `.goal/*`, or `.learnings.jsonl`, run `git check-ignore -v --no-index PATH` when in doubt. If the source is `.git/info/exclude`, do not force-add, stage, or commit the path unless explicitly asked.
 
 ## Local Codex execution guidance
@@ -95,55 +86,46 @@ Routing order:
 1. **Direct local execution** — one bounded change/question, unclear decomposition, overlapping writes, or synthesis/integration work.
 2. **Frame/selection pass** — if the route is non-obvious, use Challenge Escalation before choosing a heavy workflow.
 3. **Planning/selection pass** — if the user supplies `SLICES.md`, `plan-N.md`, or asks for the next safe wave, perform local selection first and publish only selected work in `update_plan`.
-4. **Spec-to-goal actuation** — when the user invokes `$actuating`, run the workflow façade: `$spec-pipeline` when semantic closure is not already accepted, then `$goal-actuating`.
-5. **Recursive goal scheme** — for `/goal`, long-running coding tasks, hard debugging, review closure, migrations, or repeated verification loops, prefer `$goal-actuating` when an accepted spec/direct goal exists; otherwise use `$goal-contract -> $goal-workgraph when needed -> $goal-grind -> $evidence-fold -> $proof-patch`.
-6. **Review reducer** — for reviewer comments, CAS findings, or review-like claims, prefer `$review-fold` before implementation; use `$review-adjudication` for detailed CEX-v1 claim law or thread-resolution preparation.
+4. **Actuating workflow** — when the user invokes `$actuating`, run `$spec-pipeline` in gate-only/no-plan mode when the implementation spec is not already accepted, then hand off to `$goal-actuating`.
+5. **Goal workflow** — for `/goal`, long-running coding tasks, hard debugging, review closure, migrations, or repeated verification loops, prefer `$goal-actuating` when an accepted spec/direct goal exists; otherwise use `$goal-contract -> $goal-workgraph when needed -> $goal-grind -> $evidence-fold -> $proof-patch`.
+6. **Review reducer** — for reviewer comments, CAS findings, or review-like claims, prefer `$review-fold` before implementation. Use `$review-adjudication` only when explicitly invoked or handed off for detailed claim law or thread-resolution preparation.
 7. **Durable orchestration with `$st`** — explicit-only at root. Start it only when the user asks, when `.step/st-plan.jsonl` already participates in the task, or when an active goal/review skill emits `st-required`. Do not introduce `$st` merely because work is multi-step.
 8. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
 9. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
 10. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
 11. **Recursive orchestration** — encourage when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches.
 
-Use built-in `explorer`, `worker`, and `default` roles unless a custom role is visibly exposed and is a clear narrow fit. Goal/review work may also use the custom agents `goal_architect`, `repo_scout`, `patch_worker`, `evidence_critic`, `review_reducer`, `branch_racer`, and `workflow_forensic` when their descriptions are a clear fit. Close subagents after their contribution is integrated.
+Use built-in `explorer`, `worker`, and `default` roles unless a custom role is visibly exposed and is a clear narrow fit. Goal/review work may also use `goal_architect`, `repo_scout`, `patch_worker`, `evidence_critic`, `review_reducer`, `branch_racer`, and `workflow_forensic` when their descriptions are a clear fit. Close subagents after their contribution is integrated.
 
 ## Skill routing
 
-Skills are workflow selectors, not magic words. Root-level implicit activation is intentionally narrow. Loaded skills own their command syntax, checklists, templates, trigger taxonomies, proof mechanics, and documented handoffs.
+Skills are workflow selectors, not magic words. Root-level implicit activation is intentionally narrow. Loaded skills own command syntax, checklists, templates, proof mechanics, and documented handoffs.
 
 Preferred stack shape:
 
 ```text
-understand context -> separate evidence from claims -> frame if needed -> close spec semantics -> actuate through goal runtime -> implement/adjudicate minimally -> fold evidence -> close -> capture learnings
+understand context -> separate evidence from claims -> accept implementation spec -> run goal workflow -> implement/adjudicate minimally -> fold evidence -> close -> capture learnings
 ```
 
-### Implicit skills
+### Root implicit allowlist
 
 Only these skills may activate implicitly from request or repository cues:
 
-- `$goal-actuating` — accepted SGR-v2/specs, direct `/goal` execution, review-first remediation, dry actuation plans, or st-governed goal execution that should run through the recursive goal runtime; if it performs code review, it must use `$cas` review.
-- `$goal-contract` — `/goal`, long-running coding tasks, hard debugging, migrations, review campaigns, or any task needing outcome/verifier/constraints/authority/stop-rule binding before recursion.
-- `$goal-workgraph` — goal contracts that need decomposition into inspect/edit/verify/review/branch/reuse nodes; do not use for one focused edit.
+- `$goal-actuating` — accepted implementation specs, direct `/goal` execution, review-first remediation, dry actuation plans, or `$st`-governed goal execution. If it performs code review, it must use `$cas` review.
+- `$goal-contract` — material goals that need outcome, checks, constraints, authority, and stop rules.
+- `$goal-workgraph` — material goals that need a small work list before execution.
 - `$goal-grind` — recursive goal execution, repeated verification loops, hard debugging, review closure, or migrations with proof surfaces.
-- `$evidence-fold` — tests, diffs, logs, benchmarks, screenshots, review results, or artifact state that must reduce to done/continue/regress/blocked/invalid-proof/refactor-kernel.
-- `$review-fold` — PR comments, CAS findings, reviewer suggestions, or review-like claims where the next response must be reject/proof-only/minimal-fix/refactor-kernel/ask/follow-up before code. It consumes review findings; workflow-initiated code review must come from `$cas`.
+- `$evidence-fold` — tests, diffs, logs, review results, or artifact state that must reduce to a progress verdict.
+- `$review-fold` — review findings that must be classified before code changes. It consumes review findings; workflow-initiated code review must come from `$cas`.
 - `$failure-memory` — repeated failures, same-shaped compiler/test/review findings, oscillation, regressions, or strategy retry risk.
-- `$proof-patch` — final `/goal` completion, PR handoff, or readiness claim needing current-artifact proof, review disposition, anti-gaming checks, and residual risk.
-- `$grill-me` — research-backed clarification for material user-owned choices; use after discoverable facts have been exhausted or via a skill handoff that needs a bound `grill_decision_packet`.
-- `$learnings` — recall before substantial implementation when `.learnings.jsonl` exists; capture only at decision-shaping checkpoints and delivery boundaries.
-- `$review-adjudication` — PR comments, reviewer suggestions, CAS findings, or review-like claims that require detailed CEX-v1 claim law before implementation, thread resolution, or fixed-point routing.
-- `$zig` — Zig files, build/test/toolchain output, comptime, allocator, FFI, concurrency, performance, cache, migration, or safety evidence. Do not wait for the user to type `$zig`; detailed trigger taxonomy lives under `codex/skills/zig/references/implicit_triggers.md`.
-- `$logophile` — human-facing wording, naming, terminology, headings, PR/commit text, docs, explanations, error/help text, doctrine words, or mode names. Preserve semantics and machine-consumed syntax.
-- `$universalist` — structural refactor, exact abstraction, certified context, canonical boundary, semantic-consumption, presentation-strategy, sheafification, or inexact-abstraction cues. Former Kan mechanics are internal to this skill.
-- `$cas` — Zig app-server/CAS helpers, app-server v2 protocol, goal lifecycle, detached review, multi-instance fanout, or `$st` swarm-conformance cues. Activation may be implicit, but mutating control operations still require clear intent.
+- `$proof-patch` — final `/goal` completion, PR handoff, or readiness claim needing current-artifact proof, review disposition, and residual risk.
+- `$grill-me` — research-backed clarification for material user-owned choices after discoverable facts have been exhausted.
 - `$seq` — historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Never use it for ordinary current-repo code search.
-- `$negative-ledger` — failed attempts, no-effect results, reverts, benchmark regressions, repeated semantic routes or same-cluster retries, prior-route questions, or reopening after artifact-state changes. Implicit activation permits query, mapping, and evidence classification; canonical writes and memory admission remain gated by witnessed evidence, current applicability, and a complete ledger export.
-- `$synesthesia` — use for explicit sensory/feel/look/sound/motion language, compare-by-feel requests, or when literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations and a reversible cross-modal representation could distinguish them. It may also run from a documented owning-workflow handoff. Do not activate merely because a task concerns architecture, performance, readability, flakiness, onboarding, or UX. Use the smallest useful mapping, translate it back into engineering terms with uncertainty and a falsifier, then return control to the technical owner. When the user explicitly endorses, confirms, corrects, rejects, retracts, reopens, or asks to remember a durable mapping or boundary, hand off to `$memory-source-notes` in the same turn; the Synesthesia digest refreshes automatically after a successful append.
-- `$codebase-doctrine` — use when the user asks for both deep repository understanding and durable correctness doctrine, authority/proof maps, knowledge routing, or repository-specific skill recommendations. Do not activate for quick onboarding, one isolated invariant, ordinary implementation, generic review, or direct skill creation. When its DIG-v2 says `grill_required: yes`, immediately hand off to `$grill-me` with the validated `codebase_doctrine_grill_handoff`, hard-stop Codebase Doctrine, and resume only after a bound `grill_decision_packet` returns `plan_allowed: true`. It is read-only and may use `$grill-me` only for material user-owned intent choices after researching discoverable facts.
-- `$memory-source-notes` - append-only custom memory-source capture only after a documented handoff from `$harness-memory`, `$learnings`, `$negative-ledger`, or `$synesthesia`, or when the user explicitly asks to record an event in one of those custom sources. It never writes compiled memory.
+- `$learnings` — recall before substantial implementation when `.learnings.jsonl` exists; capture only at decision-shaping checkpoints and delivery boundaries.
 
-All other skills are explicit-only at root. They may run only when the user invokes them or when an already-active skill's documented workflow hands off to them. A handoff does not create an independent root implicit trigger.
+Every other skill is explicit-only at root, including `$cas`, `$review-adjudication`, `$codebase-doctrine`, `$memory-source-notes`, `$negative-ledger`, `$synesthesia`, `$zig`, `$logophile`, `$universalist`, `$spec-pipeline`, `$plan`, `$actuating`, `$st`, `$fixed-point-driver`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, and `prove-it`. Explicit-only skills may run only when the user invokes them or when an already-active skill's documented workflow hands off to them. A handoff does not create an independent root implicit trigger.
 
-Implicit activation does not waive side-effect boundaries. `$learnings` may append only under its lifecycle rules; `$negative-ledger` may mutate its canonical ledger or admit memory only after its witness, applicability, and export gates pass; `$synesthesia` may admit mappings only after its endorsement gate passes; `$codebase-doctrine` remains read-only and may persist doctrine only after explicit authorization; `$cas` control mutations require clear intent; `$goal-grind`, `$goal-actuating`, and `$review-fold` do not authorize public tracker activity; `$actuating`, `$st`, `$fixed-point-driver`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `prove-it`, and every other unlisted skill do not start implicitly at root.
+Implicit activation does not waive side-effect boundaries. `$learnings` may append only under its lifecycle rules. `$goal-grind`, `$goal-actuating`, and `$review-fold` do not authorize public tracker activity. `$cas` may be used as the review backend by an active workflow, but CAS control mutations still require clear intent.
 
 ## Actuating workflow
 
@@ -151,12 +133,12 @@ Implicit activation does not waive side-effect boundaries. `$learnings` may appe
 
 ```text
 /goal $actuating <implementation request>
-  -> $spec-pipeline when semantic closure is absent or stale
-  -> $goal-actuating with accepted spec / SGR-v2 as semantic authority
+  -> $spec-pipeline in gate-only/no-plan mode when the implementation spec is not already accepted
+  -> $goal-actuating with the accepted spec as authority
   -> $proof-patch or explicit $ship handoff
 ```
 
-Use `$actuating` when the operator wants the familiar one-skill workflow. Use `$goal-actuating` directly only when the accepted spec, SGR-v2, PSR-v1, or direct goal is already the clear source of authority.
+Use `$actuating` when the operator wants the familiar one-skill workflow. Use `$goal-actuating` directly only when the accepted spec, direct goal, plan handoff, or review input is already the clear source of authority.
 
 ## Code review backend mandate
 
@@ -165,8 +147,8 @@ If the goal workflow performs code review, it must use `$cas` review. Do not sub
 Use `$cas` review when:
 
 ```text
-review closure, code review, adversarial review, or exhaustive review is requested
-the accepted spec/SGR-v2 includes review in the proof bar
+review closure, code review, or exhaustive review is requested
+the accepted spec includes review in the proof bar
 proof-patch or ship-handoff relies on a review claim
 review-first mode needs a fresh review artifact
 repeated review/fix cycles need a persistent detached lane
@@ -174,9 +156,9 @@ repeated review/fix cycles need a persistent detached lane
 
 Review findings from `$cas`, GitHub, or humans still pass through `$review-fold` before implementation. Exhaustive review is not minimized away: when requested or required, it remains a blocking review gate until CAS is clean, blocked, or all findings have accepted dispositions with current-artifact proof.
 
-## Goal Scheme routing
+## Goal workflow routing
 
-Use the goal scheme as the default recursive loop for material coding goals:
+Use the goal workflow as the default loop for material coding goals:
 
 ```text
 $goal-actuating
@@ -191,7 +173,7 @@ $goal-actuating
 State selection:
 
 - Use `update_plan` for concise, user-visible, in-memory steps.
-- Use `.goal/*` only when a material loop needs replayable attempts, evidence, or memo rows and those artifacts are publishable under repo hygiene rules.
+- Use `.goal/*` only when the state is ignored or explicitly local-only.
 - Use `$st` when a goal needs durable workspace coordination, resource claims, fencing tokens, independent worktrees, serialized integration, or existing `.step/st-plan.jsonl` continuity.
 
 Do not create a receipt unless it affects routing, validation, authority, stopping, comparison, or future behavior.
