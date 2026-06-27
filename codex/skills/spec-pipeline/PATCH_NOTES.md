@@ -1,26 +1,35 @@
 # Patch Notes
 
-Version: `2.1.0`
+Version: `2.1.1`
 
-Adds automatic same-turn `$plan` handoff when `$spec-pipeline` recommends it.
+Clarifies lane selection for automatic same-turn `$plan` handoff.
 
-Key change:
+Key correction:
 
 ```text
-SGR-v2 complete + lane=spec_to_plan + plan_allowed=yes + lint pass
-+ execution_handoff.next_owner=$plan + no blockers
-= same-turn $plan tail-call
+explicit $spec-pipeline invocation
+!= spec_only request
 ```
 
-The change is fail-closed:
+In `full` mode, default to `lane=spec_to_plan` unless the user explicitly asks
+for spec-only/no-plan output or a material gate blocks planning. A successful,
+plan-ready SGR-v2 must tail-call `$plan` or emit `AUTO_PLAN_HANDOFF_REQUIRED` if
+same-turn loading is unavailable.
+
+This prevents the regression where an assistant chooses `spec_only` because the
+user invoked `$spec-pipeline` rather than separately invoking `$plan`.
+
+Retains the existing fail-closed rules:
 
 - no `<proposed_plan>` from `$spec-pipeline`;
 - no auto-plan from gate-only, challenge-only, or lint-only modes;
-- no auto-plan with drift, open material questions, failed lint, open subagents, or `do_not_execute_before` blockers;
-- if the runtime cannot load `$plan`, emit `AUTO_PLAN_HANDOFF_REQUIRED` rather than silently stopping.
+- no auto-plan with drift, open material questions, failed lint, open subagents,
+  or `do_not_execute_before` blockers;
+- if the runtime cannot load `$plan`, emit `AUTO_PLAN_HANDOFF_REQUIRED` rather
+  than silently stopping or converting to `spec_only`.
 
 Adds:
 
-- `references/auto-plan-tail-call.md`
-- `tools/auto_plan_handoff_gate.py`
-- fixtures and tests for eligible and blocked handoffs
+- `references/lane-selection.md`
+- clarified `references/auto-plan-tail-call.md`
+- updated OpenAI metadata prompt with the `spec_to_plan` default rule
