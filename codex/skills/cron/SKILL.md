@@ -41,8 +41,13 @@ run_cron_tool() {
     install -m 0755 "$repo/zig-out/bin/cron" "$HOME/.local/bin/cron"
   }
 
+  cron_is_native_zig() {
+    command -v cron >/dev/null 2>&1 &&
+      cron --help 2>&1 | grep -q "Manage Codex automations with native Zig runtime"
+  }
+
   local os="$(uname -s)"
-  if command -v cron >/dev/null 2>&1 && cron --help 2>&1 | grep -q "cron.zig"; then
+  if cron_is_native_zig; then
     cron "$@"
     return
   fi
@@ -56,13 +61,13 @@ run_cron_tool() {
       echo "brew install tkersey/tap/cron failed." >&2
       return 1
     fi
-  elif ! (command -v cron >/dev/null 2>&1 && cron --help 2>&1 | grep -q "cron.zig"); then
+  elif ! cron_is_native_zig; then
     if ! install_cron_direct; then
       return 1
     fi
   fi
 
-  if command -v cron >/dev/null 2>&1 && cron --help 2>&1 | grep -q "cron.zig"; then
+  if cron_is_native_zig; then
     cron "$@"
     return
   fi
