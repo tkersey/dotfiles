@@ -1,20 +1,14 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Execute one fenced plan through integration and PR delivery"
+  short_description: "Workflow facade for $spec-pipeline -> $goal-actuating"
   default_prompt: >-
-    Use $actuating as a transaction controller for one explicit plan in
-    .ledger/st. Bind the session, obtain a conflict-free workspace claim and
-    fencing token, require current GCR-v2, and emit APMA-v1 before any
-    actuation-labeled patch. No APMA-v1 with mutation-authorized verdict means
-    no apply_patch, no editor write, no shell mutation, no proof write, and no
-    changeset seal under $actuating. If GCR-v2 denies execution because compile
-    made the session view, plan sequence, workspace sequence, or branch epoch
-    stale, stop immediately, release held claims when safe, mark actuation
-    blocked on tooling, and do not continue as $actuating. Realize only inside
-    the claimed external worktree, record branch-epoch proof, seal a change set,
-    and let the serialized st integrator advance the target branch. After
-    proof-complete integration, do not stop early when PR delivery was requested
-    or inherited from a plan-to-PR run: emit ADD-v1 and hand the integrated
-    target-branch state to $ship when ADD-v1 verdict is handoff_to_ship.
+    Use $actuating as an explicit /goal workflow facade. First establish semantic
+    closure with $spec-pipeline when an accepted SGR-v2/spec is not already
+    present, then hand the accepted spec to $goal-actuating. $actuating chooses
+    direct-goal, spec-first, review-first, dry-plan, or st-governed mode, but it
+    does not directly mutate code. Review pressure must pass through
+    $review-fold before implementation. Use st-governed mode only when durable
+    claims, fencing, worktrees, serialized integration, or existing $st state
+    must own execution.
