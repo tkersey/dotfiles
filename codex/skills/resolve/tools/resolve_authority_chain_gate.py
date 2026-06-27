@@ -22,6 +22,10 @@ IN_HORIZON_RELATIONS = {
     "compatibility_required",
     "forbidden_state_witness",
 }
+MUTATION_BATCH_MODES = {
+    "discovery",
+    "conformance",
+}
 NON_MUTATING_RELATIONS = {
     "contract_invalidating",
     "outside_horizon",
@@ -116,6 +120,7 @@ def validate(chain: Dict[str, Any]) -> Dict[str, Any]:
         "batch.mode",
         "compression.ceb_id",
         "compression.class_id",
+        "compression.quotient_witness_ref",
         "compression.mbk_id",
         "compression.rc_id",
         "compression.transition_ref",
@@ -202,9 +207,12 @@ def validate(chain: Dict[str, Any]) -> Dict[str, Any]:
             "new_witness_existing_class",
         }:
             mutation_violations.append("cex_not_novel")
-        if str(get(chain, "batch.mode", "")).strip() == "terminal_holdout":
+        batch_mode = str(get(chain, "batch.mode", "")).strip()
+        if batch_mode == "terminal_holdout":
             mutation_violations.append("terminal_holdout_not_mutation_authority")
             mutation_violations.append("unsealed_batch")
+        elif batch_mode not in MUTATION_BATCH_MODES:
+            mutation_violations.append("batch_mode_not_mutation_authority")
         if not truthy(get(chain, "realization.allowed")):
             mutation_violations.append("realization_not_allowed")
         if relation in NON_MUTATING_RELATIONS:

@@ -39,7 +39,18 @@ def main(argv: List[str] | None = None) -> int:
     try:
         chain = auth.unwrap(auth.load_data(args.chain))
         if args.review_claim_id and auth.get(chain, "review_claim.claim_id") != args.review_claim_id:
-            raise ValueError(f"review claim id mismatch: expected {args.review_claim_id}")
+            out = {
+                "mutation_allowed": False,
+                "status": "blocked",
+                "reason": "uncompiled_review_text",
+                "missing": [],
+                "violations": [f"review_claim_mismatch:expected:{args.review_claim_id}"],
+                "chain_id": auth.get(chain, "chain_id"),
+                "campaign_id": auth.get(chain, "campaign_id"),
+                "legal_next_actions": LEGAL_NEXT_ACTIONS,
+            }
+            print(json.dumps(out, indent=2, sort_keys=True) if args.format == "json" else text(out))
+            return 2
         result = auth.validate(chain)
     except Exception as exc:
         out = {

@@ -52,6 +52,8 @@ def load_jsonl(path: Optional[str]) -> List[Dict[str, Any]]:
 
 def get(row: Dict[str, Any], *paths: str, default: Any = None) -> Any:
     for path in paths:
+        if path in row:
+            return row[path]
         cur: Any = row
         ok = True
         for part in path.split("."):
@@ -97,7 +99,7 @@ def run_id(row: Dict[str, Any], index: int) -> str:
 
 
 def campaign_id(row: Dict[str, Any]) -> str:
-    return str(get(row, "campaign_id", "campaign.id", default="") or "").strip()
+    return str(get(row, "campaign_id", "campaign.id", "campaign", default="") or "").strip()
 
 
 def campaign_ids(summary: Any, rows: List[Dict[str, Any]]) -> List[str]:
@@ -107,6 +109,14 @@ def campaign_ids(summary: Any, rows: List[Dict[str, Any]]) -> List[str]:
         if single:
             ids.append(single)
         campaigns = summary.get("campaigns")
+        if isinstance(campaigns, dict):
+            for key, item in campaigns.items():
+                if isinstance(item, dict):
+                    ident = str(get(item, "campaign_id", "campaign.id", default=key) or key).strip()
+                else:
+                    ident = str(key).strip()
+                if ident:
+                    ids.append(ident)
         if isinstance(campaigns, list):
             for item in campaigns:
                 if not isinstance(item, dict):
@@ -145,6 +155,9 @@ def summary_for_campaign(summary: Any, campaign: str) -> Any:
     if str(get(summary, "campaign_id", default="") or "").strip() == campaign:
         return summary
     campaigns = summary.get("campaigns")
+    if isinstance(campaigns, dict):
+        item = campaigns.get(campaign)
+        return item if isinstance(item, dict) else {}
     if isinstance(campaigns, list):
         for item in campaigns:
             if isinstance(item, dict) and str(get(item, "campaign_id", default="") or "").strip() == campaign:
@@ -155,17 +168,20 @@ def summary_for_campaign(summary: Any, campaign: str) -> Any:
 
 
 def is_material(row: Dict[str, Any]) -> bool:
-    marker = get(row, "material", "is_material", "campaign.material", default=None)
-    if marker is not None:
-        return truthy(marker)
-    return (
+    signal = (
         truthy(get(row, "c3_required", "c3.required", default=False))
         or truthy(get(row, "delivery_closed", "delivery.closed", default=False))
         or truthy(get(row, "finding_bearing_workflow", default=False))
     )
+    marker = get(row, "material", "is_material", "campaign.material", default=None)
+    if marker is not None:
+        return truthy(marker) or signal
+    return signal
 
 
 def finding_bearing(row: Dict[str, Any]) -> bool:
+    if truthy(get(row, "finding_bearing_workflow", default=False)):
+        return True
     findings = get(row, "findings_total", "findings.total", "raw_findings", default=None)
     if findings is not None:
         return num(findings) > 0
@@ -198,10 +214,11 @@ def evaluate_run(row: Dict[str, Any], index: int) -> List[Dict[str, str]]:
     c3_closed = truthy(get(row, "c3_closed", "c3.closed", default=False))
     delivery_closed = truthy(get(row, "delivery_closed", "delivery.closed", default=False))
     terminal_closed = truthy(get(row, "terminal_closed", "terminal.closed", default=False))
-    compression_state = str(get(row, "compression_state", "compression.state", default="")).upper()
+    compression_state = str(get(row, "compression_state", "compression.state", default="")).strip().upper()
     batches_total = num(get(row, "batches_total", "batches.total", default=0))
     kernel_accepted = truthy(get(row, "kernel.accepted", "kernel_accepted", default=False))
-    strict_progress = truthy(get(row, "potential.strict_progress", "strict_progress", "potential_strict_progress", default=False))
+    strict_progress = num(get(row, "potential.strict_progress", "strict_progress", "potential_strict_progress", default=0))
+    closure_gate_status = str(get(row, "closure_gate.status", "closure_gate_status", "closure.status", default="")).strip().lower()
     semantic_surface_delta = num(get(row, "semantic_surface_delta", "semantic_surface.delta", default=0))
     ac_rebased = truthy(get(row, "ac_rebased", "acceptance.rebased", default=False))
     orphan_code_constructs = max(
@@ -242,7 +259,9 @@ def evaluate_run(row: Dict[str, Any], index: int) -> List[Dict[str, str]]:
         out.append(violation("run", ident, "delivery_not_closed", "delivery_closed=false for material run"))
     if delivery_closed and not terminal_closed:
         out.append(violation("run", ident, "delivery_closed_without_terminal_closure", "delivery_closed=true while terminal_closed=false"))
-    if material and not strict_progress:
+    if material and closure_gate_status != "passed":
+        out.append(violation("run", ident, "closure_gate_not_passed", "closure_gate.status is not passed for material run"))
+    if material and strict_progress <= 0:
         out.append(violation("run", ident, "strict_progress_zero", "potential.strict_progress is false/zero for material campaign"))
     if orphan_code_constructs > 0:
         out.append(violation("run", ident, "orphan_code_constructs", f"orphan_code_constructs={orphan_code_constructs:g}"))
