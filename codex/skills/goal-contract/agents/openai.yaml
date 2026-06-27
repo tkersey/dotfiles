@@ -2,10 +2,10 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Goal Contract"
-  short_description: "Compile /goal intent into outcome, verifier, constraints, modes, authority, and stop rules"
+  short_description: "Turn /goal intent into outcome, checks, constraints, authority, and stop rules"
   default_prompt: >-
-    Use $goal-contract to produce a compact GC-v1 GoalContract before recursive
-    goal work. Bind outcome, verifier, constraints, review policy, authority,
+    Use $goal-contract to create a compact goal contract before recursive goal
+    work. Bind outcome, verification, constraints, review policy, authority,
     persistence mode, stop conditions, and human-owned ambiguity. Research
     discoverable facts first and hand off to $grill-me only for material
     user-owned decisions.
