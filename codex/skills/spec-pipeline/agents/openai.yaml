@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Spec Pipeline"
   short_description: "Canonical current-spec engine with automatic $plan handoff"
