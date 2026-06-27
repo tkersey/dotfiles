@@ -1,6 +1,6 @@
 ---
 name: review-fold
-description: "Compress review pressure into intent-anchored review work: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent one-patch-per-comment churn. Use for PR review loops, CAS findings, reviewer suggestions, and review-like claims."
+description: "Compress review pressure into intent-anchored review work: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent one-patch-per-comment churn. Use after $cas review, PR review comments, CAS findings, reviewer suggestions, and review-like claims."
 metadata:
   version: "1.0.0"
   activation_cost: medium
@@ -21,6 +21,16 @@ review comments + goal contract + current diff
 
 This skill is the review-specific evidence fold for the recursive goal scheme. It complements `$review-adjudication`: use `$review-adjudication` for detailed CEX-v1 claim law; use `$review-fold` to control the whole review loop and pick the smallest correct response.
 
+`$review-fold` consumes review findings. It does not replace code review. When the workflow needs to perform fresh, adversarial, or exhaustive code review, the review source must be `$cas`.
+
+## Review source rule
+
+```text
+workflow-initiated code review -> $cas review -> $review-fold -> implementation only for accepted liabilities
+```
+
+Existing PR comments, human reviewer comments, or prior CAS verdicts may be folded directly as review pressure. But if the workflow itself is asked to do code review, close review, run adversarial review, or satisfy a review proof bar, it must obtain that review through `$cas` first.
+
 ## Review fold schema
 
 ```yaml
@@ -29,7 +39,12 @@ review_fold:
   goal_id:
   source:
     pr:
-    comments: []
+    review_backend: github-comments|cas-review-session|human-review|prior-artifact
+    cas_review:
+      required: yes|no
+      mode: none|cas-probe|cas-lane|cas-exhaustive
+      verdict_ref:
+      lane_ref:
   intent_anchor:
     original_goal:
     accepted_scope:
@@ -94,15 +109,29 @@ Compare two or more plausible fix/refactor strategies under the same verifier.
 
 Hand off to `$st` when review remediation requires durable resource claims, external worktrees, or serialized integration.
 
+## Exhaustive review behavior
+
+When the source is `cas-exhaustive`, do not treat review as optional or merely advisory. Continue review/fix/fold cycles until one of these holds:
+
+```text
+CAS review is clean
+all CAS findings are dispositioned with current-artifact proof
+CAS review is blocked and the blocker is reported
+user explicitly lowers the review proof bar
+```
+
+`$review-fold` may reject or mark findings proof-only, but it must not convert an exhaustive review gate into a no-review closure.
+
 ## Procedure
 
 1. Bind reviews to the original goal and current diff.
-2. Classify each finding before any implementation.
-3. Collapse duplicates and same-family comments.
-4. Decide whether the proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
-5. Produce a small work graph only for accepted liabilities.
-6. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof.
-7. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
+2. If fresh/exhaustive workflow code review is required and no CAS result is present, stop and request `$cas` review.
+3. Classify each finding before any implementation.
+4. Collapse duplicates and same-family comments.
+5. Decide whether the proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
+6. Produce a small work graph only for accepted liabilities.
+7. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof.
+8. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
 
 ## Guardrails
 
@@ -110,4 +139,5 @@ Hand off to `$st` when review remediation requires durable resource claims, exte
 - Do not add code to satisfy style or speculation when proof or rejection is correct.
 - Do not accept scope expansion without user authority.
 - Do not miss the refactor when many comments share one owner boundary.
+- Do not replace a requested or required CAS review with non-CAS critique.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.
