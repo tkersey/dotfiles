@@ -1,0 +1,11 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Review Fold"
+  short_description: "Classify review findings and choose reject, proof-only, minimal-fix, or refactor-kernel"
+  default_prompt: >-
+    Use $review-fold for PR comments, CAS findings, reviewer suggestions, or
+    review-like claims. Bind findings to the original goal and current diff,
+    compress duplicates, classify liability and intent relation, and choose
+    adjudicate-only, proof-only, minimal-fix, refactor-kernel, branch-race, or
+    st-governed before any code change.
