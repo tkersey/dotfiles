@@ -5,6 +5,6 @@ interface:
   short_description: "Reduce tests, diffs, logs, reviews, and artifact state into a progress verdict"
   default_prompt: >-
     Use $evidence-fold after verification, review classification, branch races,
-    or material diffs. Return EF-v1 with done/continue/regress/blocked/
-    invalid-proof/ask-human/refactor-kernel, anti-gaming checks, proof gaps, and
-    exactly one next action.
+    or material diffs. Return a concise verdict: done, continue, regress,
+    blocked, invalid-proof, ask-human, or refactor-kernel. Include anti-gaming
+    checks, proof gaps, and exactly one next action.
