@@ -17,7 +17,7 @@ Unfold a goal into an explicit work structure.
 GoalContract -> WorkGraph
 ```
 
-This is the anamorphic side of the goal runtime: it produces the next shape of work without pretending a linear plan is always the right model.
+This produces the next shape of work without pretending a linear plan is always the right model.
 
 ## Work node schema
 
@@ -46,7 +46,7 @@ work_graph:
   version: WG-v1
   goal_id:
   mode: direct|goal|review|debug|migration|hardening|st-governed
-  persistence: update_plan|goal-workgraph|st-required
+  persistence: update_plan|goal-artifacts|st
   nodes: []
   frontier_policy: highest-risk-first|verifier-first|dependency-order|representative-class-first|branch-race
   combine_policy: all-pass|best-branch|proof-sufficient|human-select
@@ -63,7 +63,7 @@ work_graph:
 3. For repeated failures, make one representative node and attach a `memo_key`.
 4. For reviews, group comments by liability and kernel rather than one node per comment.
 5. For competing strategies, create `branch` nodes only when alternatives can be isolated and compared by the same verifier.
-6. For high-risk mutation or overlapping resource claims, mark `persistence: st-required` and stop for `$st`.
+6. For high-risk mutation or overlapping resource claims, mark `persistence: st` and stop for `$st`.
 7. Emit the graph and the next ready frontier.
 
 ## Reabstraction trigger

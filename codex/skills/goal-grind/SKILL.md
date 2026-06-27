@@ -22,7 +22,7 @@ Use the smallest state artifact that can keep the loop honest.
 ## Loop state
 
 For lightweight goals, state may be kept in the answer and `update_plan`.
-For material goals, use a local `.goal/` directory unless the repository policy forbids it:
+For material goals, use a local `.goal/` directory only when it is ignored or explicitly local-only for the repository:
 
 ```text
 .goal/contract.yml

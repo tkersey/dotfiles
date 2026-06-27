@@ -2,11 +2,11 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Workflow for $spec-pipeline -> $goal-actuating"
+  short_description: "Workflow for $spec-pipeline then $goal-actuating"
   default_prompt: >-
     Use $actuating as the explicit /goal workflow. First get an accepted
-    implementation spec from $spec-pipeline when one is not already available,
-    then hand that accepted spec to $goal-actuating. Fresh or exhaustive review
-    must use $cas review, and findings must pass through $review-fold before any
-    implementation. Use $st mode only when durable coordination or existing $st
-    state must own execution.
+    implementation spec from $spec-pipeline in gate-only/no-plan mode when one is
+    not already available, then hand that accepted spec to $goal-actuating.
+    Fresh or exhaustive review must use $cas review, and findings must pass
+    through $review-fold before any implementation. Use $st mode only when
+    durable coordination or existing $st state must own execution.

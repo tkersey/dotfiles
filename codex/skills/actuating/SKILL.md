@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "User-facing workflow for implementation after spec work. Use `/goal $actuating` to run `$spec-pipeline -> $goal-actuating`: get an accepted implementation spec, choose the execution mode, require $cas for workflow review, implement through the goal runtime, and close with current-artifact proof."
+description: "User-facing workflow for implementation after spec work. Use `/goal $actuating` to run `$spec-pipeline` then `$goal-actuating`: get an accepted implementation spec, choose the execution mode, require $cas for workflow review, implement through the goal runtime, and close with current-artifact proof."
 metadata:
   version: "6.0.0"
   activation_cost: medium
@@ -15,7 +15,7 @@ Run the implementation workflow without making the user manage the lower-level g
 
 ```text
 implementation request or draft spec
--> $spec-pipeline when the implementation spec is not yet accepted
+-> $spec-pipeline in gate-only/no-plan mode when the implementation spec is not yet accepted
 -> $goal-actuating
 -> proof-bearing result
 ```
@@ -52,14 +52,14 @@ In that mode, `$actuating` hands off to `$goal-actuating`, which then routes thr
 ### Spec-first implementation
 
 ```text
-$spec-pipeline on <draft implementation spec>
+$spec-pipeline on <draft implementation spec> in gate-only/no-plan mode
 /goal $actuating implement the accepted spec
 ```
 
 The workflow performs:
 
 ```text
-1. Accept or refresh the implementation spec with $spec-pipeline.
+1. Accept or refresh the implementation spec with $spec-pipeline in gate-only/no-plan mode.
 2. Treat the accepted spec as the source of truth.
 3. Invoke $goal-actuating in spec-first mode.
 4. Derive a goal contract from the accepted spec.
@@ -79,7 +79,7 @@ Use when the user goal already contains scope, non-goals, done state, constraint
 /goal $actuating <objective>, verified by <checks>, preserving <constraints>
 ```
 
-If the request is still ambiguous, `$actuating` must call `$spec-pipeline` or stop as blocked rather than inventing scope.
+If the request is still ambiguous, `$actuating` must call `$spec-pipeline` in gate-only/no-plan mode or stop as blocked rather than inventing scope.
 
 ### Review-first implementation
 
@@ -133,7 +133,7 @@ review findings bound to current diff and intended change
 plan handoff / $st handoff for st-governed mode
 ```
 
-If none exists, run `$spec-pipeline` or stop with:
+If none exists, run `$spec-pipeline` in gate-only/no-plan mode or stop with:
 
 ```yaml
 actuating_status:
