@@ -1,618 +1,221 @@
 ---
 name: actuating
-description: "Plan-to-PR execution controller for one named plan inside the multi-plan `$st` workspace. Use for `$actuating`, implementing a material plan, resuming an actuation run, or driving one execution-policy action. Mutation is forbidden until APMA-v1 proves a current GCR-v2 with execution_allowed=yes, current claim, current fencing token, current branch epoch, selected task IDs, and resource coverage for the intended edit. Workers produce fenced change sets; target-branch integration is serialized through `$st`; proof-complete handoff must continue to `$ship` when PR delivery is requested."
+description: "User-facing workflow façade for implementation after spec work. Use as `/goal $actuating` to run `$spec-pipeline -> $goal-actuating`: close or validate semantic spec, lower the accepted SGR-v2/spec into GC-v1, choose lightweight/review-first/st-governed mode, execute through the recursive goal runtime, and close with current-artifact proof."
 metadata:
-  version: "5.2.0"
-  activation_cost: high
-  default_depth: standard
+  version: "6.0.0"
+  activation_cost: medium
+  default_depth: high
 ---
 
 # Actuating
 
 ## Mission
 
-Drive one plan through bounded, proof-carrying execution without conflicting with other plans or agents.
+Run the spec-to-implementation workflow without exposing the lower-level recursion machinery.
 
 ```text
-named plan
--> session binding
--> workspace allocation
--> fenced claim
--> GCR-v2
--> APMA-v1 pre-mutation authority
--> bounded semantic/action slice
--> isolated realization
--> focused proof
--> sealed change set
--> serialized integration
--> branch-epoch proof refresh
--> ADD-v1 delivery decision
--> `$ship` PR handoff when requested
+user implementation intent / draft spec / accepted SGR-v2
+-> $spec-pipeline when semantic closure is not yet proven
+-> $goal-actuating
+-> proof-bearing result
 ```
 
-`$actuating` is not an implementer. It is a transaction controller. Code mutation is legal only after the controller is the upstream authority.
-
-## Non-negotiable authority invariant
+`$actuating` is now a workflow façade. It is the skill to invoke when you want to say:
 
 ```text
-No APMA-v1 mutation-authorized receipt
-= no actuation-labeled patch
+/goal $actuating implement the spec
 ```
 
-APMA-v1 must prove all of the following before any `apply_patch`, editor write, shell mutation, proof write, change-set seal, or integration step in an actuation-labeled run:
+It does not directly own code mutation, resource claims, or review patching. It routes to the owner that should act.
+
+## Relation to the old execution controller
+
+The former `$actuating` transaction-controller role is now the **st-governed mode** of this workflow.
+
+Use st-governed execution when the accepted spec or plan requires:
 
 ```text
-GCR-v2 execution_allowed = yes
-current workspace sequence
-current plan sequence
-current branch epoch
-current held claim
-current fencing token
-current session projection
-nonempty selected task IDs
-no conflicting claim
-no unwaived graph debt
-intended edit resources covered by claim resources
+PSR-v1 / stable plan identity
+.ledger/st or .step/st-plan.jsonl continuity
+resource claims
+fencing tokens
+external worktrees
+serialized integration
+branch-epoch proof
+multi-plan coordination
 ```
 
-Use:
+In that mode, `$actuating` must hand off to `$goal-actuating` with `mode: st-governed`, which then routes through `$st` and `$fixed-point-driver`. Do not perform direct mutation while still claiming fenced actuation authority.
 
-```bash
-uv run python codex/skills/actuating/tools/actuation_authority_gate.py \
-  authorize \
-  --gcr <gcr-v2.json> \
-  --run-id <run-id> \
-  --path <repo-relative-file-or-dir> \
-  --out .ledger/actuating/<run-id>/apma-v1.json
-```
+## Normal user flow
 
-Then, immediately before the patch, check the exact intended path/resource:
-
-```bash
-uv run python codex/skills/actuating/tools/actuation_authority_gate.py \
-  check \
-  --apma .ledger/actuating/<run-id>/apma-v1.json \
-  --path <repo-relative-file-or-dir>
-```
-
-A failed check is a hard stop.
-
-See [pre-mutation-interlock.md](references/pre-mutation-interlock.md).
-
-## Artifact root
-
-Persist actuation control under:
+### Spec-first implementation
 
 ```text
-.ledger/actuating/<run-id>/
+$spec-pipeline on <draft implementation spec>
+/goal $actuating implement the accepted spec
 ```
 
-References to plan, claim, proof, change sets, and integration receipts remain authoritative at their owning paths under:
+The workflow performs:
 
 ```text
-.ledger/st/
+1. Find or create semantic closure with $spec-pipeline.
+2. Treat SGR-v2 / implementation_spec.md as semantic authority.
+3. Invoke $goal-actuating in spec-first mode.
+4. Derive GC-v1 from the accepted spec.
+5. Choose update_plan, goal-artifacts, or st-governed persistence.
+6. Use review-fold before any review-originated code change.
+7. Execute accepted work through goal-grind or st-governed slices.
+8. Fold evidence after material verification.
+9. Emit proof-patch or ship handoff.
 ```
 
-Never create new actuation artifacts under `.step/`.
+### Direct goal implementation
 
-## Required run identity
+Use when the user goal already contains scope, non-goals, done state, constraints, and proof surface:
+
+```text
+/goal $actuating <objective>, verified by <checks>, preserving <constraints>
+```
+
+If semantic closure is incomplete, `$actuating` must call `$spec-pipeline` or return a semantic-blocked result rather than inventing execution scope.
+
+### Review-first implementation
+
+Use when the work is review closure:
+
+```text
+/goal $actuating close the review for this branch
+```
+
+The workflow starts with `$review-fold` through `$goal-actuating`:
+
+```text
+raw review pressure
+-> classify and compress
+-> reject | proof-only | minimal-fix | refactor-kernel | ask-human | follow-up
+-> implement only accepted code-change liabilities
+-> evidence-fold
+-> proof-patch
+```
+
+Raw review prose never reaches implementation directly.
+
+### Dry actuation plan
+
+Use when the user wants to inspect execution shape but not mutate:
+
+```text
+/goal $actuating dry-plan the accepted spec
+```
+
+Output only:
+
+```text
+GC-v1 summary
+mode selection
+optional WG-v1 frontier
+st-required? yes/no
+proof obligations
+blockers
+```
+
+## Required source handling
+
+Before running `$goal-actuating`, establish one of:
+
+```text
+accepted SGR-v2 with planning/execution allowed
+accepted implementation_spec.md with no unresolved semantic blockers
+direct user goal with enough proof surface to derive GC-v1
+review findings bound to current diff and intended change
+PSR-v1 / st handoff for st-governed mode
+```
+
+If none exists, run `$spec-pipeline` or stop with:
 
 ```yaml
-actuation_run:
-  run_id:
-  workspace: .ledger/st
-  plan_id:
-  session_id:
-  executor:
-  target_branch:
-  actuation_root: .ledger/actuating/<run-id>
+actuating_status:
+  verdict: semantic_blocked
+  next_owner: $spec-pipeline|$grill-me|$codebase-doctrine
+  reason:
 ```
 
-One run controls one plan and one current session binding. It may observe other plans through workspace receipts but may not mutate their graphs.
+## Spec-to-runtime lowering
 
-## Capability gate
-
-Require current `st` capabilities:
+`$actuating` owns the handoff, not the internals. It should ask `$goal-actuating` to map:
 
 ```text
-workspace_v1
-workspace_claim_v1
-fencing_token_v1
-session_view_v1
-changeset_v1
-serialized_integration_v1
-gcr_v2
+implementation spec / SGR-v2 -> GC-v1 GoalContract
+GC-v1 -> WorkGraph only if decomposition changes execution
+WorkGraph -> goal-grind frontier
+verification output -> evidence-fold verdict
+review pressure -> review-fold disposition before code
+completion -> proof-patch or ship handoff
 ```
 
-Probe when uncertain:
+## Mode selection
 
-```bash
-st capabilities --format json
-```
-
-If any required capability is unavailable:
-
-```text
-analysis, plan repair, and proof planning allowed
-material mutation and delivery forbidden
-```
-
-## Phase 1 — bind the plan and session
-
-```bash
-st session bind \
-  --workspace .ledger/st \
-  --session <session-id> \
-  --executor <executor-id> \
-  --plan <plan-id>
-```
-
-Do not infer the plan when multiple plans are active.
-
-## Phase 2 — compile current plan state
-
-For a healthy existing plan:
-
-```bash
-st graph audit \
-  --workspace .ledger/st \
-  --plan <plan-id> \
-  --gate implementation-ready \
-  --format json
-```
-
-For a new plan, complete the `$st` intake path under:
-
-```text
-.ledger/st/plans/<plan-id>/intake/
-```
-
-Plan-local graph readiness does not grant mutation.
-
-## Phase 3 — workspace allocation and claim
-
-Inspect global allocation:
-
-```bash
-st workspace aperture \
-  --workspace .ledger/st \
-  --executors <executor-id> \
-  --format json
-```
-
-Grant a resource claim for the exact intended mutation boundary:
-
-```bash
-st claim grant \
-  --workspace .ledger/st \
-  --session <session-id> \
-  --executor <executor-id> \
-  --resources write:path:<repo-relative-file-or-dir>
-```
-
-Record:
-
-```text
-claim ID
-fencing token
-workspace sequence
-plan sequence
-branch epoch
-resource set
-external worktree metadata ref when created
-```
-
-If claim is denied, do not work around it by narrowing paths in prose, opening another plan file, or editing directly while still claiming `$actuating` authority.
-
-## Phase 4 — bind claim and compile GCR-v2
-
-Re-bind the session with the held claim and fencing token when the installed CLI supports it:
-
-```bash
-st session bind \
-  --workspace .ledger/st \
-  --session <session-id> \
-  --executor <executor-id> \
-  --plan <plan-id> \
-  --claim <claim-id> \
-  --fencing-token <token>
-```
-
-Compile the current GCR-v2 authority receipt:
-
-```bash
-st compile aperture \
-  --workspace .ledger/st \
-  --plan <plan-id> \
-  --session <session-id> \
-  --claim <claim-id> \
-  --fencing-token <token> \
-  --expect-workspace-seq <workspace-seq> \
-  --expect-plan-seq <plan-seq> \
-  --expect-branch-epoch <branch-epoch> \
-  --format json > .ledger/actuating/<run-id>/gcr-v2.json
-```
-
-Validate if needed:
-
-```bash
-uv run python codex/skills/st/tools/gcr_v2_gate.py \
-  .ledger/actuating/<run-id>/gcr-v2.json
-```
-
-Then emit APMA-v1 with the intended mutation resource:
-
-```bash
-uv run python codex/skills/actuating/tools/actuation_authority_gate.py \
-  authorize \
-  --gcr .ledger/actuating/<run-id>/gcr-v2.json \
-  --run-id <run-id> \
-  --path <repo-relative-file-or-dir> \
-  --out .ledger/actuating/<run-id>/apma-v1.json
-```
-
-`update_plan` remains projection only. It never substitutes for GCR-v2 or APMA-v1.
-
-## Self-invalidating GCR stop rule
-
-If GCR-v2 denies execution because the session view, workspace sequence, plan sequence, or branch epoch became stale during aperture compilation, classify the path as:
-
-```text
-blocked-self-invalidating-gcr-candidate
-```
-
-Run:
-
-```bash
-uv run python codex/skills/actuating/tools/actuation_authority_gate.py \
-  diagnose-gcr \
-  --gcr .ledger/actuating/<run-id>/gcr-v2.json
-```
-
-On that verdict:
-
-1. stop actuation immediately;
-2. do not retry blindly;
-3. do not mutate product files under `$actuating`;
-4. release any held claim when safe;
-5. mark the run blocked on `$st` authority tooling;
-6. repair `$st` so GCR compilation is non-self-invalidating, or explicitly leave `$actuating` before any direct implementation.
-
-A command that emits GCR-v2 must not invalidate the session projection it later validates.
-
-## Phase 5 — prepare one bounded slice
-
-The slice references:
-
-```text
-workspace/plan/session
-claim and fencing
-GCR-v2
-APMA-v1
-selected task IDs
-selected execution-policy action or semantic route
-owner and invariant
-patch/resource boundary
-proof obligations
-stop/new-observation conditions
-```
-
-No slice may widen the claim. A wider boundary requires:
-
-```text
-release or amend claim through `$st`
-re-run conflict analysis
-obtain new fencing authority
-compile a new GCR-v2
-emit a new APMA-v1
-```
-
-## Phase 6 — realize in the claimed worktree
-
-Invoke `$fixed-point-driver` only with:
-
-```text
-external worktree ref
-claim ID and fencing token
-GCR-v2 ID
-APMA-v1 ID
-resource roots
-base head and branch epoch
-selected normal form/action
-proof obligations
-surface budget
-```
-
-Workers must not:
-
-```text
-write the primary checkout
-stage the shared Git index
-commit/push the target branch
-edit another plan
-write outside claimed resources
-patch without APMA-v1
-```
-
-Before every patch call, the lead must verify APMA-v1 covers the intended edit path.
-
-## Phase 7 — proof and transition
-
-Run focused proof in the worker tree.
-
-Record proof under:
-
-```text
-.ledger/st/proof/<plan-id>/
-```
-
-Proof receipts bind:
-
-```text
-claim
-fencing token
-GCR-v2
-APMA-v1
-branch epoch
-tree digest
-dependency cut
-```
-
-A new observation that changes route, owner, required resources, or accepted behavior stops realization and returns to the plan/policy frontier.
-
-## Phase 8 — seal the change set
-
-```bash
-st changeset seal \
-  --workspace .ledger/st \
-  --claim <claim-id> \
-  --session <session-id> \
-  --fencing-token <token> \
-  --worktree <external-worktree> \
-  --id <changeset-id>
-```
-
-Require every changed path to be covered by the claim and by the APMA-v1 resource coverage used before mutation.
-
-## Phase 9 — integrate
-
-```bash
-st integrate enqueue \
-  --workspace .ledger/st \
-  --id <changeset-id>
-```
-
-The workspace integrator—not the worker—advances the target branch.
-
-After integration:
-
-```text
-branch epoch advances
-foreign proof invalidation is computed
-plan/session views become stale as needed
-next GCR-v2 must bind the new epoch
-next APMA-v1 must bind the new GCR-v2
-```
-
-If integration rebases or materially changes the patch, rerun affected proof.
-
-## Phase 10 — close the plan
-
-After all plan work is integrated:
-
-```bash
-st graph audit \
-  --workspace .ledger/st \
-  --plan <plan-id> \
-  --gate proof-complete \
-  --format json
-```
-
-Final plan delivery additionally requires:
-
-```text
-integration queue quiescent for the plan
-current target-branch epoch
-current final-tree proof
-no cross-plan blocker
-current PR/review state
-```
-
-Other active plans need not be complete unless their cross-plan dependencies block this plan’s terminal predicates.
-
-Proof-complete is not terminal when the actuation run, source handoff, or user request includes PR delivery intent.
-
-## Phase 11 — delivery decision and `$ship` handoff
-
-After proof-complete and serialized integration, emit or validate one ADD-v1 delivery decision:
-
-```bash
-uv run python codex/skills/actuating/tools/actuation_delivery_gate.py \
-  decide \
-  --context .ledger/actuating/<run-id>/delivery-context.json \
-  --out .ledger/actuating/<run-id>/delivery-decision.json
-```
-
-ADD-v1 classifies the terminal delivery state:
+Choose the narrowest mode that can complete safely:
 
 ```yaml
-actuation_delivery_decision:
-  decision_version: ADD-v1
-  verdict: handoff_to_ship | shipping_not_requested | blocked
-  run_id:
-  plan_id:
-  target_branch:
-  target_head:
-  branch_epoch:
-  proof_complete_receipt:
-  integrated_change_set_receipts: []
-  cross_plan_dependency_status: clear | blocked | unknown
-  pr_intent:
-    present: yes | no
-    source: user | actuation_run | source_handoff | none
-    requested_mode: ready | draft | update-existing | promote-draft | none
-  blocked_reasons: []
-  ship_handoff:
-    next_owner: $ship
-    ship_input: {}
+actuating_mode:
+  source: direct-goal|spec-first|review-first|dry-plan|st-governed
+  persistence: update_plan|goal-artifacts|st
+  implementation: proof-only|minimal-fix|refactor-kernel|branch-race
+  closure: proof-patch|ship-handoff|blocked
 ```
 
-Use `handoff_to_ship` only when all are true:
+Default:
 
 ```text
-proof-complete receipt is present and current
-integrated change-set receipts are present
-integration queue is quiescent for the plan
-target branch/head/epoch are current
-cross-plan dependency status is clear
-current PR state is inspected or explicitly unknown
-PR delivery intent is present
-no do_not_ship_before blocker remains
+spec-first + update_plan + minimal-fix + proof-patch
 ```
 
-PR delivery intent may come from:
+Switch to `review-first` when reviews/CAS findings/reviewer suggestions are present.
+Switch to `refactor-kernel` when repeated findings share an owner boundary.
+Switch to `st-governed` only when durable claims/fencing/worktrees/serialized integration are required.
+Switch to `ship-handoff` only when PR/publication intent is explicit or inherited from the accepted spec.
+
+## Stop rules
+
+Stop rather than implement when:
 
 ```text
-explicit user request to open/update/promote a PR
-source request shaped as plan-to-PR
-actuation_run.pr_mode = ready|draft|update-existing|promote-draft
-source handoff next owner = $ship
-```
-
-If ADD-v1 verdict is `handoff_to_ship`, immediately load `$ship` in the same turn and pass the integrated target-branch state. Do not pass a worker worktree. Do not stop at proof-complete.
-
-If ADD-v1 verdict is `shipping_not_requested`, report integrated/proof-complete state and explicitly say shipping was not requested.
-
-If ADD-v1 verdict is `blocked`, report the blocked reasons and do not invoke `$ship`.
-
-Validate ADD-v1 when needed:
-
-```bash
-uv run python codex/skills/actuating/tools/actuation_delivery_gate.py \
-  check \
-  --decision .ledger/actuating/<run-id>/delivery-decision.json
-```
-
-See [delivery-handoff.md](references/delivery-handoff.md).
-
-## Projection
-
-Prime only the bound session:
-
-```bash
-st prime \
-  --workspace .ledger/st \
-  --plan <plan-id> \
-  --session <session-id> \
-  --claim <claim-id> \
-  --mode aperture
-```
-
-Project only the emitted native-plan rows. Never publish another session’s view.
-
-## Heartbeats and compaction
-
-Before long proof or likely compaction:
-
-```bash
-st claim heartbeat \
-  --workspace .ledger/st \
-  --claim <claim-id> \
-  --session <session-id> \
-  --fencing-token <token>
-```
-
-Persist actuation checkpoint:
-
-```text
-.ledger/actuating/<run-id>/current.json
-```
-
-On resume, verify:
-
-```text
-claim still held
-fencing current
-workspace/plan sequence current
-branch epoch current
-worktree still bound to claim
-GCR-v2 still current for the next mutation
-APMA-v1 either current for the exact next resource or reissued
-```
-
-Any mismatch returns to workspace allocation.
-
-## Shipping
-
-`$ship` receives the integrated target-branch state, not a worker worktree.
-
-Pass exactly the ADD-v1 `ship_handoff.ship_input` fields derived from:
-
-```text
-plan ID
-integrated change-set receipts
-current target branch/head/epoch
-proof-complete plan receipt
-cross-plan dependency status
-explicit or inherited PR mode
-current PR state
-proof summary
-remaining follow-ups/blockers
-```
-
-`$actuating` does not merge. `$ship` opens, updates, or promotes a PR according to its readiness policy.
-
-A successful actuation run with PR intent is not closed until one of these is true:
-
-```text
-$ship created, updated, or promoted the PR and returned SHIP-v1
-ADD-v1 blocked shipping and named the missing condition
-ADD-v1 classified shipping_not_requested because no PR intent existed
+$spec-pipeline has not allowed planning/execution
+scope, non-goals, compatibility, or proof bar are unresolved
+review findings expand product/API scope
+raw review text has not been reduced to dispositions
+st-governed authority is required but absent
+verification regresses and the next action is not isolate/revert/prove
+public tracker or PR side effects would occur without explicit intent
 ```
 
 ## Final report
 
 ```text
-Actuation:
-- run / workspace / plan:
-- session / executor:
-- claim / fencing / resources:
-- GCR-v2:
-- APMA-v1:
-- ADD-v1 delivery decision:
-- selected action/tasks:
-- worker worktree:
-- focused proof:
-- change set:
-- integration receipt / branch epoch:
-- stale foreign proof:
-- plan graph closure:
-- PR mode / PR / SHIP-v1:
+Actuating:
+- source: direct goal | spec | SGR-v2 | PSR-v1 | review
+- semantic authority:
+- mode / persistence:
+- GC-v1 / WorkGraph:
+- review-fold disposition:
+- execution owner: goal-grind | st/fixed-point-driver | none
+- evidence-fold verdict:
+- proof-patch / ship handoff:
+- blockers / residual risk:
 ```
 
-If no APMA-v1 was emitted and checked, the final report must say:
+If no accepted spec or GC-v1 exists, say:
 
 ```text
-actuation mutation authority: absent
-actuation verdict: blocked or not-actuated
+actuation verdict: semantic-blocked
 ```
 
-Do not describe direct implementation as an actuation run.
+If st-governed authority is required but not obtained, say:
 
-## Hard rules
+```text
+actuation verdict: st-authority-blocked
+```
 
-- One actuation run owns one plan.
-- No plan inference when several plans are active.
-- No material mutation without current GCR-v2.
-- No actuation-labeled patch without APMA-v1.
-- No mutation without current fenced claim.
-- No boundary widening outside `$st`.
-- No worker writes to primary checkout or shared target branch.
-- No direct commit/push by worker agents.
-- Integration is serialized.
-- Proof is branch-epoch and APMA-bound.
-- Proof-complete graph audit is not terminal when PR delivery is requested.
-- No `$ship` handoff without ADD-v1 `handoff_to_ship`.
-- No public PR side effect without explicit or inherited PR intent.
-- Self-invalidating GCR is a hard stop, not a retry loop.
-- All new artifacts live under `.ledger/`.
+Do not describe direct implementation as a fenced actuation run.
