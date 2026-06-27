@@ -7,4 +7,4 @@ interface:
     check quotient congruence and essential abstractions, select winnowing operators,
     emit RC-v1, and propose reversible proof-bearing cuts. Do not implement unless asked.
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

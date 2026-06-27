@@ -1,3 +1,5 @@
+policy:
+  allow_implicit_invocation: false
 interface:
   display_name: "Accts"
   short_description: "Manage Codex account switching safely"

@@ -56,7 +56,7 @@ goal_actuating_mode:
 ## Procedure
 
 1. Locate the accepted spec, plan handoff, review input, or direct goal.
-2. If the work is not yet approved enough to execute, hand off to `$spec-pipeline` and stop.
+2. If the work is not yet approved enough to execute, hand off to `$spec-pipeline` in gate-only/no-plan mode and stop.
 3. Derive a goal contract with `$goal-contract`.
 4. Choose `update_plan`, `goal-artifacts`, or `$st` persistence.
 5. If the workflow performs fresh or exhaustive review, run `$cas` review.

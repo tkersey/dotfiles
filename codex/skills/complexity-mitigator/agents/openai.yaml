@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Complexity Mitigator"
   short_description: "Local factorization and winnowing preflight for tangled existing code."

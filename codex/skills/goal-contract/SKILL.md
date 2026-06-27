@@ -91,7 +91,7 @@ goal_contract:
 3. Separate observed facts from claims, proposals, and speculation.
 4. Name the success state and proof surface before work graph or mutation.
 5. Bind review policy if review comments, CAS findings, or review-like claims are involved.
-6. Choose a persistence level: `update_plan`, `goal-workgraph`, or `$st`.
+6. Choose a persistence level: `update_plan`, `goal-artifacts`, or `st`.
 7. Escalate to `$grill-me` only for material human-owned choices.
 8. Emit `GoalContract` and stop or hand off.
 

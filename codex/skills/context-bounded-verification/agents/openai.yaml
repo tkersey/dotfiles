@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Context Bounded Verification"
   short_description: "Bound software correctness, readiness, proof, and handoff claims to current evidence."

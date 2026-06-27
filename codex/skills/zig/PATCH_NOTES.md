@@ -69,7 +69,6 @@ implicit_triggers.md
 zig_semantic_route_gate.py
 zig_repo_closure_scan.py
 zig_proof_epoch.py
-regenerate_manifest.py
 ```
 
 ## Updated telemetry

@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Invariant Ace"
   short_description: "Authority-gated invariant design with counterexamples, owner/scope, induction, boundary, witness parity, and verification gates"
