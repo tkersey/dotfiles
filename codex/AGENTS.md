@@ -84,7 +84,7 @@ Never open, update, comment on, draft-to-post, or suggest public tracker activit
 - Never use broad reset/checkout/clean commands to erase working-tree state unless the user explicitly requests that exact destructive operation.
 - Treat `.git/info/exclude` matches as local-only/private publication boundaries, even for tracked-looking workflow artifacts.
 - If a path is already tracked but also matches `.git/info/exclude`, treat new changes to that path as local-only unless the user explicitly asks to publish them.
-- Before staging local-state artifacts such as `.step/st-plan.jsonl`, `.step/*.lock`, or `.learnings.jsonl`, run `git check-ignore -v --no-index PATH` when in doubt. If the source is `.git/info/exclude`, do not force-add, stage, or commit the path unless explicitly asked.
+- Before staging local-state artifacts such as `.step/st-plan.jsonl`, `.step/*.lock`, `.goal/*`, or `.learnings.jsonl`, run `git check-ignore -v --no-index PATH` when in doubt. If the source is `.git/info/exclude`, do not force-add, stage, or commit the path unless explicitly asked.
 
 ## Local Codex execution guidance
 
@@ -95,13 +95,15 @@ Routing order:
 1. **Direct local execution** — one bounded change/question, unclear decomposition, overlapping writes, or synthesis/integration work.
 2. **Frame/selection pass** — if the route is non-obvious, use Challenge Escalation before choosing a heavy workflow.
 3. **Planning/selection pass** — if the user supplies `SLICES.md`, `plan-N.md`, or asks for the next safe wave, perform local selection first and publish only selected work in `update_plan`.
-4. **Durable orchestration with `$st`** — explicit-only at root. Start it only when the user asks, or continue it when `.step/st-plan.jsonl` already participates in the task. Do not introduce `$st` merely because work is multi-step.
-5. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
-6. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
-7. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
-8. **Recursive orchestration** — encourage when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches.
+4. **Recursive goal scheme** — for `/goal`, long-running coding tasks, hard debugging, review closure, migrations, or repeated verification loops, prefer `$goal-contract -> $goal-workgraph when needed -> $goal-grind -> $evidence-fold -> $proof-patch`.
+5. **Review reducer** — for reviewer comments, CAS findings, or review-like claims, prefer `$review-fold` before implementation; use `$review-adjudication` for detailed CEX-v1 claim law or thread-resolution preparation.
+6. **Durable orchestration with `$st`** — explicit-only at root. Start it only when the user asks, when `.step/st-plan.jsonl` already participates in the task, or when an active goal/review skill emits `st-required`. Do not introduce `$st` merely because work is multi-step.
+7. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
+8. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
+9. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
+10. **Recursive orchestration** — encourage when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches.
 
-Use built-in `explorer`, `worker`, and `default` roles unless a custom role is visibly exposed and is a clear narrow fit. Close subagents after their contribution is integrated.
+Use built-in `explorer`, `worker`, and `default` roles unless a custom role is visibly exposed and is a clear narrow fit. Goal/review work may also use the custom agents `goal_architect`, `repo_scout`, `patch_worker`, `evidence_critic`, `review_reducer`, `branch_racer`, and `workflow_forensic` when their descriptions are a clear fit. Close subagents after their contribution is integrated.
 
 ## Skill routing
 
@@ -110,16 +112,23 @@ Skills are workflow selectors, not magic words. Root-level implicit activation i
 Preferred stack shape:
 
 ```text
-understand context -> separate evidence from claims -> frame if needed -> identify invariant/ownership/boundary -> implement/adjudicate/review -> verify -> close -> capture learnings
+understand context -> separate evidence from claims -> frame if needed -> bind goal/review contract -> unfold work -> implement/adjudicate minimally -> fold evidence -> close -> capture learnings
 ```
 
 ### Implicit skills
 
 Only these skills may activate implicitly from request or repository cues:
 
+- `$goal-contract` — `/goal`, long-running coding tasks, hard debugging, migrations, review campaigns, or any task needing outcome/verifier/constraints/authority/stop-rule binding before recursion.
+- `$goal-workgraph` — goal contracts that need decomposition into inspect/edit/verify/review/branch/reuse nodes; do not use for one focused edit.
+- `$goal-grind` — recursive goal execution, repeated verification loops, hard debugging, review closure, or migrations with proof surfaces.
+- `$evidence-fold` — tests, diffs, logs, benchmarks, screenshots, review results, or artifact state that must reduce to done/continue/regress/blocked/invalid-proof/refactor-kernel.
+- `$review-fold` — PR comments, CAS findings, reviewer suggestions, or review-like claims where the next response must be reject/proof-only/minimal-fix/refactor-kernel/ask/follow-up before code.
+- `$failure-memory` — repeated failures, same-shaped compiler/test/review findings, oscillation, regressions, or strategy retry risk.
+- `$proof-patch` — final `/goal` completion, PR handoff, or readiness claim needing current-artifact proof, review disposition, anti-gaming checks, and residual risk.
+- `$grill-me` — research-backed clarification for material user-owned choices; use after discoverable facts have been exhausted or via a skill handoff that needs a bound `grill_decision_packet`.
 - `$learnings` — recall before substantial implementation when `.learnings.jsonl` exists; capture only at decision-shaping checkpoints and delivery boundaries.
-- `$fixed-point-driver` — exhaustive hardening, repeated review/fix loops, PR review closure, invariant repair, local-patch risk, or requests to drive work to closure or find all impactful issues.
-- `$review-adjudication` — PR comments, reviewer suggestions, CAS findings, or review-like claims that must be classified before implementation, thread resolution, or fixed-point routing.
+- `$review-adjudication` — PR comments, reviewer suggestions, CAS findings, or review-like claims that require detailed CEX-v1 claim law before implementation, thread resolution, or fixed-point routing.
 - `$zig` — Zig files, build/test/toolchain output, comptime, allocator, FFI, concurrency, performance, cache, migration, or safety evidence. Do not wait for the user to type `$zig`; detailed trigger taxonomy lives under `codex/skills/zig/references/implicit_triggers.md`.
 - `$logophile` — human-facing wording, naming, terminology, headings, PR/commit text, docs, explanations, error/help text, doctrine words, or mode names. Preserve semantics and machine-consumed syntax.
 - `$universalist` — structural refactor, exact abstraction, certified context, canonical boundary, semantic-consumption, presentation-strategy, sheafification, or inexact-abstraction cues. Former Kan mechanics are internal to this skill.
@@ -132,11 +141,55 @@ Only these skills may activate implicitly from request or repository cues:
 
 All other skills are explicit-only at root. They may run only when the user invokes them or when an already-active skill's documented workflow hands off to them. A handoff does not create an independent root implicit trigger.
 
-Implicit activation does not waive side-effect boundaries. `$learnings` may append only under its lifecycle rules; `$negative-ledger` may mutate its canonical ledger or admit memory only after its witness, applicability, and export gates pass; `$synesthesia` may admit mappings only after its endorsement gate passes; `$codebase-doctrine` remains read-only and may persist doctrine only after explicit authorization; `$cas` control mutations require clear intent; public tracker activity requires explicit user intent. `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `prove-it`, and every other unlisted skill do not start implicitly at root.
+Implicit activation does not waive side-effect boundaries. `$learnings` may append only under its lifecycle rules; `$negative-ledger` may mutate its canonical ledger or admit memory only after its witness, applicability, and export gates pass; `$synesthesia` may admit mappings only after its endorsement gate passes; `$codebase-doctrine` remains read-only and may persist doctrine only after explicit authorization; `$cas` control mutations require clear intent; `$goal-grind` and `$review-fold` do not authorize public tracker activity; `$st`, `$fixed-point-driver`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, `prove-it`, and every other unlisted skill do not start implicitly at root.
+
+## Goal Scheme routing
+
+Use the goal scheme as the default recursive loop for material coding goals:
+
+```text
+$goal-contract
+  -> $goal-workgraph when decomposition matters
+  -> $goal-grind for one-node-at-a-time execution
+  -> $evidence-fold after material verification
+  -> $failure-memory when classes repeat
+  -> $proof-patch at completion or handoff
+```
+
+State selection:
+
+- Use `update_plan` for concise, user-visible, in-memory steps.
+- Use `.goal/*` only when a material loop needs replayable attempts, evidence, or memo rows and those artifacts are publishable under repo hygiene rules.
+- Use `$st` when a goal needs durable workspace coordination, resource claims, fencing tokens, independent worktrees, serialized integration, or existing `.step/st-plan.jsonl` continuity.
+
+Do not create a receipt unless it affects routing, validation, authority, stopping, comparison, or future behavior.
+
+## Review loop routing
+
+Review loops must reduce comments before patching:
+
+```text
+raw review pressure
+  -> $review-fold
+  -> reject | proof-only | minimal-fix | refactor-kernel | ask-human | follow-up
+  -> $goal-grind only for accepted code-change liabilities
+  -> $evidence-fold
+  -> $proof-patch
+```
+
+Default review mode is `adjudicate-only` until a finding is tied to the accepted goal and current diff.
+
+Use `proof-only` when the right answer is evidence or a drafted response.
+Use `minimal-fix` when exactly one accepted liability has one owner-correct repair.
+Use `refactor-kernel` when several findings share one missing abstraction, invariant, canonical owner, state transition, or proof surface.
+Use `branch-race` when local repair and reabstraction are both plausible and can be compared under the same verifier.
+Use `st-governed` only when review remediation needs durable claims/fencing/worktrees or explicit `$st` coordination.
+
+Do not post PR comments, resolve threads, or update public trackers without explicit user intent.
 
 ## Plan Sync (`$st` <-> Codex `update_plan`)
 
-Do not start a new `$st` workflow without explicit user intent. Apply this section only when the user asked for `$st` or `.step/st-plan.jsonl` already participates in the task.
+Do not start a new `$st` workflow without explicit user intent, an already-participating `.step/st-plan.jsonl`, or an active goal/review skill emitting `st-required`. Apply this section only when `$st` participates.
 
 - `$st` is durable truth. `update_plan` is a selected, user-visible mirror.
 - Mutate durable state only through `st` commands. Do not hand-edit existing JSONL rows.
