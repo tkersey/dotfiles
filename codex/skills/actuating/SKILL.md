@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "User-facing workflow façade for implementation after spec work. Use as `/goal $actuating` to run `$spec-pipeline -> $goal-actuating`: close or validate semantic spec, lower the accepted SGR-v2/spec into GC-v1, choose lightweight/review-first/st-governed mode, execute through the recursive goal runtime, and close with current-artifact proof."
+description: "User-facing workflow façade for implementation after spec work. Use as `/goal $actuating` to run `$spec-pipeline -> $goal-actuating`: close or validate semantic spec, lower the accepted SGR-v2/spec into GC-v1, choose lightweight/review-first/st-governed mode, require $cas for workflow code review, execute through the recursive goal runtime, and close with current-artifact proof."
 metadata:
   version: "6.0.0"
   activation_cost: medium
@@ -64,10 +64,11 @@ The workflow performs:
 3. Invoke $goal-actuating in spec-first mode.
 4. Derive GC-v1 from the accepted spec.
 5. Choose update_plan, goal-artifacts, or st-governed persistence.
-6. Use review-fold before any review-originated code change.
-7. Execute accepted work through goal-grind or st-governed slices.
-8. Fold evidence after material verification.
-9. Emit proof-patch or ship handoff.
+6. If code review is part of the proof bar, run it through $cas.
+7. Use review-fold before any review-originated code change.
+8. Execute accepted work through goal-grind or st-governed slices.
+9. Fold evidence after material verification.
+10. Emit proof-patch or ship handoff.
 ```
 
 ### Direct goal implementation
@@ -88,11 +89,11 @@ Use when the work is review closure:
 /goal $actuating close the review for this branch
 ```
 
-The workflow starts with `$review-fold` through `$goal-actuating`:
+The workflow starts by obtaining review input from `$cas` when fresh/exhaustive review is needed, then folds it:
 
 ```text
-raw review pressure
--> classify and compress
+$cas review verdict / findings
+-> $review-fold
 -> reject | proof-only | minimal-fix | refactor-kernel | ask-human | follow-up
 -> implement only accepted code-change liabilities
 -> evidence-fold
@@ -116,6 +117,7 @@ GC-v1 summary
 mode selection
 optional WG-v1 frontier
 st-required? yes/no
+review source required? none|cas-probe|cas-lane|cas-exhaustive
 proof obligations
 blockers
 ```
@@ -148,11 +150,28 @@ actuating_status:
 ```text
 implementation spec / SGR-v2 -> GC-v1 GoalContract
 GC-v1 -> WorkGraph only if decomposition changes execution
+review proof bar -> $cas review source mode
+CAS/existing review output -> review-fold disposition before code
 WorkGraph -> goal-grind frontier
 verification output -> evidence-fold verdict
-review pressure -> review-fold disposition before code
 completion -> proof-patch or ship handoff
 ```
+
+## CAS review mandate
+
+If `$actuating` performs code review or relies on a review gate, it must use `$cas` as the review backend through `$goal-actuating`. Do not substitute generic critique, non-CAS subagent review, or a prose pass for workflow code review.
+
+Use `$cas` review when:
+
+```text
+the user asks for review closure, code review, adversarial review, or exhaustive review
+the accepted spec/SGR-v2 includes review in the proof bar
+proof-patch or ship-handoff would otherwise rely on a review claim
+review-first mode needs a fresh review artifact
+repeated review/fix cycles need a persistent detached lane
+```
+
+Existing PR comments or prior review artifacts may be consumed as existing review pressure, but they do not replace a requested fresh/exhaustive CAS review.
 
 ## Mode selection
 
@@ -163,6 +182,7 @@ actuating_mode:
   source: direct-goal|spec-first|review-first|dry-plan|st-governed
   persistence: update_plan|goal-artifacts|st
   implementation: proof-only|minimal-fix|refactor-kernel|branch-race
+  review_source: none|existing-review|cas-probe|cas-lane|cas-exhaustive
   closure: proof-patch|ship-handoff|blocked
 ```
 
@@ -173,6 +193,7 @@ spec-first + update_plan + minimal-fix + proof-patch
 ```
 
 Switch to `review-first` when reviews/CAS findings/reviewer suggestions are present.
+Switch to `cas-exhaustive` when exhaustive review is requested or required by the proof bar.
 Switch to `refactor-kernel` when repeated findings share an owner boundary.
 Switch to `st-governed` only when durable claims/fencing/worktrees/serialized integration are required.
 Switch to `ship-handoff` only when PR/publication intent is explicit or inherited from the accepted spec.
@@ -186,6 +207,7 @@ $spec-pipeline has not allowed planning/execution
 scope, non-goals, compatibility, or proof bar are unresolved
 review findings expand product/API scope
 raw review text has not been reduced to dispositions
+review is required but $cas review is unavailable or not run
 st-governed authority is required but absent
 verification regresses and the next action is not isolate/revert/prove
 public tracker or PR side effects would occur without explicit intent
@@ -198,6 +220,7 @@ Actuating:
 - source: direct goal | spec | SGR-v2 | PSR-v1 | review
 - semantic authority:
 - mode / persistence:
+- review source / CAS verdict, if required:
 - GC-v1 / WorkGraph:
 - review-fold disposition:
 - execution owner: goal-grind | st/fixed-point-driver | none
@@ -216,6 +239,12 @@ If st-governed authority is required but not obtained, say:
 
 ```text
 actuation verdict: st-authority-blocked
+```
+
+If review is required but CAS review is unavailable or not run, say:
+
+```text
+actuation verdict: cas-review-blocked
 ```
 
 Do not describe direct implementation as a fenced actuation run.
