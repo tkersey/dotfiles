@@ -1,27 +1,102 @@
-# Mutation Gate
+# Spec 02 — `resolve-c3 mutation-gate`
 
-`resolve-c3 mutation-gate --chain RAC --review-claim-id ID --format json`
-decides whether review-originated mutation may proceed.
+Order: 2 of 4.
+Depends on: Spec 01 / RAC-v1.
 
-## Inputs
+## Purpose
 
-- RAC-v1 artifact path
-- review claim id
-- current artifact state or proof epoch, when available
+Prevent review-originated patches unless review prose has been compiled into an
+inspectable authority chain.
 
-## Passing Conditions
+## Native CLI surface
 
-The gate passes only when:
+```bash
+resolve-c3 mutation-gate \
+  --chain rac.yaml \
+  --format text|json
+```
 
-- the RAC-v1 artifact is valid;
-- the requested review claim id is present in the RAC;
-- the RAC is current for the working artifact state;
-- `mutation_allowed` is true for the claim;
-- the realization target is bounded by the accepted kernel/RC.
+Optional controller-integrated shape:
 
-## Failure Semantics
+```bash
+resolve-c3 mutation-gate \
+  --campaign <campaign-id> \
+  --review-claim-id <claim-id> \
+  --artifact-state <artifact-state.json> \
+  --format json
+```
 
-Missing RAC, invalid RAC, stale artifact state, unknown review claim id, and
-non-mutation RAC artifacts all fail closed. The output must preserve whether the
-blocker is a projection limitation, invalid chain, stale state, or explicit
-non-mutation decision.
+Reference compatibility script:
+
+```bash
+python3 codex/skills/resolve/tools/resolve_mutation_gate.py --chain rac.yaml
+```
+
+## Exit codes
+
+```text
+0  mutation allowed
+2  mutation blocked
+3  gate could not evaluate input
+```
+
+## Required checks
+
+Mutation is allowed only when all are true:
+
+```text
+RAC-v1 validates
+RAC artifact state is current
+review claim is present
+AC law/horizon relation is in-horizon
+CEX is confirmed
+RB-v1 is sealed
+CEB class is present
+MBK/RC transition is present
+proof obligation is present
+realization.allowed = true
+gate.mutation_allowed = yes
+```
+
+## Blocked output
+
+```json
+{
+  "mutation_allowed": false,
+  "reason": "uncompiled_review_text",
+  "missing": ["sealed_batch", "ceb_class", "mbk_transition"],
+  "legal_next_actions": [
+    "adjudicate_claim",
+    "seal_or_repair_batch",
+    "compile_or_repair_ceb_mbk_rc",
+    "rebase_ac",
+    "create_followup",
+    "reject_finding",
+    "block"
+  ]
+}
+```
+
+## Legal blocked actions
+
+When blocked, the workflow may only:
+
+```text
+adjudicate the claim
+seal or repair the batch
+compile or repair CEB/MBK/RC
+rebase AC
+create a follow-up
+reject the finding
+block
+```
+
+It must not:
+
+```text
+patch
+commit
+push
+close PR threads
+emit completion language
+```
