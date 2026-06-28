@@ -81,7 +81,7 @@ Use when the user goal already contains scope, non-goals, done state, constraint
 
 If the request is still ambiguous, `$actuating` must call `$spec-pipeline` in gate-only/no-plan mode or stop as blocked rather than inventing scope.
 
-### Review-first implementation
+### Review resolution implementation
 
 Use when the work is review closure:
 
@@ -89,17 +89,79 @@ Use when the work is review closure:
 /goal $actuating close the review for this branch
 ```
 
-The workflow obtains review input from `$cas` when fresh or exhaustive review is needed, then folds it:
+The default review behavior is `resolve-and-fix`.
+
+When the user asks for review, review closure, code review, CAS review, review remediation, or to address review findings without explicitly saying not to implement, the workflow must:
+
+1. Use `$cas` as the review backend for fresh or exhaustive workflow review.
+2. Pass findings through `$review-fold`.
+3. Run a resolve pass to produce the smallest correct closure agenda.
+4. Implement only accepted code-change liabilities.
+5. Preserve no-code dispositions: `reject`, `proof-only`, `follow-up`, and `ask-human`.
+6. Prefer `refactor-kernel` when several findings share one owner boundary.
+7. Close with `$evidence-fold` and `$proof-patch`.
+
+Do not treat `resolve-and-fix` as one patch per comment.
+
+#### Review-only
+
+Use when the user wants review findings classified without implementation:
 
 ```text
-$cas review findings
--> $review-fold
--> reject | proof-only | minimal-fix | refactor-kernel | ask-human | follow-up
--> implement only accepted code-change liabilities
--> evidence-fold
--> proof-patch
+/goal $actuating review this branch; do not implement
 ```
 
+The workflow performs:
+
+```text
+$cas review
+-> $review-fold
+-> review disposition report
+-> stop
+```
+
+Do not call `$goal-grind`.
+
+#### Resolve-only
+
+Use when the user wants a closure agenda without implementation:
+
+```text
+/goal $actuating resolve review findings for this branch; do not implement
+```
+
+The workflow performs:
+
+```text
+$cas review or existing review findings
+-> $review-fold
+-> resolve pass
+-> resolution agenda
+-> stop
+```
+
+Do not call `$goal-grind`.
+
+#### Resolve-and-fix
+
+This is the default for review work unless the user explicitly requests no implementation:
+
+```text
+/goal $actuating review this branch
+```
+
+The workflow performs:
+
+```text
+$cas review
+-> $review-fold
+-> resolve pass
+-> $goal-grind accepted liabilities only
+-> $evidence-fold
+-> $proof-patch
+```
+
+Only accepted code-change liabilities may reach implementation.
 Raw review prose never reaches implementation directly.
 
 ### Dry actuation plan
@@ -166,7 +228,7 @@ Use `$cas` review when:
 the user asks for review closure, code review, or exhaustive review
 the accepted spec includes review in the proof requirements
 proof-patch or ship-handoff would otherwise rely on a review claim
-review-first mode needs a fresh review artifact
+review resolution mode needs a fresh review artifact
 repeated review/fix cycles need a persistent detached lane
 ```
 
@@ -178,11 +240,11 @@ Choose the narrowest mode that can complete safely:
 
 ```yaml
 actuating_mode:
-  source: direct-goal|spec-first|review-first|dry-plan|st-governed
+  source: direct-goal|spec-first|review-only|resolve-only|resolve-and-fix|dry-plan|st-governed
   persistence: update_plan|goal-artifacts|st
-  implementation: proof-only|minimal-fix|refactor-kernel|branch-race
+  implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
   review_source: none|existing-review|cas-probe|cas-lane|cas-exhaustive
-  closure: proof-patch|ship-handoff|blocked
+  closure: review-disposition|resolution-agenda|proof-patch|ship-handoff|blocked
 ```
 
 Default:
@@ -191,7 +253,9 @@ Default:
 spec-first + update_plan + minimal-fix + proof-patch
 ```
 
-Switch to `review-first` when reviews, CAS findings, or reviewer suggestions are present.
+Switch to `resolve-and-fix` when reviews, CAS findings, or reviewer suggestions are present and no no-code modifier is present.
+Switch to `review-only` when the user asks for review-only, audit-only, classify-only, no changes, or do not implement behavior.
+Switch to `resolve-only` when the user asks for a plan or resolution agenda without implementation.
 Switch to `cas-exhaustive` when exhaustive review is requested or required by the proof bar.
 Switch to `refactor-kernel` when repeated findings share an owner boundary.
 Switch to `st-governed` only when durable claims, fencing, worktrees, or serialized integration are required.

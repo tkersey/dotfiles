@@ -7,6 +7,8 @@ interface:
     Use $actuating as the explicit /goal workflow. First get an accepted
     implementation spec from $spec-pipeline in gate-only/no-plan mode when one is
     not already available, then hand that accepted spec to $goal-actuating.
-    Fresh or exhaustive review must use $cas review, and findings must pass
-    through $review-fold before any implementation. Use $st mode only when
+    For review requests, default to resolve-and-fix unless the user explicitly
+    says not to implement. Fresh or exhaustive workflow review must use $cas
+    review, findings must pass through $review-fold, and only accepted
+    code-change liabilities may reach implementation. Use $st mode only when
     durable coordination or existing $st state must own execution.

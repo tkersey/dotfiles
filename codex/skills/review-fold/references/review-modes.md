@@ -2,6 +2,35 @@
 
 The review loop is a reducer, not a patch queue.
 
+## Workflow defaults
+
+`$actuating review ...` defaults to `resolve-and-fix`.
+
+No-code modes require explicit language:
+
+```text
+do not implement
+review only
+audit only
+classify only
+resolve only
+plan only
+no changes
+```
+
+`resolve-and-fix` still preserves no-code dispositions. A review with ten findings may close as:
+
+```text
+2 rejected
+2 proof-only
+1 follow-up
+1 ask-human
+3 fixed by one refactor-kernel
+1 minimal local fix
+```
+
+It must not become ten local patches.
+
 ## Finding dispositions
 
 | Disposition | Meaning | Code? |

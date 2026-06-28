@@ -111,7 +111,7 @@ understand context -> separate evidence from claims -> accept implementation spe
 
 Only these skills may activate implicitly from request or repository cues:
 
-- `$goal-actuating` — accepted implementation specs, direct `/goal` execution, review-first remediation, dry actuation plans, or `$st`-governed goal execution. If it performs code review, it must use `$cas` review.
+- `$goal-actuating` — accepted implementation specs, direct `/goal` execution, review resolution workflows, dry actuation plans, or `$st`-governed goal execution. If it performs code review, it must use `$cas` review.
 - `$goal-contract` — material goals that need outcome, checks, constraints, authority, and stop rules.
 - `$goal-workgraph` — material goals that need a small work list before execution.
 - `$goal-grind` — recursive goal execution, repeated verification loops, hard debugging, review closure, or migrations with proof surfaces.
@@ -150,7 +150,7 @@ Use `$cas` review when:
 review closure, code review, or exhaustive review is requested
 the accepted spec includes review in the proof bar
 proof-patch or ship-handoff relies on a review claim
-review-first mode needs a fresh review artifact
+review resolution mode needs a fresh review artifact
 repeated review/fix cycles need a persistent detached lane
 ```
 
@@ -180,19 +180,32 @@ Do not create a receipt unless it affects routing, validation, authority, stoppi
 
 ## Review loop routing
 
-Review loops must reduce comments before patching:
+Review loops default to resolve-and-fix unless the user explicitly requests no implementation:
 
 ```text
 $cas review when fresh/exhaustive workflow review is needed
   -> $review-fold
-  -> reject | proof-only | minimal-fix | refactor-kernel | ask-human | follow-up
+  -> resolve pass
   -> $goal-grind only for accepted code-change liabilities
   -> $evidence-fold
   -> $proof-patch
 ```
 
-Default review mode is `adjudicate-only` until a finding is tied to the accepted goal and current diff.
+No-code modifiers:
 
+```text
+do not implement
+review only
+audit only
+classify only
+resolve only
+plan only
+no changes
+```
+
+Use `review-only` when the user wants finding classification only.
+Use `resolve-only` when the user wants a closure agenda only.
+Use `resolve-and-fix` by default for review requests.
 Use `proof-only` when the right answer is evidence or a drafted response.
 Use `minimal-fix` when exactly one accepted liability has one owner-correct repair.
 Use `refactor-kernel` when several findings share one missing abstraction, invariant, canonical owner, state transition, or proof surface.
