@@ -42,7 +42,7 @@ cas conformance
 
 Use `cas review_session` when detached review lifecycle control matters: persisted `reviewThreadId`, wait/status/interrupt, compatibility diagnostics, approval/runtime overrides, or repeatable review receipts.
 
-Use `cas review_session lane` only when persistent review-lane capability has been proven for the current `cas`/`codex`/repo tuple. The lane owns transport reuse only. Callers such as `$resolve` still own review adjudication, clean-streak accounting, proof gates, commits, PR comments, and closure decisions.
+Use `cas review_session lane` only when persistent review-lane capability has been proven for the current `cas`/`codex`/repo tuple. The lane owns transport reuse only. Callers still own review adjudication, clean-streak accounting, proof gates, commits, PR comments, and closure decisions.
 
 If a caller only needs one proof-bearing review and persistent lane smoke is unproven or recently failed, prefer:
 
@@ -81,6 +81,8 @@ reviewAttemptPhase:
 
 reviewAttemptExists: bool
 proofVerdictExists: bool
+principalProofUsable: bool
+principalStrength: strong|reduced
 reviewThreadId: string|null
 reviewTurnId: string|null
 baseSha: string|null
@@ -93,6 +95,7 @@ Rules:
 ```text
 reviewAttemptExists = reviewThreadId != null
 proofVerdictExists = reviewVerdict != null && reviewVerdict.baseSha/headSha/targetFingerprint match the requested tuple
+principalProofUsable = proofVerdictExists && account principal protection is strong
 ```
 
 A lane with `reviewCount=0`, no `lastReviewThreadId`, no `lastHeadSha`, and no verdict is not a failed review. It is pre-review lane transport failure.
@@ -241,9 +244,30 @@ Rules:
 review_started|waiting + reviewThreadId => return existing handle; do not start duplicate
 pre_review_start_failed + no reviewThreadId => restart lane/start-wait allowed, but not counted as review evidence
 terminal + not normalized => normalize existing receipt; do not re-review
+terminal|normalized + --fresh-attempt REASON => start a new same-tuple review attempt
 account_resource_exhausted => block same-account retry until reset/override
 stale => require explicit takeover
 ```
+
+Default repeated review commands consume cached terminal evidence; they are not
+new independent clean runs. For review workflows that require multiple clean CAS
+runs on the same tuple, use `--fresh-attempt REASON` for each additional
+post-terminal attempt and verify the streak with:
+
+```bash
+cas review_session receipt proof --glob '<receipts>' --cwd <repo> --base <base> --clean-streak 3
+```
+
+Receipt proof counts distinct tuple-bound `reviewThreadId` attempts. Cached
+normalization of the same attempt does not increment the streak, and pre-review
+transport failures remain attempt-free evidence.
+
+`proofVerdictExists=true` only proves tuple binding. Proof-sensitive closeout
+also requires `principalProofUsable=true`. Receipts with reduced account
+principal protection, including `unknown-account` and legacy receipts missing
+principal metadata, may diagnose findings but must not certify closeout unless
+`cas review_session receipt proof` is run with an explicit
+`--allow-reduced-principal REASON` override.
 
 ## Hooks, approvals, and fallback
 
@@ -275,6 +299,7 @@ CAS Review:
 - reviewAttemptPhase:
 - reviewAttemptExists:
 - proofVerdictExists:
+- principalProofUsable / principalStrength:
 - reviewThreadId / reviewTurnId:
 - base/head/fingerprint:
 - verdict status / finding count:

@@ -40,4 +40,32 @@ reviewThreadId
 reviewTurnId
 ```
 
-This is the only surface `$resolve` or other proof-sensitive workflows should consume for clean streak, terminal holdout, or branch-readiness decisions.
+This is the only surface proof-sensitive workflows should consume for terminal
+holdout or branch-readiness decisions.
+
+Tuple binding is necessary but not sufficient for certification. Closeout proof
+also requires `principalProofUsable=true`, derived from account-principal
+metadata. If CAS falls back to `unknown-account` or normalizes a legacy receipt
+that lacks principal metadata, the receipt remains useful diagnostic evidence
+but cannot certify branch readiness by default.
+
+## Clean streak proof
+
+A clean streak is caller policy over proof verdicts, not tuple-lock ownership.
+Repeated normalization of one cached receipt is still one review attempt and
+must not increment the clean-run counter.
+
+For repeated same-tuple clean-run requirements:
+
+```text
+terminal/normalized receipt exists -> use --fresh-attempt REASON for the next independent review
+active review lock exists -> wait/recover the existing reviewThreadId
+pre-review transport failure -> no attempt exists; ignore for streak and recover transport
+```
+
+Use `cas review_session receipt proof --clean-streak N ...` to compute the
+streak from distinct tuple-bound `reviewThreadId` attempts.
+
+Reduced-principal attempts do not increment the clean streak unless the operator
+uses `--allow-reduced-principal REASON`. The override is an auditable downgrade,
+not a stronger proof.
