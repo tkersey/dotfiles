@@ -34,7 +34,7 @@ skill_decision_contract:
       aliases: [cas-review]
       terminal: "no"
     - route_id: ACT-ST-GOVERNED
-      description: Hand off to $st and $fixed-point-driver when durable coordination owns execution.
+      description: Hand off to $st bounded execution slices when durable coordination owns execution.
       aliases: [st-governed]
       terminal: "no"
     - route_id: ACT-PROOF

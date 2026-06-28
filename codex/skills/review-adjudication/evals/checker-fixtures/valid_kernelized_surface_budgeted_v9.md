@@ -26,7 +26,7 @@ artifact_state_id:
 | rw-c3 | c3 | github-review | do-not-address | none | none | no mutation | src/a.py:1 | preference-only preserved | none | expires when head/base/diff/comment changes |
 | rw-c4 | c4 | github-review | delete-collapse-canonicalize | mutate-code | src/a.py, tests/test_a.py | forbid mutate outside permitted scope | src/a.py:20 | duplicate wrapper dominated | pytest tests/test_a.py::test_retry_idempotent | expires when head/base/diff/comment changes |
 
-## Resolve Countercases
+## Route Countercases
 
 | id/thread | selected route | strongest alternative route | countercase status | evidence ref | route impact |
 |---|---|---|---|---|---|
@@ -113,9 +113,9 @@ artifact_state_id:
 - proof-only thread-resolution items: none
 - reply/defer/no-change items: c3
 - blocked items: none
-- fixed-point-driver surface handshake required: yes
+- bounded mutation receipts required: yes
 - proof: pytest tests/test_a.py::test_retry_idempotent
 
 ## Adjudication Bottom Line
 
-Proceed: c1 and c4 may route to fixed-point-driver under scoped surface budgets; c2 is validation-only; c3 is no-change.
+Proceed: c1 and c4 may route to implementation under scoped surface budgets; c2 is validation-only; c3 is no-change.

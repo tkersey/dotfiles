@@ -11,14 +11,14 @@ Rules:
 - emit Claim Decision Kernel and Resolution Warrants even if using root-equivalent reasoning
 - bind the output to artifact_state_id
 - do not allow implementation without a mutate-code warrant
-- if any route can mutate, include Surface Budget Ledger and fixed-point-driver surface handshake
+- if any route can mutate, include Surface Budget Ledger and bounded mutation receipts
 ```
 
 ## Least-surface implementation handoff
 
 ```md
 Use $review-adjudication for this review batch, then hand off only licensed
-mutation warrants to $fixed-point-driver.
+mutation warrants to the owning implementation workflow.
 
 Bias:
 - prefer delete/collapse/canonicalize/reuse before additive mutation

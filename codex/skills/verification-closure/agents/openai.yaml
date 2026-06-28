@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: false
-interface:
-  display_name: "Verification Closure"
-  short_description: "MBKC and terminal closure gate"
-  default_prompt: "Reject terminal closure without a current MBKC-v1, whole-PR realization from campaign base, conserved semantic surface, compressed proof, and explicit review horizon."

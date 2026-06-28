@@ -162,7 +162,7 @@ Chunk ID: ...
 Deleting:
 
 ```text
-.step/resolve-c3-st-plan.jsonl
+.step/review-workflow-st-plan.jsonl
 ```
 
 is `artifact_under_repair`.
@@ -170,11 +170,11 @@ is `artifact_under_repair`.
 It does not prove:
 
 ```text
-resolve-c3 governed the session
+the named review workflow governed the session
 ```
 
 Landing a PR does not prove:
 
 ```text
-resolve-c3 closed a campaign
+the named review workflow closed a campaign
 ```

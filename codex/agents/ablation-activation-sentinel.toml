@@ -1,5 +1,5 @@
 name = "ablation_activation_sentinel"
-description = "Read-only sentinel that decides whether a review/fixed-point/resolve pass requires ablation receipts."
+description = "Read-only sentinel that decides whether a review, recursive execution, or closure pass requires ablation receipts."
 sandbox_mode = "read-only"
 nickname_candidates = ["Sentinel", "Trigger", "Receipt"]
 
@@ -25,7 +25,7 @@ Return `required` when any of these are present:
 - a helper, wrapper, adapter, fallback, flag, knob, state variant, public symbol, branch, compatibility path, parser tolerance, catch-and-continue path, default, coercion, or abstraction is added or preserved;
 - duplicate, dominated, subsumed, vestigial, uninhabited, pass-through, non-canonical, or temporary-scaffold surface is present;
 - local fixes are piling up around one invariant or owner boundary;
-- fixed-point-driver is used for PR closure, `$resolve`, exhaustive hardening, or repeated review/fix loops.
+- a goal/review closure workflow is used for PR closure, exhaustive hardening, or repeated review/fix loops.
 
 Return `not-required` only when current evidence shows:
 - proof-only or validation-only closeout;

@@ -8,7 +8,7 @@ successful ranking          skill-success-rank
 workflow cohort             workflow-audit
 historical decision         decision-capsule / historical_decisions
 review compiler             review-compiler-audit
-resolve churn               resolve-churn-audit
+review churn                review-compiler-audit / adjudication-audit
 raw artifact search         artifact-search
 plan artifact               plan-search
 session narrative           turns / session-prompts / session-detail

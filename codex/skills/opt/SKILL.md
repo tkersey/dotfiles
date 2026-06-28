@@ -112,7 +112,6 @@ Optional read-only roles:
 skill_contract_modeler
 skill_decision_provenance_auditor
 skill_outcome_skeptic
-skill_edit_fresh_eyes_auditor
 ```
 
 ### Propose

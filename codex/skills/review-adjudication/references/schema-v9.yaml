@@ -59,7 +59,7 @@ required_sections:
     - Handoff Agenda
     - Adjudication Bottom Line
   mutation_or_delete:
-    - Resolve Countercases
+    - Route Countercases
     - Adversarial Action Matrix
     - Ablative Counterproposal Ledger
     - Surface Budget Ledger

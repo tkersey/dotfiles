@@ -36,7 +36,7 @@ resolve pass = closure agenda compiler
 $goal-grind = implementation engine for accepted liabilities
 ```
 
-For `resolve-and-fix` and exhaustive review, final completion requires three consecutive clean normalized `$cas` review runs after implementation. `$review-fold` decides whether each CAS run is normalized clean.
+For `resolve-and-fix` and exhaustive review, final completion requires three consecutive clean normalized `$cas` review runs after implementation. `$review-fold` decides whether each CAS run is normalized clean, but clean-run counting must be backed by distinct tuple-bound CAS attempts rather than repeated normalization of one cached receipt.
 
 ## Review source rule
 
@@ -160,6 +160,12 @@ user explicitly lowers the review proof bar
 ```
 
 A clean normalized CAS run means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the resolve pass. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-resolved findings do not make the run dirty.
+
+Each clean run must be a distinct tuple-bound CAS review attempt. When a terminal
+or normalized tuple receipt already exists, callers must request the next
+independent run with `--fresh-attempt REASON`; cached normalization of the same
+`reviewThreadId` does not increment the counter. Use `cas review_session receipt
+proof --clean-streak 3 ...` to verify the counter from receipts.
 
 Reset the clean-run counter to zero when code changes, review scope changes, base/head/diff changes, the proof bar changes, or CAS lane continuity is lost.
 

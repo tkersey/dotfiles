@@ -37,16 +37,4 @@ mkdir -p "$both_repo/.ledger/st" "$both_repo/.step"
 : >"$both_repo/.step/st-plan.jsonl"
 assert_eq ".ledger/st/st-plan.jsonl" "$(st_plan_rel "$both_repo")" "canonical preferred over legacy"
 
-c3_repo="$tmp/c3"
-mkdir -p "$c3_repo/.ledger/resolve/c3"
-: >"$c3_repo/.ledger/resolve/c3/state.json"
-assert_eq "$c3_repo" "$(find_c3_root "$c3_repo")" "find canonical c3 root"
-assert_eq ".ledger/resolve/c3/state.json" "$(c3_state_rel "$c3_repo")" "canonical c3 state path"
-
-c3_legacy_repo="$tmp/c3-legacy"
-mkdir -p "$c3_legacy_repo/.ledger/c3"
-: >"$c3_legacy_repo/.ledger/c3/state.json"
-assert_eq "$c3_legacy_repo" "$(find_c3_root "$c3_legacy_repo")" "find legacy c3 root"
-assert_eq ".ledger/c3/state.json" "$(c3_state_rel "$c3_legacy_repo")" "legacy c3 read fallback"
-
 printf 'st hook path policy: PASS\n'

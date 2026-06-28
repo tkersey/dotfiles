@@ -106,20 +106,20 @@ When the only workflow evidence is incidental, classify `incidental` and remove 
 Deleting or migrating:
 
 ```text
-.step/resolve-c3-st-plan.jsonl
+.step/review-workflow-st-plan.jsonl
 ```
 
-must not create a true C3 run.
+must not create a true workflow run.
 
 Expected:
 
 ```yaml
-candidate_c3: true
-incidental_c3: true
+candidate_workflow: true
+incidental_workflow: true
 governance: incidental
-c3_required: false
-c3_entered: false
-c3_closed: false
-included_in_c3_denominator: false
+workflow_required: false
+workflow_entered: false
+workflow_closed: false
+included_in_workflow_denominator: false
 closure_compression: NONE
 ```

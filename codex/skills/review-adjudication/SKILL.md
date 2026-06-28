@@ -1,6 +1,6 @@
 ---
 name: review-adjudication
-description: "Convert review claims into minimal, intent-anchored counterexamples. Verify current behavior, branch liability, AC-v2 horizon relation, novelty, kernel impact, and the only legal disposition. Use for review findings, PR comments, CAS findings, terminal holdouts, CEX-v1, or deciding whether a valid issue belongs in the current campaign. Under `$resolve`, never issue direct code-mutation authority or hand raw review prose to an implementer."
+description: "Convert review claims into minimal, intent-anchored counterexamples. Verify current behavior, branch liability, AC-v2 horizon relation, novelty, kernel impact, and the only legal disposition. Use for review findings, PR comments, CAS findings, terminal holdouts, CEX-v1, or deciding whether a valid issue belongs in the current campaign. Never issue direct code-mutation authority or hand raw review prose to an implementer."
 metadata:
   version: "5.0.0"
   activation_cost: medium

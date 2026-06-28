@@ -5,8 +5,8 @@
     "source": {
       "session_id": "session-incidental",
       "rollout_path": "/home/user/.codex/sessions/incidental.jsonl",
-      "workflow": "resolve-c3",
-      "protocol": "c3-mrpc",
+      "workflow": "review-controller",
+      "protocol": "review-closure",
       "classifier_command": "seq review-compiler-audit",
       "classifier_version": "0.3.5",
       "included_row_ref": "audit.json#/denominator/included_sessions/0"
@@ -37,10 +37,10 @@
           "timestamp": "2026-06-20T00:00:00Z",
           "tool_name": "apply_patch",
           "executable": null,
-          "command": "*** Delete File: .step/resolve-c3-st-plan.jsonl",
+          "command": "*** Delete File: .step/review-workflow-st-plan.jsonl",
           "matched_field": "patch_path",
-          "matched_cue": "resolve-c3",
-          "excerpt": "Delete obsolete sidecar .step/resolve-c3-st-plan.jsonl",
+          "matched_cue": "review-workflow",
+          "excerpt": "Delete obsolete sidecar .step/review-workflow-st-plan.jsonl",
           "provenance_role": "artifact_under_repair"
         }
       ]

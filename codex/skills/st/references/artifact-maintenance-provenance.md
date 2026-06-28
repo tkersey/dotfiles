@@ -2,8 +2,8 @@
 
 Artifact names are not workflow invocations.
 
-A session can repair a file named `resolve-c3` without being governed by
-`$resolve` or `resolve-c3`.
+A session can repair a file named after a review workflow without being governed
+by that workflow's controller.
 
 ## AMR-v1
 
@@ -35,7 +35,7 @@ as:
 ```text
 .step/st-plan.jsonl
 .step/*st-plan*.jsonl
-.step/resolve-c3-st-plan.jsonl
+.step/review-workflow-st-plan.jsonl
 .ledger/st/migration/**
 ```
 
@@ -61,8 +61,8 @@ not as:
 ```text
 workflow_entered
 controller_invoked
-true_c3
-true_resolve
+true_review_workflow
+true_named_workflow
 ```
 
 unless independent controller-grade evidence exists.

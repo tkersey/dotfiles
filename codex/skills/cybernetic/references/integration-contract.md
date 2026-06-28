@@ -26,7 +26,7 @@ cybernetic_context:
   leverage_level: parameter | buffer | stock_flow_structure | delay | balancing_loop | reinforcing_loop | information_flow | rules | self_organization | goal | paradigm | none
   selected_intervention:
     route: checklist | expert_analysis | safe_to_fail_probe | stabilize_first | redesign_feedback | change_rules | change_goal | handoff | blocked
-    downstream_skill: resolve | fixed-point-driver | review-adjudication | review-compression-compiler | universalist | reduce | negative-ledger | tune | verification-closure | none
+    downstream_skill: goal-actuating | st-bounded-slice | review-adjudication | universalist | reduce | negative-ledger | tune | proof-patch | none
   local_patch_allowed: yes | no
   monitoring_or_probe: "..."
 ```

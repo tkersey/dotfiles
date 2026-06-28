@@ -12,7 +12,7 @@ Examples:
 .ledger/plan/
 .ledger/st/
 .ledger/actuating/
-.ledger/resolve/
+.ledger/review-closure/
 .ledger/retrace/
 .ledger/seq/
 .ledger/negative-ledger/

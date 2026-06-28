@@ -8,7 +8,7 @@ Use $actuating.
 Plan: docs/plan.md
 
 Compile it into canonical $st graph state, require a current GCR, prepare
-bounded ASL slices, realize them with $fixed-point-driver, run focused/wave/final
+bounded ASL slices, realize them through bounded execution, run focused/wave/final
 proof, and open a ready PR when complete. Do not merge.
 ```
 

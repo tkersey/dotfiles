@@ -22,4 +22,4 @@ Signal present when a review item implies:
 - delayed failure after local green proof;
 - repeated route failure.
 
-If present, `$resolve` should consider `$cybernetic` before mutating.
+If present, the review-closure workflow should consider `$cybernetic` before mutating.

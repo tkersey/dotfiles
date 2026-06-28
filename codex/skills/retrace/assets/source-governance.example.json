@@ -5,8 +5,8 @@
     "source": {
       "session_id": "session-example",
       "rollout_path": "/home/user/.codex/sessions/example.jsonl",
-      "workflow": "resolve-c3",
-      "protocol": "c3-mrpc",
+      "workflow": "review-controller",
+      "protocol": "review-closure",
       "classifier_command": "seq review-compiler-audit",
       "classifier_version": "0.3.5",
       "included_row_ref": "review-compiler-audit.json#/denominator/included_sessions/0"
@@ -19,11 +19,11 @@
           "source": "tool",
           "timestamp": "2026-06-20T00:00:00Z",
           "tool_name": "exec_command",
-          "executable": "resolve-c3",
-          "command": "resolve-c3 campaign begin --campaign-id C3-example",
+          "executable": "review-controller",
+          "command": "review-controller campaign begin --campaign-id RC-example",
           "matched_field": "argv",
           "matched_cue": "campaign begin",
-          "excerpt": "resolve-c3 campaign begin --campaign-id C3-example",
+          "excerpt": "review-controller campaign begin --campaign-id RC-example",
           "provenance_role": "controller_invocation"
         }
       ],
@@ -38,7 +38,7 @@
           "command": null,
           "matched_field": "event",
           "matched_cue": "campaign-began",
-          "excerpt": "campaign-began C3-example",
+          "excerpt": "campaign-began RC-example",
           "provenance_role": "controller_event"
         }
       ],
@@ -53,7 +53,7 @@
           "command": null,
           "matched_field": "event",
           "matched_cue": "terminal-closed",
-          "excerpt": "terminal-closed C3-example",
+          "excerpt": "terminal-closed RC-example",
           "provenance_role": "campaign_bound_terminal"
         }
       ],

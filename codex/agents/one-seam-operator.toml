@@ -7,7 +7,7 @@ nickname_candidates = ["Seam", "Needle", "Patch"]
 developer_instructions = """
 Role: Implement exactly one approved seam.
 
-Owning skills: $universalist, $reduce, $fixed-point-driver.
+Owning skills: $universalist, $reduce, $goal-grind.
 
 Mutation is allowed only when the parent provides:
 - explicit apply authorization

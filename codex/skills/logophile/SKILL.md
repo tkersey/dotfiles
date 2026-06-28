@@ -174,9 +174,8 @@ In doctrine output, add a final `Operationalization:` line that names the exact 
 ## Composition
 Use `logophile` as a final language pass when another workflow produces human-facing language:
 - after `review-adjudication`, sharpen reviewer replies, rebuttals, acknowledgements, and disposition summaries.
-- after `adversarial-reviewer`, sharpen the bottom `Change Agenda` if it will be read or pasted.
-- after `fixed-point-driver`, sharpen PR-facing final summaries, closure notes, and handoffs.
-- after `verification-closure`, sharpen readiness wording for a PR, issue, release note, or handoff.
+- after bounded implementation workflows, sharpen PR-facing final summaries, closure notes, and handoffs.
+- after `proof-patch`, sharpen readiness wording for a PR, issue, release note, or handoff.
 - before finalizing skill names, subagent names, mode names, doctrine stacks, headings, or labels.
 
 Do not use `logophile` to replace implementation, review, adjudication, or closure work.

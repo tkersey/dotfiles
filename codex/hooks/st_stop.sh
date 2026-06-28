@@ -19,22 +19,6 @@ mode="${ST_STOP_MODE:-block}"
   exit 0
 }
 
-resolve_bin=$(resolve_c3_bin || true)
-if [ -n "${resolve_bin:-}" ]; then
-  resolve_output=$(printf '%s' "$payload" | "$resolve_bin" stop-guard --cwd "$PWD" 2>/dev/null || true)
-  resolve_status=$(printf '%s' "$resolve_output" | jq -r '.status // "allow"' 2>/dev/null || printf allow)
-  if [ "$resolve_status" = "block" ]; then
-    reason=$(printf '%s' "$resolve_output" | jq -r '.reason // "C³ run is not closed."' 2>/dev/null || printf 'C³ run is not closed.')
-    jq -n --arg reason "$reason" '{continue: true, decision: "block", reason: $reason}'
-    exit 0
-  fi
-elif c3_root=$(find_c3_root "$PWD" || true); [ -n "${c3_root:-}" ]; then
-  c3_state=$(c3_state_rel "$c3_root")
-  reason=$(printf 'Active C³ state exists at %s/%s, but resolve-c3 is unavailable.' "$c3_root" "$c3_state")
-  jq -n --arg reason "$reason" '{continue: true, decision: "block", reason: $reason}'
-  exit 0
-fi
-
 repo_root=$(find_st_root "$PWD" || true)
 [ -n "${repo_root:-}" ] || {
   json_continue

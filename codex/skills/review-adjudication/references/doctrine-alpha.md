@@ -20,7 +20,7 @@ Words alone mainly increase style, confidence, and verbosity.
 - `canonical`
 - `traceable`
 - `witness-bearing`
-- `resolve-selection`
+- `route-selection`
 - `unwitnessed guarantee`
 - `illegal inhabitant`
 - `tail proof`

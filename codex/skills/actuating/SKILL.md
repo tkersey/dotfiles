@@ -46,7 +46,7 @@ branch/head proof
 multi-plan coordination
 ```
 
-In that mode, `$actuating` hands off to `$goal-actuating`, which then routes through `$st` and `$fixed-point-driver`.
+In that mode, `$actuating` hands off to `$goal-actuating`, which then routes through `$st` with bounded execution slices.
 
 ## Normal flow
 
@@ -198,6 +198,11 @@ Raw review prose never reaches implementation directly.
 For `resolve-and-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same current artifact scope unless the user explicitly lowers the review bar.
 
 A clean normalized CAS run means `$cas` produces no new in-scope accepted liability after `$review-fold` and the resolve pass. The run is not made dirty by findings that are duplicate, rejected, out-of-scope, already-proven proof-only, deferred follow-up, or already-resolved by the current refactor kernel.
+
+Do not increment the clean-run counter from repeated normalization of one cached
+CAS receipt. After terminal evidence exists for the tuple, request each
+additional independent run with `--fresh-attempt REASON`, then verify the streak
+with `cas review_session receipt proof --clean-streak 3 ...`.
 
 Reset the clean-run counter to zero when:
 
@@ -381,7 +386,7 @@ Actuating:
 - normalized CAS clean runs: 0|1|2|3|not-required
 - goal contract / work list:
 - review-fold disposition:
-- execution owner: goal-grind | st/fixed-point-driver | none
+- execution owner: goal-grind | st-bounded-slice | none
 - evidence-fold verdict:
 - proof-patch / ship handoff:
 - blockers / residual risk:

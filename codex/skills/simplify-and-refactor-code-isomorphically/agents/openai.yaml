@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: false
-interface:
-  display_name: "Simplify and Refactor Code"
-  short_description: "Proof-heavy factoring, quotienting, ablation, and normalization under an explicit preservation relation."
-  default_prompt: "Use $simplify-and-refactor-code-isomorphically. Select the preservation relation first, then factor, quotient with congruence proof, ablate, normalize, verify, recompose, and emit RC-v1."

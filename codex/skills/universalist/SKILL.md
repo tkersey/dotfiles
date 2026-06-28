@@ -1339,7 +1339,7 @@ For Track I and team mode, read:
 Use `scripts/emit_universalist_team_prompt.sh` to produce an explicit orchestration prompt and `scripts/emit_effective_universal_architecture.sh` or `scripts/emit_substrate_certificate.sh` for the central artifacts.
 
 - Use **`invariant-ace`** when the main job is discovering or pinning down invariants before choosing structure.
-- Use **`accretive-implementer`** after the construction is chosen and the task becomes ordinary implementation.
+- Use **`goal-actuating`** after the construction is chosen and the task becomes ordinary implementation.
 - Use **`repeatedly-apply-skill`** when sweeping the repo for multiple seams or doing a multi-pass campaign.
 
 ## References

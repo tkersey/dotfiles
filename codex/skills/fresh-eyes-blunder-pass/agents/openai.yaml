@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: false
-interface:
-  display_name: "Fresh-Eyes Blunder Pass"
-  short_description: "Targeted second-pass falsification for code, specs, plans, adjudications, closure gates, skill edits, and negative-evidence ledgers"
-  default_prompt: "Use $fresh-eyes-blunder-pass for this task."

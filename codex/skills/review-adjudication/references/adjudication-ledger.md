@@ -33,10 +33,10 @@ surface budgets, and evidence references.
 |---|---|---|---|---|---|---|---|---|
 ```
 
-## Resolve Selection schema
+## Route Selection schema
 
 ```md
-| id/thread | resolve decision | reason | proof ref | next | route rationale |
+| id/thread | route decision | reason | proof ref | next | route rationale |
 |---|---|---|---|---|---|
 ```
 
@@ -50,5 +50,5 @@ surface budgets, and evidence references.
 ## Tail-weight requirement
 
 The final visible section must collapse the ledger into the action buckets,
-resolve selection, adversarial action matrix, warrants, gate, handoff agenda, and
+route selection, adversarial action matrix, warrants, gate, handoff agenda, and
 bottom line.

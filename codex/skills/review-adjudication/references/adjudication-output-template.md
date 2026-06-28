@@ -21,7 +21,7 @@ artifact_state_id:
 | warrant id | claim id | source | selected route | permitted action | permitted scope | forbidden actions | evidence refs | countercase ref | proof required | expiry |
 |---|---|---|---|---|---|---|---|---|---|---|
 
-## Resolve Countercases
+## Route Countercases
 
 | id/thread | selected route | strongest alternative route | countercase status | evidence ref | route impact |
 |---|---|---|---|---|---|
@@ -81,7 +81,7 @@ artifact_state_id:
 - proof-only thread-resolution items:
 - reply/defer/no-change items:
 - blocked items:
-- fixed-point-driver surface handshake required: yes/no/not-applicable
+- bounded mutation receipts required: yes/no/not-applicable
 - proof:
 
 ## Adjudication Bottom Line

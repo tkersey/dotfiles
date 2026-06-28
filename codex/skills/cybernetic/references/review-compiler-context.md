@@ -9,4 +9,4 @@ Use `$cybernetic` to classify whether the review loop is:
 - complex: lab experimentation and counterexample compilation needed;
 - chaotic: stabilize first.
 
-Cleanroom `$resolve` treats repeated CAS refinement as complex until proven otherwise.
+Review-closure workflows should treat repeated CAS refinement as complex until proven otherwise.

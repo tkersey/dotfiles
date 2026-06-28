@@ -24,26 +24,6 @@ esac
 contexts=""
 messages=""
 
-resolve_bin=$(resolve_c3_bin || true)
-if [ -n "${resolve_bin:-}" ]; then
-  resolve_output=$("$resolve_bin" hook-context --cwd "$PWD" 2>/dev/null || true)
-  resolve_active=$(printf '%s' "$resolve_output" | jq -r '.active // false' 2>/dev/null || printf false)
-  if [ "$resolve_active" = "true" ]; then
-    resolve_context=$(printf '%s' "$resolve_output" | jq -r '.context // ""' 2>/dev/null || true)
-    if [ -n "${resolve_context:-}" ]; then
-      contexts="${contexts}${resolve_context}
-"
-      messages="${messages}Hydrating active C³ review compiler state. "
-    fi
-  fi
-elif c3_root=$(find_c3_root "$PWD" || true); [ -n "${c3_root:-}" ]; then
-  c3_state=$(c3_state_rel "$c3_root")
-  resolve_context="Active C³ state exists at $c3_root/$c3_state, but resolve-c3 is unavailable. Install with: brew install tkersey/tap/resolve-c3"
-  contexts="${contexts}${resolve_context}
-"
-  messages="${messages}Active C³ state found without resolve-c3. "
-fi
-
 repo_root=$(find_st_root "$PWD" || true)
 if [ -n "${repo_root:-}" ] && [ -n "${session_id:-}" ]; then
   st_bin=$(resolve_st_bin "guard-session-start" || true)

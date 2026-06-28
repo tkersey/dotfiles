@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: false
-interface:
-  display_name: "Accretive Implementer"
-  short_description: "Exact kernel realization"
-  default_prompt: "Implement the accepted kernel with no invented distinctions, no orphan surface, and law-level proof."

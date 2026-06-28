@@ -34,38 +34,6 @@ st_plan_file() {
   printf '%s/%s\n' "$1" "$(st_plan_rel "$1")"
 }
 
-find_c3_root() {
-  dir="${1:-$PWD}"
-  while [ "$dir" != "/" ]; do
-    if [ -f "$dir/.ledger/resolve/c3/state.json" ] || [ -f "$dir/.ledger/c3/state.json" ]; then
-      printf '%s\n' "$dir"
-      return 0
-    fi
-    dir=$(dirname "$dir")
-  done
-  return 1
-}
-
-c3_state_rel() {
-  repo_root="${1:?repo root required}"
-  if [ -f "$repo_root/.ledger/resolve/c3/state.json" ]; then
-    printf '%s\n' ".ledger/resolve/c3/state.json"
-    return 0
-  fi
-  if [ -f "$repo_root/.ledger/c3/state.json" ]; then
-    printf '%s\n' ".ledger/c3/state.json"
-    return 0
-  fi
-  printf '%s\n' ".ledger/resolve/c3/state.json"
-}
-
-resolve_c3_bin() {
-  candidate=$(command -v resolve-c3 2>/dev/null || true)
-  [ -n "${candidate:-}" ] || return 1
-  [ -x "$candidate" ] || return 1
-  printf '%s\n' "$candidate"
-}
-
 json_continue() {
   jq -n '{continue: true}'
 }

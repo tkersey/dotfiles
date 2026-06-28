@@ -10,7 +10,7 @@ Emit an `Ablation Activation Receipt` when any comment or selected action involv
 - adding a helper, wrapper, adapter, fallback, flag, knob, state variant, public symbol, branch, compatibility path, or abstraction;
 - preserving a dominated, subsumed, vestigial, uninhabited, pass-through, duplicate, non-canonical, or temporary-scaffold surface;
 - multiple local comments that might share one governing invariant;
-- routing to `$fixed-point-driver` for closure, repeated review/fix loops, or PR resolution.
+- routing to implementation for closure, repeated review/fix loops, or PR closure.
 
 ## Receipts
 

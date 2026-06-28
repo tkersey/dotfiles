@@ -45,7 +45,7 @@
     {
       "activate": false,
       "id": "isolated-invariant",
-      "owner": "invariant-stewardship",
+      "owner": "direct",
       "prompt": "Who owns this one cache invariant?"
     },
     {

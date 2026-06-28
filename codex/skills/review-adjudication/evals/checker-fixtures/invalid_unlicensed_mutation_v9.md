@@ -36,7 +36,7 @@ artifact_state_id:
 - proof-only thread-resolution items: none
 - reply/defer/no-change items: none
 - blocked items: none
-- fixed-point-driver surface handshake required: no
+- bounded mutation receipts required: no
 - proof: test
 
 ## Adjudication Bottom Line

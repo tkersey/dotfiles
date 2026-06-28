@@ -2,7 +2,7 @@
 
 ## Activation goal
 
-Increase useful activation without making `$complexity-mitigator` a mandatory dependency of repair, resolve, or implementation workflows.
+Increase useful activation without making `$complexity-mitigator` a mandatory dependency of repair, review-closure, or implementation workflows.
 
 The skill should fire as a lightweight preflight when existing-code readability risk is visible:
 - simplify / refactor / clean up / untangle;
@@ -13,7 +13,7 @@ The skill should fire as a lightweight preflight when existing-code readability 
 
 ## Non-goal
 
-Do not restore a broad `$fix`/`$resolve` dependency. Instead, use Micro Preflight and hand off immediately when implementation or remediation owns the task.
+Do not restore a broad fix or review-closure dependency. Instead, use Micro Preflight and hand off immediately when implementation or remediation owns the task.
 
 ## Success metric
 

@@ -151,11 +151,11 @@ Run this phase when:
 - an intervention will apply a current workflow contract;
 - source inclusion depends on classifier output such as `review-compiler-audit`.
 Obtain the exact session-level row, not only aggregate counts.
-For `$resolve`/C3:
+For controller-backed review-closure workflows:
 ```bash
 seq review-compiler-audit \
   --root ~/.codex/sessions \
-  --protocol c3-mrpc \
+  --protocol <review-protocol> \
   --repo <repo> \
   --since <time> \
   --until <time> \
@@ -212,8 +212,8 @@ ambiguous
 absent
   stop before replay
 ```
-A filename such as `.step/resolve-c3-st-plan.jsonl` is not a C3 activation.
-A generic merge/land/complete signal is not a C3 close.
+A filename such as `.step/review-workflow-st-plan.jsonl` is not a workflow activation.
+A generic merge/land/complete signal is not controller closure.
 See [source-governance.md](references/source-governance.md).
 ### 1. Find the decision
 Use the narrowest `$seq` surface:

@@ -89,7 +89,7 @@ scheme_plan:
         safe_frontier: []
         forbidden_frontier: []
   handoff:
-    next_owner: $goal-actuating|$goal-workgraph|$goal-grind|$review-fold|$resolve|$plan|$st|$ship|blocked
+    next_owner: $goal-actuating|$goal-workgraph|$goal-grind|$review-fold|$plan|$st|$ship|blocked
     mode:
     required_checks: []
     blocked_on: []
@@ -303,13 +303,13 @@ Route: subagents can work on leaves, but the lead owns fan-in, integration, proo
 
 ## Review loop rule
 
-For review work, default to resolve-and-fix unless the user explicitly requests no implementation.
+For review work, default to review-fix unless the user explicitly requests no implementation.
 
 ```text
 $cas review
 -> $review-fold
 -> optional review-class-fanout
--> resolve pass
+-> closure-agenda pass
 -> optional branch-race
 -> $goal-grind accepted liabilities only
 -> optional patch-fanout over disjoint accepted liabilities only

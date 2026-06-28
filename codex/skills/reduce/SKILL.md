@@ -223,7 +223,7 @@ Winnowing Bottom Line:
 When explicitly asked to implement:
 
 1. Implement exactly one certified reduction seam at a time.
-2. Prefer `one-seam-operator` or `accretive-implementer` under the Reduction Certificate.
+2. Prefer `one-seam-operator` or `goal-actuating` under the Reduction Certificate.
 3. Preserve the old surface until the selected proof relation passes, unless direct deletion is already proven safe.
 4. Run recomposition audit before proceeding to another seam.
 5. Stop on a new observation or lost obligation.

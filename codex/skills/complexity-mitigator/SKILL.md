@@ -21,7 +21,7 @@ FACTORING -> WINNOWING
 - Retain essential domain factors.
 - Expose specification-risk factors before refactoring.
 - Remove, collapse, rename, localize, or delegate incidental factors.
-- Do not run full behavioral quotienting unless repeated distinctions and accepted observations make it necessary; route that to `review-compression-compiler` or `resolve`.
+- Do not run full behavioral quotienting unless repeated distinctions and accepted observations make it necessary; route that to `review-adjudication` or the owning review-closure workflow.
 
 ## Activation
 
@@ -36,10 +36,10 @@ Use for:
 Handoff instead:
 
 - broad layer/framework/tooling tax -> `reduce`;
-- repeated review distinctions / behavioral kernel -> `review-compression-compiler` or `resolve`;
+- repeated review distinctions / behavioral kernel -> `review-adjudication` or the owning review-closure workflow;
 - illegal states / invariant ownership -> `invariant-ace`;
 - missing essential structural shape -> `universalist`;
-- implementation -> `accretive-implementer` or the owning workflow.
+- implementation -> `goal-actuating` or the owning workflow.
 
 ## Modes
 

@@ -5,22 +5,6 @@ set -eu
 
 payload=$(cat)
 
-resolve_bin=$(resolve_c3_bin || true)
-if [ -n "${resolve_bin:-}" ]; then
-  resolve_output=$(printf '%s' "$payload" | "$resolve_bin" guard-hook --cwd "$PWD" 2>/dev/null || true)
-  resolve_status=$(printf '%s' "$resolve_output" | jq -r '.status // "allow"' 2>/dev/null || printf allow)
-  if [ "$resolve_status" = "block" ]; then
-    reason=$(printf '%s' "$resolve_output" | jq -r '.reason // "C³ blocked a direct delivery mutation."' 2>/dev/null || printf 'C³ blocked a direct delivery mutation.')
-    jq -n --arg reason "$reason" '{continue: true, decision: "block", reason: $reason}'
-    exit 0
-  fi
-elif c3_root=$(find_c3_root "$PWD" || true); [ -n "${c3_root:-}" ]; then
-  c3_state=$(c3_state_rel "$c3_root")
-  reason=$(printf 'Active C³ state exists at %s/%s, but resolve-c3 is unavailable.' "$c3_root" "$c3_state")
-  jq -n --arg reason "$reason" '{continue: true, decision: "block", reason: $reason}'
-  exit 0
-fi
-
 session_id=$(printf '%s' "$payload" | jq -r '.session_id // ""')
 transcript_path=$(printf '%s' "$payload" | jq -r '.transcript_path // ""')
 

@@ -42,23 +42,23 @@ When an accepted implementation spec is present, treat it as the source of truth
 
 ```yaml
 goal_actuating_mode:
-  source: direct-goal|spec-first|review-only|resolve-only|resolve-and-fix|dry-plan|st-governed
+  source: direct-goal|spec-first|review-only|agenda-only|review-fix|dry-plan|st-governed
   persistence: update_plan|goal-artifacts|st
   implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
   review: none|existing-review|cas-probe|cas-lane|cas-exhaustive
-  resolution: none|review-fold-only|resolve-pass|resolve-and-fix|resolve-campaign
+  resolution: none|review-fold-only|closure-agenda|review-fix|review-campaign
   scheme_plan: none|required|present
   parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
-  closure: review-disposition|resolution-agenda|proof-patch|ship-handoff|blocked
+  closure: review-disposition|closure-agenda|proof-patch|ship-handoff|blocked
 ```
 
 - `spec-first`: execute an accepted implementation spec without scope drift.
 - `direct-goal`: execute a goal that already has outcome, constraints, and proof checks.
 - `review-only`: classify review findings and stop without mutation.
-- `resolve-only`: classify findings and produce a closure agenda without mutation.
-- `resolve-and-fix`: default review mode; resolve findings, implement accepted liabilities only, and require three clean normalized CAS review runs before completion.
+- `agenda-only`: classify findings and produce a closure agenda without mutation.
+- `review-fix`: default review mode; classify findings, implement accepted liabilities only, and require three clean normalized CAS review runs before completion.
 - `dry-plan`: show the goal contract and work list only; do not mutate.
-- `st-governed`: hand off to `$st` and `$fixed-point-driver` when durable coordination owns the work.
+- `st-governed`: hand off to `$st` with bounded execution slices when durable coordination owns the work.
 
 ## Procedure
 
@@ -69,13 +69,13 @@ goal_actuating_mode:
 5. Choose `update_plan`, `goal-artifacts`, or `$st` persistence.
 6. If the workflow performs fresh or exhaustive review, run `$cas` review.
 7. Classify review findings with `$review-fold`.
-8. Run a resolve pass when review work needs a closure agenda.
+8. Run a closure-agenda pass when review work needs a closure agenda.
 9. Create a work list with `$goal-workgraph` only when decomposition changes execution.
 10. Schedule bounded subagents only for explicit safe frontier nodes.
 11. Execute one useful action at a time with `$goal-grind`, unless `$st` owns execution.
-12. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolve pass as appropriate.
+12. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the closure-agenda pass as appropriate.
 13. Use `$failure-memory` when failures or review classes repeat.
-14. For `resolve-and-fix` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
+14. For `review-fix` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
 15. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
 
 ## Scheme Plan consumption
@@ -126,7 +126,7 @@ Allowed scheduler decisions:
 - use `repo_scout` for read-only fact-finding over independent repository areas;
 - use `review_reducer` over review classes after `$cas review` and `$review-fold`;
 - use `branch_racer` when strategies can be isolated and compared by the same verifier;
-- use `patch_worker` only after the resolve pass accepts code-change liabilities and the nodes are file-disjoint or otherwise isolated;
+- use `patch_worker` only after the closure-agenda pass accepts code-change liabilities and the nodes are file-disjoint or otherwise isolated;
 - use `evidence_critic` for proof fan-in or contested evidence.
 
 The lead must fold all subagent outputs before continuing.
@@ -137,7 +137,7 @@ No subagent may declare the goal complete, post/update public PR state, or broad
 Every subagent result must fold through exactly one owner:
 
 - `review-fold` for review classification results;
-- `resolve pass` for closure agenda decisions;
+- `closure-agenda pass` for closure agenda decisions;
 - `evidence-fold` for tests, proof, diffs, logs, and verifier output;
 - lead integration for accepted patches;
 - `$ship` only for PR creation/update/promotion/publication.
@@ -187,19 +187,19 @@ A goal may close without code review only when the accepted proof requirements d
 ```text
 $cas review
 -> $review-fold
--> resolve pass
+-> closure-agenda pass
 -> $goal-grind accepted liabilities only
 ```
 
 ## Review behavior
 
-If review is requested and no no-code modifier is present, use `resolve-and-fix`.
+If review is requested and no no-code modifier is present, use `review-fix`.
 
 ```text
 $cas review
 -> $review-fold
 -> optional review-class-fanout
--> resolve pass
+-> closure-agenda pass
 -> optional branch-race
 -> $goal-grind accepted liabilities only
 -> optional patch-fanout over disjoint accepted liabilities only
@@ -215,7 +215,7 @@ do not implement
 review only
 audit only
 classify only
-resolve only
+agenda only
 plan only
 no changes
 ```
@@ -228,11 +228,16 @@ Exhaustive review is not optional once requested or required. `$review-fold` con
 
 ## Three clean normalized CAS review runs
 
-For `resolve-and-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same artifact scope unless the user explicitly lowers the review bar.
+For `review-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same artifact scope unless the user explicitly lowers the review bar.
 
-A clean normalized CAS run means `$cas` produces no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker after `$review-fold` and the resolve pass.
+A clean normalized CAS run means `$cas` produces no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker after `$review-fold` and the closure-agenda pass.
 
-Do not reset the clean-run counter for findings that are duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already resolved by the current implementation.
+Do not reset the clean-run counter for findings that are duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already addressed by the current implementation.
+
+Do not increment the clean-run counter from repeated normalization of one cached
+CAS receipt. After terminal evidence exists for the tuple, request each
+additional independent run with `--fresh-attempt REASON`, then verify the streak
+with `cas review_session receipt proof --clean-streak 3 ...`.
 
 Reset the clean-run counter to zero when:
 
@@ -249,9 +254,9 @@ serial integration changes the artifact
 
 If `$cas` cannot run, or the three-clean-run bar cannot be reached because of resource limits, stop with `actuation verdict: cas-review-blocked`.
 
-## Resolve pass
+## Closure-agenda pass
 
-A resolve pass turns classified findings into the smallest correct closure agenda.
+A closure-agenda pass turns classified findings into the smallest correct closure agenda.
 
 It decides:
 
@@ -262,15 +267,13 @@ It decides:
 - which require a human decision;
 - which findings collapse into one `refactor-kernel`.
 
-The resolve pass must not mutate code.
-
-Use `$resolve` as a handoff only when review findings require a dedicated closure agenda. Do not root-activate `$resolve`. Do not call `$resolve` for every review.
+The closure-agenda pass must not mutate code and must not hand raw review prose to implementation.
 
 ## Resolution output
 
 ```yaml
-review_resolution:
-  mode: review-only|resolve-only|resolve-and-fix
+review_closure_agenda:
+  mode: review-only|agenda-only|review-fix
   source: cas-review|existing-review|human-review
   clean_cas_runs:
     required: yes|no

@@ -7,7 +7,7 @@ or permission.
 
 ## Core principle
 
-Every `Resolve Selection` row needs an adversarial response. The response must
+Every `Route Selection` row needs an adversarial response. The response must
 attempt to defeat, downgrade, reroute, narrow, or block the selected action.
 
 Adversarial responses are read-only. They may inspect current artifacts, proofs,
@@ -52,15 +52,15 @@ Escalate to `full-fanout` or `swarm` when any of these are true:
 - current CAS/Codex findings are invariant-framed and would mutate code
 - the no-change case is weak, generic, or reviewer-authority-shaped
 - validation-only is rejected for a plausible unproven finding
-- implementation would route to `$fixed-point-driver`
+- implementation would route to the owning implementation workflow
 - comments are coupled through one governing invariant
 
 ## Adversarial Action Matrix
 
-Emit this table after `Resolve Countercases`:
+Emit this table after `Route Countercases`:
 
 ```md
-| id/thread | primary resolve decision | adversarial lanes | parallelism mode | strongest adversarial response | veto status | clearance | proof ref | decision impact |
+| id/thread | primary route decision | adversarial lanes | parallelism mode | strongest adversarial response | veto status | clearance | proof ref | decision impact |
 |---|---|---|---|---|---|---|---|---|
 ```
 

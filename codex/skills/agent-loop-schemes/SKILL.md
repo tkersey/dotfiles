@@ -26,7 +26,7 @@ Do not build a generic "keep going" loop. Pick the loop shape that matches the w
 - Designing or revising `/goal`, `$actuating`, `$goal-actuating`, review, debug, migration, or long-horizon coding workflows.
 - An agent is drifting, repeating fixes, over-patching review comments, or claiming completion without current proof.
 - A task needs a verifier, stop condition, review closure rule, memory policy, or branch-race strategy.
-- You need to decide whether to use direct execution, `update_plan`, `.goal/*`, `$st`, `$cas`, `$review-fold`, `$resolve`, `$goal-grind`, `$evidence-fold`, `$proof-patch`, or `$ship`.
+- You need to decide whether to use direct execution, `update_plan`, `.goal/*`, `$st`, `$cas`, `$review-fold`, `$goal-grind`, `$evidence-fold`, `$proof-patch`, or `$ship`.
 
 Do not use for trivial one-shot edits where the next action and proof are obvious.
 
@@ -57,7 +57,7 @@ Emit this compact object:
 ```yaml
 agent_loop_scheme:
   task_shape: direct|goal|review|debug|migration|branch_race|proof_closure|st_governed
-  selected_loop: direct_action|goal_grind|review_resolve_and_fix|review_only|resolve_only|debug_history|migration_memoized|branch_race|proof_patch|st_governed
+  selected_loop: direct_action|goal_grind|review_fix|review_only|agenda_only|debug_history|migration_memoized|branch_race|proof_patch|st_governed
   seed:
     source: accepted_spec|direct_goal|review_findings|test_failure|migration_target|plan_handoff
     authority:
@@ -76,7 +76,7 @@ agent_loop_scheme:
     invalid_strategies: []
   review_policy:
     source: none|existing-review|cas-review
-    mode: none|review-only|resolve-only|resolve-and-fix
+    mode: none|review-only|agenda-only|review-fix
     clean_cas_runs_required: 0|3
   proof:
     artifact:
@@ -110,14 +110,14 @@ goal contract -> work list when useful -> one focused action -> evidence fold ->
 
 Use `$goal-actuating`, `$goal-contract`, `$goal-grind`, `$evidence-fold`, and `$proof-patch`.
 
-### 3. Review resolve-and-fix
+### 3. Review-fix
 
 Default for review work unless the user explicitly says not to implement.
 
 ```text
 $cas review
 -> $review-fold
--> resolve pass
+-> closure-agenda pass
 -> $goal-grind accepted liabilities only
 -> $evidence-fold
 -> 3 clean normalized $cas review runs
@@ -140,15 +140,15 @@ $cas review
 
 No `$goal-grind`.
 
-### 5. Resolve-only
+### 5. Agenda-only
 
 Use when the user wants the minimal closure agenda but no code changes.
 
 ```text
 $cas review or existing findings
 -> $review-fold
--> resolve pass
--> resolution agenda
+-> closure-agenda pass
+-> review closure agenda
 -> stop
 ```
 
@@ -199,7 +199,7 @@ A proof summary must bind to current branch/head/diff or explicitly say artifact
 Use when durable coordination owns the work.
 
 ```text
-$st -> selected slice -> fixed-point-driver -> evidence -> proof
+$st -> selected slice -> bounded execution -> evidence -> proof
 ```
 
 Choose this when the task needs resource claims, fencing tokens, independent worktrees, serialized integration, branch/head proof, or existing `.step/st-plan.jsonl` continuity.
@@ -209,7 +209,7 @@ Choose this when the task needs resource claims, fencing tokens, independent wor
 For review remediation:
 
 ```text
-default = resolve-and-fix
+default = review-fix
 ```
 
 Unless the user says one of:
@@ -219,16 +219,16 @@ do not implement
 review only
 audit only
 classify only
-resolve only
+agenda only
 plan only
 no changes
 ```
 
-For `resolve-and-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same artifact scope unless the user explicitly lowers the review bar.
+For `review-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same artifact scope unless the user explicitly lowers the review bar.
 
-A clean normalized run means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the resolve pass.
+A clean normalized run means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the closure-agenda pass.
 
-Do not reset the clean-run counter for duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-resolved findings.
+Do not reset the clean-run counter for duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-addressed findings.
 
 Reset the counter when code changes, review scope changes, base/head/diff changes, the proof bar changes, or CAS lane/session continuity is lost.
 
@@ -293,7 +293,6 @@ the next action would repeat a known invalid strategy
 - `$actuating` when the user wants the high-level workflow.
 - `$cas` as the review backend for workflow code review.
 - `$review-fold` to classify findings before implementation.
-- `$resolve` only when a dedicated closure agenda is needed.
 - `$goal-grind` for accepted implementation liabilities.
 - `$evidence-fold` after verification or review results.
 - `$failure-memory` when repeated classes or oscillation appear.

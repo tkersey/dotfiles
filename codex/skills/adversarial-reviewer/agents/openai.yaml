@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: false
-interface:
-  display_name: "Adversarial Reviewer"
-  short_description: "Authority-gated adversarial review and change agenda"
-  default_prompt: "Use $adversarial-reviewer for this task."

@@ -9,7 +9,7 @@ Use common route words across adjudication, warrants, fixed-point work, and thre
 - `defer`
 - `need-evidence`
 
-## Resolve decisions
+## Route decisions
 
 - `address`
 - `validate-only`

@@ -34,7 +34,7 @@ Do not use `$ship` when:
 - implementation is not done and the user did not ask for early visibility;
 - validation is failing and the user did not explicitly accept a caveated draft;
 - the user wants merge/landing; use `$land`;
-- the user only wants readiness proof; use `$verification-closure`;
+- the user only wants readiness proof; use `$proof-patch`;
 - the current branch has unrelated or unstaged work that cannot be scoped.
 
 ## Inputs

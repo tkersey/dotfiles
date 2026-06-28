@@ -62,7 +62,7 @@ skill_decision_contract:
       description: Workflow artifact repair/migration could be misclassified as workflow use.
       cue_literals:
         - artifact_under_repair
-        - .step/resolve-c3-st-plan.jsonl
+        - .step/review-workflow-st-plan.jsonl
         - sidecar durable state
         - delete sidecar
       cue_regexes: []

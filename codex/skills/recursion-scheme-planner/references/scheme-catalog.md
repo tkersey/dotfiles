@@ -24,19 +24,19 @@ This catalogue is a practical planning map. It is not a theorem-prover and not a
 Most real coding tasks use combinations:
 
 ```text
-review resolve-and-fix = cata(CAS findings) + dyna(review classes) + hylo(accepted fixes) + zygo(proof) + terminal CAS fixed point
+review-fix = cata(CAS findings) + dyna(review classes) + hylo(accepted fixes) + zygo(proof) + terminal CAS fixed point
 migration = ana(package/error matrix) + dyna(class memoization) + hylo(apply/prove) + cata(repo evidence)
 hard debug = histo(attempts) + futu(strategy branches) + hylo(action/evidence)
 refactor = para(original code) + meta(old->new shape) + zygo(proof)
-parallel PR review = ana(review classes) + parallel traversal + cata(resolve/fan-in)
+parallel PR review = ana(review classes) + parallel traversal + cata(closure fan-in)
 ```
 
 ## Clean CAS fixed point
 
-For `resolve-and-fix` and exhaustive review:
+For `review-fix` and exhaustive review:
 
 ```text
 3 consecutive clean normalized CAS review runs
 ```
 
-A clean normalized run is a fold result, not raw absence of comments. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-resolved findings do not dirty the run.
+A clean normalized run is a fold result, not raw absence of comments. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-addressed findings do not dirty the run.

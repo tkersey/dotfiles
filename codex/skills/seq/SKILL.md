@@ -64,7 +64,6 @@ artifact-search
 ### Review/workflow audits
 ```text
 review-compiler-audit
-resolve-churn-audit
 adjudication-audit
 goal-audit
 routing-gap
@@ -223,7 +222,7 @@ Before a session-level claim:
 4. distinguish present signals from absence-derived evidence;
 5. classify workflow and closure provenance;
 6. only then use the row as a `$retrace` source.
-For C3/MRPC, workflow evidence roles are:
+For controller-backed review-closure workflows, evidence roles are:
 ```text
 controller_invocation
 controller_event
@@ -236,9 +235,9 @@ historical_reference
 generic_prose
 ```
 Only controller-grade evidence proves authoritative governance.
-A path containing `resolve-c3` is not activation.
+A path containing only a workflow name is not activation.
 Generic completion, merge, or land evidence is not controller closure.
-When evidence is incidental, exclude the row from the true C3 denominator rather than deriving `c3_required`.
+When evidence is incidental, exclude the row from the true workflow denominator rather than deriving required/entered/closed state.
 Use ordered lifecycle evidence when available:
 ```text
 begin
@@ -278,11 +277,11 @@ See [retrace-decision-capsules.md](references/retrace-decision-capsules.md).
 
 ## Protocol separation
 Do not evaluate one protocol with another protocol’s vocabulary.
-For `$resolve` distinguish:
+For review-closure workflow audits, distinguish:
 ```text
 legacy-cleanroom
-c3-mrpc
-mbk
+controller-backed
+kernel-compression
 mixed
 none
 ```
@@ -292,7 +291,7 @@ expected protocol
 detected protocol
 mismatch
 ```
-Keep C3 compression evidence separate from MBK/RC/recomposition evidence.
+Keep controller lifecycle evidence separate from kernel/compression/recomposition evidence.
 
 ## Churn, Git delta, and semantic surface
 Never collapse:

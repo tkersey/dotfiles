@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: false
-interface:
-  display_name: "Resolve"
-  short_description: "Review closure workflow"
-  default_prompt: "Use $resolve only when explicitly invoked or handed off by another active skill."
