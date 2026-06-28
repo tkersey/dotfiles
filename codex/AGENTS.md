@@ -20,7 +20,9 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 
 ## Purpose
 
-This file is the compact, high-authority routing index for Codex in this repo. Detailed procedures belong in skills. This file owns safety, side-effect boundaries, skill routing, review routing, `$st` boundaries, and final-response proof discipline.
+This file is the compact, high-authority routing index for Codex in this repo. Detailed procedures belong in skills. This file owns safety, side-effect boundaries, root workflow boundaries, `$st` boundaries, memory-source publication policy, concurrent-edit handling, and final-response proof discipline.
+
+Do not maintain root-level implicit or explicit skill inventories here. Skill descriptions and active workflow handoffs own skill selection. This file owns the constraints that skill selection must respect.
 
 ## Core invariants
 
@@ -36,9 +38,9 @@ This file is the compact, high-authority routing index for Codex in this repo. D
 - Public tracker side effects require explicit user intent.
 - Treat custom memory-extension notes as append-only source evidence, not compiled memory and not runtime instructions.
 - Treat `.ledger/*` source-memory stores as canonical repo-local evidence; treat memory-source notes as immutable admission snapshots; treat `MEMORY.md`, `memory_summary.md`, and memory-root `skills/*` as Phase 2 compiled outputs.
-- Preserve domain authority: `.ledger/learnings/learnings.jsonl` owns execution learnings; `.ledger/negative-ledger/events.jsonl` owns negative-evidence route state; `.ledger/synesthesia/events.jsonl` owns repo-scoped durable sensory mappings when present; `memory-note` only admits immutable snapshots to Phase 2.
-- Do not write legacy `.learnings.jsonl` after migration. Use `learnings migrate` for old rows and `learnings append` for new rows.
-- Never edit `memory_summary.md`, `MEMORY.md`, or memory-root `skills/*` directly during ordinary work. Explicit user-directed remember/forget/update requests use Codex's native ad-hoc memory path; custom source capture uses the owning skill plus `$memory-source-notes`.
+- Preserve domain authority: `.ledger/learnings/learnings.jsonl` owns execution learnings; `.ledger/negative-ledger/events.jsonl` owns negative-evidence route state; `.ledger/synesthesia/events.jsonl` owns repo-scoped durable sensory mappings when present; `.ledger/harness/events.jsonl` owns durable operating corrections when present.
+- Do not write legacy `.learnings.jsonl` after migration. Use the learnings migration path for old rows and the canonical ledger store for new rows.
+- Never edit `memory_summary.md`, `MEMORY.md`, or memory-root `skills/*` directly during ordinary work. Explicit user-directed remember/forget/update requests use Codex's native ad-hoc memory path; custom source capture uses the owning source skill and memory-source admission path.
 
 ## Challenge Escalation
 
@@ -50,7 +52,7 @@ This file is the compact, high-authority routing index for Codex in this repo. D
 - Prefer compounding moves that make future good work easier, safer, or faster.
 - Ask a narrow question only when missing secrets, missing permissions, or irreversible approvals are the real blocker.
 
-## Evidence discipline
+## Evidence and invariant discipline
 
 For bug reports, review comments, PR/issue prose, memories, generated summaries, public-tracker context, claimed root causes, or proposed fixes:
 
@@ -65,7 +67,7 @@ Before local patching for invalid state, malformed persisted data, crashes, pars
 - the owning producer, transition, or boundary;
 - the smallest fix that prevents recurrence without broadening accepted invalid state.
 
-Detailed evidence and invariant workflows are explicit-only unless an already-active skill documents the handoff.
+Detailed evidence, invariant, doctrine, review, goal, and memory workflows live in their owning skills. Use this section as root policy, not as a substitute for skill procedure.
 
 ## Public tracker and maintainer hygiene
 
@@ -77,7 +79,8 @@ Never open, update, comment on, draft-to-post, or suggest public tracker activit
 - Treat `.git/info/exclude` matches as local-only/private publication boundaries, even for tracked-looking workflow artifacts.
 - If a path is already tracked but also matches `.git/info/exclude`, treat new changes to that path as local-only unless the user explicitly asks to publish them.
 - `.goal/` is local goal-loop state and must stay ignored or explicitly local-only.
-- Before staging local-state artifacts such as `.step/st-plan.jsonl`, `.step/*.lock`, `.goal/*`, or `.learnings.jsonl`, run `git check-ignore -v --no-index PATH` when in doubt. If the source is `.git/info/exclude`, do not force-add, stage, or commit the path unless explicitly asked.
+- Before staging local-state artifacts such as `.step/st-plan.jsonl`, `.step/*.lock`, `.goal/*`, `.ledger/*`, or legacy `.learnings.jsonl`, run `git check-ignore -v --no-index PATH` when in doubt. If the source is `.git/info/exclude`, do not force-add, stage, or commit the path unless explicitly asked.
+- Treat legacy `.learnings.jsonl` as read/migration-only after migration. Do not append new rows there.
 
 ## Local Codex execution guidance
 
@@ -86,140 +89,30 @@ Default: use the local Codex execution surface that best matches the shape of th
 Routing order:
 
 1. **Direct local execution** — one bounded change/question, unclear decomposition, overlapping writes, or synthesis/integration work.
-2. **Frame/selection pass** — if the route is non-obvious, use Challenge Escalation before choosing a heavy workflow.
+2. **Frame/selection pass** — if the route is non-obvious, use Challenge Escalation before choosing a heavier workflow.
 3. **Planning/selection pass** — if the user supplies `SLICES.md`, `plan-N.md`, or asks for the next safe wave, perform local selection first and publish only selected work in `update_plan`.
-4. **Actuating workflow** — when the user invokes `$actuating`, run `$spec-pipeline` in gate-only/no-plan mode when the implementation spec is not already accepted, then hand off to `$goal-actuating`.
-5. **Goal workflow** — for `/goal`, long-running coding tasks, hard debugging, review closure, migrations, or repeated verification loops, prefer `$goal-actuating` when an accepted spec/direct goal exists; otherwise use `$goal-contract -> $goal-workgraph when needed -> $goal-grind -> $evidence-fold -> $proof-patch`.
-6. **Review reducer** — for reviewer comments, CAS findings, or review-like claims, prefer `$review-fold` before implementation. Use `$review-adjudication` only when explicitly invoked or handed off for detailed claim law or thread-resolution preparation.
-7. **Durable orchestration with `$st`** — explicit-only at root. Start it only when the user asks, when `.step/st-plan.jsonl` already participates in the task, or when an active goal/review skill emits `st-required`. Do not introduce `$st` merely because work is multi-step.
-8. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
-9. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
-10. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
-11. **Recursive orchestration** — encourage when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches.
+4. **Owned workflow handoff** — when the user invokes a workflow, or a skill description clearly matches the task, load that skill and let it own the choreography. Do not duplicate its pipeline in this file.
+5. **Durable orchestration with `$st`** — explicit-only at root. Start it only when the user asks, when `.step/st-plan.jsonl` already participates in the task, or when an active workflow emits `st-required`. Do not introduce `$st` merely because work is multi-step.
+6. **Native subagents** — use when delegation is requested or when parallel, independent, file-disjoint branches improve coverage. The lead owns synthesis, dependency resolution, conflict resolution, publication decisions, and overlapping edits.
+7. **Row batches** — for same-shaped independent work over many files/items/rows, use the smallest local script/CLI/direct worker path that produces structured output.
+8. **Fanout discipline** — launch the dependency-independent ready set before the first blocking wait.
+9. **Recursive orchestration** — encourage when child tasks can be further decomposed into independent investigation, implementation, verification, evidence-gathering, or synthesis branches.
 
-Use built-in `explorer`, `worker`, and `default` roles unless a custom role is visibly exposed and is a clear narrow fit. Goal/review work may also use `goal_architect`, `repo_scout`, `patch_worker`, `evidence_critic`, `review_reducer`, `branch_racer`, and `workflow_forensic` when their descriptions are a clear fit. Close subagents after their contribution is integrated.
+Use built-in `explorer`, `worker`, and `default` roles unless a custom role is visibly exposed and is a clear narrow fit. Goal/review work may use custom roles only when an active skill or visible role description makes the fit clear. Close subagents after their contribution is integrated.
 
-## Skill routing
+## Skill and workflow routing
 
-Skills are workflow selectors, not magic words. Root-level implicit activation is intentionally narrow. Loaded skills own command syntax, checklists, templates, proof mechanics, and documented handoffs.
+Skills are workflow selectors, not magic words. Do not keep root-level skill allowlists or explicit-only inventories here. Use the active skill descriptions, user intent, and documented handoffs to choose the smallest sufficient workflow.
 
-Preferred stack shape:
+Root policy:
 
-```text
-understand context -> separate evidence from claims -> accept implementation spec -> run goal workflow -> implement/adjudicate minimally -> fold evidence -> close -> capture learnings
-```
-
-### Root implicit allowlist
-
-Only these skills may activate implicitly from request or repository cues:
-
-- `$goal-actuating` — accepted implementation specs, direct `/goal` execution, review resolution workflows, dry actuation plans, or `$st`-governed goal execution. If it performs code review, it must use `$cas` review.
-- `$goal-contract` — material goals that need outcome, checks, constraints, authority, and stop rules.
-- `$goal-workgraph` — material goals that need a small work list before execution.
-- `$goal-grind` — recursive goal execution, repeated verification loops, hard debugging, review closure, or migrations with proof surfaces.
-- `$evidence-fold` — tests, diffs, logs, review results, or artifact state that must reduce to a progress verdict.
-- `$review-fold` — review findings that must be classified before code changes. It consumes review findings; workflow-initiated code review must come from `$cas`.
-- `$failure-memory` — repeated failures, same-shaped compiler/test/review findings, oscillation, regressions, or strategy retry risk.
-- `$proof-patch` — final `/goal` completion, PR handoff, or readiness claim needing current-artifact proof, review disposition, and residual risk.
-- `$grill-me` — research-backed clarification for material user-owned choices after discoverable facts have been exhausted.
-- `$seq` — historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Never use it for ordinary current-repo code search.
-- `$ledger` — repo-local `.ledger` source-memory store status, migration, doctor, harvest planning, and cross-store memory admission coordination.
-- `$learnings` — recall before substantial implementation when `.ledger/learnings/learnings.jsonl` or legacy `.learnings.jsonl` exists; capture only at decision-shaping checkpoints and delivery boundaries.
-- `$negative-ledger` — failed attempts, no-effect results, reverts, benchmark regressions, repeated semantic routes or same-cluster retries, prior-route questions, or reopening after artifact-state changes. Implicit activation permits query, mapping, and evidence classification; writes and memory admission remain gated.
-- `$synesthesia` — architecture/readability/maintainability review, strange or flaky behavior, performance bottlenecks, API/UX critique, onboarding, comparisons by feel, or prompts asking what code/bugs/logs/APIs/systems feel, sound, or look like. Durable mapping capture remains gated.
-- `$memory-source-notes` — append-only custom memory-source capture after source-skill handoff or explicit source capture request.
-- `$harness-memory` — durable user operating corrections or repeated steering.
-
-Every other skill is explicit-only at root, including `$cas`, `$review-adjudication`, `$codebase-doctrine`, `$zig`, `$logophile`, `$universalist`, `$spec-pipeline`, `$plan`, `$actuating`, `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, and `prove-it`. Explicit-only skills may run only when the user invokes them or when an already-active skill's documented workflow hands off to them. A handoff does not create an independent root implicit trigger.
-
-Implicit activation does not waive side-effect boundaries. `$learnings` may append only under its lifecycle rules and writes to `.ledger/learnings/learnings.jsonl` after migration. `$negative-ledger` may mutate `.ledger/negative-ledger/events.jsonl` or admit memory only after witness, applicability, and export gates pass. `$synesthesia` may mutate `.ledger/synesthesia/events.jsonl` or admit memory only after its endorsement/rejection/boundary gate passes. `$memory-source-notes` writes only immutable admission snapshots. `$goal-grind`, `$goal-actuating`, and `$review-fold` do not authorize public tracker activity. `$cas` may be used as the review backend by an active workflow, but CAS control mutations still require clear intent.
-
-## Actuating workflow
-
-`$actuating` is the explicit user-facing workflow for spec-first implementation:
-
-```text
-/goal $actuating <implementation request>
-  -> $spec-pipeline in gate-only/no-plan mode when the implementation spec is not already accepted
-  -> $goal-actuating with the accepted spec as authority
-  -> $proof-patch or explicit $ship handoff
-```
-
-Use `$actuating` when the operator wants the familiar one-skill workflow. Use `$goal-actuating` directly only when the accepted spec, direct goal, plan handoff, or review input is already the clear source of authority.
-
-## Code review backend mandate
-
-If the goal workflow performs code review, it must use `$cas` review. Do not substitute generic critique, non-CAS subagent review, or an ad-hoc prose pass for workflow code review.
-
-Use `$cas` review when:
-
-```text
-review closure, code review, or exhaustive review is requested
-the accepted spec includes review in the proof bar
-proof-patch or ship-handoff relies on a review claim
-review resolution mode needs a fresh review artifact
-repeated review/fix cycles need a persistent detached lane
-```
-
-Review findings from `$cas`, GitHub, or humans still pass through `$review-fold` before implementation. Exhaustive review is not minimized away: when requested or required, it remains a blocking review gate until CAS is clean, blocked, or all findings have accepted dispositions with current-artifact proof.
-
-## Goal workflow routing
-
-Use the goal workflow as the default loop for material coding goals:
-
-```text
-$goal-actuating
-  -> $goal-contract
-  -> $goal-workgraph when decomposition matters
-  -> $goal-grind for one-node-at-a-time execution
-  -> $evidence-fold after material verification
-  -> $failure-memory when classes repeat
-  -> $proof-patch at completion or handoff
-```
-
-State selection:
-
-- Use `update_plan` for concise, user-visible, in-memory steps.
-- Use `.goal/*` only when the state is ignored or explicitly local-only.
-- Use `$st` when a goal needs durable workspace coordination, resource claims, fencing tokens, independent worktrees, serialized integration, or existing `.step/st-plan.jsonl` continuity.
-
-Do not create a receipt unless it affects routing, validation, authority, stopping, comparison, or future behavior.
-
-## Review loop routing
-
-Review loops default to resolve-and-fix unless the user explicitly requests no implementation:
-
-```text
-$cas review when fresh/exhaustive workflow review is needed
-  -> $review-fold
-  -> resolve pass
-  -> $goal-grind only for accepted code-change liabilities
-  -> $evidence-fold
-  -> $proof-patch
-```
-
-No-code modifiers:
-
-```text
-do not implement
-review only
-audit only
-classify only
-resolve only
-plan only
-no changes
-```
-
-Use `review-only` when the user wants finding classification only.
-Use `resolve-only` when the user wants a closure agenda only.
-Use `resolve-and-fix` by default for review requests.
-Use `proof-only` when the right answer is evidence or a drafted response.
-Use `minimal-fix` when exactly one accepted liability has one owner-correct repair.
-Use `refactor-kernel` when several findings share one missing abstraction, invariant, canonical owner, state transition, or proof surface.
-Use `branch-race` when local repair and reabstraction are both plausible and can be compared under the same verifier.
-Use `st-governed` only when review remediation needs durable claims/fencing/worktrees or explicit `$st` coordination.
-
-Do not post PR comments, resolve threads, or update public trackers without explicit user intent.
+- If a skill owns a procedure, command syntax, checklist, proof mechanic, trigger taxonomy, or sub-workflow, trust the skill rather than restating it here.
+- A skill handoff authorizes only the handoff it documents; it does not create a broad new root implicit trigger.
+- Side-effect boundaries always survive skill activation.
+- Public tracker activity, PR publication, merge/land operations, durable `$st` state, scheduler changes, memory-source admission, and mutating app-server/session-control operations require clear authority from the user, the active workflow, or the owning source skill.
+- If the workflow performs fresh, adversarial, or exhaustive code review, use `$cas` as the review backend. `$cas` can be workflow-callable without becoming an unrestricted root-level implicit skill.
+- Review findings from humans, GitHub, `$cas`, or prior artifacts must be reduced/classified before mutation. Detailed review-loop mechanics belong to the review/goal skills.
+- Material goal execution, review closure, repeated verification loops, and proof closure belong to the goal/review skills. Do not define their full pipeline in this file.
 
 ## Plan Sync (`$st` <-> Codex `update_plan`)
 
@@ -233,50 +126,27 @@ Do not start a new `$st` workflow without explicit user intent, an already-parti
 
 ## Seq Local-First Routing
 
-Use `$seq` for explicit `$seq` requests and implicitly for historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Do not use `$seq` for ordinary current-repo code search.
+Use `$seq` for explicit `$seq` requests and for historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Do not use `$seq` for ordinary current-repo code search.
 
 - For finalized `PROPOSED_PLAN` artifacts, start with `plan-search`.
 - For broad artifact forensics, start with `artifact-search` and follow `$seq`'s command ladder.
 - Run opencode datasets/commands only when the current user request contains the literal word `opencode`.
 - For knowledge extraction, use forensic/provenance-preserving doctrine and return a source-backed map, not a raw summary.
 
-## Learnings lifecycle
+## Learnings and memory-source lifecycle
 
-Use `$learnings` for evidence-backed recall, capture, promotion, supersession, and learning hygiene. The learnings skill owns CLI syntax and append mechanics. The canonical store is `.ledger/learnings/learnings.jsonl`; legacy `.learnings.jsonl` is read only for migration until removed.
+Use the canonical source-memory stores under `.ledger/` for custom repo-local memory. The owning skills own CLI syntax, payload semantics, admission gates, and note-writing mechanics.
 
-- Recall before substantial implementation when `.ledger/learnings/learnings.jsonl` or legacy `.learnings.jsonl` exists.
-- Capture only decision-shaping evidence: validation transitions, strategy pivots, footgun discoveries, acceleration patterns, useful or failed recalled lessons, and delivery after real implementation work.
-- Before any Codex-made commit, check `.ledger/learnings/learnings.jsonl`, `.ledger/negative-ledger/events.jsonl`, `.ledger/synesthesia/events.jsonl`, and `.ledger/harness/events.jsonl` alongside the intended commit scope when session-owned changes exist.
+Root policy:
+
+- Recall before substantial implementation when relevant canonical or legacy learning stores exist.
+- Capture only decision-shaping evidence: validation transitions, strategy pivots, footgun discoveries, acceleration patterns, useful or failed recalled lessons, repeated failures, durable user corrections, and delivery after real implementation work.
+- Before any Codex-made commit, check session-owned changes in `.ledger/learnings/learnings.jsonl`, `.ledger/negative-ledger/events.jsonl`, `.ledger/synesthesia/events.jsonl`, and `.ledger/harness/events.jsonl` alongside the intended commit scope.
 - If a source-memory store is dirty and publishable, stage current-turn/session-owned rows by default; if it is local-only by `.git/info/exclude`, leave it unstaged unless explicitly asked.
-- Write rules, not changelog entries. Prefer one essential learning; append at most three.
-
-## Memory-source admission lifecycle
-
-Use `memory-note` as the single safe writer for controlled custom memory sources:
-
-```text
-harness
-learnings
-negative-ledger
-synesthesia
-```
-
-- Source stores live under `.ledger/`. Memory-source notes live under `~/.codex/memories/extensions/<source>/notes/`. Notes are derived admission snapshots, not canonical stores.
-- `memory-note` creates immutable typed notes under `~/.codex/memories/extensions/<source>/notes/`.
-- Do not use `memory-note` for `ad_hoc` or `chronicle`.
-- Source skills own admission decisions and payload semantics.
-- The `memory-source-notes` skill owns CLI syntax, path safety, proof lines, failure behavior, copy-based extension-instruction synchronization, and extension-specific validation adapters.
-- Phase 2 owns promotion into `memory_summary.md`, `MEMORY.md`, and memory-root `skills/*`.
-- A missing `memory-note` CLI must not block canonical domain capture. Complete `.ledger` writes first, then report `memory-note: not-attempted: cli unavailable`.
-- Do not hand-write custom source notes as a fallback.
-- Do not symlink live memory extension instruction files; copy them through the owning adapter and preserve live `notes/` and `resources/` directories.
-
-Admission thresholds:
-
-- harness: explicit durable operating correction or repeated evidence-backed steering;
-- learnings: `codify_now`, repeated theme, explicit durable user preference, or unusually high-value failure shield;
-- negative-ledger: complete exported ledger projection or witnessed lifecycle transition; never prose-only exclusion claims;
-- synesthesia: explicit durable endorsement, confirmation, correction, rejection, retraction, reopening, or boundary instruction is sufficient without repetition; otherwise require accepted operational use across at least two independent contexts.
+- Legacy `.learnings.jsonl` is migration input only after migration; do not append new rows there.
+- `memory-note` is the safe writer for custom memory-source admission snapshots. Do not hand-write custom source notes as a fallback.
+- A missing `memory-note` CLI must not block canonical `.ledger` capture. Complete the source-store write first, then report the missing admission step.
+- Phase 2 compiled memory outputs are not ordinary edit targets.
 
 ## Tooling standards
 
@@ -285,7 +155,7 @@ Admission thresholds:
 - Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
 - Do not stage unrelated diffs.
 - Do not force-add paths matching `.git/info/exclude` unless explicitly asked.
-- Before `git commit`, run a final narrow status check for `.ledger/learnings/learnings.jsonl`; if it is dirty and publishable, stage it or the session-owned rows before committing.
+- Before `git commit`, run a final narrow status check for session-owned `.ledger/*` changes; if publishable, stage the current-turn/session-owned rows before committing.
 - Review the diff before final response or commit.
 
 ### GitHub CLI (`gh`)
@@ -299,7 +169,7 @@ Admission thresholds:
 
 - Use `uv` for Python package/project operations. Do not use direct `python`, `pip`, `pipx`, `venv`, `virtualenv`, `poetry`, or `conda` unless the user explicitly asks or the repo requires it.
 - Run scripts, tests, linters, and CLIs through `uv run ...`.
-- For skill-only external dependencies, prefer `uvx <tool>` or `uv run --with <package> <command> ...` so dependencies remain ephemeral and non-project-scoped.
+- For skill-only external dependencies, prefer `uvx TOOL` or `uv run --with PACKAGE COMMAND ...` so dependencies remain ephemeral and non-project-scoped.
 - Do not create or reuse `.venv*` for skill-only tooling. Do not `uv pip install` external packages for skills unless the user explicitly requests a persistent dependency.
 - For projects that intentionally manage Python dependencies, keep `pyproject.toml`/`uv.lock` authoritative with `uv sync` or `uv lock` plus `uv sync`.
 - For Python automation scripts, prefer `#!/usr/bin/env -S uv run python`.
