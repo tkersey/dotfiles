@@ -3,116 +3,88 @@ skill_decision_contract:
   skill:
     name: actuating
     kind: workflow
-    source_fingerprint: actuating-v5.2-apma-add-delivery
+    source_fingerprint: actuating-v6-spec-to-goal
   triggers:
-    - trigger_id: ACT-WORK
-      description: One named plan is ready for bounded execution.
-      cue_literals: [$actuating, implement plan, plan to PR]
+    - trigger_id: ACT-SPEC-GOAL
+      description: The user wants an accepted implementation spec executed through the goal workflow.
+      cue_literals: [$actuating, implement accepted spec, run accepted spec, goal actuation]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-EXPAND
-      description: Realization requires new resources or another plan.
-      cue_literals: [resource expansion, cross-plan blocker, new owner]
+    - trigger_id: ACT-REVIEW
+      description: The user wants review closure or code review as part of the workflow.
+      cue_literals: [review closure, code review, exhaustive review, close review]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-INTEGRATE
-      description: A valid worker result is ready for target-branch integration.
-      cue_literals: [seal change set, integrate]
+    - trigger_id: ACT-ST-GOVERNED
+      description: Execution requires durable coordination or existing $st state.
+      cue_literals: [st-governed, resource claim, fencing token, external worktree, serialized integration]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-SHIP
-      description: Integrated proof-complete target-branch state is ready for PR delivery.
-      cue_literals: [ship, PR, draft PR, ready PR, plan to PR, delivery]
-      cue_regexes: []
-      exclusions: [shipping not requested, proof incomplete, integration blocked]
   routes:
-    - route_id: ACT-CLAIM
-      description: Obtain or refresh workspace authority.
-      aliases: [claim]
+    - route_id: ACT-SPEC-PIPELINE
+      description: Obtain or refresh an accepted implementation spec without tail-calling $plan.
+      aliases: [spec-pipeline-gate-only, accepted-spec]
       terminal: "no"
-    - route_id: ACT-REALIZE
-      description: Realize one bounded APMA-authorized slice.
-      aliases: [realize]
+    - route_id: ACT-GOAL
+      description: Hand the accepted spec or direct goal to $goal-actuating.
+      aliases: [goal-actuating]
       terminal: "no"
-    - route_id: ACT-RETURN-WORKSPACE
-      description: Stop and reallocate after authority/resource change.
-      aliases: [return-to-workspace]
+    - route_id: ACT-CAS-REVIEW
+      description: Run $cas review when workflow code review is requested or required.
+      aliases: [cas-review]
       terminal: "no"
-    - route_id: ACT-INTEGRATE
-      description: Enqueue a sealed change set.
-      aliases: [integrate]
+    - route_id: ACT-ST-GOVERNED
+      description: Hand off to $st and $fixed-point-driver when durable coordination owns execution.
+      aliases: [st-governed]
       terminal: "no"
-    - route_id: ACT-SHIP
-      description: Hand integrated target-branch state to $ship.
-      aliases: [ship, delivery, pr]
-      terminal: "yes"
-    - route_id: ACT-SHIPPING-NOT-REQUESTED
-      description: Close without PR because no PR delivery intent exists.
-      aliases: [shipping-not-requested]
+    - route_id: ACT-PROOF
+      description: Close with current-artifact proof or an explicit $ship handoff.
+      aliases: [proof-patch, ship-handoff]
       terminal: "yes"
     - route_id: ACT-BLOCK
-      description: Stop on stale, unavailable, or incomplete authority/delivery state.
+      description: Stop on unresolved spec, missing review backend, unavailable authority, or stale proof.
       aliases: [blocked]
       terminal: "yes"
   clauses:
-    - clause_id: ACT-GCR-002
-      trigger_refs: [ACT-WORK]
-      expected_routes: [ACT-CLAIM, ACT-REALIZE, ACT-BLOCK]
+    - clause_id: ACT-SPEC-001
+      trigger_refs: [ACT-SPEC-GOAL]
+      expected_routes: [ACT-SPEC-PIPELINE, ACT-GOAL, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
-        - GCR-v2
-        - APMA-v1
-        - WCL-v1
-        - fencing token
+        - accepted implementation spec
+        - goal contract
       success_signals:
-        - every mutation is claim and APMA bound
+        - accepted spec is treated as the source of truth
+        - $spec-pipeline is requested in gate-only/no-plan mode when used by $actuating
       failure_signals:
-        - plan-local readiness treated as execution authority
-        - mutation occurs before APMA-v1
-      rationale: Multi-plan safety requires workspace authority before material transition.
-    - clause_id: ACT-BOUNDARY-002
-      trigger_refs: [ACT-EXPAND]
-      expected_routes: [ACT-RETURN-WORKSPACE, ACT-BLOCK]
-      prohibited_routes: [ACT-REALIZE]
-      required_artifacts:
-        - requested resource expansion
-      success_signals:
-        - new claim, GCR, and APMA before resumed mutation
-      failure_signals:
-        - related edit outside claim
-      rationale: Boundary expansion must rerun global conflict analysis.
-    - clause_id: ACT-INTEGRATE-002
-      trigger_refs: [ACT-INTEGRATE]
-      expected_routes: [ACT-INTEGRATE, ACT-BLOCK]
+        - $spec-pipeline tail-calls $plan from an $actuating run
+        - goal execution starts before scope, non-goals, success state, and proof bar are accepted
+      rationale: $actuating is now a spec-to-goal workflow, not the plan-to-PR transaction controller.
+    - clause_id: ACT-REVIEW-001
+      trigger_refs: [ACT-REVIEW]
+      expected_routes: [ACT-CAS-REVIEW, ACT-GOAL, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
-        - CS-v1
-        - current branch epoch
+        - CAS review verdict when workflow code review is required
+        - review-fold disposition
       success_signals:
-        - worker never advances target branch
+        - fresh or exhaustive workflow review comes from $cas
+        - review findings are classified before implementation
       failure_signals:
-        - direct push from worker
-      rationale: Target-branch state is globally serialized.
-    - clause_id: ACT-SHIP-002
-      trigger_refs: [ACT-SHIP]
-      expected_routes: [ACT-SHIP, ACT-SHIPPING-NOT-REQUESTED, ACT-BLOCK]
-      prohibited_routes: []
+        - non-CAS critique substitutes for workflow code review
+        - raw review prose directly drives code changes
+      rationale: Code review remains exhaustive when requested, while $review-fold controls which findings become code changes.
+    - clause_id: ACT-ST-001
+      trigger_refs: [ACT-ST-GOVERNED]
+      expected_routes: [ACT-ST-GOVERNED, ACT-BLOCK]
+      prohibited_routes: [ACT-GOAL]
       required_artifacts:
-        - ADD-v1
-        - proof-complete plan receipt
-        - integrated change-set receipts
-        - current target branch/head/epoch
-        - cross-plan dependency status
-        - explicit or inherited PR mode when shipping
+        - current $st handoff or authority state
       success_signals:
-        - $ship receives integrated target-branch state
-        - worker worktree is not shipped
-        - PR URL or delivery-blocked reason is reported
+        - durable coordination remains owned by $st
       failure_signals:
-        - graph audit proof-complete treated as terminal when PR delivery was requested
-        - $ship receives worker worktree instead of integrated branch
-        - public PR side effect occurs without PR intent
-      rationale: $actuating includes delivery for plan-to-PR runs; proof-complete is implementation closure, not PR delivery closure.
+        - direct implementation claims fenced authority without $st participation
+      rationale: The old transaction-controller behavior is preserved only under st-governed mode.
   instrumentation:
     decision_receipt: required
-    rationale: Claim, mutation authority, integration, and delivery choices are material.
+    rationale: The material decisions are accepted-spec routing, review backend, persistence mode, and proof closure.

@@ -1,0 +1,10 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Goal WorkGraph"
+  short_description: "Break a goal contract into inspect/edit/verify/review/branch/reuse work items"
+  default_prompt: >-
+    Use $goal-workgraph to turn a goal contract into a small work list. Prefer
+    verifier-first and representative-class-first decomposition; group review
+    findings by shared cause; choose update_plan, goal-artifacts, or st-required
+    persistence explicitly.

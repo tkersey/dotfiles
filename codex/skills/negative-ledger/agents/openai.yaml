@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Negative Ledger"
   short_description: "Prune failed kernel and realization routes"

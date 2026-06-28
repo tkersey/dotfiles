@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Synesthesia"
   short_description: "Turn software evidence into reversible sensory diagnostics"

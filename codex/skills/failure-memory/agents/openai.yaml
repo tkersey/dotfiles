@@ -1,0 +1,10 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Failure Memory"
+  short_description: "Cluster repeated failures/review classes and memoize working or invalid strategies"
+  default_prompt: >-
+    Use $failure-memory when attempts repeat, reviews collapse to classes,
+    migrations produce same-shaped errors, or strategies oscillate. Emit memo rows
+    that change frontier selection; hand durable transferable lessons to
+    $learnings only under its admission rules.

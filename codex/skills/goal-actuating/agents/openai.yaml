@@ -1,0 +1,15 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Goal Actuating"
+  short_description: "Run accepted specs or direct goals through goal contract, work list, review, evidence, and proof"
+  default_prompt: >-
+    Use $goal-actuating to execute an accepted implementation spec, direct /goal,
+    review workflow, dry actuation plan, or $st-governed execution. Treat the
+    accepted spec as the source of truth, derive a goal contract, choose
+    update_plan, goal-artifacts, or $st persistence, and keep the loop focused on
+    the next useful action. For review requests, default to resolve-and-fix
+    unless the user explicitly requests review-only, resolve-only, audit-only, or
+    no implementation. Fresh or exhaustive review must use $cas review; then
+    route findings through $review-fold and implement only accepted code-change
+    liabilities. Close with evidence-fold and proof-patch.

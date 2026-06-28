@@ -162,8 +162,6 @@ def generated_fingerprint(root: Path) -> str:
         "build.zig",
         "build.zig.zon",
         "repo_zig_paths.txt",
-        "MANIFEST.files",
-        "MANIFEST.sha256",
     ):
         if (root / candidate).exists():
             names.append(candidate)

@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Forensic Elicitation"
+  short_description: "Explicit-only skill"
+  default_prompt: "Use this skill only when explicitly invoked or handed off by an active workflow."

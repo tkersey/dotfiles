@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Review Adjudication"
   short_description: "Compile review claims into intent-anchored CEX-v1"

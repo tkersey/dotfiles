@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "cas"
   short_description: "Zig CAS CLI for app-server checks, detached review control, fanout, and swarm conformance"

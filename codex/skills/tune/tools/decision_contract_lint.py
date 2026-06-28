@@ -12,7 +12,7 @@ except ImportError:
     yaml = None
 
 ID_RE = re.compile(r"^[A-Z][A-Z0-9._-]{2,127}$")
-KINDS = {"decision", "execution", "evidence", "orchestration", "mixed"}
+KINDS = {"decision", "execution", "evidence", "orchestration", "workflow", "mixed"}
 RECEIPT_POLICIES = {"required", "optional", "not-needed"}
 
 def load(path: str) -> dict[str, Any]:

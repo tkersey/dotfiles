@@ -1,0 +1,11 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Goal Grind"
+  short_description: "Run recursive /goal loops with minimal action, evidence folds, memory, and stop rules"
+  default_prompt: >-
+    Use $goal-grind for recursive goal execution. Select one frontier node, act
+    minimally, verify, fold evidence, memoize repeated classes, and stop on done,
+    blocked, regress, invalid proof, or budget. Use update_plan for visible
+    in-memory steps, .goal artifacts for material loops, and $st only for durable
+    fenced orchestration.

@@ -1,0 +1,191 @@
+---
+name: review-fold
+description: "Compress review pressure into intent-anchored review work: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent one-patch-per-comment churn. Use after $cas review, PR review comments, CAS findings, reviewer suggestions, and review-like claims."
+metadata:
+  version: "1.0.0"
+  activation_cost: medium
+  default_depth: high
+---
+
+# Review Fold
+
+## Mission
+
+Turn review pressure into the right next action, not more code by default.
+
+```text
+review comments + goal contract + current diff
+-> review fold
+-> proof-only | reject | minimal fix | refactor kernel | ask | follow-up
+```
+
+This skill is the review-specific evidence fold for the recursive goal scheme. It complements `$review-adjudication`: use `$review-adjudication` for detailed CEX-v1 claim law; use `$review-fold` to control the whole review loop and pick the smallest correct response.
+
+`$review-fold` consumes review findings. It does not replace code review. When the workflow needs to perform fresh, adversarial, or exhaustive code review, the review source must be `$cas`.
+
+## Relationship to resolve
+
+`$review-fold` classifies findings. It does not, by itself, decide that review work stops.
+
+For `$actuating` review workflows, default closure mode is `resolve-and-fix` unless the user explicitly requests `review-only`, `resolve-only`, audit-only, or no implementation.
+
+```text
+$cas = review source
+$review-fold = finding classifier
+resolve pass = closure agenda compiler
+$goal-grind = implementation engine for accepted liabilities
+```
+
+## Review source rule
+
+```text
+workflow-initiated code review -> $cas review -> $review-fold -> implementation only for accepted liabilities
+```
+
+Existing PR comments, human reviewer comments, or prior CAS verdicts may be folded directly as review pressure. But if the workflow itself is asked to do code review, close review, run adversarial review, or satisfy a review proof bar, it must obtain that review through `$cas` first.
+
+## Review fold schema
+
+```yaml
+review_fold:
+  version: RF-v1
+  goal_id:
+  source:
+    pr:
+    review_backend: github-comments|cas-review-session|human-review|prior-artifact
+    cas_review:
+      required: yes|no
+      mode: none|cas-probe|cas-lane|cas-exhaustive
+      verdict_ref:
+      lane_ref:
+  intent_anchor:
+    original_goal:
+    accepted_scope:
+    non_goals: []
+    changed_paths: []
+  findings:
+    - id:
+      claim:
+      observed_fact:
+      validity: valid|invalid|unproven|needs-owner
+      liability: blocks-goal|regression-risk|style|new-requirement|out-of-scope|proof-gap
+      intent_relation: core|adjacent|unrelated|expands-scope
+      novelty: duplicate|same-class|new-class
+      disposition: reject|proof-only|minimal-fix|refactor-kernel|ask-human|follow-up
+      minimal_response:
+      proof_needed:
+      code_change_allowed: yes|no
+  compression:
+    equivalence_classes: []
+    repeated_kernel:
+    reabstraction_candidate: yes|no
+    one_patch_per_comment_risk: low|medium|high
+  recommended_resolution:
+    mode: review-only|resolve-only|resolve-and-fix
+    reason:
+    no_code_modifier_detected: yes|no
+    accepted_liability_count:
+    refactor_kernel_candidate_count:
+  action_plan:
+    mode: adjudicate-only|proof-only|minimal-fix|refactor-kernel|branch-race|st-governed
+    work_nodes: []
+    do_not_fix: []
+    reviewer_response_draft: []
+```
+
+## Disposition law
+
+- `reject`: claim is false, outside accepted scope, already handled, or incompatible with the goal.
+- `proof-only`: code likely correct; run or expose proof instead of editing.
+- `minimal-fix`: valid liability with a single owner-correct local repair.
+- `refactor-kernel`: multiple findings share one missing abstraction, boundary, state transition, or proof surface.
+- `ask-human`: review introduces a product, compatibility, or API decision.
+- `follow-up`: valid but not part of the intended change.
+
+## Modes
+
+### Workflow resolution modes
+
+- `review-only`: classify findings and stop without a remediation agenda.
+- `resolve-only`: classify findings and produce a closure agenda without implementation.
+- `resolve-and-fix`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolve pass.
+
+### `adjudicate-only`
+
+Classify findings and stop. No mutation.
+
+### `proof-only`
+
+Run checks, inspect current artifacts, or draft a response. No code unless proof fails.
+
+### `minimal-fix`
+
+Make the smallest owner-correct change for accepted liabilities.
+
+### `refactor-kernel`
+
+Replace many local fixes with one normal-form correction.
+
+### `branch-race`
+
+Compare two or more plausible fix/refactor strategies under the same verifier.
+
+### `st-governed`
+
+Hand off to `$st` when review remediation requires durable resource claims, external worktrees, or serialized integration.
+
+## Exhaustive review behavior
+
+When the source is `cas-exhaustive`, do not treat review as optional or merely advisory. Continue review/fix/fold cycles until one of these holds:
+
+```text
+CAS review is clean
+all CAS findings are dispositioned with current-artifact proof
+CAS review is blocked and the blocker is reported
+user explicitly lowers the review proof bar
+```
+
+`$review-fold` may reject or mark findings proof-only, but it must not convert an exhaustive review gate into a no-review closure.
+
+## Procedure
+
+1. Bind reviews to the original goal and current diff.
+2. If fresh/exhaustive workflow code review is required and no CAS result is present, stop and request `$cas` review.
+3. Classify each finding before any implementation.
+4. Collapse duplicates and same-family comments.
+5. Recommend `review-only`, `resolve-only`, or `resolve-and-fix` from the user's requested mode and the accepted liabilities.
+6. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
+7. Produce a small work graph only for accepted liabilities.
+8. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolve pass accepts code-change liabilities.
+9. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
+
+## Default behavior in `$actuating`
+
+When called by `$actuating`:
+
+- default to `resolve-and-fix` for review requests;
+- use `review-only` only when the user explicitly asks for no implementation or classification only;
+- use `resolve-only` only when the user explicitly asks for a plan/agenda without implementation;
+- preserve no-code dispositions for rejected, proof-only, follow-up, or human-owned findings;
+- never send raw review findings directly to implementation.
+
+No-code modifiers include:
+
+```text
+do not implement
+review only
+audit only
+classify only
+resolve only
+plan only
+no changes
+```
+
+## Guardrails
+
+- Raw review text is not executable.
+- Do not add code to satisfy style or speculation when proof or rejection is correct.
+- Do not accept scope expansion without user authority.
+- Do not miss the refactor when many comments share one owner boundary.
+- Do not replace a requested or required CAS review with non-CAS critique.
+- Do not resolve or reply to PR threads without explicit public-side-effect intent.
