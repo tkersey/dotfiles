@@ -1,0 +1,9 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Agent Loop Schemes"
+  short_description: "Select the right loop shape for coding-agent goals, reviews, debugging, migrations, evidence, memory, and proof"
+  default_prompt: >-
+    Use $agent-loop-schemes to design, audit, or repair a coding-agent loop.
+    Choose the smallest loop shape that binds work, evidence, memory, proof, and
+    stop rules. Do not run this as ceremony for ordinary one-shot edits.
