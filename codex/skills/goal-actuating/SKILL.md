@@ -52,7 +52,7 @@ goal_actuating_mode:
 - `direct-goal`: execute a goal that already has outcome, constraints, and proof checks.
 - `review-only`: classify review findings and stop without mutation.
 - `resolve-only`: classify findings and produce a closure agenda without mutation.
-- `resolve-and-fix`: default review mode; resolve findings, then implement accepted liabilities only.
+- `resolve-and-fix`: default review mode; resolve findings, implement accepted liabilities only, and require three clean normalized CAS review runs before completion.
 - `dry-plan`: show the goal contract and work list only; do not mutate.
 - `st-governed`: hand off to `$st` and `$fixed-point-driver` when durable coordination owns the work.
 
@@ -69,7 +69,8 @@ goal_actuating_mode:
 9. Execute one useful action at a time with `$goal-grind`, unless `$st` owns execution.
 10. Fold verification and review results with `$evidence-fold`.
 11. Use `$failure-memory` when failures or review classes repeat.
-12. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
+12. For `resolve-and-fix` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
+13. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
 
 ## Spec to goal contract
 
@@ -120,6 +121,7 @@ $cas review
 -> resolve pass
 -> $goal-grind accepted liabilities only
 -> $evidence-fold
+-> 3 clean normalized $cas review runs
 -> $proof-patch
 ```
 
@@ -140,6 +142,26 @@ Prefer no-code outcomes when they are correct: `reject`, `proof-only`, `follow-u
 Prefer `refactor-kernel` when several findings share one missing abstraction, invariant, canonical owner, state transition, or proof surface.
 
 Exhaustive review is not optional once requested or required. `$review-fold` controls which findings become code changes; it must not remove the CAS review gate.
+
+## Three clean normalized CAS review runs
+
+For `resolve-and-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same artifact scope unless the user explicitly lowers the review bar.
+
+A clean normalized CAS run means `$cas` produces no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker after `$review-fold` and the resolve pass.
+
+Do not reset the clean-run counter for findings that are duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already resolved by the current implementation.
+
+Reset the clean-run counter to zero when:
+
+```text
+code changes
+review scope changes
+base/head/diff changes
+accepted proof bar changes
+CAS lane/session continuity is lost
+```
+
+If `$cas` cannot run, or the three-clean-run bar cannot be reached because of resource limits, stop with `actuation verdict: cas-review-blocked`.
 
 ## Resolve pass
 
@@ -164,6 +186,11 @@ Use `$resolve` as a handoff only when review findings require a dedicated closur
 review_resolution:
   mode: review-only|resolve-only|resolve-and-fix
   source: cas-review|existing-review|human-review
+  clean_cas_runs:
+    required: yes|no
+    count: 0|1|2|3
+    artifact_scope:
+    reset_reason:
   accepted_liabilities:
     - id:
       reason:
@@ -213,6 +240,7 @@ verification regresses
 proof is stale or not bound to the current artifact
 public tracker side effect would be needed without explicit intent
 review is required but $cas review is unavailable or not run
+three clean normalized $cas review runs are required but cannot be completed
 ```
 
 ## Output
@@ -222,6 +250,7 @@ Goal Actuation:
 - source: accepted spec | direct goal | plan handoff | review
 - mode / persistence:
 - review source / CAS verdict, if required:
+- clean normalized CAS review runs: 0|1|2|3|not-required
 - goal contract summary:
 - work list / next action:
 - review-fold disposition, if any:
