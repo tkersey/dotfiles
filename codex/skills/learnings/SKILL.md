@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: "Capture, browse, query, supersede, and selectively admit evidence-backed execution learnings from repo-local `.learnings.jsonl`. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
+description: "Capture, browse, query, supersede, migrate, and selectively admit evidence-backed execution learnings from repo-local `.ledger/learnings/learnings.jsonl`. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
 metadata:
   version: "6.0.0"
 ---
@@ -14,7 +14,7 @@ Maintain a repo-local, evidence-backed execution-learning store and selectively 
 Authority split:
 
 ```text
-<repo>/.learnings.jsonl
+<repo>/.ledger/learnings/learnings.jsonl
   canonical detailed learning record
 
 ~/.codex/memories/extensions/learnings/notes/*.md
@@ -40,10 +40,12 @@ Do not duplicate every learning into memory notes. For an accepted admission, lo
 ## Canonical Store
 
 ```text
-.learnings.jsonl
+.ledger/learnings/learnings.jsonl
 ```
 
 Use `learnings append` for writes. Do not hand-edit rows in normal operation.
+Legacy `.learnings.jsonl` is read only during migration. Use
+`learnings migrate --mode copy` to copy old rows into the canonical store.
 
 Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`, `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.
 
@@ -74,7 +76,6 @@ Require decision delta, transferability, and counterfactual cost. Prefer one ess
 
    ```bash
    learnings append \
-     --path .learnings.jsonl \
      --status do_more \
      --learning "When X, prefer Y because Z." \
      --evidence "exact command/result/path" \
@@ -82,8 +83,8 @@ Require decision delta, transferability, and counterfactual cost. Prefer one ess
      --tag example
    ```
 
-5. Verify the reported target path is exactly `<repo>/.learnings.jsonl`.
-6. Before any Codex-made commit, inspect `.learnings.jsonl` explicitly.
+5. Verify the reported target path is exactly `<repo>/.ledger/learnings/learnings.jsonl`.
+6. Before any Codex-made commit, inspect `.ledger/learnings/learnings.jsonl` explicitly.
 7. Emit exactly one canonical learning proof line.
 
 Proof lines:
@@ -142,7 +143,7 @@ After the canonical append succeeds, construct:
   "source_refs": [
     {
       "kind": "learning",
-      "ref": ".learnings.jsonl#lrn-...",
+      "ref": ".ledger/learnings/learnings.jsonl#lrn-...",
       "summary": "Canonical learning row"
     }
   ],
@@ -152,7 +153,7 @@ After the canonical append succeeds, construct:
     "learning_id": "lrn-...",
     "learning_status": "codify_now",
     "repo": "owner/repo",
-    "source_path": ".learnings.jsonl",
+    "source_path": ".ledger/learnings/learnings.jsonl",
     "decision_delta": "Future Codex should do Y before Z.",
     "evidence_snapshot": ["exact command/test/result"],
     "future_behavior": "Operational default or route",
@@ -205,14 +206,15 @@ Never edit or delete prior admission notes.
 
 ## Relationship to Negative Ledger
 
-A learning can seed negative evidence, but `.learnings.jsonl` is not the operational route-exclusion store. Promote witnessed failed hypotheses through `ledger capture`, then use `ledger export` plus `memory-note` for memory admission.
+A learning can seed negative evidence, but `.ledger/learnings/learnings.jsonl` is not the operational route-exclusion store. Promote witnessed failed hypotheses through `ledger capture`, then use `ledger export` plus `memory-note` for memory admission.
 
 ## Guardrails
 
 - Ground every row in observed evidence.
 - Write rules, not changelog bullets.
 - Do not append from an unverified non-repo cwd.
-- Do not force-add local-only `.learnings.jsonl`.
+- Do not write legacy `.learnings.jsonl` after migration.
+- Do not force-add local-only source stores.
 - Do not manually edit JSONL rows.
 - Do not admit every learning to memory.
 - Do not write compiled memory directly.

@@ -18,11 +18,19 @@ This adapter does not turn aesthetic language into evidence and does not replace
 
 ## Primary source
 
-Process valid new or changed immutable events under:
+Process valid new or changed immutable admission snapshots under:
 
 ```text
 extensions/synesthesia/notes/*.md
 ```
+
+When present, a repo-local canonical source store lives at:
+
+```text
+<repo>/.ledger/synesthesia/events.jsonl
+```
+
+During transition, existing immutable notes remain valid source evidence. New repo-scoped events should be admitted from the canonical store when it exists.
 
 Prioritize notes surfaced by `phase2_workspace_diff.md` when that artifact is available.
 

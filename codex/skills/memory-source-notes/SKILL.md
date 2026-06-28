@@ -36,7 +36,7 @@ source skill or canonical domain store
 -> compiled memory
 ```
 
-- `learnings` owns `.learnings.jsonl` and the admission gate for learning snapshots.
+- `learnings` owns `.ledger/learnings/learnings.jsonl` and the admission gate for learning snapshots.
 - `ledger` owns `.ledger/negative-ledger/events.jsonl` and the admission gate for route state.
 - `harness-memory` owns durable operating-correction admission.
 - `synesthesia` owns sensory mapping and activation-boundary admission.
@@ -314,7 +314,7 @@ Do not use this skill to:
 
 - bypass native ad-hoc remember/forget/update behavior;
 - write compiled memory directly;
-- replace `.learnings.jsonl` or `.ledger/negative-ledger/events.jsonl`;
+- replace `.ledger/learnings/learnings.jsonl` or `.ledger/negative-ledger/events.jsonl`;
 - decide whether negative evidence blocks a route;
 - infer durable user preferences from assistant prose alone;
 - capture ordinary chronology;
