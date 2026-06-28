@@ -8,7 +8,6 @@ interface:
     review-like claims. Bind findings to the original goal and current diff,
     compress duplicates, classify liability and intent relation, and choose
     review-only, resolve-only, resolve-and-fix, proof-only, minimal-fix,
-    refactor-kernel, branch-race, or st-governed before code changes. When
-    called by $actuating, default review requests to resolve-and-fix unless the
-    user explicitly asks for no implementation. If fresh or exhaustive workflow
-    review is required and no CAS result is present, route to $cas review first.
+    refactor-kernel, branch-race, or st-governed before code changes. If fresh or
+    exhaustive workflow review is required and no CAS result is present, route to
+    $cas review first. Mark normalized CAS clean runs when closing review.

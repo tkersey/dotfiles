@@ -1,0 +1,12 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Recursion Scheme Planner"
+  short_description: "Choose the right recursive control structure for lowering specs into implementation loops"
+  default_prompt: >-
+    Use $recursion-scheme-planner after an implementation spec or direct goal is
+    accepted and before execution when the work needs a nontrivial breakdown.
+    Select the correct loop shape: fold, unfold, goal loop, memoized migration,
+    history-aware debug loop, lookahead, branch-race, proof-carrying patch,
+    review compression, parallel traversal, or $st-governed execution. Emit a
+    compact Scheme Plan. Do not implement code.

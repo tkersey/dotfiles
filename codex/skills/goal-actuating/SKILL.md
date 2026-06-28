@@ -1,8 +1,8 @@
 ---
 name: goal-actuating
-description: "Run an accepted implementation spec or direct /goal through the goal runtime. Builds a goal contract, chooses the execution mode, requires $cas for workflow review, then uses the work list, goal-grind, evidence-fold, review-fold, and proof-patch skills as needed."
+description: "Run an accepted implementation spec or direct /goal through the goal runtime. Builds a goal contract, chooses the execution mode, optionally consumes a recursion Scheme Plan, requires $cas for workflow review, schedules bounded subagents when safe, and closes with proof."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   activation_cost: medium
   default_depth: high
 ---
@@ -15,20 +15,22 @@ Run approved work through the goal workflow.
 
 ```text
 accepted implementation spec or direct goal
+-> optional Scheme Plan
 -> goal contract
 -> execution mode
 -> work list when useful
--> one focused action at a time
+-> one focused action or bounded subagent frontier
 -> evidence
 -> proof
 ```
 
-`$actuating` is the user-facing wrapper. `$goal-actuating` is the runtime that does the lowering and routing.
+`$actuating` is the user-facing wrapper. `$goal-actuating` is the runtime that does the lowering, scheduling, fan-in, and routing.
 
 ## Inputs
 
 ```text
 accepted implementation spec
+Scheme Plan from $recursion-scheme-planner
 plan or $st handoff
 review findings bound to the current diff
 direct /goal with enough proof surface
@@ -45,6 +47,8 @@ goal_actuating_mode:
   implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
   review: none|existing-review|cas-probe|cas-lane|cas-exhaustive
   resolution: none|review-fold-only|resolve-pass|resolve-and-fix|resolve-campaign
+  scheme_plan: none|required|present
+  parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
   closure: review-disposition|resolution-agenda|proof-patch|ship-handoff|blocked
 ```
 
@@ -58,19 +62,95 @@ goal_actuating_mode:
 
 ## Procedure
 
-1. Locate the accepted spec, plan handoff, review input, or direct goal.
+1. Locate the accepted spec, Scheme Plan, plan handoff, review input, or direct goal.
 2. If the work is not yet approved enough to execute, hand off to `$spec-pipeline` in gate-only/no-plan mode and stop.
-3. Derive a goal contract with `$goal-contract`.
-4. Choose `update_plan`, `goal-artifacts`, or `$st` persistence.
-5. If the workflow performs fresh or exhaustive review, run `$cas` review.
-6. Classify review findings with `$review-fold`.
-7. Run a resolve pass when review work needs a closure agenda.
-8. Create a work list with `$goal-workgraph` only when decomposition changes execution.
-9. Execute one useful action at a time with `$goal-grind`, unless `$st` owns execution.
-10. Fold verification and review results with `$evidence-fold`.
-11. Use `$failure-memory` when failures or review classes repeat.
-12. For `resolve-and-fix` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
-13. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
+3. If no Scheme Plan exists and the work shape is unclear, hand off to `$recursion-scheme-planner`.
+4. Derive a goal contract with `$goal-contract`.
+5. Choose `update_plan`, `goal-artifacts`, or `$st` persistence.
+6. If the workflow performs fresh or exhaustive review, run `$cas` review.
+7. Classify review findings with `$review-fold`.
+8. Run a resolve pass when review work needs a closure agenda.
+9. Create a work list with `$goal-workgraph` only when decomposition changes execution.
+10. Schedule bounded subagents only for explicit safe frontier nodes.
+11. Execute one useful action at a time with `$goal-grind`, unless `$st` owns execution.
+12. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolve pass as appropriate.
+13. Use `$failure-memory` when failures or review classes repeat.
+14. For `resolve-and-fix` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
+15. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
+
+## Scheme Plan consumption
+
+A Scheme Plan may choose:
+
+```text
+direct
+cata
+ana
+hylo
+para
+apo
+histo
+futu
+zygo
+dyna
+chrono
+meta
+mutu
+parallel-traverse
+st-governed
+```
+
+Use the Scheme Plan to decide:
+
+```text
+work graph shape
+memory policy
+review compression path
+branch-race need
+parallel fanout mode
+proof fanout
+$st handoff
+stop condition
+```
+
+If a Scheme Plan says `blocked`, stop and report the blocker.
+
+## Parallel scheduler
+
+`$goal-actuating` owns bounded parallel scheduling for the goal workflow.
+
+It may spawn subagents only over explicit work nodes, review classes, isolated strategy branches, or proof checks.
+
+Allowed scheduler decisions:
+
+- use `repo_scout` for read-only fact-finding over independent repository areas;
+- use `review_reducer` over review classes after `$cas review` and `$review-fold`;
+- use `branch_racer` when strategies can be isolated and compared by the same verifier;
+- use `patch_worker` only after the resolve pass accepts code-change liabilities and the nodes are file-disjoint or otherwise isolated;
+- use `evidence_critic` for proof fan-in or contested evidence.
+
+The lead must fold all subagent outputs before continuing.
+No subagent may declare the goal complete, post/update public PR state, or broaden the accepted scope.
+
+## Parallel fan-in law
+
+Every subagent result must fold through exactly one owner:
+
+- `review-fold` for review classification results;
+- `resolve pass` for closure agenda decisions;
+- `evidence-fold` for tests, proof, diffs, logs, and verifier output;
+- lead integration for accepted patches;
+- `$ship` only for PR creation/update/promotion/publication.
+
+A subagent result is advisory until the lead folds it and either accepts, rejects, isolates, or reruns it.
+
+## Parallel integration and CAS clean runs
+
+Parallelism does not weaken the three-clean-CAS closure bar.
+
+The clean-run counter resets to 0 after any accepted artifact-changing subagent result, including patch fanout results and branch-race winner integration.
+
+Read-only fanout and classification-only fanout do not reset the counter unless the artifact scope or proof bar changes.
 
 ## Spec to goal contract
 
@@ -118,8 +198,11 @@ If review is requested and no no-code modifier is present, use `resolve-and-fix`
 ```text
 $cas review
 -> $review-fold
+-> optional review-class-fanout
 -> resolve pass
+-> optional branch-race
 -> $goal-grind accepted liabilities only
+-> optional patch-fanout over disjoint accepted liabilities only
 -> $evidence-fold
 -> 3 clean normalized $cas review runs
 -> $proof-patch
@@ -159,6 +242,9 @@ review scope changes
 base/head/diff changes
 accepted proof bar changes
 CAS lane/session continuity is lost
+accepted parallel patch result is integrated
+branch-race winner is integrated
+serial integration changes the artifact
 ```
 
 If `$cas` cannot run, or the three-clean-run bar cannot be reached because of resource limits, stop with `actuation verdict: cas-review-blocked`.
@@ -191,6 +277,12 @@ review_resolution:
     count: 0|1|2|3
     artifact_scope:
     reset_reason:
+  parallelism:
+    mode: none|review-class-fanout|patch-fanout|branch-race|proof-fanout
+    subagents_used: []
+    accepted_results: []
+    rejected_results: []
+    integration_order: []
   accepted_liabilities:
     - id:
       reason:
@@ -241,6 +333,7 @@ proof is stale or not bound to the current artifact
 public tracker side effect would be needed without explicit intent
 review is required but $cas review is unavailable or not run
 three clean normalized $cas review runs are required but cannot be completed
+parallel fanout would cross shared invariants or conflicting resources
 ```
 
 ## Output
@@ -248,7 +341,18 @@ three clean normalized $cas review runs are required but cannot be completed
 ```text
 Goal Actuation:
 - source: accepted spec | direct goal | plan handoff | review
+- scheme plan: none|required|present
 - mode / persistence:
+- parallelism:
+  - mode:
+  - subagents used:
+  - fanout frontier:
+  - fan-in reducer:
+  - accepted results:
+  - rejected results:
+  - integration order:
+  - conflicts:
+  - CAS clean-run counter reset: yes|no
 - review source / CAS verdict, if required:
 - clean normalized CAS review runs: 0|1|2|3|not-required
 - goal contract summary:

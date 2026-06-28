@@ -2,7 +2,7 @@
 name: review-fold
 description: "Compress review pressure into intent-anchored review work: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent one-patch-per-comment churn. Use after $cas review, PR review comments, CAS findings, reviewer suggestions, and review-like claims."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   activation_cost: medium
   default_depth: high
 ---
@@ -19,7 +19,7 @@ review comments + goal contract + current diff
 -> proof-only | reject | minimal fix | refactor kernel | ask | follow-up
 ```
 
-This skill is the review-specific evidence fold for the recursive goal scheme. It complements `$review-adjudication`: use `$review-adjudication` for detailed CEX-v1 claim law; use `$review-fold` to control the whole review loop and pick the smallest correct response.
+This skill is the review-specific evidence fold for the recursive goal scheme. It complements `$review-adjudication`: use `$review-adjudication` for detailed claim law; use `$review-fold` to control the whole review loop and pick the smallest correct response.
 
 `$review-fold` consumes review findings. It does not replace code review. When the workflow needs to perform fresh, adversarial, or exhaustive code review, the review source must be `$cas`.
 
@@ -97,6 +97,10 @@ review_fold:
       current_count: 0|1|2|3
       normalized_clean_this_run: yes|no
       reset_reason:
+  parallelism:
+    review_class_fanout_safe: yes|no
+    patch_fanout_safe_after_resolve: yes|no
+    unsafe_parallel_reasons: []
   action_plan:
     mode: adjudicate-only|proof-only|minimal-fix|refactor-kernel|branch-race|st-governed
     work_nodes: []
@@ -169,10 +173,11 @@ Reset the clean-run counter to zero when code changes, review scope changes, bas
 4. Collapse duplicates and same-family comments.
 5. Recommend `review-only`, `resolve-only`, or `resolve-and-fix` from the user's requested mode and the accepted liabilities.
 6. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
-7. Produce a small work graph only for accepted liabilities.
-8. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolve pass accepts code-change liabilities.
-9. For post-implementation CAS runs, mark whether the normalized result is clean and whether the clean-run counter resets.
-10. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
+7. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
+8. Produce a small work graph only for accepted liabilities.
+9. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolve pass accepts code-change liabilities.
+10. For post-implementation CAS runs, mark whether the normalized result is clean and whether the clean-run counter resets.
+11. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
 
 ## Default behavior in `$actuating`
 

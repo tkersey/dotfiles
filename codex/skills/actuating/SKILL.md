@@ -2,7 +2,7 @@
 name: actuating
 description: "User-facing workflow for implementation after spec work. Use `/goal $actuating` to run `$spec-pipeline` then `$goal-actuating`: get an accepted implementation spec, choose the execution mode, require $cas for workflow review, implement through the goal runtime, and close with current-artifact proof."
 metadata:
-  version: "6.0.0"
+  version: "6.1.0"
   activation_cost: medium
   default_depth: high
 ---
@@ -16,6 +16,7 @@ Run the implementation workflow without making the user manage the lower-level g
 ```text
 implementation request or draft spec
 -> $spec-pipeline in gate-only/no-plan mode when the implementation spec is not yet accepted
+-> $recursion-scheme-planner when the accepted spec has nontrivial recursive structure
 -> $goal-actuating
 -> proof-bearing result
 ```
@@ -26,7 +27,7 @@ Use it as:
 /goal $actuating implement the accepted spec
 ```
 
-`$actuating` does not directly edit code, claim resources, or patch review findings. It routes to the skill that should act.
+`$actuating` does not directly edit code, claim resources, patch review findings, spawn subagents, or publish PRs. It routes to the owner that should act.
 
 ## Relation to the old execution controller
 
@@ -61,15 +62,37 @@ The workflow performs:
 ```text
 1. Accept or refresh the implementation spec with $spec-pipeline in gate-only/no-plan mode.
 2. Treat the accepted spec as the source of truth.
-3. Invoke $goal-actuating in spec-first mode.
-4. Derive a goal contract from the accepted spec.
-5. Choose update_plan, goal-artifacts, or $st persistence.
-6. If code review is required, run it through $cas.
-7. Use $review-fold before any review-originated code change.
-8. Execute accepted work through $goal-grind or $st-governed slices.
-9. Fold evidence after material verification.
-10. Emit proof-patch or explicit $ship handoff.
+3. Run $recursion-scheme-planner only when the accepted spec has nontrivial recursive structure.
+4. Invoke $goal-actuating with the accepted spec and optional Scheme Plan.
+5. Derive a goal contract from the accepted spec.
+6. Choose update_plan, goal-artifacts, or $st persistence.
+7. If code review is required, run it through $cas.
+8. Use $review-fold before any review-originated code change.
+9. Execute accepted work through $goal-grind, bounded subagents, or $st-governed slices.
+10. Fold evidence after material verification.
+11. Emit proof-patch or explicit $ship handoff.
 ```
+
+### Scheme-planning handoff
+
+Run `$recursion-scheme-planner` after `$spec-pipeline` and before `$goal-actuating` when the accepted spec has nontrivial recursive structure.
+
+Use it when the spec or direct goal contains:
+
+```text
+repeated failure or review classes
+migration across many files/packages
+review campaign or CAS closure requirement
+branch choices or competing implementation strategies
+proof fanout
+parallel subagent opportunities
+mutual client/server/schema/protocol changes
+$st coordination, claims, fencing, or worktrees
+unclear stop rule
+risk of becoming a generic keep-going loop
+```
+
+Skip it for one-shot or obviously linear implementation.
 
 ### Direct goal implementation
 
@@ -148,7 +171,7 @@ Do not call `$goal-grind`. The three-clean-review closure bar does not apply bec
 This is the default for review work unless the user explicitly requests no implementation:
 
 ```text
-/goal $actuating review this branch
+/goal $actuating review and fix this PR
 ```
 
 The workflow performs:
@@ -156,11 +179,15 @@ The workflow performs:
 ```text
 $cas review
 -> $review-fold
+-> optional review-class-fanout
 -> resolve pass
+-> optional branch-race
 -> $goal-grind accepted liabilities only
+-> optional patch-fanout over disjoint accepted liabilities only
 -> $evidence-fold
 -> 3 clean normalized $cas review runs
 -> $proof-patch
+-> $ship only when PR update/publication is requested
 ```
 
 Only accepted code-change liabilities may reach implementation.
@@ -180,9 +207,35 @@ review scope changes
 base/head/diff changes
 accepted proof bar changes
 CAS lane/session changes in a way that invalidates continuity
+accepted parallel patch result is integrated
+branch-race winner is integrated
+serial integration changes the artifact
 ```
 
 Stop with `actuation verdict: cas-review-blocked` when `$cas` cannot run or the three-clean-run bar cannot be reached because of resource limits.
+
+### Parallelism policy
+
+`$actuating` may use bounded subagent parallelism only after the work has been shaped.
+
+Allowed fanout modes:
+
+- `scout-fanout`: parallel read-only repository investigation.
+- `review-class-fanout`: parallel investigation or classification of review finding classes after `$cas review` and `$review-fold`.
+- `branch-race`: compare isolated strategies under the same verifier.
+- `patch-fanout`: implement disjoint accepted liabilities after the resolve pass.
+- `proof-fanout`: run independent verification checks in parallel.
+
+Forbidden fanout:
+
+- raw review finding -> patch worker
+- public side effects from subagents
+- patch fanout over shared invariants, shared files, or shared owner boundaries
+- subagents declaring the goal complete
+- subagents updating, creating, or publishing PRs
+- branch racing without a common verifier
+
+The lead loop owns goal scope, review resolution, integration, CAS clean-run counting, proof closure, and `$ship` handoff.
 
 ### Dry actuation plan
 
@@ -196,10 +249,12 @@ Output only:
 
 ```text
 goal contract summary
+scheme plan, if needed
 mode selection
 optional work list
 $st required? yes/no
 review source required? none|cas-probe|cas-lane|cas-exhaustive
+parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
 proof obligations
 blockers
 ```
@@ -226,13 +281,16 @@ actuating_status:
 
 ## Runtime handoff
 
-`$actuating` owns the handoff, not the internals. It asks `$goal-actuating` to map:
+`$actuating` owns the handoff, not the internals. It asks downstream skills to map:
 
 ```text
-accepted spec -> goal contract
+accepted spec -> optional $recursion-scheme-planner -> goal contract
 goal contract -> work list only if decomposition changes execution
 review requirement -> $cas review source mode
 CAS/existing review output -> $review-fold disposition before code
+review classes -> optional review-class fanout
+competing strategies -> optional branch-race
+accepted disjoint liabilities -> optional patch-fanout
 work list -> $goal-grind next action
 verification output -> $evidence-fold verdict
 completion -> $proof-patch or $ship handoff
@@ -264,6 +322,8 @@ actuating_mode:
   persistence: update_plan|goal-artifacts|st
   implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
   review_source: none|existing-review|cas-probe|cas-lane|cas-exhaustive
+  scheme_plan: none|required|present
+  parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
   closure: review-disposition|resolution-agenda|proof-patch|ship-handoff|blocked
 ```
 
@@ -278,6 +338,7 @@ Switch to `review-only` when the user asks for review-only, audit-only, classify
 Switch to `resolve-only` when the user asks for a plan or resolution agenda without implementation.
 Switch to `cas-exhaustive` when exhaustive review is requested or required by the proof bar.
 Switch to `refactor-kernel` when repeated findings share an owner boundary.
+Switch to `branch-race` when local fix and refactor-kernel are both plausible and can be compared under the same verifier.
 Switch to `st-governed` only when durable claims, fencing, worktrees, or serialized integration are required.
 Switch to `ship-handoff` only when PR/publication intent is explicit or inherited from the accepted spec.
 
@@ -293,6 +354,7 @@ raw review text has not been reduced to dispositions
 review is required but $cas review is unavailable or not run
 three clean normalized $cas review runs are required but cannot be completed
 $st authority is required but absent
+parallel fanout would cross shared invariants or conflicting resources
 verification regresses and the next action is not isolate/revert/prove
 public tracker or PR side effects would occur without explicit intent
 ```
@@ -303,7 +365,18 @@ public tracker or PR side effects would occur without explicit intent
 Actuating:
 - source: direct goal | accepted spec | review | $st handoff
 - authority source:
+- scheme plan: none|required|present
 - mode / persistence:
+- parallelism:
+  - mode:
+  - subagents used:
+  - fanout frontier:
+  - fan-in reducer:
+  - accepted results:
+  - rejected results:
+  - integration order:
+  - conflicts:
+  - CAS clean-run counter reset: yes|no
 - review source / CAS verdict, if required:
 - normalized CAS clean runs: 0|1|2|3|not-required
 - goal contract / work list:

@@ -2,13 +2,14 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Workflow for $spec-pipeline then $goal-actuating"
+  short_description: "Workflow for $spec-pipeline, optional recursion-scheme planning, then $goal-actuating"
   default_prompt: >-
     Use $actuating as the explicit /goal workflow. First get an accepted
     implementation spec from $spec-pipeline in gate-only/no-plan mode when one is
-    not already available, then hand that accepted spec to $goal-actuating.
+    not already available. If the accepted spec has nontrivial recursive
+    structure, hand off to $recursion-scheme-planner before $goal-actuating.
     For review requests, default to resolve-and-fix unless the user explicitly
     says not to implement. Fresh or exhaustive workflow review must use $cas
     review, findings must pass through $review-fold, and only accepted
-    code-change liabilities may reach implementation. Use $st mode only when
-    durable coordination or existing $st state must own execution.
+    code-change liabilities may reach implementation. Use bounded subagent
+    parallelism only after work is shaped and fan results back through the lead.

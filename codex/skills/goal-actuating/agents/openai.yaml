@@ -2,14 +2,14 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Goal Actuating"
-  short_description: "Run accepted specs or direct goals through goal contract, work list, review, evidence, and proof"
+  short_description: "Run accepted specs or direct goals through goal contract, work list, review, evidence, proof, and bounded subagents"
   default_prompt: >-
     Use $goal-actuating to execute an accepted implementation spec, direct /goal,
-    review workflow, dry actuation plan, or $st-governed execution. Treat the
-    accepted spec as the source of truth, derive a goal contract, choose
-    update_plan, goal-artifacts, or $st persistence, and keep the loop focused on
-    the next useful action. For review requests, default to resolve-and-fix
-    unless the user explicitly requests review-only, resolve-only, audit-only, or
-    no implementation. Fresh or exhaustive review must use $cas review; then
-    route findings through $review-fold and implement only accepted code-change
-    liabilities. Close with evidence-fold and proof-patch.
+    review remediation, dry actuation plan, or $st-governed execution. If no
+    Scheme Plan exists and the work shape is unclear, hand off to
+    $recursion-scheme-planner before workgraph generation. Treat the accepted
+    spec as the source of truth, derive a goal contract, choose persistence, and
+    keep the loop focused on the next useful action. Fresh or exhaustive review
+    must use $cas review; findings must pass through $review-fold. Use bounded
+    subagent parallelism only over explicit safe frontier nodes, and fan results
+    back through the lead. Close with evidence-fold and proof-patch.
