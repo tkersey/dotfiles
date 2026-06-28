@@ -15,7 +15,7 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 
 - `ledger doctor`, `query`, `map`, `handoff`, `show`, and `export`;
 - `.ledger/negative-ledger/events.jsonl` through the CLI;
-- selected `.learnings.jsonl` hits as historical candidate evidence;
+- selected `.ledger/learnings/learnings.jsonl` hits as historical candidate evidence;
 - relevant commits, reverts, reviews, benchmarks, tests, traces, and diffs;
 - the current changed surface needed to judge applicability.
 

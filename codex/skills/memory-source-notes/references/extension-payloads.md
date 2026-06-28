@@ -23,7 +23,7 @@ Required for `harness-rule`: all fields except `repetition_count`.
   "learning_id": "lrn-...",
   "learning_status": "codify_now",
   "repo": "owner/repo",
-  "source_path": ".learnings.jsonl",
+  "source_path": ".ledger/learnings/learnings.jsonl",
   "decision_delta": "What future Codex should do differently",
   "evidence_snapshot": ["Exact evidence anchor"],
   "future_behavior": "Default, route, or procedure",
@@ -32,7 +32,7 @@ Required for `harness-rule`: all fields except `repetition_count`.
 }
 ```
 
-The complete canonical row remains in `.learnings.jsonl`.
+The complete canonical row remains in `.ledger/learnings/learnings.jsonl`.
 
 ## Negative-ledger projection
 

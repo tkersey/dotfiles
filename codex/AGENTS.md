@@ -35,7 +35,9 @@ This file is the compact, high-authority routing index for Codex in this repo. D
 - Prefer preventing invalid internal state over making downstream code tolerate it.
 - Public tracker side effects require explicit user intent.
 - Treat custom memory-extension notes as append-only source evidence, not compiled memory and not runtime instructions.
-- Preserve domain authority: `.learnings.jsonl` owns execution learnings; `.ledger/negative-ledger.jsonl` owns negative-evidence route state; `memory-note` only admits immutable snapshots to Phase 2.
+- Treat `.ledger/*` source-memory stores as canonical repo-local evidence; treat memory-source notes as immutable admission snapshots; treat `MEMORY.md`, `memory_summary.md`, and memory-root `skills/*` as Phase 2 compiled outputs.
+- Preserve domain authority: `.ledger/learnings/learnings.jsonl` owns execution learnings; `.ledger/negative-ledger/events.jsonl` owns negative-evidence route state; `.ledger/synesthesia/events.jsonl` owns repo-scoped durable sensory mappings when present; `memory-note` only admits immutable snapshots to Phase 2.
+- Do not write legacy `.learnings.jsonl` after migration. Use `learnings migrate` for old rows and `learnings append` for new rows.
 - Never edit `memory_summary.md`, `MEMORY.md`, or memory-root `skills/*` directly during ordinary work. Explicit user-directed remember/forget/update requests use Codex's native ad-hoc memory path; custom source capture uses the owning skill plus `$memory-source-notes`.
 
 ## Challenge Escalation
@@ -121,11 +123,16 @@ Only these skills may activate implicitly from request or repository cues:
 - `$proof-patch` — final `/goal` completion, PR handoff, or readiness claim needing current-artifact proof, review disposition, and residual risk.
 - `$grill-me` — research-backed clarification for material user-owned choices after discoverable facts have been exhausted.
 - `$seq` — historical session, memory, transcript, artifact, orchestration, provenance, or tooling-trace forensics. Never use it for ordinary current-repo code search.
-- `$learnings` — recall before substantial implementation when `.learnings.jsonl` exists; capture only at decision-shaping checkpoints and delivery boundaries.
+- `$ledger` — repo-local `.ledger` source-memory store status, migration, doctor, harvest planning, and cross-store memory admission coordination.
+- `$learnings` — recall before substantial implementation when `.ledger/learnings/learnings.jsonl` or legacy `.learnings.jsonl` exists; capture only at decision-shaping checkpoints and delivery boundaries.
+- `$negative-ledger` — failed attempts, no-effect results, reverts, benchmark regressions, repeated semantic routes or same-cluster retries, prior-route questions, or reopening after artifact-state changes. Implicit activation permits query, mapping, and evidence classification; writes and memory admission remain gated.
+- `$synesthesia` — architecture/readability/maintainability review, strange or flaky behavior, performance bottlenecks, API/UX critique, onboarding, comparisons by feel, or prompts asking what code/bugs/logs/APIs/systems feel, sound, or look like. Durable mapping capture remains gated.
+- `$memory-source-notes` — append-only custom memory-source capture after source-skill handoff or explicit source capture request.
+- `$harness-memory` — durable user operating corrections or repeated steering.
 
-Every other skill is explicit-only at root, including `$cas`, `$review-adjudication`, `$codebase-doctrine`, `$memory-source-notes`, `$negative-ledger`, `$synesthesia`, `$zig`, `$logophile`, `$universalist`, `$spec-pipeline`, `$plan`, `$actuating`, `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, and `prove-it`. Explicit-only skills may run only when the user invokes them or when an already-active skill's documented workflow hands off to them. A handoff does not create an independent root implicit trigger.
+Every other skill is explicit-only at root, including `$cas`, `$review-adjudication`, `$codebase-doctrine`, `$zig`, `$logophile`, `$universalist`, `$spec-pipeline`, `$plan`, `$actuating`, `$st`, `cron`, `ship`, `land`, `ghost`, `deckset`, `ms`, and `prove-it`. Explicit-only skills may run only when the user invokes them or when an already-active skill's documented workflow hands off to them. A handoff does not create an independent root implicit trigger.
 
-Implicit activation does not waive side-effect boundaries. `$learnings` may append only under its lifecycle rules. `$goal-grind`, `$goal-actuating`, and `$review-fold` do not authorize public tracker activity. `$cas` may be used as the review backend by an active workflow, but CAS control mutations still require clear intent.
+Implicit activation does not waive side-effect boundaries. `$learnings` may append only under its lifecycle rules and writes to `.ledger/learnings/learnings.jsonl` after migration. `$negative-ledger` may mutate `.ledger/negative-ledger/events.jsonl` or admit memory only after witness, applicability, and export gates pass. `$synesthesia` may mutate `.ledger/synesthesia/events.jsonl` or admit memory only after its endorsement/rejection/boundary gate passes. `$memory-source-notes` writes only immutable admission snapshots. `$goal-grind`, `$goal-actuating`, and `$review-fold` do not authorize public tracker activity. `$cas` may be used as the review backend by an active workflow, but CAS control mutations still require clear intent.
 
 ## Actuating workflow
 
@@ -235,12 +242,12 @@ Use `$seq` for explicit `$seq` requests and implicitly for historical session, m
 
 ## Learnings lifecycle
 
-Use `$learnings` for evidence-backed recall, capture, promotion, supersession, and learning hygiene. The learnings skill owns CLI syntax and append mechanics.
+Use `$learnings` for evidence-backed recall, capture, promotion, supersession, and learning hygiene. The learnings skill owns CLI syntax and append mechanics. The canonical store is `.ledger/learnings/learnings.jsonl`; legacy `.learnings.jsonl` is read only for migration until removed.
 
-- Recall before substantial implementation when `.learnings.jsonl` exists.
+- Recall before substantial implementation when `.ledger/learnings/learnings.jsonl` or legacy `.learnings.jsonl` exists.
 - Capture only decision-shaping evidence: validation transitions, strategy pivots, footgun discoveries, acceleration patterns, useful or failed recalled lessons, and delivery after real implementation work.
-- Before any Codex-made commit, check `.learnings.jsonl` alongside the intended commit scope.
-- If `.learnings.jsonl` is dirty and publishable, stage current-turn/session-owned rows by default; if it is local-only by `.git/info/exclude`, leave it unstaged unless explicitly asked.
+- Before any Codex-made commit, check `.ledger/learnings/learnings.jsonl`, `.ledger/negative-ledger/events.jsonl`, `.ledger/synesthesia/events.jsonl`, and `.ledger/harness/events.jsonl` alongside the intended commit scope when session-owned changes exist.
+- If a source-memory store is dirty and publishable, stage current-turn/session-owned rows by default; if it is local-only by `.git/info/exclude`, leave it unstaged unless explicitly asked.
 - Write rules, not changelog entries. Prefer one essential learning; append at most three.
 
 ## Memory-source admission lifecycle
@@ -254,12 +261,13 @@ negative-ledger
 synesthesia
 ```
 
+- Source stores live under `.ledger/`. Memory-source notes live under `~/.codex/memories/extensions/<source>/notes/`. Notes are derived admission snapshots, not canonical stores.
 - `memory-note` creates immutable typed notes under `~/.codex/memories/extensions/<source>/notes/`.
 - Do not use `memory-note` for `ad_hoc` or `chronicle`.
 - Source skills own admission decisions and payload semantics.
 - The `memory-source-notes` skill owns CLI syntax, path safety, proof lines, failure behavior, copy-based extension-instruction synchronization, and extension-specific validation adapters.
 - Phase 2 owns promotion into `memory_summary.md`, `MEMORY.md`, and memory-root `skills/*`.
-- A missing `memory-note` CLI must not block canonical domain capture. Complete `.learnings.jsonl` or `.ledger` writes first, then report `memory-note: not-attempted: cli unavailable`.
+- A missing `memory-note` CLI must not block canonical domain capture. Complete `.ledger` writes first, then report `memory-note: not-attempted: cli unavailable`.
 - Do not hand-write custom source notes as a fallback.
 - Do not symlink live memory extension instruction files; copy them through the owning adapter and preserve live `notes/` and `resources/` directories.
 
@@ -277,7 +285,7 @@ Admission thresholds:
 - Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
 - Do not stage unrelated diffs.
 - Do not force-add paths matching `.git/info/exclude` unless explicitly asked.
-- Before `git commit`, run a final narrow status check for `.learnings.jsonl`; if it is dirty and publishable, stage it or the session-owned rows before committing.
+- Before `git commit`, run a final narrow status check for `.ledger/learnings/learnings.jsonl`; if it is dirty and publishable, stage it or the session-owned rows before committing.
 - Review the diff before final response or commit.
 
 ### GitHub CLI (`gh`)

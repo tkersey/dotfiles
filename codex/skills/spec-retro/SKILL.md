@@ -68,7 +68,7 @@ Use any available:
 - `$spec-pipeline` reports;
 - session history;
 - `seq` results;
-- `.learnings.jsonl`;
+- `.ledger/learnings/learnings.jsonl` or legacy `.learnings.jsonl` during migration;
 - user-supplied retrospective reports.
 
 ## Evidence discipline

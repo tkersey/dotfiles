@@ -9,7 +9,7 @@ This extension compiles selected projections of repo-local negative-evidence led
 Operational authority remains:
 
 ```text
-<repo>/.ledger/negative-ledger.jsonl
+<repo>/.ledger/negative-ledger/events.jsonl
 ```
 
 Extension intake is:
@@ -18,7 +18,7 @@ Extension intake is:
 extensions/negative-ledger/notes/*.md
 ```
 
-A source note is a snapshot of ledger truth for memory admission. It is never the blocking route gate and never replaces the canonical ledger.
+A source note is an immutable snapshot of ledger truth for memory admission. It is never the blocking route gate and never replaces the canonical ledger.
 
 ## Primary Source
 
