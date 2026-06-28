@@ -99,7 +99,8 @@ When the user asks for review, review closure, code review, CAS review, review r
 4. Implement only accepted code-change liabilities.
 5. Preserve no-code dispositions: `reject`, `proof-only`, `follow-up`, and `ask-human`.
 6. Prefer `refactor-kernel` when several findings share one owner boundary.
-7. Close with `$evidence-fold` and `$proof-patch`.
+7. Run three consecutive clean normalized `$cas` review passes on the same artifact scope.
+8. Close with `$evidence-fold` and `$proof-patch`.
 
 Do not treat `resolve-and-fix` as one patch per comment.
 
@@ -120,7 +121,7 @@ $cas review
 -> stop
 ```
 
-Do not call `$goal-grind`.
+Do not call `$goal-grind`. The three-clean-review closure bar does not apply unless the user explicitly asks for exhaustive review certification.
 
 #### Resolve-only
 
@@ -140,7 +141,7 @@ $cas review or existing review findings
 -> stop
 ```
 
-Do not call `$goal-grind`.
+Do not call `$goal-grind`. The three-clean-review closure bar does not apply because no remediation has occurred.
 
 #### Resolve-and-fix
 
@@ -158,11 +159,30 @@ $cas review
 -> resolve pass
 -> $goal-grind accepted liabilities only
 -> $evidence-fold
+-> 3 clean normalized $cas review runs
 -> $proof-patch
 ```
 
 Only accepted code-change liabilities may reach implementation.
 Raw review prose never reaches implementation directly.
+
+#### Three clean normalized CAS review runs
+
+For `resolve-and-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same current artifact scope unless the user explicitly lowers the review bar.
+
+A clean normalized CAS run means `$cas` produces no new in-scope accepted liability after `$review-fold` and the resolve pass. The run is not made dirty by findings that are duplicate, rejected, out-of-scope, already-proven proof-only, deferred follow-up, or already-resolved by the current refactor kernel.
+
+Reset the clean-run counter to zero when:
+
+```text
+code changes
+review scope changes
+base/head/diff changes
+accepted proof bar changes
+CAS lane/session changes in a way that invalidates continuity
+```
+
+Stop with `actuation verdict: cas-review-blocked` when `$cas` cannot run or the three-clean-run bar cannot be reached because of resource limits.
 
 ### Dry actuation plan
 
@@ -271,6 +291,7 @@ scope, non-goals, compatibility, or proof bar are unresolved
 review findings expand product/API scope
 raw review text has not been reduced to dispositions
 review is required but $cas review is unavailable or not run
+three clean normalized $cas review runs are required but cannot be completed
 $st authority is required but absent
 verification regresses and the next action is not isolate/revert/prove
 public tracker or PR side effects would occur without explicit intent
@@ -284,6 +305,7 @@ Actuating:
 - authority source:
 - mode / persistence:
 - review source / CAS verdict, if required:
+- normalized CAS clean runs: 0|1|2|3|not-required
 - goal contract / work list:
 - review-fold disposition:
 - execution owner: goal-grind | st/fixed-point-driver | none
@@ -305,6 +327,12 @@ actuation verdict: st-authority-blocked
 ```
 
 If review is required but CAS review is unavailable or not run, say:
+
+```text
+actuation verdict: cas-review-blocked
+```
+
+If three clean normalized CAS runs are required but unavailable, say:
 
 ```text
 actuation verdict: cas-review-blocked
