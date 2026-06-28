@@ -36,6 +36,8 @@ resolve pass = closure agenda compiler
 $goal-grind = implementation engine for accepted liabilities
 ```
 
+For `resolve-and-fix` and exhaustive review, final completion requires three consecutive clean normalized `$cas` review runs after implementation. `$review-fold` decides whether each CAS run is normalized clean.
+
 ## Review source rule
 
 ```text
@@ -58,6 +60,10 @@ review_fold:
       mode: none|cas-probe|cas-lane|cas-exhaustive
       verdict_ref:
       lane_ref:
+      clean_run:
+        normalized_clean: yes|no
+        resets_counter: yes|no
+        reason:
   intent_anchor:
     original_goal:
     accepted_scope:
@@ -86,6 +92,11 @@ review_fold:
     no_code_modifier_detected: yes|no
     accepted_liability_count:
     refactor_kernel_candidate_count:
+    clean_cas_runs:
+      required: yes|no
+      current_count: 0|1|2|3
+      normalized_clean_this_run: yes|no
+      reset_reason:
   action_plan:
     mode: adjudicate-only|proof-only|minimal-fix|refactor-kernel|branch-race|st-governed
     work_nodes: []
@@ -108,7 +119,7 @@ review_fold:
 
 - `review-only`: classify findings and stop without a remediation agenda.
 - `resolve-only`: classify findings and produce a closure agenda without implementation.
-- `resolve-and-fix`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolve pass.
+- `resolve-and-fix`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolve pass, then require three clean normalized CAS review runs before completion.
 
 ### `adjudicate-only`
 
@@ -139,11 +150,14 @@ Hand off to `$st` when review remediation requires durable resource claims, exte
 When the source is `cas-exhaustive`, do not treat review as optional or merely advisory. Continue review/fix/fold cycles until one of these holds:
 
 ```text
-CAS review is clean
-all CAS findings are dispositioned with current-artifact proof
+three consecutive clean normalized CAS review runs are complete
 CAS review is blocked and the blocker is reported
 user explicitly lowers the review proof bar
 ```
+
+A clean normalized CAS run means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the resolve pass. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-resolved findings do not make the run dirty.
+
+Reset the clean-run counter to zero when code changes, review scope changes, base/head/diff changes, the proof bar changes, or CAS lane continuity is lost.
 
 `$review-fold` may reject or mark findings proof-only, but it must not convert an exhaustive review gate into a no-review closure.
 
@@ -157,13 +171,15 @@ user explicitly lowers the review proof bar
 6. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
 7. Produce a small work graph only for accepted liabilities.
 8. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolve pass accepts code-change liabilities.
-9. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
+9. For post-implementation CAS runs, mark whether the normalized result is clean and whether the clean-run counter resets.
+10. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
 
 ## Default behavior in `$actuating`
 
 When called by `$actuating`:
 
 - default to `resolve-and-fix` for review requests;
+- require three consecutive clean normalized `$cas` review runs before completing `resolve-and-fix` or exhaustive review;
 - use `review-only` only when the user explicitly asks for no implementation or classification only;
 - use `resolve-only` only when the user explicitly asks for a plan/agenda without implementation;
 - preserve no-code dispositions for rejected, proof-only, follow-up, or human-owned findings;
@@ -188,4 +204,5 @@ no changes
 - Do not accept scope expansion without user authority.
 - Do not miss the refactor when many comments share one owner boundary.
 - Do not replace a requested or required CAS review with non-CAS critique.
+- Do not claim review closure before three clean normalized CAS runs when `resolve-and-fix` or exhaustive review requires them.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.
