@@ -20,6 +20,21 @@ Copy first:
 learnings migrate --mode copy
 ```
 
+Required preflight before append or commit closeout:
+
+```bash
+learnings doctor
+```
+
+If the doctor reports `legacy-only`, run the dry run and copy migration before
+any `learnings append`:
+
+```bash
+learnings migrate --dry-run --mode copy
+learnings migrate --mode copy
+learnings doctor
+```
+
 Do not delete `.learnings.jsonl` by default. After migration, normal `learnings append` writes the namespaced `.ledger` store.
 
 ## Negative Ledger

@@ -252,10 +252,12 @@ stale => require explicit takeover
 Default repeated review commands consume cached terminal evidence; they are not
 new independent clean runs. For review workflows that require multiple clean CAS
 runs on the same tuple, use `--fresh-attempt REASON` for each additional
-post-terminal attempt and verify the streak with:
+post-terminal attempt and verify the streak with the canonical closeout surface.
+`closeout` may run missing `start --wait --fallback none` attempts itself;
+use `--dry-run` when only existing canonical receipts should be certified:
 
 ```bash
-cas review_session receipt certify --policy strongest-closeout --glob '<receipts>' --cwd <repo> --base <base>
+cas review_session closeout --cwd <repo> --base <base> --json
 ```
 
 Receipt certification counts distinct tuple-bound `reviewThreadId` attempts.
@@ -266,7 +268,7 @@ pre-review transport failures remain attempt-free evidence.
 also requires `principalProofUsable=true`. Receipts with reduced account
 principal protection, including `unknown-account` and legacy receipts missing
 principal metadata, may diagnose findings with `receipt proof`, but only
-`receipt certify --policy strongest-closeout` is closeout-eligible. Diagnostic
+canonical `closeout` or `receipt certify --cwd <repo> --base <base>` is closeout-eligible. Diagnostic
 `receipt proof` output is never a closeout gate, including when it passes under
 `--allow-reduced-principal REASON`.
 

@@ -46,6 +46,10 @@ Do not duplicate every learning into memory notes. For an accepted admission, lo
 Use `learnings append` for writes. Do not hand-edit rows in normal operation.
 Legacy `.learnings.jsonl` is read only during migration. Use
 `learnings migrate --mode copy` to copy old rows into the canonical store.
+Treat `legacy-only` as a required migration state, not a normal operating
+state. If `learnings doctor` reports `legacy-only`, run
+`learnings migrate --mode copy` before any append, commit closeout, or handoff
+that depends on learning capture.
 
 Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`, `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.
 
@@ -70,9 +74,25 @@ Require decision delta, transferability, and counterfactual cost. Prefer one ess
    git rev-parse --show-toplevel
    ```
 
-2. Gather exact evidence and changed paths.
-3. Distill objective, inflection, proof, and transferable rule.
-4. Append from the verified repo root:
+2. Run the migration preflight:
+
+   ```bash
+   learnings doctor
+   ```
+
+   If status is `legacy-only`, run:
+
+   ```bash
+   learnings migrate --dry-run --mode copy
+   learnings migrate --mode copy
+   learnings doctor
+   ```
+
+   Append only after the doctor status is `migrated`, `current`, or `missing`.
+   `missing` is valid only when no legacy `.learnings.jsonl` exists.
+3. Gather exact evidence and changed paths.
+4. Distill objective, inflection, proof, and transferable rule.
+5. Append from the verified repo root:
 
    ```bash
    learnings append \
@@ -83,9 +103,9 @@ Require decision delta, transferability, and counterfactual cost. Prefer one ess
      --tag example
    ```
 
-5. Verify the reported target path is exactly `<repo>/.ledger/learnings/learnings.jsonl`.
-6. Before any Codex-made commit, inspect `.ledger/learnings/learnings.jsonl` explicitly.
-7. Emit exactly one canonical learning proof line.
+6. Verify the reported target path is exactly `<repo>/.ledger/learnings/learnings.jsonl`.
+7. Before any Codex-made commit, inspect `.ledger/learnings/learnings.jsonl` explicitly.
+8. Emit exactly one canonical learning proof line.
 
 Proof lines:
 

@@ -43,6 +43,7 @@ Root policy:
 
 - Recall before substantial implementation when relevant canonical or legacy learning stores exist.
 - Capture only decision-shaping evidence: validation transitions, strategy pivots, footgun discoveries, acceleration patterns, useful or failed recalled lessons, repeated failures, durable user corrections, and delivery after real implementation work.
+- Before the first learning append in a repo, or before commit closeout when learning capture is warranted, run `learnings doctor`. If it reports `legacy-only`, run `learnings migrate --dry-run --mode copy` and `learnings migrate --mode copy` before appending.
 - Before any Codex-made commit, check session-owned changes in `.ledger/learnings/learnings.jsonl`, `.ledger/negative-ledger/events.jsonl`, `.ledger/synesthesia/events.jsonl`, and `.ledger/harness/events.jsonl` alongside the intended commit scope.
 - If a source-memory store is dirty and publishable, stage current-turn/session-owned rows by default; if it is local-only by `.git/info/exclude`, leave it unstaged unless explicitly asked.
 - Legacy `.learnings.jsonl` is migration input only after migration; do not append new rows there.

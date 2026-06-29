@@ -63,8 +63,9 @@ active review lock exists -> wait/recover the existing reviewThreadId
 pre-review transport failure -> no attempt exists; ignore for streak and recover transport
 ```
 
-Use `cas review_session receipt certify --policy strongest-closeout ...` to
-certify the streak from distinct tuple-bound `reviewThreadId` attempts.
+Use `cas review_session closeout --cwd <repo> --base <base> --json` to certify
+the streak from canonical distinct tuple-bound `reviewThreadId` attempts. Use
+`--dry-run` when the command must not start missing review attempts.
 
 Reduced-principal attempts do not increment the certified clean streak.
 `cas review_session receipt proof --allow-reduced-principal REASON ...` is an

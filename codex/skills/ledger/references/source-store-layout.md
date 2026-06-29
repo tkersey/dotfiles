@@ -29,6 +29,11 @@ Legacy stores:
 
 Legacy stores are read only for migration or compatibility. Normal writes go to the namespaced `.ledger/<source>/` store.
 
+`legacy-only` means the legacy store exists and the canonical namespaced store
+is missing. Treat this as a preflight failure for writes: run the owning
+source-specific migration command before append or commit closeout. For
+learnings, use `learnings migrate --mode copy`.
+
 Memory-source notes live outside the repo:
 
 ```text

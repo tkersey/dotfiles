@@ -20,6 +20,17 @@ Canonical stores:
 - `.ledger/synesthesia/events.jsonl` when present
 - `.ledger/harness/events.jsonl` when present
 
+Source-store state model:
+
+```text
+missing -> legacy-only -> migrated/current -> invalid
+```
+
+`legacy-only` is an actionable preflight state. It means reads may use
+compatibility fallback, but writes and commit closeout must first run the owning
+source migration. For learnings, that owner is `learnings migrate --mode copy`;
+for negative evidence, that owner is `ledger migrate --mode copy`.
+
 Compiled Codex memory is still owned by Phase 2. Memory-source notes are admission snapshots, not canonical stores.
 
 ## Trigger Cues
@@ -52,7 +63,9 @@ Never write `memory_summary.md`, `MEMORY.md`, or memory-root `skills/*`.
 2. Inspect `.ledger/` and legacy `.learnings.jsonl`.
 3. Classify each store as `migrated`, `legacy-only`, `current`, `legacy-path`, `notes-only`, `missing`, or `invalid`.
 4. Run source doctors when available.
-5. Report harvest candidates and recommended source-specific commands.
+5. If any required source is `legacy-only`, report the exact owning migration
+   command before any harvest or append recommendation.
+6. Report harvest candidates and recommended source-specific commands.
 
 See [source-store-layout.md](references/source-store-layout.md), [migration-workflow.md](references/migration-workflow.md), and [harvest-workflow.md](references/harvest-workflow.md).
 
