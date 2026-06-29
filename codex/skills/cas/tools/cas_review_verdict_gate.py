@@ -1,5 +1,5 @@
 #!/usr/bin/env -S uv run python
-"""Validate CAS review-session receipts against the CAS review proof boundary.
+"""Validate CAS review-session receipts against the CAS review transport boundary.
 
 This is a reference validator for the skill docs. It accepts one JSON object and
 checks the fields introduced by the numbered CLI specs.
@@ -64,7 +64,7 @@ def validate(data: dict[str, Any]) -> list[str]:
     failure_code = field(data, "failureCode", "failure_code")
     review_thread_id = field(data, "reviewThreadId", "review_thread_id")
     review_attempt_exists = field(data, "reviewAttemptExists", "review_attempt_exists")
-    proof_verdict_exists = field(data, "proofVerdictExists", "proof_verdict_exists")
+    tuple_verdict_exists = field(data, "tupleVerdictExists")
     verdict = review_verdict(data)
 
     if phase is None:
@@ -112,8 +112,8 @@ def validate(data: dict[str, Any]) -> list[str]:
                 errors.append("clean reviewVerdict must not have failureCode")
         if status == "no_attempt" and verdict.get("reviewThreadId") is not None:
             errors.append("no_attempt reviewVerdict must not have reviewThreadId")
-        if proof_verdict_exists is True and status not in {"clean", "findings", "account_resource_exhausted", "parse_mismatch"}:
-            errors.append("proofVerdictExists=true is inconsistent with reviewVerdict.status")
+        if tuple_verdict_exists is True and status not in {"clean", "findings", "account_resource_exhausted", "parse_mismatch"}:
+            errors.append("tupleVerdictExists=true is inconsistent with reviewVerdict.status")
 
     return errors
 

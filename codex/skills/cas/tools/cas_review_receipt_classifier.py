@@ -1,5 +1,5 @@
 #!/usr/bin/env -S uv run python
-"""Classify CAS review-session receipts into the new review-proof taxonomy."""
+"""Classify CAS review-session receipts into review transport facts."""
 from __future__ import annotations
 
 import argparse
@@ -63,7 +63,7 @@ def classify(receipt: dict[str, Any]) -> dict[str, Any]:
             "failureClass": "account_resource",
             "reviewAttemptPhase": phase,
             "reviewAttemptExists": review_thread_id is not None,
-            "proofVerdictExists": False,
+            "tupleVerdictExists": False,
             "reviewThreadId": review_thread_id,
             "retryableSameTupleNow": False,
         }
@@ -75,7 +75,7 @@ def classify(receipt: dict[str, Any]) -> dict[str, Any]:
             "failureClass": "transport",
             "reviewAttemptPhase": "pre_review_start",
             "reviewAttemptExists": False,
-            "proofVerdictExists": False,
+            "tupleVerdictExists": False,
             "reviewThreadId": None,
             "retryableSameTupleNow": True,
         }
@@ -88,7 +88,7 @@ def classify(receipt: dict[str, Any]) -> dict[str, Any]:
             "failureClass": "review_verdict",
             "reviewAttemptPhase": "normalized_verdict",
             "reviewAttemptExists": bool(verdict.get("reviewThreadId") or review_thread_id),
-            "proofVerdictExists": status in {"clean", "findings", "account_resource_exhausted", "parse_mismatch"},
+            "tupleVerdictExists": status in {"clean", "findings", "account_resource_exhausted", "parse_mismatch"},
             "reviewThreadId": verdict.get("reviewThreadId") or review_thread_id,
             "retryableSameTupleNow": status not in {"timeout", "account_resource_exhausted"},
         }
@@ -100,7 +100,7 @@ def classify(receipt: dict[str, Any]) -> dict[str, Any]:
             "failureClass": "review_attempt",
             "reviewAttemptPhase": "review_started",
             "reviewAttemptExists": True,
-            "proofVerdictExists": False,
+            "tupleVerdictExists": False,
             "reviewThreadId": review_thread_id,
             "retryableSameTupleNow": False,
         }
@@ -111,7 +111,7 @@ def classify(receipt: dict[str, Any]) -> dict[str, Any]:
         "failureClass": "unknown",
         "reviewAttemptPhase": pick(receipt, "reviewAttemptPhase", "phase") or "pre_lane_start",
         "reviewAttemptExists": False,
-        "proofVerdictExists": False,
+        "tupleVerdictExists": False,
         "reviewThreadId": None,
         "retryableSameTupleNow": True,
     }

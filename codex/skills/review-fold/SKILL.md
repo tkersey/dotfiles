@@ -123,7 +123,7 @@ review_fold:
 
 - `review-only`: classify findings and stop without a remediation agenda.
 - `resolve-only`: classify findings and produce a closure agenda without implementation.
-- `resolve-and-fix`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolve pass, then require three clean normalized CAS review runs before completion.
+- `resolve-and-fix`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolve pass, then require caller-owned repeated clean CAS review runs before completion.
 
 ### `adjudicate-only`
 
@@ -164,8 +164,9 @@ A clean normalized CAS run means no new in-scope accepted liability, unresolved 
 Each clean run must be a distinct tuple-bound CAS review attempt. When a terminal
 or normalized tuple receipt already exists, callers must request the next
 independent run with `--fresh-attempt REASON`; cached normalization of the same
-`reviewThreadId` does not increment the counter. Use `cas review_session receipt
-certify --policy strongest-closeout ...` to verify closeout from receipts.
+`reviewThreadId` does not increment the counter. Track the clean-run count in
+the caller workflow from fresh CAS review verdicts; `$cas` does not own that
+policy.
 
 Reset the clean-run counter to zero when code changes, review scope changes, base/head/diff changes, the proof bar changes, or CAS lane continuity is lost.
 
@@ -215,5 +216,5 @@ no changes
 - Do not accept scope expansion without user authority.
 - Do not miss the refactor when many comments share one owner boundary.
 - Do not replace a requested or required CAS review with non-CAS critique.
-- Do not claim review closure before three clean normalized CAS runs when `resolve-and-fix` or exhaustive review requires them.
+- Do not claim review closure before caller-owned repeated clean CAS runs when `resolve-and-fix` or exhaustive review requires them.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.

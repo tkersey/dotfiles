@@ -9,7 +9,7 @@
   "lastReviewThreadId": null,
   "managedServerListenUrl": "ws://127.0.0.1:45678",
   "managedServerPid": 12345,
-  "proofVerdictExists": false,
+  "tupleVerdictExists": false,
   "reviewAttemptExists": false,
   "reviewAttemptPhase": "pre_review_start",
   "reviewCount": 0,

@@ -201,8 +201,7 @@ A clean normalized CAS run means `$cas` produces no new in-scope accepted liabil
 
 Do not increment the clean-run counter from repeated normalization of one cached
 CAS receipt. After terminal evidence exists for the tuple, request each
-additional independent run with `--fresh-attempt REASON`, then verify the streak
-with `cas review_session receipt certify --policy strongest-closeout ...`.
+additional independent run with `--fresh-attempt REASON`, then track the streak in the caller workflow from independent CAS review verdicts.
 
 Reset the clean-run counter to zero when:
 
@@ -410,7 +409,7 @@ If review is required but CAS review is unavailable or not run, say:
 actuation verdict: cas-review-blocked
 ```
 
-If three clean normalized CAS runs are required but unavailable, say:
+If caller-owned repeated CAS reviews are required but unavailable, say:
 
 ```text
 actuation verdict: cas-review-blocked

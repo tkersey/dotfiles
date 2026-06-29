@@ -5,7 +5,7 @@
   "failureClass": "account_resource",
   "failureCode": "account_resource_exhausted",
   "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-  "proofVerdictExists": true,
+  "tupleVerdictExists": true,
   "rawErrorText": "usageLimitExceeded: Reviewer failed to output a response.",
   "retryableSameTupleNow": false,
   "reviewAttemptExists": true,

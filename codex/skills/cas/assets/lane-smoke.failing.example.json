@@ -7,7 +7,7 @@
   "laneId": "lane_smoke_failed",
   "lastReviewThreadId": null,
   "managedServerPid": 9999,
-  "proofVerdictExists": false,
+  "tupleVerdictExists": false,
   "reviewAttemptExists": false,
   "reviewAttemptPhase": "pre_review_start",
   "reviewCount": 0,

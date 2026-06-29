@@ -4,7 +4,7 @@
   "failureCode": null,
   "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "laneId": "lane_smoke",
-  "proofVerdictExists": false,
+  "tupleVerdictExists": false,
   "reviewAttemptExists": true,
   "reviewAttemptPhase": "review_started",
   "reviewThreadId": "thr_smoke",

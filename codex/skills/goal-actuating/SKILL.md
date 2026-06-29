@@ -56,7 +56,7 @@ goal_actuating_mode:
 - `direct-goal`: execute a goal that already has outcome, constraints, and proof checks.
 - `review-only`: classify review findings and stop without mutation.
 - `agenda-only`: classify findings and produce a closure agenda without mutation.
-- `review-fix`: default review mode; classify findings, implement accepted liabilities only, and require three clean normalized CAS review runs before completion.
+- `review-fix`: default review mode; classify findings, implement accepted liabilities only, and require caller-owned repeated clean CAS review runs before completion.
 - `dry-plan`: show the goal contract and work list only; do not mutate.
 - `st-governed`: hand off to `$st` with bounded execution slices when durable coordination owns the work.
 
@@ -236,9 +236,7 @@ Do not reset the clean-run counter for findings that are duplicate, rejected, ou
 
 Do not increment the clean-run counter from repeated normalization of one cached
 CAS receipt. After terminal evidence exists for the tuple, request each
-additional independent run with `--fresh-attempt REASON`, then verify the streak
-with `cas review_session closeout --cwd <repo> --base <base> --json`. Use
-`--dry-run` only when actuation must not start missing review attempts.
+additional independent run with `--fresh-attempt REASON`, then track the streak in the caller workflow from independent CAS review verdicts. CAS does not own the streak.
 
 Reset the clean-run counter to zero when:
 

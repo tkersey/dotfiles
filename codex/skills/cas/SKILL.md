@@ -16,7 +16,7 @@ A lane is not a review.
 A managed server is not a review.
 A parent thread is not a review.
 A review attempt starts only after `review/start` returns `reviewThreadId`.
-A proof verdict exists only after `reviewVerdict` binds base/head/fingerprint.
+A tuple verdict exists only after `reviewVerdict` binds base/head/fingerprint.
 ```
 
 Use this skill when the task mentions `cas`, app-server v2 methods, detached review, `reviewThreadId`, persistent review lanes, multi-instance fanout, account/rate-limit status, goal lifecycle, or `$st` conformance.
@@ -34,7 +34,7 @@ cas review_session
 cas conformance
 ```
 
-`cas smoke_check` proves app-server handshake and method reachability. It is never review proof.
+`cas smoke_check` proves app-server handshake and method reachability. It is never review output.
 
 `cas conformance` probes `$st` swarm-hardening scenarios. `$st` remains the durable source of truth for claims, resources, fencing, branch epochs, and proof metadata.
 
@@ -42,9 +42,9 @@ cas conformance
 
 Use `cas review_session` when detached review lifecycle control matters: persisted `reviewThreadId`, wait/status/interrupt, compatibility diagnostics, approval/runtime overrides, or repeatable review receipts.
 
-Use `cas review_session lane` only when persistent review-lane capability has been proven for the current `cas`/`codex`/repo tuple. The lane owns transport reuse only. Callers still own review adjudication, clean-streak accounting, proof gates, commits, PR comments, and closure decisions.
+Use `cas review_session lane` only when persistent review-lane capability is current for the active `cas`/`codex`/repo tuple. The lane owns transport reuse only. Callers still own review adjudication, clean-streak accounting, proof gates, commits, PR comments, and closure decisions.
 
-If a caller only needs one proof-bearing review and persistent lane smoke is unproven or recently failed, prefer:
+If a caller only needs one tuple-bound review and persistent lane smoke is unavailable or recently failed, prefer:
 
 ```bash
 cas review_session start --wait --cwd <repo> --base <base> --json --fallback none
@@ -67,7 +67,7 @@ Implementation specs live under `references/cli-specs/` and must be implemented 
 
 ## Review attempt phases
 
-Every review-session JSON surface should include:
+Every review-session JSON surface should include transport facts:
 
 ```text
 reviewAttemptPhase:
@@ -80,9 +80,6 @@ reviewAttemptPhase:
   normalized_verdict
 
 reviewAttemptExists: bool
-proofVerdictExists: bool
-principalProofUsable: bool
-principalStrength: strong|reduced
 reviewThreadId: string|null
 reviewTurnId: string|null
 baseSha: string|null
@@ -90,12 +87,10 @@ headSha: string|null
 targetFingerprint: string|null
 ```
 
-Rules:
+Rule:
 
 ```text
 reviewAttemptExists = reviewThreadId != null
-proofVerdictExists = reviewVerdict != null && reviewVerdict.baseSha/headSha/targetFingerprint match the requested tuple
-principalProofUsable = proofVerdictExists && account principal protection is strong
 ```
 
 A lane with `reviewCount=0`, no `lastReviewThreadId`, no `lastHeadSha`, and no verdict is not a failed review. It is pre-review lane transport failure.
@@ -106,7 +101,7 @@ A lane with `reviewCount=0`, no `lastReviewThreadId`, no `lastHeadSha`, and no v
 
 `reviewVerdict.status="findings"` is a completed review, not a CAS failure. The caller should reset clean streak and adjudicate the findings.
 
-`reviewVerdict.status="clean"` is clean proof only when all hold:
+`reviewVerdict.status="clean"` is a clean completed review fact only when all hold:
 
 ```text
 backendClass is allowed for this workflow
@@ -161,7 +156,7 @@ This is not reviewer-quality evidence and not transport evidence. It blocks same
 
 ### Output missing and parse mismatch
 
-`review_output_missing` means a review attempt reached terminal state without structured review output. It is not clean proof.
+`review_output_missing` means a review attempt reached terminal state without structured review output. It is not a clean review verdict.
 
 `review_parse_mismatch` means structured findings and rendered review-text parsing disagree. Treat it as a completed but untrusted receipt until adjudicated or normalized.
 
@@ -190,7 +185,7 @@ All review backends should produce one caller-facing surface:
 }
 ```
 
-`start --wait` output is useful review evidence but is not strict caller proof until normalized into this surface with base/head/fingerprint.
+`start --wait` output is useful review evidence but is not a tuple-bound review verdict until normalized into this surface with base/head/fingerprint.
 
 ## Persistent lane policy
 
@@ -203,7 +198,7 @@ lane review emits normalized reviewVerdict
 lane failure surfaces include reviewAttemptPhase and reviewAttemptExists
 ```
 
-If smoke is missing or recently failed with `pre_review_lane_transport_lost`, do not use persistent lane as the canonical closeout backend. Use `start --wait` plus normalized receipt, or explicit native fallback with degraded proof class.
+If smoke is missing or recently failed with `pre_review_lane_transport_lost`, do not rely on persistent lane continuity for repeated-review policy. Use `start --wait`, normalized receipts, or explicit native fallback as caller-owned review facts.
 
 ## Tuple concurrency guard
 
@@ -250,33 +245,17 @@ stale => require explicit takeover
 ```
 
 Default repeated review commands consume cached terminal evidence; they are not
-new independent clean runs. For review workflows that require multiple clean CAS
-runs on the same tuple, use `--fresh-attempt REASON` for each additional
-post-terminal attempt and verify the streak with the canonical closeout surface.
-`closeout` may run missing `start --wait --fallback none` attempts itself;
-use `--dry-run` when only existing canonical receipts should be certified:
-
-```bash
-cas review_session closeout --cwd <repo> --base <base> --json
-```
-
-Receipt certification counts distinct tuple-bound `reviewThreadId` attempts.
-Cached normalization of the same attempt does not increment the streak, and
-pre-review transport failures remain attempt-free evidence.
-
-`proofVerdictExists=true` only proves tuple binding. Proof-sensitive closeout
-also requires `principalProofUsable=true`. Receipts with reduced account
-principal protection, including `unknown-account` and legacy receipts missing
-principal metadata, may diagnose findings with `receipt proof`, but only
-canonical `closeout` or `receipt certify --cwd <repo> --base <base>` is closeout-eligible. Diagnostic
-`receipt proof` output is never a closeout gate, including when it passes under
-`--allow-reduced-principal REASON`.
+new independent review runs. For workflows that require multiple independent CAS
+reviews on the same tuple, callers must request each additional post-terminal
+attempt with `--fresh-attempt REASON` and evaluate the resulting review verdicts
+outside CAS. CAS does not own clean streaks, final eligibility, or verdict
+strength.
 
 ## Hooks, approvals, and fallback
 
 `--hooks inherit` lets Codex hooks run normally. `--hooks off` disables Codex hooks only for CAS-owned app-server processes. `--hooks require-observed` fails closed if no hook notifications are observed.
 
-`--fallback native-review` is explicit degraded verdict preservation. It is not detached CAS proof and must be reported as `backendClass="cas-native-fallback"` with `fallbackUsed=true`.
+`--fallback native-review` is explicit degraded verdict preservation. It is not detached CAS review transport and must be reported as `backendClass="cas-native-fallback"` with `fallbackUsed=true`.
 
 Do not infer success from app-server process liveness, `reviewThreadId` creation alone, `start --wait` returning, archived threads, or a terminal turn status. Structured `reviewVerdict` decides caller control flow.
 
@@ -301,14 +280,13 @@ CAS Review:
 - backend:
 - reviewAttemptPhase:
 - reviewAttemptExists:
-- proofVerdictExists:
-- principalProofUsable / principalStrength:
+- principalStrength:
 - reviewThreadId / reviewTurnId:
 - base/head/fingerprint:
 - verdict status / finding count:
 - failure class / failure code:
 - tuple lock:
-- fallback/degraded proof:
+- fallback/degraded verdict:
 - next legal action:
 ```
 
@@ -316,12 +294,12 @@ CAS Review:
 
 - A lane is not a review.
 - A review starts at `reviewThreadId`.
-- A proof starts at tuple-bound `reviewVerdict`.
+- CAS reports tuple-bound `reviewVerdict`; caller workflows decide what that means.
 - Do not treat `pre_review_lane_transport_lost` as a failed review.
 - Do not duplicate a review when an active tuple lock points to an existing `reviewThreadId`.
 - Do not treat completed findings as transport failure.
 - Do not treat `usageLimitExceeded` as reviewer output or transport failure.
-- Do not use persistent lane as canonical closeout backend until first-review creation smoke is current.
-- `start --wait` evidence must be normalized before strict consumers use it as review proof.
-- `cas smoke_check` is protocol proof, not review proof.
-- Native fallback is degraded proof, not detached CAS proof.
+- Do not rely on persistent lane continuity for repeated-review policy until first-review creation smoke is current.
+- `start --wait` evidence must be normalized before strict consumers use it as review input.
+- `cas smoke_check` is protocol validation, not review output.
+- Native fallback is degraded verdict preservation, not detached CAS review transport.

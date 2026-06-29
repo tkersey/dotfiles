@@ -2,7 +2,7 @@
   "action": "start",
   "baseSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-  "proofVerdictExists": true,
+  "tupleVerdictExists": true,
   "reviewAttemptExists": true,
   "reviewAttemptPhase": "normalized_verdict",
   "reviewThreadId": "thr_clean",

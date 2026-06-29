@@ -9,7 +9,7 @@
 Means:
 
 ```text
-CAS review, classify, build a closure agenda, fix accepted liabilities only, verify, require three clean normalized CAS review runs, then proof-patch.
+CAS review, classify, build a closure agenda, fix accepted liabilities only, verify, require caller-owned repeated clean CAS review runs, then proof-patch.
 ```
 
 ## Existing PR, no implementation
