@@ -255,19 +255,20 @@ runs on the same tuple, use `--fresh-attempt REASON` for each additional
 post-terminal attempt and verify the streak with:
 
 ```bash
-cas review_session receipt proof --glob '<receipts>' --cwd <repo> --base <base> --clean-streak 3
+cas review_session receipt certify --policy strongest-closeout --glob '<receipts>' --cwd <repo> --base <base>
 ```
 
-Receipt proof counts distinct tuple-bound `reviewThreadId` attempts. Cached
-normalization of the same attempt does not increment the streak, and pre-review
-transport failures remain attempt-free evidence.
+Receipt certification counts distinct tuple-bound `reviewThreadId` attempts.
+Cached normalization of the same attempt does not increment the streak, and
+pre-review transport failures remain attempt-free evidence.
 
 `proofVerdictExists=true` only proves tuple binding. Proof-sensitive closeout
 also requires `principalProofUsable=true`. Receipts with reduced account
 principal protection, including `unknown-account` and legacy receipts missing
-principal metadata, may diagnose findings but must not certify closeout unless
-`cas review_session receipt proof` is run with an explicit
-`--allow-reduced-principal REASON` override.
+principal metadata, may diagnose findings with `receipt proof`, but only
+`receipt certify --policy strongest-closeout` is closeout-eligible. Diagnostic
+`receipt proof` output is never a closeout gate, including when it passes under
+`--allow-reduced-principal REASON`.
 
 ## Hooks, approvals, and fallback
 

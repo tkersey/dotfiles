@@ -63,9 +63,9 @@ active review lock exists -> wait/recover the existing reviewThreadId
 pre-review transport failure -> no attempt exists; ignore for streak and recover transport
 ```
 
-Use `cas review_session receipt proof --clean-streak N ...` to compute the
-streak from distinct tuple-bound `reviewThreadId` attempts.
+Use `cas review_session receipt certify --policy strongest-closeout ...` to
+certify the streak from distinct tuple-bound `reviewThreadId` attempts.
 
-Reduced-principal attempts do not increment the clean streak unless the operator
-uses `--allow-reduced-principal REASON`. The override is an auditable downgrade,
-not a stronger proof.
+Reduced-principal attempts do not increment the certified clean streak.
+`cas review_session receipt proof --allow-reduced-principal REASON ...` is an
+auditable diagnostic downgrade, not closeout certification.

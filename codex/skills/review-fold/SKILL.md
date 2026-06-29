@@ -165,7 +165,7 @@ Each clean run must be a distinct tuple-bound CAS review attempt. When a termina
 or normalized tuple receipt already exists, callers must request the next
 independent run with `--fresh-attempt REASON`; cached normalization of the same
 `reviewThreadId` does not increment the counter. Use `cas review_session receipt
-proof --clean-streak 3 ...` to verify the counter from receipts.
+certify --policy strongest-closeout ...` to verify closeout from receipts.
 
 Reset the clean-run counter to zero when code changes, review scope changes, base/head/diff changes, the proof bar changes, or CAS lane continuity is lost.
 

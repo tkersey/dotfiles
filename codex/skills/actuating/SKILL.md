@@ -202,7 +202,7 @@ A clean normalized CAS run means `$cas` produces no new in-scope accepted liabil
 Do not increment the clean-run counter from repeated normalization of one cached
 CAS receipt. After terminal evidence exists for the tuple, request each
 additional independent run with `--fresh-attempt REASON`, then verify the streak
-with `cas review_session receipt proof --clean-streak 3 ...`.
+with `cas review_session receipt certify --policy strongest-closeout ...`.
 
 Reset the clean-run counter to zero when:
 
