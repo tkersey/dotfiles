@@ -32,8 +32,16 @@ max_concurrent_threads_per_session = 24
 [apps._default]
 enabled = false
 
+[hooks.state]
+
 [hooks.state."/Users/tk/.codex/hooks.json:session_start:0:0"]
 trusted_hash = "sha256:d7cc0fcbd9d10f3735f973c0d3b69bcc5845f0112daa09b1e678c58fd9c858f4"
+
+[hooks.state."/Users/tk/.codex/hooks.json:session_start:0:1"]
+trusted_hash = "sha256:f1c804d7e34dd7e6b01ff898a25cb51abe3e8e3ed84414dad0cb9453bbfed644"
+
+[hooks.state."/Users/tk/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:51703359cb40abdf390a934d2244e9a4b05a5f02742a73ff74bdea31613833a9"
 
 [realtime]
 version = "v2"
@@ -141,6 +149,9 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/tk"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/art/voyager"]
 trust_level = "trusted"
 
 [marketplaces.openai-bundled]
