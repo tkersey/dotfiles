@@ -41,8 +41,11 @@ Use the canonical source-memory stores under `.ledger/` for custom repo-local me
 
 Root policy:
 
-- Recall before substantial implementation when relevant canonical or legacy learning stores exist.
+- Treat `$learnings` as implicitly in scope for substantial implementation, fixes, refactors, debugging, tests, validation transitions, commit/PR/handoff closeout, wrap-up, repeated failures, strategy pivots, footgun discoveries, acceleration patterns, and durable user corrections when a canonical or legacy learning store may exist.
+- Do not wait for the user to literally say `$learnings` when prior repo-local learning could change route selection, verification order, migration handling, tool choice, or closeout obligations.
+- Recall before substantial implementation when relevant canonical or legacy learning stores exist. Use focused task, failure-surface, tool, path, and error-class terms; pass path hints when known; prefer `--drop-superseded`. Treat recall as input to current artifact inspection, not a replacement for it.
 - Capture only decision-shaping evidence: validation transitions, strategy pivots, footgun discoveries, acceleration patterns, useful or failed recalled lessons, repeated failures, durable user corrections, and delivery after real implementation work.
+- If a recalled learning looks like failed-hypothesis or route-exclusion evidence, do not block directly from the learning row. Verify current applicability and promote through Negative Ledger (`ledger capture`, then `ledger export`) when it qualifies.
 - Before the first learning append in a repo, or before commit closeout when learning capture is warranted, run `learnings doctor`. If it reports `legacy-only`, run `learnings migrate --dry-run --mode copy` and `learnings migrate --mode copy` before appending.
 - Before any Codex-made commit, check session-owned changes in `.ledger/learnings/learnings.jsonl`, `.ledger/negative-ledger/events.jsonl`, `.ledger/synesthesia/events.jsonl`, and `.ledger/harness/events.jsonl` alongside the intended commit scope.
 - If a source-memory store is dirty and publishable, stage current-turn/session-owned rows by default; if it is local-only by `.git/info/exclude`, leave it unstaged unless explicitly asked.
