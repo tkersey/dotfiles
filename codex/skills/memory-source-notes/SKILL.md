@@ -38,8 +38,9 @@ source skill or canonical domain store
 
 - `ledger --source learnings` owns `.ledger/learnings/events.jsonl` and the admission gate for learning snapshots.
 - `ledger` owns `.ledger/negative-ledger/events.jsonl` and the admission gate for route state.
+- `ledger --source synesthesia` owns `.ledger/synesthesia/events.jsonl` and the canonical sensory mapping or activation-boundary event.
 - `harness-memory` owns durable operating-correction admission.
-- `synesthesia` owns sensory mapping and activation-boundary admission.
+- `synesthesia` owns sensory mapping and activation-boundary admission semantics.
 - `memory-note` owns safe immutable transport.
 - this skill owns command syntax, extension-specific adapters, derived digest generation, copy-based instruction deployment, diagnostics, and proof-line interpretation;
 - Phase 2 owns promotion, deduplication, supersession, and compiled-memory updates.

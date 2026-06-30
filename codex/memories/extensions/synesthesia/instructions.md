@@ -34,6 +34,12 @@ During transition, existing immutable notes remain valid source evidence. New re
 
 Prioritize notes surfaced by `phase2_workspace_diff.md` when that artifact is available.
 
+Canonical repo-local ledger rows are created by:
+
+```text
+ledger capture --source synesthesia
+```
+
 Supported stored kinds:
 
 ```text
@@ -51,7 +57,7 @@ kind = mapping-endorsement
 operation = confirm
 ```
 
-A valid note is an immutable `memory-source-note/v1` event created after the Synesthesia source skill's admission gate and validated by the Synesthesia memory-source adapter.
+A valid note is an immutable `memory-source-note/v1` admission snapshot created after the Synesthesia source skill's admission gate and validated by the Synesthesia memory-source adapter. When `.ledger/synesthesia/events.jsonl` exists, prefer the ledger row as the complete canonical event and treat the note as Phase 2 transport evidence.
 
 ## Envelope authority
 

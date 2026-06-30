@@ -101,14 +101,12 @@ For boundary retraction:
 }
 ```
 
-## Same-turn append
+## Canonical append
 
-After the gate passes and `$memory-source-notes` is loaded:
+After the gate passes, write the repo-local canonical event first:
 
 ```bash
-uv run python \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
-  append \
+ledger capture --source synesthesia \
   --kind mapping-endorsement \
   --json -
 ```
@@ -116,14 +114,42 @@ uv run python \
 For confirmation:
 
 ```bash
-uv run python \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
-  append \
+ledger capture --source synesthesia \
   --kind mapping-confirmation \
   --json -
 ```
 
-The adapter validates the operation-kind matrix, prior-note relationship, scope, authority, payload, and source references; injects writer-compatibility fields; canonicalizes JSON before fingerprinting; invokes `memory-note`; and emits the writer result.
+The ledger source validates the operation-kind matrix, prior relationship,
+scope, authority, payload, and source references before appending to:
+
+```text
+.ledger/synesthesia/events.jsonl
+```
+
+## Same-turn memory-source admission
+
+After the canonical append succeeds, load `$memory-source-notes` only when
+global memory admission is warranted. Export the memory-note adapter envelope:
+
+```bash
+ledger export --source synesthesia \
+  --format memory-note \
+  --id SYN-...
+```
+
+Then pass that envelope to the Synesthesia source-note adapter:
+
+```bash
+uv run python \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  append \
+  --kind <logical-kind> \
+  --json -
+```
+
+The adapter injects writer-compatibility fields, canonicalizes JSON before
+fingerprinting, invokes `memory-note`, and emits the writer result. A failed
+memory admission must never roll back a successful ledger append.
 
 ## Copy-based adapter synchronization
 

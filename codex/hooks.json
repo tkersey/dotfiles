@@ -9,6 +9,25 @@
             "command": "$HOME/.dotfiles/codex/hooks/st_session_start.sh",
             "timeoutSec": 10,
             "statusMessage": "Hydrating $st plan"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.dotfiles/codex/hooks/learnings_session_start.sh",
+            "timeoutSec": 10,
+            "statusMessage": "Loading source-memory stores"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.dotfiles/codex/hooks/learnings_stop.sh",
+            "timeoutSec": 10,
+            "statusMessage": "Checking source-memory capture"
           }
         ]
       }

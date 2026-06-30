@@ -30,7 +30,9 @@ missing -> legacy-only -> migrated/current -> invalid
 compatibility fallback, but writes and commit closeout must first run the owning
 source migration. For learnings, that owner is
 `ledger migrate --source learnings --mode copy`; for negative evidence, that
-owner is `ledger migrate --mode copy`.
+owner is `ledger migrate --mode copy`. Synesthesia can report `notes-only`
+during transition; copy import is explicit through
+`ledger migrate --source synesthesia --mode copy`.
 
 Compiled Codex memory is still owned by Phase 2. Memory-source notes are admission snapshots, not canonical stores.
 
@@ -52,7 +54,7 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 
 - `$learnings` / `ledger --source learnings` for `.ledger/learnings/events.jsonl`;
 - `$negative-ledger` / `ledger` for `.ledger/negative-ledger/events.jsonl`;
-- `$synesthesia` for `.ledger/synesthesia/events.jsonl` or current Synesthesia notes during transition;
+- `$synesthesia` / `ledger --source synesthesia` for `.ledger/synesthesia/events.jsonl`; current Synesthesia notes remain transition evidence;
 - `$harness-memory` for `.ledger/harness/events.jsonl` or harness notes;
 - `$memory-source-notes` / `memory-note` for immutable admission snapshots.
 
@@ -61,10 +63,10 @@ Never write `memory_summary.md`, `MEMORY.md`, or memory-root `skills/*`.
 ## Read-Only Workflow
 
 1. Resolve the git root.
-2. Inspect `.ledger/`, previous `.ledger/learnings/learnings.jsonl`, and legacy `.learnings.jsonl`.
+2. Inspect `.ledger/`, previous `.ledger/learnings/learnings.jsonl`, legacy `.learnings.jsonl`, and current Synesthesia notes when present.
 3. Classify each store as `migrated`, `legacy-only`, `current`, `legacy-path`, `notes-only`, `missing`, or `invalid`.
 4. Run source doctors when available.
-5. If any required source is `legacy-only`, report the exact owning migration
+5. If any required source is `legacy-only` or Synesthesia is `notes-only` and import is requested, report the exact owning migration
    command before any harvest or append recommendation.
 6. Report harvest candidates and recommended source-specific commands.
 

@@ -252,14 +252,15 @@ When a durable memory event exists:
 1. classify it as endorsement, confirmation, correction, rejection, activation boundary, boundary retraction, or reopening;
 2. identify the narrowest reusable scope;
 3. require an engineering translation and verification rule;
-4. identify the prior source-note ID for confirmation, correction, rejection, retraction, or reopening when one exists;
-5. load `$memory-source-notes`;
-6. use the Synesthesia source-note adapter in the same turn;
-7. emit the resulting `memory-note:` proof line.
+4. identify the prior `SYN-*` ledger ID or `MSN-*` source-note ID for confirmation, correction, rejection, retraction, or reopening when one exists;
+5. run `ledger doctor --source synesthesia`;
+6. append the canonical row with `ledger capture --source synesthesia --kind <kind> --json -`;
+7. when global memory admission is warranted, load `$memory-source-notes`, export with `ledger export --source synesthesia --format memory-note --id <SYN-ID>`, and use the Synesthesia source-note adapter in the same turn;
+8. emit separate canonical and admission proof lines.
 
 Do not merely describe a qualifying memory event without attempting the handoff.
 
-Do not emit a `memory-note: not-attempted` line during ordinary Synesthesia use. Emit a proof line only when the user requested persistence, supplied a durable event, or the admission gate was materially evaluated.
+Do not emit a `memory-note: not-attempted` line during ordinary Synesthesia use. Emit a proof line only when the user requested persistence, supplied a durable event, or the admission gate was materially evaluated. When Synesthesia is evaluated only because `$learnings` lifecycle capture fired, report `synesthesia: 0 records appended: <reason>` if no durable mapping or boundary exists.
 
 ## Memory admission gate
 
@@ -292,9 +293,21 @@ Do not capture:
 
 See [memory-admission.md](references/memory-admission.md) for the operation matrix, payload contract, copy-based adapter synchronization, digest projection, and doctor workflow.
 
+## Canonical Store
+
+```text
+.ledger/synesthesia/events.jsonl
+```
+
+Use `ledger capture --source synesthesia` for canonical repo-local writes. Do
+not hand-edit events in normal operation. Existing immutable Synesthesia
+memory-source notes remain valid transition evidence; import them with
+`ledger migrate --source synesthesia --mode copy` only when an explicit copy
+migration is intended.
+
 ## Generated current-state digest
 
-A successful Synesthesia source-note append refreshes this regular-file materialized view automatically:
+A successful Synesthesia memory-source admission refreshes this regular-file materialized view automatically:
 
 ```text
 ${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
@@ -307,17 +320,13 @@ The digest is disposable and non-canonical. Every promotable entry must retain r
 Manual refresh:
 
 ```bash
-uv run python \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
-  memory-digest
+ledger memory-digest --source synesthesia
 ```
 
 Run the doctor after copy-deploying the Phase 2 adapter or when promotion appears stale:
 
 ```bash
-uv run python \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
-  doctor --format text
+ledger doctor --source synesthesia
 ```
 
 ## Cross-extension ownership

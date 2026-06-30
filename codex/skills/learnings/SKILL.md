@@ -55,6 +55,12 @@ closeout, or handoff that depends on learning capture.
 
 Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`, `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.
 
+When this skill is triggered for recall, capture, commit closeout, PR handoff,
+or wrap-up, evaluate `$synesthesia` in the same lifecycle point with
+`ledger --source synesthesia`. Append only if a durable sensory mapping or
+activation-boundary event exists; otherwise report
+`synesthesia: 0 records appended: <reason>`.
+
 ## Capture Gate
 
 Capture only when at least one decision-shaping checkpoint occurred:
