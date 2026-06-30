@@ -1,6 +1,6 @@
 # Learnings as a Negative-Ledger Source
 
-`$learnings` supplies historical candidate evidence from `.ledger/learnings/learnings.jsonl` after migration. The negative ledger owns failed-hypothesis semantics and operational route state in:
+`$learnings` supplies historical candidate evidence from `.ledger/learnings/events.jsonl` after migration. The negative ledger owns failed-hypothesis semantics and operational route state in:
 
 ```text
 .ledger/negative-ledger/events.jsonl
@@ -9,7 +9,7 @@
 ## Read Path
 
 ```bash
-learnings recall \
+ledger recall --source learnings \
   --query "<artifact> <objective> failed attempt regression revert no-effect avoid" \
   --limit 10 \
   --drop-superseded

@@ -48,7 +48,7 @@ has_non_plan_changes() {
     git -C "$repo_root" diff --name-only
     git -C "$repo_root" diff --cached --name-only
     git -C "$repo_root" ls-files --others --exclude-standard
-  } | awk 'NF' | sort -u | grep -Ev '(^|/)(\.ledger/st|\.step)/st-plan\.jsonl(\.lock)?$|(^|/)\.learnings\.jsonl$' | grep -q .
+  } | awk 'NF' | sort -u | grep -Ev '(^|/)(\.ledger/st|\.step)/st-plan\.jsonl(\.lock)?$|(^|/)\.learnings\.jsonl$|(^|/)\.ledger/learnings/(events|learnings)\.jsonl$' | grep -q .
 }
 
 st_supports_command() {

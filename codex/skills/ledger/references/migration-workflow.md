@@ -5,37 +5,37 @@
 Default target:
 
 ```text
-.ledger/learnings/learnings.jsonl
+.ledger/learnings/events.jsonl
 ```
 
 Dry run:
 
 ```bash
-learnings migrate --dry-run
+ledger migrate --source learnings --dry-run
 ```
 
 Copy first:
 
 ```bash
-learnings migrate --mode copy
+ledger migrate --source learnings --mode copy
 ```
 
 Required preflight before append or commit closeout:
 
 ```bash
-learnings doctor
+ledger doctor --source learnings
 ```
 
 If the doctor reports `legacy-only`, run the dry run and copy migration before
-any `learnings append`:
+any `ledger capture --source learnings`:
 
 ```bash
-learnings migrate --dry-run --mode copy
-learnings migrate --mode copy
-learnings doctor
+ledger migrate --source learnings --dry-run --mode copy
+ledger migrate --source learnings --mode copy
+ledger doctor --source learnings
 ```
 
-Do not delete `.learnings.jsonl` by default. After migration, normal `learnings append` writes the namespaced `.ledger` store.
+Do not delete `.learnings.jsonl` or `.ledger/learnings/learnings.jsonl` by default. After migration, normal `ledger capture --source learnings` writes the namespaced `.ledger` event store.
 
 ## Negative Ledger
 

@@ -4,13 +4,21 @@ set -eu
 find_learnings_root() {
   dir="${1:-$PWD}"
   while [ "$dir" != "/" ]; do
-    if [ -f "$dir/.learnings.jsonl" ]; then
+    if [ -f "$dir/.ledger/learnings/events.jsonl" ] ||
+      [ -f "$dir/.ledger/learnings/learnings.jsonl" ] ||
+      [ -f "$dir/.learnings.jsonl" ]; then
       printf '%s\n' "$dir"
       return 0
     fi
     dir=$(dirname "$dir")
   done
   return 1
+}
+
+ledger_supports_learnings() {
+  bin="${1:?ledger binary required}"
+  "$bin" --help 2>/dev/null | grep -Fq -- "--source SOURCE" &&
+    "$bin" capture --source learnings --help 2>/dev/null | grep -Fq ".ledger/learnings/events.jsonl"
 }
 
 looks_like_wrap_up() {
@@ -40,7 +48,13 @@ mode="${LEARNINGS_STOP_MODE:-block}"
   exit 0
 }
 
-command -v learnings >/dev/null 2>&1 || {
+ledger_bin=$(command -v ledger 2>/dev/null || true)
+[ -n "$ledger_bin" ] || {
+  json_continue
+  exit 0
+}
+
+ledger_supports_learnings "$ledger_bin" || {
   json_continue
   exit 0
 }
@@ -66,7 +80,7 @@ non_learning_changes=$(
     git -C "$repo_root" diff --name-only
     git -C "$repo_root" diff --cached --name-only
     git -C "$repo_root" ls-files --others --exclude-standard
-  } | awk 'NF' | sort -u | grep -Ev '(^|/)\.learnings\.jsonl$' || true
+  } | awk 'NF' | sort -u | grep -Ev '(^|/)\.learnings\.jsonl$|(^|/)\.ledger/learnings/(events|learnings)\.jsonl$' || true
 )
 
 [ -n "$non_learning_changes" ] || {
@@ -79,7 +93,7 @@ learnings_touched=$(
     git -C "$repo_root" diff --name-only
     git -C "$repo_root" diff --cached --name-only
     git -C "$repo_root" ls-files --others --exclude-standard
-  } | awk 'NF' | sort -u | grep -E '(^|/)\.learnings\.jsonl$' || true
+  } | awk 'NF' | sort -u | grep -E '(^|/)\.learnings\.jsonl$|(^|/)\.ledger/learnings/(events|learnings)\.jsonl$' || true
 )
 
 [ -z "$learnings_touched" ] || {
@@ -92,7 +106,7 @@ has_completion_proof "$last_message" && {
   exit 0
 }
 
-reason='Repo has .learnings.jsonl and this turn appears to be wrapping up with file changes. Run $learnings append before final handoff, or report `duplicate-skip: <reason>` / `0 records appended: <reason>`.'
+reason='Repo has a learnings source store and this turn appears to be wrapping up with file changes. Run `ledger doctor --source learnings` and `ledger capture --source learnings ...` before final handoff, or report `duplicate-skip: <reason>` / `0 records appended: <reason>`.'
 
 if [ "$mode" = "warn" ]; then
   jq -n --arg msg "$reason" '{continue: true, systemMessage: $msg}'

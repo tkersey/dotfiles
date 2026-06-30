@@ -188,7 +188,7 @@ Report both layers separately.
 
 ## Learnings Relationship
 
-`.ledger/learnings/learnings.jsonl` is historical candidate evidence, not the route-exclusion store. Legacy `.learnings.jsonl` is read only during migration. Verify current applicability and promote qualifying evidence through `ledger capture`.
+`.ledger/learnings/events.jsonl` is historical candidate evidence, not the route-exclusion store. Legacy `.ledger/learnings/learnings.jsonl` and `.learnings.jsonl` are read only during migration. Verify current applicability and promote qualifying evidence through `ledger capture`.
 
 ## Guardrails
 
