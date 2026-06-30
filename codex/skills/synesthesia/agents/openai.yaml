@@ -22,4 +22,7 @@ interface:
     the same turn. A successful append must refresh the generated current-state
     Synesthesia digest; digest failure must not roll back the immutable note. Do
     not capture assistant novelty, task-local metaphors, or unendorsed sensory
-    prose.
+    prose. When invoked only by the $learnings lifecycle, run a candidate pass:
+    append durable user-authorized mappings, emit `synesthesia: candidate: ...`
+    for useful non-durable proposals, or emit a specific zero-row reason when no
+    candidate exists.

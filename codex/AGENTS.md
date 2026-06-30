@@ -43,7 +43,7 @@ Root policy:
 
 - Treat `$learnings` as implicitly in scope for substantial implementation, fixes, refactors, debugging, tests, validation transitions, commit/PR/handoff closeout, wrap-up, repeated failures, strategy pivots, footgun discoveries, acceleration patterns, and durable user corrections when a canonical or legacy learning store may exist.
 - Do not wait for the user to literally say `$learnings` when prior repo-local learning could change route selection, verification order, migration handling, tool choice, or closeout obligations.
-- Whenever `$learnings` is implicitly in scope for recall, capture, commit closeout, PR handoff, or wrap-up, evaluate `$synesthesia` too with `ledger --source synesthesia`; append only when the Synesthesia durable mapping or activation-boundary gate passes, otherwise report `synesthesia: 0 records appended: <reason>`.
+- Whenever `$learnings` is implicitly in scope for recall, capture, commit closeout, PR handoff, or wrap-up, evaluate `$synesthesia` too with `ledger --source synesthesia`; append only when the Synesthesia durable mapping or activation-boundary gate passes. If no durable authority exists but the turn exposes a reusable sensory phrase, activation boundary, or representational ambiguity with an engineering translation, emit `synesthesia: candidate: ...`; otherwise report `synesthesia: 0 records appended: <reason>`.
 - Recall before substantial implementation when relevant canonical or legacy learning stores exist. Use focused task, failure-surface, tool, path, and error-class terms; pass path hints when known; prefer `--drop-superseded`. Treat recall as input to current artifact inspection, not a replacement for it.
 - Capture only decision-shaping evidence: validation transitions, strategy pivots, footgun discoveries, acceleration patterns, useful or failed recalled lessons, repeated failures, durable user corrections, and delivery after real implementation work.
 - If a recalled learning looks like failed-hypothesis or route-exclusion evidence, do not block directly from the learning row. Verify current applicability and promote through Negative Ledger (`ledger capture`, then `ledger export`) when it qualifies.
@@ -55,3 +55,10 @@ Root policy:
 - `memory-note` is the safe writer for custom memory-source admission snapshots. Do not hand-write custom source notes as a fallback.
 - A missing `memory-note` CLI must not block canonical `.ledger` capture. Complete the source-store write first, then report the missing admission step.
 - Phase 2 compiled memory outputs are not ordinary edit targets.
+
+Synesthesia routing:
+
+- Use `$synesthesia` when literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations and a reversible sensory model could distinguish them.
+- Every material sensory statement must translate it back into engineering terms with uncertainty and a falsifier.
+- For an explicit durable mapping or boundary, append the canonical `.ledger/synesthesia/events.jsonl` row first; when global admission is warranted, hand off to `$memory-source-notes` in the same turn.
+- The generated current-state digest refreshes automatically after a successful append; digest failure does not roll back the canonical row.

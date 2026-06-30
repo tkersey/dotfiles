@@ -58,8 +58,11 @@ Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `app
 When this skill is triggered for recall, capture, commit closeout, PR handoff,
 or wrap-up, evaluate `$synesthesia` in the same lifecycle point with
 `ledger --source synesthesia`. Append only if a durable sensory mapping or
-activation-boundary event exists; otherwise report
-`synesthesia: 0 records appended: <reason>`.
+activation-boundary event exists. If no durable authority exists but the turn
+exposes a reusable sensory phrase, activation boundary, or representational
+ambiguity with a concrete engineering translation, emit a non-durable
+`synesthesia: candidate: ...` proof line with the missing authority. Otherwise
+report `synesthesia: 0 records appended: <reason>`.
 
 ## Capture Gate
 

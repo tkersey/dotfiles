@@ -38,6 +38,24 @@ boundary retraction       explicit-user-correction | explicit-user-rejection
 
 Assistant inference is never sufficient.
 
+## Lifecycle candidates
+
+When `$learnings` lifecycle capture triggers Synesthesia evaluation and no
+durable authority exists, useful mappings should become explicit candidates
+rather than disappearing into a zero-row proof. Candidates are not adapter
+payloads and must not be written to `.ledger/synesthesia/events.jsonl`.
+
+Use this proof line shape:
+
+```text
+synesthesia: candidate: phrase="<sensory phrase>" translation="<engineering meaning>" needs=user-endorsement
+```
+
+Nearby context must include evidence, activation boundary, non-activation
+boundary, verification or falsifier, and the missing authority. If the user
+endorses, corrects, or rejects the candidate, convert that later event into the
+appropriate durable operation.
+
 ## Canonical payload
 
 Envelope fields own authority, scope, source references, and prior-note relationships. The payload owns only the sensory contract.

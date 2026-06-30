@@ -38,7 +38,7 @@ has_completion_proof() {
   esac
   case " $sources " in
     *" synesthesia "*)
-      printf '%s\n' "$message" | grep -Eiq '^synesthesia:[[:space:]](appended:[[:space:]]id=|0 records appended:[[:space:]].+|duplicate-skip:[[:space:]].+)' || return 1
+      printf '%s\n' "$message" | grep -Eiq '^synesthesia:[[:space:]](appended:[[:space:]]id=|candidate:[[:space:]].+|0 records appended:[[:space:]].+|duplicate-skip:[[:space:]].+)' || return 1
       ;;
   esac
   return 0
@@ -128,7 +128,7 @@ has_completion_proof "$last_message" "$sources" && {
   exit 0
 }
 
-reason='Repo has source-memory stores and this turn appears to be wrapping up with file changes. Run `ledger doctor --source learnings` and `ledger capture --source learnings ...` before final handoff, and evaluate Synesthesia with `ledger doctor --source synesthesia`; if no durable sensory mapping or boundary exists, report `synesthesia: 0 records appended: <reason>`.'
+reason='Repo has source-memory stores and this turn appears to be wrapping up with file changes. Run `ledger doctor --source learnings` and `ledger capture --source learnings ...` before final handoff, and evaluate Synesthesia with `ledger doctor --source synesthesia`; append durable sensory mappings/boundaries, emit `synesthesia: candidate: ...` for useful non-durable proposals, or report `synesthesia: 0 records appended: <reason>` when no candidate exists.'
 
 if [ "$mode" = "warn" ]; then
   jq -n --arg msg "$reason" '{continue: true, systemMessage: $msg}'

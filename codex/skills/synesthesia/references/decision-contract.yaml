@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: synesthesia
     kind: decision
-    source_fingerprint: synesthesia-v3.3.0
+    source_fingerprint: synesthesia-v3.4.0
   triggers:
   - trigger_id: SYN-EXPLICIT-SENSORY
     description: The user explicitly asks what software feels, sounds, looks, moves, weighs, or resembles.
@@ -61,6 +61,15 @@ skill_decision_contract:
     cue_regexes: []
     exclusions:
     - assistant-authored novelty without user authority
+  - trigger_id: SYN-LEARNINGS-LIFECYCLE
+    description: Learnings recall, capture, commit closeout, PR handoff, or wrap-up requires Synesthesia evaluation in the same lifecycle point.
+    cue_literals:
+    - learnings lifecycle
+    - source-memory closeout
+    - synesthesia evaluation
+    cue_regexes: []
+    exclusions:
+    - no material implementation, validation transition, handoff, or learning capture
   routes:
   - route_id: SYN-ROUTE-DIAGNOSE
     description: Use a reversible sensory representation to generate or rank technical hypotheses.
@@ -88,6 +97,12 @@ skill_decision_contract:
     aliases:
     - memory-admission
     terminal: 'no'
+  - route_id: SYN-ROUTE-LIFECYCLE-CANDIDATE
+    description: Emit a non-durable Synesthesia candidate when lifecycle evaluation finds a reusable mapping or boundary but lacks durable user authority.
+    aliases:
+    - lifecycle-candidate
+    - candidate
+    terminal: 'yes'
   - route_id: SYN-ROUTE-DIRECT-LITERAL
     description: Decline the sensory lens because literal handling or another governing skill is sufficient.
     aliases:
@@ -180,6 +195,31 @@ skill_decision_contract:
     - resource digest promoted without source note IDs
     - digest failure treated as failure of an otherwise successful source-note append
     rationale: Explicit durable user authority should reliably reach the source-note pipeline without weakening admission hygiene.
+  - clause_id: SYN-LIFECYCLE-004
+    trigger_refs:
+    - SYN-LEARNINGS-LIFECYCLE
+    expected_routes:
+    - SYN-ROUTE-MEMORY-ADMISSION
+    - SYN-ROUTE-LIFECYCLE-CANDIDATE
+    - SYN-ROUTE-BLOCKED
+    prohibited_routes:
+    - SYN-ROUTE-DIRECT-LITERAL
+    required_artifacts:
+    - learnings lifecycle evidence
+    - durable authority decision
+    - candidate sensory phrase or explicit no-candidate reason
+    - engineering translation when candidate exists
+    - activation and non-activation boundary when candidate exists
+    - verification or falsifier when candidate exists
+    success_signals:
+    - useful non-durable mappings become explicit candidates instead of disappearing
+    - zero-row proof is reserved for no-candidate cases
+    - notes-only is treated as store migration state, not as a substantive no-capture reason
+    failure_signals:
+    - lifecycle evaluation stops after doctor output
+    - plausible reusable mapping reported only as no durable event
+    - assistant-authored candidate appended as durable memory without user authority
+    rationale: Learnings-triggered Synesthesia should generate reviewable candidates without polluting durable memory.
   instrumentation:
     decision_receipt: optional
     rationale: Routing evals and immutable memory-source notes provide decision and persistence evidence.

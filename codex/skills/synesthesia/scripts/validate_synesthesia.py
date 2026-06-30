@@ -223,7 +223,7 @@ def main() -> int:
     if frontmatter.get("name") != "synesthesia":
         errors.append("frontmatter:name")
     version = str(frontmatter.get("metadata", {}).get("version", ""))
-    if version != "3.3.0":
+    if version != "3.4.0":
         errors.append(f"frontmatter:version:{version}")
     for phrase in (
         "representational ambiguity",
@@ -237,6 +237,8 @@ def main() -> int:
         "Do not activate merely because",
         "Generated current-state digest",
         "memory-digest",
+        "Lifecycle candidate pass",
+        "synesthesia: candidate:",
     ):
         if phrase.lower() not in body.lower():
             errors.append(f"skill:missing-contract-phrase:{phrase}")
@@ -253,6 +255,7 @@ def main() -> int:
         "same turn",
         "$memory-source-notes",
         "current-state",
+        "synesthesia: candidate:",
     ):
         if phrase not in prompt:
             errors.append(f"interface:missing:{phrase}")

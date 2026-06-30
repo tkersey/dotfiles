@@ -2,7 +2,7 @@
 name: synesthesia
 description: "Reversible cross-modal diagnostic lens for software. Use when the user asks what code, architecture, behavior, logs, APIs, or alternatives feel, sound, look, or move like; for compare-by-feel analysis; when literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations that cross-modal recoding could distinguish; or after an owning technical workflow documents such an ambiguity. Start from literal evidence and translate every sensory statement into a technical hypothesis, uncertainty, falsifier, and next move. Not for ordinary architecture, performance, readability, or UX audits; exact syntax; legal/compliance or security sign-off; or code mutation by itself."
 metadata:
-  version: "3.3.0"
+  version: "3.4.0"
   activation_cost: low
   default_depth: adaptive
 ---
@@ -260,7 +260,37 @@ When a durable memory event exists:
 
 Do not merely describe a qualifying memory event without attempting the handoff.
 
-Do not emit a `memory-note: not-attempted` line during ordinary Synesthesia use. Emit a proof line only when the user requested persistence, supplied a durable event, or the admission gate was materially evaluated. When Synesthesia is evaluated only because `$learnings` lifecycle capture fired, report `synesthesia: 0 records appended: <reason>` if no durable mapping or boundary exists.
+Do not emit a `memory-note: not-attempted` line during ordinary Synesthesia use. Emit a proof line only when the user requested persistence, supplied a durable event, or the admission gate was materially evaluated.
+
+## Lifecycle candidate pass
+
+When Synesthesia is evaluated because `$learnings` lifecycle capture fired, do
+not stop at `ledger doctor --source synesthesia` or at the absence of explicit
+durable authority. Run a candidate pass over the learning, evidence, route
+delta, and final handoff:
+
+1. If a durable memory event exists, append it through
+   `ledger capture --source synesthesia` and emit the append proof.
+2. If no durable authority exists but the turn exposes a reusable sensory
+   phrase, activation boundary, or representational ambiguity with a concrete
+   engineering translation, emit a non-durable candidate.
+3. Only if neither a durable event nor a useful candidate exists, emit
+   `synesthesia: 0 records appended: <specific reason>`.
+
+A lifecycle candidate must be compact and reversible:
+
+```text
+synesthesia: candidate: phrase="<sensory phrase>" translation="<engineering meaning>" needs=user-endorsement
+```
+
+Include or nearby state the evidence, activation boundary, non-activation
+boundary, verification/falsifier, and missing authority. A candidate is not a
+ledger row, not a memory note, and not future authority. It is a proposal for
+the user to endorse, correct, or reject.
+
+Do not report `notes-only` as the substantive reason for zero capture. That is
+a store migration state, not a Synesthesia judgment. Import notes only when an
+explicit copy migration is intended.
 
 ## Memory admission gate
 
