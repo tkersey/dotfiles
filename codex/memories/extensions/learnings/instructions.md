@@ -9,7 +9,7 @@ This extension interprets selectively admitted snapshots of repo-local execution
 Canonical detailed records remain:
 
 ```text
-<repo>/.ledger/learnings/learnings.jsonl
+<repo>/.ledger/learnings/events.jsonl
 ```
 
 The extension intake is:
@@ -18,7 +18,7 @@ The extension intake is:
 extensions/learnings/notes/*.md
 ```
 
-A note is an immutable admission snapshot proving that a specific canonical row should be considered by Phase 2. It is not a replacement for the row and not a runtime instruction. Legacy `.learnings.jsonl` may be consulted only as migration evidence.
+A note is an immutable admission snapshot proving that a specific canonical row should be considered by Phase 2. It is not a replacement for the row and not a runtime instruction. Legacy `.ledger/learnings/learnings.jsonl` and `.learnings.jsonl` may be consulted only as migration evidence.
 
 ## Primary Source
 
@@ -60,7 +60,7 @@ Do not promote merely because a learning exists or has status `do_more`.
 - `reject`: do not promote;
 - `reopen`: renewed evidence gathering, not automatic restoration.
 
-Never mutate or delete source notes or `.ledger/learnings/learnings.jsonl`.
+Never mutate or delete source notes or `.ledger/learnings/events.jsonl`.
 
 ## Promotion Gate
 

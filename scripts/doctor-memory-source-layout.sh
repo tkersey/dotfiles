@@ -25,13 +25,17 @@ print_store() {
 }
 
 printf 'memory-source-layout\trepo_root\t%s\n' "$repo_root"
-print_store "learnings" ".ledger/learnings/learnings.jsonl" "false"
+print_store "learnings" ".ledger/learnings/events.jsonl" "false"
 print_store "negative-ledger" ".ledger/negative-ledger/events.jsonl" "true"
 print_store "synesthesia" ".ledger/synesthesia/events.jsonl" "true"
 print_store "harness" ".ledger/harness/events.jsonl" "true"
 
 if [ -f ".learnings.jsonl" ]; then
   printf 'learnings-legacy\tlegacy_present\t.learnings.jsonl\n'
+fi
+
+if [ -f ".ledger/learnings/learnings.jsonl" ]; then
+  printf 'learnings-previous\tlegacy_present\t.ledger/learnings/learnings.jsonl\n'
 fi
 
 if [ -f ".ledger/negative-ledger.jsonl" ]; then

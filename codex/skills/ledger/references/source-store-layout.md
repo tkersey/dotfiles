@@ -9,7 +9,7 @@ Canonical repo-local source stores live under:
 Current stores:
 
 ```text
-.ledger/learnings/learnings.jsonl
+.ledger/learnings/events.jsonl
 .ledger/negative-ledger/events.jsonl
 ```
 
@@ -24,6 +24,7 @@ Legacy stores:
 
 ```text
 .learnings.jsonl
+.ledger/learnings/learnings.jsonl
 .ledger/negative-ledger.jsonl
 ```
 
@@ -32,7 +33,7 @@ Legacy stores are read only for migration or compatibility. Normal writes go to 
 `legacy-only` means the legacy store exists and the canonical namespaced store
 is missing. Treat this as a preflight failure for writes: run the owning
 source-specific migration command before append or commit closeout. For
-learnings, use `learnings migrate --mode copy`.
+learnings, use `ledger migrate --source learnings --mode copy`.
 
 Memory-source notes live outside the repo:
 

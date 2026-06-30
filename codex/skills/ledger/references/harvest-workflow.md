@@ -5,10 +5,11 @@ Harvest reads canonical source stores and recommends selective memory admission.
 Inputs:
 
 ```text
-.ledger/learnings/learnings.jsonl
+.ledger/learnings/events.jsonl
 .ledger/negative-ledger/events.jsonl
 .ledger/synesthesia/events.jsonl
 .ledger/harness/events.jsonl
+.ledger/learnings/learnings.jsonl
 .learnings.jsonl
 ~/.codex/memories/extensions/*/notes/*.md
 ~/.codex/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
@@ -26,7 +27,7 @@ Admission gates:
 Recommended handoff:
 
 ```bash
-learnings recall --query "<topic>" --limit 5
+ledger recall --source learnings --query "<topic>" --limit 5
 ledger doctor
 ledger export --id NEG-000001 --format memory-note
 memory-note append --extension <source> --kind <kind> --json -

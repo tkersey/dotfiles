@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: "Capture, browse, query, supersede, migrate, and selectively admit evidence-backed execution learnings from repo-local `.ledger/learnings/learnings.jsonl`. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
+description: "Capture, browse, query, supersede, migrate, and selectively admit evidence-backed execution learnings from repo-local `.ledger/learnings/events.jsonl` through `ledger --source learnings`. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
 metadata:
   version: "6.0.0"
 ---
@@ -14,8 +14,8 @@ Maintain a repo-local, evidence-backed execution-learning store and selectively 
 Authority split:
 
 ```text
-<repo>/.ledger/learnings/learnings.jsonl
-  canonical detailed learning record
+<repo>/.ledger/learnings/events.jsonl
+  canonical learning event store; learning records live under event.record
 
 ~/.codex/memories/extensions/learnings/notes/*.md
   immutable admission snapshots for Phase 2
@@ -40,16 +40,18 @@ Do not duplicate every learning into memory notes. For an accepted admission, lo
 ## Canonical Store
 
 ```text
-.ledger/learnings/learnings.jsonl
+.ledger/learnings/events.jsonl
 ```
 
-Use `learnings append` for writes. Do not hand-edit rows in normal operation.
-Legacy `.learnings.jsonl` is read only during migration. Use
-`learnings migrate --mode copy` to copy old rows into the canonical store.
+Use `ledger capture --source learnings` for writes. Do not hand-edit events in
+normal operation. Legacy `.ledger/learnings/learnings.jsonl` and
+`.learnings.jsonl` are read only during migration. Use
+`ledger migrate --source learnings --mode copy` to copy old rows into the
+canonical event store.
 Treat `legacy-only` as a required migration state, not a normal operating
-state. If `learnings doctor` reports `legacy-only`, run
-`learnings migrate --mode copy` before any append, commit closeout, or handoff
-that depends on learning capture.
+state. If `ledger doctor --source learnings` reports `legacy-only`, run
+`ledger migrate --source learnings --mode copy` before any append, commit
+closeout, or handoff that depends on learning capture.
 
 Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`, `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.
 
@@ -77,25 +79,25 @@ Require decision delta, transferability, and counterfactual cost. Prefer one ess
 2. Run the migration preflight:
 
    ```bash
-   learnings doctor
+   ledger doctor --source learnings
    ```
 
    If status is `legacy-only`, run:
 
    ```bash
-   learnings migrate --dry-run --mode copy
-   learnings migrate --mode copy
-   learnings doctor
+   ledger migrate --source learnings --dry-run --mode copy
+   ledger migrate --source learnings --mode copy
+   ledger doctor --source learnings
    ```
 
    Append only after the doctor status is `migrated`, `current`, or `missing`.
-   `missing` is valid only when no legacy `.learnings.jsonl` exists.
+   `missing` is valid only when neither legacy learning path exists.
 3. Gather exact evidence and changed paths.
 4. Distill objective, inflection, proof, and transferable rule.
 5. Append from the verified repo root:
 
    ```bash
-   learnings append \
+   ledger capture --source learnings \
      --status do_more \
      --learning "When X, prefer Y because Z." \
      --evidence "exact command/result/path" \
@@ -103,8 +105,8 @@ Require decision delta, transferability, and counterfactual cost. Prefer one ess
      --tag example
    ```
 
-6. Verify the reported target path is exactly `<repo>/.ledger/learnings/learnings.jsonl`.
-7. Before any Codex-made commit, inspect `.ledger/learnings/learnings.jsonl` explicitly.
+6. Verify the reported target path is exactly `<repo>/.ledger/learnings/events.jsonl`.
+7. Before any Codex-made commit, inspect `.ledger/learnings/events.jsonl` explicitly.
 8. Emit exactly one canonical learning proof line.
 
 Proof lines:
@@ -118,7 +120,7 @@ duplicate-skip: <reason>
 ## Recall Workflow
 
 ```bash
-learnings recall \
+ledger recall --source learnings \
   --query "<focused component failure objective terms>" \
   --limit 5 \
   --drop-superseded
@@ -153,7 +155,7 @@ After the canonical append succeeds, construct:
 ```json
 {
   "operation": "assert",
-  "authority": "learnings-cli",
+  "authority": "ledger-cli",
   "summary": "Admit lrn-... for Phase 2 consideration.",
   "scope": {
     "kind": "repo",
@@ -163,7 +165,7 @@ After the canonical append succeeds, construct:
   "source_refs": [
     {
       "kind": "learning",
-      "ref": ".ledger/learnings/learnings.jsonl#lrn-...",
+      "ref": ".ledger/learnings/events.jsonl#lrn-...",
       "summary": "Canonical learning row"
     }
   ],
@@ -173,7 +175,7 @@ After the canonical append succeeds, construct:
     "learning_id": "lrn-...",
     "learning_status": "codify_now",
     "repo": "owner/repo",
-    "source_path": ".ledger/learnings/learnings.jsonl",
+    "source_path": ".ledger/learnings/events.jsonl",
     "decision_delta": "Future Codex should do Y before Z.",
     "evidence_snapshot": ["exact command/test/result"],
     "future_behavior": "Operational default or route",
@@ -218,7 +220,7 @@ Never edit or delete prior admission notes.
 
 ## Memory Digest Compatibility
 
-`learnings memory-digest` remains useful for disposable batch imports, but it is not the primary durable admission path. Prefer timestamped resources under:
+`ledger memory-digest --source learnings` remains useful for disposable batch imports, but it is not the primary durable admission path. Prefer timestamped resources under:
 
 ```text
 ~/.codex/memories/extensions/learnings/resources/YYYY-MM-DDTHH-MM-SS-learnings-digest.md
@@ -226,7 +228,7 @@ Never edit or delete prior admission notes.
 
 ## Relationship to Negative Ledger
 
-A learning can seed negative evidence, but `.ledger/learnings/learnings.jsonl` is not the operational route-exclusion store. Promote witnessed failed hypotheses through `ledger capture`, then use `ledger export` plus `memory-note` for memory admission.
+A learning can seed negative evidence, but `.ledger/learnings/events.jsonl` is not the operational route-exclusion store. Promote witnessed failed hypotheses through `ledger capture`, then use `ledger export` plus `memory-note` for memory admission.
 
 ## Guardrails
 

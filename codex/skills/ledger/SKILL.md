@@ -15,7 +15,7 @@ Use `$ledger` for source-memory migration, cross-store doctor, harvest planning,
 
 Canonical stores:
 
-- `.ledger/learnings/learnings.jsonl`
+- `.ledger/learnings/events.jsonl`
 - `.ledger/negative-ledger/events.jsonl`
 - `.ledger/synesthesia/events.jsonl` when present
 - `.ledger/harness/events.jsonl` when present
@@ -28,8 +28,9 @@ missing -> legacy-only -> migrated/current -> invalid
 
 `legacy-only` is an actionable preflight state. It means reads may use
 compatibility fallback, but writes and commit closeout must first run the owning
-source migration. For learnings, that owner is `learnings migrate --mode copy`;
-for negative evidence, that owner is `ledger migrate --mode copy`.
+source migration. For learnings, that owner is
+`ledger migrate --source learnings --mode copy`; for negative evidence, that
+owner is `ledger migrate --mode copy`.
 
 Compiled Codex memory is still owned by Phase 2. Memory-source notes are admission snapshots, not canonical stores.
 
@@ -49,7 +50,7 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 
 `$ledger` may coordinate, inspect, and recommend. Writes are delegated to source-specific tools:
 
-- `$learnings` / `learnings` for `.ledger/learnings/learnings.jsonl`;
+- `$learnings` / `ledger --source learnings` for `.ledger/learnings/events.jsonl`;
 - `$negative-ledger` / `ledger` for `.ledger/negative-ledger/events.jsonl`;
 - `$synesthesia` for `.ledger/synesthesia/events.jsonl` or current Synesthesia notes during transition;
 - `$harness-memory` for `.ledger/harness/events.jsonl` or harness notes;
@@ -60,7 +61,7 @@ Never write `memory_summary.md`, `MEMORY.md`, or memory-root `skills/*`.
 ## Read-Only Workflow
 
 1. Resolve the git root.
-2. Inspect `.ledger/` and legacy `.learnings.jsonl`.
+2. Inspect `.ledger/`, previous `.ledger/learnings/learnings.jsonl`, and legacy `.learnings.jsonl`.
 3. Classify each store as `migrated`, `legacy-only`, `current`, `legacy-path`, `notes-only`, `missing`, or `invalid`.
 4. Run source doctors when available.
 5. If any required source is `legacy-only`, report the exact owning migration

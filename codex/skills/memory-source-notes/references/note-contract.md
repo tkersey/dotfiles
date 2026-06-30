@@ -67,7 +67,7 @@ Recommended general values:
 ```text
 explicit-user-correction
 repeated-user-steering
-learnings-cli
+ledger-cli
 ledger-cli
 explicit-user-endorsement
 explicit-user-rejection
@@ -129,7 +129,7 @@ Phase 2 updates compiled memory surgically. It never deletes source notes.
 A note can be authoritative that Phase 2 must consider an event while remaining subordinate to its canonical domain source.
 
 - a negative-ledger note is an exported snapshot; `.ledger/negative-ledger/events.jsonl` owns route state;
-- a learnings note admits a row; `.ledger/learnings/learnings.jsonl` owns the full learning;
+- a learnings note admits a row; `.ledger/learnings/events.jsonl` owns the full learning event;
 - a harness note may itself be canonical when it records explicit operating correction;
 - a Synesthesia note may itself be canonical when it records explicit endorsement, correction, rejection, retraction, reopening, or a durable boundary.
 

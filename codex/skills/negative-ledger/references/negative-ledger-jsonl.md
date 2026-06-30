@@ -6,7 +6,7 @@
 <repo>/.ledger/negative-ledger/events.jsonl
 ```
 
-Use the `ledger` CLI. Do not hand-edit the store and do not treat `.ledger/learnings/learnings.jsonl` as the operational negative-ledger authority.
+Use the `ledger` CLI. Do not hand-edit the store and do not treat `.ledger/learnings/events.jsonl` as the operational negative-ledger authority.
 
 ## Commands
 
