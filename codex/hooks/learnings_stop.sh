@@ -15,6 +15,12 @@ find_learnings_root() {
   return 1
 }
 
+ledger_supports_learnings() {
+  bin="${1:?ledger binary required}"
+  "$bin" --help 2>/dev/null | grep -Fq -- "--source SOURCE" &&
+    "$bin" capture --source learnings --help 2>/dev/null | grep -Fq ".ledger/learnings/events.jsonl"
+}
+
 looks_like_wrap_up() {
   printf '%s' "${1:-}" | grep -Eiq '\b(done|completed|implemented|updated|changed|configured|wired|fixed|added|removed|created|verification|verified|validated|testing|tested|tests|pass(ed)?|smoke|setup)\b'
 }
@@ -42,7 +48,13 @@ mode="${LEARNINGS_STOP_MODE:-block}"
   exit 0
 }
 
-command -v ledger >/dev/null 2>&1 || {
+ledger_bin=$(command -v ledger 2>/dev/null || true)
+[ -n "$ledger_bin" ] || {
+  json_continue
+  exit 0
+}
+
+ledger_supports_learnings "$ledger_bin" || {
   json_continue
   exit 0
 }
@@ -94,7 +106,7 @@ has_completion_proof "$last_message" && {
   exit 0
 }
 
-reason='Repo has a learnings source store and this turn appears to be wrapping up with file changes. Run `ledger capture --source learnings ...` before final handoff, or report `duplicate-skip: <reason>` / `0 records appended: <reason>`.'
+reason='Repo has a learnings source store and this turn appears to be wrapping up with file changes. Run `ledger doctor --source learnings` and `ledger capture --source learnings ...` before final handoff, or report `duplicate-skip: <reason>` / `0 records appended: <reason>`.'
 
 if [ "$mode" = "warn" ]; then
   jq -n --arg msg "$reason" '{continue: true, systemMessage: $msg}'
