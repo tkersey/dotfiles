@@ -20,8 +20,7 @@
   ],
   "legacy_read_fallbacks": [
     ".step/st-plan.jsonl",
-    ".ledger/c3/state.json",
-    ".step/resolve-c3-st-plan.jsonl"
+    ".ledger/c3/state.json"
   ],
   "local_runtime_defaults": [
     ".ledger/st/st-plan.jsonl.lock",
