@@ -1,7 +1,7 @@
 {
   "action": "lane-smoke",
   "baseSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "failureClass": "transport",
+  "failureClass": "transport_pre_review",
   "failureCode": "pre_review_lane_transport_lost",
   "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "laneId": "lane_smoke_failed",

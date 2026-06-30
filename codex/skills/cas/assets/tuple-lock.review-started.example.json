@@ -6,7 +6,7 @@
   "expiresAtUnixS": 1760003700,
   "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "lastFailureCode": null,
-  "lockVersion": "CRTL-v1",
+  "lockVersion": "CAS-RTL-v1",
   "overrideReason": null,
   "ownerPid": 4242,
   "recordPath": "/tmp/thr_clean.json",

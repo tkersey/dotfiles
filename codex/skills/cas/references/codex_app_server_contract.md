@@ -167,8 +167,8 @@ Use one read loop that dispatches by envelope kind and correlates by `id`. Add e
 Smoke and stream visibility:
 
 ```sh
-run_cas_tool smoke-check --cwd /path --json
-run_cas_tool request --cwd /path --method thread/list --params-json '{"cursor":null,"limit":5}' --json
+cas smoke_check --cwd /path --json
+cas instance_runner --cwd /path --instances 1 --method thread/list --params-json '{"cursor":null,"limit":5}' --json --raw-sample
 codex debug app-server send-message-v2 "run tests and summarize failures"
 ```
 

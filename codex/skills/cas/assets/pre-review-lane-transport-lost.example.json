@@ -1,7 +1,7 @@
 {
   "action": "lane-review",
   "baseSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "failureClass": "transport",
+  "failureClass": "transport_pre_review",
   "failureCode": "pre_review_lane_transport_lost",
   "failureHint": "persistent CAS lane app-server is not alive before review/start; no review attempt exists",
   "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",

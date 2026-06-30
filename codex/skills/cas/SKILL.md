@@ -1,13 +1,13 @@
 ---
 name: cas
-description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, multi-instance fanout, and `$st` swarm conformance/retry-policy checks. For review sessions, distinguish pre-review lane transport, real review attempts, normalized tuple-bound review verdicts, account/resource exhaustion, and tuple concurrency guards."
+description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_session_inquiry`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, session inquiry replay, multi-instance fanout, and `$st` swarm conformance/retry-policy checks. For review sessions, distinguish pre-review lane transport, real review attempts, normalized tuple-bound review verdicts, account/resource exhaustion, and tuple concurrency guards."
 ---
 
 # cas (Zig App-Server Control)
 
 ## Mission
 
-`$cas` is the Zig-backed app-server control skill. It owns protocol preflight, account/status probes, goal lifecycle control, direct method execution, detached review lifecycle, persistent review lanes, receipt normalization, and `$st` conformance probes.
+`$cas` is the Zig-backed app-server control skill. It owns protocol preflight, account/status probes, goal lifecycle control, direct method execution, detached review lifecycle, persistent review lanes, receipt normalization, safe session-inquiry replay, and `$st` conformance probes.
 
 For review work, the governing invariant is:
 
@@ -26,11 +26,13 @@ Use this skill when the task mentions `cas`, app-server v2 methods, detached rev
 Use the native dispatcher and helpers:
 
 ```text
+cas capabilities
 cas account status
 cas goal <resolve|get|set|clear|status|wait>
 cas smoke_check
 cas instance_runner
 cas review_session
+cas session_inquiry <preflight|run|start|status|wait|interrupt|receipt|cleanup>
 cas conformance
 ```
 
@@ -38,9 +40,25 @@ cas conformance
 
 `cas conformance` probes `$st` swarm-hardening scenarios. `$st` remains the durable source of truth for claims, resources, fencing, branch epochs, and proof metadata.
 
+`cas session_inquiry` owns safe historical replay lifecycle for `$retrace`; see `references/retrace-session-inquiry.md`.
+
 ## Review session boundary
 
 Use `cas review_session` when detached review lifecycle control matters: persisted `reviewThreadId`, wait/status/interrupt, compatibility diagnostics, approval/runtime overrides, or repeatable review receipts.
+
+For local detached review inspection, prefer:
+
+```bash
+cas review_session status --latest --json
+```
+
+This selects the newest persisted record under `~/.codex/cas/review_sessions/`
+and reports the same tuple/status fields callers need for proof binding:
+`reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, `baseSha`,
+`headSha`, `targetFingerprint`, `turnStatus`, `reviewResult`, and failure
+fields. Use `--review-thread-id <id>` when checking a non-latest session or
+when a workflow already owns the handle. Do not use latest-session selection
+for destructive control; `interrupt` requires an explicit `reviewThreadId`.
 
 Use `cas review_session lane` only when persistent review-lane capability is current for the active `cas`/`codex`/repo tuple. The lane owns transport reuse only. Callers still own review adjudication, clean-streak accounting, proof gates, commits, PR comments, and closure decisions.
 
@@ -48,10 +66,12 @@ If a caller only needs one tuple-bound review and persistent lane smoke is unava
 
 ```bash
 cas review_session start --wait --cwd <repo> --base <base> --json --fallback none
-cas review_session receipt normalize --path <start-wait-output.json> --cwd <repo> --base <base> --format json
 ```
 
-until `start --wait` natively emits the same normalized `reviewVerdict` surface.
+Current `start --wait --json` can emit a `cas-start-wait` `reviewVerdict`
+when the waited review reaches terminal state with a trusted review result and
+complete tuple identity. Use `receipt normalize` for saved outputs, receipt
+summaries, or an explicit requested-tuple recheck.
 
 ## CLI spec order
 
@@ -142,6 +162,11 @@ Use `failureCode="review_transport_lost"` only after `reviewThreadId` exists and
 
 If a timeout receipt contains `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, target fingerprint, base SHA, and head SHA, recover by waiting on that same `reviewThreadId`. Do not start another review against the same target while the original may still complete.
 
+If the caller lost the handle, first run `cas review_session status --latest
+--json` and verify `baseSha`, `headSha`, and `targetFingerprint` match the
+intended tuple. If they match, recover with `cas review_session wait --latest
+--json` or copy the reported `reviewThreadId` into an explicit wait command.
+
 ### Account/resource exhaustion
 
 If event logs, turn errors, or output contain `usageLimitExceeded`, emit:
@@ -167,7 +192,10 @@ All review backends should produce one caller-facing surface:
 ```json
 {
   "reviewVerdict": {
-    "status": "clean|findings|timeout|transport_failure|account_resource_exhausted|parse_mismatch|incomplete|no_attempt",
+    "status": "clean|findings|timeout|pre_review_transport_failure|review_transport_failure|account_resource_exhausted|parse_mismatch|review_untrusted_source|incomplete",
+    "reviewAttemptPhase": "pre_lane_start|lane_started|pre_review_start|review_started|review_waiting|review_terminal|normalized_verdict",
+    "reviewAttemptExists": false,
+    "tupleVerdictExists": false,
     "backendClass": "cas-lane|cas-start-wait|cas-native-fallback|cas-receipt-normalized",
     "clean": false,
     "findingCount": 0,
@@ -185,7 +213,11 @@ All review backends should produce one caller-facing surface:
 }
 ```
 
-`start --wait` output is useful review evidence but is not a tuple-bound review verdict until normalized into this surface with base/head/fingerprint.
+`start --wait` output is tuple-bound review evidence only when its emitted
+`reviewVerdict` has `tupleVerdictExists=true`, a terminal tuple status
+(`clean`, `findings`, or `account_resource_exhausted`), and matching
+base/head/fingerprint. Otherwise normalize the receipt or recover/wait on the
+same review attempt.
 
 ## Persistent lane policy
 
@@ -264,9 +296,11 @@ Do not infer success from app-server process liveness, `reviewThreadId` creation
 Reference validators and classifiers:
 
 ```bash
-python3 codex/skills/cas/tools/cas_review_verdict_gate.py <receipt.json>
-python3 codex/skills/cas/tools/cas_review_tuple_lock_gate.py <lock.json>
-python3 codex/skills/cas/tools/cas_review_receipt_classifier.py <receipts.jsonl> --format jsonl
+cas review_session status --latest --json
+cas review_session wait --latest --json
+cas review_session receipt gate --path <receipt.json> --format json
+cas review_session lock gate --path <lock.json> --format json
+cas review_session receipt classify --path <receipts.jsonl> --format jsonl
 ```
 
 Example receipts live under `assets/`.
@@ -297,9 +331,10 @@ CAS Review:
 - CAS reports tuple-bound `reviewVerdict`; caller workflows decide what that means.
 - Do not treat `pre_review_lane_transport_lost` as a failed review.
 - Do not duplicate a review when an active tuple lock points to an existing `reviewThreadId`.
+- Do not manually list and `jq` review-session records when latest-session status is enough; use `cas review_session status --latest --json`, then verify tuple fields before acting.
 - Do not treat completed findings as transport failure.
 - Do not treat `usageLimitExceeded` as reviewer output or transport failure.
 - Do not rely on persistent lane continuity for repeated-review policy until first-review creation smoke is current.
-- `start --wait` evidence must be normalized before strict consumers use it as review input.
+- `start --wait` evidence is strict review input only when its `reviewVerdict` is tuple-bound; otherwise normalize or recover first.
 - `cas smoke_check` is protocol validation, not review output.
 - Native fallback is degraded verdict preservation, not detached CAS review transport.

@@ -1,3 +1,3 @@
-{"classification": "pre_review_lane_transport_lost", "failureCode": "pre_review_lane_transport_lost"}
-{"classification": "review_verdict_findings", "failureClass": "review_verdict"}
-{"classification": "account_resource_exhausted", "failureCode": "account_resource_exhausted"}
+{"classification":"pre_review_lane_transport_lost","failureClass":"transport_pre_review","failureCode":"pre_review_lane_transport_lost","retryableSameTupleNow":true,"reviewAttemptExists":false,"reviewAttemptPhase":"pre_review_start","reviewThreadId":null,"sourceIndex":0,"tupleVerdictExists":false}
+{"classification":"review_verdict_findings","failureClass":"review_verdict","failureCode":null,"retryableSameTupleNow":true,"reviewAttemptExists":true,"reviewAttemptPhase":"normalized_verdict","reviewThreadId":"thr1","sourceIndex":1,"tupleVerdictExists":true}
+{"classification":"account_resource_exhausted","failureClass":"account_resource","failureCode":"account_resource_exhausted","retryableSameTupleNow":false,"reviewAttemptExists":true,"reviewAttemptPhase":"review_terminal","reviewThreadId":"thr2","sourceIndex":2,"tupleVerdictExists":false}
