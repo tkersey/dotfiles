@@ -81,6 +81,7 @@ ship-complete closure + missing delivery evidence -> blocked, next_owner=$ship
 ship-complete closure + missing ADD-v1 or ship receipt -> invalid decision
 wrapped ADD-v1 delivery decision -> accepted as delivery evidence
 ADD-shaped handoff without decision_version=ADD-v1 -> blocked
+partial ADD-v1 handoff without proof/integration receipts -> blocked
 ADD-v1 target_head or ship_input.head_sha mismatches current artifact -> blocked
 complete + closure_candidate=ship-handoff|blocked -> invalid decision
 artifact binding missing/stale -> blocked, next_owner=$goal-grind

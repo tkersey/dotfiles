@@ -281,8 +281,8 @@ def delivery_reasons_for(
     pending: list[str] = []
     add = add_v1_decision_from(delivery.get("add_v1_decision"))
     add_verdict = add.get("verdict", "missing")
-    if add_verdict != "missing" and add.get("decision_version") != "ADD-v1":
-        blocked.append("delivery.add_v1_decision.decision_version:invalid")
+    if add_verdict != "missing":
+        blocked.extend(add_v1_receipt_reasons_for(add, artifact))
     if add_verdict not in ADD_VERDICTS:
         blocked.append("delivery.add_v1_decision.verdict:invalid")
         add_verdict = "missing"
@@ -293,7 +293,6 @@ def delivery_reasons_for(
     elif add_verdict == "shipping_not_requested":
         blocked.append("delivery.add_v1_decision:shipping-not-requested-with-pr-intent")
     elif add_verdict == "handoff_to_ship":
-        blocked.extend(add_v1_head_reasons_for(add, artifact))
         ship = delivery.get("ship_result") if isinstance(delivery.get("ship_result"), dict) else {}
         if publication_required:
             if not as_yes(ship.get("present")):
@@ -314,6 +313,46 @@ def add_v1_decision_from(value: Any) -> dict[str, Any]:
     if isinstance(wrapped, dict):
         return wrapped
     return value
+
+
+def add_v1_receipt_reasons_for(add: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
+    reasons: list[str] = []
+    if add.get("decision_version") != "ADD-v1":
+        reasons.append("delivery.add_v1_decision.decision_version:invalid")
+    for key in ("run_id", "plan_id", "target_branch", "target_head"):
+        if not isinstance(add.get(key), str) or not add.get(key):
+            reasons.append(f"delivery.add_v1_decision.{key}:missing")
+    if add.get("target_branch") != artifact.get("branch"):
+        reasons.append("delivery.add_v1_decision.target_branch:artifact-mismatch")
+    if not is_plain_int(add.get("branch_epoch")) or add.get("branch_epoch", -1) < 0:
+        reasons.append("delivery.add_v1_decision.branch_epoch:invalid")
+    receipts = add.get("integrated_change_set_receipts")
+    if not isinstance(receipts, list) or not receipts:
+        reasons.append("delivery.add_v1_decision.integrated_change_set_receipts:empty")
+    proof = add.get("proof_complete_receipt") if isinstance(add.get("proof_complete_receipt"), dict) else {}
+    if proof.get("present") != "yes" or proof.get("current") != "yes":
+        reasons.append("delivery.add_v1_decision.proof_complete_receipt:not-current")
+    integration = add.get("integration") if isinstance(add.get("integration"), dict) else {}
+    if integration.get("queue_quiescent") != "yes":
+        reasons.append("delivery.add_v1_decision.integration.queue_quiescent:not-yes")
+    if add.get("cross_plan_dependency_status") != "clear":
+        reasons.append("delivery.add_v1_decision.cross_plan_dependency_status:not-clear")
+    pr_intent = add.get("pr_intent") if isinstance(add.get("pr_intent"), dict) else {}
+    if pr_intent.get("present") != "yes":
+        reasons.append("delivery.add_v1_decision.pr_intent:not-present")
+
+    if add.get("verdict") == "handoff_to_ship":
+        reasons.extend(add_v1_head_reasons_for(add, artifact))
+        handoff = add.get("ship_handoff") if isinstance(add.get("ship_handoff"), dict) else {}
+        if handoff.get("next_owner") != "$ship":
+            reasons.append("delivery.add_v1_decision.ship_handoff.next_owner:invalid")
+        ship_input = handoff.get("ship_input") if isinstance(handoff.get("ship_input"), dict) else {}
+        if ship_input.get("branch") != add.get("target_branch"):
+            reasons.append("delivery.add_v1_decision.ship_input.branch:mismatch")
+        actuation = ship_input.get("actuation") if isinstance(ship_input.get("actuation"), dict) else {}
+        if actuation.get("plan_id") != add.get("plan_id"):
+            reasons.append("delivery.add_v1_decision.ship_input.actuation.plan_id:mismatch")
+    return reasons
 
 
 def add_v1_head_reasons_for(add: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
