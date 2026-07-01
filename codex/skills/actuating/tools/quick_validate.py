@@ -30,11 +30,14 @@ def main() -> int:
         "agents/openai.yaml",
         "references/pre-mutation-interlock.md",
         "references/delivery-handoff.md",
+        "references/terminal-closure-gate.md",
         "references/decision-contract.yaml",
         "tools/actuation_authority_gate.py",
         "tools/actuation_delivery_gate.py",
+        "tools/actuation_terminal_gate.py",
         "tests/test_actuation_authority_gate.py",
         "tests/test_actuation_delivery_gate.py",
+        "tests/test_actuation_terminal_gate.py",
         "assets/gcr-v2.allowed.example.json",
         "assets/gcr-v2.self-invalidating.example.json",
         "assets/apma-v1.example.json",
@@ -44,6 +47,10 @@ def main() -> int:
         "assets/add-v1.handoff.example.json",
         "assets/add-v1.shipping-not-requested.example.json",
         "assets/add-v1.blocked.example.json",
+        "assets/atcg-v1.complete.example.json",
+        "assets/terminal-context.proof-only.example.json",
+        "assets/terminal-context.regression.example.json",
+        "assets/terminal-context.ship-continue.example.json",
     ]
     missing = [path for path in required if not (ROOT / path).is_file()]
     if missing:
@@ -52,6 +59,7 @@ def main() -> int:
     tests = [
         run_test(ROOT / "tests/test_actuation_authority_gate.py"),
         run_test(ROOT / "tests/test_actuation_delivery_gate.py"),
+        run_test(ROOT / "tests/test_actuation_terminal_gate.py"),
     ]
     ok = all(row["returncode"] == 0 for row in tests)
     print(json.dumps({
