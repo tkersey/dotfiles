@@ -137,6 +137,38 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertEqual(body["verdict"], "blocked")
         self.assertIn("delivery.add_v1_decision.decision_version:invalid", body["blocked_reasons"])
 
+    def test_ship_complete_rejects_partial_add_v1_handoff_with_version(self) -> None:
+        context = deepcopy(self.context())
+        context["closure_candidate"] = "ship-complete"
+        context["delivery"] = {
+            "pr_intent": "yes",
+            "publication_required": "yes",
+            "add_v1_decision": {
+                "decision_version": "ADD-v1",
+                "verdict": "handoff_to_ship",
+                "target_branch": "feature/example",
+                "target_head": "abc123",
+                "ship_handoff": {
+                    "next_owner": "$ship",
+                    "ship_input": {
+                        "branch": "feature/example",
+                        "head_sha": "abc123",
+                    }
+                },
+            },
+            "ship_result": {
+                "present": "yes",
+                "current": "yes",
+                "pr_url": "https://github.com/tkersey/example/pull/1",
+                "ref": "ship:example",
+            },
+        }
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertIn("delivery.add_v1_decision.run_id:missing", body["blocked_reasons"])
+        self.assertIn("delivery.add_v1_decision.integrated_change_set_receipts:empty", body["blocked_reasons"])
+
     def test_cached_cas_receipt_does_not_count_as_fresh_clean_run(self) -> None:
         context = self.context("terminal-context.proof-only.example.json")
         context["cas_review"] = {

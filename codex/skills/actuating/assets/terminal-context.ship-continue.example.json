@@ -37,10 +37,39 @@
         "decision_version": "ADD-v1",
         "verdict": "handoff_to_ship",
         "ref": "add-v1:handoff",
+        "run_id": "run-ship-001",
+        "plan_id": "plan-example",
+        "target_branch": "feature/example",
         "target_head": "abc123",
+        "branch_epoch": 4,
+        "integrated_change_set_receipts": [
+          ".ledger/st/integration/receipts/igr-001.json"
+        ],
+        "proof_complete_receipt": {
+          "present": "yes",
+          "current": "yes",
+          "ref": ".ledger/st/proof/plan-example/proof-complete.json"
+        },
+        "integration": {
+          "queue_quiescent": "yes",
+          "receipts": [
+            ".ledger/st/integration/receipts/igr-001.json"
+          ]
+        },
+        "cross_plan_dependency_status": "clear",
+        "pr_intent": {
+          "present": "yes",
+          "source": "actuation_run",
+          "requested_mode": "ready"
+        },
         "ship_handoff": {
+          "next_owner": "$ship",
           "ship_input": {
-            "head_sha": "abc123"
+            "branch": "feature/example",
+            "head_sha": "abc123",
+            "actuation": {
+              "plan_id": "plan-example"
+            }
           }
         }
       },
