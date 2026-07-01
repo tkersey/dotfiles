@@ -46,6 +46,17 @@ cas conformance
 
 Use `cas review_session` when detached review lifecycle control matters: persisted `reviewThreadId`, wait/status/interrupt, compatibility diagnostics, approval/runtime overrides, or repeatable review receipts.
 
+For ordinary one-review closure, prefer the broker:
+
+```bash
+cas review_session run --cwd <repo> --base <base> --json --fallback none
+```
+
+`run` waits, returns one caller-facing `reviewVerdict`, and includes
+`reviewBrokerDecision` so callers can see whether CAS created a new attempt,
+normalized terminal evidence, auto-replaced a proven-dead transport, or blocked
+because an active attempt might still be live.
+
 For local detached review inspection, prefer:
 
 ```bash
@@ -62,7 +73,7 @@ for destructive control; `interrupt` requires an explicit `reviewThreadId`.
 
 Use `cas review_session lane` only when persistent review-lane capability is current for the active `cas`/`codex`/repo tuple. The lane owns transport reuse only. Callers still own review adjudication, clean-streak accounting, proof gates, commits, PR comments, and closure decisions.
 
-If a caller only needs one tuple-bound review and persistent lane smoke is unavailable or recently failed, prefer:
+If a caller only needs low-level start/wait control, use:
 
 ```bash
 cas review_session start --wait --cwd <repo> --base <base> --json --fallback none
@@ -70,8 +81,9 @@ cas review_session start --wait --cwd <repo> --base <base> --json --fallback non
 
 Current `start --wait --json` can emit a `cas-start-wait` `reviewVerdict`
 when the waited review reaches terminal state with a trusted review result and
-complete tuple identity. Use `receipt normalize` for saved outputs, receipt
-summaries, or an explicit requested-tuple recheck.
+complete tuple identity. Use `receipt normalize` for saved outputs, fixture
+summaries, or an explicit requested-tuple recheck, not as the normal review
+happy path.
 
 ## CLI spec order
 
@@ -160,12 +172,17 @@ Legal next actions: restart lane, run lane smoke, use `start --wait`, or use exp
 
 Use `failureCode="review_transport_lost"` only after `reviewThreadId` exists and the review attempt loses transport while waiting or reconnecting.
 
-If a timeout receipt contains `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, target fingerprint, base SHA, and head SHA, recover by waiting on that same `reviewThreadId`. Do not start another review against the same target while the original may still complete.
+If a timeout or transport-loss receipt contains `reviewThreadId`, `reviewTurnId`,
+`recordPath`, `eventLogPath`, target fingerprint, base SHA, and head SHA, prefer
+`cas review_session run ...` for the same tuple. CAS will normalize terminal
+evidence, block if the old attempt might still be live, or auto-replace only
+when dead transport is proven from persisted owner/server liveness.
 
 If the caller lost the handle, first run `cas review_session status --latest
 --json` and verify `baseSha`, `headSha`, and `targetFingerprint` match the
 intended tuple. If they match, recover with `cas review_session wait --latest
 --json` or copy the reported `reviewThreadId` into an explicit wait command.
+This is diagnostic recovery; normal workflows should start from `run`.
 
 ### Account/resource exhaustion
 
@@ -213,7 +230,7 @@ All review backends should produce one caller-facing surface:
 }
 ```
 
-`start --wait` output is tuple-bound review evidence only when its emitted
+`run` and `start --wait` output is tuple-bound review evidence only when its emitted
 `reviewVerdict` has `tupleVerdictExists=true`, a terminal tuple status
 (`clean`, `findings`, or `account_resource_exhausted`), and matching
 base/head/fingerprint. Otherwise normalize the receipt or recover/wait on the
@@ -269,8 +286,10 @@ Rules:
 
 ```text
 review_started|waiting + reviewThreadId => return existing handle; do not start duplicate
+run + review_started|waiting + review_transport_lost + dead owner/server => auto-replace same tuple
 pre_review_start_failed + no reviewThreadId => restart lane/start-wait allowed, but not counted as review evidence
 terminal + not normalized => normalize existing receipt; do not re-review
+terminal|normalized + run => normalize and return existing tuple verdict
 terminal|normalized + --fresh-attempt REASON => start a new same-tuple review attempt
 account_resource_exhausted => block same-account retry until reset/override
 stale => require explicit takeover
@@ -298,6 +317,7 @@ Reference validators and classifiers:
 ```bash
 cas review_session status --latest --json
 cas review_session wait --latest --json
+cas review_session run --cwd <repo> --base <base> --json
 cas review_session receipt gate --path <receipt.json> --format json
 cas review_session lock gate --path <lock.json> --format json
 cas review_session receipt classify --path <receipts.jsonl> --format jsonl
@@ -329,6 +349,7 @@ CAS Review:
 - A lane is not a review.
 - A review starts at `reviewThreadId`.
 - CAS reports tuple-bound `reviewVerdict`; caller workflows decide what that means.
+- Use `cas review_session run` as the normal one-review path.
 - Do not treat `pre_review_lane_transport_lost` as a failed review.
 - Do not duplicate a review when an active tuple lock points to an existing `reviewThreadId`.
 - Do not manually list and `jq` review-session records when latest-session status is enough; use `cas review_session status --latest --json`, then verify tuple fields before acting.
