@@ -60,9 +60,10 @@ or wrap-up, evaluate `$synesthesia` in the same lifecycle point with
 `ledger --source synesthesia`. Append only if a durable sensory mapping or
 activation-boundary event exists. If no durable authority exists but the turn
 exposes a reusable sensory phrase, activation boundary, or representational
-ambiguity with a concrete engineering translation, emit a non-durable
-`synesthesia: candidate: ...` proof line with the missing authority. Otherwise
-report `synesthesia: 0 records appended: <reason>`.
+ambiguity with a concrete engineering translation, treat it as a non-durable
+candidate for routing. Keep non-durable candidates and no-op outcomes out of
+normal final user-facing replies unless they need user action, explain a
+blocker/error, or the user explicitly asks.
 
 ## Capture Gate
 
@@ -116,9 +117,12 @@ Require decision delta, transferability, and counterfactual cost. Prefer one ess
 
 6. Verify the reported target path is exactly `<repo>/.ledger/learnings/events.jsonl`.
 7. Before any Codex-made commit, inspect `.ledger/learnings/events.jsonl` explicitly.
-8. Emit exactly one canonical learning proof line.
+8. Retain exactly one canonical learning proof line in working evidence. Include
+   source-memory proof in the final user-facing reply only when it changed
+   repo-visible state, needs user action, explains a blocker/error, or the user
+   explicitly asks.
 
-Proof lines:
+Internal proof lines:
 
 ```text
 appended: id=lrn-...
@@ -205,7 +209,8 @@ run_memory_note_tool append \
 
 ## Admission Proof
 
-Report canonical and admission outcomes separately:
+When admission is user-visible or actionable, report canonical and admission
+outcomes separately:
 
 ```text
 appended: id=lrn-...

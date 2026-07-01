@@ -51,7 +51,9 @@ json_continue() {
 payload=$(cat)
 stop_hook_active=$(printf '%s' "$payload" | jq -r '.stop_hook_active // false')
 last_message=$(printf '%s' "$payload" | jq -r '.last_assistant_message // ""')
-mode="${LEARNINGS_STOP_MODE:-block}"
+# Default to reminder mode. Blocking on visible proof lines forces noisy
+# source-memory summaries into final user-facing replies.
+mode="${LEARNINGS_STOP_MODE:-warn}"
 
 [ "$mode" != "off" ] || {
   json_continue
@@ -128,7 +130,7 @@ has_completion_proof "$last_message" "$sources" && {
   exit 0
 }
 
-reason='Repo has source-memory stores and this turn appears to be wrapping up with file changes. Run `ledger doctor --source learnings` and `ledger capture --source learnings ...` before final handoff, and evaluate Synesthesia with `ledger doctor --source synesthesia`; append durable sensory mappings/boundaries, emit `synesthesia: candidate: ...` for useful non-durable proposals, or report `synesthesia: 0 records appended: <reason>` when no candidate exists.'
+reason='Repo has source-memory stores and this turn appears to be wrapping up with file changes. Run `ledger doctor --source learnings` and `ledger capture --source learnings ...` before final handoff when capture is warranted, and evaluate Synesthesia with `ledger doctor --source synesthesia`. Keep no-op or duplicate source-memory outcomes out of the final user-facing reply; surface only appended rows, actionable candidates, blockers/errors, or explicit user-requested reports.'
 
 if [ "$mode" = "warn" ]; then
   jq -n --arg msg "$reason" '{continue: true, systemMessage: $msg}'
