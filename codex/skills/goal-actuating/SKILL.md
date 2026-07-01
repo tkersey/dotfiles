@@ -77,6 +77,7 @@ goal_actuating_mode:
 13. Use `$failure-memory` when failures or review classes repeat.
 14. For `review-fix` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
 15. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
+16. Run ATCG-v1 terminal closure gate before reporting goal completion.
 
 ## Scheme Plan consumption
 
@@ -336,6 +337,7 @@ public tracker side effect would be needed without explicit intent
 review is required but $cas review is unavailable or not run
 three clean normalized $cas review runs are required but cannot be completed
 parallel fanout would cross shared invariants or conflicting resources
+ATCG-v1 does not return can_mark_goal_complete=yes
 ```
 
 ## Output
@@ -363,5 +365,6 @@ Goal Actuation:
 - review resolution, if any:
 - evidence-fold verdict:
 - proof-patch / ship handoff:
+- ATCG-v1 verdict / next owner:
 - learnings or memory-source handoff, if justified:
 ```

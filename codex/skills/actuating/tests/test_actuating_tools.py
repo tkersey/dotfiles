@@ -88,6 +88,11 @@ def main() -> int:
         "proof-dag.example.json",
         "proof_dag_gate",
     )
+    quick = run("quick_validate.py")
+    assert quick.returncode == 0, quick.stdout + quick.stderr
+    quick_body = json.loads(quick.stdout)["actuating_quick_validate"]
+    quick_paths = {row["path"] for row in quick_body["tests"]}
+    assert "tests/test_actuation_terminal_gate.py" in quick_paths
 
     with tempfile.TemporaryDirectory() as td:
         temp = Path(td)

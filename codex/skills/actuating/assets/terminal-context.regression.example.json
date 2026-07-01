@@ -1,0 +1,59 @@
+{
+  "actuation_terminal_context": {
+    "run_id": "ACT-terminal-regression",
+    "source": "accepted_spec",
+    "closure_candidate": "ship-complete",
+    "artifact_scope": {
+      "repo": "tkersey/world-host",
+      "branch": "main",
+      "head_sha": "abc123",
+      "diff_fingerprint": "diff:capability-plane",
+      "dirty_state": "clean"
+    },
+    "local_proof": {
+      "evidence_fold_verdict": "done",
+      "commands": [
+        "bun test",
+        "bun run proof"
+      ]
+    },
+    "proof_patch": {
+      "required": "yes",
+      "present": "no",
+      "current": "no",
+      "ref": ""
+    },
+    "cas_review": {
+      "required": "yes",
+      "reason": "proof-patch or ship-handoff would rely on review claim",
+      "clean_runs_required": 3,
+      "clean_runs_count": 0,
+      "independent_fresh_runs": "no",
+      "tuple_bound": "no",
+      "tuple": {
+        "base_sha": "",
+        "head_sha": "",
+        "target_fingerprint": ""
+      }
+    },
+    "delivery": {
+      "pr_intent": "yes",
+      "publication_required": "yes",
+      "add_v1_decision": {
+        "verdict": "missing",
+        "ref": ""
+      },
+      "ship_result": {
+        "present": "no",
+        "current": "unknown",
+        "pr_url": "",
+        "ref": ""
+      }
+    },
+    "final_report_fields": {
+      "normalized_cas_clean_runs": 0,
+      "proof_patch_or_ship_handoff": "not completed",
+      "blockers_residual_risk": "none"
+    }
+  }
+}

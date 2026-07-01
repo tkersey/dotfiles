@@ -194,6 +194,14 @@ patch + evidence + residual risk -> proof summary
 
 A proof summary must bind to current branch/head/diff or explicitly say artifact binding is unavailable.
 
+For `$actuating` or `$goal-actuating`, proof closure has one final reducer:
+
+```text
+evidence-fold + proof-patch/CAS/ADD-v1/ship evidence -> ATCG-v1 -> complete|continue|blocked
+```
+
+Do not claim completion unless ATCG-v1 returns `can_mark_goal_complete=yes`.
+
 ### 10. st-governed
 
 Use when durable coordination owns the work.
@@ -284,6 +292,7 @@ review needs CAS but CAS is unavailable
 three clean CAS runs are required but unavailable
 mutation authority is missing
 public side effects would occur without explicit intent
+ATCG-v1 does not permit goal completion
 the next action would repeat a known invalid strategy
 ```
 
@@ -298,6 +307,7 @@ the next action would repeat a known invalid strategy
 - `$failure-memory` when repeated classes or oscillation appear.
 - `$proof-patch` for local closure proof.
 - `$ship` for PR creation, update, promotion, or publication.
+- `ATCG-v1` as the terminal closure reducer before `$actuating` completion.
 - `$st` when durable coordination, claims, fencing, or worktrees are required.
 
 ## Guardrails

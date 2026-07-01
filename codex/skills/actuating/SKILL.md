@@ -71,6 +71,7 @@ The workflow performs:
 9. Execute accepted work through $goal-grind, bounded subagents, or $st-governed slices.
 10. Fold evidence after material verification.
 11. Emit proof-patch or explicit $ship handoff.
+12. Run ATCG-v1 terminal closure gate before any completion claim.
 ```
 
 ### Scheme-planning handoff
@@ -298,6 +299,7 @@ accepted disjoint liabilities -> optional patch-fanout
 work list -> $goal-grind next action
 verification output -> $evidence-fold verdict
 completion -> $proof-patch or $ship handoff
+terminal closure -> ATCG-v1 decision
 ```
 
 ## CAS review mandate
@@ -346,6 +348,25 @@ Switch to `branch-race` when local fix and refactor-kernel are both plausible an
 Switch to `st-governed` only when durable claims, fencing, worktrees, or serialized integration are required.
 Switch to `ship-handoff` only when PR/publication intent is explicit or inherited from the accepted spec.
 
+## Terminal closure gate
+
+Before `$actuating` may report completion or call `update_goal complete`, run
+ATCG-v1 over the current branch/head/diff, evidence-fold verdict, proof-patch
+state, CAS clean-run state, ADD-v1 delivery decision, and ship result when
+publication is required.
+
+Completion is legal only when:
+
+```text
+ATCG-v1 verdict = complete
+ATCG-v1 can_mark_goal_complete = yes
+```
+
+If ATCG-v1 returns `continue`, continue with `next_owner`. If it returns
+`blocked`, report the blocked actuation verdict and reasons. Do not substitute
+local proof, proof-complete graph state, cached CAS receipts, or ADD-v1
+`handoff_to_ship` for terminal completion.
+
 ## Stop rules
 
 Stop rather than implement when:
@@ -361,6 +382,7 @@ $st authority is required but absent
 parallel fanout would cross shared invariants or conflicting resources
 verification regresses and the next action is not isolate/revert/prove
 public tracker or PR side effects would occur without explicit intent
+ATCG-v1 does not return can_mark_goal_complete=yes
 ```
 
 ## Final report
@@ -388,6 +410,7 @@ Actuating:
 - execution owner: goal-grind | st-bounded-slice | none
 - evidence-fold verdict:
 - proof-patch / ship handoff:
+- ATCG-v1 verdict / next owner:
 - blockers / residual risk:
 ```
 
