@@ -299,7 +299,7 @@ proof fanout
 disjoint patch fanout
 ```
 
-Route: subagents can work on leaves, but the lead owns fan-in, integration, proof, CAS-RER clean-record counting, and `$ship`.
+Route: subagents can work on leaves, but the lead owns fan-in, integration, proof, CAS review evidence clean-counting, and `$ship`.
 
 ## Review loop rule
 
@@ -314,7 +314,7 @@ $cas review
 -> $goal-grind accepted liabilities only
 -> optional patch-fanout over disjoint accepted liabilities only
 -> $evidence-fold
--> 3 clean CAS-RER review records
+-> 3 clean CAS review evidence units
 -> $proof-patch
 -> $ship only when PR update/publication is requested
 ```

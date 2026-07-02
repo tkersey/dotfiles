@@ -36,7 +36,7 @@ parallel PR review = ana(review classes) + parallel traversal + cata(closure fan
 For `review-fix` and exhaustive review:
 
 ```text
-3 consecutive clean CAS-RER review records
+3 consecutive clean CAS review evidence units
 ```
 
-A clean CAS-RER review record is a fold result over current-tuple `verdict.status=clean` evidence, not raw absence of comments. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-addressed findings do not dirty the record.
+A clean CAS review evidence unit is a fold result over current-tuple clean evidence, not raw absence of comments. It can be a `CAS-RER-v1` record or, on dispatchers without the ledger surface, a normalized tuple-bound `reviewVerdict` compatibility projection. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-addressed findings do not dirty the unit.

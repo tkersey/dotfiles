@@ -36,7 +36,7 @@ resolve pass = closure agenda compiler
 $goal-grind = implementation engine for accepted liabilities
 ```
 
-For `resolve-and-fix` and exhaustive review, final completion requires three consecutive clean CAS-RER review records after implementation. `$review-fold` decides whether each CAS-RER record is clean for the caller-owned policy, but clean-run counting must be backed by distinct current-tuple CAS attempts rather than repeated normalization of one cached receipt.
+For `resolve-and-fix` and exhaustive review, final completion requires three consecutive clean CAS review evidence units after implementation. `$review-fold` decides whether each evidence unit is clean for the caller-owned policy, but clean-run counting must be backed by distinct current-tuple CAS attempts rather than repeated normalization of one cached receipt.
 
 ## Review source rule
 
@@ -44,7 +44,7 @@ For `resolve-and-fix` and exhaustive review, final completion requires three con
 workflow-initiated code review -> $cas review -> $review-fold -> implementation only for accepted liabilities
 ```
 
-Existing PR comments, human reviewer comments, or prior CAS-RER records may be folded directly as review pressure. But if the workflow itself is asked to do code review, close review, run adversarial review, or satisfy a review proof bar, it must obtain that review through `$cas` first.
+Existing PR comments, human reviewer comments, or prior CAS review evidence may be folded directly as review pressure. But if the workflow itself is asked to do code review, close review, run adversarial review, or satisfy a review proof bar, it must obtain that review through `$cas` first.
 
 ## Review fold schema
 
@@ -123,7 +123,7 @@ review_fold:
 
 - `review-only`: classify findings and stop without a remediation agenda.
 - `resolve-only`: classify findings and produce a closure agenda without implementation.
-- `resolve-and-fix`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolve pass, then require caller-owned repeated clean CAS review runs before completion.
+- `resolve-and-fix`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolve pass, then require caller-owned repeated clean CAS review evidence units before completion.
 
 ### `adjudicate-only`
 
@@ -154,21 +154,21 @@ Hand off to `$st` when review remediation requires durable resource claims, exte
 When the source is `cas-exhaustive`, do not treat review as optional or merely advisory. Continue review/fix/fold cycles until one of these holds:
 
 ```text
-three consecutive clean CAS-RER review records are complete
+three consecutive clean CAS review evidence units are complete
 CAS review is blocked and the blocker is reported
 user explicitly lowers the review proof bar
 ```
 
-A clean CAS-RER review record means the record is current-tuple evidence with `verdict.status=clean`, strong usable principal for the caller's proof bar, and no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker after `$review-fold` and the resolve pass. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-resolved findings do not make the record dirty.
+A clean CAS review evidence unit is either a `CAS-RER-v1` record or, on dispatchers without the ledger surface, a normalized tuple-bound `reviewVerdict` compatibility projection. It must carry current-tuple clean evidence with strong usable principal for the caller's proof bar and must show no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker after `$review-fold` and the resolve pass. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-resolved findings do not make the unit dirty.
 
-Each clean record must be a distinct tuple-bound CAS review attempt. When a terminal
+Each clean unit must be a distinct tuple-bound CAS review attempt. When a terminal
 or normalized tuple record already exists, callers must request the next
 independent run with `--fresh-attempt REASON`; cached normalization of the same
 `reviewThreadId` does not increment the counter. Track the clean-run count in
-the caller workflow from CAS-RER record facts; `$cas` does not own that
+the caller workflow from CAS review evidence facts; `$cas` does not own that
 policy.
 
-Reset the clean-run counter to zero when code changes, review scope changes, base/head/diff changes, the proof bar changes, or the workflow cannot prove records are current, strong, and distinct.
+Reset the clean-run counter to zero when code changes, review scope changes, base/head/diff changes, the proof bar changes, or the workflow cannot prove CAS review evidence units are current, strong, and distinct.
 
 `$review-fold` may reject or mark findings proof-only, but it must not convert an exhaustive review gate into a no-review closure.
 
@@ -191,7 +191,7 @@ Reset the clean-run counter to zero when code changes, review scope changes, bas
 When called by `$actuating`:
 
 - default to `resolve-and-fix` for review requests;
-- require three consecutive clean CAS-RER records before completing `resolve-and-fix` or exhaustive review;
+- require three consecutive clean CAS review evidence units before completing `resolve-and-fix` or exhaustive review;
 - use `review-only` only when the user explicitly asks for no implementation or classification only;
 - use `resolve-only` only when the user explicitly asks for a plan/agenda without implementation;
 - preserve no-code dispositions for rejected, proof-only, follow-up, or human-owned findings;
@@ -216,6 +216,6 @@ no changes
 - Do not accept scope expansion without user authority.
 - Do not miss the refactor when many comments share one owner boundary.
 - Do not replace a requested or required CAS review with non-CAS critique.
-- Do not claim review closure before caller-owned repeated clean CAS-RER policy passes when `resolve-and-fix` or exhaustive review requires them.
-- Do not close from diagnostic inspect/proof output, `receipt gate`, lane status, raw receipts, or raw start/wait output; import/validate CAS-RER first.
+- Do not claim review closure before caller-owned repeated clean CAS review evidence policy passes when `resolve-and-fix` or exhaustive review requires it.
+- Do not close from diagnostic inspect/proof output, `receipt gate`, lane status, raw receipts, or raw start/wait output; normalize or import to tuple-bound CAS review evidence first.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.

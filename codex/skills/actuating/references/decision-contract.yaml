@@ -65,7 +65,7 @@ skill_decision_contract:
       expected_routes: [ACT-CAS-REVIEW, ACT-GOAL, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
-        - CAS-RER review record when workflow code review is required
+        - CAS review evidence unit when workflow code review is required
         - review-fold disposition
       success_signals:
         - fresh or exhaustive workflow review comes from $cas

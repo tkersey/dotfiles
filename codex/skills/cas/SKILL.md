@@ -408,6 +408,6 @@ CAS Review:
 - Do not treat completed findings as transport failure.
 - Do not treat `usageLimitExceeded` as reviewer output or transport failure.
 - Do not rely on persistent lane continuity for repeated-review policy until first-review creation smoke is current.
-- `start --wait` evidence is workflow input only after it is represented as tuple-bound CAS-RER evidence; otherwise import, normalize, or recover first.
+- `start --wait` evidence is workflow input only after it is represented as tuple-bound review evidence; otherwise import, normalize, or recover first.
 - `cas smoke_check` is protocol validation, not review output.
 - Native fallback is degraded verdict preservation, not detached CAS review transport.
