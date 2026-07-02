@@ -75,7 +75,7 @@ goal_actuating_mode:
 11. Execute one useful action at a time with `$goal-grind`, unless `$st` owns execution.
 12. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the closure-agenda pass as appropriate.
 13. Use `$failure-memory` when failures or review classes repeat.
-14. For `review-fix` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
+14. For `review-fix` and exhaustive review, require three consecutive clean CAS-RER review records on the same artifact scope before completion.
 15. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
 16. Run ATCG-v1 terminal closure gate before reporting goal completion.
 
@@ -205,7 +205,7 @@ $cas review
 -> $goal-grind accepted liabilities only
 -> optional patch-fanout over disjoint accepted liabilities only
 -> $evidence-fold
--> 3 clean normalized $cas review runs
+-> 3 clean CAS-RER review records
 -> $proof-patch
 ```
 
@@ -227,17 +227,17 @@ Prefer `refactor-kernel` when several findings share one missing abstraction, in
 
 Exhaustive review is not optional once requested or required. `$review-fold` controls which findings become code changes; it must not remove the CAS review gate.
 
-## Three clean normalized CAS review runs
+## Three clean CAS-RER review records
 
-For `review-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same artifact scope unless the user explicitly lowers the review bar.
+For `review-fix` and exhaustive review, completion requires three consecutive clean CAS-RER review records against the same artifact scope unless the user explicitly lowers the review bar.
 
-A clean normalized CAS run means `$cas` produces no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker after `$review-fold` and the closure-agenda pass.
+A clean CAS-RER review record means `$cas` recorded current-tuple evidence with `verdict.status=clean`, strong usable principal for the caller's proof bar, and no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker after `$review-fold` and the closure-agenda pass.
 
 Do not reset the clean-run counter for findings that are duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already addressed by the current implementation.
 
 Do not increment the clean-run counter from repeated normalization of one cached
-CAS receipt. After terminal evidence exists for the tuple, request each
-additional independent run with `--fresh-attempt REASON`, then track the streak in the caller workflow from independent CAS review verdicts. CAS does not own the streak.
+CAS receipt or record. After terminal evidence exists for the tuple, request each
+additional independent run with `--fresh-attempt REASON`, then track the streak in the caller workflow from independent CAS-RER records. CAS does not own the streak.
 
 Reset the clean-run counter to zero when:
 
@@ -246,7 +246,7 @@ code changes
 review scope changes
 base/head/diff changes
 accepted proof bar changes
-CAS lane/session continuity is lost
+the workflow cannot prove CAS-RER records are current, strong, and distinct
 accepted parallel patch result is integrated
 branch-race winner is integrated
 serial integration changes the artifact
@@ -335,7 +335,7 @@ verification regresses
 proof is stale or not bound to the current artifact
 public tracker side effect would be needed without explicit intent
 review is required but $cas review is unavailable or not run
-three clean normalized $cas review runs are required but cannot be completed
+three clean CAS-RER review records are required but cannot be completed
 parallel fanout would cross shared invariants or conflicting resources
 ATCG-v1 does not return can_mark_goal_complete=yes
 ```
@@ -357,8 +357,8 @@ Goal Actuation:
   - integration order:
   - conflicts:
   - CAS clean-run counter reset: yes|no
-- review source / CAS verdict, if required:
-- clean normalized CAS review runs: 0|1|2|3|not-required
+- review source / CAS-RER record, if required:
+- clean CAS-RER review records: 0|1|2|3|not-required
 - goal contract summary:
 - work list / next action:
 - review-fold disposition, if any:

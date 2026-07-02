@@ -8,7 +8,7 @@ $cas review
 -> closure-agenda pass
 -> $goal-grind accepted liabilities only
 -> $evidence-fold
--> 3 clean normalized $cas review runs
+-> 3 clean CAS-RER review records
 -> $proof-patch
 -> $ship only when PR update/publication is requested
 ```
@@ -21,10 +21,10 @@ $cas review
 | agenda-only | Produce the closure agenda. | No |
 | review-fix | Default review remediation. Classify, fix accepted liabilities, prove closure. | Yes |
 
-## Clean normalized CAS run
+## Clean CAS-RER review record
 
-A clean normalized CAS run means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after review-fold and the closure-agenda pass.
+A clean CAS-RER review record means current-tuple `verdict.status=clean` evidence with strong usable principal and no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after review-fold and the closure-agenda pass.
 
 The run is still clean when findings are duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already addressed by the current implementation.
 
-Reset the clean-run counter when code changes, review scope changes, base/head/diff changes, proof bar changes, or CAS lane/session continuity is lost.
+Reset the clean-run counter when code changes, review scope changes, base/head/diff changes, proof bar changes, or the workflow cannot prove CAS-RER records are current, strong, and distinct.

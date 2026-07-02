@@ -36,7 +36,7 @@ parallel PR review = ana(review classes) + parallel traversal + cata(closure fan
 For `review-fix` and exhaustive review:
 
 ```text
-3 consecutive clean normalized CAS review runs
+3 consecutive clean CAS-RER review records
 ```
 
-A clean normalized run is a fold result, not raw absence of comments. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-addressed findings do not dirty the run.
+A clean CAS-RER review record is a fold result over current-tuple `verdict.status=clean` evidence, not raw absence of comments. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-addressed findings do not dirty the record.

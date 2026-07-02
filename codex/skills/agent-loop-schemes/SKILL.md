@@ -120,7 +120,7 @@ $cas review
 -> closure-agenda pass
 -> $goal-grind accepted liabilities only
 -> $evidence-fold
--> 3 clean normalized $cas review runs
+-> 3 clean CAS-RER review records
 -> $proof-patch
 -> $ship only if PR publication/update is requested
 ```
@@ -232,13 +232,13 @@ plan only
 no changes
 ```
 
-For `review-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same artifact scope unless the user explicitly lowers the review bar.
+For `review-fix` and exhaustive review, completion requires three consecutive clean CAS-RER review records against the same artifact scope unless the user explicitly lowers the review bar.
 
-A clean normalized run means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the closure-agenda pass.
+A clean CAS-RER review record means current-tuple `verdict.status=clean` evidence with strong usable principal and no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker after `$review-fold` and the closure-agenda pass.
 
 Do not reset the clean-run counter for duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-addressed findings.
 
-Reset the counter when code changes, review scope changes, base/head/diff changes, the proof bar changes, or CAS lane/session continuity is lost.
+Reset the counter when code changes, review scope changes, base/head/diff changes, the proof bar changes, or the workflow cannot prove CAS-RER records are current, strong, and distinct.
 
 ## Minimality law
 

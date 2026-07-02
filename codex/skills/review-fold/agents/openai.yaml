@@ -10,4 +10,4 @@ interface:
     review-only, resolve-only, resolve-and-fix, proof-only, minimal-fix,
     refactor-kernel, branch-race, or st-governed before code changes. If fresh or
     exhaustive workflow review is required and no CAS result is present, route to
-    $cas review first. Mark normalized CAS clean runs when closing review.
+    $cas review first. Mark clean CAS-RER records when closing review.
