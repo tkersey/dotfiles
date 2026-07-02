@@ -123,7 +123,7 @@ When the user asks for review, review closure, code review, CAS review, review r
 4. Implement only accepted code-change liabilities.
 5. Preserve no-code dispositions: `reject`, `proof-only`, `follow-up`, and `ask-human`.
 6. Prefer `refactor-kernel` when several findings share one owner boundary.
-7. Run three consecutive clean normalized `$cas` review passes on the same artifact scope.
+7. Run three consecutive clean CAS review evidence units on the same artifact scope.
 8. Close with `$evidence-fold` and `$proof-patch`.
 
 Do not treat `resolve-and-fix` as one patch per comment.
@@ -186,7 +186,7 @@ $cas review
 -> $goal-grind accepted liabilities only
 -> optional patch-fanout over disjoint accepted liabilities only
 -> $evidence-fold
--> 3 clean normalized $cas review runs
+-> 3 clean CAS review evidence units
 -> $proof-patch
 -> $ship only when PR update/publication is requested
 ```
@@ -194,15 +194,15 @@ $cas review
 Only accepted code-change liabilities may reach implementation.
 Raw review prose never reaches implementation directly.
 
-#### Three clean normalized CAS review runs
+#### Three clean CAS review evidence units
 
-For `resolve-and-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same current artifact scope unless the user explicitly lowers the review bar.
+For `resolve-and-fix` and exhaustive review, completion requires three consecutive clean CAS review evidence units against the same current artifact scope unless the user explicitly lowers the review bar.
 
-A clean normalized CAS run means `$cas` produces no new in-scope accepted liability after `$review-fold` and the resolve pass. The run is not made dirty by findings that are duplicate, rejected, out-of-scope, already-proven proof-only, deferred follow-up, or already-resolved by the current refactor kernel.
+A clean CAS review evidence unit is either a `CAS-RER-v1` record or, on dispatchers without the ledger surface, a normalized tuple-bound `reviewVerdict` compatibility projection. It must carry current-tuple clean evidence with strong usable principal for the caller's proof bar and no new in-scope accepted liability after `$review-fold` and the resolve pass. The unit is not made dirty by findings that are duplicate, rejected, out-of-scope, already-proven proof-only, deferred follow-up, or already-resolved by the current refactor kernel.
 
 Do not increment the clean-run counter from repeated normalization of one cached
-CAS receipt. After terminal evidence exists for the tuple, request each
-additional independent run with `--fresh-attempt REASON`, then track the streak in the caller workflow from independent CAS review verdicts.
+CAS receipt or record. After terminal evidence exists for the tuple, request each
+additional independent run with `--fresh-attempt REASON`, then track the streak in the caller workflow from independent CAS review evidence units.
 
 Reset the clean-run counter to zero when:
 
@@ -211,7 +211,7 @@ code changes
 review scope changes
 base/head/diff changes
 accepted proof bar changes
-CAS lane/session changes in a way that invalidates continuity
+the workflow cannot prove CAS review evidence units are current, strong, and distinct
 accepted parallel patch result is integrated
 branch-race winner is integrated
 serial integration changes the artifact
@@ -292,7 +292,7 @@ actuating_status:
 accepted spec -> optional $recursion-scheme-planner -> goal contract
 goal contract -> work list only if decomposition changes execution
 review requirement -> $cas review source mode
-CAS/existing review output -> $review-fold disposition before code
+CAS review evidence/existing review output -> $review-fold disposition before code
 review classes -> optional review-class fanout
 competing strategies -> optional branch-race
 accepted disjoint liabilities -> optional patch-fanout
@@ -364,7 +364,7 @@ ATCG-v1 can_mark_goal_complete = yes
 
 If ATCG-v1 returns `continue`, continue with `next_owner`. If it returns
 `blocked`, report the blocked actuation verdict and reasons. Do not substitute
-local proof, proof-complete graph state, cached CAS receipts, or ADD-v1
+local proof, proof-complete graph state, cached CAS receipts/records, or ADD-v1
 `handoff_to_ship` for terminal completion.
 
 ## Stop rules
@@ -377,7 +377,7 @@ scope, non-goals, compatibility, or proof bar are unresolved
 review findings expand product/API scope
 raw review text has not been reduced to dispositions
 review is required but $cas review is unavailable or not run
-three clean normalized $cas review runs are required but cannot be completed
+three clean CAS review evidence units are required but cannot be completed
 $st authority is required but absent
 parallel fanout would cross shared invariants or conflicting resources
 verification regresses and the next action is not isolate/revert/prove
@@ -403,8 +403,8 @@ Actuating:
   - integration order:
   - conflicts:
   - CAS clean-run counter reset: yes|no
-- review source / CAS verdict, if required:
-- normalized CAS clean runs: 0|1|2|3|not-required
+- review source / CAS evidence unit, if required:
+- clean CAS review evidence units: 0|1|2|3|not-required
 - goal contract / work list:
 - review-fold disposition:
 - execution owner: goal-grind | st-bounded-slice | none

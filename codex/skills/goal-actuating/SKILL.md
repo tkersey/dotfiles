@@ -56,7 +56,7 @@ goal_actuating_mode:
 - `direct-goal`: execute a goal that already has outcome, constraints, and proof checks.
 - `review-only`: classify review findings and stop without mutation.
 - `agenda-only`: classify findings and produce a closure agenda without mutation.
-- `review-fix`: default review mode; classify findings, implement accepted liabilities only, and require caller-owned repeated clean CAS review runs before completion.
+- `review-fix`: default review mode; classify findings, implement accepted liabilities only, and require caller-owned repeated clean CAS review evidence units before completion.
 - `dry-plan`: show the goal contract and work list only; do not mutate.
 - `st-governed`: hand off to `$st` with bounded execution slices when durable coordination owns the work.
 
@@ -75,7 +75,7 @@ goal_actuating_mode:
 11. Execute one useful action at a time with `$goal-grind`, unless `$st` owns execution.
 12. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the closure-agenda pass as appropriate.
 13. Use `$failure-memory` when failures or review classes repeat.
-14. For `review-fix` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
+14. For `review-fix` and exhaustive review, require three consecutive clean CAS review evidence units on the same artifact scope before completion.
 15. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
 16. Run ATCG-v1 terminal closure gate before reporting goal completion.
 
@@ -205,7 +205,7 @@ $cas review
 -> $goal-grind accepted liabilities only
 -> optional patch-fanout over disjoint accepted liabilities only
 -> $evidence-fold
--> 3 clean normalized $cas review runs
+-> 3 clean CAS review evidence units
 -> $proof-patch
 ```
 
@@ -227,17 +227,17 @@ Prefer `refactor-kernel` when several findings share one missing abstraction, in
 
 Exhaustive review is not optional once requested or required. `$review-fold` controls which findings become code changes; it must not remove the CAS review gate.
 
-## Three clean normalized CAS review runs
+## Three clean CAS review evidence units
 
-For `review-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same artifact scope unless the user explicitly lowers the review bar.
+For `review-fix` and exhaustive review, completion requires three consecutive clean CAS review evidence units against the same artifact scope unless the user explicitly lowers the review bar.
 
-A clean normalized CAS run means `$cas` produces no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker after `$review-fold` and the closure-agenda pass.
+A clean CAS review evidence unit is either a `CAS-RER-v1` record or, on dispatchers without the ledger surface, a normalized tuple-bound `reviewVerdict` compatibility projection. It must carry current-tuple clean evidence with strong usable principal for the caller's proof bar and must show no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker after `$review-fold` and the closure-agenda pass.
 
 Do not reset the clean-run counter for findings that are duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already addressed by the current implementation.
 
 Do not increment the clean-run counter from repeated normalization of one cached
-CAS receipt. After terminal evidence exists for the tuple, request each
-additional independent run with `--fresh-attempt REASON`, then track the streak in the caller workflow from independent CAS review verdicts. CAS does not own the streak.
+CAS receipt or record. After terminal evidence exists for the tuple, request each
+additional independent run with `--fresh-attempt REASON`, then track the streak in the caller workflow from independent CAS review evidence units. CAS does not own the streak.
 
 Reset the clean-run counter to zero when:
 
@@ -246,7 +246,7 @@ code changes
 review scope changes
 base/head/diff changes
 accepted proof bar changes
-CAS lane/session continuity is lost
+the workflow cannot prove CAS review evidence units are current, strong, and distinct
 accepted parallel patch result is integrated
 branch-race winner is integrated
 serial integration changes the artifact
@@ -335,7 +335,7 @@ verification regresses
 proof is stale or not bound to the current artifact
 public tracker side effect would be needed without explicit intent
 review is required but $cas review is unavailable or not run
-three clean normalized $cas review runs are required but cannot be completed
+three clean CAS review evidence units are required but cannot be completed
 parallel fanout would cross shared invariants or conflicting resources
 ATCG-v1 does not return can_mark_goal_complete=yes
 ```
@@ -357,8 +357,8 @@ Goal Actuation:
   - integration order:
   - conflicts:
   - CAS clean-run counter reset: yes|no
-- review source / CAS verdict, if required:
-- clean normalized CAS review runs: 0|1|2|3|not-required
+- review source / CAS evidence unit, if required:
+- clean CAS review evidence units: 0|1|2|3|not-required
 - goal contract summary:
 - work list / next action:
 - review-fold disposition, if any:

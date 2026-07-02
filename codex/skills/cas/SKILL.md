@@ -1,13 +1,22 @@
 ---
 name: cas
-description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_session_inquiry`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, session inquiry replay, multi-instance fanout, and `$st` swarm conformance/retry-policy checks. For review sessions, distinguish pre-review lane transport, real review attempts, normalized tuple-bound review verdicts, account/resource exhaustion, and tuple concurrency guards."
+description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_session_inquiry`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, review evidence ledger import/validation, session inquiry replay, multi-instance fanout, and `$st` swarm conformance/retry-policy checks. For review evidence, distinguish CAS-RER records, pre-review lane transport, real review attempts, normalized tuple-bound review verdicts, account/resource exhaustion, and tuple concurrency guards."
 ---
 
 # cas (Zig App-Server Control)
 
 ## Mission
 
-`$cas` is the Zig-backed app-server control skill. It owns protocol preflight, account/status probes, goal lifecycle control, direct method execution, detached review lifecycle, persistent review lanes, receipt normalization, safe session-inquiry replay, and `$st` conformance probes.
+`$cas` is the Zig-backed app-server control skill. It owns protocol preflight, account/status probes, goal lifecycle control, direct method execution, detached review lifecycle, review evidence normalization into CAS-RER records, safe session-inquiry replay, and `$st` conformance probes.
+
+For review evidence, the doctrine is:
+
+```text
+CAS records evidence.
+Workflows certify meaning.
+```
+
+CAS does not own closeout policy, clean streaks, architecture hardening mode, PR closure, or semantic reviewer adjudication. Those are workflow-owned projections over CAS review evidence.
 
 For review work, the governing invariant is:
 
@@ -42,20 +51,54 @@ cas conformance
 
 `cas session_inquiry` owns safe historical replay lifecycle for `$retrace`; see `references/retrace-session-inquiry.md`.
 
-## Review session boundary
+## Review evidence boundary
 
-Use `cas review_session` when detached review lifecycle control matters: persisted `reviewThreadId`, wait/status/interrupt, compatibility diagnostics, approval/runtime overrides, or repeatable review receipts.
+Public review consumers should prefer `CAS-RER-v1` records when the installed
+dispatcher emits them. On current dispatchers that expose only
+`cas review_session`, consume the normalized tuple-bound `reviewVerdict` from
+`cas review_session run` as the compatibility projection, and do not pretend a
+cached receipt is an independent CAS-RER record. Legacy receipts, raw event
+logs, lane records, and parent-session rows are import inputs or attachments,
+not peer truth objects.
 
-For ordinary one-review closure, prefer the broker:
+Current production helpers:
+
+```bash
+cas review_session run --cwd <repo> --base <base> --json --fallback none
+cas review_session status --latest --json
+cas review_session wait --latest --json
+cas review_session receipt normalize --path <receipt.json> --format json --summary
+cas review_session receipt classify --path <receipts.jsonl> --format jsonl
+```
+
+When available, newer ledger helpers have this shape:
+
+```bash
+cas review run --cwd <repo> --base <base> --json --fallback none
+cas review current --cwd <repo> --base <base> --json
+cas review list --cwd <repo> --base <base> --json
+cas review import --path <receipt.json> --json
+cas review inspect --record <rer.json> --json
+cas review validate-record --record <rer.json> --json
+```
+
+`cas review run` emits `CAS-RUN-v1` with a `CAS-RER-v1` record and broker decision for normal waited review evidence. `cas review current` and `cas review list` read the ledger records for the requested current tuple. `cas review import` normalizes legacy receipt/session artifacts into `CAS-RER-v1` and writes the record under:
+
+```text
+~/.codex/cas/review_ledger/records/<record_id>.json
+```
+
+Use `cas review inspect` and `cas review validate-record` for diagnostics and schema/invariant validation only. They have no workflow closeout authority.
+
+Use `cas review_session` when low-level detached review lifecycle control matters: persisted `reviewThreadId`, wait/status/interrupt, compatibility diagnostics, approval/runtime overrides, or migration/debug receipts.
+
+For ordinary one-review closure on the current dispatcher, prefer the shipped broker:
 
 ```bash
 cas review_session run --cwd <repo> --base <base> --json --fallback none
 ```
 
-`run` waits, returns one caller-facing `reviewVerdict`, and includes
-`reviewBrokerDecision` so callers can see whether CAS created a new attempt,
-normalized terminal evidence, auto-replaced a proven-dead transport, or blocked
-because an active attempt might still be live.
+The current broker output is the legacy `reviewBrokerDecision + reviewVerdict` surface. Consume it as workflow evidence only when `reviewVerdict.tupleVerdictExists=true` and the base/head/fingerprint match the requested tuple. If the newer `cas review` ledger surface is available, prefer its `CAS-RUN-v1` output: one `CAS-RER-v1` record plus a broker decision.
 
 For local detached review inspection, prefer:
 
@@ -71,7 +114,7 @@ fields. Use `--review-thread-id <id>` when checking a non-latest session or
 when a workflow already owns the handle. Do not use latest-session selection
 for destructive control; `interrupt` requires an explicit `reviewThreadId`.
 
-Use `cas review_session lane` only when persistent review-lane capability is current for the active `cas`/`codex`/repo tuple. The lane owns transport reuse only. Callers still own review adjudication, clean-streak accounting, proof gates, commits, PR comments, and closure decisions.
+Use `cas review_session lane` only for debugging, migration, or broker backend diagnostics. A persistent lane owns transport reuse only. It is not canonical proof and not a workflow policy backend.
 
 If a caller only needs low-level start/wait control, use:
 
@@ -84,6 +127,8 @@ when the waited review reaches terminal state with a trusted review result and
 complete tuple identity. Use `receipt normalize` for saved outputs, fixture
 summaries, or an explicit requested-tuple recheck, not as the normal review
 happy path.
+
+Do not branch production workflow logic on `receipt gate`, `lane status`, raw `start/wait` output, diagnostic proof/inspect output, or raw receipts. Normalize them to tuple-bound `reviewVerdict`, or import them into CAS-RER when the ledger surface exists, then let the owning workflow apply its policy.
 
 ## CLI spec order
 
@@ -298,9 +343,9 @@ stale => require explicit takeover
 Default repeated review commands consume cached terminal evidence; they are not
 new independent review runs. For workflows that require multiple independent CAS
 reviews on the same tuple, callers must request each additional post-terminal
-attempt with `--fresh-attempt REASON` and evaluate the resulting review verdicts
-outside CAS. CAS does not own clean streaks, final eligibility, or verdict
-strength.
+attempt with `--fresh-attempt REASON` and evaluate the resulting CAS-RER records
+or tuple-bound compatibility projections outside CAS. CAS does not own clean
+streaks, final eligibility, or closeout strength.
 
 ## Hooks, approvals, and fallback
 
@@ -308,7 +353,7 @@ strength.
 
 `--fallback native-review` is explicit degraded verdict preservation. It is not detached CAS review transport and must be reported as `backendClass="cas-native-fallback"` with `fallbackUsed=true`.
 
-Do not infer success from app-server process liveness, `reviewThreadId` creation alone, `start --wait` returning, archived threads, or a terminal turn status. Structured `reviewVerdict` decides caller control flow.
+Do not infer success from app-server process liveness, `reviewThreadId` creation alone, `start --wait` returning, archived threads, or a terminal turn status. A `CAS-RER-v1` record, or a normalized tuple-bound `reviewVerdict` compatibility projection, is the workflow-consumable evidence surface.
 
 ## Tools and examples
 
@@ -318,10 +363,16 @@ Reference validators and classifiers:
 cas review_session status --latest --json
 cas review_session wait --latest --json
 cas review_session run --cwd <repo> --base <base> --json
-cas review_session receipt gate --path <receipt.json> --format json
 cas review_session lock gate --path <lock.json> --format json
+cas review_session receipt normalize --path <receipt.json> --format json --summary
 cas review_session receipt classify --path <receipts.jsonl> --format jsonl
 ```
+
+Use `cas review <run|current|list|import|inspect|validate-record>` only after
+`cas --help` or `cas capabilities` confirms that subcommand exists in the
+installed dispatcher.
+
+`cas review_session receipt gate` is compatibility-only. Do not use it as a production gate; normalize or import to tuple-bound evidence instead.
 
 Example receipts live under `assets/`.
 
@@ -331,6 +382,7 @@ When reporting CAS review work, include:
 
 ```text
 CAS Review:
+- recordId / schema, if emitted:
 - backend:
 - reviewAttemptPhase:
 - reviewAttemptExists:
@@ -348,14 +400,14 @@ CAS Review:
 
 - A lane is not a review.
 - A review starts at `reviewThreadId`.
-- CAS reports tuple-bound `reviewVerdict`; caller workflows decide what that means.
-- Use `cas review_session run` as the normal one-review path.
+- CAS records tuple-bound review evidence; caller workflows decide what that means.
+- Use `cas review_session run` as the current normal one-review path unless the installed dispatcher exposes `cas review run`.
 - Do not treat `pre_review_lane_transport_lost` as a failed review.
 - Do not duplicate a review when an active tuple lock points to an existing `reviewThreadId`.
 - Do not manually list and `jq` review-session records when latest-session status is enough; use `cas review_session status --latest --json`, then verify tuple fields before acting.
 - Do not treat completed findings as transport failure.
 - Do not treat `usageLimitExceeded` as reviewer output or transport failure.
 - Do not rely on persistent lane continuity for repeated-review policy until first-review creation smoke is current.
-- `start --wait` evidence is strict review input only when its `reviewVerdict` is tuple-bound; otherwise normalize or recover first.
+- `start --wait` evidence is workflow input only after it is represented as tuple-bound review evidence; otherwise import, normalize, or recover first.
 - `cas smoke_check` is protocol validation, not review output.
 - Native fallback is degraded verdict preservation, not detached CAS review transport.
