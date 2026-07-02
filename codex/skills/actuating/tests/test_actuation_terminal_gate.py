@@ -5,6 +5,8 @@ from copy import deepcopy
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -22,6 +24,9 @@ class ActuationTerminalGateTests(unittest.TestCase):
         return json.loads((ASSETS / name).read_text())["actuation_terminal_context"]
 
     def decision(self, name: str):
+        return json.loads((ASSETS / name).read_text())
+
+    def fixture(self, name: str):
         return json.loads((ASSETS / name).read_text())
 
     def test_proof_only_context_can_complete(self) -> None:
@@ -47,6 +52,66 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertEqual(body["next_owner"], "$cas")
         self.assertIn("cas.clean_runs:0-of-3", body["blocked_reasons"])
         self.assertIn("final_report.normalized_cas_clean_runs:not-satisfied", body["blocked_reasons"])
+
+    def test_advisory_would_block_matches_fixture_expectation(self) -> None:
+        fixture = self.fixture("terminal-context.advisory-would-block.example.json")
+        advisory = MODULE.make_advisory(fixture["actuation_terminal_context"])
+        self.assertEqual(advisory["verdict"], "advisory")
+        self.assertEqual(advisory["would_block"], fixture["advisory_expectation"]["would_block"])
+        self.assertEqual(
+            advisory["would_block_reasons"],
+            fixture["advisory_expectation"]["would_block_reasons"],
+        )
+        self.assertEqual(
+            advisory["can_mark_goal_complete"],
+            fixture["advisory_expectation"]["can_mark_goal_complete"],
+        )
+        self.assertEqual(advisory["next_owner"], fixture["advisory_expectation"]["next_owner"])
+
+    def test_advisory_cli_would_block_is_non_blocking(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "validate",
+                "--context",
+                str(ASSETS / "terminal-context.advisory-would-block.example.json"),
+                "--mode",
+                "advisory",
+                "--format",
+                "json",
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        body = json.loads(result.stdout)
+        self.assertEqual(body["verdict"], "advisory")
+        self.assertTrue(body["would_block"])
+        self.assertFalse(body["can_mark_goal_complete"])
+
+    def test_advisory_direct_action_fused_exempts_loop_receipts(self) -> None:
+        fixture = self.fixture("terminal-context.advisory-fused.example.json")
+        advisory = MODULE.make_advisory(fixture["actuation_terminal_context"])
+        self.assertEqual(advisory, {
+            "verdict": "advisory",
+            "would_block": False,
+            "would_block_reasons": [],
+            "can_mark_goal_complete": True,
+            "next_owner": "none",
+        })
+
+    def test_advisory_st_governed_exempts_loop_receipts(self) -> None:
+        fixture = self.fixture("terminal-context.advisory-st-governed.example.json")
+        advisory = MODULE.make_advisory(fixture["actuation_terminal_context"])
+        self.assertEqual(advisory, {
+            "verdict": "advisory",
+            "would_block": False,
+            "would_block_reasons": [],
+            "can_mark_goal_complete": True,
+            "next_owner": "none",
+        })
 
     def test_proof_patch_closure_requires_proof_patch_receipt(self) -> None:
         context = deepcopy(self.context())

@@ -23,6 +23,21 @@ LOCAL_VERDICTS = {"done", "continue", "regress", "blocked", "invalid-proof", "as
 ADD_VERDICTS = {"handoff_to_ship", "shipping_not_requested", "blocked", "missing"}
 TERMINAL_VERDICTS = {"complete", "continue", "blocked"}
 NEXT_OWNERS = {"none", "$cas", "$proof-patch", "$ship", "$goal-grind", "human"}
+ADVISORY_REASON_ORDER = [
+    "blocked-alsr-missing",
+    "blocked-alsr-stale",
+    "blocked-hyl-missing",
+    "blocked-hyl-stale",
+    "blocked-hylo-terminal-missing",
+    "blocked-material-mutation-without-hsr",
+    "blocked-latest-fold-not-current-artifact-bound",
+    "blocked-selected-loop-task-shape-mismatch",
+    "blocked-review-fix-protocol",
+    "blocked-cas-clean-runs-incomplete",
+    "blocked-side-effect-boundary",
+    "blocked-proof-verifier-mismatch",
+    "blocked-st-control-missing",
+]
 
 
 class TerminalGateError(ValueError):
@@ -92,6 +107,218 @@ def optional_object(obj: dict[str, Any], key: str, errors: list[str]) -> dict[st
         errors.append(f"{key}:must-be-object")
         return {}
     return value
+
+
+def object_from(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def list_from(value: Any) -> list[Any]:
+    return value if isinstance(value, list) else []
+
+
+def explicit_no(value: Any) -> bool:
+    return value in NO or (isinstance(value, str) and value.lower() in NO)
+
+
+def make_advisory(context: dict[str, Any]) -> dict[str, Any]:
+    reasons = advisory_reasons_for(context)
+    would_block = bool(reasons)
+    return {
+        "verdict": "advisory",
+        "would_block": would_block,
+        "would_block_reasons": reasons,
+        "can_mark_goal_complete": not would_block,
+        "next_owner": advisory_next_owner_for(reasons),
+    }
+
+
+def advisory_reasons_for(context: dict[str, Any]) -> list[str]:
+    loop = object_from(context.get("loop_governance"))
+    hsr = object_from(loop.get("hsr"))
+    reasons: list[str] = []
+
+    direct_action_fused = as_yes(loop.get("direct_action_fused")) or loop.get("mode") in {
+        "direct_action_fused",
+        "direct-action-fused",
+        "fused",
+    }
+    st_governed = as_yes(loop.get("st_governed")) or loop.get("mode") in {
+        "st_governed",
+        "st-governed",
+        "st_owned",
+        "st-owned",
+    }
+    st_current = st_governed and (
+        as_yes(loop.get("st_control_current"))
+        or as_yes(object_from(loop.get("st_control")).get("current"))
+        or context.get("source") == "st_handoff"
+    )
+    loop_receipts_exempt = direct_action_fused or st_current
+    loop_required = loop_receipts_required(loop, hsr)
+
+    alsr = object_from(loop.get("alsr"))
+    alsr_required = (
+        not loop_receipts_exempt
+        and (as_yes(loop.get("alsr_required")) or as_yes(alsr.get("required")) or loop_required)
+    )
+    if alsr_required:
+        if not as_yes(alsr.get("present")):
+            append_reason(reasons, "blocked-alsr-missing")
+        elif not as_yes(alsr.get("current")):
+            append_reason(reasons, "blocked-alsr-stale")
+
+    hyl = object_from(loop.get("hyl"))
+    hyl_required = not loop_receipts_exempt and (
+        as_yes(loop.get("hyl_required"))
+        or as_yes(loop.get("recursive"))
+        or as_yes(loop.get("material"))
+        or as_yes(hyl.get("required"))
+        or loop_required
+    )
+    if hyl_required:
+        if not as_yes(hyl.get("present")):
+            append_reason(reasons, "blocked-hyl-missing")
+        elif not as_yes(hyl.get("current")):
+            append_reason(reasons, "blocked-hyl-stale")
+
+    if st_governed and not st_current:
+        append_reason(reasons, "blocked-st-control-missing")
+
+    if loop_required and not loop_receipts_exempt:
+        if not as_yes(hsr.get("terminal_present")):
+            append_reason(reasons, "blocked-hylo-terminal-missing")
+        if not material_mutations_have_hsr(loop, hsr):
+            append_reason(reasons, "blocked-material-mutation-without-hsr")
+        if not as_yes(hsr.get("latest_fold_current_artifact_bound")):
+            append_reason(reasons, "blocked-latest-fold-not-current-artifact-bound")
+
+    selected_loop = object_from(loop.get("selected_loop"))
+    if selected_loop and not as_yes(selected_loop.get("matches_task_shape")):
+        append_reason(reasons, "blocked-selected-loop-task-shape-mismatch")
+
+    review_fix = object_from(loop.get("review_fix"))
+    if as_yes(review_fix.get("required")) and not review_fix_obeyed(review_fix):
+        append_reason(reasons, "blocked-review-fix-protocol")
+
+    if cas_advisory_blocked(context, loop):
+        append_reason(reasons, "blocked-cas-clean-runs-incomplete")
+
+    if side_effect_boundary_violated(context, loop):
+        append_reason(reasons, "blocked-side-effect-boundary")
+
+    if proof_verifier_mismatch(context, loop):
+        append_reason(reasons, "blocked-proof-verifier-mismatch")
+
+    return sort_advisory_reasons(reasons)
+
+
+def append_reason(reasons: list[str], reason: str) -> None:
+    if reason not in reasons:
+        reasons.append(reason)
+
+
+def sort_advisory_reasons(reasons: list[str]) -> list[str]:
+    order = {reason: index for index, reason in enumerate(ADVISORY_REASON_ORDER)}
+    return sorted(reasons, key=lambda reason: order.get(reason, len(order)))
+
+
+def loop_receipts_required(loop: dict[str, Any], hsr: dict[str, Any]) -> bool:
+    return any(
+        as_yes(value)
+        for value in (
+            loop.get("loop_contract_required"),
+            loop.get("material"),
+            loop.get("recursive"),
+            object_from(loop.get("alsr")).get("required"),
+            object_from(loop.get("hyl")).get("required"),
+            hsr.get("required"),
+            hsr.get("terminal_required"),
+        )
+    )
+
+
+def material_mutations_have_hsr(loop: dict[str, Any], hsr: dict[str, Any]) -> bool:
+    mutations = list_from(loop.get("material_mutations")) or list_from(hsr.get("material_mutations"))
+    if not mutations:
+        return not as_yes(loop.get("material"))
+    for mutation in mutations:
+        item = object_from(mutation)
+        if as_yes(item.get("has_hsr")):
+            continue
+        if not (
+            as_yes(item.get("has_unfold"))
+            and as_yes(item.get("has_action"))
+            and as_yes(item.get("has_fold"))
+        ):
+            return False
+    return True
+
+
+def review_fix_obeyed(review_fix: dict[str, Any]) -> bool:
+    return (
+        as_yes(review_fix.get("cas_reviewed"))
+        and as_yes(review_fix.get("review_folded"))
+        and as_yes(review_fix.get("resolve_passed"))
+    )
+
+
+def cas_advisory_blocked(context: dict[str, Any], loop: dict[str, Any]) -> bool:
+    cas = object_from(context.get("cas_review"))
+    artifact = object_from(context.get("artifact_scope"))
+    final_report = object_from(context.get("final_report_fields"))
+    if cas_reasons_for(cas, artifact) or final_report_reasons_for(
+        final_report,
+        cas,
+        object_from(context.get("proof_patch")),
+        object_from(context.get("delivery")),
+    ):
+        return True
+
+    clean_runs = object_from(loop.get("cas_clean_runs"))
+    if not as_yes(clean_runs.get("required")):
+        return False
+    required = clean_runs.get("required_count", clean_runs.get("clean_runs_required", 3))
+    count = clean_runs.get("count", clean_runs.get("clean_runs_count", 0))
+    if not is_plain_int(required) or required <= 0:
+        return True
+    if not is_plain_int(count) or count < required:
+        return True
+    if not as_yes(clean_runs.get("independent_fresh_runs")):
+        return True
+    if not as_yes(clean_runs.get("tuple_bound")):
+        return True
+    return False
+
+
+def side_effect_boundary_violated(context: dict[str, Any], loop: dict[str, Any]) -> bool:
+    side = object_from(loop.get("side_effect_boundary")) or object_from(context.get("side_effect_boundary"))
+    if not side:
+        return False
+    if explicit_no(side.get("respected")):
+        return True
+    performed = side.get("public_side_effects") == "performed" or as_yes(side.get("performed"))
+    allowed = as_yes(side.get("public_side_effects_allowed")) or as_yes(side.get("publish_allowed"))
+    return performed and not allowed
+
+
+def proof_verifier_mismatch(context: dict[str, Any], loop: dict[str, Any]) -> bool:
+    proof = object_from(loop.get("proof")) or object_from(context.get("proof"))
+    if explicit_no(proof.get("matches_verifier")):
+        return True
+    if as_yes(proof.get("required")) and "matches_verifier" not in proof:
+        return True
+    return False
+
+
+def advisory_next_owner_for(reasons: list[str]) -> str:
+    if not reasons:
+        return "none"
+    if "blocked-cas-clean-runs-incomplete" in reasons:
+        return "$cas"
+    if "blocked-side-effect-boundary" in reasons:
+        return "$ship"
+    return "$goal-actuating"
 
 
 def make_decision(context: dict[str, Any]) -> dict[str, Any]:
@@ -540,6 +767,10 @@ def main(argv: list[str] | None = None) -> int:
     p_decide.add_argument("--out")
     p_check = sub.add_parser("check")
     p_check.add_argument("--decision", required=True)
+    p_validate = sub.add_parser("validate")
+    p_validate.add_argument("--context", required=True)
+    p_validate.add_argument("--mode", choices=("advisory",), required=True)
+    p_validate.add_argument("--format", choices=("json",), default="json")
 
     args = parser.parse_args(argv)
     try:
@@ -550,6 +781,10 @@ def main(argv: list[str] | None = None) -> int:
         elif args.cmd == "check":
             decision = load_json(args.decision)
             result = validate_decision(decision)
+            emit(result)
+        elif args.cmd == "validate":
+            context = context_from(load_json(args.context))
+            result = make_advisory(context)
             emit(result)
         return 0
     except Exception as exc:
