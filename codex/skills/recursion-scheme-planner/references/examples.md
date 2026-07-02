@@ -40,7 +40,7 @@ selected:
     - zygo: proof-patch
 review_policy:
   source: cas-review
-  mode: review-fix
+  mode: resolve-and-fix
   clean_cas_runs_required: 3
 ```
 
@@ -105,9 +105,9 @@ selected:
     - cata: review-fold
     - dyna: cluster finding classes
     - parallel-traverse: scout/reducer fanout
-    - cata: closure fan-in
+    - cata: resolve fan-in
 parallelism:
   mode: review-class-fanout
   forbidden_frontier:
-    - patch-fanout-before-closure-agenda
+    - patch-fanout-before-resolve
 ```

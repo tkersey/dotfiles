@@ -1,8 +1,8 @@
 ---
 name: recursion-scheme-planner
-description: "Use after an implementation spec or direct goal is accepted when deciding how to break it into planning, implementation, review, proof, memory, and parallel subagent loops. Selects the appropriate recursion-scheme-inspired control structure and emits a Scheme Plan."
+description: "Use after an implementation spec or direct goal is accepted when deciding how to break it into planning, implementation, review, proof, memory, and parallel subagent loops. Selects the recursion-scheme topology that $agent-loop-schemes compiles into ALSR/HYL."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   activation_cost: low
   default_depth: high
 ---
@@ -16,12 +16,13 @@ Choose the right recursive control structure before execution.
 ```text
 accepted spec or direct goal
 -> Scheme Plan
+-> ALSR/HYL compilation by $agent-loop-schemes
 -> correct execution loop
 ```
 
 This skill is for cases where `$goal-actuating` alone would be too flat. It decides whether the work should be handled as a simple goal grind, a memoized migration, a history-aware debug loop, a branch race, a proof-carrying patch, a review compression loop, a parallel traversal, or `$st`-governed execution.
 
-It does **not** implement code. It lowers an accepted intent into the execution shape that should implement it.
+It does **not** implement code. It selects topology.
 
 ## Use when
 
@@ -32,22 +33,9 @@ It does **not** implement code. It lowers an accepted intent into the execution 
 - You need to decide between `update_plan`, `.goal/*`, `$st`, subagents, branch race, or memoized class work.
 - Review or CAS findings may require compression before implementation.
 - Parallel subagents might help, but only after safe frontier selection.
+- `$agent-loop-schemes` needs topology input before emitting ALSR/HYL.
 
 Do not use for trivial one-shot edits.
-
-## Inputs
-
-Accept any of:
-
-```text
-accepted implementation spec
-direct /goal with enough proof surface
-review target or CAS findings
-migration target
-debug failure
-plan or $st handoff
-existing work graph
-```
 
 ## Output: Scheme Plan
 
@@ -88,8 +76,13 @@ scheme_plan:
         mode: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
         safe_frontier: []
         forbidden_frontier: []
+      hylomorphism:
+        required: yes|no
+        suggested_coalgebra:
+        suggested_algebra:
+        terminal_gate: ATCG-v1
   handoff:
-    next_owner: $goal-actuating|$goal-workgraph|$goal-grind|$review-fold|$plan|$st|$ship|blocked
+    next_owner: $agent-loop-schemes|$goal-actuating|$goal-workgraph|$goal-grind|$review-fold|$resolve|$plan|$st|$ship|blocked
     mode:
     required_checks: []
     blocked_on: []
@@ -105,7 +98,7 @@ scheme_plan:
 6. Decide whether memory is needed: attempt history, failure classes, review classes, or reusable transformations.
 7. Decide whether lookahead or parallelism is safe.
 8. Decide whether `$st` owns execution because of resource claims, fencing, worktrees, or serialized integration.
-9. Emit the Scheme Plan and hand off. Do not mutate code.
+9. Emit the Scheme Plan and hand off to `$agent-loop-schemes` when ALSR/HYL must be compiled. Do not mutate code.
 
 ## Scheme selector
 
@@ -152,10 +145,10 @@ Owners: `$goal-workgraph`, `repo_scout` fanout.
 Use for ordinary goal execution.
 
 ```text
-goal -> next work -> act -> evidence -> continue|stop
+state -> next work -> action -> evidence -> new state
 ```
 
-Owners: `$goal-actuating`, `$goal-grind`, `$evidence-fold`.
+Owners: `$agent-loop-schemes` for HYL definition, `$goal-actuating` for HYL interpretation.
 
 ### Paramorphism: fold while keeping original structure
 
@@ -299,83 +292,17 @@ proof fanout
 disjoint patch fanout
 ```
 
-Route: subagents can work on leaves, but the lead owns fan-in, integration, proof, CAS review evidence clean-counting, and `$ship`.
+Route: subagents can work on leaves, but the lead owns fan-in, integration, proof, CAS clean-run counting, and `$ship`.
 
-## Review loop rule
+## Handoff to `$agent-loop-schemes`
 
-For review work, default to review-fix unless the user explicitly requests no implementation.
-
-```text
-$cas review
--> $review-fold
--> optional review-class-fanout
--> closure-agenda pass
--> optional branch-race
--> $goal-grind accepted liabilities only
--> optional patch-fanout over disjoint accepted liabilities only
--> $evidence-fold
--> 3 clean CAS review evidence units
--> $proof-patch
--> $ship only when PR update/publication is requested
-```
-
-Never do:
+When a Scheme Plan selects any material recursive loop, hand off to `$agent-loop-schemes` to compile:
 
 ```text
-raw CAS finding -> patch worker
+Scheme Plan -> ALSR-v1 -> HYL-v1
 ```
 
-## Parallelism rule
-
-Parallelism belongs between work unfold and evidence fold.
-
-Allowed:
-
-```text
-unfold safe frontier
--> bounded subagents
--> fold results
--> integrate or reject
-```
-
-Forbidden:
-
-```text
-subagents choose scope
-subagents post/update PRs
-subagents declare completion
-subagents patch shared invariant independently
-subagents branch-race without common verifier
-```
-
-## `$st` rule
-
-Choose `$st` when:
-
-```text
-resource claims are required
-fencing tokens are required
-independent worktrees are needed
-overlapping edits must be serialized
-branch/head proof and durable graph state matter
-existing .step/st-plan.jsonl or .ledger/st participates
-```
-
-Do not choose `$st` merely because the task has multiple steps.
-
-## Stop conditions
-
-Stop and report blocked when:
-
-```text
-accepted spec/goal is missing
-proof surface is unknown
-review requires CAS but CAS is unavailable
-mutation authority is missing
-shared invariant makes parallel patching unsafe
-three clean CAS runs are required but cannot be completed
-the selected scheme would repeat a known invalid strategy
-```
+Skip ALSR/HYL compilation only when the work is direct-action fused or `$st` owns execution.
 
 ## Final answer shape
 
@@ -388,6 +315,7 @@ Scheme Plan:
 - parallelism:
 - memory:
 - proof:
+- HYL required: yes|no
 - stop condition:
 - handoff:
 ```

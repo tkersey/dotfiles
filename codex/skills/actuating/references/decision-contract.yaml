@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: actuating
     kind: workflow
-    source_fingerprint: actuating-v6-spec-to-goal
+    source_fingerprint: actuating-v7-hylo-control-plane
   triggers:
     - trigger_id: ACT-SPEC-GOAL
       description: The user wants an accepted implementation spec executed through the goal workflow.
@@ -12,7 +12,12 @@ skill_decision_contract:
       exclusions: []
     - trigger_id: ACT-REVIEW
       description: The user wants review closure or code review as part of the workflow.
-      cue_literals: [review closure, code review, exhaustive review, close review]
+      cue_literals: [review closure, code review, exhaustive review, close review, review and fix]
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: ACT-HYLO
+      description: Material actuation needs a loop contract and hylomorphic execution machine.
+      cue_literals: [ALSR-v1, HYL-v1, HSR-v1, loop contract, hylomorphism, graph_bypass]
       cue_regexes: []
       exclusions: []
     - trigger_id: ACT-ST-GOVERNED
@@ -24,6 +29,14 @@ skill_decision_contract:
     - route_id: ACT-SPEC-PIPELINE
       description: Obtain or refresh an accepted implementation spec without tail-calling $plan.
       aliases: [spec-pipeline-gate-only, accepted-spec]
+      terminal: "no"
+    - route_id: ACT-SCHEME-PLAN
+      description: Choose recursion-scheme topology when the accepted spec has nontrivial recursive structure.
+      aliases: [recursion-scheme-planner, scheme-plan]
+      terminal: "no"
+    - route_id: ACT-LOOP-CONTRACT
+      description: Compile ALSR-v1/HYL-v1 before material mutation.
+      aliases: [agent-loop-schemes, ALSR-v1, HYL-v1]
       terminal: "no"
     - route_id: ACT-GOAL
       description: Hand the accepted spec or direct goal to $goal-actuating.
@@ -37,18 +50,22 @@ skill_decision_contract:
       description: Hand off to $st bounded execution slices when durable coordination owns execution.
       aliases: [st-governed]
       terminal: "no"
+    - route_id: ACT-ATCG
+      description: Run terminal closure gate before completion.
+      aliases: [ATCG-v1]
+      terminal: "no"
     - route_id: ACT-PROOF
       description: Close with current-artifact proof or an explicit $ship handoff.
       aliases: [proof-patch, ship-handoff]
       terminal: "yes"
     - route_id: ACT-BLOCK
-      description: Stop on unresolved spec, missing review backend, unavailable authority, or stale proof.
+      description: Stop on unresolved spec, missing review backend, missing/stale loop contract, unavailable authority, stale proof, or failed ATCG.
       aliases: [blocked]
       terminal: "yes"
   clauses:
     - clause_id: ACT-SPEC-001
       trigger_refs: [ACT-SPEC-GOAL]
-      expected_routes: [ACT-SPEC-PIPELINE, ACT-GOAL, ACT-BLOCK]
+      expected_routes: [ACT-SPEC-PIPELINE, ACT-SCHEME-PLAN, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
         - accepted implementation spec
@@ -59,21 +76,43 @@ skill_decision_contract:
       failure_signals:
         - $spec-pipeline tail-calls $plan from an $actuating run
         - goal execution starts before scope, non-goals, success state, and proof bar are accepted
-      rationale: $actuating is now a spec-to-goal workflow, not the plan-to-PR transaction controller.
-    - clause_id: ACT-REVIEW-001
-      trigger_refs: [ACT-REVIEW]
-      expected_routes: [ACT-CAS-REVIEW, ACT-GOAL, ACT-BLOCK]
+      rationale: $actuating is a spec-to-goal workflow, not the plan-to-PR transaction controller.
+    - clause_id: ACT-HYLO-001
+      trigger_refs: [ACT-HYLO]
+      expected_routes: [ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
-        - CAS review evidence unit when workflow code review is required
+        - ALSR-v1 when material loop governance is required
+        - HYL-v1 when recursive execution is required
+        - HSR-v1 for every material unfold/action/fold transition
+      success_signals:
+        - material mutation cites an unfolded node/frontier
+        - continuation follows an evidence fold
+        - completion follows terminal ATCG-v1
+      failure_signals:
+        - mutation_without_unfold
+        - action_without_fold
+        - completion_without_terminal_algebra
+        - graph_bypass
+      rationale: HYL-v1 makes loop shape an executable control surface rather than prose guidance.
+    - clause_id: ACT-REVIEW-001
+      trigger_refs: [ACT-REVIEW]
+      expected_routes: [ACT-CAS-REVIEW, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
+      prohibited_routes: []
+      required_artifacts:
+        - CAS review verdict when workflow code review is required
         - review-fold disposition
+        - resolve pass for resolve-and-fix
+        - three clean normalized CAS review runs unless explicitly lowered
       success_signals:
         - fresh or exhaustive workflow review comes from $cas
         - review findings are classified before implementation
+        - raw review findings are quotiented into liabilities/classes before patching
       failure_signals:
         - non-CAS critique substitutes for workflow code review
         - raw review prose directly drives code changes
-      rationale: Code review remains exhaustive when requested, while $review-fold controls which findings become code changes.
+        - cached CAS receipt counted as fresh repeated review
+      rationale: Code review remains exhaustive when requested, while review-fold/resolve controls which findings become code changes.
     - clause_id: ACT-ST-001
       trigger_refs: [ACT-ST-GOVERNED]
       expected_routes: [ACT-ST-GOVERNED, ACT-BLOCK]
@@ -87,4 +126,4 @@ skill_decision_contract:
       rationale: The old transaction-controller behavior is preserved only under st-governed mode.
   instrumentation:
     decision_receipt: required
-    rationale: The material decisions are accepted-spec routing, review backend, persistence mode, and proof closure.
+    rationale: Material decisions include accepted-spec routing, scheme planning, loop contract, review backend, persistence mode, HYL/HSR execution legality, ATCG terminal closure, and proof/ship closure.

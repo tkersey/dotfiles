@@ -2,14 +2,14 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Goal Actuating"
-  short_description: "Run accepted specs or direct goals through goal contract, work list, review, evidence, proof, and bounded subagents"
+  short_description: "Interpret HYL-v1 goal loops, emit HSR-v1 steps, and close through evidence and ATCG"
   default_prompt: >-
     Use $goal-actuating to execute an accepted implementation spec, direct /goal,
     review remediation, dry actuation plan, or $st-governed execution. If no
     Scheme Plan exists and the work shape is unclear, hand off to
-    $recursion-scheme-planner before workgraph generation. Treat the accepted
-    spec as the source of truth, derive a goal contract, choose persistence, and
-    keep the loop focused on the next useful action. Fresh or exhaustive review
-    must use $cas review; findings must pass through $review-fold. Use bounded
-    subagent parallelism only over explicit safe frontier nodes, and fan results
-    back through the lead. Close with evidence-fold and proof-patch.
+    $recursion-scheme-planner. If material loop governance is required and no
+    current ALSR/HYL exists, hand off to $agent-loop-schemes. Interpret HYL-v1 as
+    a defunctionalized actuation machine: unfold a legal node/frontier, execute
+    only that node/frontier, fold evidence, emit HSR-v1, and continue or stop.
+    Fresh or exhaustive review must use $cas review; findings must pass through
+    $review-fold. Completion requires terminal ATCG-v1.

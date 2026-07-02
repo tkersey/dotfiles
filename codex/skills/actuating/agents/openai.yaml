@@ -2,14 +2,15 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Workflow for $spec-pipeline, optional recursion-scheme planning, then $goal-actuating"
+  short_description: "Explicit /goal workflow with ALSR/HYL loop governance and terminal ATCG closure"
   default_prompt: >-
     Use $actuating as the explicit /goal workflow. First get an accepted
     implementation spec from $spec-pipeline in gate-only/no-plan mode when one is
-    not already available. If the accepted spec has nontrivial recursive
-    structure, hand off to $recursion-scheme-planner before $goal-actuating.
-    For review requests, default to resolve-and-fix unless the user explicitly
-    says not to implement. Fresh or exhaustive workflow review must use $cas
-    review, findings must pass through $review-fold, and only accepted
-    code-change liabilities may reach implementation. Use bounded subagent
-    parallelism only after work is shaped and fan results back through the lead.
+    not already available. Use $recursion-scheme-planner when topology is
+    nontrivial. For material recursive work, require $agent-loop-schemes to emit
+    ALSR-v1 and HYL-v1 before mutation unless the run is direct-action fused or
+    $st-governed. $goal-actuating interprets HYL-v1 and emits HSR-v1 steps. For
+    review requests, default to resolve-and-fix unless the user explicitly says
+    not to implement. Fresh or exhaustive workflow review must use $cas review,
+    findings must pass through $review-fold, and only accepted code-change
+    liabilities may reach implementation. Completion requires terminal ATCG-v1.

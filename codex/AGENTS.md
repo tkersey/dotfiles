@@ -17,6 +17,122 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - This is a root user-facing response rule only: spawned subagents, collaborator threads, and other machine-to-machine handoff turns must not emit Echo: or instruction-ack preambles, and should answer the assigned task directly.
 - Do not include `Echo:` inside generated files, patches, code blocks, JSON/YAML/TOML intended for machine consumption, email bodies, PR bodies, commit messages, or artifacts the user asked to copy verbatim. Put Echo only in the surrounding chat response.
 
+## Hylo Actuating Governance
+
+`$actuating` is the explicit user-facing workflow. For material actuation it must not operate as a hidden loop.
+
+Governing law:
+
+```text
+No hidden loop.
+No material mutation without unfold.
+No continuation without fold.
+No completion without terminal algebra.
+```
+
+Routing:
+
+```text
+$actuating
+  -> $spec-pipeline in gate-only/no-plan mode when the implementation spec is not already accepted
+  -> $recursion-scheme-planner when recursive topology is nontrivial
+  -> $agent-loop-schemes for ALSR-v1/HYL-v1 when material loop governance is required
+  -> $goal-actuating to interpret HYL-v1 and emit HSR-v1
+  -> ATCG-v1 terminal closure
+  -> $proof-patch or explicit $ship handoff
+```
+
+`$recursion-scheme-planner` and `$agent-loop-schemes` are explicit-only at root. They may run by documented handoff from `$actuating` or `$goal-actuating`.
+
+Material `$actuating` runs must establish one of these before first material mutation:
+
+```text
+direct_action fused exemption
+current ALSR-v1 + HYL-v1
+$st owns the work with current control receipt
+```
+
+If none exists, stop with:
+
+```text
+actuation verdict: blocked-loop-contract-missing
+```
+
+If ALSR/HYL is stale against branch/head/diff, stop with:
+
+```text
+actuation verdict: blocked-loop-contract-stale
+```
+
+Review loops default to resolve-and-fix unless the user explicitly requests no implementation:
+
+```text
+$cas review
+  -> $review-fold
+  -> optional review-class-fanout
+  -> resolve pass
+  -> optional branch-race
+  -> $goal-grind only for accepted code-change liabilities
+  -> optional patch-fanout only for disjoint accepted liabilities
+  -> $evidence-fold
+  -> 3 clean normalized $cas review runs
+  -> $proof-patch
+  -> ATCG-v1
+```
+
+Subagent parallelism must be bounded by the work graph / HYL frontier. The lead owns goal scope, review resolution, integration, CAS clean-run counting, proof closure, and `$ship` handoff. Subagents may not update PRs, resolve threads, broaden scope, or declare completion.
+
+`$ship` remains the owner of PR creation, update, promotion, publication, and other public delivery state.
+
+Do not post PR comments, resolve threads, update public trackers, create PRs, update PR bodies, or publish delivery artifacts without explicit user intent or a terminal `$ship` handoff whose side-effect boundary permits that action.
+
+## Skill routing
+
+Root-level implicit activation is intentionally narrow.
+
+Implicit skills:
+
+```text
+$goal-actuating
+$goal-contract
+$goal-workgraph
+$goal-grind
+$evidence-fold
+$review-fold
+$failure-memory
+$proof-patch
+$grill-me
+$seq
+$learnings
+```
+
+Every other skill is explicit-only at root unless an already-active skill's documented workflow hands off to it. Explicit-only includes, but is not limited to:
+
+```text
+$actuating
+$recursion-scheme-planner
+$agent-loop-schemes
+$cas
+$review-adjudication
+$codebase-doctrine
+$memory-source-notes
+$negative-ledger
+$synesthesia
+$zig
+$logophile
+$universalist
+$spec-pipeline
+$plan
+$st
+$fixed-point-driver
+$ship
+$land
+$ms
+$prove-it
+```
+
+A handoff does not create an independent root implicit trigger. `$cas` may be used as the review backend by an active workflow, but CAS control mutations still require clear intent. `$ship` may be used by an active workflow for PR publication/update only when publication intent is explicit or inherited from an accepted spec/handoff.
+
 ## Tooling standards
 
 ### Git

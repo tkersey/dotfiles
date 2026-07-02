@@ -1,0 +1,36 @@
+actuation_hylomorphism:
+  machine_version: HYL-v1
+  hyl_id:
+  alsr_id:
+  seed_type:
+  node_type:
+  evidence_type:
+  verdict_type:
+  seed_state:
+    artifact_scope:
+    frontier_ref:
+    memory_refs: []
+    review_state:
+    proof_state:
+    clean_cas_runs:
+  coalgebra:
+    name:
+    input: seed_state
+    emits: terminal|blocked|work_node|parallel_frontier|st_handoff
+    no_node_verdict: blocked-hylo-frontier-missing
+  action_boundary:
+    mutation_requires_unfolded_node: yes
+    continuation_requires_fold_verdict: yes
+    review_mutation_requires_review_fold: yes
+    public_side_effects_require_ship: yes
+    subagents_may_not_complete_goal: yes
+  interpreter:
+    owner: $goal-actuating
+    allowed_effects: []
+  algebra:
+    name:
+    folds: []
+    emits: continue|complete|blocked|regress|replan|refactor-kernel|st-required
+  terminal:
+    completion_requires: ATCG-v1
+    proof_must_bind_current_artifact: yes
