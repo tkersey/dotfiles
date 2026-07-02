@@ -51,6 +51,9 @@ def main() -> int:
         "assets/terminal-context.proof-only.example.json",
         "assets/terminal-context.regression.example.json",
         "assets/terminal-context.ship-continue.example.json",
+        "assets/terminal-context.advisory-would-block.example.json",
+        "assets/terminal-context.advisory-fused.example.json",
+        "assets/terminal-context.advisory-st-governed.example.json",
     ]
     missing = [path for path in required if not (ROOT / path).is_file()]
     if missing:

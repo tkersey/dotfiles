@@ -92,6 +92,46 @@ tracked-dirty artifact + current proof-patch receipt -> may complete
 tracked-dirty artifact without proof-patch receipt -> blocked
 ```
 
+## Advisory validation
+
+Advisory mode reports ATCG-v1 completion blockers without enforcing them. A
+would-block advisory result is evidence for the caller, not a terminal stop
+condition by itself.
+
+```json
+{
+  "verdict": "advisory",
+  "would_block": true,
+  "would_block_reasons": [
+    "blocked-hylo-terminal-missing"
+  ],
+  "can_mark_goal_complete": false,
+  "next_owner": "$goal-actuating"
+}
+```
+
+Advisory mode checks loop governance and terminal proof state in the same
+required-check order used by `$actuating`:
+
+```text
+ALSR exists when required
+ALSR current against branch/head/diff
+HYL exists when recursive/material
+terminal HSR exists
+every material mutation has HSR unfold/action/fold
+latest fold is current-artifact-bound
+selected loop matches task shape
+review-fix obeyed CAS/review-fold/resolve
+three clean normalized CAS runs complete when required
+side-effect boundary respected
+proof matches verifier
+```
+
+Direct-action fused and `$st`-governed runs may exempt ALSR/HYL/HSR receipt
+checks only when the advisory context explicitly carries the exemption.
+Advisory would-block results exit successfully; malformed input or unsupported
+mode/format remains a CLI failure.
+
 ## Validator
 
 ```bash
@@ -103,6 +143,12 @@ uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
 uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
   check \
   --decision .ledger/actuating/<run-id>/terminal-decision.json
+
+uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
+  validate \
+  --context .ledger/actuating/<run-id>/terminal-context.json \
+  --mode advisory \
+  --format json
 ```
 
 ## Falsifier
