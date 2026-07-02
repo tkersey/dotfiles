@@ -5,6 +5,9 @@ interface:
   short_description: "Create current-artifact proof summaries for goal completion and PR handoff"
   default_prompt: >-
     Use $proof-patch before final /goal completion or PR handoff. Bind to current
-    artifact state, summarize changed paths, validation, review dispositions,
-    anti-gaming checks, residual risk, and human review focus. Escalate to $ship
-    only for stronger publication or release gates.
+    artifact state, summarize changed paths, loop governance receipts, review
+    closure, parallelism, validation, review dispositions, anti-gaming checks,
+    residual risk, and human review focus. State direct-action fused exemption
+    when ALSR/HYL is absent, never count cached CAS receipts as fresh clean runs,
+    and do not claim completion unless ATCG-v1 permits it. Escalate to $ship only
+    for publication, PR updates, thread resolution, or stronger release gates.
