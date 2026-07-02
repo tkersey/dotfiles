@@ -4,4 +4,4 @@ interface:
   brand_color: "#6D5EF6"
   default_prompt: "Use $universalist to select the smallest honest categorical architecture, effective substrate, concrete primitives, composition geometry, observations, laws, and one witness seam. Spawn the bundled custom agents only when the user explicitly requests team/subagent mode."
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

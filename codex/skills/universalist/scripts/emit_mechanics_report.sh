@@ -29,6 +29,9 @@ Available mechanics topics:
 - abstraction-replacement
 - category-pivot
 - syntax-semantics
+- domain-algebra
+- law-discovery
+- property-tests
 
 Examples:
   ./scripts/emit_mechanics_report.sh kan-lift typescript
@@ -76,6 +79,12 @@ OUT
     ./scripts/emit_category_pivot.sh syntax "$language" ;;
   syntax-semantics|syntax|semantics)
     ./scripts/emit_syntax_semantics_certificate.sh ToolOperation "$language" ;;
+  domain-algebra|add)
+    ./scripts/emit_domain_algebra_card.sh domain "$language" ;;
+  law-discovery|laws|non-laws)
+    ./scripts/emit_law_table.sh Carrier "$language" ;;
+  property-tests|property-test)
+    ./scripts/emit_property_test_plan.sh law "$language" ;;
   *)
     echo "Unknown mechanics topic: $topic" >&2
     echo "Run ./scripts/emit_mechanics_report.sh index" >&2

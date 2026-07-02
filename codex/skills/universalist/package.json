@@ -1,6 +1,6 @@
 {
   "name": "universalist",
-  "version": "14.0.0",
+  "version": "15.0.0",
   "description": "Universal Architecture workflow with effective substrate, Freyd effect geometry, operadic composition, and custom categorical subagents.",
   "private": true,
   "unified_mechanics": true,

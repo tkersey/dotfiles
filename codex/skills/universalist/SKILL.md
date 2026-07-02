@@ -1,11 +1,13 @@
 ---
 name: universalist
-description: "Use when software needs a structural or categorical architecture rather than ordinary feature work: impossible-state models, repeated boundary validation, opaque callbacks/effects, typed component wiring, effect-ordering ambiguity, syntax mixed with execution, duplicated projections, public contracts shaping internals, certified context, exact abstractions, or a request to design or implement any computable system on an effective universal substrate. Choose one signal, one seam, and the smallest honest construction; require effective presentation, concrete primitives, interpreter, observations, laws, falsifier, and resource model. When the user explicitly requests team/subagent mode, orchestrate the bundled Universalist agents and synthesize an Effective Universal Architecture Certificate. Includes internal Kan/Yoneda/Coyoneda/Freyd-AFT/Freyd-category/operad/codensity/CQL/sheafification mechanics."
+description: "Use when software needs structural/categorical architecture rather than ordinary feature work: domain algebra/law discovery, impossible-state models, repeated boundary validation, opaque callbacks/effects, typed component wiring, effect-order ambiguity, syntax mixed with execution, duplicated projections, public contracts shaping internals, certified context, exact abstractions, or effective universal substrate design. Start with one signal/seam; identify carriers, operations, observations, laws/non-laws, then choose smallest honest construction. Require effective presentation, concrete primitives, interpreter, laws, falsifier, resource model. Team mode only on explicit request. Includes internal ADD, Kan/Yoneda/Coyoneda/Freyd-AFT/Freyd-category/operad/codensity/CQL/sheafification mechanics"
 ---
 
 # Universalist
 
 Use this skill when the highest leverage comes from changing the **shape of truth** in a codebase, not from adding another ordinary feature branch.
+
+Default operating discipline: one signal, one seam, one smallest honest construction.
 
 This is an **inner lens** for choosing the right structural move. It is not a generic implementation skill. Use it to decide and stage the structure, then let the repo's normal implementation flow carry the change.
 
@@ -13,7 +15,7 @@ This is now the single top-level skill for the Universal Architecture doctrine. 
 
 ## Doctrine index
 
-Universalist includes Track D, Track E, Track F, Track G, Track H, and Track I. It uses Universal architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, Syntax/Semantics Pivot, Easy-World Transfer, Category Pivot Certificate, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, Freyd/AFT, Freyd categories, operads, composition geometry, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
+Universalist includes Track A0, Track D, Track E, Track F, Track G, Track H, and Track I. It uses Universal architecture, Domain Algebra Discovery, Algebra before architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, Syntax/Semantics Pivot, Easy-World Transfer, Category Pivot Certificate, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, ADD carriers/operations/observations/laws, Freyd/AFT, Freyd categories, operads, composition geometry, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
 Do not force a hard problem to stay in the ordinary executable-program world when syntax, semantics, posets, relations, coalgebras, schemas, resources, or presheaves make the required operation explicit. For whole-system work, require an effective computational substrate, concrete primitive register, universal evaluator or equivalent, recursion/partiality, effect and state semantics, observations, resource model, and executable witnesses.
 
 The enriched slogan is:
@@ -28,6 +30,67 @@ Core discipline:
 
 Ordinary code may live inside a boundary: I/O, math, parsing, vendor APIs, database drivers, model calls, clocks, randomness, local algorithms, and low-level loops. Composition boundaries should be explicit artifacts: syntax, observations, projections, transports, lifts, handlers, state transitions, IRs, or law tests.
 
+
+
+## Track A0 — Domain Algebra Discovery
+
+Use Track A0 before universal-architecture escalation when the local world is not yet algebraically clear. This is the former Algebra-Driven Design kernel folded into `universalist`.
+
+Core rule:
+
+```text
+Algebra before architecture.
+```
+
+Do not choose a universal boundary artifact until the local domain algebra has exposed the carriers, operations, observations, laws, and non-laws that make the world real.
+
+A compact Domain Algebra pass produces:
+
+```text
+Domain:
+Carriers:
+Operations / constructors / eliminators:
+Observations / equality criteria:
+Laws:
+Non-laws / counterexamples:
+Interpreters / effect boundaries:
+Property tests / falsifiers:
+Architecture implications:
+Escalation candidates:
+```
+
+Use Track A0 when:
+
+- carriers or data domains are unclear;
+- operations are named only by controllers, services, or helper functions;
+- equality is implicit or observation-dependent;
+- laws are suspected but untested;
+- tempting algebraic laws may be false under stronger observations;
+- pure and effectful operations are mixed;
+- the system needs property-test-derived implementation guidance before a larger Track D/E/F/G/H move.
+
+ADD mappings into Universalist:
+
+| ADD term | Universalist role |
+| --- | --- |
+| Carrier | object/type/world inhabitant |
+| Operation | morphism, constructor, eliminator, effect, transition |
+| Observation | semantic consumer / equality probe / Yoneda-like observation |
+| Law | invariant, interpreter law, boundary law, property test |
+| Non-law | falsifier, obstruction, false equivalence, observation-strength warning |
+| Interpreter | syntax/semantics boundary, handler, evaluator |
+| Property test | executable witness |
+| Architecture implication | Track B/D/E/F/G/H routing candidate |
+
+The output of Track A0 should either stay local—types, operations, law tests—or justify escalation:
+
+```text
+law failure at a boundary      -> Track D / Track E
+uncertified context            -> Track F
+inexact abstraction            -> Track G
+wrong representation category  -> Track H
+whole-system substrate design  -> Track I
+```
 
 
 ## Effective Universal Architecture Thesis
@@ -540,6 +603,23 @@ Use these named law shapes when designing proof signals:
 Every Track D artifact should have one positive law test and one falsifier/negative witness.
 
 ## Quick start: pick a track
+
+### Track A0 — Domain Algebra Discovery
+
+Use when the local world is not yet algebraically clear.
+
+Deliver:
+
+- domain;
+- carriers;
+- operations / constructors / eliminators;
+- observations / equality criteria;
+- laws;
+- non-laws / counterexamples;
+- interpreters / effect boundaries;
+- property tests / falsifiers;
+- architecture implications;
+- escalation candidates.
 
 ### Track A — Diagnosis only
 
@@ -1339,7 +1419,7 @@ For Track I and team mode, read:
 Use `scripts/emit_universalist_team_prompt.sh` to produce an explicit orchestration prompt and `scripts/emit_effective_universal_architecture.sh` or `scripts/emit_substrate_certificate.sh` for the central artifacts.
 
 - Use **`invariant-ace`** when the main job is discovering or pinning down invariants before choosing structure.
-- Use **`goal-actuating`** after the construction is chosen and the task becomes ordinary implementation.
+- Use **`accretive-implementer`** after the construction is chosen and the task becomes ordinary implementation.
 - Use **`repeatedly-apply-skill`** when sweeping the repo for multiple seams or doing a multi-pass campaign.
 
 ## References

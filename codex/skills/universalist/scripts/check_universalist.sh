@@ -4,7 +4,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 required=(
   SKILL.md README.md package.json agents/openai.yaml
-  references/universalist-overview.md references/discovery-signals.md references/language-encoding-matrix.md
+  references/universalist-overview.md references/discovery-signals.md references/language-encoding-matrix.md references/domain-algebra/algebra-driven-design.md references/domain-algebra/law-discovery-and-non-laws.md references/domain-algebra/property-test-derivation.md references/domain-algebra/agentic-workflow-algebras.md references/domain-algebra/examples-shopping-cart.md references/domain-algebra/examples-payment-lifecycle.md
   references/framework-boundaries.md references/cost-model-and-false-positives.md references/structures-and-laws.md
   references/testing-playbook.md references/migration-playbooks.md references/case-studies.md
   references/examples-haskell.md references/examples-go.md references/examples-typescript.md references/examples-python.md
@@ -18,10 +18,10 @@ required=(
   references/composition-certificates.md references/boundary-normal-form.md
   references/presentation-strategies.md references/dense-dual-presentation.md references/semantic-compression.md
   references/exact-context-doctrine.md references/context-certificates.md references/context-normal-form.md references/semantic-consumption-boundaries.md references/verified-context-plane.md references/context-publication-boundaries.md references/cql-fit-assessment.md references/pushout-reconciliation.md references/context-provenance-manifest.md references/possibility-sheafification.md references/sheafification-certificates.md references/abstraction-normal-form.md references/abstraction-manipulator-playbook.md references/category-pivot.md references/syntax-semantics-pivot.md references/category-pivot-certificate.md references/syntax-semantics-certificate.md references/effective-universal-architecture-thesis.md references/effective-computational-substrate.md references/concrete-primitives.md references/effective-categorical-normal-form.md references/universal-software-synthesis-playbook.md references/composition-geometry.md references/workflow/subagent-orchestration.md references/workflow/team-routing.md references/workflow/subagent-packet-contract.md
-  templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md
+  templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md templates/domain-algebra-card.md templates/law-table.md templates/non-law-ledger.md templates/property-test-plan.md
   templates/freyd-boundary-diagnostic.md templates/world-boundary-inventory.md templates/composition-certificate.md
   templates/boundary-normal-form-report.md templates/presentation-diagnostic.md templates/context-certificate.md templates/context-normal-form-report.md templates/verified-context-plane-report.md templates/cql-fit-assessment.md templates/context-provenance-manifest.md templates/sheafification-certificate.md templates/abstraction-normal-form-report.md templates/category-pivot-certificate.md templates/syntax-semantics-certificate.md templates/effective-universal-architecture-certificate.md templates/computational-substrate-certificate.md templates/universal-synthesis-packet.md
-  scripts/init_universalist_plan.sh scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py
+  scripts/init_universalist_plan.sh scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py scripts/emit_add_pass.sh scripts/emit_domain_algebra_card.sh scripts/emit_law_table.sh scripts/emit_property_test_plan.sh
   scripts/emit_verification_plan.py scripts/emit_law_test_stub.sh scripts/emit_universal_artifact_matrix.sh
   scripts/emit_canonical_artifact_plan.sh scripts/emit_universal_architecture_prompt.sh scripts/emit_freyd_boundary_diagnostic.sh
   scripts/emit_world_boundary_inventory.sh scripts/emit_boundary_law_catalogue.sh scripts/emit_composition_certificate.sh
@@ -53,7 +53,7 @@ if 'allow_implicit_invocation: true' not in Path('agents/openai.yaml').read_text
     raise SystemExit('agents/openai.yaml must allow implicit invocation')
 print(f'description length ok: {len(desc)} chars')
 required = [
-    'name: universalist', 'Track D', 'Track E', 'Track F', 'Universal architecture',
+    'name: universalist', 'Track A0', 'Domain Algebra Discovery', 'Algebra before architecture', 'carriers', 'operations', 'observations', 'laws', 'non-laws', 'Track D', 'Track E', 'Track F', 'Universal architecture',
     'canonical boundary artifact', 'one signal, one seam', 'Freyd/AFT', 'free builder',
     'obstruction report', 'Behavioral coalgebra', 'Effect signature', 'P : B -> C',
     'Allow arbitrary domain primitives', 'Unknown-location artifact selector',
@@ -72,6 +72,10 @@ for r in required:
 print('metadata ok')
 PY
 ./scripts/emit_law_test_stub.sh coproduct typescript >/dev/null
+./scripts/emit_add_pass.sh payment-lifecycle typescript >/dev/null
+./scripts/emit_domain_algebra_card.sh shopping-cart typescript >/dev/null
+./scripts/emit_law_table.sh EvidenceSet agnostic >/dev/null
+./scripts/emit_property_test_plan.sh checkout-idempotency typescript >/dev/null
 ./scripts/emit_law_test_stub.sh universal-architecture agnostic >/dev/null
 ./scripts/emit_law_test_stub.sh freyd-aft agnostic >/dev/null
 ./scripts/emit_law_test_stub.sh freyd-category agnostic >/dev/null
@@ -124,6 +128,9 @@ PY
 ./scripts/emit_mechanics_report.sh sheafification typescript >/dev/null
 ./scripts/emit_mechanics_report.sh category-pivot agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh syntax-semantics typescript >/dev/null
+./scripts/emit_mechanics_report.sh domain-algebra agnostic >/dev/null
+./scripts/emit_mechanics_report.sh law-discovery agnostic >/dev/null
+./scripts/emit_mechanics_report.sh property-tests agnostic >/dev/null
 ./scripts/emit_freyd_category.sh effect-boundary typescript >/dev/null
 ./scripts/emit_operadic_architecture.sh component-wiring typescript >/dev/null
 if ./scripts/emit_mechanics_report.sh freyd agnostic >/dev/null 2>&1; then

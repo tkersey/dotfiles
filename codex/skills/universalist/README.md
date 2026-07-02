@@ -1,8 +1,8 @@
 # universalist
 
-Single drop-in Universal Architecture workflow for structural, universal-construction-driven software synthesis. This version folds the former `kan` skill into `universalist` as an internal mechanics layer, so `$universalist` is the only top-level skill needed for this doctrine.
+Single drop-in Universal Architecture workflow for domain algebra, law discovery, structural refactoring, and universal-construction-driven software synthesis. This version folds the former `kan` skill into `universalist` as an internal mechanics layer, so `$universalist` is the only top-level skill needed for this doctrine.
 
-It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It adds Track D for universal architecture boundaries: free syntax, coherent observations, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, Freyd/premonoidal effect boundaries, operadic component grammars, explicit IR, and law tests.
+It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It now folds Algebra-Driven Design into Track A0 so local worlds are discovered through carriers, operations, observations, laws, non-laws, interpreters, and property tests before escalation. It adds Track D for universal architecture boundaries: free syntax, coherent observations, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, Freyd/premonoidal effect boundaries, operadic component grammars, explicit IR, and law tests.
 
 ## Install
 
@@ -31,6 +31,26 @@ The skill decides whether the problem needs:
 - explicit first-order IR.
 
 Use `$universalist` for the full workflow. Detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, categorical-data, and defunctionalization mechanics now live inside `references/mechanics/` and `scripts/emit_mechanics_report.sh`.
+
+
+## Track A0 — Domain Algebra Discovery
+
+Use Track A0 when the local world is not yet algebraically clear. The rule is:
+
+```text
+Algebra before architecture.
+```
+
+Useful commands:
+
+```bash
+./scripts/emit_add_pass.sh payment-lifecycle typescript
+./scripts/emit_domain_algebra_card.sh shopping-cart typescript
+./scripts/emit_law_table.sh EvidenceSet agnostic
+./scripts/emit_property_test_plan.sh checkout-idempotency typescript
+```
+
+You can safely remove `codex/skills/algebra-driven-design`; this package contains the ADD kernel as an internal workflow.
 
 ## Central rule
 

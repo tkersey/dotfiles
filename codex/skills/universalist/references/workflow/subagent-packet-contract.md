@@ -1,28 +1,35 @@
-# Universalist Specialist Payload
+# Universalist Subagent Packet Contract
 
-Universalist agents use the canonical `specialist-packet-v2` envelope in:
+Every Universalist custom subagent returns one compact packet and no user-facing essay.
 
 ```text
-codex/skills/references/specialist-packet-contract.md
+artifact_state_id: "branch=<name> head=<sha-or-id> diff=<digest-or-path-set> phase=<phase>"
+role: "<custom-agent-name>"
+scope: "<assigned system, files, seam, or question>"
+observations:
+  - claim: "<verified observation>"
+    evidence_ref: "<file:line, command, trace, or not-inspected>"
+candidate:
+  summary: "<role-specific candidate or none>"
+  artifact: "<certificate/map/model/plan>"
+countercase:
+  summary: "<strongest challenge>"
+  disposition: "defeats | narrows | survives | unresolved"
+proof_obligations:
+  - "<required check>"
+obstructions:
+  - "<missing effectivity, evidence, primitive, law, or resource constraint; or none>"
+agreement_pressure: "confirms | challenges | narrows | conflicts | none"
+stale: false
+final_call: "<one-line recommendation>"
 ```
 
-Place Universalist-specific fields under `domain_payload`:
+Rules:
 
-```yaml
-domain_payload:
-  candidate:
-    summary:
-    artifact: certificate | map | model | plan | none
-  countercase:
-    summary:
-    disposition: defeats | narrows | survives | unresolved
-  proof_obligations: []
-  obstructions: []
-  implementation:
-    changed_files: []
-    commands: []
-    results: []
-    stop_point:
-```
-
-Read-only roles omit `implementation`. The witness implementer and verifier report exact files and commands. No Universalist specialist emits a user-facing essay or recursively delegates.
+- observations must be evidence-backed;
+- proposals are not observations;
+- no raw logs or long essays;
+- no root-only Echo or user-facing preamble;
+- no child delegation;
+- read-only roles never mutate;
+- implementer and verifier report exact files and commands.

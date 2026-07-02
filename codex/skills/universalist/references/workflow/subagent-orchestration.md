@@ -1,51 +1,48 @@
 # Universalist Subagent Orchestration
 
-## Gate
+## Explicit gate
 
-Universalist custom agents are spawned only when the user explicitly requests subagents, parallel agents, team mode, or the categorical-substrate team.
+Codex subagents are used only when the user explicitly asks for subagents, parallel agents, team mode, or the Universalist categorical-substrate team.
 
 ## Root responsibilities
 
-The root owns requirement interpretation, artifact state, roster selection, prompts, packet validation, synthesis, architecture choice, write ordering, conflict resolution, final certificate, root proof, and closure.
+The root agent owns:
 
-## Default topology
+- requirement interpretation;
+- role selection and prompts;
+- packet freshness;
+- synthesis and architecture choice;
+- write ordering and conflict resolution;
+- final certificate;
+- user-facing conclusions;
+- closure.
 
-```text
-explicit team request
--> select 1-2 route-changing read-only specialists by default
--> root synthesizes one candidate certificate and strongest countercase
--> proof auditor only when unresolved soundness remains
--> root selects one witness seam
--> one bounded writer implements it
--> one independent verifier checks it
--> root integrates, proves, and stops
-```
+## Recommended phases
 
-Use 3-4 read-only specialists when several independent architecture dimensions remain material. Use 5-8 only for a high-risk whole-system certificate where those dimensions cannot be closed locally.
+### Discover
 
-## Roster
+Spawn 2-6 relevant read-only specialists in parallel. Avoid broad fanout when one dominant uncertainty exists.
 
-- `universalist-world-cartographer` — worlds, boundaries, primitives, observations, and evidence.
-- `universalist-substrate-architect` — effective presentation, recursion/partiality, and concrete primitives.
-- `universalist-categorical-architect` — canonical construction and boundary artifact.
-- `universalist-semanticist` — syntax/semantics, effects, state, observations, and equivalence.
-- `universalist-resource-realist` — time, space, latency, concurrency, failure, security, and deployment.
-- `universalist-proof-auditor` — effectivity, soundness, adequacy, laws, and falsifiers.
-- `universalist-witness-implementer` — exactly one root-selected witness seam.
-- `universalist-verifier` — independent final witness and certificate verification.
+### Synthesize
 
-Select only roles whose unresolved dimension can change the certificate, witness seam, proof, or risk disposition.
+Wait for all packets. Build one Effective Universal Architecture Certificate and one strongest countercase.
 
-## Invariants
+### Adversarial gate
 
-- Specialists return `specialist-packet-v2`.
-- Read-only roles never edit.
-- Only one writer may own the selected seam.
-- Children do not spawn children.
-- Specialist packets are evidence, not truth.
-- Any material edit makes pre-edit packets stale unless their claim is artifact-independent and the root explicitly revalidates it.
-- The verifier does not repair the witness.
+Send the synthesized certificate to `universalist-proof-auditor`. Revise or mark obstructed.
 
-## Stop rule
+### Implement
 
-Close specialists and continue locally when their uncertainty is resolved, the packet is stale or low-value, or waiting no longer produces progress. Do not wait indefinitely for a broad swarm.
+If code changes are requested, assign one witness seam to `universalist-witness-implementer`. Do not use parallel writers on overlapping architecture.
+
+### Verify
+
+Send the diff, certificate, and proof commands to `universalist-verifier`.
+
+### Close
+
+Integrate evidence, update status, name the next seam, and stop.
+
+## Context discipline
+
+Use subagents to keep exploration and specialist reasoning off the root thread. Return distilled packets, not transcript dumps.
