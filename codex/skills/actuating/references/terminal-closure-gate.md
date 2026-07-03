@@ -109,13 +109,25 @@ uses for terminal completion. Auxiliary CAS review lanes such as
 evidence, but they do not count toward the three standard clean reviews and do
 not interrupt standard-review consecutiveness.
 
-Auxiliary lanes may still block completion. ATCG should reject completion when a
+Auxiliary lanes may still block completion. ATCG rejects completion when a
 required auxiliary lane is missing, blocked, rerun-required, or not folded
 through `$review-fold` / the resolution fold.
 
-Compatibility fields may still be named `clean_runs_count` or
-`normalized_cas_clean_runs`, but their meaning is now standard-only unless a
-newer context provides explicit `standard_clean_*` fields.
+The preferred reducer fields are:
+
+```text
+cas_review.standard_clean_runs_required
+cas_review.standard_clean_runs_count
+final_report_fields.standard_clean_cas_runs
+cas_review.required_auxiliary_lanes
+cas_review.auxiliary_lanes.<lane>.folded
+cas_review.auxiliary_lanes.<lane>.unresolved_blockers
+cas_review.auxiliary_lanes.<lane>.rerun_required
+```
+
+Compatibility fields may still be named `clean_runs_required`,
+`clean_runs_count`, or `normalized_cas_clean_runs`, but their meaning is
+standard-only unless a context provides explicit `standard_clean_*` fields.
 
 ## Common outcomes
 
@@ -127,9 +139,9 @@ previous material action without fold evidence -> blocked-hylo-fold-missing, nex
 completion without terminal HSR -> blocked-hylo-terminal-missing, next_owner=$goal-actuating
 $st-governed completion without current $st control receipt -> st-authority-blocked, next_owner=$st
 CAS required + standard clean runs < required -> blocked, next_owner=$cas
-CAS required + clean_runs_required <= 0 -> blocked, next_owner=$cas
+CAS required + standard_clean_runs_required <= 0 -> blocked, next_owner=$cas
 CAS required + final report standard clean runs < required -> blocked, next_owner=$cas
-required auxiliary CAS review lane unresolved -> cas-review-blocked, next_owner=$cas
+required auxiliary CAS review lane missing|not-folded|blocked|rerun-required -> cas-review-blocked, next_owner=$cas
 review-closeout protocol incomplete -> cas-review-blocked, next_owner=$cas
 proof-patch required + missing/stale -> continue, next_owner=$proof-patch
 proof-patch closure + missing proof-patch receipt -> continue, next_owner=$proof-patch

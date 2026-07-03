@@ -52,7 +52,7 @@ ablation_activation_packet:
   additive_surface_detected: yes | no | unknown
   duplicate_or_keep_surface_detected: yes | no | unknown
   stale_packet_risk: yes | no | unknown
-  required_next_packet: ablation_auditor | review_ablative_surface_authority | root-equivalent-ablation-receipt | none | blocked
+  required_next_packet: ablation_auditor | root-equivalent-ablation-receipt | none | blocked
   not_required_evidence: "..."
   packet_status_reason: "..."
 ```

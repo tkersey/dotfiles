@@ -21,7 +21,7 @@ FACTORING -> WINNOWING
 - Retain essential domain factors.
 - Expose specification-risk factors before refactoring.
 - Remove, collapse, rename, localize, or delegate incidental factors.
-- Do not run full behavioral quotienting unless repeated distinctions and accepted observations make it necessary; route that to `review-adjudication` or the owning review-closure workflow.
+- Do not run full behavioral quotienting unless repeated distinctions and accepted observations make it necessary; route that to `review-fold` or the owning review-closure workflow.
 
 ## Activation
 
@@ -36,7 +36,7 @@ Use for:
 Handoff instead:
 
 - broad layer/framework/tooling tax -> `reduce`;
-- repeated review distinctions / behavioral kernel -> `review-adjudication` or the owning review-closure workflow;
+- repeated review distinctions / behavioral kernel -> `review-fold` or the owning review-closure workflow;
 - illegal states / invariant ownership -> `invariant-ace`;
 - missing essential structural shape -> `universalist`;
 - implementation -> `goal-actuating` or the owning workflow.
@@ -84,33 +84,11 @@ Use only when the slice crosses files, behavior is unclear, specification risk i
 
 1. Choose the slice: entrypoint, inputs, outputs, state, effects.
 2. Heat-read nesting, branches, flags, cross-file hops, state to simulate, and hidden side effects.
-3. Factor the whole:
-   - responsibilities;
-   - decisions;
-   - state;
-   - effects;
-   - external constraints;
-   - proof surfaces.
-4. Classify each factor:
-   - `essential`;
-   - `incidental`;
-   - `mixed`;
-   - `spec-risk`.
-5. Check whether incidental factors are:
-   - duplicated;
-   - dominated;
-   - subsumed;
-   - vestigial;
-   - pass-through;
-   - better delegated to an existing facility.
+3. Factor the whole into responsibilities, decisions, state, effects, external constraints, and proof surfaces.
+4. Classify each factor as `essential`, `incidental`, `mixed`, or `spec-risk`.
+5. Check whether incidental factors are duplicated, dominated, subsumed, vestigial, pass-through, or better delegated to an existing facility.
 6. Preserve essential factors and unresolved specification-risk factors.
-7. Winnow in this default order:
-   - delete/delegate;
-   - flatten;
-   - rename;
-   - localize;
-   - collapse;
-   - extract only after stable repetition appears.
+7. Winnow in this order: delegate, flatten, rename, localize, collapse, extract only after stable repetition appears.
 8. State the recomposition rule: how the retained factors still explain the behavior.
 9. Name the smallest proof signal and handoff.
 
@@ -146,11 +124,11 @@ factorization_winnowing_receipt:
 
 ## Local playbook
 
-1. **Delete or delegate** homegrown incidental logic when a current local/platform facility has matching semantics.
-2. **Flatten** control flow while keeping essential protocol/lifecycle steps explicit.
-3. **Rename** vague verbs and implicit state.
-4. **Move meaning into data** when it reduces branching or invalid combinations.
-5. **Extract** only stable repeated concepts; one case is unique, two may be coincidence, three may justify extraction.
+1. Delegate homegrown incidental logic when a current local/platform facility has matching semantics.
+2. Flatten control flow while keeping essential protocol/lifecycle steps explicit.
+3. Rename vague verbs and implicit state.
+4. Move meaning into data when it reduces branching or invalid combinations.
+5. Extract only stable repeated concepts; one case is unique, two may be coincidence, three may justify extraction.
 
 ## Output
 

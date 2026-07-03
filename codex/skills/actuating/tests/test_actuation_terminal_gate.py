@@ -496,6 +496,107 @@ class ActuationTerminalGateTests(unittest.TestCase):
         body = decision["actuation_terminal_decision"]
         self.assertEqual(body["verdict"], "complete")
 
+    def test_standard_clean_run_aliases_are_first_class(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = {
+            "required": "yes",
+            "standard_clean_runs_required": 3,
+            "standard_clean_runs_count": 3,
+            "independent_fresh_runs": "yes",
+            "tuple_bound": "yes",
+            "tuple": {
+                "base_sha": "base123",
+                "head_sha": "abc123",
+                "target_fingerprint": "diff:clean",
+            },
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "complete")
+
+    def test_standard_clean_run_aliases_block_when_insufficient(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = {
+            "required": "yes",
+            "standard_clean_runs_required": 3,
+            "standard_clean_runs_count": 2,
+            "independent_fresh_runs": "yes",
+            "tuple_bound": "yes",
+            "tuple": {
+                "base_sha": "base123",
+                "head_sha": "abc123",
+                "target_fingerprint": "diff:clean",
+            },
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 2
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertIn("cas.standard_clean_runs:2-of-3", body["blocked_reasons"])
+        self.assertIn(
+            "final_report.standard_clean_cas_runs:not-satisfied",
+            body["blocked_reasons"],
+        )
+
+    def test_required_auxiliary_lane_missing_blocks_completion(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = {
+            "required": "yes",
+            "standard_clean_runs_required": 3,
+            "standard_clean_runs_count": 3,
+            "required_auxiliary_lanes": ["footgun-finder"],
+            "independent_fresh_runs": "yes",
+            "tuple_bound": "yes",
+            "tuple": {
+                "base_sha": "base123",
+                "head_sha": "abc123",
+                "target_fingerprint": "diff:clean",
+            },
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertEqual(body["next_owner"], "$cas")
+        self.assertIn("cas-review-blocked", body["blocked_reasons"])
+        self.assertIn("cas.auxiliary_lanes.footgun-finder:missing", body["blocked_reasons"])
+
+    def test_required_auxiliary_lane_blocker_or_rerun_blocks_completion(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = {
+            "required": "yes",
+            "standard_clean_runs_required": 3,
+            "standard_clean_runs_count": 3,
+            "required_auxiliary_lanes": ["invariant-ace", "complexity-mitigator"],
+            "auxiliary_lanes": {
+                "invariant-ace": {
+                    "folded": "yes",
+                    "unresolved_blockers": "yes",
+                },
+                "complexity-mitigator": {
+                    "status": "rerun-required",
+                    "folded": "yes",
+                },
+            },
+            "independent_fresh_runs": "yes",
+            "tuple_bound": "yes",
+            "tuple": {
+                "base_sha": "base123",
+                "head_sha": "abc123",
+                "target_fingerprint": "diff:clean",
+            },
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertIn("cas.auxiliary_lanes.invariant-ace:blocked", body["blocked_reasons"])
+        self.assertIn(
+            "cas.auxiliary_lanes.complexity-mitigator:rerun-required",
+            body["blocked_reasons"],
+        )
+
     def test_publication_required_requires_pr_intent_and_ship_evidence(self) -> None:
         context = deepcopy(self.context())
         context["delivery"]["publication_required"] = "yes"

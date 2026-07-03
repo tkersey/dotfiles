@@ -23,6 +23,7 @@ LOCAL_VERDICTS = {"done", "continue", "regress", "blocked", "invalid-proof", "as
 ADD_VERDICTS = {"handoff_to_ship", "shipping_not_requested", "blocked", "missing"}
 TERMINAL_VERDICTS = {"complete", "continue", "blocked"}
 NEXT_OWNERS = {"none", "$cas", "$proof-patch", "$ship", "$goal-grind", "$goal-actuating", "$st", "human"}
+AUXILIARY_CAS_LANES = {"footgun-finder", "invariant-ace", "complexity-mitigator"}
 HARD_REASON_ORDER = [
     "blocked-loop-contract-missing",
     "blocked-loop-contract-stale",
@@ -113,8 +114,39 @@ def list_from(value: Any) -> list[Any]:
     return value if isinstance(value, list) else []
 
 
+def first_present(obj: dict[str, Any], keys: tuple[str, ...], default: Any = None) -> Any:
+    for key in keys:
+        if key in obj:
+            return obj[key]
+    return default
+
+
 def explicit_no(value: Any) -> bool:
     return value in NO or (isinstance(value, str) and value.lower() in NO)
+
+
+def standard_clean_runs_required_for(obj: dict[str, Any]) -> Any:
+    return first_present(obj, ("standard_clean_runs_required", "clean_runs_required"), 3)
+
+
+def standard_clean_runs_count_for(obj: dict[str, Any]) -> Any:
+    return first_present(obj, ("standard_clean_runs_count", "clean_runs_count"), 0)
+
+
+def loop_standard_clean_runs_required_for(obj: dict[str, Any]) -> Any:
+    return first_present(
+        obj,
+        ("standard_clean_runs_required", "required_count", "clean_runs_required"),
+        3,
+    )
+
+
+def loop_standard_clean_runs_count_for(obj: dict[str, Any]) -> Any:
+    return first_present(
+        obj,
+        ("standard_clean_runs_count", "standard_count", "count", "clean_runs_count"),
+        0,
+    )
 
 
 def make_advisory(context: dict[str, Any]) -> dict[str, Any]:
@@ -288,6 +320,71 @@ def review_closeout_obeyed(review_closeout: dict[str, Any]) -> bool:
     )
 
 
+def auxiliary_lane_records_for(cas: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    lanes = cas.get("auxiliary_lanes", cas.get("auxiliary_review_lanes", []))
+    records: dict[str, dict[str, Any]] = {}
+    if isinstance(lanes, dict):
+        iterable = lanes.items()
+        for lane, value in iterable:
+            if lane not in AUXILIARY_CAS_LANES:
+                continue
+            if isinstance(value, dict):
+                record = dict(value)
+            else:
+                record = {"status": value}
+            record.setdefault("lane", lane)
+            records[lane] = record
+        return records
+    if isinstance(lanes, list):
+        for value in lanes:
+            if isinstance(value, str):
+                lane = value
+                record = {"lane": lane, "required": "yes"}
+            else:
+                record = object_from(value)
+                lane = record.get("lane")
+            if lane in AUXILIARY_CAS_LANES:
+                records[lane] = record
+    return records
+
+
+def required_auxiliary_lanes_for(cas: dict[str, Any], records: dict[str, dict[str, Any]]) -> set[str]:
+    required: set[str] = set()
+    for key in ("required_auxiliary_lanes", "required_auxiliary_review_lanes", "review_lanes"):
+        for lane in list_from(cas.get(key)):
+            if lane in AUXILIARY_CAS_LANES:
+                required.add(lane)
+    for lane, record in records.items():
+        state = str(record.get("status", record.get("state", ""))).lower()
+        if state == "not-required":
+            continue
+        if as_yes(record.get("required")) or as_yes(record.get("selected")):
+            required.add(lane)
+    return required
+
+
+def auxiliary_lane_reasons_for(cas: dict[str, Any]) -> list[str]:
+    records = auxiliary_lane_records_for(cas)
+    required = required_auxiliary_lanes_for(cas, records)
+    reasons: list[str] = []
+    for lane in sorted(required):
+        record = records.get(lane)
+        if not record:
+            reasons.append(f"cas.auxiliary_lanes.{lane}:missing")
+            continue
+        state = str(record.get("status", record.get("state", ""))).lower()
+        folded = as_yes(record.get("folded")) or state in {"clean", "findings-folded"}
+        if state == "missing":
+            reasons.append(f"cas.auxiliary_lanes.{lane}:missing")
+        if not folded:
+            reasons.append(f"cas.auxiliary_lanes.{lane}:not-folded")
+        if as_yes(record.get("unresolved_blockers")) or state == "blocked":
+            reasons.append(f"cas.auxiliary_lanes.{lane}:blocked")
+        if as_yes(record.get("rerun_required")) or state == "rerun-required":
+            reasons.append(f"cas.auxiliary_lanes.{lane}:rerun-required")
+    return reasons
+
+
 def cas_advisory_blocked(context: dict[str, Any], loop: dict[str, Any]) -> bool:
     cas = object_from(context.get("cas_review"))
     artifact = object_from(context.get("artifact_scope"))
@@ -303,8 +400,8 @@ def cas_advisory_blocked(context: dict[str, Any], loop: dict[str, Any]) -> bool:
     clean_runs = object_from(loop.get("cas_clean_runs"))
     if not as_yes(clean_runs.get("required")):
         return False
-    required = clean_runs.get("required_count", clean_runs.get("clean_runs_required", 3))
-    count = clean_runs.get("count", clean_runs.get("clean_runs_count", 0))
+    required = loop_standard_clean_runs_required_for(clean_runs)
+    count = loop_standard_clean_runs_count_for(clean_runs)
     if not is_plain_int(required) or required <= 0:
         return True
     if not is_plain_int(count) or count < required:
@@ -492,21 +589,34 @@ def proof_patch_reasons_for(proof_patch: dict[str, Any], closure_candidate: str)
 
 
 def cas_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
-    if not as_yes(cas.get("required")):
-        return []
     reasons: list[str] = []
-    required = cas.get("clean_runs_required", 3)
-    count = cas.get("clean_runs_count", 0)
+    if not as_yes(cas.get("required")):
+        return auxiliary_lane_reasons_for(cas)
+    required = standard_clean_runs_required_for(cas)
+    count = standard_clean_runs_count_for(cas)
+    standard_fields_used = (
+        "standard_clean_runs_required" in cas or "standard_clean_runs_count" in cas
+    )
     if not is_plain_int(required) or required <= 0:
-        reasons.append("cas.clean_runs_required:invalid")
+        if standard_fields_used:
+            reasons.append("cas.standard_clean_runs_required:invalid")
+        else:
+            reasons.append("cas.clean_runs_required:invalid")
         required = 3
     if not is_plain_int(count) or count < 0:
-        reasons.append("cas.clean_runs_count:invalid")
+        if standard_fields_used:
+            reasons.append("cas.standard_clean_runs_count:invalid")
+        else:
+            reasons.append("cas.clean_runs_count:invalid")
         count = 0
     if count < required:
-        reasons.append(f"cas.clean_runs:{count}-of-{required}")
+        prefix = "cas.standard_clean_runs" if standard_fields_used else "cas.clean_runs"
+        reasons.append(f"{prefix}:{count}-of-{required}")
     if required > 0 and not as_yes(cas.get("independent_fresh_runs")):
-        reasons.append("cas.clean_runs:not-independent")
+        if standard_fields_used:
+            reasons.append("cas.standard_clean_runs:not-independent")
+        else:
+            reasons.append("cas.clean_runs:not-independent")
     if required > 0 and not as_yes(cas.get("tuple_bound")):
         reasons.append("cas.tuple:not-bound")
     tuple_value = cas.get("tuple") if isinstance(cas.get("tuple"), dict) else {}
@@ -519,6 +629,7 @@ def cas_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
     if required > 0 and isinstance(tuple_value.get("target_fingerprint"), str) and tuple_value.get("target_fingerprint"):
         if tuple_value.get("target_fingerprint") != artifact.get("diff_fingerprint"):
             reasons.append("cas.tuple.target_fingerprint:artifact-mismatch")
+    reasons.extend(auxiliary_lane_reasons_for(cas))
     return reasons
 
 
@@ -640,12 +751,19 @@ def final_report_reasons_for(
 ) -> list[str]:
     reasons: list[str] = []
     if as_yes(cas.get("required")):
-        required = cas.get("clean_runs_required", 3)
+        required = standard_clean_runs_required_for(cas)
         if not is_plain_int(required) or required <= 0:
             required = 3
-        value = count_from(final_report.get("normalized_cas_clean_runs"))
+        value = count_from(final_report.get("standard_clean_cas_runs"))
+        reason = "final_report.standard_clean_cas_runs:not-satisfied"
+        if value is None:
+            value = count_from(final_report.get("normalized_standard_cas_clean_runs"))
+            reason = "final_report.normalized_standard_cas_clean_runs:not-satisfied"
+        if value is None:
+            value = count_from(final_report.get("normalized_cas_clean_runs"))
+            reason = "final_report.normalized_cas_clean_runs:not-satisfied"
         if value is None or value < required:
-            reasons.append("final_report.normalized_cas_clean_runs:not-satisfied")
+            reasons.append(reason)
     return reasons
 
 
@@ -679,6 +797,8 @@ def next_owner_for(blocked: list[str], pending: list[str]) -> str:
         reason == "cas-review-blocked"
         or reason.startswith("cas.")
         or reason.startswith("final_report.normalized_cas")
+        or reason.startswith("final_report.normalized_standard_cas")
+        or reason.startswith("final_report.standard_clean_cas")
         for reason in combined
     ):
         return "$cas"

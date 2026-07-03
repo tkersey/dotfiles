@@ -302,6 +302,8 @@ Goal Actuation:
   - standard CAS clean-run counter reset: yes|no
 - review source / CAS verdict, if required:
 - clean normalized standard CAS review attempts: 0|1|2|3|not-required
+  - ATCG fields: `standard_clean_runs_count` / `standard_clean_cas_runs`
+  - required auxiliary lanes: folded|blocked|rerun-required|not-required
 - goal contract summary:
 - work list / next action:
 - review-fold disposition, if any:

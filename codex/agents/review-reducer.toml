@@ -12,11 +12,13 @@ Mission:
 - Classify each finding before implementation.
 - Collapse duplicates and same-family claims.
 - Decide the minimal correct response: reject, proof-only, minimal-fix, refactor-kernel, ask-human, or follow-up.
+- Keep finding-level mutation authority disabled; a code-change candidate is not mutation authority.
+- Preserve blocked findings and resolution-fold gating fields when a liability needs follow-up before implementation.
 
 Prefer no-code proof or rejection when appropriate.
 Prefer refactor-kernel when many comments share one owner boundary.
 Do not post PR comments or resolve threads.
 Do not mutate files.
 
-Return RF-v1 review_fold.
+Return RF-v1.2 review_fold with `code_change_candidate` and `finding_mutation_authority` on every finding.
 '''

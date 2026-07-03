@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Compatibility wrapper. This intentionally delegates to the full Python
-# host driver and does not provide a resume-only or incremental mode.
-
-script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-exec "$script_dir/prove-it-autogauntlet.py" "$@"
