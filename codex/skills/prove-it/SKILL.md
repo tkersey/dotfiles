@@ -1,43 +1,63 @@
 ---
 name: prove-it
-description: "Automatically run a ten-turn proof/disproof gauntlet for absolute claims. A valid run uses the bundled artifactless host loop to create exactly 10 separate assistant turns, one numbered round per turn; round 10 is the oracle and the only terminal verdict."
+description: "Run an artifactless parallel subagent gauntlet for absolute or suspiciously clean claims. Rounds 1-9 are independent lens packets produced concurrently by reusable pressure subagents; round 10 is an Oracle subagent that runs only after all nine packets return and owns the final verdict."
+metadata:
+  version: "3.0.0"
+  activation_cost: high
+  default_depth: high
 ---
 
 # Prove It
 
 ## Purpose
 
-Use this skill to stress-test absolute, sweeping, or suspiciously clean claims.
+Use this skill to stress-test absolute, sweeping, overconfident, or suspiciously clean claims.
 
 Typical activation cues:
 
-- Certainty language: "always", "never", "guaranteed", "optimal", "cannot fail", "no downside", "100%".
-- Explicit requests: "prove it", "disprove it", "devil's advocate", "stress test", "rigor", "find counterexamples".
-- Claims whose truth depends on hidden quantifiers, edge cases, operating conditions, baselines, adversaries, comparative standards, or unstated definitions.
+- certainty language: "always", "never", "guaranteed", "optimal", "cannot fail", "no downside", "100%";
+- explicit requests: "prove it", "disprove it", "devil's advocate", "stress test", "rigor", "find counterexamples";
+- claims whose truth depends on hidden quantifiers, edge cases, operating conditions, baselines, adversaries, comparative standards, or unstated definitions.
 
 ## Core contract
 
-A valid prove-it run is an **artifactless Auto Gauntlet**:
+A valid prove-it run is an **artifactless parallel subagent gauntlet**.
 
-1. exactly 10 assistant turns;
-2. exactly one numbered round per assistant turn;
-3. rounds execute in numeric order, 1 through 10;
-4. rounds 1-9 attack, repair, narrow, or pressure-test the claim;
-5. round 10 is the Oracle synthesis and the only place a final verdict may appear;
-6. early proof, early disproof, a counterexample, contradiction, or high confidence never stops the run;
-7. step, pause, manual-next, one-round, partial, and single-reply modes are invalid;
-8. no progress files, run directories, prompt dumps, transcripts, manifests, or template artifacts are created.
+```text
+root coordinator
+-> normalize claim and scope
+-> dispatch rounds 1-9 as independent subagent lens assignments at the same time
+-> collect nine round packets
+-> dispatch round 10 Oracle subagent with all nine packets
+-> emit the Oracle verdict and tightest surviving claim
+```
 
-The user-facing phrase "prove it" means **launch the host loop**, not "do ten sections in this reply" and not "run one round and wait".
+Non-negotiable rules:
+
+1. Rounds 1-9 are subagent work, not root-thread analysis sections.
+2. Rounds 1-9 are dispatched together before synthesis begins.
+3. Round 10 is an additional Oracle subagent and runs only after all nine round packets are available.
+4. The root coordinator does not issue a final verdict before the Oracle packet returns.
+5. One or two reusable subagent archetypes are enough; do not create nine bespoke subagent personalities.
+6. No progress files, templates, run directories, manifests, prompt dumps, transcripts, or other prove-it artifacts are created.
+7. The conversation response is the only output surface.
+
+If the runtime cannot spawn subagents, do not fake the gauntlet in the root thread. Stop with:
+
+```text
+PROVE_IT_REQUIRES_SUBAGENTS
+```
+
+Then explain that this skill requires concurrent subagent execution for rounds 1-9 and an Oracle subagent after fan-in.
 
 ## Artifactless state model
 
-State lives only in:
+State lives only in memory during the current assistant turn:
 
 ```text
-same conversation/thread
-+
-inline Checkpoint block from the latest assistant turn
+root coordinator context
++ nine round packets
++ one Oracle packet
 ```
 
 Do not create or update:
@@ -51,240 +71,398 @@ prompt/output transcript files
 any other prove-it state artifact
 ```
 
-The inline `Checkpoint` is the sole gauntlet state carrier. The host driver validates stdout in memory and exits non-zero on failure.
+## Subagent topology
 
-## Two-state execution model
+Use at most two reusable subagent archetypes unless the user explicitly asks for a different research topology.
 
-### 1. Launcher state: no driver marker is present
+### `pressure_worker`
 
-When a user invokes `$prove-it`, says "prove it", or otherwise asks for this skill on a claim and the prompt does **not** contain:
+Default worker for adversarial, falsifying, boundary, operational, probabilistic, and comparative pressure.
 
-```text
-Driver: PROVE_IT_AUTOTURN_V1
-```
-
-then do **not** execute a numbered round in the current reply.
-
-Instead, launch the bundled artifactless host driver when shell/tool execution is available:
-
-```bash
-codex/skills/prove-it/scripts/prove-it "<claim>"
-```
-
-This is the automatic loop. The driver creates one initial Codex turn and nine same-thread continuation turns. It validates each turn in memory and exits non-zero if the assistant compresses rounds, stops early, emits a premature verdict, or asks for artifact state.
-
-If shell/tool execution is unavailable, emit exactly:
+Posture:
 
 ```text
-PROVE_IT_REQUIRES_AUTOTURN_DRIVER
-
-Run:
-codex/skills/prove-it/scripts/prove-it "<claim>"
+Find the claim's weakest real boundary without declaring the final verdict.
 ```
 
-Then stop.
+### `steelman_worker`
 
-Direct invocation is valid only as a **launcher request**. Direct invocation is never valid as a numbered-round execution request.
+Optional worker for proof-like support, alternative formalizations, and strongest-surviving-claim construction.
 
-### 2. Driver state: driver marker is present
-
-When the prompt contains:
+Posture:
 
 ```text
-Driver: PROVE_IT_AUTOTURN_V1
+Find the strongest version of the claim that could survive the assigned lens, while still reporting pressure honestly.
 ```
 
-execute exactly the next uncompleted numbered round and stop. Do not ask whether to continue; the host driver owns continuation.
+The same archetype can be invoked multiple times with different lens instructions. The important unit is the **round packet**, not a distinct named agent.
 
-A valid driver prompt either starts round 1 from a claim or resumes from the latest inline `Checkpoint`. If no checkpoint exists, initialize the gauntlet and run round 1 only. If a checkpoint exists, resume at `Next round` only.
+## Dispatch law
 
-## Final-verdict invariant
+For every invocation:
 
-A final verdict is allowed only when all are true:
+1. Root normalizes the claim once.
+2. Root creates nine lens assignments for rounds 1-9.
+3. Root dispatches all nine assignments concurrently or requests them together so the host scheduler may run them in parallel.
+4. Each worker sees the original claim, normalized claim, scope, and its own lens only.
+5. Workers do not see other round packets before producing their own packet.
+6. Workers must not return a final verdict.
+7. Root waits for all nine packets.
+8. Missing, failed, or low-confidence packets are represented explicitly; the Oracle still receives the failure information.
+9. Root dispatches the Oracle subagent with the normalized claim and all nine packets.
+10. Oracle synthesizes the final verdict.
+11. Root emits the final answer without adding an independent verdict that contradicts the Oracle packet.
 
-```text
-completed_engine_turns == 10
-completed_rounds == {1,2,3,4,5,6,7,8,9,10}
-current_round == 10
+## Round packet schema
+
+Each round 1-9 subagent returns exactly one packet in this shape:
+
+```yaml
+prove_it_round_packet:
+  round: 1|2|3|4|5|6|7|8|9
+  lens:
+  worker_archetype: pressure_worker|steelman_worker
+  original_claim:
+  normalized_claim:
+  scope_assumptions: []
+  pressure_question:
+  strongest_attack:
+  smallest_counterexample_or_boundary:
+  strongest_support_found:
+  effect_on_original_claim: survives|narrows|breaks|unclear
+  effect_on_refined_claim: survives|narrows|breaks|unclear
+  candidate_fatal_pressure: null|string
+  candidate_decisive_support: null|string
+  refined_claim_delta:
+  uncertainty:
+  oracle_notes:
 ```
 
-Before round 10, the assistant may record:
+Round packets are evidence packets, not verdicts. Use `candidate_fatal_pressure` and `candidate_decisive_support` for severe findings, but keep verdict authority for the Oracle.
 
-- candidate counterexample;
-- candidate fatal pressure;
-- candidate decisive proof pressure;
-- claim narrowed;
-- pressure found but verdict embargoed;
-- no new pressure found.
+## Oracle packet schema
 
-Before round 10, the assistant must not say, as a final conclusion:
+Round 10 is a separate subagent after fan-in. It receives the normalized claim plus all nine round packets and returns:
 
-- `Final verdict:`;
-- `Oracle synthesis:`;
-- `The claim is true`;
-- `The claim is false`;
-- `The claim is proven`;
-- `The claim is disproven`;
-- `We can stop`;
-- `No need for the remaining rounds`;
-- `Action: STOP`;
-- `Action: STOP_CONCLUSIVE_PROOF`.
-
-## Canonical resume prompt
-
-The driver submits this prompt for rounds 2-10:
-
-```text
-Driver: PROVE_IT_AUTOTURN_V1
-
-Continue prove-it from the inline Checkpoint in the conversation.
-Execute exactly the next uncompleted numbered round only.
-Do not execute more than one round in this reply.
-Do not ask whether to continue.
-Do not pause for user input.
-Do not return a final verdict unless executing round 10.
-Do not create progress files, run directories, manifests, or transcript artifacts.
-Do not stop for proof, disproof, counterexample, contradiction, confidence, likely failure, or user-requested cadence changes.
-If the checkpoint is already complete at 10 of 10, report completion and do not run another round.
+```yaml
+prove_it_oracle_packet:
+  round: 10
+  lens: Oracle synthesis
+  packet_completeness:
+    received_rounds: []
+    missing_rounds: []
+    compromised_rounds: []
+  final_verdict:
+    outcome: PROVEN|DISPROVEN|NOT_PROVEN|INSUFFICIENT_EVIDENCE|BOUNDED_CLAIM_SURVIVES
+    statement:
+    decisive_reasons: []
+  tightest_surviving_claim:
+  valid_when: []
+  invalid_when: []
+  fatal_pressures_resolved: []
+  decisive_support_resolved: []
+  confidence:
+    level: low|medium|high
+    why:
+    main_gaps: []
+  next_tests: []
 ```
 
-## Ten-round gauntlet
+The Oracle is the only component that may choose `PROVEN`, `DISPROVEN`, `NOT_PROVEN`, `INSUFFICIENT_EVIDENCE`, or `BOUNDED_CLAIM_SURVIVES`.
 
-1. **Counterexamples**: find the smallest concrete case that pressures or breaks the original claim.
-2. **Logic traps**: expose missing quantifiers, unstated premises, invalid inferences, circularity, or category errors.
-3. **Boundary cases**: test zero, one, maximum, empty, pathological, extreme-scale, or degenerate cases.
-4. **Adversarial inputs**: test worst-case distributions, strategic manipulation, abuse, hostile users, or bad-faith incentives.
-5. **Alternative paradigms**: switch objective functions, models, values, or worldviews and see whether the conclusion flips.
-6. **Operational constraints**: test latency, cost, compliance, integration, maintainability, availability, policy, and organizational hard stops.
-7. **Probabilistic uncertainty**: test variance, tail risk, base rates, sampling bias, uncertainty intervals, and distribution shift.
-8. **Comparative baselines**: ask "better than what?", against which counterfactual, on which metric, with which trade-offs.
-9. **Meta-test**: design the fastest disproof experiment or decisive information-gathering test.
-10. **Oracle synthesis**: return the final verdict, tightest surviving claim, boundaries, confidence trail, and next tests.
+## Enhanced lens definitions
 
-## Round self-prompt bank
+### Round 1 — Counterexamples
 
-Use exactly the self-prompt matching the current numbered round.
+Find the smallest concrete case that pressures the claim. Prefer crisp examples over broad skepticism.
 
-- Counterexamples: What is the smallest input, case, or scenario that pressures or breaks the original claim?
-- Logic traps: Which hidden assumption, quantifier shift, invalid inference, or definition problem must hold?
-- Boundary cases: Which edge boundary is most plausible in real use?
-- Adversarial inputs: What does worst-case, strategic, abusive, or hostile input look like?
-- Alternative paradigms: What objective, worldview, model, or value system makes the opposite conclusion reasonable?
-- Operational constraints: Which dependency, policy, system limit, organizational constraint, or integration constraint is a hard stop?
-- Probabilistic uncertainty: What distribution shift, tail event, base-rate error, sampling bias, or variance flips the result?
-- Comparative baselines: Better than what, on which metric, under which counterfactual, and with which trade-offs?
-- Meta-test: What experiment or observation would change the final verdict fastest?
-- Oracle synthesis: What final verdict is justified after all prior pressure, and what boundaries keep it honest?
-
-## Required output schema
-
-The host driver validates this schema after every assistant turn. Prefer exact labels.
-
-### Rounds 1-9
+Ask:
 
 ```text
-Round N — <Focus>
+What single case, input, population, object, environment, or scenario would make the original wording false or materially misleading?
+```
 
-<brief round analysis>
+Look for:
 
-Round Ledger:
-Round: N
-Engine turn: N of 10
-Focus:
+- universal quantifier breaks;
+- existence counterexamples;
+- ordinary real-world exceptions;
+- minimal reproducible cases;
+- cases where the claim is true only after adding hidden qualifiers.
+
+Packet emphasis:
+
+```text
+smallest_counterexample_or_boundary
+candidate_fatal_pressure
+refined_claim_delta
+```
+
+### Round 2 — Logic traps
+
+Interrogate the argument shape rather than the world. Identify whether the claim relies on a hidden definition, invalid inference, equivocation, circularity, or category mistake.
+
+Ask:
+
+```text
+What must be smuggled into the premises for the claim to sound proven?
+```
+
+Look for:
+
+- missing quantifiers or domain restrictions;
+- moving from some to all, average to individual, correlation to causation, or possibility to necessity;
+- circular definitions;
+- overloaded terms;
+- category errors;
+- claims that cannot be evaluated because key predicates are undefined.
+
+Packet emphasis:
+
+```text
+scope_assumptions
+strongest_attack
+uncertainty
+oracle_notes
+```
+
+### Round 3 — Boundary cases
+
+Probe edges where normal intuitions fail. Boundary cases are not random weirdness; they test whether the claim has a stable domain.
+
+Ask:
+
+```text
+What happens at zero, one, infinity, empty input, maximum scale, degenerate form, pathological data, or extreme resource limits?
+```
+
+Look for:
+
+- empty sets and missing inputs;
+- one-item cases;
+- maximum-size or high-scale cases;
+- degenerate objects;
+- numerical precision, ordering, timeout, or lifecycle edges;
+- cases where the intended invariant changes at the boundary.
+
+Packet emphasis:
+
+```text
+smallest_counterexample_or_boundary
+effect_on_refined_claim
+refined_claim_delta
+```
+
+### Round 4 — Adversarial inputs
+
+Assume a strategic actor wants the claim to fail or become costly. The adversary may be a user, market participant, attacker, institution, optimizer, or unlucky data generator.
+
+Ask:
+
+```text
+How would someone with incentives, information, or control over inputs make the claim fail while staying within the stated rules?
+```
+
+Look for:
+
+- manipulation and gaming;
+- malicious or abusive inputs;
+- prompt, policy, or interface exploitation;
+- Goodharting;
+- incentive mismatch;
+- worst-case distributions;
+- cases where defense costs exceed claimed benefits.
+
+Packet emphasis:
+
+```text
+strongest_attack
+candidate_fatal_pressure
+oracle_notes
+```
+
+### Round 5 — Alternative paradigms
+
+Switch the objective function, worldview, model, or value system. Some claims survive only because the original frame hides what is being optimized.
+
+Ask:
+
+```text
+Under which reasonable alternative frame does the conclusion become false, irrelevant, or dominated by another goal?
+```
+
+Look for:
+
+- different success metrics;
+- different stakeholders;
+- safety vs speed, cost vs quality, autonomy vs control, precision vs recall;
+- formal vs pragmatic truth;
+- local vs global optimum;
+- deontological, consequentialist, legal, operational, or user-experience reframings.
+
+Packet emphasis:
+
+```text
+scope_assumptions
+strongest_support_found
+effect_on_original_claim
+refined_claim_delta
+```
+
+### Round 6 — Operational constraints
+
+Test implementation reality. A claim may be logically possible and still fail under latency, cost, integration, policy, staffing, compliance, maintenance, or deployment constraints.
+
+Ask:
+
+```text
+What real operating constraint makes this claim unusable, unscalable, unsafe, noncompliant, or too expensive?
+```
+
+Look for:
+
+- latency and throughput limits;
+- cost ceilings;
+- dependency reliability;
+- migration and rollback constraints;
+- compliance or policy hard stops;
+- maintenance burden;
+- observability gaps;
+- organizational ownership failures.
+
+Packet emphasis:
+
+```text
+candidate_fatal_pressure
+uncertainty
+oracle_notes
+```
+
+### Round 7 — Probabilistic uncertainty
+
+Replace point estimates with distributions. The question is not only whether the claim can be true, but how fragile it is under variance, base rates, sampling error, and distribution shift.
+
+Ask:
+
+```text
+What base-rate, variance, tail-risk, sampling, or distribution-shift fact would make confidence in the claim unjustified?
+```
+
+Look for:
+
+- small sample overreach;
+- survivorship bias;
+- heavy tails;
+- rare but catastrophic cases;
+- Simpson's paradox;
+- regression to the mean;
+- nonstationarity;
+- confidence intervals that cross the decision boundary.
+
+Packet emphasis:
+
+```text
+uncertainty
+effect_on_original_claim
+next evidence needed in oracle_notes
+```
+
+### Round 8 — Comparative baselines
+
+Force the claim to name its counterfactual. Many claims are only impressive until compared with the right baseline.
+
+Ask:
+
+```text
+Better, safer, cheaper, faster, truer, or more robust than what, on which metric, under which trade-off?
+```
+
+Look for:
+
+- straw baselines;
+- missing counterfactuals;
+- metric cherry-picking;
+- dominated alternatives;
+- trade-offs hidden by a single success metric;
+- local improvements that worsen system-level outcomes.
+
+Packet emphasis:
+
+```text
+strongest_attack
+strongest_support_found
+refined_claim_delta
+```
+
+### Round 9 — Meta-test
+
+Design the fastest information-gathering move that would change the verdict. This round does not merely criticize; it identifies the cleanest path to resolution.
+
+Ask:
+
+```text
+What observation, experiment, proof obligation, benchmark, adversarial test, or data collection would most efficiently decide the claim?
+```
+
+Look for:
+
+- decisive experiments;
+- falsification tests;
+- minimal proof obligations;
+- benchmarks with real baselines;
+- adversarial trials;
+- field data;
+- cheap probes that dominate further debate.
+
+Packet emphasis:
+
+```text
+oracle_notes
+uncertainty
+refined_claim_delta
+```
+
+### Round 10 — Oracle synthesis
+
+The Oracle receives all nine packets. It does not rerun all analysis; it adjudicates the packet set.
+
+Ask:
+
+```text
+After all independent pressure packets, what verdict is justified, what is the tightest surviving claim, and what would change the answer fastest?
+```
+
+The Oracle must:
+
+- resolve candidate fatal pressures;
+- resolve candidate decisive support;
+- distinguish original claim from refined claim;
+- avoid overclaiming beyond packet evidence;
+- produce one final outcome;
+- name validity boundaries and next tests.
+
+## Root final response
+
+After the Oracle packet returns, the root emits:
+
+```text
+Prove It — Parallel Subagent Gauntlet
+
 Original claim:
 Normalized claim:
-Claim scope:
-Current refined claim entering round:
-Attack summary:
-New evidence:
-New candidate counterexample or pressure:
-New candidate decisive proof pressure:
-Effect on original claim:
-Effect on refined claim:
-Candidate fatal pressures carried forward:
-Candidate decisive proof pressures carried forward:
-Remaining gaps:
-Verdict embargo status: ACTIVE
-Next round: N+1 — <Focus>
+Packets received: 1,2,3,4,5,6,7,8,9
+Oracle: complete
 
-Knowledge Delta:
-- New:
-- Updated:
-- Invalidated:
-
-Continuation Gate:
-Round completed: N of 10
-Final verdict allowed: no
-Candidate status: <pressure found | no new pressure | claim narrowed | candidate fatal pressure | candidate decisive proof pressure>
-Reason terminal output is not allowed yet:
-Action: AUTO_CONTINUE_TO_ROUND_<N+1>
-
-Checkpoint:
-Driver: PROVE_IT_AUTOTURN_V1
-Mode: auto-gauntlet-only
-Status: IN PROGRESS
-Completed engine turns: N of 10
-Completed round: N
-Next round: N+1 — <Focus>
-Verdict embargo: ACTIVE
-Stop reason: none
-Current refined claim:
-Candidate fatal pressures carried forward:
-Candidate decisive proof pressures carried forward:
-Resume rule:
-```
-
-### Round 10
-
-```text
-Round 10 — Oracle synthesis
-
-<brief synthesis>
-
-Round Ledger:
-Round: 10
-Engine turn: 10 of 10
-Focus: Oracle synthesis
-Original claim:
-Normalized claim:
-Claim scope:
-Current refined claim entering round:
-Attack summary:
-New evidence:
-New candidate counterexample or pressure:
-New candidate decisive proof pressure:
-Effect on original claim:
-Effect on refined claim:
-Candidate fatal pressures carried forward:
-Candidate decisive proof pressures carried forward:
-Remaining gaps:
-Verdict embargo status: LIFTED_BY_ROUND_10
-Next round: none
-
-Knowledge Delta:
-- New:
-- Updated:
-- Invalidated:
-
-Continuation Gate:
-Round completed: 10 of 10
-Final verdict allowed: yes
-Candidate status:
-Reason terminal output is not allowed yet: none
-Action: COMPLETE_ROUND_10
-
-Oracle synthesis:
-Original claim:
-Normalized claim:
-Completed engine turns: 10 of 10
-Verdict embargo: LIFTED_BY_ROUND_10
-
-Final verdict:
-- Outcome: <PROVEN | DISPROVEN | NOT_PROVEN | INSUFFICIENT_EVIDENCE | BOUNDED_CLAIM_SURVIVES>
-- Verdict statement:
+Verdict:
+- Outcome:
+- Statement:
 - Decisive reasons:
 
 Tightest surviving claim:
+
+Round pressure map:
+| Round | Lens | Effect | Key pressure/support |
+|---|---|---|---|
 
 Valid when:
 - ...
@@ -292,46 +470,27 @@ Valid when:
 Invalid when:
 - ...
 
-Candidate fatal pressures resolved:
-- ...
-
-Candidate decisive proof pressures resolved:
-- ...
-
-Confidence trail:
-- Evidence:
-- Counterpressure:
+Confidence:
+- Level:
+- Why:
 - Gaps:
 
 Next tests:
 - ...
-
-Checkpoint:
-Driver: PROVE_IT_AUTOTURN_V1
-Mode: auto-gauntlet-only
-Status: COMPLETE
-Completed engine turns: 10 of 10
-Completed round: 10
-Next round: none
-Verdict embargo: LIFTED_BY_ROUND_10
-Stop reason: ROUND_10_COMPLETE
-Current refined claim:
-Candidate fatal pressures carried forward:
-Candidate decisive proof pressures carried forward:
-Resume rule: complete
 ```
 
-## Heading rule
+Do not print all raw subagent packets unless the user asks for them. Summarize them in the pressure map.
 
-A reply must contain exactly one top-level `Round N — <Focus>` heading. Do not put additional top-level `Round N` headings inside the Checkpoint or historical records. If historical records are needed, name them `Round record N`.
+## Stop rules
 
-The validator ignores nested `### Round N` headings for compatibility, but new outputs should not rely on that compatibility path.
+Stop without running the gauntlet when:
 
-## Artifact prohibition
+- no claim is present;
+- subagents are unavailable;
+- the user asks only how the skill works;
+- the request is about editing the skill rather than stress-testing a claim.
 
-Do not create progress templates, progress files, logs, transcripts, run folders, manifests, or other prove-it state artifacts. Do not ask the host driver to write them. Do not tell the user to inspect an artifact path.
-
-The only durable content from a prove-it run is the conversation itself.
+Do not stop merely because a worker finds an apparently decisive proof, disproof, or counterexample. That is packet evidence for the Oracle.
 
 ## Regression guards
 
@@ -339,11 +498,13 @@ The only durable content from a prove-it run is the conversation itself.
 
 Input request: `Use prove-it on this claim: all swans are white.`
 
-Expected behavior when no driver marker is present:
+Expected behavior:
 
-- do not execute round 1 in the current reply;
-- launch `codex/skills/prove-it/scripts/prove-it "all swans are white"` when shell/tool execution is available;
-- if shell/tool execution is unavailable, emit `PROVE_IT_REQUIRES_AUTOTURN_DRIVER` plus the command.
+- root normalizes the claim;
+- root dispatches rounds 1-9 as parallel subagent assignments;
+- round 1 likely identifies black swans as candidate fatal pressure;
+- root does not issue a final verdict before Oracle;
+- Oracle decides the final verdict after all packets.
 
 ### Step, pause, or compression request
 
@@ -354,25 +515,9 @@ Inputs:
 
 Expected behavior:
 
-- never execute a numbered round without the driver marker;
-- never compress multiple rounds into one reply;
-- route to the host driver when tool execution is available, or emit the driver-required fallback.
-
-### Universal claim counterexample in round 1
-
-Input claim: `All swans are white.`
-
-Expected round 1 behavior under the host driver:
-
-- identify black swans as candidate fatal pressure;
-- do not return `Final verdict: DISPROVEN`;
-- set `Verdict embargo: ACTIVE`;
-- set `Action: AUTO_CONTINUE_TO_ROUND_2`.
-
-Expected round 10 behavior:
-
-- resolve the candidate fatal pressure;
-- return the final verdict only in Oracle synthesis.
+- do not run a manual sequential round;
+- do not compress root-authored pseudo-rounds;
+- use the parallel subagent gauntlet or stop with `PROVE_IT_REQUIRES_SUBAGENTS`.
 
 ### Artifactless run
 
@@ -383,26 +528,14 @@ Expected behavior:
 - no `.prove-it-runs/`;
 - no prompt/output transcript files;
 - no manifest;
-- stdout validation only.
+- final output only in conversation.
 
-### Valid-looking early proof still runs all rounds
+### Valid-looking early proof still reaches Oracle
 
 Input claim: `For every integer n, n + 0 = n.`
 
 Expected behavior:
 
-- record candidate decisive proof pressure before round 10;
-- continue all rounds;
-- let round 10 decide whether the proof survives all lenses.
-
-### Early terminal strings are invalid
-
-Invalid before round 10:
-
-- `Status: COMPLETE`
-- `Final verdict:`
-- `Oracle synthesis:`
-- `Terminal verdict: PROVEN`
-- `Terminal verdict: DISPROVEN`
-- `Action: STOP`
-- `Action: STOP_CONCLUSIVE_PROOF`
+- support-oriented packets may record candidate decisive support;
+- pressure packets still run;
+- Oracle decides whether the proof survives all lenses.
