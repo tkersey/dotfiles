@@ -1,8 +1,8 @@
 ---
 name: prove-it
-description: "Run an artifactless parallel subagent gauntlet for absolute or suspiciously clean claims. Rounds 1-9 are independent lens packets produced concurrently by reusable pressure subagents; round 10 is an Oracle subagent that runs only after all nine packets return and owns the final verdict."
+description: "Run an artifactless parallel subagent gauntlet for absolute or suspiciously clean claims. Rounds 1-9 are independent lens packets produced concurrently by reusable lens_worker subagents; round 10 is an oracle_worker subagent that runs only after all nine packets return and owns the final verdict."
 metadata:
-  version: "3.0.0"
+  version: "3.1.0"
   activation_cost: high
   default_depth: high
 ---
@@ -26,21 +26,22 @@ A valid prove-it run is an **artifactless parallel subagent gauntlet**.
 ```text
 root coordinator
 -> normalize claim and scope
--> dispatch rounds 1-9 as independent subagent lens assignments at the same time
+-> dispatch rounds 1-9 as independent lens_worker assignments at the same time
 -> collect nine round packets
--> dispatch round 10 Oracle subagent with all nine packets
--> emit the Oracle verdict and tightest surviving claim
+-> dispatch round 10 oracle_worker with all nine packets
+-> emit the oracle verdict and tightest surviving claim
 ```
 
 Non-negotiable rules:
 
 1. Rounds 1-9 are subagent work, not root-thread analysis sections.
 2. Rounds 1-9 are dispatched together before synthesis begins.
-3. Round 10 is an additional Oracle subagent and runs only after all nine round packets are available.
-4. The root coordinator does not issue a final verdict before the Oracle packet returns.
-5. One or two reusable subagent archetypes are enough; do not create nine bespoke subagent personalities.
-6. No progress files, templates, run directories, manifests, prompt dumps, transcripts, or other prove-it artifacts are created.
-7. The conversation response is the only output surface.
+3. Rounds 1-9 all use the reusable `lens_worker` role with different lens instructions.
+4. Round 10 uses the `oracle_worker` role and runs only after all nine round packets are available.
+5. The root coordinator does not issue a final verdict before the oracle packet returns.
+6. Do not create nine bespoke subagent personalities; the round lens, not the worker name, carries the direction.
+7. No progress files, templates, run directories, manifests, prompt dumps, transcripts, or other prove-it artifacts are created.
+8. The conversation response is the only output surface.
 
 If the runtime cannot spawn subagents, do not fake the gauntlet in the root thread. Stop with:
 
@@ -48,7 +49,7 @@ If the runtime cannot spawn subagents, do not fake the gauntlet in the root thre
 PROVE_IT_REQUIRES_SUBAGENTS
 ```
 
-Then explain that this skill requires concurrent subagent execution for rounds 1-9 and an Oracle subagent after fan-in.
+Then explain that this skill requires concurrent `lens_worker` execution for rounds 1-9 and an `oracle_worker` after fan-in.
 
 ## Artifactless state model
 
@@ -56,8 +57,8 @@ State lives only in memory during the current assistant turn:
 
 ```text
 root coordinator context
-+ nine round packets
-+ one Oracle packet
++ nine lens_worker round packets
++ one oracle_worker packet
 ```
 
 Do not create or update:
@@ -71,31 +72,67 @@ prompt/output transcript files
 any other prove-it state artifact
 ```
 
-## Subagent topology
+## Worker topology
 
-Use at most two reusable subagent archetypes unless the user explicitly asks for a different research topology.
+Use exactly two worker roles.
 
-### `pressure_worker`
+### `lens_worker`
 
-Default worker for adversarial, falsifying, boundary, operational, probabilistic, and comparative pressure.
+Used for every round from 1 through 9.
+
+A `lens_worker` receives:
+
+```yaml
+worker_role: lens_worker
+round: 1|2|3|4|5|6|7|8|9
+lens:
+original_claim:
+normalized_claim:
+claim_scope:
+assignment:
+```
 
 Posture:
 
 ```text
-Find the claim's weakest real boundary without declaring the final verdict.
+Apply the assigned lens sharply and independently. Produce one evidence packet. Do not synthesize across other rounds and do not declare the final verdict.
 ```
 
-### `steelman_worker`
+A `lens_worker` may find attack, support, uncertainty, or narrowing. It is not inherently hostile or defensive. Its direction comes from the lens assignment.
 
-Optional worker for proof-like support, alternative formalizations, and strongest-surviving-claim construction.
+Useful modes:
+
+```text
+falsify       find a concrete break or counterexample
+bound         locate scope boundaries and edge conditions
+support       identify the strongest surviving form or proof-like support
+compare       test against alternatives, baselines, and metrics
+test_design   propose the fastest discriminating proof or experiment
+```
+
+### `oracle_worker`
+
+Used only for round 10 after all nine lens packets return.
+
+A `oracle_worker` receives:
+
+```yaml
+worker_role: oracle_worker
+round: 10
+lens: Oracle synthesis
+original_claim:
+normalized_claim:
+claim_scope:
+round_packets: []
+```
 
 Posture:
 
 ```text
-Find the strongest version of the claim that could survive the assigned lens, while still reporting pressure honestly.
+Adjudicate the complete packet set. Decide the final verdict, tightest surviving claim, boundaries, confidence, and next tests without rerunning the whole gauntlet.
 ```
 
-The same archetype can be invoked multiple times with different lens instructions. The important unit is the **round packet**, not a distinct named agent.
+The `oracle_worker` is the only worker allowed to choose the terminal outcome.
 
 ## Dispatch law
 
@@ -103,15 +140,15 @@ For every invocation:
 
 1. Root normalizes the claim once.
 2. Root creates nine lens assignments for rounds 1-9.
-3. Root dispatches all nine assignments concurrently or requests them together so the host scheduler may run them in parallel.
-4. Each worker sees the original claim, normalized claim, scope, and its own lens only.
-5. Workers do not see other round packets before producing their own packet.
-6. Workers must not return a final verdict.
+3. Root dispatches all nine assignments to `lens_worker` subagents concurrently, or requests them together so the host scheduler may run them in parallel.
+4. Each `lens_worker` sees the original claim, normalized claim, scope, and its own lens only.
+5. `lens_worker` instances do not see other round packets before producing their own packet.
+6. `lens_worker` instances must not return a final verdict.
 7. Root waits for all nine packets.
-8. Missing, failed, or low-confidence packets are represented explicitly; the Oracle still receives the failure information.
-9. Root dispatches the Oracle subagent with the normalized claim and all nine packets.
-10. Oracle synthesizes the final verdict.
-11. Root emits the final answer without adding an independent verdict that contradicts the Oracle packet.
+8. Missing, failed, or low-confidence packets are represented explicitly; the oracle still receives the failure information.
+9. Root dispatches the `oracle_worker` with the normalized claim and all nine packets.
+10. `oracle_worker` synthesizes the final verdict.
+11. Root emits the final answer without adding an independent verdict that contradicts the oracle packet.
 
 ## Round packet schema
 
@@ -119,9 +156,10 @@ Each round 1-9 subagent returns exactly one packet in this shape:
 
 ```yaml
 prove_it_round_packet:
+  worker_role: lens_worker
   round: 1|2|3|4|5|6|7|8|9
   lens:
-  worker_archetype: pressure_worker|steelman_worker
+  lens_mode: falsify|bound|support|compare|test_design
   original_claim:
   normalized_claim:
   scope_assumptions: []
@@ -138,7 +176,7 @@ prove_it_round_packet:
   oracle_notes:
 ```
 
-Round packets are evidence packets, not verdicts. Use `candidate_fatal_pressure` and `candidate_decisive_support` for severe findings, but keep verdict authority for the Oracle.
+Round packets are evidence packets, not verdicts. Use `candidate_fatal_pressure` and `candidate_decisive_support` for severe findings, but keep verdict authority for the oracle.
 
 ## Oracle packet schema
 
@@ -146,6 +184,7 @@ Round 10 is a separate subagent after fan-in. It receives the normalized claim p
 
 ```yaml
 prove_it_oracle_packet:
+  worker_role: oracle_worker
   round: 10
   lens: Oracle synthesis
   packet_completeness:
@@ -168,7 +207,7 @@ prove_it_oracle_packet:
   next_tests: []
 ```
 
-The Oracle is the only component that may choose `PROVEN`, `DISPROVEN`, `NOT_PROVEN`, `INSUFFICIENT_EVIDENCE`, or `BOUNDED_CLAIM_SURVIVES`.
+The oracle is the only component that may choose `PROVEN`, `DISPROVEN`, `NOT_PROVEN`, `INSUFFICIENT_EVIDENCE`, or `BOUNDED_CLAIM_SURVIVES`.
 
 ## Enhanced lens definitions
 
@@ -193,6 +232,7 @@ Look for:
 Packet emphasis:
 
 ```text
+lens_mode: falsify
 smallest_counterexample_or_boundary
 candidate_fatal_pressure
 refined_claim_delta
@@ -220,6 +260,7 @@ Look for:
 Packet emphasis:
 
 ```text
+lens_mode: bound
 scope_assumptions
 strongest_attack
 uncertainty
@@ -248,6 +289,7 @@ Look for:
 Packet emphasis:
 
 ```text
+lens_mode: bound
 smallest_counterexample_or_boundary
 effect_on_refined_claim
 refined_claim_delta
@@ -276,6 +318,7 @@ Look for:
 Packet emphasis:
 
 ```text
+lens_mode: falsify
 strongest_attack
 candidate_fatal_pressure
 oracle_notes
@@ -303,6 +346,7 @@ Look for:
 Packet emphasis:
 
 ```text
+lens_mode: compare
 scope_assumptions
 strongest_support_found
 effect_on_original_claim
@@ -333,6 +377,7 @@ Look for:
 Packet emphasis:
 
 ```text
+lens_mode: bound
 candidate_fatal_pressure
 uncertainty
 oracle_notes
@@ -362,6 +407,7 @@ Look for:
 Packet emphasis:
 
 ```text
+lens_mode: bound
 uncertainty
 effect_on_original_claim
 next evidence needed in oracle_notes
@@ -389,6 +435,7 @@ Look for:
 Packet emphasis:
 
 ```text
+lens_mode: compare
 strongest_attack
 strongest_support_found
 refined_claim_delta
@@ -417,6 +464,7 @@ Look for:
 Packet emphasis:
 
 ```text
+lens_mode: test_design
 oracle_notes
 uncertainty
 refined_claim_delta
@@ -424,15 +472,15 @@ refined_claim_delta
 
 ### Round 10 — Oracle synthesis
 
-The Oracle receives all nine packets. It does not rerun all analysis; it adjudicates the packet set.
+The oracle receives all nine packets. It does not rerun all analysis; it adjudicates the packet set.
 
 Ask:
 
 ```text
-After all independent pressure packets, what verdict is justified, what is the tightest surviving claim, and what would change the answer fastest?
+After all independent lens packets, what verdict is justified, what is the tightest surviving claim, and what would change the answer fastest?
 ```
 
-The Oracle must:
+The oracle must:
 
 - resolve candidate fatal pressures;
 - resolve candidate decisive support;
@@ -443,7 +491,7 @@ The Oracle must:
 
 ## Root final response
 
-After the Oracle packet returns, the root emits:
+After the oracle packet returns, the root emits:
 
 ```text
 Prove It — Parallel Subagent Gauntlet
@@ -490,7 +538,7 @@ Stop without running the gauntlet when:
 - the user asks only how the skill works;
 - the request is about editing the skill rather than stress-testing a claim.
 
-Do not stop merely because a worker finds an apparently decisive proof, disproof, or counterexample. That is packet evidence for the Oracle.
+Do not stop merely because a worker finds an apparently decisive proof, disproof, or counterexample. That is packet evidence for the oracle.
 
 ## Regression guards
 
@@ -501,10 +549,10 @@ Input request: `Use prove-it on this claim: all swans are white.`
 Expected behavior:
 
 - root normalizes the claim;
-- root dispatches rounds 1-9 as parallel subagent assignments;
+- root dispatches rounds 1-9 as parallel `lens_worker` assignments;
 - round 1 likely identifies black swans as candidate fatal pressure;
-- root does not issue a final verdict before Oracle;
-- Oracle decides the final verdict after all packets.
+- root does not issue a final verdict before oracle;
+- oracle decides the final verdict after all packets.
 
 ### Step, pause, or compression request
 
@@ -530,7 +578,7 @@ Expected behavior:
 - no manifest;
 - final output only in conversation.
 
-### Valid-looking early proof still reaches Oracle
+### Valid-looking early proof still reaches oracle
 
 Input claim: `For every integer n, n + 0 = n.`
 
@@ -538,4 +586,4 @@ Expected behavior:
 
 - support-oriented packets may record candidate decisive support;
 - pressure packets still run;
-- Oracle decides whether the proof survives all lenses.
+- oracle decides whether the proof survives all lenses.
