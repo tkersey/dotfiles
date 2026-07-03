@@ -159,6 +159,21 @@ def test_early_final_verdict_is_rejected() -> None:
     assert any("final verdict" in error for error in result.errors)
 
 
+def test_artifact_contract_is_rejected() -> None:
+    driver = load_driver()
+    text = nonterminal_turn(1) + "\nManifest: .prove-it-runs/run-123/manifest.json\n"
+    result = driver.validate_turn(text, 1)
+    assert not result.ok
+    assert any("artifact" in error for error in result.errors)
+
+
+def test_driver_parser_has_no_out_dir_option() -> None:
+    driver = load_driver()
+    parser = driver.build_parser()
+    option_strings = {option for action in parser._actions for option in action.option_strings}
+    assert "--out-dir" not in option_strings
+
+
 def test_round_10_terminal_contract() -> None:
     driver = load_driver()
     result = driver.validate_turn(terminal_turn(), 10)
@@ -177,6 +192,8 @@ def main() -> int:
         test_nested_round_heading_in_checkpoint_is_ignored,
         test_space_separated_continue_action_is_accepted,
         test_early_final_verdict_is_rejected,
+        test_artifact_contract_is_rejected,
+        test_driver_parser_has_no_out_dir_option,
         test_round_10_terminal_contract,
         test_round_10_requires_complete_action,
     ):
