@@ -2,7 +2,7 @@
 name: goal-actuating
 description: "Run an accepted implementation spec or direct /goal through the goal runtime. Interprets HYL-v1 as a defunctionalized actuation machine, emits HSR-v1 step receipts, schedules bounded subagents when safe, requires $cas for workflow review, and closes through proof plus ATCG."
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   activation_cost: medium
   default_depth: high
 ---
@@ -50,6 +50,7 @@ goal_actuating_mode:
   implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
   review_mode: none|triage|remediation-plan|review-closeout
   review: none|existing-review|cas-probe|cas-lane|cas-exhaustive
+  review_lanes: []
   resolution: none|review-fold-only|resolution-fold|accepted-liabilities|resolution-campaign
   scheme_plan: none|required|present
   loop_contract: fused|ALSR-HYL|required|st-owned
@@ -66,15 +67,15 @@ goal_actuating_mode:
 5. Derive a goal contract with `$goal-contract`.
 6. Choose `update_plan`, `goal-artifacts`, or `$st` persistence.
 7. Interpret HYL-v1: unfold a legal work node/frontier, execute it, fold evidence, and emit HSR-v1.
-8. If the workflow performs fresh or exhaustive review, run `$cas` review.
-9. Classify review findings with `$review-fold`.
+8. If the workflow performs fresh or exhaustive review, select a CAS review profile and run required CAS review lanes.
+9. Classify standard and auxiliary review-lane findings with `$review-fold`.
 10. Run a resolution fold when review work needs a resolution plan.
 11. Create a work list with `$goal-workgraph` only when decomposition changes execution.
 12. Schedule bounded subagents only for explicit safe frontier nodes.
 13. Execute one useful action at a time with `$goal-grind`, unless `$st` owns execution.
 14. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolution fold as appropriate.
 15. Use `$failure-memory` when failures or review classes repeat.
-16. For `review-closeout` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
+16. For `review-closeout` and exhaustive review, require three consecutive clean normalized **standard** `$cas` review attempts on the same artifact scope before completion.
 17. Run ATCG-v1 before completion.
 18. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
 
@@ -94,6 +95,28 @@ No mutation is valid without an unfolded work node.
 No continuation is valid without a fold verdict.
 No completion is valid without terminal ATCG-v1.
 
+## Review lanes
+
+Workflow review is CAS-backed and lane-aware.
+
+```text
+standard          ordinary CAS code-review attempt; the only lane that counts toward the 3-clean-review streak
+footgun-finder   auxiliary CAS review lens for latent misuse hazards, unsafe defaults, misleading affordances, and future caller traps
+invariant-ace    auxiliary CAS review lens for illegal states, owner/source-of-truth gaps, transition preservation, policy exceptions, witness parity, races, retries, duplicates, and loop invariants
+complexity-mitigator
+                  auxiliary CAS review lens for comprehension stalls, boolean soup, mixed responsibilities, dominated branches, hidden state, and one-patch-per-comment pressure
+```
+
+Rules:
+
+- `standard` is required whenever workflow review is required.
+- Auxiliary lanes are selected before review from the diff surface, accepted proof bar, user request, or prior review class.
+- Auxiliary lanes are real CAS review evidence, but they do not increment or interrupt the standard clean-review streak.
+- Auxiliary findings must be folded through `$review-fold` and may block closeout or become accepted liabilities.
+- A code change from any lane resets the standard clean-review streak to zero.
+- Read-only or classification-only auxiliary lane results do not reset the standard streak unless they change artifact scope or proof bar.
+- Do not rerun auxiliary lanes on every standard clean attempt unless their surface was touched, their prior result was blocked/validate-first, the proof bar changed, or a standard review exposes a new class owned by that lens.
+
 ## HYL coalgebra
 
 The default coalgebra is obligation-driven:
@@ -103,12 +126,14 @@ if no accepted spec -> blocked
 if topology nontrivial and no Scheme Plan -> produce scheme-planner node
 if material and no ALSR/HYL -> produce agent-loop-schemes node
 if no goal contract -> produce goal-contract node
-if review requested and no CAS result -> produce CAS review node
-if CAS findings unclassified -> produce review-fold node
+if review requested and no review profile -> produce review-profile node
+if review requested and no standard CAS result -> produce standard CAS review node
+if required auxiliary review lane missing or invalidated -> produce CAS auxiliary review-lane node
+if CAS lane findings unclassified -> produce review-fold node
 if review requested and no resolution agenda -> produce resolution-fold node
 if accepted liabilities remain -> produce patch/refactor/branch-race node
 if proof missing -> produce verifier/proof node
-if clean CAS count < 3 -> produce fresh CAS review node
+if standard clean CAS count < 3 -> produce fresh standard CAS review node
 if proof-patch missing -> produce proof-patch node
 if ATCG not run -> produce ATCG node
 else -> terminal complete
@@ -119,9 +144,10 @@ else -> terminal complete
 The algebra folds effects into actuation state:
 
 ```text
-code change -> reset clean CAS count and proof freshness
-CAS review -> normalize through review-fold and update clean counter
-review-fold -> update dispositions and quotient findings into classes
+code change -> reset standard clean CAS count and proof freshness
+standard CAS review -> normalize through review-fold and update standard clean counter
+auxiliary CAS review -> normalize through review-fold; do not update standard clean counter
+review-fold -> update dispositions, lane blockers, and quotient findings into classes
 resolution fold -> update accepted liabilities / no-code dispositions / blockers
 proof check -> update verifier state
 proof patch -> update proof state
@@ -160,11 +186,11 @@ A subagent result is advisory until the lead folds it and either accepts, reject
 
 ## Parallel integration and CAS clean runs
 
-Parallelism does not weaken the three-clean-CAS closure bar.
+Parallelism does not weaken the three-standard-clean-CAS closure bar.
 
-The clean-run counter resets to 0 after any accepted artifact-changing subagent result, including patch fanout results and branch-race winner integration.
+The standard clean-run counter resets to 0 after any accepted artifact-changing subagent result, including auxiliary-lane fixes, patch fanout results, and branch-race winner integration.
 
-Read-only fanout and classification-only fanout do not reset the counter unless the artifact scope or proof bar changes.
+Read-only fanout, classification-only fanout, and clean auxiliary review lanes do not reset the standard counter unless the artifact scope or proof bar changes.
 
 ## CAS review mandate
 
@@ -193,7 +219,9 @@ Explicit review mode names carry the mutation rule:
 - `review-closeout`: classify findings, implement only accepted code-change liabilities, prove closure, and stop at ATCG or `$ship` handoff.
 
 ```text
-$cas review
+CAS review profile selection
+-> $cas standard review
+-> optional $cas auxiliary review lanes: footgun-finder | invariant-ace | complexity-mitigator
 -> $review-fold
 -> optional review-class-fanout
 -> resolution fold
@@ -201,10 +229,16 @@ $cas review
 -> $goal-grind accepted liabilities only
 -> optional patch-fanout over disjoint accepted liabilities only
 -> $evidence-fold
--> 3 clean normalized $cas review runs
+-> 3 clean normalized standard $cas review attempts
 -> $proof-patch
 -> ATCG-v1
 ```
+
+Auxiliary lane selection:
+
+- Use `footgun-finder` when the diff touches APIs, CLIs, config, examples, docs, defaults, flags, fallbacks, auth/permissions, persistence, lifecycle/state-machine surfaces, degraded success, or partial-success ambiguity.
+- Use `invariant-ace` when the diff or proof bar touches illegal states, owner/source-of-truth ambiguity, transition preservation, policy exceptions, witness parity, fixture preconditions, races, retries, duplicates, stale handles, or loop invariants.
+- Use `complexity-mitigator` when reviewability is blocked by hard-to-follow existing code, deep nesting, boolean soup, hidden state, mixed responsibilities, cross-file hops, duplicated/dominated factors, or likely one-patch-per-comment churn.
 
 No-code modifiers include:
 
@@ -234,8 +268,9 @@ $st authority is required but absent
 verification regresses
 proof is stale or not bound to the current artifact
 public tracker side effect would be needed without explicit intent
-review is required but $cas review is unavailable or not run
-three clean normalized $cas review runs are required but cannot be completed
+review is required but $cas standard review is unavailable or not run
+required auxiliary CAS review lane is unavailable, blocked, or not folded
+three clean normalized standard $cas review attempts are required but cannot be completed
 ALSR/HYL is required but missing or stale
 material mutation lacks HSR-v1 unfold/action/fold
 parallel fanout would cross shared invariants or conflicting resources
@@ -251,6 +286,10 @@ Goal Actuation:
 - ALSR/HYL:
 - latest HSR:
 - mode / persistence:
+- review profile:
+  - standard CAS review: required|not-required, current verdict:
+  - auxiliary lanes: footgun-finder|invariant-ace|complexity-mitigator|none
+  - auxiliary blockers:
 - parallelism:
   - mode:
   - subagents used:
@@ -260,9 +299,9 @@ Goal Actuation:
   - rejected results:
   - integration order:
   - conflicts:
-  - CAS clean-run counter reset: yes|no
+  - standard CAS clean-run counter reset: yes|no
 - review source / CAS verdict, if required:
-- clean normalized CAS review runs: 0|1|2|3|not-required
+- clean normalized standard CAS review attempts: 0|1|2|3|not-required
 - goal contract summary:
 - work list / next action:
 - review-fold disposition, if any:
