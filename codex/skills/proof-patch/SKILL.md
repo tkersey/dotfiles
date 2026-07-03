@@ -51,7 +51,7 @@ completion unless ATCG-v1 permits it.
 ## Review closure
 - CAS review source:
 - review-fold disposition:
-- resolve pass:
+- resolution fold:
 - accepted liabilities:
 - no-code dispositions:
 - clean normalized CAS runs:
@@ -95,8 +95,8 @@ completion unless ATCG-v1 permits it.
 3. Surface loop governance from ALSR-v1/HYL-v1/HSR-v1/ATCG-v1 receipts when
    they exist; otherwise state the direct-action fused exemption.
 4. Include evidence commands and results.
-5. Include review closure and review-fold disposition when review pressure was
-   present.
+5. Include review closure, review-fold disposition, and resolution fold state
+   when review pressure was present.
 6. Include parallelism state, even when the mode is `none`.
 7. Include anti-gaming checks.
 8. Name residual risks and focused human review targets.
