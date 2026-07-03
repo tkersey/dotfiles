@@ -1,6 +1,6 @@
 ---
 name: prove-it
-description: "Automatically run a ten-turn proof/disproof gauntlet for absolute claims. A valid run uses the bundled host loop to create exactly 10 separate assistant turns, one numbered round per turn; round 10 is the oracle and the only terminal verdict."
+description: "Automatically run a ten-turn proof/disproof gauntlet for absolute claims. A valid run uses the bundled artifactless host loop to create exactly 10 separate assistant turns, one numbered round per turn; round 10 is the oracle and the only terminal verdict."
 ---
 
 # Prove It
@@ -17,7 +17,7 @@ Typical activation cues:
 
 ## Core contract
 
-A valid prove-it run is an **Auto Gauntlet**:
+A valid prove-it run is an **artifactless Auto Gauntlet**:
 
 1. exactly 10 assistant turns;
 2. exactly one numbered round per assistant turn;
@@ -25,9 +25,33 @@ A valid prove-it run is an **Auto Gauntlet**:
 4. rounds 1-9 attack, repair, narrow, or pressure-test the claim;
 5. round 10 is the Oracle synthesis and the only place a final verdict may appear;
 6. early proof, early disproof, a counterexample, contradiction, or high confidence never stops the run;
-7. step, pause, manual-next, one-round, partial, and single-reply modes are invalid.
+7. step, pause, manual-next, one-round, partial, and single-reply modes are invalid;
+8. no progress files, run directories, prompt dumps, transcripts, manifests, or template artifacts are created.
 
 The user-facing phrase "prove it" means **launch the host loop**, not "do ten sections in this reply" and not "run one round and wait".
+
+## Artifactless state model
+
+State lives only in:
+
+```text
+same conversation/thread
++
+inline Checkpoint block from the latest assistant turn
+```
+
+Do not create or update:
+
+```text
+.prove-it-progress.md
+.prove-it-progress.template.md
+.prove-it-runs/
+manifest.json
+prompt/output transcript files
+any other prove-it state artifact
+```
+
+The inline `Checkpoint` is the sole gauntlet state carrier. The host driver validates stdout in memory and exits non-zero on failure.
 
 ## Two-state execution model
 
@@ -41,13 +65,13 @@ Driver: PROVE_IT_AUTOTURN_V1
 
 then do **not** execute a numbered round in the current reply.
 
-Instead, launch the bundled host driver when shell/tool execution is available:
+Instead, launch the bundled artifactless host driver when shell/tool execution is available:
 
 ```bash
 codex/skills/prove-it/scripts/prove-it "<claim>"
 ```
 
-This is the automatic loop. The driver creates one initial Codex turn and nine same-thread continuation turns. It validates each turn and exits non-zero if the assistant compresses rounds, stops early, or emits a premature verdict.
+This is the automatic loop. The driver creates one initial Codex turn and nine same-thread continuation turns. It validates each turn in memory and exits non-zero if the assistant compresses rounds, stops early, emits a premature verdict, or asks for artifact state.
 
 If shell/tool execution is unavailable, emit exactly:
 
@@ -72,7 +96,7 @@ Driver: PROVE_IT_AUTOTURN_V1
 
 execute exactly the next uncompleted numbered round and stop. Do not ask whether to continue; the host driver owns continuation.
 
-A valid driver prompt either starts round 1 from a claim or resumes from the latest checkpoint. If no checkpoint exists, initialize the gauntlet and run round 1 only. If a checkpoint exists, resume at `Next round` only.
+A valid driver prompt either starts round 1 from a claim or resumes from the latest inline `Checkpoint`. If no checkpoint exists, initialize the gauntlet and run round 1 only. If a checkpoint exists, resume at `Next round` only.
 
 ## Final-verdict invariant
 
@@ -113,12 +137,13 @@ The driver submits this prompt for rounds 2-10:
 ```text
 Driver: PROVE_IT_AUTOTURN_V1
 
-Continue prove-it from the checkpoint.
+Continue prove-it from the inline Checkpoint in the conversation.
 Execute exactly the next uncompleted numbered round only.
 Do not execute more than one round in this reply.
 Do not ask whether to continue.
 Do not pause for user input.
 Do not return a final verdict unless executing round 10.
+Do not create progress files, run directories, manifests, or transcript artifacts.
 Do not stop for proof, disproof, counterexample, contradiction, confidence, likely failure, or user-requested cadence changes.
 If the checkpoint is already complete at 10 of 10, report completion and do not run another round.
 ```
@@ -302,15 +327,11 @@ A reply must contain exactly one top-level `Round N — <Focus>` heading. Do not
 
 The validator ignores nested `### Round N` headings for compatibility, but new outputs should not rely on that compatibility path.
 
-## State and recovery
+## Artifact prohibition
 
-Preferred durable state file:
+Do not create progress templates, progress files, logs, transcripts, run folders, manifests, or other prove-it state artifacts. Do not ask the host driver to write them. Do not tell the user to inspect an artifact path.
 
-```text
-.prove-it-progress.md
-```
-
-Use the project root when writable. If the workspace is read-only or no project root is available, preserve state in the inline `Checkpoint` block. The progress file is authoritative when present; otherwise the latest inline `Checkpoint` is authoritative.
+The only durable content from a prove-it run is the conversation itself.
 
 ## Regression guards
 
@@ -352,6 +373,17 @@ Expected round 10 behavior:
 
 - resolve the candidate fatal pressure;
 - return the final verdict only in Oracle synthesis.
+
+### Artifactless run
+
+Expected behavior:
+
+- no `.prove-it-progress.md`;
+- no `.prove-it-progress.template.md`;
+- no `.prove-it-runs/`;
+- no prompt/output transcript files;
+- no manifest;
+- stdout validation only.
 
 ### Valid-looking early proof still runs all rounds
 
