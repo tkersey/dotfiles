@@ -178,4 +178,344 @@ cybernetic_packet:
     leading_indicators: []
     lagging_indicators: []
     stop_conditions: []
+  platform_view:
+    mentors_or_outside_view: []
+    data_needed: []
+    time_comparison: []
+  unintended_consequence_scan:
+    who_might_game_it: []
+    who_bears_costs: []
+    second_order_effects: []
+    delayed_harms: []
+    local_vs_whole_tradeoff: "..."
+  test_or_monitoring_plan:
+    first_probe: "..."
+    feedback_interval: "..."
+    success_signal: "..."
+    failure_signal: "..."
+    rollback_or_adapt: "..."
+  decision:
+    recommendation: "..."
+    confidence: high | medium | low | unknown
+    next_action: "..."
 ```
+
+## System classification
+
+Classify before prescribing.
+
+### Clear
+
+Cause and effect are obvious, stable, and directly observable.
+
+Use:
+
+```text
+checklist
+standard work
+precision
+known process
+```
+
+Avoid overthinking and unnecessary innovation.
+
+### Complicated
+
+Cause and effect exist but require analysis, decomposition, or expertise.
+
+Use:
+
+```text
+diagnosis
+specialist expertise
+modeling
+root-cause analysis
+comparison of alternatives
+```
+
+Avoid guessing and generic experts.
+
+### Complex
+
+Cause and effect are emergent and visible mostly in hindsight.
+
+Use:
+
+```text
+safe-to-fail experiments
+small probes
+monitoring
+adaptation
+diverse perspectives
+directional strategy
+```
+
+Avoid rigid plans, single-point forecasts, and pretending to control the system.
+
+### Chaotic
+
+Cause and effect are broken, hidden, or changing too fast to reason through.
+
+Use:
+
+```text
+stabilize first
+create safety
+act quickly
+bound harm
+then sense and analyze
+```
+
+Avoid analysis paralysis.
+
+### Mixed
+
+Many real situations contain different subsystem types. Split them.
+
+Example:
+
+```text
+technical rollout: complicated
+human adoption: complex
+incident response: chaotic until stabilized
+checklist procedure: clear
+```
+
+## DART diagnostic
+
+Use DART to quickly orient:
+
+```text
+D — Deconstruct: What are the parts, stocks, flows, and boundaries?
+A — Analyze: What is the cause/effect relationship type?
+R — Recognize: What pattern, archetype, or prior system does this resemble?
+T — Test: What is the smallest safe probe or stabilizing action?
+```
+
+In chaos, T means stabilize first rather than experiment.
+
+## Meadows ladder
+
+Prefer higher leverage when available, but stay humble.
+
+Approximate leverage order, from lower to higher:
+
+```text
+parameters / numbers
+buffers
+stock-flow structure
+delays
+balancing feedback
+reinforcing feedback
+information flows
+rules / incentives / constraints
+power to self-organize
+goals
+paradigms / mental models
+ability to transcend paradigms
+```
+
+Rules:
+
+- Do not obsess over parameters when structure, rules, goals, or mental models are producing the pattern.
+- Do not jump to paradigm change when a missing information flow would solve the issue.
+- Do not change goals or rules without scanning incentives, power, and second-order effects.
+- Do not ignore delays; delayed feedback can make good actions look bad and bad actions look good.
+
+## Iceberg model
+
+When the user gives an event, move down the iceberg:
+
+```text
+Event: What just happened?
+Pattern: What keeps happening over time?
+Structure: What rules, incentives, flows, delays, and power relations produce it?
+Mental model: What beliefs, goals, identities, or paradigms make the structure seem natural?
+```
+
+Do not stop at event-level explanation unless the system is clear and local.
+
+## Stocks and flows
+
+Ask:
+
+```text
+What is accumulating?
+What drains it?
+What fills it?
+What is the buffer?
+What is the bottleneck?
+What is the delay between action and observable effect?
+What stock is being ignored because it is intangible?
+```
+
+Common intangible stocks:
+
+```text
+trust
+attention
+morale
+technical debt
+organizational debt
+reputation
+skill
+risk
+customer goodwill
+institutional memory
+optionality
+cognitive load
+```
+
+## Feedback loops
+
+Name loops explicitly.
+
+```yaml
+feedback_loop:
+  loop_id:
+  type: reinforcing | balancing
+  stock:
+  signal:
+  action:
+  delay:
+  gain:
+  failure_mode:
+```
+
+Common failure modes:
+
+- missing feedback;
+- delayed feedback;
+- distorted feedback;
+- feedback routed to someone without decision rights;
+- proxy metric replacing goal;
+- response too strong or too weak;
+- balancing loop overwhelmed by reinforcing loop.
+
+## Incentive and cobra-effect scan
+
+Before recommending a metric, reward, target, policy, or automation, ask:
+
+```text
+What behavior will this reward?
+What proxy replaces the real goal?
+Who can game it?
+What gets worse if people optimize for the measure?
+What delayed harm might appear after the success metric improves?
+```
+
+If the proxy can beat the purpose, redesign the rule or measure.
+
+## Platform view
+
+When inside the system, seek outside perspective through:
+
+```text
+mentor / outsider / stakeholder not captured by the current incentive
+data / measurement independent of narrative
+time / before-after and trend comparison
+```
+
+If all evidence comes from inside the current mental model, mark confidence lower.
+
+## Intervention design
+
+Match intervention to system type:
+
+| System type | Best first move | Bad first move |
+|---|---|
+| clear | checklist / standard process | clever reinvention |
+| complicated | analysis / expertise | generic intuition |
+| complex | safe-to-fail probes / adaptation | rigid master plan |
+| chaotic | stabilize / create safety | analysis paralysis |
+
+## Output modes
+
+### Standard
+
+Use sections:
+
+```text
+System boundary
+System type
+Events -> patterns -> structure -> mental models
+Stocks / flows / feedback
+Incentives and delays
+Leverage map
+Intervention
+Probe / monitoring plan
+Cybernetic Bottom Line
+```
+
+### Fast
+
+Use:
+
+```text
+System type:
+Pattern:
+Leverage:
+Move:
+Watch:
+Cybernetic Bottom Line:
+```
+
+## Cybernetic Bottom Line
+
+Always end with:
+
+```text
+Cybernetic Bottom Line:
+- system_type:
+- pattern:
+- highest_leverage_available:
+- selected_move:
+- downstream_skill:
+- why_not_lower_leverage:
+- feedback_to_watch:
+- next_action:
+```
+
+## Guardrails
+
+- Do not confuse activity with progress.
+- Do not optimize a subsystem without naming whole-system effects.
+- Do not assume the measured proxy is the real goal.
+- Do not ignore delayed feedback.
+- Do not treat complex systems as controllable machines.
+- Do not treat chaotic systems as analysis problems before safety is restored.
+- Do not overgeneralize from one event.
+- Do not use systems language to avoid making a concrete recommendation.
+- Do not recommend broad transformation when a small feedback repair would work.
+- Do not recommend a local metric, reward, or rule without a gaming scan.
+- Do not claim certainty in complex systems; use probes and monitoring.
+- Do not hand off implementation without naming downstream owner, proof/probe, and stop conditions.
+
+## Companion skills
+
+Use with:
+
+- `$goal-actuating` when same-cluster review recurrence or review-process feedback needs execution routing.
+- `$review-fold` when a review item signals system-pattern risk.
+- `$review-fold` when review findings represent system feedback.
+- `$negative-ledger` when prior interventions failed or recurring strategies need exclusion.
+- `$universalist` when the system diagnosis says the boundary artifact or shape of truth is wrong.
+- `$reduce` when abstraction/layer tax may be producing the pattern.
+- `$complexity-mitigator` when comprehension risk blocks action.
+- `$tune` when the system is a skill/workflow usage loop.
+- `$st` bounded execution when the selected intervention requires claims, fencing, worktrees, and proof-bound integration.
+- `$proof-patch` when closure must prove feedback/probe readiness.
+- `$goal-actuating` only after the system intervention has become a scoped implementation route.
+
+## Resources
+
+- [integration-contract.md](references/integration-contract.md)
+- [system-types-and-dart.md](references/system-types-and-dart.md)
+- [iceberg-model.md](references/iceberg-model.md)
+- [leverage-ladder.md](references/leverage-ladder.md)
+- [stocks-flows-feedback.md](references/stocks-flows-feedback.md)
+- [incentives-and-cobra-effects.md](references/incentives-and-cobra-effects.md)
+- [dancing-with-systems.md](references/dancing-with-systems.md)
+- [intervention-design.md](references/intervention-design.md)
+- [cybernetic-packet.md](references/cybernetic-packet.md)
+- [example-invocations.md](references/example-invocations.md)
