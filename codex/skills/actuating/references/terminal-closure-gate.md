@@ -47,6 +47,30 @@ verdict = complete
 can_mark_goal_complete = yes
 ```
 
+The local workflow must then run the completion allowance guard:
+
+```bash
+uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
+  allow-complete \
+  --decision .ledger/actuating/<run-id>/terminal-decision.json
+```
+
+The guard emits:
+
+```yaml
+actuation_completion_allowance:
+  verdict: allowed | denied
+  can_call_update_goal_complete: yes | no
+  decision_verdict: complete | continue | blocked
+  next_owner: none | $cas | $proof-patch | $ship | $goal-grind | $goal-actuating | $st | human
+  blocked_reasons: []
+  continue_reasons: []
+```
+
+Only `can_call_update_goal_complete: yes` permits `update_goal complete`.
+Denied `continue` and `blocked` decisions are valid ATCG outputs, not malformed
+gate results.
+
 Any other verdict keeps the actuation run active or reports the specific blocked
 state. A local verifier pass, proof-complete graph, or ADD-v1
 `handoff_to_ship` result is not enough by itself.
@@ -173,6 +197,10 @@ uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
 
 uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
   check \
+  --decision .ledger/actuating/<run-id>/terminal-decision.json
+
+uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
+  allow-complete \
   --decision .ledger/actuating/<run-id>/terminal-decision.json
 
 uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \

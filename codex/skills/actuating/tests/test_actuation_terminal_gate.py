@@ -526,6 +526,65 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertEqual(result["actuation_terminal_gate"]["verdict"], "pass")
         self.assertEqual(result["actuation_terminal_gate"]["can_mark_goal_complete"], "yes")
 
+    def test_completion_allowance_accepts_only_complete_yes(self) -> None:
+        allowance = MODULE.make_completion_allowance(self.decision("atcg-v1.complete.example.json"))
+        body = allowance["actuation_completion_allowance"]
+        self.assertEqual(body["verdict"], "allowed")
+        self.assertEqual(body["can_call_update_goal_complete"], "yes")
+        self.assertEqual(body["decision_verdict"], "complete")
+        self.assertEqual(body["can_mark_goal_complete"], "yes")
+
+    def test_completion_allowance_denies_continue_with_next_owner(self) -> None:
+        context = deepcopy(self.context())
+        context["proof_patch"] = {}
+        allowance = MODULE.make_completion_allowance(MODULE.make_decision(context))
+        body = allowance["actuation_completion_allowance"]
+        self.assertEqual(body["verdict"], "denied")
+        self.assertEqual(body["can_call_update_goal_complete"], "no")
+        self.assertEqual(body["decision_verdict"], "continue")
+        self.assertEqual(body["next_owner"], "$proof-patch")
+        self.assertIn("proof_patch.required:missing-for-proof-patch-closure", body["continue_reasons"])
+
+    def test_completion_allowance_denies_missing_loop_contract(self) -> None:
+        context = deepcopy(self.context())
+        context["loop_governance"] = {
+            "material": "yes",
+            "alsr": {"required": "yes", "present": "no", "current": "no"},
+            "hyl": {"required": "yes", "present": "no", "current": "no"},
+            "hsr": {
+                "terminal_present": "yes",
+                "latest_fold_current_artifact_bound": "yes",
+                "material_mutations": [{"has_hsr": "yes"}],
+            },
+        }
+        allowance = MODULE.make_completion_allowance(MODULE.make_decision(context))
+        body = allowance["actuation_completion_allowance"]
+        self.assertEqual(body["verdict"], "denied")
+        self.assertEqual(body["can_call_update_goal_complete"], "no")
+        self.assertEqual(body["decision_verdict"], "blocked")
+        self.assertEqual(body["next_owner"], "$goal-actuating")
+        self.assertIn("blocked-loop-contract-missing", body["blocked_reasons"])
+
+    def test_completion_allowance_denies_stale_proof(self) -> None:
+        context = deepcopy(self.context())
+        context["proof"] = {"required": "yes", "matches_verifier": "no"}
+        allowance = MODULE.make_completion_allowance(MODULE.make_decision(context))
+        body = allowance["actuation_completion_allowance"]
+        self.assertEqual(body["verdict"], "denied")
+        self.assertEqual(body["can_call_update_goal_complete"], "no")
+        self.assertEqual(body["next_owner"], "$goal-grind")
+        self.assertIn("proof-stale", body["blocked_reasons"])
+
+    def test_completion_allowance_denies_side_effect_boundary_violation(self) -> None:
+        context = deepcopy(self.context())
+        context["side_effect_boundary"] = {"respected": "no"}
+        allowance = MODULE.make_completion_allowance(MODULE.make_decision(context))
+        body = allowance["actuation_completion_allowance"]
+        self.assertEqual(body["verdict"], "denied")
+        self.assertEqual(body["can_call_update_goal_complete"], "no")
+        self.assertEqual(body["next_owner"], "$ship")
+        self.assertIn("side-effect-boundary-violated", body["blocked_reasons"])
+
     def test_check_rejects_complete_without_artifact_binding(self) -> None:
         decision = self.decision("atcg-v1.complete.example.json")
         decision["actuation_terminal_decision"]["current_artifact_binding"]["head_sha"] = ""
@@ -611,6 +670,47 @@ class ActuationTerminalGateTests(unittest.TestCase):
             self.assertEqual(code, 0)
             body = json.loads(out.read_text())["actuation_terminal_decision"]
             self.assertEqual(body["verdict"], "complete")
+
+    def test_cli_allow_complete_accepts_valid_complete_decision(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "allow-complete",
+                "--decision",
+                str(ASSETS / "atcg-v1.complete.example.json"),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        body = json.loads(result.stdout)["actuation_completion_allowance"]
+        self.assertEqual(body["can_call_update_goal_complete"], "yes")
+
+    def test_cli_allow_complete_denies_valid_noncomplete_decision(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            decision_path = Path(td) / "blocked.json"
+            decision_path.write_text(
+                json.dumps(MODULE.make_decision(self.context("terminal-context.advisory-would-block.example.json"))),
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "allow-complete",
+                    "--decision",
+                    str(decision_path),
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        body = json.loads(result.stdout)["actuation_completion_allowance"]
+        self.assertEqual(body["can_call_update_goal_complete"], "no")
+        self.assertEqual(body["decision_verdict"], "blocked")
 
 
 if __name__ == "__main__":

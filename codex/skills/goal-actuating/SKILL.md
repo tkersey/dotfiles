@@ -128,6 +128,12 @@ subagent result -> accept/reject/integrate through lead reducer
 ATCG -> complete|continue|blocked
 ```
 
+Before `$goal-actuating` calls `update_goal complete`, it must run the ATCG
+completion allowance guard over the current terminal decision. The goal may be
+marked complete only when the guard returns `can_call_update_goal_complete =
+yes`; valid `continue` and `blocked` ATCG decisions must continue with
+`next_owner` or report their blockers instead.
+
 ## Parallel scheduler
 
 `$goal-actuating` owns bounded parallel scheduling for the goal workflow.
