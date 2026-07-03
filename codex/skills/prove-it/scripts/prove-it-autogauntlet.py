@@ -78,26 +78,30 @@ If the checkpoint is already complete at 10 of 10, report completion and do not 
 """
 
 ANSI_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+
+# Validator-owned round heading contract:
+# - Main round headings may be plain text, #, or ##.
+# - ###+ headings are treated as nested historical/checkpoint headings and ignored.
+# This avoids rejecting otherwise valid turns that quote a prior `### Round N ...`
+# inside a checkpoint while still rejecting multiple top-level rounds in one reply.
 ROUND_HEADING_RE = re.compile(
-    r"(?mi)^\s{0,3}(?:#{1,6}\s*)?Round\s+(\d+)\s*[—-]\s*(.*?)\s*$"
+    r"(?mi)^\s{0,3}(?:#{1,2}\s*)?Round\s+(\d+)\s*[—-]\s*(.*?)\s*$"
 )
 COMPLETED_ENGINE_TURNS_RE = re.compile(
-    r"(?mi)^\s*completed[_ ]engine[_ ]turns:\s*(\d+)\s*of\s*10\b"
+    r"(?mi)^\s*completed[_ ]engine[_ ]turns:\s*(\d+)\s*(?:of|/)\s*10\b"
 )
 COMPLETED_ROUND_RE = re.compile(r"(?mi)^\s*Completed round:\s*(\d+)\s*$")
 STATUS_RE = re.compile(r"(?mi)^\s*Status:\s*([A-Z_ ]+)\s*$")
 VERDICT_EMBARGO_RE = re.compile(r"(?mi)^\s*Verdict embargo:\s*([A-Z_0-9 ]+)\s*$")
 STOP_REASON_RE = re.compile(r"(?mi)^\s*Stop reason:\s*([A-Z_0-9 ]+)\s*$")
-ACTION_RE = re.compile(r"(?mi)^\s*Action:\s*([A-Z_0-9]+)\s*$")
+ACTION_RE = re.compile(r"(?mi)^\s*Action:\s*([A-Z][A-Z_0-9 ]*)\s*$")
 NEXT_ROUND_RE = re.compile(r"(?mi)^\s*next[_ ]round:\s*(.+?)\s*$")
 
-FINAL_VERDICT_RE = re.compile(r"(?mi)^\s*Final verdict\s*:")
-ORACLE_SYNTHESIS_RE = re.compile(r"(?mi)^\s*Oracle synthesis\s*:")
-AUTO_GAUNTLET_CONTROL_RE = re.compile(r"(?mi)^\s*Auto Gauntlet Control\s*:")
+FINAL_VERDICT_RE = re.compile(r"(?mi)^\s{0,3}(?:#{1,6}\s*)?Final verdict\s*:?\s*$")
+ORACLE_SYNTHESIS_RE = re.compile(r"(?mi)^\s{0,3}(?:#{1,6}\s*)?Oracle synthesis\s*:?\s*$")
+AUTO_GAUNTLET_CONTROL_RE = re.compile(r"(?mi)^\s{0,3}(?:#{1,6}\s*)?Auto Gauntlet Control\s*:?\s*$")
 LEGACY_TERMINALITY_RE = re.compile(r"(?mi)^\s*Terminality Check\s*:")
 LEGACY_TERMINAL_VERDICT_RE = re.compile(r"(?mi)^\s*Terminal verdict\s*:")
-STOP_CONCLUSIVE_RE = re.compile(r"(?mi)^\s*Action:\s*STOP_CONCLUSIVE_PROOF\s*$")
-GENERIC_STOP_ACTION_RE = re.compile(r"(?mi)^\s*Action:\s*STOP\s*$")
 
 
 @dataclass
@@ -150,7 +154,10 @@ def last_text(pattern: re.Pattern[str], text: str) -> str | None:
 
 
 def parse_round_headings(text: str) -> list[tuple[int, str]]:
-    return [(int(match.group(1)), match.group(2).strip()) for match in ROUND_HEADING_RE.finditer(text)]
+    return [
+        (int(match.group(1)), match.group(2).strip())
+        for match in ROUND_HEADING_RE.finditer(text)
+    ]
 
 
 def validate_turn(raw_text: str, expected_turn: int) -> Validation:
@@ -193,9 +200,9 @@ def validate_turn(raw_text: str, expected_turn: int) -> Validation:
         errors.append("legacy `Terminality Check` output is not allowed")
     if LEGACY_TERMINAL_VERDICT_RE.search(text):
         errors.append("legacy `Terminal verdict` output is not allowed")
-    if STOP_CONCLUSIVE_RE.search(text):
+    if action == "STOP CONCLUSIVE PROOF":
         errors.append("early conclusive-proof stop is not allowed")
-    if GENERIC_STOP_ACTION_RE.search(text):
+    if action == "STOP":
         errors.append("generic `Action: STOP` is not allowed")
 
     if expected_turn < EXPECTED_TURNS:
@@ -242,6 +249,8 @@ def validate_turn(raw_text: str, expected_turn: int) -> Validation:
                 "round 10 must set `Stop reason: ROUND_10_COMPLETE`, "
                 f"found {stop_reason!r}"
             )
+        if action != "COMPLETE ROUND 10":
+            errors.append(f"round 10 must set `Action: COMPLETE_ROUND_10`, found {action!r}")
         if not ORACLE_SYNTHESIS_RE.search(text):
             errors.append("round 10 must include `Oracle synthesis:`")
         if not FINAL_VERDICT_RE.search(text):
