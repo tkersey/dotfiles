@@ -154,6 +154,9 @@ trust_level = "trusted"
 [projects."/Users/tk/workspace/art/voyager"]
 trust_level = "trusted"
 
+[projects."/Users/tk/workspace/tk/homebrew-tap"]
+trust_level = "trusted"
+
 [marketplaces.openai-bundled]
 last_updated = "2026-06-17T20:38:40Z"
 source_type = "local"
