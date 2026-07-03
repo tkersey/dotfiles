@@ -3,7 +3,7 @@ set -euo pipefail
 cat <<'EOF'
 PROVE_IT_SUBAGENT_NATIVE
 
-Invoke `$prove-it` in a subagent-capable Codex session. The sequential host-loop driver has been removed; prove-it now runs rounds 1-9 as parallel subagent packets and round 10 as an Oracle subagent after fan-in.
+Invoke `$prove-it` in a subagent-capable Codex session. The sequential host-loop driver has been removed; prove-it now runs rounds 1-9 as parallel lens_worker packets and round 10 as an oracle_worker after fan-in.
 
 This script intentionally creates no artifacts.
 EOF
