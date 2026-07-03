@@ -1,44 +1,53 @@
-# Doctrine Alpha Reference
+# Doctrine Alpha
 
-Doctrine words improve frontier-agent performance when they become executable surfaces:
+Doctrine creates alpha only when it becomes an executable interface.
 
-- ledgers
-- gates
-- validators
-- proof receipts
-- selection maps
-- fixed-point loops
-- subagent authority packets
-- required tail summaries
-
-Words alone mainly increase style, confidence, and verbosity.
-
-## Keep high-value doctrine
-
-- `fixed-point`
-- `governing invariant`
-- `canonical`
-- `traceable`
-- `witness-bearing`
-- `resolve-selection`
-- `unwitnessed guarantee`
-- `illegal inhabitant`
-- `tail proof`
-
-## Demote when not operationalized
-
-- generic `rigor`
-- ornamental `adversarial`
-- isolated `mechanistic`
-- vague `unsound`
-- vague `accretive`
-- `de novo` without a candidate inventory and no-finding countercase
-
-## Minimum cash-out
+The observed pattern across doctrine-heavy sessions is:
 
 ```text
-What artifact does this word create?
-What evidence fills that artifact?
-What decision changes because of it?
-What would falsify or close it?
+word -> operator -> artifact -> proof -> better behavior
 ```
+
+Standalone dense words can improve register, but they become reliable only when tied to:
+
+- ledgers;
+- gates;
+- validators;
+- fixed-point loops;
+- proof receipts;
+- selection maps;
+- authority packets;
+- required output sections.
+
+## Strong doctrine mechanics
+
+| Word | Strong cash-out |
+|---|---|
+| `fixed-point` | material fixed-point gate and reopen rule |
+| `invariant` | governing invariant row and owner boundary |
+| `canonical` | one owner/representation plus rejected shadow owners |
+| `witness` | proof receipt tied to current artifact state |
+| `unsound` | soundness ledger row |
+| `ablative` | ablation activation receipt and ablation ledger |
+| `actuating` | actuation receipt showing state movement |
+| `winnowing` | reduction certificate and recomposition proof |
+| `reifying` | behavior algebra and total interpreter |
+| `forensic` | provenance map |
+
+## Failure modes
+
+- Vocabulary without artifacts.
+- Polished wording that hides uncertainty.
+- Doctrine that overprocesses trivial bounded work.
+- Doctrine stacks with conflicting operators.
+- Proof words that sound strong but lack receipts.
+
+## Design rule
+
+Prefer words that naturally force the question:
+
+```text
+What artifact must exist for this word to be true?
+```
+
+If no artifact is needed, the word is probably ornamental.

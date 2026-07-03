@@ -1,19 +1,79 @@
-# Composition
+# Composition Guidance
 
-Use `logophile` as a language-surface rail, not as a replacement for operational skills.
+Use `$logophile` as a language-surface and doctrine-compiler pass, not as an operational replacement.
 
-## Good implicit compositions
-- After `review-adjudication`, sharpen reviewer replies, rebuttals, acknowledgements, and comment disposition summaries.
-- After bounded implementation workflows, sharpen PR-facing final summaries, closure notes, and handoffs.
-- After `proof-patch`, sharpen readiness language for PRs, issues, release notes, or handoffs.
-- Before naming a skill, subagent, mode, doctrine stack, heading, label, or command surface.
-- When the user asks for doctrine words, mode words, rigor words, or compressed rubrics.
+## After review-adjudication
 
-## Bad compositions
-- Silently rewriting every output in the workspace.
-- Replacing implementation, review, adjudication, or closure work with wording work.
-- Styling code, identifiers, flags, paths, schemas, JSON, YAML, TOML, or protocol terms.
-- Polishing away uncertainty, evidence limitations, or disagreement.
+Use `$logophile` to sharpen:
 
-## Handoff pattern
-Operational skill result -> `logophile` language pass only when the result will be read, pasted, named, or published.
+- reviewer replies;
+- rebuttals;
+- acknowledgements;
+- disposition summaries;
+- resolve-selection explanations;
+- proof-only or no-change wording.
+
+Preserve raw comment identity, disposition, and evidence basis. Do not turn adjudication into implementation.
+
+## After fixed-point-driver
+
+Use `$logophile` to sharpen:
+
+- Route Receipts;
+- Fixed-Point Bottom Lines;
+- closure notes;
+- PR-facing summaries;
+- evidence-backed blocked/ready wording.
+
+Preserve gate status, proof receipts, and unresolved blockers.
+
+## After ablation workflows
+
+Use `$logophile` to make deletion/collapse/canonicalization language precise:
+
+- `ablation: not-required` must name evidence.
+- keep/delete/collapse/canonicalize decisions must not sound like taste.
+- Ablative Isomorphism Cards must state the preservation relation.
+- Avoid using `isomorphic` when the relation is really `refinement-preserving`.
+
+## After $actuating
+
+Use `$logophile` to sharpen the Actuation Bottom Line:
+
+- lever;
+- action;
+- proof of movement;
+- next bottleneck.
+
+Do not soften an executable next step into a vague recommendation.
+
+## After $seq
+
+Use `$logophile` to make forensic/cartographic outputs readable without losing provenance:
+
+- preserve citations / source paths / timestamps;
+- preserve evidence strength;
+- distinguish observation, claim, memory, summary, speculation;
+- keep the Knowledge Bottom Line copy-pasteable.
+
+## Naming skills and subagents
+
+Prefer names that encode the job or success condition:
+
+- `fixed-point-driver` names the convergence condition.
+- `ablation_auditor` names the surface-removal audit.
+- `actuating` names state-changing plan execution.
+- `logophile` names the language craft layer.
+
+Avoid names that only describe plumbing: `manager`, `coordinator`, `util`, `helper`, `processor`.
+
+## Doctrine stacks
+
+When another skill asks for a doctrine stack, return:
+
+1. recommended words;
+2. operator roles;
+3. cash-out artifacts;
+4. final copy-paste block.
+
+Do not execute the operational workflow unless explicitly asked.

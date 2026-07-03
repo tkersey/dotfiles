@@ -1,69 +1,82 @@
 # Doctrine Probe Cases
 
-Use these probes to test trigger reliability, stack quality, overlap control, and soundness vocabulary.
+## Should trigger doctrine mode
 
-## Should trigger
+```text
+Find doctrine words for reviewing PR comments more discriminately.
+```
 
-### Prompt
-`Use $logophile to find the doctrine words for a coding agent that fixes regressions with minimal blast radius.`
+Expected:
+- `rebuttal-first`
+- `discriminative`
+- `invariant-seeking`
+- `ablative`
+- artifacts: Resolve Selection, no-change countercase, Ablation Activation Receipt.
 
-Checks:
-- returns a doctrine stack, not a rewritten paragraph
-- includes an unpacked doctrine block
-- favors words like `mechanistic`, `accretive`, `traceable`, `unsound`
+```text
+What doctrine word captures moving from plan to PR?
+```
 
-### Prompt
-`Use $logophile to derive rigor words for a security review workflow.`
+Expected:
+- `actuating`
+- artifact: Actuation Receipt.
 
-Checks:
-- treats `rigor words` as a natural-language alias for doctrine words
-- prioritizes `fail-closed`, `hazard-seeking`, `adversarial`, `traceable`
-- avoids tone-only words
+```text
+What is the doctrine word for decomposing and removing what is unnecessary?
+```
 
-### Prompt
-`Find words like unsound that make a code reviewer think in type-theoretic terms.`
+Expected:
+- `winnowing`
+- companions: `factoring`, `quotienting`, `ablative`, `normalizing`, `refinement-preserving`.
 
-Checks:
-- returns words such as `unwitnessed`, `ill-typed`, `partial`, `illegal inhabitant`, `preservation-aware`, `progress-aware`
-- explains the procedural gain of each word
-- ends with a copy-pasteable doctrine block
+```text
+What doctrine word captures reset?
+```
 
-### Prompt
-`Rename this skill and give me a doctrine stack for how it should think.`
+Expected:
+- `rebaselining`
+- artifact: Baseline Receipt.
 
-Checks:
-- can do both naming and doctrine work in one turn
-- keeps outputs clearly segmented
-- ends with `Best Pick:` or `Use This:` depending on the requested final surface
+```text
+Find words like unsound for type-theoretic review.
+```
 
-## Should not trigger implicitly
+Expected:
+- `unwitnessed`, `illegal inhabitant`, `partial`, `totalizing`, `preservation-aware`, `progress-aware`.
 
-### Prompt
-`Fix the failing auth tests and update the implementation.`
+## Should not trigger doctrine mode
 
-Checks:
-- this is operational coding work, not wording or doctrine synthesis
+```text
+Fix the failing test.
+```
 
-### Prompt
-`Review this patch for regressions and invariants.`
+Unless the user asks for wording or doctrine, this is implementation, not logophile.
 
-Checks:
-- this belongs to review skills unless wording or doctrine output is explicitly requested
+```text
+Review this patch for regressions.
+```
 
-## Overlap control
+This belongs to review workflows, not logophile, unless the user asks for wording or names.
 
-### Prompt
-`Find doctrine words for a code review agent.`
+```text
+Run the tests and ship the PR.
+```
 
-Checks:
-- no near-duplicate stack such as `traceable`, `auditable`, `legible`, `reviewable` unless distinctions are explained
-- stack stays within 3-6 words by default
+This belongs to execution/shipping workflows.
 
-## Safety against ornamental vocabulary
+## Quality checks
 
-### Prompt
-`Give me smart words to make the agent sound more intelligent.`
+A doctrine answer must:
 
-Checks:
-- redirects from ornamental vocabulary to procedural gains
-- rejects or demotes generic praise words
+- name the pressure;
+- choose words with distinct jobs;
+- explain near misses when useful;
+- include artifacts;
+- end with `Use This:` and `Operationalization:`.
+
+Reject answers that:
+
+- list fancy synonyms;
+- include generic praise words;
+- fail to say what the receiving agent should do differently;
+- omit the artifact/receipt.

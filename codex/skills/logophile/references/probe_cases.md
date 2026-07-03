@@ -1,44 +1,100 @@
 # Probe Cases
 
-Use these probes to test substitution quality, output shape, and implicit trigger behavior.
+Use these probes to test rewrite, naming, and safety behavior.
 
-## Rewrite should trigger
-Prompt: `Tighten this paragraph without changing meaning.`
-Checks:
-- preserves meaning and obligations
-- sharpens wording before deleting text
-- keeps code, identifiers, paths, URLs, and numbers intact
+## Rewrite probes
 
-## Human-facing copy should trigger implicitly
-Prompt: `Write a concise PR reply explaining that we accepted comments 2 and 4 but rejected 5.`
-Checks:
-- uses paste-ready human-facing language
-- preserves the adjudication result
-- does not invent technical evidence
+### generic -> precise
 
-## Naming should trigger
-Prompt: `Rename this skill.`
-Checks:
-- returns 3-7 candidates unless asked for one
-- best candidate appears first and again as `Best Pick:` in multi-part output
-- avoids vague names like `manager`, `helper`, and `util`
+Input:
+```text
+We should iterate on improvements to the skill until it gets better.
+```
 
-## Doctrine should trigger
-Prompt: `Find doctrine words for a soundness-focused review agent.`
-Checks:
-- returns a doctrine stack and doctrine block
-- favors procedural words, not prestige words
-- includes type-theoretic pressure when relevant
+Expected:
+```text
+Find accretive changes to the skill until the contract is tighter.
+```
 
-## Should not trigger implicitly
-Prompt: `Fix the failing auth tests and update the implementation.`
-Checks:
-- this belongs to implementation skills unless a wording surface is requested
+### obligation preservation
 
-Prompt: `Review this patch for regressions and invariants.`
-Checks:
-- this belongs to review skills unless wording or doctrine output is requested
+Input:
+```text
+We may reject malformed inputs if they look risky.
+```
 
-Prompt: `Update this TOML config field.`
-Checks:
-- does not rewrite machine-consumed syntax for style
+Bad:
+```text
+Reject malformed inputs fail-closed.
+```
+
+Reason: changed `may` to an obligation.
+
+Good:
+```text
+We may reject risky malformed inputs fail-closed.
+```
+
+### code-token preservation
+
+Input:
+```text
+Run zig build check before opening the PR.
+```
+
+Expected: preserve `zig build check` exactly.
+
+## Naming probes
+
+Input:
+```text
+Things to Do Before Release
+```
+
+Expected candidates:
+```text
+Pre-Release Checklist
+Release Readiness
+Release Prep
+Pre-Release Tasks
+```
+
+Input:
+```text
+A skill that drives a plan through tasks, fixed-point implementation, validation, and PR creation.
+```
+
+Expected candidates should include:
+```text
+actuating
+```
+
+## Doctrine probes
+
+Input:
+```text
+Find a doctrine word for making a plan actually move to completion.
+```
+
+Expected: prefer `actuating`, not generic `execution`.
+
+Input:
+```text
+Find a doctrine word for deleting code that no longer earns its place.
+```
+
+Expected: include `ablative` or `winnowing`; distinguish reduction from proof relation.
+
+Input:
+```text
+Find a doctrine word for defunctionalization.
+```
+
+Expected: prefer `reifying`; include `totalizing` as interpreter-side companion.
+
+## Safety probes
+
+- Do not rewrite JSON/TOML/YAML keys for style.
+- Do not rename code identifiers unless naming is explicitly requested and scope is clear.
+- Do not remove uncertainty markers such as `probably`, `may`, `could`, `likely`, or `unknown` unless evidence changed.
+- Do not make public-facing text more certain than the source.
