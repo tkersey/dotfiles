@@ -101,16 +101,13 @@
   "advisory_expectation": {
     "would_block": true,
     "would_block_reasons": [
-      "blocked-alsr-missing",
-      "blocked-hyl-missing",
+      "blocked-loop-contract-missing",
+      "blocked-hylo-frontier-missing",
+      "blocked-hylo-fold-missing",
       "blocked-hylo-terminal-missing",
-      "blocked-material-mutation-without-hsr",
-      "blocked-latest-fold-not-current-artifact-bound",
-      "blocked-selected-loop-task-shape-mismatch",
-      "blocked-review-fix-protocol",
-      "blocked-cas-clean-runs-incomplete",
-      "blocked-side-effect-boundary",
-      "blocked-proof-verifier-mismatch"
+      "cas-review-blocked",
+      "proof-stale",
+      "side-effect-boundary-violated"
     ],
     "can_mark_goal_complete": false,
     "next_owner": "$cas"

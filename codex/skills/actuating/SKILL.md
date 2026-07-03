@@ -463,6 +463,25 @@ ATCG-v1 can_mark_goal_complete = yes
 
 If ATCG-v1 returns `continue`, continue with `next_owner`. If it returns `blocked`, report the blocked actuation verdict and reasons. Do not substitute local proof, proof-complete graph state, cached CAS receipts, or ADD-v1 `handoff_to_ship` for terminal completion.
 
+Hard ATCG-v1 completion blockers:
+
+```text
+blocked-loop-contract-missing
+blocked-loop-contract-stale
+blocked-hylo-frontier-missing
+blocked-hylo-fold-missing
+blocked-hylo-terminal-missing
+cas-review-blocked
+st-authority-blocked
+proof-stale
+side-effect-boundary-violated
+```
+
+Direct-action fused and `$st`-governed runs may exempt ALSR/HYL/HSR checks only
+when the terminal context explicitly carries the exemption. `$st`-governed
+completion also requires current `$st` control evidence; a `st_handoff` source
+without a current receipt is not enough.
+
 ## Stop rules
 
 Stop rather than implement when:
