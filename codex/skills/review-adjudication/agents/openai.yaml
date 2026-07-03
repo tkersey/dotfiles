@@ -1,9 +1,6 @@
 policy:
   allow_implicit_invocation: false
 interface:
-  display_name: "Review Adjudication"
-  short_description: "Compile review claims into intent-anchored CEX-v1"
-  default_prompt: >-
-    Use $review-adjudication to verify the current behavior, compile a minimal
-    CEX-v1 trace, bind it to AC-v2 or kernel laws, classify novelty and legal
-    disposition, and leave mutation authority disabled.
+  display_name: "Review Adjudication (retired)"
+  short_description: "Retired; use Review Fold"
+  default_prompt: "This skill is retired. Use $review-fold for review finding classification."
