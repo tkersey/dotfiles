@@ -255,4 +255,4 @@ no changes
 - Do not replace a requested or required CAS review with non-CAS critique.
 - Do not claim review closure before three clean normalized CAS runs when `review-closeout` or exhaustive review requires them.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.
-- Do not use a deleted or legacy review-adjudication path; `$review-fold` owns active review classification.
+- `$review-fold` owns active review adjudication; do not route findings through retired skill paths.

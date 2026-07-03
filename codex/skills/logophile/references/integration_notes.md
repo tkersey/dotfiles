@@ -39,7 +39,7 @@ Use `logophile` late when the text will be read or pasted by a human.
 Good:
 
 ```text
-review-adjudication -> logophile for PR reply wording
+review adjudication through $review-fold -> logophile for PR reply wording
 fixed-point-driver -> logophile for closure summary
 seq -> logophile for concise source-backed synthesis
 ```

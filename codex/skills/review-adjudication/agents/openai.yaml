@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: false
-interface:
-  display_name: "Review Adjudication (retired)"
-  short_description: "Retired; use Review Fold"
-  default_prompt: "This skill is retired. Use $review-fold for review finding classification."

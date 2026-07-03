@@ -2,7 +2,7 @@
 
 Use `$logophile` as a language-surface and doctrine-compiler pass, not as an operational replacement.
 
-## After review-adjudication
+## After review adjudication
 
 Use `$logophile` to sharpen:
 
