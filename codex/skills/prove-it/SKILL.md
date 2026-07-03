@@ -176,6 +176,8 @@ prove_it_round_packet:
   oracle_notes:
 ```
 
+`worker_role` must be the exact literal `lens_worker`. Do not prefix it with `prove-it`, the round name, or any worker nickname.
+
 Round packets are evidence packets, not verdicts. Use `candidate_fatal_pressure` and `candidate_decisive_support` for severe findings, but keep verdict authority for the oracle.
 
 ## Oracle packet schema
@@ -206,6 +208,8 @@ prove_it_oracle_packet:
     main_gaps: []
   next_tests: []
 ```
+
+`worker_role` must be the exact literal `oracle_worker`. `final_verdict.outcome` must be one exact enum value: `PROVEN`, `DISPROVEN`, `NOT_PROVEN`, `INSUFFICIENT_EVIDENCE`, or `BOUNDED_CLAIM_SURVIVES`. The oracle should cite round numbers in `decisive_reasons`, `fatal_pressures_resolved`, `decisive_support_resolved`, or `next_tests` so the final outcome is traceable to the nine packets.
 
 The oracle is the only component that may choose `PROVEN`, `DISPROVEN`, `NOT_PROVEN`, `INSUFFICIENT_EVIDENCE`, or `BOUNDED_CLAIM_SURVIVES`.
 

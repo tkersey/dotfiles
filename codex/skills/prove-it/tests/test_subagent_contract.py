@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "SKILL.md"
-SCRIPT = ROOT / "scripts" / "prove-it"
+SCRIPTS = ROOT / "scripts"
 
 
 REQUIRED_PHRASES = [
@@ -16,6 +16,10 @@ REQUIRED_PHRASES = [
     "oracle_worker",
     "worker_role: lens_worker",
     "worker_role: oracle_worker",
+    "exact literal `lens_worker`",
+    "exact literal `oracle_worker`",
+    "final_verdict.outcome",
+    "must be one exact enum value",
     "prove_it_round_packet",
     "prove_it_oracle_packet",
     "PROVE_IT_REQUIRES_SUBAGENTS",
@@ -45,6 +49,21 @@ FORBIDDEN_SKILL_PHRASES = [
     "steelman_worker",
 ]
 
+FORBIDDEN_PATHS = [
+    ".prove-it-progress.template.md",
+    "AUTOTURN_DRIVER_PROMPT.md",
+    "scripts/prove-it",
+    "scripts/autogauntlet-resume.sh",
+    "scripts/prove-it-autogauntlet.py",
+]
+
+ORACLE_OUTCOME_ENUMS = [
+    "PROVEN",
+    "DISPROVEN",
+    "NOT_PROVEN",
+    "INSUFFICIENT_EVIDENCE",
+    "BOUNDED_CLAIM_SURVIVES",
+]
 
 def read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -80,11 +99,19 @@ def test_artifact_prohibition_names_old_state_paths() -> None:
         assert path in text
 
 
-def test_script_no_longer_launches_autoturn_driver() -> None:
-    text = read(SCRIPT)
-    assert "PROVE_IT_SUBAGENT_NATIVE" in text
-    assert "prove-it-autogauntlet.py" not in text
-    assert "exec \"$script_dir" not in text
+def test_removed_driver_surfaces_are_absent() -> None:
+    existing = [path for path in FORBIDDEN_PATHS if (ROOT / path).exists()]
+    assert not existing, existing
+
+
+def test_no_runtime_script_surface_remains() -> None:
+    assert not SCRIPTS.exists()
+
+
+def test_oracle_outcome_enums_are_explicit() -> None:
+    text = read(SKILL)
+    missing = [value for value in ORACLE_OUTCOME_ENUMS if value not in text]
+    assert not missing, missing
 
 
 def main() -> int:
@@ -93,7 +120,9 @@ def main() -> int:
         test_all_enhanced_rounds_are_present,
         test_obsolete_autoturn_and_old_worker_contracts_are_removed,
         test_artifact_prohibition_names_old_state_paths,
-        test_script_no_longer_launches_autoturn_driver,
+        test_removed_driver_surfaces_are_absent,
+        test_no_runtime_script_surface_remains,
+        test_oracle_outcome_enums_are_explicit,
     ):
         test()
     print("prove-it subagent contract tests: PASS")
