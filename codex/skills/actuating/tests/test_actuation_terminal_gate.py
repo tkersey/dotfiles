@@ -29,6 +29,14 @@ class ActuationTerminalGateTests(unittest.TestCase):
     def fixture(self, name: str):
         return json.loads((ASSETS / name).read_text())
 
+    def assert_blocks_with(self, context, reason: str, next_owner: str) -> None:
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertEqual(body["can_mark_goal_complete"], "no")
+        self.assertEqual(body["next_owner"], next_owner)
+        self.assertIn(reason, body["blocked_reasons"])
+
     def test_proof_only_context_can_complete(self) -> None:
         decision = MODULE.make_decision(self.context())
         body = decision["actuation_terminal_decision"]
@@ -50,6 +58,7 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertEqual(body["verdict"], "blocked")
         self.assertEqual(body["can_mark_goal_complete"], "no")
         self.assertEqual(body["next_owner"], "$cas")
+        self.assertIn("cas-review-blocked", body["blocked_reasons"])
         self.assertIn("cas.clean_runs:0-of-3", body["blocked_reasons"])
         self.assertIn("final_report.normalized_cas_clean_runs:not-satisfied", body["blocked_reasons"])
 
@@ -91,6 +100,16 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertTrue(body["would_block"])
         self.assertFalse(body["can_mark_goal_complete"])
 
+    def test_hard_decision_blocks_advisory_fixture(self) -> None:
+        fixture = self.fixture("terminal-context.advisory-would-block.example.json")
+        decision = MODULE.make_decision(fixture["actuation_terminal_context"])
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertEqual(body["can_mark_goal_complete"], "no")
+        self.assertEqual(body["next_owner"], fixture["advisory_expectation"]["next_owner"])
+        for reason in fixture["advisory_expectation"]["would_block_reasons"]:
+            self.assertIn(reason, body["blocked_reasons"])
+
     def test_advisory_direct_action_fused_exempts_loop_receipts(self) -> None:
         fixture = self.fixture("terminal-context.advisory-fused.example.json")
         advisory = MODULE.make_advisory(fixture["actuation_terminal_context"])
@@ -102,6 +121,14 @@ class ActuationTerminalGateTests(unittest.TestCase):
             "next_owner": "none",
         })
 
+    def test_hard_direct_action_fused_can_complete(self) -> None:
+        fixture = self.fixture("terminal-context.advisory-fused.example.json")
+        decision = MODULE.make_decision(fixture["actuation_terminal_context"])
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "complete")
+        self.assertEqual(body["can_mark_goal_complete"], "yes")
+        self.assertEqual(body["next_owner"], "none")
+
     def test_advisory_st_governed_exempts_loop_receipts(self) -> None:
         fixture = self.fixture("terminal-context.advisory-st-governed.example.json")
         advisory = MODULE.make_advisory(fixture["actuation_terminal_context"])
@@ -112,6 +139,85 @@ class ActuationTerminalGateTests(unittest.TestCase):
             "can_mark_goal_complete": True,
             "next_owner": "none",
         })
+
+    def test_hard_st_governed_current_receipt_can_complete(self) -> None:
+        fixture = self.fixture("terminal-context.advisory-st-governed.example.json")
+        decision = MODULE.make_decision(fixture["actuation_terminal_context"])
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "complete")
+        self.assertEqual(body["can_mark_goal_complete"], "yes")
+        self.assertEqual(body["next_owner"], "none")
+
+    def test_hard_st_governed_requires_current_receipt(self) -> None:
+        context = deepcopy(self.context("terminal-context.advisory-st-governed.example.json"))
+        context["loop_governance"]["st_control"]["current"] = "no"
+        self.assert_blocks_with(context, "st-authority-blocked", "$st")
+
+    def test_hard_stale_loop_contract_blocks_completion(self) -> None:
+        context = deepcopy(self.context())
+        context["loop_governance"] = {
+            "material": "yes",
+            "alsr": {"required": "yes", "present": "yes", "current": "no"},
+            "hyl": {"required": "yes", "present": "yes", "current": "yes"},
+            "hsr": {
+                "terminal_present": "yes",
+                "latest_fold_current_artifact_bound": "yes",
+                "material_mutations": [{"has_hsr": "yes"}],
+            },
+        }
+        self.assert_blocks_with(context, "blocked-loop-contract-stale", "$goal-actuating")
+
+    def test_hard_missing_frontier_blocks_completion(self) -> None:
+        context = deepcopy(self.context())
+        context["loop_governance"] = {
+            "material": "yes",
+            "alsr": {"required": "yes", "present": "yes", "current": "yes"},
+            "hyl": {"required": "yes", "present": "yes", "current": "yes"},
+            "hsr": {
+                "terminal_present": "yes",
+                "latest_fold_current_artifact_bound": "yes",
+                "material_mutations": [{"has_unfold": "no", "has_action": "yes", "has_fold": "yes"}],
+            },
+        }
+        self.assert_blocks_with(context, "blocked-hylo-frontier-missing", "$goal-actuating")
+
+    def test_hard_missing_fold_blocks_completion(self) -> None:
+        context = deepcopy(self.context())
+        context["loop_governance"] = {
+            "material": "yes",
+            "alsr": {"required": "yes", "present": "yes", "current": "yes"},
+            "hyl": {"required": "yes", "present": "yes", "current": "yes"},
+            "hsr": {
+                "terminal_present": "yes",
+                "latest_fold_current_artifact_bound": "yes",
+                "material_mutations": [{"has_unfold": "yes", "has_action": "yes", "has_fold": "no"}],
+            },
+        }
+        self.assert_blocks_with(context, "blocked-hylo-fold-missing", "$goal-actuating")
+
+    def test_hard_missing_terminal_hsr_blocks_completion(self) -> None:
+        context = deepcopy(self.context())
+        context["loop_governance"] = {
+            "material": "yes",
+            "alsr": {"required": "yes", "present": "yes", "current": "yes"},
+            "hyl": {"required": "yes", "present": "yes", "current": "yes"},
+            "hsr": {
+                "terminal_present": "no",
+                "latest_fold_current_artifact_bound": "yes",
+                "material_mutations": [{"has_hsr": "yes"}],
+            },
+        }
+        self.assert_blocks_with(context, "blocked-hylo-terminal-missing", "$goal-actuating")
+
+    def test_hard_proof_stale_blocks_completion(self) -> None:
+        context = deepcopy(self.context())
+        context["proof"] = {"required": "yes", "matches_verifier": "no"}
+        self.assert_blocks_with(context, "proof-stale", "$goal-grind")
+
+    def test_hard_side_effect_boundary_blocks_completion(self) -> None:
+        context = deepcopy(self.context())
+        context["side_effect_boundary"] = {"respected": "no"}
+        self.assert_blocks_with(context, "side-effect-boundary-violated", "$ship")
 
     def test_proof_patch_closure_requires_proof_patch_receipt(self) -> None:
         context = deepcopy(self.context())

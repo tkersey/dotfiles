@@ -22,21 +22,17 @@ CLOSURE_CANDIDATES = {"proof-patch", "ship-handoff", "ship-complete", "blocked"}
 LOCAL_VERDICTS = {"done", "continue", "regress", "blocked", "invalid-proof", "ask-human", "refactor-kernel"}
 ADD_VERDICTS = {"handoff_to_ship", "shipping_not_requested", "blocked", "missing"}
 TERMINAL_VERDICTS = {"complete", "continue", "blocked"}
-NEXT_OWNERS = {"none", "$cas", "$proof-patch", "$ship", "$goal-grind", "human"}
-ADVISORY_REASON_ORDER = [
-    "blocked-alsr-missing",
-    "blocked-alsr-stale",
-    "blocked-hyl-missing",
-    "blocked-hyl-stale",
+NEXT_OWNERS = {"none", "$cas", "$proof-patch", "$ship", "$goal-grind", "$goal-actuating", "$st", "human"}
+HARD_REASON_ORDER = [
+    "blocked-loop-contract-missing",
+    "blocked-loop-contract-stale",
+    "blocked-hylo-frontier-missing",
+    "blocked-hylo-fold-missing",
     "blocked-hylo-terminal-missing",
-    "blocked-material-mutation-without-hsr",
-    "blocked-latest-fold-not-current-artifact-bound",
-    "blocked-selected-loop-task-shape-mismatch",
-    "blocked-review-fix-protocol",
-    "blocked-cas-clean-runs-incomplete",
-    "blocked-side-effect-boundary",
-    "blocked-proof-verifier-mismatch",
-    "blocked-st-control-missing",
+    "cas-review-blocked",
+    "st-authority-blocked",
+    "proof-stale",
+    "side-effect-boundary-violated",
 ]
 
 
@@ -122,7 +118,7 @@ def explicit_no(value: Any) -> bool:
 
 
 def make_advisory(context: dict[str, Any]) -> dict[str, Any]:
-    reasons = advisory_reasons_for(context)
+    reasons = hard_completion_reasons_for(context)
     would_block = bool(reasons)
     return {
         "verdict": "advisory",
@@ -134,6 +130,10 @@ def make_advisory(context: dict[str, Any]) -> dict[str, Any]:
 
 
 def advisory_reasons_for(context: dict[str, Any]) -> list[str]:
+    return hard_completion_reasons_for(context)
+
+
+def hard_completion_reasons_for(context: dict[str, Any]) -> list[str]:
     loop = object_from(context.get("loop_governance"))
     hsr = object_from(loop.get("hsr"))
     reasons: list[str] = []
@@ -152,7 +152,6 @@ def advisory_reasons_for(context: dict[str, Any]) -> list[str]:
     st_current = st_governed and (
         as_yes(loop.get("st_control_current"))
         or as_yes(object_from(loop.get("st_control")).get("current"))
-        or context.get("source") == "st_handoff"
     )
     loop_receipts_exempt = direct_action_fused or st_current
     loop_required = loop_receipts_required(loop, hsr)
@@ -164,9 +163,9 @@ def advisory_reasons_for(context: dict[str, Any]) -> list[str]:
     )
     if alsr_required:
         if not as_yes(alsr.get("present")):
-            append_reason(reasons, "blocked-alsr-missing")
+            append_reason(reasons, "blocked-loop-contract-missing")
         elif not as_yes(alsr.get("current")):
-            append_reason(reasons, "blocked-alsr-stale")
+            append_reason(reasons, "blocked-loop-contract-stale")
 
     hyl = object_from(loop.get("hyl"))
     hyl_required = not loop_receipts_exempt and (
@@ -178,39 +177,40 @@ def advisory_reasons_for(context: dict[str, Any]) -> list[str]:
     )
     if hyl_required:
         if not as_yes(hyl.get("present")):
-            append_reason(reasons, "blocked-hyl-missing")
+            append_reason(reasons, "blocked-loop-contract-missing")
         elif not as_yes(hyl.get("current")):
-            append_reason(reasons, "blocked-hyl-stale")
+            append_reason(reasons, "blocked-loop-contract-stale")
 
     if st_governed and not st_current:
-        append_reason(reasons, "blocked-st-control-missing")
+        append_reason(reasons, "st-authority-blocked")
 
     if loop_required and not loop_receipts_exempt:
         if not as_yes(hsr.get("terminal_present")):
             append_reason(reasons, "blocked-hylo-terminal-missing")
-        if not material_mutations_have_hsr(loop, hsr):
-            append_reason(reasons, "blocked-material-mutation-without-hsr")
+        reasons.extend(material_mutation_hsr_reasons(loop, hsr))
+        if explicit_no(hsr.get("latest_fold_present")):
+            append_reason(reasons, "blocked-hylo-fold-missing")
         if not as_yes(hsr.get("latest_fold_current_artifact_bound")):
-            append_reason(reasons, "blocked-latest-fold-not-current-artifact-bound")
+            append_reason(reasons, "proof-stale")
 
     selected_loop = object_from(loop.get("selected_loop"))
     if selected_loop and not as_yes(selected_loop.get("matches_task_shape")):
-        append_reason(reasons, "blocked-selected-loop-task-shape-mismatch")
+        append_reason(reasons, "blocked-hylo-frontier-missing")
 
     review_fix = object_from(loop.get("review_fix"))
     if as_yes(review_fix.get("required")) and not review_fix_obeyed(review_fix):
-        append_reason(reasons, "blocked-review-fix-protocol")
+        append_reason(reasons, "cas-review-blocked")
 
     if cas_advisory_blocked(context, loop):
-        append_reason(reasons, "blocked-cas-clean-runs-incomplete")
+        append_reason(reasons, "cas-review-blocked")
 
     if side_effect_boundary_violated(context, loop):
-        append_reason(reasons, "blocked-side-effect-boundary")
+        append_reason(reasons, "side-effect-boundary-violated")
 
     if proof_verifier_mismatch(context, loop):
-        append_reason(reasons, "blocked-proof-verifier-mismatch")
+        append_reason(reasons, "proof-stale")
 
-    return sort_advisory_reasons(reasons)
+    return sort_hard_reasons(reasons)
 
 
 def append_reason(reasons: list[str], reason: str) -> None:
@@ -218,8 +218,8 @@ def append_reason(reasons: list[str], reason: str) -> None:
         reasons.append(reason)
 
 
-def sort_advisory_reasons(reasons: list[str]) -> list[str]:
-    order = {reason: index for index, reason in enumerate(ADVISORY_REASON_ORDER)}
+def sort_hard_reasons(reasons: list[str]) -> list[str]:
+    order = {reason: index for index, reason in enumerate(HARD_REASON_ORDER)}
     return sorted(reasons, key=lambda reason: order.get(reason, len(order)))
 
 
@@ -239,20 +239,23 @@ def loop_receipts_required(loop: dict[str, Any], hsr: dict[str, Any]) -> bool:
 
 
 def material_mutations_have_hsr(loop: dict[str, Any], hsr: dict[str, Any]) -> bool:
+    return not material_mutation_hsr_reasons(loop, hsr)
+
+
+def material_mutation_hsr_reasons(loop: dict[str, Any], hsr: dict[str, Any]) -> list[str]:
     mutations = list_from(loop.get("material_mutations")) or list_from(hsr.get("material_mutations"))
     if not mutations:
-        return not as_yes(loop.get("material"))
+        return ["blocked-hylo-frontier-missing"] if as_yes(loop.get("material")) else []
+    reasons: list[str] = []
     for mutation in mutations:
         item = object_from(mutation)
         if as_yes(item.get("has_hsr")):
             continue
-        if not (
-            as_yes(item.get("has_unfold"))
-            and as_yes(item.get("has_action"))
-            and as_yes(item.get("has_fold"))
-        ):
-            return False
-    return True
+        if not as_yes(item.get("has_unfold")) or not as_yes(item.get("has_action")):
+            append_reason(reasons, "blocked-hylo-frontier-missing")
+        if not as_yes(item.get("has_fold")):
+            append_reason(reasons, "blocked-hylo-fold-missing")
+    return reasons
 
 
 def review_fix_obeyed(review_fix: dict[str, Any]) -> bool:
@@ -314,10 +317,14 @@ def proof_verifier_mismatch(context: dict[str, Any], loop: dict[str, Any]) -> bo
 def advisory_next_owner_for(reasons: list[str]) -> str:
     if not reasons:
         return "none"
-    if "blocked-cas-clean-runs-incomplete" in reasons:
+    if "st-authority-blocked" in reasons:
+        return "$st"
+    if "cas-review-blocked" in reasons:
         return "$cas"
-    if "blocked-side-effect-boundary" in reasons:
+    if "side-effect-boundary-violated" in reasons:
         return "$ship"
+    if any(reason.startswith("blocked-loop-contract") or reason.startswith("blocked-hylo") for reason in reasons):
+        return "$goal-actuating"
     return "$goal-actuating"
 
 
@@ -344,6 +351,8 @@ def make_decision(context: dict[str, Any]) -> dict[str, Any]:
     blocked: list[str] = []
     if errors:
         blocked.extend(errors)
+
+    blocked.extend(hard_completion_reasons_for(context))
 
     artifact_reasons = artifact_reasons_for(artifact, proof_patch)
     blocked.extend(artifact_reasons)
@@ -640,10 +649,23 @@ def next_owner_for(blocked: list[str], pending: list[str]) -> str:
     combined = blocked + pending
     if any("ask-human" in reason for reason in combined):
         return "human"
+    if any(reason == "st-authority-blocked" for reason in combined):
+        return "$st"
     if any(reason.startswith("artifact_scope") for reason in combined):
         return "$goal-grind"
-    if any(reason.startswith("cas.") or reason.startswith("final_report.normalized_cas") for reason in combined):
+    if any(
+        reason == "cas-review-blocked"
+        or reason.startswith("cas.")
+        or reason.startswith("final_report.normalized_cas")
+        for reason in combined
+    ):
         return "$cas"
+    if any(reason == "side-effect-boundary-violated" for reason in combined):
+        return "$ship"
+    if any(reason.startswith("blocked-loop-contract") or reason.startswith("blocked-hylo") for reason in combined):
+        return "$goal-actuating"
+    if any(reason == "proof-stale" for reason in combined):
+        return "$goal-grind"
     if any(reason.startswith("proof_patch") for reason in combined):
         return "$proof-patch"
     if any(reason.startswith("ship") or reason.startswith("delivery") or reason.startswith("final_report.ship") for reason in combined):
