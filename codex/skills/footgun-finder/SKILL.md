@@ -79,7 +79,7 @@ compatibility_trap
 Rank by expected harm and likelihood, not by how annoying the code looks.
 
 ```text
-P0  likely data loss, privacy exposure, irreversible destructive action, production outage, or policy bypass from plausible normal use
+P0  likely data loss, security or privacy exposure, irreversible destructive action, production outage, or policy bypass from plausible normal use
 P1  high-probability misuse causing wrong behavior, false proof, lost work, persistent state corruption, or expensive recovery
 P2  plausible misuse with bounded impact, confusing degraded behavior, or costly debugging
 P3  minor sharp edge, confusing naming, or low-likelihood trap with easy recovery
