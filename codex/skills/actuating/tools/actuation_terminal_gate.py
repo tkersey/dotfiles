@@ -762,6 +762,26 @@ def validate_decision(value: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def make_completion_allowance(value: dict[str, Any]) -> dict[str, Any]:
+    validate_decision(value)
+    d = unwrap(value, "actuation_terminal_decision")
+    allowed = d.get("verdict") == "complete" and d.get("can_mark_goal_complete") == "yes"
+    result = {
+        "actuation_completion_allowance": {
+            "verdict": "allowed" if allowed else "denied",
+            "can_call_update_goal_complete": "yes" if allowed else "no",
+            "decision_version": d.get("decision_version"),
+            "decision_verdict": d.get("verdict"),
+            "can_mark_goal_complete": d.get("can_mark_goal_complete"),
+            "run_id": d.get("run_id"),
+            "next_owner": d.get("next_owner"),
+            "blocked_reasons": d.get("blocked_reasons", []),
+            "continue_reasons": d.get("continue_reasons", []),
+        }
+    }
+    return result
+
+
 def complete_dirty_state_allowed(decision: dict[str, Any], artifact: dict[str, Any]) -> bool:
     dirty_state = artifact.get("dirty_state")
     if dirty_state == "clean":
@@ -789,6 +809,8 @@ def main(argv: list[str] | None = None) -> int:
     p_decide.add_argument("--out")
     p_check = sub.add_parser("check")
     p_check.add_argument("--decision", required=True)
+    p_allow = sub.add_parser("allow-complete")
+    p_allow.add_argument("--decision", required=True)
     p_validate = sub.add_parser("validate")
     p_validate.add_argument("--context", required=True)
     p_validate.add_argument("--mode", choices=("advisory",), required=True)
@@ -804,6 +826,11 @@ def main(argv: list[str] | None = None) -> int:
             decision = load_json(args.decision)
             result = validate_decision(decision)
             emit(result)
+        elif args.cmd == "allow-complete":
+            decision = load_json(args.decision)
+            result = make_completion_allowance(decision)
+            emit(result)
+            return 0 if result["actuation_completion_allowance"]["can_call_update_goal_complete"] == "yes" else 1
         elif args.cmd == "validate":
             context = context_from(load_json(args.context))
             result = make_advisory(context)

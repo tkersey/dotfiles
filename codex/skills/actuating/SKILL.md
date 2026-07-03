@@ -461,6 +461,19 @@ ATCG-v1 verdict = complete
 ATCG-v1 can_mark_goal_complete = yes
 ```
 
+Before a workflow calls `update_goal complete`, it must run the local completion
+allowance guard over the current ATCG-v1 decision:
+
+```bash
+uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
+  allow-complete \
+  --decision .ledger/actuating/<run-id>/terminal-decision.json
+```
+
+Only `can_call_update_goal_complete = yes` permits the `update_goal complete`
+call. A valid ATCG `continue` or `blocked` decision must deny completion and
+carry the `next_owner`, `continue_reasons`, or `blocked_reasons` forward.
+
 If ATCG-v1 returns `continue`, continue with `next_owner`. If it returns `blocked`, report the blocked actuation verdict and reasons. Do not substitute local proof, proof-complete graph state, cached CAS receipts, or ADD-v1 `handoff_to_ship` for terminal completion.
 
 Hard ATCG-v1 completion blockers:
