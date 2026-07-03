@@ -1,30 +1,28 @@
 #!/usr/bin/env python3
 """
-Host driver for the prove-it skill.
+Artifactless host driver for the prove-it skill.
 
-This script makes prove-it host-driven instead of prompt-only:
+The driver owns the ten-turn loop:
 - starts a prove-it run from a claim,
 - executes exactly 10 separate Codex CLI turns,
 - resumes the same conversation for turns 2-10,
 - validates one numbered round per assistant reply,
 - rejects early proof/disproof/final-verdict/Oracle-synthesis output.
 
-It intentionally has no "run one round", "step", "pause", or "resume N rounds"
-mode. A normal invocation either completes all 10 turns or exits non-zero.
+It intentionally writes no progress files, prompts, transcripts, manifests, or run
+directories. State lives only in the conversation and in the inline Checkpoint
+block emitted by each assistant turn.
 """
 
 from __future__ import annotations
 
 import argparse
-import datetime as dt
-import json
 import os
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Sequence
 
 
@@ -57,7 +55,8 @@ Host-driver contract:
 - Do not pause for user input.
 - Do not return a final verdict before round 10.
 - Do not stop for proof, disproof, counterexample, contradiction, confidence, likely failure, or user-requested cadence changes.
-- Preserve a checkpoint.
+- Preserve an inline Checkpoint.
+- Do not create progress files, run directories, manifests, or transcript artifacts.
 - The host driver will automatically continue until exactly 10 separate assistant turns have completed.
 
 Claim:
@@ -67,12 +66,13 @@ Claim:
 RESUME_PROMPT = f"""\
 Driver: {DRIVER_ID}
 
-Continue prove-it from the checkpoint.
+Continue prove-it from the inline Checkpoint in the conversation.
 Execute exactly the next uncompleted numbered round only.
 Do not execute more than one round in this reply.
 Do not ask whether to continue.
 Do not pause for user input.
 Do not return a final verdict unless executing round 10.
+Do not create progress files, run directories, manifests, or transcript artifacts.
 Do not stop for proof, disproof, counterexample, contradiction, confidence, likely failure, or user-requested cadence changes.
 If the checkpoint is already complete at 10 of 10, report completion and do not run another round.
 """
@@ -102,6 +102,9 @@ ORACLE_SYNTHESIS_RE = re.compile(r"(?mi)^\s{0,3}(?:#{1,6}\s*)?Oracle synthesis\s
 AUTO_GAUNTLET_CONTROL_RE = re.compile(r"(?mi)^\s{0,3}(?:#{1,6}\s*)?Auto Gauntlet Control\s*:?\s*$")
 LEGACY_TERMINALITY_RE = re.compile(r"(?mi)^\s*Terminality Check\s*:")
 LEGACY_TERMINAL_VERDICT_RE = re.compile(r"(?mi)^\s*Terminal verdict\s*:")
+ARTIFACT_REQUEST_RE = re.compile(
+    r"(?mi)^\s*(?:artifact|progress file|manifest|run directory|output directory|transcript artifact)s?\s*:"
+)
 
 
 @dataclass
@@ -120,17 +123,6 @@ class Validation:
     @property
     def ok(self) -> bool:
         return not self.errors
-
-
-@dataclass
-class TurnRecord:
-    turn: int
-    prompt_file: str
-    output_file: str
-    last_message_file: str
-    command: list[str]
-    returncode: int
-    validation: dict
 
 
 def strip_ansi(value: str) -> str:
@@ -200,6 +192,8 @@ def validate_turn(raw_text: str, expected_turn: int) -> Validation:
         errors.append("legacy `Terminality Check` output is not allowed")
     if LEGACY_TERMINAL_VERDICT_RE.search(text):
         errors.append("legacy `Terminal verdict` output is not allowed")
+    if ARTIFACT_REQUEST_RE.search(text):
+        errors.append("artifact/progress/manifest output contract is not allowed")
     if action == "STOP CONCLUSIVE PROOF":
         errors.append("early conclusive-proof stop is not allowed")
     if action == "STOP":
@@ -274,24 +268,6 @@ def validate_turn(raw_text: str, expected_turn: int) -> Validation:
     )
 
 
-class RunLock:
-    def __init__(self, lock_dir: Path):
-        self.lock_dir = lock_dir
-
-    def __enter__(self) -> "RunLock":
-        try:
-            self.lock_dir.mkdir()
-        except FileExistsError as exc:
-            raise RuntimeError(
-                f"prove-it run lock already exists: {self.lock_dir}\n"
-                "Another run may be active. Remove the lock only if you are sure it is stale."
-            ) from exc
-        return self
-
-    def __exit__(self, exc_type, exc, tb) -> None:
-        shutil.rmtree(self.lock_dir, ignore_errors=True)
-
-
 def run_command(command: Sequence[str], cwd: Path | None, timeout_seconds: int | None) -> tuple[int, str]:
     try:
         completed = subprocess.run(
@@ -310,11 +286,6 @@ def run_command(command: Sequence[str], cwd: Path | None, timeout_seconds: int |
         return 124, output + f"\n[TIMEOUT after {timeout_seconds} seconds]\n"
 
     return completed.returncode, completed.stdout
-
-
-def write_text(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
 
 
 def resolve_claim(args: argparse.Namespace) -> str:
@@ -350,7 +321,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Run the prove-it skill as exactly 10 separate Codex turns. "
-            "No step, pause, one-round, or incremental mode is provided."
+            "No step, pause, one-round, incremental, or artifact-writing mode is provided."
         )
     )
     parser.add_argument(
@@ -373,11 +344,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="working directory for Codex CLI commands, default: current directory",
     )
     parser.add_argument(
-        "--out-dir",
-        default=None,
-        help="directory for prompts, outputs, and manifest; default: .prove-it-runs/run-<timestamp>",
-    )
-    parser.add_argument(
         "--timeout-seconds",
         type=int,
         default=0,
@@ -393,110 +359,39 @@ def main(argv: Sequence[str] | None = None) -> int:
     claim = resolve_claim(args)
     cwd = Path(args.cwd).resolve() if args.cwd else None
 
-    timestamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d-%H%M%SZ")
-    out_dir = Path(args.out_dir or f".prove-it-runs/run-{timestamp}").resolve()
-    lock_dir = out_dir.parent / ".prove-it-autogauntlet.lock"
+    for turn in range(1, EXPECTED_TURNS + 1):
+        if turn == 1:
+            prompt = INITIAL_PROMPT_TEMPLATE.format(driver_id=DRIVER_ID, claim=claim)
+            command = [args.codex_bin, "exec", prompt]
+        else:
+            prompt = RESUME_PROMPT
+            command = [args.codex_bin, "exec", "resume", "--last", prompt]
 
-    manifest: dict[str, object] = {
-        "driver": DRIVER_ID,
-        "expected_turns": EXPECTED_TURNS,
-        "claim": claim,
-        "started_at": timestamp,
-        "cwd": str(cwd) if cwd else None,
-        "out_dir": str(out_dir),
-        "turns": [],
-        "status": "IN_PROGRESS",
-    }
+        print(f"\n=== prove-it host turn {turn}/10: {ROUND_FOCUS[turn]} ===", flush=True)
+        if turn == 1:
+            print(f"$ {args.codex_bin} exec <prompt>", flush=True)
+        else:
+            print(f"$ {args.codex_bin} exec resume --last <prompt>", flush=True)
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    write_text(out_dir / "claim.txt", claim)
+        returncode, output = run_command(command, cwd, args.timeout_seconds)
+        print(output, end="" if output.endswith("\n") else "\n", flush=True)
 
-    try:
-        with RunLock(lock_dir):
-            for turn in range(1, EXPECTED_TURNS + 1):
-                if turn == 1:
-                    prompt = INITIAL_PROMPT_TEMPLATE.format(driver_id=DRIVER_ID, claim=claim)
-                    last_message_file = out_dir / f"last-message-{turn:02d}.txt"
-                    command = [args.codex_bin, "exec", "-o", str(last_message_file), prompt]
-                else:
-                    prompt = RESUME_PROMPT
-                    last_message_file = out_dir / f"last-message-{turn:02d}.txt"
-                    command = [
-                        args.codex_bin,
-                        "exec",
-                        "-o",
-                        str(last_message_file),
-                        "resume",
-                        "--last",
-                        prompt,
-                    ]
+        if returncode != 0:
+            print(
+                f"\nERROR: Codex command failed on turn {turn} with exit code {returncode}",
+                file=sys.stderr,
+            )
+            return 1
 
-                prompt_file = out_dir / f"prompt-{turn:02d}.txt"
-                output_file = out_dir / f"turn-{turn:02d}.txt"
-                write_text(prompt_file, prompt)
+        validation = validate_turn(output, turn)
+        if not validation.ok:
+            print(f"\nERROR: prove-it output failed host-driver validation on turn {turn}", file=sys.stderr)
+            for error in validation.errors:
+                print(f"- {error}", file=sys.stderr)
+            return 2
 
-                print(f"\n=== prove-it host turn {turn}/10: {ROUND_FOCUS[turn]} ===", flush=True)
-                if turn == 1:
-                    print(f"$ {args.codex_bin} exec <prompt>", flush=True)
-                else:
-                    print(f"$ {args.codex_bin} exec resume --last <prompt>", flush=True)
-
-                returncode, output = run_command(command, cwd, args.timeout_seconds)
-                write_text(output_file, output)
-                print(output, end="" if output.endswith("\n") else "\n", flush=True)
-
-                if returncode == 0 and last_message_file.exists():
-                    validation_text = last_message_file.read_text(encoding="utf-8")
-                else:
-                    validation_text = output
-
-                validation = validate_turn(validation_text, turn)
-                record = TurnRecord(
-                    turn=turn,
-                    prompt_file=str(prompt_file),
-                    output_file=str(output_file),
-                    last_message_file=str(last_message_file),
-                    command=command[:2]
-                    + ["-o", str(last_message_file)]
-                    + (["resume", "--last"] if turn > 1 else [])
-                    + ["<prompt>"],
-                    returncode=returncode,
-                    validation=asdict(validation),
-                )
-                manifest["turns"].append(asdict(record))
-                write_text(out_dir / "manifest.json", json.dumps(manifest, indent=2))
-
-                if returncode != 0:
-                    manifest["status"] = "CODEX_COMMAND_FAILED"
-                    manifest["failed_turn"] = turn
-                    write_text(out_dir / "manifest.json", json.dumps(manifest, indent=2))
-                    print(f"\nERROR: Codex command failed on turn {turn} with exit code {returncode}", file=sys.stderr)
-                    print(f"Artifacts: {out_dir}", file=sys.stderr)
-                    return 1
-
-                if not validation.ok:
-                    manifest["status"] = "VALIDATION_FAILED"
-                    manifest["failed_turn"] = turn
-                    manifest["validation_errors"] = validation.errors
-                    write_text(out_dir / "manifest.json", json.dumps(manifest, indent=2))
-                    print(f"\nERROR: prove-it output failed host-driver validation on turn {turn}", file=sys.stderr)
-                    for error in validation.errors:
-                        print(f"- {error}", file=sys.stderr)
-                    print(f"Artifacts: {out_dir}", file=sys.stderr)
-                    return 2
-
-            manifest["status"] = "COMPLETE"
-            manifest["completed_at"] = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d-%H%M%SZ")
-            write_text(out_dir / "manifest.json", json.dumps(manifest, indent=2))
-            print(f"\nSUCCESS: prove-it completed exactly 10 separate turns. Artifacts: {out_dir}")
-            return 0
-
-    except RuntimeError as exc:
-        manifest["status"] = "LOCK_FAILED"
-        manifest["error"] = str(exc)
-        write_text(out_dir / "manifest.json", json.dumps(manifest, indent=2))
-        print(f"ERROR: {exc}", file=sys.stderr)
-        return 3
+    print("\nSUCCESS: prove-it completed exactly 10 separate turns without creating artifacts.")
+    return 0
 
 
 if __name__ == "__main__":
