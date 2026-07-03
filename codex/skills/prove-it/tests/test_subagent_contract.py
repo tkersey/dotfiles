@@ -20,6 +20,10 @@ REQUIRED_PHRASES = [
     "exact literal `oracle_worker`",
     "final_verdict.outcome",
     "must be one exact enum value",
+    "Packets received: <oracle.packet_completeness.received_rounds>",
+    "Missing packets: <oracle.packet_completeness.missing_rounds>",
+    "Compromised packets: <oracle.packet_completeness.compromised_rounds>",
+    "if subagents are unavailable, stop with `PROVE_IT_REQUIRES_SUBAGENTS`",
     "prove_it_round_packet",
     "prove_it_oracle_packet",
     "PROVE_IT_REQUIRES_SUBAGENTS",
@@ -47,6 +51,7 @@ FORBIDDEN_SKILL_PHRASES = [
     "codex exec resume --last",
     "pressure_worker",
     "steelman_worker",
+    "Packets received: 1,2,3,4,5,6,7,8,9",
 ]
 
 FORBIDDEN_PATHS = [

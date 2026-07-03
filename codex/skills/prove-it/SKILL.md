@@ -502,8 +502,10 @@ Prove It — Parallel Subagent Gauntlet
 
 Original claim:
 Normalized claim:
-Packets received: 1,2,3,4,5,6,7,8,9
-Oracle: complete
+Packets received: <oracle.packet_completeness.received_rounds>
+Missing packets: <oracle.packet_completeness.missing_rounds>
+Compromised packets: <oracle.packet_completeness.compromised_rounds>
+Oracle completeness: complete|incomplete
 
 Verdict:
 - Outcome:
@@ -533,6 +535,8 @@ Next tests:
 
 Do not print all raw subagent packets unless the user asks for them. Summarize them in the pressure map.
 
+Do not claim all nine packets arrived unless `received_rounds` contains 1-9 and both `missing_rounds` and `compromised_rounds` are empty. If any packet is missing, failed, timed out, or compromised, surface that incompleteness in the final response and let the oracle choose the corresponding outcome.
+
 ## Stop rules
 
 Stop without running the gauntlet when:
@@ -553,7 +557,8 @@ Input request: `Use prove-it on this claim: all swans are white.`
 Expected behavior:
 
 - root normalizes the claim;
-- root dispatches rounds 1-9 as parallel `lens_worker` assignments;
+- if subagents are available, root dispatches rounds 1-9 as parallel `lens_worker` assignments;
+- if subagents are unavailable, stop with `PROVE_IT_REQUIRES_SUBAGENTS` instead of faking a root-only gauntlet;
 - round 1 likely identifies black swans as candidate fatal pressure;
 - root does not issue a final verdict before oracle;
 - oracle decides the final verdict after all packets.
