@@ -8,6 +8,8 @@ interface:
     review-like claims. Bind findings to the original goal and current diff,
     compress duplicates, classify liability and intent relation, and choose
     triage, remediation-plan, review-closeout, proof-only, minimal-fix,
-    refactor-kernel, branch-race, or st-governed before code changes. If fresh or
-    exhaustive workflow review is required and no CAS result is present, route to
-    $cas review first. Mark normalized CAS clean runs when closing review.
+    refactor-kernel, branch-race, or st-governed before code changes. A review
+    finding is never mutation authority; the resolution fold must accept any
+    code-change candidate before implementation. If fresh or exhaustive workflow
+    review is required and no CAS result is present, route to $cas review first.
+    Mark normalized CAS clean runs when closing review.

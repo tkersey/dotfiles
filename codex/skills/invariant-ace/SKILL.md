@@ -28,7 +28,7 @@ Authority-Gated v1 requires:
 - fixture precondition alignment;
 - verification plan tied to predicates;
 - authority packet receipts and veto handling when the task is non-trivial or consequential;
-- an Invariant Gate before implementation, review-adjudication handoff, proof closure, or fixed-point routing.
+- an Invariant Gate before implementation, review adjudication handoff, proof closure, or fixed-point routing.
 
 Compact mode is allowed only for exploratory invariant sketches, and it must block implementation handoff unless the Invariant Gate passes.
 

@@ -104,7 +104,7 @@ Do not start `$st` merely because the goal has several steps. Use `update_plan` 
 ## Guardrails
 
 - Do not weaken tests, skip checks, or delete assertions to satisfy a goal.
-- Do not implement raw review prose without `$review-fold` or `$review-adjudication`.
+- Do not implement raw review prose without `$review-fold`.
 - Do not broaden scope after a new observation; fold it first.
 - Do not continue after regression unless the next action is isolate, revert, or prove non-regression.
 - Do not claim completion without current-artifact evidence.

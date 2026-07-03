@@ -305,7 +305,7 @@ In doctrine output, add a final `Operationalization:` line that names the exact 
 
 Use `logophile` as a final language pass when another workflow produces human-facing language:
 
-- after `review-adjudication`, sharpen reviewer replies, rebuttals, acknowledgements, disposition summaries, and review-comment Bottom Lines.
+- after review adjudication through `$review-fold`, sharpen reviewer replies, rebuttals, acknowledgements, disposition summaries, and review-comment Bottom Lines.
 - after `fixed-point-driver`, sharpen Route Receipts, Fixed-Point Bottom Lines, closure notes, and PR-facing summaries.
 - after ablation-heavy workflows, ensure `ablation: not-required`, Ablation Ledger, keep/delete/canonicalize decisions, and Ablative Isomorphism Cards are precise rather than decorative.
 - after `$actuating`, sharpen the Actuation Bottom Line so the lever, action, proof, and next bottleneck are unmistakable.

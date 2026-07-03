@@ -57,7 +57,7 @@
     {
       "activate": false,
       "id": "generic-review",
-      "owner": "review-adjudication",
+      "owner": "review-fold",
       "prompt": "Review this pull request for bugs."
     },
     {
