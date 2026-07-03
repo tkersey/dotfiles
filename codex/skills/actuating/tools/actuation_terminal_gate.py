@@ -197,8 +197,8 @@ def hard_completion_reasons_for(context: dict[str, Any]) -> list[str]:
     if selected_loop and not as_yes(selected_loop.get("matches_task_shape")):
         append_reason(reasons, "blocked-hylo-frontier-missing")
 
-    resolve = resolve_governance_for(loop)
-    if as_yes(resolve.get("required")) and not resolve_obeyed(resolve):
+    review_closeout = review_closeout_governance_for(loop)
+    if as_yes(review_closeout.get("required")) and not review_closeout_obeyed(review_closeout):
         append_reason(reasons, "cas-review-blocked")
 
     if cas_advisory_blocked(context, loop):
@@ -258,7 +258,10 @@ def material_mutation_hsr_reasons(loop: dict[str, Any], hsr: dict[str, Any]) -> 
     return reasons
 
 
-def resolve_governance_for(loop: dict[str, Any]) -> dict[str, Any]:
+def review_closeout_governance_for(loop: dict[str, Any]) -> dict[str, Any]:
+    review_closeout = object_from(loop.get("review_closeout"))
+    if review_closeout:
+        return review_closeout
     resolve = object_from(loop.get("resolve"))
     if resolve:
         return resolve
@@ -269,11 +272,19 @@ def any_yes(obj: dict[str, Any], *keys: str) -> bool:
     return any(as_yes(obj.get(key)) for key in keys)
 
 
-def resolve_obeyed(resolve: dict[str, Any]) -> bool:
+def review_closeout_obeyed(review_closeout: dict[str, Any]) -> bool:
     return (
-        any_yes(resolve, "cas_reviewed", "cas_obeyed", "cas_satisfied")
-        and any_yes(resolve, "review_folded", "review_fold_obeyed", "review_fold_satisfied")
-        and any_yes(resolve, "resolve_passed", "resolve_obeyed", "resolved", "resolution_folded")
+        any_yes(review_closeout, "cas_reviewed", "cas_obeyed", "cas_satisfied")
+        and any_yes(review_closeout, "review_folded", "review_fold_obeyed", "review_fold_satisfied")
+        and any_yes(
+            review_closeout,
+            "review_closeout_passed",
+            "review_closeout_obeyed",
+            "resolution_folded",
+            "resolve_passed",
+            "resolve_obeyed",
+            "resolved",
+        )
     )
 
 

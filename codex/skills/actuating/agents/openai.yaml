@@ -10,7 +10,8 @@ interface:
     nontrivial. For material recursive work, require $agent-loop-schemes to emit
     ALSR-v1 and HYL-v1 before mutation unless the run is direct-action fused or
     $st-governed. $goal-actuating interprets HYL-v1 and emits HSR-v1 steps. For
-    review requests, default to resolve unless the user explicitly says
-    not to implement. Fresh or exhaustive workflow review must use $cas review,
-    findings must pass through $review-fold, and only accepted code-change
-    liabilities may reach implementation. Completion requires terminal ATCG-v1.
+    review requests, default to review-closeout unless the user names triage,
+    remediation-plan, or another no-implementation mode. Fresh or exhaustive
+    workflow review must use $cas review, findings must pass through
+    $review-fold, and only accepted code-change liabilities may reach
+    implementation. Completion requires terminal ATCG-v1.

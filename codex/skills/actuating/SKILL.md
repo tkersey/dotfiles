@@ -27,7 +27,7 @@ Use it as:
 
 ```text
 /goal $actuating implement the accepted spec
-/goal $actuating resolve this PR
+/goal $actuating review-closeout this PR
 ```
 
 `$actuating` does not directly edit code, claim resources, patch review findings, spawn subagents, or publish PRs. It routes to the owner that should act and enforces the gates that make the run valid.
@@ -157,11 +157,19 @@ If the request is still ambiguous, `$actuating` must call `$spec-pipeline` in ga
 Use when the work is review closure:
 
 ```text
-/goal $actuating resolve this PR
-/goal $actuating close the review for this branch
+/goal $actuating review-closeout this PR
+/goal $actuating close out review for this branch
 ```
 
-The default review behavior is `resolve`.
+The review modes are `triage`, `remediation-plan`, and `review-closeout`.
+
+Explicit review mode names carry the mutation rule:
+
+- `triage`: classify findings and stop without implementation.
+- `remediation-plan`: classify findings, produce the fix plan, and stop without implementation.
+- `review-closeout`: classify findings, implement only accepted code-change liabilities, prove closure, and stop at ATCG or `$ship` handoff.
+
+Unqualified review closure requests default to `review-closeout`.
 
 When the user asks for review, review closure, code review, CAS review, review remediation, or to address review findings without explicitly saying not to implement, the workflow must:
 
@@ -174,14 +182,14 @@ When the user asks for review, review closure, code review, CAS review, review r
 7. Run three consecutive clean normalized `$cas` review passes on the same artifact scope.
 8. Close through `$evidence-fold`, `$proof-patch`, and ATCG-v1.
 
-Do not treat `resolve` as one patch per comment.
+Do not treat review-closeout as one patch per comment.
 
-#### Review-only
+#### Triage
 
 Use when the user wants review findings classified without implementation:
 
 ```text
-/goal $actuating review this branch; do not implement
+/goal $actuating triage this branch
 ```
 
 The workflow performs:
@@ -193,14 +201,14 @@ $cas review
 -> stop
 ```
 
-Do not call `$goal-grind`. The three-clean-review closure bar does not apply unless the user explicitly asks for exhaustive review certification.
+Do not call `$goal-grind`. Do not implement. The three-clean-review closure bar does not apply unless the user explicitly asks for exhaustive review certification.
 
-#### Resolution-plan-only
+#### Remediation-plan
 
 Use when the user wants a resolution plan without implementation:
 
 ```text
-/goal $actuating make a resolution plan for this branch; do not implement
+/goal $actuating remediation-plan this branch
 ```
 
 The workflow performs:
@@ -213,14 +221,14 @@ $cas review or existing review findings
 -> stop
 ```
 
-Do not call `$goal-grind`. The three-clean-review closure bar does not apply because no remediation has occurred.
+Do not call `$goal-grind`. Do not implement. The three-clean-review closure bar does not apply because no remediation has occurred.
 
-#### Resolve
+#### Review-closeout
 
 This is the default for review work unless the user explicitly requests no implementation:
 
 ```text
-/goal $actuating resolve this PR
+/goal $actuating review-closeout this PR
 ```
 
 The workflow performs:
@@ -245,7 +253,7 @@ Raw review prose never reaches implementation directly.
 
 #### Three clean normalized CAS review runs
 
-For `resolve` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same current artifact scope unless the user explicitly lowers the review bar.
+For `review-closeout` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same current artifact scope unless the user explicitly lowers the review bar.
 
 A clean normalized CAS run means `$cas` produces no new in-scope accepted liability after `$review-fold` and the resolution fold. The run is not made dirty by findings that are duplicate, rejected, out-of-scope, already-proven proof-only, deferred follow-up, or already-resolved by the current refactor kernel.
 
@@ -412,25 +420,26 @@ Choose the narrowest mode that can complete safely:
 
 ```yaml
 actuating_mode:
-  source: direct-goal|spec-first|review-only|resolution-plan-only|resolve|dry-plan|st-governed
+  source: direct-goal|spec-first|review|dry-plan|st-governed
   persistence: update_plan|goal-artifacts|st
   implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
+  review_mode: none|triage|remediation-plan|review-closeout
   review_source: none|existing-review|cas-probe|cas-lane|cas-exhaustive
   scheme_plan: none|required|present
   loop_contract: fused|ALSR-HYL|required|st-owned
   parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
-  closure: review-disposition|resolution-agenda|proof-patch|ship-handoff|blocked
+  closure: triage-report|remediation-plan|review-closeout|ship-handoff|blocked
 ```
 
 Default:
 
 ```text
-spec-first + update_plan + minimal-fix + proof-patch
+spec-first + update_plan + minimal-fix + review-closeout
 ```
 
-Switch to `resolve` when reviews, CAS findings, or reviewer suggestions are present and no no-code modifier is present.
-Switch to `review-only` when the user asks for review-only, audit-only, classify-only, no changes, or do not implement behavior.
-Switch to `resolution-plan-only` when the user asks for a plan or resolution plan without implementation.
+Switch to `review-closeout` when reviews, CAS findings, or reviewer suggestions are present and no no-code modifier is present.
+Switch to `triage` when the user names `triage`, or asks for review-only, audit-only, classify-only, no changes, or do not implement behavior.
+Switch to `remediation-plan` when the user names `remediation-plan`, or asks for a plan or resolution plan without implementation.
 Switch to `cas-exhaustive` when exhaustive review is requested or required by the proof bar.
 Switch to `refactor-kernel` when repeated findings share an owner boundary.
 Switch to `branch-race` when local fix and refactor-kernel are both plausible and can be compared under the same verifier.

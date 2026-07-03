@@ -13,13 +13,13 @@ $cas review
 -> $ship only when PR update/publication is requested
 ```
 
-## Modes
+## Review models
 
-| Mode | Purpose | Code changes |
+| Review model | Purpose | Code changes |
 |---|---|---|
-| review-only | Find and classify review findings. | No |
-| resolution-plan-only | Produce the resolution plan. | No |
-| resolve | Default review remediation. Classify, fix accepted liabilities, prove closure. | Yes |
+| triage | Find and classify review findings. | No |
+| remediation-plan | Produce the resolution plan. | No |
+| review-closeout | Default review remediation. Classify, fix accepted liabilities, prove closure. | Yes |
 
 ## Clean CAS review evidence unit
 

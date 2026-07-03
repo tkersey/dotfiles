@@ -1,9 +1,9 @@
 # Examples
 
-## Existing PR, resolve
+## Existing PR, review-closeout
 
 ```text
-/goal $actuating resolve this PR
+/goal $actuating review-closeout this PR
 ```
 
 Means:
@@ -12,10 +12,10 @@ Means:
 CAS review, classify, build a resolution plan, fix accepted liabilities only, verify, require caller-owned repeated clean CAS review evidence units, then proof-patch.
 ```
 
-## Existing PR, no implementation
+## Existing PR, triage
 
 ```text
-/goal $actuating review this PR; do not implement
+/goal $actuating triage this PR
 ```
 
 Means:

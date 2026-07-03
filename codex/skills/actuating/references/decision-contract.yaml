@@ -12,7 +12,7 @@ skill_decision_contract:
       exclusions: []
     - trigger_id: ACT-REVIEW
       description: The user wants review closure or code review as part of the workflow.
-      cue_literals: [review closure, code review, exhaustive review, close review, resolve]
+      cue_literals: [triage, remediation-plan, review-closeout, review closure, code review, exhaustive review, close review]
       cue_regexes: []
       exclusions: []
     - trigger_id: ACT-HYLO
@@ -102,7 +102,7 @@ skill_decision_contract:
       required_artifacts:
         - CAS review verdict when workflow code review is required
         - review-fold disposition
-        - resolution fold for resolve
+        - resolution fold for remediation-plan or review-closeout
         - three clean normalized CAS review runs unless explicitly lowered
       success_signals:
         - fresh or exhaustive workflow review comes from $cas
@@ -112,7 +112,7 @@ skill_decision_contract:
         - non-CAS critique substitutes for workflow code review
         - raw review prose directly drives code changes
         - cached CAS receipt counted as fresh repeated review
-      rationale: Code review remains exhaustive when requested, while review-fold/resolve controls which findings become code changes.
+      rationale: Code review remains exhaustive when requested, while review-fold/review-closeout controls which findings become code changes.
     - clause_id: ACT-ST-001
       trigger_refs: [ACT-ST-GOVERNED]
       expected_routes: [ACT-ST-GOVERNED, ACT-BLOCK]

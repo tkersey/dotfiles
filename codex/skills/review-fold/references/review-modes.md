@@ -4,21 +4,17 @@ The review loop is a reducer, not a patch queue.
 
 ## Workflow defaults
 
-`$actuating review ...` defaults to `resolve`.
+`$actuating review ...` defaults to `review-closeout`.
 
-No-code modes require explicit language:
+Explicit review mode names carry the mutation rule:
 
 ```text
-do not implement
-review only
-audit only
-classify only
-resolution plan only
-plan only
-no changes
+triage -> classify findings and stop without implementation
+remediation-plan -> produce the fix plan and stop without implementation
+review-closeout -> fix accepted liabilities and prove closure
 ```
 
-`resolve` still preserves no-code dispositions. A review with ten findings may close as:
+`review-closeout` still preserves no-code dispositions. A review with ten findings may close as:
 
 ```text
 2 rejected

@@ -11,5 +11,8 @@ interface:
     current ALSR/HYL exists, hand off to $agent-loop-schemes. Interpret HYL-v1 as
     a defunctionalized actuation machine: unfold a legal node/frontier, execute
     only that node/frontier, fold evidence, emit HSR-v1, and continue or stop.
-    Fresh or exhaustive review must use $cas review; findings must pass through
-    $review-fold. Completion requires terminal ATCG-v1.
+    Review modes are triage, remediation-plan, and review-closeout; triage and
+    remediation-plan do not implement, while review-closeout implements only
+    accepted code-change liabilities. Fresh or exhaustive review must use $cas
+    review; findings must pass through $review-fold. Completion requires
+    terminal ATCG-v1.

@@ -106,7 +106,7 @@ $st-governed completion without current $st control receipt -> st-authority-bloc
 CAS required + clean runs < required -> blocked, next_owner=$cas
 CAS required + clean_runs_required <= 0 -> blocked, next_owner=$cas
 CAS required + final report clean runs < required -> blocked, next_owner=$cas
-resolve protocol incomplete -> cas-review-blocked, next_owner=$cas
+review-closeout protocol incomplete -> cas-review-blocked, next_owner=$cas
 proof-patch required + missing/stale -> continue, next_owner=$proof-patch
 proof-patch closure + missing proof-patch receipt -> continue, next_owner=$proof-patch
 ADD-v1 handoff + ship result missing -> continue, next_owner=$ship
@@ -175,7 +175,7 @@ terminal HSR exists
 every material mutation has HSR unfold/action/fold
 latest fold is current-artifact-bound
 selected loop matches task shape
-resolve obeyed CAS/review-fold/resolve
+review-closeout obeyed CAS/review-fold/resolution-fold
 three clean normalized CAS runs complete when required
 side-effect boundary respected
 proof matches verifier

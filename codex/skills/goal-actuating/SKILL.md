@@ -45,15 +45,16 @@ When an accepted implementation spec is present, treat it as the source of truth
 
 ```yaml
 goal_actuating_mode:
-  source: direct-goal|spec-first|review-only|resolution-plan-only|resolve|dry-plan|st-governed
+  source: direct-goal|spec-first|review|dry-plan|st-governed
   persistence: update_plan|goal-artifacts|st
   implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
+  review_mode: none|triage|remediation-plan|review-closeout
   review: none|existing-review|cas-probe|cas-lane|cas-exhaustive
-  resolution: none|review-fold-only|resolution-fold|resolve|resolve-campaign
+  resolution: none|review-fold-only|resolution-fold|accepted-liabilities|resolution-campaign
   scheme_plan: none|required|present
   loop_contract: fused|ALSR-HYL|required|st-owned
   parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
-  closure: review-disposition|resolution-agenda|proof-patch|ship-handoff|blocked
+  closure: triage-report|remediation-plan|review-closeout|ship-handoff|blocked
 ```
 
 ## Procedure
@@ -73,7 +74,7 @@ goal_actuating_mode:
 13. Execute one useful action at a time with `$goal-grind`, unless `$st` owns execution.
 14. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolution fold as appropriate.
 15. Use `$failure-memory` when failures or review classes repeat.
-16. For `resolve` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
+16. For `review-closeout` and exhaustive review, require three consecutive clean normalized `$cas` review runs on the same artifact scope before completion.
 17. Run ATCG-v1 before completion.
 18. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
 
@@ -104,7 +105,7 @@ if material and no ALSR/HYL -> produce agent-loop-schemes node
 if no goal contract -> produce goal-contract node
 if review requested and no CAS result -> produce CAS review node
 if CAS findings unclassified -> produce review-fold node
-if review requested and no resolve agenda -> produce resolution-fold node
+if review requested and no resolution agenda -> produce resolution-fold node
 if accepted liabilities remain -> produce patch/refactor/branch-race node
 if proof missing -> produce verifier/proof node
 if clean CAS count < 3 -> produce fresh CAS review node
@@ -183,7 +184,13 @@ A goal may close without code review only when the accepted proof requirements d
 
 ## Review behavior
 
-If review is requested and no no-code modifier is present, use `resolve`.
+If review is requested and no no-code modifier is present, use `review-closeout`.
+
+Explicit review mode names carry the mutation rule:
+
+- `triage`: classify findings and stop without implementation.
+- `remediation-plan`: classify findings, produce the fix plan, and stop without implementation.
+- `review-closeout`: classify findings, implement only accepted code-change liabilities, prove closure, and stop at ATCG or `$ship` handoff.
 
 ```text
 $cas review

@@ -80,7 +80,7 @@ agent_loop_scheme_receipt:
     diff_digest:
     paths: []
   task_shape: direct|goal|review|debug|migration|branch_race|proof_closure|st_governed
-  selected_loop: direct_action|goal_grind|resolve|review_only|resolution_plan_only|debug_history|migration_memoized|branch_race|proof_patch|st_governed
+  selected_loop: direct_action|goal_grind|triage|remediation_plan|review_closeout|debug_history|migration_memoized|branch_race|proof_patch|st_governed
   seed:
     source:
     authority:
@@ -302,9 +302,9 @@ Use for ordinary long-running coding goals with a verifier.
 goal contract -> work list when useful -> HYL step -> evidence fold -> continue or stop
 ```
 
-### Resolve
+### Review-closeout
 
-Default for review work unless the user explicitly says not to implement.
+Default for review work unless the user names `triage`, `remediation-plan`, or another no-implementation mode.
 
 ```text
 $cas review
@@ -320,9 +320,9 @@ $cas review
 
 Never treat review text as code instructions. Findings must become accepted liabilities, rejections, proof-only items, follow-ups, human-owned decisions, or refactor kernels before implementation.
 
-### Review-only
+### Triage
 
-Use when the user asks for review, audit, or classification with no code changes.
+Use when the user names `triage`, or asks for review, audit, or classification with no code changes.
 
 ```text
 $cas review
@@ -333,9 +333,9 @@ $cas review
 
 No `$goal-grind`.
 
-### Resolution-plan-only
+### Remediation-plan
 
-Use when the user wants the minimal resolution plan but no code changes.
+Use when the user names `remediation-plan`, or wants the minimal resolution plan but no code changes.
 
 ```text
 $cas review or existing findings
@@ -432,7 +432,7 @@ same canonical owner
 same invalid state transition
 ```
 
-A resolve HYL unfolds review classes and accepted liabilities, not raw findings.
+A review-closeout HYL unfolds review classes and accepted liabilities, not raw findings.
 
 ## Parallelism law
 

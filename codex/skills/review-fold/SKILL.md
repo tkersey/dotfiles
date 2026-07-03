@@ -23,11 +23,11 @@ This skill is the review-specific evidence fold for the recursive goal scheme. I
 
 `$review-fold` consumes review findings. It does not replace code review. When the workflow needs to perform fresh, adversarial, or exhaustive code review, the review source must be `$cas`.
 
-## Relationship to resolve
+## Relationship to review closure
 
 `$review-fold` classifies findings. It does not, by itself, decide that review work stops.
 
-For `$actuating` review workflows, default closure mode is `resolve` unless the user explicitly requests `review-only`, `resolution-plan-only`, audit-only, or no implementation.
+For `$actuating` review workflows, default review mode is `review-closeout` unless the user explicitly requests `triage`, `remediation-plan`, audit-only, or no implementation.
 
 ```text
 $cas = review source
@@ -36,7 +36,7 @@ resolution fold = resolution plan compiler
 $goal-grind = implementation engine for accepted liabilities
 ```
 
-For `resolve` and exhaustive review, final completion requires three consecutive clean normalized `$cas` review runs after implementation. `$review-fold` decides whether each CAS run is normalized clean.
+For `review-closeout` and exhaustive review, final completion requires three consecutive clean normalized `$cas` review runs after implementation. `$review-fold` decides whether each CAS run is normalized clean.
 
 ## Review source rule
 
@@ -87,7 +87,7 @@ review_fold:
     reabstraction_candidate: yes|no
     one_patch_per_comment_risk: low|medium|high
   recommended_resolution:
-    mode: review-only|resolution-plan-only|resolve
+    review_mode: triage|remediation-plan|review-closeout
     reason:
     no_code_modifier_detected: yes|no
     accepted_liability_count:
@@ -119,11 +119,11 @@ review_fold:
 
 ## Modes
 
-### Workflow resolution modes
+### Workflow review modes
 
-- `review-only`: classify findings and stop without a remediation agenda.
-- `resolution-plan-only`: classify findings and produce a resolution plan without implementation.
-- `resolve`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolution fold, then require three clean normalized CAS review runs before completion.
+- `triage`: classify findings and stop without a remediation agenda or implementation.
+- `remediation-plan`: classify findings and produce a resolution plan without implementation.
+- `review-closeout`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolution fold, then require three clean normalized CAS review runs before completion.
 
 ### `adjudicate-only`
 
@@ -171,7 +171,7 @@ Reset the clean-run counter to zero when code changes, review scope changes, bas
 2. If fresh/exhaustive workflow code review is required and no CAS result is present, stop and request `$cas` review.
 3. Classify each finding before any implementation.
 4. Collapse duplicates and same-family comments.
-5. Recommend `review-only`, `resolution-plan-only`, or `resolve` from the user's requested mode and the accepted liabilities.
+5. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
 6. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
 7. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
 8. Produce a small work graph only for accepted liabilities.
@@ -183,10 +183,10 @@ Reset the clean-run counter to zero when code changes, review scope changes, bas
 
 When called by `$actuating`:
 
-- default to `resolve` for review requests;
-- require three consecutive clean normalized `$cas` review runs before completing `resolve` or exhaustive review;
-- use `review-only` only when the user explicitly asks for no implementation or classification only;
-- use `resolution-plan-only` only when the user explicitly asks for a plan/agenda without implementation;
+- default to `review-closeout` for review requests;
+- require three consecutive clean normalized `$cas` review runs before completing `review-closeout` or exhaustive review;
+- use `triage` when the user names `triage`, or asks for no implementation or classification only;
+- use `remediation-plan` when the user names `remediation-plan`, or asks for a plan/agenda without implementation;
 - preserve no-code dispositions for rejected, proof-only, follow-up, or human-owned findings;
 - never send raw review findings directly to implementation.
 
@@ -209,5 +209,5 @@ no changes
 - Do not accept scope expansion without user authority.
 - Do not miss the refactor when many comments share one owner boundary.
 - Do not replace a requested or required CAS review with non-CAS critique.
-- Do not claim review closure before three clean normalized CAS runs when `resolve` or exhaustive review requires them.
+- Do not claim review closure before three clean normalized CAS runs when `review-closeout` or exhaustive review requires them.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.

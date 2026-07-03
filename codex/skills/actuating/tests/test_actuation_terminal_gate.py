@@ -110,7 +110,34 @@ class ActuationTerminalGateTests(unittest.TestCase):
         for reason in fixture["advisory_expectation"]["would_block_reasons"]:
             self.assertIn(reason, body["blocked_reasons"])
 
-    def test_resolve_governance_accepts_cas_review_fold_and_resolve(self) -> None:
+    def test_review_closeout_governance_accepts_cas_review_fold_and_resolution(self) -> None:
+        context = deepcopy(self.context())
+        context["loop_governance"] = {
+            "review_closeout": {
+                "required": "yes",
+                "cas_reviewed": "yes",
+                "review_folded": "yes",
+                "review_closeout_obeyed": "yes",
+            }
+        }
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "complete")
+        self.assertEqual(body["can_mark_goal_complete"], "yes")
+
+    def test_review_closeout_governance_blocks_without_cas_review_fold_or_resolution(self) -> None:
+        context = deepcopy(self.context())
+        context["loop_governance"] = {
+            "review_closeout": {
+                "required": "yes",
+                "cas_reviewed": "no",
+                "review_folded": "yes",
+                "review_closeout_obeyed": "yes",
+            }
+        }
+        self.assert_blocks_with(context, "cas-review-blocked", "$cas")
+
+    def test_legacy_resolve_governance_is_still_accepted(self) -> None:
         context = deepcopy(self.context())
         context["loop_governance"] = {
             "resolve": {
@@ -125,19 +152,7 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertEqual(body["verdict"], "complete")
         self.assertEqual(body["can_mark_goal_complete"], "yes")
 
-    def test_resolve_governance_blocks_without_cas_review_fold_or_resolve(self) -> None:
-        context = deepcopy(self.context())
-        context["loop_governance"] = {
-            "resolve": {
-                "required": "yes",
-                "cas_reviewed": "no",
-                "review_folded": "yes",
-                "resolve_obeyed": "yes",
-            }
-        }
-        self.assert_blocks_with(context, "cas-review-blocked", "$cas")
-
-    def test_legacy_review_fix_governance_still_blocks_without_resolve(self) -> None:
+    def test_legacy_review_fix_governance_still_blocks_without_resolution(self) -> None:
         context = deepcopy(self.context())
         context["loop_governance"] = {
             "review_fix": {
