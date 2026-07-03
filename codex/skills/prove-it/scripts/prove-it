@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-exec "$script_dir/prove-it-autogauntlet.py" "$@"
+cat <<'EOF'
+PROVE_IT_SUBAGENT_NATIVE
+
+Invoke `$prove-it` in a subagent-capable Codex session. The sequential host-loop driver has been removed; prove-it now runs rounds 1-9 as parallel subagent packets and round 10 as an Oracle subagent after fan-in.
+
+This script intentionally creates no artifacts.
+EOF
+exit 2
