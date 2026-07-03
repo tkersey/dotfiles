@@ -12,7 +12,7 @@ skill_decision_contract:
       exclusions: []
     - trigger_id: ACT-REVIEW
       description: The user wants review closure or code review as part of the workflow.
-      cue_literals: [review closure, code review, exhaustive review, close review, review and fix]
+      cue_literals: [review closure, code review, exhaustive review, close review, resolve]
       cue_regexes: []
       exclusions: []
     - trigger_id: ACT-HYLO
@@ -102,7 +102,7 @@ skill_decision_contract:
       required_artifacts:
         - CAS review verdict when workflow code review is required
         - review-fold disposition
-        - resolve pass for resolve-and-fix
+        - resolution fold for resolve
         - three clean normalized CAS review runs unless explicitly lowered
       success_signals:
         - fresh or exhaustive workflow review comes from $cas

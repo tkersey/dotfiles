@@ -24,7 +24,7 @@ This catalogue is a practical planning map. It is not a theorem-prover and not a
 Most real coding tasks use combinations:
 
 ```text
-review resolve-and-fix = cata(CAS findings) + dyna(review classes) + hylo(accepted fixes) + zygo(proof) + terminal CAS fixed point
+review resolve = cata(CAS findings) + dyna(review classes) + hylo(accepted fixes) + zygo(proof) + terminal CAS fixed point
 migration = ana(package/error matrix) + dyna(class memoization) + hylo(apply/prove) + cata(repo evidence)
 hard debug = histo(attempts) + futu(strategy branches) + hylo(action/evidence)
 refactor = para(original code) + meta(old->new shape) + zygo(proof)
@@ -33,7 +33,7 @@ parallel PR review = ana(review classes) + parallel traversal + cata(resolve/fan
 
 ## Clean CAS fixed point
 
-For `resolve-and-fix` and exhaustive review:
+For `resolve` and exhaustive review:
 
 ```text
 3 consecutive clean normalized CAS review runs

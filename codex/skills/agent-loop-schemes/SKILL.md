@@ -80,7 +80,7 @@ agent_loop_scheme_receipt:
     diff_digest:
     paths: []
   task_shape: direct|goal|review|debug|migration|branch_race|proof_closure|st_governed
-  selected_loop: direct_action|goal_grind|resolve_and_fix|review_only|resolve_only|debug_history|migration_memoized|branch_race|proof_patch|st_governed
+  selected_loop: direct_action|goal_grind|resolve|review_only|resolution_plan_only|debug_history|migration_memoized|branch_race|proof_patch|st_governed
   seed:
     source:
     authority:
@@ -160,7 +160,7 @@ actuation_hylomorphism:
       - verify
       - cas_review
       - review_fold
-      - resolve_pass
+      - resolution_fold
       - subagent_spawn
       - branch_race
       - st_handoff
@@ -173,7 +173,7 @@ actuation_hylomorphism:
       - command_output
       - cas_review
       - review_fold
-      - resolve_pass
+      - resolution_fold
       - subagent_result
       - proof_patch
     emits: continue|complete|blocked|regress|replan|refactor-kernel|st-required
@@ -302,14 +302,14 @@ Use for ordinary long-running coding goals with a verifier.
 goal contract -> work list when useful -> HYL step -> evidence fold -> continue or stop
 ```
 
-### Resolve-and-fix
+### Resolve
 
 Default for review work unless the user explicitly says not to implement.
 
 ```text
 $cas review
 -> $review-fold
--> resolve pass
+-> resolution fold
 -> $goal-grind accepted liabilities only
 -> $evidence-fold
 -> 3 clean normalized $cas review runs
@@ -333,15 +333,15 @@ $cas review
 
 No `$goal-grind`.
 
-### Resolve-only
+### Resolution-plan-only
 
-Use when the user wants the minimal closure agenda but no code changes.
+Use when the user wants the minimal resolution plan but no code changes.
 
 ```text
 $cas review or existing findings
 -> $review-fold
--> resolve pass
--> review closure agenda
+-> resolution fold
+-> review resolution plan
 -> stop
 ```
 
@@ -432,7 +432,7 @@ same canonical owner
 same invalid state transition
 ```
 
-A resolve-and-fix HYL unfolds review classes and accepted liabilities, not raw findings.
+A resolve HYL unfolds review classes and accepted liabilities, not raw findings.
 
 ## Parallelism law
 
@@ -523,7 +523,7 @@ terminal_without_stop_rule
 terminal_without_atcg
 parallel_fanout_without_fanin
 stale_hylo_after_diff_change
-review_fix_without_review_fold
+resolve_without_review_fold
 raw_review_to_patch
 cached_cas_counted_as_fresh
 ```
@@ -554,7 +554,7 @@ the next action would repeat a known invalid strategy
 - `$actuating` when the user wants the high-level workflow.
 - `$cas` as the review backend for workflow code review.
 - `$review-fold` to classify findings before implementation.
-- `$resolve` only when a dedicated closure agenda is needed.
+- `$resolve` only when a dedicated resolution fold or closure decision is needed.
 - `$goal-grind` for accepted implementation liabilities.
 - `$evidence-fold` after verification or review results.
 - `$failure-memory` when repeated classes or oscillation appear.

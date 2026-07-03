@@ -63,7 +63,7 @@ work_graph:
     mode: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
     max_agents:
     allowed_roles: []
-    fan_in: evidence-fold|review-fold|resolve-pass|lead-integration
+    fan_in: evidence-fold|review-fold|resolution-fold|lead-integration
     stop_on_blocker: yes|no
     stop_on_winner: yes|no
   escalation:
@@ -88,7 +88,7 @@ work_graph:
 1. Emit `parallel_safe: yes` only when dependencies are satisfied, paths/resources do not conflict, and the proof surface is known.
 2. Use `scout-fanout` only for read-only fact finding.
 3. Use `review-class-fanout` only after CAS findings have been grouped.
-4. Use `patch-fanout` only after the resolve pass accepts code-change liabilities.
+4. Use `patch-fanout` only after the resolution fold accepts code-change liabilities.
 5. Use `branch-race` only when all strategies share the same verifier.
 6. Mark shared invariants, shared files, or shared owner-boundary fixes as `parallel_safe: no`.
 7. Prefer one `refactor-kernel` node over parallel local patches when findings share an owner boundary.
