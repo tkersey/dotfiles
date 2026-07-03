@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Footgun Finder"
+  short_description: "Read-only review lens for latent misuse hazards and dangerous affordances."
+  default_prompt: "Use $footgun-finder read-only. Find plausible easy-path misuse hazards, classify each with a misuse trace, separate footguns from invariants and complexity, and emit a ranked footgun ledger with mitigation handoffs."
