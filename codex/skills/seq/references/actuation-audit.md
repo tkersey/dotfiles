@@ -1,6 +1,19 @@
 # `$actuating` Audit
 
-Preferred future lifted command:
+Preferred lifted command:
+
+```bash
+seq actuation-audit \
+  --root ~/.codex/sessions \
+  --workdir <workdir> \
+  --since <time> \
+  --until <time> \
+  --exclude-current \
+  --mode hylo \
+  --format json
+```
+
+Report mode remains available for human-readable summaries:
 
 ```bash
 seq actuation-audit \
@@ -13,7 +26,7 @@ seq actuation-audit \
   --format markdown
 ```
 
-Until implemented, use:
+If the installed command is unavailable, use:
 
 ```text
 skill-decision-audit
@@ -42,6 +55,8 @@ skill rereads after compaction
 subagent artifact yield
 decision receipts
 ship/PR mode
+ALSR/HYL/HSR governance coverage
+terminal ATCG coverage
 ```
 
 Key defect:
@@ -63,5 +78,5 @@ Do not call `codex_internal_context` or persistent goal context a successful dow
 The native implementation is specified in:
 
 ```text
-SEQ_ACTUATION_AUDIT_SPEC.md
+seq actuation-audit --mode hylo
 ```
