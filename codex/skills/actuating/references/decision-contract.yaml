@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: actuating
     kind: workflow
-    source_fingerprint: actuating-v7-hylo-control-plane
+    source_fingerprint: actuating-v7-review-lane-standard-streak
   triggers:
     - trigger_id: ACT-SPEC-GOAL
       description: The user wants an accepted implementation spec executed through the goal workflow.
@@ -13,6 +13,11 @@ skill_decision_contract:
     - trigger_id: ACT-REVIEW
       description: The user wants review closure or code review as part of the workflow.
       cue_literals: [triage, remediation-plan, review-closeout, review closure, code review, exhaustive review, close review]
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: ACT-REVIEW-LANES
+      description: Review requires a standard CAS lane plus selected auxiliary review lenses.
+      cue_literals: [standard CAS review, footgun-finder, invariant-ace, complexity-mitigator, review lanes, review bundle]
       cue_regexes: []
       exclusions: []
     - trigger_id: ACT-HYLO
@@ -45,6 +50,10 @@ skill_decision_contract:
     - route_id: ACT-CAS-REVIEW
       description: Run $cas review when workflow code review is requested or required.
       aliases: [cas-review]
+      terminal: "no"
+    - route_id: ACT-CAS-REVIEW-LANES
+      description: Run standard CAS review and selected auxiliary CAS review lanes, preserving the standard-only clean streak.
+      aliases: [cas-review-bundle, standard-review, footgun-finder, invariant-ace, complexity-mitigator]
       terminal: "no"
     - route_id: ACT-ST-GOVERNED
       description: Hand off to $st bounded execution slices when durable coordination owns execution.
@@ -97,22 +106,41 @@ skill_decision_contract:
       rationale: HYL-v1 makes loop shape an executable control surface rather than prose guidance.
     - clause_id: ACT-REVIEW-001
       trigger_refs: [ACT-REVIEW]
-      expected_routes: [ACT-CAS-REVIEW, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
+      expected_routes: [ACT-CAS-REVIEW, ACT-CAS-REVIEW-LANES, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
-        - CAS review verdict when workflow code review is required
+        - standard CAS review verdict when workflow code review is required
         - review-fold disposition
         - resolution fold for remediation-plan or review-closeout
-        - three clean normalized CAS review runs unless explicitly lowered
+        - three clean normalized standard CAS review attempts unless explicitly lowered
       success_signals:
         - fresh or exhaustive workflow review comes from $cas
         - review findings are classified before implementation
         - raw review findings are quotiented into liabilities/classes before patching
+        - only standard CAS review attempts count toward the three-clean-review closure bar
       failure_signals:
         - non-CAS critique substitutes for workflow code review
         - raw review prose directly drives code changes
         - cached CAS receipt counted as fresh repeated review
+        - auxiliary review lens counted as a standard clean review
       rationale: Code review remains exhaustive when requested, while review-fold/review-closeout controls which findings become code changes.
+    - clause_id: ACT-REVIEW-LANES-001
+      trigger_refs: [ACT-REVIEW-LANES]
+      expected_routes: [ACT-CAS-REVIEW-LANES, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
+      prohibited_routes: []
+      required_artifacts:
+        - review profile with standard plus selected auxiliary lanes
+        - folded auxiliary lane outcomes for footgun-finder, invariant-ace, or complexity-mitigator when selected
+        - standard-only clean-run counter
+      success_signals:
+        - footgun-finder, invariant-ace, and complexity-mitigator are available as auxiliary CAS review lanes
+        - auxiliary lanes may block closeout but do not increment or interrupt the standard clean streak
+        - artifact-changing fixes from any lane reset the standard clean streak
+      failure_signals:
+        - auxiliary lane output bypasses review-fold
+        - auxiliary lane is treated as mutation authority
+        - standard clean streak includes non-standard attempts
+      rationale: Specialized review depth should strengthen review evidence without weakening the three standard clean reviews closure bar.
     - clause_id: ACT-ST-001
       trigger_refs: [ACT-ST-GOVERNED]
       expected_routes: [ACT-ST-GOVERNED, ACT-BLOCK]
@@ -126,4 +154,4 @@ skill_decision_contract:
       rationale: The old transaction-controller behavior is preserved only under st-governed mode.
   instrumentation:
     decision_receipt: required
-    rationale: Material decisions include accepted-spec routing, scheme planning, loop contract, review backend, persistence mode, HYL/HSR execution legality, ATCG terminal closure, and proof/ship closure.
+    rationale: Material decisions include accepted-spec routing, scheme planning, loop contract, review backend and lanes, persistence mode, HYL/HSR execution legality, ATCG terminal closure, and proof/ship closure.
