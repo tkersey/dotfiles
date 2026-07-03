@@ -35,7 +35,7 @@ class ProofPatchContractTests(unittest.TestCase):
             "## Review closure",
             "- CAS review source:",
             "- review-fold disposition:",
-            "- resolve pass:",
+            "- resolution fold:",
             "- accepted liabilities:",
             "- no-code dispositions:",
             "- clean normalized CAS runs:",
@@ -76,6 +76,7 @@ class ProofPatchContractTests(unittest.TestCase):
         required_phrases = [
             "loop governance receipts",
             "review closure",
+            "resolution fold",
             "parallelism",
             "direct-action fused exemption",
             "never count cached CAS receipts as fresh clean runs",
