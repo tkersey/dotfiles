@@ -76,11 +76,11 @@
       "selected_loop": {
         "matches_task_shape": "no"
       },
-      "review_fix": {
+      "resolve": {
         "required": "yes",
         "cas_reviewed": "no",
         "review_folded": "no",
-        "resolve_passed": "no"
+        "resolve_obeyed": "no"
       },
       "cas_clean_runs": {
         "required": "yes",

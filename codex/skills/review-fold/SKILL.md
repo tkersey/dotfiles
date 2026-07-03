@@ -27,16 +27,16 @@ This skill is the review-specific evidence fold for the recursive goal scheme. I
 
 `$review-fold` classifies findings. It does not, by itself, decide that review work stops.
 
-For `$actuating` review workflows, default closure mode is `resolve-and-fix` unless the user explicitly requests `review-only`, `resolve-only`, audit-only, or no implementation.
+For `$actuating` review workflows, default closure mode is `resolve` unless the user explicitly requests `review-only`, `resolution-plan-only`, audit-only, or no implementation.
 
 ```text
 $cas = review source
 $review-fold = finding classifier
-resolve pass = closure agenda compiler
+resolution fold = resolution plan compiler
 $goal-grind = implementation engine for accepted liabilities
 ```
 
-For `resolve-and-fix` and exhaustive review, final completion requires three consecutive clean normalized `$cas` review runs after implementation. `$review-fold` decides whether each CAS run is normalized clean.
+For `resolve` and exhaustive review, final completion requires three consecutive clean normalized `$cas` review runs after implementation. `$review-fold` decides whether each CAS run is normalized clean.
 
 ## Review source rule
 
@@ -87,7 +87,7 @@ review_fold:
     reabstraction_candidate: yes|no
     one_patch_per_comment_risk: low|medium|high
   recommended_resolution:
-    mode: review-only|resolve-only|resolve-and-fix
+    mode: review-only|resolution-plan-only|resolve
     reason:
     no_code_modifier_detected: yes|no
     accepted_liability_count:
@@ -122,8 +122,8 @@ review_fold:
 ### Workflow resolution modes
 
 - `review-only`: classify findings and stop without a remediation agenda.
-- `resolve-only`: classify findings and produce a closure agenda without implementation.
-- `resolve-and-fix`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolve pass, then require three clean normalized CAS review runs before completion.
+- `resolution-plan-only`: classify findings and produce a resolution plan without implementation.
+- `resolve`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolution fold, then require three clean normalized CAS review runs before completion.
 
 ### `adjudicate-only`
 
@@ -159,7 +159,7 @@ CAS review is blocked and the blocker is reported
 user explicitly lowers the review proof bar
 ```
 
-A clean normalized CAS run means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the resolve pass. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-resolved findings do not make the run dirty.
+A clean normalized CAS run means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the resolution fold. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-resolved findings do not make the run dirty.
 
 Reset the clean-run counter to zero when code changes, review scope changes, base/head/diff changes, the proof bar changes, or CAS lane continuity is lost.
 
@@ -171,11 +171,11 @@ Reset the clean-run counter to zero when code changes, review scope changes, bas
 2. If fresh/exhaustive workflow code review is required and no CAS result is present, stop and request `$cas` review.
 3. Classify each finding before any implementation.
 4. Collapse duplicates and same-family comments.
-5. Recommend `review-only`, `resolve-only`, or `resolve-and-fix` from the user's requested mode and the accepted liabilities.
+5. Recommend `review-only`, `resolution-plan-only`, or `resolve` from the user's requested mode and the accepted liabilities.
 6. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
 7. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
 8. Produce a small work graph only for accepted liabilities.
-9. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolve pass accepts code-change liabilities.
+9. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolution fold accepts code-change liabilities.
 10. For post-implementation CAS runs, mark whether the normalized result is clean and whether the clean-run counter resets.
 11. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
 
@@ -183,10 +183,10 @@ Reset the clean-run counter to zero when code changes, review scope changes, bas
 
 When called by `$actuating`:
 
-- default to `resolve-and-fix` for review requests;
-- require three consecutive clean normalized `$cas` review runs before completing `resolve-and-fix` or exhaustive review;
+- default to `resolve` for review requests;
+- require three consecutive clean normalized `$cas` review runs before completing `resolve` or exhaustive review;
 - use `review-only` only when the user explicitly asks for no implementation or classification only;
-- use `resolve-only` only when the user explicitly asks for a plan/agenda without implementation;
+- use `resolution-plan-only` only when the user explicitly asks for a plan/agenda without implementation;
 - preserve no-code dispositions for rejected, proof-only, follow-up, or human-owned findings;
 - never send raw review findings directly to implementation.
 
@@ -197,7 +197,7 @@ do not implement
 review only
 audit only
 classify only
-resolve only
+resolution plan only
 plan only
 no changes
 ```
@@ -209,5 +209,5 @@ no changes
 - Do not accept scope expansion without user authority.
 - Do not miss the refactor when many comments share one owner boundary.
 - Do not replace a requested or required CAS review with non-CAS critique.
-- Do not claim review closure before three clean normalized CAS runs when `resolve-and-fix` or exhaustive review requires them.
+- Do not claim review closure before three clean normalized CAS runs when `resolve` or exhaustive review requires them.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.

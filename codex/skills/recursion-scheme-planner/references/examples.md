@@ -24,7 +24,7 @@ handoff:
 Input:
 
 ```text
-/goal $actuating review and fix this PR
+/goal $actuating resolve this PR
 ```
 
 Output:
@@ -40,7 +40,7 @@ selected:
     - zygo: proof-patch
 review_policy:
   source: cas-review
-  mode: resolve-and-fix
+  mode: resolve
   clean_cas_runs_required: 3
 ```
 

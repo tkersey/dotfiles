@@ -197,8 +197,8 @@ def hard_completion_reasons_for(context: dict[str, Any]) -> list[str]:
     if selected_loop and not as_yes(selected_loop.get("matches_task_shape")):
         append_reason(reasons, "blocked-hylo-frontier-missing")
 
-    review_fix = object_from(loop.get("review_fix"))
-    if as_yes(review_fix.get("required")) and not review_fix_obeyed(review_fix):
+    resolve = resolve_governance_for(loop)
+    if as_yes(resolve.get("required")) and not resolve_obeyed(resolve):
         append_reason(reasons, "cas-review-blocked")
 
     if cas_advisory_blocked(context, loop):
@@ -258,11 +258,22 @@ def material_mutation_hsr_reasons(loop: dict[str, Any], hsr: dict[str, Any]) -> 
     return reasons
 
 
-def review_fix_obeyed(review_fix: dict[str, Any]) -> bool:
+def resolve_governance_for(loop: dict[str, Any]) -> dict[str, Any]:
+    resolve = object_from(loop.get("resolve"))
+    if resolve:
+        return resolve
+    return object_from(loop.get("review_fix"))
+
+
+def any_yes(obj: dict[str, Any], *keys: str) -> bool:
+    return any(as_yes(obj.get(key)) for key in keys)
+
+
+def resolve_obeyed(resolve: dict[str, Any]) -> bool:
     return (
-        as_yes(review_fix.get("cas_reviewed"))
-        and as_yes(review_fix.get("review_folded"))
-        and as_yes(review_fix.get("resolve_passed"))
+        any_yes(resolve, "cas_reviewed", "cas_obeyed", "cas_satisfied")
+        and any_yes(resolve, "review_folded", "review_fold_obeyed", "review_fold_satisfied")
+        and any_yes(resolve, "resolve_passed", "resolve_obeyed", "resolved", "resolution_folded")
     )
 
 

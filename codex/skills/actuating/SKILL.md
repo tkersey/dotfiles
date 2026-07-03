@@ -27,7 +27,7 @@ Use it as:
 
 ```text
 /goal $actuating implement the accepted spec
-/goal $actuating review and fix this PR
+/goal $actuating resolve this PR
 ```
 
 `$actuating` does not directly edit code, claim resources, patch review findings, spawn subagents, or publish PRs. It routes to the owner that should act and enforces the gates that make the run valid.
@@ -157,24 +157,24 @@ If the request is still ambiguous, `$actuating` must call `$spec-pipeline` in ga
 Use when the work is review closure:
 
 ```text
-/goal $actuating review and fix this PR
+/goal $actuating resolve this PR
 /goal $actuating close the review for this branch
 ```
 
-The default review behavior is `resolve-and-fix`.
+The default review behavior is `resolve`.
 
 When the user asks for review, review closure, code review, CAS review, review remediation, or to address review findings without explicitly saying not to implement, the workflow must:
 
 1. Use `$cas` as the review backend for fresh or exhaustive workflow review.
 2. Pass findings through `$review-fold`.
-3. Run a resolve pass to produce the smallest correct closure agenda.
+3. Run a resolution fold to produce the smallest correct resolution plan.
 4. Implement only accepted code-change liabilities.
 5. Preserve no-code dispositions: `reject`, `proof-only`, `follow-up`, and `ask-human`.
 6. Prefer `refactor-kernel` when several findings share one owner boundary.
 7. Run three consecutive clean normalized `$cas` review passes on the same artifact scope.
 8. Close through `$evidence-fold`, `$proof-patch`, and ATCG-v1.
 
-Do not treat `resolve-and-fix` as one patch per comment.
+Do not treat `resolve` as one patch per comment.
 
 #### Review-only
 
@@ -195,12 +195,12 @@ $cas review
 
 Do not call `$goal-grind`. The three-clean-review closure bar does not apply unless the user explicitly asks for exhaustive review certification.
 
-#### Resolve-only
+#### Resolution-plan-only
 
-Use when the user wants a closure agenda without implementation:
+Use when the user wants a resolution plan without implementation:
 
 ```text
-/goal $actuating resolve review findings for this branch; do not implement
+/goal $actuating make a resolution plan for this branch; do not implement
 ```
 
 The workflow performs:
@@ -208,19 +208,19 @@ The workflow performs:
 ```text
 $cas review or existing review findings
 -> $review-fold
--> resolve pass
--> resolution agenda
+-> resolution fold
+-> resolution plan
 -> stop
 ```
 
 Do not call `$goal-grind`. The three-clean-review closure bar does not apply because no remediation has occurred.
 
-#### Resolve-and-fix
+#### Resolve
 
 This is the default for review work unless the user explicitly requests no implementation:
 
 ```text
-/goal $actuating review and fix this PR
+/goal $actuating resolve this PR
 ```
 
 The workflow performs:
@@ -229,7 +229,7 @@ The workflow performs:
 $cas review
 -> $review-fold
 -> optional review-class-fanout
--> resolve pass
+-> resolution fold
 -> optional branch-race
 -> $goal-grind accepted liabilities only
 -> optional patch-fanout over disjoint accepted liabilities only
@@ -245,9 +245,9 @@ Raw review prose never reaches implementation directly.
 
 #### Three clean normalized CAS review runs
 
-For `resolve-and-fix` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same current artifact scope unless the user explicitly lowers the review bar.
+For `resolve` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same current artifact scope unless the user explicitly lowers the review bar.
 
-A clean normalized CAS run means `$cas` produces no new in-scope accepted liability after `$review-fold` and the resolve pass. The run is not made dirty by findings that are duplicate, rejected, out-of-scope, already-proven proof-only, deferred follow-up, or already-resolved by the current refactor kernel.
+A clean normalized CAS run means `$cas` produces no new in-scope accepted liability after `$review-fold` and the resolution fold. The run is not made dirty by findings that are duplicate, rejected, out-of-scope, already-proven proof-only, deferred follow-up, or already-resolved by the current refactor kernel.
 
 Do not increment the clean-run counter from repeated normalization of one cached CAS receipt. After terminal evidence exists for the tuple, request each additional independent run with `--fresh-attempt REASON`, then track the streak in the caller workflow from independent CAS review verdicts.
 
@@ -291,7 +291,7 @@ Allowed fanout modes:
 - `scout-fanout`: parallel read-only repository investigation.
 - `review-class-fanout`: parallel investigation or classification of review finding classes after `$cas review` and `$review-fold`.
 - `branch-race`: compare isolated strategies under the same verifier.
-- `patch-fanout`: implement disjoint accepted liabilities after the resolve pass.
+- `patch-fanout`: implement disjoint accepted liabilities after the resolution fold.
 - `proof-fanout`: run independent verification checks in parallel.
 
 Forbidden fanout:
@@ -412,7 +412,7 @@ Choose the narrowest mode that can complete safely:
 
 ```yaml
 actuating_mode:
-  source: direct-goal|spec-first|review-only|resolve-only|resolve-and-fix|dry-plan|st-governed
+  source: direct-goal|spec-first|review-only|resolution-plan-only|resolve|dry-plan|st-governed
   persistence: update_plan|goal-artifacts|st
   implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
   review_source: none|existing-review|cas-probe|cas-lane|cas-exhaustive
@@ -428,9 +428,9 @@ Default:
 spec-first + update_plan + minimal-fix + proof-patch
 ```
 
-Switch to `resolve-and-fix` when reviews, CAS findings, or reviewer suggestions are present and no no-code modifier is present.
+Switch to `resolve` when reviews, CAS findings, or reviewer suggestions are present and no no-code modifier is present.
 Switch to `review-only` when the user asks for review-only, audit-only, classify-only, no changes, or do not implement behavior.
-Switch to `resolve-only` when the user asks for a plan or resolution agenda without implementation.
+Switch to `resolution-plan-only` when the user asks for a plan or resolution plan without implementation.
 Switch to `cas-exhaustive` when exhaustive review is requested or required by the proof bar.
 Switch to `refactor-kernel` when repeated findings share an owner boundary.
 Switch to `branch-race` when local fix and refactor-kernel are both plausible and can be compared under the same verifier.
@@ -461,39 +461,7 @@ ATCG-v1 verdict = complete
 ATCG-v1 can_mark_goal_complete = yes
 ```
 
-Before a workflow calls `update_goal complete`, it must run the local completion
-allowance guard over the current ATCG-v1 decision:
-
-```bash
-uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
-  allow-complete \
-  --decision .ledger/actuating/<run-id>/terminal-decision.json
-```
-
-Only `can_call_update_goal_complete = yes` permits the `update_goal complete`
-call. A valid ATCG `continue` or `blocked` decision must deny completion and
-carry the `next_owner`, `continue_reasons`, or `blocked_reasons` forward.
-
 If ATCG-v1 returns `continue`, continue with `next_owner`. If it returns `blocked`, report the blocked actuation verdict and reasons. Do not substitute local proof, proof-complete graph state, cached CAS receipts, or ADD-v1 `handoff_to_ship` for terminal completion.
-
-Hard ATCG-v1 completion blockers:
-
-```text
-blocked-loop-contract-missing
-blocked-loop-contract-stale
-blocked-hylo-frontier-missing
-blocked-hylo-fold-missing
-blocked-hylo-terminal-missing
-cas-review-blocked
-st-authority-blocked
-proof-stale
-side-effect-boundary-violated
-```
-
-Direct-action fused and `$st`-governed runs may exempt ALSR/HYL/HSR checks only
-when the terminal context explicitly carries the exemption. `$st`-governed
-completion also requires current `$st` control evidence; a `st_handoff` source
-without a current receipt is not enough.
 
 ## Stop rules
 

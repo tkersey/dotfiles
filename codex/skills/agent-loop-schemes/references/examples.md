@@ -1,15 +1,15 @@
 # Examples
 
-## Existing PR, review and fix
+## Existing PR, resolve
 
 ```text
-/goal $actuating review and fix this PR
+/goal $actuating resolve this PR
 ```
 
 Means:
 
 ```text
-CAS review, classify, build a closure agenda, fix accepted liabilities only, verify, require caller-owned repeated clean CAS review evidence units, then proof-patch.
+CAS review, classify, build a resolution plan, fix accepted liabilities only, verify, require caller-owned repeated clean CAS review evidence units, then proof-patch.
 ```
 
 ## Existing PR, no implementation

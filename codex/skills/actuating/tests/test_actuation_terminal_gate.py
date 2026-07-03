@@ -62,7 +62,7 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertIn("cas.clean_runs:0-of-3", body["blocked_reasons"])
         self.assertIn("final_report.normalized_cas_clean_runs:not-satisfied", body["blocked_reasons"])
 
-    def test_advisory_would_block_matches_fixture_expectation(self) -> None:
+    def test_advisory_would_block_matches_seq_fixture_expectation(self) -> None:
         fixture = self.fixture("terminal-context.advisory-would-block.example.json")
         advisory = MODULE.make_advisory(fixture["actuation_terminal_context"])
         self.assertEqual(advisory["verdict"], "advisory")
@@ -109,6 +109,45 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertEqual(body["next_owner"], fixture["advisory_expectation"]["next_owner"])
         for reason in fixture["advisory_expectation"]["would_block_reasons"]:
             self.assertIn(reason, body["blocked_reasons"])
+
+    def test_resolve_governance_accepts_cas_review_fold_and_resolve(self) -> None:
+        context = deepcopy(self.context())
+        context["loop_governance"] = {
+            "resolve": {
+                "required": "yes",
+                "cas_reviewed": "yes",
+                "review_folded": "yes",
+                "resolve_obeyed": "yes",
+            }
+        }
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "complete")
+        self.assertEqual(body["can_mark_goal_complete"], "yes")
+
+    def test_resolve_governance_blocks_without_cas_review_fold_or_resolve(self) -> None:
+        context = deepcopy(self.context())
+        context["loop_governance"] = {
+            "resolve": {
+                "required": "yes",
+                "cas_reviewed": "no",
+                "review_folded": "yes",
+                "resolve_obeyed": "yes",
+            }
+        }
+        self.assert_blocks_with(context, "cas-review-blocked", "$cas")
+
+    def test_legacy_review_fix_governance_still_blocks_without_resolve(self) -> None:
+        context = deepcopy(self.context())
+        context["loop_governance"] = {
+            "review_fix": {
+                "required": "yes",
+                "cas_reviewed": "yes",
+                "review_folded": "yes",
+                "resolve_passed": "no",
+            }
+        }
+        self.assert_blocks_with(context, "cas-review-blocked", "$cas")
 
     def test_advisory_direct_action_fused_exempts_loop_receipts(self) -> None:
         fixture = self.fixture("terminal-context.advisory-fused.example.json")

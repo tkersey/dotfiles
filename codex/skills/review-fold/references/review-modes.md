@@ -4,7 +4,7 @@ The review loop is a reducer, not a patch queue.
 
 ## Workflow defaults
 
-`$actuating review ...` defaults to `resolve-and-fix`.
+`$actuating review ...` defaults to `resolve`.
 
 No-code modes require explicit language:
 
@@ -13,12 +13,12 @@ do not implement
 review only
 audit only
 classify only
-resolve only
+resolution plan only
 plan only
 no changes
 ```
 
-`resolve-and-fix` still preserves no-code dispositions. A review with ten findings may close as:
+`resolve` still preserves no-code dispositions. A review with ten findings may close as:
 
 ```text
 2 rejected
