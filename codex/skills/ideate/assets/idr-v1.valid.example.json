@@ -1,0 +1,26 @@
+{
+  "ideate_result": {
+    "receipt_version": "IDR-v1",
+    "mode": "standard",
+    "terminal_state": "portfolio_ready",
+    "scope": "repo",
+    "evidence_sources_count": 7,
+    "baseline_candidates_generated": 20,
+    "candidates_shortlisted": 5,
+    "glaze_gate": {
+      "applied": "yes",
+      "material_delta_count": 3
+    },
+    "asi_gate": {
+      "applied": "yes",
+      "cash_out_count": 2
+    },
+    "overlap_check": {
+      "performed": "yes"
+    },
+    "chosen_direction": "Canonical policy proof surface",
+    "seed_emitted": "yes",
+    "assumptions": [],
+    "remaining_uncertainty": ["exact first fixture scope"]
+  }
+}

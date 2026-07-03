@@ -1,9 +1,11 @@
-# Plan Seed Template
+# Planning Handoff Seed Template
 
-Use this exact output shape for the plan seed section of the final artifact.
+This file name is preserved for compatibility. The artifact is a **planning handoff seed**, not a plan.
+
+Use this exact shape when a seed is warranted.
 
 ```md
-# Plan Seed: <direction name>
+# Planning Handoff Seed: <direction name>
 
 ## Thesis
 
@@ -26,8 +28,6 @@ Why this deserves attention now rather than later.
 The concrete user-visible, maintainer-visible, or strategic gain.
 
 ## Breakthrough Frame
-
-The concise governing insight produced by the Glaze and ASI gates.
 
 - Baseline idea:
 - Glaze material delta:
@@ -52,17 +52,17 @@ What already exists, what is adjacent, and how this differs.
 
 ## Evidence Base
 
-The strongest repository signals supporting this direction.
+Strongest repository/product signals supporting this direction.
 
 - `path:line` or artifact reference — observation
 
 ## Originality Source
 
-Which originality lens or combination of lenses makes this idea non-obvious but grounded.
+Which originality lens or combination makes this non-obvious but grounded.
 
 ## Why This Won
 
-Why this direction beat the other shortlisted ideas, including why its escalated version beat the baseline version.
+Why this beat other shortlisted ideas and why its escalated version beat the baseline.
 
 ## Assumptions to Validate
 
@@ -82,27 +82,25 @@ What behavior, API, CLI output, config format, data format, or workflow must rem
 
 ## Validation Path
 
-Smallest credible ways to learn whether this deserves a full plan.
+Smallest credible ways to learn whether this deserves a full planning pass.
 
 ## Success Signals
 
-What would justify advancing to a full planning pass.
+What would justify advancing to `$spec-pipeline` or `$plan`.
 
 ## Candidate Workstreams
 
-3-6 workstreams or themes, not tasks.
+3-6 themes, not tasks.
 
-- ...
-- ...
 - ...
 
 ## Questions for the Planning Pass
 
-What the next planning step must answer.
+What a later planning step must answer.
 
 ## Recommended Next Move
 
-The immediate next action to turn this seed into a real plan.
+The immediate next action to turn this seed into a real spec or plan.
 ```
 
 ## Notes
@@ -110,7 +108,6 @@ The immediate next action to turn this seed into a real plan.
 - Keep the artifact self-contained.
 - Do not turn workstreams into tickets or task lists.
 - Prefer concrete language over generic strategy jargon.
-- Be explicit about what is still uncertain.
-- For refactor seeds, include a behavior-preservation strategy.
-- Do not let the breakthrough frame expand the seed into a giant implementation plan.
-- The smallest proof-bearing artifact should be small enough to validate before a full commitment.
+- For refactor seeds, include behavior-preservation strategy.
+- Do not let the breakthrough frame expand into a giant implementation plan.
+- The smallest proof-bearing artifact should be small enough to validate before full commitment.

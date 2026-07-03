@@ -1,14 +1,15 @@
 # Opportunity Portfolio Template
 
-Use this output shape for the final artifact before the plan seed.
+Use this shape for final portfolio output. Adapt length to selected mode.
 
 ```md
 # Codebase Opportunity Portfolio
 
 ## 1. Compressed repo snapshot
 
+- Mode:
 - Scope:
-- Repo shape:
+- Repo/product shape:
 - Primary user-facing surfaces:
 - Primary maintainer surfaces:
 - Important constraints:
@@ -17,7 +18,7 @@ Use this output shape for the final artifact before the plan seed.
 
 ## 2. Opportunity map
 
-Group the strongest evidence signals by theme.
+Group evidence signals by theme.
 
 ### Theme: <name>
 
@@ -28,7 +29,7 @@ Group the strongest evidence signals by theme.
 
 ## 3. Escalation ledger
 
-Show how the mandatory Glaze and ASI gates changed the portfolio. Keep this compact but specific.
+Show how Glaze and ASI changed the portfolio. Compact but specific.
 
 ### Chosen direction escalation chain
 
@@ -45,10 +46,10 @@ Show how the mandatory Glaze and ASI gates changed the portfolio. Keep this comp
 
 ### Other high-signal escalations
 
-1. **<idea title>** — baseline → Glaze delta → ASI artifact → result: promoted | kept | demoted | cut.
+1. **<idea title>** — baseline -> Glaze delta -> ASI artifact -> result: promoted | kept | demoted | cut.
 2. ...
 
-## 4. Top 5 breakthrough ideas
+## 4. Top breakthrough ideas
 
 ### 1. <idea title>
 
@@ -71,7 +72,7 @@ Show how the mandatory Glaze and ASI gates changed the portfolio. Keep this comp
 
 ...
 
-## 5. Next 10 ideas
+## 5. Next ideas
 
 Use shorter cards, but keep evidence and escalation status.
 
@@ -79,8 +80,6 @@ Use shorter cards, but keep evidence and escalation status.
 2. ...
 
 ## 6. Ideas cut
-
-Briefly list the most tempting rejected ideas and why they lost. Include escalation failures.
 
 - **<cut idea>** — Cut because ...
 - **<cut idea>** — Glaze failed: no material delta.
@@ -98,17 +97,20 @@ Briefly list the most tempting rejected ideas and why they lost. Include escalat
 
 Name the leading direction and explain why it won after ordinary scoring, Glaze, ASI, and overlap checks.
 
-## 9. Plan seed
+## 9. Planning handoff seed
 
-Use `PLAN_SEED_TEMPLATE.md`.
+Use `PLAN_SEED_TEMPLATE.md` when evidence is sufficient.
+
+## 10. Ideate Result Receipt
+
+Use `IDR-v1`.
 ```
 
 ## Notes
 
 - Keep the portfolio useful, not exhaustive.
-- Do not expose all 30 raw candidates unless the user explicitly asks.
+- Do not expose every raw candidate unless asked.
 - Cite file paths, symbols, tests, commands, or docs for evidence.
-- Be clear when an idea is promising but evidence is thin.
-- Be clear when an idea is strong but not actually breakthrough.
-- The escalation ledger should prove the gates were used without turning the answer into process theater.
-- The plan seed should focus on the chosen direction, not the full portfolio.
+- Be clear when evidence is thin.
+- The escalation ledger should prove gates were used without becoming process theater.
+- The seed focuses on the chosen direction, not the full portfolio.

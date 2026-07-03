@@ -1,7 +1,13 @@
 interface:
   display_name: "ideate"
-  short_description: "Mine repo evidence into breakthrough ideas"
+  short_description: "Mine repo evidence into breakthrough opportunity portfolios"
   default_prompt: >-
-    Use $ideate to inspect this codebase, harvest opportunity signals, generate evidence-backed ideas for changes/additions/refactors, winnow them hard, then run the mandatory Glaze and ASI escalation gates before choosing a direction. Deliver a ranked opportunity portfolio, escalation ledger, and one plan seed. Do not implement or create tickets.
+    Use $ideate to inspect available artifacts, choose mode fast/standard/deep/audit-only,
+    harvest evidence-backed opportunity signals, generate a mode-appropriate candidate
+    field, winnow hard, then run the mandatory Glaze and ASI prompt gates before
+    choosing a direction. Keep Glaze/ASI as escalation prompt passes; $ideate owns
+    the gate semantics. Deliver a ranked opportunity portfolio, escalation ledger,
+    IDR-v1 receipt, and a planning handoff seed only when evidence is sufficient.
+    Do not implement, create tickets, or emit task graphs.
 policy:
   allow_implicit_invocation: false

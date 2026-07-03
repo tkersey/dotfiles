@@ -4,13 +4,8 @@ set -euo pipefail
 ROOT="${1:-.}"
 cd "$ROOT"
 
-section() {
-  printf '\n## %s\n' "$1"
-}
-
-have() {
-  command -v "$1" >/dev/null 2>&1
-}
+section() { printf '\n## %s\n' "$1"; }
+have() { command -v "$1" >/dev/null 2>&1; }
 
 run_rg() {
   local pattern="$1"
@@ -94,7 +89,7 @@ section "Reliability and recovery hints"
 run_rg 'retry|timeout|rollback|cleanup|finally|defer |idempot|transaction|migration|lock|race|concurrent|queue|resume|recover|partial|validate|schema|sanitize'
 
 section "Performance hints"
-run_rg 'cache|memo|batch|stream|lazy|eager|serialize|deserialize|for .* in|while |N\+1|benchmark|bench|perf|slow|startup|hot path|optimi[sz]e'
+run_rg 'cache|memo|batch|stream|lazy|eager|serialize|deserialize|N\+1|benchmark|bench|perf|slow|startup|hot path|optimi[sz]e'
 
 section "Test surfaces"
 find . -maxdepth 5 -type d \( \
@@ -141,4 +136,4 @@ else
 fi
 
 section "Scan note"
-echo "This is a read-only signal index. Use it to seed hypotheses, then verify the relevant files directly before ranking ideas."
+echo "This is a read-only signal index. Use it to seed hypotheses, then verify relevant files directly before ranking ideas."

@@ -1,267 +1,201 @@
 # Workflow
 
-This skill combines repository signal harvesting with mandatory Glaze and ASI escalation gates. It should produce a ranked codebase opportunity portfolio, an escalation ledger, and one plan seed, not a task list.
+`$ideate` is a mode-aware opportunity compiler. It combines repository signal harvesting, candidate generation, ruthless winnowing, Glaze/ASI prompt passes, overlap checking, and a planning handoff seed when evidence is sufficient.
+
+## Phase 0 — Select mode
+
+Choose one:
+
+```text
+fast | standard | deep | audit-only
+```
+
+Default: `standard`.
+
+Mode budgets:
+
+| mode | candidates | gates | output |
+|---|---:|---|---|
+| fast | 8-12 | Glaze top 2, ASI top 1-2 | top 3 + seed if supported |
+| standard | 18-20 | Glaze top 5, ASI top 3 | top 5 + next 8-10 + seed |
+| deep | 30+ | Glaze top 5-7, ASI top 3-5 | full portfolio + seed |
+| audit-only | optional | optional | signals, hypotheses, gaps, no seed by default |
+
+Downgrade when evidence cannot support the requested mode. Do not fake depth.
 
 ## Phase 1 — Scope and ground
 
-Infer the working scope from the user prompt. Default to the current repository.
+Infer scope from the prompt. Default to the current repository or supplied artifacts.
 
-Read:
+Read relevant:
 
-- `AGENTS.md`
-- `README*`
-- docs and design notes
-- roadmap, backlog, changelog, ADRs, TODOs
-- tests, benchmarks, fixtures, examples
-- package manifests, build scripts, config files, CI workflows
-- public entry points such as commands, routes, exports, and UI flows
-- user-provided files, links, tickets, or issue exports
+- `AGENTS.md`, `README*`, docs, ADRs, design notes;
+- roadmap, backlog, TODOs, changelog;
+- tests, benchmarks, fixtures, examples;
+- package manifests, build scripts, config, CI workflows;
+- public surfaces: commands, APIs, routes, exports, UI flows;
+- user-provided files, reports, links, or issue exports;
+- git history when relevant.
 
 Capture:
 
-- apparent opportunity
-- repo shape
-- affected users and maintainers
-- constraints
-- current workarounds
-- possible existing plans or overlap
-- unknowns that truly require user input
+```text
+scope, repo shape, users/maintainers, constraints, opportunity signals,
+overlap, assumptions, unknowns requiring user input.
+```
 
 ## Phase 2 — Harvest signals
 
-Use `CODEBASE_SIGNAL_LANES.md` to build an opportunity map.
-
-Do not audit every file. Sample strategically across public surfaces, tests, architecture seams, comments, config, docs, and history. Prefer exact evidence.
+Use `CODEBASE_SIGNAL_LANES.md`. Sample strategically; do not audit every file.
 
 Signal classes:
 
-- public surface
-- maintainer friction
-- architecture seam
-- test intent
-- reliability
-- performance
-- observability / diagnostics
-- negative space
-- history / churn
-- refactor-enabler
+```text
+public surface, maintainer friction, architecture seam, test intent,
+reliability, performance, observability, negative space, history/churn,
+refactor-enabler
+```
+
+Evidence should cite the smallest useful path, symbol, command, test, or artifact. Prefer `path:line` when practical.
 
 ## Phase 3 — Interrogate only material gaps
 
-Before ideating, be able to answer, explicitly or by assumption:
+Before ideating, know or assume:
 
-- what problem or opportunity this is about
-- who benefits
-- what "better" means
-- what constraints matter
-- what behavior must remain stable
-- what is out of scope
-- what evidence exists
-- what success would look like
-- what overlap is already visible
-- what level of behavior change is acceptable
+- what problem/opportunity this concerns;
+- who benefits;
+- what better means;
+- constraints and non-goals;
+- what behavior must remain stable;
+- what evidence exists;
+- what success would look like;
+- overlap with existing work;
+- behavior-change appetite.
 
-If a missing answer materially changes the ranking and cannot be inferred, ask. Otherwise proceed with an explicit assumption.
+Ask only if the missing answer would materially change ranking and cannot be inferred.
 
-## Phase 4 — Generate 30 baseline candidates
+## Phase 4 — Generate candidate field
 
-Generate a wide field before selecting a direction.
+Generate the mode-appropriate number of concrete candidates. Each should include evidence, originality source, benefit, risk, validation path, and overlap status.
 
-Candidate buckets:
+Candidate buckets to sample when relevant:
 
-- user-facing additions or feature ideas
-- DX / CLI / API / workflow improvements
-- refactor or simplification opportunities
-- reliability / correctness / recovery ideas
-- observability / diagnostics ideas
-- performance / scalability ideas
-- documentation / onboarding ideas with structural value
-- wild-card ideas from negative-space or hidden-primitive lenses
+- user-facing additions or features;
+- DX / CLI / API / workflow improvements;
+- refactor or simplification opportunities;
+- reliability / correctness / recovery;
+- observability / diagnostics;
+- performance / scalability;
+- documentation/onboarding with structural value;
+- hidden primitive or negative-space wildcards.
 
-Each candidate should have evidence, originality source, benefit, risk, and validation path.
+Avoid duplicate variants, generic cleanup, unsupported features, refactors without behavior-preservation strategy, and pure implementation details with no strategic meaning.
 
-Avoid:
+## Phase 5 — First winnow
 
-- duplicate variants
-- generic cleanup without leverage
-- pure implementation details with no strategic meaning
-- feature ideas unsupported by repo evidence unless the user requested speculation
-- refactors with no behavior-preservation strategy
+Use `RUBRIC.md`.
 
-## Phase 5 — First winnow 30 → 5 → 15
+1. Remove fatal flaws.
+2. Remove weak or generic evidence.
+3. Score remaining candidates.
+4. Rank by evidence, value, originality, validation, and fit.
+5. Keep the mode-appropriate shortlist.
+6. Pick a preliminary leader.
 
-Use `RUBRIC.md` to score and cut aggressively.
+The preliminary leader is not final. It is input to Glaze and ASI.
 
-Suggested sequence:
-
-1. Remove anything with a fatal flaw.
-2. Remove ideas with weak or generic evidence.
-3. Score the remainder.
-4. Rank by weighted score and rationale quality.
-5. Keep the strongest 5.
-6. Add the next 10 or the strongest complements.
-7. Re-rank the 15-set.
-8. Choose a preliminary leading direction.
-
-The preliminary leader is not final. It is the best ordinary idea before escalation.
-
-## Phase 6 — Mandatory Glaze gate
+## Phase 6 — Glaze prompt pass
 
 Use `ESCALATION_GATES.md`.
 
-Run the Glaze pass over the preliminary top 5 and the preliminary leader.
+For each shortlisted candidate under the mode budget, produce:
 
-For each top idea, produce:
+- why the obvious version loses;
+- default basin;
+- material delta;
+- stronger move;
+- why it wins;
+- next evaluation step.
 
-- why the obvious version loses
-- material delta
-- stronger move
-- why it wins
-- next evaluation step
+Cut or demote candidates with no material delta.
 
-Cut or demote any top idea that cannot produce a material delta.
-
-The Glaze pass should make the portfolio qualitatively stronger, not merely louder. The pass is successful only when it introduces a new frame, invariant, mechanism, interface, artifact, architecture move, or ordering strategy.
-
-## Phase 7 — Mandatory ASI gate
+## Phase 7 — ASI prompt pass
 
 Use `ESCALATION_GATES.md`.
 
-Run the ASI pass over the strongest Glaze survivors, usually the top 3.
+For the strongest Glaze survivors, produce:
 
-For each, produce:
+- why the current answer still underperforms;
+- 10x horizon;
+- systemic frame;
+- leverage point;
+- smallest proof-bearing artifact;
+- cash-out type;
+- why it preserves the 10x insight;
+- first proof signal.
 
-- why the current answer still underperforms
-- 10x horizon
-- systemic frame
-- leverage point
-- smallest proof-bearing artifact
-- cash-out type
-- why the artifact preserves the 10x insight
-- first proof signal
-
-Cut or demote any idea that cannot be collapsed into a small proof-bearing artifact.
-
-The ASI pass should increase ambition while shrinking the first move. The ideal outcome is a small artifact that opens a new capability surface, coordination surface, proof surface, or strategic ordering.
+Cut or demote candidates with no small proof-bearing artifact.
 
 ## Phase 8 — Breakthrough synthesis and second winnow
 
-Re-score escalated candidates with the ordinary codebase rubric and the breakthrough criteria.
+Re-score escalated candidates against ordinary value and breakthrough quality.
 
 Ask:
 
 - Did Glaze add a material delta?
-- Did ASI expose a 10x frame?
-- Did ASI compress that frame into a small artifact?
-- Is the artifact still grounded in repository evidence?
-- Is the result meaningfully better than the baseline idea?
-- Does it create a mechanism, interface, proof surface, or strategy?
+- Did ASI expose and compress a 10x frame?
+- Is the artifact still grounded in evidence?
+- Is the result better than the baseline?
 - Can the proof signal be observed before a full implementation bet?
 
-Rank the final top 5 by both practical value and breakthrough quality.
+Rank the final portfolio.
 
-## Phase 9 — Overlap scan without `br`
+## Phase 9 — Overlap scan
 
-Search the repo and provided artifacts for:
+Search after escalation for matching or conflicting existing work:
 
-- similar roadmap items
-- TODOs or backlog notes
-- past attempts
-- recently completed adjacent work
-- existing hidden features
-- naming collisions and scope collisions
+```text
+roadmap, TODOs, backlog, issue exports, past attempts, recent changes,
+hidden features, naming collisions, adjacent plans
+```
 
-For each shortlisted idea, classify:
+Classify each shortlisted idea:
 
-- duplicate
-- adjacent / merge mentally
-- conflict
-- net-new
-- unknown due to thin evidence
+```text
+direct duplicate | adjacent / merge mentally | conflict | net-new | unknown due to thin evidence
+```
 
-Do this after escalation because the escalated idea may have different overlap from its baseline ancestor.
+Do not use `br`.
 
-If certainty is impossible because the repo or artifacts are thin, say so explicitly.
+## Phase 10 — Refine the chosen direction
 
-## Phase 10 — Plan-space refinement
+Use critique passes appropriate to mode:
 
-Refine the chosen direction before turning it into a plan seed.
+- fast: at least 2 passes — value/fit, proof/cash-out;
+- standard/deep: at least 5 passes — value, architecture risk, evidence/originality, Glaze delta, ASI cash-out;
+- audit-only: no seed refinement unless explicitly requested.
 
-Use at least five passes:
+Do not overspecify implementation.
 
-### Pass 1 — Is this the right bet?
+## Phase 11 — Emit portfolio and planning handoff seed
 
-- sharp user or maintainer benefit
-- clear thesis
-- sensible boundaries
+Use `OPPORTUNITY_PORTFOLIO_TEMPLATE.md` and `PLAN_SEED_TEMPLATE.md`.
 
-### Pass 2 — Does it fit the codebase?
+The seed is not a plan. It is a handoff object for a later `$spec-pipeline` or `$plan` run.
 
-- architecture fit
-- behavior stability
-- migration and compatibility risk
-- maintenance cost
+## Thin-evidence terminal
 
-### Pass 3 — Is it original and grounded?
+Use `IDEATE_EVIDENCE_TOO_THIN` when evidence cannot support a credible portfolio.
 
-- evidence strength
-- originality lens
-- why it is not generic
-- what would disconfirm it
+Output:
 
-### Pass 4 — Did Glaze materially improve it?
+- compressed snapshot;
+- evidence gaps;
+- 3-5 signal hypotheses;
+- exact artifacts needed next;
+- no breakthrough claim;
+- no planning seed unless one hypothesis is sufficiently grounded and the user requested it.
 
-- material delta
-- stronger move
-- why it dominates the obvious alternative
-- what weaker variants were cut
+## IDR-v1 terminal receipt
 
-### Pass 5 — Did ASI cash it out?
-
-- 10x frame
-- smallest proof-bearing artifact
-- mechanism / interface / proof surface / strategy
-- first proof signal
-
-Optional:
-
-### Pass 6 — Can the seed be sharper?
-
-- better title
-- tighter framing
-- cleaner workstream grouping
-- narrower non-goals
-
-## Final output
-
-The final artifact is a **codebase opportunity portfolio plus escalation ledger plus one plan seed**, not a roadmap, ticket set, or implementation plan.
-
-A good portfolio is:
-
-- grounded in repo evidence
-- diverse across idea types
-- explicit about why top ideas beat alternatives
-- explicit about the Glaze and ASI transformations
-- honest about assumptions, risks, and thin evidence
-- useful for choosing what to plan next
-
-A good escalation ledger is:
-
-- compact
-- specific
-- free of hype
-- clear about the material delta
-- clear about the 10x frame
-- clear about the smallest proof-bearing artifact
-- clear about the first proof signal
-
-A good plan seed is:
-
-- specific enough to guide a later planning pass
-- bounded enough not to sprawl
-- honest about risks and assumptions
-- explicit about why it won
-- grounded in existing context
-- shaped by both the Glaze material delta and the ASI compression
-
-See `OPPORTUNITY_PORTFOLIO_TEMPLATE.md`, `ESCALATION_GATES.md`, and `PLAN_SEED_TEMPLATE.md`.
+Every terminal output includes IDR-v1. See `IDEATE_RESULT.md`.
