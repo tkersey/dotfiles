@@ -12,9 +12,10 @@ REQUIRED_PHRASES = [
     "artifactless parallel subagent gauntlet",
     "Rounds 1-9 are subagent work",
     "Rounds 1-9 are dispatched together",
-    "Round 10 is an additional Oracle subagent",
-    "pressure_worker",
-    "steelman_worker",
+    "lens_worker",
+    "oracle_worker",
+    "worker_role: lens_worker",
+    "worker_role: oracle_worker",
     "prove_it_round_packet",
     "prove_it_oracle_packet",
     "PROVE_IT_REQUIRES_SUBAGENTS",
@@ -40,6 +41,8 @@ FORBIDDEN_SKILL_PHRASES = [
     "AUTOTURN_DRIVER_PROMPT",
     "prove-it-autogauntlet.py",
     "codex exec resume --last",
+    "pressure_worker",
+    "steelman_worker",
 ]
 
 
@@ -59,7 +62,7 @@ def test_all_enhanced_rounds_are_present() -> None:
     assert not missing, missing
 
 
-def test_obsolete_autoturn_contract_is_removed() -> None:
+def test_obsolete_autoturn_and_old_worker_contracts_are_removed() -> None:
     text = read(SKILL)
     found = [phrase for phrase in FORBIDDEN_SKILL_PHRASES if phrase in text]
     assert not found, found
@@ -88,7 +91,7 @@ def main() -> int:
     for test in (
         test_required_contract_phrases,
         test_all_enhanced_rounds_are_present,
-        test_obsolete_autoturn_contract_is_removed,
+        test_obsolete_autoturn_and_old_worker_contracts_are_removed,
         test_artifact_prohibition_names_old_state_paths,
         test_script_no_longer_launches_autoturn_driver,
     ):
