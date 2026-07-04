@@ -31,9 +31,9 @@ interface:
     one remaining valid P1/P2", "CAS attempt returned another accepted P1/P2",
     "the finding is valid", "this finding is valid too", "accepted code-change
     liabilities", "CAS is right", "the owner fix is", "owner-correct fix is",
-    "the clean fix is", "clean streak stays at 0", or "streak remains 0" also
-    require a fresh RF-v1.3 compact/full receipt before describing the repair
-    path or patching it.
+    "the clean fix is", "concrete gaps remain", "gaps remain", "clean streak
+    stays at 0", or "streak remains 0" also require a fresh RF-v1.3
+    compact/full receipt before describing the repair path or patching it.
     Grouped CAS prose patterns like "CAS found ... more", "CAS found a larger
     class", "CAS found a broader class", "CAS is still finding", "CAS
     continues to find", "CAS has narrowed this to one remaining class", "one
