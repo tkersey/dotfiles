@@ -108,6 +108,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "valid P2",
             "accepted P1",
             "accepted P2",
+            "Review fold:",
             "implementation starts",
             "Do not use `straightforward liability`, `obvious fix`, or severity labels as substitutes for RF-v1.3 receipt fields.",
         ]
@@ -122,6 +123,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "valid P2",
             "accepted P1",
             "accepted P2",
+            "Review fold:",
             "grouped liability prose",
             "substitutes for RF-v1.3 receipt fields before implementation",
         ]
@@ -171,6 +173,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "this finding is valid too",
             "CAS is right",
             "accepted code-change liabilities",
+            "accepted code-change liability",
             "the owner fix is",
             "owner-correct fix is",
             "the clean fix is",
@@ -186,7 +189,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "RF-v1.3 compact/full receipt before",
             "fix",
             "next mutation",
-            "Treat single or small-batch CAS prose like `CAS attempt found a P1/P2`, `attempt found a P1/P2`, `CAS attempt returned P1/P2 findings`, `CAS found valid items`, `CAS found valid classes`, `CAS found two valid classes`, `CAS found one remaining valid P1/P2`, `CAS attempt returned another accepted P1/P2`, `the finding is valid`, `this finding is valid too`, `CAS is right`, `accepted code-change liabilities`, `the owner fix is`, `owner-correct fix is`, `the clean fix is`, `CAS found proof gaps`, `straightforward proof gaps`, `proof gaps now`, `concrete gaps remain`, `gaps remain`, `clean streak stays at 0`, `clean streak resets to zero`, `clean streak resets to 0`, or `streak remains 0` as receipt-triggering folds",
+            "Treat single or small-batch CAS prose like `CAS attempt found a P1/P2`, `attempt found a P1/P2`, `CAS attempt returned P1/P2 findings`, `CAS found valid items`, `CAS found valid classes`, `CAS found two valid classes`, `CAS found one remaining valid P1/P2`, `CAS attempt returned another accepted P1/P2`, `the finding is valid`, `this finding is valid too`, `CAS is right`, `accepted code-change liabilities`, `accepted code-change liability`, `the owner fix is`, `owner-correct fix is`, `the clean fix is`, `CAS found proof gaps`, `straightforward proof gaps`, `proof gaps now`, `concrete gaps remain`, `gaps remain`, `clean streak stays at 0`, `clean streak resets to zero`, `clean streak resets to 0`, or `streak remains 0` as receipt-triggering folds",
             "Fresh PR-thread prose has the same floor.",
             "unresolved PR review threads ... P1/P2",
             "unresolved PR comments are valid",
@@ -243,6 +246,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "this finding is valid too",
             "CAS is right",
             "accepted code-change liabilities",
+            "accepted code-change liability",
             "the owner fix is",
             "owner-correct fix is",
             "the clean fix is",
@@ -296,7 +300,7 @@ class ReviewFoldContractTests(unittest.TestCase):
                 self.assertIn(token, NORMALIZED)
 
         contract_required = [
-            "review-fold-v1.4.21-proof-gaps-pattern",
+            "review-fold-v1.4.22-review-fold-label-pattern",
             "fresh receipt before single-finding CAS repair prose",
             "PR-thread accepted liabilities have a receipt before repair planning",
             "thread disposition has a receipt before review closeout advances",
@@ -314,6 +318,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "CAS is right prose precedes receipt",
             "CAS attempt returned P1 or P2 findings without a receipt",
             "CAS attempt returned another accepted P1 or P2 without a receipt",
+            "Review fold prefix leaves no receipt",
             "straightforward proof gaps prose precedes receipt",
             "accepted P1 or P2 shortcut leaves no receipt",
             "PR comments are valid without a receipt",
@@ -326,6 +331,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "CAS found valid classes without a receipt",
             "CAS found two valid classes without a receipt",
             "CAS found proof gaps without a receipt",
+            "accepted code-change liability prose precedes receipt",
             "accepted code-change liabilities prose precedes receipt",
             "clean fix prose precedes receipt",
             "concrete gaps remain prose precedes receipt",
