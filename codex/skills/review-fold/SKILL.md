@@ -2,7 +2,7 @@
 name: review-fold
 description: "Compress review pressure into intent-anchored review work: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent one-patch-per-comment churn. Use after $cas review, PR review comments, CAS findings, reviewer suggestions, and review-like claims. Owns active review finding classification for goal workflows."
 metadata:
-  version: "1.4.3"
+  version: "1.4.4"
   activation_cost: medium
   default_depth: high
 ---
@@ -243,10 +243,11 @@ liabilities` are material fold decisions, not receipts. Emit full RF-v1.3 or
 sent to the resolution fold, and before implementation starts.
 
 Fresh CAS-result prose has the same floor even when there is only one finding.
-Phrases such as `CAS attempt 1 found a new P1`, `the finding is valid`, `the
-owner fix is`, or `clean streak stays at 0` accept liability or reset review
-accounting; they are not RF receipts. Emit the fresh RF-v1.3 compact/full
-receipt before describing the fix path, resolution node, or next mutation.
+Phrases such as `CAS attempt 1 found a new P1`, `CAS found one remaining valid
+P1`, `the finding is valid`, `the owner fix is`, `owner-correct fix is`, or
+`clean streak stays at 0` accept liability or reset review accounting; they are
+not RF receipts. Emit the fresh RF-v1.3 compact/full receipt before describing
+the fix path, resolution node, or next mutation.
 
 Receipt scope is per review result, not per closeout. A prior RF-v1.3 receipt
 does not cover later CAS attempts, follow-up finding batches, reopened PR
@@ -357,7 +358,7 @@ Auxiliary CAS review lanes may still block closeout. They do not increment the s
 8. Name the falsified law, owner boundary, model state, and repair level when a finding is valid or unresolved.
 9. Emit full RF-v1.3 or the compact receipt floor before any accepted liability, blocker, clean-run decision, or thread disposition leaves the fold.
 10. Treat `straightforward liability`, `obvious fix`, P1/P2 labels, and same-sentence grouped acceptances as receipt-triggering folds, not as receipt substitutes.
-11. Treat single-finding CAS prose like `CAS attempt found a new P1`, `the finding is valid`, `the owner fix is`, or `clean streak stays at 0` as receipt-triggering folds before any repair path is described.
+11. Treat single-finding CAS prose like `CAS attempt found a new P1`, `CAS found one remaining valid P1`, `the finding is valid`, `the owner fix is`, `owner-correct fix is`, or `clean streak stays at 0` as receipt-triggering folds before any repair path is described.
 12. Treat each new CAS attempt result, follow-up finding batch, reopened thread batch, or dirty clean-streak attempt as a new receipt scope; do not reuse an earlier RF receipt for later findings.
 13. Collapse duplicates and same-family comments across lanes.
 14. Mark whether the current standard attempt is normalized clean and whether the standard clean-run counter resets.
