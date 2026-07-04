@@ -36,15 +36,28 @@ resolution fold = resolution plan compiler
 $goal-grind = implementation engine for accepted liabilities
 ```
 
-For `review-closeout` and exhaustive review, final completion requires three consecutive clean normalized `$cas` review runs after implementation. `$review-fold` decides whether each CAS run is normalized clean.
+For `review-closeout` and exhaustive review, final completion requires three consecutive clean normalized **standard** `$cas` review attempts after implementation. `$review-fold` decides whether each review lane is normalized clean, blocking, or reset-worthy. Auxiliary CAS lanes do not increment or interrupt the standard clean streak.
 
 ## Review source rule
 
 ```text
-workflow-initiated code review -> $cas review -> $review-fold -> resolution fold -> implementation only for accepted liabilities
+workflow-initiated code review -> $cas review lanes -> $review-fold -> resolution fold -> implementation only for accepted liabilities
 ```
 
 Existing PR comments, human reviewer comments, or prior CAS verdicts may be folded directly as review pressure. But if the workflow itself is asked to do code review, close review, run adversarial review, or satisfy a review proof bar, it must obtain that review through `$cas` first.
+
+## CAS review lanes
+
+Supported CAS-backed review lanes:
+
+```text
+standard              ordinary CAS code review; counts toward the 3-clean standard streak
+footgun-finder       auxiliary lens for misuse hazards, unsafe defaults, hidden traps, misleading affordances, degraded success, and copy/paste hazards
+invariant-ace        auxiliary lens for illegal states, owner/source-of-truth, transition preservation, exceptions, witness parity, races, retries, duplicates, stale handles, and loop invariants
+complexity-mitigator auxiliary lens for comprehension stalls, boolean soup, mixed responsibilities, hidden state, dominated branches, incidental complexity, and one-patch-per-comment pressure
+```
+
+Only `standard` may set `contributes_to_standard_streak: yes`. Auxiliary lanes are review evidence; they may create blockers or accepted liabilities, but they do not count as standard clean reviews and do not interrupt standard-review consecutiveness.
 
 ## Minimal review law
 
@@ -76,16 +89,28 @@ review_fold:
   goal_id:
   source:
     pr:
-    review_backend: github-comments|cas-review-session|human-review|prior-artifact
+    review_backend: github-comments|cas-review-session|cas-review-bundle|human-review|prior-artifact
     cas_review:
       required: yes|no
       mode: none|cas-probe|cas-lane|cas-exhaustive
+      bundle_ref:
       verdict_ref:
+      lane: standard|footgun-finder|invariant-ace|complexity-mitigator|none
       lane_ref:
       clean_run:
         normalized_clean: yes|no
-        resets_counter: yes|no
+        contributes_to_standard_streak: yes|no
+        resets_standard_counter: yes|no
         reason:
+      auxiliary_lanes:
+        - lane: footgun-finder|invariant-ace|complexity-mitigator
+          verdict_ref:
+          head_sha:
+          target_fingerprint:
+          folded: yes|no
+          unresolved_blockers: yes|no
+          rerun_required: yes|no
+          reason:
   intent_anchor:
     original_goal:
     accepted_scope:
@@ -93,11 +118,12 @@ review_fold:
     changed_paths: []
   findings:
     - id:
+      lane: standard|footgun-finder|invariant-ace|complexity-mitigator|human|prior-artifact|unknown
       claim:
       observed_fact:
       suggested_repair:
       validity: valid|invalid|unproven|needs-owner
-      liability: blocks-goal|regression-risk|style|new-requirement|out-of-scope|proof-gap
+      liability: blocks-goal|regression-risk|style|new-requirement|out-of-scope|proof-gap|misuse-hazard|invariant-gap|complexity-stall
       intent_relation: core|adjacent|unrelated|expands-scope
       novelty: duplicate|same-class|new-class
       disposition: reject|proof-only|minimal-fix|refactor-kernel|ask-human|follow-up|blocked
@@ -112,17 +138,25 @@ review_fold:
     repeated_kernel:
     reabstraction_candidate: yes|no
     one_patch_per_comment_risk: low|medium|high
+    lane_overlap:
+      footgun_to_invariant: []
+      footgun_to_complexity: []
+      invariant_to_complexity: []
   recommended_resolution:
     review_mode: triage|remediation-plan|review-closeout
     reason:
     no_code_modifier_detected: yes|no
     accepted_liability_count:
     refactor_kernel_candidate_count:
-    clean_cas_runs:
+    standard_clean_cas_runs:
       required: yes|no
       current_count: 0|1|2|3
       normalized_clean_this_run: yes|no
       reset_reason:
+    auxiliary_review_lanes:
+      footgun-finder: not-required|clean|findings-folded|blocked|rerun-required
+      invariant-ace: not-required|clean|findings-folded|blocked|rerun-required
+      complexity-mitigator: not-required|clean|findings-folded|blocked|rerun-required
   parallelism:
     review_class_fanout_safe: yes|no
     patch_fanout_safe_after_resolve: yes|no
@@ -139,7 +173,7 @@ review_fold:
 - `reject`: claim is false, stale, duplicate with no new proof value, unrelated, already handled, incompatible with the goal, or merely preference/style without accepted liability.
 - `proof-only`: current code likely satisfies the goal and the right response is proof, inspection, or reviewer explanation before editing.
 - `minimal-fix`: one valid, in-scope, owner-correct liability has a small local response and does not share a broader missing boundary with other findings.
-- `refactor-kernel`: multiple findings share one missing abstraction, owner boundary, state transition, validation rule, or proof surface.
+- `refactor-kernel`: multiple findings share one missing abstraction, owner boundary, state transition, validation rule, invariant, proof surface, or misuse trap.
 - `ask-human`: review introduces a product, compatibility, API, UX, performance, security, or scope decision.
 - `follow-up`: valid but not part of the intended change.
 - `blocked`: validity, liability, current artifact state, review source, or accepted scope is unclear enough that implementation would be guesswork.
@@ -164,7 +198,7 @@ A finding row never grants mutation authority. It only marks whether the resolut
 
 - `triage`: classify findings and stop without a remediation agenda or implementation.
 - `remediation-plan`: classify findings and produce a resolution plan without implementation.
-- `review-closeout`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolution fold, then require three clean normalized CAS review runs before completion.
+- `review-closeout`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolution fold, then require three clean normalized standard CAS review attempts before completion.
 
 ### `adjudicate-only`
 
@@ -195,39 +229,45 @@ Hand off to `$st` when review remediation requires durable resource claims, exte
 When the source is `cas-exhaustive`, do not treat review as optional or merely advisory. Continue review/fix/fold cycles until one of these holds:
 
 ```text
-three consecutive clean normalized CAS review runs are complete
+three consecutive clean normalized standard CAS review attempts are complete
 CAS review is blocked and the blocker is reported
 user explicitly lowers the review proof bar
 ```
 
-A clean normalized CAS run means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the resolution fold. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, or already-resolved findings do not make the run dirty.
+A clean normalized standard CAS review attempt means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the resolution fold. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, already-resolved findings, and clean auxiliary review-lane results do not make the standard attempt dirty.
 
-Reset the clean-run counter to zero when code changes, review scope changes, base/head/diff changes, the proof bar changes, or CAS lane continuity is lost.
+Reset the standard clean-run counter to zero when code changes, review scope changes, base/head/diff changes, the proof bar changes, accepted auxiliary-lane remediation changes the artifact, or standard CAS lane continuity is lost.
+
+Auxiliary CAS review lanes may still block closeout. They do not increment the standard counter. They do not interrupt standard-review consecutiveness. Rerun them only when their surface was touched, their prior result was blocked or validate-first, the proof bar changed, or a standard review exposes a new class owned by that lens.
 
 `$review-fold` may reject or mark findings proof-only, but it must not convert an exhaustive review gate into a no-review closure.
 
 ## Procedure
 
 1. Bind reviews to the original goal and current diff.
-2. If fresh/exhaustive workflow code review is required and no CAS result is present, stop and request `$cas` review.
-3. Classify each finding before any implementation.
-4. Separate the claim, observed fact, and suggested repair when the review text includes all three.
-5. Reject, block, ask, or follow up before code whenever validity, liability, or scope is not established.
-6. Collapse duplicates and same-family comments.
-7. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
-8. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
-9. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
-10. Produce a small work graph only for accepted liabilities and only after the resolution fold accepts code-changing work.
-11. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolution fold accepts code-change liabilities.
-12. For post-implementation CAS runs, mark whether the normalized result is clean and whether the clean-run counter resets.
-13. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
+2. If fresh/exhaustive workflow code review is required and no CAS standard review result is present, stop and request `$cas` standard review.
+3. If the review profile selected auxiliary lanes, require their CAS-backed results before final review folding unless they are explicitly marked not-required.
+4. Classify each finding before any implementation.
+5. Separate the claim, observed fact, and suggested repair when the review text includes all three.
+6. Reject, block, ask, or follow up before code whenever validity, liability, or scope is not established.
+7. Collapse duplicates and same-family comments across lanes.
+8. Mark whether the current standard attempt is normalized clean and whether the standard clean-run counter resets.
+9. Mark auxiliary lane state as `clean`, `findings-folded`, `blocked`, or `rerun-required`; never count it as a standard clean run.
+10. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
+11. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
+12. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
+13. Produce a small work graph only for accepted liabilities and only after the resolution fold accepts code-changing work.
+14. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolution fold accepts code-change liabilities.
+15. For post-implementation CAS runs, mark whether the normalized standard result is clean and whether the standard clean-run counter resets.
+16. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
 
 ## Default behavior in `$actuating`
 
 When called by `$actuating`:
 
 - default to `review-closeout` for review requests;
-- require three consecutive clean normalized `$cas` review runs before completing `review-closeout` or exhaustive review;
+- require three consecutive clean normalized standard `$cas` review attempts before completing `review-closeout` or exhaustive review;
+- fold selected auxiliary CAS lanes through `$review-fold` before resolution/implementation;
 - use `triage` when the user names `triage`, or asks for no implementation or classification only;
 - use `remediation-plan` when the user names `remediation-plan`, or asks for a plan/agenda without implementation;
 - preserve no-code dispositions for rejected, proof-only, follow-up, or human-owned findings;
@@ -253,6 +293,7 @@ no changes
 - Do not accept scope expansion without user authority.
 - Do not miss the refactor when many comments share one owner boundary.
 - Do not replace a requested or required CAS review with non-CAS critique.
-- Do not claim review closure before three clean normalized CAS runs when `review-closeout` or exhaustive review requires them.
+- Do not count auxiliary CAS lanes as standard clean reviews.
+- Do not claim review closure before three clean normalized standard CAS attempts when `review-closeout` or exhaustive review requires them.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.
 - `$review-fold` owns active review adjudication; do not route findings through retired skill paths.

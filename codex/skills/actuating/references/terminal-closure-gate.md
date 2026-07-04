@@ -84,7 +84,8 @@ current branch/head/diff binding
 loop governance: ALSR-v1, HYL-v1, HSR-v1, or explicit fused/$st exemption
 evidence-fold verdict and proof commands
 proof-patch presence/currentness
-CAS requirement, tuple, freshness, and clean-run count
+CAS requirement, tuple, freshness, and standard clean-run count
+auxiliary CAS review-lane folded/blocker state when selected
 ADD-v1 delivery decision
 ship result receipt when publication is required
 side-effect boundary evidence
@@ -93,6 +94,42 @@ final report field values
 
 It does not run CAS, create proof-patch output, call `$ship`, publish PRs, or
 mutate workspace state.
+
+## CAS lane closure rule
+
+For review-closeout and exhaustive review, the terminal CAS count means:
+
+```text
+three clean normalized standard CAS review attempts
+```
+
+Only the `standard` CAS review lane may increment the clean-run count that ATCG
+uses for terminal completion. Auxiliary CAS review lanes such as
+`footgun-finder`, `invariant-ace`, and `complexity-mitigator` are review
+evidence, but they do not count toward the three standard clean reviews and do
+not interrupt standard-review consecutiveness.
+
+Auxiliary lanes may still block completion. ATCG rejects completion when a
+required auxiliary lane is missing, blocked, rerun-required, or not folded
+through `$review-fold` / the resolution fold.
+
+The preferred reducer fields are:
+
+```text
+cas_review.standard_clean_runs_required
+cas_review.standard_clean_runs_count
+final_report_fields.standard_clean_cas_runs
+cas_review.required_auxiliary_lanes
+cas_review.auxiliary_lanes.<lane>.folded
+cas_review.auxiliary_lanes.<lane>.unresolved_blockers
+cas_review.auxiliary_lanes.<lane>.rerun_required
+cas_review.auxiliary_lanes.<lane>.head_sha
+cas_review.auxiliary_lanes.<lane>.target_fingerprint
+```
+
+Compatibility fields may still be named `clean_runs_required`,
+`clean_runs_count`, or `normalized_cas_clean_runs`, but their meaning is
+standard-only unless a context provides explicit `standard_clean_*` fields.
 
 ## Common outcomes
 
@@ -103,9 +140,11 @@ material mutation without unfold/action evidence -> blocked-hylo-frontier-missin
 previous material action without fold evidence -> blocked-hylo-fold-missing, next_owner=$goal-actuating
 completion without terminal HSR -> blocked-hylo-terminal-missing, next_owner=$goal-actuating
 $st-governed completion without current $st control receipt -> st-authority-blocked, next_owner=$st
-CAS required + clean runs < required -> blocked, next_owner=$cas
-CAS required + clean_runs_required <= 0 -> blocked, next_owner=$cas
-CAS required + final report clean runs < required -> blocked, next_owner=$cas
+CAS required + standard clean runs < required -> blocked, next_owner=$cas
+CAS required + standard_clean_runs_required <= 0 -> blocked, next_owner=$cas
+CAS required + final report standard clean runs < required -> blocked, next_owner=$cas
+required auxiliary CAS review lane missing|not-folded|blocked|rerun-required -> cas-review-blocked, next_owner=$cas
+required auxiliary CAS review lane stale against head/diff -> cas-review-blocked, next_owner=$cas
 review-closeout protocol incomplete -> cas-review-blocked, next_owner=$cas
 proof-patch required + missing/stale -> continue, next_owner=$proof-patch
 proof-patch closure + missing proof-patch receipt -> continue, next_owner=$proof-patch
@@ -176,7 +215,8 @@ every material mutation has HSR unfold/action/fold
 latest fold is current-artifact-bound
 selected loop matches task shape
 review-closeout obeyed CAS/review-fold/resolution-fold
-three clean normalized CAS runs complete when required
+three clean normalized standard CAS attempts complete when required
+required auxiliary CAS review lanes folded or not-required
 side-effect boundary respected
 proof matches verifier
 ```
@@ -216,6 +256,7 @@ The gate is working when future actuation reports show:
 
 ```text
 local_proof_passed_but_goal_complete = 0
-cas_required_with_zero_clean_runs_complete = 0
+cas_required_with_zero_standard_clean_runs_complete = 0
+auxiliary_review_lane_counted_as_standard_clean_run = 0
 add_v1_handoff_without_ship_result_complete = 0
 ```
