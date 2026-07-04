@@ -22,7 +22,10 @@ Apply gate:
 - pass | blocked: <reason>
 
 Commit/push policy:
-- For apply-with-refine, commit and push each validated atomic change unless the user explicitly disables publishing.
+- Apply, edit, patch, or update authorizes local file changes and validation only.
+- Commit only when the user explicitly asks to commit, publish, ship, or save changes to git.
+- Push only when the user explicitly asks to push or publish remotely, and only after the commit succeeds.
+- If publishing is not authorized, report commit/push as blocked: not requested.
 
 Tuning goal:
 - <one-line goal>
@@ -90,12 +93,12 @@ Validation:
 - If quick_validate.py is unavailable, report validation as blocked and do not claim a pass.
 
 Publishing, apply-with-refine only:
+- Authorization: <none | commit-only | commit-and-push>, with exact user intent source.
 - Atomic change boundary: <what this commit contains and why it is one coherent change>
 - Scoped files to stage: <files justified by the brief>
 - Unrelated worktree changes: <none | present and left unstaged | blocked because inseparable>
-- Commit command: git commit -m "Tune <skill>: <short gap/fix summary>"
-- Commit SHA: <sha | blocked/not run and why>
-- Push command/result: <git push result | blocked/not run and why>
+- Commit command/result: <blocked:not-requested | git commit -m "Tune <skill>: <short gap/fix summary>" -> sha>
+- Push command/result: <blocked:not-requested | blocked:commit-failed | git push result>
 - Do not create PRs, merge branches, or clean up branches unless the user separately invokes that workflow.
 
 Privacy / sanitization:
