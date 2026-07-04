@@ -2,7 +2,7 @@
 name: review-fold
 description: "Compress review pressure into intent-anchored review work: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent one-patch-per-comment churn. Use after $cas review, PR review comments, CAS findings, reviewer suggestions, and review-like claims. Owns active review finding classification for goal workflows."
 metadata:
-  version: "1.4.16"
+  version: "1.4.19"
   activation_cost: medium
   default_depth: high
 ---
@@ -245,15 +245,22 @@ implementation starts.
 
 Fresh CAS-result prose has the same floor even when there is only one finding.
 Treat the pattern class, not only the exact examples, as receipt-triggering:
-`CAS attempt ... found ... P1/P2`, `CAS attempt ... returned ... P1/P2
-findings`, `CAS found ... valid items`, `CAS found one remaining valid P1/P2`,
-`CAS attempt ... returned another accepted P1/P2`, `the finding is valid`, `this
-finding is valid too`, `CAS is right`, `accepted code-change liabilities`, `the
-owner fix is`, `owner-correct fix is`, `the clean fix is`, `concrete gaps
-remain`, `gaps remain`, `clean streak stays at 0`, or `streak remains 0`.
+`CAS attempt ... found ... P1/P2`, `attempt ... found ... P1/P2`, `CAS attempt ... returned ... P1/P2
+findings`, `CAS found ... valid items`, `CAS found ... valid classes`, `CAS
+found two valid classes`, `CAS found one remaining valid P1/P2`, `CAS attempt ... returned another accepted P1/P2`,
+`the finding is valid`, `this finding is valid too`, `CAS is right`, `accepted
+code-change liabilities`, `the owner fix is`, `owner-correct fix is`, `the clean
+fix is`, `concrete gaps remain`, `gaps remain`, `clean streak stays at 0`,
+`clean streak resets to zero`, `clean streak resets to 0`, or `streak remains
+0`.
 Those phrases accept liability or reset review accounting; they are not RF
 receipts. Emit the fresh RF-v1.3 compact/full receipt before describing the fix
 path, resolution node, or next mutation.
+
+Fresh PR-thread prose has the same floor. Treat `unresolved PR review threads
+... P1/P2`, `unresolved PR comments are valid`, `PR comments are valid`, `they
+are both P1/P2`, and `accepted liabilities` as receipt-triggering folds before
+describing the repair path or patching review-thread findings.
 
 Grouped or same-boundary CAS prose has the same requirement. Treat the pattern
 class, not only the exact examples, as receipt-triggering: `CAS found ... more`,
@@ -380,21 +387,22 @@ Auxiliary CAS review lanes may still block closeout. They do not increment the s
 8. Name the falsified law, owner boundary, model state, and repair level when a finding is valid or unresolved.
 9. Emit full RF-v1.3 or the compact receipt floor before any accepted liability, blocker, clean-run decision, or thread disposition leaves the fold.
 10. Treat `straightforward liability`, `obvious fix`, P1/P2 labels, and same-sentence grouped acceptances as receipt-triggering folds, not as receipt substitutes.
-11. Treat single or small-batch CAS prose like `CAS attempt found a P1/P2`, `CAS attempt returned P1/P2 findings`, `CAS found valid items`, `CAS found one remaining valid P1/P2`, `CAS attempt returned another accepted P1/P2`, `the finding is valid`, `this finding is valid too`, `CAS is right`, `accepted code-change liabilities`, `the owner fix is`, `owner-correct fix is`, `the clean fix is`, `concrete gaps remain`, `gaps remain`, `clean streak stays at 0`, or `streak remains 0` as receipt-triggering folds before any repair path is described.
-12. Treat grouped CAS prose like `CAS found ... more`, `CAS found a larger class`, `CAS found a broader class`, `CAS is still finding`, `CAS continues to find`, `CAS has narrowed this to one remaining class`, `one remaining class`, `same ... boundary`, `same owner-boundary refactor`, `same ... class`, `forms of the same ... class`, or `same-class finding` as a receipt-triggering fold before any refactor or replacement strategy is described.
-13. Treat clean CAS-run prose like `CAS attempt ... is clean`, `clean streak is N/3`, `clean streak is 1/3`, or `starting fresh attempt N` as receipt-triggering clean-run accounting before advancing the closeout loop.
-14. Treat each new CAS attempt result, follow-up finding batch, reopened thread batch, or dirty clean-streak attempt as a new receipt scope; do not reuse an earlier RF receipt for later findings.
-15. Collapse duplicates and same-family comments across lanes.
-16. Mark whether the current standard attempt is normalized clean and whether the standard clean-run counter resets.
-17. Mark auxiliary lane state as `clean`, `findings-folded`, `blocked`, or `rerun-required`; never count it as a standard clean run.
-18. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
-19. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
-20. Escalate high one-patch-per-comment risk to `refactor-kernel`, `branch-race`, `remediation-plan`, or `blocked` unless an explicit owner-boundary exception is recorded.
-21. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
-22. Produce a small work graph only for accepted liabilities and only after the resolution fold accepts code-changing work.
-23. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolution fold accepts code-change liabilities.
-24. For post-implementation CAS runs, mark whether the normalized standard result is clean and whether the standard clean-run counter resets.
-25. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
+11. Treat single or small-batch CAS prose like `CAS attempt found a P1/P2`, `attempt found a P1/P2`, `CAS attempt returned P1/P2 findings`, `CAS found valid items`, `CAS found valid classes`, `CAS found two valid classes`, `CAS found one remaining valid P1/P2`, `CAS attempt returned another accepted P1/P2`, `the finding is valid`, `this finding is valid too`, `CAS is right`, `accepted code-change liabilities`, `the owner fix is`, `owner-correct fix is`, `the clean fix is`, `concrete gaps remain`, `gaps remain`, `clean streak stays at 0`, `clean streak resets to zero`, `clean streak resets to 0`, or `streak remains 0` as receipt-triggering folds before any repair path is described.
+12. Treat PR-thread review prose like `unresolved PR review threads ... P1/P2`, `unresolved PR comments are valid`, `PR comments are valid`, `they are both P1/P2`, or `accepted liabilities` as receipt-triggering folds before any repair path is described.
+13. Treat grouped CAS prose like `CAS found ... more`, `CAS found a larger class`, `CAS found a broader class`, `CAS is still finding`, `CAS continues to find`, `CAS has narrowed this to one remaining class`, `one remaining class`, `same ... boundary`, `same owner-boundary refactor`, `same ... class`, `forms of the same ... class`, or `same-class finding` as a receipt-triggering fold before any refactor or replacement strategy is described.
+14. Treat clean CAS-run prose like `CAS attempt ... is clean`, `clean streak is N/3`, `clean streak is 1/3`, or `starting fresh attempt N` as receipt-triggering clean-run accounting before advancing the closeout loop.
+15. Treat each new CAS attempt result, follow-up finding batch, reopened thread batch, or dirty clean-streak attempt as a new receipt scope; do not reuse an earlier RF receipt for later findings.
+16. Collapse duplicates and same-family comments across lanes.
+17. Mark whether the current standard attempt is normalized clean and whether the standard clean-run counter resets.
+18. Mark auxiliary lane state as `clean`, `findings-folded`, `blocked`, or `rerun-required`; never count it as a standard clean run.
+19. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
+20. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
+21. Escalate high one-patch-per-comment risk to `refactor-kernel`, `branch-race`, `remediation-plan`, or `blocked` unless an explicit owner-boundary exception is recorded.
+22. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
+23. Produce a small work graph only for accepted liabilities and only after the resolution fold accepts code-changing work.
+24. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolution fold accepts code-change liabilities.
+25. For post-implementation CAS runs, mark whether the normalized standard result is clean and whether the standard clean-run counter resets.
+26. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
 
 ## Default behavior in `$actuating`
 
