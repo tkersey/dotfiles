@@ -25,11 +25,11 @@ interface:
     when closing review. Do not use shortcut labels like "straightforward
     liability", "obvious fix", "valid P1", "valid P2", or grouped liability
     prose as substitutes for RF-v1.3 receipt fields before implementation.
-    Single-finding CAS prose like "CAS attempt found a new P1", "CAS found one
-    remaining valid P1", "the finding is valid", "the owner fix is",
-    "owner-correct fix is", or "clean streak stays at 0" also requires a fresh
-    RF-v1.3 compact/full receipt before describing the repair path or patching
-    it.
+    Single-finding CAS prose patterns like "CAS attempt found a P1/P2", "CAS
+    found one remaining valid P1/P2", "the finding is valid", "this finding is
+    valid too", "the owner fix is", "owner-correct fix is", "clean streak
+    stays at 0", or "streak remains 0" also require a fresh RF-v1.3
+    compact/full receipt before describing the repair path or patching it.
     Earlier RF receipts do not cover later CAS attempts, follow-up finding
     batches, dirty clean-streak attempts, or reopened PR thread batches; emit a
     fresh RF-v1.3 compact/full receipt for each new source batch before patching

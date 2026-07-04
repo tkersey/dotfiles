@@ -153,41 +153,48 @@ class ReviewFoldContractTests(unittest.TestCase):
     def test_single_finding_cas_prose_needs_fresh_receipts(self) -> None:
         skill_required = [
             "Fresh CAS-result prose has the same floor even when there is only one finding.",
-            "CAS attempt 1 found a new P1",
-            "CAS found one remaining valid P1",
+            "Treat the pattern class, not only the exact examples, as receipt-triggering:",
+            "CAS attempt ... found ... P1/P2",
+            "CAS found one remaining valid P1/P2",
             "the finding is valid",
+            "this finding is valid too",
             "the owner fix is",
             "owner-correct fix is",
             "clean streak stays at 0",
+            "streak remains 0",
             "receipt before describing",
-            "the fix path, resolution node, or next mutation",
-            "Treat single-finding CAS prose like `CAS attempt found a new P1`, `CAS found one remaining valid P1`, `the finding is valid`, `the owner fix is`, `owner-correct fix is`, or `clean streak stays at 0` as receipt-triggering folds",
+            "fix",
+            "path, resolution node, or next mutation",
+            "Treat single-finding CAS prose like `CAS attempt found a P1/P2`, `CAS found one remaining valid P1/P2`, `the finding is valid`, `this finding is valid too`, `the owner fix is`, `owner-correct fix is`, `clean streak stays at 0`, or `streak remains 0` as receipt-triggering folds",
         ]
         for token in skill_required:
             with self.subTest(token=token):
                 self.assertIn(token, SKILL)
 
         prompt_required = [
-            "CAS attempt found a new P1",
-            "CAS found one remaining valid P1",
+            "CAS attempt found a P1/P2",
+            "CAS found one remaining valid P1/P2",
             "the finding is valid",
+            "this finding is valid too",
             "the owner fix is",
             "owner-correct fix is",
             "clean streak stays at 0",
-            "requires a fresh RF-v1.3 compact/full receipt before describing the repair path or patching it",
+            "streak remains 0",
+            "require a fresh RF-v1.3 compact/full receipt before describing the repair path or patching it",
         ]
         for token in prompt_required:
             with self.subTest(token=token):
                 self.assertIn(token, NORMALIZED)
 
         contract_required = [
-            "review-fold-v1.4.4-single-finding-cas-prose-receipts",
+            "review-fold-v1.4.5-single-finding-cas-prose-patterns",
             "fresh receipt before single-finding CAS repair prose",
-            "single fresh or remaining P1 acceptance has a joinable receipt before repair planning",
-            "CAS attempt found a new P1 without a receipt",
-            "CAS found one remaining valid P1 without a receipt",
+            "single fresh or remaining severity acceptance has a joinable receipt before repair planning",
+            "CAS attempt found a P1 or P2 without a receipt",
+            "CAS found one remaining valid P1 or P2 without a receipt",
             "owner-correct fix prose precedes receipt",
             "finding is valid prose precedes receipt",
+            "streak remains zero without a receipt",
         ]
         for token in contract_required:
             with self.subTest(token=token):
