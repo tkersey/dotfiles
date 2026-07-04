@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: review-fold
     kind: mixed
-    source_fingerprint: review-fold-v1.4.2-fresh-receipt-per-review-batch
+    source_fingerprint: review-fold-v1.4.3-single-finding-cas-receipts
   triggers:
     - trigger_id: RF-REVIEW-FINDING
       description: CAS, PR, human, or prior-artifact review pressure needs classification.
@@ -83,9 +83,9 @@ skill_decision_contract:
       trigger_refs: [RF-REVIEW-FINDING, RF-CLEAN-RUN-ACCOUNTING]
       expected_routes: [RF-REJECT, RF-PROOF-ONLY, RF-MINIMAL-FIX, RF-REFACTOR-KERNEL, RF-BRANCH-RACE, RF-ASK-HUMAN, RF-FOLLOW-UP, RF-BLOCK]
       prohibited_routes: []
-      required_artifacts: [full RF-v1.3 or RF-v1.3 compact receipt for material folds, source_ref or explicit unknown backend, clean-run reset or count effect when applicable, fresh receipt for each new CAS attempt result or follow-up finding batch]
-      success_signals: [future seq tune audits can recover the decision episode, PR thread and CAS finding refs are joinable, later dirty CAS attempts have their own receipts]
-      failure_signals: [accepted liability appears only as terse prose, straightforward liability shortcut leaves no receipt, follow-up CAS findings reuse an earlier receipt, clean streak changes without a receipt, thread disposition cannot be joined back to a source]
+      required_artifacts: [full RF-v1.3 or RF-v1.3 compact receipt for material folds, source_ref or explicit unknown backend, clean-run reset or count effect when applicable, fresh receipt for each new CAS attempt result or follow-up finding batch, fresh receipt before single-finding CAS repair prose]
+      success_signals: [future seq tune audits can recover the decision episode, PR thread and CAS finding refs are joinable, later dirty CAS attempts have their own receipts, single fresh P1 acceptance has a joinable receipt before repair planning]
+      failure_signals: [accepted liability appears only as terse prose, straightforward liability shortcut leaves no receipt, follow-up CAS findings reuse an earlier receipt, CAS attempt found a new P1 without a receipt, finding is valid prose precedes receipt, clean streak changes without a receipt, thread disposition cannot be joined back to a source]
       rationale: Material folds must remain observable after compaction and session shadowing.
     - clause_id: RF-KERNEL-001
       trigger_refs: [RF-REPEATED-OWNER-BOUNDARY]

@@ -150,6 +150,42 @@ class ReviewFoldContractTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, NORMALIZED)
 
+    def test_single_finding_cas_prose_needs_fresh_receipts(self) -> None:
+        skill_required = [
+            "Fresh CAS-result prose has the same floor even when there is only one finding.",
+            "CAS attempt 1 found a new P1",
+            "the finding is valid",
+            "the owner fix is",
+            "clean streak stays at 0",
+            "before describing the fix path, resolution node, or next mutation",
+            "Treat single-finding CAS prose like `CAS attempt found a new P1`, `the finding is valid`, `the owner fix is`, or `clean streak stays at 0` as receipt-triggering folds",
+        ]
+        for token in skill_required:
+            with self.subTest(token=token):
+                self.assertIn(token, SKILL)
+
+        prompt_required = [
+            "CAS attempt found a new P1",
+            "the finding is valid",
+            "the owner fix is",
+            "clean streak stays at 0",
+            "requires a fresh RF-v1.3 compact/full receipt before describing the repair path or patching it",
+        ]
+        for token in prompt_required:
+            with self.subTest(token=token):
+                self.assertIn(token, NORMALIZED)
+
+        contract_required = [
+            "review-fold-v1.4.3-single-finding-cas-receipts",
+            "fresh receipt before single-finding CAS repair prose",
+            "single fresh P1 acceptance has a joinable receipt before repair planning",
+            "CAS attempt found a new P1 without a receipt",
+            "finding is valid prose precedes receipt",
+        ]
+        for token in contract_required:
+            with self.subTest(token=token):
+                self.assertIn(token, CONTRACT)
+
     def test_decision_contract_exposes_review_fold_routes_for_seq_tune(self) -> None:
         required = [
             "contract_version: SKDC-v1",
