@@ -74,10 +74,9 @@ goal_actuating_mode:
 12. Schedule bounded subagents only for explicit safe frontier nodes.
 13. Execute one useful action at a time with `$goal-grind`, unless `$st` owns execution.
 14. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolution fold as appropriate.
-15. Use `$failure-memory` when failures or review classes repeat.
-16. For `review-closeout` and exhaustive review, require three consecutive clean normalized **standard** `$cas` review attempts on the same artifact scope before completion.
-17. Run ATCG-v1 before completion.
-18. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
+15. For `review-closeout` and exhaustive review, require three consecutive clean normalized **standard** `$cas` review attempts on the same artifact scope before completion.
+16. Run ATCG-v1 before completion.
+17. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
 
 ## HYL-v1 interpreter
 

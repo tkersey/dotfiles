@@ -557,7 +557,6 @@ the next action would repeat a known invalid strategy
 - `$resolve` only when a dedicated resolution fold or closure decision is needed.
 - `$goal-grind` for accepted implementation liabilities.
 - `$evidence-fold` after verification or review results.
-- `$failure-memory` when repeated classes or oscillation appear.
 - `$proof-patch` for local closure proof.
 - `$ship` for PR creation, update, promotion, or publication.
 - `ATCG-v1` as the terminal closure reducer before `$actuating` completion.

@@ -191,7 +191,7 @@ review findings that reappear
 failed strategies that should not repeat
 ```
 
-Owners: `$failure-memory`, attempt ledger, `$seq` if historical forensics are needed.
+Owners: attempt ledger, `$seq` if historical forensics are needed.
 
 ### Futumorphism: lookahead / future expansion
 
@@ -235,7 +235,7 @@ migration across packages
 same test fixture failure across modules
 ```
 
-Owners: `$failure-memory`; solve representative class before bulk application.
+Owners: solve representative class before bulk application.
 
 ### Chronomorphism: history plus lookahead
 
@@ -249,7 +249,7 @@ multi-round review/fix campaign
 performance tuning with repeated benchmark classes
 ```
 
-Route: combine `$failure-memory`, branch-race, and evidence folds.
+Route: combine attempt history, branch-race, and evidence folds.
 
 ### Metamorphism: transform old representation to new representation
 

@@ -10,7 +10,7 @@ This catalogue is a practical planning map. It is not a theorem-prover and not a
 | Hylomorphism | Can we unfold work and fold evidence repeatedly? | `$goal-actuating` / `$goal-grind`. |
 | Paramorphism | Do edits require original structure plus summary? | AST/span/file-preserving refactor. |
 | Apomorphism | Can we reuse a solved subtree or pattern? | Reuse nodes, codemods, templates, previous fixes. |
-| Histomorphism | Do prior attempts matter? | Attempt ledger, `$failure-memory`, anti-oscillation. |
+| Histomorphism | Do prior attempts matter? | Attempt ledger, anti-oscillation. |
 | Futumorphism | Do we need lookahead or competing futures? | Branch race with common verifier. |
 | Zygomorphism | Must artifact and proof be produced together? | Proof-carrying patch / PR handoff. |
 | Dynamorphism | Are subproblems repeated and memoizable? | Representative failure classes, migration memoization. |
