@@ -2,7 +2,7 @@
 name: review-fold
 description: "Compress review pressure into intent-anchored review work: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent one-patch-per-comment churn. Use after $cas review, PR review comments, CAS findings, reviewer suggestions, and review-like claims. Owns active review finding classification for goal workflows."
 metadata:
-  version: "1.4.14"
+  version: "1.4.15"
   activation_cost: medium
   default_depth: high
 ---
@@ -259,7 +259,8 @@ class, not only the exact examples, as receipt-triggering: `CAS found ... more`,
 `CAS found a larger class`, `CAS found a broader class`, `CAS is still
 finding`, `CAS continues to find`, `CAS has narrowed this to one remaining
 class`, `one remaining class`, `same ... boundary`, `same owner-boundary
-refactor`, `same owner boundary`, or `same-class finding`.
+refactor`, `same owner boundary`, `same ... class`, `forms of the same ...
+class`, or `same-class finding`.
 Those phrases accept a refactor-kernel or grouped-liability route when they
 point to a repair direction. Emit the fresh RF-v1.3 compact/full receipt before
 describing the refactor, replacement strategy, or next patch.
@@ -379,7 +380,7 @@ Auxiliary CAS review lanes may still block closeout. They do not increment the s
 9. Emit full RF-v1.3 or the compact receipt floor before any accepted liability, blocker, clean-run decision, or thread disposition leaves the fold.
 10. Treat `straightforward liability`, `obvious fix`, P1/P2 labels, and same-sentence grouped acceptances as receipt-triggering folds, not as receipt substitutes.
 11. Treat single or small-batch CAS prose like `CAS attempt found a P1/P2`, `CAS attempt returned P1/P2 findings`, `CAS found valid items`, `CAS found one remaining valid P1/P2`, `CAS attempt returned another accepted P1/P2`, `the finding is valid`, `this finding is valid too`, `CAS is right`, `accepted code-change liabilities`, `the owner fix is`, `owner-correct fix is`, `the clean fix is`, `clean streak stays at 0`, or `streak remains 0` as receipt-triggering folds before any repair path is described.
-12. Treat grouped CAS prose like `CAS found ... more`, `CAS found a larger class`, `CAS found a broader class`, `CAS is still finding`, `CAS continues to find`, `CAS has narrowed this to one remaining class`, `one remaining class`, `same ... boundary`, `same owner-boundary refactor`, or `same-class finding` as a receipt-triggering fold before any refactor or replacement strategy is described.
+12. Treat grouped CAS prose like `CAS found ... more`, `CAS found a larger class`, `CAS found a broader class`, `CAS is still finding`, `CAS continues to find`, `CAS has narrowed this to one remaining class`, `one remaining class`, `same ... boundary`, `same owner-boundary refactor`, `same ... class`, `forms of the same ... class`, or `same-class finding` as a receipt-triggering fold before any refactor or replacement strategy is described.
 13. Treat clean CAS-run prose like `CAS attempt ... is clean`, `clean streak is N/3`, `clean streak is 1/3`, or `starting fresh attempt N` as receipt-triggering clean-run accounting before advancing the closeout loop.
 14. Treat each new CAS attempt result, follow-up finding batch, reopened thread batch, or dirty clean-streak attempt as a new receipt scope; do not reuse an earlier RF receipt for later findings.
 15. Collapse duplicates and same-family comments across lanes.
