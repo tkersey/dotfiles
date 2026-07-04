@@ -52,7 +52,6 @@ printf 'memory-source-layout\trepo_root\t%s\n' "$repo_root"
 print_learnings_store
 print_store "negative-ledger" ".ledger/negative-ledger/events.jsonl" "true"
 print_synesthesia_store
-print_store "harness" ".ledger/harness/events.jsonl" "true"
 
 if [ -f ".learnings.jsonl" ]; then
   printf 'learnings-legacy\tlegacy_present\t.learnings.jsonl\n'

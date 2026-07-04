@@ -18,7 +18,6 @@ Canonical stores:
 - `.ledger/learnings/events.jsonl`
 - `.ledger/negative-ledger/events.jsonl`
 - `.ledger/synesthesia/events.jsonl` when present
-- `.ledger/harness/events.jsonl` when present
 
 Source-store state model:
 
@@ -55,7 +54,6 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 - `$learnings` / `ledger --source learnings` for `.ledger/learnings/events.jsonl`;
 - `$negative-ledger` / `ledger` for `.ledger/negative-ledger/events.jsonl`;
 - `$synesthesia` / `ledger --source synesthesia` for `.ledger/synesthesia/events.jsonl`; current Synesthesia notes remain transition evidence;
-- `$harness-memory` for `.ledger/harness/events.jsonl` or harness notes;
 - `$memory-source-notes` / `memory-note` for immutable admission snapshots.
 
 Never write `memory_summary.md`, `MEMORY.md`, or memory-root `skills/*`.
@@ -80,14 +78,12 @@ See [source-store-layout.md](references/source-store-layout.md), [migration-work
 - learnings: migrated | legacy-only | missing | invalid
 - negative-ledger: current | legacy-path | missing | invalid
 - synesthesia: notes-only | ledger-present | missing | invalid
-- harness: notes-only | ledger-present | missing | invalid
 
 ## Harvest candidates
 
 - learnings:
 - negative-ledger:
 - synesthesia:
-- harness:
 
 ## Recommended actions
 
