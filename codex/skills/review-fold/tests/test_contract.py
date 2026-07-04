@@ -193,6 +193,12 @@ class ReviewFoldContractTests(unittest.TestCase):
             "describing the refactor",
             "replacement strategy, or next patch",
             "Treat grouped CAS prose like `CAS found ... more`, `CAS found a larger class`, `CAS found a broader class`, `CAS is still finding`, `CAS continues to find`, `CAS has narrowed this to one remaining class`, `one remaining class`, `same ... boundary`, `same owner-boundary refactor`, or `same-class finding` as a receipt-triggering fold",
+            "Clean CAS-run prose has the same floor.",
+            "CAS attempt ... is clean",
+            "clean streak is N/3",
+            "clean streak is 1/3",
+            "starting fresh attempt N",
+            "receipt-triggering clean-run accounting before advancing the closeout loop",
         ]
         for token in skill_required:
             with self.subTest(token=token):
@@ -226,17 +232,24 @@ class ReviewFoldContractTests(unittest.TestCase):
             "same owner boundary",
             "same-class finding",
             "require a fresh RF-v1.3 compact/full receipt before describing a refactor, replacement strategy, or next patch",
+            "Clean CAS-run prose patterns like",
+            "CAS attempt ... is clean",
+            "clean streak is N/3",
+            "clean streak is 1/3",
+            "starting fresh attempt N",
+            "require a fresh RF-v1.3 compact/full receipt before advancing the closeout loop or launching the next review attempt",
         ]
         for token in prompt_required:
             with self.subTest(token=token):
                 self.assertIn(token, NORMALIZED)
 
         contract_required = [
-            "review-fold-v1.4.13-remaining-class-pattern",
+            "review-fold-v1.4.14-clean-run-pattern",
             "fresh receipt before single-finding CAS repair prose",
             "single fresh or remaining severity acceptance has a joinable receipt before repair planning",
             "grouped same-boundary or larger-class CAS acceptance has a receipt before refactor planning",
             "remaining-class CAS acceptance has a receipt before replacement planning",
+            "clean CAS results have a receipt before the streak advances",
             "CAS attempt found a P1 or P2 without a receipt",
             "CAS is right prose precedes receipt",
             "CAS attempt returned P1 or P2 findings without a receipt",
@@ -250,6 +263,8 @@ class ReviewFoldContractTests(unittest.TestCase):
             "CAS found a larger class without a receipt",
             "CAS found a broader class without a receipt",
             "CAS narrowed to one remaining class without a receipt",
+            "CAS clean result advances the clean streak without a receipt",
+            "next CAS attempt starts after clean result without a receipt",
             "CAS is still finding prose precedes receipt",
             "same boundary refactor prose precedes receipt",
             "owner-correct fix prose precedes receipt",

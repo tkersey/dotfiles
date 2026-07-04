@@ -41,6 +41,10 @@ interface:
     "same owner boundary", or "same-class finding" also require a fresh
     RF-v1.3 compact/full receipt before describing a refactor, replacement
     strategy, or next patch.
+    Clean CAS-run prose patterns like "CAS attempt ... is clean", "clean
+    streak is N/3", "clean streak is 1/3", or "starting fresh attempt N" also
+    require a fresh RF-v1.3 compact/full receipt before advancing the closeout
+    loop or launching the next review attempt.
     Earlier RF receipts do not cover later CAS attempts, follow-up finding
     batches, dirty clean-streak attempts, or reopened PR thread batches; emit a
     fresh RF-v1.3 compact/full receipt for each new source batch before patching
