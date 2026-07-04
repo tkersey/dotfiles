@@ -166,6 +166,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "CAS attempt ... returned another accepted P1/P2",
             "the finding is valid",
             "this finding is valid too",
+            "CAS is right",
             "accepted code-change liabilities",
             "the owner fix is",
             "owner-correct fix is",
@@ -175,7 +176,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "RF-v1.3 compact/full receipt before",
             "fix",
             "next mutation",
-            "Treat single or small-batch CAS prose like `CAS attempt found a P1/P2`, `CAS attempt returned P1/P2 findings`, `CAS found valid items`, `CAS found one remaining valid P1/P2`, `CAS attempt returned another accepted P1/P2`, `the finding is valid`, `this finding is valid too`, `accepted code-change liabilities`, `the owner fix is`, `owner-correct fix is`, `the clean fix is`, `clean streak stays at 0`, or `streak remains 0` as receipt-triggering folds",
+            "Treat single or small-batch CAS prose like `CAS attempt found a P1/P2`, `CAS attempt returned P1/P2 findings`, `CAS found valid items`, `CAS found one remaining valid P1/P2`, `CAS attempt returned another accepted P1/P2`, `the finding is valid`, `this finding is valid too`, `CAS is right`, `accepted code-change liabilities`, `the owner fix is`, `owner-correct fix is`, `the clean fix is`, `clean streak stays at 0`, or `streak remains 0` as receipt-triggering folds",
             "Grouped or same-boundary CAS prose has the same requirement.",
             "CAS found ... more",
             "CAS is still finding",
@@ -201,6 +202,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "CAS attempt returned another accepted P1/P2",
             "the finding is valid",
             "this finding is valid too",
+            "CAS is right",
             "accepted code-change liabilities",
             "the owner fix is",
             "owner-correct fix is",
@@ -222,11 +224,12 @@ class ReviewFoldContractTests(unittest.TestCase):
                 self.assertIn(token, NORMALIZED)
 
         contract_required = [
-            "review-fold-v1.4.10-cas-accepted-severity-patterns",
+            "review-fold-v1.4.11-cas-is-right-pattern",
             "fresh receipt before single-finding CAS repair prose",
             "single fresh or remaining severity acceptance has a joinable receipt before repair planning",
             "grouped same-boundary CAS acceptance has a receipt before refactor planning",
             "CAS attempt found a P1 or P2 without a receipt",
+            "CAS is right prose precedes receipt",
             "CAS attempt returned P1 or P2 findings without a receipt",
             "CAS attempt returned another accepted P1 or P2 without a receipt",
             "accepted P1 or P2 shortcut leaves no receipt",
