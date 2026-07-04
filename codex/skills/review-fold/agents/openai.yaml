@@ -22,6 +22,9 @@ interface:
     and target_fingerprint. For valid or contested findings, name the law_family,
     falsified_law, owner_boundary, model_state, repair_level,
     alternatives_considered, and evidence_refs. Mark normalized CAS clean runs
-    when closing review. If one_patch_per_comment_risk is high, route to
+    when closing review. Do not use shortcut labels like "straightforward
+    liability", "obvious fix", "valid P1", "valid P2", or grouped liability
+    prose as substitutes for RF-v1.3 receipt fields before implementation. If
+    one_patch_per_comment_risk is high, route to
     refactor-kernel, branch-race, remediation-plan, or blocked unless an
     explicit owner-boundary exception is recorded.

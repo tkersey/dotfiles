@@ -2,7 +2,7 @@
 name: review-fold
 description: "Compress review pressure into intent-anchored review work: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent one-patch-per-comment churn. Use after $cas review, PR review comments, CAS findings, reviewer suggestions, and review-like claims. Owns active review finding classification for goal workflows."
 metadata:
-  version: "1.4.0"
+  version: "1.4.1"
   activation_cost: medium
   default_depth: high
 ---
@@ -236,6 +236,12 @@ omitting the field. A compact receipt is not a second schema; it is the minimum
 observable projection of RF-v1.3 needed by `$seq`, `$tune`, `$actuating`, and PR
 thread sweeps.
 
+Shortcut labels do not relax the floor. Phrases such as `straightforward
+liability`, `obvious fix`, `valid P1`, `valid P2`, or `both findings are
+liabilities` are material fold decisions, not receipts. Emit full RF-v1.3 or
+`RF-v1.3 compact:` before those findings leave `$review-fold`, before they are
+sent to the resolution fold, and before implementation starts.
+
 ## Disposition law
 
 - `reject`: claim is false, stale, duplicate with no new proof value, unrelated, already handled, incompatible with the goal, or merely preference/style without accepted liability.
@@ -335,17 +341,18 @@ Auxiliary CAS review lanes may still block closeout. They do not increment the s
 7. Preserve CAS source refs when present: `cas_finding_id`, `finding_fingerprint`, `review_attempt_id`, tuple, and lane role.
 8. Name the falsified law, owner boundary, model state, and repair level when a finding is valid or unresolved.
 9. Emit full RF-v1.3 or the compact receipt floor before any accepted liability, blocker, clean-run decision, or thread disposition leaves the fold.
-10. Collapse duplicates and same-family comments across lanes.
-11. Mark whether the current standard attempt is normalized clean and whether the standard clean-run counter resets.
-12. Mark auxiliary lane state as `clean`, `findings-folded`, `blocked`, or `rerun-required`; never count it as a standard clean run.
-13. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
-14. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
-15. Escalate high one-patch-per-comment risk to `refactor-kernel`, `branch-race`, `remediation-plan`, or `blocked` unless an explicit owner-boundary exception is recorded.
-16. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
-17. Produce a small work graph only for accepted liabilities and only after the resolution fold accepts code-changing work.
-18. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolution fold accepts code-change liabilities.
-19. For post-implementation CAS runs, mark whether the normalized standard result is clean and whether the standard clean-run counter resets.
-20. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
+10. Treat `straightforward liability`, `obvious fix`, P1/P2 labels, and same-sentence grouped acceptances as receipt-triggering folds, not as receipt substitutes.
+11. Collapse duplicates and same-family comments across lanes.
+12. Mark whether the current standard attempt is normalized clean and whether the standard clean-run counter resets.
+13. Mark auxiliary lane state as `clean`, `findings-folded`, `blocked`, or `rerun-required`; never count it as a standard clean run.
+14. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
+15. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
+16. Escalate high one-patch-per-comment risk to `refactor-kernel`, `branch-race`, `remediation-plan`, or `blocked` unless an explicit owner-boundary exception is recorded.
+17. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
+18. Produce a small work graph only for accepted liabilities and only after the resolution fold accepts code-changing work.
+19. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolution fold accepts code-change liabilities.
+20. For post-implementation CAS runs, mark whether the normalized standard result is clean and whether the standard clean-run counter resets.
+21. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
 
 ## Default behavior in `$actuating`
 
@@ -382,6 +389,7 @@ no changes
 - Do not count auxiliary CAS lanes as standard clean reviews.
 - Do not store auxiliary lane selection policy only in `$cas` transport fields.
 - Do not let accepted liabilities, blockers, or clean-run decisions leave only as unjoinable prose.
+- Do not use `straightforward liability`, `obvious fix`, or severity labels as substitutes for RF-v1.3 receipt fields.
 - Do not claim review closure before three clean normalized standard CAS attempts when `review-closeout` or exhaustive review requires them.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.
 - `$review-fold` owns active review adjudication; do not route findings through retired skill paths.

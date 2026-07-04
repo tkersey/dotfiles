@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: review-fold
     kind: mixed
-    source_fingerprint: review-fold-v1.4-compact-receipt-floor
+    source_fingerprint: review-fold-v1.4.1-no-shortcut-liability-folds
   triggers:
     - trigger_id: RF-REVIEW-FINDING
       description: CAS, PR, human, or prior-artifact review pressure needs classification.
@@ -85,7 +85,7 @@ skill_decision_contract:
       prohibited_routes: []
       required_artifacts: [full RF-v1.3 or RF-v1.3 compact receipt for material folds, source_ref or explicit unknown backend, clean-run reset or count effect when applicable]
       success_signals: [future seq tune audits can recover the decision episode, PR thread and CAS finding refs are joinable]
-      failure_signals: [accepted liability appears only as terse prose, clean streak changes without a receipt, thread disposition cannot be joined back to a source]
+      failure_signals: [accepted liability appears only as terse prose, straightforward liability shortcut leaves no receipt, clean streak changes without a receipt, thread disposition cannot be joined back to a source]
       rationale: Material folds must remain observable after compaction and session shadowing.
     - clause_id: RF-KERNEL-001
       trigger_refs: [RF-REPEATED-OWNER-BOUNDARY]

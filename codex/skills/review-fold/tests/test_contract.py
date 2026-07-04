@@ -99,6 +99,32 @@ class ReviewFoldContractTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, SKILL)
 
+    def test_shortcut_liability_labels_do_not_replace_receipts(self) -> None:
+        skill_required = [
+            "Shortcut labels do not relax the floor.",
+            "straightforward liability",
+            "obvious fix",
+            "valid P1",
+            "valid P2",
+            "before implementation starts",
+            "Do not use `straightforward liability`, `obvious fix`, or severity labels as substitutes for RF-v1.3 receipt fields.",
+        ]
+        for token in skill_required:
+            with self.subTest(token=token):
+                self.assertIn(token, SKILL)
+
+        prompt_required = [
+            "straightforward liability",
+            "obvious fix",
+            "valid P1",
+            "valid P2",
+            "grouped liability prose",
+            "substitutes for RF-v1.3 receipt fields before implementation",
+        ]
+        for token in prompt_required:
+            with self.subTest(token=token):
+                self.assertIn(token, NORMALIZED)
+
     def test_decision_contract_exposes_review_fold_routes_for_seq_tune(self) -> None:
         required = [
             "contract_version: SKDC-v1",
@@ -112,6 +138,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "RF-MINIMAL-FIX",
             "RF-REFACTOR-KERNEL",
             "decision_receipt: required",
+            "straightforward liability shortcut leaves no receipt",
         ]
         for token in required:
             with self.subTest(token=token):
