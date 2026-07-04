@@ -1,21 +1,5 @@
 # Extension Payload Contracts
 
-## Harness rule
-
-```json
-{
-  "harness_rule": "When X, do Y before Z.",
-  "trigger": "Situation or symptom",
-  "preferred_behavior": "Future behavior",
-  "failure_avoided": "Predictable failure",
-  "verification_cue": "Proof or stop condition",
-  "evidence_count": 1,
-  "repetition_count": 1
-}
-```
-
-Required for `harness-rule`: all fields except `repetition_count`.
-
 ## Learning admission
 
 ```json

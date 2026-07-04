@@ -1,6 +1,6 @@
 ---
 name: memory-source-notes
-description: "Safely append, inspect, validate, deploy, and materialize derived digests for typed source-evidence notes in controlled Codex memory extensions. Use only after a handoff from harness-memory, learnings, negative-ledger, or synesthesia, or an explicit custom source capture or diagnostic request. Never edits compiled memory."
+description: "Safely append, inspect, validate, deploy, and materialize derived digests for typed source-evidence notes in controlled Codex memory extensions. Use only after a handoff from learnings, negative-ledger, or synesthesia, or an explicit custom source capture or diagnostic request. Never edits compiled memory."
 metadata:
   version: "1.2.0"
 ---
@@ -39,7 +39,6 @@ source skill or canonical domain store
 - `ledger --source learnings` owns `.ledger/learnings/events.jsonl` and the admission gate for learning snapshots.
 - `ledger` owns `.ledger/negative-ledger/events.jsonl` and the admission gate for route state.
 - `ledger --source synesthesia` owns `.ledger/synesthesia/events.jsonl` and the canonical sensory mapping or activation-boundary event.
-- `harness-memory` owns durable operating-correction admission.
 - `synesthesia` owns sensory mapping and activation-boundary admission semantics.
 - `memory-note` owns safe immutable transport.
 - this skill owns command syntax, extension-specific adapters, derived digest generation, copy-based instruction deployment, diagnostics, and proof-line interpretation;
@@ -48,7 +47,6 @@ source skill or canonical domain store
 ## Allowed extensions
 
 ```text
-harness
 learnings
 negative-ledger
 synesthesia
@@ -59,7 +57,7 @@ Refuse `ad_hoc` and Chronicle. Native remember/forget/update requests belong to 
 ## Trigger cues
 
 - explicit `$memory-source-notes`;
-- documented handoff from `$harness-memory`, `$learnings`, `$negative-ledger`, or `$synesthesia`;
+- documented handoff from `$learnings`, `$negative-ledger`, or `$synesthesia`;
 - explicit request to inspect or repair a custom memory-source layout;
 - explicit request to synchronize extension instructions into the live memory root;
 - explicit request to diagnose why admitted notes are not reaching compiled memory.
@@ -253,15 +251,6 @@ A source-note failure must not undo a successful canonical learning or negative-
 
 ## Source-specific kinds
 
-Harness:
-
-```text
-harness-rule
-harness-confirmation
-harness-supersession
-harness-retraction
-```
-
 Learnings:
 
 ```text
@@ -301,7 +290,7 @@ General read-only commands:
 ```bash
 run_memory_note_tool doctor
 run_memory_note_tool doctor --extension negative-ledger
-run_memory_note_tool list --extension harness
+run_memory_note_tool list --extension learnings
 run_memory_note_tool show --extension negative-ledger --id MSN-...
 ```
 

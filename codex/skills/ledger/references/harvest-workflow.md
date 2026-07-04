@@ -8,7 +8,6 @@ Inputs:
 .ledger/learnings/events.jsonl
 .ledger/negative-ledger/events.jsonl
 .ledger/synesthesia/events.jsonl
-.ledger/harness/events.jsonl
 .ledger/learnings/learnings.jsonl
 .learnings.jsonl
 ~/.codex/memories/extensions/*/notes/*.md
@@ -22,7 +21,6 @@ Admission gates:
 - Learnings: `codify_now`, repeated theme, explicit durable user preference, high-value failure shield, repo map, verification path, or repeatable procedure.
 - Negative Ledger: current `ledger export --format memory-note` projection with witness, applicability, exclusion, reopening criteria, and projection fingerprint.
 - Synesthesia: explicit durable mapping or boundary event, rejection/retraction/reopening, or repeated accepted operational use.
-- Harness: durable trigger/behavior/verification operating rule.
 
 Recommended handoff:
 

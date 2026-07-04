@@ -319,7 +319,7 @@ Do not capture:
 - mappings with no engineering translation;
 - ordinary technical facts better owned by learnings;
 - failed-route exclusions better owned by negative ledger;
-- general operating corrections better owned by harness memory.
+- general operating corrections are outside Synesthesia scope unless they establish a sensory mapping or activation boundary.
 
 See [memory-admission.md](references/memory-admission.md) for the operation matrix, payload contract, copy-based adapter synchronization, digest projection, and doctor workflow.
 
@@ -361,7 +361,6 @@ ledger doctor --source synesthesia
 
 ## Cross-extension ownership
 
-- durable operating correction -> `$harness-memory`;
 - evidence-backed execution learning -> `$learnings`;
 - failed-hypothesis exclusion or reopening -> `$negative-ledger`;
 - endorsed sensory mapping or sensory activation boundary -> `$synesthesia`;
