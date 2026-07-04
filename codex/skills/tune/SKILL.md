@@ -1,6 +1,6 @@
 ---
 name: tune
-description: "Tune an existing Codex skill by comparing its intended decision contract with observed decision episodes and outcomes. Prefer `seq skill-decision-audit --mode tune-packet`; use for `$tune`, intended-vs-observed behavior, missed/false/ceremonial activations, ignored clauses, wrong routes, outcome regressions, repeated workarounds, STE-v1 packets, skill-delta candidates, explicit `$refine` handoff, or commit/push authorization questions. Stop at audit/proposal unless apply is explicit. Commit/push only with explicit publish intent after validation. `$seq` CLI changes require a separate special spec."
+description: "Tune an existing Codex skill by comparing its intended decision contract with observed decision episodes and outcomes. Prefer `seq skill-decision-audit --mode tune-packet`; use for `$tune`, intended-vs-observed behavior, missed/false/ceremonial activations, ignored clauses, wrong routes, outcome regressions, repeated workarounds, STE-v1 packets, skill-delta candidates, explicit `$refine` handoff, or commit/push authorization for skill-refinement changes. Stop at audit/proposal unless apply or skill-refinement publication is explicit. Commit/push only with explicit publish intent after validation. `$seq` CLI changes require a separate special spec."
 ---
 
 # Tune
@@ -51,7 +51,7 @@ seq skill-decision-audit \
 
 Canonical packet: `skill_tuning_evidence / STE-v1`.
 
-If the installed CLI lacks `skill-decision-audit`, use the existing narrow `$seq` surfaces, keep activation/decision/outcome evidence separate, mark decision causality `unknown` unless explicit, and emit `SEQ-SPEC-HANDOFF-v2` when the missing surface materially blocks diagnosis. Do not normalize broad raw transcript mining as the replacement workflow.
+If the installed CLI lacks `skill-decision-audit`, use the existing narrow `$seq` surfaces, keep activation/decision/outcome evidence separate, mark decision causality `unknown` unless explicit, and emit `SEQ-SPEC-HANDOFF-v1` when the missing surface materially blocks diagnosis. Do not normalize broad raw transcript mining as the replacement workflow.
 
 ## Modes
 
@@ -67,7 +67,7 @@ apply-with-refine
 
 `proposal-only`: default for "improve," "optimize," or "what should change?"; produce one bounded decision delta, terminal repeat state, or no-action decision; no edits.
 
-`apply-with-refine`: use only when the user explicitly asks to edit, apply, patch, or update now. Produce the diagnosis first, then hand a bounded brief to `$refine`. Apply means local file changes plus validation; it does not authorize commit or push.
+`apply-with-refine`: use only when the user explicitly asks to edit, apply, patch, update, or publish an already-applied validated skill refinement now. Produce the diagnosis first, then hand a bounded brief to `$refine` or report the publication-only state. Apply means local file changes plus validation; it does not authorize commit or push.
 
 ## Target skill type
 
@@ -208,8 +208,9 @@ retired
 
 Apply-with-refine may edit files only when all hold:
 
-- explicit user request to edit, apply, patch, or update now;
-- target, evidence source, intended contract, and protected-skill restrictions are identified;
+- explicit user request to edit, apply, patch, update, or publish an already-applied validated skill refinement now;
+- target, evidence source, and intended contract are identified;
+- protected-skill restrictions are satisfied;
 - decision/outcome gap is sufficiently evidenced and smallest change is known;
 - stable clause IDs are preserved unless intentionally replaced;
 - validation query exists.
@@ -228,7 +229,7 @@ If any required gate fails, stop at audit/proposal or report blocked publication
 
 `$refine` handoff: use `REFINE-SKILL-v3`. The brief must bind source packet, target kind, gap/clause refs, expected delta, optimization boundary, intervention budget, forbidden changes, smallest-change hint, static/contract/script/behavioral validation, and publish authorization when relevant. Do not hand `$refine` raw transcripts when STE-v1 is available.
 
-`$seq` special-spec handoff: when a missing evidence surface blocks diagnosis, emit `SEQ-SPEC-HANDOFF-v2` with need, observed gap, desired command/packet fields, acceptance criteria, validation examples, and source evidence. Do not edit `$seq` inside ordinary skill refinement.
+`$seq` special-spec handoff: when a missing evidence surface blocks diagnosis, emit `SEQ-SPEC-HANDOFF-v1` with need, observed gap, desired command/packet fields, acceptance criteria, validation examples, and source evidence. Do not edit `$seq` inside ordinary skill refinement.
 
 ## Subagent policy
 

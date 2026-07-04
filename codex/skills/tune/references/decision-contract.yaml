@@ -17,7 +17,7 @@ skill_decision_contract:
       exclusions:
         - style preference only
     - trigger_id: TUNE-APPLY-REQUEST
-      description: The user explicitly requests skill-file changes or publication now; commit and push require separate publish intent.
+      description: The user explicitly requests skill-file changes or skill-refinement publication now; commit and push require separate publish intent.
       cue_literals:
         - apply
         - edit
@@ -26,6 +26,10 @@ skill_decision_contract:
         - commit
         - push
         - publish
+        - ship
+        - save to git
+        - save-to-git
+        - save changes to git
       cue_regexes: []
       exclusions:
         - what should change
@@ -44,7 +48,7 @@ skill_decision_contract:
         - final-brief
       terminal: "yes"
     - route_id: TUNE-REFINE
-      description: Hand a complete bounded edit brief to refine.
+      description: Hand a complete bounded edit brief to refine, or report the publication state for an already-applied validated skill refinement.
       aliases:
         - handoff-refine
         - apply-with-refine
@@ -90,7 +94,7 @@ skill_decision_contract:
         - scoped file boundary
         - publish authorization, when commit or push is requested
       success_signals:
-        - minimal authorized edit
+        - minimal authorized edit or publication-only state
         - commit/push state reported as authorized, completed, or blocked
       failure_signals:
         - edit without explicit request
