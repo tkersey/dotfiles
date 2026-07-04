@@ -132,17 +132,19 @@ skill_decision_contract:
         - review profile with standard plus selected auxiliary lanes
         - folded auxiliary lane outcomes for footgun-finder, invariant-ace, or complexity-mitigator when selected
         - standard-only clean-run counter
-        - ATCG context fields for standard_clean_runs_count and selected auxiliary lane blocker state
+        - ATCG context fields for standard_clean_runs_count and selected auxiliary lane blocker/current-artifact state
       success_signals:
         - footgun-finder, invariant-ace, and complexity-mitigator are available as auxiliary CAS review lanes
         - auxiliary lanes may block closeout but do not increment or interrupt the standard clean streak
         - artifact-changing fixes from any lane reset the standard clean streak
         - terminal closure rejects missing, blocked, rerun-required, or not-folded selected auxiliary lanes
+        - terminal closure rejects selected auxiliary lane receipts that are stale against current head or diff
       failure_signals:
         - auxiliary lane output bypasses review-fold
         - auxiliary lane is treated as mutation authority
         - standard clean streak includes non-standard attempts
         - terminal closure accepts unresolved auxiliary lane blocker state
+        - terminal closure accepts stale auxiliary lane evidence after artifact-changing work
       rationale: Specialized review depth should strengthen review evidence without weakening the three standard clean reviews closure bar.
     - clause_id: ACT-ST-001
       trigger_refs: [ACT-ST-GOVERNED]

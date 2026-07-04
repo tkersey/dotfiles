@@ -105,6 +105,8 @@ review_fold:
       auxiliary_lanes:
         - lane: footgun-finder|invariant-ace|complexity-mitigator
           verdict_ref:
+          head_sha:
+          target_fingerprint:
           folded: yes|no
           unresolved_blockers: yes|no
           rerun_required: yes|no

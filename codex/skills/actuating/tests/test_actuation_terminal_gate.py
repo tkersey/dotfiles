@@ -597,6 +597,97 @@ class ActuationTerminalGateTests(unittest.TestCase):
             body["blocked_reasons"],
         )
 
+    def test_selected_auxiliary_lane_requires_standard_cas_even_when_not_marked_required(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = {
+            "required": "no",
+            "required_auxiliary_lanes": ["footgun-finder"],
+            "auxiliary_lanes": {
+                "footgun-finder": {
+                    "status": "clean",
+                    "folded": "yes",
+                    "head_sha": "abc123",
+                    "target_fingerprint": "diff:clean",
+                },
+            },
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 0
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertEqual(body["next_owner"], "$cas")
+        self.assertIn("cas.standard_clean_runs:0-of-3", body["blocked_reasons"])
+        self.assertIn("cas.standard_clean_runs:not-independent", body["blocked_reasons"])
+        self.assertIn("cas.tuple.head_sha:missing", body["blocked_reasons"])
+        self.assertIn(
+            "final_report.standard_clean_cas_runs:not-satisfied",
+            body["blocked_reasons"],
+        )
+
+    def test_clean_auxiliary_lane_must_match_current_artifact(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = {
+            "required": "yes",
+            "standard_clean_runs_required": 3,
+            "standard_clean_runs_count": 3,
+            "required_auxiliary_lanes": ["invariant-ace"],
+            "auxiliary_lanes": {
+                "invariant-ace": {
+                    "status": "clean",
+                    "folded": "yes",
+                    "head_sha": "stale-head",
+                    "target_fingerprint": "stale-diff",
+                },
+            },
+            "independent_fresh_runs": "yes",
+            "tuple_bound": "yes",
+            "tuple": {
+                "base_sha": "base123",
+                "head_sha": "abc123",
+                "target_fingerprint": "diff:clean",
+            },
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertIn(
+            "cas.auxiliary_lanes.invariant-ace.head_sha:artifact-mismatch",
+            body["blocked_reasons"],
+        )
+        self.assertIn(
+            "cas.auxiliary_lanes.invariant-ace.target_fingerprint:artifact-mismatch",
+            body["blocked_reasons"],
+        )
+
+    def test_current_clean_auxiliary_lane_allows_completion_with_standard_cas(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = {
+            "required": "yes",
+            "standard_clean_runs_required": 3,
+            "standard_clean_runs_count": 3,
+            "required_auxiliary_lanes": ["complexity-mitigator"],
+            "auxiliary_lanes": {
+                "complexity-mitigator": {
+                    "status": "clean",
+                    "folded": "yes",
+                    "head_sha": "abc123",
+                    "target_fingerprint": "diff:clean",
+                },
+            },
+            "independent_fresh_runs": "yes",
+            "tuple_bound": "yes",
+            "tuple": {
+                "base_sha": "base123",
+                "head_sha": "abc123",
+                "target_fingerprint": "diff:clean",
+            },
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "complete")
+
     def test_publication_required_requires_pr_intent_and_ship_evidence(self) -> None:
         context = deepcopy(self.context())
         context["delivery"]["publication_required"] = "yes"

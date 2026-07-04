@@ -363,7 +363,17 @@ def required_auxiliary_lanes_for(cas: dict[str, Any], records: dict[str, dict[st
     return required
 
 
-def auxiliary_lane_reasons_for(cas: dict[str, Any]) -> list[str]:
+def standard_cas_required_for(cas: dict[str, Any]) -> bool:
+    records = auxiliary_lane_records_for(cas)
+    return as_yes(cas.get("required")) or bool(required_auxiliary_lanes_for(cas, records))
+
+
+def lane_binding_value(record: dict[str, Any], key: str) -> Any:
+    tuple_value = object_from(record.get("tuple"))
+    return first_present(record, (key,), tuple_value.get(key))
+
+
+def auxiliary_lane_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
     records = auxiliary_lane_records_for(cas)
     required = required_auxiliary_lanes_for(cas, records)
     reasons: list[str] = []
@@ -382,6 +392,16 @@ def auxiliary_lane_reasons_for(cas: dict[str, Any]) -> list[str]:
             reasons.append(f"cas.auxiliary_lanes.{lane}:blocked")
         if as_yes(record.get("rerun_required")) or state == "rerun-required":
             reasons.append(f"cas.auxiliary_lanes.{lane}:rerun-required")
+        head_sha = lane_binding_value(record, "head_sha")
+        if not isinstance(head_sha, str) or not head_sha:
+            reasons.append(f"cas.auxiliary_lanes.{lane}.head_sha:missing")
+        elif head_sha != artifact.get("head_sha"):
+            reasons.append(f"cas.auxiliary_lanes.{lane}.head_sha:artifact-mismatch")
+        target_fingerprint = lane_binding_value(record, "target_fingerprint")
+        if not isinstance(target_fingerprint, str) or not target_fingerprint:
+            reasons.append(f"cas.auxiliary_lanes.{lane}.target_fingerprint:missing")
+        elif target_fingerprint != artifact.get("diff_fingerprint"):
+            reasons.append(f"cas.auxiliary_lanes.{lane}.target_fingerprint:artifact-mismatch")
     return reasons
 
 
@@ -590,12 +610,14 @@ def proof_patch_reasons_for(proof_patch: dict[str, Any], closure_candidate: str)
 
 def cas_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
     reasons: list[str] = []
-    if not as_yes(cas.get("required")):
-        return auxiliary_lane_reasons_for(cas)
+    standard_required = standard_cas_required_for(cas)
+    if not standard_required:
+        return auxiliary_lane_reasons_for(cas, artifact)
     required = standard_clean_runs_required_for(cas)
     count = standard_clean_runs_count_for(cas)
     standard_fields_used = (
         "standard_clean_runs_required" in cas or "standard_clean_runs_count" in cas
+        or not as_yes(cas.get("required"))
     )
     if not is_plain_int(required) or required <= 0:
         if standard_fields_used:
@@ -629,7 +651,7 @@ def cas_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
     if required > 0 and isinstance(tuple_value.get("target_fingerprint"), str) and tuple_value.get("target_fingerprint"):
         if tuple_value.get("target_fingerprint") != artifact.get("diff_fingerprint"):
             reasons.append("cas.tuple.target_fingerprint:artifact-mismatch")
-    reasons.extend(auxiliary_lane_reasons_for(cas))
+    reasons.extend(auxiliary_lane_reasons_for(cas, artifact))
     return reasons
 
 
@@ -750,7 +772,7 @@ def final_report_reasons_for(
     delivery: dict[str, Any],
 ) -> list[str]:
     reasons: list[str] = []
-    if as_yes(cas.get("required")):
+    if standard_cas_required_for(cas):
         required = standard_clean_runs_required_for(cas)
         if not is_plain_int(required) or required <= 0:
             required = 3
@@ -776,7 +798,7 @@ def required_receipts_for(
     receipts: list[str] = []
     if as_yes(proof_patch.get("required")) or closure_candidate == "proof-patch":
         receipts.append("proof_patch")
-    if as_yes(cas.get("required")):
+    if standard_cas_required_for(cas):
         receipts.append("cas_review")
     if as_yes(delivery.get("pr_intent")) or closure_candidate == "ship-complete":
         receipts.append("add_v1_delivery_decision")

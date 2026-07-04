@@ -123,6 +123,8 @@ cas_review.required_auxiliary_lanes
 cas_review.auxiliary_lanes.<lane>.folded
 cas_review.auxiliary_lanes.<lane>.unresolved_blockers
 cas_review.auxiliary_lanes.<lane>.rerun_required
+cas_review.auxiliary_lanes.<lane>.head_sha
+cas_review.auxiliary_lanes.<lane>.target_fingerprint
 ```
 
 Compatibility fields may still be named `clean_runs_required`,
@@ -142,6 +144,7 @@ CAS required + standard clean runs < required -> blocked, next_owner=$cas
 CAS required + standard_clean_runs_required <= 0 -> blocked, next_owner=$cas
 CAS required + final report standard clean runs < required -> blocked, next_owner=$cas
 required auxiliary CAS review lane missing|not-folded|blocked|rerun-required -> cas-review-blocked, next_owner=$cas
+required auxiliary CAS review lane stale against head/diff -> cas-review-blocked, next_owner=$cas
 review-closeout protocol incomplete -> cas-review-blocked, next_owner=$cas
 proof-patch required + missing/stale -> continue, next_owner=$proof-patch
 proof-patch closure + missing proof-patch receipt -> continue, next_owner=$proof-patch

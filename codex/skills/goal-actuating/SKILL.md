@@ -97,7 +97,7 @@ No completion is valid without terminal ATCG-v1.
 
 ## Review lanes
 
-Workflow review is CAS-backed and lane-aware.
+Workflow review is CAS-backed and lane-aware. `standard` is the only CAS review lane required for the clean-review streak; auxiliary lanes are workflow-selected review lenses whose folded evidence must be current-artifact-bound.
 
 ```text
 standard          ordinary CAS code-review attempt; the only lane that counts toward the 3-clean-review streak
@@ -109,10 +109,12 @@ complexity-mitigator
 
 Rules:
 
-- `standard` is required whenever workflow review is required.
+- `standard` is required whenever workflow review is required or any auxiliary lane is selected.
 - Auxiliary lanes are selected before review from the diff surface, accepted proof bar, user request, or prior review class.
 - Auxiliary lanes are real CAS review evidence, but they do not increment or interrupt the standard clean-review streak.
 - Auxiliary findings must be folded through `$review-fold` and may block closeout or become accepted liabilities.
+- Do not require unsupported `$cas` commands to produce semantic footgun/invariant/complexity lane labels. CAS transports and tuple-binds review evidence; the workflow owns auxiliary lens selection, folding, and blocker state.
+- A selected auxiliary lane must carry current `head_sha` and `target_fingerprint` evidence before ATCG may complete.
 - A code change from any lane resets the standard clean-review streak to zero.
 - Read-only or classification-only auxiliary lane results do not reset the standard streak unless they change artifact scope or proof bar.
 - Do not rerun auxiliary lanes on every standard clean attempt unless their surface was touched, their prior result was blocked/validate-first, the proof bar changed, or a standard review exposes a new class owned by that lens.
@@ -128,7 +130,7 @@ if material and no ALSR/HYL -> produce agent-loop-schemes node
 if no goal contract -> produce goal-contract node
 if review requested and no review profile -> produce review-profile node
 if review requested and no standard CAS result -> produce standard CAS review node
-if required auxiliary review lane missing or invalidated -> produce CAS auxiliary review-lane node
+if required auxiliary review lane missing or invalidated -> produce auxiliary review-lens evidence node
 if CAS lane findings unclassified -> produce review-fold node
 if review requested and no resolution agenda -> produce resolution-fold node
 if accepted liabilities remain -> produce patch/refactor/branch-race node
@@ -221,7 +223,7 @@ Explicit review mode names carry the mutation rule:
 ```text
 CAS review profile selection
 -> $cas standard review
--> optional $cas auxiliary review lanes: footgun-finder | invariant-ace | complexity-mitigator
+-> optional auxiliary review lenses: footgun-finder | invariant-ace | complexity-mitigator
 -> $review-fold
 -> optional review-class-fanout
 -> resolution fold
