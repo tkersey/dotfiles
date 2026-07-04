@@ -23,5 +23,5 @@ When one_patch_per_comment_risk is high, route to refactor-kernel, branch-race, 
 Do not post PR comments or resolve threads.
 Do not mutate files.
 
-Return RF-v1.3 review_fold with `source_ref`, `repair_level`, `code_change_candidate`, and `finding_mutation_authority` on every finding.
+Return RF-v1.3 review_fold with `source_ref`, `repair_level`, `code_change_candidate`, and `finding_mutation_authority` on every finding. If the full schema would be too large for the current handoff, return an `RF-v1.3 compact` block with source_ref or explicit unknown backend, lane_role, head_sha, target_fingerprint, validity, liability, intent_relation, disposition, repair_level, owner_boundary, law_family, evidence_refs, clean_run effect when applicable, and `finding_mutation_authority.allowed: no`.
 '''

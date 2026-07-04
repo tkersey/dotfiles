@@ -1,0 +1,100 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: review-fold
+    kind: mixed
+    source_fingerprint: review-fold-v1.4-compact-receipt-floor
+  triggers:
+    - trigger_id: RF-REVIEW-FINDING
+      description: CAS, PR, human, or prior-artifact review pressure needs classification.
+      cue_literals: [CAS finding, PR review comment, reviewer suggestion, review thread, review-like claim]
+      cue_regexes: []
+      exclusions: [no-code unrelated discussion]
+    - trigger_id: RF-FRESH-REVIEW-REQUIRED
+      description: The workflow asks for fresh, exhaustive, adversarial, or closure-grade code review.
+      cue_literals: [fresh review, exhaustive review, review-closeout, close review, standard CAS review]
+      cue_regexes: []
+      exclusions: [existing PR comments only]
+    - trigger_id: RF-REPEATED-OWNER-BOUNDARY
+      description: Multiple findings share an owner boundary, missing invariant, or one-patch-per-comment risk.
+      cue_literals: [same owner boundary, same-class finding, repeated accepted liabilities, one-patch-per-comment, refactor-kernel]
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: RF-CLEAN-RUN-ACCOUNTING
+      description: A CAS attempt may advance, reset, or fail to affect the standard clean-run counter.
+      cue_literals: [clean run, clean streak, normalized clean, reset counter, standard attempt]
+      cue_regexes: []
+      exclusions: [auxiliary-only lane summary]
+  routes:
+    - route_id: RF-CAS-REVIEW
+      description: Require CAS before folding when workflow-initiated review is required.
+      aliases: [cas-review, require-cas]
+      terminal: no
+    - route_id: RF-REJECT
+      description: Reject false, stale, duplicate, unrelated, preference-only, or out-of-scope claims.
+      aliases: [reject]
+      terminal: yes
+    - route_id: RF-PROOF-ONLY
+      description: Require evidence, inspection, or reviewer explanation rather than code.
+      aliases: [proof-only]
+      terminal: yes
+    - route_id: RF-MINIMAL-FIX
+      description: Accept one owner-correct local liability for resolution-fold consideration.
+      aliases: [minimal-fix]
+      terminal: no
+    - route_id: RF-REFACTOR-KERNEL
+      description: Compress multiple same-boundary findings into one owner-level correction.
+      aliases: [refactor-kernel]
+      terminal: no
+    - route_id: RF-BRANCH-RACE
+      description: Compare plausible remediation strategies under the same verifier.
+      aliases: [branch-race]
+      terminal: no
+    - route_id: RF-ASK-HUMAN
+      description: Ask for product, API, compatibility, UX, performance, security, or scope authority.
+      aliases: [ask-human]
+      terminal: yes
+    - route_id: RF-FOLLOW-UP
+      description: Defer valid but out-of-scope findings outside the current change.
+      aliases: [follow-up]
+      terminal: yes
+    - route_id: RF-BLOCK
+      description: Stop when validity, liability, scope, source, or current artifact state is unclear.
+      aliases: [blocked]
+      terminal: yes
+  clauses:
+    - clause_id: RF-SOURCE-001
+      trigger_refs: [RF-FRESH-REVIEW-REQUIRED]
+      expected_routes: [RF-CAS-REVIEW, RF-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [CAS standard review result for workflow-initiated review, lane role, head sha or tuple]
+      success_signals: [fresh or exhaustive review is CAS-backed, auxiliary lanes are not counted as standard clean reviews]
+      failure_signals: [non-CAS critique substitutes for workflow review, cached or stale review attempt counted as fresh]
+      rationale: Review-fold classifies findings; it does not create fresh workflow code review.
+    - clause_id: RF-CLASSIFY-001
+      trigger_refs: [RF-REVIEW-FINDING]
+      expected_routes: [RF-REJECT, RF-PROOF-ONLY, RF-MINIMAL-FIX, RF-REFACTOR-KERNEL, RF-BRANCH-RACE, RF-ASK-HUMAN, RF-FOLLOW-UP, RF-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [source refs when present, validity, liability, intent relation, owner boundary for valid or unresolved findings, finding mutation authority disabled]
+      success_signals: [claim fact and suggested repair are separated, code-change candidates remain gated by the resolution fold]
+      failure_signals: [raw review prose directly drives mutation, style preference becomes code without accepted liability, accepted finding lacks owner boundary]
+      rationale: The fold turns review pressure into dispositions, not implementation authority.
+    - clause_id: RF-RECEIPT-001
+      trigger_refs: [RF-REVIEW-FINDING, RF-CLEAN-RUN-ACCOUNTING]
+      expected_routes: [RF-REJECT, RF-PROOF-ONLY, RF-MINIMAL-FIX, RF-REFACTOR-KERNEL, RF-BRANCH-RACE, RF-ASK-HUMAN, RF-FOLLOW-UP, RF-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [full RF-v1.3 or RF-v1.3 compact receipt for material folds, source_ref or explicit unknown backend, clean-run reset or count effect when applicable]
+      success_signals: [future seq tune audits can recover the decision episode, PR thread and CAS finding refs are joinable]
+      failure_signals: [accepted liability appears only as terse prose, clean streak changes without a receipt, thread disposition cannot be joined back to a source]
+      rationale: Material folds must remain observable after compaction and session shadowing.
+    - clause_id: RF-KERNEL-001
+      trigger_refs: [RF-REPEATED-OWNER-BOUNDARY]
+      expected_routes: [RF-REFACTOR-KERNEL, RF-BRANCH-RACE, RF-MINIMAL-FIX, RF-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [equivalence class or owner boundary, one-patch-per-comment risk, alternatives considered when choosing local minimal fixes]
+      success_signals: [same-class findings are compressed, minimal-fix exception explains why no kernel is preserved]
+      failure_signals: [repeated same-boundary findings continue as silent local fixes, refactor-kernel route is skipped without evidence]
+      rationale: The skill prevents review pressure from becoming one patch per comment.
+  instrumentation:
+    decision_receipt: required
+    rationale: Emit full RF-v1.3 or the compact receipt floor for material folds, clean-run accounting, blockers, and thread dispositions.
