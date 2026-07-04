@@ -17,15 +17,19 @@ skill_decision_contract:
       exclusions:
         - style preference only
     - trigger_id: TUNE-APPLY-REQUEST
-      description: The user explicitly requests skill-file changes now.
+      description: The user explicitly requests skill-file changes or publication now; commit and push require separate publish intent.
       cue_literals:
         - apply
         - edit
         - patch
         - update the skill
+        - commit
+        - push
+        - publish
       cue_regexes: []
       exclusions:
         - what should change
+        - commit message suggestion only
   routes:
     - route_id: TUNE-NO-ACTION
       description: Evidence is too weak or no decision delta exists.
@@ -83,11 +87,16 @@ skill_decision_contract:
         - complete refine brief
         - static validation
         - behavioral validation query
+        - scoped file boundary
+        - publish authorization, when commit or push is requested
       success_signals:
         - minimal authorized edit
+        - commit/push state reported as authorized, completed, or blocked
       failure_signals:
         - edit without explicit request
-      rationale: Apply only after the evidence and edit boundaries are complete.
+        - commit or push without explicit publish request
+        - push before validation and commit succeed
+      rationale: Apply only after the evidence and edit boundaries are complete; publish only after explicit publish intent and validation.
   instrumentation:
     decision_receipt: optional
     rationale: Emit for material route decisions or repeated proposal terminal states.
