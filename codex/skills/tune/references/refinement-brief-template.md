@@ -25,7 +25,8 @@ Commit/push policy:
 - Apply, edit, patch, or update authorizes local file changes and validation only.
 - Commit only when the user explicitly asks to commit, publish, ship, or save changes to git.
 - Push only when the user explicitly asks to push or publish remotely, and only after the commit succeeds.
-- If publishing is not authorized, report commit/push as blocked: not requested.
+- If publishing is not authorized, report commit/push as `blocked:not-requested`.
+- If publishing is authorized but validation, pre-commit, or worktree checks fail, report the specific blocked state.
 
 Tuning goal:
 - <one-line goal>
@@ -97,8 +98,8 @@ Publishing, apply-with-refine only:
 - Atomic change boundary: <what this commit contains and why it is one coherent change>
 - Scoped files to stage: <files justified by the brief>
 - Unrelated worktree changes: <none | present and left unstaged | blocked because inseparable>
-- Commit command/result: <blocked:not-requested | git commit -m "Tune <skill>: <short gap/fix summary>" -> sha>
-- Push command/result: <blocked:not-requested | blocked:commit-failed | git push result>
+- Commit command/result: <blocked:not-requested | blocked:validation-failed | blocked:pre-commit-failed | blocked:worktree-inseparable | git commit -m "Tune <skill>: <short gap/fix summary>" -> sha>
+- Push command/result: <blocked:not-requested | blocked:validation-failed | blocked:pre-commit-failed | blocked:worktree-inseparable | blocked:commit-failed | git push result>
 - Do not create PRs, merge branches, or clean up branches unless the user separately invokes that workflow.
 
 Privacy / sanitization:

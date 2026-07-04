@@ -219,6 +219,8 @@ Publishing is separate:
 - commit only after validation passes and explicit commit, publish, ship, or save-to-git intent exists;
 - push only after commit succeeds and explicit push or remote-publish intent exists;
 - otherwise report commit/push as `blocked:not-requested`.
+- when publishing was requested but validation, pre-commit, or worktree checks fail,
+  report the specific blocked state instead of collapsing it to `blocked:not-requested`.
 
 If any required gate fails, stop at audit/proposal or report blocked publication.
 

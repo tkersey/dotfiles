@@ -266,6 +266,7 @@ Commit/push policy:
 - Apply/edit/patch authorizes local file changes and validation only.
 - Commit authorization: <none | explicit commit/publish/save-to-git request>
 - Push authorization: <none | explicit push/remote-publish request>
+- Failed validation, pre-commit, or worktree checks must produce a specific blocked publication state.
 
 Tuning goal:
 - $goal
@@ -312,6 +313,6 @@ Publishing, apply-with-refine only:
 - Atomic change boundary: <what this commit contains and why it is one coherent change>
 - Scoped files to stage: <files justified by the brief>
 - Unrelated worktree changes: <none | present and left unstaged | blocked because inseparable>
-- Commit command/result: <blocked:not-requested | git commit -m "Tune $skill: <short gap/fix summary>" -> sha>
-- Push command/result: <blocked:not-requested | blocked:commit-failed | git push result>
+- Commit command/result: <blocked:not-requested | blocked:validation-failed | blocked:pre-commit-failed | blocked:worktree-inseparable | git commit -m "Tune $skill: <short gap/fix summary>" -> sha>
+- Push command/result: <blocked:not-requested | blocked:validation-failed | blocked:pre-commit-failed | blocked:worktree-inseparable | blocked:commit-failed | git push result>
 TUNE_OUT
