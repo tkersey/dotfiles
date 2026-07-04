@@ -18,6 +18,7 @@ protected doctrine IDs
 allowed package
 explicit user authorization
 validation
+evaluation contract
 future empirical evaluation
 ```
 
@@ -39,5 +40,11 @@ A `recommended_for_trial` candidate may be created only under explicit user
 authorization and must retain its trial status until empirical decision episodes
 justify acceptance.
 
-Preserve governing law IDs in the package decision contract without requiring
-the full CBD artifact at runtime.
+The `evaluation_contract` tells `$ms` how the generated skill will be graded,
+updated, or retired after real use. It must include quality criteria, pass/fail
+signals, update triggers, retirement criteria, evaluation evidence, cadence,
+evaluator, decision-record expectations, and a policy that prevents tuning from
+raw mention counts.
+
+Preserve governing law IDs and the evaluation contract in the package decision
+contract without requiring the full CBD artifact at runtime.
