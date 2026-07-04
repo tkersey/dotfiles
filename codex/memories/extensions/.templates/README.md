@@ -7,7 +7,6 @@ Do not place non-evidence templates in a visible directory such as `extensions/_
 To create a real local digest, copy the relevant template into the matching extension's `resources/` directory and rename it with a timestamp prefix:
 
 ```text
-~/.codex/memories/extensions/harness/resources/2026-05-17T18-30-00-harness-candidates.md
 ~/.codex/memories/extensions/learnings/resources/2026-05-17T18-30-00-learnings-digest.md
 ~/.codex/memories/extensions/synesthesia/resources/2026-05-17T18-30-00-synesthesia-signals.md
 ~/.codex/memories/extensions/negative-ledger/resources/2026-05-17T18-30-00-negative-ledger-digest.md

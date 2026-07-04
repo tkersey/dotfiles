@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: false
-interface:
-  display_name: "Tracepact"
-  short_description: "Help with Tracepact tasks"
-  default_prompt: "Use $tracepact for this task."
