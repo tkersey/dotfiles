@@ -63,7 +63,7 @@ For durable, multi-plan, fenced, or resource-sensitive work, use `$st` instead o
 5. Make the smallest owner-correct change for that node.
 6. Run the node verifier or record why it cannot run.
 7. Call `$evidence-fold` on test output, diffs, logs, and artifacts.
-8. Call `$failure-memory` when failure signatures repeat or strategies oscillate.
+8. When failure signatures, review classes, or strategies repeat, update the local attempt history or `.goal/memo.jsonl` before continuing.
 9. Continue only when the fold says `continue`.
 10. Stop when the fold says `done`, `blocked`, `regress`, or `invalid-proof`.
 
