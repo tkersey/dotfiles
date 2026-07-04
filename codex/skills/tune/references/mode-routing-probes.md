@@ -88,9 +88,9 @@ Use $tune on the slides skill and apply the smallest validated fix.
 
 Expected mode: `apply-with-refine`
 
-Expected source: `mixed`: usage evidence plus `worktree` for validation/publishing.
+Expected source: `mixed`: usage evidence plus `worktree` for validation and publication status.
 
-Reason: The user explicitly asks to apply a fix and requires validation. After validation passes, `$tune` should commit and push the atomic change.
+Reason: The user explicitly asks to apply a fix and requires validation. Apply authority permits local edits and validation only; commit and push should be reported as `blocked:not-requested`.
 
 Prompt:
 
@@ -102,7 +102,7 @@ Expected mode: `apply-with-refine`
 
 Expected source: `history` + `worktree`
 
-Reason: The user explicitly asks to patch files and validate. After validation passes, `$tune` should commit and push the atomic change.
+Reason: The user explicitly asks to patch files and validate. Patch authority permits local edits and validation only; commit and push should be reported as `blocked:not-requested`.
 
 Prompt:
 
@@ -180,4 +180,4 @@ Open a PR for these skill changes.
 
 Expected owner: `$ship`
 
-Reason: PR creation is not `$tune`'s responsibility. `$tune` may commit and push validated apply-mode changes, but `$ship` owns PR creation.
+Reason: PR creation is not `$tune`'s responsibility. `$tune` may commit and push only when explicit publish intent exists and validation passes; `$ship` owns PR creation.
