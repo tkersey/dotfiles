@@ -44,6 +44,64 @@ codebase_skill_handoff:
   validation:
   - quick_validate
   - decision-contract lint
+  evaluation_contract:
+    evaluation_cadence: First after 10 material decision episodes or 30 days, then
+      after any doctrine refresh.
+    evaluator: $seq skill-decision-audit -> $tune -> $refine, with changed laws returned
+      to $codebase-doctrine refresh.
+    decision_record: Record route decisions, pass/fail signals, evidence refs, and whether
+      the skill changed the selected authority or proof path.
+    update_policy: Update the skill only from evidence-bearing decision episodes, changed
+      doctrine, or repeated failure signals; never from raw mention counts.
+    evaluation_evidence:
+    - seq skill-decision-audit episodes
+    - accepted or refuted route decisions
+    - refreshed CBD/CBDD proof and authority changes
+    quality_criteria:
+    - criterion_id: EVAL-OWNER-ROUTING
+      question: Did the skill route publication changes to Store.commit rather than
+        reader-side tolerance or shadow owners?
+      pass_signals:
+      - selected Store.commit or rejected shadow owner route under matching applicability
+      fail_signals:
+      - accepted reader-side tolerance despite NEG-READER-TOLERANCE applicability
+      evidence_refs:
+      - E-CODE
+      - E-HISTORY
+    - criterion_id: EVAL-PROOF-BAR
+      question: Did the skill require a current law-level proof receipt before recommending
+        change closure?
+      pass_signals:
+      - current visibility proof receipt requested or verified
+      fail_signals:
+      - closure allowed from static reasoning without current proof
+      evidence_refs:
+      - E-TEST
+      - E-CI
+    update_triggers:
+    - trigger_id: UPDATE-AUTHORITY-DRIFT
+      condition: New doctrine or empirical episodes show a different publication authority
+        or repeated owner-routing mistakes.
+      required_update: Run $codebase-doctrine refresh, then tune/refine the generated
+        skill against the accepted delta.
+      evidence_refs:
+      - E-CODE
+      - E-HISTORY
+    - trigger_id: UPDATE-PROOF-GAP
+      condition: Skill use repeatedly misses required proof surfaces or accepts stale
+        receipts.
+      required_update: Add proof-surface checks to the skill contract and validate with
+        current receipts.
+      evidence_refs:
+      - E-TEST
+      - E-CI
+    retirement_criteria:
+    - criterion_id: RETIRE-TO-ENFORCEMENT
+      condition: The contextual decision becomes fully enforced by code, test, static
+        tooling, or CI and no longer needs skill judgment.
+      evidence_refs:
+      - E-CODE
+      - E-CI
   future_evaluation:
   - seq skill-decision-audit after 30 days
   - tune matched decision episodes

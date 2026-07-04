@@ -80,6 +80,28 @@ class PacketAndHandoffTests(unittest.TestCase):
         )
         self.assertTrue(any("authorized:not-yes" in item for item in errors))
 
+    def test_handoff_rejects_missing_evaluation_contract(self) -> None:
+        handoff = self.load("codebase-skill-handoff.example.yaml")
+        del handoff["codebase_skill_handoff"]["evaluation_contract"]
+        errors, _warnings = handoff_gate.validate_handoff(
+            handoff,
+            self.load("codebase-doctrine.example.yaml"),
+        )
+        self.assertTrue(any("evaluation_contract:must-be-object" in item for item in errors))
+
+    def test_handoff_rejects_unknown_evaluation_evidence(self) -> None:
+        handoff = self.load("codebase-skill-handoff.example.yaml")
+        handoff["codebase_skill_handoff"]["evaluation_contract"]["quality_criteria"][0][
+            "evidence_refs"
+        ] = ["E-MISSING"]
+        errors, _warnings = handoff_gate.validate_handoff(
+            handoff,
+            self.load("codebase-doctrine.example.yaml"),
+        )
+        self.assertTrue(
+            any("evaluation_contract.quality_criteria[0].evidence_refs:unknown:E-MISSING" in item for item in errors)
+        )
+
     def test_worker_suite(self) -> None:
         errors, warnings, counts = worker_suite_check.validate_suite(CODEX_ROOT / "agents")
         self.assertEqual(errors, [])

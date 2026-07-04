@@ -30,6 +30,7 @@
         "allowed_package",
         "explicit_user_authorization",
         "validation",
+        "evaluation_contract",
         "future_evaluation"
       ],
       "type": "object"
