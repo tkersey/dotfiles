@@ -30,6 +30,10 @@ interface:
     valid too", "the owner fix is", "owner-correct fix is", "clean streak
     stays at 0", or "streak remains 0" also require a fresh RF-v1.3
     compact/full receipt before describing the repair path or patching it.
+    Grouped CAS prose like "CAS is still finding", "same owner-boundary
+    refactor", "same owner boundary", or "same-class finding" also requires a
+    fresh RF-v1.3 compact/full receipt before describing a refactor, replacement
+    strategy, or next patch.
     Earlier RF receipts do not cover later CAS attempts, follow-up finding
     batches, dirty clean-streak attempts, or reopened PR thread batches; emit a
     fresh RF-v1.3 compact/full receipt for each new source batch before patching
