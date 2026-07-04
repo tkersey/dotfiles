@@ -34,10 +34,13 @@ class ProofPatchContractTests(unittest.TestCase):
         fields = [
             "## Review closure",
             "- CAS review source:",
+            "- CAS finding IDs:",
             "- review-fold disposition:",
+            "- review-fold receipt version:",
             "- resolution fold:",
             "- accepted liabilities:",
             "- no-code dispositions:",
+            "- actuation escalation receipt:",
             "- clean normalized CAS runs:",
             "- cached CAS receipts counted as fresh: no",
         ]
@@ -76,6 +79,9 @@ class ProofPatchContractTests(unittest.TestCase):
         required_phrases = [
             "loop governance receipts",
             "review closure",
+            "CAS finding IDs",
+            "RF-v1.3",
+            "AER-v1",
             "resolution fold",
             "parallelism",
             "direct-action fused exemption",

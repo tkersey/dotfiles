@@ -6,8 +6,10 @@ interface:
   default_prompt: >-
     Use $proof-patch before final /goal completion or PR handoff. Bind to current
     artifact state, summarize changed paths, loop governance receipts, review
-    closure including resolution fold state, parallelism, validation, review
-    dispositions, anti-gaming checks, residual risk, and human review focus.
+    closure including CAS finding IDs, RF-v1.3 review-fold receipt version,
+    AER-v1 actuation escalation receipt state, and resolution fold state,
+    parallelism, validation, review dispositions, anti-gaming checks, residual
+    risk, and human review focus.
     State direct-action fused exemption when ALSR/HYL is absent, never count
     cached CAS receipts as fresh clean runs, and do not claim completion unless
     ATCG-v1 permits it. Escalate to $ship only for publication, PR updates,

@@ -1,0 +1,32 @@
+{
+  "actuation_escalation_receipt": {
+    "version": "AER-v1",
+    "run_id": "ACT-example-001",
+    "owner_boundary": "codex/skills/review-fold",
+    "repeated_finding_class": "same owner boundary and proof surface",
+    "accepted_liabilities": [
+      {
+        "cas_finding_id": "cas-finding:attempt-001:0001",
+        "finding_fingerprint": "sha256:cross-attempt-example",
+        "review_fold_ref": "RF-v1.3:example:finding-1",
+        "liability": "invariant-gap"
+      }
+    ],
+    "prior_resolution_mode": "minimal-fix",
+    "next_resolution_mode": "refactor-kernel",
+    "escalation_trigger": "Repeated accepted findings share one owner boundary.",
+    "alternatives_considered": [
+      "minimal-fix",
+      "branch-race"
+    ],
+    "selected_route": "refactor-kernel",
+    "verifier": [
+      "uv run python -m unittest discover codex/skills/review-fold/tests"
+    ],
+    "current_artifact_scope": {
+      "branch": "main",
+      "head_sha": "head456",
+      "target_fingerprint": "diff:example"
+    }
+  }
+}

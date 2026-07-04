@@ -275,6 +275,64 @@ All review backends should produce one caller-facing surface:
 }
 ```
 
+## Per-finding identity projection
+
+When a completed review emits findings, CAS should expose a stable
+per-finding evidence projection so workflow receipts can join later decisions,
+patch epochs, proof epochs, and clean-review attempts back to the exact review
+row.
+
+CAS owns the identity fields as evidence. It does not decide whether a finding
+is accepted, rejected, proof-only, minimal-fix, refactor-kernel, or mutation
+authority.
+
+Each normalized finding row should carry:
+
+```json
+{
+  "findingId": "cas-finding:<reviewAttemptId>:<ordinal-or-source-id>",
+  "findingFingerprint": "best-effort-cross-attempt-hash",
+  "reviewAttemptId": "cas-review-attempt-id",
+  "lane": "standard|footgun-finder|invariant-ace|complexity-mitigator|other",
+  "laneRole": "standard|auxiliary|unknown",
+  "contributesToStandardStreak": false,
+  "reviewThreadId": "thread-id",
+  "reviewTurnId": "turn-id",
+  "baseSha": "base",
+  "headSha": "head",
+  "targetFingerprint": "diff-fingerprint",
+  "titleHash": "sha256:title",
+  "bodyHash": "sha256:body",
+  "normalizedLocation": {
+    "path": "src/file.ext",
+    "line": 1,
+    "side": "RIGHT|LEFT|unknown"
+  },
+  "severity": "info|low|medium|high|unknown",
+  "verdictStatus": "findings"
+}
+```
+
+Identity semantics:
+
+```text
+findingId = exact emitted finding row in one CAS review attempt
+findingFingerprint = best-effort same issue across attempts
+reviewAttemptId = stable attempt row or compatibility projection ID
+laneRole = standard only when the attempt is the ordinary standard lane
+contributesToStandardStreak = true only for normalized clean standard attempts, not finding rows
+```
+
+If native CAS output cannot provide a source finding ID, compatibility
+normalization may synthesize `findingId` from review attempt identity, tuple,
+lane, normalized location, title/body hashes, and ordinal. It must still mark
+cross-attempt matching as best-effort through `findingFingerprint`.
+
+Downstream aliases may convert these fields to snake_case (`finding_id`,
+`finding_fingerprint`, `review_attempt_id`, and so on), but CAS should preserve
+the tuple and thread fields needed by `$review-fold`, `$actuating`, and `$seq`
+to cite evidence without re-parsing review prose.
+
 `run` and `start --wait` output is tuple-bound review evidence only when its emitted
 `reviewVerdict` has `tupleVerdictExists=true`, a terminal tuple status
 (`clean`, `findings`, or `account_resource_exhausted`), and matching
@@ -406,6 +464,7 @@ CAS Review:
 - Do not duplicate a review when an active tuple lock points to an existing `reviewThreadId`.
 - Do not manually list and `jq` review-session records when latest-session status is enough; use `cas review_session status --latest --json`, then verify tuple fields before acting.
 - Do not treat completed findings as transport failure.
+- Do not treat per-finding identity as acceptance, rejection, repair mode, clean-streak authority, or mutation authority.
 - Do not treat `usageLimitExceeded` as reviewer output or transport failure.
 - Do not rely on persistent lane continuity for repeated-review policy until first-review creation smoke is current.
 - `start --wait` evidence is workflow input only after it is represented as tuple-bound review evidence; otherwise import, normalize, or recover first.

@@ -47,6 +47,7 @@ def main() -> int:
         "assets/add-v1.handoff.example.json",
         "assets/add-v1.shipping-not-requested.example.json",
         "assets/add-v1.blocked.example.json",
+        "assets/aer-v1.example.json",
         "assets/atcg-v1.complete.example.json",
         "assets/terminal-context.proof-only.example.json",
         "assets/terminal-context.regression.example.json",
@@ -63,6 +64,7 @@ def main() -> int:
         run_test(ROOT / "tests/test_actuation_authority_gate.py"),
         run_test(ROOT / "tests/test_actuation_delivery_gate.py"),
         run_test(ROOT / "tests/test_actuation_terminal_gate.py"),
+        run_test(ROOT / "tests/test_aer_contract.py"),
     ]
     ok = all(row["returncode"] == 0 for row in tests)
     print(json.dumps({

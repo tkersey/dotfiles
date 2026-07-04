@@ -12,4 +12,11 @@ interface:
     finding is never mutation authority; the resolution fold must accept any
     code-change candidate before implementation. If fresh or exhaustive workflow
     review is required and no CAS result is present, route to $cas review first.
-    Mark normalized CAS clean runs when closing review.
+    Return RF-v1.3 when possible, preserving CAS source refs such as
+    cas_finding_id, finding_fingerprint, review_attempt_id, lane_role,
+    head_sha, and target_fingerprint. For valid or contested findings, name the
+    law_family, falsified_law, owner_boundary, model_state, repair_level,
+    alternatives_considered, and evidence_refs. Mark normalized CAS clean runs
+    when closing review. If one_patch_per_comment_risk is high, route to
+    refactor-kernel, branch-race, remediation-plan, or blocked unless an
+    explicit owner-boundary exception is recorded.

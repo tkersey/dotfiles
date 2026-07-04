@@ -1,0 +1,41 @@
+{
+  "reviewVerdict": {
+    "status": "findings",
+    "reviewAttemptPhase": "normalized_verdict",
+    "reviewAttemptExists": true,
+    "tupleVerdictExists": true,
+    "backendClass": "cas-review-session",
+    "clean": false,
+    "findingCount": 1,
+    "failureCode": null,
+    "baseSha": "base123",
+    "headSha": "head456",
+    "targetFingerprint": "diff:example",
+    "reviewThreadId": "thread-abc",
+    "reviewTurnId": "turn-def",
+    "findings": [
+      {
+        "findingId": "cas-finding:attempt-001:0001",
+        "findingFingerprint": "sha256:cross-attempt-example",
+        "reviewAttemptId": "attempt-001",
+        "lane": "standard",
+        "laneRole": "standard",
+        "contributesToStandardStreak": false,
+        "reviewThreadId": "thread-abc",
+        "reviewTurnId": "turn-def",
+        "baseSha": "base123",
+        "headSha": "head456",
+        "targetFingerprint": "diff:example",
+        "titleHash": "sha256:title",
+        "bodyHash": "sha256:body",
+        "normalizedLocation": {
+          "path": "codex/skills/example/SKILL.md",
+          "line": 42,
+          "side": "RIGHT"
+        },
+        "severity": "medium",
+        "verdictStatus": "findings"
+      }
+    ]
+  }
+}
