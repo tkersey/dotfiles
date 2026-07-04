@@ -140,36 +140,73 @@ A material action without a goal-focus frame is equivalent to `mutation_without_
 ## `$recursion-scheme-planner` responsibility
 
 The planner should emit a subgoal ladder when the parent goal has staged structure.
+The ladder is an extension inside the required SP-v1 Scheme Plan shape; it must
+not replace the `version`, `source`, `selected`, `work_shape`, `loops`, or
+`handoff` fields that downstream consumers read.
 
 ```yaml
 scheme_plan:
-  parent_goal:
-    objective:
+  version: SP-v1
+  source:
+    kind: direct-goal|review
+    ref: parent_goal_id
     artifact_scope:
-    terminal_gate: ATCG-v1
-  subgoal_ladder:
-    enabled: yes|no
+    authority:
+      terminal_gate: ATCG-v1
+  selected:
+    primary_scheme: hylo
+    composition: []
     reason:
-    subgoals:
-      - id:
-        name:
-        scheme:
-        depends_on: []
-        objective:
-        seed:
-        producer:
-        reducer:
-        output:
-        verifier:
-        abstraction_checkpoint:
-          required: yes|no
-          question:
-          local_fix_allowed_when: []
-        parallelism:
-          mode: none|review-class-fanout|branch-race|proof-fanout|patch-fanout
-          fan_in:
-        stop:
-  terminal_gate: ATCG-v1
+  work_shape:
+    structure: line|dag|review-classes
+    decomposition_basis:
+      - review-class
+      - owner-boundary
+      - proof-surface
+  loops:
+    - id:
+      scheme: hylo
+      seed:
+        parent_goal:
+          objective:
+          artifact_scope:
+          terminal_gate: ATCG-v1
+        subgoal_ladder:
+          enabled: yes|no
+          reason:
+          subgoals:
+            - id:
+              name:
+              scheme:
+              depends_on: []
+              objective:
+              seed:
+              producer:
+              reducer:
+              output:
+              verifier:
+              abstraction_checkpoint:
+                required: yes|no
+                question:
+                local_fix_allowed_when: []
+              parallelism:
+                mode: none|review-class-fanout|branch-race|proof-fanout|patch-fanout
+                fan_in:
+              stop:
+      producer: goal-focus-frame-unfold
+      reducer: parent-state-fold
+      memory:
+      proof:
+      stop:
+      parallelism:
+        mode: none|review-class-fanout|branch-race|proof-fanout|patch-fanout
+        safe_frontier: []
+        forbidden_frontier: []
+  handoff:
+    next_owner: $agent-loop-schemes
+    mode: compile-goal-focus-ladder
+    required_checks: []
+    blocked_on: []
 ```
 
 A Scheme Plan is not a list of implementation steps. It is a topology for producing goal-focus frames.
