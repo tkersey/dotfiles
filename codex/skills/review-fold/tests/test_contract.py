@@ -125,6 +125,31 @@ class ReviewFoldContractTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, NORMALIZED)
 
+    def test_followup_cas_batches_need_fresh_receipts(self) -> None:
+        skill_required = [
+            "Receipt scope is per review result, not per closeout.",
+            "does not cover later CAS attempts",
+            "follow-up finding batches",
+            "dirty clean-streak attempts",
+            "terminal CAS list",
+            "compact follow-up patch",
+            "Treat each new CAS attempt result, follow-up finding batch, reopened thread batch, or dirty clean-streak attempt as a new receipt scope",
+            "Do not let one RF receipt for an earlier CAS batch stand in for later follow-up findings",
+        ]
+        for token in skill_required:
+            with self.subTest(token=token):
+                self.assertIn(token, SKILL)
+
+        prompt_required = [
+            "Earlier RF receipts do not cover later CAS attempts",
+            "follow-up finding batches",
+            "dirty clean-streak attempts",
+            "fresh RF-v1.3 compact/full receipt for each new source batch",
+        ]
+        for token in prompt_required:
+            with self.subTest(token=token):
+                self.assertIn(token, NORMALIZED)
+
     def test_decision_contract_exposes_review_fold_routes_for_seq_tune(self) -> None:
         required = [
             "contract_version: SKDC-v1",
@@ -139,6 +164,7 @@ class ReviewFoldContractTests(unittest.TestCase):
             "RF-REFACTOR-KERNEL",
             "decision_receipt: required",
             "straightforward liability shortcut leaves no receipt",
+            "follow-up CAS findings reuse an earlier receipt",
         ]
         for token in required:
             with self.subTest(token=token):
