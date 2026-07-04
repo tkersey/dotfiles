@@ -85,7 +85,7 @@ loop governance: ALSR-v1, HYL-v1, HSR-v1, or explicit fused/$st exemption
 evidence-fold verdict and proof commands
 proof-patch presence/currentness
 CAS requirement, tuple, freshness, and standard clean-run count
-auxiliary CAS review-lane folded/blocker state when selected
+workflow-owned review_profile auxiliary coverage and folded/blocker state
 ADD-v1 delivery decision
 ship result receipt when publication is required
 side-effect boundary evidence
@@ -119,17 +119,19 @@ The preferred reducer fields are:
 cas_review.standard_clean_runs_required
 cas_review.standard_clean_runs_count
 final_report_fields.standard_clean_cas_runs
-cas_review.required_auxiliary_lanes
-cas_review.auxiliary_lanes.<lane>.folded
-cas_review.auxiliary_lanes.<lane>.unresolved_blockers
-cas_review.auxiliary_lanes.<lane>.rerun_required
-cas_review.auxiliary_lanes.<lane>.head_sha
-cas_review.auxiliary_lanes.<lane>.target_fingerprint
+review_profile.standard
+review_profile.auxiliary_review_lanes.<lane>.state
+review_profile.auxiliary_review_lanes.<lane>.reason
+review_profile.auxiliary_review_lanes.<lane>.evidence_ref
+review_profile.auxiliary_review_lanes.<lane>.head_sha
+review_profile.auxiliary_review_lanes.<lane>.target_fingerprint
 ```
 
 Compatibility fields may still be named `clean_runs_required`,
 `clean_runs_count`, or `normalized_cas_clean_runs`, but their meaning is
 standard-only unless a context provides explicit `standard_clean_*` fields.
+Legacy auxiliary fields under `cas_review` remain accepted as compatibility
+evidence, but `$cas` does not own auxiliary lane selection policy.
 
 ## Common outcomes
 

@@ -36,7 +36,7 @@ resolution fold = resolution plan compiler
 $goal-grind = implementation engine for accepted liabilities
 ```
 
-For `review-closeout` and exhaustive review, final completion requires three consecutive clean normalized **standard** `$cas` review attempts after implementation. `$review-fold` decides whether each review lane is normalized clean, blocking, or reset-worthy. Auxiliary CAS lanes do not increment or interrupt the standard clean streak.
+For `review-closeout` and exhaustive review, final completion requires three consecutive clean normalized **standard** `$cas` review attempts after implementation. `$review-fold` decides whether each review lane is normalized clean, blocking, or reset-worthy. `$actuating` / `$goal-actuating` own the `review_profile` that records which auxiliary lenses were selected or explicitly not required. Auxiliary CAS lanes do not increment or interrupt the standard clean streak.
 
 ## Review source rule
 
@@ -57,7 +57,7 @@ invariant-ace        auxiliary lens for illegal states, owner/source-of-truth, t
 complexity-mitigator auxiliary lens for comprehension stalls, boolean soup, mixed responsibilities, hidden state, dominated branches, incidental complexity, and one-patch-per-comment pressure
 ```
 
-Only `standard` may set `contributes_to_standard_streak: yes`. Auxiliary lanes are review evidence; they may create blockers or accepted liabilities, but they do not count as standard clean reviews and do not interrupt standard-review consecutiveness.
+Only `standard` may set `contributes_to_standard_streak: yes`. Auxiliary lanes are review evidence; they may create blockers or accepted liabilities, but they do not count as standard clean reviews and do not interrupt standard-review consecutiveness. `$cas` transports tuple-bound evidence; it does not own the auxiliary lane selection policy.
 
 ## Minimal review law
 
@@ -287,7 +287,7 @@ Auxiliary CAS review lanes may still block closeout. They do not increment the s
 
 1. Bind reviews to the original goal and current diff.
 2. If fresh/exhaustive workflow code review is required and no CAS standard review result is present, stop and request `$cas` standard review.
-3. If the review profile selected auxiliary lanes, require their CAS-backed results before final review folding unless they are explicitly marked not-required.
+3. If the workflow `review_profile` selected auxiliary lanes, require their CAS-backed results before final review folding unless they are explicitly marked not-required with a reason.
 4. Classify each finding before any implementation.
 5. Separate the claim, observed fact, and suggested repair when the review text includes all three.
 6. Reject, block, ask, or follow up before code whenever validity, liability, or scope is not established.
@@ -338,6 +338,7 @@ no changes
 - Do not miss the refactor when many comments share one owner boundary.
 - Do not replace a requested or required CAS review with non-CAS critique.
 - Do not count auxiliary CAS lanes as standard clean reviews.
+- Do not store auxiliary lane selection policy only in `$cas` transport fields.
 - Do not claim review closure before three clean normalized standard CAS attempts when `review-closeout` or exhaustive review requires them.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.
 - `$review-fold` owns active review adjudication; do not route findings through retired skill paths.

@@ -139,16 +139,21 @@ skill_decision_contract:
       prohibited_routes: []
       required_artifacts:
         - review profile with standard plus selected auxiliary lanes
+        - explicit not-required reason for every unselected auxiliary lane
         - folded auxiliary lane outcomes for footgun-finder, invariant-ace, or complexity-mitigator when selected
         - standard-only clean-run counter
-        - ATCG context fields for standard_clean_runs_count and selected auxiliary lane blocker/current-artifact state
+        - ATCG context fields for standard_clean_runs_count and workflow-owned review_profile blocker/current-artifact state
       success_signals:
         - footgun-finder, invariant-ace, and complexity-mitigator are available as auxiliary CAS review lanes
+        - auxiliary lane selection and non-selection are recorded by $actuating/$goal-actuating, not inferred from $cas transport state
         - auxiliary lanes may block closeout but do not increment or interrupt the standard clean streak
         - artifact-changing fixes from any lane reset the standard clean streak
+        - terminal closure rejects missing or partial review_profile coverage when workflow review is required
         - terminal closure rejects missing, blocked, rerun-required, or not-folded selected auxiliary lanes
         - terminal closure rejects selected auxiliary lane receipts that are stale against current head or diff
       failure_signals:
+        - auxiliary lane policy is stored only in cas_review transport fields
+        - terminal closure treats absent review_profile coverage as clean or not-required
         - auxiliary lane output bypasses review-fold
         - auxiliary lane is treated as mutation authority
         - standard clean streak includes non-standard attempts
