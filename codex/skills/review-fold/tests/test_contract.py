@@ -167,12 +167,17 @@ class ReviewFoldContractTests(unittest.TestCase):
             "path, resolution node, or next mutation",
             "Treat single-finding CAS prose like `CAS attempt found a P1/P2`, `CAS found one remaining valid P1/P2`, `the finding is valid`, `this finding is valid too`, `the owner fix is`, `owner-correct fix is`, `clean streak stays at 0`, or `streak remains 0` as receipt-triggering folds",
             "Grouped or same-boundary CAS prose has the same requirement.",
+            "CAS found ... more",
             "CAS is still finding",
+            "CAS continues to find",
+            "same ... boundary",
             "same owner-boundary refactor",
             "same owner boundary",
             "same-class finding",
-            "before describing the refactor, replacement strategy, or next patch",
-            "Treat grouped CAS prose like `CAS is still finding`, `same owner-boundary refactor`, or `same-class finding` as a receipt-triggering fold",
+            "Treat the pattern class, not only the exact examples, as receipt-triggering:",
+            "describing the refactor",
+            "replacement strategy, or next patch",
+            "Treat grouped CAS prose like `CAS found ... more`, `CAS is still finding`, `CAS continues to find`, `same ... boundary`, `same owner-boundary refactor`, or `same-class finding` as a receipt-triggering fold",
         ]
         for token in skill_required:
             with self.subTest(token=token):
@@ -188,25 +193,29 @@ class ReviewFoldContractTests(unittest.TestCase):
             "clean streak stays at 0",
             "streak remains 0",
             "require a fresh RF-v1.3 compact/full receipt before describing the repair path or patching it",
-            "Grouped CAS prose like",
+            "Grouped CAS prose patterns like",
+            "CAS found ... more",
+            "CAS continues to find",
+            "same ... boundary",
             "same owner-boundary refactor",
             "same owner boundary",
             "same-class finding",
-            "requires a fresh RF-v1.3 compact/full receipt before describing a refactor, replacement strategy, or next patch",
+            "require a fresh RF-v1.3 compact/full receipt before describing a refactor, replacement strategy, or next patch",
         ]
         for token in prompt_required:
             with self.subTest(token=token):
                 self.assertIn(token, NORMALIZED)
 
         contract_required = [
-            "review-fold-v1.4.6-cas-prose-receipt-patterns",
+            "review-fold-v1.4.7-cas-grouped-prose-patterns",
             "fresh receipt before single-finding CAS repair prose",
             "single fresh or remaining severity acceptance has a joinable receipt before repair planning",
             "grouped same-boundary CAS acceptance has a receipt before refactor planning",
             "CAS attempt found a P1 or P2 without a receipt",
             "CAS found one remaining valid P1 or P2 without a receipt",
+            "CAS found more same-boundary findings without a receipt",
             "CAS is still finding prose precedes receipt",
-            "same owner-boundary refactor prose precedes receipt",
+            "same boundary refactor prose precedes receipt",
             "owner-correct fix prose precedes receipt",
             "finding is valid prose precedes receipt",
             "streak remains zero without a receipt",
