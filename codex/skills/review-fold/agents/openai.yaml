@@ -41,6 +41,10 @@ interface:
     are both P1/P2", or "accepted liabilities" also require a fresh RF-v1.3
     compact/full receipt before describing the repair path or patching
     review-thread findings.
+    Thread-disposition prose patterns like "targeted threads report resolved",
+    "PR thread sweep is clean", "no unresolved threads", "unresolved thread
+    count is 0", or "no unresolved threads across both pages" also require a
+    fresh RF-v1.3 compact/full receipt before advancing review closeout.
     Grouped CAS prose patterns like "CAS found ... more", "CAS found a larger
     class", "CAS found a broader class", "CAS is still finding", "CAS
     continues to find", "CAS has narrowed this to one remaining class", "one
