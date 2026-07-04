@@ -159,7 +159,7 @@ At least one must also hold:
 - it is an unusually high-impact failure shield, repo map, verification path, or stop rule;
 - it proves a repeatable procedure suitable for a memory-root skill.
 
-Do not admit every `do_more` row, raw chronology, weak `review_later` candidates, failed-hypothesis exclusions better owned by `negative-ledger`, harness corrections, or synesthetic mappings.
+Do not admit every `do_more` row, raw chronology, weak `review_later` candidates, failed-hypothesis exclusions better owned by `negative-ledger`, operating-correction events better handled as standing policy, or synesthetic mappings.
 
 ## Learning Admission Payload
 

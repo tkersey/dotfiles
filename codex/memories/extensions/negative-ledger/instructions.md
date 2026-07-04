@@ -94,7 +94,7 @@ Compiled negative memory can guide where to look, but a normal runtime agent sho
 
 ## Cross-Extension Ownership
 
-- general operating guardrail -> harness;
+- general operating guardrail -> standing policy or native memory, not negative-ledger;
 - broad learning without failed-hypothesis semantics -> learnings;
 - sensory vocabulary -> synesthesia;
 - witnessed route state, applicability, exclusion, reopening -> negative-ledger.

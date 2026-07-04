@@ -17,7 +17,6 @@ Future or optional stores:
 
 ```text
 .ledger/synesthesia/events.jsonl
-.ledger/harness/events.jsonl
 ```
 
 Legacy stores:
