@@ -36,7 +36,8 @@ interface:
     path or patching it.
     Grouped CAS prose patterns like "CAS found ... more", "CAS found a larger
     class", "CAS found a broader class", "CAS is still finding", "CAS
-    continues to find", "same ... boundary", "same owner-boundary refactor",
+    continues to find", "CAS has narrowed this to one remaining class", "one
+    remaining class", "same ... boundary", "same owner-boundary refactor",
     "same owner boundary", or "same-class finding" also require a fresh
     RF-v1.3 compact/full receipt before describing a refactor, replacement
     strategy, or next patch.
