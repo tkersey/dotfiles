@@ -109,11 +109,12 @@ complexity-mitigator
 Rules:
 
 - `standard` is required whenever workflow review is required or any auxiliary lane is selected.
-- Auxiliary lanes are selected before review from the diff surface, accepted proof bar, user request, or prior review class.
+- Auxiliary lanes are selected before review from the diff surface, accepted proof bar, user request, or prior review class, and the decision lives in the workflow-owned `review_profile`.
 - Auxiliary lanes are real CAS review evidence, but they do not increment or interrupt the standard clean-review streak.
 - Auxiliary findings must be folded through `$review-fold` and may block closeout or become accepted liabilities.
 - Do not require unsupported `$cas` commands to produce semantic footgun/invariant/complexity lane labels. CAS transports and tuple-binds review evidence; the workflow owns auxiliary lens selection, folding, and blocker state.
 - A selected auxiliary lane must carry current `head_sha` and `target_fingerprint` evidence before ATCG may complete.
+- When workflow review is required, `review_profile` must explicitly account for `footgun-finder`, `invariant-ace`, and `complexity-mitigator` as selected/folded evidence or `not-required` with a reason; absence is unknown coverage, not clean review.
 - A code change from any lane resets the standard clean-review streak to zero.
 - Read-only or classification-only auxiliary lane results do not reset the standard streak unless they change artifact scope or proof bar.
 - Do not rerun auxiliary lanes on every standard clean attempt unless their surface was touched, their prior result was blocked/validate-first, the proof bar changed, or a standard review exposes a new class owned by that lens.
@@ -220,7 +221,7 @@ Explicit review mode names carry the mutation rule:
 - `review-closeout`: classify findings, implement only accepted code-change liabilities, prove closure, and stop at ATCG or `$ship` handoff.
 
 ```text
-CAS review profile selection
+workflow review_profile selection
 -> $cas standard review
 -> optional auxiliary review lenses: footgun-finder | invariant-ace | complexity-mitigator
 -> $review-fold
@@ -270,6 +271,7 @@ verification regresses
 proof is stale or not bound to the current artifact
 public tracker side effect would be needed without explicit intent
 review is required but $cas standard review is unavailable or not run
+workflow review is required but review_profile is missing, partial, or lacks explicit not-required reasons
 required auxiliary CAS review lane is unavailable, blocked, or not folded
 three clean normalized standard $cas review attempts are required but cannot be completed
 ALSR/HYL is required but missing or stale
@@ -289,7 +291,7 @@ Goal Actuation:
 - mode / persistence:
 - review profile:
   - standard CAS review: required|not-required, current verdict:
-  - auxiliary lanes: footgun-finder|invariant-ace|complexity-mitigator|none
+  - auxiliary lanes: footgun-finder|invariant-ace|complexity-mitigator each not-required|clean|findings-folded|blocked|rerun-required
   - auxiliary blockers:
 - parallelism:
   - mode:

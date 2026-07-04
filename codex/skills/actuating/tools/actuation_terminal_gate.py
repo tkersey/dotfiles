@@ -363,9 +363,55 @@ def required_auxiliary_lanes_for(cas: dict[str, Any], records: dict[str, dict[st
     return required
 
 
-def standard_cas_required_for(cas: dict[str, Any]) -> bool:
+def review_profile_for(context: dict[str, Any]) -> dict[str, Any]:
+    profile = object_from(context.get("review_profile"))
+    if profile:
+        return profile
+    return object_from(object_from(context.get("loop_governance")).get("review_profile"))
+
+
+def review_profile_lane_records_for(profile: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    lanes = profile.get("auxiliary_review_lanes", profile.get("auxiliary_lanes", []))
+    records: dict[str, dict[str, Any]] = {}
+    if isinstance(lanes, dict):
+        for lane, value in lanes.items():
+            if lane not in AUXILIARY_CAS_LANES:
+                continue
+            if isinstance(value, dict):
+                record = dict(value)
+            else:
+                record = {"state": value}
+            record.setdefault("lane", lane)
+            records[lane] = record
+        return records
+    if isinstance(lanes, list):
+        for value in lanes:
+            record = {"lane": value, "state": "clean"} if isinstance(value, str) else object_from(value)
+            lane = record.get("lane")
+            if lane in AUXILIARY_CAS_LANES:
+                records[lane] = record
+    return records
+
+
+def review_profile_selects_auxiliary_lane(profile: dict[str, Any]) -> bool:
+    for record in review_profile_lane_records_for(profile).values():
+        state = str(record.get("state", record.get("status", ""))).lower()
+        if state and state != "not-required":
+            return True
+        if as_yes(record.get("selected")) or as_yes(record.get("required")):
+            return True
+    return False
+
+
+def standard_cas_required_for(cas: dict[str, Any], profile: dict[str, Any] | None = None) -> bool:
     records = auxiliary_lane_records_for(cas)
-    return as_yes(cas.get("required")) or bool(required_auxiliary_lanes_for(cas, records))
+    workflow_profile = profile or {}
+    return (
+        as_yes(cas.get("required"))
+        or bool(required_auxiliary_lanes_for(cas, records))
+        or str(workflow_profile.get("standard", "")).lower() == "required"
+        or review_profile_selects_auxiliary_lane(workflow_profile)
+    )
 
 
 def lane_binding_value(record: dict[str, Any], key: str) -> Any:
@@ -405,13 +451,68 @@ def auxiliary_lane_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) ->
     return reasons
 
 
+def review_profile_reasons_for(profile: dict[str, Any], artifact: dict[str, Any], standard_required: bool) -> list[str]:
+    if not standard_required and not profile:
+        return []
+    reasons: list[str] = []
+    if standard_required and not profile:
+        return ["review_profile:missing"]
+
+    standard_state = str(profile.get("standard", "")).lower()
+    if standard_required and standard_state != "required":
+        reasons.append("review_profile.standard:missing-required")
+
+    records = review_profile_lane_records_for(profile)
+    for lane in sorted(AUXILIARY_CAS_LANES):
+        record = records.get(lane)
+        prefix = f"review_profile.auxiliary_review_lanes.{lane}"
+        if not record:
+            reasons.append(f"{prefix}:missing")
+            continue
+        state = str(record.get("state", record.get("status", ""))).lower()
+        if not state:
+            reasons.append(f"{prefix}.state:missing")
+            continue
+        if state not in {"not-required", "clean", "findings-folded", "blocked", "rerun-required"}:
+            reasons.append(f"{prefix}.state:invalid")
+            continue
+        if state == "not-required":
+            reason = record.get("reason")
+            if not isinstance(reason, str) or not reason.strip():
+                reasons.append(f"{prefix}.reason:missing")
+            continue
+        if state == "blocked":
+            reasons.append(f"{prefix}:blocked")
+            continue
+        if state == "rerun-required":
+            reasons.append(f"{prefix}:rerun-required")
+            continue
+
+        evidence_ref = first_present(record, ("evidence_ref", "verdict_ref", "review_fold_ref", "receipt_ref"))
+        if not isinstance(evidence_ref, str) or not evidence_ref:
+            reasons.append(f"{prefix}.evidence_ref:missing")
+        head_sha = lane_binding_value(record, "head_sha")
+        if not isinstance(head_sha, str) or not head_sha:
+            reasons.append(f"{prefix}.head_sha:missing")
+        elif head_sha != artifact.get("head_sha"):
+            reasons.append(f"{prefix}.head_sha:artifact-mismatch")
+        target_fingerprint = lane_binding_value(record, "target_fingerprint")
+        if not isinstance(target_fingerprint, str) or not target_fingerprint:
+            reasons.append(f"{prefix}.target_fingerprint:missing")
+        elif target_fingerprint != artifact.get("diff_fingerprint"):
+            reasons.append(f"{prefix}.target_fingerprint:artifact-mismatch")
+    return reasons
+
+
 def cas_advisory_blocked(context: dict[str, Any], loop: dict[str, Any]) -> bool:
     cas = object_from(context.get("cas_review"))
+    profile = review_profile_for(context)
     artifact = object_from(context.get("artifact_scope"))
     final_report = object_from(context.get("final_report_fields"))
-    if cas_reasons_for(cas, artifact) or final_report_reasons_for(
+    if cas_reasons_for(cas, profile, artifact) or final_report_reasons_for(
         final_report,
         cas,
+        profile,
         object_from(context.get("proof_patch")),
         object_from(context.get("delivery")),
     ):
@@ -483,6 +584,9 @@ def make_decision(context: dict[str, Any]) -> dict[str, Any]:
     local_proof = optional_object(context, "local_proof", errors)
     proof_patch = optional_object(context, "proof_patch", errors)
     cas = optional_object(context, "cas_review", errors)
+    profile = optional_object(context, "review_profile", errors) or object_from(
+        object_from(context.get("loop_governance")).get("review_profile")
+    )
     delivery = optional_object(context, "delivery", errors)
     final_report = optional_object(context, "final_report_fields", errors)
 
@@ -505,14 +609,14 @@ def make_decision(context: dict[str, Any]) -> dict[str, Any]:
     proof_reasons = proof_patch_reasons_for(proof_patch, closure_candidate)
     unresolved.extend(proof_reasons)
 
-    cas_reasons = cas_reasons_for(cas, artifact)
+    cas_reasons = cas_reasons_for(cas, profile, artifact)
     blocked.extend(cas_reasons)
 
     delivery_reasons, delivery_continue = delivery_reasons_for(delivery, closure_candidate, artifact)
     blocked.extend(delivery_reasons)
     unresolved.extend(delivery_continue)
 
-    report_reasons = final_report_reasons_for(final_report, cas, proof_patch, delivery)
+    report_reasons = final_report_reasons_for(final_report, cas, profile, proof_patch, delivery)
     blocked.extend(report_reasons)
 
     if closure_candidate == "blocked":
@@ -552,7 +656,7 @@ def make_decision(context: dict[str, Any]) -> dict[str, Any]:
                 "diff_fingerprint": artifact.get("diff_fingerprint", ""),
                 "dirty_state": artifact.get("dirty_state", "unknown"),
             },
-            "required_receipts": required_receipts_for(proof_patch, cas, delivery, closure_candidate),
+            "required_receipts": required_receipts_for(proof_patch, cas, profile, delivery, closure_candidate),
         }
     }
     validate_decision(decision)
@@ -608,11 +712,11 @@ def proof_patch_reasons_for(proof_patch: dict[str, Any], closure_candidate: str)
     return reasons
 
 
-def cas_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
+def cas_reasons_for(cas: dict[str, Any], profile: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
     reasons: list[str] = []
-    standard_required = standard_cas_required_for(cas)
+    standard_required = standard_cas_required_for(cas, profile)
     if not standard_required:
-        return auxiliary_lane_reasons_for(cas, artifact)
+        return auxiliary_lane_reasons_for(cas, artifact) + review_profile_reasons_for(profile, artifact, standard_required)
     required = standard_clean_runs_required_for(cas)
     count = standard_clean_runs_count_for(cas)
     standard_fields_used = (
@@ -652,6 +756,7 @@ def cas_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
         if tuple_value.get("target_fingerprint") != artifact.get("diff_fingerprint"):
             reasons.append("cas.tuple.target_fingerprint:artifact-mismatch")
     reasons.extend(auxiliary_lane_reasons_for(cas, artifact))
+    reasons.extend(review_profile_reasons_for(profile, artifact, standard_required))
     return reasons
 
 
@@ -768,11 +873,12 @@ def add_v1_head_reasons_for(add: dict[str, Any], artifact: dict[str, Any]) -> li
 def final_report_reasons_for(
     final_report: dict[str, Any],
     cas: dict[str, Any],
+    profile: dict[str, Any],
     proof_patch: dict[str, Any],
     delivery: dict[str, Any],
 ) -> list[str]:
     reasons: list[str] = []
-    if standard_cas_required_for(cas):
+    if standard_cas_required_for(cas, profile):
         required = standard_clean_runs_required_for(cas)
         if not is_plain_int(required) or required <= 0:
             required = 3
@@ -792,13 +898,14 @@ def final_report_reasons_for(
 def required_receipts_for(
     proof_patch: dict[str, Any],
     cas: dict[str, Any],
+    profile: dict[str, Any],
     delivery: dict[str, Any],
     closure_candidate: str,
 ) -> list[str]:
     receipts: list[str] = []
     if as_yes(proof_patch.get("required")) or closure_candidate == "proof-patch":
         receipts.append("proof_patch")
-    if standard_cas_required_for(cas):
+    if standard_cas_required_for(cas, profile):
         receipts.append("cas_review")
     if as_yes(delivery.get("pr_intent")) or closure_candidate == "ship-complete":
         receipts.append("add_v1_delivery_decision")
@@ -815,15 +922,20 @@ def next_owner_for(blocked: list[str], pending: list[str]) -> str:
         return "$st"
     if any(reason.startswith("artifact_scope") for reason in combined):
         return "$goal-grind"
-    if any(
-        reason == "cas-review-blocked"
-        or reason.startswith("cas.")
+    profile_blocked = any(reason.startswith("review_profile") for reason in combined)
+    cas_detail_blocked = any(
+        reason.startswith("cas.")
         or reason.startswith("final_report.normalized_cas")
         or reason.startswith("final_report.normalized_standard_cas")
         or reason.startswith("final_report.standard_clean_cas")
         for reason in combined
-    ):
+    )
+    if profile_blocked and not cas_detail_blocked:
+        return "$goal-actuating"
+    if "cas-review-blocked" in combined or cas_detail_blocked:
         return "$cas"
+    if profile_blocked:
+        return "$goal-actuating"
     if any(reason == "side-effect-boundary-violated" for reason in combined):
         return "$ship"
     if any(reason.startswith("blocked-loop-contract") or reason.startswith("blocked-hylo") for reason in combined):
