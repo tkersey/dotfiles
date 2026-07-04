@@ -32,10 +32,12 @@ interface:
     "CAS found one remaining valid P1/P2", "CAS attempt returned another
     accepted P1/P2", "the finding is valid", "this finding is valid too",
     "accepted code-change liabilities", "CAS is right", "the owner fix is",
-    "owner-correct fix is", "the clean fix is", "concrete gaps remain", "gaps
-    remain", "clean streak stays at 0", "clean streak resets to zero", "clean
-    streak resets to 0", or "streak remains 0" also require a fresh RF-v1.3
-    compact/full receipt before describing the repair path or patching it.
+    "owner-correct fix is", "the clean fix is", "CAS found proof gaps",
+    "straightforward proof gaps", "proof gaps now", "concrete gaps remain",
+    "gaps remain", "clean streak stays at 0", "clean streak resets to zero",
+    "clean streak resets to 0", or "streak remains 0" also require a fresh
+    RF-v1.3 compact/full receipt before describing the repair path or patching
+    it.
     PR-thread review prose patterns like "unresolved PR review threads ...
     P1/P2", "unresolved PR comments are valid", "PR comments are valid", "they
     are both P1/P2", or "accepted liabilities" also require a fresh RF-v1.3
