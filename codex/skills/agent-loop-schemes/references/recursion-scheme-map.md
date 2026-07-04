@@ -4,8 +4,8 @@ This reference keeps the theory available without forcing it into every user-fac
 
 | Scheme | Plain-language role | Coding-agent use |
 |---|---|---|
-| Anamorphism | Unfold a seed into work | Turn a goal, spec, review target, or failure into a work list or branch set. |
-| Catamorphism | Fold evidence into a result | Turn tests, logs, diffs, CAS findings, and artifacts into a verdict. |
+| Anamorphism | Unfold a seed into work | Turn a goal, spec, review target, or failure into a work list, subgoal ladder, or branch set. |
+| Catamorphism | Fold evidence into a result | Turn tests, logs, diffs, CAS findings, subagent outputs, and artifacts into a parent-goal verdict. |
 | Hylomorphism | Unfold then fold repeatedly | The normal goal loop: choose work, act, verify, fold evidence, continue or stop. |
 | Paramorphism | Fold while keeping original structure | Refactor code while retaining file/spans/AST needed for precise edits. |
 | Apomorphism | Unfold while reusing existing solved pieces | Reuse templates, known fixes, codemods, prior subplans, or previous solutions. |
@@ -22,3 +22,18 @@ seed -> unfold work -> act -> fold evidence -> update memory -> proof -> stop or
 ```
 
 Use this to prevent generic while-loops.
+
+## Goal-focus HYL frames
+
+For material `$actuating`, keep one stable parent `/goal` and move a typed active focus through the HYL loop:
+
+```text
+parent /goal
+-> goal-focus frame
+-> anamorphism produces legal work/frontier
+-> action executes only that work/frontier
+-> catamorphism folds evidence into parent state
+-> next focus | blocked | terminal ATCG
+```
+
+Do not treat child frames as literal nested `/goal` commands. Child frames are parent-owned subgoals that must fold back into the parent. See `$recursion-scheme-planner`'s `references/goal-focus-hylo-driver.md` for the canonical subgoal ladder and goal-focus schema.
