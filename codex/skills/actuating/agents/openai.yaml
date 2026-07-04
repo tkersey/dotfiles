@@ -14,4 +14,10 @@ interface:
     remediation-plan, or another no-implementation mode. Fresh or exhaustive
     workflow review must use $cas review, findings must pass through
     $review-fold, and only accepted code-change liabilities may reach
-    implementation. Completion requires terminal ATCG-v1.
+    implementation. When repeated accepted liabilities share an owner boundary,
+    missing abstraction, invariant, proof surface, or misuse trap, emit an
+    AER-v1 actuation_escalation_receipt with owner_boundary,
+    repeated_finding_class, accepted_liabilities, prior_resolution_mode,
+    next_resolution_mode, escalation_trigger, alternatives_considered,
+    selected_route, verifier, and current_artifact_scope before further
+    mutation. Completion requires terminal ATCG-v1.

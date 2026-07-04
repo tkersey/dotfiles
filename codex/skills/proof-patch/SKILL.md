@@ -50,10 +50,13 @@ completion unless ATCG-v1 permits it.
 
 ## Review closure
 - CAS review source:
+- CAS finding IDs:
 - review-fold disposition:
+- review-fold receipt version:
 - resolution fold:
 - accepted liabilities:
 - no-code dispositions:
+- actuation escalation receipt:
 - clean normalized CAS runs:
 - cached CAS receipts counted as fresh: no
 
@@ -97,6 +100,8 @@ completion unless ATCG-v1 permits it.
 4. Include evidence commands and results.
 5. Include review closure, review-fold disposition, and resolution fold state
    when review pressure was present.
+   Preserve joinable CAS finding IDs, RF-v1.3 receipt version, and AER-v1
+   escalation receipt state when they exist.
 6. Include parallelism state, even when the mode is `none`.
 7. Include anti-gaming checks.
 8. Name residual risks and focused human review targets.

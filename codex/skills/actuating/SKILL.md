@@ -184,6 +184,42 @@ When the user asks for review, review closure, code review, CAS review, review r
 
 Do not treat review-closeout as one patch per comment.
 
+#### Actuation escalation receipt
+
+When repeated accepted liabilities share an owner boundary, missing
+abstraction, state transition, validation rule, invariant, proof surface, or
+misuse trap, `$actuating` records the repair-mode escalation decision before
+more mutation.
+
+```yaml
+actuation_escalation_receipt:
+  version: AER-v1
+  run_id:
+  owner_boundary:
+  repeated_finding_class:
+  accepted_liabilities:
+    - cas_finding_id:
+      finding_fingerprint:
+      review_fold_ref:
+      liability:
+  prior_resolution_mode: minimal-fix|proof-only|refactor-kernel|branch-race|none
+  next_resolution_mode: minimal-fix|refactor-kernel|branch-race|remediation-plan|blocked
+  escalation_trigger:
+  alternatives_considered: []
+  selected_route:
+  verifier: []
+  current_artifact_scope:
+    branch:
+    head_sha:
+    target_fingerprint:
+```
+
+AER-v1 is not review adjudication and not mutation authority. It records why
+the actuation loop continued with a local fix, pivoted to a refactor kernel,
+started a branch race, stopped for a remediation plan, or blocked. `$seq` may
+later audit whether this receipt existed and whether behavior contradicted it;
+`$actuating` owns the active escalation decision.
+
 #### Triage
 
 Use when the user wants review findings classified without implementation:
@@ -445,6 +481,7 @@ Switch to `refactor-kernel` when repeated findings share an owner boundary.
 Switch to `branch-race` when local fix and refactor-kernel are both plausible and can be compared under the same verifier.
 Switch to `st-governed` only when durable claims, fencing, worktrees, or serialized integration are required.
 Switch to `ship-handoff` only when PR/publication intent is explicit or inherited from the accepted spec.
+Emit AER-v1 before continuing mutation when repeated accepted liabilities require or reject escalation from minimal-fix to refactor-kernel, branch-race, remediation-plan, or blocked.
 
 ## Terminal closure gate
 
@@ -521,6 +558,7 @@ Actuating:
 - normalized CAS clean runs: 0|1|2|3|not-required
 - goal contract / work list:
 - review-fold disposition:
+- actuation escalation receipt:
 - execution owner: goal-grind | st-bounded-slice | none
 - evidence-fold verdict:
 - proof-patch / ship handoff:

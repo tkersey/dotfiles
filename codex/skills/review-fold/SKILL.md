@@ -2,7 +2,7 @@
 name: review-fold
 description: "Compress review pressure into intent-anchored review work: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent one-patch-per-comment churn. Use after $cas review, PR review comments, CAS findings, reviewer suggestions, and review-like claims. Owns active review finding classification for goal workflows."
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   activation_cost: medium
   default_depth: high
 ---
@@ -85,7 +85,7 @@ This is a routing guard, not a counterexample compiler. Do not introduce CEX/AC/
 
 ```yaml
 review_fold:
-  version: RF-v1.2
+  version: RF-v1.3
   goal_id:
   source:
     pr:
@@ -118,17 +118,33 @@ review_fold:
     changed_paths: []
   findings:
     - id:
+      source_ref:
+        cas_finding_id:
+        finding_fingerprint:
+        review_attempt_id:
+        review_thread_id:
+        review_turn_id:
+        lane_role: standard|auxiliary|unknown
+        head_sha:
+        target_fingerprint:
       lane: standard|footgun-finder|invariant-ace|complexity-mitigator|human|prior-artifact|unknown
       claim:
       observed_fact:
       suggested_repair:
+      law_family:
+      falsified_law:
+      owner_boundary:
+      model_state: intact|local-gap|boundary-gap|unknown
       validity: valid|invalid|unproven|needs-owner
       liability: blocks-goal|regression-risk|style|new-requirement|out-of-scope|proof-gap|misuse-hazard|invariant-gap|complexity-stall
       intent_relation: core|adjacent|unrelated|expands-scope
       novelty: duplicate|same-class|new-class
       disposition: reject|proof-only|minimal-fix|refactor-kernel|ask-human|follow-up|blocked
+      repair_level: none|proof-only|minimal-fix|refactor-kernel|branch-race|ask-human|follow-up|blocked
       minimal_response:
       proof_needed:
+      alternatives_considered: []
+      evidence_refs: []
       code_change_candidate: yes|no
       finding_mutation_authority:
         allowed: no
@@ -136,8 +152,13 @@ review_fold:
   compression:
     equivalence_classes: []
     repeated_kernel:
+    kernel_pressure: none|low|medium|high
+    refactor_trigger:
+      present: yes|no
+      reason:
     reabstraction_candidate: yes|no
     one_patch_per_comment_risk: low|medium|high
+    minimal_fix_regret_risk: low|medium|high
     lane_overlap:
       footgun_to_invariant: []
       footgun_to_complexity: []
@@ -168,6 +189,12 @@ review_fold:
     reviewer_response_draft: []
 ```
 
+RF-v1.3 folds the useful RFDEC-v1 receipt ideas into one review-fold schema
+rather than creating a second active finding-decision format. CAS finding IDs
+and fingerprints are evidence references only; `$review-fold` still classifies
+validity, liability, owner boundary, and repair level, and the resolution fold
+still owns mutation-authorizing work nodes.
+
 ## Disposition law
 
 - `reject`: claim is false, stale, duplicate with no new proof value, unrelated, already handled, incompatible with the goal, or merely preference/style without accepted liability.
@@ -191,6 +218,20 @@ duplicate/same-class -> compress; do not create a new implementation distinction
 ```
 
 A finding row never grants mutation authority. It only marks whether the resolution fold may consider code-changing work.
+
+When `one_patch_per_comment_risk: high`, do not silently recommend more
+minimal fixes. Route to one of:
+
+```text
+refactor-kernel
+branch-race
+remediation-plan
+blocked
+```
+
+Use an explicit exception only when `alternatives_considered` shows why a local
+minimal fix is still owner-correct and does not preserve the repeated failure
+class. Record that exception in `evidence_refs`.
 
 ## Modes
 
@@ -250,16 +291,19 @@ Auxiliary CAS review lanes may still block closeout. They do not increment the s
 4. Classify each finding before any implementation.
 5. Separate the claim, observed fact, and suggested repair when the review text includes all three.
 6. Reject, block, ask, or follow up before code whenever validity, liability, or scope is not established.
-7. Collapse duplicates and same-family comments across lanes.
-8. Mark whether the current standard attempt is normalized clean and whether the standard clean-run counter resets.
-9. Mark auxiliary lane state as `clean`, `findings-folded`, `blocked`, or `rerun-required`; never count it as a standard clean run.
-10. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
-11. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
-12. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
-13. Produce a small work graph only for accepted liabilities and only after the resolution fold accepts code-changing work.
-14. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolution fold accepts code-change liabilities.
-15. For post-implementation CAS runs, mark whether the normalized standard result is clean and whether the standard clean-run counter resets.
-16. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
+7. Preserve CAS source refs when present: `cas_finding_id`, `finding_fingerprint`, `review_attempt_id`, tuple, and lane role.
+8. Name the falsified law, owner boundary, model state, and repair level when a finding is valid or unresolved.
+9. Collapse duplicates and same-family comments across lanes.
+10. Mark whether the current standard attempt is normalized clean and whether the standard clean-run counter resets.
+11. Mark auxiliary lane state as `clean`, `findings-folded`, `blocked`, or `rerun-required`; never count it as a standard clean run.
+12. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
+13. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
+14. Escalate high one-patch-per-comment risk to `refactor-kernel`, `branch-race`, `remediation-plan`, or `blocked` unless an explicit owner-boundary exception is recorded.
+15. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
+16. Produce a small work graph only for accepted liabilities and only after the resolution fold accepts code-changing work.
+17. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolution fold accepts code-change liabilities.
+18. For post-implementation CAS runs, mark whether the normalized standard result is clean and whether the standard clean-run counter resets.
+19. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
 
 ## Default behavior in `$actuating`
 
