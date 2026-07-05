@@ -1,0 +1,31 @@
+{
+  "refactor_kernel_outcome": {
+    "version": "RKO-v1",
+    "issued_at": "2026-07-05T20:00:00Z",
+    "run_id": "ACT-example-001",
+    "decision_ref": "AER-v1:ACT-example-001",
+    "owner_boundary": "codex/skills/review-fold",
+    "head_before": "head456",
+    "head_after": "def456",
+    "patch_calls": 4,
+    "files_changed": 3,
+    "covered_liabilities": 2,
+    "local_proof": {
+      "passed": [
+        "uv run python -m unittest discover codex/skills/review-fold/tests"
+      ],
+      "failed": []
+    },
+    "review_after": {
+      "new_liabilities": 0,
+      "clean_runs": 3,
+      "blocked_reason": ""
+    },
+    "closure_state": "complete",
+    "assessment": "effective",
+    "governance": {
+      "graph_bypass": "no",
+      "mutations_without_graph_control_receipt": 0
+    }
+  }
+}
