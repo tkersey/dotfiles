@@ -34,9 +34,11 @@ def main() -> int:
         "references/decision-contract.yaml",
         "tools/actuation_authority_gate.py",
         "tools/actuation_delivery_gate.py",
+        "tools/actuation_refactor_kernel_gate.py",
         "tools/actuation_terminal_gate.py",
         "tests/test_actuation_authority_gate.py",
         "tests/test_actuation_delivery_gate.py",
+        "tests/test_actuation_refactor_kernel_gate.py",
         "tests/test_actuation_terminal_gate.py",
         "assets/gcr-v2.allowed.example.json",
         "assets/gcr-v2.self-invalidating.example.json",
@@ -48,6 +50,7 @@ def main() -> int:
         "assets/add-v1.shipping-not-requested.example.json",
         "assets/add-v1.blocked.example.json",
         "assets/aer-v1.example.json",
+        "assets/rko-v1.effective.example.json",
         "assets/atcg-v1.complete.example.json",
         "assets/terminal-context.proof-only.example.json",
         "assets/terminal-context.regression.example.json",
@@ -63,6 +66,7 @@ def main() -> int:
     tests = [
         run_test(ROOT / "tests/test_actuation_authority_gate.py"),
         run_test(ROOT / "tests/test_actuation_delivery_gate.py"),
+        run_test(ROOT / "tests/test_actuation_refactor_kernel_gate.py"),
         run_test(ROOT / "tests/test_actuation_terminal_gate.py"),
         run_test(ROOT / "tests/test_aer_contract.py"),
     ]
