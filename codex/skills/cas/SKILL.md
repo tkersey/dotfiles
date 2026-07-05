@@ -283,8 +283,8 @@ patch epochs, proof epochs, and clean-review attempts back to the exact review
 row.
 
 CAS owns the identity fields as evidence. It does not decide whether a finding
-is accepted, rejected, proof-only, minimal-fix, refactor-kernel, or mutation
-authority.
+is accepted, rejected, proof-only, follow-up, blocked, which kernel status it
+has, or whether it grants mutation authority.
 
 Each normalized finding row should carry:
 
@@ -464,7 +464,7 @@ CAS Review:
 - Do not duplicate a review when an active tuple lock points to an existing `reviewThreadId`.
 - Do not manually list and `jq` review-session records when latest-session status is enough; use `cas review_session status --latest --json`, then verify tuple fields before acting.
 - Do not treat completed findings as transport failure.
-- Do not treat per-finding identity as acceptance, rejection, repair mode, clean-streak authority, or mutation authority.
+- Do not treat per-finding identity as acceptance, rejection, kernel status, clean-streak authority, or mutation authority.
 - Do not treat `usageLimitExceeded` as reviewer output or transport failure.
 - Do not rely on persistent lane continuity for repeated-review policy until first-review creation smoke is current.
 - `start --wait` evidence is workflow input only after it is represented as tuple-bound review evidence; otherwise import, normalize, or recover first.

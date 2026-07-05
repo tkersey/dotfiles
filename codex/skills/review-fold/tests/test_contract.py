@@ -11,8 +11,10 @@ SKILL = (ROOT / "SKILL.md").read_text(encoding="utf-8")
 AGENT = (ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
 CONTRACT = (ROOT / "references" / "decision-contract.yaml").read_text(encoding="utf-8")
 TRIGGERS = (ROOT / "references" / "material-fold-triggers.yaml").read_text(encoding="utf-8")
+MODES = (ROOT / "references" / "review-modes.md").read_text(encoding="utf-8")
 REDUCER = (CODEX_ROOT / "agents" / "review-reducer.toml").read_text(encoding="utf-8")
 NORMALIZED_PROMPTS = " ".join((AGENT + "\n" + REDUCER).split())
+LIVE_REVIEW_FOLD_SURFACES = "\n".join([SKILL, AGENT, CONTRACT, TRIGGERS, MODES, REDUCER])
 
 
 class ReviewFoldContractTests(unittest.TestCase):
@@ -33,9 +35,9 @@ class ReviewFoldContractTests(unittest.TestCase):
         self.assertNotIn("CAS review lanes", SKILL)
         self.assertNotIn("Supported CAS-backed review lanes", SKILL)
 
-    def test_rf_v13_schema_has_generic_joinable_source_refs(self) -> None:
+    def test_rf_v14_schema_has_generic_joinable_source_refs(self) -> None:
         required = [
-            "version: RF-v1.3",
+            "version: RF-v1.4",
             "source_ref:",
             "backend: cas|github-comments|human-review|prior-artifact|local-audit|other|unknown",
             "source_batch_id",
@@ -60,10 +62,10 @@ class ReviewFoldContractTests(unittest.TestCase):
             "liability != scope",
             "scope != code change",
             "code-change candidate != mutation authority",
+            "kernel fold != repair plan",
             "`reject`",
             "`proof-only`",
-            "`minimal-fix`",
-            "`refactor-kernel`",
+            "`accepted-liability`",
             "`ask-human`",
             "`follow-up`",
             "`blocked`",
@@ -75,13 +77,13 @@ class ReviewFoldContractTests(unittest.TestCase):
     def test_compact_receipt_floor_preserves_material_fold_observability(self) -> None:
         required = [
             "## Compact receipt floor",
-            "RF-v1.3 compact:",
+            "RF-v1.4 compact:",
             "source_ref:",
             "validity:",
             "liability:",
             "intent_relation:",
             "disposition:",
-            "repair_level:",
+            "kernel_fold:",
             "owner_boundary:",
             "law_family:",
             "clean_run:",
@@ -91,6 +93,18 @@ class ReviewFoldContractTests(unittest.TestCase):
         for token in required:
             with self.subTest(token=token):
                 self.assertIn(token, SKILL)
+
+    def test_live_review_fold_surfaces_forbid_retired_repair_routes(self) -> None:
+        forbidden = [
+            "minimal-fix",
+            "repair_level",
+            "RF-v1.3 compact",
+            "version: RF-v1.3",
+            "choose reject, proof-only",
+        ]
+        for token in forbidden:
+            with self.subTest(token=token):
+                self.assertNotIn(token, LIVE_REVIEW_FOLD_SURFACES)
 
     def test_material_fold_trigger_taxonomy_replaces_literal_phrase_catalog(self) -> None:
         required = [
@@ -164,8 +178,8 @@ class ReviewFoldContractTests(unittest.TestCase):
             "RF-RECEIPT-001",
             "RF-KERNEL-001",
             "RF-SOURCE-BLOCK",
-            "RF-MINIMAL-FIX",
-            "RF-REFACTOR-KERNEL",
+            "RF-ACCEPTED-LIABILITY",
+            "RF-KERNEL-FOLD",
             "decision_receipt: required",
             "validator: codex/skills/review-fold/tools/review_fold_receipt_gate.py",
         ]

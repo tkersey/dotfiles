@@ -11,4 +11,4 @@ interface:
     identity fields such as findingId, findingFingerprint, reviewAttemptId,
     laneRole, reviewThreadId, reviewTurnId, headSha, and targetFingerprint.
     CAS records evidence; caller workflows certify meaning, clean streaks,
-    review-fold disposition, repair mode, and mutation authority.
+    review-fold disposition, kernel status, and mutation authority.
