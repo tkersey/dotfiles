@@ -20,4 +20,8 @@ interface:
     repeated_finding_class, accepted_liabilities, prior_resolution_mode,
     next_resolution_mode, escalation_trigger, alternatives_considered,
     selected_route, verifier, and current_artifact_scope before further
-    mutation. Completion requires terminal ATCG-v1.
+    mutation. If selected_route or next_resolution_mode is refactor-kernel,
+    validate the AER-v1 before mutation and emit an RKO-v1
+    refactor_kernel_outcome after proof/review that records covered liabilities,
+    new liabilities, closure state, and graph-bypass/mutation-without-control
+    evidence. Completion requires terminal ATCG-v1.
