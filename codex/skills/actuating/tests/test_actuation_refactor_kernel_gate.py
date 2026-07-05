@@ -45,11 +45,39 @@ class ActuationRefactorKernelGateTests(unittest.TestCase):
         self.assertEqual(report["verdict"], "fail")
         self.assertIn("review_fold_ref:missing", report["errors"])
 
+    def test_decision_rejects_missing_required_alternatives(self) -> None:
+        value = self.decision()
+        value["actuation_escalation_receipt"]["alternatives_considered"] = ["minimal-fix"]
+        report = MODULE.validate_decision(value)["refactor_kernel_decision_gate"]
+        self.assertEqual(report["verdict"], "fail")
+        self.assertIn("alternatives_considered:branch-race:missing", report["errors"])
+        self.assertIn("alternatives_considered:remediation-plan:missing", report["errors"])
+
+    def test_decision_rejects_duplicate_liabilities(self) -> None:
+        value = self.decision()
+        liabilities = value["actuation_escalation_receipt"]["accepted_liabilities"]
+        liabilities[1] = dict(liabilities[0])
+        report = MODULE.validate_decision(value)["refactor_kernel_decision_gate"]
+        self.assertEqual(report["verdict"], "fail")
+        self.assertIn("accepted_liabilities[1]:duplicate", report["errors"])
+
     def test_outcome_fixture_passes_and_scores(self) -> None:
         report = MODULE.validate_outcome(self.outcome(), self.decision())["refactor_kernel_outcome_gate"]
         self.assertEqual(report["verdict"], "pass")
         self.assertEqual(report["assessment"], "effective")
         self.assertGreaterEqual(report["effectiveness_score"], 2)
+
+    def test_outcome_requires_joinable_decision(self) -> None:
+        report = MODULE.validate_outcome(self.outcome())["refactor_kernel_outcome_gate"]
+        self.assertEqual(report["verdict"], "fail")
+        self.assertIn("decision_ref:decision-required", report["errors"])
+
+    def test_outcome_requires_issued_at(self) -> None:
+        value = self.outcome()
+        value["refactor_kernel_outcome"].pop("issued_at")
+        report = MODULE.validate_outcome(value, self.decision())["refactor_kernel_outcome_gate"]
+        self.assertEqual(report["verdict"], "fail")
+        self.assertIn("issued_at:missing", report["errors"])
 
     def test_outcome_blocks_graph_bypass(self) -> None:
         value = self.outcome()
@@ -67,6 +95,21 @@ class ActuationRefactorKernelGateTests(unittest.TestCase):
         report = MODULE.validate_outcome(value, self.decision())["refactor_kernel_outcome_gate"]
         self.assertEqual(report["verdict"], "fail")
         self.assertIn("assessment:effective-with-new-liabilities", report["errors"])
+
+    def test_effective_outcome_requires_local_proof_evidence(self) -> None:
+        value = self.outcome()
+        value["refactor_kernel_outcome"]["local_proof"]["passed"] = []
+        report = MODULE.validate_outcome(value, self.decision())["refactor_kernel_outcome_gate"]
+        self.assertEqual(report["verdict"], "fail")
+        self.assertIn("assessment:effective-without-local-proof", report["errors"])
+
+    def test_outcome_requires_governance_fields(self) -> None:
+        value = self.outcome()
+        value["refactor_kernel_outcome"]["governance"] = {}
+        report = MODULE.validate_outcome(value, self.decision())["refactor_kernel_outcome_gate"]
+        self.assertEqual(report["verdict"], "fail")
+        self.assertIn("governance.graph_bypass:missing", report["errors"])
+        self.assertIn("governance.mutations_without_graph_control_receipt:missing", report["errors"])
 
     def test_make_outcome_binds_decision_scope(self) -> None:
         context = {

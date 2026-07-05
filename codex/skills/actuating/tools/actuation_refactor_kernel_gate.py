@@ -89,6 +89,14 @@ def plain_int(value: Any) -> int | None:
     return None
 
 
+def valid_timestamp(value: str) -> bool:
+    try:
+        parsed = _dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return parsed.tzinfo is not None
+
+
 def validate_decision(value: dict[str, Any]) -> dict[str, Any]:
     d = unwrap(value, DECISION_KEY)
     errors: list[str] = []
@@ -112,19 +120,30 @@ def validate_decision(value: dict[str, Any]) -> dict[str, Any]:
         errors.append("next_resolution_mode:invalid")
 
     liabilities = require_list(d, "accepted_liabilities", errors)
+    seen_liabilities: set[tuple[str, str, str, str]] = set()
     for index, liability in enumerate(liabilities):
         if not isinstance(liability, dict):
             errors.append(f"accepted_liabilities[{index}]:must-be-object")
             continue
         for key in ("cas_finding_id", "finding_fingerprint", "review_fold_ref", "liability"):
             require_str(liability, key, errors)
+        fingerprint = (
+            liability.get("cas_finding_id"),
+            liability.get("finding_fingerprint"),
+            liability.get("review_fold_ref"),
+            liability.get("liability"),
+        )
+        if all(isinstance(part, str) and part for part in fingerprint):
+            if fingerprint in seen_liabilities:
+                errors.append(f"accepted_liabilities[{index}]:duplicate")
+            seen_liabilities.add(fingerprint)
 
     alternatives = require_list(d, "alternatives_considered", errors)
     if alternatives and not all(isinstance(x, str) and x for x in alternatives):
         errors.append("alternatives_considered:must-be-nonempty-strings")
     for required_alt in ("minimal-fix", "branch-race", "remediation-plan"):
         if required_alt not in alternatives:
-            warnings.append(f"alternatives_considered:{required_alt}:missing")
+            errors.append(f"alternatives_considered:{required_alt}:missing")
 
     verifier = require_list(d, "verifier", errors)
     if verifier and not all(isinstance(x, str) and x for x in verifier):
@@ -165,6 +184,9 @@ def validate_outcome(value: dict[str, Any], decision_value: dict[str, Any] | Non
 
     if outcome.get("version") != "RKO-v1":
         errors.append("version:expected-RKO-v1")
+    issued_at = require_str(outcome, "issued_at", errors)
+    if issued_at and not valid_timestamp(issued_at):
+        errors.append("issued_at:invalid-timestamp")
     run_id = require_str(outcome, "run_id", errors)
     decision_ref = require_str(outcome, "decision_ref", errors)
     owner_boundary = require_str(outcome, "owner_boundary", errors)
@@ -192,6 +214,7 @@ def validate_outcome(value: dict[str, Any], decision_value: dict[str, Any] | Non
         value_list = local_proof.get(key)
         if not isinstance(value_list, list):
             errors.append(f"local_proof.{key}:must-be-list")
+    passed_proofs = local_proof.get("passed") if isinstance(local_proof.get("passed"), list) else []
 
     review_after = outcome.get("review_after")
     if not isinstance(review_after, dict):
@@ -223,13 +246,21 @@ def validate_outcome(value: dict[str, Any], decision_value: dict[str, Any] | Non
         errors.append("assessment:effective-requires-terminal-or-ready-state")
     if assessment == "effective" and new_liabilities:
         errors.append("assessment:effective-with-new-liabilities")
+    if assessment == "effective" and not passed_proofs:
+        errors.append("assessment:effective-without-local-proof")
 
     governance = outcome.get("governance")
     if not isinstance(governance, dict):
         errors.append("governance:must-be-object")
         governance = {}
-    graph_bypass = governance.get("graph_bypass", "unknown")
-    mutations_without_control = plain_int(governance.get("mutations_without_graph_control_receipt", 0))
+    graph_bypass = governance.get("graph_bypass")
+    if "graph_bypass" not in governance:
+        errors.append("governance.graph_bypass:missing")
+    elif not as_yes(graph_bypass) and not as_no(graph_bypass):
+        errors.append("governance.graph_bypass:yes-or-no-required")
+    mutations_without_control = plain_int(governance.get("mutations_without_graph_control_receipt"))
+    if "mutations_without_graph_control_receipt" not in governance:
+        errors.append("governance.mutations_without_graph_control_receipt:missing")
     if as_yes(graph_bypass):
         errors.append("governance.graph_bypass:yes")
     if mutations_without_control is None or mutations_without_control < 0:
@@ -239,7 +270,9 @@ def validate_outcome(value: dict[str, Any], decision_value: dict[str, Any] | Non
         errors.append("governance.mutations_without_graph_control_receipt:nonzero")
 
     expected_liabilities = 0
-    if decision_value is not None:
+    if decision_value is None:
+        errors.append("decision_ref:decision-required")
+    else:
         decision_report = validate_decision(decision_value)["refactor_kernel_decision_gate"]
         if decision_report["verdict"] != "pass":
             errors.append("decision_ref:decision-invalid")
