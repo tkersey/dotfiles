@@ -113,8 +113,10 @@ Rules:
 - Auxiliary lanes are real CAS review evidence, but they do not increment or interrupt the standard clean-review streak.
 - Auxiliary findings must be folded through `$review-fold` and may block closeout or become accepted liabilities.
 - Do not require unsupported `$cas` commands to produce semantic footgun/invariant/complexity lane labels. CAS transports and tuple-binds review evidence; the workflow owns auxiliary lens selection, folding, and blocker state.
-- A selected auxiliary lane must carry current `head_sha` and `target_fingerprint` evidence before ATCG may complete.
+- A selected auxiliary lane must carry current `head_sha`, `target_fingerprint`, `lens_contract`, `lens_evidence_state`, and `lens_evidence_ref` before ATCG may complete. `clean` and `findings-folded` are not enough without the lane contract.
+- ATCG lane contracts are `footgun-lens-v1`, `invariant-gate-v1`, and `complexity-preflight-v1`. `lens_evidence_state` must be `valid` for completion.
 - When workflow review is required, `review_profile` must explicitly account for `footgun-finder`, `invariant-ace`, and `complexity-mitigator` as selected/folded evidence or `not-required` with a reason; absence is unknown coverage, not clean review.
+- Record `complexity_pressure` when standard or auxiliary reviews show repeated same-class findings, one-patch-per-comment pressure, review churn, or comprehension blockage. That pressure selects `complexity-mitigator` unless it is explicitly marked not applicable.
 - A code change from any lane resets the standard clean-review streak to zero.
 - Read-only or classification-only auxiliary lane results do not reset the standard streak unless they change artifact scope or proof bar.
 - Do not rerun auxiliary lanes on every standard clean attempt unless their surface was touched, their prior result was blocked/validate-first, the proof bar changed, or a standard review exposes a new class owned by that lens.
@@ -241,6 +243,7 @@ Auxiliary lane selection:
 - Use `footgun-finder` when the diff touches APIs, CLIs, config, examples, docs, defaults, flags, fallbacks, auth/permissions, persistence, lifecycle/state-machine surfaces, degraded success, or partial-success ambiguity.
 - Use `invariant-ace` when the diff or proof bar touches illegal states, owner/source-of-truth ambiguity, transition preservation, policy exceptions, witness parity, fixture preconditions, races, retries, duplicates, stale handles, or loop invariants.
 - Use `complexity-mitigator` when reviewability is blocked by hard-to-follow existing code, deep nesting, boolean soup, hidden state, mixed responsibilities, cross-file hops, duplicated/dominated factors, or likely one-patch-per-comment churn.
+  Record this as `complexity_pressure` in `review_profile`; do not leave the lane implicit.
 
 No-code modifiers include:
 
@@ -291,7 +294,7 @@ Goal Actuation:
 - mode / persistence:
 - review profile:
   - standard CAS review: required|not-required, current verdict:
-  - auxiliary lanes: footgun-finder|invariant-ace|complexity-mitigator each not-required|clean|findings-folded|blocked|rerun-required
+  - auxiliary lanes: footgun-finder|invariant-ace|complexity-mitigator each not-required|clean|findings-folded|blocked|rerun-required, with `lens_contract` / `lens_evidence_state` / `lens_evidence_ref` when selected
   - auxiliary blockers:
 - parallelism:
   - mode:

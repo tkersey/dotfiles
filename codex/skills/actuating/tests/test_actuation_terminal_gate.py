@@ -29,6 +29,22 @@ class ActuationTerminalGateTests(unittest.TestCase):
     def fixture(self, name: str):
         return json.loads((ASSETS / name).read_text())
 
+    def lens_evidence(self, lane: str, **overrides):
+        contracts = {
+            "footgun-finder": "footgun-lens-v1",
+            "invariant-ace": "invariant-gate-v1",
+            "complexity-mitigator": "complexity-preflight-v1",
+        }
+        record = {
+            "lens_contract": contracts[lane],
+            "lens_evidence_state": "valid",
+            "lens_evidence_ref": f"cas:{lane}:lens",
+            "head_sha": "abc123",
+            "target_fingerprint": "diff:clean",
+        }
+        record.update(overrides)
+        return record
+
     def review_profile(self, **lane_overrides):
         lanes = {
             "footgun-finder": {
@@ -569,9 +585,12 @@ class ActuationTerminalGateTests(unittest.TestCase):
             **{
                 "invariant-ace": {
                     "state": "clean",
-                    "evidence_ref": "cas:invariant-ace:clean",
-                    "head_sha": "stale-head",
-                    "target_fingerprint": "stale-diff",
+                    **self.lens_evidence(
+                        "invariant-ace",
+                        evidence_ref="cas:invariant-ace:clean",
+                        head_sha="stale-head",
+                        target_fingerprint="stale-diff",
+                    ),
                 }
             }
         )
@@ -588,14 +607,14 @@ class ActuationTerminalGateTests(unittest.TestCase):
             body["blocked_reasons"],
         )
 
-    def test_review_profile_clean_lane_allows_completion(self) -> None:
+    def test_review_profile_clean_lane_requires_lens_contract(self) -> None:
         context = deepcopy(self.context("terminal-context.proof-only.example.json"))
         context["cas_review"] = self.satisfied_standard_cas()
         context["review_profile"] = self.review_profile(
             **{
-                "complexity-mitigator": {
+                "footgun-finder": {
                     "state": "clean",
-                    "evidence_ref": "cas:complexity-mitigator:clean",
+                    "evidence_ref": "cas:footgun-finder:clean",
                     "head_sha": "abc123",
                     "target_fingerprint": "diff:clean",
                 }
@@ -604,7 +623,91 @@ class ActuationTerminalGateTests(unittest.TestCase):
         context["final_report_fields"]["standard_clean_cas_runs"] = 3
         decision = MODULE.make_decision(context)
         body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertIn(
+            "review_profile.auxiliary_review_lanes.footgun-finder.lens_contract:missing",
+            body["blocked_reasons"],
+        )
+        self.assertIn(
+            "review_profile.auxiliary_review_lanes.footgun-finder.lens_evidence_state:missing",
+            body["blocked_reasons"],
+        )
+
+    def test_review_profile_rejects_wrong_lens_contract(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = self.satisfied_standard_cas()
+        context["review_profile"] = self.review_profile(
+            **{
+                "invariant-ace": {
+                    "state": "findings-folded",
+                    **self.lens_evidence("invariant-ace", lens_contract="footgun-lens-v1"),
+                }
+            }
+        )
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertIn(
+            "review_profile.auxiliary_review_lanes.invariant-ace.lens_contract:invalid",
+            body["blocked_reasons"],
+        )
+
+    def test_review_profile_rejects_non_valid_lens_evidence_state(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = self.satisfied_standard_cas()
+        context["review_profile"] = self.review_profile(
+            **{
+                "complexity-mitigator": {
+                    "state": "clean",
+                    **self.lens_evidence("complexity-mitigator", lens_evidence_state="stale"),
+                }
+            }
+        )
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertIn(
+            "review_profile.auxiliary_review_lanes.complexity-mitigator.lens_evidence_state:stale",
+            body["blocked_reasons"],
+        )
+
+    def test_review_profile_clean_lane_allows_completion(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = self.satisfied_standard_cas()
+        context["review_profile"] = self.review_profile(
+            **{
+                "complexity-mitigator": {
+                    "state": "clean",
+                    **self.lens_evidence(
+                        "complexity-mitigator",
+                        evidence_ref="cas:complexity-mitigator:clean",
+                    ),
+                }
+            }
+        )
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
         self.assertEqual(body["verdict"], "complete")
+
+    def test_complexity_pressure_requires_complexity_lens(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = self.satisfied_standard_cas()
+        context["review_profile"] = self.review_profile()
+        context["review_profile"]["complexity_pressure"] = {
+            "review_churn": "yes",
+            "one_patch_per_comment_pressure": "yes",
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertIn(
+            "review_profile.auxiliary_review_lanes.complexity-mitigator:complexity-pressure-required",
+            body["blocked_reasons"],
+        )
 
     def test_review_profile_blocker_or_rerun_blocks_completion(self) -> None:
         context = deepcopy(self.context("terminal-context.proof-only.example.json"))
@@ -671,6 +774,42 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertEqual(body["next_owner"], "$cas")
         self.assertIn("cas-review-blocked", body["blocked_reasons"])
         self.assertIn("cas.auxiliary_lanes.footgun-finder:missing", body["blocked_reasons"])
+
+    def test_required_auxiliary_lane_clean_requires_lens_contract(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = {
+            "required": "yes",
+            "standard_clean_runs_required": 3,
+            "standard_clean_runs_count": 3,
+            "required_auxiliary_lanes": ["footgun-finder"],
+            "auxiliary_lanes": {
+                "footgun-finder": {
+                    "status": "clean",
+                    "folded": "yes",
+                    "head_sha": "abc123",
+                    "target_fingerprint": "diff:clean",
+                },
+            },
+            "independent_fresh_runs": "yes",
+            "tuple_bound": "yes",
+            "tuple": {
+                "base_sha": "base123",
+                "head_sha": "abc123",
+                "target_fingerprint": "diff:clean",
+            },
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertIn(
+            "cas.auxiliary_lanes.footgun-finder.lens_contract:missing",
+            body["blocked_reasons"],
+        )
+        self.assertIn(
+            "cas.auxiliary_lanes.footgun-finder.lens_evidence_state:missing",
+            body["blocked_reasons"],
+        )
 
     def test_required_auxiliary_lane_blocker_or_rerun_blocks_completion(self) -> None:
         context = deepcopy(self.context("terminal-context.proof-only.example.json"))
@@ -745,8 +884,11 @@ class ActuationTerminalGateTests(unittest.TestCase):
                 "invariant-ace": {
                     "status": "clean",
                     "folded": "yes",
-                    "head_sha": "stale-head",
-                    "target_fingerprint": "stale-diff",
+                    **self.lens_evidence(
+                        "invariant-ace",
+                        head_sha="stale-head",
+                        target_fingerprint="stale-diff",
+                    ),
                 },
             },
             "independent_fresh_runs": "yes",
@@ -781,8 +923,7 @@ class ActuationTerminalGateTests(unittest.TestCase):
                 "complexity-mitigator": {
                     "status": "clean",
                     "folded": "yes",
-                    "head_sha": "abc123",
-                    "target_fingerprint": "diff:clean",
+                    **self.lens_evidence("complexity-mitigator"),
                 },
             },
             "independent_fresh_runs": "yes",
@@ -797,9 +938,10 @@ class ActuationTerminalGateTests(unittest.TestCase):
             **{
                 "complexity-mitigator": {
                     "state": "clean",
-                    "evidence_ref": "cas:complexity-mitigator:clean",
-                    "head_sha": "abc123",
-                    "target_fingerprint": "diff:clean",
+                    **self.lens_evidence(
+                        "complexity-mitigator",
+                        evidence_ref="cas:complexity-mitigator:clean",
+                    ),
                 }
             }
         )

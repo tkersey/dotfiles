@@ -24,6 +24,12 @@ ADD_VERDICTS = {"handoff_to_ship", "shipping_not_requested", "blocked", "missing
 TERMINAL_VERDICTS = {"complete", "continue", "blocked"}
 NEXT_OWNERS = {"none", "$cas", "$proof-patch", "$ship", "$goal-grind", "$goal-actuating", "$st", "human"}
 AUXILIARY_CAS_LANES = {"footgun-finder", "invariant-ace", "complexity-mitigator"}
+AUXILIARY_LENS_CONTRACTS = {
+    "footgun-finder": "footgun-lens-v1",
+    "invariant-ace": "invariant-gate-v1",
+    "complexity-mitigator": "complexity-preflight-v1",
+}
+VALID_LENS_EVIDENCE_STATES = {"valid", "missing", "invalid", "stale", "blocked", "rerun-required", "not-required"}
 HARD_REASON_ORDER = [
     "blocked-loop-contract-missing",
     "blocked-loop-contract-stale",
@@ -419,6 +425,64 @@ def lane_binding_value(record: dict[str, Any], key: str) -> Any:
     return first_present(record, (key,), tuple_value.get(key))
 
 
+def lens_evidence_ref_for(record: dict[str, Any]) -> Any:
+    return first_present(
+        record,
+        (
+            "lens_evidence_ref",
+            "evidence_ref",
+            "verdict_ref",
+            "review_fold_ref",
+            "receipt_ref",
+        ),
+    )
+
+
+def lens_contract_reasons_for(record: dict[str, Any], lane: str, prefix: str) -> list[str]:
+    reasons: list[str] = []
+    expected = AUXILIARY_LENS_CONTRACTS[lane]
+    contract = record.get("lens_contract")
+    if not isinstance(contract, str) or not contract:
+        reasons.append(f"{prefix}.lens_contract:missing")
+    elif contract != expected:
+        reasons.append(f"{prefix}.lens_contract:invalid")
+
+    state = str(record.get("lens_evidence_state", "")).lower()
+    if not state:
+        reasons.append(f"{prefix}.lens_evidence_state:missing")
+    elif state not in VALID_LENS_EVIDENCE_STATES:
+        reasons.append(f"{prefix}.lens_evidence_state:invalid")
+    elif state != "valid":
+        reasons.append(f"{prefix}.lens_evidence_state:{state}")
+
+    evidence_ref = lens_evidence_ref_for(record)
+    if not isinstance(evidence_ref, str) or not evidence_ref:
+        reasons.append(f"{prefix}.lens_evidence_ref:missing")
+    return reasons
+
+
+def complexity_pressure_requires_lens(profile: dict[str, Any]) -> bool:
+    pressure = profile.get("complexity_pressure")
+    if pressure is None or pressure == "":
+        return False
+    if isinstance(pressure, dict):
+        if any(explicit_no(pressure.get(key)) for key in ("required", "applies", "present")):
+            return False
+        return any(
+            as_yes(pressure.get(key))
+            for key in (
+                "required",
+                "present",
+                "review_churn",
+                "one_patch_per_comment_pressure",
+                "comprehension_blocked",
+                "mixed_responsibilities",
+                "boolean_soup",
+            )
+        ) or str(pressure.get("level", "")).lower() in {"medium", "high", "required"}
+    return as_yes(pressure) or str(pressure).lower() in {"present", "required", "medium", "high"}
+
+
 def auxiliary_lane_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
     records = auxiliary_lane_records_for(cas)
     required = required_auxiliary_lanes_for(cas, records)
@@ -438,6 +502,8 @@ def auxiliary_lane_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) ->
             reasons.append(f"cas.auxiliary_lanes.{lane}:blocked")
         if as_yes(record.get("rerun_required")) or state == "rerun-required":
             reasons.append(f"cas.auxiliary_lanes.{lane}:rerun-required")
+        if folded and state not in {"blocked", "rerun-required"}:
+            reasons.extend(lens_contract_reasons_for(record, lane, f"cas.auxiliary_lanes.{lane}"))
         head_sha = lane_binding_value(record, "head_sha")
         if not isinstance(head_sha, str) or not head_sha:
             reasons.append(f"cas.auxiliary_lanes.{lane}.head_sha:missing")
@@ -480,6 +546,8 @@ def review_profile_reasons_for(profile: dict[str, Any], artifact: dict[str, Any]
             reason = record.get("reason")
             if not isinstance(reason, str) or not reason.strip():
                 reasons.append(f"{prefix}.reason:missing")
+            if lane == "complexity-mitigator" and complexity_pressure_requires_lens(profile):
+                reasons.append(f"{prefix}:complexity-pressure-required")
             continue
         if state == "blocked":
             reasons.append(f"{prefix}:blocked")
@@ -488,7 +556,8 @@ def review_profile_reasons_for(profile: dict[str, Any], artifact: dict[str, Any]
             reasons.append(f"{prefix}:rerun-required")
             continue
 
-        evidence_ref = first_present(record, ("evidence_ref", "verdict_ref", "review_fold_ref", "receipt_ref"))
+        reasons.extend(lens_contract_reasons_for(record, lane, prefix))
+        evidence_ref = lens_evidence_ref_for(record)
         if not isinstance(evidence_ref, str) or not evidence_ref:
             reasons.append(f"{prefix}.evidence_ref:missing")
         head_sha = lane_binding_value(record, "head_sha")

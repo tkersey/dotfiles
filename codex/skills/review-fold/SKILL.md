@@ -104,6 +104,9 @@ review_fold:
         reason:
       auxiliary_lanes:
         - lane: footgun-finder|invariant-ace|complexity-mitigator
+          lens_contract: footgun-lens-v1|invariant-gate-v1|complexity-preflight-v1
+          lens_evidence_state: valid|missing|invalid|stale|blocked|rerun-required|not-required
+          lens_evidence_ref:
           verdict_ref:
           head_sha:
           target_fingerprint:
@@ -387,7 +390,7 @@ Auxiliary CAS review lanes may still block closeout. They do not increment the s
 
 1. Bind reviews to the original goal and current diff.
 2. If fresh/exhaustive workflow code review is required and no CAS standard review result is present, stop and request `$cas` standard review.
-3. If the workflow `review_profile` selected auxiliary lanes, require their CAS-backed results before final review folding unless they are explicitly marked not-required with a reason.
+3. If the workflow `review_profile` selected auxiliary lanes, require their CAS-backed lens evidence before final review folding unless they are explicitly marked not-required with a reason.
 4. Classify each finding before any implementation.
 5. Separate the claim, observed fact, and suggested repair when the review text includes all three.
 6. Reject, block, ask, or follow up before code whenever validity, liability, or scope is not established.
@@ -403,7 +406,7 @@ Auxiliary CAS review lanes may still block closeout. They do not increment the s
 16. Treat each new CAS attempt result, follow-up finding batch, reopened thread batch, or dirty clean-streak attempt as a new receipt scope; do not reuse an earlier RF receipt for later findings.
 17. Collapse duplicates and same-family comments across lanes.
 18. Mark whether the current standard attempt is normalized clean and whether the standard clean-run counter resets.
-19. Mark auxiliary lane state as `clean`, `findings-folded`, `blocked`, or `rerun-required`; never count it as a standard clean run.
+19. Mark auxiliary lane state as `clean`, `findings-folded`, `blocked`, or `rerun-required`; include the lane's `lens_contract`, `lens_evidence_state`, and `lens_evidence_ref`; never count it as a standard clean run.
 20. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
 21. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
 22. Escalate high one-patch-per-comment risk to `refactor-kernel`, `branch-race`, `remediation-plan`, or `blocked` unless an explicit owner-boundary exception is recorded.
