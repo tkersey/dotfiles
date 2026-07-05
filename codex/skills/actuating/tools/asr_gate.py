@@ -72,11 +72,11 @@ def main() -> int:
             errors.append(f"artifact_state.{key}")
 
     control = obj(state, "control", errors)
-    for key in ("plan_ref", "gcr_id"):
+    for key in ("plan_ref", "authority_id"):
         if not control.get(key):
             errors.append(f"control.{key}")
-    if control.get("gcr_current") is not True:
-        errors.append("control.gcr_current")
+    if control.get("authority_current") is not True:
+        errors.append("control.authority_current")
     if control.get("execution_allowed") is not True:
         errors.append("control.execution_allowed")
     debt = control.get("blocking_debt")
@@ -146,7 +146,7 @@ def main() -> int:
 
     ship_ready = (
         not errors
-        and control.get("gcr_current") is True
+        and control.get("authority_current") is True
         and control.get("projection_valid") is True
         and not debt
         and counts["open"] == 0

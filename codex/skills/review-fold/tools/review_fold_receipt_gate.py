@@ -247,7 +247,7 @@ def validate_full(receipt: dict[str, Any]) -> dict[str, Any]:
     recommended = object_from(receipt.get("recommended_resolution"))
     action = object_from(receipt.get("action_plan"))
     mode = action.get("mode")
-    if risk == "high" and mode not in {"refactor-kernel", "branch-race", "st-governed"}:
+    if risk == "high" and mode not in {"refactor-kernel", "branch-race"}:
         warnings.append("compression.one_patch_per_comment_risk:high-without-kernel-or-branch-route")
     if mode == "refactor-kernel":
         owner = compression.get("repeated_kernel") or compression.get("owner_boundary")

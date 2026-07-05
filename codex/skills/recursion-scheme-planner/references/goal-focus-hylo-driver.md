@@ -53,7 +53,7 @@ goal_focus_frame:
   version: GFF-v1
   parent_goal_id:
   frame_id:
-  focus_kind: inspect|review-intake|review-quotient|abstraction-decision|implementation|proof|ship|st-handoff|blocked|terminal
+  focus_kind: inspect|review-intake|review-quotient|abstraction-decision|implementation|proof|ship|blocked|terminal
   local_objective:
   contribution_to_parent:
   seed_ref:
@@ -98,12 +98,12 @@ hylo_effect_goal:
     generated_work:
     frontier:
   action:
-    owner: root|subagent|st
+    owner: root|subagent
     allowed_effects: []
     mutation_allowed: yes|no
   catamorphism:
     evidence: []
-    fold_verdict: continue|complete|blocked|regress|replan|refactor-kernel|st-required
+    fold_verdict: continue|complete|blocked|regress|replan|refactor-kernel
     parent_state_delta:
   continuation:
     next_focus:

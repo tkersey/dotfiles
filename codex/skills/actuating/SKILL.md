@@ -41,24 +41,12 @@ No continuation without fold.
 No completion without terminal algebra.
 ```
 
-## Relation to the old execution controller
+## Removed Execution Controller
 
-The former transaction-controller behavior is still available as **st-governed mode**.
-
-Use st-governed mode when the accepted work requires:
-
-```text
-stable plan identity
-existing .ledger/st or .step/st-plan.jsonl state
-resource claims
-fencing tokens
-external worktrees
-serialized integration
-branch/head proof
-multi-plan coordination
-```
-
-In that mode, `$actuating` hands off to `$goal-actuating`, which then routes through `$st` with bounded execution slices.
+The former transaction-controller path has been removed from this
+workspace. When accepted work requires durable claims, fencing, external
+worktrees, serialized integration, or multi-plan coordination, `$actuating`
+must block or ask for a new controller rather than routing to a removed skill.
 
 ## Normal flow
 
@@ -78,10 +66,10 @@ The workflow performs:
 4. Run $agent-loop-schemes when a material loop contract is required.
 5. Invoke $goal-actuating with the accepted spec and optional Scheme Plan / ALSR / HYL.
 6. Derive a goal contract from the accepted spec.
-7. Choose update_plan, goal-artifacts, or $st persistence.
+7. Choose update_plan or goal-artifacts persistence.
 8. If code review is required, run it through $cas.
 9. Use $review-fold before any review-originated code change.
-10. Execute accepted work through HYL-v1 steps, bounded subagents, or $st-governed slices.
+10. Execute accepted work through HYL-v1 steps or bounded subagents.
 11. Fold evidence after material verification.
 12. Run ATCG-v1 terminal closure gate before any completion claim.
 13. Emit proof-patch or explicit $ship handoff.
@@ -101,7 +89,7 @@ branch choices or competing implementation strategies
 proof fanout
 parallel subagent opportunities
 mutual client/server/schema/protocol changes
-$st coordination, claims, fencing, or worktrees
+durable coordination, claims, fencing, or external worktrees
 unclear stop rule
 risk of becoming a generic keep-going loop
 ```
@@ -115,7 +103,6 @@ For material actuation, establish one of these before first material mutation:
 ```text
 direct_action fused exemption
 ALSR-v1 + HYL-v1 current
-$st owns the work with current control receipt
 ```
 
 If none exists, stop with:
@@ -319,7 +306,7 @@ seed
 -> unfold next legal work node or frontier
 -> execute only that node/frontier
 -> fold current-artifact evidence
--> continue | complete | blocked | regress | replan | st-required
+-> continue | complete | blocked | regress | replan
 ```
 
 No material mutation is valid without a current unfold result.
@@ -390,7 +377,7 @@ scheme plan, if needed
 ALSR/HYL summary, if material
 mode selection
 optional work list
-$st required? yes/no
+durable external controller required? yes/no
 review source required? none|cas-probe|cas-lane|cas-exhaustive
 parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
 proof obligations
@@ -405,7 +392,7 @@ Before running `$goal-actuating`, establish one of:
 accepted implementation spec
 direct user goal with enough proof surface
 review findings bound to current diff and intended change
-plan handoff / $st handoff for st-governed mode
+plan handoff for goal-artifact execution
 ```
 
 If none exists, run `$spec-pipeline` in gate-only/no-plan mode or stop with:
@@ -456,13 +443,13 @@ Choose the narrowest mode that can complete safely:
 
 ```yaml
 actuating_mode:
-  source: direct-goal|spec-first|review|dry-plan|st-governed
-  persistence: update_plan|goal-artifacts|st
+  source: direct-goal|spec-first|review|dry-plan
+  persistence: update_plan|goal-artifacts
   implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
   review_mode: none|triage|remediation-plan|review-closeout
   review_source: none|existing-review|cas-probe|cas-lane|cas-exhaustive
   scheme_plan: none|required|present
-  loop_contract: fused|ALSR-HYL|required|st-owned
+  loop_contract: fused|ALSR-HYL|required
   parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
   closure: triage-report|remediation-plan|review-closeout|ship-handoff|blocked
 ```
@@ -479,7 +466,7 @@ Switch to `remediation-plan` when the user names `remediation-plan`, or asks for
 Switch to `cas-exhaustive` when exhaustive review is requested or required by the proof bar.
 Switch to `refactor-kernel` when repeated findings share an owner boundary.
 Switch to `branch-race` when local fix and refactor-kernel are both plausible and can be compared under the same verifier.
-Switch to `st-governed` only when durable claims, fencing, worktrees, or serialized integration are required.
+Block when durable claims, fencing, worktrees, or serialized integration are required and no supported controller exists.
 Switch to `ship-handoff` only when PR/publication intent is explicit or inherited from the accepted spec.
 Emit AER-v1 before continuing mutation when repeated accepted liabilities require or reject escalation from minimal-fix to refactor-kernel, branch-race, remediation-plan, or blocked.
 
@@ -520,7 +507,6 @@ review findings expand product/API scope
 raw review text has not been reduced to dispositions
 review is required but $cas review is unavailable or not run
 three clean normalized $cas review runs are required but cannot be completed
-$st authority is required but absent
 parallel fanout would cross shared invariants or conflicting resources
 ALSR/HYL is required but missing
 ALSR/HYL is stale against current artifact state
@@ -535,7 +521,7 @@ ATCG-v1 does not return can_mark_goal_complete=yes
 
 ```text
 Actuating:
-- source: direct goal | accepted spec | review | $st handoff
+- source: direct goal | accepted spec | review
 - authority source:
 - scheme plan: none|required|present
 - loop contract:
@@ -559,7 +545,7 @@ Actuating:
 - goal contract / work list:
 - review-fold disposition:
 - actuation escalation receipt:
-- execution owner: goal-grind | st-bounded-slice | none
+- execution owner: goal-grind | none
 - evidence-fold verdict:
 - proof-patch / ship handoff:
 - ATCG-v1 verdict / next owner:
@@ -570,12 +556,6 @@ If no accepted spec or goal contract exists, say:
 
 ```text
 actuation verdict: blocked-needs-accepted-spec
-```
-
-If $st authority is required but not obtained, say:
-
-```text
-actuation verdict: st-authority-blocked
 ```
 
 If review is required but CAS review is unavailable or not run, say:

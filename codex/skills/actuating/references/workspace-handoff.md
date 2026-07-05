@@ -7,8 +7,8 @@ actuation_workspace_handoff:
   session_id:
   executor:
   claim_ref:
-  fencing_token:
-  gcr_ref:
+  coordination_token:
+  authority_ref:
   branch_epoch:
   worktree_ref:
   resource_roots: []
@@ -17,5 +17,5 @@ actuation_workspace_handoff:
   proof_obligations: []
 ```
 
-This handoff is stale when any referenced sequence, epoch, claim, fencing token,
+This handoff is stale when any referenced sequence, epoch, claim, coordination token,
 or worktree binding changes.

@@ -17,12 +17,12 @@ from typing import Any
 
 YES = {"yes", "true", "1", True}
 NO = {"no", "false", "0", False}
-SOURCES = {"accepted_spec", "direct_goal", "review", "st_handoff"}
+SOURCES = {"accepted_spec", "direct_goal", "review"}
 CLOSURE_CANDIDATES = {"proof-patch", "ship-handoff", "ship-complete", "blocked"}
 LOCAL_VERDICTS = {"done", "continue", "regress", "blocked", "invalid-proof", "ask-human", "refactor-kernel"}
 ADD_VERDICTS = {"handoff_to_ship", "shipping_not_requested", "blocked", "missing"}
 TERMINAL_VERDICTS = {"complete", "continue", "blocked"}
-NEXT_OWNERS = {"none", "$cas", "$proof-patch", "$ship", "$goal-grind", "$goal-actuating", "$st", "human"}
+NEXT_OWNERS = {"none", "$cas", "$proof-patch", "$ship", "$goal-grind", "$goal-actuating", "human"}
 AUXILIARY_CAS_LANES = {"footgun-finder", "invariant-ace", "complexity-mitigator"}
 AUXILIARY_LENS_CONTRACTS = {
     "footgun-finder": "footgun-lens-v1",
@@ -37,7 +37,6 @@ HARD_REASON_ORDER = [
     "blocked-hylo-fold-missing",
     "blocked-hylo-terminal-missing",
     "cas-review-blocked",
-    "st-authority-blocked",
     "proof-stale",
     "side-effect-boundary-violated",
 ]
@@ -181,17 +180,7 @@ def hard_completion_reasons_for(context: dict[str, Any]) -> list[str]:
         "direct-action-fused",
         "fused",
     }
-    st_governed = as_yes(loop.get("st_governed")) or loop.get("mode") in {
-        "st_governed",
-        "st-governed",
-        "st_owned",
-        "st-owned",
-    }
-    st_current = st_governed and (
-        as_yes(loop.get("st_control_current"))
-        or as_yes(object_from(loop.get("st_control")).get("current"))
-    )
-    loop_receipts_exempt = direct_action_fused or st_current
+    loop_receipts_exempt = direct_action_fused
     loop_required = loop_receipts_required(loop, hsr)
 
     alsr = object_from(loop.get("alsr"))
@@ -218,9 +207,6 @@ def hard_completion_reasons_for(context: dict[str, Any]) -> list[str]:
             append_reason(reasons, "blocked-loop-contract-missing")
         elif not as_yes(hyl.get("current")):
             append_reason(reasons, "blocked-loop-contract-stale")
-
-    if st_governed and not st_current:
-        append_reason(reasons, "st-authority-blocked")
 
     if loop_required and not loop_receipts_exempt:
         if not as_yes(hsr.get("terminal_present")):
@@ -626,8 +612,6 @@ def proof_verifier_mismatch(context: dict[str, Any], loop: dict[str, Any]) -> bo
 def advisory_next_owner_for(reasons: list[str]) -> str:
     if not reasons:
         return "none"
-    if "st-authority-blocked" in reasons:
-        return "$st"
     if "cas-review-blocked" in reasons:
         return "$cas"
     if "side-effect-boundary-violated" in reasons:
@@ -987,8 +971,6 @@ def next_owner_for(blocked: list[str], pending: list[str]) -> str:
     combined = blocked + pending
     if any("ask-human" in reason for reason in combined):
         return "human"
-    if any(reason == "st-authority-blocked" for reason in combined):
-        return "$st"
     if any(reason.startswith("artifact_scope") for reason in combined):
         return "$goal-grind"
     profile_blocked = any(reason.startswith("review_profile") for reason in combined)

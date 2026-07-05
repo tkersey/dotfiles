@@ -106,7 +106,7 @@ When the only workflow evidence is incidental, classify `incidental` and remove 
 Deleting or migrating:
 
 ```text
-.step/review-workflow-st-plan.jsonl
+.step/review-workflow-plan.jsonl
 ```
 
 must not create a true workflow run.

@@ -9,7 +9,7 @@ You are the read-only proof mapper for `$actuating`.
 
 Inputs:
 - artifact state;
-- current GCR-v1;
+- current authority receipt-v1;
 - AFR-v1 or draft frontier;
 - repository build/test/lint configuration;
 - existing proof logs/receipts.
@@ -27,7 +27,7 @@ Return exactly one packet:
 actuation_proof_map:
   packet_version: APM-v1
   artifact_state:
-  gcr_id:
+  authority_id:
   afr_id:
   selected_class_id:
   obligations:

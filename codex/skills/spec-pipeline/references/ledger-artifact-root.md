@@ -10,7 +10,6 @@ Examples:
 
 ```text
 .ledger/plan/
-.ledger/st/
 .ledger/actuating/
 .ledger/review-closure/
 .ledger/retrace/
@@ -21,4 +20,4 @@ Examples:
 Specifications and user-facing source documents may remain under `docs/`.
 
 A specification handoff to `$plan` should provide an immutable source digest
-and proposed `plan_id`; `$st` remains the authority that registers the plan.
+and proposed `plan_id`; `$plan` owns the policy artifact and `$actuating` owns execution.

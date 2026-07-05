@@ -36,7 +36,7 @@ profile + mode
 ```
 
 `$spec-pipeline` owns accepted semantics. `$plan` owns execution-policy
-synthesis, task/wave ordering, policy fixed-point refinement, and `.ledger/st`
+synthesis, task/wave ordering, policy fixed-point refinement, and `$actuating`
 handoff. `$actuating` owns fenced execution. This skill never mutates repository
 product files and never emits `<proposed_plan>`.
 

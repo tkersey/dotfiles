@@ -19,7 +19,7 @@ user intent + current artifact facts
 -> work can unfold, evidence can fold, and stopping can be judged
 ```
 
-This skill replaces large upfront specification ceremony for ordinary goal work. It does not replace `$grill-me`, `$codebase-doctrine`, or `$st`; it records when those specialist effects are required.
+This skill replaces large upfront specification ceremony for ordinary goal work. It does not replace `$grill-me` or `$codebase-doctrine`; it records when those specialist effects are required.
 
 ## Use when
 
@@ -28,7 +28,7 @@ This skill replaces large upfront specification ceremony for ordinary goal work.
 - Reviews, failures, migrations, or repeated attempts need one governing outcome.
 - The agent is tempted to keep going without a stop rule.
 
-Do not use for trivial one-shot edits, pure prose answers, or already-bound `$st` execution slices.
+Do not use for trivial one-shot edits, pure prose answers, or already-bound execution slices.
 
 ## Contract schema
 
@@ -38,7 +38,7 @@ goal_contract:
   id: goal-YYYYMMDD-short-name
   objective:
     summary:
-    mode: direct|goal|review|debug|migration|hardening|st-governed
+    mode: direct|goal|review|debug|migration|hardening|blocked-external-coordination
     non_goals: []
   done:
     success_state: []
@@ -72,7 +72,7 @@ goal_contract:
     mutation_allowed: yes|no
     dependency_changes_allowed: yes|no
     deployment_allowed: no
-    durable_orchestration: update_plan|goal-workgraph|st-required
+    durable_orchestration: update_plan|goal-workgraph|blocked
   ambiguity:
     discoverable_facts_to_research: []
     human_owned_decisions: []
@@ -86,7 +86,7 @@ goal_contract:
 
 ## Procedure
 
-1. Identify the task shape: direct, goal, review, debug, migration, hardening, or st-governed.
+1. Identify the task shape: direct, goal, review, debug, migration, hardening, or blocked external coordination.
 2. Research discoverable repository facts before asking the user questions.
 3. Separate observed facts from claims, proposals, and speculation.
 4. Name the success state and proof surface before work graph or mutation.
@@ -102,12 +102,12 @@ goal_contract:
 - `$review-fold` when review pressure is present.
 - `$codebase-doctrine` when correctness doctrine or authority maps are missing.
 - `$grill-me` when human-owned choices block the contract.
-- `$st` only when durable orchestration, resource claims, or fencing is required.
+- `blocked` when durable orchestration, resource claims, or fencing are required but no supported controller exists.
 
 ## Guardrails
 
 - Do not create a large spec unless semantic closure is still the blocker.
 - Do not ask the user for discoverable facts.
 - Do not treat reviews as implementation instructions.
-- Do not use `$st` merely because work has multiple steps.
+- Do not require a durable controller merely because work has multiple steps.
 - Do not claim a goal is grindable when no verifier or proof surface exists.

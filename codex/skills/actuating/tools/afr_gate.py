@@ -93,8 +93,8 @@ def main() -> int:
     for key in (
         "plan_ref",
         "plan_seq",
-        "gcr_id",
-        "gcr_ref",
+        "authority_id",
+        "authority_ref",
         "structure_fingerprint",
         "contract_fingerprint",
         "coverage_fingerprint",

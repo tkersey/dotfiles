@@ -212,7 +212,7 @@ ambiguous
 absent
   stop before replay
 ```
-A filename such as `.step/review-workflow-st-plan.jsonl` is not a workflow activation.
+A filename such as `.step/review-workflow-plan.jsonl` is not a workflow activation.
 A generic merge/land/complete signal is not controller closure.
 See [source-governance.md](references/source-governance.md).
 ### 1. Find the decision

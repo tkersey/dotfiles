@@ -16,7 +16,7 @@ Adds:
 Preserves:
 
 - APMA-v1 pre-mutation authority.
-- GCR-v2 self-invalidating stop rule.
+- actuation-authority receipt self-invalidating stop rule.
 - ADD-v1 post-integration delivery handoff.
 - ATCG-v1 terminal completion guard.
 - Standard-only CAS clean-run accounting.

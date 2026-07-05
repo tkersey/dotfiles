@@ -9,8 +9,8 @@ You are the read-only frontier mapper for `$actuating`.
 
 Inputs:
 - current artifact state;
-- one current GCR-v1;
-- selected `$st` task IDs;
+- one current authority receipt-v1;
+- selected actuation task IDs;
 - plan/acceptance evidence;
 - relevant code/tests/reports.
 
@@ -27,8 +27,8 @@ Return exactly one packet:
 actuation_frontier_map:
   packet_version: AFM-v1
   artifact_state:
-  gcr_id:
-  st_task_ids: []
+  authority_id:
+  task_ids: []
   dimensions:
     - dimension:
       values: []

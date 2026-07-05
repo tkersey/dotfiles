@@ -33,7 +33,7 @@ For material goals, use a local `.goal/` directory only when it is ignored or ex
 .goal/proof.md
 ```
 
-For durable, multi-plan, fenced, or resource-sensitive work, use `$st` instead of inventing a parallel plan store.
+For durable, multi-plan, fenced, or resource-sensitive work, block unless an existing supported controller owns the coordination.
 
 ## Attempt row
 
@@ -71,7 +71,7 @@ For durable, multi-plan, fenced, or resource-sensitive work, use `$st` instead o
 
 ```yaml
 goal_grind_mode:
-  persistence: update_plan|goal-artifacts|st
+  persistence: update_plan|goal-artifacts
   implementation: proof-only|minimal-fix|refactor-kernel|branch-race
   review_scope: none|in-scope-only|adjudicate-all|user-selected
   frontier: verifier-first|highest-risk-first|representative-class-first|dependency-order
@@ -84,11 +84,9 @@ Minimal does not mean local. Minimal means the smallest change that fixes the ow
 
 Prefer `refactor-kernel` over local patching when many local fixes would duplicate an invariant check, adapter, state transition, proof obligation, review-only special case, or owner boundary.
 
-## `$st` boundary
+## External Controller Boundary
 
-`$st` is not deprecated.
-
-Use `$st` when any of these are true:
+Block when any of these are true and no supported controller already owns the work:
 
 ```text
 multiple plans or branches need durable coordination
@@ -96,10 +94,10 @@ resource claims or fencing tokens are required
 the task spans independent worktrees
 overlapping edits must be serialized
 branch epoch / base-head proof matters
-the user explicitly asks for $st or .step/st-plan.jsonl already participates
+legacy removed-controller state would be required for continuity
 ```
 
-Do not start `$st` merely because the goal has several steps. Use `update_plan` or `goal-workgraph` first.
+Do not require a durable controller merely because the goal has several steps. Use `update_plan` or `goal-workgraph` first.
 
 ## Guardrails
 

@@ -6,10 +6,10 @@ New planning artifacts:
 .ledger/plan/<plan-id>/
 ```
 
-The `$st` canonical imported state remains:
+The canonical plan artifact remains:
 
 ```text
-.ledger/st/plans/<plan-id>/
+.ledger/plan/<plan-id>/
 ```
 
 Recommended plan artifact layout:

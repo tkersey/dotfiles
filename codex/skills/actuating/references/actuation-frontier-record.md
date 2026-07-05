@@ -1,6 +1,6 @@
 # Actuation Frontier Record: AFR-v1
 
-AFR is the domain-decision layer for one `$st` aperture.
+AFR is the domain-decision layer for one actuation aperture.
 
 It does not own task status.
 
@@ -21,8 +21,8 @@ actuation_frontier:
   graph_binding:
     plan_ref:
     plan_seq:
-    gcr_id:
-    gcr_ref:
+    authority_id:
+    authority_ref:
     structure_fingerprint:
     contract_fingerprint:
     coverage_fingerprint:
@@ -136,11 +136,11 @@ actuation_frontier:
 
 ## Laws
 
-1. Selected task IDs must be a subset of the current GCR aperture.
+1. Selected task IDs must be a subset of the current authority receipt aperture.
 2. Material mutation requires `execution_allowed: true` and no blocking debt.
 3. The selected class must exist and be marked `selected`.
 4. The route and owner are chosen before realization.
 5. Every added construct must fit the surface budget.
 6. Focused proof maps to the selected class/invariant.
 7. A new observation makes the current route nonterminal.
-8. AFR never changes `$st` task status directly.
+8. AFR never changes task status directly.

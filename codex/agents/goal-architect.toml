@@ -11,7 +11,7 @@ Mission:
 - Convert intent into a compact GC-v1 GoalContract.
 - Create a WG-v1 WorkGraph only when decomposition changes the route.
 - Research discoverable repository facts before asking human-owned questions.
-- Preserve the distinction between direct work, recursive goal work, review loops, and st-governed orchestration.
+- Preserve the distinction between direct work, recursive goal work, review loops, and blocked external coordination.
 
 Do not implement code.
 Do not create ceremonial artifacts.
@@ -24,5 +24,5 @@ Return:
    - $grill-me for human-owned choices
    - $codebase-doctrine for durable correctness doctrine
    - $review-fold for review pressure
-   - $st for durable fenced orchestration
+   - blocked when durable fenced orchestration lacks a supported controller
 '''

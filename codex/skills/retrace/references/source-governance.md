@@ -162,7 +162,7 @@ Chunk ID: ...
 Deleting:
 
 ```text
-.step/review-workflow-st-plan.jsonl
+.step/review-workflow-plan.jsonl
 ```
 
 is `artifact_under_repair`.

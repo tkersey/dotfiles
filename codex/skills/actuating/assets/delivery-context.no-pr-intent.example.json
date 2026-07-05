@@ -12,7 +12,7 @@
     "integration": {
       "queue_quiescent": "yes",
       "receipts": [
-        ".ledger/st/integration/receipts/igr-001.json"
+        ".ledger/actuating/delivery/receipts/igr-001.json"
       ]
     },
     "plan_id": "plan-example",
@@ -24,7 +24,7 @@
     "proof_complete_receipt": {
       "current": "yes",
       "present": "yes",
-      "ref": ".ledger/st/proof/plan-example/proof-complete.json"
+      "ref": ".ledger/actuating/proof/plan-example/proof-complete.json"
     },
     "proof_summary": "Proof-complete graph audit and integration receipt are current.",
     "repo_policy_pr_mode": "unknown",

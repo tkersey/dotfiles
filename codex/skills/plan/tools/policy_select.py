@@ -299,7 +299,7 @@ def select_policy(
         "failure_observation_refs": [],
         "utility": None,
         "mutation_authority": "no",
-        "requires_gcr": False,
+        "requires_actuation_authority": False,
         "requires_frontier_record": False,
     }
 
@@ -349,7 +349,7 @@ def select_policy(
                     "failure_observation_refs", []
                 ),
                 "utility": action.get("utility"),
-                "requires_gcr": repository_mutation,
+                "requires_actuation_authority": repository_mutation,
                 "requires_frontier_record": repository_mutation
                 and action.get("kind")
                 in {"mutate", "stabilize", "deploy", "rollback"},

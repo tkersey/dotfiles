@@ -8,7 +8,7 @@ New retrace artifacts belong under:
 
 Do not create new `.retrace/` roots.
 
-When replaying `$st` decisions, preserve:
+When replaying legacy execution-controller decisions, preserve:
 
 ```text
 workspace ID/sequence
@@ -16,5 +16,5 @@ plan ID/sequence
 claim/fencing
 branch epoch
 session view
-GCR-v2
+actuation-authority receipt
 ```

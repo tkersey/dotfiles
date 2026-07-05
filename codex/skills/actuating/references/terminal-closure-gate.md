@@ -23,9 +23,9 @@ actuation_terminal_decision:
   verdict: complete | continue | blocked
   can_mark_goal_complete: yes | no
   run_id:
-  source: accepted_spec | direct_goal | review | st_handoff
+  source: accepted_spec | direct_goal | review | blocked
   closure_candidate: proof-patch | ship-handoff | ship-complete | blocked
-  next_owner: none | $cas | $proof-patch | $ship | $goal-grind | $goal-actuating | $st | human
+  next_owner: none | $cas | $proof-patch | $ship | $goal-grind | $goal-actuating | human
   blocked_reasons: []
   continue_reasons: []
   current_artifact_binding:
@@ -62,7 +62,7 @@ actuation_completion_allowance:
   verdict: allowed | denied
   can_call_update_goal_complete: yes | no
   decision_verdict: complete | continue | blocked
-  next_owner: none | $cas | $proof-patch | $ship | $goal-grind | $goal-actuating | $st | human
+  next_owner: none | $cas | $proof-patch | $ship | $goal-grind | $goal-actuating | human
   blocked_reasons: []
   continue_reasons: []
 ```
@@ -81,7 +81,7 @@ ATCG-v1 consumes current receiver-owned evidence:
 
 ```text
 current branch/head/diff binding
-loop governance: ALSR-v1, HYL-v1, HSR-v1, or explicit fused/$st exemption
+loop governance: ALSR-v1, HYL-v1, HSR-v1, or explicit fused exemption
 evidence-fold verdict and proof commands
 proof-patch presence/currentness
 CAS requirement, tuple, freshness, and standard clean-run count
@@ -165,7 +165,6 @@ ALSR/HYL required + stale -> blocked-loop-contract-stale, next_owner=$goal-actua
 material mutation without unfold/action evidence -> blocked-hylo-frontier-missing, next_owner=$goal-actuating
 previous material action without fold evidence -> blocked-hylo-fold-missing, next_owner=$goal-actuating
 completion without terminal HSR -> blocked-hylo-terminal-missing, next_owner=$goal-actuating
-$st-governed completion without current $st control receipt -> st-authority-blocked, next_owner=$st
 CAS required + standard clean runs < required -> blocked, next_owner=$cas
 CAS required + standard_clean_runs_required <= 0 -> blocked, next_owner=$cas
 CAS required + final report standard clean runs < required -> blocked, next_owner=$cas
@@ -203,7 +202,6 @@ blocked-hylo-frontier-missing
 blocked-hylo-fold-missing
 blocked-hylo-terminal-missing
 cas-review-blocked
-st-authority-blocked
 proof-stale
 side-effect-boundary-violated
 ```
@@ -247,10 +245,8 @@ side-effect boundary respected
 proof matches verifier
 ```
 
-Direct-action fused and `$st`-governed runs may exempt ALSR/HYL/HSR receipt
-checks only when the context explicitly carries the exemption. `$st`-governed
-completion additionally requires current `$st` control evidence; `source:
-st_handoff` alone is not sufficient. Advisory would-block results exit
+Direct-action fused runs may exempt ALSR/HYL/HSR receipt checks only when the
+context explicitly carries the exemption. Advisory would-block results exit
 successfully; malformed input or unsupported mode/format remains a CLI failure.
 
 ## Validator

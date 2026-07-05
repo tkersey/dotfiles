@@ -15,4 +15,4 @@ proof-dag/
 resume/
 ```
 
-Authoritative task/claim/proof state remains under `.ledger/st/`.
+Authoritative task/proof state remains under `.ledger/actuating/`.

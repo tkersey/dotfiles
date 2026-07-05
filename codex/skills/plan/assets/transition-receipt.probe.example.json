@@ -4,12 +4,12 @@
     "transition_id": "ETR-PROBE-001",
     "policy_id": "POLICY-cache-strategy",
     "policy_revision": 1,
-    "policy_digest": "sha256:eff535bc88c9471ba4d7b2f87838948436bd93ac5b0f5e083489b00af3f81a5f",
+    "policy_digest": "sha256:4619a1a2f9ae91c9eb2623a593bd7df2c73f53557b2d3c1a51b71b87d136e7d1",
     "action_id": "ACTION-PROBE",
     "decision_ref": "EPD-STATE-0",
     "state_before": {
       "state_id": "STATE-0",
-      "state_digest": "sha256:0a427a0fc6072c85744c3f5d00aada9d7c2ec89b0ef0a67601b991645fded94e",
+      "state_digest": "sha256:75dbf5ba092d4ceee9463c60a3eea840525d274a50872f6c6ad08b74de387db6",
       "potential": {
         "critical_unknowns": 1,
         "hard_semantic_surface": 1,

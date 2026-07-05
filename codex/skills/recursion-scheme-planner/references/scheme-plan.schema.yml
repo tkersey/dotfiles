@@ -6,7 +6,7 @@ scheme_plan:
     artifact_scope:
     authority:
   selected:
-    primary_scheme: direct|cata|ana|hylo|para|apo|histo|futu|zygo|dyna|chrono|meta|mutu|parallel-traverse|st-governed
+    primary_scheme: direct|cata|ana|hylo|para|apo|histo|futu|zygo|dyna|chrono|meta|mutu|parallel-traverse|blocked-external-coordination
     composition: []
     reason:
   work_shape:
@@ -26,7 +26,7 @@ scheme_plan:
         safe_frontier: []
         forbidden_frontier: []
   handoff:
-    next_owner: $goal-actuating|$goal-workgraph|$goal-grind|$review-fold|$resolve|$plan|$st|$ship|blocked
+    next_owner: $goal-actuating|$goal-workgraph|$goal-grind|$review-fold|$resolve|$plan|$ship|blocked
     mode:
     required_checks: []
     blocked_on: []

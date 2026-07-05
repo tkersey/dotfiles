@@ -30,14 +30,14 @@ one legal work item
 known verifier
 no review requirement
 no parallelism
-no $st requirement
+no external-controller requirement
 no public side effect
 no repeated class/migration/branch choice
 ```
 
 ## Unfusion
 
-If evidence reveals repeated classes, review campaign, migration shape, branch choice, proof fanout, parallel frontier, `$st` requirement, or unclear stop rule, emit `replan` and compile ALSR/HYL.
+If evidence reveals repeated classes, review campaign, migration shape, branch choice, proof fanout, parallel frontier, unsupported durable-coordination requirement, or unclear stop rule, emit `replan` and compile ALSR/HYL.
 
 ## Review quotient
 
@@ -58,9 +58,10 @@ same canonical owner
 same invalid transition
 ```
 
-## `$st` as continuation
+## Unsupported Controller Boundary
 
-`$st` is emitted by HYL as an escape continuation when local actuation cannot safely own resource claims, fencing, worktrees, or serialized integration.
+Emit `blocked` when local actuation cannot safely own resource claims, fencing,
+worktrees, or serialized integration.
 
 ## `$ship` as terminal effect
 

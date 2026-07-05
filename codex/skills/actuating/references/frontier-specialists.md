@@ -12,8 +12,8 @@ Returns:
 actuation_frontier_map:
   packet_version: AFM-v1
   artifact_state:
-  gcr_id:
-  st_task_ids: []
+  authority_id:
+  task_ids: []
   dimensions: []
   counterexamples: []
   equivalence_classes: []

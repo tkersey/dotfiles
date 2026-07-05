@@ -2,8 +2,8 @@
 
 ```text
 plan source
--> canonical $st intake
--> current executable GCR
+-> canonical actuation intake
+-> current executable authority receipt
 -> VMX when semantic state-space is material
 -> prepared ASL
 -> validated FPS

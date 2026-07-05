@@ -10,7 +10,6 @@ import json
 import os
 from pathlib import Path
 import re
-import shlex
 import subprocess
 import sys
 import tempfile
@@ -158,7 +157,6 @@ class Runtime:
         base = accts_home()
         self.vault_dir = expand_path(str(settings.get("vault_dir", base / "vault")))
         self.state_dir = expand_path(str(settings.get("state_dir", base / "state")))
-        self.hooks_file = expand_path(str(settings.get("hooks_file", self.codex_home / "hooks.json")))
         self.cas_cwd = expand_path(str(settings.get("cas_cwd", Path.cwd())))
         self.auth_file = self.codex_home / "auth.json"
         self.state_file = self.state_dir / "state.json"
@@ -254,7 +252,6 @@ def template_config() -> str:
 # codex_home = "~/.codex"
 # vault_dir = "~/.local/share/accts/vault"
 # state_dir = "~/.local/share/accts/state"
-# hooks_file = "~/.codex/hooks.json"
 # cas_cwd = "/path/to/repo"
 
 [accounts.personal]
@@ -431,7 +428,7 @@ def queue_account(rt: Runtime, name: str) -> None:
 def cmd_queue(args: argparse.Namespace) -> int:
     rt = runtime_from_args(args)
     queue_account(rt, args.name)
-    print(f"queued {args.name} for the next possible turn")
+    print(f"queued {args.name}")
     return 0
 
 
@@ -461,129 +458,6 @@ def cmd_next(args: argparse.Namespace) -> int:
     return 0
 
 
-def hook_command(kind: str) -> str:
-    script = Path(__file__).resolve()
-    return f"{shlex.quote(sys.executable)} {shlex.quote(str(script))} hook {kind}"
-
-
-def accts_hook_entry(kind: str) -> dict[str, Any]:
-    if kind == "session-start":
-        return {
-            "matcher": "startup|resume",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": hook_command(kind),
-                    "timeoutSec": 10,
-                    "statusMessage": "accts: apply queued account switch",
-                }
-            ],
-        }
-    return {
-        "hooks": [
-            {
-                "type": "command",
-                "command": hook_command(kind),
-                "timeoutSec": 10,
-                "statusMessage": "accts: prepare next account",
-            }
-        ]
-    }
-
-
-def entry_is_accts(entry: dict[str, Any]) -> bool:
-    hooks = entry.get("hooks", [])
-    if not isinstance(hooks, list):
-        return False
-    for hook in hooks:
-        if not isinstance(hook, dict):
-            continue
-        command = str(hook.get("command", ""))
-        status = str(hook.get("statusMessage", ""))
-        if "accts.py hook " in command or status.startswith("accts:"):
-            return True
-    return False
-
-
-def merged_hooks(rt: Runtime, *, install: bool) -> dict[str, Any]:
-    data = read_json(rt.hooks_file, {"hooks": {}})
-    if not isinstance(data, dict):
-        data = {"hooks": {}}
-    hooks = data.setdefault("hooks", {})
-    if not isinstance(hooks, dict):
-        data["hooks"] = hooks = {}
-    for event in ("Stop", "SessionStart"):
-        entries = hooks.get(event, [])
-        if not isinstance(entries, list):
-            entries = []
-        entries = [entry for entry in entries if not (isinstance(entry, dict) and entry_is_accts(entry))]
-        if install:
-            entries.append(accts_hook_entry("stop" if event == "Stop" else "session-start"))
-        if entries:
-            hooks[event] = entries
-        else:
-            hooks.pop(event, None)
-    return data
-
-
-def cmd_hook_print(args: argparse.Namespace) -> int:
-    payload = {
-        "hooks": {
-            "Stop": [accts_hook_entry("stop")],
-            "SessionStart": [accts_hook_entry("session-start")],
-        }
-    }
-    print(json.dumps(payload, indent=2, sort_keys=True))
-    return 0
-
-
-def cmd_hook_install(args: argparse.Namespace) -> int:
-    rt = runtime_from_args(args)
-    write_json_atomic(rt.hooks_file, merged_hooks(rt, install=True))
-    print(f"installed accts hooks in {rt.hooks_file}")
-    return 0
-
-
-def cmd_hook_uninstall(args: argparse.Namespace) -> int:
-    rt = runtime_from_args(args)
-    write_json_atomic(rt.hooks_file, merged_hooks(rt, install=False))
-    print(f"removed accts hooks from {rt.hooks_file}")
-    return 0
-
-
-def read_hook_stdin() -> dict[str, Any]:
-    raw = sys.stdin.read()
-    if not raw.strip():
-        return {}
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        return {}
-    return data if isinstance(data, dict) else {}
-
-
-def hook_response(message: str | None = None) -> int:
-    payload: dict[str, Any] = {"continue": True}
-    if message:
-        payload["systemMessage"] = message
-    print(json.dumps(payload, sort_keys=True))
-    return 0
-
-
-def append_turn_ledger(rt: Runtime, state: dict[str, Any], account: str | None, event: dict[str, Any]) -> None:
-    if not account:
-        return
-    row = {
-        "account": account,
-        "used_at": utc_now(),
-        "source": "Stop",
-    }
-    session_id = event.get("session_id") or event.get("sessionId")
-    if isinstance(session_id, str):
-        row["session_id"] = session_id
-    state.setdefault("turn_use_ledger", []).append(row)
-
-
 def advance_reset_cycle(rt: Runtime, state: dict[str, Any], just_used: str | None) -> str | None:
     cycle = state.get("reset_cycle")
     if not isinstance(cycle, dict) or cycle.get("complete"):
@@ -603,38 +477,6 @@ def advance_reset_cycle(rt: Runtime, state: dict[str, Any], just_used: str | Non
     state.pop("pending_account", None)
     state.pop("pending_queued_at", None)
     return None
-
-
-def cmd_hook_stop(args: argparse.Namespace) -> int:
-    rt = runtime_from_args(args)
-    event = read_hook_stdin()
-    state = rt.state()
-    current = rt.active_account()
-    append_turn_ledger(rt, state, current, event)
-    advance_reset_cycle(rt, state, current)
-    pending = state.get("pending_account")
-    rt.save_state(state)
-    if isinstance(pending, str):
-        activate_account(rt, pending, backup=False, source="hook-stop")
-        return hook_response(f"accts switched to {pending} for the next turn")
-    return hook_response()
-
-
-def cmd_hook_session_start(args: argparse.Namespace) -> int:
-    rt = runtime_from_args(args)
-    state = rt.state()
-    pending = state.get("pending_account")
-    if not isinstance(pending, str):
-        next_name = reset_cycle_next(state)
-        if next_name:
-            state["pending_account"] = next_name
-            state["pending_queued_at"] = utc_now()
-            pending = next_name
-            rt.save_state(state)
-    if isinstance(pending, str):
-        activate_account(rt, pending, backup=False, source="hook-session-start")
-        return hook_response(f"accts switched to {pending}")
-    return hook_response()
 
 
 def run_cas_status(rt: Runtime) -> dict[str, Any]:
@@ -814,7 +656,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--backup-current", action="store_true")
     p.set_defaults(func=cmd_activate)
 
-    p = sub.add_parser("queue", help="Queue an account to be activated by the next Stop or SessionStart hook")
+    p = sub.add_parser("queue", help="Record the account to activate manually next")
     p.add_argument("name")
     p.set_defaults(func=cmd_queue)
 
@@ -829,19 +671,6 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("next", help="Print the account currently pending or next in reset rotation")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_next)
-
-    hook = sub.add_parser("hook", help="Print, install, uninstall, or execute Codex hooks")
-    hook_sub = hook.add_subparsers(dest="hook_command", required=True)
-    p = hook_sub.add_parser("print", help="Print accts hook JSON")
-    p.set_defaults(func=cmd_hook_print)
-    p = hook_sub.add_parser("install", help="Merge accts hooks into hooks.json")
-    p.set_defaults(func=cmd_hook_install)
-    p = hook_sub.add_parser("uninstall", help="Remove accts hooks from hooks.json")
-    p.set_defaults(func=cmd_hook_uninstall)
-    p = hook_sub.add_parser("stop", help="Codex Stop hook entrypoint")
-    p.set_defaults(func=cmd_hook_stop)
-    p = hook_sub.add_parser("session-start", help="Codex SessionStart hook entrypoint")
-    p.set_defaults(func=cmd_hook_session_start)
 
     reset = sub.add_parser("reset-cycle", help="Manage weekly reset rotation through all Codex accounts")
     reset_sub = reset.add_subparsers(dest="reset_command", required=True)

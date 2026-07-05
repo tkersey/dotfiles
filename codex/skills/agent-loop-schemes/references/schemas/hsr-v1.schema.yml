@@ -12,11 +12,11 @@ hylo_step_receipt:
     memory_refs: []
   unfold:
     producer:
-    produced: work_node|parallel_frontier|terminal|blocked|st_handoff
+    produced: work_node|parallel_frontier|terminal|blocked
     node_ids: []
     reason:
   action:
-    owner: root|subagent|st
+    owner: root|subagent
     node_id:
     effect:
     changed_paths: []
@@ -25,7 +25,7 @@ hylo_step_receipt:
   fold:
     reducer:
     evidence_refs: []
-    verdict: continue|complete|blocked|regress|replan|refactor-kernel|st-required
+    verdict: continue|complete|blocked|regress|replan|refactor-kernel
     next_state_ref:
     current_artifact_bound: yes|no
     invalidators: []

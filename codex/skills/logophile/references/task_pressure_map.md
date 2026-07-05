@@ -56,7 +56,7 @@ Default stack candidates:
 
 Artifacts:
 - Actuation Receipt
-- `$st` task graph / completion receipts
+- task graph / completion receipts
 - closure gate
 
 ## Code review / adversarial audit

@@ -5,8 +5,8 @@
 ```text
 EPG + EPS
 -> EPD
--> one `$st` commitment horizon
--> GCR
+-> one actuation commitment horizon
+-> authority receipt
 -> policy-bound ASL/FPS
 -> FPSR + proof + observations
 -> ETR
@@ -29,7 +29,7 @@ A mismatch makes the materialization stale.
 
 ## Horizon discipline
 
-Only the selected action becomes active `$st` work.
+Only the selected action becomes active actuation work.
 
 Dormant conditional actions remain in EPG and must not pollute ready, blocked, or proof frontiers.
 
@@ -48,4 +48,4 @@ proof failure      -> action failure or return to policy
 
 A success terminal is a policy decision, not delivery proof.
 
-Shipping still requires current GCR, proof-complete `$st`, terminal obligations, valid transition receipts, and explicit PR mode.
+Shipping still requires current authority receipt, proof-complete actuation state, terminal obligations, valid transition receipts, and explicit PR mode.

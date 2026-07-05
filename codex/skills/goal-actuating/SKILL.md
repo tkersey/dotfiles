@@ -34,7 +34,7 @@ accepted implementation spec or direct goal
 accepted implementation spec
 Scheme Plan from $recursion-scheme-planner
 ALSR-v1 / HYL-v1 from $agent-loop-schemes
-plan or $st handoff
+plan handoff
 review findings bound to the current diff
 direct /goal with enough proof surface
 ```
@@ -45,15 +45,15 @@ When an accepted implementation spec is present, treat it as the source of truth
 
 ```yaml
 goal_actuating_mode:
-  source: direct-goal|spec-first|review|dry-plan|st-governed
-  persistence: update_plan|goal-artifacts|st
+  source: direct-goal|spec-first|review|dry-plan
+  persistence: update_plan|goal-artifacts
   implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
   review_mode: none|triage|remediation-plan|review-closeout
   review: none|existing-review|cas-probe|cas-lane|cas-exhaustive
   review_lanes: []
   resolution: none|review-fold-only|resolution-fold|accepted-liabilities|resolution-campaign
   scheme_plan: none|required|present
-  loop_contract: fused|ALSR-HYL|required|st-owned
+  loop_contract: fused|ALSR-HYL|required
   parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
   closure: triage-report|remediation-plan|review-closeout|ship-handoff|blocked
 ```
@@ -65,14 +65,14 @@ goal_actuating_mode:
 3. If no Scheme Plan exists and the work shape is unclear, hand off to `$recursion-scheme-planner`.
 4. If material loop governance is required and no current ALSR/HYL exists, hand off to `$agent-loop-schemes`.
 5. Derive a goal contract with `$goal-contract`.
-6. Choose `update_plan`, `goal-artifacts`, or `$st` persistence.
+6. Choose `update_plan` or `goal-artifacts` persistence.
 7. Interpret HYL-v1: unfold a legal work node/frontier, execute it, fold evidence, and emit HSR-v1.
 8. If the workflow performs fresh or exhaustive review, select a CAS review profile and run required CAS review lanes.
 9. Classify standard and auxiliary review-lane findings with `$review-fold`.
 10. Run a resolution fold when review work needs a resolution plan.
 11. Create a work list with `$goal-workgraph` only when decomposition changes execution.
 12. Schedule bounded subagents only for explicit safe frontier nodes.
-13. Execute one useful action at a time with `$goal-grind`, unless `$st` owns execution.
+13. Execute one useful action at a time with `$goal-grind`.
 14. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolution fold as appropriate.
 15. For `review-closeout` and exhaustive review, require three consecutive clean normalized **standard** `$cas` review attempts on the same artifact scope before completion.
 16. Run ATCG-v1 before completion.
@@ -84,7 +84,7 @@ A material action is legal only as an HSR-v1 transition:
 
 ```text
 state_before
--> unfold work_node|parallel_frontier|terminal|blocked|st_handoff
+-> unfold work_node|parallel_frontier|terminal|blocked
 -> action
 -> fold evidence
 -> continuation
@@ -269,7 +269,7 @@ Stop when:
 execution has not been approved
 scope would drift from the accepted spec
 review finding expands product/API scope
-$st authority is required but absent
+durable external coordination is required but unsupported
 verification regresses
 proof is stale or not bound to the current artifact
 public tracker side effect would be needed without explicit intent

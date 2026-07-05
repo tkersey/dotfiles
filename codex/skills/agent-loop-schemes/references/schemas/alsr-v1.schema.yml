@@ -9,8 +9,8 @@ agent_loop_scheme_receipt:
     head:
     diff_digest:
     paths: []
-  task_shape: direct|goal|review|debug|migration|branch_race|proof_closure|st_governed
-  selected_loop: direct_action|goal_grind|triage|remediation_plan|review_closeout|debug_history|migration_memoized|branch_race|proof_patch|st_governed
+  task_shape: direct|goal|review|debug|migration|branch_race|proof_closure|blocked_external_coordination
+  selected_loop: direct_action|goal_grind|triage|remediation_plan|review_closeout|debug_history|migration_memoized|branch_race|proof_patch|blocked
   seed:
     source:
     authority:

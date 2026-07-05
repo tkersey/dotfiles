@@ -3,11 +3,11 @@
 
 ## Plan Identity
 
-`PLAN-example-fixed-point`, revision 1. Target `$st` workspace: `.ledger/st`.
+`PLAN-example-fixed-point`, revision 1. Target execution owner: `$actuating`.
 
 ## Source and Terminal Contract
 
-The source digest is `sha256:example`. Terminal success is a source-current policy with resource predictions, proof, rollback, and a valid `$st` handoff.
+The source digest is `sha256:example`. Terminal success is a source-current policy with resource predictions, proof, rollback, and a valid `$actuating` handoff.
 
 ## Policy State and Unknowns
 
@@ -18,12 +18,12 @@ Unknowns: none remain ungated after synthesis.
 ## Actions and Resource Predictions
 
 - `ACTION-1`: inspect and bind current resources before mutation.
-- `ACTION-2`: perform the bounded mutation after `$st` claim/GCR authority.
+- `ACTION-2`: perform the bounded mutation after `$actuating` establishes mutation authority.
 - Unknown resources default to `repo:all / exclusive`.
 
 ## Decision/Observation Rules
 
-If resource prediction fails, return to `$st` workspace allocation. If a semantic gap appears, return to `$spec-pipeline` or `$grill-me`.
+If resource prediction fails, block for controller selection. If a semantic gap appears, return to `$spec-pipeline` or `$grill-me`.
 
 ## Proof, Rollback, and Invalidators
 
@@ -47,11 +47,10 @@ Receipt path:
 .ledger/plan/PLAN-example-fixed-point/synthesis-receipt.json
 ```
 
-## `$st` Workspace Handoff
+## `$actuating` Handoff
 
 ```yaml
-st_handoff:
-  workspace: .ledger/st
+actuating_handoff:
   plan_id: PLAN-example-fixed-point
   policy_ref: .ledger/plan/PLAN-example-fixed-point/policy.json
   policy_digest: sha256:example

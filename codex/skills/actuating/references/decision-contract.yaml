@@ -25,9 +25,9 @@ skill_decision_contract:
       cue_literals: [ALSR-v1, HYL-v1, HSR-v1, loop contract, hylomorphism, graph_bypass]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-ST-GOVERNED
-      description: Execution requires durable coordination or existing $st state.
-      cue_literals: [st-governed, resource claim, fencing token, external worktree, serialized integration]
+    - trigger_id: ACT-EXTERNAL-COORDINATION
+      description: Execution requires durable coordination that no supported local controller owns.
+      cue_literals: [resource claim, coordination token, external worktree, serialized integration]
       cue_regexes: []
       exclusions: []
     - trigger_id: ACT-ESCALATION
@@ -59,10 +59,6 @@ skill_decision_contract:
     - route_id: ACT-CAS-REVIEW-LANES
       description: Run standard CAS review and selected auxiliary CAS review lanes, preserving the standard-only clean streak.
       aliases: [cas-review-bundle, standard-review, footgun-finder, invariant-ace, complexity-mitigator]
-      terminal: "no"
-    - route_id: ACT-ST-GOVERNED
-      description: Hand off to $st bounded execution slices when durable coordination owns execution.
-      aliases: [st-governed]
       terminal: "no"
     - route_id: ACT-ATCG
       description: Run terminal closure gate before completion.
@@ -164,17 +160,17 @@ skill_decision_contract:
         - terminal closure accepts unresolved auxiliary lane blocker state
         - terminal closure accepts stale auxiliary lane evidence after artifact-changing work
       rationale: Specialized review depth should strengthen review evidence without weakening the three standard clean reviews closure bar.
-    - clause_id: ACT-ST-001
-      trigger_refs: [ACT-ST-GOVERNED]
-      expected_routes: [ACT-ST-GOVERNED, ACT-BLOCK]
+    - clause_id: ACT-EXTERNAL-COORDINATION-001
+      trigger_refs: [ACT-EXTERNAL-COORDINATION]
+      expected_routes: [ACT-BLOCK]
       prohibited_routes: [ACT-GOAL]
       required_artifacts:
-        - current $st handoff or authority state
+        - explicit blocked reason naming the unsupported coordination requirement
       success_signals:
-        - durable coordination remains owned by $st
+        - durable coordination does not proceed through a hidden controller
       failure_signals:
-        - direct implementation claims fenced authority without $st participation
-      rationale: The old transaction-controller behavior is preserved only under st-governed mode.
+        - direct implementation claims fenced authority without a supported controller
+      rationale: Removed controller paths must block rather than silently degrade to local mutation.
     - clause_id: ACT-ESCALATION-001
       trigger_refs: [ACT-ESCALATION]
       expected_routes: [ACT-ESCALATION-RECEIPT, ACT-GOAL, ACT-REFACTOR-KERNEL-OUTCOME, ACT-ATCG, ACT-BLOCK]

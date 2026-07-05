@@ -57,7 +57,7 @@ evidence_fold:
     coverage_reduced: yes|no|unknown
     behavior_outside_goal_changed: yes|no|unknown
   recommendation:
-    action: stop|continue|revert|isolate|ask-human|spawn-branch-race|hand-off-st|use-review-fold
+    action: stop|continue|revert|isolate|ask-human|spawn-branch-race|block-external-coordination|use-review-fold
     reason:
 ```
 

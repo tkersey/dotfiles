@@ -56,7 +56,7 @@ def main() -> int:
     assert policy_slice["policy_control"]["action_id"] == "ACT-MUTATE-1"
 
     bad_asl = deepcopy(standard)
-    bad_asl["task_control"]["gcr_current"] = "no"
+    bad_asl["task_control"]["authority_current"] = "no"
     errors, _ = validate_slice(bad_asl)
     assert "gate.mutation_allowed:prerequisites-fail" in errors
 

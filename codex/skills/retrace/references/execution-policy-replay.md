@@ -9,7 +9,7 @@ EPG policy ID/revision/digest
 EPS state ID/digest and satisfied atoms
 eligible/shielded actions
 EPD selected rule/action
-artifact/GCR/frontier state
+artifact/authority/frontier state
 outcome-blind evidence available at selection
 ```
 

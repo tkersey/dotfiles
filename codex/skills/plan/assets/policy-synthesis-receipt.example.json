@@ -94,7 +94,7 @@
       },
       {
         "pass_id": "PASS-09",
-        "lens": "simplicity_and_st_compileability",
+        "lens": "simplicity_and_actuation_readiness",
         "candidate_digest_before": "sha256:e4c2305bcb87b5104e531eeff87157df12f10dc4d93de1dfc7c6469bfd0491f9",
         "candidate_digest_after": "sha256:e4c2305bcb87b5104e531eeff87157df12f10dc4d93de1dfc7c6469bfd0491f9",
         "findings": [],
@@ -105,17 +105,17 @@
     "radical_candidate": {
       "candidate": "Replace the planned broad implementation wave with a two-action evidence-first slice that validates resource ownership before mutation.",
       "disposition": "adopt",
-      "reason": "It improves execution safety and `$st` compileability without changing semantic authority.",
+      "reason": "It improves execution safety and actuation readiness without changing semantic authority.",
       "affected_refs": [
         "ACTION-1",
-        "GCR-v2-precondition"
+        "actuation-authority-precondition"
       ]
     },
     "convergence": {
       "complete_clean_sweep": true,
       "independent_press_pass_clean": true,
-      "unresolved_errors": 0,
-      "untreated_material_risks": 0,
+      "unresolved_errors": [],
+      "untreated_material_risks": [],
       "improvements_exhausted": true
     }
   }

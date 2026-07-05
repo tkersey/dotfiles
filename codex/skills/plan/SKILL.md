@@ -1,6 +1,6 @@
 ---
 name: plan
-description: "Compile accepted intent or a `$spec-pipeline` PSC-v1 source contract into a source-bound execution policy and immutable `plan_id`, then exhaustively refine it to a policy-synthesis fixed point before handoff to the multi-plan `$st` workspace under `.ledger/st/`. Use for `$plan`, spec-to-execution lowering, adaptive probes, stabilization plans, or plan revision. Preserve semantic authority; never mutate the repository or silently select an existing `$st` plan."
+description: "Compile accepted intent or a `$spec-pipeline` PSC-v1 source contract into a source-bound execution policy and immutable `plan_id`, then exhaustively refine it to a policy-synthesis fixed point before handoff to `$actuating`. Use for `$plan`, spec-to-execution lowering, adaptive probes, stabilization plans, or plan revision. Preserve semantic authority; never mutate the repository or silently select an execution plan."
 metadata:
   version: "4.2.0"
   activation_cost: medium
@@ -11,9 +11,9 @@ metadata:
 
 ## Mission
 
-Compile accepted intent into an execution policy that can inhabit one independent
-`$st` plan namespace, then refine that policy until no material execution
-improvement remains.
+Compile accepted intent into an execution policy that can be handed to
+`$actuating`, then refine that policy until no material execution improvement
+remains.
 
 ```text
 source contract
@@ -24,7 +24,7 @@ source contract
 -> proof and rollback
 -> policy synthesis fixed point
 -> execution policy
--> `$st plan create/import`
+-> `$actuating` handoff
 ```
 
 The best old `$plan` behavior is still mandatory:
@@ -130,7 +130,7 @@ plan_identity:
   source_digest:
   target_repository:
   target_branch:
-  target_st_workspace: .ledger/st
+  target_execution_owner: $actuating
 ```
 
 `plan_id` is stable across revisions of one objective.
@@ -150,11 +150,8 @@ $plan
   execution policy, evidence gates, bounded actions, rollback, plan identity,
   exhaustive policy refinement
 
-$st
-  durable graph, plan namespace, scheduling, resource coordination, proof state
-
 $actuating
-  one plan/session/claim execution controller
+  execution control, loop governance, review/proof closure, mutation authority
 ```
 
 A semantic gap returns to `$spec-pipeline` or `$grill-me`.
@@ -197,7 +194,7 @@ commitment horizon
 invalidators
 ```
 
-Every mutation action predicts resources using the `$st` grammar:
+Every mutation action predicts resources using this grammar:
 
 ```text
 path:
@@ -225,7 +222,7 @@ action and resource-boundary completeness
 policy closure over reachable states
 safety, rollback, and irreversible-risk control
 proof and terminal-state sufficiency
-simplicity, surface minimization, and `$st` compileability
+simplicity, surface minimization, and actuation readiness
 ```
 
 Rules:
@@ -335,21 +332,12 @@ uv run python codex/skills/plan/tools/policy_synthesis_receipt_gate.py   .ledger
 
 See [05-policy-synthesis-receipt.md](references/cli-specs/05-policy-synthesis-receipt.md).
 
-## Multi-plan handoff
-
-Create/import explicitly:
-
-```bash
-st plan create   --workspace .ledger/st   --plan <plan-id>   --source .ledger/plan/<plan-id>/policy.json
-
-st plan import-policy   --workspace .ledger/st   --plan <plan-id>   --input .ledger/plan/<plan-id>/policy.json
-```
+## Execution handoff
 
 The handoff records:
 
 ```yaml
-st_handoff:
-  workspace: .ledger/st
+actuating_handoff:
   plan_id:
   policy_ref:
   policy_digest:
@@ -360,7 +348,7 @@ st_handoff:
   mutation_allowed: no
 ```
 
-`$plan` never emits GCR or mutation authority.
+`$plan` never emits mutation authority.
 
 ## Cross-plan relationships
 
@@ -374,14 +362,15 @@ proposed_cross_plan_dependency:
   reason:
 ```
 
-Only the `$st` workspace may accept and persist one.
+`$plan` may only propose the relation. A downstream controller must accept or
+reject it before execution.
 
 Do not flatten another plan's tasks into the current plan merely to express a
 dependency.
 
 ## Readiness
 
-A plan is ready for `$st` when:
+A plan is ready for `$actuating` when:
 
 ```text
 source current
@@ -402,10 +391,10 @@ Readiness does not mean execution is safe.
 Execution still requires:
 
 ```text
-workspace import
-plan audit
-global resource claim
-GCR-v2
+accepted actuation source
+current direct-action exemption or ALSR/HYL loop contract
+review/proof closure evidence
+terminal ATCG-v1
 ```
 
 ## Output
@@ -420,7 +409,7 @@ Actions and Resource Predictions
 Decision/Observation Rules
 Proof, Rollback, and Invalidators
 Policy Synthesis Receipt
-`$st` Workspace Handoff
+`$actuating` Handoff
 ```
 
 Do not include internal iteration logs.
@@ -444,7 +433,7 @@ When the user asks only whether an existing plan is ready:
 - validate policy structure;
 - validate PSR-v1 convergence;
 - validate radical candidate disposition;
-- validate `$st` handoff readiness.
+- validate `$actuating` handoff readiness.
 
 If all pass and no revision is requested, reply exactly:
 
@@ -459,9 +448,9 @@ Do not use self-attested readiness without PSR/source evidence.
 - Persist only under `.ledger/plan/`.
 - Every plan has an explicit immutable plan ID.
 - Validate PSC-v1 before planning from `$spec-pipeline`.
-- Never infer the target `$st` plan.
+- Never infer a target execution owner beyond the emitted handoff.
 - Never merge separate objectives into one plan for convenience.
-- Never create cross-plan edges outside `$st`.
+- Never create executable cross-plan edges.
 - Never grant mutation authority.
 - Unknown scope means exclusive scope.
 - Exhaustive policy synthesis is mandatory before emission.

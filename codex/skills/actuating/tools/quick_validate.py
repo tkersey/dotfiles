@@ -33,16 +33,12 @@ def main() -> int:
         "references/terminal-closure-gate.md",
         "references/refactor-kernel-receipts.md",
         "references/decision-contract.yaml",
-        "tools/actuation_authority_gate.py",
         "tools/actuation_delivery_gate.py",
         "tools/actuation_refactor_kernel_gate.py",
         "tools/actuation_terminal_gate.py",
-        "tests/test_actuation_authority_gate.py",
         "tests/test_actuation_delivery_gate.py",
         "tests/test_actuation_refactor_kernel_gate.py",
         "tests/test_actuation_terminal_gate.py",
-        "assets/gcr-v2.allowed.example.json",
-        "assets/gcr-v2.self-invalidating.example.json",
         "assets/apma-v1.example.json",
         "assets/delivery-context.ready.example.json",
         "assets/delivery-context.no-pr-intent.example.json",
@@ -58,14 +54,12 @@ def main() -> int:
         "assets/terminal-context.ship-continue.example.json",
         "assets/terminal-context.advisory-would-block.example.json",
         "assets/terminal-context.advisory-fused.example.json",
-        "assets/terminal-context.advisory-st-governed.example.json",
     ]
     missing = [path for path in required if not (ROOT / path).is_file()]
     if missing:
         print(json.dumps({"actuating_quick_validate": {"verdict": "fail", "missing": missing}}, indent=2))
         return 2
     tests = [
-        run_test(ROOT / "tests/test_actuation_authority_gate.py"),
         run_test(ROOT / "tests/test_actuation_delivery_gate.py"),
         run_test(ROOT / "tests/test_actuation_refactor_kernel_gate.py"),
         run_test(ROOT / "tests/test_actuation_terminal_gate.py"),

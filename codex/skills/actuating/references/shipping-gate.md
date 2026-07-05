@@ -4,8 +4,8 @@
 
 ```text
 current artifact state
-proof-complete $st graph
-current executable GCR
+proof-complete actuation graph
+current executable authority receipt
 all ASL slices terminal
 no required open VMX row
 PDAG final gate passes
@@ -24,7 +24,7 @@ ship_handoff:
   draft_allowed_reason:
   graph:
     plan_ref:
-    gcr_ref:
+    authority_ref:
     proof_complete:
   actuation:
     final_slice_refs: []

@@ -43,17 +43,17 @@
         "target_head": "abc123",
         "branch_epoch": 4,
         "integrated_change_set_receipts": [
-          ".ledger/st/integration/receipts/igr-001.json"
+          ".ledger/actuating/delivery/receipts/igr-001.json"
         ],
         "proof_complete_receipt": {
           "present": "yes",
           "current": "yes",
-          "ref": ".ledger/st/proof/plan-example/proof-complete.json"
+          "ref": ".ledger/actuating/proof/plan-example/proof-complete.json"
         },
         "integration": {
           "queue_quiescent": "yes",
           "receipts": [
-            ".ledger/st/integration/receipts/igr-001.json"
+            ".ledger/actuating/delivery/receipts/igr-001.json"
           ]
         },
         "cross_plan_dependency_status": "clear",

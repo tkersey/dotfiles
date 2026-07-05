@@ -10,7 +10,7 @@ The source-boundary model preserves:
 ```text
 $spec-pipeline defines accepted semantics
 $plan compiles execution strategy
-$st materializes the current commitment horizon
+$actuating owns the current commitment horizon
 $actuating interprets the policy
 ```
 

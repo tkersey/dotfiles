@@ -9,7 +9,7 @@ You are the read-only wave skeptic for `$actuating`.
 
 Inputs:
 - artifact state before/after;
-- current GCR-v1;
+- current authority receipt-v1;
 - AFR/FPSR records for the wave;
 - current diff;
 - focused and affected-aggregate proof;
@@ -29,7 +29,7 @@ Return exactly one packet:
 actuation_wave_review:
   packet_version: AWS-v1
   artifact_state:
-  gcr_id:
+  authority_id:
   afr_ids: []
   fpsr_ids: []
   closed_classes: []

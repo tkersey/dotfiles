@@ -10,17 +10,17 @@
       "branch": "feature",
       "head": "abc123",
       "dirty_fingerprint": "sha256:dirty",
-      "st_plan_fingerprint": "sha256:plan"
+      "plan_fingerprint": "sha256:plan"
     },
     "task_control": {
-      "plan_ref": ".ledger/st/st-plan.jsonl",
-      "gcr_id": "GCR-example-001",
-      "gcr_ref": ".ledger/proof/gcr-example.json",
-      "gcr_seq": 42,
-      "gcr_current": "yes",
+      "plan_ref": ".ledger/actuating/run-plan.jsonl",
+      "authority_id": "AUTH-example-001",
+      "authority_ref": ".ledger/proof/authority-example.json",
+      "authority_seq": 42,
+      "authority_current": "yes",
       "execution_allowed": "yes",
       "selected_task_ids": [
-        "st-101"
+        "node-101"
       ],
       "graph_debt_refs": [],
       "projection_ref": "plan_sync:42"
@@ -116,7 +116,7 @@
         "skill": "actuating",
         "fingerprint": "sha256:actuating",
         "active_clauses": [
-          "ACT-GCR-001",
+          "ACT-AUTH-001",
           "ACT-SLICE-001"
         ],
         "route_ref": "ASL-example-001"
@@ -133,7 +133,7 @@
     "state": "prepared",
     "next_frontier": {
       "task_ids": [
-        "st-101"
+        "node-101"
       ],
       "matrix_rows": [
         "VMX-row-002"
@@ -142,7 +142,7 @@
     },
     "gate": {
       "mutation_allowed": "yes",
-      "reason": "Current executable GCR and prepared bounded semantic slice."
+      "reason": "Current executable authority receipt and prepared bounded semantic slice."
     }
   }
 }

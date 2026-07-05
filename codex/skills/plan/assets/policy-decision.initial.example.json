@@ -27,12 +27,12 @@
       "OBS-ROUTE"
     ],
     "mutation_authority": "no",
-    "policy_digest": "sha256:eff535bc88c9471ba4d7b2f87838948436bd93ac5b0f5e083489b00af3f81a5f",
+    "policy_digest": "sha256:4619a1a2f9ae91c9eb2623a593bd7df2c73f53557b2d3c1a51b71b87d136e7d1",
     "policy_id": "POLICY-cache-strategy",
     "policy_revision": 1,
     "rationale": "Resolve the critical route uncertainty before production mutation.",
     "requires_frontier_record": false,
-    "requires_gcr": true,
+    "requires_actuation_authority": true,
     "satisfied_atoms": [
       "fact:FACT-API-LOCKED",
       "fact:FACT-SOURCE-CURRENT"
@@ -47,7 +47,7 @@
         "SHIELD-B:Route B mutation requires route-B evidence and locked API authority.:missing=obs:OBS-ROUTE=route_b"
       ]
     },
-    "state_digest": "sha256:0a427a0fc6072c85744c3f5d00aada9d7c2ec89b0ef0a67601b991645fded94e",
+    "state_digest": "sha256:75dbf5ba092d4ceee9463c60a3eea840525d274a50872f6c6ad08b74de387db6",
     "state_id": "STATE-0",
     "terminal": null,
     "utility": {

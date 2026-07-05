@@ -16,7 +16,7 @@ actuation_hylomorphism:
   coalgebra:
     name:
     input: seed_state
-    emits: terminal|blocked|work_node|parallel_frontier|st_handoff
+    emits: terminal|blocked|work_node|parallel_frontier
     no_node_verdict: blocked-hylo-frontier-missing
   action_boundary:
     mutation_requires_unfolded_node: yes
@@ -30,7 +30,7 @@ actuation_hylomorphism:
   algebra:
     name:
     folds: []
-    emits: continue|complete|blocked|regress|replan|refactor-kernel|st-required
+    emits: continue|complete|blocked|regress|replan|refactor-kernel
   terminal:
     completion_requires: ATCG-v1
     proof_must_bind_current_artifact: yes

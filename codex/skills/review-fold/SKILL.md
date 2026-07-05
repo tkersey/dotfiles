@@ -189,7 +189,7 @@ review_fold:
     patch_fanout_safe_after_resolve: yes|no
     unsafe_parallel_reasons: []
   action_plan:
-    mode: adjudicate-only|proof-only|minimal-fix|refactor-kernel|branch-race|st-governed
+    mode: adjudicate-only|proof-only|minimal-fix|refactor-kernel|branch-race|blocked
     work_nodes: []
     do_not_fix: []
     reviewer_response_draft: []
@@ -316,7 +316,7 @@ Use an explicit exception only when `alternatives_considered` shows why a local 
 - `minimal-fix`: smallest owner-correct change for accepted liabilities.
 - `refactor-kernel`: replace many local fixes with one normal-form correction.
 - `branch-race`: compare two or more plausible fix/refactor strategies under the same verifier.
-- `st-governed`: hand off when review remediation requires durable resource claims, external worktrees, or serialized integration.
+- `blocked`: stop when review remediation requires durable resource claims, external worktrees, or serialized integration that no supported controller owns.
 
 ## Clean-run and exhaustive-review behavior
 

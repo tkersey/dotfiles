@@ -1,13 +1,13 @@
 ---
 name: cas
-description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_session_inquiry`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, review evidence ledger import/validation, session inquiry replay, multi-instance fanout, and `$st` swarm conformance/retry-policy checks. For review evidence, distinguish CAS-RER records, pre-review lane transport, real review attempts, normalized tuple-bound review verdicts, account/resource exhaustion, and tuple concurrency guards."
+description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_session_inquiry`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, review evidence ledger import/validation, session inquiry replay, and multi-instance fanout. For review evidence, distinguish CAS-RER records, pre-review lane transport, real review attempts, normalized tuple-bound review verdicts, account/resource exhaustion, and tuple concurrency guards."
 ---
 
 # cas (Zig App-Server Control)
 
 ## Mission
 
-`$cas` is the Zig-backed app-server control skill. It owns protocol preflight, account/status probes, goal lifecycle control, direct method execution, detached review lifecycle, review evidence normalization into CAS-RER records, safe session-inquiry replay, and `$st` conformance probes.
+`$cas` is the Zig-backed app-server control skill. It owns protocol preflight, account/status probes, goal lifecycle control, direct method execution, detached review lifecycle, review evidence normalization into CAS-RER records, and safe session-inquiry replay.
 
 For review evidence, the doctrine is:
 
@@ -28,7 +28,7 @@ A review attempt starts only after `review/start` returns `reviewThreadId`.
 A tuple verdict exists only after `reviewVerdict` binds base/head/fingerprint.
 ```
 
-Use this skill when the task mentions `cas`, app-server v2 methods, detached review, `reviewThreadId`, persistent review lanes, multi-instance fanout, account/rate-limit status, goal lifecycle, or `$st` conformance.
+Use this skill when the task mentions `cas`, app-server v2 methods, detached review, `reviewThreadId`, persistent review lanes, multi-instance fanout, account/rate-limit status, or goal lifecycle.
 
 ## Native commands
 
@@ -47,7 +47,7 @@ cas conformance
 
 `cas smoke_check` proves app-server handshake and method reachability. It is never review output.
 
-`cas conformance` probes `$st` swarm-hardening scenarios. `$st` remains the durable source of truth for claims, resources, fencing, branch epochs, and proof metadata.
+`cas conformance` probes app-server helper compatibility and retry-policy scenarios.
 
 `cas session_inquiry` owns safe historical replay lifecycle for `$retrace`; see `references/retrace-session-inquiry.md`.
 

@@ -15,7 +15,7 @@ proof_dag:
         final
       command:
       covers:
-        st_obligations: []
+        actuation_obligations: []
         matrix_rows: []
         files: []
         semantic_laws: []

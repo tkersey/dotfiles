@@ -15,7 +15,7 @@ Facts `FACT-SOURCE-CURRENT` and `FACT-API-LOCKED` are currently evidenced. Criti
 
 ## Commitment Horizon
 
-Current state `STATE-0` materializes only `ACTION-PROBE`. Production actions `ACTION-IMPLEMENT-A` and `ACTION-IMPLEMENT-B` remain dormant until their route observation is present. `$st` and GCR remain required before repository mutation.
+Current state `STATE-0` materializes only `ACTION-PROBE`. Production actions `ACTION-IMPLEMENT-A` and `ACTION-IMPLEMENT-B` remain dormant until their route observation is present. `$actuating` authority remains required before repository mutation.
 
 ## Policy Branches
 
@@ -1092,7 +1092,7 @@ Initial policy revision. It replaces speculative implementation sequencing with 
       "source_changes": []
     },
     "handoff": {
-      "next_owner": "st",
+      "next_owner": "actuating",
       "runtime_ready": "yes",
       "mutation_allowed": "no",
       "gate_result": "pass",

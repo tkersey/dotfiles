@@ -5,7 +5,7 @@ The resume packet should make full skill rereads unnecessary.
 Persist after:
 
 ```text
-GCR change
+authority receipt change
 ASL state transition
 matrix frontier change
 FPS result
@@ -16,7 +16,7 @@ compaction warning
 Resume order:
 
 1. read current ASL;
-2. verify repository, plan, GCR, and artifact fingerprints;
+2. verify repository, plan, authority receipt, and artifact fingerprints;
 3. read referenced VMX/PDAG/FPS artifacts;
 4. verify active skill fingerprints;
 5. reread only changed skills or the active route reference;

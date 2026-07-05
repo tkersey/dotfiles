@@ -3,7 +3,7 @@
 Audit the full closed loop:
 
 ```text
-EPG -> EPS -> EPD -> `$st`/GCR -> AFR/PAH/PAR -> ETR -> next EPS
+EPG -> EPS -> EPD -> authority -> AFR/PAH/PAR -> ETR -> next EPS
 ```
 
 Primary metrics:

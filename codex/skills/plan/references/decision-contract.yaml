@@ -22,7 +22,7 @@ skill_decision_contract:
       exclusions: []
   routes:
     - route_id: PLAN-EMIT
-      description: Emit one named plan policy and `$st` handoff.
+      description: Emit one named plan policy and `$actuating` handoff.
       aliases: [emit]
       terminal: "yes"
     - route_id: PLAN-REFINE
@@ -51,9 +51,9 @@ skill_decision_contract:
         - source digest
         - target branch
       success_signals:
-        - explicit `.ledger/st` handoff
+        - explicit `$actuating` handoff
       failure_signals:
-        - plan inferred from current `$st` state
+        - plan inferred from current execution state
       rationale: Plan identity is the unit of namespace isolation.
     - clause_id: PLAN-CROSS-001
       trigger_refs: [PLAN-RELATION]
@@ -62,7 +62,7 @@ skill_decision_contract:
       required_artifacts:
         - proposed qualified cross-plan edge
       success_signals:
-        - edge remains a proposal until accepted by `$st`
+        - edge remains a proposal until accepted by a downstream controller
       failure_signals:
         - foreign work copied into current plan
       rationale: Cross-plan authority belongs to the workspace.

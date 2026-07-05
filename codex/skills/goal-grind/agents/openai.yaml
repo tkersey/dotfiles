@@ -7,5 +7,5 @@ interface:
     Use $goal-grind for recursive goal execution. Select one frontier node, act
     minimally, verify, fold evidence, memoize repeated classes, and stop on done,
     blocked, regress, invalid proof, or budget. Use update_plan for visible
-    in-memory steps, .goal artifacts for material loops, and $st only for durable
+    in-memory steps, .goal artifacts for material loops, and blocked outcomes for durable
     fenced orchestration.

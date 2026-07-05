@@ -21,7 +21,7 @@ The required shape is:
 review-fold dispositions
 -> resolution fold finds repeated accepted liabilities
 -> AER-v1 decision selects refactor-kernel before mutation
--> material work runs under HYL/HSR or current $st authority
+-> material work runs under HYL/HSR or current actuation authority
 -> proof/review folds current evidence
 -> RKO-v1 outcome records compression, review delta, and governance state
 -> ATCG-v1 decides completion
@@ -50,7 +50,7 @@ verifier nonempty
 current_artifact_scope branch/head_sha/target_fingerprint present
 ```
 
-AER-v1 is not mutation authority. APMA/GCR or HYL/HSR still governs material
+AER-v1 is not mutation authority. APMA/authority receipt or HYL/HSR still governs material
 mutation.
 
 ## Outcome receipt

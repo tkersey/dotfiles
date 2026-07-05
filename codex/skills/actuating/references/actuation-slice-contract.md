@@ -2,7 +2,7 @@
 
 ASL is the smallest durable control artifact that joins task, semantic, mutation, and proof frontiers.
 
-It does not duplicate `$st` task status, the language route, or proof result content. It points to them.
+It does not duplicate task status, the language route, or proof result content. It points to them.
 
 ```yaml
 actuation_slice:
@@ -17,14 +17,14 @@ actuation_slice:
     branch:
     head:
     dirty_fingerprint:
-    st_plan_fingerprint:
+    plan_fingerprint:
 
   task_control:
-    plan_ref: .ledger/st/st-plan.jsonl
-    gcr_id:
-    gcr_ref:
-    gcr_seq:
-    gcr_current: yes | no
+    plan_ref: .ledger/actuating/run-plan.jsonl
+    authority_id:
+    authority_ref:
+    authority_seq:
+    authority_current: yes | no
     execution_allowed: yes | no
     selected_task_ids: []
     graph_debt_refs: []
@@ -124,7 +124,7 @@ actuation_slice:
 `mutation_allowed: yes` requires:
 
 ```text
-gcr_current = yes
+authority_current = yes
 execution_allowed = yes
 selected_task_ids non-empty
 owner and invariant present
@@ -164,6 +164,6 @@ Local-exclude by default unless the user deliberately wants reviewable actuation
 
 When an ASL realizes an EPG-selected action, add `policy_control` as documented in `policy-action-handoff.md`.
 
-The policy block must be current and must match the active EPD and the selected `$st` materialization.
+The policy block must be current and must match the active EPD and the selected actuation materialization.
 
 ASL remains the mutation gate. EPD by itself never grants mutation authority.

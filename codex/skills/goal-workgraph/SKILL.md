@@ -38,7 +38,7 @@ work_node:
   risk: low|medium|high
   parallel_safe: yes|no
   parallel_group:
-  isolation: read-only|file-disjoint|worktree|st-governed
+  isolation: read-only|file-disjoint|worktree|blocked-external-coordination
   merge_policy: evidence-only|serial-integrate|winner-take-all
   conflict_with: []
   reviewer_class:
@@ -54,8 +54,8 @@ work_graph:
   version: WG-v1
   goal_id:
   scheme_plan_ref:
-  mode: direct|goal|review|debug|migration|hardening|st-governed
-  persistence: update_plan|goal-artifacts|st
+  mode: direct|goal|review|debug|migration|hardening|blocked-external-coordination
+  persistence: update_plan|goal-artifacts
   nodes: []
   frontier_policy: highest-risk-first|verifier-first|dependency-order|representative-class-first|branch-race
   combine_policy: all-pass|best-branch|proof-sufficient|human-select
@@ -67,7 +67,7 @@ work_graph:
     stop_on_blocker: yes|no
     stop_on_winner: yes|no
   escalation:
-    use_st_when: []
+    block_external_coordination_when: []
     use_grill_me_when: []
     use_review_fold_when: []
 ```
@@ -80,7 +80,7 @@ work_graph:
 4. For repeated failures, make one representative node and attach a `memo_key`.
 5. For reviews, group comments by liability and kernel rather than one node per comment.
 6. For competing strategies, create `branch` nodes only when alternatives can be isolated and compared by the same verifier.
-7. For high-risk mutation or overlapping resource claims, mark `persistence: st` and stop for `$st`.
+7. For high-risk mutation or overlapping resource claims, mark the node blocked unless an existing supported controller owns it.
 8. Emit the graph and the next ready frontier.
 
 ## Parallelism rules
@@ -112,5 +112,5 @@ same review finding would create wound-specific helpers/tests
 - Do not expand work just to look comprehensive.
 - Do not create separate nodes for comments that reduce to the same counterexample.
 - Do not add refactor work unless it shrinks the proof surface or fixes a shared owner boundary.
-- Do not use `$st` for ordinary in-memory planning; reserve it for durable coordination and fencing.
+- Do not invent a durable controller for ordinary in-memory planning.
 - Do not mark patch nodes parallel-safe when they touch the same owner boundary or invariant.

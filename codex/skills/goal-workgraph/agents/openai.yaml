@@ -8,4 +8,4 @@ interface:
     graph. Prefer verifier-first and representative-class-first decomposition;
     group review findings by shared cause; encode bounded parallelism only when
     paths/resources/proof surfaces are safe; choose update_plan, goal-artifacts,
-    or st persistence explicitly.
+    or external-controller blockers explicitly.

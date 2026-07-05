@@ -42,11 +42,11 @@ generic query only for missing joins
 Measure separately:
 
 ```text
-GCR attempts/current coverage
+authority attempts/current coverage
 graph failures and mutation-after-failure
 AFR coverage
 ARH/FPSR coverage
-update_plan per GCR sequence
+update_plan per authority sequence
 patch/churn
 focused/wave/full proof cadence
 proof invalidators
@@ -62,7 +62,7 @@ terminal ATCG coverage
 Key defect:
 
 ```text
-failed/stale GCR
+failed/stale authority
 -> repeated update_plan
 -> material patching
 ```

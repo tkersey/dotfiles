@@ -3,8 +3,8 @@
     "coordination": {
       "claim_id": "claim-001",
       "executor": "codex",
-      "fencing_current": true,
-      "fencing_token": 42,
+      "coordination_current": true,
+      "coordination_token": 42,
       "lease_current": true,
       "resources": [
         {
@@ -18,9 +18,9 @@
       ],
       "session_id": "session-001"
     },
-    "gcr": {
+    "authority": {
       "execution_allowed": "yes",
-      "gcr_id": "GCR-example-001",
+      "authority_id": "AUTH-example-001",
       "projection_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
       "projection_view_id": "view-session-001"
     },
@@ -36,7 +36,7 @@
       "plan_id": "default",
       "plan_sequence": 11,
       "selected_task_ids": [
-        "st-001"
+        "node-001"
       ]
     },
     "resource_coverage": [

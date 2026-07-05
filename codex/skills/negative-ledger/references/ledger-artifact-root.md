@@ -6,7 +6,7 @@ New durable negative-route records belong under:
 .ledger/negative-ledger/
 ```
 
-When a record concerns `$st` execution, bind:
+When a record concerns legacy execution-controller decisions, bind:
 
 ```text
 workspace ID

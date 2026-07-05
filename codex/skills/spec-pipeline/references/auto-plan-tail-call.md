@@ -65,7 +65,7 @@ plan_source_contract:
 ```
 
 `$plan` compiles that source contract into a plan identity, execution policy,
-PSR-v1 synthesis receipt, and `.ledger/st` handoff.
+PSR-v1 synthesis receipt, and `$actuating` handoff.
 
 ## Fail-closed cases
 

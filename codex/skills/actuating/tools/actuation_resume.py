@@ -35,8 +35,8 @@ def main() -> int:
     for key in ("branch", "base", "head", "dirty_fingerprint"):
         if state_artifact.get(key) != frontier_artifact.get(key):
             errors.append(f"artifact_state_mismatch:{key}")
-    if state.get("control", {}).get("gcr_id") != frontier.get("graph_binding", {}).get("gcr_id"):
-        errors.append("gcr_id_mismatch")
+    if state.get("control", {}).get("authority_id") != frontier.get("graph_binding", {}).get("authority_id"):
+        errors.append("authority_id_mismatch")
 
     packet = {
         "actuation_resume": {
@@ -46,9 +46,9 @@ def main() -> int:
             "run_id": state.get("run_id"),
             "objective": state.get("objective"),
             "artifact_state": state_artifact,
-            "gcr": {
-                "id": state.get("control", {}).get("gcr_id"),
-                "current": state.get("control", {}).get("gcr_current"),
+            "authority": {
+                "id": state.get("control", {}).get("authority_id"),
+                "current": state.get("control", {}).get("authority_current"),
                 "execution_allowed": state.get("control", {}).get("execution_allowed"),
                 "blocking_debt": state.get("control", {}).get("blocking_debt", []),
             },
@@ -84,7 +84,7 @@ def main() -> int:
     print(f"- run: `{row['run_id']}`")
     print(f"- objective: {row['objective']}")
     print(f"- head: `{row['artifact_state'].get('head')}`")
-    print(f"- GCR: `{row['gcr']['id']}` current={row['gcr']['current']} execution_allowed={row['gcr']['execution_allowed']}")
+    print(f"- authority receipt: `{row['authority']['id']}` current={row['authority']['current']} execution_allowed={row['authority']['execution_allowed']}")
     if row["errors"]:
         print(f"- errors: {', '.join(row['errors'])}")
     print()

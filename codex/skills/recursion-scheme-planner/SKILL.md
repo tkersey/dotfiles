@@ -20,7 +20,7 @@ accepted spec or direct goal
 -> correct execution loop
 ```
 
-This skill is for cases where `$goal-actuating` alone would be too flat. It decides whether the work should be handled as a simple goal grind, a memoized migration, a history-aware debug loop, a branch race, a proof-carrying patch, a review compression loop, a parallel traversal, or `$st`-governed execution.
+This skill is for cases where `$goal-actuating` alone would be too flat. It decides whether the work should be handled as a simple goal grind, a memoized migration, a history-aware debug loop, a branch race, a proof-carrying patch, a review compression loop, a parallel traversal, or blocked external coordination.
 
 It does **not** implement code. It selects topology.
 
@@ -30,7 +30,7 @@ It does **not** implement code. It selects topology.
 - The work contains repeated classes, migrations, review campaigns, branch choices, or proof obligations.
 - A direct goal is too complex for one linear plan.
 - `$goal-actuating` risks becoming a generic while-loop.
-- You need to decide between `update_plan`, `.goal/*`, `$st`, subagents, branch race, or memoized class work.
+- You need to decide between `update_plan`, `.goal/*`, subagents, branch race, memoized class work, or blocked external coordination.
 - Review or CAS findings may require compression before implementation.
 - Parallel subagents might help, but only after safe frontier selection.
 - `$agent-loop-schemes` needs topology input before emitting ALSR/HYL.
@@ -50,7 +50,7 @@ scheme_plan:
     artifact_scope:
     authority:
   selected:
-    primary_scheme: direct|cata|ana|hylo|para|apo|histo|futu|zygo|dyna|chrono|meta|mutu|parallel-traverse|st-governed
+    primary_scheme: direct|cata|ana|hylo|para|apo|histo|futu|zygo|dyna|chrono|meta|mutu|parallel-traverse|blocked-external-coordination
     composition: []
     reason:
   work_shape:
@@ -82,7 +82,7 @@ scheme_plan:
         suggested_algebra:
         terminal_gate: ATCG-v1
   handoff:
-    next_owner: $agent-loop-schemes|$goal-actuating|$goal-workgraph|$goal-grind|$review-fold|$resolve|$plan|$st|$ship|blocked
+    next_owner: $agent-loop-schemes|$goal-actuating|$goal-workgraph|$goal-grind|$review-fold|$resolve|$plan|$ship|blocked
     mode:
     required_checks: []
     blocked_on: []
@@ -97,7 +97,7 @@ scheme_plan:
 5. Name the reducer: how evidence, findings, proofs, or subagent results are folded into a verdict.
 6. Decide whether memory is needed: attempt history, failure classes, review classes, or reusable transformations.
 7. Decide whether lookahead or parallelism is safe.
-8. Decide whether `$st` owns execution because of resource claims, fencing, worktrees, or serialized integration.
+8. Decide whether execution must block because resource claims, fencing, worktrees, or serialized integration lack a supported owner.
 9. Emit the Scheme Plan and hand off to `$agent-loop-schemes` when ALSR/HYL must be compiled. Do not mutate code.
 
 ## Scheme selector
@@ -277,7 +277,7 @@ type/schema/test fixture co-evolution
 multi-package dependency cycles
 ```
 
-Route: do not patch in parallel unless the dependency cycle is broken. Consider `$st`.
+Route: do not patch in parallel unless the dependency cycle is broken. Block if serialized integration lacks a supported owner.
 
 ### Parallel traversal
 
@@ -302,7 +302,7 @@ When a Scheme Plan selects any material recursive loop, hand off to `$agent-loop
 Scheme Plan -> ALSR-v1 -> HYL-v1
 ```
 
-Skip ALSR/HYL compilation only when the work is direct-action fused or `$st` owns execution.
+Skip ALSR/HYL compilation only when the work is direct-action fused.
 
 ## Final answer shape
 

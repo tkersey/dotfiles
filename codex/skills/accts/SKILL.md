@@ -1,6 +1,6 @@
 ---
 name: accts
-description: Manage local Codex account switching with a metadata-only TOML config, safe auth.json vault backups, queued next-turn activation hooks, and weekly reset-cycle rotation. Use when the user asks to manage Codex accounts, switch Codex accounts, install account-switch hooks, inspect account status, or rotate through accounts after weekly limits reset.
+description: Manage local Codex account switching with a metadata-only TOML config, safe auth.json vault backups, pending manual account activation, and weekly reset-cycle rotation. Use when the user asks to manage Codex accounts, switch Codex accounts, inspect account status, or rotate through accounts after weekly limits reset.
 ---
 
 # Accts
@@ -20,8 +20,8 @@ python3 codex/skills/accts/scripts/accts.py --help
 - Treat `auth.json` as secret OAuth material. Never print, summarize, paste, or store its contents outside the owner-only vault.
 - Keep `accts.toml` metadata-only. If TOML contains token-like keys such as `access_token`, `refresh_token`, `api_key`, `secret`, or `password`, stop and fix the config rather than tolerating it.
 - Use temp `CODEX_HOME` and `ACCTS_HOME` for tests, dry runs, or examples unless the user explicitly wants to mutate the live account setup.
-- Prefer queued switching through hooks for active Codex conversations. A direct `activate` changes `auth.json`, but the running turn may already have loaded credentials.
-- Preserve unrelated existing hooks in `hooks.json`; install/uninstall only the tagged `accts:` hook entries.
+- Do not install Codex lifecycle hooks for account switching. Use `queue`, `next`, and explicit `activate` commands so account changes are visible user-owned steps.
+- A direct `activate` changes `auth.json`, but the running turn may already have loaded credentials. Prefer activating before starting the turn that should use the new account.
 
 ## Config
 
@@ -39,7 +39,6 @@ Config schema:
 # codex_home = "~/.codex"
 # vault_dir = "~/.local/share/accts/vault"
 # state_dir = "~/.local/share/accts/state"
-# hooks_file = "~/.codex/hooks.json"
 # cas_cwd = "/path/to/repo"
 
 [accounts.personal]
@@ -65,17 +64,12 @@ Switch immediately when no current turn depends on the old account:
 python3 codex/skills/accts/scripts/accts.py activate personal --backup-current
 ```
 
-Queue a switch for the next possible Codex turn:
+Queue a switch, inspect the pending account, then activate it manually before the turn that should use it:
 
 ```bash
 python3 codex/skills/accts/scripts/accts.py queue personal
-python3 codex/skills/accts/scripts/accts.py hook install
-```
-
-Use `hook print` to inspect the exact Stop and SessionStart JSON before installing:
-
-```bash
-python3 codex/skills/accts/scripts/accts.py hook print
+python3 codex/skills/accts/scripts/accts.py next
+python3 codex/skills/accts/scripts/accts.py activate personal --backup-current
 ```
 
 ## Weekly Reset Rotation
@@ -88,7 +82,7 @@ python3 codex/skills/accts/scripts/accts.py reset-cycle start
 python3 codex/skills/accts/scripts/accts.py next
 ```
 
-`reset-cycle start` reads CAS account status and queues the first eligible vaulted account. The Stop hook records a non-secret turn-use ledger row for the account that just completed a turn, then activates the next untouched account. The cycle completes after every enabled `reset_participates = true` vaulted account has a ledger row for the cycle.
+`reset-cycle start` reads CAS account status and queues the first eligible vaulted account. Activate the account shown by `next` before using it. After that account has had a real turn, run `reset-cycle advance --account <name>` to mark it touched and queue the next untouched account. The cycle completes after every enabled `reset_participates = true` vaulted account has been marked touched.
 
 If CAS is unavailable, do not invent reset timing. Use `reset-cycle status --state-only` to inspect local state, or ask the user before using an explicit offline `--resets-at` timestamp.
 

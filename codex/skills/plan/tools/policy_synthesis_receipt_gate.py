@@ -44,27 +44,54 @@ def main(argv: list[str]) -> int:
             errors.append(f"{key}: required")
     if not isinstance(psr.get("passes"), list) or not psr.get("passes"):
         errors.append("passes must be non-empty")
-    if not get(psr, "radical_candidate", "disposition"):
+    required_lenses = {
+        "source_fidelity",
+        "semantic_authority",
+        "system_regime",
+        "belief_and_observation",
+        "action_completeness",
+        "policy_closure",
+        "safety_and_rollback",
+        "proof_and_terminal_state",
+        "simplicity_and_actuation_readiness",
+    }
+    seen_lenses = {
+        row.get("lens")
+        for row in psr.get("passes", [])
+        if isinstance(row, dict) and row.get("lens")
+    }
+    missing_lenses = sorted(required_lenses - seen_lenses)
+    if missing_lenses:
+        errors.append("missing-lenses:" + ",".join(missing_lenses))
+    for index, row in enumerate(psr.get("passes", [])):
+        if not isinstance(row, dict):
+            continue
+        if row.get("disposition") == "clean" and row.get("material_changes"):
+            errors.append(f"passes[{index}]:clean-with-material_changes")
+    radical_disposition = get(psr, "radical_candidate", "disposition")
+    if not radical_disposition:
         errors.append("radical_candidate.disposition: required")
+    elif radical_disposition not in {"adopt", "reject", "defer", "return_to_spec", "none"}:
+        errors.append("radical_candidate.disposition")
     conv = psr.get("convergence") or {}
     for key in ("complete_clean_sweep", "independent_press_pass_clean", "improvements_exhausted"):
         if conv.get(key) is not True:
             errors.append(f"convergence.{key} must be true")
+    if conv.get("independent_press_pass_clean") is not True:
+        errors.append("requires-press-pass")
     if conv.get("unresolved_errors") not in ([], None):
-        errors.append("convergence.unresolved_errors must be empty")
+        errors.append("unresolved-errors")
     if conv.get("untreated_material_risks") not in ([], None):
-        errors.append("convergence.untreated_material_risks must be empty")
+        errors.append("untreated-material-risks")
     if get(psr, "source_contract", "kind") == "PSC-v1":
         if get(psr, "source_contract", "source_owner") != "spec-pipeline":
             errors.append("PSC-v1 source_contract.source_owner must be spec-pipeline")
         if not get(psr, "source_contract", "spec_id"):
             errors.append("PSC-v1 source_contract.spec_id required")
     if errors:
-        print("policy-synthesis-receipt: blocked", file=sys.stderr)
-        for err in errors:
-            print(f"- {err}", file=sys.stderr)
-        return 1
-    print("policy-synthesis-receipt: pass")
+        print(json.dumps({"policy_synthesis_receipt_gate": {"verdict": "blocked", "errors": errors}}, indent=2))
+        return 2
+    print(json.dumps({"policy_synthesis_receipt_gate": {"verdict": "pass", "errors": []}}, indent=2))
     return 0
 
 if __name__ == "__main__":

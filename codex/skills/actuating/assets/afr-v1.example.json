@@ -12,16 +12,16 @@
       "dirty_fingerprint": "sha256:dirty"
     },
     "graph_binding": {
-      "plan_ref": ".ledger/st/st-plan.jsonl",
+      "plan_ref": ".ledger/actuating/run-plan.jsonl",
       "plan_seq": 42,
-      "gcr_id": "GCR-example-001",
-      "gcr_ref": ".ledger/proof/gcr-42.json",
+      "authority_id": "AUTH-example-001",
+      "authority_ref": ".ledger/proof/authority-42.json",
       "structure_fingerprint": "sha256:structure",
       "contract_fingerprint": "sha256:contract",
       "coverage_fingerprint": "sha256:coverage",
       "execution_fingerprint": "sha256:execution",
       "selected_task_ids": [
-        "st-101"
+        "node-101"
       ],
       "execution_allowed": true,
       "blocking_debt": []

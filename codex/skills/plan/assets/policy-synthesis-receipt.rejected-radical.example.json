@@ -94,7 +94,7 @@
       },
       {
         "pass_id": "PASS-09",
-        "lens": "simplicity_and_st_compileability",
+        "lens": "simplicity_and_actuation_readiness",
         "candidate_digest_before": "sha256:e4c2305bcb87b5104e531eeff87157df12f10dc4d93de1dfc7c6469bfd0491f9",
         "candidate_digest_after": "sha256:e4c2305bcb87b5104e531eeff87157df12f10dc4d93de1dfc7c6469bfd0491f9",
         "findings": [],
@@ -113,8 +113,8 @@
     "convergence": {
       "complete_clean_sweep": true,
       "independent_press_pass_clean": true,
-      "unresolved_errors": 0,
-      "untreated_material_risks": 0,
+      "unresolved_errors": [],
+      "untreated_material_risks": [],
       "improvements_exhausted": true
     }
   }

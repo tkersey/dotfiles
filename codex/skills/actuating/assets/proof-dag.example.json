@@ -12,8 +12,8 @@
         "kind": "focused",
         "command": "zig build test-loaded-session-row-002",
         "covers": {
-          "st_obligations": [
-            "st-101/proof-001"
+          "actuation_obligations": [
+            "node-101/proof-001"
           ],
           "matrix_rows": [
             "VMX-row-002"
@@ -37,8 +37,8 @@
         "kind": "wave",
         "command": "zig build test-session",
         "covers": {
-          "st_obligations": [
-            "st-101/proof-002"
+          "actuation_obligations": [
+            "node-101/proof-002"
           ],
           "matrix_rows": [
             "VMX-row-001",
@@ -66,8 +66,8 @@
         "kind": "final",
         "command": "zig build check --summary all",
         "covers": {
-          "st_obligations": [
-            "st-101/proof-final"
+          "actuation_obligations": [
+            "node-101/proof-final"
           ],
           "matrix_rows": [
             "VMX-row-001",

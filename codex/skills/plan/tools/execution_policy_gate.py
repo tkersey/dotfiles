@@ -40,8 +40,8 @@ EVIDENCE_KINDS = {"command", "inspection", "metric", "live_integration", "experi
 ARTIFACT_BINDINGS = {"action", "wave", "final_tree", "live_system"}
 TERMINALS = {"success", "blocked", "return_to_spec", "rollback"}
 SHIELD_RESPONSES = {"block", "rollback", "return_to_spec"}
-INVALIDATOR_ACTIONS = {"return_to_spec", "return_to_grill", "replan", "recompile_st", "block"}
-HANDOFF_OWNERS = {"st", "actuating", "spec-pipeline", "grill-me", "blocked"}
+INVALIDATOR_ACTIONS = {"return_to_spec", "return_to_grill", "replan", "block"}
+HANDOFF_OWNERS = {"actuating", "spec-pipeline", "grill-me", "blocked"}
 HANDOFF_RESULTS = {"pass", "stale", "return_to_spec", "return_to_grill", "blocked"}
 SEMANTIC_DRIFT = {"none", "authorized", "unauthorized"}
 
@@ -960,7 +960,7 @@ def validate_policy(epg: dict[str, Any]) -> tuple[list[str], list[str], dict[str
     if handoff.get("gate_result") not in HANDOFF_RESULTS:
         errors.append("handoff.gate_result")
     require(handoff, "reason", errors, "handoff.")
-    expected_runtime_ready = policy_ready and handoff.get("next_owner") in {"st", "actuating"}
+    expected_runtime_ready = policy_ready and handoff.get("next_owner") == "actuating"
     if is_yes(handoff.get("runtime_ready")) != expected_runtime_ready:
         errors.append("handoff.runtime_ready:contradicts-derived-value")
     if policy_ready and handoff.get("gate_result") != "pass":

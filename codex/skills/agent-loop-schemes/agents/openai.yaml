@@ -6,7 +6,7 @@ interface:
   default_prompt: >-
     Use $agent-loop-schemes to design, audit, or repair a coding-agent loop. For
     material $actuating work, emit ALSR-v1 and HYL-v1 before mutation unless the
-    work is direct-action fused or $st-governed. Audit HSR-v1 transitions with
+    work is direct-action fused. Audit HSR-v1 transitions with
     the law: no mutation without unfold, no continuation without fold, no
     completion without terminal ATCG. Do not run this as ceremony for ordinary
     one-shot edits.

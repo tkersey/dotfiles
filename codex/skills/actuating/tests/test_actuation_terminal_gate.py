@@ -235,30 +235,6 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertEqual(body["can_mark_goal_complete"], "yes")
         self.assertEqual(body["next_owner"], "none")
 
-    def test_advisory_st_governed_exempts_loop_receipts(self) -> None:
-        fixture = self.fixture("terminal-context.advisory-st-governed.example.json")
-        advisory = MODULE.make_advisory(fixture["actuation_terminal_context"])
-        self.assertEqual(advisory, {
-            "verdict": "advisory",
-            "would_block": False,
-            "would_block_reasons": [],
-            "can_mark_goal_complete": True,
-            "next_owner": "none",
-        })
-
-    def test_hard_st_governed_current_receipt_can_complete(self) -> None:
-        fixture = self.fixture("terminal-context.advisory-st-governed.example.json")
-        decision = MODULE.make_decision(fixture["actuation_terminal_context"])
-        body = decision["actuation_terminal_decision"]
-        self.assertEqual(body["verdict"], "complete")
-        self.assertEqual(body["can_mark_goal_complete"], "yes")
-        self.assertEqual(body["next_owner"], "none")
-
-    def test_hard_st_governed_requires_current_receipt(self) -> None:
-        context = deepcopy(self.context("terminal-context.advisory-st-governed.example.json"))
-        context["loop_governance"]["st_control"]["current"] = "no"
-        self.assert_blocks_with(context, "st-authority-blocked", "$st")
-
     def test_hard_stale_loop_contract_blocks_completion(self) -> None:
         context = deepcopy(self.context())
         context["loop_governance"] = {

@@ -1053,7 +1053,7 @@
       "source_changes": []
     },
     "handoff": {
-      "next_owner": "st",
+      "next_owner": "actuating",
       "runtime_ready": "yes",
       "mutation_allowed": "no",
       "gate_result": "pass",

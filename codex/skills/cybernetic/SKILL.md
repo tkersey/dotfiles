@@ -50,7 +50,7 @@ It should output a downstream owner:
 
 ```text
 goal-actuating
-st-bounded-slice
+blocked
 review-fold
 negative-ledger
 universalist
@@ -109,7 +109,7 @@ cybernetic_context:
   leverage_level: parameter | buffer | stock_flow_structure | delay | balancing_loop | reinforcing_loop | information_flow | rules | self_organization | goal | paradigm | none
   selected_intervention:
     route: checklist | expert_analysis | safe_to_fail_probe | stabilize_first | redesign_feedback | change_rules | change_goal | handoff | blocked
-    downstream_skill: goal-actuating | st-bounded-slice | review-fold | universalist | reduce | negative-ledger | tune | proof-patch | none
+    downstream_skill: goal-actuating | blocked | review-fold | universalist | reduce | negative-ledger | tune | proof-patch | none
   local_patch_allowed: yes | no
   monitoring_or_probe: "..."
 ```
@@ -171,7 +171,7 @@ cybernetic_packet:
       why_higher_leverage_is_not_available_or_not_needed: "..."
   intervention_design:
     route: no_action | observe_more | checklist | expert_analysis | experiment | stabilize | redesign_feedback | change_rules | change_goal | reframe | handoff | blocked
-    downstream_skill: goal-actuating | st-bounded-slice | review-fold | universalist | reduce | negative-ledger | tune | proof-patch | none
+    downstream_skill: goal-actuating | blocked | review-fold | universalist | reduce | negative-ledger | tune | proof-patch | none
     smallest_safe_move: "..."
     reversibility: reversible | partially_reversible | irreversible | unknown
     blast_radius: narrow | medium | broad | unknown
@@ -503,7 +503,7 @@ Use with:
 - `$reduce` when abstraction/layer tax may be producing the pattern.
 - `$complexity-mitigator` when comprehension risk blocks action.
 - `$tune` when the system is a skill/workflow usage loop.
-- `$st` bounded execution when the selected intervention requires claims, fencing, worktrees, and proof-bound integration.
+- `blocked` when the selected intervention requires claims, fencing, worktrees, and proof-bound integration that no supported controller owns.
 - `$proof-patch` when closure must prove feedback/probe readiness.
 - `$goal-actuating` only after the system intervention has become a scoped implementation route.
 

@@ -5,7 +5,7 @@ interface:
   short_description: "Interpret HYL-v1 goal loops, emit HSR-v1 steps, and close through evidence and ATCG"
   default_prompt: >-
     Use $goal-actuating to execute an accepted implementation spec, direct /goal,
-    review remediation, dry actuation plan, or $st-governed execution. If no
+    review remediation, or dry actuation plan. If no
     Scheme Plan exists and the work shape is unclear, hand off to
     $recursion-scheme-planner. If material loop governance is required and no
     current ALSR/HYL exists, hand off to $agent-loop-schemes. Interpret HYL-v1 as

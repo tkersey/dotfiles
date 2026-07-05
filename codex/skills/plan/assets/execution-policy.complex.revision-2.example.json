@@ -5,7 +5,7 @@
     "revision": 2,
     "parent": {
       "policy_id": "POLICY-cache-strategy",
-      "digest": "sha256:eff535bc88c9471ba4d7b2f87838948436bd93ac5b0f5e083489b00af3f81a5f"
+      "digest": "sha256:4619a1a2f9ae91c9eb2623a593bd7df2c73f53557b2d3c1a51b71b87d136e7d1"
     },
     "created_at": "2026-06-24T12:00:00-07:00",
     "profile": "strict",
@@ -1056,7 +1056,7 @@
       "source_changes": []
     },
     "handoff": {
-      "next_owner": "st",
+      "next_owner": "actuating",
       "runtime_ready": "yes",
       "mutation_allowed": "no",
       "gate_result": "pass",

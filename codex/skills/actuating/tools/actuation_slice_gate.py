@@ -85,20 +85,20 @@ def validate_slice(body: dict[str, Any]) -> tuple[list[str], list[str]]:
             errors.append(key)
 
     artifact = require_object(body, "artifact_state", errors)
-    for key in ("repository_root", "branch", "head", "dirty_fingerprint", "st_plan_fingerprint"):
+    for key in ("repository_root", "branch", "head", "dirty_fingerprint", "plan_fingerprint"):
         if not artifact.get(key):
             errors.append(f"artifact_state.{key}")
 
     policy_ready, policy_action_id = validate_policy_control(body, errors)
 
     task = require_object(body, "task_control", errors)
-    for key in ("plan_ref", "gcr_id", "gcr_ref"):
+    for key in ("plan_ref", "authority_id", "authority_ref"):
         if not task.get(key):
             errors.append(f"task_control.{key}")
-    if not isinstance(task.get("gcr_seq"), int) or task.get("gcr_seq", -1) < 0:
-        errors.append("task_control.gcr_seq")
-    if not (yes(task.get("gcr_current")) or no(task.get("gcr_current"))):
-        errors.append("task_control.gcr_current")
+    if not isinstance(task.get("authority_seq"), int) or task.get("authority_seq", -1) < 0:
+        errors.append("task_control.authority_seq")
+    if not (yes(task.get("authority_current")) or no(task.get("authority_current"))):
+        errors.append("task_control.authority_current")
     if not (yes(task.get("execution_allowed")) or no(task.get("execution_allowed"))):
         errors.append("task_control.execution_allowed")
     tasks = require_list(task, "selected_task_ids", errors)
@@ -189,7 +189,7 @@ def validate_slice(body: dict[str, Any]) -> tuple[list[str], list[str]]:
 
     prerequisites = (
         policy_ready
-        and yes(task.get("gcr_current"))
+        and yes(task.get("authority_current"))
         and yes(task.get("execution_allowed"))
         and bool(tasks)
         and bool(semantic.get("owner"))

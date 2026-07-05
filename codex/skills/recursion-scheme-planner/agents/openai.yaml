@@ -8,6 +8,6 @@ interface:
     accepted and before execution when the work needs a nontrivial breakdown.
     Select the correct loop shape: fold, unfold, hylo, memoized migration,
     history-aware debug loop, lookahead, branch-race, proof-carrying patch,
-    review compression, parallel traversal, or $st-governed execution. Emit a
+    review compression, parallel traversal, or blocked external coordination. Emit a
     compact Scheme Plan and hand off to $agent-loop-schemes when ALSR/HYL loop
     compilation is required. Do not implement code.

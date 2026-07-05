@@ -26,7 +26,6 @@ Before first material mutation, establish one of:
 ```text
 direct_action fused exemption
 current ALSR-v1 + HYL-v1
-$st owns the work with current control receipt
 ```
 
 If none exists, stop with:

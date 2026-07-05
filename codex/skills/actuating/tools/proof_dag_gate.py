@@ -50,7 +50,7 @@ def main() -> int:
             errors.append(f"nodes[{index}].command")
         covers = require_object(node, "covers", errors)
         total_coverage = 0
-        for key in ("st_obligations", "matrix_rows", "files", "semantic_laws"):
+        for key in ("actuation_obligations", "matrix_rows", "files", "semantic_laws"):
             values = require_list(covers, key, errors)
             total_coverage += len(values)
         if total_coverage == 0:

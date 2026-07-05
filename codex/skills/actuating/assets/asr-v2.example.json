@@ -12,9 +12,9 @@
       "dirty_fingerprint": "sha256:clean"
     },
     "control": {
-      "plan_ref": ".ledger/st/st-plan.jsonl",
-      "gcr_id": "GCR-example-final",
-      "gcr_current": true,
+      "plan_ref": ".ledger/actuating/run-plan.jsonl",
+      "authority_id": "AUTH-example-final",
+      "authority_current": true,
       "execution_allowed": true,
       "blocking_debt": [],
       "projection_valid": true,

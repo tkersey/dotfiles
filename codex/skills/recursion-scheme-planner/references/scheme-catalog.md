@@ -16,7 +16,7 @@ This catalogue is a practical planning map. It is not a theorem-prover and not a
 | Dynamorphism | Are subproblems repeated and memoizable? | Representative failure classes, migration memoization. |
 | Chronomorphism | Need both history and lookahead? | Long-horizon debug/review/perf loops. |
 | Metamorphism | Transform old representation into new one? | Fold old model, unfold new implementation. |
-| Mutumorphism | Are subproblems mutually recursive? | Coordinated plan, often `$st` or serial integration. |
+| Mutumorphism | Are subproblems mutually recursive? | Coordinated plan or serial integration. |
 | Parallel traversal | Are leaves independent? | Bounded subagents with strict fan-in. |
 
 ## Scheme compositions

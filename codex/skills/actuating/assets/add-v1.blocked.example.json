@@ -18,12 +18,12 @@
       "current PR state unavailable"
     ],
     "integrated_change_set_receipts": [
-      ".ledger/st/integration/receipts/igr-001.json"
+      ".ledger/actuating/delivery/receipts/igr-001.json"
     ],
     "integration": {
       "queue_quiescent": "no",
       "receipts": [
-        ".ledger/st/integration/receipts/igr-001.json"
+        ".ledger/actuating/delivery/receipts/igr-001.json"
       ]
     },
     "issued_at": "2026-06-26T00:00:00Z",
@@ -36,7 +36,7 @@
     "proof_complete_receipt": {
       "current": "no",
       "present": "yes",
-      "ref": ".ledger/st/proof/plan-example/proof-complete.json"
+      "ref": ".ledger/actuating/proof/plan-example/proof-complete.json"
     },
     "run_id": "run-blocked-001",
     "ship_handoff": null,

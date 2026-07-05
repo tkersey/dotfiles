@@ -11,7 +11,7 @@ seq actuation-control-audit
 It should measure:
 
 ```text
-GCR coverage and failure class
+authority receipt coverage and failure class
 mutation after unavailable graph control
 ASL/FPS coverage
 projection inversion

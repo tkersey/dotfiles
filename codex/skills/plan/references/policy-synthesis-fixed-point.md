@@ -20,7 +20,7 @@ action_completeness
 policy_closure
 safety_and_rollback
 proof_and_terminal_state
-simplicity_and_st_compileability
+simplicity_and_actuation_readiness
 ```
 
 ## Loop

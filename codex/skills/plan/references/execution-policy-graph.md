@@ -293,7 +293,6 @@ execution_policy_graph:
 
   handoff:
     next_owner:
-      st |
       actuating |
       spec-pipeline |
       grill-me |

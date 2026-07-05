@@ -41,7 +41,7 @@ Stale handling is explicit:
 return_to_spec
 return_to_grill
 replan
-recompile_st
+refresh_authority
 block
 ```
 

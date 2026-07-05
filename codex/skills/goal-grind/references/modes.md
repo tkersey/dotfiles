@@ -8,7 +8,7 @@ Use modes to customize behavior without multiplying skills.
 |---|---|---|
 | `update_plan` | The plan is user-visible and session-local. | Native Codex plan UI. |
 | `goal-artifacts` | A material `/goal` needs attempts, evidence, and memo rows. | `.goal/*` files if publishable for the repo. |
-| `st` | Durable graph coordination, fencing, claims, worktrees, or serialized integration are required. | `$st` and `.step/st-plan.jsonl`. |
+| `blocked` | Durable graph coordination, fencing, claims, worktrees, or serialized integration are required but unsupported. | Explicit blocked receipt. |
 
 ## Implementation modes
 
@@ -27,7 +27,7 @@ Use modes to customize behavior without multiplying skills.
 | `proof-only` | Treat review as a request for evidence. |
 | `minimal-fix` | Fix accepted liabilities locally. |
 | `refactor-kernel` | Collapse same-family comments into one abstraction or boundary correction. |
-| `st-governed` | Use `$st` for durable, fenced review remediation. |
+| `blocked-external-coordination` | Stop when durable, fenced review remediation lacks a supported controller. |
 
 ## Default selection
 
@@ -35,4 +35,4 @@ Use modes to customize behavior without multiplying skills.
 2. Switch to `proof-only` when the claim is likely already satisfied.
 3. Switch to `refactor-kernel` when findings or failures share an owner boundary.
 4. Switch to `branch-race` when two plausible fixes cannot be ranked cheaply.
-5. Switch to `st` only for durable coordination, resource claims, or explicit `$st` work.
+5. Switch to `blocked` for durable coordination, resource claims, or legacy controller continuity that cannot be represented locally.

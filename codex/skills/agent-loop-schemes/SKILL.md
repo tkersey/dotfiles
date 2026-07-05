@@ -36,8 +36,8 @@ Do not build a generic "keep going" loop.
 - `$actuating` needs a loop contract before material mutation.
 - `$goal-actuating` has no current loop machine and the work is not a direct one-shot action.
 - An agent is drifting, repeating fixes, over-patching review comments, or claiming completion without current proof.
-- A task needs a verifier, stop condition, review closure rule, memory policy, branch-race strategy, bounded parallelism policy, or `$st` handoff.
-- You need to decide whether to use direct execution, `update_plan`, `.goal/*`, `$st`, `$cas`, `$review-fold`, `$resolve`, `$goal-grind`, `$evidence-fold`, `$proof-patch`, or `$ship`.
+- A task needs a verifier, stop condition, review closure rule, memory policy, branch-race strategy, bounded parallelism policy, or supported-controller boundary.
+- You need to decide whether to use direct execution, `update_plan`, `.goal/*`, `$cas`, `$review-fold`, `$resolve`, `$goal-grind`, `$evidence-fold`, `$proof-patch`, or `$ship`.
 
 Do not use for trivial one-shot edits where the next action and proof are obvious, unless `$actuating` has classified the run as material and requires a receipt.
 
@@ -79,8 +79,8 @@ agent_loop_scheme_receipt:
     head:
     diff_digest:
     paths: []
-  task_shape: direct|goal|review|debug|migration|branch_race|proof_closure|st_governed
-  selected_loop: direct_action|goal_grind|triage|remediation_plan|review_closeout|debug_history|migration_memoized|branch_race|proof_patch|st_governed
+  task_shape: direct|goal|review|debug|migration|branch_race|proof_closure|blocked_external_coordination
+  selected_loop: direct_action|goal_grind|triage|remediation_plan|review_closeout|debug_history|migration_memoized|branch_race|proof_patch|blocked
   seed:
     source:
     authority:
@@ -144,7 +144,7 @@ actuation_hylomorphism:
   coalgebra:
     name:
     input: seed_state
-    emits: terminal|blocked|work_node|parallel_frontier|st_handoff
+    emits: terminal|blocked|work_node|parallel_frontier
     no_node_verdict: blocked-hylo-frontier-missing
   action_boundary:
     mutation_requires_unfolded_node: yes
@@ -163,7 +163,6 @@ actuation_hylomorphism:
       - resolution_fold
       - subagent_spawn
       - branch_race
-      - st_handoff
       - proof_patch
       - ship_handoff
   algebra:
@@ -176,7 +175,7 @@ actuation_hylomorphism:
       - resolution_fold
       - subagent_result
       - proof_patch
-    emits: continue|complete|blocked|regress|replan|refactor-kernel|st-required
+    emits: continue|complete|blocked|regress|replan|refactor-kernel
   terminal:
     completion_requires: ATCG-v1
     proof_must_bind_current_artifact: yes
@@ -201,11 +200,11 @@ hylo_step_receipt:
     memory_refs: []
   unfold:
     producer:
-    produced: work_node|parallel_frontier|terminal|blocked|st_handoff
+    produced: work_node|parallel_frontier|terminal|blocked
     node_ids: []
     reason:
   action:
-    owner: root|subagent|st
+    owner: root|subagent
     node_id:
     effect:
     changed_paths: []
@@ -214,7 +213,7 @@ hylo_step_receipt:
   fold:
     reducer:
     evidence_refs: []
-    verdict: continue|complete|blocked|regress|replan|refactor-kernel|st-required
+    verdict: continue|complete|blocked|regress|replan|refactor-kernel
     next_state_ref:
     current_artifact_bound: yes|no
     invalidators: []
@@ -233,7 +232,7 @@ current actuation state
 -> unfold exactly one legal next work item or parallel frontier
 -> execute only that item/frontier
 -> fold current-artifact evidence
--> continue | complete | blocked | regress | replan | st-required
+-> continue | complete | blocked | regress | replan
 ```
 
 The work graph is a projection of this machine, not the source of truth.
@@ -250,7 +249,7 @@ A run may be `fused` into direct action when:
 ```text
 the coalgebra emits exactly one work node
 the verifier is known
-there is no review/st/parallel/public side effect
+there is no review/parallel/public side effect
 no repeated class or branch choice is present
 ```
 
@@ -273,7 +272,7 @@ migration matrix
 branch choice
 proof fanout
 parallel subagent frontier
-$st coordination requirement
+unsupported durable coordination requirement
 unclear stop rule
 ```
 
@@ -281,7 +280,7 @@ The fold verdict should be:
 
 ```text
 verdict: replan
-next_owner: $agent-loop-schemes|$recursion-scheme-planner|$st
+next_owner: $agent-loop-schemes|$recursion-scheme-planner|blocked
 ```
 
 ## Loop selectors
@@ -395,15 +394,11 @@ evidence-fold + proof-patch/CAS/ADD-v1/ship evidence + terminal HSR -> ATCG-v1 -
 
 Do not claim completion unless ATCG-v1 returns `can_mark_goal_complete=yes`.
 
-### st-governed
+### Unsupported Durable Coordination
 
-Use when durable coordination owns the work.
-
-```text
-$st -> selected slice -> bounded execution -> evidence -> proof
-```
-
-Choose this when the task needs resource claims, fencing tokens, independent worktrees, serialized integration, branch/head proof, or existing `.step/st-plan.jsonl` continuity.
+Block when the task requires resource claims, fencing tokens, independent
+worktrees, serialized integration, or branch/head proof that the current local
+loop cannot own.
 
 ## Review quotient law
 
@@ -458,20 +453,21 @@ subagents branch-race without common verifier
 raw review finding -> patch worker
 ```
 
-## `$st` as escape continuation
+## Unsupported Controller Boundary
 
 When local actuation cannot legally own coordination, the HYL coalgebra emits:
 
 ```yaml
 unfold:
-  produced: st_handoff
+  produced: blocked
   reason:
     - resource_claim_required
     - overlapping_edits
     - external_worktree_required
 ```
 
-`$st` is a continuation constructor, not ordinary multi-step planning.
+Do not invent a hidden controller. Stop with an explicit blocked reason until a
+supported controller exists.
 
 ## `$ship` as terminal effect handler
 
@@ -560,7 +556,7 @@ the next action would repeat a known invalid strategy
 - `$proof-patch` for local closure proof.
 - `$ship` for PR creation, update, promotion, or publication.
 - `ATCG-v1` as the terminal closure reducer before `$actuating` completion.
-- `$st` when durable coordination, claims, fencing, or worktrees are required.
+- `blocked` when durable coordination, claims, fencing, or worktrees are required without a supported controller.
 
 ## Final output
 

@@ -37,10 +37,10 @@
           "timestamp": "2026-06-20T00:00:00Z",
           "tool_name": "apply_patch",
           "executable": null,
-          "command": "*** Delete File: .step/review-workflow-st-plan.jsonl",
+          "command": "*** Delete File: .step/review-workflow-plan.jsonl",
           "matched_field": "patch_path",
           "matched_cue": "review-workflow",
-          "excerpt": "Delete obsolete sidecar .step/review-workflow-st-plan.jsonl",
+          "excerpt": "Delete obsolete sidecar .step/review-workflow-plan.jsonl",
           "provenance_role": "artifact_under_repair"
         }
       ]
