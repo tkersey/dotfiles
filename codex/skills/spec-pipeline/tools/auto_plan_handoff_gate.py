@@ -14,7 +14,13 @@ def load(path: str) -> Any:
         return json.loads(text)
     if yaml is None:
         return json.loads(text)
-    return yaml.safe_load(text)
+    parsed = yaml.safe_load(text)
+    if isinstance(parsed, dict):
+        return parsed
+    marker = "spec_governance_receipt:"
+    if marker in text:
+        return yaml.safe_load(text[text.index(marker):])
+    return parsed
 
 def unwrap(obj: Any) -> dict[str, Any]:
     if isinstance(obj, dict) and "spec_governance_receipt" in obj:
@@ -37,6 +43,9 @@ def eq(actual: Any, expected: Any) -> bool:
     if expected == "no":
         return actual is False or str(actual).lower() == "no"
     return actual == expected
+
+def yes_no_string(value: Any) -> str:
+    return "yes" if eq(value, "yes") else "no"
 
 def empty_list(v: Any) -> bool:
     return v is None or v == []
@@ -77,18 +86,28 @@ def main(argv: list[str]) -> int:
         actual = get(sgr, *parts)
         if expected == "full|repair":
             if actual not in ("full", "repair"):
-                errors.append(f"{dotted}: expected full|repair, got {actual!r}")
+                errors.append(f"{dotted}:expected:full-or-repair")
         else:
             if not eq(actual, expected):
-                errors.append(f"{dotted}: expected {expected!r}, got {actual!r}")
+                errors.append(f"{dotted}:expected:{expected}")
     if not empty_list(get(sgr, "execution_handoff", "do_not_execute_before")):
-        errors.append("execution_handoff.do_not_execute_before must be empty")
+        errors.append("execution_handoff.do_not_execute_before:must-be-empty")
     if errors:
-        print("auto-plan-handoff: blocked", file=sys.stderr)
-        for err in errors:
-            print(f"- {err}", file=sys.stderr)
-        return 1
-    print("auto-plan-handoff: eligible")
+        if eq(get(sgr, "auto_plan_handoff", "eligible"), "yes"):
+            errors.append("eligible=yes-but-predicates-failed")
+        print(json.dumps({"auto_plan_handoff_gate": {
+            "verdict": "blocked",
+            "eligible": yes_no_string(get(sgr, "auto_plan_handoff", "eligible")),
+            "next_owner": get(sgr, "execution_handoff", "next_owner", default=""),
+            "errors": errors,
+        }}, sort_keys=True))
+        return 2
+    print(json.dumps({"auto_plan_handoff_gate": {
+        "verdict": "pass",
+        "eligible": "yes",
+        "next_owner": get(sgr, "execution_handoff", "next_owner", default=""),
+        "errors": [],
+    }}, sort_keys=True))
     return 0
 
 if __name__ == "__main__":

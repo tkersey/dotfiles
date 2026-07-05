@@ -110,8 +110,10 @@ evidence, but they do not count toward the three standard clean reviews and do
 not interrupt standard-review consecutiveness.
 
 Auxiliary lanes may still block completion. ATCG rejects completion when a
-required auxiliary lane is missing, blocked, rerun-required, or not folded
-through `$review-fold` / the resolution fold.
+required auxiliary lane is missing, blocked, rerun-required, not folded through
+`$review-fold` / the resolution fold, or missing current lens-shaped evidence.
+CAS lane labels are transport evidence; they do not prove that the corresponding
+skill lens executed.
 
 The preferred reducer fields are:
 
@@ -122,10 +124,32 @@ final_report_fields.standard_clean_cas_runs
 review_profile.standard
 review_profile.auxiliary_review_lanes.<lane>.state
 review_profile.auxiliary_review_lanes.<lane>.reason
+review_profile.auxiliary_review_lanes.<lane>.lens_contract
+review_profile.auxiliary_review_lanes.<lane>.lens_evidence_state
+review_profile.auxiliary_review_lanes.<lane>.lens_evidence_ref
 review_profile.auxiliary_review_lanes.<lane>.evidence_ref
 review_profile.auxiliary_review_lanes.<lane>.head_sha
 review_profile.auxiliary_review_lanes.<lane>.target_fingerprint
+review_profile.complexity_pressure
 ```
+
+Selected auxiliary lanes with `clean` or `findings-folded` state must carry the
+lane contract expected by ATCG:
+
+```text
+footgun-finder       -> footgun-lens-v1
+invariant-ace        -> invariant-gate-v1
+complexity-mitigator -> complexity-preflight-v1
+```
+
+`lens_evidence_state` must be `valid` for terminal completion. `missing`,
+`invalid`, `stale`, `blocked`, and `rerun-required` are blocking states.
+`not-required` is valid only for lanes explicitly not selected and still needs a
+reason.
+
+`complexity_pressure` records review churn, one-patch-per-comment pressure, or
+comprehension blockage. When it is present, `complexity-mitigator` cannot remain
+`not-required` unless the pressure is explicitly marked not applicable.
 
 Compatibility fields may still be named `clean_runs_required`,
 `clean_runs_count`, or `normalized_cas_clean_runs`, but their meaning is
@@ -145,7 +169,7 @@ $st-governed completion without current $st control receipt -> st-authority-bloc
 CAS required + standard clean runs < required -> blocked, next_owner=$cas
 CAS required + standard_clean_runs_required <= 0 -> blocked, next_owner=$cas
 CAS required + final report standard clean runs < required -> blocked, next_owner=$cas
-required auxiliary CAS review lane missing|not-folded|blocked|rerun-required -> cas-review-blocked, next_owner=$cas
+required auxiliary CAS review lane missing|not-folded|blocked|rerun-required|lens-evidence-invalid -> cas-review-blocked, next_owner=$cas
 required auxiliary CAS review lane stale against head/diff -> cas-review-blocked, next_owner=$cas
 review-closeout protocol incomplete -> cas-review-blocked, next_owner=$cas
 proof-patch required + missing/stale -> continue, next_owner=$proof-patch
