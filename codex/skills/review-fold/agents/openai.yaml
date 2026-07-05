@@ -2,7 +2,7 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Fold"
-  short_description: "Classify review findings and choose reject, proof-only, minimal-fix, refactor-kernel, ask-human, follow-up, or blocked without granting mutation authority"
+  short_description: "Classify review findings, emit RF-v1.4 kernel-fold receipts, and keep mutation authority disabled"
   default_prompt: >-
     Use $review-fold for review findings, PR comments, reviewer suggestions,
     CAS-backed review evidence, human review, prior artifacts, local audit
@@ -14,19 +14,19 @@ interface:
     review_attempt_id, review_thread_id, review_turn_id, lane_role,
     head_sha, target_fingerprint, and backend_specific fields. CAS-specific
     fields are evidence references only; they do not decide validity,
-    liability, repair level, clean-run effect, or mutation authority.
+    liability, kernel status, clean-run effect, or mutation authority.
 
     Separate claim, observed_fact, and suggested_repair. Classify validity,
-    liability, intent_relation, novelty, disposition, and repair_level before
+    liability, intent_relation, novelty, disposition, and kernel_fold before
     any implementation. For valid or contested findings, name law_family,
     falsified_law, owner_boundary, model_state, alternatives_considered, and
     evidence_refs.
 
-    Return full RF-v1.3 when practical. When the full schema is too large,
-    emit an RF-v1.3 compact block before any material fold leaves review-fold:
+    Return full RF-v1.4 when practical. When the full schema is too large,
+    emit an RF-v1.4 compact block before any material fold leaves review-fold:
     source_ref with backend or explicit unknown source, lane_role when known,
     head_sha, target_fingerprint, validity, liability, intent_relation,
-    disposition, repair_level, owner_boundary, law_family, evidence_refs,
+    disposition, kernel_fold, owner_boundary, law_family, evidence_refs,
     clean_run effect when applicable, and finding_mutation_authority.allowed:
     no.
 
@@ -34,16 +34,16 @@ interface:
     acceptance shortcut, repair shortcut, proof-gap shortcut, clean-run
     accounting, thread disposition, grouped-liability / owner-boundary
     shortcut, and source-batch boundary. Shortcut prose is not a receipt.
-    Emit full RF-v1.3 or RF-v1.3 compact before accepted liabilities,
-    blockers, clean-run decisions, thread dispositions, refactor-kernel
-    decisions, or repair directions reach the resolution fold, mutation
-    planning, closeout accounting, or public review-thread handling.
+    Emit full RF-v1.4 or RF-v1.4 compact before accepted liabilities,
+    blockers, clean-run decisions, thread dispositions, kernel decisions, or
+    repair directions reach the resolution fold, mutation planning, closeout
+    accounting, or public review-thread handling.
 
     A finding is never mutation authority. A code-change candidate remains
     advisory until the resolution fold accepts a work node and the caller
     workflow has valid mutation authority. Prefer no-code outcomes when
-    correct: reject, proof-only, follow-up, ask-human, or blocked. If
-    one_patch_per_comment_risk is high, route to refactor-kernel, branch-race,
-    remediation-plan, or blocked unless an explicit owner-boundary exception is
-    recorded. Do not post PR comments, resolve threads, mutate files, choose a
-    fresh review backend, or claim terminal review closure.
+    correct: reject, proof-only, follow-up, ask-human, or blocked. If kernel
+    pressure is high, do not emit kernel_fold.status: point unless
+    point_safety is proven with evidence; otherwise use structural, unknown,
+    or blocked. Do not post PR comments, resolve threads, mutate files, choose
+    a fresh review backend, or claim terminal review closure.

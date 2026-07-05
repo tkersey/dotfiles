@@ -1,9 +1,9 @@
 #!/usr/bin/env -S uv run python
-"""RF-v1.3 receipt validator for $review-fold.
+"""RF-v1.4 receipt validator for $review-fold.
 
-The gate validates JSON projections of full RF-v1.3 receipts and compact
-RF-v1.3 receipts. It intentionally avoids review-backend policy: source fields
-are evidence references, not validity or mutation authority.
+The gate validates JSON projections of full RF-v1.4 receipts and compact
+RF-v1.4 receipts. It intentionally avoids review-backend policy: source fields
+are evidence references, not validity, kernel status, or mutation authority.
 """
 from __future__ import annotations
 
@@ -39,26 +39,19 @@ VALID_INTENT = {"core", "adjacent", "unrelated", "expands-scope"}
 VALID_DISPOSITIONS = {
     "reject",
     "proof-only",
-    "minimal-fix",
-    "refactor-kernel",
+    "accepted-liability",
     "ask-human",
     "follow-up",
     "blocked",
 }
-VALID_REPAIR = {
-    "none",
-    "proof-only",
-    "minimal-fix",
-    "refactor-kernel",
-    "branch-race",
-    "ask-human",
-    "follow-up",
-    "blocked",
-}
-CODE_CHANGE_DISPOSITIONS = {"minimal-fix", "refactor-kernel"}
 MATERIAL_DISPOSITIONS = VALID_DISPOSITIONS
+VALID_KERNEL_STATUS = {"none", "point", "structural", "unknown"}
+VALID_KERNEL_PRESSURE = {"none", "low", "medium", "high"}
+VALID_POINT_SAFETY = {"proven", "not-proven", "not-applicable"}
 VALID_CLEAN = {"yes", "no", "not-applicable"}
 VALID_COUNT_EFFECT = {"increment", "reset", "none", "blocked", "unknown"}
+FORBIDDEN_FINDING_KEYS = {"repair_level"}
+FORBIDDEN_FULL_KEYS = {"action_plan"}
 
 
 class ReceiptGateError(ValueError):
@@ -76,14 +69,21 @@ def load_json(path: str) -> dict[str, Any]:
 def unwrap_receipt(value: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     if isinstance(value.get("review_fold"), dict):
         return "full", value["review_fold"]
-    for key in ("rf_v13_compact", "RF-v1.3 compact", "RF-v1.3 compact:"):
+    for key in (
+        "rf_v14_compact",
+        "RF-v1.4 compact",
+        "RF-v1.4 compact:",
+        "rf_v13_compact",
+        "RF-v1.3 compact",
+        "RF-v1.3 compact:",
+    ):
         if isinstance(value.get(key), dict):
             return "compact", value[key]
-    if "findings" in value or value.get("version") == "RF-v1.3":
+    if "findings" in value or value.get("version") in {"RF-v1.4", "RF-v1.3"}:
         return "full", value
     if "validity" in value and "disposition" in value:
         return "compact", value
-    raise ReceiptGateError("receipt: expected review_fold or RF-v1.3 compact object")
+    raise ReceiptGateError("receipt: expected review_fold or RF-v1.4 compact object")
 
 
 def as_no(value: Any) -> bool:
@@ -92,6 +92,10 @@ def as_no(value: Any) -> bool:
 
 def object_from(value: Any) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
+
+
+def meaningful(value: Any) -> bool:
+    return isinstance(value, str) and value not in {"", "unknown", "not-applicable", "none"}
 
 
 def require_list(obj: dict[str, Any], key: str, errors: list[str], prefix: str) -> list[Any]:
@@ -158,10 +162,55 @@ def clean_run_errors(clean_run: dict[str, Any], prefix: str) -> list[str]:
     return errors
 
 
+def kernel_fold_errors(finding: dict[str, Any], prefix: str, disposition: str) -> list[str]:
+    errors: list[str] = []
+    kernel = object_from(finding.get("kernel_fold"))
+    if not kernel:
+        errors.append(f"{prefix}.kernel_fold:missing")
+        return errors
+
+    status = validate_enum(
+        kernel.get("status"), VALID_KERNEL_STATUS, "kernel_fold.status", errors, prefix
+    )
+    pressure = validate_enum(
+        kernel.get("pressure"), VALID_KERNEL_PRESSURE, "kernel_fold.pressure", errors, prefix
+    )
+    point_safety = validate_enum(
+        kernel.get("point_safety"), VALID_POINT_SAFETY, "kernel_fold.point_safety", errors, prefix
+    )
+
+    for key in ("equivalence_class", "owner_boundary", "law_family", "falsifier"):
+        value = kernel.get(key)
+        if not isinstance(value, str) or not value:
+            errors.append(f"{prefix}.kernel_fold.{key}:missing")
+
+    evidence_refs = require_list(kernel, "evidence_refs", errors, f"{prefix}.kernel_fold")
+    if evidence_refs and not all(isinstance(item, str) and item for item in evidence_refs):
+        errors.append(f"{prefix}.kernel_fold.evidence_refs:must-be-strings")
+
+    if disposition == "accepted-liability" and status not in {"point", "structural"}:
+        errors.append(f"{prefix}.kernel_fold.status:accepted-liability-requires-point-or-structural")
+    if status == "point" and point_safety != "proven":
+        errors.append(f"{prefix}.kernel_fold.point_safety:point-status-requires-proven")
+    if status == "structural" and not (
+        meaningful(kernel.get("equivalence_class")) or meaningful(kernel.get("owner_boundary"))
+    ):
+        errors.append(f"{prefix}.kernel_fold.structural:missing-equivalence-class-or-owner-boundary")
+    if pressure == "high" and status == "point" and (
+        point_safety != "proven" or not evidence_refs
+    ):
+        errors.append(f"{prefix}.kernel_fold.point_safety:high-pressure-point-requires-proof")
+
+    return errors
+
+
 def validate_finding(finding: dict[str, Any], prefix: str) -> list[str]:
     errors: list[str] = []
     if not finding:
         return [f"{prefix}:missing"]
+
+    for key in FORBIDDEN_FINDING_KEYS & finding.keys():
+        errors.append(f"{prefix}.{key}:forbidden-in-RF-v1.4")
 
     source_ref = object_from(finding.get("source_ref"))
     if not source_ref:
@@ -173,14 +222,16 @@ def validate_finding(finding: dict[str, Any], prefix: str) -> list[str]:
     validate_enum(finding.get("liability"), VALID_LIABILITY, "liability", errors, prefix)
     intent = validate_enum(finding.get("intent_relation"), VALID_INTENT, "intent_relation", errors, prefix)
     disposition = validate_enum(finding.get("disposition"), VALID_DISPOSITIONS, "disposition", errors, prefix)
-    repair = validate_enum(finding.get("repair_level"), VALID_REPAIR, "repair_level", errors, prefix)
 
-    if disposition in CODE_CHANGE_DISPOSITIONS and finding.get("code_change_candidate") not in {"yes", True}:
-        errors.append(f"{prefix}.code_change_candidate:expected-yes-for-code-change-disposition")
-    if disposition == "reject" and finding.get("code_change_candidate") in {"yes", True}:
-        errors.append(f"{prefix}.code_change_candidate:reject-cannot-be-code-change")
-    if disposition == "proof-only" and repair not in {"proof-only", "none"}:
-        errors.append(f"{prefix}.repair_level:proof-only-disposition-mismatch")
+    code_change = finding.get("code_change_candidate")
+    kernel = object_from(finding.get("kernel_fold"))
+    kernel_status = kernel.get("status")
+    if code_change in {"yes", True} and not (
+        disposition == "accepted-liability" and kernel_status in {"point", "structural"}
+    ):
+        errors.append(f"{prefix}.code_change_candidate:requires-accepted-liability-point-or-structural")
+    if disposition == "accepted-liability" and code_change not in {"yes", True}:
+        errors.append(f"{prefix}.code_change_candidate:expected-yes-for-accepted-liability")
     if disposition == "follow-up" and intent not in {"adjacent", "expands-scope", "unrelated"}:
         errors.append(f"{prefix}.intent_relation:follow-up-should-not-be-core")
 
@@ -196,6 +247,7 @@ def validate_finding(finding: dict[str, Any], prefix: str) -> list[str]:
         if not isinstance(law, str) or not law:
             errors.append(f"{prefix}.law_family:missing")
 
+    errors.extend(kernel_fold_errors(finding, prefix, disposition))
     errors.extend(mutation_authority_errors(finding, prefix))
     errors.extend(clean_run_errors(object_from(finding.get("clean_run")), prefix))
     return errors
@@ -220,8 +272,11 @@ def validate_full(receipt: dict[str, Any]) -> dict[str, Any]:
     errors: list[str] = []
     warnings: list[str] = []
 
-    if receipt.get("version") != "RF-v1.3":
-        errors.append("review_fold.version:expected-RF-v1.3")
+    if receipt.get("version") != "RF-v1.4":
+        errors.append("review_fold.version:expected-RF-v1.4")
+
+    for key in FORBIDDEN_FULL_KEYS & receipt.keys():
+        errors.append(f"review_fold.{key}:forbidden-in-RF-v1.4")
 
     source = object_from(receipt.get("source"))
     if source:
@@ -243,17 +298,11 @@ def validate_full(receipt: dict[str, Any]) -> dict[str, Any]:
         errors.extend(validate_finding(finding_value, f"review_fold.findings[{index}]"))
 
     compression = object_from(receipt.get("compression"))
-    risk = compression.get("one_patch_per_comment_risk")
-    recommended = object_from(receipt.get("recommended_resolution"))
-    action = object_from(receipt.get("action_plan"))
-    mode = action.get("mode")
-    if risk == "high" and mode not in {"refactor-kernel", "branch-race"}:
-        warnings.append("compression.one_patch_per_comment_risk:high-without-kernel-or-branch-route")
-    if mode == "refactor-kernel":
-        owner = compression.get("repeated_kernel") or compression.get("owner_boundary")
-        if not owner and not compression.get("equivalence_classes"):
-            errors.append("compression.refactor-kernel:missing-equivalence-class-or-owner-boundary")
+    pressure = compression.get("kernel_pressure")
+    if pressure is not None and pressure not in VALID_KERNEL_PRESSURE:
+        errors.append("review_fold.compression.kernel_pressure:invalid")
 
+    recommended = object_from(receipt.get("recommended_resolution"))
     clean = object_from(recommended.get("clean_run_accounting"))
     if clean:
         normalized = clean.get("normalized_clean_this_source", "not-applicable")
@@ -282,7 +331,7 @@ def validate(value: dict[str, Any]) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate RF-v1.3 full or compact review-fold receipts")
+    parser = argparse.ArgumentParser(description="Validate RF-v1.4 full or compact review-fold receipts")
     sub = parser.add_subparsers(dest="command", required=True)
     validate_parser = sub.add_parser("validate")
     validate_parser.add_argument("--receipt", required=True, help="Path to JSON receipt, or '-' for stdin")

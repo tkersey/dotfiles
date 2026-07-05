@@ -1,28 +1,28 @@
 material_fold_triggers:
-  version: RF-MFT-v1
+  version: RF-MFT-v2
   purpose: >
     Keep review-fold receipt triggers semantic and backend-neutral. Examples are
     illustrative; do not tune the skill by adding every observed transcript
     phrase to the main prompt.
   receipt_rule: >
-    If the statement changes accepted validity, liability, scope, repair
-    direction, clean-run accounting, thread disposition, blocker state, or
-    closure state, emit full RF-v1.3 or RF-v1.3 compact before the decision
-    reaches resolution, mutation planning, closeout accounting, or public review
-    thread handling.
+    If the statement changes accepted validity, liability, scope, kernel
+    status, clean-run accounting, thread disposition, blocker state, or closure
+    state, emit full RF-v1.4 or RF-v1.4 compact before the decision reaches
+    resolution, mutation planning, closeout accounting, or public review thread
+    handling.
   classes:
     - id: acceptance_shortcut
       meaning: A terse statement accepts or rejects validity, liability, severity, or in-scope status.
       backend_neutral_examples: [valid finding, accepted liability, both findings are liabilities, severity label used as acceptance]
-      required_receipt_effect: finding disposition before repair planning
+      required_receipt_effect: finding disposition and kernel_fold before resolution planning
     - id: repair_shortcut
       meaning: A statement names the owner fix, clean fix, next patch, or mutation path.
       backend_neutral_examples: [owner-correct fix, clean fix, next patch, replacement strategy]
-      required_receipt_effect: repair_level and mutation_authority disabled before resolution fold
+      required_receipt_effect: kernel_fold and mutation_authority disabled before resolution fold
     - id: proof_gap_shortcut
       meaning: A statement decides that proof gaps remain, are resolved, or are sufficient for review accounting.
       backend_neutral_examples: [proof gaps remain, concrete gaps remain, proof is enough, no proof gap remains]
-      required_receipt_effect: proof-only or blocker disposition with evidence_refs
+      required_receipt_effect: proof-only or blocker disposition with evidence_refs and kernel_fold
     - id: clean_run_accounting
       meaning: A statement increments, resets, blocks, or leaves unchanged a caller-owned review closeout counter.
       backend_neutral_examples: [review attempt is clean, clean streak advances, clean streak resets, dirty review attempt]
@@ -32,9 +32,9 @@ material_fold_triggers:
       backend_neutral_examples: [no unresolved threads, thread sweep is clean, targeted threads resolved, reopened thread batch]
       required_receipt_effect: thread source_ref and disposition before public-side-effect handling
     - id: grouped_liability
-      meaning: A statement collapses multiple findings into a repeated class, owner boundary, or refactor-kernel candidate.
+      meaning: A statement collapses multiple findings into a repeated class, owner boundary, or structural kernel candidate.
       backend_neutral_examples: [same owner boundary, same class, larger repeated class, shared missing invariant]
-      required_receipt_effect: equivalence class, owner_boundary, one_patch_per_comment_risk, and repair_level
+      required_receipt_effect: equivalence class, owner_boundary, kernel pressure, point_safety, and kernel_fold
     - id: source_batch_boundary
       meaning: A later review source batch appears after an earlier receipt.
       backend_neutral_examples: [new review attempt, follow-up finding batch, reopened thread batch, dirty clean-run attempt]
@@ -42,4 +42,4 @@ material_fold_triggers:
   anti_patterns:
     - Adding a literal transcript phrase to the main skill when it fits an existing class.
     - Treating backend-specific wording as a new review-fold route.
-    - Treating source transport fields as validity, liability, or mutation authority.
+    - Treating source transport fields as validity, liability, kernel status, or mutation authority.
