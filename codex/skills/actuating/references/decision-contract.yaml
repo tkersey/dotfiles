@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: actuating
     kind: workflow
-    source_fingerprint: actuating-v7-review-lane-standard-streak-aer-v1
+    source_fingerprint: actuating-v7.1-refactor-kernel-rko-v1
   triggers:
     - trigger_id: ACT-SPEC-GOAL
       description: The user wants an accepted implementation spec executed through the goal workflow.
@@ -32,7 +32,7 @@ skill_decision_contract:
       exclusions: []
     - trigger_id: ACT-ESCALATION
       description: Repeated accepted review liabilities may require escalation from local fixes to a refactor kernel or branch race.
-      cue_literals: [AER-v1, actuation_escalation_receipt, refactor-kernel, repeated accepted liabilities, one-patch-per-comment risk]
+      cue_literals: [AER-v1, RKO-v1, actuation_escalation_receipt, refactor_kernel_outcome, refactor-kernel, repeated accepted liabilities, one-patch-per-comment risk]
       cue_regexes: []
       exclusions: []
   routes:
@@ -69,8 +69,12 @@ skill_decision_contract:
       aliases: [ATCG-v1]
       terminal: "no"
     - route_id: ACT-ESCALATION-RECEIPT
-      description: Record the repair-mode escalation decision before continuing mutation under repeated review pressure.
+      description: Record and validate the repair-mode escalation decision before continuing mutation under repeated review pressure.
       aliases: [AER-v1, actuation-escalation-receipt]
+      terminal: "no"
+    - route_id: ACT-REFACTOR-KERNEL-OUTCOME
+      description: Record and validate RKO-v1 after a refactor-kernel patch so compression, review delta, closure state, and graph-bypass evidence are auditable.
+      aliases: [RKO-v1, refactor-kernel-outcome, refactor_kernel_outcome]
       terminal: "no"
     - route_id: ACT-PROOF
       description: Close with current-artifact proof or an explicit $ship handoff.
@@ -173,20 +177,26 @@ skill_decision_contract:
       rationale: The old transaction-controller behavior is preserved only under st-governed mode.
     - clause_id: ACT-ESCALATION-001
       trigger_refs: [ACT-ESCALATION]
-      expected_routes: [ACT-ESCALATION-RECEIPT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
+      expected_routes: [ACT-ESCALATION-RECEIPT, ACT-GOAL, ACT-REFACTOR-KERNEL-OUTCOME, ACT-ATCG, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
         - AER-v1 actuation_escalation_receipt when repeated accepted liabilities share one owner boundary or missing abstraction
+        - RKO-v1 refactor_kernel_outcome when selected_route or next_resolution_mode is refactor-kernel
       success_signals:
         - owner boundary is named before further mutation
         - prior and next resolution modes are explicit
         - alternatives considered are recorded
         - selected route is tied to verifier and current artifact scope
+        - refactor-kernel AER-v1 is validated before mutation
+        - RKO-v1 records covered liabilities, new liabilities, closure state, and graph-bypass governance evidence after proof or review
       failure_signals:
         - repeated accepted liabilities continue as silent one-patch-per-comment local fixes
         - refactor-kernel escalation happens without a cited owner boundary
         - AER-v1 is treated as review finding acceptance or mutation authority
+        - broad owner-boundary patching is treated as refactor-kernel without AER-v1
+        - refactor-kernel completion is reported without RKO-v1
+        - RKO-v1 reports assessment effective while graph_bypass is yes or mutations_without_graph_control_receipt is nonzero
       rationale: Escalation belongs to active workflow governance while preserving auditable evidence for later forensic tools.
   instrumentation:
     decision_receipt: required
-    rationale: Material decisions include accepted-spec routing, scheme planning, loop contract, review backend and lanes, repair-mode escalation, persistence mode, HYL/HSR execution legality, ATCG terminal closure, and proof/ship closure.
+    rationale: Material decisions include accepted-spec routing, scheme planning, loop contract, review backend and lanes, repair-mode escalation, persistence mode, HYL/HSR execution legality, refactor-kernel outcome accounting, ATCG terminal closure, and proof/ship closure.
