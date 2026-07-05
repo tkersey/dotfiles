@@ -10,6 +10,12 @@
         "finding_fingerprint": "sha256:cross-attempt-example",
         "review_fold_ref": "RF-v1.3:example:finding-1",
         "liability": "invariant-gap"
+      },
+      {
+        "cas_finding_id": "cas-finding:attempt-001:0002",
+        "finding_fingerprint": "sha256:cross-attempt-example-2",
+        "review_fold_ref": "RF-v1.3:example:finding-2",
+        "liability": "same-owner-proof-gap"
       }
     ],
     "prior_resolution_mode": "minimal-fix",
@@ -17,7 +23,8 @@
     "escalation_trigger": "Repeated accepted findings share one owner boundary.",
     "alternatives_considered": [
       "minimal-fix",
-      "branch-race"
+      "branch-race",
+      "remediation-plan"
     ],
     "selected_route": "refactor-kernel",
     "verifier": [
