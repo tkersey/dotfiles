@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Emulator"
+  short_description: "Instantiate Ghost contracts as executable synthetic worlds"
+  default_prompt: "Use $emulator to consume a Ghost-style behavior contract, generate or run synthetic implementations, preserve seeds and trace evidence, emit EER-v1, and avoid routing to $tune or $refine unless skill-improvement intent is explicit."
