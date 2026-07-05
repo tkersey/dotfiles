@@ -31,6 +31,7 @@ def main() -> int:
         "references/pre-mutation-interlock.md",
         "references/delivery-handoff.md",
         "references/terminal-closure-gate.md",
+        "references/refactor-kernel-receipts.md",
         "references/decision-contract.yaml",
         "tools/actuation_authority_gate.py",
         "tools/actuation_delivery_gate.py",
