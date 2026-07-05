@@ -1,8 +1,8 @@
 ---
 name: review-fold
-description: "Compress review pressure into intent-anchored review work: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent one-patch-per-comment churn. Use after $cas review, PR review comments, CAS findings, reviewer suggestions, and review-like claims. Owns active review finding classification for goal workflows."
+description: "Compress review pressure into intent-anchored review decisions: classify findings, reject non-liabilities, choose proof-only vs minimal-fix vs refactor-kernel, and prevent review prose from becoming mutation authority. Use after reviewer comments, PR threads, CAS-backed review evidence, human review, prior artifacts, local audit output, or review-like claims. Owns active review finding classification for goal workflows; does not own review backend selection, closeout policy, or implementation authority."
 metadata:
-  version: "1.4.26"
+  version: "1.5.0"
   activation_cost: medium
   default_depth: high
 ---
@@ -11,53 +11,49 @@ metadata:
 
 ## Mission
 
-Turn review pressure into the right next action, not more code by default.
+Turn review pressure into the right next decision, not more code by default.
 
 ```text
-review comments + goal contract + current diff
+review findings + goal contract + current artifact state
 -> review fold
--> proof-only | reject | minimal-fix | refactor-kernel | ask | follow-up
+-> reject | proof-only | minimal-fix | refactor-kernel | ask-human | follow-up | blocked
 ```
 
-This skill is the review-specific evidence fold for the recursive goal scheme. It owns active review finding classification for goal workflows: reduce review pressure to dispositions, group duplicates and same-family findings, and decide which liabilities may be considered by the resolution fold.
+`$review-fold` is the review-specific evidence reducer for goal workflows. It classifies review-like claims, separates claims from facts and liabilities, compresses duplicates and same-family findings, and decides which findings may be considered by the resolution fold.
 
-`$review-fold` consumes review findings. It does not replace code review. When the workflow needs to perform fresh, adversarial, or exhaustive code review, the review source must be `$cas`.
+It is deliberately **review-backend neutral**. Review findings may come from CAS-backed review evidence, GitHub PR comments, human review, prior artifacts, local audit output, or another normalized source. `$review-fold` consumes the evidence; it does not choose the backend.
 
-## Relationship to review closure
+## Ownership boundaries
 
-`$review-fold` classifies findings. It does not, by itself, decide that review work stops and it does not directly authorize mutation.
-
-For `$actuating` review workflows, default review mode is `review-closeout` unless the user explicitly requests `triage`, `remediation-plan`, audit-only, or no implementation.
+`$review-fold` owns:
 
 ```text
-$cas = review source
-$review-fold = finding classifier
-resolution fold = resolution plan compiler
-$goal-grind = implementation engine for accepted liabilities
+review finding -> validity / liability / intent relation / disposition / repair level
 ```
 
-For `review-closeout` and exhaustive review, final completion requires three consecutive clean normalized **standard** `$cas` review attempts after implementation. `$review-fold` decides whether each review lane is normalized clean, blocking, or reset-worthy. `$actuating` / `$goal-actuating` own the `review_profile` that records which auxiliary lenses were selected or explicitly not required. Auxiliary CAS lanes do not increment or interrupt the standard clean streak.
-
-## Review source rule
+It does not own:
 
 ```text
-workflow-initiated code review -> $cas review lanes -> $review-fold -> resolution fold -> implementation only for accepted liabilities
+fresh review backend selection
+review-profile / auxiliary-lens selection
+implementation authority
+PR thread mutation or public replies
+terminal closeout authority
 ```
 
-Existing PR comments, human reviewer comments, or prior CAS verdicts may be folded directly as review pressure. But if the workflow itself is asked to do code review, close review, run adversarial review, or satisfy a review proof bar, it must obtain that review through `$cas` first.
+Workflow owners such as `$actuating` and `$goal-actuating` decide whether fresh review is required and which backend satisfies that requirement. In the current goal workflow, fresh or closure-grade code review may be CAS-backed; that policy lives in the caller workflow and `$cas`, not in `$review-fold`.
 
-## CAS review lanes
-
-Supported CAS-backed review lanes:
+The normal review-closeout chain is:
 
 ```text
-standard              ordinary CAS code review; counts toward the 3-clean standard streak
-footgun-finder       auxiliary lens for misuse hazards, unsafe defaults, hidden traps, misleading affordances, degraded success, and copy/paste hazards
-invariant-ace        auxiliary lens for illegal states, owner/source-of-truth, transition preservation, exceptions, witness parity, races, retries, duplicates, stale handles, and loop invariants
-complexity-mitigator auxiliary lens for comprehension stalls, boolean soup, mixed responsibilities, hidden state, dominated branches, incidental complexity, and one-patch-per-comment pressure
+review source evidence
+-> $review-fold finding classification
+-> resolution fold work-node decision
+-> implementation only for accepted code-change liabilities
+-> evidence fold / proof / terminal closure gate
 ```
 
-Only `standard` may set `contributes_to_standard_streak: yes`. Auxiliary lanes are review evidence; they may create blockers or accepted liabilities, but they do not count as standard clean reviews and do not interrupt standard-review consecutiveness. `$cas` transports tuple-bound evidence; it does not own the auxiliary lane selection policy.
+A review finding never grants mutation authority by itself. A code-change candidate becomes implementation work only after the resolution fold accepts it and the actuation loop has valid mutation authority.
 
 ## Minimal review law
 
@@ -75,45 +71,54 @@ Operationally:
 
 - A review claim is not automatically true.
 - A true observation is not automatically branch-liable.
-- A branch-liable observation is not automatically in the accepted scope.
+- A branch-liable observation is not automatically in accepted scope.
 - An in-scope liability is not automatically a code change.
 - A code-change candidate is not mutation authority until the resolution fold accepts it.
 
-This is a routing guard, not a counterexample compiler. Do not introduce CEX/AC/kernel ceremony merely to classify ordinary review findings.
+This is a routing guard, not a counterexample compiler. Do not introduce CEX, AC, kernel, or review-backend ceremony merely to classify ordinary review findings.
 
-## Review fold schema
+## Source model
+
+Preserve source identity when it exists, but do not make one backend the ontology.
+
+```yaml
+source_ref:
+  backend: cas|github-comments|human-review|prior-artifact|local-audit|other|unknown
+  source_batch_id:
+  finding_id:
+  finding_fingerprint:
+  review_attempt_id:
+  review_thread_id:
+  review_turn_id:
+  lane_role: standard|auxiliary|human|prior-artifact|unknown
+  head_sha:
+  target_fingerprint:
+  backend_specific: {}
+```
+
+Rules:
+
+- `backend` is required for material receipts; use `unknown` only when the source really lacks identity.
+- CAS-specific fields are evidence references only. They do not imply validity, liability, repair level, clean-run effect, or mutation authority.
+- PR thread IDs are source references only. Do not resolve threads, post replies, or mutate public review state without explicit public-side-effect intent.
+- If fresh workflow review is required but no review source evidence is present, `$review-fold` reports a source blocker and hands control to the caller or review-source owner.
+
+## RF-v1.3 schema
 
 ```yaml
 review_fold:
   version: RF-v1.3
   goal_id:
   source:
-    pr:
-    review_backend: github-comments|cas-review-session|cas-review-bundle|human-review|prior-artifact
-    cas_review:
-      required: yes|no
-      mode: none|cas-probe|cas-lane|cas-exhaustive
-      bundle_ref:
-      verdict_ref:
-      lane: standard|footgun-finder|invariant-ace|complexity-mitigator|none
-      lane_ref:
-      clean_run:
-        normalized_clean: yes|no
-        contributes_to_standard_streak: yes|no
-        resets_standard_counter: yes|no
-        reason:
-      auxiliary_lanes:
-        - lane: footgun-finder|invariant-ace|complexity-mitigator
-          lens_contract: footgun-lens-v1|invariant-gate-v1|complexity-preflight-v1
-          lens_evidence_state: valid|missing|invalid|stale|blocked|rerun-required|not-required
-          lens_evidence_ref:
-          verdict_ref:
-          head_sha:
-          target_fingerprint:
-          folded: yes|no
-          unresolved_blockers: yes|no
-          rerun_required: yes|no
-          reason:
+    backend: cas|github-comments|human-review|prior-artifact|local-audit|other|unknown
+    source_batch_id:
+    source_ref:
+    review_required_by_caller: yes|no|unknown
+    review_mode: none|existing-review|fresh-review|exhaustive-review|unknown
+    current_artifact:
+      head_sha:
+      target_fingerprint:
+      changed_paths: []
   intent_anchor:
     original_goal:
     accepted_scope:
@@ -122,15 +127,18 @@ review_fold:
   findings:
     - id:
       source_ref:
-        cas_finding_id:
+        backend: cas|github-comments|human-review|prior-artifact|local-audit|other|unknown
+        source_batch_id:
+        finding_id:
         finding_fingerprint:
         review_attempt_id:
         review_thread_id:
         review_turn_id:
-        lane_role: standard|auxiliary|unknown
+        lane_role: standard|auxiliary|human|prior-artifact|unknown
         head_sha:
         target_fingerprint:
-      lane: standard|footgun-finder|invariant-ace|complexity-mitigator|human|prior-artifact|unknown
+        backend_specific: {}
+      lane: standard|auxiliary|human|prior-artifact|unknown
       claim:
       observed_fact:
       suggested_repair:
@@ -162,25 +170,20 @@ review_fold:
     reabstraction_candidate: yes|no
     one_patch_per_comment_risk: low|medium|high
     minimal_fix_regret_risk: low|medium|high
-    lane_overlap:
-      footgun_to_invariant: []
-      footgun_to_complexity: []
-      invariant_to_complexity: []
   recommended_resolution:
     review_mode: triage|remediation-plan|review-closeout
     reason:
     no_code_modifier_detected: yes|no
     accepted_liability_count:
     refactor_kernel_candidate_count:
-    standard_clean_cas_runs:
-      required: yes|no
-      current_count: 0|1|2|3
-      normalized_clean_this_run: yes|no
-      reset_reason:
-    auxiliary_review_lanes:
-      footgun-finder: not-required|clean|findings-folded|blocked|rerun-required
-      invariant-ace: not-required|clean|findings-folded|blocked|rerun-required
-      complexity-mitigator: not-required|clean|findings-folded|blocked|rerun-required
+    clean_run_accounting:
+      applies: yes|no
+      normalized_clean_this_source: yes|no|not-applicable
+      count_effect: increment|reset|none|blocked|unknown
+      reason:
+    auxiliary_evidence:
+      folded: yes|no|not-applicable
+      blockers: []
   parallelism:
     review_class_fanout_safe: yes|no
     patch_fanout_safe_after_resolve: yes|no
@@ -192,26 +195,23 @@ review_fold:
     reviewer_response_draft: []
 ```
 
-RF-v1.3 folds the useful RFDEC-v1 receipt ideas into one review-fold schema
-rather than creating a second active finding-decision format. CAS finding IDs
-and fingerprints are evidence references only; `$review-fold` still classifies
-validity, liability, owner boundary, and repair level, and the resolution fold
-still owns mutation-authorizing work nodes.
+RF-v1.3 is a finding-classification receipt. It is not a resolution plan, graph-control receipt, proof receipt, PR publication receipt, or terminal completion proof.
 
 ## Compact receipt floor
 
-Full RF-v1.3 is preferred for artifacts, handoffs, and review bundles. For
-progress updates or tight review-closeout loops, do not collapse a material fold
-to bare prose such as `valid minimal-fix`. Emit at least one joinable block
-headed `RF-v1.3 compact:` whenever a fold affects mutation, clean-run counting,
-thread disposition, or closure state.
+Full RF-v1.3 is preferred for artifacts, handoffs, and review bundles. For progress updates or tight review-closeout loops, do not collapse a material fold to bare prose such as `valid minimal-fix` or `threads are clean`.
+
+Emit at least one joinable block headed `RF-v1.3 compact:` whenever a fold affects mutation, clean-run accounting, thread disposition, blocker state, or closure state.
 
 Minimum compact fields:
 
 ```yaml
 RF-v1.3 compact:
   source_ref:
-    cas_finding_id:
+    backend: cas|github-comments|human-review|prior-artifact|local-audit|other|unknown
+    source_batch_id:
+    finding_id:
+    finding_fingerprint:
     review_attempt_id:
     review_thread_id:
     lane_role: standard|auxiliary|human|prior-artifact|unknown
@@ -227,76 +227,44 @@ RF-v1.3 compact:
   evidence_refs: []
   clean_run:
     normalized_clean: yes|no|not-applicable
-    standard_count:
-    reset_reason:
+    count_effect: increment|reset|none|blocked|unknown
+    reason:
   finding_mutation_authority:
     allowed: no
     reason:
 ```
 
-If a source lacks a field, write `unknown` and name the backend rather than
-omitting the field. A compact receipt is not a second schema; it is the minimum
-observable projection of RF-v1.3 needed by `$seq`, `$tune`, `$actuating`, and PR
-thread sweeps.
+If a source lacks a field, write `unknown` and name the backend rather than omitting the field.
 
-Shortcut labels do not relax the floor. Phrases such as `straightforward
-liability`, `obvious fix`, `valid P1`, `valid P2`, `accepted P1`, `accepted P2`,
-`both findings are liabilities`, or a `Review fold:` prefix are material fold
-decisions, not receipts. Emit full RF-v1.3 or `RF-v1.3 compact:` before those
-findings leave `$review-fold`, before they are sent to the resolution fold, and
-before implementation starts.
+## Material fold trigger classes
 
-Fresh CAS-result prose has the same floor even when there is only one finding.
-Treat the pattern class, not only the exact examples, as receipt-triggering:
-`CAS attempt ... found ... P1/P2`, `attempt ... found ... P1/P2`, `CAS attempt ... returned ... P1/P2
-findings`, `CAS attempt N found a new P1/P2`, `CAS returned one current-head P1/P2 finding`, `CAS returned ... valid findings`, `CAS found ... valid items`, `CAS found ... valid classes`, `CAS
-found two valid classes`, `CAS found one remaining valid P1/P2`, `CAS attempt ... returned another accepted P1/P2`,
-`the finding is valid`, `this finding is valid too`, `CAS is right`, `I'm accepting it`, `accepted
-code-change liabilities`, `accepted code-change liability`, `the owner fix is`,
-`owner-correct fix is`, `the clean fix is`, `CAS found ... proof gaps`, `straightforward proof gaps`, `proof gaps
-now`, `concrete gaps remain`, `gaps remain`, `clean streak stays at 0`, `clean
-streak is reset`, `clean streak resets again`, `clean streak resets to zero`,
-`clean streak resets to 0`, or `streak remains 0`.
-Those phrases accept liability or reset review accounting; they are not RF
-receipts. Emit the fresh RF-v1.3 compact/full receipt before describing the fix
-path, resolution node, or next mutation.
+Shortcut prose does not relax the receipt floor. Treat the semantic class, not the literal wording, as the trigger.
 
-Fresh PR-thread prose has the same floor. Treat `unresolved PR review threads
-... P1/P2`, `unresolved PR comments are valid`, `PR comments are valid`, `they
-are both P1/P2`, and `accepted liabilities` as receipt-triggering folds before
-describing the repair path or patching review-thread findings.
+See `references/material-fold-triggers.yaml` for the canonical trigger taxonomy.
 
-Thread-disposition prose has the same floor. Treat `targeted threads report
-resolved`, `PR thread sweep is clean`, `review-thread sweep is still clean`, `no
-unresolved threads`, `unresolved thread count is 0`, and `no unresolved threads
-across both pages` as receipt-triggering closure folds before advancing review
-closeout.
+Material fold classes:
 
-Grouped or same-boundary CAS prose has the same requirement. Treat the pattern
-class, not only the exact examples, as receipt-triggering: `CAS found ... more`,
-`CAS found a larger class`, `CAS found a broader class`, `CAS is still
-finding`, `CAS continues to find`, `CAS has narrowed this to one remaining
-class`, `one remaining class`, `same ... boundary`, `same owner-boundary
-refactor`, `same owner boundary`, `same ... class`, `forms of the same ...
-class`, or `same-class finding`.
-Those phrases accept a refactor-kernel or grouped-liability route when they
-point to a repair direction. Emit the fresh RF-v1.3 compact/full receipt before
-describing the refactor, replacement strategy, or next patch.
+```text
+acceptance shortcut
+repair shortcut
+proof-gap shortcut
+clean-run accounting
+thread disposition
+grouped-liability / owner-boundary shortcut
+source-batch boundary
+```
 
-Clean CAS-run prose has the same floor. Treat `CAS attempt ... is clean`,
-`clean streak is N/3`, `clean streak is 1/3`, `clean streak is reset`,
-`starting fresh attempt N`, and `starting fresh CAS attempt N` as
-receipt-triggering clean-run accounting before advancing the closeout loop or
-launching the next review attempt.
+Examples:
 
-Receipt scope is per review result, not per closeout. A prior RF-v1.3 receipt
-does not cover later CAS attempts, follow-up finding batches, reopened PR
-threads, or dirty clean-streak attempts. Phrases such as `terminal CAS list
-confirms`, `remaining findings`, `expected findings`, `next bounded node`, or
-`compact follow-up patch` are also material folds when they accept findings,
-reset clean-run accounting, or authorize another patch. Emit a fresh full or
-compact RF-v1.3 receipt for that new source batch before it reaches the
-resolution fold.
+- “valid finding,” “accepted liability,” “both are liabilities,” or a severity label used as acceptance is an acceptance shortcut.
+- “owner fix,” “clean fix,” or “next patch” is a repair shortcut when it points to mutation.
+- “proof gaps remain” or “proof gaps resolved” is a proof-gap shortcut.
+- “review attempt is clean,” “clean streak advances,” or “counter resets” is clean-run accounting.
+- “threads are resolved,” “no unresolved threads,” or “thread sweep is clean” is thread disposition.
+- “same owner boundary,” “same class,” or “larger repeated class” is grouped-liability pressure.
+- A later review attempt, follow-up finding batch, reopened thread batch, or dirty clean-run attempt is a new source-batch boundary.
+
+Emit a full or compact RF-v1.3 receipt before any such decision reaches the resolution fold, mutation planning, closeout accounting, or public review-thread handling.
 
 ## Disposition law
 
@@ -316,14 +284,13 @@ reviewer preference only -> reject unless the accepted goal made it material
 valid but outside accepted scope -> follow-up or ask-human
 scope expansion -> ask-human
 missing proof -> proof-only before code
-unknown validity/liability/scope -> blocked or ask-human
+unknown validity/liability/scope/source/current-artifact -> blocked or ask-human
 duplicate/same-class -> compress; do not create a new implementation distinction
 ```
 
 A finding row never grants mutation authority. It only marks whether the resolution fold may consider code-changing work.
 
-When `one_patch_per_comment_risk: high`, do not silently recommend more
-minimal fixes. Route to one of:
+When `one_patch_per_comment_risk: high`, do not silently recommend more minimal fixes. Route to one of:
 
 ```text
 refactor-kernel
@@ -332,9 +299,7 @@ remediation-plan
 blocked
 ```
 
-Use an explicit exception only when `alternatives_considered` shows why a local
-minimal fix is still owner-correct and does not preserve the repeated failure
-class. Record that exception in `evidence_refs`.
+Use an explicit exception only when `alternatives_considered` shows why a local minimal fix is still owner-correct and does not preserve the repeated failure class. Record that exception in `evidence_refs`.
 
 ## Modes
 
@@ -342,92 +307,69 @@ class. Record that exception in `evidence_refs`.
 
 - `triage`: classify findings and stop without a remediation agenda or implementation.
 - `remediation-plan`: classify findings and produce a resolution plan without implementation.
-- `review-closeout`: default `$actuating` review mode; implement only accepted code-change liabilities after the resolution fold, then require three clean normalized standard CAS review attempts before completion.
+- `review-closeout`: classify findings, preserve no-code dispositions, hand accepted liabilities to the resolution fold, and let the caller workflow prove closure.
 
-### `adjudicate-only`
+### Action modes
 
-Classify findings and stop. No mutation.
+- `adjudicate-only`: classify findings and stop. No mutation.
+- `proof-only`: run checks, inspect current artifacts, or draft a response. No code unless proof fails and the resolution fold creates an accepted liability.
+- `minimal-fix`: smallest owner-correct change for accepted liabilities.
+- `refactor-kernel`: replace many local fixes with one normal-form correction.
+- `branch-race`: compare two or more plausible fix/refactor strategies under the same verifier.
+- `st-governed`: hand off when review remediation requires durable resource claims, external worktrees, or serialized integration.
 
-### `proof-only`
+## Clean-run and exhaustive-review behavior
 
-Run checks, inspect current artifacts, or draft a response. No code unless proof fails and the resolution fold creates an accepted liability.
+When the caller has a review-closeout or exhaustive-review proof bar, `$review-fold` may decide whether a review source is normalized clean, dirty, blocking, or reset-worthy. The caller owns the clean-run counter, proof bar, backend, and terminal completion gate.
 
-### `minimal-fix`
+A normalized clean review source means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the resolution fold.
 
-Make the smallest owner-correct change for accepted liabilities.
+Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, already-resolved findings, and clean auxiliary evidence do not make the source dirty.
 
-### `refactor-kernel`
-
-Replace many local fixes with one normal-form correction.
-
-### `branch-race`
-
-Compare two or more plausible fix/refactor strategies under the same verifier.
-
-### `st-governed`
-
-Hand off to `$st` when review remediation requires durable resource claims, external worktrees, or serialized integration.
-
-## Exhaustive review behavior
-
-When the source is `cas-exhaustive`, do not treat review as optional or merely advisory. Continue review/fix/fold cycles until one of these holds:
+Reset conditions are caller-owned, but `$review-fold` should mark reset-worthy facts when review evidence shows them:
 
 ```text
-three consecutive clean normalized standard CAS review attempts are complete
-CAS review is blocked and the blocker is reported
-user explicitly lowers the review proof bar
+artifact changed
+review scope changed
+base/head/diff changed
+proof bar changed
+accepted auxiliary remediation changed the artifact
+review source continuity is lost
 ```
 
-A clean normalized standard CAS review attempt means no new in-scope accepted liability, unresolved proof gap, unresolved refactor-kernel candidate, or human-owned blocker remains after `$review-fold` and the resolution fold. Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up, already-resolved findings, and clean auxiliary review-lane results do not make the standard attempt dirty.
-
-Reset the standard clean-run counter to zero when code changes, review scope changes, base/head/diff changes, the proof bar changes, accepted auxiliary-lane remediation changes the artifact, or standard CAS lane continuity is lost.
-
-Auxiliary CAS review lanes may still block closeout. They do not increment the standard counter. They do not interrupt standard-review consecutiveness. Rerun them only when their surface was touched, their prior result was blocked or validate-first, the proof bar changed, or a standard review exposes a new class owned by that lens.
-
-`$review-fold` may reject or mark findings proof-only, but it must not convert an exhaustive review gate into a no-review closure.
+`$review-fold` may reject or mark findings proof-only, but it must not convert a caller-required exhaustive review gate into a no-review closure.
 
 ## Procedure
 
-1. Bind reviews to the original goal and current diff.
-2. If fresh/exhaustive workflow code review is required and no CAS standard review result is present, stop and request `$cas` standard review.
-3. If the workflow `review_profile` selected auxiliary lanes, require their CAS-backed lens evidence before final review folding unless they are explicitly marked not-required with a reason.
-4. Classify each finding before any implementation.
-5. Separate the claim, observed fact, and suggested repair when the review text includes all three.
-6. Reject, block, ask, or follow up before code whenever validity, liability, or scope is not established.
-7. Preserve CAS source refs when present: `cas_finding_id`, `finding_fingerprint`, `review_attempt_id`, tuple, and lane role.
-8. Name the falsified law, owner boundary, model state, and repair level when a finding is valid or unresolved.
-9. Emit full RF-v1.3 or the compact receipt floor before any accepted liability, blocker, clean-run decision, or thread disposition leaves the fold.
-10. Treat `straightforward liability`, `obvious fix`, P1/P2 labels, `Review fold:`, and same-sentence grouped acceptances as receipt-triggering folds, not as receipt substitutes.
-11. Treat single or small-batch CAS prose like `CAS attempt found a P1/P2`, `attempt found a P1/P2`, `CAS attempt returned P1/P2 findings`, `CAS attempt N found a new P1/P2`, `CAS returned one current-head P1/P2 finding`, `CAS returned valid findings`, `CAS found valid items`, `CAS found valid classes`, `CAS found two valid classes`, `CAS found one remaining valid P1/P2`, `CAS attempt returned another accepted P1/P2`, `the finding is valid`, `this finding is valid too`, `CAS is right`, `I'm accepting it`, `accepted code-change liabilities`, `accepted code-change liability`, `the owner fix is`, `owner-correct fix is`, `the clean fix is`, `CAS found proof gaps`, `straightforward proof gaps`, `proof gaps now`, `concrete gaps remain`, `gaps remain`, `clean streak stays at 0`, `clean streak is reset`, `clean streak resets again`, `clean streak resets to zero`, `clean streak resets to 0`, or `streak remains 0` as receipt-triggering folds before any repair path is described.
-12. Treat PR-thread review prose like `unresolved PR review threads ... P1/P2`, `unresolved PR comments are valid`, `PR comments are valid`, `they are both P1/P2`, or `accepted liabilities` as receipt-triggering folds before any repair path is described.
-13. Treat thread-disposition prose like `targeted threads report resolved`, `PR thread sweep is clean`, `review-thread sweep is still clean`, `no unresolved threads`, `unresolved thread count is 0`, or `no unresolved threads across both pages` as receipt-triggering closure folds before advancing review closeout.
-14. Treat grouped CAS prose like `CAS found ... more`, `CAS found a larger class`, `CAS found a broader class`, `CAS is still finding`, `CAS continues to find`, `CAS has narrowed this to one remaining class`, `one remaining class`, `same ... boundary`, `same owner-boundary refactor`, `same ... class`, `forms of the same ... class`, or `same-class finding` as a receipt-triggering fold before any refactor or replacement strategy is described.
-15. Treat clean CAS-run prose like `CAS attempt ... is clean`, `clean streak is N/3`, `clean streak is 1/3`, `clean streak is reset`, `starting fresh attempt N`, or `starting fresh CAS attempt N` as receipt-triggering clean-run accounting before advancing the closeout loop.
-16. Treat each new CAS attempt result, follow-up finding batch, reopened thread batch, or dirty clean-streak attempt as a new receipt scope; do not reuse an earlier RF receipt for later findings.
-17. Collapse duplicates and same-family comments across lanes.
-18. Mark whether the current standard attempt is normalized clean and whether the standard clean-run counter resets.
-19. Mark auxiliary lane state as `clean`, `findings-folded`, `blocked`, or `rerun-required`; include the lane's `lens_contract`, `lens_evidence_state`, and `lens_evidence_ref`; never count it as a standard clean run.
-20. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and the accepted liabilities.
-21. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
-22. Escalate high one-patch-per-comment risk to `refactor-kernel`, `branch-race`, `remediation-plan`, or `blocked` unless an explicit owner-boundary exception is recorded.
-23. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
-24. Produce a small work graph only for accepted liabilities and only after the resolution fold accepts code-changing work.
-25. Hand off to `$goal-grind` for implementation and `$evidence-fold` for proof only after a resolution fold accepts code-change liabilities.
-26. For post-implementation CAS runs, mark whether the normalized standard result is clean and whether the standard clean-run counter resets.
-27. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
+1. Bind review findings to the original goal, accepted scope, non-goals, and current artifact state.
+2. If fresh/exhaustive workflow review is required and no source evidence is present, stop with a source blocker for the caller or review-source owner.
+3. Classify each finding before any implementation.
+4. Separate claim, observed fact, and suggested repair when review text includes all three.
+5. Reject, block, ask, or follow up before code whenever validity, liability, or scope is not established.
+6. Preserve source refs when present: backend, source batch, finding identity, review/thread identity, lane role, head SHA, and target fingerprint.
+7. Name falsified law, owner boundary, model state, and repair level when a finding is valid or unresolved.
+8. Emit full RF-v1.3 or the compact receipt floor before any material fold leaves `$review-fold`.
+9. Treat material fold classes as semantic triggers, not literal phrase matching.
+10. Treat each new review attempt, follow-up finding batch, reopened thread batch, thread disposition, or dirty clean-run attempt as a new receipt scope.
+11. Collapse duplicates and same-family comments across sources and lanes.
+12. Mark whether the current source is normalized clean and whether the caller's clean-run accounting should increment, reset, stay unchanged, or block.
+13. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and accepted liabilities.
+14. Decide whether each finding's proper response is no code, proof, local fix, refactor, branch race, ask, or follow-up.
+15. Escalate high one-patch-per-comment risk to `refactor-kernel`, `branch-race`, `remediation-plan`, or `blocked` unless an explicit owner-boundary exception is recorded.
+16. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
+17. Produce work nodes only for accepted liabilities and only after the resolution fold accepts code-changing work.
+18. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
 
 ## Default behavior in `$actuating`
 
 When called by `$actuating`:
 
-- default to `review-closeout` for review requests;
-- require three consecutive clean normalized standard `$cas` review attempts before completing `review-closeout` or exhaustive review;
-- fold selected auxiliary CAS lanes through `$review-fold` before resolution/implementation;
-- use `triage` when the user names `triage`, or asks for no implementation or classification only;
-- use `remediation-plan` when the user names `remediation-plan`, or asks for a plan/agenda without implementation;
+- respect `$actuating` / `$goal-actuating` as the owner of review backend policy, review profile, clean-run counting, and ATCG terminal closure;
+- classify all standard and auxiliary review evidence through `$review-fold`;
 - preserve no-code dispositions for rejected, proof-only, follow-up, or human-owned findings;
 - never send raw review findings directly to implementation;
-- never treat a finding row as mutation authority.
+- never treat a finding row as mutation authority;
+- never count auxiliary review evidence as standard clean-review evidence; mark only the classification effect for the caller.
 
 No-code modifiers include:
 
@@ -441,18 +383,50 @@ plan only
 no changes
 ```
 
+## Validation
+
+Static skill validation:
+
+```bash
+uv run --with pyyaml -- python3 \
+  codex/skills/.system/skill-creator/scripts/quick_validate.py \
+  codex/skills/review-fold
+```
+
+Decision contract validation:
+
+```bash
+uv run --with pyyaml -- python3 \
+  codex/skills/tune/tools/decision_contract_lint.py \
+  codex/skills/review-fold/references/decision-contract.yaml
+```
+
+Receipt validation:
+
+```bash
+uv run python codex/skills/review-fold/tools/review_fold_receipt_gate.py \
+  validate \
+  --receipt path/to/review-fold-receipt.json \
+  --format json
+```
+
+Behavioral tests:
+
+```bash
+uv run python -m unittest discover codex/skills/review-fold/tests
+```
+
 ## Guardrails
 
 - Raw review text is not executable.
 - Do not add code to satisfy style or speculation when proof or rejection is correct.
 - Do not accept scope expansion without user authority.
 - Do not miss the refactor when many comments share one owner boundary.
-- Do not replace a requested or required CAS review with non-CAS critique.
-- Do not count auxiliary CAS lanes as standard clean reviews.
-- Do not store auxiliary lane selection policy only in `$cas` transport fields.
-- Do not let accepted liabilities, blockers, or clean-run decisions leave only as unjoinable prose.
-- Do not use `straightforward liability`, `obvious fix`, or severity labels as substitutes for RF-v1.3 receipt fields.
-- Do not let one RF receipt for an earlier CAS batch stand in for later follow-up findings, dirty clean-streak attempts, or reopened thread batches.
-- Do not claim review closure before three clean normalized standard CAS attempts when `review-closeout` or exhaustive review requires them.
+- Do not make `$review-fold` a review-backend transcript parser.
+- Do not count auxiliary evidence as standard clean-review evidence.
+- Do not store caller-owned review profile policy only in source-transport fields.
+- Do not let accepted liabilities, blockers, clean-run decisions, or thread dispositions leave only as unjoinable prose.
+- Do not let one RF receipt for an earlier source batch stand in for later findings, dirty clean-run attempts, or reopened thread batches.
+- Do not claim review closure when the caller's terminal proof bar still requires review evidence, proof, delivery, or ATCG.
 - Do not resolve or reply to PR threads without explicit public-side-effect intent.
 - `$review-fold` owns active review adjudication; do not route findings through retired skill paths.

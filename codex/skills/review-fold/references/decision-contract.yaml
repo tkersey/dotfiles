@@ -3,33 +3,38 @@ skill_decision_contract:
   skill:
     name: review-fold
     kind: mixed
-    source_fingerprint: review-fold-v1.4.26-new-p2-acceptance-reset
+    source_fingerprint: review-fold-v1.5.0-backend-neutral-receipt-gate
   triggers:
     - trigger_id: RF-REVIEW-FINDING
-      description: CAS, PR, human, or prior-artifact review pressure needs classification.
-      cue_literals: [CAS finding, PR review comment, reviewer suggestion, review thread, review-like claim]
+      description: Review pressure from any backend needs classification against the accepted goal and current artifact.
+      cue_literals: [review finding, PR review comment, reviewer suggestion, review thread, human review, prior artifact, CAS-backed review evidence, review-like claim]
       cue_regexes: []
       exclusions: [no-code unrelated discussion]
-    - trigger_id: RF-FRESH-REVIEW-REQUIRED
-      description: The workflow asks for fresh, exhaustive, adversarial, or closure-grade code review.
-      cue_literals: [fresh review, exhaustive review, review-closeout, close review, standard CAS review]
+    - trigger_id: RF-REVIEW-SOURCE-NEEDED
+      description: The caller requires fresh, exhaustive, adversarial, or closure-grade review evidence, but no current source evidence is present.
+      cue_literals: [fresh review required, exhaustive review required, review-closeout without review evidence, close review, closure-grade review]
       cue_regexes: []
-      exclusions: [existing PR comments only]
+      exclusions: [existing current review evidence supplied]
+    - trigger_id: RF-MATERIAL-FOLD
+      description: A review-related statement accepts, rejects, blocks, repairs, accounts for clean-run state, or disposes of review threads.
+      cue_literals: [accepted liability, valid finding, owner fix, clean fix, proof gap, clean run, clean streak, thread resolved, no unresolved threads, same owner boundary, same-class finding]
+      cue_regexes: []
+      exclusions: [non-decisional discussion]
     - trigger_id: RF-REPEATED-OWNER-BOUNDARY
-      description: Multiple findings share an owner boundary, missing invariant, or one-patch-per-comment risk.
+      description: Multiple findings share an owner boundary, missing invariant, proof surface, or one-patch-per-comment risk.
       cue_literals: [same owner boundary, same-class finding, repeated accepted liabilities, one-patch-per-comment, refactor-kernel]
       cue_regexes: []
       exclusions: []
-    - trigger_id: RF-CLEAN-RUN-ACCOUNTING
-      description: A CAS attempt may advance, reset, or fail to affect the standard clean-run counter.
-      cue_literals: [clean run, clean streak, normalized clean, reset counter, standard attempt]
+    - trigger_id: RF-SOURCE-BATCH-BOUNDARY
+      description: A later review attempt, follow-up finding batch, reopened thread batch, or dirty clean-run attempt appears after a prior RF receipt.
+      cue_literals: [new review attempt, follow-up finding batch, reopened thread, dirty clean-run attempt, later source batch]
       cue_regexes: []
-      exclusions: [auxiliary-only lane summary]
+      exclusions: [same already-receipted source batch]
   routes:
-    - route_id: RF-CAS-REVIEW
-      description: Require CAS before folding when workflow-initiated review is required.
-      aliases: [cas-review, require-cas]
-      terminal: no
+    - route_id: RF-SOURCE-BLOCK
+      description: Stop and ask the caller or review-source owner for current review evidence when required evidence is absent.
+      aliases: [source-needed, review-evidence-needed, backend-owned-review-needed]
+      terminal: yes
     - route_id: RF-REJECT
       description: Reject false, stale, duplicate, unrelated, preference-only, or out-of-scope claims.
       aliases: [reject]
@@ -59,33 +64,33 @@ skill_decision_contract:
       aliases: [follow-up]
       terminal: yes
     - route_id: RF-BLOCK
-      description: Stop when validity, liability, scope, source, or current artifact state is unclear.
+      description: Stop when validity, liability, scope, source, owner boundary, or current artifact state is unclear.
       aliases: [blocked]
       terminal: yes
   clauses:
     - clause_id: RF-SOURCE-001
-      trigger_refs: [RF-FRESH-REVIEW-REQUIRED]
-      expected_routes: [RF-CAS-REVIEW, RF-BLOCK]
-      prohibited_routes: []
-      required_artifacts: [CAS standard review result for workflow-initiated review, lane role, head sha or tuple]
-      success_signals: [fresh or exhaustive review is CAS-backed, auxiliary lanes are not counted as standard clean reviews]
-      failure_signals: [non-CAS critique substitutes for workflow review, cached or stale review attempt counted as fresh]
-      rationale: Review-fold classifies findings; it does not create fresh workflow code review.
+      trigger_refs: [RF-REVIEW-SOURCE-NEEDED]
+      expected_routes: [RF-SOURCE-BLOCK, RF-BLOCK]
+      prohibited_routes: [RF-MINIMAL-FIX, RF-REFACTOR-KERNEL]
+      required_artifacts: [caller-owned review requirement, current review source evidence or explicit source blocker]
+      success_signals: [review-fold does not invent fresh review output, backend policy remains owned by the caller workflow, absent current review evidence blocks classification-dependent mutation]
+      failure_signals: [review-fold substitutes generic critique for required fresh review evidence, backend-specific transport details become review-fold policy, stale review source is treated as current]
+      rationale: Review-fold classifies review evidence; it does not select or run the review backend.
     - clause_id: RF-CLASSIFY-001
       trigger_refs: [RF-REVIEW-FINDING]
       expected_routes: [RF-REJECT, RF-PROOF-ONLY, RF-MINIMAL-FIX, RF-REFACTOR-KERNEL, RF-BRANCH-RACE, RF-ASK-HUMAN, RF-FOLLOW-UP, RF-BLOCK]
       prohibited_routes: []
       required_artifacts: [source refs when present, validity, liability, intent relation, owner boundary for valid or unresolved findings, finding mutation authority disabled]
-      success_signals: [claim fact and suggested repair are separated, code-change candidates remain gated by the resolution fold]
-      failure_signals: [raw review prose directly drives mutation, style preference becomes code without accepted liability, accepted finding lacks owner boundary]
+      success_signals: [claim fact and suggested repair are separated, code-change candidates remain gated by the resolution fold, no-code dispositions remain available]
+      failure_signals: [raw review prose directly drives mutation, style preference becomes code without accepted liability, accepted finding lacks owner boundary, finding_mutation_authority.allowed is yes]
       rationale: The fold turns review pressure into dispositions, not implementation authority.
     - clause_id: RF-RECEIPT-001
-      trigger_refs: [RF-REVIEW-FINDING, RF-CLEAN-RUN-ACCOUNTING]
+      trigger_refs: [RF-MATERIAL-FOLD, RF-SOURCE-BATCH-BOUNDARY]
       expected_routes: [RF-REJECT, RF-PROOF-ONLY, RF-MINIMAL-FIX, RF-REFACTOR-KERNEL, RF-BRANCH-RACE, RF-ASK-HUMAN, RF-FOLLOW-UP, RF-BLOCK]
       prohibited_routes: []
-      required_artifacts: [full RF-v1.3 or RF-v1.3 compact receipt for material folds, source_ref or explicit unknown backend, clean-run reset or count effect when applicable, fresh receipt for each new CAS attempt result or follow-up finding batch, fresh receipt before single-finding CAS repair prose]
-      success_signals: [future seq tune audits can recover the decision episode, PR thread and CAS finding refs are joinable, later dirty CAS attempts have their own receipts, PR-thread accepted liabilities have a receipt before repair planning, thread disposition has a receipt before review closeout advances, single fresh or remaining severity acceptance has a joinable receipt before repair planning, dirty severity attempts have a receipt before streak reset and repair planning, valid finding batches have a receipt before repair planning, valid class batches have a receipt before repair planning, proof-gap batches have a receipt before repair planning, small-batch remaining gaps have a receipt before repair planning, grouped same-boundary or same-class CAS acceptance has a receipt before refactor planning, grouped larger-class CAS acceptance has a receipt before refactor planning, remaining-class CAS acceptance has a receipt before replacement planning, clean CAS results have a receipt before the streak advances]
-      failure_signals: [accepted liability appears only as terse prose, Review fold prefix leaves no receipt, straightforward liability shortcut leaves no receipt, straightforward proof gaps prose precedes receipt, accepted P1 or P2 shortcut leaves no receipt, follow-up CAS findings reuse an earlier receipt, PR comments are valid without a receipt, unresolved PR comments are valid without a receipt, PR accepted liabilities prose precedes receipt, PR thread sweep is clean without a receipt, review-thread sweep is still clean without a receipt, no unresolved threads prose precedes receipt, targeted threads resolved prose precedes receipt, CAS is right prose precedes receipt, CAS attempt found a P1 or P2 without a receipt, CAS attempt found a new P1 or P2 without a receipt, attempt found a P1 or P2 without a receipt, CAS attempt returned P1 or P2 findings without a receipt, CAS returned current-head P1 or P2 finding without a receipt, CAS returned valid findings without a receipt, CAS attempt returned another accepted P1 or P2 without a receipt, CAS found valid items without a receipt, CAS found valid classes without a receipt, CAS found two valid classes without a receipt, CAS found proof gaps without a receipt, accepting it prose precedes receipt, accepted code-change liability prose precedes receipt, accepted code-change liabilities prose precedes receipt, clean fix prose precedes receipt, concrete gaps remain prose precedes receipt, gaps remain prose precedes receipt, CAS found one remaining valid P1 or P2 without a receipt, CAS found more same-boundary findings without a receipt, CAS found a larger class without a receipt, CAS found a broader class without a receipt, CAS narrowed to one remaining class without a receipt, CAS found forms of the same class without a receipt, same class repair prose precedes receipt, CAS clean result advances the clean streak without a receipt, next CAS attempt starts after clean result without a receipt, starting fresh CAS attempt without a receipt, clean streak is reset without a receipt, clean streak resets again without a receipt, clean streak resets to zero without a receipt, clean streak resets to 0 without a receipt, CAS is still finding prose precedes receipt, same boundary refactor prose precedes receipt, owner-correct fix prose precedes receipt, finding is valid prose precedes receipt, streak remains zero without a receipt, clean streak changes without a receipt, thread disposition cannot be joined back to a source]
+      required_artifacts: [full RF-v1.3 or RF-v1.3 compact receipt for material folds, source_ref with backend or explicit unknown backend, clean-run count effect when applicable, fresh receipt for each new review source batch or thread disposition]
+      success_signals: [future seq tune audits can recover the decision episode, source refs are joinable without backend-specific prose parsing, later dirty attempts or follow-up batches have their own receipts]
+      failure_signals: [accepted liability appears only as terse prose, repair direction precedes a receipt, proof-gap or clean-run accounting appears without a receipt, thread disposition cannot be joined back to a source, follow-up findings reuse an earlier receipt]
       rationale: Material folds must remain observable after compaction and session shadowing.
     - clause_id: RF-KERNEL-001
       trigger_refs: [RF-REPEATED-OWNER-BOUNDARY]
@@ -93,8 +98,9 @@ skill_decision_contract:
       prohibited_routes: []
       required_artifacts: [equivalence class or owner boundary, one-patch-per-comment risk, alternatives considered when choosing local minimal fixes]
       success_signals: [same-class findings are compressed, minimal-fix exception explains why no kernel is preserved]
-      failure_signals: [repeated same-boundary findings continue as silent local fixes, refactor-kernel route is skipped without evidence]
+      failure_signals: [repeated same-boundary findings continue as silent local fixes, refactor-kernel route is skipped without evidence, branch-race is skipped when local fix and kernel are both plausible under the same verifier]
       rationale: The skill prevents review pressure from becoming one patch per comment.
   instrumentation:
     decision_receipt: required
-    rationale: Emit full RF-v1.3 or the compact receipt floor for material folds, clean-run accounting, blockers, and thread dispositions.
+    validator: codex/skills/review-fold/tools/review_fold_receipt_gate.py
+    rationale: Emit full RF-v1.3 or the compact receipt floor for material folds, clean-run accounting, blockers, source-batch boundaries, and thread dispositions.

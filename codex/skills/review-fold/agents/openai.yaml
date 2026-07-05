@@ -2,70 +2,48 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Fold"
-  short_description: "Classify CAS/PR review findings and choose reject, proof-only, minimal-fix, or refactor-kernel"
+  short_description: "Classify review findings and choose reject, proof-only, minimal-fix, refactor-kernel, ask-human, follow-up, or blocked without granting mutation authority"
   default_prompt: >-
-    Use $review-fold for CAS findings, PR comments, reviewer suggestions, or
-    review-like claims. Bind findings to the original goal and current diff,
-    compress duplicates, classify liability and intent relation, and choose
-    triage, remediation-plan, review-closeout, proof-only, minimal-fix,
-    refactor-kernel, branch-race, or st-governed before code changes. A review
-    finding is never mutation authority; the resolution fold must accept any
-    code-change candidate before implementation. If fresh or exhaustive workflow
-    review is required and no CAS result is present, route to $cas review first.
-    Return RF-v1.3 when possible. When the full schema is too large, emit an
-    RF-v1.3 compact block before any material fold leaves review-fold: source_ref
-    or explicit unknown backend, lane_role, head_sha, target_fingerprint,
-    validity, liability, intent_relation, disposition, repair_level,
-    owner_boundary, law_family, evidence_refs, clean_run effect when applicable,
-    and finding_mutation_authority.allowed: no. Preserve CAS source refs such as
-    cas_finding_id, finding_fingerprint, review_attempt_id, lane_role, head_sha,
-    and target_fingerprint. For valid or contested findings, name the law_family,
-    falsified_law, owner_boundary, model_state, repair_level,
-    alternatives_considered, and evidence_refs. Mark normalized CAS clean runs
-    when closing review. Do not use shortcut labels like "straightforward
-    liability", "obvious fix", "valid P1", "valid P2", "accepted P1",
-    "accepted P2", or grouped liability prose as substitutes for RF-v1.3
-    receipt fields before implementation.
-    A "Review fold:" prefix is not an RF-v1.3 receipt.
-    Single or small-batch CAS prose patterns like "CAS attempt found a P1/P2",
-    "attempt found a P1/P2", "CAS attempt returned P1/P2 findings", "CAS
-    attempt N found a new P1/P2", "CAS returned one current-head P1/P2 finding", "CAS returned ... valid findings",
-    "CAS found valid items", "CAS found valid classes", "CAS found two valid classes",
-    "CAS found one remaining valid P1/P2", "CAS attempt returned another
-    accepted P1/P2", "the finding is valid", "this finding is valid too", "I'm
-    accepting it", "accepted code-change liabilities", "accepted code-change liability", "CAS
-    is right", "the owner fix is", "owner-correct fix is", "the clean fix is", "CAS found proof gaps",
-    "straightforward proof gaps", "proof gaps now", "concrete gaps remain",
-    "gaps remain", "clean streak stays at 0", "clean streak is reset", "clean
-    streak resets again", "clean streak resets to zero", "clean streak resets
-    to 0", or "streak remains 0"
-    also require a fresh RF-v1.3 compact/full receipt before describing the
-    repair path or patching it.
-    PR-thread review prose patterns like "unresolved PR review threads ...
-    P1/P2", "unresolved PR comments are valid", "PR comments are valid", "they
-    are both P1/P2", or "accepted liabilities" also require a fresh RF-v1.3
-    compact/full receipt before describing the repair path or patching
-    review-thread findings.
-    Thread-disposition prose patterns like "targeted threads report resolved",
-    "PR thread sweep is clean", "review-thread sweep is still clean", "no
-    unresolved threads", "unresolved thread count is 0", or "no unresolved
-    threads across both pages" also require a fresh RF-v1.3 compact/full receipt
-    before advancing review closeout.
-    Grouped CAS prose patterns like "CAS found ... more", "CAS found a larger
-    class", "CAS found a broader class", "CAS is still finding", "CAS
-    continues to find", "CAS has narrowed this to one remaining class", "one
-    remaining class", "same ... boundary", "same owner-boundary refactor",
-    "same owner boundary", "same ... class", "forms of the same ... class", or
-    "same-class finding" also require a fresh RF-v1.3 compact/full receipt
-    before describing a refactor, replacement strategy, or next patch.
-    Clean CAS-run prose patterns like "CAS attempt ... is clean", "clean
-    streak is N/3", "clean streak is 1/3", "clean streak is reset", "starting
-    fresh attempt N", or "starting fresh CAS attempt N" also require a fresh
-    RF-v1.3 compact/full receipt before advancing the closeout loop or launching
-    the next review attempt.
-    Earlier RF receipts do not cover later CAS attempts, follow-up finding
-    batches, dirty clean-streak attempts, or reopened PR thread batches; emit a
-    fresh RF-v1.3 compact/full receipt for each new source batch before patching
-    it. If one_patch_per_comment_risk is high, route to
-    refactor-kernel, branch-race, remediation-plan, or blocked unless an
-    explicit owner-boundary exception is recorded.
+    Use $review-fold for review findings, PR comments, reviewer suggestions,
+    CAS-backed review evidence, human review, prior artifacts, local audit
+    output, or review-like claims. Bind findings to the original goal,
+    accepted scope, non-goals, changed paths, and current artifact state.
+
+    Keep review-fold backend neutral. Preserve source identity when present:
+    backend, source_batch_id, finding_id, finding_fingerprint,
+    review_attempt_id, review_thread_id, review_turn_id, lane_role,
+    head_sha, target_fingerprint, and backend_specific fields. CAS-specific
+    fields are evidence references only; they do not decide validity,
+    liability, repair level, clean-run effect, or mutation authority.
+
+    Separate claim, observed_fact, and suggested_repair. Classify validity,
+    liability, intent_relation, novelty, disposition, and repair_level before
+    any implementation. For valid or contested findings, name law_family,
+    falsified_law, owner_boundary, model_state, alternatives_considered, and
+    evidence_refs.
+
+    Return full RF-v1.3 when practical. When the full schema is too large,
+    emit an RF-v1.3 compact block before any material fold leaves review-fold:
+    source_ref with backend or explicit unknown source, lane_role when known,
+    head_sha, target_fingerprint, validity, liability, intent_relation,
+    disposition, repair_level, owner_boundary, law_family, evidence_refs,
+    clean_run effect when applicable, and finding_mutation_authority.allowed:
+    no.
+
+    Material fold trigger classes are semantic, not literal phrase matching:
+    acceptance shortcut, repair shortcut, proof-gap shortcut, clean-run
+    accounting, thread disposition, grouped-liability / owner-boundary
+    shortcut, and source-batch boundary. Shortcut prose is not a receipt.
+    Emit full RF-v1.3 or RF-v1.3 compact before accepted liabilities,
+    blockers, clean-run decisions, thread dispositions, refactor-kernel
+    decisions, or repair directions reach the resolution fold, mutation
+    planning, closeout accounting, or public review-thread handling.
+
+    A finding is never mutation authority. A code-change candidate remains
+    advisory until the resolution fold accepts a work node and the caller
+    workflow has valid mutation authority. Prefer no-code outcomes when
+    correct: reject, proof-only, follow-up, ask-human, or blocked. If
+    one_patch_per_comment_risk is high, route to refactor-kernel, branch-race,
+    remediation-plan, or blocked unless an explicit owner-boundary exception is
+    recorded. Do not post PR comments, resolve threads, mutate files, choose a
+    fresh review backend, or claim terminal review closure.
