@@ -13,8 +13,9 @@ CONTRACT = (ROOT / "references" / "decision-contract.yaml").read_text(encoding="
 TRIGGERS = (ROOT / "references" / "material-fold-triggers.yaml").read_text(encoding="utf-8")
 MODES = (ROOT / "references" / "review-modes.md").read_text(encoding="utf-8")
 REDUCER = (CODEX_ROOT / "agents" / "review-reducer.toml").read_text(encoding="utf-8")
+GOAL_WORKGRAPH = (CODEX_ROOT / "skills" / "goal-workgraph" / "SKILL.md").read_text(encoding="utf-8")
 NORMALIZED_PROMPTS = " ".join((AGENT + "\n" + REDUCER).split())
-LIVE_REVIEW_FOLD_SURFACES = "\n".join([SKILL, AGENT, CONTRACT, TRIGGERS, MODES, REDUCER])
+LIVE_REVIEW_FOLD_SURFACES = "\n".join([SKILL, AGENT, CONTRACT, TRIGGERS, MODES, REDUCER, GOAL_WORKGRAPH])
 
 
 class ReviewFoldContractTests(unittest.TestCase):
@@ -35,9 +36,9 @@ class ReviewFoldContractTests(unittest.TestCase):
         self.assertNotIn("CAS review lanes", SKILL)
         self.assertNotIn("Supported CAS-backed review lanes", SKILL)
 
-    def test_rf_v14_schema_has_generic_joinable_source_refs(self) -> None:
+    def test_rf_v15_schema_has_generic_joinable_source_refs(self) -> None:
         required = [
-            "version: RF-v1.4",
+            "version: RF-v1.5",
             "source_ref:",
             "backend: cas|github-comments|human-review|prior-artifact|local-audit|other|unknown",
             "source_batch_id",
@@ -55,20 +56,24 @@ class ReviewFoldContractTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, SKILL)
 
-    def test_minimal_review_law_and_dispositions_remain(self) -> None:
+    def test_minimal_review_law_and_control_dispositions_remain(self) -> None:
         required = [
             "claim != fact",
             "fact != liability",
             "liability != scope",
             "scope != code change",
-            "code-change candidate != mutation authority",
+            "code-change pressure != mutation authority",
             "kernel fold != repair plan",
             "`reject`",
             "`proof-only`",
-            "`accepted-liability`",
             "`ask-human`",
             "`follow-up`",
             "`blocked`",
+            "`refactor-kernel`",
+            "`unknown`",
+            "boundary_proof",
+            "proof_gap",
+            "next_evidence_action",
         ]
         for token in required:
             with self.subTest(token=token):
@@ -77,7 +82,7 @@ class ReviewFoldContractTests(unittest.TestCase):
     def test_compact_receipt_floor_preserves_material_fold_observability(self) -> None:
         required = [
             "## Compact receipt floor",
-            "RF-v1.4 compact:",
+            "RF-v1.5 compact:",
             "source_ref:",
             "validity:",
             "liability:",
@@ -96,10 +101,21 @@ class ReviewFoldContractTests(unittest.TestCase):
 
     def test_live_review_fold_surfaces_forbid_retired_repair_routes(self) -> None:
         forbidden = [
+            "accepted-liability",
+            "accepted liability",
             "minimal-fix",
             "repair_level",
+            "code_change_candidate",
             "RF-v1.3 compact",
+            "RF-v1.4 compact",
             "version: RF-v1.3",
+            "version: RF-v1.4",
+            "kernel_fold.status: point",
+            "kernel_fold.status: structural",
+            "status: point",
+            "status: structural",
+            "point_safety",
+            "structural kernel",
             "choose reject, proof-only",
         ]
         for token in forbidden:
@@ -162,6 +178,9 @@ class ReviewFoldContractTests(unittest.TestCase):
             "Shortcut prose is not a receipt",
             "finding_mutation_authority.allowed: no",
             "A finding is never mutation authority",
+            "kernel_fold.status: refactor-kernel",
+            "proof_gap",
+            "next_evidence_action",
             "Do not post PR comments, resolve threads, mutate files, choose a fresh review backend, or claim terminal review closure",
         ]
         for token in required:
@@ -178,8 +197,8 @@ class ReviewFoldContractTests(unittest.TestCase):
             "RF-RECEIPT-001",
             "RF-KERNEL-001",
             "RF-SOURCE-BLOCK",
-            "RF-ACCEPTED-LIABILITY",
             "RF-KERNEL-FOLD",
+            "refactor-kernel",
             "decision_receipt: required",
             "validator: codex/skills/review-fold/tools/review_fold_receipt_gate.py",
         ]

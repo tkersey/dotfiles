@@ -1,8 +1,8 @@
 #!/usr/bin/env -S uv run python
-"""RF-v1.4 receipt validator for $review-fold.
+"""RF-v1.5 receipt validator for $review-fold.
 
-The gate validates JSON projections of full RF-v1.4 receipts and compact
-RF-v1.4 receipts. It intentionally avoids review-backend policy: source fields
+The gate validates JSON projections of full RF-v1.5 receipts and compact
+RF-v1.5 receipts. It intentionally avoids review-backend policy: source fields
 are evidence references, not validity, kernel status, or mutation authority.
 """
 from __future__ import annotations
@@ -39,18 +39,18 @@ VALID_INTENT = {"core", "adjacent", "unrelated", "expands-scope"}
 VALID_DISPOSITIONS = {
     "reject",
     "proof-only",
-    "accepted-liability",
     "ask-human",
     "follow-up",
     "blocked",
 }
 MATERIAL_DISPOSITIONS = VALID_DISPOSITIONS
-VALID_KERNEL_STATUS = {"none", "point", "structural", "unknown"}
+VALID_KERNEL_STATUS = {"none", "refactor-kernel", "unknown"}
 VALID_KERNEL_PRESSURE = {"none", "low", "medium", "high"}
-VALID_POINT_SAFETY = {"proven", "not-proven", "not-applicable"}
+VALID_BOUNDARY_PROOF = {"proven", "not-proven", "not-applicable"}
+VALID_NEXT_EVIDENCE_ACTION = {"inspect-more", "ask-human", "blocked", "branch-race", "reclassify"}
 VALID_CLEAN = {"yes", "no", "not-applicable"}
 VALID_COUNT_EFFECT = {"increment", "reset", "none", "blocked", "unknown"}
-FORBIDDEN_FINDING_KEYS = {"repair_level"}
+FORBIDDEN_FINDING_KEYS = {"repair_level", "code_change_candidate"}
 FORBIDDEN_FULL_KEYS = {"action_plan"}
 
 
@@ -69,6 +69,9 @@ def load_json(path: str) -> dict[str, Any]:
 def unwrap_receipt(value: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     if isinstance(value.get("review_fold"), dict):
         return "full", value["review_fold"]
+    for key in ("rf_v15_compact", "RF-v1.5 compact", "RF-v1.5 compact:"):
+        if isinstance(value.get(key), dict):
+            return "compact", value[key]
     for key in (
         "rf_v14_compact",
         "RF-v1.4 compact",
@@ -78,12 +81,12 @@ def unwrap_receipt(value: dict[str, Any]) -> tuple[str, dict[str, Any]]:
         "RF-v1.3 compact:",
     ):
         if isinstance(value.get(key), dict):
-            return "compact", value[key]
-    if "findings" in value or value.get("version") in {"RF-v1.4", "RF-v1.3"}:
+            raise ReceiptGateError("receipt: expected RF-v1.5 compact object")
+    if "findings" in value or value.get("version") in {"RF-v1.5", "RF-v1.4", "RF-v1.3"}:
         return "full", value
     if "validity" in value and "disposition" in value:
         return "compact", value
-    raise ReceiptGateError("receipt: expected review_fold or RF-v1.4 compact object")
+    raise ReceiptGateError("receipt: expected review_fold or RF-v1.5 compact object")
 
 
 def as_no(value: Any) -> bool:
@@ -146,7 +149,7 @@ def mutation_authority_errors(finding: dict[str, Any], prefix: str) -> list[str]
     return errors
 
 
-def clean_run_errors(clean_run: dict[str, Any], prefix: str) -> list[str]:
+def clean_run_errors(clean_run: dict[str, Any], prefix: str, kernel_status: str = "") -> list[str]:
     errors: list[str] = []
     if not clean_run:
         return errors
@@ -156,6 +159,11 @@ def clean_run_errors(clean_run: dict[str, Any], prefix: str) -> list[str]:
     effect = clean_run.get("count_effect", "unknown")
     if effect not in VALID_COUNT_EFFECT and not isinstance(effect, int):
         errors.append(f"{prefix}.clean_run.count_effect:invalid")
+    if kernel_status == "unknown":
+        if normalized == "yes":
+            errors.append(f"{prefix}.clean_run.normalized_clean:unknown-cannot-be-clean")
+        if effect in {"increment"} or (isinstance(effect, int) and effect > 0):
+            errors.append(f"{prefix}.clean_run.count_effect:unknown-cannot-increment-clean-run")
     reason = clean_run.get("reason")
     if reason is not None and not isinstance(reason, str):
         errors.append(f"{prefix}.clean_run.reason:must-be-string")
@@ -175,8 +183,8 @@ def kernel_fold_errors(finding: dict[str, Any], prefix: str, disposition: str) -
     pressure = validate_enum(
         kernel.get("pressure"), VALID_KERNEL_PRESSURE, "kernel_fold.pressure", errors, prefix
     )
-    point_safety = validate_enum(
-        kernel.get("point_safety"), VALID_POINT_SAFETY, "kernel_fold.point_safety", errors, prefix
+    boundary_proof = validate_enum(
+        kernel.get("boundary_proof"), VALID_BOUNDARY_PROOF, "kernel_fold.boundary_proof", errors, prefix
     )
 
     for key in ("equivalence_class", "owner_boundary", "law_family", "falsifier"):
@@ -188,18 +196,25 @@ def kernel_fold_errors(finding: dict[str, Any], prefix: str, disposition: str) -
     if evidence_refs and not all(isinstance(item, str) and item for item in evidence_refs):
         errors.append(f"{prefix}.kernel_fold.evidence_refs:must-be-strings")
 
-    if disposition == "accepted-liability" and status not in {"point", "structural"}:
-        errors.append(f"{prefix}.kernel_fold.status:accepted-liability-requires-point-or-structural")
-    if status == "point" and point_safety != "proven":
-        errors.append(f"{prefix}.kernel_fold.point_safety:point-status-requires-proven")
-    if status == "structural" and not (
+    if status == "refactor-kernel" and not (
         meaningful(kernel.get("equivalence_class")) or meaningful(kernel.get("owner_boundary"))
     ):
-        errors.append(f"{prefix}.kernel_fold.structural:missing-equivalence-class-or-owner-boundary")
-    if pressure == "high" and status == "point" and (
-        point_safety != "proven" or not evidence_refs
-    ):
-        errors.append(f"{prefix}.kernel_fold.point_safety:high-pressure-point-requires-proof")
+        errors.append(f"{prefix}.kernel_fold.refactor-kernel:missing-equivalence-class-or-owner-boundary")
+    if boundary_proof == "proven" and not evidence_refs:
+        errors.append(f"{prefix}.kernel_fold.boundary_proof:proven-requires-evidence")
+    if status == "unknown":
+        if boundary_proof == "proven":
+            errors.append(f"{prefix}.kernel_fold.boundary_proof:unknown-cannot-be-proven")
+        proof_gap = kernel.get("proof_gap")
+        if not meaningful(proof_gap):
+            errors.append(f"{prefix}.kernel_fold.proof_gap:required-for-unknown")
+        validate_enum(
+            kernel.get("next_evidence_action"),
+            VALID_NEXT_EVIDENCE_ACTION,
+            "kernel_fold.next_evidence_action",
+            errors,
+            prefix,
+        )
 
     return errors
 
@@ -210,7 +225,7 @@ def validate_finding(finding: dict[str, Any], prefix: str) -> list[str]:
         return [f"{prefix}:missing"]
 
     for key in FORBIDDEN_FINDING_KEYS & finding.keys():
-        errors.append(f"{prefix}.{key}:forbidden-in-RF-v1.4")
+        errors.append(f"{prefix}.{key}:forbidden-in-RF-v1.5")
 
     source_ref = object_from(finding.get("source_ref"))
     if not source_ref:
@@ -223,15 +238,12 @@ def validate_finding(finding: dict[str, Any], prefix: str) -> list[str]:
     intent = validate_enum(finding.get("intent_relation"), VALID_INTENT, "intent_relation", errors, prefix)
     disposition = validate_enum(finding.get("disposition"), VALID_DISPOSITIONS, "disposition", errors, prefix)
 
-    code_change = finding.get("code_change_candidate")
     kernel = object_from(finding.get("kernel_fold"))
     kernel_status = kernel.get("status")
-    if code_change in {"yes", True} and not (
-        disposition == "accepted-liability" and kernel_status in {"point", "structural"}
-    ):
-        errors.append(f"{prefix}.code_change_candidate:requires-accepted-liability-point-or-structural")
-    if disposition == "accepted-liability" and code_change not in {"yes", True}:
-        errors.append(f"{prefix}.code_change_candidate:expected-yes-for-accepted-liability")
+    if kernel_status == "refactor-kernel" and disposition != "blocked":
+        errors.append(f"{prefix}.disposition:refactor-kernel-requires-blocked-control")
+    if kernel_status == "unknown" and disposition not in {"blocked", "ask-human"}:
+        errors.append(f"{prefix}.disposition:unknown-requires-blocked-or-ask-human")
     if disposition == "follow-up" and intent not in {"adjacent", "expands-scope", "unrelated"}:
         errors.append(f"{prefix}.intent_relation:follow-up-should-not-be-core")
 
@@ -249,7 +261,7 @@ def validate_finding(finding: dict[str, Any], prefix: str) -> list[str]:
 
     errors.extend(kernel_fold_errors(finding, prefix, disposition))
     errors.extend(mutation_authority_errors(finding, prefix))
-    errors.extend(clean_run_errors(object_from(finding.get("clean_run")), prefix))
+    errors.extend(clean_run_errors(object_from(finding.get("clean_run")), prefix, kernel_status))
     return errors
 
 
@@ -272,11 +284,11 @@ def validate_full(receipt: dict[str, Any]) -> dict[str, Any]:
     errors: list[str] = []
     warnings: list[str] = []
 
-    if receipt.get("version") != "RF-v1.4":
-        errors.append("review_fold.version:expected-RF-v1.4")
+    if receipt.get("version") != "RF-v1.5":
+        errors.append("review_fold.version:expected-RF-v1.5")
 
     for key in FORBIDDEN_FULL_KEYS & receipt.keys():
-        errors.append(f"review_fold.{key}:forbidden-in-RF-v1.4")
+        errors.append(f"review_fold.{key}:forbidden-in-RF-v1.5")
 
     source = object_from(receipt.get("source"))
     if source:
@@ -296,6 +308,11 @@ def validate_full(receipt: dict[str, Any]) -> dict[str, Any]:
             errors.append(f"review_fold.findings[{index}]:must-be-object")
             continue
         errors.extend(validate_finding(finding_value, f"review_fold.findings[{index}]"))
+    has_unknown_kernel = any(
+        isinstance(finding_value, dict)
+        and object_from(finding_value.get("kernel_fold")).get("status") == "unknown"
+        for finding_value in findings
+    )
 
     compression = object_from(receipt.get("compression"))
     pressure = compression.get("kernel_pressure")
@@ -311,6 +328,11 @@ def validate_full(receipt: dict[str, Any]) -> dict[str, Any]:
         effect = clean.get("count_effect", "unknown")
         if effect not in VALID_COUNT_EFFECT:
             errors.append("recommended_resolution.clean_run_accounting.count_effect:invalid")
+        if has_unknown_kernel:
+            if normalized == "yes":
+                errors.append("recommended_resolution.clean_run_accounting.normalized_clean_this_source:unknown-cannot-be-clean")
+            if effect == "increment":
+                errors.append("recommended_resolution.clean_run_accounting.count_effect:unknown-cannot-increment-clean-run")
 
     return {
         "review_fold_receipt_gate": {
@@ -324,14 +346,24 @@ def validate_full(receipt: dict[str, Any]) -> dict[str, Any]:
 
 
 def validate(value: dict[str, Any]) -> dict[str, Any]:
-    receipt_type, body = unwrap_receipt(value)
+    try:
+        receipt_type, body = unwrap_receipt(value)
+    except ReceiptGateError as exc:
+        return {
+            "review_fold_receipt_gate": {
+                "verdict": "fail",
+                "receipt_type": "unknown",
+                "errors": [str(exc)],
+                "warnings": [],
+            }
+        }
     if receipt_type == "compact":
         return validate_compact(body)
     return validate_full(body)
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate RF-v1.4 full or compact review-fold receipts")
+    parser = argparse.ArgumentParser(description="Validate RF-v1.5 full or compact review-fold receipts")
     sub = parser.add_subparsers(dest="command", required=True)
     validate_parser = sub.add_parser("validate")
     validate_parser.add_argument("--receipt", required=True, help="Path to JSON receipt, or '-' for stdin")

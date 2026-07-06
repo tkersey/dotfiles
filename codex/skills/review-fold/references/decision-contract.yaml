@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: review-fold
     kind: mixed
-    source_fingerprint: review-fold-v1.6.0-kernel-fold-receipt-gate
+    source_fingerprint: review-fold-v1.7.0-refactor-kernel-receipt-gate
   triggers:
     - trigger_id: RF-REVIEW-FINDING
       description: Review pressure from any backend needs classification against the accepted goal and current artifact.
@@ -17,12 +17,12 @@ skill_decision_contract:
       exclusions: [existing current review evidence supplied]
     - trigger_id: RF-MATERIAL-FOLD
       description: A review-related statement accepts, rejects, blocks, accounts for clean-run state, or disposes of review threads.
-      cue_literals: [accepted liability, valid finding, owner fix, clean fix, proof gap, clean run, clean streak, thread resolved, no unresolved threads, same owner boundary, same-class finding]
+      cue_literals: [in-scope liability, valid finding, owner fix, clean fix, proof gap, clean run, clean streak, thread resolved, no unresolved threads, same owner boundary, same-class finding]
       cue_regexes: []
       exclusions: [non-decisional discussion]
     - trigger_id: RF-KERNEL-PRESSURE
       description: Multiple findings share an owner boundary, missing invariant, proof surface, or patch-per-comment risk.
-      cue_literals: [same owner boundary, same-class finding, repeated accepted liabilities, patch-per-comment, structural kernel, kernel pressure]
+      cue_literals: [same owner boundary, same-class finding, repeated in-scope liabilities, patch-per-comment, refactor-kernel, kernel pressure]
       cue_regexes: []
       exclusions: []
     - trigger_id: RF-SOURCE-BATCH-BOUNDARY
@@ -43,13 +43,9 @@ skill_decision_contract:
       description: Require evidence, inspection, or reviewer explanation rather than code.
       aliases: [proof-only]
       terminal: yes
-    - route_id: RF-ACCEPTED-LIABILITY
-      description: Accept an in-scope liability for resolution-fold consideration while preserving disabled mutation authority.
-      aliases: [accepted-liability]
-      terminal: no
     - route_id: RF-KERNEL-FOLD
-      description: Attach point, structural, none, or unknown kernel status to every material finding.
-      aliases: [kernel-fold, structural-kernel, point-kernel, unknown-kernel]
+      description: Attach none, refactor-kernel, or unknown kernel status to every finding.
+      aliases: [kernel-fold, refactor-kernel, unknown-kernel]
       terminal: no
     - route_id: RF-ASK-HUMAN
       description: Ask for product, API, compatibility, UX, performance, security, or scope authority.
@@ -67,36 +63,36 @@ skill_decision_contract:
     - clause_id: RF-SOURCE-001
       trigger_refs: [RF-REVIEW-SOURCE-NEEDED]
       expected_routes: [RF-SOURCE-BLOCK, RF-BLOCK]
-      prohibited_routes: [RF-ACCEPTED-LIABILITY]
+      prohibited_routes: [RF-KERNEL-FOLD]
       required_artifacts: [caller-owned review requirement, current review source evidence or explicit source blocker]
       success_signals: [review-fold does not invent fresh review output, backend policy remains owned by the caller workflow, absent current review evidence blocks classification-dependent mutation]
       failure_signals: [review-fold substitutes generic critique for required fresh review evidence, backend-specific transport details become review-fold policy, stale review source is treated as current]
       rationale: Review-fold classifies review evidence; it does not select or run the review backend.
     - clause_id: RF-CLASSIFY-001
       trigger_refs: [RF-REVIEW-FINDING]
-      expected_routes: [RF-REJECT, RF-PROOF-ONLY, RF-ACCEPTED-LIABILITY, RF-ASK-HUMAN, RF-FOLLOW-UP, RF-BLOCK]
+      expected_routes: [RF-REJECT, RF-PROOF-ONLY, RF-KERNEL-FOLD, RF-ASK-HUMAN, RF-FOLLOW-UP, RF-BLOCK]
       prohibited_routes: []
       required_artifacts: [source refs when present, validity, liability, intent relation, owner boundary for valid or unresolved findings, kernel fold, finding mutation authority disabled]
-      success_signals: [claim fact and suggested repair are separated, code-change candidates remain gated by the resolution fold, no-code dispositions remain available]
-      failure_signals: [raw review prose directly drives mutation, style preference becomes code without accepted liability, accepted finding lacks owner boundary, finding_mutation_authority.allowed is yes]
+      success_signals: [claim fact and suggested repair are separated, refactor-kernel pressure remains gated by the resolution fold, no-code dispositions remain available]
+      failure_signals: [raw review prose directly drives mutation, style preference becomes code without refactor-kernel, material finding lacks owner boundary, finding_mutation_authority.allowed is yes]
       rationale: The fold turns review pressure into dispositions and kernel accounts, not implementation authority.
     - clause_id: RF-RECEIPT-001
       trigger_refs: [RF-MATERIAL-FOLD, RF-SOURCE-BATCH-BOUNDARY]
-      expected_routes: [RF-REJECT, RF-PROOF-ONLY, RF-ACCEPTED-LIABILITY, RF-ASK-HUMAN, RF-FOLLOW-UP, RF-BLOCK]
+      expected_routes: [RF-REJECT, RF-PROOF-ONLY, RF-KERNEL-FOLD, RF-ASK-HUMAN, RF-FOLLOW-UP, RF-BLOCK]
       prohibited_routes: []
-      required_artifacts: [full RF-v1.4 or RF-v1.4 compact receipt for material folds, source_ref with backend or explicit unknown backend, kernel_fold on every finding, clean-run count effect when applicable, fresh receipt for each new review source batch or thread disposition]
+      required_artifacts: [full RF-v1.5 or RF-v1.5 compact receipt for material folds, source_ref with backend or explicit unknown backend, kernel_fold on every finding, clean-run count effect when applicable, fresh receipt for each new review source batch or thread disposition]
       success_signals: [future seq tune audits can recover the decision episode, source refs are joinable without backend-specific prose parsing, later dirty attempts or follow-up batches have their own receipts]
-      failure_signals: [accepted liability appears only as terse prose, kernel status precedes a receipt, proof-gap or clean-run accounting appears without a receipt, thread disposition cannot be joined back to a source, follow-up findings reuse an earlier receipt]
+      failure_signals: [material liability appears only as terse prose, kernel status precedes a receipt, proof-gap or clean-run accounting appears without a receipt, thread disposition cannot be joined back to a source, follow-up findings reuse an earlier receipt]
       rationale: Material folds must remain observable after compaction and session shadowing.
     - clause_id: RF-KERNEL-001
       trigger_refs: [RF-KERNEL-PRESSURE]
       expected_routes: [RF-KERNEL-FOLD, RF-BLOCK, RF-ASK-HUMAN]
       prohibited_routes: []
-      required_artifacts: [equivalence class or owner boundary, kernel pressure, point safety when status is point, evidence refs for high-pressure point claims]
-      success_signals: [same-class findings are compressed, point kernel proves why no structural kernel remains, unknown kernel blocks mutation]
-      failure_signals: [repeated same-boundary findings continue as silent local fixes, structural kernel is skipped without evidence, high-pressure point status lacks proof]
+      required_artifacts: [equivalence class or owner boundary, kernel pressure, boundary proof when boundedness is claimed, proof_gap and next_evidence_action when status is unknown]
+      success_signals: [same-class findings are compressed, refactor-kernel owns material pressure, unknown kernel blocks mutation]
+      failure_signals: [repeated same-boundary findings continue as silent local fixes, refactor-kernel is skipped without evidence, unknown kernel becomes patch authority]
       rationale: The skill prevents review pressure from becoming one patch per comment.
   instrumentation:
     decision_receipt: required
     validator: codex/skills/review-fold/tools/review_fold_receipt_gate.py
-    rationale: Emit full RF-v1.4 or the compact receipt floor for material folds, clean-run accounting, blockers, source-batch boundaries, and thread dispositions.
+    rationale: Emit full RF-v1.5 or the compact receipt floor for material folds, clean-run accounting, blockers, source-batch boundaries, and thread dispositions.

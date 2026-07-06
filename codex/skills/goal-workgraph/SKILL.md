@@ -88,15 +88,15 @@ work_graph:
 1. Emit `parallel_safe: yes` only when dependencies are satisfied, paths/resources do not conflict, and the proof surface is known.
 2. Use `scout-fanout` only for read-only fact finding.
 3. Use `review-class-fanout` only after CAS findings have been grouped.
-4. Use `patch-fanout` only after the resolution fold accepts code-change liabilities.
+4. Use `patch-fanout` only after the resolution fold accepts refactor-kernel work nodes.
 5. Use `branch-race` only when all strategies share the same verifier.
 6. Mark shared invariants, shared files, or shared owner-boundary fixes as `parallel_safe: no`.
-7. Consume `$review-fold` `kernel_fold.status`: `structural` becomes one owner-level work node, `point` may become one bounded node, and `unknown` must inspect, ask, block, or branch-race before mutation.
+7. Consume `$review-fold` `kernel_fold.status`: `refactor-kernel` may become one owner-level work node, `none` cannot produce edit work, and `unknown` must inspect, ask, block, branch-race, or reclassify before mutation.
 8. Do not let subagents update public tracker state, resolve threads, or declare completion.
 
 ## Reabstraction trigger
 
-When review or failure nodes share any of the following, prefer a structural kernel node over local patches:
+When review or failure nodes share any of the following, prefer a refactor-kernel node over local patches:
 
 ```text
 same invariant violated in multiple places

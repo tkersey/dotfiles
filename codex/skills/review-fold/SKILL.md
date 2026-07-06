@@ -1,8 +1,8 @@
 ---
 name: review-fold
-description: "Compress review pressure into intent-anchored kernel-fold decisions: classify findings, reject non-liabilities, identify accepted liabilities, attach a kernel account to every material finding, and prevent review prose from becoming mutation authority. Use after reviewer comments, PR threads, CAS-backed review evidence, human review, prior artifacts, local audit output, or review-like claims. Owns active review finding classification for goal workflows; does not own review backend selection, closeout policy, resolution planning, or implementation authority."
+description: "Compress review pressure into intent-anchored kernel-fold decisions: classify findings, reject non-liabilities, attach a refactor-kernel account to every material finding, quarantine unknowns, and prevent review prose from becoming mutation authority. Use after reviewer comments, PR threads, CAS-backed review evidence, human review, prior artifacts, local audit output, or review-like claims. Owns active review finding classification for goal workflows; does not own review backend selection, closeout policy, resolution planning, or implementation authority."
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
   activation_cost: medium
   default_depth: high
 ---
@@ -17,8 +17,8 @@ patch queue.
 ```text
 review findings + goal contract + current artifact state
 -> review fold
--> reject | proof-only | accepted-liability | ask-human | follow-up | blocked
--> kernel_fold: none | point | structural | unknown
+-> reject | proof-only | ask-human | follow-up | blocked
+-> kernel_fold: none | refactor-kernel | unknown
 ```
 
 `$review-fold` is the review-specific evidence reducer for goal workflows. It
@@ -61,13 +61,13 @@ The normal review-closeout chain is:
 review source evidence
 -> $review-fold finding classification + kernel_fold
 -> resolution fold work-node decision
--> implementation only for accepted liabilities with valid mutation authority
+-> implementation only for refactor-kernel work with valid mutation authority
 -> evidence fold / proof / terminal closure gate
 ```
 
-A review finding never grants mutation authority by itself. A code-change
-candidate becomes implementation work only after the resolution fold accepts it
-and the actuation loop has valid mutation authority.
+A review finding never grants mutation authority by itself. A material
+`refactor-kernel` becomes implementation work only after the resolution fold
+accepts it and the actuation loop has valid mutation authority.
 
 ## Minimal review law
 
@@ -78,7 +78,7 @@ claim != fact
 fact != liability
 liability != scope
 scope != code change
-code-change candidate != mutation authority
+code-change pressure != mutation authority
 kernel fold != repair plan
 ```
 
@@ -88,7 +88,7 @@ Operationally:
 - A true observation is not automatically branch-liable.
 - A branch-liable observation is not automatically in accepted scope.
 - An in-scope liability is not automatically a code change.
-- A code-change candidate is not mutation authority until the resolution fold accepts it.
+- Code-change pressure is not mutation authority until the resolution fold accepts a work node.
 - A kernel account classifies shape and pressure; it does not choose the patch.
 
 This is a routing guard, not a counterexample compiler. Do not introduce CEX,
@@ -121,11 +121,11 @@ Rules:
 - PR thread IDs are source references only. Do not resolve threads, post replies, or mutate public review state without explicit public-side-effect intent.
 - If fresh workflow review is required but no review source evidence is present, `$review-fold` reports a source blocker and hands control to the caller or review-source owner.
 
-## RF-v1.4 schema
+## RF-v1.5 schema
 
 ```yaml
 review_fold:
-  version: RF-v1.4
+  version: RF-v1.5
   goal_id:
   source:
     backend: cas|github-comments|human-review|prior-artifact|local-audit|other|unknown
@@ -163,26 +163,27 @@ review_fold:
       law_family:
       falsified_law:
       owner_boundary:
-      model_state: intact|point-gap|structural-gap|unknown
+      model_state: intact|kernel-gap|unknown
       validity: valid|invalid|unproven|needs-owner
       liability: blocks-goal|regression-risk|style|new-requirement|out-of-scope|proof-gap|misuse-hazard|invariant-gap|complexity-stall
       intent_relation: core|adjacent|unrelated|expands-scope
       novelty: duplicate|same-class|new-class
-      disposition: reject|proof-only|accepted-liability|ask-human|follow-up|blocked
+      disposition: reject|proof-only|ask-human|follow-up|blocked
       kernel_fold:
-        status: none|point|structural|unknown
+        status: none|refactor-kernel|unknown
         pressure: none|low|medium|high
         equivalence_class:
         owner_boundary:
         law_family:
         falsifier:
-        point_safety: proven|not-proven|not-applicable
+        boundary_proof: proven|not-proven|not-applicable
+        proof_gap:
+        next_evidence_action: inspect-more|ask-human|blocked|branch-race|reclassify
         evidence_refs: []
       minimal_response:
       proof_needed:
       alternatives_considered: []
       evidence_refs: []
-      code_change_candidate: yes|no
       finding_mutation_authority:
         allowed: no
         reason:
@@ -197,8 +198,8 @@ review_fold:
     review_mode: triage|remediation-plan|review-closeout
     reason:
     no_code_modifier_detected: yes|no
-    accepted_liability_count:
-    structural_kernel_candidate_count:
+    refactor_kernel_count:
+    quarantined_unknown_count:
     clean_run_accounting:
       applies: yes|no
       normalized_clean_this_source: yes|no|not-applicable
@@ -213,24 +214,24 @@ review_fold:
     unsafe_parallel_reasons: []
 ```
 
-RF-v1.4 is a finding-classification and kernel-account receipt. It is not a
+RF-v1.5 is a finding-classification and kernel-account receipt. It is not a
 resolution plan, graph-control receipt, proof receipt, PR publication receipt,
 or terminal completion proof.
 
 ## Compact receipt floor
 
-Full RF-v1.4 is preferred for artifacts, handoffs, and review bundles. For
+Full RF-v1.5 is preferred for artifacts, handoffs, and review bundles. For
 progress updates or tight review-closeout loops, do not collapse a material
 fold to bare prose such as `valid liability` or `threads are clean`.
 
-Emit at least one joinable block headed `RF-v1.4 compact:` whenever a fold
+Emit at least one joinable block headed `RF-v1.5 compact:` whenever a fold
 affects mutation, clean-run accounting, thread disposition, blocker state, or
 closure state.
 
 Minimum compact fields:
 
 ```yaml
-RF-v1.4 compact:
+RF-v1.5 compact:
   source_ref:
     backend: cas|github-comments|human-review|prior-artifact|local-audit|other|unknown
     source_batch_id:
@@ -244,15 +245,17 @@ RF-v1.4 compact:
   validity: valid|invalid|unproven|needs-owner
   liability: blocks-goal|regression-risk|style|new-requirement|out-of-scope|proof-gap|misuse-hazard|invariant-gap|complexity-stall
   intent_relation: core|adjacent|unrelated|expands-scope
-  disposition: reject|proof-only|accepted-liability|ask-human|follow-up|blocked
+  disposition: reject|proof-only|ask-human|follow-up|blocked
   kernel_fold:
-    status: none|point|structural|unknown
+    status: none|refactor-kernel|unknown
     pressure: none|low|medium|high
     equivalence_class:
     owner_boundary:
     law_family:
     falsifier:
-    point_safety: proven|not-proven|not-applicable
+    boundary_proof: proven|not-proven|not-applicable
+    proof_gap:
+    next_evidence_action: inspect-more|ask-human|blocked|branch-race|reclassify
     evidence_refs: []
   owner_boundary:
   law_family:
@@ -290,7 +293,7 @@ source-batch boundary
 
 Examples:
 
-- “valid finding,” “accepted liability,” “both findings are liabilities,” or a severity label used as acceptance is an acceptance shortcut.
+- "valid finding," "in-scope liability," "both findings are liabilities," or a severity label used as acceptance is an acceptance shortcut.
 - “owner fix,” “clean fix,” or “next patch” is a repair shortcut when it points to mutation; the fold must record kernel status and disabled mutation authority before resolution.
 - “proof gaps remain” or “proof gaps resolved” is a proof-gap shortcut.
 - “review attempt is clean,” “clean streak advances,” or “counter resets” is clean-run accounting.
@@ -298,18 +301,17 @@ Examples:
 - “same owner boundary,” “same class,” or “larger repeated class” is grouped-liability pressure.
 - A later review attempt, follow-up finding batch, reopened thread batch, or dirty clean-run attempt is a new source-batch boundary.
 
-Emit a full or compact RF-v1.4 receipt before any such decision reaches the
+Emit a full or compact RF-v1.5 receipt before any such decision reaches the
 resolution fold, mutation planning, closeout accounting, or public review-thread
 handling.
 
 ## Disposition law
 
-- `reject`: claim is false, stale, duplicate with no new proof value, unrelated, already handled, incompatible with the goal, or merely preference/style without accepted liability.
+- `reject`: claim is false, stale, duplicate with no new proof value, unrelated, already handled, incompatible with the goal, or merely preference/style without goal authority.
 - `proof-only`: current code likely satisfies the goal and the right response is proof, inspection, or reviewer explanation before editing.
-- `accepted-liability`: one or more valid, in-scope liabilities may be considered by the resolution fold; the kernel account still decides whether the evidence is point, structural, or unknown.
 - `ask-human`: review introduces a product, compatibility, API, UX, performance, security, or scope decision.
 - `follow-up`: valid but not part of the intended change.
-- `blocked`: validity, liability, current artifact state, review source, accepted scope, or kernel status is unclear enough that implementation would be guesswork.
+- `blocked`: validity, liability, current artifact state, review source, accepted scope, kernel status, unresolved refactor-kernel pressure, or unknown quarantine prevents closure or direct implementation.
 
 Deterministic downroutes:
 
@@ -324,25 +326,27 @@ duplicate/same-class -> compress; do not create a new implementation distinction
 ```
 
 A finding row never grants mutation authority. It only marks whether the
-resolution fold may consider code-changing work.
+resolution fold may consider no-code/control disposition or a refactor-kernel.
+When `kernel_fold.status: refactor-kernel`, use `disposition: blocked` to mark
+the current review source closure-blocked until the resolution fold acts. When
+`kernel_fold.status: unknown`, use `blocked` or `ask-human`; no other
+disposition may carry unknown material pressure.
 
 ## Kernel fold law
 
 Every finding receives a `kernel_fold`.
 
 - `none`: no in-scope code liability remains after rejection, proof, follow-up, or human-owned scope handling.
-- `point`: the liability is owner-correct, bounded to one kernel boundary, has no live same-family pressure, and records `point_safety: proven`.
-- `structural`: multiple findings, repeated classes, shared owner boundaries, shared invariants, or repeated proof obligations require one normal-form owner correction.
-- `unknown`: the fold cannot prove whether the liability is point or structural; the next owner must block, inspect, ask, or branch-race before mutation.
+- `refactor-kernel`: material review pressure requires one owner-boundary kernel account before any code-changing work can be planned.
+- `unknown`: the fold cannot prove whether a material kernel is required; it must record `proof_gap` and `next_evidence_action`, and the next owner must block, inspect, ask, branch-race, or reclassify before mutation.
 
-When `kernel_fold.pressure: high`, do not silently emit `status: point`. A point
-kernel under high pressure is valid only with `point_safety: proven` and
-evidence that same-family pressure is absent or already owned by the selected
-boundary. Otherwise emit `structural`, `unknown`, or `blocked`.
+When `kernel_fold.pressure: high`, do not silently shrink material pressure to a
+local patch. Emit `status: refactor-kernel` with an owner boundary or
+equivalence class, or emit `unknown`/`blocked` with the missing proof named.
 
-Downstream implementation may realize `status: point` as a small owner-boundary
-change. That realization is not a review-fold output; it belongs to the
-resolution fold and the actuation loop.
+Downstream implementation may realize a refactor-kernel as a small
+owner-boundary change when `boundary_proof: proven`. That realization is not a
+separate review-fold route; it belongs to the resolution fold and actuation loop.
 
 ## Modes
 
@@ -350,7 +354,7 @@ resolution fold and the actuation loop.
 
 - `triage`: classify findings and stop without a remediation agenda or implementation.
 - `remediation-plan`: classify findings and produce resolution inputs without implementation.
-- `review-closeout`: classify findings, preserve no-code dispositions, hand accepted liabilities and kernel accounts to the resolution fold, and let the caller workflow prove closure.
+- `review-closeout`: classify findings, preserve no-code dispositions, hand refactor-kernel accounts to the resolution fold, and let the caller workflow prove closure.
 
 ## Clean-run and exhaustive-review behavior
 
@@ -359,9 +363,9 @@ When the caller has a review-closeout or exhaustive-review proof bar,
 blocking, or reset-worthy. The caller owns the clean-run counter, proof bar,
 backend, and terminal completion gate.
 
-A normalized clean review source means no new in-scope accepted liability,
-unresolved proof gap, unresolved structural kernel candidate, unknown kernel,
-or human-owned blocker remains after `$review-fold` and the resolution fold.
+A normalized clean review source means no new in-scope refactor-kernel,
+unresolved proof gap, unknown kernel, or human-owned blocker remains after
+`$review-fold` and the resolution fold.
 
 Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up,
 already-resolved findings, and clean auxiliary evidence do not make the source
@@ -375,7 +379,7 @@ artifact changed
 review scope changed
 base/head/diff changed
 proof bar changed
-accepted auxiliary remediation changed the artifact
+artifact-changing auxiliary remediation changed the artifact
 review source continuity is lost
 ```
 
@@ -391,16 +395,16 @@ caller-required exhaustive review gate into a no-review closure.
 5. Reject, block, ask, or follow up before code whenever validity, liability, scope, or kernel status is not established.
 6. Preserve source refs when present: backend, source batch, finding identity, review/thread identity, lane role, head SHA, and target fingerprint.
 7. Name falsified law, owner boundary, model state, and kernel fold when a finding is valid or unresolved.
-8. Emit full RF-v1.4 or the compact receipt floor before any material fold leaves `$review-fold`.
+8. Emit full RF-v1.5 or the compact receipt floor before any material fold leaves `$review-fold`.
 9. Treat material fold classes as semantic triggers, not literal phrase matching.
 10. Treat each new review attempt, follow-up finding batch, reopened thread batch, thread disposition, or dirty clean-run attempt as a new receipt scope.
 11. Collapse duplicates and same-family comments across sources and lanes.
 12. Mark whether the current source is normalized clean and whether the caller's clean-run accounting should increment, reset, stay unchanged, or block.
-13. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and accepted liabilities.
-14. Decide whether each finding's proper review response is no code, proof, accepted liability, ask, follow-up, or block.
-15. Emit `kernel_fold.status: structural` or `unknown` when repeated owner-boundary pressure cannot be safely proven point.
+13. Recommend `triage`, `remediation-plan`, or `review-closeout` from the user's requested mode and refactor-kernel pressure.
+14. Decide whether each finding's proper review response is no code, proof, refactor-kernel, ask, follow-up, or block.
+15. Emit `kernel_fold.status: refactor-kernel` or `unknown` when repeated owner-boundary pressure cannot be safely dismissed.
 16. Mark review-class fanout safe only for classification/investigation classes; raw findings must not fan out directly to patch workers.
-17. Produce resolution inputs only for accepted liabilities and only after the resolution fold accepts code-changing work.
+17. Produce resolution inputs only for refactor-kernel findings and only after the resolution fold accepts code-changing work.
 18. Preserve reviewer response drafts as drafts; do not post public comments unless explicitly asked.
 
 ## Default behavior in `$actuating`
@@ -464,10 +468,10 @@ uv run python -m unittest discover codex/skills/review-fold/tests
 - Raw review text is not executable.
 - Do not add code to satisfy style or speculation when proof or rejection is correct.
 - Do not accept scope expansion without user authority.
-- Do not miss the structural kernel when many comments share one owner boundary.
+- Do not miss the refactor-kernel when many comments share one owner boundary.
 - Do not make `$review-fold` a review-backend transcript parser.
 - Do not count auxiliary evidence as standard clean-review evidence.
 - Do not store caller-owned review profile policy only in source-transport fields.
-- Do not let accepted liabilities, blockers, clean-run decisions, or thread dispositions leave only as unjoinable prose.
+- Do not let refactor-kernel findings, blockers, clean-run decisions, or thread dispositions leave only as unjoinable prose.
 - Do not let one RF receipt for an earlier source batch stand in for later findings, dirty clean-run attempts, or reopened thread batches.
 - Do not claim review closure when the caller's terminal proof bar still requires review evidence, proof, delivery, or ATCG.
