@@ -11,7 +11,7 @@ Explicit review mode names carry the mutation rule:
 ```text
 triage -> classify findings and stop without implementation
 remediation-plan -> produce resolution inputs and stop without implementation
-review-closeout -> hand accepted liabilities to resolution, then prove closure
+review-closeout -> hand refactor-kernel findings to resolution, then prove closure
 ```
 
 `review-closeout` still preserves no-code dispositions. A review with ten
@@ -22,8 +22,7 @@ findings may close as:
 2 proof-only
 1 follow-up
 1 ask-human
-3 accepted under one structural kernel
-1 accepted under a proven point kernel
+4 folded under one refactor-kernel
 ```
 
 It must not become ten local patches.
@@ -34,23 +33,21 @@ It must not become ten local patches.
 |---|---|---|
 | `reject` | False, duplicate, out-of-scope, or incompatible with the accepted goal. | No |
 | `proof-only` | The right answer is evidence, not code. | No by default |
-| `accepted-liability` | A valid in-scope liability may be considered by the resolution fold. | Advisory only |
 | `ask-human` | The review introduces a product/API/compatibility decision. | No |
 | `follow-up` | Valid but outside the intended change. | No in current PR |
-| `blocked` | Validity, scope, source, current artifact, or kernel status is unclear. | No |
+| `blocked` | Closure or direct implementation is blocked by unclear state, unresolved refactor-kernel pressure, or unknown quarantine. | No |
 
 ## Kernel status
 
 | Status | Meaning | Resolution implication |
 |---|---|---|
 | `none` | No in-scope code liability remains. | No code |
-| `point` | One owner boundary is enough and `point_safety: proven`. | May become one bounded work node |
-| `structural` | Same-family pressure needs one normal-form owner correction. | Must not split by comment |
-| `unknown` | The fold cannot prove point versus structural. | Inspect, ask, or block before mutation |
+| `refactor-kernel` | Material pressure needs one owner-boundary kernel account. | May become one owner-level work node |
+| `unknown` | The fold cannot prove whether a material kernel is required. | Inspect, ask, block, branch-race, or reclassify before mutation |
 
 ## Reabstraction tests
 
-Choose `kernel_fold.status: structural` when at least two are true:
+Choose `kernel_fold.status: refactor-kernel` when at least two are true:
 
 - multiple comments mention the same state, transition, or boundary;
 - fixes would add similar guards/helpers in multiple files;
@@ -65,8 +62,7 @@ The minimal correct response may be:
 
 - a short proof note;
 - a no-code rejection;
-- a proven point kernel;
-- a structural kernel;
+- a refactor-kernel with `boundary_proof: proven`;
 - a human-owned decision;
 - a blocker because the kernel status is unknown.
 

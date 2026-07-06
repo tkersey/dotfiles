@@ -5,15 +5,15 @@ material_fold_triggers:
     illustrative; do not tune the skill by adding every observed transcript
     phrase to the main prompt.
   receipt_rule: >
-    If the statement changes accepted validity, liability, scope, kernel
+    If the statement changes validity, liability, scope, kernel
     status, clean-run accounting, thread disposition, blocker state, or closure
-    state, emit full RF-v1.4 or RF-v1.4 compact before the decision reaches
+    state, emit full RF-v1.5 or RF-v1.5 compact before the decision reaches
     resolution, mutation planning, closeout accounting, or public review thread
     handling.
   classes:
     - id: acceptance_shortcut
       meaning: A terse statement accepts or rejects validity, liability, severity, or in-scope status.
-      backend_neutral_examples: [valid finding, accepted liability, both findings are liabilities, severity label used as acceptance]
+      backend_neutral_examples: [valid finding, in-scope liability, both findings are liabilities, severity label used as acceptance]
       required_receipt_effect: finding disposition and kernel_fold before resolution planning
     - id: repair_shortcut
       meaning: A statement names the owner fix, clean fix, next patch, or mutation path.
@@ -32,9 +32,9 @@ material_fold_triggers:
       backend_neutral_examples: [no unresolved threads, thread sweep is clean, targeted threads resolved, reopened thread batch]
       required_receipt_effect: thread source_ref and disposition before public-side-effect handling
     - id: grouped_liability
-      meaning: A statement collapses multiple findings into a repeated class, owner boundary, or structural kernel candidate.
+      meaning: A statement collapses multiple findings into a repeated class, owner boundary, or refactor-kernel candidate.
       backend_neutral_examples: [same owner boundary, same class, larger repeated class, shared missing invariant]
-      required_receipt_effect: equivalence class, owner_boundary, kernel pressure, point_safety, and kernel_fold
+      required_receipt_effect: equivalence class, owner_boundary, kernel pressure, boundary_proof, and kernel_fold
     - id: source_batch_boundary
       meaning: A later review source batch appears after an earlier receipt.
       backend_neutral_examples: [new review attempt, follow-up finding batch, reopened thread batch, dirty clean-run attempt]

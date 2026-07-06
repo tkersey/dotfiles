@@ -2,7 +2,7 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Fold"
-  short_description: "Classify review findings, emit RF-v1.4 kernel-fold receipts, and keep mutation authority disabled"
+  short_description: "Classify review findings, emit RF-v1.5 refactor-kernel receipts, and keep mutation authority disabled"
   default_prompt: >-
     Use $review-fold for review findings, PR comments, reviewer suggestions,
     CAS-backed review evidence, human review, prior artifacts, local audit
@@ -22,8 +22,8 @@ interface:
     falsified_law, owner_boundary, model_state, alternatives_considered, and
     evidence_refs.
 
-    Return full RF-v1.4 when practical. When the full schema is too large,
-    emit an RF-v1.4 compact block before any material fold leaves review-fold:
+    Return full RF-v1.5 when practical. When the full schema is too large,
+    emit an RF-v1.5 compact block before any material fold leaves review-fold:
     source_ref with backend or explicit unknown source, lane_role when known,
     head_sha, target_fingerprint, validity, liability, intent_relation,
     disposition, kernel_fold, owner_boundary, law_family, evidence_refs,
@@ -34,16 +34,16 @@ interface:
     acceptance shortcut, repair shortcut, proof-gap shortcut, clean-run
     accounting, thread disposition, grouped-liability / owner-boundary
     shortcut, and source-batch boundary. Shortcut prose is not a receipt.
-    Emit full RF-v1.4 or RF-v1.4 compact before accepted liabilities,
+    Emit full RF-v1.5 or RF-v1.5 compact before refactor-kernel findings,
     blockers, clean-run decisions, thread dispositions, kernel decisions, or
     repair directions reach the resolution fold, mutation planning, closeout
     accounting, or public review-thread handling.
 
-    A finding is never mutation authority. A code-change candidate remains
-    advisory until the resolution fold accepts a work node and the caller
-    workflow has valid mutation authority. Prefer no-code outcomes when
-    correct: reject, proof-only, follow-up, ask-human, or blocked. If kernel
-    pressure is high, do not emit kernel_fold.status: point unless
-    point_safety is proven with evidence; otherwise use structural, unknown,
-    or blocked. Do not post PR comments, resolve threads, mutate files, choose
+    A finding is never mutation authority. Material code pressure is represented
+    only by kernel_fold.status: refactor-kernel, and even that remains advisory
+    until the resolution fold accepts a work node and the caller workflow has
+    valid mutation authority. Prefer no-code outcomes when correct: reject,
+    proof-only, follow-up, ask-human, or blocked. If kernel pressure is high,
+    use refactor-kernel with evidence or unknown with proof_gap and
+    next_evidence_action; do not shrink it to a local patch. Do not post PR comments, resolve threads, mutate files, choose
     a fresh review backend, or claim terminal review closure.
