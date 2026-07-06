@@ -52,6 +52,12 @@ VALID_CLEAN = {"yes", "no", "not-applicable"}
 VALID_COUNT_EFFECT = {"increment", "reset", "none", "blocked", "unknown"}
 FORBIDDEN_FINDING_KEYS = {"repair_level", "code_change_candidate"}
 FORBIDDEN_FULL_KEYS = {"action_plan"}
+AUXILIARY_OWNER_LANES = {"footgun-finder", "invariant-ace", "complexity-mitigator"}
+SPECIALIZED_LIABILITY_LANES = {
+    "misuse-hazard": "footgun-finder",
+    "invariant-gap": "invariant-ace",
+    "complexity-stall": "complexity-mitigator",
+}
 
 
 class ReceiptGateError(ValueError):
@@ -170,6 +176,51 @@ def clean_run_errors(clean_run: dict[str, Any], prefix: str, kernel_status: str 
     return errors
 
 
+def source_owner_lens(source_ref: dict[str, Any]) -> str:
+    lane = source_ref.get("lane")
+    role = source_ref.get("lane_role", source_ref.get("laneRole"))
+    if lane in AUXILIARY_OWNER_LANES and role == "auxiliary":
+        return lane
+    return ""
+
+
+def finding_owner_lens(finding: dict[str, Any], source_ref: dict[str, Any]) -> str:
+    direct = finding.get("owner_lens", finding.get("auxiliary_owner_lens"))
+    if direct in AUXILIARY_OWNER_LANES:
+        return direct
+    obligation = object_from(finding.get("review_obligation"))
+    if obligation.get("owner_lens") in AUXILIARY_OWNER_LANES:
+        return obligation["owner_lens"]
+    return source_owner_lens(source_ref)
+
+
+def specialized_owner_lens_errors(
+    finding: dict[str, Any],
+    source_ref: dict[str, Any],
+    liability: str,
+    disposition: str,
+    prefix: str,
+) -> list[str]:
+    expected = SPECIALIZED_LIABILITY_LANES.get(liability)
+    if not expected:
+        return []
+    errors: list[str] = []
+    if finding_owner_lens(finding, source_ref) == expected:
+        return errors
+
+    if disposition not in {"blocked", "ask-human"}:
+        errors.append(f"{prefix}.review_obligation.owner_lens:required-before-nonblocked-disposition")
+
+    clean = object_from(finding.get("clean_run"))
+    normalized = clean.get("normalized_clean", "not-applicable")
+    effect = clean.get("count_effect", "unknown")
+    if normalized == "yes":
+        errors.append(f"{prefix}.clean_run.normalized_clean:specialized-owner-lens-required")
+    if effect == "increment" or (isinstance(effect, int) and effect > 0):
+        errors.append(f"{prefix}.clean_run.count_effect:specialized-owner-lens-required")
+    return errors
+
+
 def kernel_fold_errors(finding: dict[str, Any], prefix: str, disposition: str) -> list[str]:
     errors: list[str] = []
     kernel = object_from(finding.get("kernel_fold"))
@@ -234,7 +285,7 @@ def validate_finding(finding: dict[str, Any], prefix: str) -> list[str]:
         errors.extend(source_ref_errors(source_ref, f"{prefix}.source_ref"))
 
     validity = validate_enum(finding.get("validity"), VALID_VALIDITY, "validity", errors, prefix)
-    validate_enum(finding.get("liability"), VALID_LIABILITY, "liability", errors, prefix)
+    liability = validate_enum(finding.get("liability"), VALID_LIABILITY, "liability", errors, prefix)
     intent = validate_enum(finding.get("intent_relation"), VALID_INTENT, "intent_relation", errors, prefix)
     disposition = validate_enum(finding.get("disposition"), VALID_DISPOSITIONS, "disposition", errors, prefix)
 
@@ -262,6 +313,7 @@ def validate_finding(finding: dict[str, Any], prefix: str) -> list[str]:
     errors.extend(kernel_fold_errors(finding, prefix, disposition))
     errors.extend(mutation_authority_errors(finding, prefix))
     errors.extend(clean_run_errors(object_from(finding.get("clean_run")), prefix, kernel_status))
+    errors.extend(specialized_owner_lens_errors(finding, source_ref, liability, disposition, prefix))
     return errors
 
 

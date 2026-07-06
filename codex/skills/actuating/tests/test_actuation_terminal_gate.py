@@ -704,6 +704,95 @@ class ActuationTerminalGateTests(unittest.TestCase):
             body["blocked_reasons"],
         )
 
+    def test_obligation_router_requires_selected_owner_lens(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = self.satisfied_standard_cas()
+        context["review_profile"] = self.review_profile()
+        context["review_profile"]["obligation_router"] = {
+            "version": "ROR-v1",
+            "obligations": [
+                {
+                    "id": "obligation-invariant-1",
+                    "trigger": "invariant-gap",
+                    "source_ref": {
+                        "backend": "cas",
+                        "head_sha": "abc123",
+                        "target_fingerprint": "diff:clean",
+                    },
+                    "owner_lens": "invariant-ace",
+                    "state": "findings-folded",
+                    "evidence_ref": "rf:invariant-gap:1",
+                }
+            ],
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        self.assert_blocks_with(
+            context,
+            "review_profile.auxiliary_review_lanes.invariant-ace:obligation-router-required",
+            "$goal-actuating",
+        )
+
+    def test_obligation_router_not_required_requires_source_bound_reason(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = self.satisfied_standard_cas()
+        context["review_profile"] = self.review_profile()
+        context["review_profile"]["obligation_router"] = {
+            "version": "ROR-v1",
+            "obligations": [
+                {
+                    "id": "obligation-footgun-1",
+                    "trigger": "misuse-hazard",
+                    "source_ref": {
+                        "backend": "github-comments",
+                        "head_sha": "abc123",
+                        "target_fingerprint": "diff:clean",
+                    },
+                    "owner_lens": "footgun-finder",
+                    "state": "not-required",
+                    "not_required_reason": "",
+                }
+            ],
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        self.assert_blocks_with(
+            context,
+            "review_profile.obligation_router.obligations[0].not_required_reason:missing",
+            "$goal-actuating",
+        )
+
+    def test_obligation_router_accepts_current_owner_lens_evidence(self) -> None:
+        context = deepcopy(self.context("terminal-context.proof-only.example.json"))
+        context["cas_review"] = self.satisfied_standard_cas()
+        context["review_profile"] = self.review_profile(
+            **{
+                "complexity-mitigator": {
+                    "state": "findings-folded",
+                    **self.lens_evidence("complexity-mitigator"),
+                }
+            }
+        )
+        context["review_profile"]["obligation_router"] = {
+            "version": "ROR-v1",
+            "obligations": [
+                {
+                    "id": "obligation-complexity-1",
+                    "trigger": "complexity-stall",
+                    "source_ref": {
+                        "backend": "cas",
+                        "head_sha": "abc123",
+                        "target_fingerprint": "diff:clean",
+                    },
+                    "owner_lens": "complexity-mitigator",
+                    "state": "findings-folded",
+                    "evidence_ref": "rf:complexity-stall:1",
+                }
+            ],
+        }
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "complete")
+
     def test_standard_clean_run_aliases_block_when_insufficient(self) -> None:
         context = deepcopy(self.context("terminal-context.proof-only.example.json"))
         context["cas_review"] = {

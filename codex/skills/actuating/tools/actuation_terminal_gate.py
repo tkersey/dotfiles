@@ -29,6 +29,13 @@ AUXILIARY_LENS_CONTRACTS = {
     "invariant-ace": "invariant-gate-v1",
     "complexity-mitigator": "complexity-preflight-v1",
 }
+OBLIGATION_TRIGGER_LANES = {
+    "misuse-hazard": "footgun-finder",
+    "invariant-gap": "invariant-ace",
+    "complexity-pressure": "complexity-mitigator",
+    "complexity-stall": "complexity-mitigator",
+    "repeated-owner-boundary": "complexity-mitigator",
+}
 VALID_LENS_EVIDENCE_STATES = {"valid", "missing", "invalid", "stale", "blocked", "rerun-required", "not-required"}
 HARD_REASON_ORDER = [
     "blocked-loop-contract-missing",
@@ -385,7 +392,29 @@ def review_profile_lane_records_for(profile: dict[str, Any]) -> dict[str, dict[s
     return records
 
 
+def review_obligation_records_for(profile: dict[str, Any]) -> list[dict[str, Any]]:
+    router = object_from(profile.get("obligation_router"))
+    obligations = router.get("obligations")
+    if not isinstance(obligations, list):
+        return []
+    return [item for item in obligations if isinstance(item, dict)]
+
+
+def review_obligation_required_lanes_for(profile: dict[str, Any]) -> set[str]:
+    required: set[str] = set()
+    for record in review_obligation_records_for(profile):
+        lane = record.get("owner_lens")
+        if lane not in AUXILIARY_CAS_LANES:
+            continue
+        state = str(record.get("state", record.get("status", ""))).lower()
+        if state != "not-required":
+            required.add(lane)
+    return required
+
+
 def review_profile_selects_auxiliary_lane(profile: dict[str, Any]) -> bool:
+    if review_obligation_required_lanes_for(profile):
+        return True
     for record in review_profile_lane_records_for(profile).values():
         state = str(record.get("state", record.get("status", ""))).lower()
         if state and state != "not-required":
@@ -469,6 +498,80 @@ def complexity_pressure_requires_lens(profile: dict[str, Any]) -> bool:
     return as_yes(pressure) or str(pressure).lower() in {"present", "required", "medium", "high"}
 
 
+def review_obligation_router_reasons_for(
+    profile: dict[str, Any],
+    artifact: dict[str, Any],
+    lane_records: dict[str, dict[str, Any]],
+) -> list[str]:
+    router = object_from(profile.get("obligation_router"))
+    if not router:
+        return []
+    reasons: list[str] = []
+    if router.get("version") != "ROR-v1":
+        reasons.append("review_profile.obligation_router.version:invalid")
+    obligations = router.get("obligations")
+    if not isinstance(obligations, list):
+        reasons.append("review_profile.obligation_router.obligations:must-be-list")
+        return reasons
+    if not obligations:
+        return reasons
+    for index, value in enumerate(obligations):
+        prefix = f"review_profile.obligation_router.obligations[{index}]"
+        if not isinstance(value, dict):
+            reasons.append(f"{prefix}:must-be-object")
+            continue
+        obligation_id = value.get("id")
+        if not isinstance(obligation_id, str) or not obligation_id:
+            reasons.append(f"{prefix}.id:missing")
+        trigger = value.get("trigger")
+        if not isinstance(trigger, str) or not trigger:
+            reasons.append(f"{prefix}.trigger:missing")
+        expected_lane = OBLIGATION_TRIGGER_LANES.get(trigger)
+        lane = value.get("owner_lens")
+        if lane not in AUXILIARY_CAS_LANES:
+            reasons.append(f"{prefix}.owner_lens:invalid")
+            lane = ""
+        elif expected_lane and lane != expected_lane:
+            reasons.append(f"{prefix}.owner_lens:trigger-mismatch")
+        source_ref = object_from(value.get("source_ref"))
+        if not source_ref:
+            reasons.append(f"{prefix}.source_ref:missing")
+        else:
+            for key, artifact_key in (("head_sha", "head_sha"), ("target_fingerprint", "diff_fingerprint")):
+                source_value = source_ref.get(key)
+                if source_value is not None and not isinstance(source_value, str):
+                    reasons.append(f"{prefix}.source_ref.{key}:must-be-string")
+                elif isinstance(source_value, str) and source_value and source_value != artifact.get(artifact_key):
+                    reasons.append(f"{prefix}.source_ref.{key}:artifact-mismatch")
+        state = str(value.get("state", value.get("status", ""))).lower()
+        if not state:
+            reasons.append(f"{prefix}.state:missing")
+            continue
+        if state not in {"not-required", "clean", "findings-folded", "blocked", "rerun-required"}:
+            reasons.append(f"{prefix}.state:invalid")
+            continue
+        if state == "not-required":
+            reason = first_present(value, ("not_required_reason", "reason"))
+            if not isinstance(reason, str) or not reason.strip():
+                reasons.append(f"{prefix}.not_required_reason:missing")
+            continue
+        if state == "blocked":
+            reasons.append(f"{prefix}:blocked")
+            continue
+        if state == "rerun-required":
+            reasons.append(f"{prefix}:rerun-required")
+            continue
+        evidence_ref = lens_evidence_ref_for(value)
+        if not isinstance(evidence_ref, str) or not evidence_ref:
+            reasons.append(f"{prefix}.evidence_ref:missing")
+        if lane:
+            lane_record = lane_records.get(lane)
+            lane_state = str(object_from(lane_record).get("state", object_from(lane_record).get("status", ""))).lower()
+            if not lane_record or lane_state == "not-required":
+                reasons.append(f"review_profile.auxiliary_review_lanes.{lane}:obligation-router-required")
+    return reasons
+
+
 def auxiliary_lane_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
     records = auxiliary_lane_records_for(cas)
     required = required_auxiliary_lanes_for(cas, records)
@@ -515,6 +618,7 @@ def review_profile_reasons_for(profile: dict[str, Any], artifact: dict[str, Any]
         reasons.append("review_profile.standard:missing-required")
 
     records = review_profile_lane_records_for(profile)
+    router_required_lanes = review_obligation_required_lanes_for(profile)
     for lane in sorted(AUXILIARY_CAS_LANES):
         record = records.get(lane)
         prefix = f"review_profile.auxiliary_review_lanes.{lane}"
@@ -532,6 +636,8 @@ def review_profile_reasons_for(profile: dict[str, Any], artifact: dict[str, Any]
             reason = record.get("reason")
             if not isinstance(reason, str) or not reason.strip():
                 reasons.append(f"{prefix}.reason:missing")
+            if lane in router_required_lanes:
+                reasons.append(f"{prefix}:obligation-router-required")
             if lane == "complexity-mitigator" and complexity_pressure_requires_lens(profile):
                 reasons.append(f"{prefix}:complexity-pressure-required")
             continue
@@ -556,6 +662,7 @@ def review_profile_reasons_for(profile: dict[str, Any], artifact: dict[str, Any]
             reasons.append(f"{prefix}.target_fingerprint:missing")
         elif target_fingerprint != artifact.get("diff_fingerprint"):
             reasons.append(f"{prefix}.target_fingerprint:artifact-mismatch")
+    reasons.extend(review_obligation_router_reasons_for(profile, artifact, records))
     return reasons
 
 

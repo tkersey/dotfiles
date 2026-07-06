@@ -121,6 +121,33 @@ Rules:
 - Read-only or classification-only auxiliary lane results do not reset the standard streak unless they change artifact scope or proof bar.
 - Do not rerun auxiliary lanes on every standard clean attempt unless their surface was touched, their prior result was blocked/validate-first, the proof bar changed, or a standard review exposes a new class owned by that lens.
 
+### Review Obligation Router
+
+`review_profile.obligation_router` records `ROR-v1` obligations when standard,
+GitHub, human, or local review pressure contains specialized claims owned by an
+auxiliary lens.
+
+```yaml
+obligation_router:
+  version: ROR-v1
+  obligations:
+    - id: stable-obligation-id
+      trigger: misuse-hazard | invariant-gap | complexity-pressure | complexity-stall | repeated-owner-boundary
+      source_ref: {}
+      owner_lens: footgun-finder | invariant-ace | complexity-mitigator
+      state: clean | findings-folded | blocked | rerun-required | not-required
+      evidence_ref: current folded lens evidence
+      not_required_reason: source-bound reason when state is not-required
+```
+
+Routing rules:
+
+- `misuse-hazard` selects `footgun-finder`.
+- `invariant-gap` selects `invariant-ace`.
+- `complexity-pressure`, `complexity-stall`, and repeated owner-boundary pressure select `complexity-mitigator`.
+- A non-`not-required` obligation means the corresponding auxiliary lane must be selected in `review_profile.auxiliary_review_lanes` with current lens evidence before ATCG may complete.
+- A `not-required` obligation must explain why the source-bound trigger does not require that lens. A bare clean or summary-shaped review-fold is not enough.
+
 ## HYL coalgebra
 
 The default coalgebra is obligation-driven:

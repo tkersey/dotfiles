@@ -245,6 +245,54 @@ class ReviewFoldReceiptGateTests(unittest.TestCase):
             report["errors"],
         )
 
+    def test_ownerless_specialized_liability_cannot_be_clean_or_increment(self) -> None:
+        source_ref = valid_finding()["source_ref"]
+        source_ref["lane"] = "standard"
+        source_ref["lane_role"] = "standard"
+        receipt = {
+            "review_fold": {
+                "version": "RF-v1.5",
+                "findings": [
+                    valid_finding(
+                        source_ref=source_ref,
+                        liability="invariant-gap",
+                        clean_run={"normalized_clean": "yes", "count_effect": "increment"},
+                    )
+                ],
+            }
+        }
+        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
+        self.assertEqual(report["verdict"], "fail")
+        self.assertIn(
+            "review_fold.findings[0].clean_run.normalized_clean:specialized-owner-lens-required",
+            report["errors"],
+        )
+        self.assertIn(
+            "review_fold.findings[0].clean_run.count_effect:specialized-owner-lens-required",
+            report["errors"],
+        )
+
+    def test_auxiliary_owner_lens_specialized_liability_can_be_clean(self) -> None:
+        source_ref = valid_finding()["source_ref"]
+        source_ref["lane"] = "invariant-ace"
+        source_ref["lane_role"] = "auxiliary"
+        receipt = {
+            "review_fold": {
+                "version": "RF-v1.5",
+                "findings": [
+                    valid_finding(
+                        source_ref=source_ref,
+                        liability="invariant-gap",
+                        disposition="proof-only",
+                        kernel_fold=valid_kernel(status="none", boundary_proof="not-applicable"),
+                        clean_run={"normalized_clean": "yes", "count_effect": "increment"},
+                    )
+                ],
+            }
+        }
+        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
+        self.assertEqual(report["verdict"], "pass")
+
     def test_rf_v14_receipt_fails(self) -> None:
         receipt = {
             "review_fold": {

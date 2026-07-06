@@ -118,6 +118,7 @@ Rules:
 
 - `backend` is required for material receipts; use `unknown` only when the source really lacks identity.
 - CAS-specific fields are evidence references only. They do not imply validity, liability, kernel status, clean-run effect, or mutation authority.
+- Specialized liabilities remain owner-lens gated. If a non-auxiliary source yields `misuse-hazard`, `invariant-gap`, or `complexity-stall`, the caller workflow must route the finding through `footgun-finder`, `invariant-ace`, or `complexity-mitigator` before the finding can look closure-ready or increment clean-run accounting.
 - PR thread IDs are source references only. Do not resolve threads, post replies, or mutate public review state without explicit public-side-effect intent.
 - If fresh workflow review is required but no review source evidence is present, `$review-fold` reports a source blocker and hands control to the caller or review-source owner.
 

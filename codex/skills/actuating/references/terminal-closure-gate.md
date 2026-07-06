@@ -130,6 +130,13 @@ review_profile.auxiliary_review_lanes.<lane>.lens_evidence_ref
 review_profile.auxiliary_review_lanes.<lane>.evidence_ref
 review_profile.auxiliary_review_lanes.<lane>.head_sha
 review_profile.auxiliary_review_lanes.<lane>.target_fingerprint
+review_profile.obligation_router.version
+review_profile.obligation_router.obligations[].trigger
+review_profile.obligation_router.obligations[].source_ref
+review_profile.obligation_router.obligations[].owner_lens
+review_profile.obligation_router.obligations[].state
+review_profile.obligation_router.obligations[].evidence_ref
+review_profile.obligation_router.obligations[].not_required_reason
 review_profile.complexity_pressure
 ```
 
