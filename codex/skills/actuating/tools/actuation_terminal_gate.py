@@ -285,7 +285,14 @@ def fusion_receipt_reasons_for(context: dict[str, Any], loop: dict[str, Any]) ->
 
 
 def actuation_interlock_reasons_for(context: dict[str, Any], loop: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
-    interlock = object_from(context.get("actuation_interlock")) or object_from(loop.get("actuation_interlock"))
+    if "actuation_interlock" in context:
+        raw_interlock = context.get("actuation_interlock")
+    else:
+        raw_interlock = loop.get("actuation_interlock")
+    if raw_interlock is not None and not isinstance(raw_interlock, dict):
+        return ["blocked-loop-contract-missing", "actuation_interlock:must-be-object"]
+
+    interlock = object_from(raw_interlock)
     if not interlock:
         return ["blocked-loop-contract-missing", "actuation_interlock:missing"]
 
@@ -1310,6 +1317,10 @@ def required_receipts_for(proof_patch: dict[str, Any], cas: dict[str, Any], prof
     return unique(receipts)
 
 
+def receipts_require_interlock(receipts: list[Any]) -> bool:
+    return any(receipt in receipts for receipt in ("alsr", "hyl", "terminal_hsr"))
+
+
 def next_owner_for(blocked: list[str], pending: list[str]) -> str:
     combined = blocked + pending
     if any("ask-human" in reason for reason in combined):
@@ -1390,6 +1401,8 @@ def validate_decision(value: dict[str, Any]) -> dict[str, Any]:
         receipts = d.get("required_receipts") if isinstance(d.get("required_receipts"), list) else []
         if d.get("closure_candidate") == "proof-patch" and "proof_patch" not in receipts:
             errors.append("complete.required_receipts.proof_patch:missing")
+        if receipts_require_interlock(receipts) and "actuation_interlock" not in receipts:
+            errors.append("complete.required_receipts.actuation_interlock:missing")
         if d.get("closure_candidate") == "ship-complete":
             if "add_v1_delivery_decision" not in receipts:
                 errors.append("complete.required_receipts.add_v1_delivery_decision:missing")

@@ -65,6 +65,18 @@ class ActuationTerminalGateTests(unittest.TestCase):
         body = decision["actuation_terminal_decision"]
         self.assertIn("actuation_interlock.continuation_allowed:not-yes", body["blocked_reasons"])
 
+    def test_malformed_top_level_interlock_does_not_fall_back_to_loop_copy(self) -> None:
+        context = deepcopy(self.context("terminal-context.hylo-complete.example.json"))
+        context["loop_governance"]["actuation_interlock"] = deepcopy(context["actuation_interlock"])
+        context["actuation_interlock"] = "malformed"
+        self.assert_blocks_with(context, "actuation_interlock:must-be-object", "$goal-actuating")
+
+    def test_empty_top_level_interlock_does_not_fall_back_to_loop_copy(self) -> None:
+        context = deepcopy(self.context("terminal-context.hylo-complete.example.json"))
+        context["loop_governance"]["actuation_interlock"] = deepcopy(context["actuation_interlock"])
+        context["actuation_interlock"] = {}
+        self.assert_blocks_with(context, "actuation_interlock:missing", "$goal-actuating")
+
     def test_material_run_without_hsr_chain_blocks(self) -> None:
         context = deepcopy(self.context("terminal-context.hylo-complete.example.json"))
         loop = context["loop_governance"]
@@ -189,6 +201,13 @@ class ActuationTerminalGateTests(unittest.TestCase):
         body = allowance["actuation_completion_allowance"]
         self.assertEqual(body["verdict"], "denied")
         self.assertEqual(body["next_owner"], "$goal-actuating")
+
+    def test_completion_allowance_rejects_material_decision_without_interlock_receipt(self) -> None:
+        decision = MODULE.make_decision(self.context("terminal-context.hylo-complete.example.json"))
+        receipts = decision["actuation_terminal_decision"]["required_receipts"]
+        receipts.remove("actuation_interlock")
+        with self.assertRaisesRegex(MODULE.TerminalGateError, "complete.required_receipts.actuation_interlock:missing"):
+            MODULE.make_completion_allowance(decision)
 
     def test_check_rejects_complete_without_artifact_binding(self) -> None:
         decision = self.decision("atcg-v1.complete.example.json")
