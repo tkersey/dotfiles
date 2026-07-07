@@ -78,6 +78,11 @@ goal_actuating_mode:
 16. Run ATCG-v1 before completion.
 17. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
 
+Persistence is projection, not authority. `update_plan`, work lists, and
+goal-artifact projections may show the current frontier, but they do not replace
+ALSR-v1, HYL-v1, HSR-v1, evidence-fold, proof-patch, review-fold, or ATCG-v1
+receipts.
+
 ## HYL-v1 interpreter
 
 A material action is legal only as an HSR-v1 transition:
@@ -93,6 +98,10 @@ state_before
 No mutation is valid without an unfolded work node.
 No continuation is valid without a fold verdict.
 No completion is valid without terminal ATCG-v1.
+
+The minimum valid material transition is therefore `unfold -> action -> fold`.
+If any one of those fields is missing, the run is not governed actuation even
+when tests, summaries, or progress projections exist.
 
 ## Review lanes
 
@@ -185,6 +194,10 @@ proof patch -> update proof state
 subagent result -> accept/reject/integrate through lead reducer
 ATCG -> complete|continue|blocked
 ```
+
+Supporting effects cannot skip the algebra. A clean command, cached review,
+proof summary, or `$ship` handoff updates state only after the owner reducer
+folds it against the current artifact.
 
 ## Parallel scheduler
 

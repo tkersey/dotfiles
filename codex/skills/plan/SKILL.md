@@ -156,6 +156,10 @@ $actuating
 
 A semantic gap returns to `$spec-pipeline` or `$grill-me`.
 
+Plan artifacts are policy projections over accepted semantics. They can make the
+next action executable by `$actuating`, but they do not replace loop receipts,
+evidence folds, proof-patch, review-fold, or ATCG-v1.
+
 ## Planning regimes
 
 ```text
@@ -350,6 +354,10 @@ actuating_handoff:
 
 `$plan` never emits mutation authority.
 
+It also never emits completion evidence. The receiving `$actuating` run must
+bind the plan to current branch/head/diff and establish its own loop or fusion
+receipt before material mutation.
+
 ## Cross-plan relationships
 
 A plan may propose, but not create, cross-plan relations:
@@ -396,6 +404,10 @@ current direct-action exemption or ALSR/HYL loop contract
 review/proof closure evidence
 terminal ATCG-v1
 ```
+
+Treat these as blocking gates, not checklist labels. A plan is complete when
+PSR-v1 converges; execution is complete only after `$actuating` folds current
+evidence through ATCG-v1.
 
 ## Output
 
