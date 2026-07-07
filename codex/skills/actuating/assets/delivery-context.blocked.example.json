@@ -1,50 +1,36 @@
 {
   "actuation_delivery_context": {
-    "base_branch": "main",
-    "branch_epoch": 4,
-    "cross_plan_dependency_status": "unknown",
-    "current_pr_state": {
-      "draft": "unknown",
-      "exists": "no",
-      "url": ""
-    },
-    "do_not_ship_before": [
-      "current PR state unavailable"
-    ],
-    "integration": {
-      "queue_quiescent": "no",
-      "receipts": [
-        ".ledger/actuating/delivery/receipts/igr-001.json"
-      ]
-    },
-    "plan_id": "plan-example",
-    "pr_intent": {
-      "present": "yes",
-      "requested_mode": "ready",
-      "source": "actuation_run"
-    },
-    "proof_complete_receipt": {
-      "current": "no",
-      "present": "yes",
-      "ref": ".ledger/actuating/proof/plan-example/proof-complete.json"
-    },
-    "proof_summary": "Proof-complete graph audit and integration receipt are current.",
-    "repo_policy_pr_mode": "unknown",
-    "run_id": "run-blocked-001",
+    "run_id": "ACT-delivery-blocked",
+    "plan_id": "PLAN-1",
     "target_branch": "feature/example",
     "target_head": "abc123",
-    "task_state": {
-      "blocked": "no",
-      "complete": "yes",
-      "deferred": "no",
-      "open": "no"
+    "base_branch": "main",
+    "branch_epoch": 1,
+    "proof_complete_receipt": {
+      "present": "no",
+      "current": "no",
+      "ref": ""
+    },
+    "integration": {
+      "queue_quiescent": "no",
+      "receipts": []
+    },
+    "cross_plan_dependency_status": "unknown",
+    "pr_intent": {
+      "present": "yes",
+      "source": "user",
+      "requested_mode": "ready"
+    },
+    "current_pr_state": {
+      "exists": "no",
+      "url": "",
+      "draft": "unknown"
     },
     "validation": {
-      "acceptance": "pass",
-      "build": "pass",
-      "language_specific": "pass",
-      "lint": "pass",
       "tests": "pass"
+    },
+    "task_state": {
+      "complete": "yes"
     }
   }
 }

@@ -3,10 +3,10 @@ skill_decision_contract:
   skill:
     name: actuating
     kind: workflow
-    source_fingerprint: actuating-v7.1-refactor-kernel-rko-v1
+    source_fingerprint: actuating-v7.1-loop-receipts-focus-fusion-rko-v1
   triggers:
     - trigger_id: ACT-SPEC-GOAL
-      description: The user wants an accepted implementation spec executed through the goal workflow.
+      description: The user wants approved implementation work executed through the goal workflow.
       cue_literals: [$actuating, implement accepted spec, run accepted spec, goal actuation]
       cue_regexes: []
       exclusions: []
@@ -21,13 +21,18 @@ skill_decision_contract:
       cue_regexes: []
       exclusions: []
     - trigger_id: ACT-HYLO
-      description: Material actuation needs a loop contract and hylomorphic execution machine.
-      cue_literals: [ALSR-v1, HYL-v1, HSR-v1, loop contract, hylomorphism, graph_bypass]
+      description: Material actuation needs either a direct-action fusion receipt or a loop receipt chain.
+      cue_literals: [FUSION-v1, ALSR-v1, HYL-v1, HSR-v1, loop contract, hylomorphism, graph_bypass]
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: ACT-GOAL-FOCUS
+      description: Long actuation runs use a stable parent goal with folded child focus frames.
+      cue_literals: [goal-focus, GFF-v1, HEG-v1, parent goal, child focus frame]
       cue_regexes: []
       exclusions: []
     - trigger_id: ACT-EXTERNAL-COORDINATION
       description: Execution requires durable coordination that no supported local controller owns.
-      cue_literals: [resource claim, coordination token, external worktree, serialized integration]
+      cue_literals: [resource claim, coordination token, external worktree, serialized integration, fencing]
       cue_regexes: []
       exclusions: []
     - trigger_id: ACT-ESCALATION
@@ -45,8 +50,8 @@ skill_decision_contract:
       aliases: [recursion-scheme-planner, scheme-plan]
       terminal: "no"
     - route_id: ACT-LOOP-CONTRACT
-      description: Compile ALSR-v1/HYL-v1 before material mutation.
-      aliases: [agent-loop-schemes, ALSR-v1, HYL-v1]
+      description: Compile or validate FUSION-v1 or ALSR-v1/HYL-v1/HSR-v1 before material mutation.
+      aliases: [agent-loop-schemes, FUSION-v1, ALSR-v1, HYL-v1, HSR-v1]
       terminal: "no"
     - route_id: ACT-GOAL
       description: Hand the accepted spec or direct goal to $goal-actuating.
@@ -57,7 +62,7 @@ skill_decision_contract:
       aliases: [cas-review]
       terminal: "no"
     - route_id: ACT-CAS-REVIEW-LANES
-      description: Run standard CAS review and selected auxiliary CAS review lanes, preserving the standard-only clean streak.
+      description: Run standard CAS review and selected auxiliary review lenses while preserving the standard-only clean streak.
       aliases: [cas-review-bundle, standard-review, footgun-finder, invariant-ace, complexity-mitigator]
       terminal: "no"
     - route_id: ACT-ATCG
@@ -69,7 +74,7 @@ skill_decision_contract:
       aliases: [AER-v1, actuation-escalation-receipt]
       terminal: "no"
     - route_id: ACT-REFACTOR-KERNEL-OUTCOME
-      description: Record and validate RKO-v1 after a refactor-kernel patch so compression, review delta, closure state, and graph-bypass evidence are auditable.
+      description: Record and validate RKO-v1 after a refactor-kernel patch.
       aliases: [RKO-v1, refactor-kernel-outcome, refactor_kernel_outcome]
       terminal: "no"
     - route_id: ACT-PROOF
@@ -77,7 +82,7 @@ skill_decision_contract:
       aliases: [proof-patch, ship-handoff]
       terminal: "yes"
     - route_id: ACT-BLOCK
-      description: Stop on unresolved spec, missing review backend, missing/stale loop contract, unavailable authority, stale proof, or failed ATCG.
+      description: Stop on unresolved spec, missing review backend, missing/stale loop receipts, unsupported authority, stale proof, or failed ATCG.
       aliases: [blocked]
       terminal: "yes"
   clauses:
@@ -94,25 +99,46 @@ skill_decision_contract:
       failure_signals:
         - $spec-pipeline tail-calls $plan from an $actuating run
         - goal execution starts before scope, non-goals, success state, and proof bar are accepted
-      rationale: $actuating is a spec-to-goal workflow, not the plan-to-PR transaction controller.
+      rationale: $actuating is the implementation workflow, not a free-form planner.
     - clause_id: ACT-HYLO-001
       trigger_refs: [ACT-HYLO]
       expected_routes: [ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
+        - FUSION-v1 when direct-action fusion is claimed
         - ALSR-v1 when material loop governance is required
         - HYL-v1 when recursive execution is required
         - HSR-v1 for every material unfold/action/fold transition
       success_signals:
-        - material mutation cites an unfolded node/frontier
+        - direct-action fusion is proven by FUSION-v1, not a bare flag
+        - material mutation cites an unfolded node or frontier
         - continuation follows an evidence fold
         - completion follows terminal ATCG-v1
       failure_signals:
         - mutation_without_unfold
         - action_without_fold
         - completion_without_terminal_algebra
+        - fused_run_without_FUSION_v1
         - graph_bypass
-      rationale: HYL-v1 makes loop shape an executable control surface rather than prose guidance.
+      rationale: Loop receipts make the work sequence auditable rather than prose guidance.
+    - clause_id: ACT-GOAL-FOCUS-001
+      trigger_refs: [ACT-GOAL-FOCUS]
+      expected_routes: [ACT-SCHEME-PLAN, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
+      prohibited_routes: []
+      required_artifacts:
+        - stable parent goal binding
+        - folded or blocked child focus frames
+        - terminal focus that matches the parent stop rule
+      success_signals:
+        - primary_goal_stable=yes
+        - all child focus frames folded or blocked
+        - no child focus frame claims parent completion
+      failure_signals:
+        - primary_goal_swapped_without_user_authority
+        - child_goal_claimed_parent_completion
+        - focus_without_fold
+        - focus_fold_not_parent_bound
+      rationale: Local focus frames may guide work but only the parent goal plus ATCG may close the run.
     - clause_id: ACT-REVIEW-001
       trigger_refs: [ACT-REVIEW]
       expected_routes: [ACT-CAS-REVIEW, ACT-CAS-REVIEW-LANES, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
@@ -125,14 +151,14 @@ skill_decision_contract:
       success_signals:
         - fresh or exhaustive workflow review comes from $cas
         - review findings are classified before implementation
-        - raw review findings are quotiented into liabilities/classes before patching
+        - raw review findings are reduced into liabilities/classes before patching
         - only standard CAS review attempts count toward the three-clean-review closure bar
       failure_signals:
         - non-CAS critique substitutes for workflow code review
         - raw review prose directly drives code changes
         - cached CAS receipt counted as fresh repeated review
         - auxiliary review lens counted as a standard clean review
-      rationale: Code review remains exhaustive when requested, while review-fold/review-closeout controls which findings become code changes.
+      rationale: Review stays strict while the resolution fold controls which findings become code changes.
     - clause_id: ACT-REVIEW-LANES-001
       trigger_refs: [ACT-REVIEW-LANES]
       expected_routes: [ACT-CAS-REVIEW-LANES, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
@@ -140,26 +166,18 @@ skill_decision_contract:
       required_artifacts:
         - review profile with standard plus selected auxiliary lanes
         - explicit not-required reason for every unselected auxiliary lane
-        - folded auxiliary lane outcomes for footgun-finder, invariant-ace, or complexity-mitigator when selected
+        - folded auxiliary lane outcomes when selected
         - standard-only clean-run counter
-        - ATCG context fields for standard_clean_runs_count and workflow-owned review_profile blocker/current-artifact state
       success_signals:
-        - footgun-finder, invariant-ace, and complexity-mitigator are available as auxiliary CAS review lanes
-        - auxiliary lane selection and non-selection are recorded by $actuating/$goal-actuating, not inferred from $cas transport state
-        - auxiliary lanes may block closeout but do not increment or interrupt the standard clean streak
+        - auxiliary lane selection is recorded by $actuating/$goal-actuating
+        - auxiliary lanes may block closeout but do not increment the standard clean streak
         - artifact-changing fixes from any lane reset the standard clean streak
-        - terminal closure rejects missing or partial review_profile coverage when workflow review is required
-        - terminal closure rejects missing, blocked, rerun-required, or not-folded selected auxiliary lanes
-        - terminal closure rejects selected auxiliary lane receipts that are stale against current head or diff
       failure_signals:
-        - auxiliary lane policy is stored only in cas_review transport fields
-        - terminal closure treats absent review_profile coverage as clean or not-required
         - auxiliary lane output bypasses review-fold
         - auxiliary lane is treated as mutation authority
         - standard clean streak includes non-standard attempts
-        - terminal closure accepts unresolved auxiliary lane blocker state
-        - terminal closure accepts stale auxiliary lane evidence after artifact-changing work
-      rationale: Specialized review depth should strengthen review evidence without weakening the three standard clean reviews closure bar.
+        - terminal closure accepts stale auxiliary lane evidence
+      rationale: Specialized review lenses increase review evidence without weakening the standard clean-review bar.
     - clause_id: ACT-EXTERNAL-COORDINATION-001
       trigger_refs: [ACT-EXTERNAL-COORDINATION]
       expected_routes: [ACT-BLOCK]
@@ -170,6 +188,7 @@ skill_decision_contract:
         - durable coordination does not proceed through a hidden controller
       failure_signals:
         - direct implementation claims fenced authority without a supported controller
+        - APMA-v1 is hand-authored as active authority
       rationale: Removed controller paths must block rather than silently degrade to local mutation.
     - clause_id: ACT-ESCALATION-001
       trigger_refs: [ACT-ESCALATION]
@@ -183,16 +202,14 @@ skill_decision_contract:
         - prior and next resolution modes are explicit
         - alternatives considered are recorded
         - selected route is tied to verifier and current artifact scope
-        - refactor-kernel AER-v1 is validated before mutation
-        - RKO-v1 records covered liabilities, new liabilities, closure state, and graph-bypass governance evidence after proof or review
+        - RKO-v1 records covered liabilities, new liabilities, closure state, and graph-bypass evidence
       failure_signals:
         - repeated accepted liabilities continue as silent one-patch-per-comment local fixes
         - refactor-kernel escalation happens without a cited owner boundary
         - AER-v1 is treated as review finding acceptance or mutation authority
-        - broad owner-boundary patching is treated as refactor-kernel without AER-v1
         - refactor-kernel completion is reported without RKO-v1
         - RKO-v1 reports assessment effective while graph_bypass is yes or mutations_without_graph_control_receipt is nonzero
-      rationale: Escalation belongs to active workflow governance while preserving auditable evidence for later forensic tools.
+      rationale: Escalation should be visible before mutation and auditable afterward.
   instrumentation:
     decision_receipt: required
-    rationale: Material decisions include accepted-spec routing, scheme planning, loop contract, review backend and lanes, repair-mode escalation, persistence mode, HYL/HSR execution legality, refactor-kernel outcome accounting, ATCG terminal closure, and proof/ship closure.
+    rationale: Material decisions include accepted-spec routing, scheme planning, loop receipt/fusion choice, review backend and lanes, repair-mode escalation, persistence mode, HYL/HSR execution legality, focus-frame closure, refactor-kernel outcome accounting, ATCG terminal closure, and proof/ship closure.

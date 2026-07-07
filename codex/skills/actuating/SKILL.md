@@ -1,8 +1,8 @@
 ---
 name: actuating
-description: "User-facing workflow for implementation after spec work. Use `/goal $actuating` to get an accepted implementation spec, compile a loop contract when needed, run the goal runtime, require CAS for workflow review, and close through proof plus terminal ATCG."
+description: "User-facing workflow for implementing approved work. It gets an accepted spec when needed, checks whether a loop receipt is required, runs the goal runtime, requires CAS-backed review when review is in scope, and closes only through proof plus ATCG."
 metadata:
-  version: "7.0.0"
+  version: "7.1.0"
   activation_cost: medium
   default_depth: high
 ---
@@ -11,16 +11,16 @@ metadata:
 
 ## Mission
 
-Run the implementation workflow without making the user manage the lower-level goal skills.
+Run implementation work without making the user manage the lower-level skills.
 
 ```text
 implementation request or draft spec
--> $spec-pipeline in gate-only/no-plan mode when the implementation spec is not yet accepted
--> $recursion-scheme-planner when topology is nontrivial
--> $agent-loop-schemes emits ALSR-v1/HYL-v1 when material recursion is required
--> $goal-actuating interprets HYL-v1
--> ATCG-v1 terminal closure
--> proof-bearing result
+-> accepted implementation spec, when needed
+-> loop shape decision, when work is not one simple action
+-> goal runtime
+-> proof and review evidence
+-> terminal closure gate
+-> final result or explicit handoff
 ```
 
 Use it as:
@@ -28,81 +28,89 @@ Use it as:
 ```text
 /goal $actuating implement the accepted spec
 /goal $actuating review-closeout this PR
+/goal $actuating dry-plan the accepted spec
 ```
 
-`$actuating` does not directly edit code, claim resources, patch review findings, spawn subagents, or publish PRs. It routes to the owner that should act and enforces the gates that make the run valid.
+`$actuating` is the front door. It does not directly edit code, claim resources,
+spawn subagents, publish PRs, or mark work complete. It chooses the right owner
+and checks that the required evidence exists.
 
-## Governing law
+## Plain rules
 
 ```text
-No hidden loop.
-No material mutation without unfold.
-No continuation without fold.
-No completion without terminal algebra.
+Do not run an untracked loop.
+Do not change code unless the next work item was selected.
+Do not keep going unless the previous action was checked.
+Do not claim completion until the terminal gate allows it.
 ```
 
-## Removed Execution Controller
+## Removed controller path
 
-The former transaction-controller path has been removed from this
-workspace. When accepted work requires durable claims, fencing, external
-worktrees, serialized integration, or multi-plan coordination, `$actuating`
-must block or ask for a new controller rather than routing to a removed skill.
+The old transaction-controller/APMA path is not active in this workspace. If the
+work needs durable claims, fencing, external worktrees, serialized integration,
+or multi-plan coordination, `$actuating` must block or ask for a supported
+controller. It must not pretend that local edits are a fenced actuation run.
 
 ## Normal flow
 
-### Spec-first implementation
-
-```text
-$spec-pipeline on <draft implementation spec> in gate-only/no-plan mode
-/goal $actuating implement the accepted spec
-```
-
-The workflow performs:
-
-```text
-1. Accept or refresh the implementation spec with $spec-pipeline in gate-only/no-plan mode.
+1. Get or refresh an accepted implementation spec through `$spec-pipeline` in
+   gate-only/no-plan mode when the request is not already approved enough.
 2. Treat the accepted spec as the source of truth.
-3. Run $recursion-scheme-planner when the accepted spec has nontrivial recursive structure.
-4. Run $agent-loop-schemes when a material loop contract is required.
-5. Invoke $goal-actuating with the accepted spec and optional Scheme Plan / ALSR / HYL.
-6. Derive a goal contract from the accepted spec.
-7. Choose update_plan or goal-artifacts persistence.
-8. If code review is required, run it through $cas.
-9. Use $review-fold before any review-originated code change.
-10. Execute accepted work through HYL-v1 steps or bounded subagents.
-11. Fold evidence after material verification.
-12. Run ATCG-v1 terminal closure gate before any completion claim.
-13. Emit proof-patch or explicit $ship handoff.
+3. Use `$recursion-scheme-planner` when the work has branching, repeated classes,
+   review campaigns, migrations, proof fanout, or unclear stopping conditions.
+4. Use `$agent-loop-schemes` when material work needs ALSR/HYL loop receipts.
+5. Send the accepted work to `$goal-actuating`.
+6. Use `$cas` when workflow review is requested or required.
+7. Pass findings through `$review-fold` before any review-driven code change.
+8. Implement only accepted code-change liabilities.
+9. Fold current evidence after each material action.
+10. Run ATCG-v1 before any completion claim.
+11. Emit a proof-patch result or a `$ship` handoff when PR publication/update was requested.
+
+## Source requirement
+
+Before `$goal-actuating` runs, establish one of:
+
+```text
+accepted implementation spec
+direct user goal with enough scope, constraints, and proof checks
+review findings bound to the current diff and intended change
+plan handoff for goal-artifact execution
 ```
 
-### Scheme-planning handoff
+If none exists, run `$spec-pipeline` in gate-only/no-plan mode or stop with:
 
-Run `$recursion-scheme-planner` after `$spec-pipeline` and before `$agent-loop-schemes` / `$goal-actuating` when the accepted spec has nontrivial recursive structure.
+```yaml
+actuating_status:
+  verdict: blocked-needs-accepted-spec
+  next_owner: $spec-pipeline|$grill-me|$codebase-doctrine
+  reason:
+```
 
-Use it when the spec or direct goal contains:
+## When a loop receipt is required
+
+Simple, one-shot work may be direct-action fused. Anything more complex needs a
+current loop receipt before material changes.
+
+Require ALSR/HYL when the work has:
 
 ```text
 repeated failure or review classes
-migration across many files/packages
-review campaign or CAS closure requirement
+many-file migration
+review closeout or CAS closure
 branch choices or competing implementation strategies
 proof fanout
 parallel subagent opportunities
 mutual client/server/schema/protocol changes
-durable coordination, claims, fencing, or external worktrees
 unclear stop rule
-risk of becoming a generic keep-going loop
+risk of turning into a generic keep-going loop
 ```
 
-Skip it for one-shot or obviously linear implementation.
-
-### Loop-machine handoff
-
-For material actuation, establish one of these before first material mutation:
+For material runs, `$actuating` must establish one of:
 
 ```text
-direct_action fused exemption
-ALSR-v1 + HYL-v1 current
+valid FUSION-v1 direct-action receipt
+current ALSR-v1 + HYL-v1 + HSR-v1 chain
 ```
 
 If none exists, stop with:
@@ -111,72 +119,126 @@ If none exists, stop with:
 actuation verdict: blocked-loop-contract-missing
 ```
 
-If ALSR/HYL exists but is stale against current branch/head/diff, stop with:
+If the loop receipts do not match the current branch/head/diff, stop with:
 
 ```text
 actuation verdict: blocked-loop-contract-stale
 ```
 
-If the next material action has no unfolded work node or parallel frontier, stop with:
+If the next material action has no selected work item, stop with:
 
 ```text
 actuation verdict: blocked-hylo-frontier-missing
 ```
 
-If the previous material action has no current-artifact evidence fold, stop with:
+If the previous material action has no current evidence fold, stop with:
 
 ```text
 actuation verdict: blocked-hylo-fold-missing
 ```
 
-### Direct goal implementation
+## Direct-action fusion
 
-Use when the user goal already contains scope, non-goals, done state, constraints, and proof checks:
-
-```text
-/goal $actuating <objective>, verified by <checks>, preserving <constraints>
-```
-
-If the request is still ambiguous, `$actuating` must call `$spec-pipeline` in gate-only/no-plan mode or stop as blocked rather than inventing scope.
-
-### Review resolution implementation
-
-Use when the work is review closure:
+Direct-action fusion is allowed only when all are true:
 
 ```text
-/goal $actuating review-closeout this PR
-/goal $actuating close out review for this branch
+one legal work item
+known verifier
+no review requirement
+no parallelism
+no public side effect
+no repeated class, migration, or branch choice
+objective, artifact scope, and stop condition are bound to the final proof
 ```
 
-The review modes are `triage`, `remediation-plan`, and `review-closeout`.
+A fused run must carry a `FUSION-v1` receipt. A raw flag such as
+`direct_action_fused: yes` is not enough.
 
-Explicit review mode names carry the mutation rule:
+## Material loop operation
+
+For material runs, `$goal-actuating` interprets HYL-v1:
+
+```text
+current state
+-> select exactly one legal work item or safe parallel frontier
+-> execute only that item/frontier
+-> fold current evidence
+-> continue | complete | blocked | regress | replan | refactor-kernel
+```
+
+Every material step must produce an HSR-v1 receipt that records the selected
+work, the action, the evidence fold, and the next owner.
+
+## Goal-focus frames
+
+Receipt field name: `goal_focus`.
+
+
+A long parent goal may use smaller focus frames. The parent goal stays stable;
+only the active focus changes.
+
+Before completion, ATCG must verify:
+
+```text
+primary_goal_stable = yes
+all child focus frames folded or blocked = yes
+terminal focus matches parent stop rule = yes
+no child frame claimed parent completion = yes
+latest focus fold is parent-bound = yes
+```
+
+A focus frame is not a nested `/goal`; it is a local work frame owned by the
+parent actuation run.
+
+## Review modes
+
+Review modes are explicit:
 
 - `triage`: classify findings and stop without implementation.
-- `remediation-plan`: classify findings, produce the fix plan, and stop without implementation.
+- `remediation-plan`: classify findings, produce a fix plan, and stop without implementation.
 - `review-closeout`: classify findings, implement only accepted code-change liabilities, prove closure, and stop at ATCG or `$ship` handoff.
 
 Unqualified review closure requests default to `review-closeout`.
 
-When the user asks for review, review closure, code review, CAS review, review remediation, or to address review findings without explicitly saying not to implement, the workflow must:
+When review closeout is active, the workflow is:
 
-1. Use `$cas` as the review backend for fresh or exhaustive workflow review.
-2. Pass findings through `$review-fold`.
-3. Run a resolution fold to produce the smallest correct resolution plan.
-4. Implement only accepted code-change liabilities.
-5. Preserve no-code dispositions: `reject`, `proof-only`, `follow-up`, and `ask-human`.
-6. Prefer `refactor-kernel` when several findings share one owner boundary.
-7. Run three consecutive clean normalized `$cas` review passes on the same artifact scope.
-8. Close through `$evidence-fold`, `$proof-patch`, and ATCG-v1.
+```text
+$cas review
+-> $review-fold
+-> resolution fold
+-> optional branch-race/refactor-kernel decision
+-> implementation of accepted code-change liabilities only
+-> evidence fold
+-> three clean normalized standard CAS review attempts
+-> proof-patch
+-> ATCG-v1
+-> $ship only when publication/update is requested
+```
 
-Do not treat review-closeout as one patch per comment.
+Raw review text never reaches implementation directly.
 
-#### Actuation escalation receipt
+## Review lanes
 
-When repeated accepted liabilities share an owner boundary, missing
-abstraction, state transition, validation rule, invariant, proof surface, or
-misuse trap, `$actuating` records the repair-mode escalation decision before
-more mutation.
+The standard CAS review lane is the only lane that counts toward the three-clean
+review streak. Auxiliary review lanes may block completion, but they do not add
+to the standard clean count.
+
+Available auxiliary lanes:
+
+```text
+footgun-finder       misuse hazards, unsafe defaults, misleading affordances
+invariant-ace        illegal states, ownership gaps, transition or policy breaks
+complexity-mitigator reviewability stalls, repeated owner-boundary churn, boolean soup
+```
+
+When workflow review is required, `review_profile` must explicitly account for
+all auxiliary lanes as selected/folded or `not-required` with a reason.
+
+## Refactor-kernel escalation
+
+When repeated accepted liabilities share one owner boundary, missing abstraction,
+state transition, validation rule, invariant, proof surface, or misuse trap,
+`$actuating` records the decision before more mutation.
 
 ```yaml
 actuation_escalation_receipt:
@@ -201,291 +263,49 @@ actuation_escalation_receipt:
     target_fingerprint:
 ```
 
-AER-v1 is not review adjudication and not mutation authority. It records why
-the actuation loop continued with a local fix, pivoted to a refactor kernel,
-started a branch race, stopped for a remediation plan, or blocked. `$seq` may
-later audit whether this receipt existed and whether behavior contradicted it;
-`$actuating` owns the active escalation decision.
+AER-v1 is not review adjudication and not mutation authority. `$seq` may later
+audit whether this receipt existed and whether behavior contradicted it;
+`$actuating` owns the active escalation decision. AER-v1 is treated as review
+finding acceptance or mutation authority only by mistake; that is a failure.
 
-#### Triage
+If `selected_route` or `next_resolution_mode` is `refactor-kernel`, validate the
+AER-v1 before mutation and emit RKO-v1 after proof/review.
 
-Use when the user wants review findings classified without implementation:
+## Parallelism policy
 
-```text
-/goal $actuating triage this branch
-```
+Parallel work is allowed only after the work has been shaped and a safe frontier
+has been selected.
 
-The workflow performs:
-
-```text
-$cas review
--> $review-fold
--> review disposition report
--> stop
-```
-
-Do not call `$goal-grind`. Do not implement. The three-clean-review closure bar does not apply unless the user explicitly asks for exhaustive review certification.
-
-#### Remediation-plan
-
-Use when the user wants a resolution plan without implementation:
+Allowed:
 
 ```text
-/goal $actuating remediation-plan this branch
+read-only scout fanout
+review-class fanout after review folding
+branch race under one verifier
+patch fanout over disjoint accepted liabilities
+proof fanout over independent checks
 ```
 
-The workflow performs:
+Forbidden:
 
 ```text
-$cas review or existing review findings
--> $review-fold
--> resolution fold
--> resolution plan
--> stop
+raw review finding -> patch worker
+subagent chooses scope
+subagent declares completion
+subagent updates or publishes PRs
+patch fanout over shared invariants or owner boundaries
+branch race without a common verifier
 ```
 
-Do not call `$goal-grind`. Do not implement. The three-clean-review closure bar does not apply because no remediation has occurred.
+The lead loop owns scope, review resolution, integration, clean CAS counting,
+proof closure, and `$ship` handoff.
 
-#### Review-closeout
+## Terminal closure
 
-This is the default for review work unless the user explicitly requests no implementation:
-
-```text
-/goal $actuating review-closeout this PR
-```
-
-The workflow performs:
-
-```text
-$cas review
--> $review-fold
--> optional review-class-fanout
--> resolution fold
--> optional branch-race
--> $goal-grind accepted liabilities only
--> optional patch-fanout over disjoint accepted liabilities only
--> $evidence-fold
--> 3 clean normalized $cas review runs
--> $proof-patch
--> ATCG-v1
--> $ship only when PR update/publication is requested
-```
-
-Only accepted code-change liabilities may reach implementation.
-Raw review prose never reaches implementation directly.
-
-#### Three clean normalized CAS review runs
-
-For `review-closeout` and exhaustive review, completion requires three consecutive clean normalized `$cas` review runs against the same current artifact scope unless the user explicitly lowers the review bar.
-
-A clean normalized CAS run means `$cas` produces no new in-scope accepted liability after `$review-fold` and the resolution fold. The run is not made dirty by findings that are duplicate, rejected, out-of-scope, already-proven proof-only, deferred follow-up, or already-resolved by the current refactor kernel.
-
-Do not increment the clean-run counter from repeated normalization of one cached CAS receipt. After terminal evidence exists for the tuple, request each additional independent run with `--fresh-attempt REASON`, then track the streak in the caller workflow from independent CAS review verdicts.
-
-Reset the clean-run counter to zero when:
-
-```text
-code changes
-review scope changes
-base/head/diff changes
-accepted proof bar changes
-CAS lane/session changes in a way that invalidates continuity
-accepted parallel patch result is integrated
-branch-race winner is integrated
-serial integration changes the artifact
-```
-
-Stop with `actuation verdict: cas-review-blocked` when `$cas` cannot run or the three-clean-run bar cannot be reached because of resource limits.
-
-### HYL-v1 operation
-
-For material runs, `$actuating` must ensure the active loop has a HYL-v1 operation.
-
-```text
-seed
--> unfold next legal work node or frontier
--> execute only that node/frontier
--> fold current-artifact evidence
--> continue | complete | blocked | regress | replan
-```
-
-No material mutation is valid without a current unfold result.
-No continuation is valid without an evidence fold.
-No completion is valid without terminal ATCG-v1 closure.
-
-### Parallelism policy
-
-`$actuating` may use bounded subagent parallelism only after the work has been shaped.
-
-Allowed fanout modes:
-
-- `scout-fanout`: parallel read-only repository investigation.
-- `review-class-fanout`: parallel investigation or classification of review finding classes after `$cas review` and `$review-fold`.
-- `branch-race`: compare isolated strategies under the same verifier.
-- `patch-fanout`: implement disjoint accepted liabilities after the resolution fold.
-- `proof-fanout`: run independent verification checks in parallel.
-
-Forbidden fanout:
-
-- raw review finding -> patch worker
-- public side effects from subagents
-- patch fanout over shared invariants, shared files, or shared owner boundaries
-- subagents declaring the goal complete
-- subagents updating, creating, or publishing PRs
-- branch racing without a common verifier
-
-The lead loop owns goal scope, review resolution, integration, CAS clean-run counting, proof closure, and `$ship` handoff.
-
-### Compaction and resume
-
-Before compaction or resume, preserve:
-
-```yaml
-hylo_resume_packet:
-  alsr_id:
-  hyl_id:
-  latest_hsr_id:
-  current_state_ref:
-  current_artifact_scope:
-  pending_frontier:
-  clean_cas_runs:
-  invalidators:
-  next_owner:
-```
-
-On resume:
-
-```text
-missing packet -> blocked-loop-contract-missing
-artifact scope changed -> blocked-loop-contract-stale
-pending frontier invalid -> blocked-hylo-frontier-missing
-```
-
-### Dry actuation plan
-
-Use when the user wants to inspect execution shape but not mutate:
-
-```text
-/goal $actuating dry-plan the accepted spec
-```
-
-Output only:
-
-```text
-goal contract summary
-scheme plan, if needed
-ALSR/HYL summary, if material
-mode selection
-optional work list
-durable external controller required? yes/no
-review source required? none|cas-probe|cas-lane|cas-exhaustive
-parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
-proof obligations
-blockers
-```
-
-## Required source handling
-
-Before running `$goal-actuating`, establish one of:
-
-```text
-accepted implementation spec
-direct user goal with enough proof surface
-review findings bound to current diff and intended change
-plan handoff for goal-artifact execution
-```
-
-If none exists, run `$spec-pipeline` in gate-only/no-plan mode or stop with:
-
-```yaml
-actuating_status:
-  verdict: blocked-needs-accepted-spec
-  next_owner: $spec-pipeline|$grill-me|$codebase-doctrine
-  reason:
-```
-
-## Runtime handoff
-
-`$actuating` owns the handoff, not the internals. It asks downstream skills to map:
-
-```text
-accepted spec -> optional $recursion-scheme-planner -> $agent-loop-schemes ALSR/HYL -> goal contract
-goal contract -> work list only if decomposition changes execution
-review requirement -> $cas review source mode
-CAS/existing review output -> $review-fold disposition before code
-review classes -> optional review-class fanout
-competing strategies -> optional branch-race
-accepted disjoint liabilities -> optional patch-fanout
-work list -> HSR-v1 step machine
-verification output -> $evidence-fold verdict
-completion -> ATCG-v1 -> $proof-patch or $ship handoff
-```
-
-## CAS review mandate
-
-If `$actuating` performs code review or relies on a review gate, it must use `$cas` as the review backend through `$goal-actuating`.
-
-Use `$cas` review when:
-
-```text
-the user asks for review closure, code review, or exhaustive review
-the accepted spec includes review in the proof requirements
-proof-patch or ship-handoff would otherwise rely on a review claim
-review resolution mode needs a fresh review artifact
-repeated review/fix cycles need a persistent detached lane
-```
-
-Existing PR comments or prior review artifacts may be consumed as existing review pressure, but they do not replace a requested fresh or exhaustive CAS review.
-
-## Mode selection
-
-Choose the narrowest mode that can complete safely:
-
-```yaml
-actuating_mode:
-  source: direct-goal|spec-first|review|dry-plan
-  persistence: update_plan|goal-artifacts
-  implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
-  review_mode: none|triage|remediation-plan|review-closeout
-  review_source: none|existing-review|cas-probe|cas-lane|cas-exhaustive
-  scheme_plan: none|required|present
-  loop_contract: fused|ALSR-HYL|required
-  parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
-  closure: triage-report|remediation-plan|review-closeout|ship-handoff|blocked
-```
-
-Default:
-
-```text
-spec-first + update_plan + minimal-fix + review-closeout
-```
-
-Switch to `review-closeout` when reviews, CAS findings, or reviewer suggestions are present and no no-code modifier is present.
-Switch to `triage` when the user names `triage`, or asks for review-only, audit-only, classify-only, no changes, or do not implement behavior.
-Switch to `remediation-plan` when the user names `remediation-plan`, or asks for a plan or resolution plan without implementation.
-Switch to `cas-exhaustive` when exhaustive review is requested or required by the proof bar.
-Switch to `refactor-kernel` when repeated findings share an owner boundary.
-Switch to `branch-race` when local fix and refactor-kernel are both plausible and can be compared under the same verifier.
-Block when durable claims, fencing, worktrees, or serialized integration are required and no supported controller exists.
-Switch to `ship-handoff` only when PR/publication intent is explicit or inherited from the accepted spec.
-Emit AER-v1 before continuing mutation when repeated accepted liabilities require or reject escalation from minimal-fix to refactor-kernel, branch-race, remediation-plan, or blocked.
-
-## Terminal closure gate
-
-Before `$actuating` may report completion or call `update_goal complete`, run ATCG-v1 over:
-
-```text
-current branch/head/diff
-ALSR-v1 currentness
-HYL-v1 currentness
-terminal HSR-v1
-evidence-fold verdict
-proof-patch state
-CAS clean-run state
-ADD-v1 delivery decision
-ship result when publication is required
-side-effect boundary
-```
+Before `$actuating` may report completion or call `update_goal complete`, run
+ATCG-v1 over the current branch/head/diff, loop receipts or fusion receipt,
+latest HSR/focus evidence, evidence fold, proof-patch, CAS state, delivery state,
+and side-effect boundary.
 
 Completion is legal only when:
 
@@ -494,24 +314,26 @@ ATCG-v1 verdict = complete
 ATCG-v1 can_mark_goal_complete = yes
 ```
 
-If ATCG-v1 returns `continue`, continue with `next_owner`. If it returns `blocked`, report the blocked actuation verdict and reasons. Do not substitute local proof, proof-complete graph state, cached CAS receipts, or ADD-v1 `handoff_to_ship` for terminal completion.
+Do not substitute local proof, a proof-complete graph, cached CAS receipts, or
+ADD-v1 `handoff_to_ship` for terminal completion.
 
 ## Stop rules
 
 Stop rather than implement when:
 
 ```text
-$spec-pipeline has not approved execution
+execution has not been approved
 scope, non-goals, compatibility, or proof bar are unresolved
 review findings expand product/API scope
 raw review text has not been reduced to dispositions
-review is required but $cas review is unavailable or not run
-three clean normalized $cas review runs are required but cannot be completed
+review is required but CAS review is unavailable or not run
+three clean standard CAS reviews are required but cannot be completed
 parallel fanout would cross shared invariants or conflicting resources
-ALSR/HYL is required but missing
-ALSR/HYL is stale against current artifact state
-unfold is missing for material mutation
+ALSR/HYL/HSR is required but missing or stale
+FUSION-v1 is claimed but not proven
+unfold is missing before material mutation
 fold is missing after material action
+goal-focus frames are missing, stale, or not folded to parent
 verification regresses and the next action is not isolate/revert/prove
 public tracker or PR side effects would occur without explicit intent
 ATCG-v1 does not return can_mark_goal_complete=yes
@@ -524,11 +346,12 @@ Actuating:
 - source: direct goal | accepted spec | review
 - authority source:
 - scheme plan: none|required|present
-- loop contract:
+- loop receipt:
+  - fusion receipt:
   - ALSR-v1:
   - HYL-v1:
-  - fused/unfused:
   - latest HSR-v1:
+  - goal-focus frame:
 - mode / persistence:
 - parallelism:
   - mode:
@@ -539,9 +362,9 @@ Actuating:
   - rejected results:
   - integration order:
   - conflicts:
-  - CAS clean-run counter reset: yes|no
+  - standard CAS clean-run counter reset: yes|no
 - review source / CAS verdict, if required:
-- normalized CAS clean runs: 0|1|2|3|not-required
+- normalized standard CAS clean runs: 0|1|2|3|not-required
 - goal contract / work list:
 - review-fold disposition:
 - actuation escalation receipt:
@@ -564,13 +387,7 @@ If review is required but CAS review is unavailable or not run, say:
 actuation verdict: cas-review-blocked
 ```
 
-If caller-owned repeated CAS reviews are required but unavailable, say:
-
-```text
-actuation verdict: cas-review-blocked
-```
-
-If ALSR/HYL is required but missing or stale, say:
+If ALSR/HYL/HSR is required but missing or stale, say:
 
 ```text
 actuation verdict: blocked-loop-contract-missing

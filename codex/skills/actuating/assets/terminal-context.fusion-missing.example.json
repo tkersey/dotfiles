@@ -1,6 +1,6 @@
 {
   "actuation_terminal_context": {
-    "run_id": "ACT-terminal-advisory-fused",
+    "run_id": "ACT-terminal-fusion-missing",
     "source": "direct_goal",
     "closure_candidate": "proof-patch",
     "artifact_scope": {
@@ -51,33 +51,7 @@
     },
     "loop_governance": {
       "mode": "direct_action_fused",
-      "direct_action_fused": "yes",
-      "fusion_receipt": {
-        "version": "FUSION-v1",
-        "one_legal_work_item": "yes",
-        "verifier_known": "yes",
-        "review_required": "no",
-        "parallelism": "none",
-        "public_side_effect": "no",
-        "repeated_class_or_branch_choice": "no",
-        "objective_bound": "yes",
-        "artifact_scope_bound": "yes",
-        "stop_condition_bound": "yes",
-        "proof_ref": "proof-patch:abc123"
-      },
-      "side_effect_boundary": {
-        "respected": "yes"
-      },
-      "proof": {
-        "required": "yes",
-        "matches_verifier": "yes"
-      }
+      "direct_action_fused": "yes"
     }
-  },
-  "advisory_expectation": {
-    "would_block": false,
-    "would_block_reasons": [],
-    "can_mark_goal_complete": true,
-    "next_owner": "none"
   }
 }

@@ -63,6 +63,7 @@
         "current": "no"
       },
       "hsr": {
+        "terminal_required": "yes",
         "terminal_present": "no",
         "latest_fold_current_artifact_bound": "no",
         "material_mutations": [
@@ -89,6 +90,14 @@
         "independent_fresh_runs": "yes",
         "tuple_bound": "yes"
       },
+      "goal_focus": {
+        "required": "yes",
+        "parent_goal_stable": "no",
+        "all_child_focus_frames_folded_or_blocked": "no",
+        "terminal_focus_matches_parent_stop_rule": "no",
+        "child_claimed_parent_completion": "yes",
+        "latest_focus_fold_parent_bound": "no"
+      },
       "side_effect_boundary": {
         "respected": "no"
       },
@@ -99,17 +108,6 @@
     }
   },
   "advisory_expectation": {
-    "would_block": true,
-    "would_block_reasons": [
-      "blocked-loop-contract-missing",
-      "blocked-hylo-frontier-missing",
-      "blocked-hylo-fold-missing",
-      "blocked-hylo-terminal-missing",
-      "cas-review-blocked",
-      "proof-stale",
-      "side-effect-boundary-violated"
-    ],
-    "can_mark_goal_complete": false,
-    "next_owner": "$cas"
+    "would_block": true
   }
 }

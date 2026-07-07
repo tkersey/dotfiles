@@ -1,26 +1,26 @@
 {
   "actuation_escalation_receipt": {
     "version": "AER-v1",
-    "run_id": "ACT-example-001",
-    "owner_boundary": "codex/skills/review-fold",
-    "repeated_finding_class": "same owner boundary and proof surface",
+    "run_id": "ACT-rko",
+    "owner_boundary": "codex/skills/actuating/tools/actuation_terminal_gate.py",
+    "repeated_finding_class": "shared terminal closure bypass",
     "accepted_liabilities": [
       {
-        "cas_finding_id": "cas-finding:attempt-001:0001",
-        "finding_fingerprint": "sha256:cross-attempt-example",
-        "review_fold_ref": "RF-v1.3:example:finding-1",
-        "liability": "invariant-gap"
+        "cas_finding_id": "CAS-1",
+        "finding_fingerprint": "fp:1",
+        "review_fold_ref": "rf:1",
+        "liability": "fusion flag can bypass loop checks"
       },
       {
-        "cas_finding_id": "cas-finding:attempt-001:0002",
-        "finding_fingerprint": "sha256:cross-attempt-example-2",
-        "review_fold_ref": "RF-v1.3:example:finding-2",
-        "liability": "same-owner-proof-gap"
+        "cas_finding_id": "CAS-2",
+        "finding_fingerprint": "fp:2",
+        "review_fold_ref": "rf:2",
+        "liability": "HSR summary can bypass step checks"
       }
     ],
     "prior_resolution_mode": "minimal-fix",
     "next_resolution_mode": "refactor-kernel",
-    "escalation_trigger": "Repeated accepted findings share one owner boundary.",
+    "escalation_trigger": "repeated shared owner boundary findings",
     "alternatives_considered": [
       "minimal-fix",
       "branch-race",
@@ -28,12 +28,12 @@
     ],
     "selected_route": "refactor-kernel",
     "verifier": [
-      "uv run python -m unittest discover codex/skills/review-fold/tests"
+      "uv run python codex/skills/actuating/tests/test_actuation_terminal_gate.py"
     ],
     "current_artifact_scope": {
-      "branch": "main",
-      "head_sha": "head456",
-      "target_fingerprint": "diff:example"
+      "branch": "feature/example",
+      "head_sha": "abc123",
+      "target_fingerprint": "diff:clean"
     }
   }
 }

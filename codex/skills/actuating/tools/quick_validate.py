@@ -39,6 +39,7 @@ def main() -> int:
         "tests/test_actuation_delivery_gate.py",
         "tests/test_actuation_refactor_kernel_gate.py",
         "tests/test_actuation_terminal_gate.py",
+        "tests/test_aer_contract.py",
         "assets/apma-v1.example.json",
         "assets/delivery-context.ready.example.json",
         "assets/delivery-context.no-pr-intent.example.json",
@@ -50,10 +51,13 @@ def main() -> int:
         "assets/rko-v1.effective.example.json",
         "assets/atcg-v1.complete.example.json",
         "assets/terminal-context.proof-only.example.json",
+        "assets/terminal-context.hylo-complete.example.json",
         "assets/terminal-context.regression.example.json",
         "assets/terminal-context.ship-continue.example.json",
         "assets/terminal-context.advisory-would-block.example.json",
         "assets/terminal-context.advisory-fused.example.json",
+        "assets/terminal-context.fusion-missing.example.json",
+        "assets/unsupported-coordination.example.json",
     ]
     missing = [path for path in required if not (ROOT / path).is_file()]
     if missing:
@@ -66,12 +70,7 @@ def main() -> int:
         run_test(ROOT / "tests/test_aer_contract.py"),
     ]
     ok = all(row["returncode"] == 0 for row in tests)
-    print(json.dumps({
-        "actuating_quick_validate": {
-            "verdict": "pass" if ok else "fail",
-            "tests": tests,
-        }
-    }, indent=2))
+    print(json.dumps({"actuating_quick_validate": {"verdict": "pass" if ok else "fail", "tests": tests}}, indent=2))
     return 0 if ok else 2
 
 

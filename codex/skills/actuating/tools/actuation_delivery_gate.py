@@ -1,9 +1,8 @@
 #!/usr/bin/env -S uv run python
-"""Actuating post-integration delivery gate.
+"""ADD-v1 delivery handoff gate.
 
-ADD-v1 prevents a plan-to-PR actuation run from stopping at proof-complete graph
-audit. It decides whether the integrated target-branch state must be handed to
-$ship, whether shipping was not requested, or whether delivery is blocked.
+This gate decides whether a proved actuation run should stop locally, hand the
+current integrated branch to $ship, or report a delivery blocker.
 """
 from __future__ import annotations
 
@@ -39,6 +38,10 @@ def unwrap(value: dict[str, Any], key: str) -> dict[str, Any]:
     if not isinstance(body, dict):
         raise DeliveryError(f"{key}: expected object")
     return body
+
+
+def context_from(value: dict[str, Any]) -> dict[str, Any]:
+    return unwrap(value, "actuation_delivery_context")
 
 
 def now_utc() -> str:
@@ -77,10 +80,6 @@ def list_field(obj: dict[str, Any], key: str, errors: list[str]) -> list[Any]:
     return value
 
 
-def context_from(value: dict[str, Any]) -> dict[str, Any]:
-    return unwrap(value, "actuation_delivery_context")
-
-
 def make_decision(context: dict[str, Any]) -> dict[str, Any]:
     errors: list[str] = []
     run_id = require_str(context, "run_id", errors)
@@ -89,25 +88,20 @@ def make_decision(context: dict[str, Any]) -> dict[str, Any]:
     target_head = require_str(context, "target_head", errors)
     base_branch = context.get("base_branch") if isinstance(context.get("base_branch"), str) else ""
     branch_epoch = context.get("branch_epoch")
-    if not isinstance(branch_epoch, int) or branch_epoch < 0:
+    if not isinstance(branch_epoch, int) or isinstance(branch_epoch, bool) or branch_epoch < 0:
         errors.append("branch_epoch:missing-or-invalid")
         branch_epoch = None
 
-    proof = context.get("proof_complete_receipt")
-    if not isinstance(proof, dict):
-        proof = {}
+    proof = context.get("proof_complete_receipt") if isinstance(context.get("proof_complete_receipt"), dict) else {}
+    if not proof:
         errors.append("proof_complete_receipt:must-be-object")
-    integration = context.get("integration")
-    if not isinstance(integration, dict):
-        integration = {}
+    integration = context.get("integration") if isinstance(context.get("integration"), dict) else {}
+    if not integration:
         errors.append("integration:must-be-object")
-    pr_intent = context.get("pr_intent")
-    if not isinstance(pr_intent, dict):
-        pr_intent = {}
+    pr_intent = context.get("pr_intent") if isinstance(context.get("pr_intent"), dict) else {}
+    if not pr_intent:
         errors.append("pr_intent:must-be-object")
-    current_pr = context.get("current_pr_state")
-    if not isinstance(current_pr, dict):
-        current_pr = {"exists": "unknown", "url": "", "draft": "unknown"}
+    current_pr = context.get("current_pr_state") if isinstance(context.get("current_pr_state"), dict) else {"exists": "unknown", "url": "", "draft": "unknown"}
     validation = context.get("validation") if isinstance(context.get("validation"), dict) else {}
     task_state = context.get("task_state") if isinstance(context.get("task_state"), dict) else {}
 
@@ -251,10 +245,11 @@ def validate_decision(value: dict[str, Any]) -> dict[str, Any]:
     for key in ("run_id", "plan_id", "target_branch", "target_head"):
         if not isinstance(d.get(key), str) or not d.get(key):
             errors.append(f"{key}:missing")
-    if not isinstance(d.get("branch_epoch"), int) or d.get("branch_epoch", -1) < 0:
-        errors.append("branch_epoch")
+    branch_epoch_valid = isinstance(d.get("branch_epoch"), int) and not isinstance(d.get("branch_epoch"), bool) and d.get("branch_epoch", -1) >= 0
     receipts = list_field(d, "integrated_change_set_receipts", errors)
     blocked = list_field(d, "blocked_reasons", errors)
+    if not branch_epoch_valid and d.get("verdict") != "blocked":
+        errors.append("branch_epoch")
     if d.get("cross_plan_dependency_status") not in CROSS_STATUSES:
         errors.append("cross_plan_dependency_status")
     pr_intent = d.get("pr_intent") if isinstance(d.get("pr_intent"), dict) else {}
@@ -282,7 +277,8 @@ def validate_decision(value: dict[str, Any]) -> dict[str, Any]:
             errors.append("handoff_to_ship:proof-not-current")
         if integration.get("queue_quiescent") != "yes":
             errors.append("handoff_to_ship:integration-not-quiescent")
-        if not receipts:
+        no_change = any(str(item).startswith("no-change:") for item in receipts)
+        if not receipts and not no_change:
             errors.append("handoff_to_ship:receipts-empty")
         if d.get("cross_plan_dependency_status") != "clear":
             errors.append("handoff_to_ship:cross-plan-not-clear")
@@ -345,17 +341,12 @@ def main(argv: list[str] | None = None) -> int:
     p_decide.add_argument("--out")
     p_check = sub.add_parser("check")
     p_check.add_argument("--decision", required=True)
-
     args = parser.parse_args(argv)
     try:
         if args.cmd == "decide":
-            context = context_from(load_json(args.context))
-            decision = make_decision(context)
-            emit(decision, args.out)
+            emit(make_decision(context_from(load_json(args.context))), args.out)
         elif args.cmd == "check":
-            decision = load_json(args.decision)
-            result = validate_decision(decision)
-            emit(result)
+            emit(validate_decision(load_json(args.decision)))
         return 0
     except Exception as exc:
         print(json.dumps({"actuation_delivery_gate": {"verdict": "fail", "error": str(exc)}}, indent=2, sort_keys=True))

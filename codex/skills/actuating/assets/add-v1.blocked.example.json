@@ -1,47 +1,42 @@
 {
   "actuation_delivery_decision": {
-    "blocked_reasons": [
-      "proof_complete_receipt:not-current",
-      "integration.queue_quiescent:not-yes",
-      "cross_plan_dependency_status:unknown",
-      "do_not_ship_before:current PR state unavailable"
-    ],
-    "branch_epoch": 4,
-    "cross_plan_dependency_status": "unknown",
-    "current_pr_state": {
-      "draft": "unknown",
-      "exists": "no",
-      "url": ""
-    },
     "decision_version": "ADD-v1",
-    "do_not_ship_before": [
-      "current PR state unavailable"
-    ],
-    "integrated_change_set_receipts": [
-      ".ledger/actuating/delivery/receipts/igr-001.json"
-    ],
-    "integration": {
-      "queue_quiescent": "no",
-      "receipts": [
-        ".ledger/actuating/delivery/receipts/igr-001.json"
-      ]
-    },
-    "issued_at": "2026-06-26T00:00:00Z",
-    "plan_id": "plan-example",
-    "pr_intent": {
-      "present": "yes",
-      "requested_mode": "ready",
-      "source": "actuation_run"
-    },
-    "proof_complete_receipt": {
-      "current": "no",
-      "present": "yes",
-      "ref": ".ledger/actuating/proof/plan-example/proof-complete.json"
-    },
-    "run_id": "run-blocked-001",
-    "ship_handoff": null,
+    "verdict": "blocked",
+    "issued_at": "2026-07-07T00:00:00Z",
+    "run_id": "ACT-delivery-blocked",
+    "plan_id": "PLAN-1",
     "target_branch": "feature/example",
     "target_head": "abc123",
-    "verdict": "blocked"
+    "branch_epoch": 1,
+    "proof_complete_receipt": {
+      "present": "yes",
+      "current": "yes",
+      "ref": "proof-patch:abc123"
+    },
+    "integration": {
+      "queue_quiescent": "yes",
+      "receipts": [
+        "change:1"
+      ]
+    },
+    "integrated_change_set_receipts": [
+      "change:1"
+    ],
+    "cross_plan_dependency_status": "clear",
+    "pr_intent": {
+      "present": "yes",
+      "source": "user",
+      "requested_mode": "ready"
+    },
+    "current_pr_state": {
+      "exists": "no",
+      "url": "",
+      "draft": "unknown"
+    },
+    "do_not_ship_before": [],
+    "blocked_reasons": [
+      "proof_complete_receipt:missing"
+    ],
+    "ship_handoff": null
   }
 }

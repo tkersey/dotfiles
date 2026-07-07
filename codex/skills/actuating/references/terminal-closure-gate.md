@@ -2,11 +2,10 @@
 
 ## Purpose
 
-ATCG-v1 prevents `$actuating` from treating local verification as terminal
-completion when proof-patch, CAS review, delivery, or ship evidence is still
-required.
+ATCG-v1 decides whether the current actuation run may be marked complete. It does
+not run review, edit files, create proof, publish PRs, or update goals.
 
-The gate enforces this separation:
+It enforces this separation:
 
 ```text
 local proof passed
@@ -23,7 +22,7 @@ actuation_terminal_decision:
   verdict: complete | continue | blocked
   can_mark_goal_complete: yes | no
   run_id:
-  source: accepted_spec | direct_goal | review | blocked
+  source: accepted_spec | direct_goal | review
   closure_candidate: proof-patch | ship-handoff | ship-complete | blocked
   next_owner: none | $cas | $proof-patch | $ship | $goal-grind | $goal-actuating | human
   blocked_reasons: []
@@ -47,7 +46,7 @@ verdict = complete
 can_mark_goal_complete = yes
 ```
 
-The local workflow must then run the completion allowance guard:
+Then run the allowance guard:
 
 ```bash
 uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
@@ -55,25 +54,7 @@ uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
   --decision .ledger/actuating/<run-id>/terminal-decision.json
 ```
 
-The guard emits:
-
-```yaml
-actuation_completion_allowance:
-  verdict: allowed | denied
-  can_call_update_goal_complete: yes | no
-  decision_verdict: complete | continue | blocked
-  next_owner: none | $cas | $proof-patch | $ship | $goal-grind | $goal-actuating | human
-  blocked_reasons: []
-  continue_reasons: []
-```
-
 Only `can_call_update_goal_complete: yes` permits `update_goal complete`.
-Denied `continue` and `blocked` decisions are valid ATCG outputs, not malformed
-gate results.
-
-Any other verdict keeps the actuation run active or reports the specific blocked
-state. A local verifier pass, proof-complete graph, or ADD-v1
-`handoff_to_ship` result is not enough by itself.
 
 ## Inputs
 
@@ -81,19 +62,63 @@ ATCG-v1 consumes current receiver-owned evidence:
 
 ```text
 current branch/head/diff binding
-loop governance: ALSR-v1, HYL-v1, HSR-v1, or explicit fused exemption
-evidence-fold verdict and proof commands
+FUSION-v1 receipt or ALSR/HYL/HSR receipts
+optional goal-focus frame state
+local evidence-fold verdict and proof commands
 proof-patch presence/currentness
 CAS requirement, tuple, freshness, and standard clean-run count
 workflow-owned review_profile auxiliary coverage and folded/blocker state
 ADD-v1 delivery decision
-ship result receipt when publication is required
+ship result when publication is required
 side-effect boundary evidence
 final report field values
 ```
 
-It does not run CAS, create proof-patch output, call `$ship`, publish PRs, or
-mutate workspace state.
+## Loop receipt checks
+
+For material work, ATCG requires one of:
+
+```text
+valid FUSION-v1 receipt for one simple action
+current ALSR-v1 + HYL-v1 + terminal HSR-v1 chain
+```
+
+A raw boolean such as `direct_action_fused: yes` is not enough. A fused run must
+prove the direct-action conditions:
+
+```yaml
+fusion_receipt:
+  version: FUSION-v1
+  one_legal_work_item: yes
+  verifier_known: yes
+  review_required: no
+  parallelism: none
+  public_side_effect: no
+  repeated_class_or_branch_choice: no
+  objective_bound: yes
+  artifact_scope_bound: yes
+  stop_condition_bound: yes
+  proof_ref:
+```
+
+For an unfused material run, ATCG checks that ALSR/HYL are present/current and
+that HSR step receipts bind unfold, action, fold, and continuation to the current
+artifact. A material mutation with only `has_hsr: yes` is not enough; it must
+carry unfold/action/fold evidence or a receipt reference.
+
+## Goal-focus checks
+
+When goal-focus mode is active, ATCG rejects completion unless:
+
+```text
+primary_goal_stable = yes
+all child focus frames folded or blocked = yes
+terminal focus matches parent stop rule = yes
+child_claimed_parent_completion = no
+latest focus fold is parent-bound = yes
+```
+
+These checks prevent a child frame or temporary focus from closing the parent goal.
 
 ## CAS lane closure rule
 
@@ -103,42 +128,9 @@ For review-closeout and exhaustive review, the terminal CAS count means:
 three clean normalized standard CAS review attempts
 ```
 
-Only the `standard` CAS review lane may increment the clean-run count that ATCG
-uses for terminal completion. Auxiliary CAS review lanes such as
-`footgun-finder`, `invariant-ace`, and `complexity-mitigator` are review
-evidence, but they do not count toward the three standard clean reviews and do
-not interrupt standard-review consecutiveness.
-
-Auxiliary lanes may still block completion. ATCG rejects completion when a
-required auxiliary lane is missing, blocked, rerun-required, not folded through
-`$review-fold` / the resolution fold, or missing current lens-shaped evidence.
-CAS lane labels are transport evidence; they do not prove that the corresponding
-skill lens executed.
-
-The preferred reducer fields are:
-
-```text
-cas_review.standard_clean_runs_required
-cas_review.standard_clean_runs_count
-final_report_fields.standard_clean_cas_runs
-review_profile.standard
-review_profile.auxiliary_review_lanes.<lane>.state
-review_profile.auxiliary_review_lanes.<lane>.reason
-review_profile.auxiliary_review_lanes.<lane>.lens_contract
-review_profile.auxiliary_review_lanes.<lane>.lens_evidence_state
-review_profile.auxiliary_review_lanes.<lane>.lens_evidence_ref
-review_profile.auxiliary_review_lanes.<lane>.evidence_ref
-review_profile.auxiliary_review_lanes.<lane>.head_sha
-review_profile.auxiliary_review_lanes.<lane>.target_fingerprint
-review_profile.obligation_router.version
-review_profile.obligation_router.obligations[].trigger
-review_profile.obligation_router.obligations[].source_ref
-review_profile.obligation_router.obligations[].owner_lens
-review_profile.obligation_router.obligations[].state
-review_profile.obligation_router.obligations[].evidence_ref
-review_profile.obligation_router.obligations[].not_required_reason
-review_profile.complexity_pressure
-```
+Only the `standard` CAS lane may increment the clean-run count. Auxiliary lanes
+such as `footgun-finder`, `invariant-ace`, and `complexity-mitigator` may block
+completion, but they do not count toward the three standard clean reviews.
 
 Selected auxiliary lanes with `clean` or `findings-folded` state must carry the
 lane contract expected by ATCG:
@@ -149,58 +141,29 @@ invariant-ace        -> invariant-gate-v1
 complexity-mitigator -> complexity-preflight-v1
 ```
 
-`lens_evidence_state` must be `valid` for terminal completion. `missing`,
-`invalid`, `stale`, `blocked`, and `rerun-required` are blocking states.
-`not-required` is valid only for lanes explicitly not selected and still needs a
-reason.
-
-`complexity_pressure` records review churn, one-patch-per-comment pressure, or
-comprehension blockage. When it is present, `complexity-mitigator` cannot remain
-`not-required` unless the pressure is explicitly marked not applicable.
-
-Compatibility fields may still be named `clean_runs_required`,
-`clean_runs_count`, or `normalized_cas_clean_runs`, but their meaning is
-standard-only unless a context provides explicit `standard_clean_*` fields.
-Legacy auxiliary fields under `cas_review` remain accepted as compatibility
-evidence, but `$cas` does not own auxiliary lane selection policy.
+`lens_evidence_state` must be `valid` for terminal completion. `not-required` is
+valid only for lanes explicitly not selected and still needs a reason.
 
 ## Common outcomes
 
 ```text
 ALSR/HYL required + missing -> blocked-loop-contract-missing, next_owner=$goal-actuating
 ALSR/HYL required + stale -> blocked-loop-contract-stale, next_owner=$goal-actuating
+FUSION-v1 missing for fused claim -> blocked-loop-contract-missing, next_owner=$goal-actuating
 material mutation without unfold/action evidence -> blocked-hylo-frontier-missing, next_owner=$goal-actuating
 previous material action without fold evidence -> blocked-hylo-fold-missing, next_owner=$goal-actuating
 completion without terminal HSR -> blocked-hylo-terminal-missing, next_owner=$goal-actuating
+goal-focus frame not folded to parent -> blocked-hylo-fold-missing, next_owner=$goal-actuating
 CAS required + standard clean runs < required -> blocked, next_owner=$cas
-CAS required + standard_clean_runs_required <= 0 -> blocked, next_owner=$cas
-CAS required + final report standard clean runs < required -> blocked, next_owner=$cas
-required auxiliary CAS review lane missing|not-folded|blocked|rerun-required|lens-evidence-invalid -> cas-review-blocked, next_owner=$cas
-required auxiliary CAS review lane stale against head/diff -> cas-review-blocked, next_owner=$cas
-review-closeout protocol incomplete -> cas-review-blocked, next_owner=$cas
+required auxiliary lane missing|not-folded|blocked|rerun-required|stale -> cas-review-blocked, next_owner=$cas
 proof-patch required + missing/stale -> continue, next_owner=$proof-patch
-proof-patch closure + missing proof-patch receipt -> continue, next_owner=$proof-patch
 ADD-v1 handoff + ship result missing -> continue, next_owner=$ship
-ship-complete closure + missing delivery evidence -> blocked, next_owner=$ship
 public side effect outside $ship boundary -> side-effect-boundary-violated, next_owner=$ship
 proof verifier mismatch or stale current-artifact binding -> proof-stale, next_owner=$goal-grind
-ship-complete closure + missing ADD-v1 or ship receipt -> invalid decision
-wrapped ADD-v1 delivery decision -> accepted as delivery evidence
-ADD-shaped handoff without decision_version=ADD-v1 -> blocked
-partial ADD-v1 handoff without proof/integration receipts -> blocked
-ADD-v1 target_head or ship_input.head_sha mismatches current artifact -> blocked
-complete + closure_candidate=ship-handoff|blocked -> invalid decision
-artifact binding missing/stale -> blocked, next_owner=$goal-grind
-continue|blocked + next_owner=none -> invalid decision
-evidence-fold refactor-kernel -> continue, next_owner=$goal-grind
 all required receipts current -> complete
-tracked-dirty artifact + current proof-patch receipt -> may complete
-tracked-dirty artifact without proof-patch receipt -> blocked
 ```
 
 ## Hard blocker names
-
-ATCG-v1 hard decisions use these canonical blocker names:
 
 ```text
 blocked-loop-contract-missing
@@ -213,48 +176,23 @@ proof-stale
 side-effect-boundary-violated
 ```
 
-Detailed legacy reasons may accompany canonical blockers for compatibility, but
-canonical blockers are the terminal governance signal.
+Detailed reasons may accompany these names, but these canonical blockers are the
+main terminal signal.
 
 ## Advisory validation
 
-Advisory mode reports the same ATCG-v1 completion blockers without enforcing
-them. A would-block advisory result is evidence for the caller, not a terminal
+Advisory mode reports the same blockers without making a terminal decision.
+
+```bash
+uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
+  validate \
+  --context .ledger/actuating/<run-id>/terminal-context.json \
+  --mode advisory \
+  --format json
+```
+
+A would-block advisory result is evidence for the caller. It is not a terminal
 stop condition by itself.
-
-```json
-{
-  "verdict": "advisory",
-  "would_block": true,
-  "would_block_reasons": [
-    "blocked-hylo-terminal-missing"
-  ],
-  "can_mark_goal_complete": false,
-  "next_owner": "$goal-actuating"
-}
-```
-
-Advisory mode checks loop governance and terminal proof state in the same
-required-check order used by `$actuating`:
-
-```text
-ALSR exists when required
-ALSR current against branch/head/diff
-HYL exists when recursive/material
-terminal HSR exists
-every material mutation has HSR unfold/action/fold
-latest fold is current-artifact-bound
-selected loop matches task shape
-review-closeout obeyed CAS/review-fold/resolution-fold
-three clean normalized standard CAS attempts complete when required
-required auxiliary CAS review lanes folded or not-required
-side-effect boundary respected
-proof matches verifier
-```
-
-Direct-action fused runs may exempt ALSR/HYL/HSR receipt checks only when the
-context explicitly carries the exemption. Advisory would-block results exit
-successfully; malformed input or unsupported mode/format remains a CLI failure.
 
 ## Validator
 
@@ -271,21 +209,18 @@ uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
 uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
   allow-complete \
   --decision .ledger/actuating/<run-id>/terminal-decision.json
-
-uv run python codex/skills/actuating/tools/actuation_terminal_gate.py \
-  validate \
-  --context .ledger/actuating/<run-id>/terminal-context.json \
-  --mode advisory \
-  --format json
 ```
 
 ## Falsifier
 
-The gate is working when future actuation reports show:
+The gate is working when future reports show:
 
 ```text
 local_proof_passed_but_goal_complete = 0
 cas_required_with_zero_standard_clean_runs_complete = 0
 auxiliary_review_lane_counted_as_standard_clean_run = 0
 add_v1_handoff_without_ship_result_complete = 0
+fused_run_without_FUSION_v1_complete = 0
+material_run_without_HSR_chain_complete = 0
+child_focus_claimed_parent_completion = 0
 ```

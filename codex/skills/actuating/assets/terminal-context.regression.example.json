@@ -2,46 +2,40 @@
   "actuation_terminal_context": {
     "run_id": "ACT-terminal-regression",
     "source": "accepted_spec",
-    "closure_candidate": "ship-complete",
+    "closure_candidate": "proof-patch",
     "artifact_scope": {
-      "repo": "tkersey/world-host",
-      "branch": "main",
+      "repo": "tkersey/example",
+      "branch": "feature/example",
       "head_sha": "abc123",
-      "diff_fingerprint": "diff:capability-plane",
+      "diff_fingerprint": "diff:clean",
       "dirty_state": "clean"
     },
     "local_proof": {
       "evidence_fold_verdict": "done",
       "commands": [
-        "bun test",
-        "bun run proof"
+        "uv run python codex/skills/actuating/tests/test_actuation_terminal_gate.py"
       ]
     },
     "proof_patch": {
       "required": "yes",
-      "present": "no",
-      "current": "no",
-      "ref": ""
+      "present": "yes",
+      "current": "yes",
+      "ref": "proof-patch:abc123"
     },
     "cas_review": {
       "required": "yes",
-      "reason": "proof-patch or ship-handoff would rely on review claim",
       "clean_runs_required": 3,
       "clean_runs_count": 0,
       "independent_fresh_runs": "no",
       "tuple_bound": "no",
-      "tuple": {
-        "base_sha": "",
-        "head_sha": "",
-        "target_fingerprint": ""
-      }
+      "tuple": {}
     },
     "delivery": {
-      "pr_intent": "yes",
-      "publication_required": "yes",
+      "pr_intent": "no",
+      "publication_required": "no",
       "add_v1_decision": {
-        "verdict": "missing",
-        "ref": ""
+        "verdict": "shipping_not_requested",
+        "ref": "add-v1:none"
       },
       "ship_result": {
         "present": "no",
@@ -52,8 +46,8 @@
     },
     "final_report_fields": {
       "normalized_cas_clean_runs": 0,
-      "proof_patch_or_ship_handoff": "not completed",
-      "blockers_residual_risk": "none"
+      "proof_patch_or_ship_handoff": "proof-patch",
+      "blockers_residual_risk": "cas pending"
     }
   }
 }

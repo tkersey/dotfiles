@@ -2,27 +2,26 @@
 
 ## Purpose
 
-`$actuating` includes delivery when the run, source request, or user intent asks for
-PR output. A proof-complete plan graph is not the terminal state for a plan-to-PR
-actuation run.
+A run is not finished just because local proof passed. If the user or accepted
+spec asked for PR output, `$actuating` must hand the proved, integrated branch to
+`$ship` or explain why delivery is blocked.
 
-The delivery handoff prevents this regression:
+The failure this prevents:
 
 ```text
-proof-complete graph audit
--> stop
--> no PR despite plan-to-PR intent
+proof passed
+-> workflow stops
+-> no PR even though PR output was requested
 ```
 
-and enforces this terminal chain:
+The required chain is:
 
 ```text
-proof-complete graph audit
--> serialized integration complete
--> current target-branch head/epoch
+proof complete
+-> integrated target branch is current
 -> ADD-v1 delivery decision
--> $ship receives integrated target-branch state
--> SHIP-v1 or delivery-blocked reason
+-> $ship receives that branch state
+-> ship result or clear delivery blocker
 ```
 
 ## ADD-v1
@@ -82,55 +81,30 @@ Use `handoff_to_ship` only when all hold:
 
 ```text
 proof-complete receipt present and current
-integration queue quiescent for the plan
-at least one integrated change-set receipt or explicit no-change integrated receipt
-target branch/head/epoch known
-cross-plan dependency status clear
-PR delivery intent present
-no do_not_ship_before blocker
+integration queue is quiet for this plan
+at least one integrated change-set receipt, or an explicit no-change integrated receipt
+target branch/head/epoch are known
+cross-plan dependency status is clear
+PR delivery intent is present
+no do_not_ship_before blocker exists
 ```
 
-Then immediately invoke `$ship` with the integrated target-branch state.
-
-Do not pass:
-
-```text
-worker worktree
-unintegrated patch
-claim-local tree
-proof from a stale branch epoch
-```
+Do not pass worker worktrees, unintegrated patches, claim-local trees, or stale
+branch proof to `$ship`.
 
 ## Intent sources
 
-PR delivery intent exists when any of these is true:
-
-```text
-user asked to open/update/promote a PR
-user asked for plan-to-PR execution
-actuation_run.pr_mode is ready|draft|update-existing|promote-draft
-source handoff says next_owner: $ship
-prior workflow explicitly requested draft PR visibility
-```
+PR delivery intent exists when the user asked to open/update/promote a PR, the
+accepted source says plan-to-PR, the actuation run requested ready/draft/update,
+or a source handoff says `$ship` is next.
 
 No PR intent means `shipping_not_requested`, not `$ship`.
 
 ## Blocked delivery
 
-`blocked` is required when:
-
-```text
-proof-complete receipt missing or stale
-integration queue not quiescent
-integrated change-set receipts missing for a changeful run
-cross-plan dependency is blocked or unknown
-current target branch/head/epoch unknown
-do_not_ship_before is nonempty
-current PR state cannot be inspected and mode requires update/promote
-```
-
-A blocked delivery result must name the missing condition. It must not silently
-fall back to proof-complete as terminal.
+`blocked` is required when proof is missing/stale, integration is not quiet,
+change-set receipts are missing for a changeful run, cross-plan status is not
+clear, target branch/head/epoch are unknown, or `do_not_ship_before` is nonempty.
 
 ## Validator
 
@@ -146,8 +120,6 @@ uv run python codex/skills/actuating/tools/actuation_delivery_gate.py \
 ```
 
 ## Falsifier
-
-The delivery repair is working when future actuation reports show:
 
 ```text
 proof_complete_but_no_ship_when_pr_intent = 0

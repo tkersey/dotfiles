@@ -2,28 +2,29 @@
 
 ## Purpose
 
-Refactor-kernel is a workflow route, not a patch style.
+A refactor-kernel is a workflow route, not a patch style. Use it when several
+accepted findings share one owner boundary, invariant, state transition, proof
+surface, or missing abstraction.
 
-The failure this reference prevents:
+The failure this prevents:
 
 ```text
 many accepted liabilities
 -> broad owner-boundary patch burst
 -> local proof improves
--> no selected_route: refactor-kernel
+-> no refactor-kernel decision
 -> no outcome accounting
--> seq reports graph_bypass
 ```
 
-The required shape is:
+The required shape:
 
 ```text
 review-fold dispositions
 -> resolution fold finds repeated accepted liabilities
 -> AER-v1 decision selects refactor-kernel before mutation
--> material work runs under HYL/HSR or current actuation authority
+-> material work runs under FUSION-v1 or ALSR/HYL/HSR
 -> proof/review folds current evidence
--> RKO-v1 outcome records compression, review delta, and governance state
+-> RKO-v1 records coverage, new liabilities, and governance state
 -> ATCG-v1 decides completion
 ```
 
@@ -45,13 +46,13 @@ selected_route = refactor-kernel
 next_resolution_mode = refactor-kernel
 owner_boundary named
 accepted_liabilities nonempty and joinable to review-fold refs
-alternatives_considered records minimal-fix, branch-race, and remediation-plan consideration
+alternatives_considered records minimal-fix, branch-race, and remediation-plan
 verifier nonempty
 current_artifact_scope branch/head_sha/target_fingerprint present
 ```
 
-AER-v1 is not mutation authority. APMA/authority receipt or HYL/HSR still governs material
-mutation.
+AER-v1 is not mutation authority. FUSION-v1 or ALSR/HYL/HSR still governs the
+material change.
 
 ## Outcome receipt
 
@@ -92,9 +93,9 @@ uv run python codex/skills/actuating/tools/actuation_refactor_kernel_gate.py \
   --decision .ledger/actuating/<run-id>/aer-v1.json
 ```
 
-`governance.graph_bypass: yes` or nonzero
-`mutations_without_graph_control_receipt` is a failed refactor-kernel outcome,
-even when local proof passed.
+`governance.graph_bypass: yes` or a nonzero
+`mutations_without_graph_control_receipt` is a failed outcome, even if local
+proof passed.
 
 ## Effectiveness score
 
@@ -107,12 +108,9 @@ effectiveness_score = covered_liabilities
   - graph_bypass_penalty
 ```
 
-This score is a local diagnostic, not a global causal claim. `$seq` still owns
-cohort-level evidence and must preserve denominators and contamination policy.
+The score is a local diagnostic, not a global causal claim.
 
 ## Falsifier
-
-The repair is working when future `$seq` reports show:
 
 ```text
 true_actuation graph_bypass sessions with refactor-kernel language -> 0

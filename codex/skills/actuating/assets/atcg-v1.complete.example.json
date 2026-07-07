@@ -3,7 +3,7 @@
     "decision_version": "ATCG-v1",
     "verdict": "complete",
     "can_mark_goal_complete": "yes",
-    "issued_at": "2026-07-01T00:00:00Z",
+    "issued_at": "2026-07-07T00:00:00Z",
     "run_id": "ACT-terminal-proof-only",
     "source": "accepted_spec",
     "closure_candidate": "proof-patch",

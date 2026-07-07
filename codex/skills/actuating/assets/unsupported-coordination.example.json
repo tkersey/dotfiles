@@ -1,0 +1,7 @@
+{
+  "actuating_blocked": {
+    "verdict": "blocked-unsupported-controller",
+    "reason": "durable claims/fencing/external worktree required but no supported controller exists",
+    "next_owner": "human"
+  }
+}

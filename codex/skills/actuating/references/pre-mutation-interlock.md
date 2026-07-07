@@ -2,129 +2,76 @@
 
 ## Purpose
 
-`$actuating` is a transaction controller. It does not merely advise implementation.
+This file replaces the old transaction-controller/APMA path with a simpler rule:
+`$actuating` may not pretend it owns durable coordination that is no longer
+available in this workspace.
 
-The interlock prevents this failure shape:
+The old APMA/claim/lease path is retired. Keep the `apma-v1.example.json` asset
+only as a compatibility tombstone so older audits do not silently resolve to a
+missing file.
+
+## Current rule
+
+Before a material change, `$actuating` must have one of:
+
+```text
+valid FUSION-v1 receipt for one simple direct action
+current ALSR-v1 + HYL-v1 + HSR-v1 receipt chain
+```
+
+If the work needs durable claims, fencing, external worktrees, serialized
+integration, or multi-plan coordination, the local workflow must stop.
+
+```text
+actuation verdict: blocked-unsupported-controller
+```
+
+## Why
+
+The old failure shape was:
 
 ```text
 plan pressure
 -> local decomposition
 -> patch attempts
--> update_plan projection
--> proof attempts
 -> retrospective control language
+-> completion claim
 ```
 
-and enforces this shape:
+The required shape is now:
 
 ```text
-plan pressure
--> actuation session binding
--> claimed resources
--> actuation-authority receipt execution_allowed=yes
--> APMA-v1 mutation-authorized
--> bounded slice
--> isolated realization
--> proof receipt
--> sealed changeset
--> serialized integration
-```
-
-## APMA-v1
-
-APMA-v1 is the local pre-mutation authority receipt.
-
-```yaml
-actuation_pre_mutation_authority:
-  version: APMA-v1
-  verdict: mutation-authorized
-  issued_at:
-  run_id:
-  workspace:
-    workspace_id:
-    target_branch:
-    head:
-    workspace_sequence:
-    branch_epoch:
-    working_tree_fingerprint:
-  plan:
-    plan_id:
-    plan_sequence:
-    selected_task_ids: []
-  coordination:
-    claim_id:
-    session_id:
-    executor:
-    coordination_token:
-    lease_current:
-    coordination_current:
-    resources: []
-  authority:
-    authority_id:
-    execution_allowed: yes
-    projection_view_id:
-    projection_digest:
-  intended_resources: []
-  resource_coverage: []
-```
-
-APMA-v1 is derived from a current actuation-authority receipt plus the exact intended edit resource.
-It is not hand-authored.
-
-## Authority record
-
-When a material mutation needs local authority, persist a current APMA-v1 record under `.ledger/actuating/<run-id>/apma-v1.json` and check it immediately before mutation. A failed or missing authority check means no patch.
-
-## What it validates
-
-The gate requires:
-
-```text
-actuation-authority receipt receipt_version
-actuation-authority receipt execution_allowed=yes
-no denial reasons
-claim id
-session id
-executor
-coordination token
-lease_current=true
-coordination_current=true
-workspace sequence equality
-plan sequence equality
-branch epoch equality
-projection selected IDs equals plan selected IDs
-projection session equals coordination session
-nonempty selected task IDs
-nonempty claim resources
-no conflicting claims
-graph gate passed
-no graph debt
-intended write/exclusive resource covered by claim resource
+approved source
+-> selected work item or safe frontier
+-> material action
+-> current evidence fold
+-> terminal ATCG decision
 ```
 
 ## Unsupported authority path
 
-If the available authority path invalidates its own session, view, sequence, or artifact preconditions, stop actuation, do not mutate product files, release any held claim when safe, and record the run as blocked on authority tooling.
+Do not hand-author APMA-v1, claim ids, leases, coordination tokens, or serialized
+integration receipts. If another tool later reintroduces real coordination, it
+must come with its own validator and an explicit handoff contract.
 
 ## Direct implementation fallback
 
-Direct implementation can be valid when no concurrent workspace coordination is needed, but it must not be presented as `$actuating`.
-
-Use an explicit transition:
+Direct implementation can be valid when no coordination is needed, but it must
+not be presented as a fenced `$actuating` run. Use an explicit transition:
 
 ```text
-$actuating blocked: authority receipt path self-invalidating.
-Leaving $actuating before direct implementation.
+$actuating blocked: unsupported durable coordination requirement.
+Leaving $actuating before any direct implementation.
 No actuation authority is claimed for subsequent edits.
 ```
 
 ## Falsifier
 
-The interlock is working when future `seq actuation-audit` true/control rows show:
+The interlock is working when future audits show:
 
 ```text
-mutations_without_authority = 0
-apply_patch_calls are covered by APMA-v1
-no graph_bypass verdicts
-no projection_inversion verdicts
+mutations_without_unfold = 0
+continuations_without_fold = 0
+completion_without_ATCG = 0
+local edits claiming retired APMA authority = 0
 ```

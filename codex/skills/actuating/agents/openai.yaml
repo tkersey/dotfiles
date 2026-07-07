@@ -2,26 +2,19 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Explicit /goal workflow with ALSR/HYL loop governance and terminal ATCG closure"
+  short_description: "Explicit implementation workflow with proof, review, loop, and terminal closure checks"
   default_prompt: >-
-    Use $actuating as the explicit /goal workflow. First get an accepted
-    implementation spec from $spec-pipeline in gate-only/no-plan mode when one is
-    not already available. Use $recursion-scheme-planner when topology is
-    nontrivial. For material recursive work, require $agent-loop-schemes to emit
-    ALSR-v1 and HYL-v1 before mutation unless the run is direct-action fused or
-    blocked external coordination. $goal-actuating interprets HYL-v1 and emits HSR-v1 steps. For
-    review requests, default to review-closeout unless the user names triage,
-    remediation-plan, or another no-implementation mode. Fresh or exhaustive
-    workflow review must use $cas review, findings must pass through
-    $review-fold, and only accepted code-change liabilities may reach
-    implementation. When repeated accepted liabilities share an owner boundary,
-    missing abstraction, invariant, proof surface, or misuse trap, emit an
-    AER-v1 actuation_escalation_receipt with owner_boundary,
-    repeated_finding_class, accepted_liabilities, prior_resolution_mode,
-    next_resolution_mode, escalation_trigger, alternatives_considered,
-    selected_route, verifier, and current_artifact_scope before further
-    mutation. If selected_route or next_resolution_mode is refactor-kernel,
-    validate the AER-v1 before mutation and emit an RKO-v1
-    refactor_kernel_outcome after proof/review that records covered liabilities,
-    new liabilities, closure state, and graph-bypass/mutation-without-control
-    evidence. Completion requires terminal ATCG-v1.
+    Use $actuating only as the explicit /goal implementation workflow. First get
+    an accepted implementation spec from $spec-pipeline in gate-only/no-plan mode
+    when one is not already available. Use $recursion-scheme-planner when the
+    work shape is not simple. For material work, require either a valid FUSION-v1
+    direct-action receipt or current ALSR-v1, HYL-v1, and HSR-v1 receipts before
+    mutation. $goal-actuating executes the selected work item or safe frontier
+    and folds evidence after each material action. Review requests default to
+    review-closeout unless the user asks for triage, remediation-plan, or another
+    no-change mode. Fresh or exhaustive workflow review must use $cas; findings
+    must pass through $review-fold; only accepted code-change liabilities may be
+    implemented. Repeated accepted liabilities that share an owner boundary or
+    missing abstraction require an AER-v1 decision before more mutation, and
+    refactor-kernel work requires an RKO-v1 outcome after proof/review. Completion
+    requires ATCG-v1 with can_mark_goal_complete=yes.

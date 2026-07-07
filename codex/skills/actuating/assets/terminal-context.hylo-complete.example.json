@@ -1,0 +1,310 @@
+{
+  "actuation_terminal_context": {
+    "run_id": "ACT-terminal-hylo-complete",
+    "source": "accepted_spec",
+    "closure_candidate": "proof-patch",
+    "artifact_scope": {
+      "repo": "tkersey/example",
+      "branch": "feature/example",
+      "head_sha": "abc123",
+      "diff_fingerprint": "diff:clean",
+      "dirty_state": "clean"
+    },
+    "local_proof": {
+      "evidence_fold_verdict": "done",
+      "commands": [
+        "uv run python codex/skills/actuating/tests/test_actuation_terminal_gate.py"
+      ]
+    },
+    "proof_patch": {
+      "required": "yes",
+      "present": "yes",
+      "current": "yes",
+      "ref": "proof-patch:abc123"
+    },
+    "cas_review": {
+      "required": "no",
+      "clean_runs_required": 0,
+      "clean_runs_count": 0,
+      "independent_fresh_runs": "no",
+      "tuple_bound": "no",
+      "tuple": {}
+    },
+    "delivery": {
+      "pr_intent": "no",
+      "publication_required": "no",
+      "add_v1_decision": {
+        "verdict": "shipping_not_requested",
+        "ref": "add-v1:none"
+      },
+      "ship_result": {
+        "present": "no",
+        "current": "unknown",
+        "pr_url": "",
+        "ref": ""
+      }
+    },
+    "final_report_fields": {
+      "normalized_cas_clean_runs": "not-required",
+      "proof_patch_or_ship_handoff": "proof-patch",
+      "blockers_residual_risk": "none"
+    },
+    "loop_governance": {
+      "mode": "ALSR-HYL",
+      "material": "yes",
+      "alsr": {
+        "required": "yes",
+        "present": "yes",
+        "current": "yes",
+        "receipt_ref": "ALSR-123",
+        "receipt": {
+          "receipt_version": "ALSR-v1",
+          "alsr_id": "ALSR-123",
+          "created_at": "2026-07-07T00:00:00Z",
+          "objective": "Implement accepted example spec",
+          "artifact_scope": {
+            "repo": "tkersey/example",
+            "branch": "feature/example",
+            "head": "abc123",
+            "diff_digest": "diff:clean",
+            "paths": [
+              "src/example.py"
+            ]
+          },
+          "task_shape": "goal",
+          "selected_loop": "goal_grind",
+          "seed": {
+            "source": "accepted_spec",
+            "authority": "spec:example",
+            "current_state_binding": "abc123"
+          },
+          "verifier": {
+            "commands": [
+              "pytest"
+            ],
+            "review_source": "none",
+            "proof_bar": "tests pass"
+          },
+          "work_producer": {
+            "next_work_rule": "select next accepted work item",
+            "decomposition": "single node",
+            "owner_boundary": "example"
+          },
+          "evidence_reducer": {
+            "checks": [
+              "pytest"
+            ],
+            "verdicts": [
+              "continue",
+              "complete"
+            ],
+            "anti_gaming_checks": []
+          },
+          "memory_policy": {
+            "recall_required": "no",
+            "capture_required": "no",
+            "memoized_classes": [],
+            "invalid_strategies": []
+          },
+          "proof_artifact": {
+            "required": "yes",
+            "expected_form": "proof-patch",
+            "current_state_binding": "abc123"
+          },
+          "stop_rule": {
+            "success": "proof-patch current",
+            "blocked": "verifier failure",
+            "budget": "bounded"
+          },
+          "side_effect_boundary": {
+            "public_side_effects_allowed": "no",
+            "publish_allowed": "no"
+          },
+          "hylomorphism": {
+            "required": "yes",
+            "hyl_ref": "HYL-123"
+          },
+          "terminal_gate": {
+            "owner": "ATCG-v1",
+            "completion_requires_can_mark_goal_complete": "yes"
+          }
+        }
+      },
+      "hyl": {
+        "required": "yes",
+        "present": "yes",
+        "current": "yes",
+        "receipt_ref": "HYL-123",
+        "receipt": {
+          "machine_version": "HYL-v1",
+          "hyl_id": "HYL-123",
+          "alsr_id": "ALSR-123",
+          "seed_type": "accepted_spec",
+          "node_type": "work_node",
+          "evidence_type": "proof",
+          "verdict_type": "continue|complete|blocked|regress|replan|refactor-kernel",
+          "seed_state": {
+            "artifact_scope": {
+              "branch": "feature/example",
+              "head_sha": "abc123"
+            },
+            "frontier_ref": "frontier:1",
+            "memory_refs": [],
+            "review_state": "none",
+            "proof_state": "current",
+            "clean_cas_runs": "not-required"
+          },
+          "coalgebra": {
+            "name": "default",
+            "input": "seed_state",
+            "emits": "terminal",
+            "no_node_verdict": "blocked-hylo-frontier-missing"
+          },
+          "action_boundary": {
+            "mutation_requires_unfolded_node": "yes",
+            "continuation_requires_fold_verdict": "yes",
+            "review_mutation_requires_review_fold": "yes",
+            "public_side_effects_require_ship": "yes",
+            "subagents_may_not_complete_goal": "yes"
+          },
+          "interpreter": {
+            "owner": "$goal-actuating",
+            "allowed_effects": [
+              "inspect",
+              "edit",
+              "verify",
+              "proof_patch"
+            ]
+          },
+          "algebra": {
+            "name": "evidence-fold",
+            "folds": [
+              "diff",
+              "command_output",
+              "proof_patch"
+            ],
+            "emits": "complete"
+          },
+          "terminal": {
+            "completion_requires": "ATCG-v1",
+            "proof_must_bind_current_artifact": "yes"
+          }
+        }
+      },
+      "hsr": {
+        "required": "yes",
+        "terminal_required": "yes",
+        "terminal_present": "yes",
+        "latest_fold_current_artifact_bound": "yes",
+        "chain": [
+          {
+            "receipt_version": "HSR-v1",
+            "hsr_id": "HSR-001",
+            "alsr_id": "ALSR-123",
+            "hyl_id": "HYL-123",
+            "step_id": "step-1",
+            "state_before": {
+              "branch": "feature/example",
+              "head": "abc123",
+              "diff_digest": "diff:clean",
+              "clean_cas_runs": "not-required",
+              "memory_refs": []
+            },
+            "unfold": {
+              "producer": "goal-actuating",
+              "produced": "work_node",
+              "node_ids": [
+                "node-1"
+              ],
+              "reason": "accepted work remains"
+            },
+            "action": {
+              "owner": "root",
+              "node_id": "node-1",
+              "effect": "verify",
+              "changed_paths": [],
+              "commands": [
+                "pytest"
+              ],
+              "side_effects": "none"
+            },
+            "fold": {
+              "reducer": "evidence-fold",
+              "evidence_refs": [
+                "cmd:pytest"
+              ],
+              "verdict": "continue",
+              "next_state_ref": "state-2",
+              "current_artifact_bound": "yes",
+              "invalidators": []
+            },
+            "continuation": {
+              "next_owner": "$goal-actuating",
+              "stop_rule_fired": "no",
+              "atcg_required": "yes"
+            }
+          },
+          {
+            "receipt_version": "HSR-v1",
+            "hsr_id": "HSR-002",
+            "alsr_id": "ALSR-123",
+            "hyl_id": "HYL-123",
+            "step_id": "step-2",
+            "state_before": {
+              "branch": "feature/example",
+              "head": "abc123",
+              "diff_digest": "diff:clean",
+              "clean_cas_runs": "not-required",
+              "memory_refs": []
+            },
+            "unfold": {
+              "producer": "goal-actuating",
+              "produced": "terminal",
+              "node_ids": [],
+              "reason": "proof current"
+            },
+            "action": {
+              "owner": "none",
+              "node_id": "",
+              "effect": "none",
+              "changed_paths": [],
+              "commands": [],
+              "side_effects": "none"
+            },
+            "fold": {
+              "reducer": "ATCG-precheck",
+              "evidence_refs": [
+                "proof-patch:abc123"
+              ],
+              "verdict": "complete",
+              "next_state_ref": "terminal",
+              "current_artifact_bound": "yes",
+              "invalidators": []
+            },
+            "continuation": {
+              "next_owner": "$goal-actuating",
+              "stop_rule_fired": "yes",
+              "atcg_required": "yes"
+            }
+          }
+        ]
+      },
+      "material_mutations": [
+        {
+          "receipt_ref": "HSR-001",
+          "has_unfold": "yes",
+          "has_action": "yes",
+          "has_fold": "yes"
+        }
+      ],
+      "goal_focus": {
+        "required": "yes",
+        "parent_goal_stable": "yes",
+        "all_child_focus_frames_folded_or_blocked": "yes",
+        "terminal_focus_matches_parent_stop_rule": "yes",
+        "child_claimed_parent_completion": "no",
+        "latest_focus_fold_parent_bound": "yes"
+      }
+    }
+  }
+}

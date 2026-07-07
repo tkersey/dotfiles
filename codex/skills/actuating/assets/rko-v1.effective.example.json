@@ -1,18 +1,18 @@
 {
   "refactor_kernel_outcome": {
     "version": "RKO-v1",
-    "issued_at": "2026-07-05T20:00:00Z",
-    "run_id": "ACT-example-001",
-    "decision_ref": "AER-v1:ACT-example-001",
-    "owner_boundary": "codex/skills/review-fold",
-    "head_before": "head456",
+    "issued_at": "2026-07-07T00:00:00Z",
+    "run_id": "ACT-rko",
+    "decision_ref": "AER-v1:ACT-rko",
+    "owner_boundary": "codex/skills/actuating/tools/actuation_terminal_gate.py",
+    "head_before": "abc123",
     "head_after": "def456",
-    "patch_calls": 4,
-    "files_changed": 3,
+    "patch_calls": 1,
+    "files_changed": 2,
     "covered_liabilities": 2,
     "local_proof": {
       "passed": [
-        "uv run python -m unittest discover codex/skills/review-fold/tests"
+        "terminal gate tests"
       ],
       "failed": []
     },

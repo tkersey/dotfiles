@@ -1,10 +1,10 @@
 #!/usr/bin/env -S uv run python
-"""Refactor-kernel decision and outcome gate for $actuating.
+"""Refactor-kernel decision and outcome gate.
 
-The gate makes the repair-mode escalation auditable.  A refactor-kernel is a
-workflow route, not a patch style: before mutation it must be represented by a
-current AER-v1 decision receipt, and after mutation it must be bound to an
-RKO-v1 outcome receipt.
+A refactor-kernel is not just a bigger patch.  It is a workflow decision made
+when several accepted findings share one owner, invariant, proof surface, or
+missing abstraction.  The decision must be recorded before mutation; the outcome
+must be recorded after proof/review.
 """
 from __future__ import annotations
 
@@ -19,16 +19,7 @@ DECISION_KEY = "actuation_escalation_receipt"
 OUTCOME_KEY = "refactor_kernel_outcome"
 MODES = {"minimal-fix", "proof-only", "refactor-kernel", "branch-race", "remediation-plan", "blocked", "none"}
 NEXT_MODES = {"minimal-fix", "refactor-kernel", "branch-race", "remediation-plan", "blocked"}
-CLOSURE_STATES = {
-    "local-proof-only",
-    "ready-for-ship",
-    "pushed",
-    "cas-blocked",
-    "complete",
-    "regressed",
-    "blocked",
-    "unknown",
-}
+CLOSURE_STATES = {"local-proof-only", "ready-for-ship", "pushed", "cas-blocked", "complete", "regressed", "blocked", "unknown"}
 ASSESSMENTS = {"effective", "overbroad", "underfit", "blocked", "unknown"}
 YES = {"yes", "true", "1", True}
 NO = {"no", "false", "0", False}
@@ -158,15 +149,14 @@ def validate_decision(value: dict[str, Any]) -> dict[str, Any]:
 
     if len(liabilities) < 2:
         warnings.append("accepted_liabilities:single-liability-kernel")
-    if owner_boundary and repeated and owner_boundary.lower() in {"unknown", "none"}:
+    if owner_boundary and owner_boundary.lower() in {"unknown", "none"}:
         errors.append("owner_boundary:must-name-real-boundary")
     if trigger and "repeated" not in trigger.lower() and "shared" not in trigger.lower():
         warnings.append("escalation_trigger:does-not-name-repetition-or-shared-boundary")
 
-    verdict = "pass" if not errors else "fail"
     return {
         "refactor_kernel_decision_gate": {
-            "verdict": verdict,
+            "verdict": "pass" if not errors else "fail",
             "run_id": run_id,
             "selected_route": selected_route,
             "owner_boundary": owner_boundary,
@@ -211,8 +201,7 @@ def validate_outcome(value: dict[str, Any], decision_value: dict[str, Any] | Non
         errors.append("local_proof:must-be-object")
         local_proof = {}
     for key in ("passed", "failed"):
-        value_list = local_proof.get(key)
-        if not isinstance(value_list, list):
+        if not isinstance(local_proof.get(key), list):
             errors.append(f"local_proof.{key}:must-be-list")
     passed_proofs = local_proof.get("passed") if isinstance(local_proof.get("passed"), list) else []
 
@@ -292,14 +281,13 @@ def validate_outcome(value: dict[str, Any], decision_value: dict[str, Any] | Non
         elif covered < expected_liabilities:
             warnings.append("covered_liabilities:below-decision-liability-count")
 
-    unresolved_terminal_blockers = 1 if closure_state in {"cas-blocked", "blocked", "regressed", "unknown"} else 0
+    unresolved_terminal_blocker = 1 if closure_state in {"cas-blocked", "blocked", "regressed", "unknown"} else 0
     graph_bypass_penalty = 1 if as_yes(graph_bypass) or mutations_without_control else 0
-    effectiveness_score = covered - new_liabilities - unresolved_terminal_blockers - graph_bypass_penalty
+    effectiveness_score = covered - new_liabilities - unresolved_terminal_blocker - graph_bypass_penalty
 
-    verdict = "pass" if not errors else "fail"
     return {
         "refactor_kernel_outcome_gate": {
-            "verdict": verdict,
+            "verdict": "pass" if not errors else "fail",
             "run_id": run_id,
             "decision_ref": decision_ref,
             "closure_state": closure_state,
@@ -336,16 +324,10 @@ def make_outcome(context: dict[str, Any], decision_value: dict[str, Any]) -> dic
             "files_changed": context.get("files_changed", 0),
             "covered_liabilities": context.get("covered_liabilities", 0),
             "local_proof": context.get("local_proof", {"passed": [], "failed": []}),
-            "review_after": context.get(
-                "review_after",
-                {"new_liabilities": 0, "clean_runs": 0, "blocked_reason": ""},
-            ),
+            "review_after": context.get("review_after", {"new_liabilities": 0, "clean_runs": 0, "blocked_reason": ""}),
             "closure_state": context.get("closure_state", "unknown"),
             "assessment": context.get("assessment", "unknown"),
-            "governance": context.get(
-                "governance",
-                {"graph_bypass": "no", "mutations_without_graph_control_receipt": 0},
-            ),
+            "governance": context.get("governance", {"graph_bypass": "no", "mutations_without_graph_control_receipt": 0}),
         }
     }
     report = validate_outcome(outcome, decision_value)["refactor_kernel_outcome_gate"]
@@ -355,26 +337,28 @@ def make_outcome(context: dict[str, Any], decision_value: dict[str, Any]) -> dic
     return outcome
 
 
+def emit(obj: dict[str, Any], out: str | None = None) -> None:
+    text = json.dumps(obj, indent=2, sort_keys=True) + "\n"
+    if out:
+        Path(out).write_text(text, encoding="utf-8")
+    print(text, end="")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
-
     p_decision = sub.add_parser("check-decision")
     p_decision.add_argument("--receipt", required=True)
     p_decision.add_argument("--out")
-
     p_outcome = sub.add_parser("check-outcome")
     p_outcome.add_argument("--outcome", required=True)
     p_outcome.add_argument("--decision")
     p_outcome.add_argument("--out")
-
     p_make = sub.add_parser("make-outcome")
     p_make.add_argument("--context", required=True)
     p_make.add_argument("--decision", required=True)
     p_make.add_argument("--out")
-
     args = parser.parse_args(argv)
-
     try:
         if args.command == "check-decision":
             result = validate_decision(load_json(args.receipt))
@@ -388,10 +372,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         print(json.dumps({"refactor_kernel_gate": {"verdict": "fail", "errors": [str(exc)]}}, indent=2))
         return 2
-
-    if args.out:
-        Path(args.out).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps(result, indent=2))
+    emit(result, args.out)
     body = next(iter(result.values())) if result else {}
     return 0 if body.get("verdict", "pass") == "pass" and not body.get("gate_errors") else 2
 

@@ -1,69 +1,8 @@
 {
-  "actuation_pre_mutation_authority": {
-    "coordination": {
-      "claim_id": "claim-001",
-      "executor": "codex",
-      "coordination_current": true,
-      "coordination_token": 42,
-      "lease_current": true,
-      "resources": [
-        {
-          "mode": "write",
-          "root": "path:src"
-        },
-        {
-          "mode": "read",
-          "root": "path:docs"
-        }
-      ],
-      "session_id": "session-001"
-    },
-    "authority": {
-      "execution_allowed": "yes",
-      "authority_id": "AUTH-example-001",
-      "projection_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-      "projection_view_id": "view-session-001"
-    },
-    "hard_rule": "No APMA-v1 mutation-authorized receipt means no actuation-labeled patch.",
-    "intended_resources": [
-      {
-        "mode": "write",
-        "root": "path:src/main.zig"
-      }
-    ],
-    "issued_at": "2026-06-26T00:00:00Z",
-    "plan": {
-      "plan_id": "default",
-      "plan_sequence": 11,
-      "selected_task_ids": [
-        "node-001"
-      ]
-    },
-    "resource_coverage": [
-      {
-        "covered": true,
-        "covering_resources": [
-          {
-            "mode": "write",
-            "root": "path:src"
-          }
-        ],
-        "intended": {
-          "mode": "write",
-          "root": "path:src/main.zig"
-        }
-      }
-    ],
-    "run_id": "act-run-example",
-    "verdict": "mutation-authorized",
+  "retired_controller_receipt": {
     "version": "APMA-v1",
-    "workspace": {
-      "branch_epoch": 2,
-      "head": "abcdef1234567890",
-      "target_branch": "main",
-      "working_tree_fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-      "workspace_id": "STW-example",
-      "workspace_sequence": 7
-    }
+    "status": "retired",
+    "active_authority": "no",
+    "replacement": "FUSION-v1 or ALSR-v1/HYL-v1/HSR-v1 with ATCG-v1"
   }
 }
