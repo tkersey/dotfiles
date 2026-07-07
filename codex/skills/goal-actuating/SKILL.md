@@ -1,6 +1,6 @@
 ---
 name: goal-actuating
-description: "Run an accepted implementation spec or direct /goal through the goal runtime. Interprets HYL-v1 as a defunctionalized actuation machine, emits HSR-v1 step receipts, schedules bounded subagents when safe, requires $cas for workflow review, and closes through proof plus ATCG."
+description: "Run an accepted implementation spec, direct /goal, or no-code review mode through the goal runtime. Interprets HYL-v1 for material work, emits HSR-v1 step receipts, schedules bounded subagents when safe, requires $cas for workflow review, and closes material work through proof plus ATCG."
 metadata:
   version: "2.1.0"
   activation_cost: medium
@@ -14,7 +14,7 @@ metadata:
 Run approved work through the goal workflow.
 
 ```text
-accepted implementation spec or direct goal
+accepted implementation spec, direct goal, or no-code review mode
 -> optional Scheme Plan
 -> ALSR-v1/HYL-v1 when material loop governance is required
 -> goal contract
@@ -25,6 +25,8 @@ accepted implementation spec or direct goal
 -> terminal ATCG
 -> proof
 ```
+
+No-code review modes stop earlier with a triage report or remediation plan.
 
 `$actuating` is the user-facing wrapper. `$goal-actuating` is the runtime that interprets HYL-v1.
 
@@ -66,17 +68,21 @@ goal_actuating_mode:
 4. If material loop governance is required and no current ALSR/HYL exists, hand off to `$agent-loop-schemes`.
 5. Derive a goal contract with `$goal-contract`.
 6. Choose `update_plan` or `goal-artifacts` persistence.
-7. Interpret HYL-v1: unfold a legal work node/frontier, execute it, fold evidence, and emit HSR-v1.
-8. If the workflow performs fresh or exhaustive review, select a CAS review profile and run required CAS review lanes.
-9. Classify standard and auxiliary review-lane findings with `$review-fold`.
-10. Run a resolution fold when review work needs a resolution plan.
-11. Create a work list with `$goal-workgraph` only when decomposition changes execution.
-12. Schedule bounded subagents only for explicit safe frontier nodes.
-13. Execute one useful action at a time with `$goal-grind`.
-14. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolution fold as appropriate.
-15. For `review-closeout` and exhaustive review, require three consecutive clean normalized **standard** `$cas` review attempts on the same artifact scope before completion.
-16. Run ATCG-v1 before completion.
-17. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
+7. If the mode is `triage` or `remediation-plan`, run the selected review
+   source, classify findings with `$review-fold`, run the resolution fold when
+   planning is requested, and stop with `triage-report` or `remediation-plan`.
+8. Interpret HYL-v1 for material modes: unfold a legal work node/frontier,
+   execute it, fold evidence, and emit HSR-v1.
+9. If the workflow performs fresh or exhaustive review, select a CAS review profile and run required CAS review lanes.
+10. Classify standard and auxiliary review-lane findings with `$review-fold`.
+11. Run a resolution fold when review work needs a resolution plan.
+12. Create a work list with `$goal-workgraph` only when decomposition changes execution.
+13. Schedule bounded subagents only for explicit safe frontier nodes.
+14. Execute one useful action at a time with `$goal-grind`.
+15. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolution fold as appropriate.
+16. For `review-closeout` and exhaustive review, require three consecutive clean normalized **standard** `$cas` review attempts on the same artifact scope before completion.
+17. Run ATCG-v1 before material completion.
+18. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
 
 Persistence is projection, not authority. `update_plan`, work lists, and
 goal-artifact projections may show the current frontier, but they do not replace
@@ -91,6 +97,12 @@ ALSR/HYL/frontier state before acting. A missing loop contract emits
 `blocked-loop-contract-stale`; a missing unfolded node emits
 `blocked-hylo-frontier-missing`; a missing previous fold emits
 `blocked-hylo-fold-missing`.
+
+This interlock requirement applies to HSR-v1 material actions only. `triage`
+and `remediation-plan` may inspect, review, fold, and plan without emitting a
+positive interlock, HSR-v1, proof-patch, or ATCG. If a no-code review mode would
+edit files, mutate public review state, or claim implementation closure, it must
+transition to the appropriate material or delivery mode first.
 
 ## HYL-v1 interpreter
 
@@ -112,8 +124,9 @@ The minimum valid material transition is therefore `unfold -> action -> fold`.
 If any one of those fields is missing, the run is not governed actuation even
 when tests, summaries, or progress projections exist.
 
-Do not repair a missing interlock by performing more inspection or patching.
-Return the blocker as the next HSR-v1 state and wait for the correct owner.
+Do not repair a missing interlock for a material action by performing more
+inspection or patching. Return the blocker as the next HSR-v1 state and wait for
+the correct owner.
 
 ## Review lanes
 
@@ -178,7 +191,8 @@ if no accepted spec -> blocked
 if topology nontrivial and no Scheme Plan -> produce scheme-planner node
 if material and no ALSR/HYL -> produce agent-loop-schemes node
 if no goal contract -> produce goal-contract node
-if runtime interlock blocks mutation -> emit blocked HSR-v1 node
+if no-code review mode -> produce review-fold or resolution-fold node and stop before material execution
+if runtime interlock blocks material mutation -> emit blocked HSR-v1 node
 if review requested and no review profile -> produce review-profile node
 if review requested and no standard CAS result -> produce standard CAS review node
 if required auxiliary review lane missing or invalidated -> produce auxiliary review-lens evidence node
@@ -274,6 +288,27 @@ Explicit review mode names carry the mutation rule:
 - `triage`: classify findings and stop without implementation.
 - `remediation-plan`: classify findings, produce the fix plan, and stop without implementation.
 - `review-closeout`: classify findings, implement only accepted code-change liabilities, prove closure, and stop at ATCG or `$ship` handoff.
+
+For `triage`:
+
+```text
+workflow review source
+-> $review-fold
+-> review disposition report
+-> stop
+```
+
+For `remediation-plan`:
+
+```text
+workflow review source
+-> $review-fold
+-> resolution fold
+-> remediation plan
+-> stop
+```
+
+For `review-closeout`:
 
 ```text
 workflow review_profile selection

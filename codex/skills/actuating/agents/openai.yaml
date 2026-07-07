@@ -2,7 +2,7 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Explicit implementation workflow with proof, review, loop, and terminal closure checks"
+  short_description: "Explicit material implementation and no-code review workflow"
   default_prompt: >-
     Use $actuating only as the explicit /goal implementation workflow. First get
     an accepted implementation spec from $spec-pipeline in gate-only/no-plan mode
@@ -16,8 +16,11 @@ interface:
     blocked-loop-contract-stale, blocked-hylo-frontier-missing,
     blocked-hylo-fold-missing, or blocked-unsupported-controller. Do not use
     update_plan, summaries, cached checks, or chat history as receipt evidence.
-    $goal-actuating executes the selected work item or safe frontier and folds
-    evidence after each material action before any continuation. Review requests default to
+    Triage and remediation-plan are no-code review modes: they may inspect, run
+    review, fold findings, produce a report or plan, and stop without loop
+    receipts, interlock, HSR-v1, proof-patch, ATCG, or $ship. $goal-actuating
+    executes the selected work item or safe frontier and folds evidence after
+    each material action before any continuation. Review requests default to
     review-closeout unless the user asks for triage, remediation-plan, or another
     no-change mode. Fresh or exhaustive workflow review must use $cas; findings
     must pass through $review-fold; only accepted code-change liabilities may be

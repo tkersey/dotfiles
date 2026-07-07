@@ -37,6 +37,12 @@ actuation_interlock:
 not continue by doing more inspection, applying a patch, or treating
 `update_plan` as a replacement frontier.
 
+This is a pre-mutation rule, not a review-only rule. `triage` and
+`remediation-plan` may inspect code, collect review evidence, fold findings, and
+produce reports or plans without an actuation interlock. If they would edit,
+publish, resolve public review state, or claim implementation closure, they must
+leave no-code mode and satisfy the material or delivery gate first.
+
 If the work needs durable claims, fencing, external worktrees, serialized
 integration, or multi-plan coordination, the local workflow must stop.
 
