@@ -29,4 +29,12 @@ ASL state = return_to_frontier
 mutation_allowed = no
 ```
 
-Do not reconstruct the frontier from `update_plan` or chat prose.
+If the resume packet is missing or stale:
+
+```text
+mutation_allowed = no
+continuation_allowed = no
+```
+
+Do not reconstruct the frontier from `update_plan` or chat prose. Rebuild the
+loop contract through the owning skill or stop with the canonical blocker.

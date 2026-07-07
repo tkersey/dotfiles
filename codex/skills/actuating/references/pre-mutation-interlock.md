@@ -16,8 +16,32 @@ Before a material change, `$actuating` must have one of:
 
 ```text
 valid FUSION-v1 receipt for one simple direct action
-current ALSR-v1 + HYL-v1 + HSR-v1 receipt chain
+current ALSR-v1 + HYL-v1 with an unfolded work item/frontier
+current HSR-v1 fold before continuation after any material action
 ```
+
+The caller must make the decision explicit before mutation:
+
+```yaml
+actuation_interlock:
+  mutation_allowed: yes | no
+  continuation_allowed: yes | no
+  blocker: none | blocked-loop-contract-missing | blocked-loop-contract-stale | blocked-hylo-frontier-missing | blocked-hylo-fold-missing | blocked-unsupported-controller
+  current_binding:
+    branch:
+    head:
+    diff_fingerprint:
+```
+
+`mutation_allowed: no` is terminal for the current work item. The workflow must
+not continue by doing more inspection, applying a patch, or treating
+`update_plan` as a replacement frontier.
+
+This is a pre-mutation rule, not a review-only rule. `triage` and
+`remediation-plan` may inspect code, collect review evidence, fold findings, and
+produce reports or plans without an actuation interlock. If they would edit,
+publish, resolve public review state, or claim implementation closure, they must
+leave no-code mode and satisfy the material or delivery gate first.
 
 If the work needs durable claims, fencing, external worktrees, serialized
 integration, or multi-plan coordination, the local workflow must stop.
@@ -42,6 +66,7 @@ The required shape is now:
 
 ```text
 approved source
+-> explicit interlock
 -> selected work item or safe frontier
 -> material action
 -> current evidence fold
@@ -73,5 +98,6 @@ The interlock is working when future audits show:
 mutations_without_unfold = 0
 continuations_without_fold = 0
 completion_without_ATCG = 0
+interlock_no_followed_by_mutation = 0
 local edits claiming retired APMA authority = 0
 ```

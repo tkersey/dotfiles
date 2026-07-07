@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "User-facing workflow for implementing approved work. It gets an accepted spec when needed, checks whether a loop receipt is required, runs the goal runtime, requires CAS-backed review when review is in scope, and closes only through proof plus ATCG."
+description: "User-facing workflow for implementing approved work and no-code review modes. It gets an accepted spec when needed, checks whether a loop receipt is required, runs the goal runtime, requires CAS-backed review when review is in scope, and closes material work only through proof plus ATCG."
 metadata:
   version: "7.1.0"
   activation_cost: medium
@@ -11,7 +11,8 @@ metadata:
 
 ## Mission
 
-Run implementation work without making the user manage the lower-level skills.
+Run implementation and review-routing work without making the user manage the
+lower-level skills.
 
 ```text
 implementation request or draft spec
@@ -27,6 +28,8 @@ Use it as:
 
 ```text
 /goal $actuating implement the accepted spec
+/goal $actuating triage this PR
+/goal $actuating remediation-plan this PR
 /goal $actuating review-closeout this PR
 /goal $actuating dry-plan the accepted spec
 ```
@@ -44,6 +47,68 @@ Do not keep going unless the previous action was checked.
 Do not claim completion until the terminal gate allows it.
 ```
 
+## Essential governance spine
+
+The essential material `$actuating` spine is:
+
+```text
+accepted source
+-> current loop receipt or valid FUSION-v1
+-> unfolded work item/frontier
+-> HSR-v1 material step
+-> current evidence fold
+-> proof/review closure
+-> ATCG-v1
+-> proof-patch or `$ship` handoff when publication was requested
+```
+
+Everything else is supporting machinery. Work graphs, `update_plan`, summaries,
+progress projections, cached checks, stale review runs, and raw review text may
+help select the next action, but they are not receipt evidence and cannot
+replace the spine.
+
+No-code review modes have a smaller spine:
+
+```text
+current review source
+-> review-fold
+-> triage report or resolution fold -> remediation plan
+-> stop without mutation, proof-patch, ATCG, or `$ship`
+```
+
+They do not claim implementation closure and must not be upgraded into material
+actuation merely because they inspect code, run review, or plan a fix.
+
+## Runtime interlock
+
+Before any material mutation, and before continuing after any material action,
+`$actuating` must make the interlock decision explicit:
+
+```yaml
+actuation_interlock:
+  mutation_allowed: yes | no
+  continuation_allowed: yes | no
+  blocker: none | blocked-loop-contract-missing | blocked-loop-contract-stale | blocked-hylo-frontier-missing | blocked-hylo-fold-missing | blocked-unsupported-controller
+  current_binding:
+    branch:
+    head:
+    diff_fingerprint:
+```
+
+`mutation_allowed: yes` requires either a valid FUSION-v1 receipt or a current
+ALSR-v1 + HYL-v1 with an unfolded work item/frontier. HSR-v1 is required once a
+material step exists, and `continuation_allowed: yes` requires the previous HSR
+fold to be current. If the interlock is `no`, stop immediately with the blocker.
+Do not keep inspecting, patching, or relying on `update_plan` to make progress
+inside `$actuating`.
+
+The interlock gates material mutation and continuation only. In `triage` and
+`remediation-plan`, omit the interlock unless the workflow leaves no-code mode.
+Missing loop receipts or a missing interlock must not block review collection,
+classification, or plan production. If the next action would edit files, resolve
+public threads, push, publish, or claim implementation closure, first transition
+to `review-closeout`, `$ship`, or `$land` and satisfy that owner’s gates.
+
 ## Removed controller path
 
 The old transaction-controller/APMA path is not active in this workspace. If the
@@ -58,14 +123,18 @@ controller. It must not pretend that local edits are a fenced actuation run.
 2. Treat the accepted spec as the source of truth.
 3. Use `$recursion-scheme-planner` when the work has branching, repeated classes,
    review campaigns, migrations, proof fanout, or unclear stopping conditions.
-4. Use `$agent-loop-schemes` when material work needs ALSR/HYL loop receipts.
-5. Send the accepted work to `$goal-actuating`.
-6. Use `$cas` when workflow review is requested or required.
-7. Pass findings through `$review-fold` before any review-driven code change.
-8. Implement only accepted code-change liabilities.
-9. Fold current evidence after each material action.
-10. Run ATCG-v1 before any completion claim.
-11. Emit a proof-patch result or a `$ship` handoff when PR publication/update was requested.
+4. If the explicit mode is `triage` or `remediation-plan`, run the selected
+   review source, `$review-fold`, and the resolution fold when needed, then stop
+   with the report or plan.
+5. Use `$agent-loop-schemes` when material work needs ALSR/HYL loop receipts.
+6. Send the accepted material work to `$goal-actuating`.
+7. Emit the runtime interlock before the first material mutation.
+8. Use `$cas` when workflow review is requested or required.
+9. Pass findings through `$review-fold` before any review-driven code change.
+10. Implement only accepted code-change liabilities.
+11. Fold current evidence after each material action before continuing.
+12. Run ATCG-v1 before any material completion claim.
+13. Emit a proof-patch result or a `$ship` handoff when PR publication/update was requested.
 
 ## Source requirement
 
@@ -77,6 +146,14 @@ direct user goal with enough scope, constraints, and proof checks
 review findings bound to the current diff and intended change
 plan handoff for goal-artifact execution
 ```
+
+These sources authorize routing only. They do not authorize mutation unless the
+loop/fusion receipt, unfolded work item, and evidence-fold requirements below
+are also current for the branch/head/diff.
+
+For no-code review modes, a current review source authorizes inspection,
+classification, and planning only. It does not require or imply mutation
+authority.
 
 If none exists, run `$spec-pipeline` in gate-only/no-plan mode or stop with:
 
@@ -97,7 +174,7 @@ Require ALSR/HYL when the work has:
 ```text
 repeated failure or review classes
 many-file migration
-review closeout or CAS closure
+review-closeout or CAS closure
 branch choices or competing implementation strategies
 proof fanout
 parallel subagent opportunities
@@ -110,8 +187,12 @@ For material runs, `$actuating` must establish one of:
 
 ```text
 valid FUSION-v1 direct-action receipt
-current ALSR-v1 + HYL-v1 + HSR-v1 chain
+current ALSR-v1 + HYL-v1 with an unfolded work item/frontier
+current HSR-v1 fold before continuation after any material action
 ```
+
+The receipt must bind the current branch, head, and diff. A prose declaration,
+checklist item, or `update_plan` row is not a loop receipt.
 
 If none exists, stop with:
 
@@ -136,6 +217,11 @@ If the previous material action has no current evidence fold, stop with:
 ```text
 actuation verdict: blocked-hylo-fold-missing
 ```
+
+`triage` and `remediation-plan` do not require loop receipts solely because they
+use review or CAS. They become material only if the workflow accepts a
+code-change liability for implementation, performs a public side effect, or
+claims implementation closure.
 
 ## Direct-action fusion
 
@@ -216,6 +302,12 @@ $cas review
 ```
 
 Raw review text never reaches implementation directly.
+
+`triage` and `remediation-plan` are no-code control modes. They may read files,
+inspect diffs, run `$cas` or consume existing review evidence, fold findings,
+and produce reports or plans. They must not require ALSR/HYL/HSR, a positive
+actuation interlock, proof-patch, three clean review attempts, or ATCG unless
+they explicitly transition to `review-closeout`.
 
 ## Review lanes
 
@@ -302,10 +394,10 @@ proof closure, and `$ship` handoff.
 
 ## Terminal closure
 
-Before `$actuating` may report completion or call `update_goal complete`, run
-ATCG-v1 over the current branch/head/diff, loop receipts or fusion receipt,
-latest HSR/focus evidence, evidence fold, proof-patch, CAS state, delivery state,
-and side-effect boundary.
+Before `$actuating` may report material implementation completion or call
+`update_goal complete`, run ATCG-v1 over the current branch/head/diff, loop
+receipts or fusion receipt, latest HSR/focus evidence, evidence fold,
+proof-patch, CAS state, delivery state, and side-effect boundary.
 
 Completion is legal only when:
 
@@ -315,7 +407,12 @@ ATCG-v1 can_mark_goal_complete = yes
 ```
 
 Do not substitute local proof, a proof-complete graph, cached CAS receipts, or
-ADD-v1 `handoff_to_ship` for terminal completion.
+ADD-v1 `handoff_to_ship` for terminal completion. A `$ship` result is delivery
+evidence, not completion evidence, until ATCG-v1 folds it into the terminal
+state.
+
+ATCG is not required for a `triage` report or `remediation-plan` because those
+outputs intentionally do not claim implementation completion.
 
 ## Stop rules
 
@@ -331,6 +428,8 @@ three clean standard CAS reviews are required but cannot be completed
 parallel fanout would cross shared invariants or conflicting resources
 ALSR/HYL/HSR is required but missing or stale
 FUSION-v1 is claimed but not proven
+actuation interlock returns `mutation_allowed: no` for a material action
+actuation interlock returns `continuation_allowed: no` for material continuation
 unfold is missing before material mutation
 fold is missing after material action
 goal-focus frames are missing, stale, or not folded to parent
@@ -339,6 +438,10 @@ public tracker or PR side effects would occur without explicit intent
 ATCG-v1 does not return can_mark_goal_complete=yes
 ```
 
+In no-code review modes, a missing interlock is not a blocker by itself. The
+blocker appears only when the workflow attempts mutation, public side effects,
+or implementation closure.
+
 ## Final report
 
 ```text
@@ -346,6 +449,10 @@ Actuating:
 - source: direct goal | accepted spec | review
 - authority source:
 - scheme plan: none|required|present
+- actuation interlock:
+  - mutation_allowed:
+  - continuation_allowed:
+  - blocker:
 - loop receipt:
   - fusion receipt:
   - ALSR-v1:

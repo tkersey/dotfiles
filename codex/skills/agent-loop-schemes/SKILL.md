@@ -50,6 +50,15 @@ No continuation without fold.
 No completion without terminal algebra.
 ```
 
+The essential receipts are ALSR-v1, HYL-v1, HSR-v1, evidence fold, and ATCG-v1.
+Planning views, work graphs, `update_plan`, and prose summaries are projections
+over those receipts. They may guide attention, but they do not prove control.
+
+For material `$actuating` work, the loop scheme must also define the runtime
+interlock: the exact condition under which mutation is allowed, the condition
+under which continuation is allowed, and the canonical blocker emitted when
+either condition fails.
+
 ## Protocol objects
 
 ### ALSR-v1: Agent Loop Scheme Receipt
@@ -236,9 +245,16 @@ current actuation state
 ```
 
 The work graph is a projection of this machine, not the source of truth.
+`update_plan` is also a projection. If either projection disagrees with the
+current HYL state, the HYL state wins and the projection must be refreshed.
 
 If work happens inside HYL, the work graph can be regenerated.
 If work happens outside HYL, it is invalid actuation.
+
+The HSR-v1 unfold is the mutation interlock. If the interpreter cannot bind the
+current branch/head/diff, selected node, and previous fold, it emits `blocked`
+instead of an action. It must not continue by reconstructing authority from chat
+history, `update_plan`, or a summary.
 
 ## Fusion law
 
@@ -479,6 +495,9 @@ proof complete + publication requested -> emit ShipHandoff effect
 
 `$ship` owns PR creation, update, promotion, and publication.
 
+Shipping is a terminal side effect handler, not proof of actuation completion.
+ATCG-v1 must fold the `$ship` evidence before a parent goal can complete.
+
 ## Compaction and resume
 
 Before compaction or resume, preserve:
@@ -503,6 +522,10 @@ missing packet -> blocked-loop-contract-missing
 artifact scope changed -> blocked-loop-contract-stale
 pending frontier invalid -> blocked-hylo-frontier-missing
 ```
+
+A resume without a packet is not recoverable inside `$actuating` by rereading
+chat. The only legal continuation is to rebuild the loop contract through the
+owning skill or stop with the blocker.
 
 ## Failure classes
 

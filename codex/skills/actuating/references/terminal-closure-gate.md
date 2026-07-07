@@ -62,6 +62,7 @@ ATCG-v1 consumes current receiver-owned evidence:
 
 ```text
 current branch/head/diff binding
+latest actuation_interlock decision for material ALSR/HYL runs
 FUSION-v1 receipt or ALSR/HYL/HSR receipts
 optional goal-focus frame state
 local evidence-fold verdict and proof commands
@@ -80,7 +81,7 @@ For material work, ATCG requires one of:
 
 ```text
 valid FUSION-v1 receipt for one simple action
-current ALSR-v1 + HYL-v1 + terminal HSR-v1 chain
+current positive actuation_interlock + current ALSR-v1 + HYL-v1 + terminal HSR-v1 chain
 ```
 
 A raw boolean such as `direct_action_fused: yes` is not enough. A fused run must
@@ -162,6 +163,10 @@ public side effect outside $ship boundary -> side-effect-boundary-violated, next
 proof verifier mismatch or stale current-artifact binding -> proof-stale, next_owner=$goal-grind
 all required receipts current -> complete
 ```
+
+ATCG-v1 must not infer a missing receipt from final report prose, `update_plan`,
+a PR body, or a proof summary. Those artifacts may reference evidence, but they
+are not the evidence owner.
 
 ## Hard blocker names
 
