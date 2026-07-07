@@ -83,6 +83,13 @@ goal-artifact projections may show the current frontier, but they do not replace
 ALSR-v1, HYL-v1, HSR-v1, evidence-fold, proof-patch, review-fold, or ATCG-v1
 receipts.
 
+Before executing an HSR-v1 action, `$goal-actuating` must have a positive
+runtime interlock from `$actuating` or produce a blocked HSR-v1 step itself. A
+missing loop contract emits `blocked-loop-contract-missing`; stale branch/head
+or diff binding emits `blocked-loop-contract-stale`; a missing unfolded node
+emits `blocked-hylo-frontier-missing`; a missing previous fold emits
+`blocked-hylo-fold-missing`.
+
 ## HYL-v1 interpreter
 
 A material action is legal only as an HSR-v1 transition:
@@ -102,6 +109,9 @@ No completion is valid without terminal ATCG-v1.
 The minimum valid material transition is therefore `unfold -> action -> fold`.
 If any one of those fields is missing, the run is not governed actuation even
 when tests, summaries, or progress projections exist.
+
+Do not repair a missing interlock by performing more inspection or patching.
+Return the blocker as the next HSR-v1 state and wait for the correct owner.
 
 ## Review lanes
 
@@ -166,6 +176,7 @@ if no accepted spec -> blocked
 if topology nontrivial and no Scheme Plan -> produce scheme-planner node
 if material and no ALSR/HYL -> produce agent-loop-schemes node
 if no goal contract -> produce goal-contract node
+if runtime interlock blocks mutation -> emit blocked HSR-v1 node
 if review requested and no review profile -> produce review-profile node
 if review requested and no standard CAS result -> produce standard CAS review node
 if required auxiliary review lane missing or invalidated -> produce auxiliary review-lens evidence node

@@ -62,6 +62,7 @@ ATCG-v1 consumes current receiver-owned evidence:
 
 ```text
 current branch/head/diff binding
+latest actuation_interlock decision
 FUSION-v1 receipt or ALSR/HYL/HSR receipts
 optional goal-focus frame state
 local evidence-fold verdict and proof commands
@@ -162,6 +163,10 @@ public side effect outside $ship boundary -> side-effect-boundary-violated, next
 proof verifier mismatch or stale current-artifact binding -> proof-stale, next_owner=$goal-grind
 all required receipts current -> complete
 ```
+
+ATCG-v1 must not infer a missing receipt from final report prose, `update_plan`,
+a PR body, or a proof summary. Those artifacts may reference evidence, but they
+are not the evidence owner.
 
 ## Hard blocker names
 
