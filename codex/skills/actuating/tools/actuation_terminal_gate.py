@@ -42,19 +42,10 @@ HARD_REASON_ORDER = [
     "blocked-hylo-frontier-missing",
     "blocked-hylo-fold-missing",
     "blocked-hylo-terminal-missing",
-    "blocked-unsupported-controller",
     "cas-review-blocked",
     "proof-stale",
     "side-effect-boundary-violated",
 ]
-INTERLOCK_BLOCKERS = {
-    "none",
-    "blocked-loop-contract-missing",
-    "blocked-loop-contract-stale",
-    "blocked-hylo-frontier-missing",
-    "blocked-hylo-fold-missing",
-    "blocked-unsupported-controller",
-}
 
 
 class TerminalGateError(ValueError):
@@ -222,7 +213,6 @@ def hard_completion_reasons_for(context: dict[str, Any]) -> list[str]:
         reasons.extend(hyl_reasons_for(hyl, artifact, alsr))
 
     if loop_required and not loop_receipts_exempt:
-        reasons.extend(actuation_interlock_reasons_for(context, loop, artifact))
         reasons.extend(hsr_reasons_for(loop, hsr, artifact))
 
     selected_loop = object_from(loop.get("selected_loop"))
@@ -282,79 +272,6 @@ def fusion_receipt_reasons_for(context: dict[str, Any], loop: dict[str, Any]) ->
     if not isinstance(receipt.get("proof_ref"), str) or not receipt.get("proof_ref"):
         reasons.append("fusion_receipt.proof_ref:missing")
     return reasons
-
-
-def actuation_interlock_reasons_for(context: dict[str, Any], loop: dict[str, Any], artifact: dict[str, Any]) -> list[str]:
-    if "actuation_interlock" in context:
-        raw_interlock = context.get("actuation_interlock")
-    else:
-        raw_interlock = loop.get("actuation_interlock")
-    if raw_interlock is not None and not isinstance(raw_interlock, dict):
-        return ["blocked-loop-contract-missing", "actuation_interlock:must-be-object"]
-
-    interlock = object_from(raw_interlock)
-    if not interlock:
-        return ["blocked-loop-contract-missing", "actuation_interlock:missing"]
-
-    reasons: list[str] = []
-    blocker = interlock.get("blocker")
-    if blocker not in INTERLOCK_BLOCKERS:
-        reasons.append("actuation_interlock.blocker:invalid")
-    elif blocker != "none":
-        append_reason(reasons, blocker)
-
-    binding = object_from(interlock.get("current_binding"))
-    if not binding:
-        append_reason(reasons, "blocked-loop-contract-missing")
-        reasons.append("actuation_interlock.current_binding:missing")
-    else:
-        compare_interlock_binding(reasons, binding, artifact)
-
-    if explicit_no(interlock.get("current")):
-        append_reason(reasons, "blocked-loop-contract-stale")
-        reasons.append("actuation_interlock.current:not-yes")
-
-    if not as_yes(interlock.get("mutation_allowed")):
-        if not interlock_has_hard_blocker(reasons):
-            append_reason(reasons, "blocked-hylo-frontier-missing")
-        reasons.append("actuation_interlock.mutation_allowed:not-yes")
-
-    if not as_yes(interlock.get("continuation_allowed")):
-        if not interlock_has_hard_blocker(reasons):
-            append_reason(reasons, "blocked-hylo-fold-missing")
-        reasons.append("actuation_interlock.continuation_allowed:not-yes")
-
-    return reasons
-
-
-def compare_interlock_binding(reasons: list[str], binding: dict[str, Any], artifact: dict[str, Any]) -> None:
-    branch = binding.get("branch")
-    if not isinstance(branch, str) or not branch:
-        append_reason(reasons, "blocked-loop-contract-missing")
-        reasons.append("actuation_interlock.current_binding.branch:missing")
-    elif artifact.get("branch") and branch != artifact.get("branch"):
-        append_reason(reasons, "blocked-loop-contract-stale")
-        reasons.append("actuation_interlock.current_binding.branch:artifact-mismatch")
-
-    head = first_present(binding, ("head", "head_sha"))
-    if not isinstance(head, str) or not head:
-        append_reason(reasons, "blocked-loop-contract-missing")
-        reasons.append("actuation_interlock.current_binding.head:missing")
-    elif artifact.get("head_sha") and head != artifact.get("head_sha"):
-        append_reason(reasons, "blocked-loop-contract-stale")
-        reasons.append("actuation_interlock.current_binding.head:artifact-mismatch")
-
-    diff = first_present(binding, ("diff_fingerprint", "diff_digest"))
-    if not isinstance(diff, str) or not diff:
-        append_reason(reasons, "blocked-loop-contract-missing")
-        reasons.append("actuation_interlock.current_binding.diff_fingerprint:missing")
-    elif artifact.get("diff_fingerprint") and diff != artifact.get("diff_fingerprint"):
-        append_reason(reasons, "blocked-loop-contract-stale")
-        reasons.append("actuation_interlock.current_binding.diff_fingerprint:artifact-mismatch")
-
-
-def interlock_has_hard_blocker(reasons: list[str]) -> bool:
-    return any(reason in INTERLOCK_BLOCKERS and reason != "none" for reason in reasons)
 
 
 def loop_receipts_required(loop: dict[str, Any], hsr: dict[str, Any]) -> bool:
@@ -1301,7 +1218,7 @@ def required_receipts_for(proof_patch: dict[str, Any], cas: dict[str, Any], prof
     if direct_action_fused_requested(loop):
         receipts.append("fusion_receipt")
     elif loop_receipts_required(loop, hsr):
-        receipts.extend(["actuation_interlock", "alsr", "hyl", "terminal_hsr"])
+        receipts.extend(["alsr", "hyl", "terminal_hsr"])
     if as_yes(object_from(loop.get("goal_focus")).get("required")):
         receipts.append("goal_focus_frame_chain")
     if object_from(loop.get("refactor_kernel")).get("selected") == "yes" or as_yes(object_from(loop.get("refactor_kernel")).get("selected")):
@@ -1315,10 +1232,6 @@ def required_receipts_for(proof_patch: dict[str, Any], cas: dict[str, Any], prof
     if as_yes(delivery.get("publication_required")) or closure_candidate == "ship-complete":
         receipts.append("ship_result")
     return unique(receipts)
-
-
-def receipts_require_interlock(receipts: list[Any]) -> bool:
-    return any(receipt in receipts for receipt in ("alsr", "hyl", "terminal_hsr", "goal_focus_frame_chain"))
 
 
 def next_owner_for(blocked: list[str], pending: list[str]) -> str:
@@ -1343,8 +1256,6 @@ def next_owner_for(blocked: list[str], pending: list[str]) -> str:
         return "$goal-actuating"
     if any(reason == "side-effect-boundary-violated" for reason in combined):
         return "$ship"
-    if any(reason == "blocked-unsupported-controller" for reason in combined):
-        return "human"
     if any(reason.startswith("fusion_receipt") or reason.startswith("goal_focus") for reason in combined):
         return "$goal-actuating"
     if any(reason.startswith("blocked-loop-contract") or reason.startswith("blocked-hylo") or reason.startswith("alsr") or reason.startswith("hyl") or reason.startswith("hsr") or reason.startswith("material_mutations") or reason.startswith("selected_loop") for reason in combined):
@@ -1401,8 +1312,6 @@ def validate_decision(value: dict[str, Any]) -> dict[str, Any]:
         receipts = d.get("required_receipts") if isinstance(d.get("required_receipts"), list) else []
         if d.get("closure_candidate") == "proof-patch" and "proof_patch" not in receipts:
             errors.append("complete.required_receipts.proof_patch:missing")
-        if receipts_require_interlock(receipts) and "actuation_interlock" not in receipts:
-            errors.append("complete.required_receipts.actuation_interlock:missing")
         if d.get("closure_candidate") == "ship-complete":
             if "add_v1_delivery_decision" not in receipts:
                 errors.append("complete.required_receipts.add_v1_delivery_decision:missing")

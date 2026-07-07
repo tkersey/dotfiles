@@ -534,9 +534,6 @@ plan_source_contract:
 `<proposed_plan>` block and performs its fixed-point planning loop with PSR-v1.
 `$plan` does not grant mutation authority.
 
-The PSC-v1 handoff is source authority only. It preserves accepted semantics for
-`$plan`; it is not an actuation receipt, an evidence fold, or completion proof.
-
 Do not auto-run `$plan` when any of these are true:
 
 ```text

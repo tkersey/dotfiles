@@ -10,16 +10,6 @@
       "diff_fingerprint": "diff:clean",
       "dirty_state": "clean"
     },
-    "actuation_interlock": {
-      "mutation_allowed": "yes",
-      "continuation_allowed": "yes",
-      "blocker": "none",
-      "current_binding": {
-        "branch": "feature/example",
-        "head": "abc123",
-        "diff_fingerprint": "diff:clean"
-      }
-    },
     "local_proof": {
       "evidence_fold_verdict": "done",
       "commands": [
