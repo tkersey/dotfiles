@@ -44,6 +44,26 @@ Do not keep going unless the previous action was checked.
 Do not claim completion until the terminal gate allows it.
 ```
 
+## Essential governance spine
+
+The essential `$actuating` spine is:
+
+```text
+accepted source
+-> current loop receipt or valid FUSION-v1
+-> unfolded work item/frontier
+-> HSR-v1 material step
+-> current evidence fold
+-> proof/review closure
+-> ATCG-v1
+-> proof-patch or `$ship` handoff when publication was requested
+```
+
+Everything else is supporting machinery. Work graphs, `update_plan`, summaries,
+progress projections, cached checks, stale review runs, and raw review text may
+help select the next action, but they are not receipt evidence and cannot
+replace the spine.
+
 ## Removed controller path
 
 The old transaction-controller/APMA path is not active in this workspace. If the
@@ -77,6 +97,10 @@ direct user goal with enough scope, constraints, and proof checks
 review findings bound to the current diff and intended change
 plan handoff for goal-artifact execution
 ```
+
+These sources authorize routing only. They do not authorize mutation unless the
+loop/fusion receipt, unfolded work item, and evidence-fold requirements below
+are also current for the branch/head/diff.
 
 If none exists, run `$spec-pipeline` in gate-only/no-plan mode or stop with:
 
@@ -112,6 +136,9 @@ For material runs, `$actuating` must establish one of:
 valid FUSION-v1 direct-action receipt
 current ALSR-v1 + HYL-v1 + HSR-v1 chain
 ```
+
+The receipt must bind the current branch, head, and diff. A prose declaration,
+checklist item, or `update_plan` row is not a loop receipt.
 
 If none exists, stop with:
 
@@ -315,7 +342,9 @@ ATCG-v1 can_mark_goal_complete = yes
 ```
 
 Do not substitute local proof, a proof-complete graph, cached CAS receipts, or
-ADD-v1 `handoff_to_ship` for terminal completion.
+ADD-v1 `handoff_to_ship` for terminal completion. A `$ship` result is delivery
+evidence, not completion evidence, until ATCG-v1 folds it into the terminal
+state.
 
 ## Stop rules
 

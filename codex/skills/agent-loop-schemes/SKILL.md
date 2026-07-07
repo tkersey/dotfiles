@@ -50,6 +50,10 @@ No continuation without fold.
 No completion without terminal algebra.
 ```
 
+The essential receipts are ALSR-v1, HYL-v1, HSR-v1, evidence fold, and ATCG-v1.
+Planning views, work graphs, `update_plan`, and prose summaries are projections
+over those receipts. They may guide attention, but they do not prove control.
+
 ## Protocol objects
 
 ### ALSR-v1: Agent Loop Scheme Receipt
@@ -236,6 +240,8 @@ current actuation state
 ```
 
 The work graph is a projection of this machine, not the source of truth.
+`update_plan` is also a projection. If either projection disagrees with the
+current HYL state, the HYL state wins and the projection must be refreshed.
 
 If work happens inside HYL, the work graph can be regenerated.
 If work happens outside HYL, it is invalid actuation.
@@ -478,6 +484,9 @@ proof complete + publication requested -> emit ShipHandoff effect
 ```
 
 `$ship` owns PR creation, update, promotion, and publication.
+
+Shipping is a terminal side effect handler, not proof of actuation completion.
+ATCG-v1 must fold the `$ship` evidence before a parent goal can complete.
 
 ## Compaction and resume
 
