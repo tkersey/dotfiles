@@ -72,7 +72,7 @@ No-code review modes have a smaller spine:
 ```text
 current review source
 -> review-fold
--> triage report or remediation plan
+-> triage report or resolution fold -> remediation plan
 -> stop without mutation, proof-patch, ATCG, or `$ship`
 ```
 

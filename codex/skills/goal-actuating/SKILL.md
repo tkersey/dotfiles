@@ -191,13 +191,15 @@ if no accepted spec -> blocked
 if topology nontrivial and no Scheme Plan -> produce scheme-planner node
 if material and no ALSR/HYL -> produce agent-loop-schemes node
 if no goal contract -> produce goal-contract node
-if no-code review mode -> produce review-fold or resolution-fold node and stop before material execution
 if runtime interlock blocks material mutation -> emit blocked HSR-v1 node
+if no-code review mode and no current review source -> produce review-source node
 if review requested and no review profile -> produce review-profile node
 if review requested and no standard CAS result -> produce standard CAS review node
 if required auxiliary review lane missing or invalidated -> produce auxiliary review-lens evidence node
 if CAS lane findings unclassified -> produce review-fold node
-if review requested and no resolution agenda -> produce resolution-fold node
+if no-code triage and folded review source current -> terminal triage-report
+if remediation-plan or review-closeout and no resolution agenda -> produce resolution-fold node
+if no-code remediation-plan and resolution agenda current -> terminal remediation-plan
 if accepted liabilities remain -> produce patch/refactor/branch-race node
 if proof missing -> produce verifier/proof node
 if standard clean CAS count < 3 -> produce fresh standard CAS review node
