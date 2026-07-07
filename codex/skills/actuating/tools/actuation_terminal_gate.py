@@ -1318,7 +1318,7 @@ def required_receipts_for(proof_patch: dict[str, Any], cas: dict[str, Any], prof
 
 
 def receipts_require_interlock(receipts: list[Any]) -> bool:
-    return any(receipt in receipts for receipt in ("alsr", "hyl", "terminal_hsr"))
+    return any(receipt in receipts for receipt in ("alsr", "hyl", "terminal_hsr", "goal_focus_frame_chain"))
 
 
 def next_owner_for(blocked: list[str], pending: list[str]) -> str:

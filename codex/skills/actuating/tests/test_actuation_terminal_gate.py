@@ -209,6 +209,12 @@ class ActuationTerminalGateTests(unittest.TestCase):
         with self.assertRaisesRegex(MODULE.TerminalGateError, "complete.required_receipts.actuation_interlock:missing"):
             MODULE.make_completion_allowance(decision)
 
+    def test_completion_allowance_rejects_goal_focus_decision_without_interlock_receipt(self) -> None:
+        decision = self.decision("atcg-v1.complete.example.json")
+        decision["actuation_terminal_decision"]["required_receipts"].append("goal_focus_frame_chain")
+        with self.assertRaisesRegex(MODULE.TerminalGateError, "complete.required_receipts.actuation_interlock:missing"):
+            MODULE.make_completion_allowance(decision)
+
     def test_check_rejects_complete_without_artifact_binding(self) -> None:
         decision = self.decision("atcg-v1.complete.example.json")
         decision["actuation_terminal_decision"]["current_artifact_binding"]["head_sha"] = ""
