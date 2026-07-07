@@ -73,7 +73,7 @@ Before any material mutation, and before continuing after any material action,
 actuation_interlock:
   mutation_allowed: yes | no
   continuation_allowed: yes | no
-  blocker: none | blocked-loop-contract-missing | blocked-loop-contract-stale | blocked-hylo-frontier-missing | blocked-hylo-fold-missing
+  blocker: none | blocked-loop-contract-missing | blocked-loop-contract-stale | blocked-hylo-frontier-missing | blocked-hylo-fold-missing | blocked-unsupported-controller
   current_binding:
     branch:
     head:
@@ -81,9 +81,11 @@ actuation_interlock:
 ```
 
 `mutation_allowed: yes` requires either a valid FUSION-v1 receipt or a current
-ALSR-v1 + HYL-v1 + HSR-v1 chain with an unfolded work item/frontier. If the
-interlock is `no`, stop immediately with the blocker. Do not keep inspecting,
-patching, or relying on `update_plan` to make progress inside `$actuating`.
+ALSR-v1 + HYL-v1 with an unfolded work item/frontier. HSR-v1 is required once a
+material step exists, and `continuation_allowed: yes` requires the previous HSR
+fold to be current. If the interlock is `no`, stop immediately with the blocker.
+Do not keep inspecting, patching, or relying on `update_plan` to make progress
+inside `$actuating`.
 
 ## Removed controller path
 
@@ -156,7 +158,8 @@ For material runs, `$actuating` must establish one of:
 
 ```text
 valid FUSION-v1 direct-action receipt
-current ALSR-v1 + HYL-v1 + HSR-v1 chain
+current ALSR-v1 + HYL-v1 with an unfolded work item/frontier
+current HSR-v1 fold before continuation after any material action
 ```
 
 The receipt must bind the current branch, head, and diff. A prose declaration,

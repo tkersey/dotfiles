@@ -16,7 +16,8 @@ Before a material change, `$actuating` must have one of:
 
 ```text
 valid FUSION-v1 receipt for one simple direct action
-current ALSR-v1 + HYL-v1 + HSR-v1 receipt chain
+current ALSR-v1 + HYL-v1 with an unfolded work item/frontier
+current HSR-v1 fold before continuation after any material action
 ```
 
 The caller must make the decision explicit before mutation:

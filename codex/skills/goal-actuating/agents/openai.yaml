@@ -11,10 +11,11 @@ interface:
     current ALSR/HYL exists, hand off to $agent-loop-schemes. Interpret HYL-v1 as
     a defunctionalized actuation machine: unfold a legal node/frontier, execute
     only that node/frontier, fold evidence, emit HSR-v1, and continue or stop.
-    If the runtime interlock is missing, stale, lacks an unfolded node, or lacks
-    a previous fold, emit the canonical blocked HSR-v1 state instead of
-    inspecting or patching further. update_plan and summaries are projections,
-    not receipt evidence.
+    If invoked directly or implicitly, emit a positive runtime interlock from
+    current ALSR/HYL/frontier state before action. If the runtime interlock is
+    missing, stale, lacks an unfolded node, or lacks a previous fold, emit the
+    canonical blocked HSR-v1 state instead of inspecting or patching further.
+    update_plan and summaries are projections, not receipt evidence.
     Review modes are triage, remediation-plan, and review-closeout; triage and
     remediation-plan do not implement, while review-closeout implements only
     accepted code-change liabilities. Fresh or exhaustive review must use $cas

@@ -45,10 +45,25 @@ class ActuationTerminalGateTests(unittest.TestCase):
         decision = MODULE.make_decision(self.context("terminal-context.hylo-complete.example.json"))
         body = decision["actuation_terminal_decision"]
         self.assertEqual(body["verdict"], "complete")
+        self.assertIn("actuation_interlock", body["required_receipts"])
         self.assertIn("alsr", body["required_receipts"])
         self.assertIn("hyl", body["required_receipts"])
         self.assertIn("terminal_hsr", body["required_receipts"])
         self.assertIn("goal_focus_frame_chain", body["required_receipts"])
+
+    def test_hylo_context_without_interlock_blocks_completion(self) -> None:
+        context = deepcopy(self.context("terminal-context.hylo-complete.example.json"))
+        del context["actuation_interlock"]
+        self.assert_blocks_with(context, "actuation_interlock:missing", "$goal-actuating")
+
+    def test_interlock_continuation_denial_blocks_completion(self) -> None:
+        context = deepcopy(self.context("terminal-context.hylo-complete.example.json"))
+        context["actuation_interlock"]["continuation_allowed"] = "no"
+        context["actuation_interlock"]["blocker"] = "blocked-hylo-fold-missing"
+        self.assert_blocks_with(context, "blocked-hylo-fold-missing", "$goal-actuating")
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertIn("actuation_interlock.continuation_allowed:not-yes", body["blocked_reasons"])
 
     def test_material_run_without_hsr_chain_blocks(self) -> None:
         context = deepcopy(self.context("terminal-context.hylo-complete.example.json"))

@@ -62,7 +62,7 @@ ATCG-v1 consumes current receiver-owned evidence:
 
 ```text
 current branch/head/diff binding
-latest actuation_interlock decision
+latest actuation_interlock decision for material ALSR/HYL runs
 FUSION-v1 receipt or ALSR/HYL/HSR receipts
 optional goal-focus frame state
 local evidence-fold verdict and proof commands
@@ -81,7 +81,7 @@ For material work, ATCG requires one of:
 
 ```text
 valid FUSION-v1 receipt for one simple action
-current ALSR-v1 + HYL-v1 + terminal HSR-v1 chain
+current positive actuation_interlock + current ALSR-v1 + HYL-v1 + terminal HSR-v1 chain
 ```
 
 A raw boolean such as `direct_action_fused: yes` is not enough. A fused run must

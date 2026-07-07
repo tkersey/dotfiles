@@ -9,10 +9,12 @@ interface:
     when one is not already available. Use $recursion-scheme-planner when the
     work shape is not simple. For material work, emit an actuation_interlock
     before mutation. mutation_allowed=yes requires either a valid FUSION-v1
-    direct-action receipt or current ALSR-v1, HYL-v1, and HSR-v1 receipts with
-    an unfolded work item/frontier bound to the current branch/head/diff.
+    direct-action receipt or current ALSR-v1 and HYL-v1 receipts with an
+    unfolded work item/frontier bound to the current branch/head/diff; HSR-v1 is
+    required for continuation after a material step.
     mutation_allowed=no stops immediately with blocked-loop-contract-missing,
-    blocked-loop-contract-stale, or blocked-hylo-frontier-missing. Do not use
+    blocked-loop-contract-stale, blocked-hylo-frontier-missing,
+    blocked-hylo-fold-missing, or blocked-unsupported-controller. Do not use
     update_plan, summaries, cached checks, or chat history as receipt evidence.
     $goal-actuating executes the selected work item or safe frontier and folds
     evidence after each material action before any continuation. Review requests default to
