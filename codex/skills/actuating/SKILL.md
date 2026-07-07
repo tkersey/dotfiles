@@ -64,6 +64,27 @@ progress projections, cached checks, stale review runs, and raw review text may
 help select the next action, but they are not receipt evidence and cannot
 replace the spine.
 
+## Runtime interlock
+
+Before any material mutation, and before continuing after any material action,
+`$actuating` must make the interlock decision explicit:
+
+```yaml
+actuation_interlock:
+  mutation_allowed: yes | no
+  continuation_allowed: yes | no
+  blocker: none | blocked-loop-contract-missing | blocked-loop-contract-stale | blocked-hylo-frontier-missing | blocked-hylo-fold-missing
+  current_binding:
+    branch:
+    head:
+    diff_fingerprint:
+```
+
+`mutation_allowed: yes` requires either a valid FUSION-v1 receipt or a current
+ALSR-v1 + HYL-v1 + HSR-v1 chain with an unfolded work item/frontier. If the
+interlock is `no`, stop immediately with the blocker. Do not keep inspecting,
+patching, or relying on `update_plan` to make progress inside `$actuating`.
+
 ## Removed controller path
 
 The old transaction-controller/APMA path is not active in this workspace. If the
@@ -80,12 +101,13 @@ controller. It must not pretend that local edits are a fenced actuation run.
    review campaigns, migrations, proof fanout, or unclear stopping conditions.
 4. Use `$agent-loop-schemes` when material work needs ALSR/HYL loop receipts.
 5. Send the accepted work to `$goal-actuating`.
-6. Use `$cas` when workflow review is requested or required.
-7. Pass findings through `$review-fold` before any review-driven code change.
-8. Implement only accepted code-change liabilities.
-9. Fold current evidence after each material action.
-10. Run ATCG-v1 before any completion claim.
-11. Emit a proof-patch result or a `$ship` handoff when PR publication/update was requested.
+6. Emit the runtime interlock before the first material mutation.
+7. Use `$cas` when workflow review is requested or required.
+8. Pass findings through `$review-fold` before any review-driven code change.
+9. Implement only accepted code-change liabilities.
+10. Fold current evidence after each material action before continuing.
+11. Run ATCG-v1 before any completion claim.
+12. Emit a proof-patch result or a `$ship` handoff when PR publication/update was requested.
 
 ## Source requirement
 
@@ -360,6 +382,8 @@ three clean standard CAS reviews are required but cannot be completed
 parallel fanout would cross shared invariants or conflicting resources
 ALSR/HYL/HSR is required but missing or stale
 FUSION-v1 is claimed but not proven
+actuation interlock returns `mutation_allowed: no`
+actuation interlock returns `continuation_allowed: no`
 unfold is missing before material mutation
 fold is missing after material action
 goal-focus frames are missing, stale, or not folded to parent
@@ -375,6 +399,10 @@ Actuating:
 - source: direct goal | accepted spec | review
 - authority source:
 - scheme plan: none|required|present
+- actuation interlock:
+  - mutation_allowed:
+  - continuation_allowed:
+  - blocker:
 - loop receipt:
   - fusion receipt:
   - ALSR-v1:
