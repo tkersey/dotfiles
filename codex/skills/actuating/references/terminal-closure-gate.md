@@ -141,8 +141,20 @@ invariant-ace        -> invariant-gate-v1
 complexity-mitigator -> complexity-preflight-v1
 ```
 
-`lens_evidence_state` must be `valid` for terminal completion. `not-required` is
-valid only for lanes explicitly not selected and still needs a reason.
+`lens_evidence_state` and `source_validity` must both be `valid` for terminal
+completion. `not-required` is valid only for lanes explicitly not selected and
+still needs a reason.
+
+Auxiliary source validity matrix:
+
+```text
+valid clean             satisfies auxiliary coverage; standard count unchanged
+valid findings-folded   folded evidence is current; accepted artifact changes reset standard count
+invalid clean           no closeout credit; lane remains unsatisfied
+invalid findings        candidate-pressure only until owner-boundary validation resolves it
+selected-pending        selected but not run; blocks ATCG
+candidate-pressure      non-certifying findings under validation; blocks ATCG
+```
 
 ## Common outcomes
 
@@ -155,7 +167,7 @@ previous material action without fold evidence -> blocked-hylo-fold-missing, nex
 completion without terminal HSR -> blocked-hylo-terminal-missing, next_owner=$goal-actuating
 goal-focus frame not folded to parent -> blocked-hylo-fold-missing, next_owner=$goal-actuating
 CAS required + standard clean runs < required -> blocked, next_owner=$cas
-required auxiliary lane missing|not-folded|blocked|rerun-required|stale -> cas-review-blocked, next_owner=$cas
+required auxiliary lane missing|not-folded|selected-pending|candidate-pressure|blocked|rerun-required|stale|invalid-proof -> cas-review-blocked, next_owner=$cas
 proof-patch required + missing/stale -> continue, next_owner=$proof-patch
 ADD-v1 handoff + ship result missing -> continue, next_owner=$ship
 public side effect outside $ship boundary -> side-effect-boundary-violated, next_owner=$ship

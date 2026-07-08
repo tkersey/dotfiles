@@ -321,12 +321,20 @@ findingFingerprint = best-effort same issue across attempts
 reviewAttemptId = stable attempt row or compatibility projection ID
 laneRole = standard only when the attempt is the ordinary standard lane
 contributesToStandardStreak = true only for normalized clean standard attempts, not finding rows
+source_validity = valid only when the attempt is tuple-bound to the intended current artifact
 ```
 
 If native CAS output cannot provide a source finding ID, compatibility
 normalization may synthesize `findingId` from review attempt identity, tuple,
 lane, normalized location, title/body hashes, and ordinal. It must still mark
 cross-attempt matching as best-effort through `findingFingerprint`.
+
+CAS transports identity; caller workflows own closure accounting. A custom lens
+with `base=unknown`, `target_identity_unavailable`, missing head, missing target
+fingerprint, or stale tuple binding must be projected as `invalid-proof` for
+auxiliary closeout. Dirty invalid-proof findings may still be useful review
+pressure after owner-boundary validation, but clean invalid-proof output must not
+clear an auxiliary lane or standard clean-review requirement.
 
 Downstream aliases may convert these fields to snake_case (`finding_id`,
 `finding_fingerprint`, `review_attempt_id`, and so on), but CAS should preserve

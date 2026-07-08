@@ -257,6 +257,24 @@ complexity-mitigator reviewability stalls, repeated owner-boundary churn, boolea
 When workflow review is required, `review_profile` must explicitly account for
 all auxiliary lanes as selected/folded or `not-required` with a reason.
 
+Auxiliary source validity matrix:
+
+```text
+valid clean             satisfies that auxiliary obligation; standard count unchanged
+valid findings-folded   may block or produce accepted liabilities; artifact changes reset standard count
+invalid clean           grants no closeout credit
+invalid findings        becomes candidate-pressure until owner-boundary validation resolves it
+selected-pending        blocks ATCG until run, waived, or resolved
+not-required            allowed only with a source-bound reason
+```
+
+Selected lanes in `clean` or `findings-folded` state must carry
+`source_validity=valid`, the expected lens contract, valid lens evidence, current
+`head_sha`, current `target_fingerprint`, and a current evidence reference.
+`base=unknown`, `target_identity_unavailable`, stale tuple binding, or missing
+target identity is `invalid-proof`: useful dirty findings may be quarantined as
+candidate pressure, but clean output cannot clear the lane.
+
 ## Refactor-kernel escalation
 
 When repeated accepted liabilities share one owner boundary, missing abstraction,
@@ -398,6 +416,9 @@ Actuating:
   - standard CAS clean-run counter reset: yes|no
 - review source / CAS verdict, if required:
 - normalized standard CAS clean runs: 0|1|2|3|not-required
+- auxiliary lanes:
+  - footgun-finder|invariant-ace|complexity-mitigator each not-required|selected-pending|candidate-pressure|clean|findings-folded|blocked|rerun-required
+  - selected lanes include `source_validity`, `lens_contract`, `lens_evidence_state`, `lens_evidence_ref`, `head_sha`, and `target_fingerprint`
 - goal contract / work list:
 - review-fold disposition:
 - actuation escalation receipt:
