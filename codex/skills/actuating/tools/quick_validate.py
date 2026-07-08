@@ -40,6 +40,7 @@ def main() -> int:
         "tests/test_actuation_refactor_kernel_gate.py",
         "tests/test_actuation_terminal_gate.py",
         "tests/test_aer_contract.py",
+        "tests/test_review_mode_contract.py",
         "assets/apma-v1.example.json",
         "assets/delivery-context.ready.example.json",
         "assets/delivery-context.no-pr-intent.example.json",
@@ -68,6 +69,7 @@ def main() -> int:
         run_test(ROOT / "tests/test_actuation_refactor_kernel_gate.py"),
         run_test(ROOT / "tests/test_actuation_terminal_gate.py"),
         run_test(ROOT / "tests/test_aer_contract.py"),
+        run_test(ROOT / "tests/test_review_mode_contract.py"),
     ]
     ok = all(row["returncode"] == 0 for row in tests)
     print(json.dumps({"actuating_quick_validate": {"verdict": "pass" if ok else "fail", "tests": tests}}, indent=2))

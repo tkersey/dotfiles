@@ -65,6 +65,10 @@ skill_decision_contract:
       description: Run standard CAS review and selected auxiliary review lenses while preserving the standard-only clean streak.
       aliases: [cas-review-bundle, standard-review, footgun-finder, invariant-ace, complexity-mitigator]
       terminal: "no"
+    - route_id: ACT-REVIEW-NO-CODE
+      description: End triage or remediation-plan with a mode-terminal review disposition report or remediation plan and no material closure claim.
+      aliases: [triage-report, remediation-plan, no-code-review, mode-terminal]
+      terminal: "yes"
     - route_id: ACT-ATCG
       description: Run terminal closure gate before completion.
       aliases: [ATCG-v1]
@@ -141,33 +145,42 @@ skill_decision_contract:
       rationale: Local focus frames may guide work but only the parent goal plus ATCG may close the run.
     - clause_id: ACT-REVIEW-001
       trigger_refs: [ACT-REVIEW]
-      expected_routes: [ACT-CAS-REVIEW, ACT-CAS-REVIEW-LANES, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
+      expected_routes: [ACT-CAS-REVIEW, ACT-CAS-REVIEW-LANES, ACT-REVIEW-NO-CODE, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
-        - standard CAS review verdict when workflow code review is required
+        - standard CAS review verdict when workflow code review is fresh, exhaustive, or required for material closeout
+        - current review source for triage or remediation-plan
         - review-fold disposition
         - resolution fold for remediation-plan or review-closeout
-        - three clean normalized standard CAS review attempts unless explicitly lowered
+        - loop receipts, proof-patch, three clean normalized standard CAS review attempts, and ATCG only for review-closeout or material closure
       success_signals:
         - fresh or exhaustive workflow review comes from $cas
+        - ACT-REVIEW-NO-CODE terminal=yes means mode-terminal route stop, not ATCG terminal completion
+        - Use supplied existing GitHub, human, or CAS findings when present
+        - CAS runs only when no current review source exists or fresh review is explicitly requested
+        - No-code outputs must report review source/currentness
+        - triage and remediation-plan stop without material mutation or completion claims
+        - review-closeout with missing tuple-bound CAS evidence routes to `$cas`
+        - terminal completion still requires tuple-bound clean CAS evidence and ATCG
         - review findings are classified before implementation
         - raw review findings are reduced into liabilities/classes before patching
         - only standard CAS review attempts count toward the three-clean-review closure bar
       failure_signals:
         - non-CAS critique substitutes for workflow code review
         - raw review prose directly drives code changes
+        - No-code review mode is incorrectly blocked on positive interlock, HSR-v1, proof-patch, or ATCG
         - cached CAS receipt counted as fresh repeated review
         - auxiliary review lens counted as a standard clean review
       rationale: Review stays strict while the resolution fold controls which findings become code changes.
     - clause_id: ACT-REVIEW-LANES-001
       trigger_refs: [ACT-REVIEW-LANES]
-      expected_routes: [ACT-CAS-REVIEW-LANES, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
+      expected_routes: [ACT-CAS-REVIEW-LANES, ACT-REVIEW-NO-CODE, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts:
         - review profile with standard plus selected auxiliary lanes
         - explicit not-required reason for every unselected auxiliary lane
         - folded auxiliary lane outcomes when selected
-        - standard-only clean-run counter
+        - standard-only clean-run counter for review-closeout or material closure
       success_signals:
         - auxiliary lane selection is recorded by $actuating/$goal-actuating
         - auxiliary lanes may block closeout but do not increment the standard clean streak
@@ -212,4 +225,4 @@ skill_decision_contract:
       rationale: Escalation should be visible before mutation and auditable afterward.
   instrumentation:
     decision_receipt: required
-    rationale: Material decisions include accepted-spec routing, scheme planning, loop receipt/fusion choice, review backend and lanes, repair-mode escalation, persistence mode, HYL/HSR execution legality, focus-frame closure, refactor-kernel outcome accounting, ATCG terminal closure, and proof/ship closure.
+    rationale: Material decisions include accepted-spec routing, scheme planning, loop receipt/fusion choice, review backend and lanes, repair-mode escalation, persistence mode, HYL/HSR execution legality, focus-frame closure, refactor-kernel outcome accounting, ATCG terminal closure, and proof/ship closure. No-code review decisions include review source/currentness, review-fold disposition, optional resolution fold, and an explicit mode-terminal stop without material closure.

@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "User-facing workflow for implementing approved work. It gets an accepted spec when needed, checks whether a loop receipt is required, runs the goal runtime, requires CAS-backed review when review is in scope, and closes only through proof plus ATCG."
+description: "User-facing workflow for implementing approved work and no-code review modes. It gets an accepted spec when needed, checks whether a loop receipt is required, runs the goal runtime, requires CAS-backed review when review is in scope, and closes material implementation only through proof plus ATCG."
 metadata:
   version: "7.1.0"
   activation_cost: medium
@@ -11,7 +11,8 @@ metadata:
 
 ## Mission
 
-Run implementation work without making the user manage the lower-level skills.
+Run implementation and review-routing work without making the user manage the
+lower-level skills.
 
 ```text
 implementation request or draft spec
@@ -27,6 +28,8 @@ Use it as:
 
 ```text
 /goal $actuating implement the accepted spec
+/goal $actuating triage this PR
+/goal $actuating remediation-plan this PR
 /goal $actuating review-closeout this PR
 /goal $actuating dry-plan the accepted spec
 ```
@@ -58,14 +61,17 @@ controller. It must not pretend that local edits are a fenced actuation run.
 2. Treat the accepted spec as the source of truth.
 3. Use `$recursion-scheme-planner` when the work has branching, repeated classes,
    review campaigns, migrations, proof fanout, or unclear stopping conditions.
-4. Use `$agent-loop-schemes` when material work needs ALSR/HYL loop receipts.
-5. Send the accepted work to `$goal-actuating`.
-6. Use `$cas` when workflow review is requested or required.
-7. Pass findings through `$review-fold` before any review-driven code change.
-8. Implement only accepted code-change liabilities.
-9. Fold current evidence after each material action.
-10. Run ATCG-v1 before any completion claim.
-11. Emit a proof-patch result or a `$ship` handoff when PR publication/update was requested.
+4. If the explicit mode is `triage` or `remediation-plan`, use supplied existing
+   GitHub, human, or CAS findings when present; CAS runs only when no current
+   review source exists or fresh review is explicitly requested.
+5. Use `$agent-loop-schemes` when material work needs ALSR/HYL loop receipts.
+6. Send the accepted work to `$goal-actuating`.
+7. Use `$cas` when workflow review is requested or required.
+8. Pass findings through `$review-fold` before any review-driven code change.
+9. Implement only accepted code-change liabilities.
+10. Fold current evidence after each material action.
+11. Run ATCG-v1 before any material completion claim.
+12. Emit a proof-patch result or a `$ship` handoff when PR publication/update was requested.
 
 ## Source requirement
 
@@ -75,6 +81,7 @@ Before `$goal-actuating` runs, establish one of:
 accepted implementation spec
 direct user goal with enough scope, constraints, and proof checks
 review findings bound to the current diff and intended change
+current review source for a no-code review mode
 plan handoff for goal-artifact execution
 ```
 
@@ -137,6 +144,11 @@ If the previous material action has no current evidence fold, stop with:
 actuation verdict: blocked-hylo-fold-missing
 ```
 
+No-code review modes do not require material loop receipts, proof-patch, three
+clean CAS attempts, or ATCG. They become material only if the workflow accepts a
+code-change liability for implementation, performs a public side effect, or
+claims implementation completion.
+
 ## Direct-action fusion
 
 Direct-action fusion is allowed only when all are true:
@@ -198,12 +210,18 @@ Review modes are explicit:
 - `remediation-plan`: classify findings, produce a fix plan, and stop without implementation.
 - `review-closeout`: classify findings, implement only accepted code-change liabilities, prove closure, and stop at ATCG or `$ship` handoff.
 
+`triage` and `remediation-plan` end in mode-terminal outputs, not terminal
+completion. No-code outputs must report review source/currentness and must not
+claim implementation completion. ATCG is not required for a `triage` report or
+`remediation-plan`; proof-patch, three clean CAS attempts, and material loop
+receipts are not required either.
+
 Unqualified review closure requests default to `review-closeout`.
 
 When review closeout is active, the workflow is:
 
 ```text
-$cas review
+review source acquisition or $cas review
 -> $review-fold
 -> resolution fold
 -> optional branch-race/refactor-kernel decision
@@ -214,6 +232,11 @@ $cas review
 -> ATCG-v1
 -> $ship only when publication/update is requested
 ```
+
+Missing tuple-bound CAS evidence is a `$cas` acquisition node for
+`review-closeout`, not an entry failure. Terminal completion still requires
+tuple-bound independent fresh standard CAS clean evidence when review closeout
+requires CAS.
 
 Raw review text never reaches implementation directly.
 
@@ -302,10 +325,10 @@ proof closure, and `$ship` handoff.
 
 ## Terminal closure
 
-Before `$actuating` may report completion or call `update_goal complete`, run
-ATCG-v1 over the current branch/head/diff, loop receipts or fusion receipt,
-latest HSR/focus evidence, evidence fold, proof-patch, CAS state, delivery state,
-and side-effect boundary.
+Before `$actuating` may report material implementation completion or call
+`update_goal complete`, run ATCG-v1 over the current branch/head/diff, loop
+receipts or fusion receipt, latest HSR/focus evidence, evidence fold,
+proof-patch, CAS state, delivery state, and side-effect boundary.
 
 Completion is legal only when:
 
@@ -316,6 +339,10 @@ ATCG-v1 can_mark_goal_complete = yes
 
 Do not substitute local proof, a proof-complete graph, cached CAS receipts, or
 ADD-v1 `handoff_to_ship` for terminal completion.
+
+Mode-terminal no-code outputs are different: a `triage` report or
+`remediation-plan` can end successfully without terminal completion because it
+does not claim implementation closure.
 
 ## Stop rules
 
@@ -339,6 +366,11 @@ public tracker or PR side effects would occur without explicit intent
 ATCG-v1 does not return can_mark_goal_complete=yes
 ```
 
+For no-code review modes, missing CAS evidence is a blocker only when no current
+review source exists or fresh review was explicitly requested. For
+`review-closeout`, missing tuple-bound CAS evidence routes to `$cas` until
+terminal closeout evidence exists.
+
 ## Final report
 
 ```text
@@ -353,6 +385,7 @@ Actuating:
   - latest HSR-v1:
   - goal-focus frame:
 - mode / persistence:
+- mode-terminal output:
 - parallelism:
   - mode:
   - subagents used:

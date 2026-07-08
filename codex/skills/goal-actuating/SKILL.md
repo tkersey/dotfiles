@@ -1,6 +1,6 @@
 ---
 name: goal-actuating
-description: "Run an accepted implementation spec or direct /goal through the goal runtime. Interprets HYL-v1 as a defunctionalized actuation machine, emits HSR-v1 step receipts, schedules bounded subagents when safe, requires $cas for workflow review, and closes through proof plus ATCG."
+description: "Run an accepted implementation spec, direct /goal, or no-code review mode through the goal runtime. Interprets HYL-v1 for material work, emits HSR-v1 step receipts, schedules bounded subagents when safe, requires $cas for workflow review, and closes material work through proof plus ATCG."
 metadata:
   version: "2.1.0"
   activation_cost: medium
@@ -14,7 +14,7 @@ metadata:
 Run approved work through the goal workflow.
 
 ```text
-accepted implementation spec or direct goal
+accepted implementation spec, direct goal, or no-code review mode
 -> optional Scheme Plan
 -> ALSR-v1/HYL-v1 when material loop governance is required
 -> goal contract
@@ -25,6 +25,9 @@ accepted implementation spec or direct goal
 -> terminal ATCG
 -> proof
 ```
+
+No-code review modes stop earlier with a mode-terminal triage report or
+remediation plan.
 
 `$actuating` is the user-facing wrapper. `$goal-actuating` is the runtime that interprets HYL-v1.
 
@@ -66,17 +69,24 @@ goal_actuating_mode:
 4. If material loop governance is required and no current ALSR/HYL exists, hand off to `$agent-loop-schemes`.
 5. Derive a goal contract with `$goal-contract`.
 6. Choose `update_plan` or `goal-artifacts` persistence.
-7. Interpret HYL-v1: unfold a legal work node/frontier, execute it, fold evidence, and emit HSR-v1.
-8. If the workflow performs fresh or exhaustive review, select a CAS review profile and run required CAS review lanes.
-9. Classify standard and auxiliary review-lane findings with `$review-fold`.
-10. Run a resolution fold when review work needs a resolution plan.
-11. Create a work list with `$goal-workgraph` only when decomposition changes execution.
-12. Schedule bounded subagents only for explicit safe frontier nodes.
-13. Execute one useful action at a time with `$goal-grind`.
-14. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolution fold as appropriate.
-15. For `review-closeout` and exhaustive review, require three consecutive clean normalized **standard** `$cas` review attempts on the same artifact scope before completion.
-16. Run ATCG-v1 before completion.
-17. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
+7. If the mode is `triage` or `remediation-plan`, use supplied existing GitHub,
+   human, or CAS findings when present; CAS runs only when no current review
+   source exists or fresh review is explicitly requested.
+8. For no-code modes, classify findings with `$review-fold`, run the resolution
+   fold only for `remediation-plan`, report review source/currentness, and stop
+   without material mutation, proof-patch, three clean CAS attempts, or ATCG.
+9. Interpret HYL-v1 for material modes: unfold a legal work node/frontier,
+   execute it, fold evidence, and emit HSR-v1.
+10. If the workflow performs fresh or exhaustive review, select a CAS review profile and run required CAS review lanes.
+11. Classify standard and auxiliary review-lane findings with `$review-fold`.
+12. Run a resolution fold when review work needs a resolution plan.
+13. Create a work list with `$goal-workgraph` only when decomposition changes execution.
+14. Schedule bounded subagents only for explicit safe frontier nodes.
+15. Execute one useful action at a time with `$goal-grind`.
+16. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolution fold as appropriate.
+17. For `review-closeout` and exhaustive review, require three consecutive clean normalized **standard** `$cas` review attempts on the same artifact scope before completion.
+18. Run ATCG-v1 before material completion.
+19. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
 
 ## HYL-v1 interpreter
 
@@ -157,11 +167,15 @@ if no accepted spec -> blocked
 if topology nontrivial and no Scheme Plan -> produce scheme-planner node
 if material and no ALSR/HYL -> produce agent-loop-schemes node
 if no goal contract -> produce goal-contract node
+if no-code review mode and no current review source -> produce review-source or $cas acquisition node
+if no-code review mode and review findings unclassified -> produce review-fold node
+if no-code triage and folded review source current -> terminal triage-report
+if remediation-plan or review-closeout and no resolution agenda -> produce resolution-fold node
+if no-code remediation-plan and resolution agenda current -> terminal remediation-plan
 if review requested and no review profile -> produce review-profile node
-if review requested and no standard CAS result -> produce standard CAS review node
+if review-closeout and no standard CAS result -> produce standard CAS review node
 if required auxiliary review lane missing or invalidated -> produce auxiliary review-lens evidence node
 if CAS lane findings unclassified -> produce review-fold node
-if review requested and no resolution agenda -> produce resolution-fold node
 if accepted liabilities remain -> produce patch/refactor/branch-race node
 if proof missing -> produce verifier/proof node
 if standard clean CAS count < 3 -> produce fresh standard CAS review node
@@ -249,6 +263,31 @@ Explicit review mode names carry the mutation rule:
 - `remediation-plan`: classify findings, produce the fix plan, and stop without implementation.
 - `review-closeout`: classify findings, implement only accepted code-change liabilities, prove closure, and stop at ATCG or `$ship` handoff.
 
+No-code review modes do not require material loop receipts, proof-patch, three
+clean CAS attempts, or ATCG. They stop at a mode-terminal output and must report
+review source/currentness. They leave no implementation-completion claim behind.
+
+For `triage`:
+
+```text
+existing review source or $cas acquisition when needed
+-> $review-fold
+-> triage-report
+-> stop
+```
+
+For `remediation-plan`:
+
+```text
+existing review source or $cas acquisition when needed
+-> $review-fold
+-> resolution fold
+-> remediation-plan
+-> stop
+```
+
+For `review-closeout`:
+
 ```text
 workflow review_profile selection
 -> $cas standard review
@@ -264,6 +303,11 @@ workflow review_profile selection
 -> $proof-patch
 -> ATCG-v1
 ```
+
+Missing tuple-bound CAS evidence is a `$cas` acquisition node for
+`review-closeout`, not an entry failure. Terminal completion still requires
+tuple-bound independent fresh standard CAS clean evidence and ATCG
+`can_mark_goal_complete=yes`.
 
 Auxiliary lane selection:
 
@@ -310,6 +354,11 @@ parallel fanout would cross shared invariants or conflicting resources
 ATCG-v1 does not permit completion
 ```
 
+For no-code review modes, missing CAS evidence blocks only when there is no
+current review source or fresh review was explicitly requested. Missing
+proof-patch, clean CAS streak, or ATCG must not block `triage` or
+`remediation-plan`.
+
 ## Output
 
 ```text
@@ -319,6 +368,7 @@ Goal Actuation:
 - ALSR/HYL:
 - latest HSR:
 - mode / persistence:
+- mode-terminal output:
 - review profile:
   - standard CAS review: required|not-required, current verdict:
   - auxiliary lanes: footgun-finder|invariant-ace|complexity-mitigator each not-required|clean|findings-folded|blocked|rerun-required, with `lens_contract` / `lens_evidence_state` / `lens_evidence_ref` when selected

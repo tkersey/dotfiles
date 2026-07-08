@@ -2,7 +2,7 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Explicit implementation workflow with proof, review, loop, and terminal closure checks"
+  short_description: "Explicit implementation and no-code review workflow"
   default_prompt: >-
     Use $actuating only as the explicit /goal implementation workflow. First get
     an accepted implementation spec from $spec-pipeline in gate-only/no-plan mode
@@ -12,8 +12,14 @@ interface:
     mutation. $goal-actuating executes the selected work item or safe frontier
     and folds evidence after each material action. Review requests default to
     review-closeout unless the user asks for triage, remediation-plan, or another
-    no-change mode. Fresh or exhaustive workflow review must use $cas; findings
-    must pass through $review-fold; only accepted code-change liabilities may be
+    no-change mode. Triage and remediation-plan are no-code review modes: use
+    supplied existing GitHub, human, or CAS findings when present, run CAS only
+    when no current review source exists or fresh review is explicitly requested,
+    report review source/currentness, and stop without proof-patch, clean CAS
+    closeout, ATCG, or implementation completion claims. Missing tuple-bound CAS
+    evidence in review-closeout is a $cas acquisition node, not an entry failure.
+    Fresh or exhaustive workflow review must use $cas; findings must pass
+    through $review-fold; only accepted code-change liabilities may be
     implemented. Repeated accepted liabilities that share an owner boundary or
     missing abstraction require an AER-v1 decision before more mutation, and
     refactor-kernel work requires an RKO-v1 outcome after proof/review. Completion
