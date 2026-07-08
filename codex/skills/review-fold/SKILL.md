@@ -372,6 +372,12 @@ Duplicate, rejected, out-of-scope, already-proven proof-only, follow-up,
 already-resolved findings, and clean auxiliary evidence do not make the source
 dirty.
 
+Clean auxiliary evidence is clean only when the caller can bind it to a valid
+auxiliary source: current artifact, expected lens contract, valid lens evidence,
+valid source identity, and current evidence reference. Invalid auxiliary clean
+output is not clearance. Invalid auxiliary findings may be folded only as
+`candidate-pressure` until the owner boundary validates or rejects them.
+
 Reset conditions are caller-owned, but `$review-fold` should mark reset-worthy
 facts when review evidence shows them:
 
@@ -382,6 +388,7 @@ base/head/diff changed
 proof bar changed
 artifact-changing auxiliary remediation changed the artifact
 review source continuity is lost
+auxiliary source validity is invalid-proof, missing, or stale
 ```
 
 `$review-fold` may reject or mark findings proof-only, but it must not convert a

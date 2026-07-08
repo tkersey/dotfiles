@@ -124,7 +124,9 @@ Rules:
 - Auxiliary findings must be folded through `$review-fold` and may block closeout or become accepted liabilities.
 - Do not require unsupported `$cas` commands to produce semantic footgun/invariant/complexity lane labels. CAS transports and tuple-binds review evidence; the workflow owns auxiliary lens selection, folding, and blocker state.
 - A selected auxiliary lane must carry current `head_sha`, `target_fingerprint`, `lens_contract`, `lens_evidence_state`, and `lens_evidence_ref` before ATCG may complete. `clean` and `findings-folded` are not enough without the lane contract.
-- ATCG lane contracts are `footgun-lens-v1`, `invariant-gate-v1`, and `complexity-preflight-v1`. `lens_evidence_state` must be `valid` for completion.
+- ATCG lane contracts are `footgun-lens-v1`, `invariant-gate-v1`, and `complexity-preflight-v1`. `lens_evidence_state` and `source_validity` must both be `valid` for completion.
+- Auxiliary source validity is asymmetric: invalid dirty findings may become `candidate-pressure` after quarantine and owner-boundary validation, but invalid clean findings grant no closeout credit. `base=unknown`, `target_identity_unavailable`, stale tuple binding, or missing target identity is `invalid-proof`.
+- `selected-pending` and `candidate-pressure` block ATCG. Clear them only by obtaining valid folded lens evidence, resolving accepted liabilities and rerunning when needed, or explicitly marking the lane `not-required` with a source-bound reason.
 - When workflow review is required, `review_profile` must explicitly account for `footgun-finder`, `invariant-ace`, and `complexity-mitigator` as selected/folded evidence or `not-required` with a reason; absence is unknown coverage, not clean review.
 - Record `complexity_pressure` when standard or auxiliary reviews show repeated same-class findings, one-patch-per-comment pressure, review churn, or comprehension blockage. That pressure selects `complexity-mitigator` unless it is explicitly marked not applicable.
 - A code change from any lane resets the standard clean-review streak to zero.
@@ -371,7 +373,7 @@ Goal Actuation:
 - mode-terminal output:
 - review profile:
   - standard CAS review: required|not-required, current verdict:
-  - auxiliary lanes: footgun-finder|invariant-ace|complexity-mitigator each not-required|clean|findings-folded|blocked|rerun-required, with `lens_contract` / `lens_evidence_state` / `lens_evidence_ref` when selected
+  - auxiliary lanes: footgun-finder|invariant-ace|complexity-mitigator each not-required|selected-pending|candidate-pressure|clean|findings-folded|blocked|rerun-required, with `source_validity` / `lens_contract` / `lens_evidence_state` / `lens_evidence_ref` when selected
   - auxiliary blockers:
 - parallelism:
   - mode:

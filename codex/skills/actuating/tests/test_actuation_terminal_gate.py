@@ -133,6 +133,55 @@ class ActuationTerminalGateTests(unittest.TestCase):
         self.assertEqual(body["verdict"], "blocked")
         self.assertIn("review_profile.auxiliary_review_lanes.complexity-mitigator.lens_evidence_state:stale", body["blocked_reasons"])
 
+    def test_selected_pending_auxiliary_lane_blocks_completion(self) -> None:
+        context = deepcopy(self.context())
+        context["cas_review"] = satisfied_standard_cas()
+        context["review_profile"] = review_profile(**{"footgun-finder": {"state": "selected-pending", "reason": "Public API surface changed."}})
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        self.assert_blocks_with(context, "review_profile.auxiliary_review_lanes.footgun-finder:selected-pending", "$goal-actuating")
+
+    def test_invalid_clean_auxiliary_lane_does_not_clear_obligation(self) -> None:
+        context = deepcopy(self.context())
+        context["cas_review"] = satisfied_standard_cas()
+        context["review_profile"] = review_profile(
+            **{
+                "footgun-finder": {
+                    "state": "clean",
+                    **lens_evidence("footgun-finder", source_validity="invalid-proof"),
+                    "tuple": {"base_sha": "unknown", "head_sha": "abc123", "target_fingerprint": "diff:clean"},
+                }
+            }
+        )
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "blocked")
+        self.assertIn("review_profile.auxiliary_review_lanes.footgun-finder.source_validity:invalid-proof", body["blocked_reasons"])
+
+    def test_invalid_dirty_auxiliary_lane_remains_candidate_pressure(self) -> None:
+        context = deepcopy(self.context())
+        context["cas_review"] = satisfied_standard_cas()
+        context["review_profile"] = review_profile(
+            **{
+                "footgun-finder": {
+                    "state": "candidate-pressure",
+                    "source_validity": "invalid-proof",
+                    "reason": "Findings are quarantined until owner-boundary validation completes.",
+                }
+            }
+        )
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        self.assert_blocks_with(context, "review_profile.auxiliary_review_lanes.footgun-finder:candidate-pressure", "$goal-actuating")
+
+    def test_valid_folded_auxiliary_lane_can_complete(self) -> None:
+        context = deepcopy(self.context())
+        context["cas_review"] = satisfied_standard_cas()
+        context["review_profile"] = review_profile(**{"footgun-finder": {"state": "findings-folded", **lens_evidence("footgun-finder")}})
+        context["final_report_fields"]["standard_clean_cas_runs"] = 3
+        decision = MODULE.make_decision(context)
+        body = decision["actuation_terminal_decision"]
+        self.assertEqual(body["verdict"], "complete")
+
     def test_standard_review_profile_can_complete(self) -> None:
         context = deepcopy(self.context())
         context["cas_review"] = satisfied_standard_cas()
@@ -204,7 +253,7 @@ class ActuationTerminalGateTests(unittest.TestCase):
 
 def lens_evidence(lane: str, **overrides):
     contracts = {"footgun-finder": "footgun-lens-v1", "invariant-ace": "invariant-gate-v1", "complexity-mitigator": "complexity-preflight-v1"}
-    record = {"lens_contract": contracts[lane], "lens_evidence_state": "valid", "lens_evidence_ref": f"cas:{lane}:lens", "head_sha": "abc123", "target_fingerprint": "diff:clean"}
+    record = {"lens_contract": contracts[lane], "lens_evidence_state": "valid", "lens_evidence_ref": f"cas:{lane}:lens", "source_validity": "valid", "head_sha": "abc123", "target_fingerprint": "diff:clean"}
     record.update(overrides)
     return record
 

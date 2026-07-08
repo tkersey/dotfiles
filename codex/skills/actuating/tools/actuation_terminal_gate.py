@@ -35,7 +35,19 @@ OBLIGATION_TRIGGER_LANES = {
     "complexity-stall": "complexity-mitigator",
     "repeated-owner-boundary": "complexity-mitigator",
 }
-VALID_LENS_EVIDENCE_STATES = {"valid", "missing", "invalid", "stale", "blocked", "rerun-required", "not-required"}
+VALID_LENS_EVIDENCE_STATES = {"valid", "missing", "invalid", "invalid-proof", "stale", "blocked", "rerun-required", "not-required"}
+VALID_SOURCE_VALIDITY_STATES = {"valid", "invalid-proof", "stale", "missing", "not-required"}
+AUXILIARY_LANE_STATES = {
+    "not-required",
+    "missing",
+    "clean",
+    "findings-folded",
+    "blocked",
+    "rerun-required",
+    "selected-pending",
+    "candidate-pressure",
+}
+AUXILIARY_BLOCKING_STATES = {"blocked", "rerun-required", "selected-pending", "candidate-pressure"}
 HARD_REASON_ORDER = [
     "blocked-loop-contract-missing",
     "blocked-loop-contract-stale",
@@ -670,6 +682,22 @@ def lens_evidence_ref_for(record: dict[str, Any]) -> Any:
     return first_present(record, ("lens_evidence_ref", "evidence_ref", "verdict_ref", "review_fold_ref", "receipt_ref"))
 
 
+def source_validity_for(record: dict[str, Any]) -> str:
+    value = first_present(record, ("source_validity", "sourceValidity", "source_validity_state"), "")
+    return str(value).lower()
+
+
+def source_validity_reasons_for(record: dict[str, Any], prefix: str, *, required: bool) -> list[str]:
+    state = source_validity_for(record)
+    if not state:
+        return [f"{prefix}.source_validity:missing"] if required else []
+    if state not in VALID_SOURCE_VALIDITY_STATES:
+        return [f"{prefix}.source_validity:invalid"]
+    if state != "valid":
+        return [f"{prefix}.source_validity:{state}"]
+    return []
+
+
 def lens_contract_reasons_for(record: dict[str, Any], lane: str, prefix: str) -> list[str]:
     reasons: list[str] = []
     expected = AUXILIARY_LENS_CONTRACTS[lane]
@@ -690,6 +718,7 @@ def lens_contract_reasons_for(record: dict[str, Any], lane: str, prefix: str) ->
     evidence_ref = lens_evidence_ref_for(record)
     if not isinstance(evidence_ref, str) or not evidence_ref:
         reasons.append(f"{prefix}.lens_evidence_ref:missing")
+    reasons.extend(source_validity_reasons_for(record, prefix, required=True))
     return reasons
 
 
@@ -750,7 +779,7 @@ def review_obligation_router_reasons_for(profile: dict[str, Any], artifact: dict
         if not state:
             reasons.append(f"{prefix}.state:missing")
             continue
-        if state not in {"not-required", "clean", "findings-folded", "blocked", "rerun-required"}:
+        if state not in AUXILIARY_LANE_STATES:
             reasons.append(f"{prefix}.state:invalid")
             continue
         if state == "not-required":
@@ -758,7 +787,7 @@ def review_obligation_router_reasons_for(profile: dict[str, Any], artifact: dict
             if not isinstance(reason, str) or not reason.strip():
                 reasons.append(f"{prefix}.not_required_reason:missing")
             continue
-        if state in {"blocked", "rerun-required"}:
+        if state in AUXILIARY_BLOCKING_STATES:
             reasons.append(f"{prefix}:{state}")
             continue
         evidence_ref = lens_evidence_ref_for(value)
@@ -782,16 +811,19 @@ def auxiliary_lane_reasons_for(cas: dict[str, Any], artifact: dict[str, Any]) ->
             reasons.append(f"cas.auxiliary_lanes.{lane}:missing")
             continue
         state = str(record.get("status", record.get("state", ""))).lower()
+        if state and state not in AUXILIARY_LANE_STATES:
+            reasons.append(f"cas.auxiliary_lanes.{lane}.state:invalid")
+            continue
         folded = as_yes(record.get("folded")) or state in {"clean", "findings-folded"}
         if state == "missing":
             reasons.append(f"cas.auxiliary_lanes.{lane}:missing")
         if not folded:
             reasons.append(f"cas.auxiliary_lanes.{lane}:not-folded")
-        if as_yes(record.get("unresolved_blockers")) or state == "blocked":
-            reasons.append(f"cas.auxiliary_lanes.{lane}:blocked")
-        if as_yes(record.get("rerun_required")) or state == "rerun-required":
+        if as_yes(record.get("unresolved_blockers")) or state in AUXILIARY_BLOCKING_STATES:
+            reasons.append(f"cas.auxiliary_lanes.{lane}:{state if state in AUXILIARY_BLOCKING_STATES else 'blocked'}")
+        if as_yes(record.get("rerun_required")):
             reasons.append(f"cas.auxiliary_lanes.{lane}:rerun-required")
-        if folded and state not in {"blocked", "rerun-required"}:
+        if folded and state not in AUXILIARY_BLOCKING_STATES:
             reasons.extend(lens_contract_reasons_for(record, lane, f"cas.auxiliary_lanes.{lane}"))
         head_sha = lane_binding_value(record, "head_sha")
         if not isinstance(head_sha, str) or not head_sha:
@@ -829,7 +861,7 @@ def review_profile_reasons_for(profile: dict[str, Any], artifact: dict[str, Any]
         if not state:
             reasons.append(f"{prefix}.state:missing")
             continue
-        if state not in {"not-required", "clean", "findings-folded", "blocked", "rerun-required"}:
+        if state not in AUXILIARY_LANE_STATES:
             reasons.append(f"{prefix}.state:invalid")
             continue
         if state == "not-required":
@@ -841,7 +873,7 @@ def review_profile_reasons_for(profile: dict[str, Any], artifact: dict[str, Any]
             if lane == "complexity-mitigator" and complexity_pressure_requires_lens(profile):
                 reasons.append(f"{prefix}:complexity-pressure-required")
             continue
-        if state in {"blocked", "rerun-required"}:
+        if state in AUXILIARY_BLOCKING_STATES:
             reasons.append(f"{prefix}:{state}")
             continue
         reasons.extend(lens_contract_reasons_for(record, lane, prefix))
