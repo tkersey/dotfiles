@@ -6,6 +6,7 @@
 - Zig 0.16.0 release notes: https://ziglang.org/download/0.16.0/release-notes.html
 - Zig build system guide: https://ziglang.org/learn/build-system/
 - Zig download/release index: https://ziglang.org/download/
+- LLVM Link Time Optimization design: https://llvm.org/docs/LinkTimeOptimization.html
 
 Relevant official areas:
 
@@ -18,7 +19,7 @@ error sets, try/catch/errdefer
 atomics
 extern/packed layout
 build modes
-build system and target options
+build system, target options, linker options, and LTO
 comptime/reflection/type construction
 Smith fuzzing
 std.Io and process.Init
