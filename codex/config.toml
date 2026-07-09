@@ -1,5 +1,5 @@
-model = "gpt-5.5"
-model_reasoning_effort = "high"
+model = "gpt-5.6-sol"
+model_reasoning_effort = "ultra"
 plan_mode_reasoning_effort = "xhigh"
 suppress_unstable_features_warning = true
 web_search = "live"
@@ -27,7 +27,7 @@ js_repl = false
 
 [features.multi_agent_v2]
 enabled = true
-max_concurrent_threads_per_session = 24
+max_concurrent_threads_per_session = 12
 
 [apps._default]
 enabled = false
