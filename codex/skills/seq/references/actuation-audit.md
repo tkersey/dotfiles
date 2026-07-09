@@ -1,82 +1,48 @@
 # `$actuating` Audit
 
-Preferred lifted command:
+Use `seq actuation-audit` to measure whether material work followed the live
+three-object protocol.
 
-```bash
+~~~bash
 seq actuation-audit \
   --root ~/.codex/sessions \
   --workdir <workdir> \
   --since <time> \
   --until <time> \
   --exclude-current \
-  --mode hylo \
-  --format json
-```
-
-Report mode remains available for human-readable summaries:
-
-```bash
-seq actuation-audit \
-  --root ~/.codex/sessions \
-  --repo <repo> \
-  --since <time> \
-  --until <time> \
-  --exclude-current \
   --mode report \
   --format markdown
-```
-
-If the installed command is unavailable, use:
-
-```text
-skill-decision-audit
-skill-evidence
-tool-lifecycle
-session-tooling
-turns
-session-detail
-orchestration-concurrency
-generic query only for missing joins
-```
+~~~
 
 Measure separately:
 
-```text
-authority attempts/current coverage
-graph failures and mutation-after-failure
-AFR coverage
-ARH/FPSR coverage
-update_plan per authority sequence
-patch/churn
-focused/wave/full proof cadence
-proof invalidators
-compactions and resume artifacts
-skill rereads after compaction
-subagent artifact yield
-decision receipts
-ship/PR mode
-ALSR/HYL/HSR governance coverage
-terminal ATCG coverage
-```
+~~~text
+actuation-run/v1 source and authority coverage
+current repo/base/branch/head/target bindings
+selected-step-before-mutation coverage
+completed-step and evidence-fold joins
+review-fold classification coverage
+review-resolution/v1 strategy distribution
+local-repair versus replacement-kernel outcomes
+abstraction retirement and semantic-balance failures
+workflow-bound CAS record coverage
+distinct current standard clean suffix length
+auxiliary lens coverage and invalid evidence
+closure-decision/v1 live recomputation
+proof-patch-after-closure ordering
+ship-only public effects
+subagent selection and lead fan-in
+~~~
 
-Key defect:
+Treat scalar clean counts, opaque proof references, raw review-to-patch
+transitions, missing selected steps, and replayed closure decisions as control
+failures.
 
-```text
-failed/stale authority
--> repeated update_plan
--> material patching
-```
+The installed `hylo`, `slices`, and `proof` modes remain historical dual-read
+surfaces for older sessions. Do not interpret their legacy receipt coverage as
+new-protocol success. Until the native command exposes the three-object fields,
+use `report` plus `skill-decision-audit`, `skill-evidence`,
+`tool-lifecycle`, and bounded `query` joins for missing dimensions.
 
-Classify:
-
-```text
-projection_inversion
-```
-
-Do not call `codex_internal_context` or persistent goal context a successful downstream skill outcome.
-
-The native implementation is specified in:
-
-```text
-seq actuation-audit --mode hylo
-```
+Never call persistent goal context or internal context injection a successful
+downstream skill outcome.

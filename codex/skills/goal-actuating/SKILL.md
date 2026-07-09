@@ -1,400 +1,139 @@
 ---
 name: goal-actuating
-description: "Run an accepted implementation spec, direct /goal, or no-code review mode through the goal runtime. Interprets HYL-v1 for material work, emits HSR-v1 step receipts, schedules bounded subagents when safe, requires $cas for workflow review, and closes material work through proof plus ATCG."
-metadata:
-  version: "2.1.0"
-  activation_cost: medium
-  default_depth: high
+description: "Coordinate an accepted implementation goal or explicit review workflow through actuation-run/v1. Select one bounded step, delegate its execution to $goal-grind, fold evidence, consume review-resolution/v1, acquire CAS review evidence when required, and request closure-decision/v1 without owning publication."
 ---
 
 # Goal Actuating
 
 ## Mission
 
-Run approved work through the goal workflow.
+Be the sole coordinator for an authority-bound run.
 
-```text
-accepted implementation spec, direct goal, or no-code review mode
--> optional Scheme Plan
--> ALSR-v1/HYL-v1 when material loop governance is required
--> goal contract
--> execution mode
--> work list when useful
--> HSR-v1 unfold/action/fold steps
--> evidence
--> terminal ATCG
--> proof
-```
+~~~text
+accepted source + GoalContract
+-> actuation-run/v1
+-> select one step
+-> $goal-grind action
+-> $evidence-fold
+-> update run
+-> $ship
+-> review-closeout
+-> final closure-decision/v1
+~~~
 
-No-code review modes stop earlier with a mode-terminal triage report or
-remediation plan.
-
-`$actuating` is the user-facing wrapper. `$goal-actuating` is the runtime that interprets HYL-v1.
+This skill coordinates. It does not redefine accepted semantics, implement raw
+review prose, duplicate the selected-step executor, derive final proof prose,
+or publish.
 
 ## Inputs
 
-```text
-accepted implementation spec
-Scheme Plan from $recursion-scheme-planner
-ALSR-v1 / HYL-v1 from $agent-loop-schemes
-plan handoff
-review findings bound to the current diff
-direct /goal with enough proof surface
-```
+- an accepted implementation spec or direct user goal;
+- a source-bound GoalContract;
+- an accepted plan handoff when one exists;
+- optional topology advice from `$agent-loop-schemes`;
+- current review evidence and `review-resolution/v1` for review work.
 
-When an accepted implementation spec is present, treat it as the source of truth. Do not reinterpret scope, non-goals, compatibility, or proof requirements.
+Treat the accepted source as immutable authority. A plan handoff is policy and
+scope, not mutation permission.
 
 ## Modes
 
-```yaml
+~~~yaml
 goal_actuating_mode:
-  source: direct-goal|spec-first|review|dry-plan
-  persistence: update_plan|goal-artifacts
-  implementation: none|proof-only|minimal-fix|refactor-kernel|branch-race
-  review_mode: none|triage|remediation-plan|review-closeout
-  review: none|existing-review|cas-probe|cas-lane|cas-exhaustive
-  review_lanes: []
-  resolution: none|review-fold-only|resolution-fold|accepted-liabilities|resolution-campaign
-  scheme_plan: none|required|present
-  loop_contract: fused|ALSR-HYL|required
-  parallelism: none|scout-fanout|review-class-fanout|patch-fanout|proof-fanout|branch-race
-  closure: triage-report|remediation-plan|review-closeout|ship-handoff|blocked
-```
+  mode: implement | triage | remediation-plan | review-closeout
+  persistence: update_plan | goal-artifacts
+  execution: none | direct | iterative
+  review: none | existing-source | cas-fresh | cas-closeout
+  parallelism: none | scout-fanout | review-class-fanout | proof-fanout
+  closure: no-code-output | local-completion | ship-handoff | blocked
+~~~
 
-## Procedure
+Unqualified review means `triage`. Only explicit fix, address, resolve,
+implement, or closeout intent selects `review-closeout`.
 
-1. Locate the accepted spec, Scheme Plan, ALSR/HYL, plan handoff, review input, or direct goal.
-2. If the work is not yet approved enough to execute, hand off to `$spec-pipeline` in gate-only/no-plan mode and stop.
-3. If no Scheme Plan exists and the work shape is unclear, hand off to `$recursion-scheme-planner`.
-4. If material loop governance is required and no current ALSR/HYL exists, hand off to `$agent-loop-schemes`.
-5. Derive a goal contract with `$goal-contract`.
-6. Choose `update_plan` or `goal-artifacts` persistence.
-7. If the mode is `triage` or `remediation-plan`, use supplied existing GitHub,
-   human, or CAS findings when present; CAS runs only when no current review
-   source exists or fresh review is explicitly requested.
-8. For no-code modes, classify findings with `$review-fold`, run the resolution
-   fold only for `remediation-plan`, report review source/currentness, and stop
-   without material mutation, proof-patch, three clean CAS attempts, or ATCG.
-9. Interpret HYL-v1 for material modes: unfold a legal work node/frontier,
-   execute it, fold evidence, and emit HSR-v1.
-10. If the workflow performs fresh or exhaustive review, select a CAS review profile and run required CAS review lanes.
-11. Classify standard and auxiliary review-lane findings with `$review-fold`.
-12. Run a resolution fold when review work needs a resolution plan.
-13. Create a work list with `$goal-workgraph` only when decomposition changes execution.
-14. Schedule bounded subagents only for explicit safe frontier nodes.
-15. Execute one useful action at a time with `$goal-grind`.
-16. Fold verification, review, and subagent results with `$evidence-fold`, `$review-fold`, or the resolution fold as appropriate.
-17. For `review-closeout` and exhaustive review, require three consecutive clean normalized **standard** `$cas` review attempts on the same artifact scope before completion.
-18. Run ATCG-v1 before material completion.
-19. Close with `$proof-patch`, or hand off to `$ship` only when publication is requested and ready.
+Bare `$actuating` and `/goal $actuating` run the ordered lifecycle `implement ->
+$ship -> review-closeout -> final closure`. `$actuating implement` runs only the
+implementation phase. Ship handoff is therefore a continuation point, not a
+terminal result, for a bare invocation.
 
-## HYL-v1 interpreter
+## Run ownership
 
-A material action is legal only as an HSR-v1 transition:
+Create or refresh `actuation-run/v1` with:
 
-```text
-state_before
--> unfold work_node|parallel_frontier|terminal|blocked
--> action
--> fold evidence
--> continuation
-```
+- source and execution authority references;
+- current repo, base, branch, head, live-state fingerprint, and initial
+  per-path state map;
+- allowed paths and effect boundaries;
+- direct or iterative execution kind;
+- current selected step, completed step chain, and evidence references;
+- review requirement, source references, Codex thread ID for CAS closeout, and
+  publication intent.
 
-No mutation is valid without an unfolded work node.
-No continuation is valid without a fold verdict.
-No completion is valid without terminal ATCG-v1.
+Before mutation, validate the run with `$actuating`'s gate. Direct work is a
+one-step run; it is not an exceptional control path.
 
-## Review lanes
+## Coordination loop
 
-Workflow review is CAS-backed and lane-aware. `standard` is the only CAS review lane required for the clean-review streak; auxiliary lanes are workflow-selected review lenses whose folded evidence must be current-artifact-bound.
+1. If source authority or artifact binding is stale, block.
+2. If topology changes execution and no advice exists, request normalized step
+   topology from `$agent-loop-schemes`.
+3. Project a WorkGraph only when decomposition matters.
+4. Select exactly one ready node as lead.
+5. Record the selection in the run before action.
+6. Invoke `$goal-grind` once for each selected leaf.
+7. Integrate accepted action results in deterministic order.
+8. Run `$evidence-fold` over tests, diffs, logs, and artifact state.
+9. Attach the evidence to the completed step and refresh the artifact binding.
+10. Continue only when the updated run validates.
 
-```text
-standard          ordinary CAS code-review attempt; the only lane that counts toward the 3-clean-review streak
-footgun-finder   auxiliary CAS review lens for latent misuse hazards, unsafe defaults, misleading affordances, and future caller traps
-invariant-ace    auxiliary CAS review lens for illegal states, owner/source-of-truth gaps, transition preservation, policy exceptions, witness parity, races, retries, duplicates, and loop invariants
-complexity-mitigator
-                  auxiliary CAS review lens for comprehension stalls, boolean soup, mixed responsibilities, dominated branches, hidden state, and one-patch-per-comment pressure
-```
+No step may claim parent completion. A node result of done means only that the
+node is closed.
 
-Rules:
+## Review handoff
 
-- `standard` is required whenever workflow review is required or any auxiliary lane is selected.
-- Auxiliary lanes are selected before review from the diff surface, accepted proof bar, user request, or prior review class, and the decision lives in the workflow-owned `review_profile`.
-- Auxiliary lanes are real CAS review evidence, but they do not increment or interrupt the standard clean-review streak.
-- Auxiliary findings must be folded through `$review-fold` and may block closeout or become accepted liabilities.
-- Do not require unsupported `$cas` commands to produce semantic footgun/invariant/complexity lane labels. CAS transports and tuple-binds review evidence; the workflow owns auxiliary lens selection, folding, and blocker state.
-- A selected auxiliary lane must carry current `head_sha`, `target_fingerprint`, `lens_contract`, `lens_evidence_state`, and `lens_evidence_ref` before ATCG may complete. `clean` and `findings-folded` are not enough without the lane contract.
-- ATCG lane contracts are `footgun-lens-v1`, `invariant-gate-v1`, and `complexity-preflight-v1`. `lens_evidence_state` and `source_validity` must both be `valid` for completion.
-- Auxiliary source validity is asymmetric: invalid dirty findings may become `candidate-pressure` after quarantine and owner-boundary validation, but invalid clean findings grant no closeout credit. `base=unknown`, `target_identity_unavailable`, stale tuple binding, or missing target identity is `invalid-proof`.
-- `selected-pending` and `candidate-pressure` block ATCG. Clear them only by obtaining valid folded lens evidence, resolving accepted liabilities and rerunning when needed, or explicitly marking the lane `not-required` with a source-bound reason.
-- When workflow review is required, `review_profile` must explicitly account for `footgun-finder`, `invariant-ace`, and `complexity-mitigator` as selected/folded evidence or `not-required` with a reason; absence is unknown coverage, not clean review.
-- Record `complexity_pressure` when standard or auxiliary reviews show repeated same-class findings, one-patch-per-comment pressure, review churn, or comprehension blockage. That pressure selects `complexity-mitigator` unless it is explicitly marked not applicable.
-- A code change from any lane resets the standard clean-review streak to zero.
-- Read-only or classification-only auxiliary lane results do not reset the standard streak unless they change artifact scope or proof bar.
-- Do not rerun auxiliary lanes on every standard clean attempt unless their surface was touched, their prior result was blocked/validate-first, the proof bar changed, or a standard review exposes a new class owned by that lens.
+For review work, preserve the order and artifacts required by `$actuating`'s
+Review law: CAS evidence, RF-v2 classification, current resolution, admitted
+selected node, action evidence, and closure-grade review. `$actuating` alone
+defines lens derivation, CAS eligibility, semantic balance, and closure. This
+coordinator schedules those owners without restating their rules.
 
-### Review Obligation Router
+## Parallelism
 
-`review_profile.obligation_router` records `ROR-v1` obligations when standard,
-GitHub, human, or local review pressure contains specialized claims owned by an
-auxiliary lens.
+Allowed:
 
-```yaml
-obligation_router:
-  version: ROR-v1
-  obligations:
-    - id: stable-obligation-id
-      trigger: misuse-hazard | invariant-gap | complexity-pressure | complexity-stall | repeated-owner-boundary
-      source_ref: {}
-      owner_lens: footgun-finder | invariant-ace | complexity-mitigator
-      state: clean | findings-folded | blocked | rerun-required | not-required
-      evidence_ref: current folded lens evidence
-      not_required_reason: source-bound reason when state is not-required
-```
+- read-only scouting over independent areas;
+- classification fanout after review findings are quotiented;
+- proof checks over independent commands.
 
-Routing rules:
+Mutation is serial through the one selected node. Replacement-kernel work stays
+at its owner boundary instead of being divided into comment-sized patches.
 
-- `misuse-hazard` selects `footgun-finder`.
-- `invariant-gap` selects `invariant-ace`.
-- `complexity-pressure`, `complexity-stall`, and repeated owner-boundary pressure select `complexity-mitigator`.
-- A non-`not-required` obligation means the corresponding auxiliary lane must be selected in `review_profile.auxiliary_review_lanes` with current lens evidence before ATCG may complete.
-- A `not-required` obligation must explain why the source-bound trigger does not require that lens. A bare clean or summary-shaped review-fold is not enough.
+The lead owns scope, selection, fan-in, integration, resolution, review
+accounting, and closure. Subagents remain advisory until folded and may not
+publish or complete the goal.
 
-## HYL coalgebra
+## Closure
 
-The default coalgebra is obligation-driven:
-
-```text
-if no accepted spec -> blocked
-if topology nontrivial and no Scheme Plan -> produce scheme-planner node
-if material and no ALSR/HYL -> produce agent-loop-schemes node
-if no goal contract -> produce goal-contract node
-if no-code review mode and no current review source -> produce review-source or $cas acquisition node
-if no-code review mode and review findings unclassified -> produce review-fold node
-if no-code triage and folded review source current -> terminal triage-report
-if remediation-plan or review-closeout and no resolution agenda -> produce resolution-fold node
-if no-code remediation-plan and resolution agenda current -> terminal remediation-plan
-if review requested and no review profile -> produce review-profile node
-if review-closeout and no standard CAS result -> produce standard CAS review node
-if required auxiliary review lane missing or invalidated -> produce auxiliary review-lens evidence node
-if CAS lane findings unclassified -> produce review-fold node
-if accepted liabilities remain -> produce patch/refactor/branch-race node
-if proof missing -> produce verifier/proof node
-if standard clean CAS count < 3 -> produce fresh standard CAS review node
-if proof-patch missing -> produce proof-patch node
-if ATCG not run -> produce ATCG node
-else -> terminal complete
-```
-
-## HYL algebra
-
-The algebra folds effects into actuation state:
-
-```text
-code change -> reset standard clean CAS count and proof freshness
-standard CAS review -> normalize through review-fold and update standard clean counter
-auxiliary CAS review -> normalize through review-fold; do not update standard clean counter
-review-fold -> update dispositions, lane blockers, and quotient findings into classes
-resolution fold -> update accepted liabilities / no-code dispositions / blockers
-proof check -> update verifier state
-proof patch -> update proof state
-subagent result -> accept/reject/integrate through lead reducer
-ATCG -> complete|continue|blocked
-```
-
-## Parallel scheduler
-
-`$goal-actuating` owns bounded parallel scheduling for the goal workflow.
-
-It may spawn subagents only over explicit work nodes, review classes, isolated strategy branches, or proof checks.
-
-Allowed scheduler decisions:
-
-- use `repo_scout` for read-only fact-finding over independent repository areas;
-- use `review_reducer` over review classes after `$cas review` and `$review-fold`;
-- use `branch_racer` when strategies can be isolated and compared by the same verifier;
-- use `patch_worker` only after the resolution fold accepts code-change liabilities and the nodes are file-disjoint or otherwise isolated;
-- use `evidence_critic` for proof fan-in or contested evidence.
-
-The lead must fold all subagent outputs before continuing.
-No subagent may declare the goal complete, post/update public PR state, or broaden the accepted scope.
-
-## Parallel fan-in law
-
-Every subagent result must fold through exactly one owner:
-
-- `review-fold` for review classification results;
-- `resolution fold` for resolution plan decisions;
-- `evidence-fold` for tests, proof, diffs, logs, and verifier output;
-- lead integration for accepted patches;
-- `$ship` only for PR creation/update/promotion/publication.
-
-A subagent result is advisory until the lead folds it and either accepts, rejects, isolates, or reruns it.
-
-## Parallel integration and CAS clean runs
-
-Parallelism does not weaken the three-standard-clean-CAS closure bar.
-
-The standard clean-run counter resets to 0 after any accepted artifact-changing subagent result, including auxiliary-lane fixes, patch fanout results, and branch-race winner integration.
-
-Read-only fanout, classification-only fanout, and clean auxiliary review lanes do not reset the standard counter unless the artifact scope or proof bar changes.
-
-## CAS review mandate
-
-If `$goal-actuating` performs code review, `$cas` is the review backend.
-
-Use `$cas` review when:
-
-```text
-the user asks for review closure, code review, or exhaustive review
-the accepted spec includes review in the proof requirements
-review resolution mode needs a fresh review artifact
-repeated review/fix cycles need a persistent detached lane
-proof-patch or ship-handoff would otherwise rely on a review claim
-```
-
-A goal may close without code review only when the accepted proof requirements do not include review and focused checks are enough. Once a review gate is present, CAS review is mandatory.
-
-## Review behavior
-
-If review is requested and no no-code modifier is present, use `review-closeout`.
-
-Explicit review mode names carry the mutation rule:
-
-- `triage`: classify findings and stop without implementation.
-- `remediation-plan`: classify findings, produce the fix plan, and stop without implementation.
-- `review-closeout`: classify findings, implement only accepted code-change liabilities, prove closure, and stop at ATCG or `$ship` handoff.
-
-No-code review modes do not require material loop receipts, proof-patch, three
-clean CAS attempts, or ATCG. They stop at a mode-terminal output and must report
-review source/currentness. They leave no implementation-completion claim behind.
-
-For `triage`:
-
-```text
-existing review source or $cas acquisition when needed
--> $review-fold
--> triage-report
--> stop
-```
-
-For `remediation-plan`:
-
-```text
-existing review source or $cas acquisition when needed
--> $review-fold
--> resolution fold
--> remediation-plan
--> stop
-```
-
-For `review-closeout`:
-
-```text
-workflow review_profile selection
--> $cas standard review
--> optional auxiliary review lenses: footgun-finder | invariant-ace | complexity-mitigator
--> $review-fold
--> optional review-class-fanout
--> resolution fold
--> optional branch-race
--> $goal-grind accepted liabilities only
--> optional patch-fanout over disjoint accepted liabilities only
--> $evidence-fold
--> 3 clean normalized standard $cas review attempts
--> $proof-patch
--> ATCG-v1
-```
-
-Missing tuple-bound CAS evidence is a `$cas` acquisition node for
-`review-closeout`, not an entry failure. Terminal completion still requires
-tuple-bound independent fresh standard CAS clean evidence and ATCG
-`can_mark_goal_complete=yes`.
-
-Auxiliary lane selection:
-
-- Use `footgun-finder` when the diff touches APIs, CLIs, config, examples, docs, defaults, flags, fallbacks, auth/permissions, persistence, lifecycle/state-machine surfaces, degraded success, or partial-success ambiguity.
-- Use `invariant-ace` when the diff or proof bar touches illegal states, owner/source-of-truth ambiguity, transition preservation, policy exceptions, witness parity, fixture preconditions, races, retries, duplicates, stale handles, or loop invariants.
-- Use `complexity-mitigator` when reviewability is blocked by hard-to-follow existing code, deep nesting, boolean soup, hidden state, mixed responsibilities, cross-file hops, duplicated/dominated factors, or likely one-patch-per-comment churn.
-  Record this as `complexity_pressure` in `review_profile`; do not leave the lane implicit.
-
-No-code modifiers include:
-
-```text
-do not implement
-review only
-audit only
-classify only
-resolution plan only
-plan only
-no changes
-```
-
-Prefer no-code outcomes when they are correct: `reject`, `proof-only`, `follow-up`, or `ask-human`.
-
-Prefer `refactor-kernel` when several findings share one missing abstraction, invariant, canonical owner, state transition, or proof surface.
+For a bare invocation, hand implementation to `$ship`, resume with
+`review-closeout`, and only then ask `$actuating` for the final
+`closure-decision/v1`; do not duplicate or precompute its conditions. Only a
+current final closure may feed `$proof-patch`. Explicit implementation-only work
+stops before ship, and local completion for other workflows skips the ship
+branch.
 
 ## Stop rules
 
-Stop when:
-
-```text
-execution has not been approved
-scope would drift from the accepted spec
-review finding expands product/API scope
-durable external coordination is required but unsupported
-verification regresses
-proof is stale or not bound to the current artifact
-public tracker side effect would be needed without explicit intent
-review is required but $cas standard review is unavailable or not run
-workflow review is required but review_profile is missing, partial, or lacks explicit not-required reasons
-required auxiliary CAS review lane is unavailable, blocked, or not folded
-three clean normalized standard $cas review attempts are required but cannot be completed
-ALSR/HYL is required but missing or stale
-material mutation lacks HSR-v1 unfold/action/fold
-parallel fanout would cross shared invariants or conflicting resources
-ATCG-v1 does not permit completion
-```
-
-For no-code review modes, missing CAS evidence blocks only when there is no
-current review source or fresh review was explicitly requested. Missing
-proof-patch, clean CAS streak, or ATCG must not block `triage` or
-`remediation-plan`.
+Stop whenever the current run validator, resolution validator, evidence fold,
+or closure gate blocks. Do not reinterpret the failure locally.
 
 ## Output
 
-```text
+~~~text
 Goal Actuation:
-- source: accepted spec | direct goal | plan handoff | review
-- scheme plan: none|required|present
-- ALSR/HYL:
-- latest HSR:
-- mode / persistence:
-- mode-terminal output:
-- review profile:
-  - standard CAS review: required|not-required, current verdict:
-  - auxiliary lanes: footgun-finder|invariant-ace|complexity-mitigator each not-required|selected-pending|candidate-pressure|clean|findings-folded|blocked|rerun-required, with `source_validity` / `lens_contract` / `lens_evidence_state` / `lens_evidence_ref` when selected
-  - auxiliary blockers:
-- parallelism:
-  - mode:
-  - subagents used:
-  - fanout frontier:
-  - fan-in reducer:
-  - accepted results:
-  - rejected results:
-  - integration order:
-  - conflicts:
-  - standard CAS clean-run counter reset: yes|no
-- review source / CAS verdict, if required:
-- clean normalized standard CAS review attempts: 0|1|2|3|not-required
-  - ATCG fields: `standard_clean_runs_count` / `standard_clean_cas_runs`
-  - required auxiliary lanes: folded|blocked|rerun-required|not-required
-- goal contract summary:
-- work list / next action:
-- review-fold disposition, if any:
-- review resolution, if any:
-- evidence-fold verdict:
-- ATCG-v1 verdict:
-- proof-patch / ship handoff:
-- learnings or memory-source handoff, if justified:
-```
+- run ID and current artifact binding
+- mode and execution kind
+- selected/completed step
+- evidence-fold verdict
+- closure decision or next owner
+- blockers and residual risk
+~~~

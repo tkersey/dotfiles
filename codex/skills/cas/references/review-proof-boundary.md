@@ -9,3 +9,21 @@ CAS receipt normalization may expose transport facts such as `reviewAttemptPhase
 These fields are observational and are not guarantees. Per-finding identity is
 not acceptance, rejection, repair-mode selection, clean-streak authority, or
 mutation authority.
+
+CAS-RER-v1 may additionally preserve an optional `workflowBinding` containing
+`actuationRunId`, `artifactStateFingerprint`, `reviewContractFingerprint`,
+`resolutionDigest`, a canonical `selectedLenses` set, `reviewLane`, and
+`lensContract`. The live-state fingerprint is distinct from CAS's opaque
+`targetFingerprint`. The producer uses it for lock and record identity.
+Unfiltered `current`/`list` preserves all same-artifact/thread epochs so prior
+findings remain visible; an explicitly supplied binding is an exact filter.
+
+`CAS-LIST-v1.recordRefs[].proofCreditEligible` is current-context metadata.
+Runtime or account drift may make a record ineligible for clean credit without
+changing the immutable record-time `principal.proofUsable` fact or hiding the
+record from history.
+
+The binding remains transport identity, not semantic approval. Missing binding
+must not stop CAS from running, but actuation closure that requires a bound
+record must reject it as `workflow-unbound`. Import must preserve rather than
+invent the binding.

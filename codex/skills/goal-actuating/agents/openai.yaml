@@ -1,23 +1,6 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "Goal Actuating"
-  short_description: "Interpret HYL-v1 material loops and no-code review modes"
-  default_prompt: >-
-    Use $goal-actuating to execute an accepted implementation spec, direct /goal,
-    review remediation, or dry actuation plan. If no
-    Scheme Plan exists and the work shape is unclear, hand off to
-    $recursion-scheme-planner. If material loop governance is required and no
-    current ALSR/HYL exists, hand off to $agent-loop-schemes. Interpret HYL-v1 as
-    a defunctionalized actuation machine: unfold a legal node/frontier, execute
-    only that node/frontier, fold evidence, emit HSR-v1, and continue or stop.
-    Review modes are triage, remediation-plan, and review-closeout. Triage and
-    remediation-plan are no-code modes: consume existing GitHub, human, or CAS
-    findings when present, use $cas only when no current review source exists or
-    fresh review is explicitly requested, report review source/currentness, and
-    stop without material loop receipts, proof-patch, clean CAS closeout, ATCG,
-    or implementation completion claims. Review-closeout implements only
-    accepted code-change liabilities; missing tuple-bound CAS evidence routes to
-    $cas acquisition before terminal validation. Fresh or exhaustive review must
-    use $cas review; findings must pass through $review-fold. Material
-    completion requires terminal ATCG-v1.
+  short_description: "Coordinate authority-bound goal execution"
+  default_prompt: "Use $goal-actuating to coordinate this accepted goal through one selected step at a time, fold current evidence, and request live closure without publishing."

@@ -2,227 +2,91 @@ skill_decision_contract:
   contract_version: SKDC-v1
   skill:
     name: actuating
-    kind: workflow
-    source_fingerprint: actuating-v7.1-loop-receipts-focus-fusion-rko-v1
+    kind: mixed
+    source_fingerprint: actuating-live-semantics-v1
   triggers:
-    - trigger_id: ACT-SPEC-GOAL
-      description: The user wants approved implementation work executed through the goal workflow.
-      cue_literals: [$actuating, implement accepted spec, run accepted spec, goal actuation]
+    - trigger_id: ACT-IMPLEMENT
+      description: Bare invocation runs implement, ship, review-closeout, then final closure; explicit implement stops after implementation.
+      cue_literals: [$actuating, /goal $actuating, $actuating implement, implement accepted work, execute accepted plan]
       cue_regexes: []
       exclusions: []
     - trigger_id: ACT-REVIEW
-      description: The user wants review closure or code review as part of the workflow.
-      cue_literals: [triage, remediation-plan, review-closeout, review closure, code review, exhaustive review, close review]
+      description: Review should default to no-code triage unless mutation is explicit.
+      cue_literals: [review, triage, remediation-plan, review-closeout]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-REVIEW-LANES
-      description: Review requires a standard CAS lane plus selected auxiliary review lenses.
-      cue_literals: [standard CAS review, footgun-finder, invariant-ace, complexity-mitigator, review lanes, review bundle]
+    - trigger_id: ACT-RESOLVE
+      description: Classified findings require an owner-boundary resolution before mutation.
+      cue_literals: [review-resolution/v1, replacement-kernel, local-repair]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-HYLO
-      description: Material actuation needs either a direct-action fusion receipt or a loop receipt chain.
-      cue_literals: [FUSION-v1, ALSR-v1, HYL-v1, HSR-v1, loop contract, hylomorphism, graph_bypass]
-      cue_regexes: []
-      exclusions: []
-    - trigger_id: ACT-GOAL-FOCUS
-      description: Long actuation runs use a stable parent goal with folded child focus frames.
-      cue_literals: [goal-focus, GFF-v1, HEG-v1, parent goal, child focus frame]
-      cue_regexes: []
-      exclusions: []
-    - trigger_id: ACT-EXTERNAL-COORDINATION
-      description: Execution requires durable coordination that no supported local controller owns.
-      cue_literals: [resource claim, coordination token, external worktree, serialized integration, fencing]
-      cue_regexes: []
-      exclusions: []
-    - trigger_id: ACT-ESCALATION
-      description: Repeated accepted review liabilities may require escalation from local fixes to a refactor kernel or branch race.
-      cue_literals: [AER-v1, RKO-v1, actuation_escalation_receipt, refactor_kernel_outcome, refactor-kernel, repeated accepted liabilities, one-patch-per-comment risk]
+    - trigger_id: ACT-CLOSE
+      description: A goal or implementation completion claim requires live closure recomputation.
+      cue_literals: [closure-decision/v1, complete, ready-to-ship]
       cue_regexes: []
       exclusions: []
   routes:
-    - route_id: ACT-SPEC-PIPELINE
-      description: Obtain or refresh an accepted implementation spec without tail-calling $plan.
-      aliases: [spec-pipeline-gate-only, accepted-spec]
+    - route_id: ACT-RUN
+      description: Create or continue an actuation-run/v1 under current authority.
+      aliases: [actuation-run, execute]
       terminal: "no"
-    - route_id: ACT-SCHEME-PLAN
-      description: Choose recursion-scheme topology when the accepted spec has nontrivial recursive structure.
-      aliases: [recursion-scheme-planner, scheme-plan]
-      terminal: "no"
-    - route_id: ACT-LOOP-CONTRACT
-      description: Compile or validate FUSION-v1 or ALSR-v1/HYL-v1/HSR-v1 before material mutation.
-      aliases: [agent-loop-schemes, FUSION-v1, ALSR-v1, HYL-v1, HSR-v1]
-      terminal: "no"
-    - route_id: ACT-GOAL
-      description: Hand the accepted spec or direct goal to $goal-actuating.
-      aliases: [goal-actuating]
-      terminal: "no"
-    - route_id: ACT-CAS-REVIEW
-      description: Run $cas review when workflow code review is requested or required.
-      aliases: [cas-review]
-      terminal: "no"
-    - route_id: ACT-CAS-REVIEW-LANES
-      description: Run standard CAS review and selected auxiliary review lenses while preserving the standard-only clean streak.
-      aliases: [cas-review-bundle, standard-review, footgun-finder, invariant-ace, complexity-mitigator]
-      terminal: "no"
-    - route_id: ACT-REVIEW-NO-CODE
-      description: End triage or remediation-plan with a mode-terminal review disposition report or remediation plan and no material closure claim.
-      aliases: [triage-report, remediation-plan, no-code-review, mode-terminal]
+    - route_id: ACT-TRIAGE
+      description: Classify review evidence without mutation.
+      aliases: [triage, review-only]
       terminal: "yes"
-    - route_id: ACT-ATCG
-      description: Run terminal closure gate before completion.
-      aliases: [ATCG-v1]
-      terminal: "no"
-    - route_id: ACT-ESCALATION-RECEIPT
-      description: Record and validate the repair-mode escalation decision before continuing mutation under repeated review pressure.
-      aliases: [AER-v1, actuation-escalation-receipt]
-      terminal: "no"
-    - route_id: ACT-REFACTOR-KERNEL-OUTCOME
-      description: Record and validate RKO-v1 after a refactor-kernel patch.
-      aliases: [RKO-v1, refactor-kernel-outcome, refactor_kernel_outcome]
-      terminal: "no"
-    - route_id: ACT-PROOF
-      description: Close with current-artifact proof or an explicit $ship handoff.
-      aliases: [proof-patch, ship-handoff]
+    - route_id: ACT-REMEDIATION
+      description: Produce review-resolution/v1 without selecting executable mutation.
+      aliases: [remediation-plan]
       terminal: "yes"
+    - route_id: ACT-REVIEW-CLOSEOUT
+      description: Resolve findings, execute the current selected node, and acquire closure-grade review evidence.
+      aliases: [review-closeout]
+      terminal: "no"
+    - route_id: ACT-CLOSURE
+      description: Recompute closure-decision/v1 from current joined evidence.
+      aliases: [closure, complete]
+      terminal: "yes"
+    - route_id: ACT-SHIP-HANDOFF
+      description: Hand implementation to the sole public-effect owner, then continue bare invocation into review-closeout.
+      aliases: [ship-handoff]
+      terminal: "no"
     - route_id: ACT-BLOCK
-      description: Stop on unresolved spec, missing review backend, missing/stale loop receipts, unsupported authority, stale proof, or failed ATCG.
+      description: Stop on missing authority, stale binding, unresolved review, invalid proof, or unsupported coordination.
       aliases: [blocked]
       terminal: "yes"
   clauses:
-    - clause_id: ACT-SPEC-001
-      trigger_refs: [ACT-SPEC-GOAL]
-      expected_routes: [ACT-SPEC-PIPELINE, ACT-SCHEME-PLAN, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-BLOCK]
+    - clause_id: ACT-AUTHORITY-001
+      trigger_refs: [ACT-IMPLEMENT]
+      expected_routes: [ACT-RUN, ACT-SHIP-HANDOFF, ACT-REVIEW-CLOSEOUT, ACT-CLOSURE, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts:
-        - accepted implementation spec
-        - goal contract
-      success_signals:
-        - accepted spec is treated as the source of truth
-        - $spec-pipeline is requested in gate-only/no-plan mode when used by $actuating
-      failure_signals:
-        - $spec-pipeline tail-calls $plan from an $actuating run
-        - goal execution starts before scope, non-goals, success state, and proof bar are accepted
-      rationale: $actuating is the implementation workflow, not a free-form planner.
-    - clause_id: ACT-HYLO-001
-      trigger_refs: [ACT-HYLO]
-      expected_routes: [ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
-      prohibited_routes: []
-      required_artifacts:
-        - FUSION-v1 when direct-action fusion is claimed
-        - ALSR-v1 when material loop governance is required
-        - HYL-v1 when recursive execution is required
-        - HSR-v1 for every material unfold/action/fold transition
-      success_signals:
-        - direct-action fusion is proven by FUSION-v1, not a bare flag
-        - material mutation cites an unfolded node or frontier
-        - continuation follows an evidence fold
-        - completion follows terminal ATCG-v1
-      failure_signals:
-        - mutation_without_unfold
-        - action_without_fold
-        - completion_without_terminal_algebra
-        - fused_run_without_FUSION_v1
-        - graph_bypass
-      rationale: Loop receipts make the work sequence auditable rather than prose guidance.
-    - clause_id: ACT-GOAL-FOCUS-001
-      trigger_refs: [ACT-GOAL-FOCUS]
-      expected_routes: [ACT-SCHEME-PLAN, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
-      prohibited_routes: []
-      required_artifacts:
-        - stable parent goal binding
-        - folded or blocked child focus frames
-        - terminal focus that matches the parent stop rule
-      success_signals:
-        - primary_goal_stable=yes
-        - all child focus frames folded or blocked
-        - no child focus frame claims parent completion
-      failure_signals:
-        - primary_goal_swapped_without_user_authority
-        - child_goal_claimed_parent_completion
-        - focus_without_fold
-        - focus_fold_not_parent_bound
-      rationale: Local focus frames may guide work but only the parent goal plus ATCG may close the run.
+      required_artifacts: [actuation-run/v1, current source and artifact binding, selected step before mutation]
+      success_signals: [scope source remains distinct from execution authority, bare invocation orders implement then ship then review-closeout then final closure, explicit implement stops after implementation]
+      failure_signals: [plan grants mutation by itself, bare invocation skips or reorders a phase, ship handoff terminates bare invocation, explicit implement publishes or enters review-closeout, unsupported controller is simulated]
+      rationale: Execution authority belongs to the run, while invocation syntax selects the ordered lifecycle boundary.
     - clause_id: ACT-REVIEW-001
       trigger_refs: [ACT-REVIEW]
-      expected_routes: [ACT-CAS-REVIEW, ACT-CAS-REVIEW-LANES, ACT-REVIEW-NO-CODE, ACT-LOOP-CONTRACT, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
+      expected_routes: [ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts:
-        - standard CAS review verdict when workflow code review is fresh, exhaustive, or required for material closeout
-        - current review source for triage or remediation-plan
-        - review-fold disposition
-        - resolution fold for remediation-plan or review-closeout
-        - loop receipts, proof-patch, three clean normalized standard CAS review attempts, and ATCG only for review-closeout or material closure
-      success_signals:
-        - fresh or exhaustive workflow review comes from $cas
-        - ACT-REVIEW-NO-CODE terminal=yes means mode-terminal route stop, not ATCG terminal completion
-        - Use supplied existing GitHub, human, or CAS findings when present
-        - CAS runs only when no current review source exists or fresh review is explicitly requested
-        - No-code outputs must report review source/currentness
-        - triage and remediation-plan stop without material mutation or completion claims
-        - review-closeout with missing tuple-bound CAS evidence routes to `$cas`
-        - terminal completion still requires tuple-bound clean CAS evidence and ATCG
-        - review findings are classified before implementation
-        - raw review findings are reduced into liabilities/classes before patching
-        - only standard CAS review attempts count toward the three-clean-review closure bar
-      failure_signals:
-        - non-CAS critique substitutes for workflow code review
-        - raw review prose directly drives code changes
-        - No-code review mode is incorrectly blocked on positive interlock, HSR-v1, proof-patch, or ATCG
-        - cached CAS receipt counted as fresh repeated review
-        - auxiliary review lens counted as a standard clean review
-      rationale: Review stays strict while the resolution fold controls which findings become code changes.
-    - clause_id: ACT-REVIEW-LANES-001
-      trigger_refs: [ACT-REVIEW-LANES]
-      expected_routes: [ACT-CAS-REVIEW-LANES, ACT-REVIEW-NO-CODE, ACT-GOAL, ACT-ATCG, ACT-BLOCK]
+      required_artifacts: [current review source, review-fold classification before review resolution]
+      success_signals: [unqualified review selects triage, explicit closeout is required for review-derived mutation]
+      failure_signals: [raw finding becomes a patch, no-code mode selects a work node]
+      rationale: Review evidence is not mutation authority.
+    - clause_id: ACT-RESOLUTION-001
+      trigger_refs: [ACT-RESOLVE]
+      expected_routes: [ACT-RUN, ACT-REVIEW-CLOSEOUT, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts:
-        - review profile with standard plus selected auxiliary lanes
-        - explicit not-required reason for every unselected auxiliary lane
-        - folded auxiliary lane outcomes when selected
-        - standard-only clean-run counter for review-closeout or material closure
-      success_signals:
-        - auxiliary lane selection is recorded by $actuating/$goal-actuating
-        - auxiliary lanes may block closeout but do not increment the standard clean streak
-        - artifact-changing fixes from any lane reset the standard clean streak
-      failure_signals:
-        - auxiliary lane output bypasses review-fold
-        - auxiliary lane is treated as mutation authority
-        - standard clean streak includes non-standard attempts
-        - terminal closure accepts stale auxiliary lane evidence
-      rationale: Specialized review lenses increase review evidence without weakening the standard clean-review bar.
-    - clause_id: ACT-EXTERNAL-COORDINATION-001
-      trigger_refs: [ACT-EXTERNAL-COORDINATION]
-      expected_routes: [ACT-BLOCK]
-      prohibited_routes: [ACT-GOAL]
-      required_artifacts:
-        - explicit blocked reason naming the unsupported coordination requirement
-      success_signals:
-        - durable coordination does not proceed through a hidden controller
-      failure_signals:
-        - direct implementation claims fenced authority without a supported controller
-        - APMA-v1 is hand-authored as active authority
-      rationale: Removed controller paths must block rather than silently degrade to local mutation.
-    - clause_id: ACT-ESCALATION-001
-      trigger_refs: [ACT-ESCALATION]
-      expected_routes: [ACT-ESCALATION-RECEIPT, ACT-GOAL, ACT-REFACTOR-KERNEL-OUTCOME, ACT-ATCG, ACT-BLOCK]
+      required_artifacts: [review-resolution/v1, owner-boundary strategy, abstraction account, semantic balance]
+      success_signals: [one selected owner node, all added constructs replace named constructs]
+      failure_signals: [one node per comment, local repair adds machinery, dominated abstraction remains]
+      rationale: Resolution should remove the owning cause instead of accumulating review patches.
+    - clause_id: ACT-CLOSURE-001
+      trigger_refs: [ACT-CLOSE]
+      expected_routes: [ACT-CLOSURE, ACT-SHIP-HANDOFF, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts:
-        - AER-v1 actuation_escalation_receipt when repeated accepted liabilities share one owner boundary or missing abstraction
-        - RKO-v1 refactor_kernel_outcome when selected_route or next_resolution_mode is refactor-kernel
-      success_signals:
-        - owner boundary is named before further mutation
-        - prior and next resolution modes are explicit
-        - alternatives considered are recorded
-        - selected route is tied to verifier and current artifact scope
-        - RKO-v1 records covered liabilities, new liabilities, closure state, and graph-bypass evidence
-      failure_signals:
-        - repeated accepted liabilities continue as silent one-patch-per-comment local fixes
-        - refactor-kernel escalation happens without a cited owner boundary
-        - AER-v1 is treated as review finding acceptance or mutation authority
-        - refactor-kernel completion is reported without RKO-v1
-        - RKO-v1 reports assessment effective while graph_bypass is yes or mutations_without_graph_control_receipt is nonzero
-      rationale: Escalation should be visible before mutation and auditable afterward.
+      required_artifacts: [closure-decision/v1, current evidence folds, actual CAS records when review is required]
+      success_signals: [goal and implementation outcomes are separate, three standard attempts are derived from distinct records]
+      failure_signals: [opaque proof reference, scalar clean count, replayed completion decision, proof-patch precedes closure]
+      rationale: Completion must be a live join over current evidence.
   instrumentation:
     decision_receipt: required
-    rationale: Material decisions include accepted-spec routing, scheme planning, loop receipt/fusion choice, review backend and lanes, repair-mode escalation, persistence mode, HYL/HSR execution legality, focus-frame closure, refactor-kernel outcome accounting, ATCG terminal closure, and proof/ship closure. No-code review decisions include review source/currentness, review-fold disposition, optional resolution fold, and an explicit mode-terminal stop without material closure.
+    rationale: Run admission, review resolution, and closure determine mutation and completion legality.

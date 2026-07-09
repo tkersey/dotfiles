@@ -43,6 +43,7 @@ Before acting, establish:
 
 ```yaml
 ship_input:
+  source: direct | actuation
   branch:
   base_branch:
   head_sha:
@@ -63,11 +64,27 @@ ship_input:
     deferred:
     open:
   proof_summary:
+  actuation:
+    closure_decision_id:
+    closure_verdict: ready-to-ship
+    actuation_run_id:
+    state_fingerprint:
+    review_contract_fingerprint:
+    selected_lenses: []
+    resolution_ref:
+    resolution_digest: # null when actuation review was not required
+    cas_rer_record_ids: []
   user_requested_pr_mode: ready | draft | update-existing | promote-draft | none
   repo_policy_pr_mode: ready | draft | unknown
 ```
 
 If key state is unknown, inspect the repository and PR state before creating or updating a PR.
+
+For `source: actuation`, require a current `closure-decision/v1` with
+`verdict: ready-to-ship`. Preserve its actuation and review binding exactly;
+do not reconstruct it from PR prose. Actuation input cannot use the early draft
+path because draft publication has no valid closure re-entry. A direct ship
+input does not require this object.
 
 ## PR Readiness Policy
 
@@ -148,11 +165,13 @@ Do not pass `--draft` unless the readiness record says `mode: draft`.
 1. Confirm current branch, base branch, head SHA, and repository remote.
 2. Inspect worktree status.
 3. Confirm recent validation signal exists for the current change set; if not, run or request validation.
-4. Determine PR mode using the readiness policy.
-5. Summarize proof: commands/signals and outcomes.
-6. Build PR body with proof, scope, risks, and remaining follow-ups.
-7. Open/update/promote PR according to `pr_readiness.mode`.
-8. Report PR URL/status and any remaining follow-ups.
+4. For actuation input, validate the closure decision and preserve its run,
+   target, contract, lens, resolution, and CAS record bindings.
+5. Determine PR mode using the readiness policy.
+6. Summarize proof: commands/signals and outcomes.
+7. Build PR body with proof, scope, risks, and remaining follow-ups.
+8. Open/update/promote PR according to `pr_readiness.mode`.
+9. Emit SHIP-v1 for closure recomputation and report PR state.
 
 ## PR body contract
 
@@ -188,6 +207,7 @@ Emit:
 ```yaml
 ship_record:
   record_version: SHIP-v1
+  source: direct | actuation
   branch: "..."
   base_branch: "..."
   head_sha: "..."
@@ -209,7 +229,22 @@ ship_record:
     command: "..."
     result: created | updated | promoted | blocked | skipped
     pr_url: "..."
+  actuation_review:
+    actuation_run_id: "..."
+    state_fingerprint: "..."
+    review_contract_fingerprint: "..."
+    selected_lenses: []
+    resolution_ref: "..."
+    resolution_digest: "..."
+    cas_rer_record_ids: []
 ```
+
+`actuation_review` is required for actuation ready/update/promote records and
+omitted for direct records. Every field must match the input closure decision.
+Missing or mismatched binding blocks actuation shipping.
+After publication, closure must query live PR metadata and match the repository,
+base ref and SHA, head ref and SHA, URL, open state, and ready status; copied
+SHIP fields are not authoritative for those facts.
 
 ## Guardrails
 

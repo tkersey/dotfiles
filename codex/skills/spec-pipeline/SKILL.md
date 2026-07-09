@@ -37,7 +37,8 @@ profile + mode
 
 `$spec-pipeline` owns accepted semantics. `$plan` owns execution-policy
 synthesis, task/wave ordering, policy fixed-point refinement, and `$actuating`
-handoff. `$actuating` owns fenced execution. This skill never mutates repository
+handoff. `$actuating` owns source-bound local execution governance; it does not
+claim fencing or durable coordination. This skill never mutates repository
 product files and never emits `<proposed_plan>`.
 
 ## Public boundary
