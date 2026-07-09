@@ -16,7 +16,7 @@ CAS records evidence.
 Workflows certify meaning.
 ```
 
-CAS does not own closeout policy, clean streaks, architecture hardening mode, PR closure, or semantic reviewer adjudication. Those are workflow-owned projections over CAS review evidence.
+CAS does not own closeout policy, clean-streak eligibility, architecture hardening mode, PR closure, or semantic reviewer adjudication. Those are workflow-owned projections over CAS review evidence. CAS may maintain coordination hygiene for review reuse, including recording a three-clean reset marker and clearing reusable lock state.
 
 For review work, the governing invariant is:
 
@@ -51,6 +51,40 @@ cas conformance
 
 `cas session_inquiry` owns safe historical replay lifecycle for `$retrace`; see `references/retrace-session-inquiry.md`.
 
+## Artifact store
+
+CAS artifacts default to the current repository ledger:
+
+```text
+<repo>/.ledger/cas/
+```
+
+The default store root is discovered from `--cwd` or the current working
+directory by walking to the enclosing git root. If no git root exists, CAS uses
+the canonical current working directory's `.ledger/cas`. Do not use global
+`~/.codex/cas` as an implicit fallback.
+
+Use an explicit store root only for diagnostics, migration, or compatibility:
+
+```bash
+cas review_session run --cwd <repo> --base <base> --json --store-root <dir>
+CAS_STORE_ROOT=<dir> cas review_session status --latest --json
+cas session_inquiry run --cwd <repo> --store-root <dir> ...
+```
+
+Repo-local subtrees include:
+
+```text
+.ledger/cas/review_sessions/
+.ledger/cas/review_sessions/locks/
+.ledger/cas/review_ledger/records/
+.ledger/cas/session_inquiries/
+.ledger/cas/state/clean_streak_resets/
+```
+
+Review session records include `store_root`, `store_scope="repo-local"`,
+`repo_root`, and `codex_thread_id` when available.
+
 ## Review evidence boundary
 
 Public review consumers should prefer `CAS-RER-v1` records when the installed
@@ -66,6 +100,7 @@ Current production helpers:
 ```bash
 cas review_session run --cwd <repo> --base <base> --json --fallback none
 cas review_session status --latest --json
+cas review_session status --path <record.json> --json
 cas review_session wait --latest --json
 cas review_session receipt normalize --path <receipt.json> --format json --summary
 cas review_session receipt classify --path <receipts.jsonl> --format jsonl
@@ -85,7 +120,7 @@ cas review validate-record --record <rer.json> --json
 `cas review run` emits `CAS-RUN-v1` with a `CAS-RER-v1` record and broker decision for normal waited review evidence. `cas review current` and `cas review list` read the ledger records for the requested current tuple. `cas review import` normalizes legacy receipt/session artifacts into `CAS-RER-v1` and writes the record under:
 
 ```text
-~/.codex/cas/review_ledger/records/<record_id>.json
+.ledger/cas/review_ledger/records/<record_id>.json
 ```
 
 Use `cas review inspect` and `cas review validate-record` for diagnostics and schema/invariant validation only. They have no workflow closeout authority.
@@ -106,13 +141,27 @@ For local detached review inspection, prefer:
 cas review_session status --latest --json
 ```
 
-This selects the newest persisted record under `~/.codex/cas/review_sessions/`
+This selects the newest persisted record under `.ledger/cas/review_sessions/`
 and reports the same tuple/status fields callers need for proof binding:
 `reviewThreadId`, `reviewTurnId`, `recordPath`, `eventLogPath`, `baseSha`,
 `headSha`, `targetFingerprint`, `turnStatus`, `reviewResult`, and failure
 fields. Use `--review-thread-id <id>` when checking a non-latest session or
-when a workflow already owns the handle. Do not use latest-session selection
-for destructive control; `interrupt` requires an explicit `reviewThreadId`.
+when a workflow already owns the handle. Use `--path <record.json>` when the
+caller has the `recordPath` from a prior run and may be operating outside the
+reviewed repo. Do not use latest-session selection
+for destructive control; `interrupt` requires an explicit `reviewThreadId` or
+session record `--path`.
+
+For compatibility, session lookup by `--review-thread-id` and `--latest` may
+read legacy records from `~/.codex/cas/review_sessions` when no repo-local
+record exists. This is lookup-only migration compatibility; new CAS artifacts
+must still be written under `.ledger/cas` unless an explicit store root is
+provided.
+
+ID selectors are store-scoped. When checking from outside the reviewed repo,
+pass `--cwd <repo>`, `--store-root <dir>`, or the emitted `recordPath` through
+`--path`; the review thread id alone is not a global locator in the repo-local
+store model.
 
 Use `cas review_session lane` only for debugging, migration, or broker backend diagnostics. A persistent lane owns transport reuse only. It is not canonical proof and not a workflow policy backend.
 
@@ -341,6 +390,34 @@ Downstream aliases may convert these fields to snake_case (`finding_id`,
 the tuple and thread fields needed by `$review-fold`, `$actuating`, and `$seq`
 to cite evidence without re-parsing review prose.
 
+## Codex thread scoping
+
+CAS review reuse is scoped by the Codex session/thread id in addition to the
+repo/base/head/account tuple. Pass it explicitly when the caller can resolve it:
+
+```bash
+cas review_session run --cwd <repo> --base <base> --json --codex-thread-id <id>
+```
+
+`CODEX_THREAD_ID` and `CODEX_SESSION_ID` are accepted environment fallbacks. If
+none is provided, CAS uses a stable reduced id (`reduced-unspecified`) so plain
+CLI `run/current/list` calls can still agree. Workflows that need session
+isolation must pass the real Codex thread id.
+
+Wrappers may resolve the current session with `$seq` and pass the result into
+CAS, for example:
+
+```bash
+seq find-session \
+  --prompt 'Use $seq to tell me the session id of this current session.' \
+  --since <local-day-start> \
+  --limit 1 \
+  --format json
+```
+
+The CAS core must not depend silently on `seq`; session id discovery belongs in
+the wrapper/workflow layer.
+
 `run` and `start --wait` output is tuple-bound review evidence only when its emitted
 `reviewVerdict` has `tupleVerdictExists=true`, a terminal tuple status
 (`clean`, `findings`, or `account_resource_exhausted`), and matching
@@ -372,12 +449,13 @@ target_fingerprint
 resolved_codex_path
 resolved_codex_version
 account_fingerprint
+codex_thread_id
 ```
 
 Store locks under:
 
 ```text
-~/.codex/cas/review_sessions/locks/<tuple_hash>.json
+.ledger/cas/review_sessions/locks/<tuple_hash>.json
 ```
 
 States:
@@ -410,8 +488,21 @@ Default repeated review commands consume cached terminal evidence; they are not
 new independent review runs. For workflows that require multiple independent CAS
 reviews on the same tuple, callers must request each additional post-terminal
 attempt with `--fresh-attempt REASON` and evaluate the resulting CAS-RER records
-or tuple-bound compatibility projections outside CAS. CAS does not own clean
-streaks, final eligibility, or closeout strength.
+or tuple-bound compatibility projections outside CAS. CAS does not own final
+eligibility or closeout strength.
+
+When the same Codex thread records three consecutive reusable clean terminal
+reviews for the same tuple lock, CAS writes:
+
+```text
+.ledger/cas/state/clean_streak_resets/<tuple_hash>-<timestamp>.json
+```
+
+Then CAS removes only the reusable tuple lock. The three clean review records
+remain in `.ledger/cas/review_sessions/` and/or `.ledger/cas/review_ledger/`.
+This preserves evidence of the clean streak while allowing a later Codex session
+or next run to review again instead of being permanently satisfied by a prior
+three-clean state. A findings verdict resets the clean counter.
 
 ## Hooks, approvals, and fallback
 
