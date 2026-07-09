@@ -23,8 +23,8 @@ test/lint/bench/fuzz steps
 ```bash
 zig version
 zig build --help
+zig build-exe --help | rg -- '-flto|-fno-lto|lld|new-linker'
 zig env
-zig build --help | rg -- '-flto|-fno-lto|lld|new-linker'
 find . -maxdepth 4 \( -name build.zig -o -name build.zig.zon \) -print
 python3 codex/skills/zig/scripts/zig_repo_closure_scan.py --root .
 ```
@@ -59,7 +59,7 @@ baseline and LTO variant can be measured under the same target, optimize mode, C
 
 Leave LTO off for ordinary debug iteration, compile-error triage, sanitizer/fuzzer minimization, profiler runs that require stable debug information, and unexplained link failures unless the repository already makes LTO part of the artifact contract.
 
-For Zig 0.16-era CLI usage, verify with the installed `zig build --help` and use explicit modes:
+For Zig 0.16-era CLI usage, verify with the installed `zig build-exe --help` or relevant compiler subcommand help, then use explicit modes:
 
 ```bash
 zig build-exe src/main.zig -O ReleaseFast -flto       # full LTO
