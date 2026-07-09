@@ -1,6 +1,6 @@
 # Zig performance, profiling, cache-layout, and measurement playbook
 
-Use this playbook when users ask for speedups, latency, throughput, allocation pressure, binary size, CPU hotspots, memory growth, cache behavior, SIMD/vectorization, or profiling.
+Use this playbook when users ask for speedups, latency, throughput, allocation pressure, binary size, CPU hotspots, memory growth, cache behavior, SIMD/vectorization, LTO, or profiling.
 
 ## Expert objective
 
@@ -28,6 +28,43 @@ Minimum benchmark shape:
 - baseline and variant run under the same environment.
 
 Report `UNMEASURED` rather than implying a speedup without numbers.
+
+## LTO measurement lane
+
+Link-time optimization is a candidate release optimization, not proof by itself.
+
+Add an LTO lane when the hypothesis is cross-module inlining, dead-code removal, devirtualization-like specialization through visible calls, or binary-size reduction. Do not add it for semantic correctness, debug-only work, or failure triage unless the repository already ships with LTO.
+
+Compare explicit variants:
+
+```bash
+# repository-specific commands are preferred when available
+zig build -Doptimize=ReleaseFast
+zig build -Doptimize=ReleaseFast -Dlto=thin
+zig build -Doptimize=ReleaseFast -Dlto=full
+zig build -Doptimize=ReleaseSmall -Dlto=thin
+
+# direct compiler probes are acceptable for isolated artifacts
+zig build-exe src/main.zig -O ReleaseFast -fno-lto
+zig build-exe src/main.zig -O ReleaseFast -flto=thin
+zig build-exe src/main.zig -O ReleaseFast -flto=full
+```
+
+Only use `-Dlto=...` when the repository exposes that build option. Otherwise, inspect `build.zig` and either use the repo’s existing knob or propose a small enum option in the build-toolchain playbook.
+
+For each LTO result, record:
+
+```text
+lto mode: none|thin|full
+Zig version, target triple, CPU, optimize mode
+use_lld/use_new_linker/use_llvm when known
+binary size and stripped/debug-info state
+build/link time and memory pressure when relevant
+benchmark metric and variance
+correctness guard/checksum
+```
+
+Prefer `.thin` for large projects or CI lanes where link time and memory are constraints. Test `.full` only when the link is tractable or the artifact justifies the cost. If LTO changes profiler symbolization, call graph quality, sanitizer behavior, or debug-info availability, separate the profiling lane from the shipping-performance lane.
 
 ## Decompose regressions
 
@@ -103,18 +140,21 @@ zig build -Doptimize=ReleaseSmall
 ls -lh zig-out/bin/*
 ```
 
-Also examine specialization cardinality from comptime generics. Excessive value-specialization can improve hot paths while harming build time and binary size.
+Also compare `ReleaseSmall` with explicit LTO variants when the repository supports them, because LTO can change dead-code elimination and cross-module specialization.
+
+Examine specialization cardinality from comptime generics. Excessive value-specialization can improve hot paths while harming build time and binary size.
 
 ## Linker/debug-info caveat
 
-Profiling workflows that need DWARF call graphs require binaries with suitable debug info. Do not enable linker/incremental settings that drop debug information when the profiler depends on it.
+Profiling workflows that need DWARF call graphs require binaries with suitable debug info. Do not enable linker/incremental/LTO settings that drop or destabilize debug information when the profiler depends on it.
 
 ## Review checklist
 
 - Baseline and variant are measured under the same conditions.
 - Correctness guard prevents benchmarking wrong output.
 - Optimization mode matches the claim.
+- LTO is off/thin/full intentionally and recorded when relevant.
 - Allocation and CPU questions use the right profiler.
 - Cache/SIMD claims have evidence.
-- Build time and binary size are considered for comptime specialization.
+- Build time and binary size are considered for comptime specialization and LTO.
 - Results include exact commands and remaining noise.
